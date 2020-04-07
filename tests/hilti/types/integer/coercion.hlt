@@ -1,0 +1,62 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+##### Integer<*> = Integer<*> coercions:  #####
+
+global int<32> i = 32;
+global int<64> j = i;
+global int<64> k = 0;
+
+# Contextual conversions
+if ( i )
+    assert True;
+else
+    assert False;
+
+if ( k )
+    assert False;
+else
+    assert True;
+
+assert i == j;
+
+global uint<8>  u8_hi =  0xFF;
+global uint<16> u16_hi = 0xFFFF;
+global uint<32> u32_hi = 0xFFFFFFFF;
+global uint<64> u64_hi = 0xFFFFFFFFFFFFFFFF;
+
+global int<8> i8_hi =  0x7F;
+global int<8> i8_lo = -0x80;
+
+global int<16> i16_hi =  0x7FFF;
+global int<16> i16_lo = -0x8000;
+
+global int<32> i32_hi =  0x7FFFFFFF;
+global int<32> i32_lo = -0x80000000;
+
+global int<64> i64_hi =  0x7FFFFFFFFFFFFFFF;
+global int<64> i64_lo = -0x8000000000000000;
+
+hilti::print(i64_lo);
+
+##### Integer to Real coercions: Real <= Integer #####
+
+# (1) Coerce integer constant to real
+# (2) Assert that coerced real variable = real constant
+#     Note: 1p53 is largest integer in +1 sequence from 0
+#           still exactly representable as a double.
+
+global real u_1p53 = 0x20000000000000;
+assert u_1p53 == 0x20000000000000p0;
+
+global real i_1p53 = -0x20000000000000;
+assert i_1p53 == -0x20000000000000p0;
+
+global real inexact = cast<real>(0x20000000000001);
+assert inexact == 0x20000000000000;
+
+}

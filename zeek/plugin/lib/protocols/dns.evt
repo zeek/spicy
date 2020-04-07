@@ -1,0 +1,65 @@
+# Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+protocol analyzer spicy::DNS over UDP:
+    parse with DNS::Message,
+    port 53/udp,
+    port 137/udp,
+    port 5353/udp,
+    port 5355/udp,
+    replaces DNS;
+
+import Zeek_DNS;
+
+   # TODO: Length of raw payload?
+on DNS::Message::header -> event dns_message($conn, Zeek_DNS::is_query(self.header), Zeek_DNS::message(self.header), cast<uint64>(0));
+
+on DNS::Question if ( msg.header.flags.qr == 0 )
+    -> event dns_request($conn, Zeek_DNS::message(msg.header), Zeek_DNS::name(self.qname), self.qtype, self.qclass);
+
+on DNS::Question if ( msg.header.flags.qr == 1 && ! msg.header.rejected )
+    -> event dns_query_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::name(self.qname), self.qtype, self.qclass);
+
+on DNS::Question if ( msg.header.flags.qr == 1 && msg.header.rejected )
+    -> event dns_rejected($conn, Zeek_DNS::message(msg.header), Zeek_DNS::name(self.qname), self.qtype, self.qclass);
+
+on DNS::Message
+    -> event dns_end($conn, Zeek_DNS::message(self.header));
+
+on DNS::Message if ( |self.question| == 0 && ! self.header.rejected )
+    -> event dns_query_reply($conn, Zeek_DNS::message(self.header), b"<no query>", cast<uint64>(0), cast<uint64>(0));
+
+on DNS::Message if ( |self.question| == 0 && self.header.rejected )
+    -> event dns_rejected($conn, Zeek_DNS::message(self.header), b"<no query>", cast<uint64>(0), cast<uint64>(0));
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::A )
+    -> event dns_A_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype), self.a);
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::A6 )
+   -> event dns_A6_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype), self.a);
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::AAAA )
+    -> event dns_AAAA_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype), self.a);
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::NS )
+    -> event dns_NS_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype), Zeek_DNS::name(self.rname));
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::CNAME )
+    -> event dns_CNAME_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype), Zeek_DNS::name(self.rname));
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::PTR )
+    -> event dns_PTR_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype), Zeek_DNS::name(self.rname));
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::MX )
+    -> event dns_MX_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype), Zeek_DNS::name(self.mx.name), self.mx.preference);
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::SOA )
+    -> event dns_SOA_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype), Zeek_DNS::soa(self.soa));
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::TXT )
+    -> event dns_TXT_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype), [i.data for i in self.txt]);
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::WKS )
+    -> event dns_WKS_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype));
+
+on DNS::ResourceRecord if ( self.ty == DNS::RDType::SRV )
+    -> event dns_SRV_reply($conn, Zeek_DNS::message(msg.header), Zeek_DNS::answer(self, rrtype));

@@ -1,0 +1,2 @@
+[error] cannot coerce expression '0x1p-1' of type 'real' to type 'uint<64>'
+[error] spicyc: aborting after errors

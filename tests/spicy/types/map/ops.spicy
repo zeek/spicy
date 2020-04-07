@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# Just basic functionality tests, more on the HILTI side.
+
+module Test;
+
+import spicy;
+
+global m1: map<int64, bytes> = map(1: b"AAA", 2: b"BBB", 3: b"CCC");
+print m1;
+print m1[2];
+assert 1 in m1;

@@ -1,0 +1,11 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${HILTIC} -c -D compiler,ast-final %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+type X = bool;
+
+declare string foo(real bar);
+
+}

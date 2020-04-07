@@ -1,0 +1,21 @@
+# @TEST-GROUP: no-jit
+# @TEST-IGNORE
+#
+# We use this script for a number of HTTP tests.
+
+module Test;
+
+import HTTP from protocols;
+
+on HTTP::Request::%done {
+    print self;
+    }
+
+on HTTP::Reply::%done {
+    print self;
+    }
+
+public type EatAll = unit {
+    %mime-type = "*";
+    data: bytes &eod { print "I ate it all:", self.data; }
+};

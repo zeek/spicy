@@ -1,0 +1,51 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+
+module Foo;
+
+global i: int16 = -10;
+global j: int16 = 20;
+global k: int32 = 20;
+global l: int32 = 30;
+global m: int32 = 3;
+
+assert -i == 10;
+assert -j == -20;
+
+assert i + j == 10;
+assert j - i == 30;
+assert i * j == -200;
+assert l / i == -3;
+assert l % k == 10;
+assert i ** m == -1000;
+
+assert j == k;
+assert i != j;
+assert i < j;
+assert !(j < i);
+assert j > i;
+assert !(i > j);
+
+assert j >= j;
+assert j >= i;
+assert !(j <= i);
+
+assert j <= j;
+assert i <= j;
+assert !(i >= j);
+
+assert --i == -11;
+assert i-- == -11;
+assert i == -12;
+
+assert ++i == -11;
+assert i++ == -11;
+assert i == -10;
+
+i += 5;
+assert i == -5;
+i -= 5;
+assert i == -10;
+i *= 3;
+assert i == -30;
+i /= 3;
+assert i == -10;

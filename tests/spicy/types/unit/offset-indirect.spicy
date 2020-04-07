@@ -1,0 +1,19 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    %random-access
+    x1: Sub(self, 0);
+    x2: Sub(self, 3);
+    on %done   { print self; }
+};
+
+type Sub = unit(t: Test, o: int64) {
+    on %init   { assert t.offset() == o; }
+    x: uint16  { assert t.offset() == o; }
+    y: uint8;
+};

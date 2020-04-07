@@ -1,0 +1,15 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+
+module Foo {
+
+import hilti;
+
+global bool untrue = 1.01;
+global bool falser = 0.0;
+
+global real u = 0xFFFFFFFFFFFFFFFF;
+
+global real v = 0x20000000000001;
+
+}

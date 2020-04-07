@@ -1,0 +1,16 @@
+# @TEST-EXEC: printf '\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\02' | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+# `count` accepts unsigned arguments.
+
+module testing;
+
+public type U = unit() {
+  # `1` is unsigned.
+  a: int64[] &count = 1;
+
+  # `1/1` is deduced as unsigned since `1` is unsigned.
+  b: int64[] &count = 1/1;
+
+  on %done { print self; }
+};

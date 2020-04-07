@@ -1,0 +1,15 @@
+# @TEST-REQUIRES: test "$BUILD" = "debug"
+# @TEST-EXEC:  printf '\000\012\000\077' | HILTI_DEBUG=spicy spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+type Foo = enum { A = 3 };
+
+public type test = unit {
+    a: uint16;
+    b: bitfield(16) {
+        x1: 0..3;
+        x2: 4..7 &convert=Foo($$);
+    };
+};

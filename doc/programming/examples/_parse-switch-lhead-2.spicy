@@ -1,0 +1,19 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+type A = unit {
+    a: b"A";
+};
+
+type B = unit {
+    b: uint16(0xffff);
+};
+
+public type Foo = unit {
+    switch {
+        a: A;
+        b: B;
+    };
+
+    on %done { print self; }
+};

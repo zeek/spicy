@@ -1,0 +1,13 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+import spicy;
+
+type X = enum { A = 1, B = 2 };
+
+public type Foo = unit {
+    f: bitfield(8) {
+        x1: 0..3 &convert=X($$);
+        x2: 4..7 &convert=X($$);
+    } { print self.f.x1, self.f.x2; }
+};

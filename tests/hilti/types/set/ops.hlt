@@ -1,0 +1,54 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+global set<string> s0 = ["A", "B"];
+global set<int<64>> s1 = set(1, 2, 3);
+global set<bytes> s2;
+
+hilti::print(s0);
+hilti::print(s1);
+hilti::print(s2);
+hilti::print(set());
+
+assert 2 in s1;
+assert ! (4 in s1);
+
+add s1[4];
+assert 4 in s1;
+
+add s2[b"hurz"];
+assert b"hurz" in s2;
+assert !( b"" in s2);
+
+assert |s1| == 4;
+delete s1[4];
+assert |s1| == 3;
+
+assert |s2| == 1;
+
+global int<64> x1;
+
+for ( i in s1 )
+    x1 += i;
+
+assert x1 == 6;
+
+global int<64> x2;
+global iterator<set<int<64>>> i;
+
+i = begin(s1);
+while ( i != end(s1) )
+    x2 += *i++;
+
+assert x2 == 6;
+
+s1.clear();
+s2.clear();
+assert |s1| == 0;
+assert |s2| == 0;
+
+}

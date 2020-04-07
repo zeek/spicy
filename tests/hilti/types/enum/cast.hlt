@@ -1,0 +1,35 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = enum {
+    A1 = 1,
+    A2 = 2,
+    A3 = 2
+};
+
+global X x;
+hilti::print(x);
+
+x = cast<X>(1);
+hilti::print(x);
+
+x = cast<X>(2);
+hilti::print(x);
+
+x = cast<X>(10);
+hilti::print(x);
+
+x = cast<X>(0);
+hilti::print(x);
+
+assert X(1) == X::A1;
+
+assert cast<uint<16>>(X::A2) == 2;
+assert cast<int<16>>(X::A1) == 1;
+assert-exception cast<uint<16>>(X::Undef);
+
+}

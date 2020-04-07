@@ -1,0 +1,64 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function void p(vector<uint<64>> v) {
+    local auto i = begin(v);
+    hilti::print(i);
+    assert *i++ == 1;
+    assert i != end(v);
+    assert *++i == 3;
+    assert i != end(v);
+    assert *i++ == 3;
+    assert i == end(v);
+
+    i = begin(v);
+    for ( x in v )
+        x == *i++;
+}
+
+function void p2(vector<vector<uint<64>>> v) {
+    local auto i = begin(v);
+    hilti::print(i);
+    assert *i++ == vector(1,2);
+    assert i != end(v);
+    assert *++i == vector(3,4);
+    assert ++i == end(v);
+
+    i = begin(v);
+    for ( x in v )
+        x == *i++;
+}
+
+# Checking non-constant iterator
+local auto v = vector(1, 2, 3);
+local auto i = begin(v);
+hilti::print(i);
+
+assert *i++ == 1;
+assert i != end(v);
+assert *++i == 3;
+assert i != end(v);
+assert *i++ == 3;
+assert i == end(v);
+
+# Checking constant iterators
+p(v);
+
+local vector<vector<uint<64>>> v2 = vector(vector(1,2), vector(2, 3), vector(3, 4));
+p2(v2);
+
+#  Checking for loop
+i = begin(v);
+for ( x in v )
+    x == *i++;
+
+local auto j = begin(v2);
+for ( x in v2 )
+    x == *j++;
+}

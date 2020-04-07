@@ -1,0 +1,48 @@
+module Foo {
+
+global real d;
+global real r = 0x1.999999999999ap-4;
+
+assert 0x1.999999999999ap-4 == 0x1.999999999999ap-4;
+
+}
+// Begin of Foo (from "/home/robin/work/spicy/tests/.tmp/hilti.types.real.nops/nops.hlt")
+// Compiled by HILTI version 0.2.0-dev
+
+#include <hilti/rt/compiler-setup.h>
+
+#include <hilti/rt/libhilti.h>
+
+namespace __hlt::Foo {
+    using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+        double d;
+        double r;
+        template<typename F> void __visit(F _) const { _("d", d); _("r", r); }
+    };
+
+    inline unsigned int __globals_index;
+    static inline auto __globals() { return hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
+    extern void __init_globals(hilti::rt::Context* ctx);
+    extern void __init_module();
+    extern void __register_module();
+}
+
+HILTI_PRE_INIT(__hlt::Foo::__register_module)
+
+extern void __hlt::Foo::__init_globals(hilti::rt::Context* ctx) {
+    hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index);
+    __globals()->r = 0x1.999999999999ap-4;
+}
+
+extern void __hlt::Foo::__init_module() {
+    if ( ! (0x1.999999999999ap-4 == 0x1.999999999999ap-4) ) {
+        throw hilti::rt::AssertionFailure("failed expression '0x1.999999999999ap-4 == 0x1.999999999999ap-4'", "/home/robin/work/spicy/tests/.tmp/hilti.types.real.nops/nops.hlt:11");
+    }
+}
+
+extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, &__init_globals, &__globals_index}); }
+
+/* __HILTI_LINKER_V1__
+{"module":"Foo","namespace":"__hlt::Foo","path":"/home/robin/work/spicy/tests/.tmp/hilti.types.real.nops/nops.hlt","version":1}
+*/
+

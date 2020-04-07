@@ -1,0 +1,20 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+type Sub = unit {
+    %random-access
+
+    x: uint16;
+    y: uint8;
+};
+
+public type Test = unit {
+    %random-access
+
+    x: Sub[3] foreach { if ( $$.y == 5 ) self.set_input($$.input()); }
+    on %done { print self; }
+};

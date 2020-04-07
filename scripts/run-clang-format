@@ -1,0 +1,42 @@
+#! /bin/sh
+#
+# Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+base=$(dirname $0)
+fix=0
+
+if [ $# != 0 ]; then
+    if [ "$1" = "--fixit" ]; then
+        fix=1
+    else
+        echo "usage: $(basename $0) [--fixit]"
+        exit 1
+    fi
+fi
+
+if [ -z "${CLANG_FORMAT}" ]; then
+    CLANG_FORMAT=$(which clang-format 2>/dev/null)
+fi
+
+if [ -z "${CLANG_FORMAT}" -o ! -x "${CLANG_FORMAT}" ]; then
+    echo "Cannot find clang-format. If not in PATH, set CLANG_FORMAT."
+    exit 1
+fi
+
+if ! (cd / && ${CLANG_FORMAT} -dump-config | grep -q SpacesInConditionalStatement); then
+    echo "${CLANG_FORMAT} does not support SpacesInConditionalStatement. Install custom version and put it into PATH, or point CLANG_FORMAT to it."
+    exit 1
+fi
+
+if [ ! -e .clang-format ]; then
+   echo "Must execute in top-level directory."
+   exit 1
+fi
+
+cmd="${base}/3rdparty/run-clang-format/run-clang-format.py -r --clang-format-executable ${CLANG_FORMAT} --exclude '*/3rdparty/*' hilti spicy zeek"
+
+if [ ${fix} = 1 ]; then
+    eval ${cmd} | git apply -p0
+else
+    eval ${cmd}
+fi

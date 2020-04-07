@@ -1,0 +1,22 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+assert(b"-123".to_int() == -123);
+assert(b"123".to_uint() == 123);
+assert(b"a0".to_int(16) == 160);
+assert(b"".to_int(16) == 0);
+assert-exception(b"XXX".to_int());
+
+assert(b"\x01\x02\x03\x04".to_int(hilti::ByteOrder::Big) == 0x1020304);
+assert(b"\x01\x02\x03\x04".to_int(hilti::ByteOrder::Little) == 0x4030201);
+
+# TODO: Some problems with the escaping & typing here.
+# assert(b"\x81".to_int(hilti::ByteOrder::Big) == 0x81);
+# assert(b"\x81".to_int(hilti::ByteOrder::Big) == 0xffffffffffffff81);
+# #assert(b"\xff\xff\xff\xd6".to_int(hilti::ByteOrder::Big) == \xffffffffffffffd6);
+
+}

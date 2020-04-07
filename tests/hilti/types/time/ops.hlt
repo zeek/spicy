@@ -1,0 +1,32 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+global t1 = time(1295415110.5);
+global i = interval(3599.5);
+global i2 = interval(-110.5);
+
+hilti::print(t1);
+assert t1.seconds() == 1295415110.5;
+assert t1.nanoseconds() == 1295415110.5 * 1e9;
+
+hilti::print(t1+i);
+hilti::print(time(1295418710));
+
+assert (t1 + i) == time(1295418710);
+assert (t1 + i2) == time(1295415000.0);
+assert (t1 + i) - i == t1;
+
+global t2 = time(1295416110.5);
+assert t1 <= t2;
+assert t2 >= t1;
+assert t2 > t1;
+assert t1 >= t1;
+assert t1 <= t1;
+
+assert cast<time>(1295416110) == time(1295416110);
+
+}

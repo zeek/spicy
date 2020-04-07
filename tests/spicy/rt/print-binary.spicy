@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+import spicy;
+
+global x1: bytes = b"Hürz";
+global x2: bytes = b"X\r\nY";
+
+print x1;
+print x2;
+print x1, x2;

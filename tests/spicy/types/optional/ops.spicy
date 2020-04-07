@@ -1,0 +1,11 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+global x: optional<string>;
+print x;
+x = "123";
+print x;
+x = optional("456");
+print x;

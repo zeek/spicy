@@ -1,0 +1,20 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function void run() {
+    local real d = 15.0 - 5.;
+    assert d == 10.;
+    hilti::print(d);
+    d -= 2.5;
+    hilti::print(d);
+    assert d == 10.0 - 2.5;
+    assert d == 10.-2.5;
+    assert d == 10e0+-25e-1;
+}
+
+run();
+}

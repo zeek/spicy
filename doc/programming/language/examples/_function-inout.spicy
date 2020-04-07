@@ -1,0 +1,12 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+global s = "1";
+
+function foo(inout x: string) {
+    x = "2";
+}
+
+print s;
+foo(s);
+print s;

@@ -1,0 +1,120 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+/** Interface for HILTI types. */
+class Type(hilti::trait::isType) : hilti::trait::isNode {
+    /** Returns true if the type is equivalent to another HILTI type. */
+    bool isEqual(const Type& other) const;
+
+    /**
+     * Returns any parameters associated with type. If a type is declared as
+     * `T<A,B,C>` this returns a vector of the AST nodes for `A`, `B`, and
+     * `C`.
+     */
+    std::vector<Node> typeParameters() const if hilti::type::trait::isParameterized else {};
+
+    /**
+     * Returns true if all instances of the same type class can be coerced
+     * into the current instance, independent of their pararameters. In HILTI
+     * source code, this typically corresponds to a type `T<*>`.
+     */
+    bool isWildcard() const if hilti::type::trait::isParameterized else false;
+
+    /** Returns the set of flags associated with the type. */
+    type::Flags flags() const;
+
+    /** Returns true if a given type flag has been set. */
+    bool hasFlag(type::Flag f) const;
+
+    /** Returns the type of an iterator for this type. */
+    Type iteratorType(bool const_) const if hilti::type::trait::isIterable or hilti::type::trait::isView;
+
+    /** Returns the type of an view for this type. */
+    Type viewType() const if hilti::type::trait::isViewable;
+
+    /** Returns the type of elements the iterator traveres. */
+    Type dereferencedType() const if hilti::type::trait::isDereferencable;
+
+    /** Returns the type of elements the container stores. */
+    Type elementType() const if hilti::type::trait::isIterable;
+
+    /**
+     * Returns the fully deferenced type that this type corresponds to. This,
+     * for example, follows a type ID to the actual type it maps to.
+     */
+    Type effectiveType() const if hilti::type::trait::hasDynamicType;
+
+    /** For internal use. Use ``type::isAllocable` instead. */
+    trait _isAllocable() from hilti::type::trait::isAllocable;
+
+    /** For internal use. Use ``type::isDereferencable` instead. */
+    trait _isDereferencable() from hilti::type::trait::isDereferencable;
+
+    /** For internal use. Use ``type::isIterable` instead. */
+    trait _isIterable() from hilti::type::trait::isIterable;
+
+    /** For internal use. Use ``type::isViewable` instead. */
+    trait _isViewable() from hilti::type::trait::isViewable;
+
+    /** For internal use. Use ``type::isIterator` instead. */
+    trait _isIterator() from hilti::type::trait::isIterator;
+
+    /** For internal use. Use ``type::isView` instead. */
+    trait _isView() from hilti::type::trait::isView;
+
+    /** For internal use. Use ``type::isParameterized` instead. */
+    trait _isParameterized() from hilti::type::trait::isParameterized;
+
+    /** For internal use. Use ``type::isReferenceType` instead. */
+    trait _isReferenceType() from hilti::type::trait::isReferenceType;
+
+    /** For internal use. Use ``type::isMutable` instead. */
+    trait _isMutable() from hilti::type::trait::isMutable;
+
+    /** For internal use. Use ``type::hasDynamicInstead` instead. */
+    trait _hasDynamicType() from hilti::type::trait::hasDynamicType;
+
+    /** For internal use. Use ``type::isRuntimeNonTrivial` instead. */
+    trait _isRuntimeNonTrivial() from hilti::type::trait::isRuntimeNonTrivial;
+
+    /** For internal use. Use ``type::isOnHeap` instead. */
+    trait _isOnHeap() from hilti::type::trait::isOnHeap;
+
+    /** For internal use. Use ``type::isConstant()` instead. */
+    bool _isConstant() const;
+
+    /** For internal use. */
+    type::detail::State& _state();
+
+    /**
+     * Returns a HILTI ID associated with the type if any has been set. This
+     * method is implemented for all types in `TypeBase`.
+     */
+    std::optional<ID> typeID() const;
+
+    /**
+     * Returns a C++ ID associated with the type if any has been set. This
+     * method is implemented for all types in `TypeBase`.
+     */
+    std::optional<ID> cxxID() const;
+
+    /** Implements the `Node` interface. */
+    hilti::node::Properties properties() const;
+
+    /** Implements the `Node` interface. */
+    const std::vector<hilti::Node>& childs() const;
+
+    /** Implements the `Node` interface. */
+    std::vector<hilti::Node>& childs();
+
+    /** Implements the `Node` interface. */
+    const Meta& meta() const;
+
+    /** Implements the `Node` interface. */
+    void setMeta(Meta m);
+
+    /** Implements the `Node` interface. */
+    const NodeRef& originalNode() const;
+
+    /** Implements the `Node` interface. */
+    void setOriginalNode(const NodeRef& n);
+};

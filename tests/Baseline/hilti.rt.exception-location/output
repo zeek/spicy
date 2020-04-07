@@ -1,0 +1,1 @@
+uncaught exception hilti::rt::InvalidIterator: bound object has expired (/Users/robin/work/spicy/tests/.tmp/hilti.rt.exception-location/exception-location.hlt:11)

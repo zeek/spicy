@@ -1,0 +1,28 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+/** Interface for HILTI statements. */
+class Statement(trait::isStatement) : trait::isNode {
+    /** Returns true if the statement is equivalent to another one in HILTI semantics. */
+    bool isEqual(const Statement& other) const;
+
+    /** Implements the `Node` interface. */
+    hilti::node::Properties properties() const;
+
+    /** Implements the `Node` interface. */
+    const std::vector<hilti::Node>& childs() const;
+
+    /** Implements the `Node` interface. */
+    std::vector<hilti::Node>& childs();
+
+    /** Implements the `Node` interface. */
+    const Meta& meta() const;
+
+    /** Implements the `Node` interface. */
+    void setMeta(Meta m);
+
+    /** Implements the `Node` interface. */
+    const NodeRef& originalNode() const;
+
+    /** Implements the `Node` interface. */
+    void setOriginalNode(const NodeRef& n);
+};

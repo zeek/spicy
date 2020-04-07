@@ -1,0 +1,35 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <hilti/ast/expression.h>
+
+namespace hilti {
+namespace expression {
+
+/** AST node for a "move" expression. */
+class Move : public NodeBase, public trait::isExpression {
+public:
+    Move(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
+
+    auto expression() const { return child<Expression>(0); }
+
+    bool operator==(const Move& other) const { return expression() == other.expression(); }
+
+    /** Implements `Expression` interface. */
+    bool isLhs() const { return false; }
+    /** Implements `Expression` interface. */
+    bool isTemporary() const { return true; }
+    /** Implements `Expression` interface. */
+    auto type() const { return expression().type(); }
+    /** Implements `Expression` interface. */
+    auto isConstant() const { return expression().isConstant(); }
+    /** Implements `Expression` interface. */
+    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+
+    /** Implements `Node` interface. */
+    auto properties() const { return node::Properties{}; }
+};
+
+} // namespace expression
+} // namespace hilti

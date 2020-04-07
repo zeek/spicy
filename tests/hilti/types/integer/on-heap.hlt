@@ -1,0 +1,25 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: ${HILTIC} -c %INPUT | grep -q 'hilti::rt::ValueReference<hilti::rt::integer::safe<int64_t>> x'
+# @TEST-EXEC: btest-diff output
+#
+# Note: From inside HILTI, it's not easily visible if an integer
+# is on the heap or not. This is checking *that*, and then ensures
+# that the generated code contains the expected type definitions.
+
+module Foo {
+
+import hilti;
+
+type X = int<64> &on-heap;
+
+global X x;
+x = 128;
+global X y;
+y = x;
+
+x = 256;
+
+hilti::print(x);
+hilti::print(y);
+
+}

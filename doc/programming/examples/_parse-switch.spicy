@@ -1,0 +1,13 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+    x: bytes &size=1;
+    switch ( self.x ) {
+        b"A" -> a8: int8;
+        b"B" -> a16: int16;
+        b"C" -> a32: int32;
+    };
+
+    on %done { print self; }
+};

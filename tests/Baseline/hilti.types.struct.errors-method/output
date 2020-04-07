@@ -1,0 +1,6 @@
+[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:15: type X does not have a method 'x' matching the signature
+[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:16: type X does not have a method 'y'
+[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:17: X::s is not a method
+[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:18: method lacks a type namespace
+[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:20: unknown ID 'self'
+[error] hiltic: aborting after errors

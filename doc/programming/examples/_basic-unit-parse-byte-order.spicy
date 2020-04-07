@@ -1,0 +1,12 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+import spicy;
+
+public type Foo = unit {
+    version: uint32 &byte-order=spicy::ByteOrder::Little;
+
+    on %done {
+        print "0x%x" % self.version;
+    }
+};

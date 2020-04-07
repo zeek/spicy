@@ -1,0 +1,45 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+/** Interface for HILTI declarations. */
+class Declaration(trait::isDeclaration) : trait::isNode {
+    /** Returns the declaration's ID. */
+    ID id() const;
+
+    /** Returns the declaration's linkage. */
+    Linkage linkage() const;
+
+    /**
+     * Returns true if one cannot assign to what this declaration defines.
+     */
+    bool isConstant() const;
+
+    /**
+     * Returns a user-friendly name for the type of object the declararion
+     * refers to. This is used in error messages.
+     */
+    std::string displayName() const;
+
+    /** Returns true if the declaration is equivalent to another one in HILTI semantics. */
+    bool isEqual(const Declaration& other) const;
+
+    /** Implements the `Node` interface. */
+    hilti::node::Properties properties() const;
+
+    /** Implements the `Node` interface. */
+    const std::vector<hilti::Node>& childs() const;
+
+    /** Implements the `Node` interface. */
+    std::vector<hilti::Node>& childs();
+
+    /** Implements the `Node` interface. */
+    const Meta& meta() const;
+
+    /** Implements the `Node` interface. */
+    void setMeta(Meta m);
+
+    /** Implements the `Node` interface. */
+    const NodeRef& originalNode() const;
+
+    /** Implements the `Node` interface. */
+    void setOriginalNode(const NodeRef& n);
+};

@@ -1,0 +1,2 @@
+# @TEST-EXEC:  cat %DIR/reply-multipart.dat | spicy-driver %DIR/common.spicy -p HTTP::Replies >>output
+# @TEST-EXEC:  btest-diff output

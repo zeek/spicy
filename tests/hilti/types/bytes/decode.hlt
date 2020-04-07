@@ -1,0 +1,12 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+hilti::print(b"testing".decode(hilti::Charset::ASCII));
+hilti::print(b"testüng\n".decode(hilti::Charset::ASCII));
+hilti::print(b"testüng".decode(hilti::Charset::UTF8));
+
+}

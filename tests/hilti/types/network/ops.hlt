@@ -1,0 +1,45 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+global n1 = [2001:0db8::1428:57ab]/48;
+global n2 = 192.168.1.0/24;
+global n3 = [::192.168.1.0]/24;
+
+hilti::print(n1);
+hilti::print(n2);
+hilti::print(n3);
+hilti::print(n1.family());
+
+assert n2 == n3;
+assert n1 != n3;
+
+assert n2 == 192.168.1.0/24;
+assert n2 != 192.168.1.0/23;
+assert n2 != 193.168.1.0/24;
+
+assert 192.168.1.15 in n2;
+assert ! (192.168.2.15 in n2);
+
+assert n1.family() == hilti::AddressFamily::IPv6;
+assert n2.family() == n3.family();
+assert n1.family() != n3.family();
+
+assert n1.length() == 48;
+assert n2.length() == 24;
+assert n3.length() == 24;
+
+hilti::print((255.255.255.255/24).prefix());
+hilti::print((255.255.255.255/32).prefix());
+hilti::print(([ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]/0).prefix());
+hilti::print(([ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]/8).prefix());
+hilti::print(([ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]/56).prefix());
+hilti::print(([ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]/64).prefix());
+hilti::print(([ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]/72).prefix());
+hilti::print(([ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]/120).prefix());
+hilti::print(([ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]/128).prefix());
+
+}

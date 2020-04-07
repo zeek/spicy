@@ -1,0 +1,68 @@
+[debug/compiler] parsing file "/home/robin/work/spicy/tests/.tmp/hilti.ast.basic-module/basic-module.hlt"
+[debug/compiler] registering AST for module Foo ("/home/robin/work/spicy/tests/.tmp/hilti.ast.basic-module/basic-module.hlt")
+[debug/compiler]   processing AST, round 1
+[debug/compiler]     performing missing imports for module Foo
+[debug/compiler]       updated cached AST for module Foo (final: no, requires_compilation: yes, dependencies: (none))
+[debug/compiler]     modules: Foo
+[debug/compiler]     resetting nodes for module Foo
+[debug/compiler]     building scopes for all module modules
+[debug/compiler]     resolving IDs in module Foo
+[debug/compiler]       -> modified
+[debug/compiler]     resolving operators in module Foo
+[debug/compiler]     coercing expressions for Foo
+[debug/compiler]   processing AST, round 2
+[debug/compiler]     performing missing imports for module Foo
+[debug/compiler]       updated cached AST for module Foo (final: no, requires_compilation: yes, dependencies: (none))
+[debug/compiler]     modules: Foo
+[debug/compiler]     resetting nodes for module Foo
+[debug/compiler]     building scopes for all module modules
+[debug/compiler]     resolving IDs in module Foo
+[debug/compiler]     resolving operators in module Foo
+[debug/compiler]     coercing expressions for Foo
+[debug/ast-final] # Foo: Final AST
+[debug/ast-final]   - Module %1 (basic-module.hlt:5-11)
+[debug/ast-final]       | Foo -> Module %1
+[debug/ast-final]       | X -> declaration::Type %3 <linkage=private>
+[debug/ast-final]       | foo -> declaration::Function %4 <linkage=private>
+[debug/ast-final]     - ID <name=Foo> (basic-module.hlt:5)
+[debug/ast-final]     - statement::Block (basic-module.hlt:5-11)
+[debug/ast-final]     - declaration::Type %3 <linkage=private> (basic-module.hlt:5-7)
+[debug/ast-final]       - ID <name=X> (basic-module.hlt:7)
+[debug/ast-final]       - type::Bool (basic-module.hlt:7) (non-const) (type-id: Foo::X)
+[debug/ast-final]       - node::None (basic-module.hlt:5-7)
+[debug/ast-final]     - declaration::Function %4 <linkage=private> (basic-module.hlt:9)
+[debug/ast-final]       - Function <cc=<standard>> (basic-module.hlt:9)
+[debug/ast-final]           | bar -> declaration::Parameter %2 <is_struct_param=false kind=in>
+[debug/ast-final]         - ID <name=foo> (basic-module.hlt:9)
+[debug/ast-final]         - type::Function <flavor=standard> (basic-module.hlt:9) (non-const)
+[debug/ast-final]           - type::function::Result (basic-module.hlt:9)
+[debug/ast-final]             - type::String (basic-module.hlt:9) (non-const)
+[debug/ast-final]           - declaration::Parameter %2 <is_struct_param=false kind=in> (basic-module.hlt:9)
+[debug/ast-final]             - ID <name=bar> (basic-module.hlt:9)
+[debug/ast-final]             - type::Real (basic-module.hlt:9) (non-const)
+[debug/ast-final]             - node::None (basic-module.hlt:9)
+[debug/ast-final]         - node::None (basic-module.hlt:9)
+[debug/ast-final]         - node::None (basic-module.hlt:5-7)
+[debug/compiler]   validating module Foo (post-transform)
+[debug/compiler]   updated cached AST for module Foo (final: yes, requires_compilation: yes, dependencies: (none))
+[debug/compiler]   compiling module Foo to C++
+[debug/compiler]     finalizing module Foo
+// Begin of Foo (from "/home/robin/work/spicy/tests/.tmp/hilti.ast.basic-module/basic-module.hlt")
+// Compiled by HILTI version 0.3.0-branch
+
+#include <hilti/rt/compiler-setup.h>
+
+#include <hilti/rt/libhilti.h>
+
+namespace __hlt::Foo {
+    extern void __register_module();
+}
+
+HILTI_PRE_INIT(__hlt::Foo::__register_module)
+
+extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", nullptr, nullptr, nullptr}); }
+
+/* __HILTI_LINKER_V1__
+{"module":"Foo","namespace":"__hlt::Foo","path":"/home/robin/work/spicy/tests/.tmp/hilti.ast.basic-module/basic-module.hlt","version":1}
+*/
+

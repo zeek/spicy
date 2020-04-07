@@ -1,0 +1,2 @@
+[error] /home/robin/work/spicy/tests/.tmp/hilti.types.integer.mixed-operands-overflow/mixed-operands-overflow.hlt:7: cannot resolve operator: <uint<8>> + <uint<64>>
+[error] hiltic: aborting after errors

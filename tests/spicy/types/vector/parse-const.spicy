@@ -1,0 +1,11 @@
+# @TEST-EXEC:  printf '\001\001\001' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module HTTP;
+
+const LINE = /[^\n]*\n/;
+
+public type Test = unit {
+    x: (int8(0x01))[] &size=3;
+    on %done { print self; }
+    };

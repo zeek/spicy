@@ -1,0 +1,22 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    string s;
+    method void x(bool b);
+};
+
+global X f;
+
+method void X::x(string s) { }
+method void X::y(string s) { }
+method void X::s(string s) { }
+method void x(string s) { }
+
+function void x() { hilti::print(self); }
+
+}

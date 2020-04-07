@@ -1,0 +1,21 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function void f1(tuple<bool, string> i) {
+    hilti::print(i);
+}
+
+global tuple<string, bool> x = ("Hello!", True);
+
+hilti::print(((1, 2, (3, 4))));
+hilti::print(());
+hilti::print(x);
+hilti::printValues(x);
+
+#f1((True, "X"));
+
+}

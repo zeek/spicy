@@ -1,0 +1,5 @@
+Available parsers:
+
+      Mini::Test1  Hello, Parser! [80/tcp]
+      Mini::Test2  [123/udp, 567/tcp] [foo/bar, foo/baz]
+

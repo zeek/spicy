@@ -1,0 +1,18 @@
+# @TEST-EXEC:  printf '\001\002\003\004\001\002\003\004\001\002\003\004\005\006\007\010\011\020\021\022\023\024\025\026'  | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type test = unit {
+    f1: addr &ipv4;
+    f2: addr &ipv4 &byte-order=spicy::ByteOrder::Little;
+    f3: addr &ipv6;
+
+    on %done {
+        print self.f1;
+        print self.f2;
+        print self.f3;
+        }
+};

@@ -1,0 +1,48 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+global i: int64 = 0;
+
+print "-- A";
+
+while ( i++ < 5 )
+    print i;
+
+print "-- B";
+
+while ( local j = 2; j++ < 5 )
+    print j;
+
+print "-- C";
+
+while ( local k = 0; k++ < 5 ) {
+    if ( k == 2 )
+        continue;
+
+    print k;
+
+    if ( k == 4 )
+        break;
+}
+
+print "-- D";
+
+while ( local k = 0; k++ < 5 ) {
+    print k;
+}
+else
+    print "else";
+
+print "-- E";
+
+
+while ( local k = 0; k++ < 5 ) {
+    print k;
+
+    if ( k == 3 )
+        break;
+}
+else
+    print "else";

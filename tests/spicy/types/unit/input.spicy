@@ -1,0 +1,24 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x00\x01\x02\x03\x04\x05\x06\x07\x08' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-GROUP: spicy-core
+
+module Mini;
+
+import spicy;
+
+type Sub = unit {
+    %random-access
+
+    on %init   { print "Sub:init", *self.input(); }
+    x: uint16  { print "Sub:x", *self.input(); }
+    y: uint8   { print "Sub:y", *self.input(); }
+};
+
+public type Test = unit {
+    %random-access
+
+    on %init           { print "Main:init", *self.input(); }
+    : Sub[3]   foreach { print "Main:Sub", *self.input(); }
+    on %done           { print "Main:done", *self.input(); }
+};

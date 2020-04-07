@@ -1,0 +1,2 @@
+# @TEST-EXEC:  cat %DIR/requests.dat | spicy-driver %DIR/common.spicy -p HTTP::Requests >>output
+# @TEST-EXEC:  btest-diff output

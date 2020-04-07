@@ -1,0 +1,18 @@
+#! /bin/sh
+
+base=$(cd $(dirname $0) && pwd)
+
+export SPICY_BUILD_DIRECTORY=$(${base}/build-directory)
+export PATH=${SPICY_BUILD_DIRECTORY}/bin:${PATH}
+
+if ! which hilti-config >/dev/null 2>&1; then
+    # Fail silently if we got an installation directory. We are
+    # probably running from with the alternative's settings and
+    # can ignore the initial error.
+    test -n "${SPICY_INSTALLATION_DIRECTORY}" && exit 1
+
+    echo "No build directory; set SPICY_BUILD_DIRECTORY"
+    exit 1
+fi
+
+exec $@

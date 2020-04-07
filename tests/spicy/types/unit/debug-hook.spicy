@@ -1,0 +1,14 @@
+#
+# @TEST-EXEC:  printf X | spicy-driver -d %INPUT >>output
+# @TEST-EXEC:  printf X | spicy-driver %INPUT >>output
+# @TEST-EXEC:  btest-diff output
+#
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    a: b"X";
+    on %done %debug { print "DONE with %debug"; }
+};

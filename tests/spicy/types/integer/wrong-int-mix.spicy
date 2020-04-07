@@ -1,0 +1,9 @@
+# @TEST-EXEC-FAIL: ${SPICYC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+global a: int32 = 1;
+global b: uint32;
+
+print a + b;

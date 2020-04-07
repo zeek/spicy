@@ -1,0 +1,27 @@
+
+- We don't optimize for the NO_CAPTURE case yet. If given, we can skip the
+  whole tagging stuff.
+
+- No locale support
+  * Extend jrx-local.{h,c}.
+
+- CCL optimization
+  * Precompute CCLs for codepoints < 256.
+  * CCLs should use a better data structure to represent sets of
+    intervals.
+
+- DFA optimizations:
+    * Remove duplicate states
+    * Join transitions to the same target state where CCLs are subset of each other.
+    * Join neighboring ranges in CCLs into a single range.
+    * After the DFA has been computed, some sets/vectors could be frozen.
+    * More generally, we could store the DFA states in a more compressed
+      format.
+
+- The groups returned for capturing expressions aren't always
+  POSIX-conform (i.e., not always what you would expect).
+
+- Just-in-time into LLVM code.
+
+- Add unicode matching.
+

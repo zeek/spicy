@@ -1,0 +1,19 @@
+# @TEST-EXEC:  echo 1234567890abcdef | spicy-driver %INPUT | sort >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+public type test = unit {
+    a: bytes &size=4
+        { print "A"; }
+
+    b: bytes &size=6
+        { print self.b; }
+
+    c: bytes &size=6
+        { print self; }
+
+    on a { print "A-unit-global", self; }
+    };
+
+on test::a { print "A-module-global", self; }

@@ -1,0 +1,16 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+
+module Foo {
+
+import hilti;
+
+function void f(copy bytes x) {
+    x += b"Bar";
+    assert x == b"FooBar";
+}
+
+global x = b"Foo";
+f(x);
+assert x == b"Foo";
+
+}

@@ -1,0 +1,34 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${HILTIC} -c -D compiler,resolver,ast-scopes,ast-final foo.hlt >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+@TEST-START-FILE foo.hlt
+
+module Foo {
+
+import Bar;
+
+public type Foo1 = bool;
+public type Foo2 = Bar::Bar1;
+
+declare string foo(Foo1 foo, Bar::Bar1 bar);
+
+}
+
+@TEST-END-FILE
+
+
+@TEST-START-FILE bar.hlt
+
+module Bar {
+
+import Foo;
+
+public type Bar1 = string;
+public type Bar2 = Foo::Foo1;
+
+declare string bar(Bar1 bar, Foo::Foo1 foo);
+
+}
+
+@TEST-END-FILE

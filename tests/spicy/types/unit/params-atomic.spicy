@@ -1,0 +1,22 @@
+# @TEST-EXEC:  printf xxx | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+# @TEST-EXEC:  btest-diff .stderr
+
+module Mini;
+
+import spicy;
+
+type Foo = unit(a: string, b: bool) {
+    : b"xxx" {
+        self.x = a;
+        self.y = b;
+    }
+
+    var x: string;
+    var y: bool;
+};
+
+public type Test = unit {
+    f: Foo("String", True);
+    on %done { print self; }
+};

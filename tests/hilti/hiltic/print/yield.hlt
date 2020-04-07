@@ -1,0 +1,25 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${HILTIC} -c %INPUT >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: ${HILTIC} -P %INPUT >prototypes
+# @TEST-EXEC: btest-diff prototypes
+
+module Foo {
+
+import hilti;
+
+function extern string test(string x) {
+    hilti::print("HILTI - 1 - argument: ", False);
+    hilti::print(x);
+
+    yield;
+    hilti::print("HILTI - 2");
+    yield;
+    hilti::print("HILTI - 3");
+    yield;
+    hilti::print("HILTI - Done");
+
+    return "test-result";
+}
+
+}

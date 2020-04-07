@@ -1,0 +1,18 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${SPICY_BUILD} %INPUT
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | HILTI_DEBUG=spicy ./a.out -p Mini::Test >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: ${SPICY_BUILD} -S %INPUT
+# @TEST-EXEC: ./a.out -h >no-main.output 2>&1
+# @TEST-EXEC: btest-diff no-main.output
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    on %init   { print self; }
+    f1: uint32 { print self.f1; }
+    f2: uint8  { print self.f2; }
+    on %done   { print self; }
+};

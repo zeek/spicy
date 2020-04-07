@@ -1,0 +1,17 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+import spicy;
+
+global x = vector('1', '2', '3');
+
+for ( i in x )
+    print i;
+
+global j: iterator<vector<uint64>> = begin(x);
+assert *j++ == '1';
+assert *j++ == '2';
+assert *j++ == '3';
+assert j == end(x);

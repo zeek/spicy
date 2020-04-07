@@ -1,0 +1,10 @@
+# @TEST-EXEC:  printf 'abc' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module HTTP;
+
+public type Test = unit {
+    on %init { print self; }
+    x: uint8[3] foreach { print "one: %s" % $$; }
+    on %done { print self; }
+    };

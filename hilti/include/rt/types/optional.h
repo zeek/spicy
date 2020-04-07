@@ -1,0 +1,80 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <hilti/rt/extension-points.h>
+#include <hilti/rt/util.h>
+
+namespace hilti::rt {
+
+namespace detail::adl {
+template<typename T>
+inline std::string to_string(std::optional<T> x, adl::tag /*unused*/) {
+    return x ? hilti::rt::to_string(*x) : "(not set)";
+}
+
+} // namespace detail::adl
+
+/**
+ * Exception reflecting an access to an unset optional value.
+ */
+HILTI_EXCEPTION(UnsetOptional, RuntimeError)
+
+namespace optional {
+
+struct Unset : public std::exception {}; // Internal exception to signal access to optional that may expectedly by unset
+
+template<class T>
+inline auto& value(const std::optional<T>& t, const char* location) {
+    if ( t.has_value() )
+        return t.value();
+
+    throw UnsetOptional("unset optional value", location);
+}
+
+template<class T>
+inline auto& value(std::optional<T>& t, const char* location) {
+    if ( t.has_value() )
+        return t.value();
+
+    throw UnsetOptional("unset optional value", location);
+}
+
+template<class T>
+inline auto& valueOrInit(std::optional<T>& t, const T& default_) {
+    if ( ! t.has_value() )
+        t = default_;
+
+    return t.value();
+}
+
+template<class T>
+inline auto& valueOrInit(std::optional<T>& t) {
+    if ( ! t.has_value() )
+        t.emplace();
+
+    return t.value();
+}
+
+template<class T>
+inline auto& tryValue(const std::optional<T>& t) {
+    if ( t.has_value() )
+        return t.value();
+
+    throw Unset();
+}
+
+} // namespace optional
+
+template<>
+inline std::string detail::to_string_for_print<std::optional<std::string>>(const std::optional<std::string>& x) {
+    return x ? *x : "(not set)";
+}
+
+template<>
+inline std::string detail::to_string_for_print<std::optional<std::string_view>>(
+    const std::optional<std::string_view>& x) {
+    return x ? std::string(*x) : "(not set)";
+}
+
+} // namespace hilti::rt

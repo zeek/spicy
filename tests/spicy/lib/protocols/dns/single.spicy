@@ -1,0 +1,18 @@
+# @TEST-EXEC:  cat %DIR/single.dat | spicy-driver %INPUT -p DNS::Message >>output
+# @TEST-EXEC:  btest-diff output
+
+module Test;
+
+import DNS from protocols;
+
+on DNS::Message::%done {
+    print self.header;
+    print "";
+    print self.question;
+    print "";
+    print self.answer;
+    print "";
+    print self.authority;
+    print "";
+    print self.additional;
+    }

@@ -1,0 +1,2 @@
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.wrong-int-mix/wrong-int-mix.spicy:9: cannot resolve operator: <int<32>> + <uint<32>>
+[error] spicyc: aborting after errors

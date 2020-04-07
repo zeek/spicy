@@ -1,0 +1,21 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+for ( i in [1,2,3] )
+    hilti::print(i);
+
+local v = [1,2,3];
+
+for ( i in v )
+    hilti::print(i);
+
+for ( i in [] )
+    hilti::print(i);
+
+# More tests are in the type-specific sets.
+
+}

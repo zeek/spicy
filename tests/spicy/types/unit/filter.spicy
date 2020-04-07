@@ -1,0 +1,31 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: printf '1234567890' | spicy-driver -p Mini::Main %INPUT.hlto >output
+# @TEST-EXEC: printf '1234567890' | spicy-driver -p Mini::Main -i 1 %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type Main = unit {
+    a: bytes &size=2;
+    b: bytes &size=5;
+    c: bytes &size=3;
+    d: bytes &size=5;
+
+    on %init {
+        self.connect_filter(new MyFilter);
+    }
+
+    on %done {
+        print self;
+    }
+};
+
+type MyFilter = unit {
+    %filter
+
+    x: bytes &size=2 { self.forward(b"ABC"); }
+    y: bytes &size=3 { self.forward(b"DEFGH"); }
+    z: bytes &size=5 { self.forward(b"IJKLMNO"); }
+};

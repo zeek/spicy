@@ -1,0 +1,65 @@
+#! /usr/bin/env bash
+#
+#
+
+function usage {
+   cat <<EOF
+Usage: hilti-config <options>
+
+    --cflags       Print flags for compiling C sources.
+    --cxxflags     Print flags for compiling C++ sources.
+    --distbase     Print path of the source distribution.
+    --ldflags      Print flags for linking. 
+    --libs         Print libaries for linking.
+    
+    --debug        Print all output suitable for building debugging versions.
+                   Note that this option must come first.
+                   
+    --version      Print version.
+
+EOF
+   exit 1
+}
+
+base=@CMAKE_INSTALL_PREFIX@
+
+if [ "$#" == "0" ]; then 
+   usage
+fi
+
+debug=""
+
+while [ "$1" != "" ]; do
+    case $1 in 
+        --version)
+            echo "@PROJECT_NAME@ @PROJECT_VERSION@"
+            shift;;
+            
+        --distbase)
+            echo $base
+            shift;;
+            
+        --ldflags)
+            echo "@CONFIG_LDFLAGS@"
+            shift;;
+            
+        --libs)
+            echo "@CONFIG_LIBS@"
+            shift;;
+            
+        --cflags)
+            echo "@CONFIG_CFLAGS@"
+            shift;;
+            
+        --cxxflags)
+            echo "@CONFIG_CXXFLAGS@"
+            shift;;
+            
+        *)
+            usage;;
+    esac
+done    
+
+
+
+

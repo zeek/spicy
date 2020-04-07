@@ -1,0 +1,31 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: echo 1234567890 | spicy-driver %INPUT.hlto >output
+# @TEST-EXEC: echo 2234567890 | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: echo 3234567890 | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: echo 4234567890 | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type test = unit {
+
+       a: bytes &size=1;
+
+       switch ( self.a ) {
+           b"1"       -> b1: bytes &size=4 &default=b"nope";
+           b"2", b"3" -> b2: bytes &size=4 &default=b"nope";
+           *          -> b3: bytes &size=4 &default=b"nope";
+           };
+
+       c: bytes &size=5 {
+           print self;
+
+           print self?.b1 ? self.b1 : b"noe";
+           print self?.b2 ? self.b2 : b"noe";
+           print self?.b3 ? self.b3 : b"noe";
+
+           print self.b1;
+           print self.b2;
+           print self.b3;
+           }
+};

@@ -1,0 +1,11 @@
+Gap at input position 5, length 3
+01234
+
+Gap at input position 5, length 3
+Skipped to position 8
+01234890ABC
+
+Undelivered data at position 1: 1
+Undelivered data at position 3: 34
+Skipped to position 8
+890ABC

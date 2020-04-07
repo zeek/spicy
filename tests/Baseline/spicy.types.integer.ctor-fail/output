@@ -1,0 +1,10 @@
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.ctor-fail/ctor-fail.spicy:7: integer value out of range for type
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.ctor-fail/ctor-fail.spicy:8: integer value out of range for type
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.ctor-fail/ctor-fail.spicy:9: integer value out of range for type
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.ctor-fail/ctor-fail.spicy:12: integer value out of range for type
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.ctor-fail/ctor-fail.spicy:13: integer value out of range for type
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.ctor-fail/ctor-fail.spicy:14: integer value out of range for type
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.ctor-fail/ctor-fail.spicy:17: integer value out of range for type
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.ctor-fail/ctor-fail.spicy:18: integer value out of range for type
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.ctor-fail/ctor-fail.spicy:19: integer value out of range for type
+[error] spicyc: aborting after errors

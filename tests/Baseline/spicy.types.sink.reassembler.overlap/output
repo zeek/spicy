@@ -1,0 +1,12 @@
+Overlap at 2: 23 vs AB
+0123456789
+
+Overlap at 1: 123 vs ABC
+0123456789
+
+Overlap at 1: 123 vs ABC
+Overlap at 4: D vs 4
+0123D56789
+
+Overlap at 2: 23 vs 2A
+0123B56

@@ -1,0 +1,5 @@
+WARNING: Linking two modules of different data layouts: '/Users/robin/work/hilti/build/libspicy/libspicy-rt-dbg.bc' is 'e-m:o-i64:64-f80:128-n8:16:32:64-S128' whereas '<jit analyzers>' is 'e-m:e-i64:64-f80:128-n8:16:32:64-S128'
+WARNING: Linking two modules of different target triples: /Users/robin/work/hilti/build/libspicy/libspicy-rt-dbg.bc' is 'x86_64-apple-darwin14.0.0' whereas '<jit analyzers>' is 'x86_64-apple-darwin14.1.0'
+WARNING: Linking two modules of different data layouts: '/Users/robin/work/hilti/build/libhilti/libhilti-rt-dbg.bc' is 'e-m:o-i64:64-f80:128-n8:16:32:64-S128' whereas '<jit analyzers>' is 'e-m:e-i64:64-f80:128-n8:16:32:64-S128'
+WARNING: Linking two modules of different target triples: /Users/robin/work/hilti/build/libhilti/libhilti-rt-dbg.bc' is 'x86_64-apple-darwin14.0.0' whereas '<jit analyzers>' is 'x86_64-apple-darwin14.1.0'
+hilti: uncaught exception, UndefinedValue (from <no location>:)

@@ -1,0 +1,20 @@
+#! /bin/sh
+# @TEST-EXEC: /bin/sh %INPUT
+# @TEST-EXEC-FAIL: test -s .stderr
+#
+# Checks that the main sources files have our one-line license header in place.
+
+if [ -n "${DIST}" ]; then
+    cd "${DIST}"
+else
+    cd $(dirname $0)/../..
+fi
+
+git ls-files \
+    | egrep -v '^(tests|doc)/' \
+    | egrep -v '3rdparty/' \
+    | egrep -v '^\.$' \
+    | egrep '\.(h|c|cc|py|sh|api|ll|yy|h.in|cc.in|c.in|txt|evt|hilti|spicy)$' \
+    | while read i; do
+        grep -q "Copyright.*Zeek" $i || echo "No appropiate copyright header in '$i'" >&2
+done

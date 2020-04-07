@@ -1,0 +1,9 @@
+#! /bin/sh
+
+find . -type d -mindepth 0 -maxdepth 1 | egrep -v '^\.(/build.*|/\.git)(/|$)' | while read dir; do
+    find "${dir}" -type f | while read file; do
+        echo ${file} | egrep -q '/3rdparty/|/\..*/|update-license-headers' && continue
+        cat ${file} | grep -q Copyright || continue
+        sed -i '' 's/Copyright .* information\./Copyright (c) 2020 by the Zeek Project. See LICENSE for details./' "${file}"
+    done
+done

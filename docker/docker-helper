@@ -1,0 +1,36 @@
+#! /bin/sh
+#
+# Helper for the Makefile to trigger Docker commands with the desired image.
+
+usage() {
+    echo "usage: $(basename $0) build|test|run <platform>"
+    exit 1
+}
+
+test $# = 2 || usage
+
+version=$(../scripts/autogen-version --short)
+cmd=$1
+platform=$2
+
+if [ ! -e Dockerfile.${platform} ]; then
+    echo "Dockerfile.${platform} does not exist"
+    exit 1
+fi
+
+case "${cmd}" in
+    build)
+        DOCKER_BUILDKIT=1 docker build -t spicy-${platform}:${version} -f Dockerfile.${platform} .. || exit 1
+        docker tag $(docker inspect --format='{{.Id}}' spicy-${platform}:${version}) spicy-${platform}:latest
+        ;;
+
+    test)
+        docker run spicy-${platform}:latest /bin/sh -c "cd /opt/spicy/src/tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -q -j -d"
+        ;;
+
+    run)
+        docker run --cap-add SYS_PTRACE -i -t spicy-${platform}:latest /bin/bash
+        ;;
+
+    *) usage;;
+esac

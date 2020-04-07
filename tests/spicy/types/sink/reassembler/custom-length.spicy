@@ -1,0 +1,38 @@
+# @TEST-EXEC: spicy-driver -p Mini::Main %INPUT >output </dev/null
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type Main = unit {
+
+    sink data;
+
+    on %init {
+        self.data.connect(new Sub);
+        self.data.write(b"44444", 4, 1);
+        self.data.write(b"33333", 3, 1);
+        self.data.write(b"22222", 2, 1);
+        self.data.write(b"11111", 1, 1);
+        self.data.write(b"00000", 0, 1);
+    }
+};
+
+public type Sub = unit {
+    s: bytes &eod;
+
+    on %done {
+        print self.s;
+    }
+
+    on %gap(seq: uint64, len: uint64)  {
+        print "Gap at input position %u, length %u" % (seq, len);
+        }
+
+    on %skipped(seq: uint64){
+        print "Skipped to position %u" % seq;
+        }
+
+    on %undelivered(seq: uint64, data: bytes) {
+        print "Undelivered data at position %u: %s" % (seq, data);
+        }
+};

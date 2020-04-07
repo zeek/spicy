@@ -1,0 +1,6 @@
+/ghi/
+/ghi/
+/abc/ | /ghi/ &nosub
+/ghi/ &nosub
+/ghi/ &nosub
+<regexp wo/ pattern>

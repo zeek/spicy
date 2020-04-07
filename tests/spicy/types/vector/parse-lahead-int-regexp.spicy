@@ -1,0 +1,19 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: printf "\001\012\013\001\014\015XXX\005" | spicy-driver %INPUT.hlto >output
+# @TEST-EXEC: printf "XXX\005" | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module HTTP;
+
+type Item = unit {
+    x: uint8(0x01);
+    y: uint16;
+};
+
+public type Test = unit {
+    a: Item[];
+    b: /XXX/;
+    c: uint8;
+
+    on %done { print self; }
+    };

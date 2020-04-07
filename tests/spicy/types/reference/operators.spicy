@@ -1,0 +1,22 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+global b1: bytes& = new b"My";
+global b2: bytes& = b1;
+global b3: bytes&;
+global b4: bytes& = Null;
+
+b1 += b"Da";
+b2 += b"ta";
+assert b1 == b"MyData";
+assert b2 == b"MyData";
+
+assert b3 == Null;
+assert !b3;
+assert b4 == Null;
+assert b3 == b4;
+print b4;
+
+assert-exception b3 == b"XXX";

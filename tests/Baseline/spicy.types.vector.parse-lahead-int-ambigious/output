@@ -1,0 +1,3 @@
+[error] /Users/robin/work/spicy/tests/.tmp/spicy.types.vector.parse-lahead-int-ambigious/parse-lahead-int-ambigious.spicy:12-17: grammar HTTP::Test (/Users/robin/work/spicy/tests/.tmp/spicy.types.vector.parse-lahead-int-ambigious/parse-lahead-int-ambigious.spicy:12-17), production a_l1 (/Users/robin/work/spicy/tests/.tmp/spicy.types.vector.parse-lahead-int-ambigious/parse-lahead-int-ambigious.spicy:13) is ambigious for look-ahead symbol(s) { 1 (uint<8>) }
+
+[error] spicyc: aborting after errors

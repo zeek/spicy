@@ -1,0 +1,10 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+    on %init { print self; }
+    x: int8 { self.a = "Our integer is %d" % $$; }
+    on %done { print self; }
+
+    var a: string &optional;
+};

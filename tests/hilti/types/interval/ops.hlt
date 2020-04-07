@@ -1,0 +1,32 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+global i1 = interval(2.5);
+global i2 = interval(1.5);
+
+hilti::print(i1);
+hilti::print(i2);
+
+assert i1.seconds() == 2.5;
+assert i1.nanoseconds() == 2500000000;
+
+assert (i1 + i2) == interval(4.0);
+assert (i2 - i1) == interval(-1.0);
+assert (i1 - interval(2.0)) == interval(0.5);
+
+assert (i1 * 2) == interval(5.0);
+assert (i1 * 3.0) == interval(7.5);
+
+assert i2 <= i1;
+assert i1 >= i2;
+assert i1 > i2;
+assert i1 >= i1;
+assert i2 <= i2;
+
+assert cast<interval>(5) == interval(5.0);
+
+}

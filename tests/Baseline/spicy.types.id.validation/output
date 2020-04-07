@@ -1,0 +1,6 @@
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.id.validation/validation.spicy:6: Invalid ID 'a-b': cannot contain '-'
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.id.validation/validation.spicy:7: Invalid ID '__private_name': cannot start with '__'
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.id.validation/validation.spicy:12: Invalid ID 'a-b': cannot contain '-'
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.id.validation/validation.spicy:15: Invalid ID 'Bar-Baz': cannot contain '-'
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.id.validation/validation.spicy:17: Invalid ID 'f-1': cannot contain '-'
+[error] spicyc: parse error

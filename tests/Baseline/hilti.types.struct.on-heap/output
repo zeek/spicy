@@ -1,0 +1,4 @@
+x=[$b=False, $s="Foo!", $i=21]
+y=[$b=True, $s="NEW", $i=21]
+s1=[$b=False, $s="Foo!", $i=21]
+s2=[$b=True, $s="NEW", $i=21]

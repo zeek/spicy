@@ -1,0 +1,17 @@
+hilti/include/                              hilti/src/
+hilti/include/ast/                          hilti/src/ast/
+hilti/include/base/                         hilti/src/base/
+hilti/include/rt/                           hilti/src/rt/
+hilti/include/compiler/detail/visitors.h    hilti/src/compiler/visitors/
+hilti/include/compiler                      hilti/src/compiler/
+hilti/include/compiler/detail               hilti/src/compiler/
+hilti/bin
+spicy/include                               spicy/src
+spicy/include/ast/                          spicy/src/ast/
+spicy/include/rt/                           spicy/src/rt/
+spicy/include/compiler/detail/visitors.h    spicy/src/compiler/visitors/
+spicy/include/compiler                      spicy/src/compiler/
+spicy/include/compiler/detail               spicy/src/compiler/
+spicy/bin
+zeek                                        zeek
+zeek/plugin/include                         zeek/plugin/src

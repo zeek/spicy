@@ -1,0 +1,7 @@
+#! /bin/sh
+#
+# Canonifies spicy/spicy-verbose debug output for baseline diffing.
+
+cat \
+  | sed 's/stream=0x[0-9a-z]\{2,\} /stream=0xXXXXXXXX /g' \
+  | sed 's/for stream 0x[0-9a-z]\{2,\}/for stream 0xXXXXXXXX/g'

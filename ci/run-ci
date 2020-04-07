@@ -1,0 +1,394 @@
+#! /usr/bin/env bash
+#
+# Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+#
+# Runs selected stages of the CI pipeline. Each stage assumes the
+# preceesing one has been successfully executed already.
+#
+# We use bash here since that's useful (for pipefail in particular) and
+# users are unlikely to run this script.
+
+set -o pipefail
+
+name=$(basename $0)
+root=$(cd $(dirname $0)/.. && pwd)
+build=
+install=
+
+color_red=$'\e[1;31m'
+color_green=$'\e[1;32m'
+color_yellow=$'\e[1;33m'
+color_blue=$'\e[1;34m'
+color_magenta=$'\e[1;35m'
+color_cyan=$'\e[1;36m'
+color_normal=$'\e[0m'
+
+function usage {
+cat <<EOF
+Usage: ${mame} [<global options>] <stage> [<command options>]
+
+Stages
+
+    configure [release|debug] [<configure options>]   Configure the build for compiling a release/debug version
+    build                                             Compile the code
+    install                                           Install the built version
+    test-code                                         Run code & formatting checks
+    test-build                                        Run the test suite on the built version
+    test-install                                      Run the test suite on the installed version
+    test-install-nojit                                Run the test suite on the installed version, limit to non-JIT tests only
+    cleanup                                           Delete all build artifcats.
+
+Global options:
+
+    -r <dir>   Base directory of repository checkout (default: ${root})
+    -b <dir>   Build directory; will be deleted at completion (default: \${root}/build-ci)
+
+Configure options:
+
+    --clang-format <path>    Path to clang-format to use (default: found in PATH)
+    --clang-tidy <path>      Path to clang-tidy to use   (default: found in PATH)
+    --cxx-compiler <path>    Path to C++ compiler to use (default: found by cmake)
+    --disable-jit            Do not compile in JIT support
+    --rpath <path>           Additional rpaths to use; will end up in LD_LIBRARY_PATH (default: none)
+    --with-zeek <path>       Path to Zeek installation to use (default: none)
+    --zeek-ld-preload <path> LD_PRELOAD library for Zeek tests (no default; needed for ASAN builds to load runtime)
+
+EOF
+
+exit 1
+}
+
+function log_colored {
+    color=$1
+    shift
+    printf "%s" "${color}"
+    printf "%s" "$@"
+    printf "%s\n" "${color_normal}"
+}
+
+function log_stage {
+    echo
+    log_colored "${color_magenta}" "### $@"
+}
+
+function log_warning {
+    log_colored "${color_yellow}" "### $@"
+}
+
+function log_error {
+    log_colored "${color_red}" "### $@"
+}
+
+function log_diag {
+    log_colored "${color_yellow}" "--- $@"
+}
+
+function error {
+    echo "### Error: $@"
+    exit 1
+}
+
+function run_configure {
+    build_type="$1"
+    shift
+
+    mkdir -p ${install}
+    configure="./configure --builddir=${build} --prefix=${install} --generator=Ninja --enable-werror --enable-ccache"
+
+    clang_format=$(which clang-format 2>/dev/null)
+    clang_tidy=$(which clang-tidy 2>/dev/null)
+    zeek_root=""
+    rpath=""
+    zeek_ld_preload=""
+
+    if [ "${build_type}" == "release" ]; then
+        :
+    elif [ "${build_type}" == "debug" ]; then
+        configure="${configure} --enable-debug --enable-sanitizer"
+    else
+        usage
+    fi
+
+    while [ $# -ne 0 ]; do
+        case "$1" in
+            --cxx-compiler)
+                test $# -gt 0 || usage
+                configure="${configure} --with-cxx-compiler=$2"
+                shift 2;
+                ;;
+
+            --clang-format)
+                test $# -gt 0 || usage
+                clang_format="$2"
+                test -x ${clang_format} || error "clang-format not found in $2"
+                shift 2;
+                ;;
+
+            --clang-tidy)
+                test $# -gt 0 || usage
+                clang_tidy="$2"
+                test -x ${clang_tidy} || error "clang-tidy not found in $2"
+                shift 2;
+                ;;
+
+            --with-zeek)
+                test $# -gt 0 || usage
+                zeek_root="$2"
+                test -x ${zeek_root}/bin/zeek || error "Zeek not found in $2/bin"
+                configure="${configure} --with-zeek=${zeek_root}"
+                shift 2;
+                ;;
+
+            --rpath)
+                test $# -gt 0 || usage
+                rpath="$2"
+                shift 2;
+                ;;
+
+            --zeek-ld-preload)
+                test $# -gt 0 || usage
+                zeek_ld_preload="$2"
+                test -e ${zeek_ld_preload} || error "zeek_ld_preload path not found: $2"
+                shift 2;
+                ;;
+
+            --disable-jit)
+                configure="${configure} --disable-jit"
+                shift 1;
+                ;;
+
+            --enable-werror)
+                configure="${configure} --enable-werror"
+                shift 1;
+                ;;
+
+            *)  usage;;
+        esac
+    done
+
+    if [ -e ${build} ]; then
+        error "Build directory ${build} already exists, delete first"
+    fi
+
+    test -z "${clang_format}" && log_stage "Warning: No clang-format found, will skip any related tests"
+    test -z "${clang_tidy}" && log_stage "Warning: No clang-tidy found, will skip any related tests"
+
+    # Looks like Cirrus CI doesn't fetch tags.
+    git fetch --tags
+
+    log_stage "Running configure ... (${configure})"
+    ${configure} || exit 1
+    mkdir -p ${artifacts}
+
+    echo "${clang_format}" >${build}/.clang_format
+    echo "${clang_tidy}" >${build}/.clang_tidy
+    echo "${rpath}" >${build}/.rpath
+    echo "${zeek_ld_preload}" >${build}/.zeek_ld_preload
+}
+
+function run_build {
+    export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
+
+    log_stage "Building code ..."
+    (cd ${build} && ninja) || exit 1
+
+    log_stage "Building docs ..."
+    (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc) || exit 1
+}
+
+function run_install {
+    log_stage "Installing code ..."
+    (cd ${build} && ninja install) || exit 1
+}
+
+function run_test_btest {
+    if [ -n "$1" ]; then
+        btest_alternative="-a $1"
+    else
+        btest_alternative=""
+    fi
+
+    if [ -n "${SPICY_BTEST_GROUPS}" ]; then
+        btest_group="-g no-jit"
+    else
+        btest_group=""
+    fi
+
+    export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
+    export ZEEK_LD_PRELOAD=$(cat ${build}/.zeek_ld_preload)
+
+    log_stage "Running tests ... (${btest_alternative} ${btest_group})"
+
+    cd tests
+    eval ${preload} \
+        btest -b \
+              -j 5 \
+              -f ${artifacts}/diag.log \
+              -x ${artifacts}/diag.xml \
+              ${btest_alternative} \
+              ${btest_group}
+
+    rc=$?
+
+    if [ ${rc} != 0 ]; then
+        cp -a .tmp ${artifacts}/btest-tmp
+        log_diag "Begin diagnostics"
+        cat ${artifacts}/diag.log
+        log_diag "End diagnostics (complete test output in 'btest-tmp')"
+        log_error "Tests have failed"
+    fi
+
+    return ${rc}
+}
+
+function run_test_clang_format {
+    clang_format=$(cat ${build}/.clang_format 2>/dev/null)
+
+    if [ ! -x ${clang_format} ]; then
+        log_warning "clang-format not available, skipping"
+        return 0
+    fi
+
+    log_stage "Running clang-format ..."
+
+    export CLANG_FORMAT=${clang_format}
+
+    if ${root}/scripts/run-clang-format; then
+        echo "clang-format run passed"
+        return 0
+    else
+        ${root}/scripts/run-clang-format >${artifacts}/clang-format.diff
+        log_diag "Patch to fix in 'clang-format.diff'"
+        log_error "clang-format has failed"
+        return 1
+    fi
+}
+
+function run_test_clang_tidy {
+    clang_tidy=$(cat ${build}/.clang_tidy 2>/dev/null)
+
+    if [ ! -x ${clang_tidy} ]; then
+        log_warning "clang-tidy not available, skipping"
+        return 0
+    fi
+
+    log_stage "Running clang-tidy ..."
+
+    export CLANG_TIDY=${clang_tidy}
+
+    if ${root}//scripts/run-clang-tidy --fixit -j 10 ${build}; then
+        echo "clang-tidy run passed"
+        return 0
+    else
+        git diff >${artifacts}/clang-tidy.diff
+        log_diag "Patch to what can be fixed automatically in 'clang-tidy.diff'"
+        log_error "clang-tidy has failed"
+        return 1
+    fi
+}
+
+function run_test_code {
+    rc=0
+
+    pre-commit run -a || rc=1
+
+    pushd $(pwd) >/dev/null
+    run_test_clang_format || rc=1
+    popd >/dev/null
+
+    pushd $(pwd) >/dev/null
+    run_test_clang_tidy || rc=1
+    popd >/dev/null
+
+    return ${rc}
+}
+
+function run_test_common {
+    btest_alternative=$1
+    rc=0
+
+    pushd $(pwd) >/dev/null
+    run_test_btest ${btest_alternative} || rc=1
+    popd >/dev/null
+
+    return ${rc}
+}
+
+function run_test_build {
+    export SPICY_BUILD_DIRECTORY=${build}
+    run_test_common
+}
+
+function run_test_install {
+    export SPICY_INSTALLATION_DIRECTORY=${install}
+    run_test_common installation
+}
+
+function run_test_install_nojit {
+    export SPICY_INSTALLATION_DIRECTORY=${install}
+    export SPICY_BTEST_GROUPS=no-jit
+    run_test_common installation
+}
+
+function run_deploy {
+    # log_stage "Deploying docs ..."
+    log_stage "Deploying docs NOT implemeneted ..."
+    # TODO: RTD integration
+}
+
+function run_cleanup {
+    log_stage "Cleaning up ..."
+    (cd ${build} && ninja clean) || exit 1
+    (cd doc && make clean) || exit 1
+}
+
+### Main
+
+while getopts "r:b:" opt; do
+    case "${opt}" in
+        h)
+            usage
+            ;;
+        r)
+            root=${OPTARG}
+            ;;
+        b)
+            build=${OPTARG}
+            ;;
+        *)
+            echo "unknown option -${opt}"
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${build}" ]; then
+    build=${root}/build-ci
+fi
+
+install=/opt/ci-install-$(basename ${build})
+root=$(realpath ${root})
+build=$(realpath ${build})
+artifacts=${build}/ci
+
+cmd=$1
+shift
+
+test -n "${cmd}" || usage
+
+cd ${root}
+test -e CMakeLists.txt || error "${root} is not the project's root git repository"
+
+case "${cmd}" in
+    configure)           (run_configure $@);;
+    build)               (run_build $@);;
+    install)             (run_install $@);;
+    test-build)          (run_test_build $@);;
+    test-install)        (run_test_install $@);;
+    test-install-nojit)  (run_test_install_nojit $@);;
+    test-code)           (run_test_code $@);;
+    deploy)              (run_deploy $@);;
+    cleanup)             (run_cleanup $@);;
+    *)       usage;;
+esac

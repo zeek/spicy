@@ -1,0 +1,25 @@
+# @TEST-EXEC:  printf xxx | spicy-driver -d -p Mini::Test %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type T1 = unit(t: Test) {
+    t1: b"yyy";
+    on %done   { print self; }
+};
+
+type T2 = unit(inout t: Test) {
+    t2 : b"xxx" {
+        self.x.connect(new T1(t));
+        self.x.write(b"yyy");
+        }
+
+    sink x;
+};
+
+public type Test = unit {
+    x: T2(self);
+    on %done   { print self; }
+};

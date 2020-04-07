@@ -1,0 +1,55 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    bool b;
+    string s1 &optional;
+    string s2 &optional &default=".";
+    int<64> i &default=42;
+};
+
+global X x = [$b=True, $s1="Foo!", $i=21, $s2="@"];
+global X y = [$b=True];
+global X z;
+
+hilti::print(x);
+hilti::print(y);
+hilti::print(z);
+
+hilti::print("--");
+hilti::print(x.b);
+hilti::print(x.s1);
+hilti::print(x.s2);
+hilti::print(y.i);
+hilti::print(y.s2);
+hilti::print(z.b);
+
+hilti::print("--");
+x.b = False;
+hilti::print(x.b);
+
+hilti::print("--");
+hilti::print(z?.b);
+hilti::print(z?.s1);
+hilti::print(z?.s2);
+hilti::print(z?.i);
+
+hilti::print("--");
+z.s1 = "x";
+z.s2 = "y";
+z.i = 12;
+hilti::print(z?.b);
+hilti::print(z?.s1);
+hilti::print(z?.s2);
+hilti::print(z?.i);
+
+hilti::print("--");
+hilti::print(x);
+hilti::print(y);
+hilti::print(z);
+
+}

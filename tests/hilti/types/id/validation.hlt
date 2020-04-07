@@ -1,0 +1,18 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -p %INPUT > output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+const a-b = 1;
+const __private_name = 2;
+
+type Bar-Baz = bool;
+
+type Bar = struct {
+  uint<8> ab;
+  uint<8> a_b;
+  uint<8> a-b;
+};
+
+function void f-1() {}
+}

@@ -1,0 +1,15 @@
+# @TEST-EXEC: (${HILTIC} -j %INPUT 2>&1; true) | grep "unset optional value"
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    string s &optional;
+};
+
+global X x;
+
+hilti::print(x.s);
+
+}

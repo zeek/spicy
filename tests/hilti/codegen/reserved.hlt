@@ -1,0 +1,17 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function void f(string NULL) {
+    hilti::print(NULL);
+}
+
+const class = "42";
+
+hilti::print(class);
+f(class);
+
+}

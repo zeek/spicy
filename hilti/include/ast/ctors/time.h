@@ -1,0 +1,41 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <hilti/ast/ctor.h>
+#include <hilti/ast/types/time.h>
+#include <hilti/rt/types/time.h>
+
+namespace hilti {
+namespace ctor {
+
+/** AST node for a time constructor. */
+class Time : public NodeBase, public hilti::trait::isCtor {
+public:
+    using Value = hilti::rt::Time;
+
+    Time(const Value& time, Meta m = Meta()) : NodeBase(std::move(m)), _time(time) {}
+
+    const auto& value() const { return _time; }
+
+    bool operator==(const Time& other) const { return value() == other.value(); }
+
+    /** Implements `Ctor` interface. */
+    auto type() const { return type::Time(meta()); }
+    /** Implements `Ctor` interface. */
+    bool isConstant() const { return true; }
+    /** Implements `Ctor` interface. */
+    auto isLhs() const { return false; }
+    /** Implements `Ctor` interface. */
+    auto isTemporary() const { return true; }
+    /** Implements `Ctor` interface. */
+    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+    /** Implements `Node` interface. */
+    auto properties() const { return node::Properties{{"time", to_string(_time)}}; }
+
+private:
+    Value _time;
+};
+
+} // namespace ctor
+} // namespace hilti

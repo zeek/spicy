@@ -1,0 +1,44 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+local stream x = stream(b"01234567890");
+
+local view<stream> all = x;
+local view<stream> v = x.sub(x.at(1), x.at(10));
+local auto v2 = x.sub(x.at(5), x.at(7));
+
+assert v == b"123456789";
+assert v != b"XXX";
+assert v2 == b"56";
+
+assert begin(v) == x.at(1);
+assert v.find(b"1") == (True, x.at(1));
+assert v.find(b"234") == (True, x.at(2));
+assert v.find(b"890") == (False, x.at(8));
+assert (b"456" in v);
+assert ! (b"xyz" in v);
+assert v.starts_with(b"12");
+assert v.starts_with(b"");
+assert ! v.starts_with(b"XYZ");
+
+assert |v| == 9;
+
+local stream x2 = stream(b"AbCdEf");
+v2 = cast<view<stream>>(x2).sub(x2.at(1), x2.at(5));
+
+local auto m = begin(x);
+++m;
+
+for ( i in v )
+    assert i == *m++;
+
+# Invalidate iterator
+local stream x3;
+x = x3;
+assert-exception hilti::print(v);
+
+}

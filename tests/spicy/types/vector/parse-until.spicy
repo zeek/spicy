@@ -1,0 +1,19 @@
+# @TEST-EXEC: printf "AAA\nBBB\nCCC\nDDD\nEEEE\n---\nFFF\n" | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module HTTP;
+
+const LINE = /[^\n]+\n/;
+const DASHES = /---\n/;
+
+type Item = unit {
+    line:   LINE;
+};
+
+public type Test = unit {
+    lines: Item[] &until=($$.line == b"---\n")
+          foreach { print $$; }
+    last: LINE;
+
+    on %done { print self; }
+};

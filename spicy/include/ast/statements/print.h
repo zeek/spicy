@@ -1,0 +1,31 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <hilti/ast/expression.h>
+#include <hilti/ast/statement.h>
+
+namespace spicy {
+namespace statement {
+
+class Print : public hilti::NodeBase, public hilti::trait::isStatement {
+public:
+    Print(std::vector<hilti::Expression> e, Meta m = Meta())
+        : hilti::NodeBase(hilti::nodes(std::move(e)), std::move(m)) {}
+
+    auto expressions() const { return childs<hilti::Expression>(0, -1); }
+
+    bool operator==(const Print& /* other */) const {
+        // return expressions() == other.expressions(); FIXME
+        return false;
+    }
+
+    // Statement interface.
+    auto isEqual(const hilti::Statement& other) const { return hilti::node::isEqual(this, other); }
+
+    // Node interface.
+    auto properties() const { return hilti::node::Properties{}; }
+};
+
+} // namespace statement
+} // namespace spicy

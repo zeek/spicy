@@ -1,0 +1,17 @@
+# @TEST-EXEC-FAIL: ${SPICYC} -p %INPUT > output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+const a-b = 1;
+const __private_name = 2;
+
+public type Bar = unit {
+  ab: uint8;
+  a_b: uint8;
+  a-b: uint8;
+};
+
+type Bar-Baz = unit {};
+
+function f-1() {}

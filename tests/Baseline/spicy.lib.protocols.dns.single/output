@@ -1,0 +1,9 @@
+[$id=13928, $flags=(1, 0, 0, 0, 1, 1, 0, 0), $qdcount=1, $ancount=2, $nscount=2, $arcount=0, $rejected=False]
+
+[[$qname=[$label=b".www.joelonsoftware.com"], $qtype=1, $qclass=1]]
+
+[[$name=[$label=b".www.joelonsoftware.com"], $ty=RDType::CNAME, $class_=1, $ttl=2187.000000s, $rdlen=2, $rname=[$label=b".joelonsoftware.com"], $a=(not set), $mx=(not set), $soa=(not set), $txt=(not set), $rdata=(not set)], [$name=[$label=b".joelonsoftware.com"], $ty=RDType::A, $class_=1, $ttl=2188.000000s, $rdlen=4, $rname=(not set), $a=64.34.80.173, $mx=(not set), $soa=(not set), $txt=(not set), $rdata=(not set)]]
+
+[[$name=[$label=b".joelonsoftware.com"], $ty=RDType::NS, $class_=1, $ttl=2188.000000s, $rdlen=16, $rname=[$label=b".dns3.fogcreek.com"], $a=(not set), $mx=(not set), $soa=(not set), $txt=(not set), $rdata=(not set)], [$name=[$label=b".joelonsoftware.com"], $ty=RDType::NS, $class_=1, $ttl=2188.000000s, $rdlen=7, $rname=[$label=b".dns5.fogcreek.com"], $a=(not set), $mx=(not set), $soa=(not set), $txt=(not set), $rdata=(not set)]]
+
+[]

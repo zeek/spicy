@@ -1,0 +1,20 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: echo "H4sIAOVzEV0CA/NIzcnJ11EILshMrlQEACp6Q+YNAAAA" | spicy-driver -p Test::X  %INPUT.hlto >output
+# @TEST-EXEC: echo "H4sIAOVzEV0CA/NIzcnJ11EILshMrlQEACp6Q+YNAAAA" | spicy-driver -i 1 -p Test::X %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+import spicy;
+import filter;
+
+public type X = unit {
+    b1: bytes &size=5;
+    b2: bytes &size=5;
+    b3: bytes &size=3;
+    on %init {
+        self.connect_filter(new filter::Base64Decode);
+        self.connect_filter(new filter::Zlib);
+    }
+    on %done { print self; }
+};

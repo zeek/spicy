@@ -1,0 +1,12 @@
+language: cpp
+
+addons:
+  apt:
+    sources:
+      - llvm-toolchain-trusty-5.0
+      - key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
+    packages:
+      - clang-format-5.0
+
+script:
+  - ./run-clang-format.py -r .

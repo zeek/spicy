@@ -1,0 +1,58 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${HILTIC} -P -o Foo.h %INPUT
+# @TEST-EXEC: ${HILTIC} -c -D compiler -o foo.cc %INPUT
+# @TEST-EXEC: ${HILTIC} -l -D compiler -o linker.cc foo.cc
+# @TEST-EXEC: cxx-compile -c -o foo.o foo.cc
+# @TEST-EXEC: cxx-compile -c -o linker.o linker.cc
+# @TEST-EXEC: cxx-compile -c -o driver.o driver.cc
+# @TEST-EXEC: cxx-link -o a.out foo.o linker.o driver.o
+# @TEST-EXEC: ./a.out >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type MyException = exception;
+
+function extern void test() {
+    hilti::print("HILTI - Begin");
+    throw MyException("test exception");
+    hilti::print("HILTI - End - Not reached");
+}
+
+}
+
+@TEST-START-FILE driver.cc
+
+#include <hilti/rt/libhilti.h>
+
+#include "Foo.h"
+
+extern "C" int hilti_main() { // Point of entry for JIT
+    try {
+        auto r = hlt::Foo::test();
+
+        while ( ! r ) {
+            std::cout << "suspended, resuming" << std::endl;
+            r.resume();
+        }
+
+        std::cout << "Done, but shouldn't get here" << std::endl;
+    }
+
+    catch ( const hilti::rt::Exception& e ) {
+        std::cout << "Caught exception: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

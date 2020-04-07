@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC-FAIL: printf 'abcde' | spicy-driver %INPUT.hlto >output 2>&1
+# @TEST-EXEC-FAIL: printf 'abcded' | spicy-driver %INPUT.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type X = unit {
+    b1 : b"abc";
+    b2 : b"def";
+
+    on %done { print self; }
+};

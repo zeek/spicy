@@ -1,0 +1,4 @@
+# Automatically generated; do not edit. -- <HASH> spicyc -j %INPUT/spicyc -j %INPUT/False
+# spicyc -j print.spicy
+Hello, World
+x=1

@@ -1,0 +1,86 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Foo {
+
+import hilti;
+
+##### Real to Integer coercions: Integer <= Real #####
+
+# Note: 64-bit double-precision has 53-bit significand/'mantissa'
+# so 0x1p53 = 0x20000000000000 is the smallest magnitude integer
+# for which every smaller one is still exactly representable;
+# the next higher value 0x1.0000000000001p53 = 0x20000000000002
+# so the skipped value 0x20000000000001 is not representable.
+
+global uint<8>  u8_hi  = 0xFFp0;
+global uint<16> u16_hi = 0xFFFFp0;
+global uint<32> u32_hi = 0xFFFFFFFFp0;
+global uint<64> u64_big = 0x20000000000000p0;
+
+assert u8_hi  == 0xFF;
+assert u16_hi == 0xFFFF;
+assert u32_hi == 0xFFFFFFFF;
+assert u64_big == 0x20000000000000;
+
+global int<8> i8_hi =  0x7Fp0;
+global int<8> i8_lo = -0x80p0;
+
+assert i8_hi  ==  0x7F;
+assert i8_lo  == -0x80;
+
+global int<16> i16_hi =  0x7FFFp0;
+global int<16> i16_lo = -0x8000p0;
+
+assert i16_hi  ==  0x7FFF;
+assert i16_lo  == -0x8000;
+
+global int<32> i32_hi =  0x7FFFFFFFp0;
+global int<32> i32_lo = -0x80000000p0;
+
+assert i32_hi  ==  0x7FFFFFFF;
+assert i32_lo  == -0x80000000;
+
+global int<64> i64_bi =  0x20000000000000p0;
+global int<64> i64_bo = -0x20000000000000p0;
+
+assert i64_bi  ==  0x20000000000000;
+assert i64_bo  == -0x20000000000000;
+
+##### Real to Integer casts:  #####
+
+global realy = 4e9;         # Deduce real lhs from real rhs
+assert realy == 4000000000; # Compare real variable with coerced integer constant:
+
+global uint<64> uinty = cast<uint<64>>(realy); # Can't coerce real variable to integer; have to cast
+
+# 355/113 approximates pi as 3.141592920353982520964564...
+
+global real piish = 355./113.;
+
+# real needs ~15 decimal digits for its double-precision
+assert piish == 3.1415929203539823;
+assert piish == 3.1415929203539827;
+
+# 13 hexits suffice for exact representation of double
+assert piish == 0x1.921fb78121fb8p+1;
+hilti::print(piish);
+
+global int<8>  pi0 = cast<int<8>>(piish);
+global uint<8>  pi1 = cast<uint<8>>(piish*10);
+global int<16> pi2 = cast<int<16>>(piish*100);
+global uint<16> pi3 = cast<uint<16>>(piish*1000);
+global int<32> pi4 = cast<int<32>>(piish*10000);
+global uint<32> pi5 = cast<uint<32>>(piish*100000);
+
+# Real to Integer cast always truncates:
+assert pi0 == 3;
+assert pi1 == 31;
+assert pi2 == 314;
+assert pi3 == 3141;
+assert pi4 == 31415;
+assert pi5 == 314159;
+
+assert cast<int<64>>(-piish) == -3;
+
+}

@@ -1,0 +1,17 @@
+trait spicy::detail::codegen::Production isProduction
+
+spicy::detail::codegen::production::Boolean : isProduction
+spicy::detail::codegen::production::ByteBlock : isProduction
+spicy::detail::codegen::production::Counter : isProduction
+spicy::detail::codegen::production::Ctor : isProduction
+spicy::detail::codegen::production::Enclosure : isProduction
+spicy::detail::codegen::production::Epsilon : isProduction
+spicy::detail::codegen::production::ForEach : isProduction
+spicy::detail::codegen::production::LookAhead : isProduction
+spicy::detail::codegen::production::Sequence : isProduction
+spicy::detail::codegen::production::Switch : isProduction
+spicy::detail::codegen::production::TypeLiteral : isProduction
+spicy::detail::codegen::production::Unit : isProduction
+spicy::detail::codegen::production::Resolved : isProduction
+spicy::detail::codegen::production::Variable : isProduction
+spicy::detail::codegen::production::While : isProduction

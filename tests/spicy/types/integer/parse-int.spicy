@@ -1,0 +1,24 @@
+# @TEST-EXEC:  printf '\377\001\377\001\377\001\377\001\377\001' | spicy-driver %INPUT
+
+module Mini;
+
+import spicy;
+
+public type test = unit {
+    f1: int16;
+    f2: int16 &byte-order = spicy::ByteOrder::Little;
+    f3: int16 &byte-order = spicy::ByteOrder::Network;
+    f4: int16 &byte-order = spicy::ByteOrder::Big;
+    f5: int8;
+    f6: int8;
+
+on %done {
+        print(self);
+        assert self.f1 == -255; # Network byte order is default.
+        assert self.f2 == 511;
+        assert self.f3 == -255;
+        assert self.f4 == -255;
+        assert self.f5 == -1;
+        assert self.f6 == 1;
+    }
+};

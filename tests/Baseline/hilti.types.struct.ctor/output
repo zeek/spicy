@@ -1,0 +1,2 @@
+[$b=True, $s="Foo!", $i=21]
+[$b=True, $s=(not set), $i=(not set)]

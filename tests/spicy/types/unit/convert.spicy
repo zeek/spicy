@@ -1,0 +1,10 @@
+# @TEST-EXEC:  echo AaBbffff | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+public type test = unit {
+       a: bytes &size=4 &convert=$$.lower();
+       b: bytes &size=4 &convert=$$.to_int(16)
+          { print self.a; print self.b; }
+};

@@ -1,0 +1,22 @@
+# Create a precompile module.
+# @TEST-EXEC: spicyc -j -o %INPUT.hlto %INPUT
+#
+# Precompiling to an existing file updates the file.
+# @TEST-EXEC: rm %INPUT.hlto && touch %INPUT.hlto
+# @TEST-EXEC: spicyc -j -o %INPUT.hlto %INPUT
+#
+# @TEST-EXEC: printf "\01\02" | spicy-driver %INPUT.hlto >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-GROUP: spicy-core
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    on %init   { print self; }
+    f1: uint8  { print self.f1; }
+    f2: uint8  { print self.f2; }
+    on %done   { print self; }
+};

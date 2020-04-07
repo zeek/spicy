@@ -1,0 +1,27 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: echo xaaaFoo | spicy-driver -i 1 %INPUT.hlto >>output
+# @TEST-EXEC: echo xaaaXBar | spicy-driver -i 1 %INPUT.hlto >>output
+# @TEST-EXEC: echo xaaaFoo | spicy-driver -i 4 %INPUT.hlto >>output
+# @TEST-EXEC: echo xaaaXBar | spicy-driver -i 4 %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+type A = unit {
+     x: /xa+/;
+     y: /Foo/;
+     on %done { print "A", self.x, self.y; }
+};
+
+type B = unit {
+    x: /xa+X/;
+    y: /Bar/;
+    on %done { print "B", self.x, self.y; }
+};
+
+public type test = unit {
+       switch {
+           a: A;
+           b: B;
+           };
+};

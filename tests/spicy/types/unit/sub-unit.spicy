@@ -1,0 +1,20 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x01\x02\x03' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+# @TEST-EXEC:  btest-diff .stderr
+#
+# @TEST-GROUP: spicy-core
+
+module Mini;
+
+import spicy;
+
+type Foo = unit {
+    x: uint16;
+    y: uint8;
+};
+
+public type Test = unit {
+    on %init   { print self; }
+    f: Foo;
+    on %done   { print self; }
+};

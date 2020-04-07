@@ -1,0 +1,21 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >>output 2>&1
+# @TEST-EXEC-FAIL: ${SPICYC} -j fail.spicy >>output 2>&1
+# @TEST-EXEC-FAIL: ${SPICYC} -j fail2.spicy >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+assert 1 == 1;
+
+@TEST-START-FILE fail.spicy
+
+module Foo;
+assert 1 == 0;
+
+@TEST-END-FILE
+
+@TEST-START-FILE fail2.spicy
+
+module Foo;
+assert 1 == 0 : "my error";
+
+@TEST-END-FILE

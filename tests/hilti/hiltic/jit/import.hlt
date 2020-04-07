@@ -1,0 +1,38 @@
+# @TEST-EXEC: ${HILTIC} -j -D compiler,jit foo.hlt bar.hlt | sort >output
+# @TEST-EXEC: btest-diff output
+
+@TEST-START-FILE foo.hlt
+
+module Foo {
+
+import Bar;
+
+import hilti;
+
+public global string foo = "Foo!";
+
+hilti::print("Hello, world from Foo!");
+hilti::print(foo);
+hilti::print(Bar::bar);
+
+}
+
+@TEST-END-FILE
+
+@TEST-START-FILE bar.hlt
+
+module Bar {
+
+import Foo;
+
+import hilti;
+
+public global string bar = "Bar!";
+
+hilti::print("Hello, world from Bar!");
+hilti::print(Foo::foo);
+hilti::print(bar);
+
+}
+
+@TEST-END-FILE

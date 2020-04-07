@@ -1,0 +1,17 @@
+# @TEST-EXEC:  printf '\100\050\260\374\323\057\157\073\100\050\260\374\323\057\157\073\100\110\365\303\303\365\110\100' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type test = unit {
+ 	f1: real &type=spicy::RealType::IEEE754_Double;
+    f2: real &type=spicy::RealType::IEEE754_Double;
+	f3: real &type=spicy::RealType::IEEE754_Single &byte-order=spicy::ByteOrder::Big;
+	f4: real &type=spicy::RealType::IEEE754_Single &byte-order=spicy::ByteOrder::Little;
+
+	on %done {
+		print self;
+	}
+};

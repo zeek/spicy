@@ -1,0 +1,29 @@
+# @TEST-EXEC:  printf '\100\001\100\001\100\001' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type test = unit {
+    f1: bitfield(16) {
+        x1: 0;
+        x2: 1..2;
+        } &bit-order=spicy::BitOrder::MSB0;
+
+    f2: bitfield(16) {
+        x1: 0;
+        x2: 1..2;
+        } &bit-order=spicy::BitOrder::LSB0;
+
+    f3: bitfield(16) {
+        x1: 0;
+        x2: 1..2;
+        };
+
+    on %done {
+        print self.f1.x1, self.f1.x2;
+        print self.f2.x1, self.f2.x2;
+        print self.f3.x1, self.f3.x2;
+        }
+};

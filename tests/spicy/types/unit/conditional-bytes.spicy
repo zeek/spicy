@@ -1,0 +1,16 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -d -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x02\x03\x04\x05' | spicy-driver -d %INPUT.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05' | spicy-driver -d %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type X = unit {
+    var len: uint64;
+    cond : int8;
+    a: uint8 { self.len = self.a; }
+    x: bytes &size = (self.len - 1) if (self.cond != 0);
+    y: uint8 if (self.cond != 0);
+    z: uint8;
+    on %done { print self; }
+};

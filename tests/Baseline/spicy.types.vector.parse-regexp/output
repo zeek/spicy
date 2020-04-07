@@ -1,0 +1,12 @@
+[$lines=(not set)]
+line: ABC
+
+line: DEF
+
+line: GHI
+
+line: 
+
+line: XYZ
+
+[$lines=[b"ABC\n", b"DEF\n", b"GHI\n", b"\n", b"XYZ\n"]]

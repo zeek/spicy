@@ -1,0 +1,33 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >>output 2>&1
+# @TEST-EXEC-FAIL: ${SPICYC} -j fail.spicy >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+global x: int64 = 0;
+
+switch ( 2 ) {
+    case 1: assert False;
+    case 2: ++x;
+    default: assert False;
+}
+
+switch ( 3 ) {
+    case 1: assert False;
+    case 2: assert False;
+    default: ++x;
+}
+
+assert x == 2;
+
+@TEST-START-FILE fail.spicy
+
+module Foo;
+
+
+switch ( 3 ) {
+    case 1: assert False;
+    case 2: assert False;
+}
+
+@TEST-END-FILE

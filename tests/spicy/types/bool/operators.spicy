@@ -1,0 +1,15 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+#
+# Basic functionality tests for Spicy. HILTI provides the main tests for the type.
+
+module Test;
+
+global x: bool = True;
+
+assert True == x;
+assert False != x;
+assert ! False;
+assert x == x;
+assert x && True;
+assert ! (x && False);
+assert False || x;

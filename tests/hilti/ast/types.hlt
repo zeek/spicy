@@ -1,0 +1,10 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${HILTIC} -p -D compiler,ast-final %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+global x1 = b"abc";
+global x2 = (1, 2);
+
+}

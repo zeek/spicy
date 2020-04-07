@@ -1,0 +1,30 @@
+FROM alpine:3.11
+
+WORKDIR /root
+
+ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
+ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy/"
+
+RUN apk update
+
+# Install development tools.
+RUN apk add ccache cmake curl g++ gcc gdb git make ninja python3 vim
+
+# Install Spicy dependencies.
+RUN apk add bash bison clang clang-dev clang-libs clang-static flex flex-dev flex-libs libucontext-dev llvm9-dev llvm9-static py3-sphinx py3-sphinx_rtd_theme
+RUN pip3 install btest
+
+# Install Zeek dependencies.
+RUN apk add fts-dev libpcap-dev linux-headers openssl-dev python-dev swig zlib-dev
+
+# Install Zeek.
+RUN mkdir -p /opt/zeek/src
+RUN cd /opt/zeek && git clone -b release/3.0 --recursive https://github.com/zeek/zeek src
+RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd .. && rm -rf build
+
+# Install Spicy.
+ADD . /opt/spicy/src
+
+RUN cd /opt/spicy/src && \
+    LDFLAGS="-lucontext" ./configure --prefix=/opt/spicy --generator=Ninja --with-cxx-compiler=/usr/bin/clang++ --with-zeek=/opt/zeek --disable-gold && \
+    cd build && ninja install && cd .. && rm -rf build

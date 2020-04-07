@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global auto x = ("Hello!", True);
+
+hilti::print(x[0]);
+hilti::print(x[1]);
+
+}

@@ -1,0 +1,6 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+    x: uint8[5] foreach { print $$, self.x; }
+};

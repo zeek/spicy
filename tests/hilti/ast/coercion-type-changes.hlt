@@ -1,0 +1,15 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+local int<64> a = 1;
+
+# Checks that we limit type changes to one per expression.
+# Othwerwise this would match "<bool> == <bool>" as well
+# and become ambigious.
+assert a == 1;
+
+}

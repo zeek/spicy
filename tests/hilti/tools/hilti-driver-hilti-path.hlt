@@ -1,0 +1,31 @@
+# @TEST-EXEC: mkdir -p a/b/c && cp bar.hlt.templ a/b/c/bar.hlt
+# @TEST-EXEC: HILTI_PATH=${DIST}/hilti/lib:a/b/c ${HILTIC} -j foo.hlt >output
+# @TEST-EXEC: btest-diff output
+
+@TEST-START-FILE foo.hlt
+
+module Foo {
+
+import hilti;
+
+import Bar;
+
+Bar::bar("foo");
+
+}
+
+@TEST-END-FILE
+
+@TEST-START-FILE bar.hlt.templ
+
+module Bar {
+
+import hilti;
+
+public function void bar(string x) {
+    hilti::print(x);
+}
+
+}
+
+@TEST-END-FILE

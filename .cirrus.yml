@@ -1,0 +1,30 @@
+
+environment:
+    CCACHE_BASEDIR: $CIRRUS_WORKING_DIR
+
+container:
+    image: rsmmr/spicy-ci-ubuntu:latest
+    cpu: 8
+    memory: 16G
+
+clang9_debug_task:
+    configure_script:   ./ci/run-ci -b build-ci-debug configure debug --cxx-compiler clang++-9 --with-zeek /opt/zeek-debug --clang-format /opt/clang10/bin/clang-format --clang-tidy /opt/clang10/bin/clang-tidy
+    build_script:       ./ci/run-ci -b build-ci-debug build
+    test_build_script:  ./ci/run-ci -b build-ci-debug test-build
+    test_code_script:   ./ci/run-ci -b build-ci-debug test-code
+    install_script:     ./ci/run-ci -b build-ci-debug install
+
+    timeout_in: 120m
+
+    ccache_cache:
+        folder: /var/spool/ccache
+        fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+    always:
+        ci_artifacts:
+            path: build-ci-debug/ci
+
+        junit_artifacts:
+            path: build-ci-debug/ci/diag.xml
+            type: text/xml
+            format: junit

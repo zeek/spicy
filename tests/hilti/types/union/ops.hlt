@@ -1,0 +1,37 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Main {
+
+import hilti;
+
+type A = union {
+    int<64> i,
+    bool b,
+    string test
+};
+
+local A a;
+
+assert !a;
+assert a?.i == False;
+assert a?.test == False;
+hilti::print(a);
+
+a.i = 42;
+assert a;
+assert a.i == 42;
+assert a?.i == True;
+assert a?.test == False;
+hilti::print(a);
+
+a.test = "X";
+assert a;
+assert a.test == "X";
+assert a?.i == False;
+assert a?.test == True;
+hilti::print(a);
+
+assert-exception a.b;
+
+}

@@ -1,0 +1,44 @@
+#
+# @TEST-EXEC:       ${SCRIPTS}/printf '\x10\x20\x30\x40' | spicy-driver %INPUT >>output 2>&1
+# @TEST-EXEC-FAIL:  ${SCRIPTS}/printf '\x10\x20\x30\x40' | spicy-driver fail.spicy >>output 2>&1
+# @TEST-EXEC:  btest-diff output
+#
+
+module Test;
+
+public type X = unit {
+    on %init   { print self; }
+    f1: uint8  {
+        assert self.?f1;
+        assert ! self?.f2;
+        assert ! self?.f3;
+        assert self.f1 == 16;
+        assert self.?f1 == 16;
+        assert self.f3 == 3;
+
+        self.f2 = 2;
+        assert self.?f2;
+        assert self.f2 == 2;
+    }
+
+    f2: uint8;
+    f3: uint8 &default=3;
+
+    on %done   { print self; }
+};
+
+
+@TEST-START-FILE fail.spicy
+module Test;
+
+public type X = unit {
+    on %init   { print self; }
+    f1: uint8  {
+        print self.?f2;
+    }
+
+    f2: uint8;
+    on %done   { print self; }
+};
+
+@@TEST-END-FILE

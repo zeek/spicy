@@ -1,0 +1,45 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+### Failing Coercions ####
+
+module Foo {
+
+import hilti;
+
+##### Integer<*> to Integer<*> coercion Fails #####
+
+global uint<8>  u8_hi  = 0x100;
+global uint<16> u16_hi = 0x10000;
+global uint<32> u32_hi = 0x100000000;
+ # 'integer literal out of range' (not coercion fail)
+#global uint<64> u64_hi  = 0x10000000000000000;
+
+global uint<8>  u8_lo  = -1;
+global uint<16> u16_lo = -1;
+global uint<32> u32_lo = -1;
+global uint<64> u64_lo = -1;
+
+global int<8> i8_hi =  0x80;
+global int<8> i8_lo = -0x81;
+
+global int<16> i16_hi =  0x8000;
+global int<16> i16_lo = -0x8001;
+
+global int<32> i32_hi =  0x80000000;
+global int<32> i32_lo = -0x80000001;
+
+global int<64>  i64_hi =  0x8000000000000000;
+ # 'integer overflow on negation' (not coercion fail)
+#global int<64> i64_lo  = -0x8000000000000001;
+
+##### Integer to Real coercion Fails #####
+
+global real from_u64_1p53 = 0x20000000000001;
+global real from_i64_1p53 = -0x20000000000001;
+
+global int<32> i = 32;
+# This fails, we don't allow converson to boolean outside of specific language contexts.
+global bool k = i;
+
+}

@@ -1,0 +1,21 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+for ( i in [1,2,3] ) {
+    hilti::print(i);
+    continue;
+    hilti::print("X");
+    }
+
+while ( local int<64> i = 1; i != 4 ) {
+    hilti::print(i);
+    i = i + 1;
+    continue;
+    hilti::print("X");
+    }
+
+}

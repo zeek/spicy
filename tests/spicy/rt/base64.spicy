@@ -1,0 +1,26 @@
+# @TEST-EXEC: spicyc -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+import spicy;
+
+global enc: bytes;
+global e: spicy::Base64Stream;
+
+enc += spicy::base64_encode(e, b"123");
+enc += spicy::base64_encode(e, b"456");
+enc += spicy::base64_encode(e, b"");
+enc += spicy::base64_encode(e, b"7890");
+enc += spicy::base64_finish(e);
+print enc;
+
+global dec: bytes;
+global d: spicy::Base64Stream;
+
+dec += spicy::base64_decode(d, b"MTIz");
+dec += spicy::base64_decode(d, b"NDU2Nzg");
+dec += spicy::base64_decode(d, b"5");
+dec += spicy::base64_decode(d, b"MA==");
+dec += spicy::base64_finish(d);
+print dec;

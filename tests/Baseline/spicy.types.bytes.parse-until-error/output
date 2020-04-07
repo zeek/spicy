@@ -1,0 +1,1 @@
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: end-of-data reached before &until expression found (/home/robin/work/spicy/tests/.tmp/spicy.types.bytes.parse-until-error/parse-until-error.spicy:8)

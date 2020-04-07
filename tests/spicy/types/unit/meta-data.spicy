@@ -1,0 +1,22 @@
+# @TEST-EXEC: spicy-driver -l %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type Test1 = unit {
+    %description = "Hello, Parser!";
+    %port = 80/tcp;
+
+    f: uint32 {}
+};
+
+public type Test2 = unit {
+    %port = 123/udp;
+    %port = 567/tcp;
+    %mime-type = "foo/bar";
+    %mime-type = "foo/baz";
+
+    f: uint32 {}
+};

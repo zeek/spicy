@@ -1,0 +1,12 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global auto re1 = /23.*09/;
+hilti::print(re1.find_span(b"xxA1234X5678Y0912Bxx"));
+hilti::print(re1.find_span(b"xxA14567812Bxx")); # No match
+
+}

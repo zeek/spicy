@@ -1,0 +1,36 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function result<string> x(bool b) {
+    if ( b )
+        return "yeah!";
+    else
+        return error("trouble...");
+}
+
+
+*x(False);
+
+}
+
+# @TEST-START-NEXT
+
+module Foo {
+
+import hilti;
+
+function result<string> x(bool b) {
+    if ( b )
+        return "yeah!";
+    else
+        return error("trouble...");
+}
+
+
+x(True).error();
+
+}

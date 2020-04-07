@@ -1,0 +1,2 @@
+[error] cannot coerce expression 'True' of type 'bool' to type 'uint<64>'
+[error] spicyc: aborting after errors

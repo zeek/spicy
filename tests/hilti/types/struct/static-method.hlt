@@ -1,0 +1,20 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type T = struct {
+    method int<64> test(int<64> v) &static;
+};
+
+global T t;
+
+hilti::print(t.test(10));
+
+method int<64> T::test(int<64> v) &static {
+    return v + 2;
+}
+
+}

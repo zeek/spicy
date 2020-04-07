@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+#
+# Configuration file for the Sphinx documentation builder.
+#
+# This file does only contain a selection of the most common options. For a
+# full list see the documentation:
+# http://www.sphinx-doc.org/en/master/config
+
+# -- Path setup --------------------------------------------------------------
+
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+#
+import os
+import sys
+import subprocess
+
+sys.path.insert(0, os.path.abspath('scripts'))
+
+os.environ["PATH"] = "%s/bin:%s" % (os.environ["SPICY_BUILD_DIRECTORY"], os.environ["PATH"])
+
+# -- Project information -----------------------------------------------------
+
+project = u'Spicy'
+copyright = u'2020 by the Zeek Project'
+author = u'Zeek Project'
+
+version = subprocess.check_output("../scripts/autogen-version").decode("utf8")
+release = version
+
+# -- General configuration ---------------------------------------------------
+
+needs_sphinx = '1.8'
+
+extensions = [
+    'sphinx.ext.todo',
+    'sphinx.ext.extlinks',
+    'spicy'
+]
+
+exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store', '_build/autogen/types', '3rdparty/*', "_old-content"]
+
+templates_path = ['_templates']
+
+source_suffix = '.rst'
+master_doc = 'index'
+pygments_style = 'sphinx'
+
+# Todo extension
+todo_include_todos = True
+
+# Extlinks extension
+extlinks = {
+     "repo":  ("https://github.com/zeek/spicy/blob/master/%s", "#"),
+     "issue": ("https://github.com/zeek/spicy/issues/issues/%s", "#"),
+     "pr":    ("https://github.com/zeek/spicy/pulls/%s", "#"),
+}
+
+# -- Options for HTML output -------------------------------------------------
+
+html_theme = "sphinx_rtd_theme"
+html_logo = "_static/spicy-logo.png"
+html_favicon = "_static/spicy-favicon.ico"
+html_title = "Spicy v" + version
+html_static_path = ['_static']
+
+html_theme_options = {
+    "style_external_links": True
+}

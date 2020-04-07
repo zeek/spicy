@@ -1,0 +1,35 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+
+module Foo;
+
+# Note: double ctor lex doesn't error on precison loss
+assert 0x20000000000000p0 == 0x20000000000001p0;
+
+assert 0x20000000000000 == 0x20000000000000p0;
+assert 0x20000000000000 == 0x20000000000001p0;
+assert 0x20000000000000 != 0x20000000000002p0;
+
+global u8_hi: real  =  uint8(0xFF);
+global u16_hi: real =  uint16(0xFFFF);
+global u32_hi: real =  uint32(0xFFFFFFFF);
+global u64_big: real =  0x20000000000000;
+
+assert u8_hi  == 0xFF;
+assert u16_hi == 0xFFFF;
+assert u32_hi == 0xFFFFFFFF;
+assert u64_big == 0x20000000000000;
+
+assert u8_hi   == 0xFFp0;
+assert u16_hi  == 0xFFFFp0;
+assert u32_hi  == 0xFFFFFFFFp0;
+assert u64_big == 0x20000000000000p0;
+
+global i8_lo: real  = int8(-0x80);
+global i16_lo: real = int16(-0x8000);
+global i32_lo: real = int32(-0x80000000);
+global i64_sml: real = -0x20000000000000;
+
+assert i8_lo   == -0x80p0;
+assert i16_lo  == -0x8000p0;
+assert i32_lo  == -0x80000000p0;
+assert i64_sml == -0x20000000000000p0;

@@ -1,0 +1,26 @@
+#
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d      %INPUT >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 1 %INPUT >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 2 %INPUT >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 3 %INPUT >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 4 %INPUT >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 5 %INPUT >>output
+# @TEST-EXEC:  btest-diff output
+# @TEST-EXEC:  test "$BUILD" = "release" || TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff .stderr
+
+module Mini;
+
+import spicy;
+
+type Sub = unit {
+    x: b"90a";
+    y: b"bcd";
+};
+
+public type Test = unit {
+    f1: b"12";
+    f2: b"34";
+    f3: b"5678";
+    f4: Sub;
+    on %done   { print self; }
+};

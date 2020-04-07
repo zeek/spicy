@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global auto e = error("test");
+
+hilti::print(e);
+hilti::print(e.description());
+
+}

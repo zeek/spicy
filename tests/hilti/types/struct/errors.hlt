@@ -1,0 +1,16 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    string s &optional;
+};
+
+global X x;
+
+hilti::print(x.DoesNotExist);
+
+}

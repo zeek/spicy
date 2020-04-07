@@ -1,0 +1,15 @@
+# @TEST-EXEC-FAIL: ${SPICYC} -j %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+
+module Foo;
+
+global untrue: bool = 1.01;
+global falser: bool = 0.0;
+
+global u64max: real = 0xFFFFFFFFFFFFFFFF;
+
+global sig_54: real = 0xFFFFFFFFFFFFFC00;
+
+global i_lo: real =  -0x7FFFFFFFFFFFFE00;
+
+global v: real = 0x20000000000001;

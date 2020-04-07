@@ -1,0 +1,3 @@
+[error] /home/robin/work/spicy/tests/.tmp/hilti.types.enum.equal-ops-fail/equal-ops-fail.hlt:11: cannot resolve operator: <Foo::X> != <Foo::Y>
+[error] /home/robin/work/spicy/tests/.tmp/hilti.types.enum.equal-ops-fail/equal-ops-fail.hlt:15: cannot resolve operator: <Foo::X> != <Foo::Y>
+[error] hiltic: aborting after errors

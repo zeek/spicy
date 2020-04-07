@@ -1,0 +1,44 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function result<string> x(bool b) {
+    if ( b )
+        return "yeah!";
+    else
+        return error("trouble...");
+}
+
+function void y(result<string> r) {
+    if ( r )
+        hilti::print("yes");
+    else
+        hilti::print("no");
+}
+
+global string s;
+global optional<string> o;
+
+hilti::print(x(True));
+hilti::print(x(False));
+hilti::print(x(False).error());
+
+s = *x(True);
+hilti::print(s);
+
+s = x(False).error().description();
+hilti::print(s);
+
+o = x(True);
+hilti::print(o);
+
+o = x(False);
+hilti::print(o);
+
+y(x(True));
+y(x(False));
+
+}

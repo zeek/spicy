@@ -1,0 +1,28 @@
+==Client hello
+192.168.1.105, 74.125.224.79
+Version, TLS::TLSVersion_TLSv10
+ts, 1335538392
+client random, \xc97\x10\xcfx\x9e\xf7\xaa\x0e\xd1\xdd\x9b\x8c\xd5\xcb\xc5T\xa9\xda\xfe\xc9\x931\x99\xd5BO\xd7
+session id, 
+cipher list, [49162, 49172, 136, 135, 57, 56, 49167, 49157, 132, 53, 49159, 49161, 49169, 49171, 69, 68, 102, 51, 50, 49164, 49166, 49154, 49156, 150, 65, 4, 5, 47, 49160, 49170, 22, 19, 49165, 49155, 65279, 10]
+==Client hello end
+tls_extension_server_name, 192.168.1.105, 74.125.224.79, [ssl.gstatic.com]
+tls_extension_renegotiation_info, 192.168.1.105, 74.125.224.79, 
+tls_extension_elliptic_curves, 192.168.1.105, 74.125.224.79, [23, 24, 25]
+tls_extension_ec_point_formats, 192.168.1.105, 74.125.224.79
+tls_extension_sessionticket_tls, 192.168.1.105, 74.125.224.79, 
+tls_extension_next_protocol_negotiation, 192.168.1.105, 74.125.224.79
+==Server hello
+192.168.1.105, 74.125.224.79
+Version, TLS::TLSVersion_TLSv10
+ts, 1335538392
+server random, I\x1bx\xcae\x04\xb9$+\xbc\xc2\xb7\xc9\x82_\xc0\xa0\x8cE=\xcb\xa9\xf0\xb3\xb0\xcbH\xdf
+session id, 
+cipher, 49169
+compression metod, 0
+==Server hello end
+tls_extension_renegotiation_info, 192.168.1.105, 74.125.224.79, 
+tls_extension_ec_point_formats, 192.168.1.105, 74.125.224.79
+tls_extension_sessionticket_tls, 192.168.1.105, 74.125.224.79, 
+tls_extension_next_protocol_negotiation, 192.168.1.105, 74.125.224.79
+session ticket handshake, 100800, x}A\xa0\xd3b&\xa2\xe5\xc4^\x9f\xc5\xd6rX\x95M\xfe\xae\xcaXX\xe0O\x16@[\x03^A\x8b7\xb5\xaeA=tk\xf5o\xe8y\xa1\x8ag\xe2\\xd4\xb3\xe5,>\xd8\x9a\xf0\xe0\x11\x82\xbf\xcb\x92\xb0\x85\xe2%d\xee\xd5\x08\x1cY^\xd8;\x0d\xfd\xd5E\xe7\x1b\xc1\x11@\xdf\x0e\x8d\xd9\xf9\x04L8-\xd8=\x03\xa6\x12\xac6\xb9\xeaq\x90{\xe7B\x0d\x1a\xb0\x87\x7f7`\x81\x0c\xe9Z"J,\xc1\x89\xf8\xbd\x95J`{\x986\x1eT\xf2\xfe$\x8a]\xb3\x96\xe6\xf9\x83\xad+M\xf0l\x7f\xa7\xe3\x1bNu\x14|`\xfb\x9cn\xec\xd4\x14\x8b

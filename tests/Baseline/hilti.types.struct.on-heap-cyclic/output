@@ -1,0 +1,2 @@
+[$s="X2", $y=(not set)]
+[$s="Y", $x=[$s="X", $y=(not set)]]

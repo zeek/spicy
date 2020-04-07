@@ -1,0 +1,18 @@
+# @TEST-EXEC:  printf "A\012\013A\014\015AAA\005" | spicy-driver %INPUT >output
+# @TEST-EXEC:  printf "AAA\005" | spicy-driver %INPUT >>output
+# @TEST-EXEC:  btest-diff output
+
+module HTTP;
+
+type Item = unit {
+    x: uint8(0x41);
+    y: uint16;
+};
+
+public type Test = unit {
+    a: Item[];
+    b: /AAA*/;
+    c: uint8;
+
+    on %done { print self; }
+    };

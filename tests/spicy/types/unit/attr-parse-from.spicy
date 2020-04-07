@@ -1,0 +1,15 @@
+# @TEST-EXEC:  printf 1234567890 | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+public type test = unit {
+    a: bytes &size=5;
+    B: bytes &size=5 &parse-from=b"ABCDE";
+    C: bytes &parse-from=b"FGHI";
+    d: bytes &size=5;
+
+    on %done {
+        print self;
+    }
+};

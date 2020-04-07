@@ -1,0 +1,14 @@
+# @TEST-EXEC:  printf 'ABC\nDEF\nGHI\n\nXYZ\n' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module HTTP;
+
+const LINE = /[^\n]*\n/;
+
+public type Test = unit {
+    on %init { print self; }
+
+    lines: LINE[] foreach { print "line: %s" % $$; }
+
+    on %done { print self; }
+    };

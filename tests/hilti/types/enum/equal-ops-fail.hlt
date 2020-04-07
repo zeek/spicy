@@ -1,0 +1,17 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = enum { a, b };
+type Y = enum { a, b };
+
+assert X::a != Y::a;
+
+global X x;
+global Y y;
+assert x != y;
+
+}

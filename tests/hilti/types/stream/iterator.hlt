@@ -1,0 +1,78 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+local stream x = stream(b"01234567890");
+
+local auto i = begin(x);
+local auto j = i;
+assert i == begin(x);
+assert j == begin(x);
+assert i.offset() == 0;
+assert j == i;
+assert *i++ == '0';
+assert *i++ == '1';
+assert *i++ == '2';
+assert *++i == '4';
+assert i.offset() == 4;
+
+assert i > j;
+assert i >= j;
+assert j < i;
+assert j <= i;
+assert !( i < j );
+assert !( i <= j );
+assert !( j > i );
+assert !( j >= i );
+
+assert i.is_frozen() == False;
+x.freeze();
+assert i.is_frozen() == True;
+x.unfreeze();
+assert i.is_frozen() == False;
+
+i += 2;
+assert *i == '6';
+
+i = i + 4;
+assert *i == '0';
+assert i != end(x);
+i++;
+assert i == end(x);
+
+i = begin(x);
+for ( j in x )
+    assert j == *i++;
+
+# Const version
+function void p(stream x) {
+    local auto i = begin(x);
+    assert i.offset() == 0;
+    assert *i++ == '0';
+    assert *i++ == '1';
+    assert *i++ == '2';
+    assert *++i == '4';
+    assert i.offset() == 4;
+
+    assert i.is_frozen() == False;
+    i += 2;
+    assert *i == '6';
+
+    i = i + 4;
+    assert *i == '0';
+    assert i != end(x);
+    i++;
+    assert i == end(x);
+
+    i = begin(x);
+    for ( j in x )
+        assert j == *i++;
+}
+
+local stream x2 = stream(b"01234567890");
+p(x2);
+
+}

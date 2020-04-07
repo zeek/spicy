@@ -1,0 +1,24 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+#
+# Basic functionality tests for Spicy. HILTI provides the main tests for the type.
+
+module Test;
+
+global v: vector<int64> = [1, 2, 3];
+
+assert |v| == 3;
+assert |vector("x", "y")| == 2;
+assert |vector()| == 0;
+
+assert v[0] == 1;
+assert v[2] == 3;
+
+v[1] = 42;
+assert v[1] == 42;
+
+v.push_back(4);
+assert |v| == 4;
+assert v[3] == 4;
+
+assert v == [1, 42, 3, 4];
+assert v != [];

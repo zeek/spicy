@@ -1,0 +1,25 @@
+# Automatically generated; do not edit. -- <HASH> spicy-config -h//False
+
+Usage: spicy-config [options]
+
+Available options:
+
+    --build                 Prints "debug" or "release", depending on the build configuration.
+    --bindir                Prints the path to the directory where binaries are installed.
+    --cxx                   Print the path to the C++ compiler used to build Spicy
+    --cxxflags              Print flags for C++ compiler. (These are addition to any that HILTI needs.)
+    --debug                 Output flags for working with debugging versions.
+    --distbase              Print path of the Spicy source distribution.
+    --help                  Print this usage summary
+    --jit-compiler          Prints the version of the JIT compiler if compiled with corresponding support.
+    --jit-support           Prints 'yes' if compiled with JIT support, 'no' otherwise.
+    --ldflags               Print flags for linker. (These are addition to any that HILTI needs.)
+    --libdirs               Print standard Spicy library directories.
+    --prefix                Print path of installation (TODO: same as --distbase currently)
+    --spicy-build           Print the path to the spicy-build script.
+    --spicyc                Print the path to the spicyc binary.
+    --zeek                  Print the path to the Zeek executable
+    --zeek-prefix           Print the path to the Zeek installation prefix
+    --zeek-plugin-path      Print the path to go into ZEEK_PLUGIN_PATH for enabling the Zeek Spicy plugin
+    --version               Print Spicy version.
+

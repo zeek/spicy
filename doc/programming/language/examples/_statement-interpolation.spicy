@@ -1,0 +1,5 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+print "Hello, %!" % "World";
+print "%s=%d" % ("x", 1);

@@ -1,0 +1,18 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    string m;
+
+    hook optional<string> f2();
+};
+
+global X x;
+
+hilti::print(x.f2());
+
+}

@@ -1,0 +1,9 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${SPICY_BUILD} -S %INPUT
+# @TEST-EXEC: ./a.out >output
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+print "Hello, world!";
+print "Hello", "world!";

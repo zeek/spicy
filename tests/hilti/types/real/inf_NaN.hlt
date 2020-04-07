@@ -1,0 +1,32 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Foo {
+
+import hilti;
+
+global zero = 0e0;
+global real minus_zero = -0.;
+global real inf = 1./0.;
+global real minus_inf = -1./0.;
+global real nan = 0./0.;
+
+assert zero == minus_zero;
+assert inf == 3.14159/0e-999;
+assert minus_inf == 3.14159/-0e-999;
+assert inf == - minus_inf;
+
+# Note: NaN is always != anything
+assert nan != nan;
+
+hilti::print(zero);
+hilti::print(minus_zero);
+hilti::print(inf);
+hilti::print(minus_inf);
+hilti::print(nan);
+
+# Note: NaN has a sign, doesn't mean anything
+# (Removed, because on macOS this prints as "nan" and on Linux as "-nan".)
+# hilti::print(-nan);
+
+}

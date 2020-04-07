@@ -1,0 +1,57 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function int<64> g(int<64> i) {
+    return i + 1;
+}
+
+function void f1(int<64> i) {
+    switch ( i ) {
+        case 1: hilti::print("1A");
+        case 2,3,4: hilti::print("1B");
+        case 5: hilti::print("1C");
+        default: hilti::print("1*");
+    }
+}
+
+function void f2(int<64> i) {
+    switch ( local auto x = g(i) ) {
+        case 1: hilti::print("2A");
+        case 2,3,4: hilti::print("2B");
+        case 5: hilti::print("2C");
+        default: hilti::print("2*");
+    }
+}
+
+f1(1);
+f1(2);
+f1(3);
+f1(5);
+f1(10);
+
+f2(1);
+f2(2);
+f2(3);
+f2(5);
+f2(10);
+
+# Test coercion
+global x = 3.0;
+switch ( x ) {
+    case 3: hilti::print("1T");
+    case 4: hilti::print("1F");
+}
+
+local i = 1;
+
+# TODO: Don't have integer increment operator yet.
+#switch ( ++i ) {
+#    case 2: hilti::print("A");
+#    case 3: hilti::print("B");
+#    case 4: hilti::print("C");
+#}
+}

@@ -1,0 +1,2 @@
+[$a=b"1234", $b=(not set)]
+Error, [$a=b"1234", $b=(not set)]

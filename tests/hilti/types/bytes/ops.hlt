@@ -1,0 +1,112 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+local auto x = b"1";
+x += b"2";
+x += b"";
+
+assert x == b"12";
+assert x != b"";
+assert x != b"123";
+assert b"123" > b"113";
+assert b"123" > b"12";
+assert !(b"123" <= b"113");
+assert !(b"123" <= b"12");
+assert b"123" >= b"113";
+assert b"123" >= b"123";
+assert !(b"123" < b"113");
+assert !(b"123" < b"123");
+assert b"123" < b"213";
+assert b"123" < b"1234";
+assert !(b"123" >= b"213");
+assert !(b"123" >= b"1234");
+assert b"123" <= b"213";
+assert b"123" <= b"123";
+assert !(b"123" > b"213");
+assert !(b"123" > b"123");
+
+assert (b"abc" + b"def") == b"abcdef";
+
+local auto y = b"0123456789";
+assert begin(y) == y.at(0);
+assert y.find(b"0") == (True, y.at(0));
+assert y.find(b"234") == (True, y.at(2));
+assert y.find(b"789") == (True, y.at(7));
+assert y.find(b"890") == (False, y.at(8));
+
+local auto y2 = b"abcdedede";
+assert y2.sub(y2.find(b"def")[1], end(y2)) == b"de";
+assert y.find(b"XYZ") == (False, end(y));
+assert (b"456" in y);
+assert ! (b"xyz" in y);
+assert y.starts_with(b"012");
+assert y.starts_with(b"");
+assert ! y.starts_with(b"XYZ");
+
+assert |y| == 10;
+assert |b""| == 0;
+
+local auto z = b"AbCdEfü";
+assert z.lower(hilti::Charset::UTF8) == b"abcdefü";
+assert z.upper(hilti::Charset::UTF8) == b"ABCDEFÜ";
+
+assert b"abc def".split1() == (b"abc", b"def");
+assert b"abc   def".split1() == (b"abc", b"def");
+assert b"abc   def xyz".split1() == (b"abc", b"def xyz");
+assert b" xyz".split1() == (b"", b"xyz");
+assert b"xyz".split1() == (b"xyz", b"");
+assert b"".split1() == (b"", b"");
+
+assert b"abc def".split() == [b"abc", b"def"];
+assert b"abc  def  ghi j    kl   ".split() == [b"abc", b"def", b"ghi", b"j", b"kl"];
+assert b"abc".split() == [b"abc"];
+assert b"   ".split() == [];
+assert b"".split() == [];
+
+assert b"abcXYZdef".split1(b"XYZ") == (b"abc", b"def");
+assert b"XYZdef".split1(b"XYZ") == (b"", b"def");
+assert b"abc".split1(b"XYZ") == (b"abc", b"");
+assert b"".split1(b"XYZ") == (b"", b"");
+
+assert b"abcXYZdefXYZghi".split(b"XYZ") == [b"abc", b"def", b"ghi"];
+assert b"abcXYZXYZghi".split(b"XYZ") == [b"abc", b"", b"ghi"];
+assert b"abc".split(b"XYZ") == [b"abc"];
+assert b"".split(b"XYZ") == [b""];
+
+assert b"   abc   ".strip() == b"abc";
+assert b"abc".strip() == b"abc";
+assert b"".strip() == b"";
+assert b"  abc  ".strip(hilti::Side::Left) == b"abc  ";
+assert b"  abc  ".strip(hilti::Side::Right) == b"  abc";
+assert b"  abc  ".strip(hilti::Side::Both) == b"abc";
+assert b"123abc456".strip(hilti::Side::Both, b"1234567890") == b"abc";
+
+# Test const verasion
+function void p(bytes x) {
+    assert x == b"abc";
+    assert x != b"ABC";
+    assert x > b"ab";
+    assert x >= b"abc";
+    assert x < b"bbc";
+    assert x <= b"bbc";
+    assert (b"123" + x) == b"123abc";
+    assert begin(x) == x.at(0);
+    assert x.find(b"b") == (True, x.at(1));
+    assert (b"b" in x);
+    assert ! (b"X" in x);
+    assert x.starts_with(b"ab");
+    assert |x| == 3;
+    assert x.lower(hilti::Charset::UTF8) == b"abc";
+    assert x.upper(hilti::Charset::UTF8) == b"ABC";
+    assert x.split1(b"b") == (b"a", b"c");
+    assert x.split(b"b") == [b"a", b"c"];
+    assert x.strip(hilti::Side::Left, b"a") == b"bc";
+}
+
+p(b"abc");
+
+}

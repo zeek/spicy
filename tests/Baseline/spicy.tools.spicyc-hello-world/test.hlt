@@ -1,0 +1,26 @@
+// Begin of Foo (from "/home/robin/work/spicy/tests/.tmp/spicy.tools.spicyc-hello-world/spicyc-hello-world.spicy")
+// Compiled by HILTI version 0.2.0-dev
+
+#include <hilti/rt/compiler-setup.h>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+namespace __hlt::Foo {
+    extern void __init_module();
+    extern void __register_module();
+}
+
+HILTI_PRE_INIT(__hlt::Foo::__register_module)
+
+extern void __hlt::Foo::__init_module() {
+    hilti::rt::print(std::string("Hello, world!"), true);
+    hilti::rt::printValues(std::make_tuple(std::string("Hello"), std::string("world!")), true);
+}
+
+extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, nullptr, nullptr}); }
+
+/* __HILTI_LINKER_V1__
+{"module":"Foo","namespace":"__hlt::Foo","path":"/home/robin/work/spicy/tests/.tmp/spicy.tools.spicyc-hello-world/spicyc-hello-world.spicy","version":1}
+*/
+

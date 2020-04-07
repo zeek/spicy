@@ -1,0 +1,27 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test implicit initialization of vector elements with a type's non-standard default value.
+
+module Foo {
+
+import hilti;
+
+type X = enum {
+    A1 = 1,
+    A2
+};
+
+global vector<X> v;
+global X x;
+
+v[1] = X::A1;
+
+# TODO: Activate once we have enum comparision operators.
+#assert v[0] == X::Undef;
+#assert v[1] == X::A1;
+
+hilti::print(v[0]);
+hilti::print(v[1]);
+
+}

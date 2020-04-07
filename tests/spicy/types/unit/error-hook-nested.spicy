@@ -1,0 +1,19 @@
+# @TEST-EXEC-FAIL: echo 1234567 | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+type test2 = unit {
+    x: bytes &size=4;
+    y: bytes &size=6;
+
+    on %error { print "Error test2", self; }
+};
+
+public type test1 = unit {
+       a: bytes &size=4 { print self; }
+       t: test2;
+       b: bytes &size=6;
+
+       on %error { print "Error test1", self; }
+};

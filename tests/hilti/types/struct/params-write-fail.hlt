@@ -1,0 +1,22 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC:      btest-diff output
+#
+# Test that we cannot modify read-only struct parameters.
+
+module Mini {
+
+type Bar = struct {
+   int<32> a;
+};
+
+type Foo = struct(bool X, set<string> Y, value_ref<Bar> Z) {
+    method void test();
+};
+
+method void Foo::test() {
+    X = True;
+    add Y["*"];
+    Z.a = 42;
+}
+
+}

@@ -1,0 +1,20 @@
+# @TEST-EXEC: echo "H4sIAOVzEV0CA/NIzcnJ11EILshMrlQEACp6Q+YNAAAA" | base64 -d | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+import spicy;
+
+public type X = unit {
+    b1: bytes &size=10;
+    b2: bytes &size=10;
+    b3: bytes &eod=10;
+    on %done {
+        local z: spicy::ZlibStream;
+        local out: bytes;
+        out += spicy::zlib_decompress(z, self.b1);
+        out += spicy::zlib_decompress(z, self.b2);
+        out += spicy::zlib_decompress(z, self.b3);
+        print(out);
+    }
+};

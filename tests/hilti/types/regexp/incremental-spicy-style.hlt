@@ -1,0 +1,38 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global auto re = /NixMatch{#43}/ | /1234ABCDEFGH*{#42}/ &nosub;
+global hilti::MatchState m = re.token_matcher();
+
+global stream data = b"12";
+global view<stream> v = data;
+
+function view<stream> feed(view<stream> x) {
+    local int<32> rc;
+    local iterator<stream> i;
+    local view<stream> y;
+
+    (rc, y) = m.advance(x);
+    hilti::print((x, "=>", rc, y));
+    return y;
+}
+
+v = feed(v);
+data += b"34AB";
+v = feed(v);
+v = feed(v);
+data += b"C";
+v = feed(v);
+data += b"";
+v = feed(v);
+data += b"D";
+data += b"E";
+data += b"FGHHH%%%";
+data.freeze();
+v = feed(v);
+
+}

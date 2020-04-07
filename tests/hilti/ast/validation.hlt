@@ -1,0 +1,36 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC-FAIL: ${HILTIC} -c %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+type T = bool;
+type U = void;
+
+global int<64> x;
+global int<65> y;
+global int<0> z;
+
+global void v;
+global T t;
+global U u;
+
+function bool f1() {
+    return;
+}
+
+function void f2() {
+    return 42;
+}
+
+function bool f3() {
+    local bool b;
+    local real d;
+
+    "1" == "2";
+    d = ("1" == "2");
+    b = ("1" == 2);
+}
+
+
+}

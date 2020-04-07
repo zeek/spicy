@@ -1,0 +1,9 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# Just basic functionality tests, more on the HILTI side.
+
+module Foo;
+
+print [i * 2 for i in [1, 2, 3]];
+assert [b.lower() for b in [b"A", b"B", b"C"]] == [b"a", b"b", b"c"];

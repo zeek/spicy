@@ -1,0 +1,11 @@
+# @TEST-EXEC:  echo 12345 | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+const RE = /[0-9]+/;
+
+public type test = unit {
+       a: RE &convert=$$.to_int()
+          { print self.a + 1; }
+};

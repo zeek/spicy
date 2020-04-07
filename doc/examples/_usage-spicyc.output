@@ -1,0 +1,30 @@
+# Automatically generated; do not edit. -- <HASH> spicyc -h//False
+Usage: spicyc [options] <inputs>
+
+Options controlling code generation:
+
+  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI exceptions.
+  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.
+  -C | --dump-code                Dump all generated code to disk for debugging.
+  -D | --compiler-debug <streams> Activate compile-time debugging output for given debug streams (comma-separated; 'help' for list).
+  -e | --output-all-dependencies  Output list of dependencies for all compiled modules.
+  -E | --output-code-dependencies Output list of dependencies for all compiled modules that require separate compilation of their own.
+  -K | --include-linker           With --output-c++, include HILTI linker glue code.
+  -L | --library-path <path>      Add path to list of directories to search when importing modules.
+  -O | --optimize                 Build optimized release version of generated code.
+  -P | --output-prototypes        Output C++ header with prototypes for public functionality.
+  -V | --skip-validation          Don't validate ASTs (for debugging only).
+  -c | --output-c++               Print out all generated C++ code (including linker glue by default).
+  -d | --debug                    Include debug instrumentation into generated code.
+  -j | --jit-code                 Fully compile all code, and then execute it unless --output-to gives a file to store it
+  -l | --output-linker            Print out only generated HILTI linker glue code.
+  -o | --output-to <path>         Path for saving output.
+  -p | --output-hilti             Just output parsed HILTI code again.
+  -R | --report-times             Report a break-down of compiler's execution time.
+  -S | --skip-dependencies        Do not automatically compile dependencies during JIT.
+  -T | --keep-tmps                Do not delete any temporary files created.
+  -v | --version                  Print version information.
+  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation (comma-separated; see 'help' for list).
+
+Inputs can be .hlt, .spicy, .cc/.cxx, *.hlto.
+

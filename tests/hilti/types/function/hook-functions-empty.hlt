@@ -1,0 +1,12 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+declare hook optional<string> f(string s);
+
+hilti::print(f("test"));
+
+}

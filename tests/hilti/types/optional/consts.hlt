@@ -1,0 +1,22 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+hilti::print(optional(1));
+hilti::print(optional(b"ABC"));
+
+global optional<bytes> X;
+
+X = optional(b"ABC");
+hilti::print(X);
+
+X = optional(b"");
+hilti::print(X);
+
+X = Null;
+hilti::print(X);
+
+}

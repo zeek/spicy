@@ -1,0 +1,18 @@
+# @TEST-EXEC:  printf '\001\002\003\004\005\001\002\003\004\005\001\002\003\004\005\001\002\003\004\005\264\222\004\000\264\222\004\000' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type test = unit {
+       sl: bytes &size=5 &convert=b"xx".to_int(spicy::ByteOrder::Little);
+       sb: bytes &size=5 &convert=$$.to_int(spicy::ByteOrder::Network);
+       ul: bytes &size=5 &convert=$$.to_uint(spicy::ByteOrder::Little);
+       ub: bytes &size=5 &convert=$$.to_uint(spicy::ByteOrder::Network);
+
+       a: uint32 &byte-order=spicy::ByteOrder::Little;
+       b: bytes &size=4 &convert=$$.to_uint(spicy::ByteOrder::Little);
+
+       on %done { print self; }
+};

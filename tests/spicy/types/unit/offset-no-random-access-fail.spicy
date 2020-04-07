@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06\x07\x08\x09' | spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    on %init   { print self.offset(); }
+    a: uint8;
+    on %done   { print self; }
+};

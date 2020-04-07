@@ -1,0 +1,6 @@
+== spicy-build
+HILTI runtime library version X.X.X [release build]
+Spicy runtime library version X.X.X [release build]
+== spicy-build -d
+HILTI runtime library version X.X.X [debug build]
+Spicy runtime library version X.X.X [debug build]

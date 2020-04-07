@@ -1,0 +1,45 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type T = struct {
+    uint<8> a;
+    uint<8> b;
+    uint<16> c;
+
+    method view<stream> parse(inout stream data);
+};
+
+method view<stream> T::parse(inout stream data) {
+    local view<stream> d = data;
+
+    if ( local auto x = unpack<uint<8>>(d, hilti::ByteOrder::Little) )
+        (self.a, d) = *x;
+    else
+        return d;
+
+    if ( local auto x = unpack<uint<8>>(d, hilti::ByteOrder::Little) )
+        (self.b, d) = *x;
+    else
+        return d;
+
+    if ( local auto x = unpack<uint<16>>(d, hilti::ByteOrder::Little) )
+        (self.c, d) = *x;
+    else
+        return d;
+
+    return d;
+}
+
+global T f;
+global view<stream> rest;
+global stream s = stream(b"\x01\x02\x03\x04<tail>");
+
+rest = f.parse(s);
+hilti::print("Parsed: %s" % f);
+hilti::print("Data left: %s" % rest);
+
+}

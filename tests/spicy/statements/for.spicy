@@ -1,0 +1,26 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+for ( i in [1,2,3] )
+    print i;
+
+local v = [1,2,3];
+
+for ( i in v ) {
+    print i;
+}
+
+for ( i in [] )
+    print i;
+
+for ( i in [1,2,3, 4, 5] ) {
+    if ( i == 2 )
+        continue;
+
+    print i;
+
+    if ( i == 4 )
+        break;
+}

@@ -1,0 +1,4 @@
+# @TEST-EXEC:  cat %DIR/reply-eod.dat | spicy-driver %DIR/common.spicy -p HTTP::Replies >>output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-GROUP: spicy-core

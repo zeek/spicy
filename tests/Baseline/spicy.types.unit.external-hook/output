@@ -1,0 +1,5 @@
+567890
+A
+A-module-global, [$a=b"1234", $b=(not set), $c=(not set)]
+A-unit-global, [$a=b"1234", $b=(not set), $c=(not set)]
+[$a=b"1234", $b=b"567890", $c=b"abcdef"]

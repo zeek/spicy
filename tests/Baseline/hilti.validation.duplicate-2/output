@@ -1,0 +1,2 @@
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.duplicate-2/duplicate.hlt:5-6: redefinition of 'f' defined in /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.duplicate-2/duplicate.hlt:2-5
+[error] hiltic: aborting after errors

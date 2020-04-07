@@ -1,0 +1,9 @@
+#! /bin/sh
+
+. $(dirname $0)/cxx-common.sh
+
+cxx=$(${HILTI_CONFIG} --cxx)
+cxxflags=$(${HILTI_CONFIG} --cxxflags ${debug})
+ldflags=$(${HILTI_CONFIG} --ldflags ${debug})
+
+exec ${cxx} ${cxxflags} ${ldflags} $@

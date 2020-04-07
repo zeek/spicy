@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+global int<*> i;
+
+function void f(tuple<*> t) {
+    local int<*> j;
+}
+
+}

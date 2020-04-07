@@ -1,0 +1,19 @@
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC:      btest-diff output
+#
+# Test that we cannot write to a read-only parameters.
+
+module Mini;
+
+import spicy;
+
+type Bar = unit {
+    a: int32;
+};
+
+type Foo = unit(x: bool, y: Bar&) {
+    x: b"xxx" {
+        x = False;
+        y.a = 42;
+    }
+};

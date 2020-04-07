@@ -1,0 +1,31 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${HILTIC} -p -D ast-final %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+global real A = 3;
+global real B = -5;
+global stream C = b"X";
+global string D = "42";
+
+function bool x() {
+    return True;
+}
+
+function real y() {
+    return 1;
+}
+
+function view<stream> z() {
+    return C;
+}
+
+function void z2() {
+    return;
+}
+
+global tuple<real, int<32>, string> E = (1, 2, "xyz");
+
+
+}

@@ -1,0 +1,31 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+type X = enum {
+    A1 = 1,
+    A2
+};
+
+type Y = enum {
+    B1,
+    B2
+};
+
+type Z = struct {
+    X x1;
+    X x2 &optional;
+    Y y1 &optional &default=Y::B1;
+};
+
+global x: X = X::A1;
+global y: Y;
+global z: Z;
+
+print x;
+print y;
+print X::A1;
+print Y::B2;
+print Y::Undef;
+print z;

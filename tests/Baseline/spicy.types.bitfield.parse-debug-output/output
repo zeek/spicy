@@ -1,0 +1,5 @@
+[spicy] Mini::test
+[spicy]   a = 10
+[spicy]   b = 63
+[spicy]     x1 = 15
+[spicy]     x2 = Foo::A

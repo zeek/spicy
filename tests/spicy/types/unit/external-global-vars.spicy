@@ -1,0 +1,26 @@
+# @TEST-EXEC: echo 01234567890abcdef | spicy-driver -p test::Test %INPUT mini.spicy >output
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+import Mini;
+
+public type Test = unit {
+	a: bytes &size = 1;
+	b: Mini::Foo;
+
+	on %done { print self; }
+};
+
+### @TEST-START-FILE mini.spicy
+
+module Mini;
+
+global mini_here_i_am = True;
+
+public type Foo = unit {
+	a: bytes &size=4;
+	b: bytes &size=6 if ( mini_here_i_am );
+};
+
+### @TEST-END-FILE

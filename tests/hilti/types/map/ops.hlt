@@ -1,0 +1,74 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+global map<int<64>, bytes> m1 = map(1: b"AAA", 2: b"BBB", 3: b"CCC");
+global map<bytes, bool> m2;
+
+hilti::print(m1);
+hilti::print(m2);
+hilti::print(m1[2]);
+
+assert 1 in m1;
+assert !( 5 in m1);
+m1[5] = b"FFF";
+assert 5 in m1;
+assert m1[5] == b"FFF";
+delete m1[5];
+assert !( 5 in m1);
+
+assert m1[2] == b"BBB";
+m1[2] = b"XXX";
+assert m1[2] == b"XXX";
+
+m2[b"Test"] = True;
+assert m2.get(b"Test");
+assert m2.get(b"Test", False);
+assert ! (m2.get(b"Test2", False));
+assert-exception m2.get(b"Test2");
+
+global int<64> i1;
+global bytes b1;
+
+for ( x in m1 ) {
+    i1 += x[0];
+    b1 += x[1];
+}
+
+assert i1 == 6;
+assert b1 == b"AAAXXXCCC";
+
+global int<64> i2;
+global bytes b2;
+global iterator<map<int<64>, bytes>> y;
+
+y = begin(m1);
+while ( y != end(m1) ) {
+    i2 += (*y)[0];
+    b2 += (*y)[1];
+    ++y;
+}
+
+assert i2 == 6;
+assert b2 == b"AAAXXXCCC";
+
+global map<bytes, bytes> m3 = map(b"AA": b"L-A", b"BB": b"L-B", b"CC": b"L-C");
+
+global test1 = b"AA";
+global test2 = b"A";
+test2 += b"A";
+
+assert m3.get(test1, b"1 failed") == b"L-A";
+assert m3.get(test2, b"2 failed") == b"L-A";
+
+assert |m1| == 3;
+assert |m2| == 1;
+m1.clear();
+m2.clear();
+assert |m1| == 0;
+assert |m2| == 0;
+
+}

@@ -1,0 +1,17 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Foo {
+
+global real DBL_MAX = 0x1.fffffffffffffp+1023;
+global real DBL_MIN = 0x1p-1022;
+global real subnorm = 0x0.0000000000001p-1022;
+global real too_sml = 0x0.0000000000001p-1023;
+
+assert subnorm < DBL_MIN;
+
+}
+
+# TODO: These can produce unexpected results based on platform - strtod rounding mode?
+# assert too_sml == 0.;
+# global real too_big = 0x2p+1023;

@@ -1,0 +1,44 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT foo.hlt bar.hlt >output
+# @TEST-EXEC: btest-diff output
+
+@TEST-START-FILE foo.hlt
+
+module Foo {
+
+import hilti;
+
+public type E = exception;
+
+declare public hook void f1();
+
+public function hook void f1() { hilti::print("Foo: f1"); }
+
+}
+
+@TEST-END-FILE
+
+@TEST-START-FILE bar.hlt
+
+module Bar {
+
+import hilti;
+import Foo;
+
+function hook void Foo::f1() { hilti::print("Bar: f1"); throw Foo::E("Bar::f1"); }
+
+}
+
+@TEST-END-FILE
+
+module Test {
+
+import hilti;
+import Foo;
+
+try {
+    Foo::f1();
+} catch ( Foo::E e ) {
+    hilti::print(("Caught: ", e.description()));
+}
+
+}

@@ -1,0 +1,10 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${HILTIC} -c -D compiler -o test.cc %INPUT
+# @TEST-EXEC: ${HILTIC} -l -D compiler -o linker.cc test.cc
+# @TEST-EXEC: cxx-compile -c -o test.o test.cc
+# @TEST-EXEC: cxx-compile -c -o linker.o linker.cc
+# @TEST-EXEC: cxx-link -o a.out test.o linker.o
+# @TEST-EXEC: ./a.out >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {}

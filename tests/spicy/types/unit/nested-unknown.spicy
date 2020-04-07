@@ -1,0 +1,19 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: spicyc -c %INPUT
+
+module HTTP;
+
+public type Request = unit {
+    message: Message(False, True);
+};
+
+type Message = unit(body_default: bool, is_request: bool) {
+    headers:    (Header(self))[];
+};
+
+type Header = unit(msg: Message) {
+    name:    /[^:]*/;
+    :        /: */;
+    content: /[^\n]*/;
+    :        /\n/;
+};

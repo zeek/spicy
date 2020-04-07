@@ -1,0 +1,6 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+
+module Foo;
+
+assert 1 == (True ? 1 : 2);
+assert 2 == (False ? 1 : 2);

@@ -1,0 +1,99 @@
+#! /bin/sh
+#
+# Preprocess lib/spicy.spicy for including its content into the
+# documentation.
+
+awk -v "target=$1" -v "ns=$2" '
+    # Collect comments.
+    /^##/    { if ( comment == "" )
+                  comment = $0;
+              else
+                  comment "\n" $0;
+
+              gsub("^## *", "", comment);
+              next;
+            }
+
+    # Enums
+    /public type .* = enum { *$/ {
+        label=$3;
+
+        if ( target == "types" ) {
+            printf(".. _spicy_%s:\n\n", tolower(label));
+            printf(".. rubric:: ``%s::%s``\n\n", ns, label);
+            printf("%s\n\n", comment);
+            printf(".. spicy-code::\n\n");
+            printf("    type %s = {\n", $3);
+        }
+
+        comment = "";
+        next;
+        }
+
+    label != "" && /^ *}/ {
+        if ( target == "types" ) {
+            print "    };";
+            print "";
+        }
+
+        label = "";
+        next;
+        }
+
+    label != "" {
+        if ( target == "types" )
+            print "    " $0;
+        }
+
+    # Library types
+    /public type .* = __library_type/ {
+        if ( target == "types" ) {
+            printf(".. _spicy_%s:\n\n", tolower($3));
+            printf(".. rubric:: ``%s::%s``\n\n", ns, $3);
+            printf("%s\n\n", comment);
+        }
+
+        comment = "";
+        next;
+    }
+
+    # Units (for which we do not member currently; and at least for filters we also do not wany to)
+    /public type .* = unit/ {
+        if ( target == "types" ) {
+            printf(".. _spicy_%s:\n\n", tolower($3));
+            printf(".. rubric:: ``%s::%s``\n\n", ns, $3);
+            printf("%s\n\n::\n\n type %s = unit;\n\n", comment, $3);
+        }
+
+        comment = "";
+        next;
+    }
+
+    # Functions
+    /public function/ {
+        split($0, x, "[( ]+");
+        split($0, y, "[()]");
+        name = x[3];
+        args = y[2];
+        split(y[3], z, "[: ]+");
+        result = z[2];
+
+        if ( result ~ /void/ )
+            result = "";
+        else
+            result = " : " result;
+
+        if ( target == "functions" ) {
+            printf(".. _spicy_%s:\n\n", name);
+            printf(".. rubric:: ``function %s::%s(%s)%s``\n\n", ns, name, args, result);
+            printf("%s\n\n", comment);
+        }
+
+        comment = "";
+        next;
+    }
+
+    # Clear state for anything left over. */
+    /^public/ { comment = ""; }
+
+'

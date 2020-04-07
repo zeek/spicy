@@ -1,0 +1,3 @@
+Foo: f1
+Bar: f1
+("Caught: ", "Bar::f1")

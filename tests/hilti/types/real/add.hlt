@@ -1,0 +1,19 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Foo {
+
+import hilti;
+
+global real d = 4.21;
+d += 8.42;
+hilti::print(d);
+assert d == 4.21+8.42;
+
+d = -4.21;
+d += 8.42;
+hilti::print(d);
+
+assert d == -4.21+8.42;
+
+}

@@ -1,0 +1,3 @@
+# Automatically generated; do not edit. -- <HASH> spicy-driver -p Test::Foo %INPUT </dev/null/spicy-driver -p Test::Foo %INPUT </dev/null/False
+# spicy-driver -p Test::Foo foo.spicy </dev/null
+0123456789

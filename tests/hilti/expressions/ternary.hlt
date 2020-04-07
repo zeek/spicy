@@ -1,0 +1,16 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+local auto s1 = "S1";
+local auto s2 = "S2";
+local auto t = True;
+local auto f = False;
+
+assert 1 == (True ? 1 : 2);
+assert 2 == (False ? 1 : 2);
+assert "S1" == (t ? s1 : s2);
+assert "S2" == (f ? s1 : s2);
+
+}

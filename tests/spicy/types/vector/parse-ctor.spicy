@@ -1,0 +1,16 @@
+# @TEST-EXEC:  printf 'XXXXXXXXXXXX' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module HTTP;
+
+const LINE = b"XXX";
+const DASHES = b"---";
+
+public type Test = unit {
+    on %init { print self; }
+
+    lines1: b"XXX"[2] foreach { print "item1: %s" % $$; }
+    lines2: LINE[2]   foreach { print "item2: %s" % $$; }
+
+    on %done { print self; }
+    };

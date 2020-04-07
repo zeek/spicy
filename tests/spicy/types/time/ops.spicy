@@ -1,0 +1,16 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# Just basic functionality tests, more on the HILTI side.
+
+module Test;
+
+import spicy;
+
+global t1 = time(1295415110.5);
+global i = interval(3599.5);
+global i2 = interval(-110.5);
+
+print t1;
+assert t1.seconds() == 1295415110.5;
+assert t1.nanoseconds() == 1295415110.5 * 1e9;

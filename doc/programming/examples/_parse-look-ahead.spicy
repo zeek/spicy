@@ -1,0 +1,10 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+    data: uint8[];
+        : /EOD/;
+    x   : int8;
+
+    on %done { print self; }
+};

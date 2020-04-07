@@ -1,0 +1,111 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <hilti/ast/operators/common.h>
+#include <hilti/ast/types/bool.h>
+#include <hilti/ast/types/integer.h>
+#include <hilti/ast/types/real.h>
+#include <hilti/ast/types/string.h>
+#include <hilti/ast/types/type.h>
+#include <hilti/base/logger.h>
+
+namespace hilti {
+namespace operator_ {
+
+namespace detail {
+inline static auto widestTypeSigned() {
+    return [=](const std::vector<Expression>& orig_ops,
+               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+        if ( orig_ops.empty() && resolved_ops.empty() )
+            return type::DocOnly("uint<*>");
+
+        int w1 = 0;
+        int w2 = 0;
+
+        if ( auto t = orig_ops[0].type().tryAs<type::SignedInteger>() )
+            w1 = t->width();
+        else if ( auto t = orig_ops[0].type().tryAs<type::UnsignedInteger>() )
+            w1 = t->width();
+
+        if ( auto t = orig_ops[1].type().tryAs<type::SignedInteger>() )
+            w2 = t->width();
+        else if ( auto t = orig_ops[1].type().tryAs<type::UnsignedInteger>() )
+            w2 = t->width();
+
+        if ( ! (w1 && w2) )
+            return {};
+
+        const bool is_ctor1 = orig_ops[0].isA<expression::Ctor>();
+        const bool is_ctor2 = orig_ops[1].isA<expression::Ctor>();
+
+        if ( is_ctor1 && ! is_ctor2 )
+            return type::SignedInteger(w2);
+
+        if ( is_ctor2 && ! is_ctor1 )
+            return type::SignedInteger(w1);
+
+        return type::SignedInteger(std::max(w1, w2));
+    };
+}
+} // namespace detail
+
+STANDARD_OPERATOR_1(signed_integer, DecrPostfix, operator_::sameTypeAs(0, "int"), type::SignedInteger(type::Wildcard()),
+                    "Decrements the value, returning the old value.");
+STANDARD_OPERATOR_1(signed_integer, DecrPrefix, operator_::sameTypeAs(0, "int"), type::SignedInteger(type::Wildcard()),
+                    "Increments the value, returning the new value.");
+STANDARD_OPERATOR_1(signed_integer, IncrPostfix, operator_::sameTypeAs(0, "int"), type::SignedInteger(type::Wildcard()),
+                    "Increments the value, returning the old value.");
+STANDARD_OPERATOR_1(signed_integer, IncrPrefix, operator_::sameTypeAs(0, "int"), type::SignedInteger(type::Wildcard()),
+                    "Increments the value, returning the new value.");
+STANDARD_OPERATOR_1(signed_integer, SignNeg, operator_::sameTypeAs(0, "int"), type::SignedInteger(type::Wildcard()),
+                    "Inverts the sign of the integer.");
+STANDARD_OPERATOR_2(signed_integer, Difference, detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    detail::widestTypeSigned(), "Returns the difference between the two integers.");
+STANDARD_OPERATOR_2(signed_integer, DifferenceAssign, operator_::sameTypeAs(0, "int"),
+                    type::SignedInteger(type::Wildcard()), operator_::sameTypeAs(0, "int"),
+                    "Decrements the first value by the second, assigning the new value.");
+STANDARD_OPERATOR_2(signed_integer, Division, detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    detail::widestTypeSigned(), "Divides the first integer by the second.");
+STANDARD_OPERATOR_2(signed_integer, DivisionAssign, operator_::sameTypeAs(0, "int"),
+                    type::SignedInteger(type::Wildcard()), operator_::sameTypeAs(0, "int"),
+                    "Dividies the first value by the second, assigning the new value.");
+STANDARD_OPERATOR_2(signed_integer, Equal, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    "Compares the two integers.");
+STANDARD_OPERATOR_2(signed_integer, Greater, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    "Compares the two integers.");
+STANDARD_OPERATOR_2(signed_integer, GreaterEqual, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    "Compares the two integers.");
+STANDARD_OPERATOR_2(signed_integer, Lower, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    "Compares the two integers.");
+STANDARD_OPERATOR_2(signed_integer, LowerEqual, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    "Compares the two integers.");
+STANDARD_OPERATOR_2(signed_integer, Modulo, detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    detail::widestTypeSigned(), "Computes the modulus of the first integer divided by the second.");
+STANDARD_OPERATOR_2(signed_integer, Multiple, detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    detail::widestTypeSigned(), "Multiplies the first integer by the second.");
+STANDARD_OPERATOR_2(signed_integer, MultipleAssign, operator_::sameTypeAs(0, "int"),
+                    type::SignedInteger(type::Wildcard()), operator_::sameTypeAs(0, "int"),
+                    "Multiplies the first value by the second, assigning the new value.");
+STANDARD_OPERATOR_2(signed_integer, Power, detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    detail::widestTypeSigned(), "Computes the first integer raised to the power of the second.");
+STANDARD_OPERATOR_2(signed_integer, Sum, detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    detail::widestTypeSigned(), "Returns the sum of the integers.");
+STANDARD_OPERATOR_2(signed_integer, SumAssign, operator_::sameTypeAs(0, "int"), type::SignedInteger(type::Wildcard()),
+                    operator_::sameTypeAs(0, "int"),
+                    "Increments the first integer by the second, assigning the new value.");
+STANDARD_OPERATOR_2(signed_integer, Unequal, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),
+                    "Compares the two integers.");
+
+STANDARD_OPERATOR_2x(signed_integer, CastUnsigned, Cast, operator_::typedType(1, "uint<*>"),
+                     type::SignedInteger(type::Wildcard()), type::Type_(type::UnsignedInteger(type::Wildcard())),
+                     "Converts the value to an unsigned integer type, accepting any loss of information.");
+STANDARD_OPERATOR_2x(signed_integer, CastSigned, Cast, operator_::typedType(1, "int<*>"),
+                     type::SignedInteger(type::Wildcard()), type::Type_(type::SignedInteger(type::Wildcard())),
+                     "Converts the value to another signed integer type, accepting any loss of information.");
+STANDARD_OPERATOR_2x(signed_integer, CastReal, Cast, operator_::typedType(1, "real"),
+                     type::SignedInteger(type::Wildcard()), type::Type_(type::Real()),
+                     "Converts the value into a real, accepting any loss of information.");
+
+} // namespace operator_
+} // namespace hilti

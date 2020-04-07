@@ -1,0 +1,74 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+/**
+ * Interface for HILTI operators.
+ *
+ * Operators aren't AST nodes themselves. Instead, they generally *define* an
+ * operator that's available in HILTI. An operator can then instantiated with
+ * concrete operands to create a corresponding AST expression node.
+ */
+class Operator(trait::isOperator) {
+    /** Returns the operator's kind. */
+    hilti::operator_::Kind kind() const;
+
+    /**
+     * Returns a documentation string associated with the operatior. This
+     * goes into automatically generated HILTI reference documentation.
+     */
+    std::string doc() const;
+
+    /**
+     * Returns the internal namespace this operator is defined in. This is
+     * used for grouping operators in the auto-generated documentation.
+     */
+    std::string docNamespace() const;
+
+    /**
+     * Validates correctness of an instantiated version of this operator.
+     * This will be called as part of HILTI's AST validation process and
+     * should ensure that the operator's operands are valid.
+     *
+     * @param o instantiated operator expression
+     * @param p position of `o` in the AST being validated; can be used to derive further context about the usage
+     * @return false if the instantiation doesn't reflect a correct usage of the operator
+     */
+    void validate(const expression::ResolvedOperator& o, operator_::const_position_t p) const;
+
+    /**
+     * Returns the HILTI type that the operator yields when evaluated with a
+     * given set of operands.
+     *
+     * @param ops operands to use for deriving the result type; note that
+     * when auto-generating documentation, this vector will always be empty.
+     * Operators that require expressions to calculate their return type
+     * dynamically must catch getting an empty vector and return a
+     * type::DocOnly() instance in that case that provides a textual
+     * description for documentation.
+     *
+     * @return type when evaluated
+     *
+     */
+    Type result(const std::vector<Expression>& ops) const;
+
+    /** True if operator's result can be assigned to. */
+    bool isLhs() const;
+
+    /**
+     * Describes the operands that the operator accepts, such as their types
+     * and default values.
+     *
+     * @return
+     */
+    std::vector<hilti::operator_::Operand> operands() const;
+
+    /**
+     * Creates an expression representing this operator instantied with a
+     * given set of operands. The returned expression will typically be a
+     * `expression::ResolvedOperator`.
+     *
+     * @param ops operands to instantiate the operator with
+     * @param m meta information to associated with the instantiated expression
+     * @return new expression to integrate into AST
+     */
+    Expression instantiate(const std::vector<Expression>& operands, const Meta& m) const;
+};

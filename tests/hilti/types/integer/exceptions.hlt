@@ -1,0 +1,18 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Makes sure undefined integer operatios are caught
+
+module Foo {
+
+import hilti;
+
+global uint<8> i = 10;
+global uint<8> j = 255;
+global uint<8> k = 0;
+
+assert-exception i + j; # Overflow
+assert-exception i - j; # Underflow
+assert-exception k -= 5; # Underflow
+assert-exception i / k; # Division by zero
+}

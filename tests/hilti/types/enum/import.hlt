@@ -1,0 +1,28 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+import Bar;
+
+global Bar::X x = Bar::X::A2;
+global Bar::X y;
+
+hilti::print(Bar::X::A1);
+hilti::print(x);
+
+}
+
+@TEST-START-FILE bar.hlt
+
+module Bar {
+
+public type X = enum {
+    A1 = 1,
+    A2
+};
+
+}
+
+@TEST-END-FILE

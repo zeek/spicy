@@ -1,0 +1,6 @@
+[$lines1=(not set), $lines2=(not set)]
+item1: XXX
+item1: XXX
+item2: XXX
+item2: XXX
+[$lines1=[b"XXX", b"XXX"], $lines2=[b"XXX", b"XXX"]]

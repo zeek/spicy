@@ -1,0 +1,18 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# Just basic functionality tests, more on the HILTI side.
+
+module Test;
+
+import spicy;
+
+global s0: set<string> = ["A", "B"];
+global s1: set<int64> = set(1, 2, 3);
+
+print s0;
+print s1;
+
+assert 2 in s1;
+add s1[4];
+assert 4 in s1;

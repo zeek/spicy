@@ -1,0 +1,19 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# Basic functionality tests for Spicy. HILTI provides the main tests for the type.
+
+module Test;
+
+global x = "Spicy";
+global y = "Spïcy";
+global z = "Sp\x69cy";
+
+print(x,y,z);
+
+assert x == z;
+assert x != y;
+assert y == "Sp\u00efcy";
+assert "a" + "b" == "ab";
+assert "|%s|" % "Spicy" == "|Spicy|";
+assert "|%s%s|" % ("Spi", "cy") == "|Spicy|";

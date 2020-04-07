@@ -1,0 +1,73 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global int<64> catches = 0;
+
+type E1 = exception;
+type E2 = exception : E1;
+type E3 = exception : E1;
+
+try {
+    throw E1("e1");
+    assert False;
+} catch {
+    catches++;
+    assert True;
+}
+
+##
+
+try {
+    throw E1("e1");
+    assert False;
+} catch ( E1 e ) {
+    catches++;
+    assert e.description() == "e1";
+}
+
+##
+
+try {
+    throw E2("e2");
+    assert False;
+} catch ( E1 e ) {
+    catches++;
+    assert e.description() == "e2";
+}
+
+##
+
+try {
+    try {
+        throw E1("e1");
+        assert False;
+    } catch {
+        catches++;
+        throw;
+    }
+} catch {
+    catches++;
+}
+
+##
+
+try {
+    try {
+        throw E1("e1");
+        assert False;
+    } catch ( E1 e ) {
+        catches++;
+        throw e;
+    }
+} catch ( E1 e ) {
+    assert e.description() == "e1";
+    catches++;
+}
+
+assert catches == 7;
+
+}

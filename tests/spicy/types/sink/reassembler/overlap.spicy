@@ -1,0 +1,72 @@
+# @TEST-EXEC: spicy-driver -p Mini::Main %INPUT >output </dev/null
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type Main = unit {
+
+    sink data;
+
+    on %init {
+        self.data.connect(new Sub);
+        self.data.write(b"123", 1);
+        self.data.write(b"AB456", 2);
+        self.data.write(b"789", 7);
+        self.data.write(b"0", 0);
+        self.data.close();
+
+        print "";
+
+        self.data.connect(new Sub);
+        self.data.write(b"123", 1);
+        self.data.write(b"ABC", 1);
+        self.data.write(b"456", 4);
+        self.data.write(b"789", 7);
+        self.data.write(b"0", 0);
+        self.data.close();
+
+        print "";
+
+        self.data.connect(new Sub);
+        self.data.write(b"123", 1);
+        self.data.write(b"ABCD", 1);
+        self.data.write(b"456", 4);
+        self.data.write(b"789", 7);
+        self.data.write(b"0", 0);
+        self.data.close();
+
+        print "";
+
+        self.data.connect(new Sub);
+        self.data.write(b"23", 2);
+        self.data.write(b"12AB", 1);
+        self.data.write(b"56", 5);
+        self.data.write(b"0", 0);
+        self.data.close();
+    }
+};
+
+public type Sub = unit {
+    s: bytes &eod;
+
+    on %done {
+        print self.s;
+    }
+
+    on %gap(seq: uint64, len: uint64)  {
+        print "Gap at input position %u, length %u" % (seq, len);
+        }
+
+    on %skipped(seq: uint64){
+        print "Skipped to position %u" % seq;
+        }
+
+    on %undelivered(seq: uint64, data: bytes) {
+        print "Undelivered data at position %u: %s" % (seq, data);
+        }
+
+    # Intentionally using custom parameter names here
+    on %overlap(seq: uint64, b1: bytes, b2: bytes) {
+        print "Overlap at %u: %s vs %s" % (seq, b1, b2);
+        }
+};

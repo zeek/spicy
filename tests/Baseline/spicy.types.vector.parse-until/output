@@ -1,0 +1,6 @@
+[$line=b"AAA\n"]
+[$line=b"BBB\n"]
+[$line=b"CCC\n"]
+[$line=b"DDD\n"]
+[$line=b"EEEE\n"]
+[$lines=[[$line=b"AAA\n"], [$line=b"BBB\n"], [$line=b"CCC\n"], [$line=b"DDD\n"], [$line=b"EEEE\n"]], $last=b"FFF\n"]

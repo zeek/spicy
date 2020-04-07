@@ -1,0 +1,14 @@
+Main:init, 0
+Sub:init, 0
+Sub:x, 0
+Sub:y, 2
+Main:Sub, 0
+Sub:init, 0
+Sub:x, 0
+Sub:y, 2
+Main:Sub, 3
+Sub:init, 0
+Sub:x, 0
+Sub:y, 2
+Main:Sub, 6
+Main:done, 6

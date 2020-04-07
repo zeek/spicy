@@ -1,0 +1,46 @@
+// Begin of Foo (from "/home/robin/work/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt")
+// Compiled by HILTI version 0.3.0-branch
+
+#include <hilti/rt/compiler-setup.h>
+
+#include <hilti/rt/libhilti.h>
+
+namespace __hlt::Foo {
+    extern void __register_module();
+    extern auto test(const std::string& x) -> std::string;
+}
+
+namespace hlt::Foo {
+    extern auto test(const std::string& x) -> hilti::rt::Resumable;
+}
+
+HILTI_PRE_INIT(__hlt::Foo::__register_module)
+
+extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", nullptr, nullptr, nullptr}); }
+
+extern auto __hlt::Foo::test(const std::string& x) -> std::string {
+    hilti::rt::print(std::string("HILTI - 1 - argument: "), false);
+    hilti::rt::print(x, true);
+    hilti::rt::detail::yield();
+    hilti::rt::print(std::string("HILTI - 2"), true);
+    hilti::rt::detail::yield();
+    hilti::rt::print(std::string("HILTI - 3"), true);
+    hilti::rt::detail::yield();
+    hilti::rt::print(std::string("HILTI - Done"), true);
+    return std::string("test-result");
+}
+
+extern auto hlt::Foo::test(const std::string& x) -> hilti::rt::Resumable {
+    auto cb = [&](hilti::rt::resumable::Handle* r) -> std::any {
+        return __hlt::Foo::test(x);
+    };
+
+    hilti::rt::Resumable r = {std::move(cb)};
+    r.run();
+    return r;
+}
+
+/* __HILTI_LINKER_V1__
+{"module":"Foo","namespace":"__hlt::Foo","path":"/home/robin/work/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt","version":1}
+*/
+

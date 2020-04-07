@@ -1,0 +1,15 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <string>
+
+#cmakedefine CXX_FILESYSTEM_IS_EXPERIMENTAL
+#define CXX_FILESYSTEM_HEADER "@CXX_FILESYSTEM_HEADER@"
+
+#cmakedefine HILTI_HAVE_BACKTRACE
+#ifdef HILTI_HAVE_BACKTRACE
+#include <${Backtrace_HEADER}>
+#endif
+
+#cmakedefine HILTI_HAVE_SANITIZER

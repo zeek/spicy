@@ -1,0 +1,3 @@
+[$a=b"A", $len=2, $dnets=[3, 4], $x=(not set), $b=b"\x05"]
+x, [$a=b"B", $len=2, $dnets=(not set), $x=3, $b=(not set)]
+[$a=b"B", $len=2, $dnets=[4], $x=3, $b=b"\x05"]

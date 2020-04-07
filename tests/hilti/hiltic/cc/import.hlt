@@ -1,0 +1,46 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${HILTIC} -c -D compiler -o foo.cc foo.hlt
+# @TEST-EXEC: ${HILTIC} -c -D compiler -o bar.cc bar.hlt
+# @TEST-EXEC: ${HILTIC} -l -D compiler -o linker.cc foo.cc bar.cc
+# @TEST-EXEC: cxx-compile -c -o foo.o foo.cc
+# @TEST-EXEC: cxx-compile -c -o bar.o bar.cc
+# @TEST-EXEC: cxx-compile -c -o linker.o linker.cc
+# @TEST-EXEC: cxx-link -o a.out foo.o bar.o linker.o
+# @TEST-EXEC: ./a.out >output
+# @TEST-EXEC: btest-diff output
+
+@TEST-START-FILE foo.hlt
+
+module Foo {
+
+import Bar;
+
+import hilti;
+
+public global string foo = "Foo!";
+
+hilti::print("Hello, world!");
+hilti::print(foo);
+hilti::print(Bar::bar);
+
+}
+
+@TEST-END-FILE
+
+@TEST-START-FILE bar.hlt
+
+module Bar {
+
+import Foo;
+
+import hilti;
+
+public global string bar = "Bar!";
+
+hilti::print("Hello, world!");
+hilti::print(Foo::foo);
+hilti::print(bar);
+
+}
+
+@TEST-END-FILE

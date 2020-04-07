@@ -1,0 +1,4 @@
+# @TEST-EXEC: ${HILTIC} -j -D compiler,jit %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {}

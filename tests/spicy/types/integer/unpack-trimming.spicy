@@ -1,0 +1,15 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x01\00\x02\00\x03\00\x04' | HILTI_DEBUG=spicy-driver spicy-driver -d -i 2 %INPUT 2>debug.log
+# @TEST-EXEC: cat debug.log | grep " input :" | sed -r 's/[a-z_-]+=/\n&/g' | grep offset | cut -d = -f 2 | awk '{print $1}' | sort | uniq -c | awk '$1 != 2 { exit 1; }'
+#
+# Checks that after each 2-byte input chunk the stream offsets are fully
+# advanced (i.e., any processed data is trimmed off). In the output that menas
+# that offset-head and offset-tail match each time.
+
+module Test;
+
+public type X = unit {
+    a: uint16;
+    b: uint16;
+    c: uint16;
+    d: uint16;
+};

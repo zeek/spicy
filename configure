@@ -1,0 +1,192 @@
+#! /bin/sh
+#
+# Convenience wrapper for easily viewing/setting options that
+# the project's CMake scripts will recognize
+#
+# Adapted from Zeek's wrapper.
+
+# Defaults
+cmake_bison_root=""
+cmake_build_directory="build"
+cmake_build_shared_libs="yes"
+cmake_build_type="RelWithDebInfo"
+cmake_clang_root=""
+cmake_c_compiler=""
+cmake_cxx_compiler=""
+cmake_c_system_include_dirs=""
+cmake_cxx_system_include_dirs=""
+cmake_clang_resource_dir=""
+cmake_flex_root=""
+cmake_generator=""
+cmake_hilti_have_jit="yes"
+cmake_install_prefix="/usr/local"
+cmake_llvm_root=""
+cmake_use_ccache="no"
+cmake_use_gold="yes"
+cmake_use_sanitizers=""
+cmake_use_werror="false"
+cmake_zeek_root_dir="/usr/local/zeek"
+
+display_cmake=0
+cache_entries=""
+
+set -e
+command="$0 $*"
+
+cmake_exe="<no cmake>"
+for i in cmake cmake3; do
+    if command -v $i >/dev/null; then
+        $i --version | grep -q "cmake.*version 3" && cmake_exe=$(which $i)
+        break
+    fi
+done
+
+type ${cmake_exe} > /dev/null 2>&1 || {
+    echo "\
+This package requires CMake, please install it first, then you may
+use this configure script to access CMake equivalent functionality.\
+" >&2;
+    exit 1;
+}
+
+usage="\
+Usage: $0 [OPTION]... [VAR=VALUE]...
+
+  Build Options:
+    --build-static-libs                Build static libraries instead [default: shared]
+    --build-dir=DIR                    Place build files in directory [default: ${cmake_build_directory}]
+    --build-type=TYPE                  Set build type (Debug,Release,RelWithDebInfo) [default: ${cmake_build_type}]
+    --disable-jit                      Do not compile in support for JIT compilation
+    --disable-gold                     On Linux, do not try to use the gold linker
+    --enable-ccache                    Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
+    --enable-debug                     Compile debug version (same as --build-type=Debug) [default: off]
+    --enable-sanitizer[=<names>]       Enable sanitizer(s), default if not further specified is \"address\"
+    --enable-werror                    Treat compiler warnings as errors [default: ${cmake_use_werror}]
+    --generator=<generator>            CMake generator to use (see cmake --help)
+    --prefix=PATH                      Installation prefix [default: ${cmake_install_prefix}]
+    --with-bison=<prefix>              Set prefix of Bison installation
+    --with-clang-root=<prefix>         Set prefix of Clang installation
+    --with-c-compiler=<path>           Set C compiler to use
+    --with-cxx-compiler=<path>         Set C++ compiler to use
+    --with-flex=<prefix>               Set prefix of Flex installation
+    --with-libc-include-dirs=<path>    Set additional include directories for C library headers during JIT (separate with colons)
+    --with-libcxx-include-dirs=<path>  Set additional include directories for C++ library headers during JIT (separate with colons)
+    --with-clang-resource-dir=<path>   Set resource directory to use with clang during JIT
+    --with-llvm-root=<prefix>          Set prefix of LLVM installation
+    --with-zeek=PATH                   Path to Zeek installation [default: ${cmake_zeek_root_dir}]
+
+    --display-cmake                    Don't create build configuration, just output final CMake invocation
+"
+source_dir="$(cd "$(dirname "$0")" && pwd)"
+
+# Function to append a CMake cache entry definition to the
+# cmake_cache_entries variable.
+#   $1 is the cache entry variable name
+#   $2 is the cache entry variable type
+#   $3 is the cache entry variable value
+append_cache_entry () {
+    if [ "$3" != "" ]; then
+        cmake_cache_entries="${cmake_cache_entries} -D $1:$2=$3"
+    fi
+}
+
+# parse arguments
+while [ $# -ne 0 ]; do
+    case "$1" in
+        -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+        *) optarg= ;;
+    esac
+
+    case "$1" in
+        --build-static-libs)               cmake_build_shared_libs="false";;
+        --build-dir=*|--builddir=*)        cmake_build_directory="${optarg}";;
+        --build-type=*)                    cmake_build_type="${optarg}";;
+        --disable-jit)                     cmake_hilti_have_jit="no";;
+        --disable-gold)                    cmake_use_gold="no";;
+        --enable-ccache)                   cmake_use_ccache="yes";;
+        --enable-debug)                    cmake_build_type="Debug";;
+        --enable-sanitizer)                cmake_use_sanitizers="address";;
+        --enable-sanitizer=*)              cmake_use_sanitizers="${optargs}";;
+        --enable-werror)                   cmake_use_werror="yes";;
+        --disable-jit)                     cmake_hilti_have_jit="no";;
+        --generator=*)                     cmake_generator="${optarg}";;
+        --prefix=*)                        cmake_install_prefix="${optarg}";;
+        --with-clang-root=*)               cmake_clang_root="${optarg}";;
+        --with-c-compiler=*)               cmake_c_compiler="${optarg}";;
+        --with-cxx-compiler=*)
+            cmake_cxx_compiler="${optarg}"
+
+            if [ -z "${cmake_c_compiler}" ]; then
+              try_c_compiler=$(echo "${cmake_cxx_compiler}" | sed 's/++//g')
+              command -v "${try_c_compiler}" >/dev/null && cmake_c_compiler="${try_c_compiler}"
+            fi
+            ;;
+
+        --with-c-system-include-dirs=*)    cmake_c_system_include_dirs="${optarg}";;
+        --with-cxx-system-include-dirs=*)  cmake_cxx_system_include_dirs="${optarg}";;
+        --with-clang-resource-dir=*)       cmake_clang_resource_dir="${optarg}";;
+        --with-flex=*)                     cmake_flex_root="${optarg}";;
+        --with-bison=*)                    cmake_bison_root="${optarg}";;
+        --with-llvm-root=*)                cmake_llvm_root="${optarg}";;
+        --with-zeek=*)                     cmake_zeek_root_dir="${optarg}";;
+        --without-bison=*)                 cmake_bison_root="";;
+        --without-clang-root=*)            cmake_clang_root=""; cmake_hilti_have_jit="no";;
+        --without-flex=*)                  cmake_flex_root="";;
+        --without-llvm-root=*)             cmake_llvm_root=""; cmake_hilti_have_jit="no";;
+        --without-zeek)                    cmake_zeek_root_dir="";;
+
+        --display-cmake) display_cmake=1;;
+
+        --help|-h) echo "${usage}" 1>&2 && exit 1;;
+        *) echo "Invalid option '$1'.  Try $0 --help to see available options." && exit 1;;
+    esac
+    shift
+done
+
+# Set CMake cache options.
+append_cache_entry BISON_ROOT                   PATH   "${cmake_bison_root}"
+append_cache_entry BUILD_SHARED_LIBS            BOOL   "${cmake_build_shared_libs}"
+append_cache_entry CLANG_ROOT                   PATH   "${cmake_clang_root}"
+append_cache_entry CMAKE_BUILD_TYPE             STRING "${cmake_build_type}"
+append_cache_entry CMAKE_C_COMPILER             PATH   "${cmake_c_compiler}"
+append_cache_entry CMAKE_CXX_COMPILER           PATH   "${cmake_cxx_compiler}"
+append_cache_entry CLANG_RESOURCE_DIR           PATH   "${cmake_clang_resource_dir}"
+append_cache_entry C_SYSTEM_INCLUDE_DIRS        PATH   "${cmake_c_system_include_dirs}"
+append_cache_entry CXX_SYSTEM_INCLUDE_DIRS      PATH   "${cmake_cxx_system_include_dirs}"
+append_cache_entry CMAKE_INSTALL_PREFIX         PATH   "${cmake_install_prefix}"
+append_cache_entry FLEX_ROOT                    PATH   "${cmake_flex_root}"
+append_cache_entry HILTI_HAVE_JIT               BOOL   "${cmake_hilti_have_jit}"
+append_cache_entry LLVM_ROOT                    PATH   "${cmake_llvm_root}"
+append_cache_entry USE_CCACHE                   BOOL   "${cmake_use_ccache}"
+append_cache_entry USE_GOLD                     BOOL   "${cmake_use_gold}"
+append_cache_entry USE_SANITIZERS               STRING "${cmake_use_sanitizers}"
+append_cache_entry USE_WERROR                   BOOL   "${cmake_use_werror}"
+append_cache_entry ZEEK_ROOT_DIR                PATH   "${cmake_zeek_root_dir}"
+
+if [ -n "${cmake_generator}" ]; then
+    cmake="${cmake_exe} -G '${cmake_generator}' ${cmake_cache_entries} ${source_dir}"
+else
+    cmake="${cmake_exe} ${cmake_cache_entries} ${source_dir}"
+fi
+
+if [ "${display_cmake}" = 1 ]; then
+    echo "${cmake}"
+    exit 0
+fi
+
+if [ ! -d ${cmake_build_directory} ]; then
+    # Create build directory
+    mkdir -p ${cmake_build_directory}
+else
+    # If build directory already exists, remove any pre-existing
+    # CMake cache so that this configuration is not tainted by a
+    # previous one
+    rm -f ${cmake_build_directory}/CMakeCache.txt
+fi
+
+cd ${cmake_build_directory}
+eval ${cmake} 2>&1 | tee config.log
+
+echo "# This is the command used to configure this build" > config.status
+echo ${command} >> config.status
+chmod u+x config.status

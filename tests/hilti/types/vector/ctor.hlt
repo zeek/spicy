@@ -1,0 +1,35 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# Note: The list constructor '[..]' coerces to vector.
+module Foo {
+
+import hilti;
+
+global auto x1 = vector();
+global auto x2 = vector(1);
+global auto x3 = vector(1, 2, 3);
+global auto x4 = vector("s1", "s2");
+global auto x5 = vector([1,2], [3,4], [4,5]);
+global auto x6 = vector(vector(1,2), vector(3,4), vector(4,5));
+
+global vector<uint<16>> l1 = [1];
+global vector<int<32>> l2 = [];
+global vector<int<32>> l3 = [1];
+global vector<string> l4 = ["s1", "s2"];
+global vector<vector<uint<16>>> l5 = [[1,2], [3,4], [4,5]];
+
+hilti::print(x1);
+hilti::print(x2);
+hilti::print(x3);
+hilti::print(x4);
+hilti::print(x5);
+hilti::print(x6);
+
+hilti::print(l1);
+hilti::print(l2);
+hilti::print(l3);
+hilti::print(l4);
+hilti::print(l5);
+
+}

@@ -1,0 +1,4 @@
+[$f=(not set), $x="original"]
+[$x=b"xxx"]
+[$f=[$x=b"xxx"], $x="original"]
+[$f=[$x=b"xxx"], $x="modified"]

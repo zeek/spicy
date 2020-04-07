@@ -1,0 +1,12 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x01\x02\x03\x04'  | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Test;
+
+    public type Foo = unit {
+        x: bytes &size=2;
+        y: uint16 &parse-from=self.x;
+        z: bytes &size=2;
+
+        on %done { print self; }
+    };

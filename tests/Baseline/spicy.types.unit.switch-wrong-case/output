@@ -1,0 +1,2 @@
+[error] /Users/robin/work/spicy/tests/.tmp/spicy.types.unit.switch-wrong-case/switch-wrong-case.spicy:13: cannot resolve operator: <const bytes> == <uint<64>>
+[error] spicyc: aborting after errors

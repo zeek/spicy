@@ -1,0 +1,19 @@
+#! /bin/sh
+
+base=$(cd $(dirname $0) && pwd)
+
+if [ -n "${SPICY_INSTALLATION_DIRECTORY}" ]; then
+    PREFIX=${SPICY_INSTALLATION_DIRECTORY}
+else
+    SPICY_BUILD_DIRECTORY=$(${base}/build-directory)
+    test -z "${SPICY_BUILD_DIRECTORY}" || PREFIX=$(${SPICY_BUILD_DIRECTORY}/bin/hilti-config --prefix)
+fi
+
+PATH=${PREFIX}/bin:${PATH}
+
+if ! which hilti-config >/dev/null 2>&1; then
+    echo "No build directory; to run installation tests without build directory available set SPICY_INSTALLATION_DIRECTORY" >&2
+    exit 1
+fi
+
+exec $@

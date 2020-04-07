@@ -1,0 +1,34 @@
+FROM ubuntu:19.10
+
+WORKDIR /root
+
+ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
+ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy/"
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update
+
+# Install development tools.
+RUN apt-get install -y ccache curl g++ gcc gdb git locales-all make ninja-build python3 python3-pip vim
+
+  # Need a more recent CMake than available.
+RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - && ln -s /usr/local/cmake-3.16.4-Linux-x86_64/bin/cmake /usr/local/bin
+
+# Install Spicy dependencies.
+RUN apt-get install -y bison clang-9 flex libclang-9-dev python3-sphinx python3-sphinx-rtd-theme
+RUN pip3 install btest
+
+# Install Zeek dependencies.
+RUN apt-get install -y libpcap-dev libssl-dev python-dev swig zlib1g-dev
+
+# Install Zeek.
+RUN mkdir -p /opt/zeek/src
+RUN cd /opt/zeek && git clone -b release/3.0 --recursive https://github.com/zeek/zeek src
+RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd .. && rm -rf build
+
+# Install Spicy.
+ADD . /opt/spicy/src
+
+RUN cd /opt/spicy/src && \
+    ./configure --prefix=/opt/spicy --with-zeek=/opt/zeek --generator=Ninja && \
+    cd build && ninja install && cd .. && rm -rf build

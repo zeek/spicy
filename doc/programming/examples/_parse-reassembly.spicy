@@ -1,0 +1,20 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+
+    sink data;
+
+    on %init {
+        self.data.connect(new Bar);
+        self.data.write(b"567", 5);
+        self.data.write(b"89", 8);
+        self.data.write(b"012", 0);
+        self.data.write(b"34", 3);
+    }
+};
+
+public type Bar = unit {
+    s: bytes &eod;
+    on %done { print self.s; }
+};

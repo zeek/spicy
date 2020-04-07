@@ -1,0 +1,30 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+class Item(trait::isUnitItem) : hilti::trait::isNode {
+    /** Returns the type of the parsed unit item. */
+    Type itemType() const;
+
+    /** Returns true if the unit item is equivalent to another one. */
+    bool isEqual(const Item& other) const;
+
+    /** Implements the `Node` interface. */
+    hilti::node::Properties properties() const;
+
+    /** Implements the `Node` interface. */
+    const std::vector<hilti::Node>& childs() const;
+
+    /** Implements the `Node` interface. */
+    std::vector<hilti::Node>& childs();
+
+    /** Implements the `Node` interface. */
+    const Meta& meta() const;
+
+    /** Implements the `Node` interface. */
+    void setMeta(Meta m);
+
+    /** Implements the `Node` interface. */
+    const NodeRef& originalNode() const;
+
+    /** Implements the `Node` interface. */
+    void setOriginalNode(const NodeRef& n);
+};

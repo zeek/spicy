@@ -1,0 +1,3 @@
+[$a=b"1234", $t=(not set), $b=(not set)]
+Error test2, [$x=b"567\n", $y=(not set)]
+Error test1, [$a=b"1234", $t=[$x=b"567\n", $y=(not set)], $b=(not set)]

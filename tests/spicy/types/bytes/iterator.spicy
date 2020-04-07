@@ -1,0 +1,19 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# Basic functionality tests for Spicy. HILTI provides the main tests for the type.
+
+module Test;
+
+import spicy;
+
+global x = b"123";
+
+for ( i in x )
+    print i;
+
+global j: iterator<bytes> = begin(x);
+assert *j++ == '1';
+assert *j++ == '2';
+assert *j++ == '3';
+assert j == end(x);

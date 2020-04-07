@@ -1,0 +1,7 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o foo.hlto >> output 2>&1
+# @TEST-EXEC: spicy-driver -J foo.hlto >> output 2>&1 || true
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+print "Hello, world!";

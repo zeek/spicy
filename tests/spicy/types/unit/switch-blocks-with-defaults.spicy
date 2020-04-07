@@ -1,0 +1,40 @@
+# @TEST-EXEC:  echo 1234567890 | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+public type test = unit {
+
+       a: bytes &size=1;
+
+       switch ( self.a ) {
+           b"1" ->  {
+                       b: bytes &size=1 &default=b"nope_b";
+                       c: bytes &size=3 &default=b"nope_c";
+                    }
+           b"2" ->  {
+                       d: bytes &size=1 &default=b"nope_d";
+                       e: bytes &size=3 &default=b"nope_e";
+                    }
+
+           *    -> f: bytes &size=4 &default=b"nope_f";
+           };
+
+
+       on %done {
+          print self;
+
+          print self?.b ? self.b : b"noe_b";
+          print self?.c ? self.c : b"noe_c";
+          print self?.d ? self.d : b"noe_d";
+          print self?.e ? self.e : b"noe_e";
+          print self?.f ? self.f : b"noe_f";
+
+          print self.b;
+          print self.c;
+          print self.d;
+          print self.e;
+          print self.f;
+
+       }
+};

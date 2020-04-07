@@ -1,0 +1,20 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type A = unit {
+    on %init { self.b.connect(new B); }
+
+    length: uint8;
+    data: bytes &size=self.length { self.b.write($$); }
+
+    on %done { print "A", self; }
+
+    sink b;
+};
+
+public type B = unit {
+        : /GET /;
+    path: /[^\n]+/;
+
+    on %done { print "B", self; }
+};

@@ -1,0 +1,54 @@
+# @TEST-EXEC:  printf '1234567890abcde' | spicy-driver -p Mini::Main %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type Main = unit {
+    a: bytes &size=2;
+    b: bytes &size=5 -> self.data;
+    c: bytes &size=3;
+     : bytes &size=5 -> self.data;
+
+    sink data;
+
+    on %init {
+        self.data.connect_mime_type("application/foo");
+    }
+
+    on %done {
+        print "Main", self;
+    }
+};
+
+public type Sub = unit {
+    %mime-type = "application/foo";
+
+    s1: bytes &size=2;
+    s2: bytes &size=8;
+
+    on %done {
+        print "Sub ", self;
+    }
+};
+
+public type Sub2 = unit {
+    %mime-type = "application/bar";
+
+    s: bytes &eod;
+
+    on %done {
+        print "Sub2 ", self;
+    }
+};
+
+public type Sub3 = unit {
+    %mime-type = "application/*";
+
+    s: bytes &eod;
+
+    on %done {
+        print "Sub3 ", self;
+    }
+};

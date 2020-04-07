@@ -1,0 +1,26 @@
+[$b=True, $s1="Foo!", $s2="@", $i=21]
+[$b=True, $s1=(not set), $s2=(not set), $i=42]
+[$b=False, $s1=(not set), $s2=(not set), $i=42]
+--
+True
+Foo!
+@
+42
+.
+False
+--
+False
+--
+True
+False
+False
+True
+--
+True
+True
+True
+True
+--
+[$b=False, $s1="Foo!", $s2="@", $i=21]
+[$b=True, $s1=(not set), $s2=(not set), $i=42]
+[$b=False, $s1="x", $s2="y", $i=12]

@@ -1,0 +1,68 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global auto i1 = 0;
+global auto i2 = 0;
+global auto i3 = 0;
+global auto k1 = -5;
+global auto k2 = -5;
+
+function bool not_5(uint<64> i) {
+    if ( i == 5 )
+        return False;
+    else
+        return True;
+}
+
+function int<64> next_k1() {
+    k1 = k1 + 1;
+    return k1;
+}
+
+function int<64> next_k2() {
+    k2 = k2 + 1;
+    return k2;
+}
+
+function uint<64> next_i3() {
+    i3 = i3 + 1;
+    return i3;
+}
+
+while ( not_5(i1) ) {
+    hilti::print("1 - %u" % i1);
+    i1 = i1 + 1;
+    }
+
+while ( local auto j = 0; not_5(j) ) {
+    hilti::print("2 - %u" % j);
+    j = j + 1;
+    }
+
+while ( local auto x = next_k1() )
+    hilti::print("3 - %u" % x);
+
+while ( not_5(i2) ) {
+    hilti::print("4 - %u" % i2);
+    i2 = i2 + 1;
+    }
+else
+    hilti::print("4 - done - %u" % i2);
+
+while ( local auto x = next_i3(); not_5(i3) ) {
+    hilti::print("5 - %u" % x);
+    x = next_i3();
+    }
+else
+    hilti::print("5 - done - %u" % x);
+
+while ( local auto x = next_k2() )
+    hilti::print("6 - %u" % x);
+else
+    hilti::print("6 - done - %u" % x);
+
+}

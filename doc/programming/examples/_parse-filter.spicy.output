@@ -1,0 +1,3 @@
+# Automatically generated; do not edit. -- <HASH> printf 'aBcDe' | spicy-driver %INPUT/printf 'aBcDe' | spicy-driver %INPUT/False
+# printf 'aBcDe' | spicy-driver foo.spicy
+ABCDE

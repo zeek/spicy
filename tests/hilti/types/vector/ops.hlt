@@ -1,0 +1,66 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+local auto v = vector("a", "b", "c");
+
+assert v == ["a", "b", "c"];
+assert v != [];
+assert |v| == 3;
+assert v[1] == "b";
+assert v[1] != "X";
+
+v[5] = "e";
+assert v[5] == "e";
+assert v[4] == "";
+assert-exception hilti::print(v[100]); # Need to use the result to trigger exeception;
+
+v.push_back("f");
+v.push_back("g");
+assert |v| == 8;
+assert v[6] == "f";
+assert v[7] == "g";
+
+v.reserve(20); # No visible change
+
+hilti::print(v);
+
+# Test const version.
+
+function void p(vector<uint<64>> v) {
+    assert v == [1,2,3];
+    assert |v| == 3;
+    assert v[1] == 2;
+    assert-exception v[4];
+}
+
+p([1,2,3]);
+
+# Test coercion.
+
+local vector<real> b;
+
+b[1] = 0;
+b[2] = 42;
+b.push_back(0);
+b.push_back(1);
+
+assert b[0] == 0.0;
+assert b[1] == 0.0;
+assert b[2] == 42.0;
+assert b[3] == 0.0;
+assert b[4] == 1.0;
+hilti::print(b);
+
+local vector<real> c = [1,0,3];
+assert c == [1.0, 0.0, 3.0];
+hilti::print(c);
+
+assert c + b == [1,0,3,0,0,42,0,1];
+c += b;
+assert c == [1,0,3,0,0,42,0,1];
+
+}

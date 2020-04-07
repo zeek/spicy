@@ -1,0 +1,34 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+#
+# Basic functionality tests for Spicy. HILTI provides the main tests for the type.
+
+module Test;
+
+import spicy;
+
+assert b"123" == b"123";
+assert b"123" != b"1234";
+assert b"123" + b"456" == b"123456";
+
+global x = b"123";
+x += b"ABC";
+assert x == b"123ABC";
+assert |x| == 6;
+assert |b""| == 0;
+
+assert b"aBcDeF".lower() == b"abcdef";
+assert b"aBcDeF".upper() == b"ABCDEF";
+assert b"".split() == [];
+assert b"12 34 56 78".split() == [b"12", b"34", b"56", b"78"];
+assert b"12XX34XX56XX78".split(b"XX") == [b"12", b"34", b"56", b"78"];
+assert b"".split1() == (b"", b"");
+assert b"12".split1() == (b"12", b"");
+assert b"12 34 56 78".split1() == (b"12", b"34 56 78");
+assert b"12XX34XX56XX78".split1(b"XX") == (b"12", b"34XX56XX78");
+assert b"xyz".starts_with(b"xy");
+assert ! b"xyz".starts_with(b"XY");
+assert b"  xyz  ".strip() == b"xyz";
+assert b"  abc  ".strip(spicy::Side::Left) == b"abc  ";
+assert b"  abc  ".strip(spicy::Side::Right) == b"  abc";
+assert b"  abc  ".strip(spicy::Side::Both) == b"abc";
+assert b"123abc456".strip(spicy::Side::Both, b"1234567890") == b"abc";

@@ -1,0 +1,5 @@
+#! /bin/sh
+#
+# Returns success if the tests are running from inside the build directory.
+
+test ${USING_BUILD_DIRECTORY} = 1

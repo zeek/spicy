@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL:  printf 'abc1234567890' | spicy-driver -p Test::Y %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+
+module Test;
+
+public type Y = unit {
+    c1 : b"abc";
+    c2 : bytes &size=7 &chunked { print self.c2; }
+    c3 : bytes &size=15 &chunked { print self.c3; }
+    c4 : bytes &size=3 &chunked { print self.c4; }
+    on %done { print self; }
+};

@@ -1,0 +1,11 @@
+# @TEST-REQUIRES: test "$BUILD" = "debug"
+# @TEST-EXEC: HILTI_DEBUG=test-debug ${HILTIC} -d -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+hilti::debug("test-debug", "12");
+hilti::debug("test-debug", 12);
+}

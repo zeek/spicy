@@ -1,0 +1,2 @@
+uncaught exception hilti::rt::AssertionFailure: failed expression '1 == 0' (fail.spicy:3)
+uncaught exception hilti::rt::AssertionFailure: my error (fail2.spicy:3)

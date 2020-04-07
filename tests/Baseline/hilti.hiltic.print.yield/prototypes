@@ -1,0 +1,16 @@
+// Prototypes for module Foo
+
+#ifndef HILTI_PROTOTYPES_FOO_H
+
+#include <hilti/rt/libhilti.h>
+
+namespace __hlt::Foo {
+    extern void __register_module();
+    extern auto test(const std::string& x) -> std::string;
+}
+
+namespace hlt::Foo {
+    extern auto test(const std::string& x) -> hilti::rt::Resumable;
+}
+
+#endif

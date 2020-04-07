@@ -1,0 +1,9 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+import spicy;
+
+global t = hilti::current_time();
+assert t > time(1564617600) && t < time(1609372800);

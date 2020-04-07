@@ -1,0 +1,59 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global strong_ref<bytes> x = new b"xyz";
+global strong_ref<bytes> y = x;
+
+global strong_ref<bytes> z;
+
+assert *x == b"xyz";
+assert *y == b"xyz";
+assert x == y;
+assert *x == *y;
+assert !(x != y);
+assert !(*x != *y);
+
+*x += b"123";
+assert *x == b"xyz123";
+assert *y == b"xyz123";
+assert x == y;
+assert *x == *y;
+
+assert z == Null;
+assert !(z != Null);
+
+assert x;
+assert y;
+assert !z;
+
+hilti::print(x);
+hilti::print(*x);
+hilti::print(y);
+hilti::print(*y);
+hilti::print(z);
+
+y = Null;
+assert *x == b"xyz123";
+assert x != y;
+assert y == Null;
+assert !y;
+
+global catches = 0;
+
+try {
+    hilti::print(*y);
+    assert False;
+} catch ( hilti::RuntimeError e ) {
+    ++catches;
+}
+
+assert catches == 1;
+
+x = new bytes;
+assert *x == b"";
+
+}

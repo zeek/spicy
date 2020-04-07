@@ -1,0 +1,17 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global re1 = /te**st/;
+global re2 = /12(de|fg|hi)34/;
+
+assert b"test".match(re1);
+assert ! b"XXX".match(re1);
+
+assert *(b"...test...".match(re1)) == b"test";
+assert *(b"012fg345".match(re2, 1)) == b"fg";
+
+}

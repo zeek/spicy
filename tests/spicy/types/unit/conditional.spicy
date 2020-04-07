@@ -1,0 +1,16 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -d -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | HILTI_DEBUG=spicy spicy-driver -d %INPUT.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x00\x00\x2a' | HILTI_DEBUG=spicy spicy-driver -d %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    on %init   { print self; }
+    f1: uint32;
+    f2: uint8 if ( self.f1 != 0 );
+    on %done   { print self; }
+};

@@ -1,0 +1,75 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+/** Interface for expressions representing resolved operators. */
+class ResolvedOperator(trait::isResolvedOperator) : trait::isExpression {
+    /** Returns the operator expression that the expression has been resolved to.  */
+    Operator operator_() const;
+
+    /** Returns the type of the operator expressions's result. */
+    hilti::Type result() const;
+
+    /** Returns the operator expression's operands. */
+    std::vector<Expression> operands() const;
+
+    /**
+     * Returns the operator expression's 1st operand.
+     * @exception `std::out_of_range`` if the expression doesn't have that operand
+     */
+    Expression op0() const;
+
+    /**
+     * Returns the operator expression's 2nd operand.
+     * @exception `std::out_of_range`` if the expression doesn't have that operand
+     */
+    Expression op1() const;
+
+    /**
+     * Returns the operator expression's 3rd operand
+     * @exception `std::out_of_range`` if the expression doesn't have that operand
+     */
+    Expression op2() const;
+
+    /** Returns true if the operator expression has at least one operand. */
+    bool hasOp0();
+
+    /** Returns true if the operator expression has at least two operands. */
+    bool hasOp1();
+
+    /** Returns true if the operator expression has at least three operands. */
+    bool hasOp2();
+
+    /** Sets the operator expressions 1st operand. */
+    void setOp0(Expression e);
+
+    /** Sets the operator expressions 2nd operand. */
+    void setOp1(Expression e);
+
+    /** Sets the operator expressions 3rd operand. */
+    void setOp2(Expression e);
+
+    /** Implements `Expression` interface. */
+    bool isLhs() const;
+    /** Implements `Expression` interface. */
+    bool isTemporary() const;
+    /** Implements the `Expression` interface. */
+    hilti::Type type() const;
+    /** Implements the `Expression` interface. */
+    bool isEqual(const Expression& other) const;
+    /** Implements the `Expression` interface. */
+    bool isConstant() const;
+
+    /** Implements the `Node` interface. */
+    hilti::node::Properties properties() const;
+    /** Implements the `Node` interface. */
+    const std::vector<hilti::Node>& childs() const;
+    /** Implements the `Node` interface. */
+    std::vector<hilti::Node>& childs();
+    /** Implements the `Node` interface. */
+    const Meta& meta() const;
+    /** Implements the `Node` interface. */
+    void setMeta(Meta m);
+    /** Implements the `Node` interface. */
+    const NodeRef& originalNode() const;
+    /** Implements the `Node` interface. */
+    void setOriginalNode(const NodeRef& n);
+};

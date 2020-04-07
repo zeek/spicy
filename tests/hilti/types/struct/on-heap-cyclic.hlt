@@ -1,0 +1,26 @@
+# @TEST-EXEC: ${HILTIC} -c %INPUT | grep -q ValueReference
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    string s;
+    optional<value_ref<Y>> y;
+} &on-heap;
+
+type Y = struct {
+    string s;
+    optional<value_ref<X>> x;
+} &on-heap;
+
+global X x = [$s = "X", $y = Null];
+global Y y = [$s = "Y", $x = x];
+x.s = "X2";
+
+hilti::print(x);
+hilti::print(y);
+
+}

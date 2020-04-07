@@ -1,0 +1,26 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global vector<bytes> gl1 = [b"foo", b"bar", b"baz"];
+global vector<bytes> gl2 = [];
+global vector<string> gl3 = ["one", "two", "three"];
+global vector<int<32>> gl4 = [1, 2, 3];
+global vector<int<32>> gl5 = [1];
+
+hilti::print(b"".join(gl1));
+hilti::print(b".".join(gl1));
+hilti::print(b"XXX".join(gl1));
+
+hilti::print(b".".join(gl2));
+
+hilti::print(b".".join(gl3));
+
+hilti::print(b".".join(gl4));
+
+hilti::print(b".".join(gl5));
+
+}

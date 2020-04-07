@@ -1,0 +1,36 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# Checks that we catch various violations of constness. Tests are meant
+# independent of specifics types, we just use some where we know
+# their constness.
+
+module Foo {
+
+import hilti;
+
+type Z = struct {
+    method void x(inout vector<uint<64>> v);
+};
+
+function void p2(inout vector<uint<64>> v) {
+}
+
+function void p(vector<uint<64>> v) {
+    local string x;
+    local vector<uint<64>> v2;
+    v.push_back(2);  # v is const
+    v = v2; # v is const, we also don't allow assigment then
+    v[5] = 1;        # v is const
+    (x, v) = ("X", v); # v is const
+    p2(v);           # v is const, but p2::v is not.
+
+    local Z z;
+    z.x(v);
+
+    v2 = v; # ok
+    (x, v2) = ("X", v2); # ok
+
+}
+
+}

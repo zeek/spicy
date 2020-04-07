@@ -1,0 +1,20 @@
+# This test won't work in sanitizer mode as ASAN is putting ctors into
+# the binary code that will then lead to duplicate symbols.
+# @TEST-REQUIRES: ! have-sanitizer
+#
+# @TEST-EXEC: ${HILTIC} -j -o %INPUT.1.hlto %INPUT
+# @TEST-EXEC: ${HILTIC} -j -o %INPUT.2.hlto %INPUT
+# @TEST-EXEC: ${HILTIC} -j %INPUT.1.hlto %INPUT.2.hlto >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-GROUP: spicy-core
+
+module Foo {
+
+global string X = "Hello, world!";
+
+import hilti;
+
+hilti::print(X);
+
+}

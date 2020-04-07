@@ -1,0 +1,9 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT 2>output.log
+# @TEST-EXEC: btest-diff output.log
+
+module Test {
+
+local uint<8> x3 = 0;
+x3 = x3 + 256;
+
+}

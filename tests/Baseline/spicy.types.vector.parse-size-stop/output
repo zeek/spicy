@@ -1,0 +1,7 @@
+[$lines=(not set), $dashes=(not set), $last=(not set)]
+[0] []
+    -> new item is [$line=b"XXX\\n"]
+[1] [[$line=b"XXX\\n"]]
+    -> new item is [$line=b"XXX\\n"]
+[2] [[$line=b"XXX\\n"], [$line=b"XXX\\n"]]
+[$lines=[[$line=b"XXX\n"], [$line=b"XXX\n"]], $dashes=b"---\n", $last=b"XXX\n"]

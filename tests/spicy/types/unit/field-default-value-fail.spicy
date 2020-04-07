@@ -1,0 +1,8 @@
+# @TEST-EXEC-FAIL: ${SPICYC} -p %INPUT > output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+type Bar = unit {
+  a: uint8 &default;
+};

@@ -1,0 +1,15 @@
+# @TEST-EXEC:  printf '\001\000\002\000\000\000\003' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+type ExampleEnum = enum {
+    A = 1, B = 2, C = 3
+};
+
+public type test = unit {
+       a: uint8  &convert=ExampleEnum($$);
+       b: uint16 &convert=ExampleEnum($$);
+       c: uint32 &convert=ExampleEnum($$)
+          { print self.a; print self.b; print self.c; }
+};

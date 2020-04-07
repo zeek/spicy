@@ -1,0 +1,39 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <hilti/ast/ctor.h>
+#include <hilti/ast/type.h>
+
+namespace hilti {
+namespace ctor {
+
+/** AST node for a constructor that's been coerced from one type to another. */
+class Coerced : public NodeBase, public hilti::trait::isCtor {
+public:
+    Coerced(Ctor orig, Ctor new_, Meta m = Meta()) : NodeBase({std::move(orig), std::move(new_)}, std::move(m)) {}
+
+    auto originalCtor() const { return child<Ctor>(0); }
+    auto coercedCtor() const { return child<Ctor>(1); }
+
+    bool operator==(const Coerced& other) const {
+        return originalCtor() == other.originalCtor() && coercedCtor() == other.coercedCtor();
+    }
+
+    /** Implements `Ctor` interface. */
+    Type type() const { return type::effectiveType(coercedCtor().type()); }
+    /** Implements `Ctor` interface. */
+    bool isConstant() const { return coercedCtor().isConstant(); }
+    /** Implements `Ctor` interface. */
+    auto isLhs() const { return coercedCtor().isLhs(); }
+    /** Implements `Ctor` interface. */
+    auto isTemporary() const { return coercedCtor().isTemporary(); }
+    /** Implements `Ctor` interface. */
+    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+
+    /** Implements `Node` interface. */
+    auto properties() const { return node::Properties{}; }
+};
+
+} // namespace ctor
+} // namespace hilti

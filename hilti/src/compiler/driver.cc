@@ -1,0 +1,908 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#include <dlfcn.h>
+#include <getopt.h>
+
+#include <fstream>
+#include <iostream>
+#include <utility>
+
+#include <hilti/hilti.h>
+#include <hilti/rt/libhilti.h>
+
+using namespace hilti;
+using util::fmt;
+
+namespace hilti::logging::debug {
+inline const DebugStream Compiler("compiler");
+inline const DebugStream Driver("driver");
+} // namespace hilti::logging::debug
+
+static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
+                                              {"show-backtraces", required_argument, nullptr, 'B'},
+                                              {"compiler-debug", required_argument, nullptr, 'D'},
+                                              {"debug", no_argument, nullptr, 'd'},
+                                              {"debug-addl", required_argument, nullptr, 'X'},
+                                              {"dump-code", no_argument, nullptr, 'C'},
+                                              {"help", no_argument, nullptr, 'h'},
+                                              {"include-linker", no_argument, nullptr, 'K'},
+                                              {"keep-tmps", no_argument, nullptr, 'T'},
+                                              {"library-path", required_argument, nullptr, 'L'},
+                                              {"optimize", no_argument, nullptr, 'O'},
+                                              {"output", required_argument, nullptr, 'o'},
+                                              {"output-c++", no_argument, nullptr, 'c'},
+                                              {"output-hilti", no_argument, nullptr, 'p'},
+                                              {"disable-jit", no_argument, nullptr, 'J'},
+                                              {"execute-code", no_argument, nullptr, 'j'},
+                                              {"output-linker", no_argument, nullptr, 'l'},
+                                              {"output-prototypes", no_argument, nullptr, 'P'},
+                                              {"output-all-dependencies", no_argument, nullptr, 'e'},
+                                              {"output-code-dependencies", no_argument, nullptr, 'E'},
+                                              {"report-times", required_argument, nullptr, 'R'},
+                                              {"skip-validation", no_argument, nullptr, 'V'},
+                                              {"skip-dependencies", no_argument, nullptr, 'S'},
+                                              {"version", no_argument, nullptr, 'v'},
+                                              {nullptr, 0, nullptr, 0}};
+
+Driver::Driver(std::string name, const std::string_view& argv0) : _name(std::move(name)) {
+    if ( argv0.size() )
+        configuration().initLocation(argv0);
+}
+
+Driver::~Driver() {
+    if ( ! _driver_options.keep_tmps ) {
+        for ( const auto& t : _tmp_files )
+            unlink(t.c_str());
+    }
+}
+
+void Driver::usage() {
+    auto exts = util::join(plugin::registry().supportedExtensions(), ", ");
+
+    std::cerr
+        << "Usage: " << _name
+        << " [options] <inputs>\n"
+           "\n"
+           "Options controlling code generation:\n"
+           "\n"
+           "  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI "
+           "exceptions.\n"
+           "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
+           "  -C | --dump-code                Dump all generated code to disk for debugging.\n"
+           "  -D | --compiler-debug <streams> Activate compile-time debugging output for given debug streams "
+           "(comma-separated; 'help' for list).\n"
+           "  -e | --output-all-dependencies  Output list of dependencies for all compiled modules.\n"
+           "  -E | --output-code-dependencies Output list of dependencies for all compiled modules that require "
+           "separate compilation of their own.\n"
+           "  -K | --include-linker           With --output-c++, include HILTI linker glue code.\n"
+           "  -L | --library-path <path>      Add path to list of directories to search when importing modules.\n"
+           "  -O | --optimize                 Build optimized release version of generated code.\n"
+           "  -P | --output-prototypes        Output C++ header with prototypes for public functionality.\n"
+           "  -V | --skip-validation          Don't validate ASTs (for debugging only).\n"
+           "  -c | --output-c++               Print out all generated C++ code (including linker glue by default).\n"
+           "  -d | --debug                    Include debug instrumentation into generated code.\n"
+#ifdef HILTI_HAVE_JIT
+           // Don't show this if we don't have JIT. We still accept the
+           // option, but issue an error an runtime.
+           "  -j | --jit-code                 Fully compile all code, and then execute it unless --output-to gives a "
+           "file to store it\n"
+#endif
+           "  -l | --output-linker            Print out only generated HILTI linker glue code.\n"
+           "  -o | --output-to <path>         Path for saving output.\n"
+           "  -p | --output-hilti             Just output parsed HILTI code again.\n"
+           "  -R | --report-times             Report a break-down of compiler's execution time.\n"
+           "  -S | --skip-dependencies        Do not automatically compile dependencies during JIT.\n"
+           "  -T | --keep-tmps                Do not delete any temporary files created.\n"
+           "  -v | --version                  Print version information.\n"
+           "  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation "
+           "(comma-separated; see 'help' for list).\n"
+           "\n"
+           "Inputs can be "
+        << exts
+        << ", .cc/.cxx, *.hlto.\n"
+           "\n";
+}
+
+result::Error Driver::error(std::string_view msg, const std::filesystem::path& p) {
+    auto x = fmt("%s: %s", _name, msg);
+
+    if ( ! p.empty() )
+        x += fmt(" (%s)", p.native());
+
+    return result::Error(std::move(x));
+}
+
+result::Error Driver::augmentError(const result::Error& err, const std::filesystem::path& p) {
+    return error(err.description(), p);
+}
+
+Result<std::ofstream> Driver::openOutput(const std::filesystem::path& p, bool binary) {
+    auto mode = std::ios::out | std::ios::trunc;
+
+    if ( p == "/dev/stdout" || p == "/dev/stderr" )
+        mode = std::ios::out | std::ios::app;
+
+    if ( binary )
+        mode |= std::ios::binary;
+
+    std::ofstream out(p, mode);
+
+    if ( ! out.is_open() )
+        return error("Cannot open file for output", p);
+
+    return {std::move(out)};
+}
+
+Result<Nothing> Driver::openInput(std::ifstream& in, const std::filesystem::path& p) {
+    in.open(p);
+
+    if ( ! in.is_open() )
+        return error("Cannot open file for reading", p);
+
+    return Nothing();
+}
+
+Result<std::stringstream> Driver::readInput(const std::filesystem::path& p) {
+    std::ifstream in;
+    if ( auto x = openInput(in, p); ! x )
+        return x.error();
+
+    std::stringstream out;
+
+    if ( ! util::copyStream(in, out) )
+        return error("Error reading from file", p);
+
+    return std::move(out);
+}
+
+Result<Nothing> Driver::writeOutput(std::ifstream& in, const std::filesystem::path& p) {
+    auto out = openOutput(p);
+
+    if ( ! out )
+        return out.error();
+
+    if ( ! util::copyStream(in, *out) )
+        return error("Error writing to file", p);
+
+    return Nothing();
+}
+
+Result<std::filesystem::path> Driver::writeToTemp(std::ifstream& in, const std::string& name_hint,
+                                                  const std::string& extension) {
+    auto template_ = fmt("%s.XXXXXX.%s", name_hint, extension);
+    char name[template_.size() + 1];
+    strcpy(name, template_.c_str()); // NOLINT
+    auto fd = mkstemp(name);
+
+    if ( fd < 0 )
+        return error("Cannot open temporary file");
+
+    // Not sure if this is safe, but it seems to be what everybody does ...
+    std::ofstream out(name);
+    close(fd);
+
+    if ( ! util::copyStream(in, out) )
+        return error("Error writing to file", std::string(name));
+
+    _tmp_files.insert(name);
+    return std::filesystem::path(name);
+}
+
+void Driver::dumpUnit(const Unit& unit) {
+    if ( unit.isCompiledHILTI() ) {
+        auto output_path = util::fmt("dbg.%s.hlt", unit.id());
+        if ( auto out = openOutput(output_path) ) {
+            HILTI_DEBUG(logging::debug::Driver, fmt("saving HILTI code for module %s to %s", unit.id(), output_path));
+            unit.print(*out);
+        }
+    }
+
+    if ( auto cxx = unit.cxxCode() ) {
+        ID id = (unit.isCompiledHILTI() ? unit.id() : ID(unit.cxxCode()->id()));
+        auto output_path = util::fmt("dbg.%s.cc", id);
+        if ( auto out = openOutput(util::fmt("dbg.%s.cc", id)) ) {
+            HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", id, output_path));
+            cxx->save(*out);
+        }
+    }
+}
+
+Result<Nothing> Driver::parseOptions(int argc, char** argv) {
+    int num_output_types = 0;
+
+    while ( true ) {
+        int c = getopt_long(argc, argv, "ABlKL:OcCpPvjJhvVdX:o:D:TEeSR", long_driver_options, nullptr);
+
+        if ( c < 0 )
+            break;
+
+        switch ( c ) {
+            case 'A': _driver_options.abort_on_exceptions = true; break;
+
+            case 'B': _driver_options.show_backtraces = true; break;
+
+            case 'c':
+                _driver_options.output_cxx = true;
+                ++num_output_types;
+                break;
+
+            case 'C': {
+                _driver_options.dump_code = true;
+                break;
+            }
+
+            case 'd': {
+                _compiler_options.debug = true;
+                break;
+            }
+
+            case 'X': {
+                auto arg = std::string(optarg);
+
+                if ( arg == "help" ) {
+                    std::cerr << "Additional debug instrumentation:\n";
+                    std::cerr << "   flow:     log function calls to debug stream \"hilti-flow\"\n";
+                    std::cerr << "   location: track current source code location for error reporting\n";
+                    std::cerr << "   trace:    log statements to debug stream \"hilti-trace\"\n";
+                    std::cerr << "\n";
+                    exit(0);
+                }
+
+                _compiler_options.debug = true;
+
+                if ( auto r = _compiler_options.parseDebugAddl(arg); ! r )
+                    error(r.error());
+
+                break;
+            }
+
+            case 'D': {
+                auto arg = std::string(optarg);
+
+                if ( arg == "help" ) {
+                    std::cerr << "Debug streams:\n";
+
+                    for ( const auto& s : logging::DebugStream::all() )
+                        std::cerr << "  " << s << "\n";
+
+                    std::cerr << "\n";
+                    exit(0);
+                }
+
+                for ( const auto& s : util::split(arg, ",") ) {
+                    if ( ! _driver_options.logger->debugEnable(s) )
+                        return error(fmt("Unknown debug stream '%s', use 'help' for list", arg));
+                }
+
+                break;
+            }
+
+            case 'e':
+                _driver_options.output_dependencies = driver::Dependencies::All;
+                ++num_output_types;
+                break;
+
+            case 'E':
+                _driver_options.output_dependencies = driver::Dependencies::Code;
+                ++num_output_types;
+                break;
+
+            case 'J': _driver_options.disable_jit = true; break;
+
+            case 'j':
+                _driver_options.execute_code = true;
+                _driver_options.disable_jit = false;
+                _driver_options.include_linker = true;
+                ++num_output_types;
+                break;
+
+            case 'l':
+                _driver_options.output_linker = true;
+                _driver_options.include_linker = true;
+                ++num_output_types;
+                break;
+
+            case 'K': _driver_options.include_linker = true; break;
+
+            case 'L': _compiler_options.library_paths.emplace_back(std::string(optarg)); break;
+
+            case 'o': _driver_options.output_path = std::string(optarg); break;
+
+            case 'O': _compiler_options.optimize = true; break;
+
+            case 'p':
+                _driver_options.output_hilti = true;
+                ++num_output_types;
+                break;
+
+            case 'P':
+                _driver_options.output_prototypes = true;
+                ++num_output_types;
+                break;
+
+            case 'R': _driver_options.report_times = true; break;
+
+            case 'S': _driver_options.skip_dependencies = true; break;
+
+            case 'T': _driver_options.keep_tmps = true; break;
+
+            case 'v':
+                std::cerr << _name << " v" << hilti::configuration().version_string_long << std::endl;
+                return Nothing();
+
+            case 'V': _compiler_options.skip_validation = true; break;
+
+            case 'h': usage(); return Nothing();
+
+            default: usage(); return error(fmt("option %c not implemented", c));
+        }
+    }
+
+    while ( optind < argc )
+        _driver_options.inputs.emplace_back(argv[optind++]);
+
+    if ( _driver_options.inputs.empty() )
+        return error("no input file given");
+
+    if ( num_output_types > 1 )
+        return error("only one type of output can be specificied");
+
+    if ( num_output_types == 0 )
+        return error("no output type given");
+
+    if ( ! _compiler_options.debug ) {
+        if ( _compiler_options.debug_trace || _compiler_options.debug_flow )
+            return error("cannot use --optimize with --cgdebug");
+    }
+
+    if ( _driver_options.execute_code and ! _driver_options.output_path.empty() ) {
+        if ( ! util::endsWith(_driver_options.output_path, ".hlto") )
+            return error("destination path for object code must have '.hlto' extension");
+    }
+
+    return Nothing();
+}
+
+Result<Nothing> Driver::initialize() {
+    if ( _stage != Stage::UNINITIALIZED )
+        logger().internalError("unexpected driver stage in initialize()");
+
+    _stage = INITIALIZED;
+
+    if ( _driver_options.logger )
+        setLogger(std::move(_driver_options.logger));
+
+    _ctx = std::make_shared<Context>(_compiler_options);
+    return Nothing();
+}
+
+void Driver::setCompilerOptions(hilti::Options options) {
+    if ( _stage != Stage::UNINITIALIZED )
+        logger().internalError("setCompilerOptions() must be called before initialization");
+
+    _compiler_options = std::move(options);
+}
+
+void Driver::setDriverOptions(driver::Options options) {
+    if ( _stage != Stage::UNINITIALIZED )
+        logger().internalError("setCompilerOptions() must be called before initialization");
+
+    _driver_options = std::move(options);
+}
+
+void Driver::_addUnit(Unit unit) {
+    if ( _processed_units.find(unit.id()) != _processed_units.end() )
+        return;
+
+    if ( (! unit.path().empty()) && _processed_paths.find(unit.path()) != _processed_paths.end() )
+        return;
+
+    _processed_units.insert(unit.id());
+
+    if ( (! unit.path().empty()) )
+        _processed_paths.insert(unit.path());
+
+    hookNewASTPreCompilation(unit.id(), unit.path(), unit.module());
+    _pending_units.emplace_back(std::move(unit));
+}
+
+Result<void*> Driver::_symbol(const std::string& symbol) {
+    // Since `NULL` could be the address of a function, use `::dlerror` to
+    // detect errors. Since `::dlerror` resets the error state when called we
+    // can drive its state explicitly.
+
+    ::dlerror(); // Resets error state.
+    auto sym = ::dlsym(RTLD_DEFAULT, symbol.c_str());
+
+    // We return an error if the symbol could not be looked up, or if the
+    // address of the symbol is `NULL`.
+    if ( auto error = ::dlerror() )
+        return result::Error(error);
+    else if ( ! sym )
+        return result::Error(util::fmt("address of symbol is %s", sym));
+
+    return sym;
+}
+
+Result<Nothing> Driver::addInput(const std::filesystem::path& path) {
+    if ( path.empty() || _processed_paths.find(path) != _processed_paths.end() )
+        return Nothing();
+
+    // Calling hook before stage check so that it can execute initialize()
+    // just in time if it so desires.
+    hookAddInput(path);
+
+    if ( _stage == Stage::UNINITIALIZED )
+        logger().internalError(" driver must be initialized before inputs can be added");
+
+    if ( _stage != Stage::INITIALIZED )
+        logger().internalError("no further inputs can be added after compilation has finished already");
+
+    if ( plugin::registry().supportsExtension(path.extension()) ) {
+        HILTI_DEBUG(logging::debug::Driver, fmt("adding source file %s", path));
+
+        if ( auto unit = Unit::fromCache(_ctx, path) ) {
+            HILTI_DEBUG(logging::debug::Driver, fmt("reusing previously cached module %s", unit->id()));
+            _addUnit(std::move(*unit));
+        }
+        else {
+            HILTI_DEBUG(logging::debug::Driver, fmt("parsing input file %s", path));
+            unit = Unit::fromSource(context(), path);
+            if ( ! unit )
+                return augmentError(unit.error());
+
+            _addUnit(std::move(*unit));
+        }
+
+        return Nothing();
+    }
+
+    else if ( path.extension() == ".cc" || path.extension() == ".cxx" ) {
+        HILTI_DEBUG(logging::debug::Driver, fmt("adding external C++ file %s", path));
+        _external_cxxs.push_back(path);
+        return Nothing();
+    }
+
+    else if ( path.extension() == ".hlto" ) {
+        HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
+
+        if ( auto load = Library(path).open(); ! load )
+            return error(util::fmt("could not load library file %s: %s", path, load.error()));
+
+        return Nothing();
+    }
+
+    return error("unsupported file type", path);
+}
+
+Result<Nothing> Driver::addInput(hilti::Module&& module, const std::filesystem::path& path) {
+    if ( _processed_units.find(module.id()) != _processed_units.end() )
+        return Nothing();
+
+    if ( (! path.empty()) && _processed_paths.find(path) != _processed_paths.end() )
+        return Nothing();
+
+    // Calling hook before stage check so that it can execute initialize()
+    // just in time if it so desires.
+    hookAddInput(module, path);
+
+    if ( _stage == Stage::UNINITIALIZED )
+        logger().internalError(" driver must be initialized before inputs can be added");
+
+    if ( _stage != Stage::INITIALIZED )
+        logger().internalError("no further inputs can be added after compilation has finished already");
+
+    HILTI_DEBUG(logging::debug::Driver, fmt("adding source AST %s", module.id()));
+    auto unit = Unit::fromModule(_ctx, std::move(module), path);
+    if ( ! unit )
+        return augmentError(unit.error());
+
+    _addUnit(std::move(*unit));
+    return Nothing();
+}
+
+Result<Nothing> Driver::_compileUnit(Unit unit) {
+    logging::DebugPushIndent _(logging::debug::Compiler);
+
+    HILTI_DEBUG(logging::debug::Driver, fmt("processing input unit %s", unit.id()));
+
+    if ( auto x = unit.compile(); ! x )
+        // Specific errors have already been reported.
+        return error("aborting after errors");
+
+    hookNewASTPostCompilation(unit.id(), unit.path(), unit.module());
+
+    if ( _driver_options.output_hilti && ! _driver_options.include_linker ) {
+        // No need to kick off code generation.
+        _hlts.push_back(std::move(unit));
+        return Nothing();
+    }
+
+    if ( auto rc = unit.codegen(); ! rc )
+        return augmentError(rc.error());
+
+    if ( auto md = unit.linkerMetaData() )
+        _mds.push_back(*md);
+
+    if ( _driver_options.dump_code )
+        dumpUnit(unit);
+
+    if ( _driver_options.execute_code && ! _driver_options.skip_dependencies ) {
+        for ( const auto& d : unit.allImported(true) ) {
+            // Compile any implicit dependencies as well. Note that once we run
+            // the completion hook, that may compile further modules and hence in
+            // turn add more dependencies.
+            HILTI_DEBUG(logging::debug::Compiler, fmt("imported module %s needs compilation", d.id));
+
+            if ( auto rc = addInput(d.path); ! rc )
+                return rc.error();
+        }
+    }
+
+    _hlts.push_back(std::move(unit));
+    return Nothing();
+}
+
+Result<Nothing> Driver::compileUnits() {
+    if ( _stage != Stage::INITIALIZED )
+        logger().internalError("unexpected driver stage in compileUnits()");
+
+    while ( _pending_units.size() ) {
+        auto pending_units = std::move(_pending_units);
+        _pending_units.clear();
+
+        for ( auto&& unit : pending_units ) {
+            if ( auto rc = _compileUnit(std::move(unit)); ! rc )
+                return rc;
+        }
+
+        if ( auto rc = hookCompilationFinished(); ! rc )
+            return augmentError(rc.error());
+    }
+
+    _stage = Stage::FINALIZED;
+
+    if ( _driver_options.output_hilti ) {
+        std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
+        auto output = openOutput(output_path, false);
+        if ( ! output )
+            return output.error();
+
+        for ( auto& unit : _hlts ) {
+            if ( ! unit.isCompiledHILTI() )
+                continue;
+
+            HILTI_DEBUG(logging::debug::Driver, util::fmt("saving HILTI code for module %s to %s", unit.id(), output));
+            if ( ! unit.print(*output) )
+                return error(fmt("error print HILTI code for module %s", unit.id()));
+        }
+    }
+
+    return Nothing();
+}
+
+Result<Nothing> Driver::run() {
+    // Helper to print timing summary on exit from this function.
+    struct AtExit { //NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+        AtExit(std::function<void()> f) : func(std::move(f)) {}
+        ~AtExit() { func(); }
+        std::function<void()> func;
+    } _([&]() {
+        if ( _driver_options.report_times ) {
+            util::timing::summary(std::cerr);
+            util::type_erasure::summary(std::cerr);
+        }
+    });
+
+    initialize();
+
+    for ( const auto& i : _driver_options.inputs ) {
+        if ( auto rc = addInput(i); ! rc )
+            return rc.error();
+    }
+
+    if ( auto x = compile(); ! x )
+        return x;
+
+    if ( ! _driver_options.execute_code || ! _driver_options.output_path.empty() )
+        return Nothing();
+
+    try {
+        util::timing::Collector _("hilti/runtime");
+
+        if ( auto x = initRuntime(); ! x )
+            return x;
+
+        if ( auto x = executeMain(); ! x )
+            return x;
+
+        if ( auto x = finishRuntime(); ! x )
+            return x;
+
+        return Nothing();
+
+    } catch ( const std::exception& e ) {
+        std::cerr << util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
+                               util::demangle(typeid(e).name()), e.what())
+                  << std::endl;
+        exit(1);
+    }
+
+    return {};
+}
+
+Result<Nothing> Driver::compile() {
+    if ( auto rc = compileUnits(); ! rc )
+        return rc;
+
+    if ( _driver_options.include_linker ) {
+        if ( auto rc = linkUnits(); ! rc )
+            return rc;
+    }
+
+    if ( _driver_options.output_hilti )
+        return Nothing();
+
+    if ( auto rc = outputUnits(); ! rc )
+        return rc;
+
+    if ( _driver_options.execute_code && ! _driver_options.output_prototypes ) {
+        if ( auto rc = jitUnits(); ! rc )
+            return rc;
+
+        if ( ! _driver_options.output_path.empty() ) {
+            // Save code to disk rather than execute.
+            HILTI_DEBUG(logging::debug::Driver, fmt("saving precompiled code to %s", _driver_options.output_path));
+
+            assert(_jit);
+            auto library = _jit->retrieveLibrary();
+            if ( ! library )
+                return library.error();
+
+            if ( auto success = library->get().save(_driver_options.output_path); ! success )
+                return result::Error(
+                    fmt("error saving object code to %s: %s", _driver_options.output_path, success.error()));
+        }
+    }
+
+    return Nothing();
+}
+
+Result<Nothing> Driver::linkUnits() {
+    if ( _stage != Stage::FINALIZED )
+        logger().internalError("unexpected driver stage in linkModule()");
+
+    _stage = Stage::LINKED;
+
+    for ( const auto& cxx : _external_cxxs ) {
+        std::ifstream in;
+
+        if ( auto x = openInput(in, cxx); ! x )
+            return x.error();
+
+        auto md = Unit::readLinkerMetaData(in, cxx);
+
+        if ( ! md.first )
+            return error(fmt("cannot read linker data from %s", cxx));
+
+        if ( md.second )
+            _mds.push_back(*md.second);
+    }
+
+    HILTI_DEBUG(logging::debug::Driver, "linking modules");
+    for ( const auto& md : _mds ) {
+        auto id = md.at("module").template get<std::string>();
+        HILTI_DEBUG(logging::debug::Driver, fmt("  - %s", id));
+    }
+
+    auto linker_unit = Unit::link(_ctx, _mds);
+
+    if ( ! linker_unit )
+        return error("aborting after linker errors");
+
+    if ( _driver_options.output_linker ) {
+        std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
+
+        auto output = openOutput(output_path, false);
+        if ( ! output )
+            return output.error();
+
+        HILTI_DEBUG(logging::debug::Driver, fmt("writing linker code to %s", output_path));
+        linker_unit->cxxCode()->save(*output);
+        return Nothing(); // All done.
+    }
+
+    if ( _driver_options.dump_code )
+        dumpUnit(*linker_unit);
+
+    if ( linker_unit->cxxCode()->code() && linker_unit->cxxCode()->code()->size() )
+        _hlts.push_back(std::move(*linker_unit));
+
+    return Nothing();
+}
+
+Result<Nothing> Driver::outputUnits() {
+    if ( _stage != Stage::FINALIZED && _stage != Stage::LINKED )
+        logger().internalError("unexpected driver stage in outputUnits()");
+
+    std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
+
+    for ( auto& unit : _hlts ) {
+        if ( auto cxx = unit.cxxCode() ) {
+            if ( _driver_options.output_cxx ) {
+                auto output = openOutput(output_path, false);
+                if ( ! output )
+                    return output.error();
+
+                HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", unit.id(), output_path));
+                cxx->save(*output);
+            }
+
+            if ( _driver_options.output_prototypes ) {
+                auto output = openOutput(output_path, false);
+                if ( ! output )
+                    return output.error();
+
+                HILTI_DEBUG(logging::debug::Driver,
+                            fmt("saving C++ prototypes for module %s to %s", unit.id(), output_path));
+                unit.createPrototypes(*output);
+            }
+
+            if ( _driver_options.output_dependencies != driver::Dependencies::None ) {
+                for ( const auto& [id, path] :
+                      unit.allImported(_driver_options.output_dependencies == driver::Dependencies::Code) )
+                    std::cout << fmt("%s (%s)\n", id, util::normalizePath(path).native());
+            }
+
+            _generated_cxxs.push_back(std::move(*cxx));
+        }
+        else
+            return error(fmt("error retrieving C++ code for module %s", unit.id()));
+    }
+
+    return Nothing();
+}
+
+Result<Nothing> Driver::jitUnits() {
+    if ( _stage != Stage::LINKED )
+        logger().internalError("unexpected driver stage in jitModule()");
+
+    _stage = Stage::JITTED;
+
+    if ( _driver_options.disable_jit )
+        return error("driver not configured for JIT");
+
+    static util::timing::Ledger ledger("hilti/jit");
+    util::timing::Collector _(&ledger);
+
+    HILTI_DEBUG(logging::debug::Driver, "JIT modules:");
+
+    auto jit = std::make_unique<hilti::JIT>(_ctx);
+
+    for ( const auto& cxx : _generated_cxxs ) {
+        HILTI_DEBUG(logging::debug::Driver, fmt("  - %s", cxx.id()));
+        jit->add(cxx);
+    }
+
+    for ( const auto& cxx : _external_cxxs ) {
+        HILTI_DEBUG(logging::debug::Driver, fmt("  - %s", cxx));
+        jit->add(cxx);
+    }
+
+    if ( jit->needsCompile() ) {
+        HILTI_DEBUG(logging::debug::Driver, "JIT: compiling to bitcode");
+        if ( ! jit->compile() ) {
+            return error("JIT compilation failed");
+        }
+    }
+
+    HILTI_DEBUG(logging::debug::Driver, "JIT: preparing native code");
+    if ( _driver_options.dump_code )
+        jit->setDumpCode();
+
+    if ( auto rc = jit->jit(); ! rc )
+        return rc;
+
+    _jit = std::move(jit);
+    return Nothing();
+}
+
+void Driver::printHiltiException(const hilti::rt::Exception& e) {
+    std::cerr << fmt("uncaught exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
+
+    if ( _driver_options.show_backtraces && ! e.backtrace().empty() ) {
+        std::cerr << "backtrace:\n";
+
+        for ( const auto& s : e.backtrace() )
+            std::cerr << "  " << s << "\n";
+    }
+}
+
+Result<Nothing> Driver::initRuntime() {
+    util::timing::Collector _("hilti/runtime/init");
+
+    if ( _runtime_initialized )
+        return Nothing();
+
+    if ( _requires_jit() && ! _jit )
+        return result::Error("JIT not initialized");
+
+    auto config = hilti::rt::configuration::get();
+    config.abort_on_exceptions = _driver_options.abort_on_exceptions;
+    config.show_backtraces = _driver_options.show_backtraces;
+    hilti::rt::configuration::set(config);
+
+    try {
+        HILTI_DEBUG(logging::debug::Driver, "initializing runtime");
+
+        if ( _requires_jit() )
+            _jit->initRuntime();
+
+        rt::init();
+        hookInitRuntime();
+    } catch ( const hilti::rt::Exception& e ) {
+        printHiltiException(e);
+        exit(1);
+    } catch ( const std::runtime_error& e ) {
+        std::cerr << fmt("uncaught C++ exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
+        exit(1);
+    }
+
+    _runtime_initialized = true;
+    return Nothing();
+}
+
+Result<Nothing> Driver::executeMain() {
+    util::timing::Collector _("hilti/runtime/main");
+
+    int rc = 0;
+
+    if ( auto main = _symbol("hilti_main") ) {
+        HILTI_DEBUG(logging::debug::Driver, "executing main() function");
+
+        using main_t = int();
+
+        try {
+            rc = (*(reinterpret_cast<main_t*>(*main)))();
+        } catch ( const hilti::rt::Exception& e ) {
+            printHiltiException(e);
+            exit(1);
+        } catch ( const std::runtime_error& e ) {
+            std::cerr << fmt("uncaught C++ exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
+            exit(1);
+        }
+    }
+
+    if ( rc == 0 )
+        return Nothing();
+
+    return error(fmt("hilti_main() returned exit code %d", rc));
+}
+
+Result<Nothing> Driver::finishRuntime() {
+    util::timing::Collector _("hilti/runtime/finish");
+
+    if ( _runtime_initialized ) {
+        HILTI_DEBUG(logging::debug::Driver, "shutting down runtime");
+        hookFinishRuntime();
+        rt::done();
+        _runtime_initialized = false;
+    }
+
+    if ( _jit ) {
+        _jit->finishRuntime();
+        _jit.reset();
+    }
+
+    return Nothing();
+}
+
+Result<hilti::JIT*> Driver::jit() {
+    if ( ! _jit )
+        return error("cannot retrieve JIT instance, JIT compilation hasn't been performed");
+
+    if ( ! _runtime_initialized )
+        return error("cannot retrieve JIT instance, runtime hasn't been initialized");
+
+    return _jit.get();
+}

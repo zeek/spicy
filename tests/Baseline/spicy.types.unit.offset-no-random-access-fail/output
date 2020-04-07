@@ -1,0 +1,2 @@
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.unit.offset-no-random-access-fail/offset-no-random-access-fail.spicy:9: use of 'offset()' requires unit type to have property `%random-access`
+[error] spicy-driver: aborting after errors

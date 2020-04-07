@@ -1,0 +1,13 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${HILTIC} -p %INPUT >output
+# @TEST-EXEC: ${HILTIC} -c %INPUT >>output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+global real d;
+global real r = 0.1;
+
+assert 0.1 == 0x1.999999999999ap-4;
+
+}

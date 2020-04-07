@@ -1,0 +1,12 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# We have "print" statements in many tests, so just do some basics heres.
+
+module Foo;
+
+print True;
+print True, 32;
+print;
+print "Xyz";
+print (1, 2, True, b"XX");

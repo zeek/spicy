@@ -1,0 +1,18 @@
+# @TEST-EXEC: spicy-driver -p Mini::Main %INPUT >output </dev/null
+# @TEST-EXEC: btest-diff output
+#
+# We actually have only one policy right now, which is also the
+# default. So just check that the method call works for now.
+
+module Mini;
+
+import spicy;
+
+public type Main = unit {
+
+    sink data;
+
+    on %init {
+        self.data.set_policy(spicy::ReassemblerPolicy::First);
+    }
+};

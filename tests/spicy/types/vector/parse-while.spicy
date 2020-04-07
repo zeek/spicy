@@ -1,0 +1,12 @@
+# @TEST-EXEC: printf "\001\002\003\004" | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type test = unit {
+    ints: uint8[] &while=($$ != 3)
+          foreach { print $$; }
+    last: int8;
+
+    on %done { print self; }
+};

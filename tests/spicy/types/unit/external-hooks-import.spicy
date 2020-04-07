@@ -1,0 +1,22 @@
+#
+# @TEST-EXEC:  echo 1234567890 | spicy-driver %INPUT mini.spicy >output
+# @TEST-EXEC:  btest-diff output
+
+module test;
+
+import Mini;
+
+on Mini::Foo::a { print "FOO a", self.a; }
+on Mini::Foo::b { print "FOO b", self.b; }
+on Mini::Foo::%init { print "FOO init"; }
+
+### @TEST-START-FILE mini.spicy
+
+module Mini;
+
+public type Foo = unit {
+       a: bytes &size=4;
+       b: bytes &size=6;
+};
+
+### # @TEST-END-FILE

@@ -1,0 +1,18 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+
+module Test;
+
+global i: int64 = 0;
+
+function f() {
+    i += 1;
+    return;
+    i += 1;
+}
+
+function g() : int64 {
+    return 42;
+}
+
+f();
+assert i + g() == 43;

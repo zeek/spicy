@@ -1,0 +1,29 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+/** Interface for all AST nodes. */
+class Node(trait::isNode) {
+    /** Returns any properties associated with the the node. */
+    hilti::node::Properties properties() const;
+
+    /** Returns the node's childrens. */
+    const std::vector<hilti::Node>& childs() const;
+
+    /** Returns the node's childrens. */
+    std::vector<hilti::Node>& childs();
+
+    /** Returns the node's meta data. */
+    const Meta& meta() const;
+
+    /** Sets the node's meta data. */
+    void setMeta(Meta m);
+
+    /**
+     * Returns an original, pre-transformation node associated with the node
+     * if such has been set.
+     */
+    const NodeRef& originalNode() const;
+
+    /** Associates an original, pre-transformation node with this node. */
+    void setOriginalNode(const NodeRef& n);
+
+};

@@ -1,0 +1,19 @@
+# @TEST-EXEC:  printf 'abcd' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module HTTP;
+
+type Sub = unit(t: Test) {
+    z: uint8;
+
+    on %done {
+        print t.x, self.z;
+        }
+};
+
+public type Test = unit {
+    x: uint8;
+    y: (Sub(self))[] &count=3;
+
+    on %done { print self; }
+    };

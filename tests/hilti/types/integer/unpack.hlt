@@ -1,0 +1,28 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global uint<16> u16;
+global bytes r;
+
+global d = b"\x00\x01X";
+
+(u16, r) = *unpack<uint<16>>(d, hilti::ByteOrder::Little);
+hilti::print("L 0x%04x" % u16);
+
+(u16, r) = *unpack<uint<16>>(d, hilti::ByteOrder::Big);
+hilti::print("B 0x%04x" % u16);
+
+# Check that stream version works, too.
+local stream s = stream(b"\x00\x01X");
+local view<stream> v = s;
+local view<stream> vr;
+(u16, vr) = *unpack<uint<16>>(v, hilti::ByteOrder::Little);
+hilti::print("L 0x%04x" % u16);
+(u16, vr) = *unpack<uint<16>>(v, hilti::ByteOrder::Big);
+hilti::print("B 0x%04x" % u16);
+
+}

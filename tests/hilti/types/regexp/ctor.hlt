@@ -1,0 +1,23 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global regexp re1 = /ghi/;
+global regexp re2;
+re2 = re1;
+global regexp re3 = /abc/ | /ghi/;
+global regexp re4 = /ghi/ &nosub;
+global regexp re5 = /ghi/ &nosub;
+global regexp re6;
+
+hilti::print(re1);
+hilti::print(re2);
+hilti::print(re3);
+hilti::print(re4);
+hilti::print(re5);
+hilti::print(re6);
+
+}

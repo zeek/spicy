@@ -1,0 +1,41 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = enum {
+    A1 = 1,
+    A2
+};
+
+type Y = enum {
+    B1,
+    B2
+};
+
+type Z = struct {
+    X x1;
+    X x2 &optional;
+    Y y1 &optional &default=Y::B1;
+};
+
+global X x = X::A1;
+global Y y;
+global Z z;
+
+hilti::print(x);
+hilti::print(y);
+hilti::print(X::A1);
+hilti::print(Y::B2);
+hilti::print(z);
+
+# Coercion to bool
+assert x;
+assert !y;
+assert X::A1;
+assert !X::Undef;
+assert x && X::A1 ;
+
+}

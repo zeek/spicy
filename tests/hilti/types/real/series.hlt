@@ -1,0 +1,53 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+# A series of operations, with load and stores in between.
+
+function void run() {
+    local real d1;
+    local real d2;
+    local real d3;
+    local real d4;
+    local bool b;
+
+    d1 = 42.0 + 84.100000;
+    hilti::print(d1);
+
+    d2 = d1 - 26.1;
+    hilti::print(d2);
+
+    d3 = d1 * d2;
+    hilti::print(d3);
+
+    d3 = d3 / 42.0;
+    hilti::print(d3);
+
+    b = d3 == d3;
+    hilti::print(b);
+
+    b = d3 == -42.0;
+    hilti::print(b);
+
+    b = d2 < d3;
+    hilti::print(b);
+
+    b = d3 < d2;
+    hilti::print(b);
+
+    b = d3 < d3;
+    hilti::print(b);
+
+    d3 = d1*1e3;
+    hilti::print(d3);
+
+    d3 = d1+1.;
+    hilti::print(d3);
+
+    return;
+}
+run();
+}

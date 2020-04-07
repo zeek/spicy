@@ -1,0 +1,11 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+    a: int8;
+    b: int8 if ( self.a == 1 );
+    c: int8 if ( self.a % 2 == 0 );
+    d: int8;
+
+    on %done { print self; }
+};

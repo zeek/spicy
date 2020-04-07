@@ -1,0 +1,14 @@
+# @TEST-EXEC:  printf '\000\001\000\002\000\003\377\377\n' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module HTTP;
+
+type Item = unit {
+    v:   uint16;
+};
+
+public type Test = unit {
+    lines: Item[] foreach { print $$; }
+    term: uint16(0xffff);
+    on %done { print self; }
+    };

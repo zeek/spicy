@@ -1,0 +1,31 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+
+function void do_unpack(bytes data, hilti::AddressFamily family, hilti::ByteOrder order, addr expected) {
+    local addr a;
+    local bytes r;
+    (a, r) = *unpack<addr>(data, family, order);
+    assert a == expected && r == b"XXX";
+}
+
+do_unpack(b"\xc0\xa8\x01\x01XXX", hilti::AddressFamily::IPv4, hilti::ByteOrder::Network, 192.168.1.1);
+do_unpack(b"\x20\x01\x0d\xb8\x00\x00\x00\x00\x00\x00\x00\x00\x14(W\xabXXX", hilti::AddressFamily::IPv6, hilti::ByteOrder::Network, [2001:db8::1428:57ab]);
+do_unpack(b"\x00\x01\x02\x03XXX", hilti::AddressFamily::IPv4, hilti::ByteOrder::Big, 0.1.2.3);
+do_unpack(b"\x00\x01\x02\x03XXX", hilti::AddressFamily::IPv4, hilti::ByteOrder::Little, 3.2.1.0);
+do_unpack(b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0fXXX", hilti::AddressFamily::IPv6, hilti::ByteOrder::Big, [1:203:405:607:809:a0b:c0d:e0f]);
+do_unpack(b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0fXXX", hilti::AddressFamily::IPv6, hilti::ByteOrder::Little, [f0e:d0c:b0a:908:706:504:302:100]);
+
+# Check that stream version works, too.
+local stream s = stream(b"\xc0\xa8\x01\x01XXX");
+local view<stream> v = s;
+local addr a;
+local view<stream> r;
+(a, r) = *unpack<addr>(v, hilti::AddressFamily::IPv4, hilti::ByteOrder::Network);
+assert a == 192.168.1.1 && r == b"XXX";
+
+}

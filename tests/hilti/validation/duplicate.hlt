@@ -1,0 +1,27 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT > output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+# Functions can be redefined.
+function void fun(int<32> i) {}
+function void fun(uint<32> i) {}
+
+# Modules can be imported multiple times.
+import hilti;
+import hilti;
+
+# Variables cannot be redefined in the same scope.
+global i = 1;
+global i = 2;
+}
+
+# @TEST-START-NEXT
+
+module Foo {
+
+# A symbol defined as function cannot be redefined as a variable.
+function void f(int<32> i) {}
+global f = 1;
+
+}

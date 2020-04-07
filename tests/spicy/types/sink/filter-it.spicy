@@ -1,0 +1,23 @@
+# @TEST-EXEC:  printf 'SGVsbG8sIFNwaWN5IQ==' | spicy-driver -i 1 -p Mini::Main %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import filter;
+
+public type Main = unit {
+    raw: bytes &eod -> self.data;
+
+    on %init {
+        self.data.connect(new Sub);
+        self.data.connect_filter(new filter::Base64Decode);
+    }
+
+    sink data;
+};
+
+public type Sub = unit {
+    msg: bytes &eod {
+        print self.msg;
+        }
+};

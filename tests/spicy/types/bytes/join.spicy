@@ -1,0 +1,5 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+print b".".join(vector("a", "b", "c"));

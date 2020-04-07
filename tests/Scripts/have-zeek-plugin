@@ -1,0 +1,5 @@
+#! /bin/sh
+#
+# Returns success if we have Zeek's Spicy plugin (and Zeek itself) available for testing
+
+spicy-config --zeek-plugin-path >/dev/null

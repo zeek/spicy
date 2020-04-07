@@ -1,0 +1,9 @@
+#! /bin/sh
+#
+# Returns success if we Spicy has been compiled with address sanitizer support.
+
+test "${USING_BUILD_DIRECTORY}" = 1 || exit 1
+
+base=$(cd $(dirname $0) && pwd)
+cache=$(${base}/build-directory)/CMakeCache.txt
+test -e ${cache} && grep -q "HILTI_HAVE_SANITIZER.*=yes" ${cache}

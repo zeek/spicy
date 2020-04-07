@@ -1,0 +1,27 @@
+# @TEST-EXEC-FAIL: ${SPICYC} -p %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+# `count` rejects incompatible types.
+
+module testing;
+
+public type U1 = unit() {
+  a: uint16;
+  b: int64[] &count = -1;
+};
+
+# @TEST-START-NEXT
+module testing;
+
+public type U2 = unit() {
+  a: uint16;
+  b: int64[] &count = True;
+};
+
+# @TEST-START-NEXT
+module testing;
+
+public type U3 = unit() {
+  a: uint16;
+  b: int64[] &count = 0.5;
+};

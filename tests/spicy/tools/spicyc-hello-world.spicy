@@ -1,0 +1,9 @@
+# @TEST-EXEC: ${SPICYC} -c %INPUT >test.hlt
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff test.hlt
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+print "Hello, world!";
+print "Hello", "world!";

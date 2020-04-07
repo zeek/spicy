@@ -1,0 +1,20 @@
+# @TEST-EXEC:  printf '\377\377\377\377' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+public type test = unit {
+     f: bitfield(32) {
+         x1: 0;
+         x2: 1..2;
+         x3: 3..4;
+     };
+
+     on f {
+         print self.f.x1;
+         print self.f.x2;
+         print self.f.x3;
+     }
+
+     on %done { print self; }
+};

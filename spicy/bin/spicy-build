@@ -1,0 +1,140 @@
+#! /bin/sh
+#
+# Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+usage() {
+    cat << EOF
+$(basename $0) [options] <input files>
+
+    -d          Build a debug version.
+    -o <file>   Destination name for the compiled executable; default is "a.out".
+    -S          Do not compile the "spicy-driver" host application into executable.
+    -v          Verbose output, display command lines executing.
+    -t          Do not delete tmp files (useful for inspecting, and use with debugger)
+
+Input files may be anything that spicyc can compile to C++.
+
+EOF
+}
+
+mktmp() {
+    base=$1
+    ext=$2
+    cnt=0
+    while : ; do
+        tmp=${dest}/${base}.${cnt}.tmp.${ext}
+        test -e ${tmp} || break
+        cnt=$((cnt + 1))
+    done
+    touch ${tmp}
+    echo ${tmp}
+}
+
+mkcc() {
+    tmp=$(mktmp $1 cc)
+    echo ${tmp}
+}
+
+execute() {
+    # Remove absolute path of executable
+    test "${verbose}" = 1 && echo $@ | sed 's#^[^ ]*/\([a-zA-Z+_-]\{1,\}\) #> \1 #'
+    $@
+}
+
+cleanup() {
+   test "${delete_tmps}" = 1 && rm -rf "${dest}"
+}
+
+### Main
+
+hiltic_flags=""
+spicy_config_flags=""
+verbose=0
+delete_tmps=1
+compile_spicy_driver=1
+out=a.out
+
+while getopts "hdo:Stv" opt; do
+    case "$opt" in
+        d)
+           hiltic_flags="${hiltic_flags} -d"
+           spicy_config_flags="--debug"
+           ;;
+
+        o) out=$OPTARG;;
+        S) compile_spicy_driver=0;;
+        t) delete_tmps=0;;
+        v) verbose=1;;
+
+        h) usage; exit 0;;
+        *) usage; exit 1;;
+    esac
+done
+
+shift $((${OPTIND} - 1))
+
+inputs=$@
+test -z "${inputs}" && usage && exit 1
+test -z "${out}" && usage && exit 1
+
+base=$(cd $(dirname $0)/.. && pwd)
+dest=$(pwd)/${out}.$$.tmp.d
+rm -rf "${dest}"
+mkdir -p "${dest}"
+
+trap cleanup EXIT
+
+for i in $(which hilti-config 2>/dev/null) ${base}/bin/hilti-config ${base}/build/bin/hilti-config; do
+   test -x $i && hilti_config=$i && break
+done
+
+for i in $(which spicy-config 2>/dev/null) ${base}/bin/spicy-config ${base}/build/bin/spicy-config; do
+   test -x $i && spicy_config=$i && break
+done
+
+if [ -z "${hilti_config}" ]; then
+    echo cannot find hilti-config
+    exit 1
+fi
+
+if [ -z "${spicy_config}" ]; then
+    echo cannot find spicy-config
+    exit 1
+fi
+
+cxx="$(${spicy_config} --cxx ${spicy_config_flags}) $(${spicy_config} --cxxflags ${spicy_config_flags})"
+ldflags="$(${spicy_config} --ldflags ${spicy_config_flags})"
+spicy_lib_dir=$(${spicy_config} --libdirs | sed 's/^\. //g') # A bit of a hack to get the dir we want ...
+spicy_driver=${spicy_lib_dir}/spicy-driver-host.cc
+
+rt_modules=""
+cxxs=""
+
+if [ "${compile_spicy_driver}" = 1 ]; then
+    rt_modules="${spicy_lib_dir}/filter.spicy"
+    cxxs="${spicy_driver}"
+fi
+
+n=0
+for i in ${inputs} ${rt_modules}; do
+    case "${i}" in
+        *.cc)
+            cc=${i}
+            ;;
+        *)
+            # Generate C++ code for HILTI/Spicy source.
+            cc=$(mkcc ${out})
+            execute $(${spicy_config} --spicyc) ${hiltic_flags} -c -o ${cc} ${i} || exit 1
+            ;;
+    esac
+
+   cxxs="${cxxs} ${cc}"
+done
+
+# Generate C++ linker code
+cc=$(mkcc ${out})
+execute $(${spicy_config} --spicyc) ${hiltic_flags} -l -o ${cc} ${cxxs} || exit 1
+cxxs="${cxxs} ${cc}"
+
+# Compile all C++ code into executable
+execute ${cxx} ${cxxs} ${ldflags} -o ${out} || exit 1

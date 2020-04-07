@@ -1,0 +1,13 @@
+# @TEST-REQUIRES: test "$BUILD" = "debug"
+# @TEST-EXEC-FAIL: ${HILTIC} -X location -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+local auto x = b"xyz";
+local auto i = begin(x);
+assert *i == 'x';
+x = b"";
+assert *i == 'x'; # will throw
+
+}

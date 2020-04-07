@@ -1,0 +1,2 @@
+[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.wrong-cast/wrong-cast.spicy:8: cannot resolve operator: cast<<type<string>>>(<int<32>>)
+[error] spicyc: aborting after errors

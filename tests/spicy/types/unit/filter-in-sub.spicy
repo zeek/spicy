@@ -1,0 +1,42 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: printf 'abcdefghij' | spicy-driver -p Mini::Main %INPUT.hlto >output
+# @TEST-EXEC: printf 'abcdefghij' | spicy-driver -p Mini::Main -i 1 %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type Main = unit {
+    # Disable trimming, as that means the subunit will get the full data
+    # instances and must pay attention to its current view.
+    %random-access
+
+    a: bytes &size=5;
+    b: Sub;
+
+    on %done {
+        print self;
+    }
+};
+
+public type Sub = unit {
+    s1: bytes &size=3;
+    s2: bytes &size=2;
+
+    on %init {
+        self.connect_filter(new MyFilter);
+    }
+
+    on %done {
+        print self;
+    }
+};
+
+type MyFilter = unit {
+    %filter
+
+    x: bytes &size=1 { self.forward(self.x.upper()); }
+    y: bytes &size=2 { self.forward(self.y.upper()); }
+    z: bytes &size=2 { self.forward(self.z.upper()); }
+};

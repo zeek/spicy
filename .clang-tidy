@@ -1,0 +1,46 @@
+---
+Checks: 'bugprone,
+         cert,
+         clang,
+         misc,
+         modernize,
+         performance,
+         portability,
+         readability,
+
+         -bugprone-exception-escape,
+         -bugprone-forward-declaration-namespace,
+         -bugprone-macro-parentheses,
+         -bugprone-suspicious-semicolon,
+         -bugprone-unhandled-self-assignment,
+         -cert-err58-cpp,
+         -cert-oop54-cpp,
+         -clang-diagnostic-c++2a-designator,
+         -clang-diagnostic-deprecated-copy,
+         -clang-diagnostic-range-loop-analysis,
+         -misc-macro-parentheses,
+         -misc-non-private-member-variables-in-classes,
+         -misc-suspicious-semicolon,
+         -misc-unused-parameters,
+         -modernize-avoid-c-arrays,
+         -modernize-use-equals-default,
+         -modernize-use-nodiscard,
+         -modernize-use-trailing-return-type,
+         -readability-braces-around-statements,
+         -readability-container-size-empty,
+         -readability-convert-member-functions-to-static,
+         -readability-else-after-return,
+         -readability-implicit-bool-conversion,
+         -readability-isolate-declaration,
+         -readability-magic-numbers,
+         -readability-make-member-function-const,
+         -readability-named-parameter,
+         -readability-qualified-auto,
+         '
+
+HeaderFilterRegex: '/include/(hilti|spicy)/[^3].*/[^_][^_][^/]*$'
+WarningsAsErrors: '*'
+
+CheckOptions:
+      - key:             performance-unnecessary-value-param.AllowedTypes
+        value:           hilti::NodeRef

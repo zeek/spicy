@@ -1,0 +1,367 @@
+
+.. _types:
+
+=====
+Types
+=====
+
+.. _type_address:
+
+Address
+-------
+
+The address type stores both IPv4 and IPv6 addresses.
+
+.. rubric:: Type
+
+- ``addr``
+
+.. rubric:: Constants
+
+- IPv4: ``1.2.3.4``
+- IPv6: ``[2001:db8:85a3:8d3:1319:8a2e:370:7348]``, ``[::1.2.3.4]``
+
+.. include:: /../html/autogen/types/address.rst
+
+.. _type_bitfield:
+
+Bitfield
+--------
+
+Bitfields provide access to individual bitranges inside an unsigned
+integer. That can't be instantiated directly, but must be defined and
+parsed inside a unit.
+
+.. rubric:: Type
+
+- ``bitfield(N) { RANGE_1; ...; RANGE_N }``
+- Each ``RANGE`` has one of the forms ``LABEL: A`` or ``LABEL: A..B``
+  where ``A`` and ``B`` are a bit numbers.
+
+.. include:: /../html/autogen/types/bitfield.rst
+
+.. _type_bool:
+
+Bool
+----
+
+Boolean values can be true or false.
+
+.. rubric:: Type
+
+- ``bool``
+
+.. rubric:: Constants
+
+- ``True``, ``False``
+
+.. include:: /../html/autogen/types/bool.rst
+
+.. _type_bytes:
+
+Bytes
+-----
+
+Bytes instances store raw, opaque data. They provide iterators to
+traverse their content.
+
+.. rubric:: Types
+
+- ``bytes``
+- ``iterator<bytes>``
+
+.. rubric:: Constants
+
+- ``b"Spicy"``, ``b""``
+
+.. include:: /../html/autogen/types/bytes.rst
+.. include:: /../html/autogen/types/bytes-iterator.rst
+
+.. _type_enum:
+
+Enum
+----
+
+Enum types associate labels with a numerical values.
+
+.. rubric:: Type
+
+- ``enum { LABEL_1; ... LABEL_N }``
+- Each label has the form ``ID [= VALUE]``. If ``VALUE`` is skipped,
+  one will be assigned automatically.
+
+- Each enum type comes with an implicitly defined ``Undef`` label with
+  a value distinct from all other ones. When coerced into a boolean,
+  an enum will be true iff it's not ``Undef``.
+
+.. note:: An instance of a enum can assume a numerical value that does
+   not map to any of its defined label. If printed, it will render
+   into ``<unknown-N>`` in that case, with ``N`` being its value.
+
+.. rubric:: Constants
+
+- The individual labels represent constants of the corresponding type
+  (e.g., ``MyEnum::MyFirstLabel`` is a constant of type ``MyEnum``).
+
+.. include:: /../html/autogen/types/enum.rst
+
+.. _type_exception:
+
+Exception
+---------
+
+.. todo:: This isn't available in Spicy yet (:issue:`89`).
+
+.. _type_integer:
+
+Integer
+-------
+
+Spicy distinguishes between signed and unsigned integers, and always
+requires specifying the bitwidth of a type.
+
+.. rubric:: Type
+
+- ``intN`` for signed integers, where ``N`` can be one of 8, 16, 32, 64.
+- ``uintN`` for signed integers, where ``N`` can be one of 8, 16, 32, 64.
+
+.. rubric:: Constants
+
+- Unsigned integer: ``1234``, ``+1234``, ``uint8(42)``, ``uint16(42)``, ``uint32(42)``, ``uint64(42)``
+- Signed integer: ``-1234``, ``int8(42)``, ``int8(-42)``, ``int16(42)``, ``int32(42)``, ``int64(42)``
+
+.. include:: /../html/autogen/types/integer.rst
+
+.. _type_port:
+
+Port
+----
+
+Ports represent the combination of a numerical port number and an
+associated transport-layer protocol.
+
+.. rubric:: Type
+
+- ``port``
+
+.. rubric:: Constants
+
+- ``443/tcp``, ``53/udp``
+
+.. include:: /../html/autogen/types/port.rst
+
+.. _type_real:
+
+Real
+----
+
+"Real" values store floating points with double precision.
+
+.. rubric:: Type
+
+- ``real``
+
+.. rubric:: Constants
+
+- ``3.14``, ``10e9``, ``0x1.921fb78121fb8p+1``
+
+.. include:: /../html/autogen/types/real.rst
+
+.. _type_regexp:
+
+Regular Expression
+------------------
+
+Spicy's provide POSIX-style regular expressions.
+
+.. rubric:: Type
+
+- ``regexp``
+
+.. rubric:: Constants
+
+- ``/Foo*ba?r/``, ``/X(..)(..)(..)Y/``
+
+Regular expressions use the extended POSIX syntax, with a few smaller
+differences and extensions:
+
+- Supported character classes are: ``[:lower:]``, ``[:upper:]``,
+  ``[:digit:]``, ``[:upper:]``, ``[:blank:]``.
+- ``\b`` asserts a word-boundary, ``\B`` matches asserts no word
+  boundary.
+- ``{#<number>}`` associates a numerical ID with a regular expression
+  (useful for set matching).
+
+
+.. include:: /../html/autogen/types/regexp.rst
+
+.. _type_sink:
+
+Sink
+----
+
+Sinks act as a connector between two units, facilitating feeding the
+output of one as input into the other. See :ref:`sinks` for a full
+description.
+
+Sinks are special in that they don't represent a type that's generally
+available for instantiation. Instead they need to be declared as the
+member of unit using the special ``sink`` keyword. You can, however,
+maintain references to sinks by assigning the unit member to a variable
+of type ``Sink&``.
+
+.. include:: /../html/autogen/types/sink.rst
+
+.. rubric: Hooks
+
+Sinks provide a set of dedicated unit hooks as callbacks for the
+reassembly process. These must be implemented on the reader side,
+i.e., the unit that's connected to a sink.
+
+.. spicy:method:: %on_gap sink %on_gap False - (seq: uint64, len: uint64)
+
+.. spicy:method:: %on_overlap sink %on_overlap False - (seq: uint64, old: data, new: data)
+
+Triggered when reassembly encounters a 2nd version of data for
+sequence space already covered earlier. *seq* is the start of the
+overlap, and *old*/*new* the previous and the new data, respectively.
+This hook is just for informational purposes, the policy set with
+:spicy:method:`sink::set_policy` determines how the reassembler
+handles the overlap.
+
+.. spicy:method:: %on_skipped sink %on_skipped False - (seq: uint64)
+
+Any time :spicy:method:`sink::skip`   moves ahead in the input stream, this hook reports
+the new sequence number *seq*.
+
+.. spicy:method:: %on_undelivered sink %on_skipped False - (seq: uint64, data: bytes)
+
+If data still buffered is skipped over through
+:spicy:method:`sink::skip` , it will be passed to this hook before
+being adjusting the current position. *seq* the starting sequence
+number of the data, *data* the data itself.
+
+.. _type_stream:
+
+Stream
+------
+
+A ``stream`` is data structure aimed at efficiently representing a
+potentially large, incrementally built input stream of raw data. You
+can think of it as a :ref:`type_bytes` type that's optimized for (1)
+efficiently appending new chunks of data at the end, and (2) trimming
+data no longer needed at the beginning. Other than those two
+operation, stream data cannot be modified; there's no way to change
+the actual content of a stream once it has been added. Streams
+provides *iterators* for traversal, and *views* for limiting
+visibility to a smaller window into the total stream.
+
+Streams are key to Spicy's parsing process, although most of that
+happens behind the scenes. Most likely you will encounter them when
+using :ref:`random_access`. They may also be useful for buffering
+larger volumes of data during processing.
+
+.. rubric:: Types
+
+- ``stream``
+- ``iterator<stream>``
+- ``view<stream>``
+
+.. include:: /../html/autogen/types/stream.rst
+.. include:: /../html/autogen/types/stream-iterator.rst
+.. include:: /../html/autogen/types/stream-view.rst
+
+.. _type_string:
+
+String
+------
+
+Strings store readable text that's associated with a given character
+set. Internally, Spicy stores them as UTF-8.
+
+.. rubric:: Type
+
+- ``string``
+
+.. rubric:: Constants
+
+- ``"Spicy"``, ``""``
+- When specifying string constants, Spicy assumes them to be in UTF-8.
+
+.. include:: /../html/autogen/types/string.rst
+
+.. _type_tuple:
+
+Tuple
+-----
+
+Tuples are heterogeneous containers of a fixed, ordered set of types.
+
+.. rubric:: Type
+
+- ``tuple<TYPE_1, ...TYPE_N``
+
+.. rubric:: Constants
+
+- ``(1, "string", True)``, ``(1, )``, ``()``
+
+.. include:: /../html/autogen/types/tuple.rst
+
+.. _type_unit:
+
+Unit
+----
+
+.. rubric:: Type
+
+- ``unit { FIELD_1; ...; FIELD_N }``
+
+- See :ref:`parsing` for a full discussion of unit types.
+
+.. rubric:: Constants
+
+- Spicy doesn't support unit constants, but you can initialize unit
+  instances through coercion from a list expression: ``my_unit =
+  [$FIELD_1 = X_1, $FIELD_N = X_N, ...]`` where ``FIELD_I`` is the
+  label of a corresponding field in ``my_unit``'s type.
+
+.. include:: /../html/autogen/types/unit.rst
+.. include:: /../html/autogen/types/struct.rst
+
+.. _type_vector:
+
+Vector
+------
+
+Vectors are homogeneous containers, holding a set of elements of a
+given element type. They provide iterators to traverse their content.
+
+.. rubric:: Types
+
+- ``vector<T>`` specifies a vector with elements of type ``T``.
+- ``iterator<vector<T>>``
+
+.. rubric:: Constants
+
+- ``vector(E_1, E_2, ..., E_N)`` creates a vector of ``N`` elements.
+  The values ``E_I`` must all have the same type. ``vector()`` creates
+  an empty vector of unknown element type; this cannot be used
+  directly but must be coerced into a fully-defined vector type first.
+
+- Vectors can be initialized through coercions from a list value:
+  ``vector<string> I = ["A", "B", "C"]``.
+
+.. include:: /../html/autogen/types/vector.rst
+.. include:: /../html/autogen/types/vector-iterator.rst
+
+.. _type_void:
+
+Void
+----
+
+The void type is place holder for specifying "no type", such as when a
+function doesn't return anything.
+
+.. rubric:: Type
+
+- ``void``

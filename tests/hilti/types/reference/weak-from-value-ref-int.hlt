@@ -1,0 +1,32 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = value_ref<int<64>>;
+global weak_ref<int<64>> r;
+
+function void foo() {
+    local X x = 32;
+    r = x;
+    hilti::print(("init", x, r));
+}
+
+foo();
+hilti::print(("main", r));
+
+global catches = 0;
+
+try {
+    hilti::print(*r);
+    assert False;
+} catch ( hilti::RuntimeError e ) {
+    ++catches;
+}
+
+assert catches == 1;
+
+
+}

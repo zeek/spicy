@@ -1,0 +1,19 @@
+- Generally, keep global state to a mininum and add it to
+  hilti::rt::detail::GlobalState instead of creating actual globals.
+  This applies to static class members, too.
+
+- If you really have to create a global or static class member (which
+  should be rare), do not use types that have global constructors. JIT
+  is easier if we don't need to support them (and we don't).
+
+- Make sure accesses to state in hilti::rt::detail::GlobalState is
+  thread-safe.
+
+  TODO: Actually right now it is not, need to go througn and add
+  synchronization where necessary. (Or maybe an accessor object that
+  locks the state automatically)
+
+- TODO: The separation of internal details and public API isn't great
+  yet. Should move factor out much of the headers into a separate
+  `detail/` tree, and then also move more from the public namespace
+  into the `detail` namespace.

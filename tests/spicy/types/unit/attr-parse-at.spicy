@@ -1,0 +1,24 @@
+# @TEST-EXEC:  printf 1234567890 | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+type Foo = unit {
+    all: bytes &size=10;
+};
+
+public type test = unit {
+    %random-access
+
+    a: bytes &size=4;
+    b: bytes &size=4;
+
+    C: Foo &parse-at=self.input();
+
+    d: bytes &size=2;
+
+    on %done {
+        print self.a, self.b, self.C.all, self.d;
+        }
+
+};

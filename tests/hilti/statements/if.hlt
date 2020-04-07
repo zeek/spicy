@@ -1,0 +1,56 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+if ( True )
+    hilti::print("1 - correct");
+else
+    hilti::print("1 - incorrect");
+
+if ( True ) {
+    hilti::print("2a - correct");
+    hilti::print("2b - correct");
+    }
+else
+    hilti::print("2 - incorrect");
+
+if ( False )
+    hilti::print("3 - incorrect");
+else
+    hilti::print("3 - correct");
+
+if ( False )
+    hilti::print("2 - incorrect");
+else {
+    hilti::print("2a - correct");
+    hilti::print("2b - correct");
+}
+
+if ( True )
+    hilti::print("3 - correct");
+
+if ( False )
+    hilti::print("4 - incorrect");
+
+hilti::print("(4 should be missing)");
+
+if ( local auto x = 42 )
+    hilti::print("5 - correct - %u" % x);
+
+if ( local auto x = 0 )
+    hilti::print("6 - incorrect - %u" % x);
+else
+    hilti::print("6 - correct - %u" % x);
+
+if ( local auto x = "foo"; x == "foo" )
+    hilti::print("7 - correct - %s" % x);
+
+if ( local auto x = "foo"; x == "bar" )
+    hilti::print("8 - incorrect - %s" % x);
+else
+    hilti::print("8 - correct - %s" % x);
+
+}

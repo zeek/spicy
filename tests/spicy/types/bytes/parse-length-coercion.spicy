@@ -1,0 +1,13 @@
+# @TEST-EXEC: printf 'abc12345def' | spicy-driver %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type X = unit {
+    b1 : b"abc";
+    b2 : bytes &size=self.len;
+    b3 : b"def";
+
+    var len: uint8 = 5;
+    on %done { print self.b1, self.b2, self.b3; }
+};

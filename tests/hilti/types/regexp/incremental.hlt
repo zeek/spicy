@@ -1,0 +1,19 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global auto re1 = /1234ABCDEF*/ &nosub;
+global auto m = re1.token_matcher();
+
+function void feed(bytes data, bool is_final = False) {
+    hilti::print(m.advance(data, is_final));
+}
+
+feed(b"1234");
+feed(b"AB");
+feed(b"CDEFFF", True);
+
+}

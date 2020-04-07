@@ -1,0 +1,3 @@
+Sub , [$s1=b"34", $s2=b"567abcde"]
+Main, [$a=b"12", $b=b"34567", $c=b"890", $data=<sink>]
+Sub3 , [$s=b"34567abcde"]

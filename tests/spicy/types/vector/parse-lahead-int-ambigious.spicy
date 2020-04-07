@@ -1,0 +1,17 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+
+module HTTP;
+
+type Item = unit {
+    x: uint8(0x01);
+    y: uint16;
+};
+
+public type Test = unit {
+    a: Item[];
+    b: uint8(0x01);
+
+    on %done { print self; }
+    };

@@ -1,0 +1,28 @@
+[$a=b"1", $b1=b"2345", $b2=(not set), $b3=(not set), $c=b"67890"]
+2345
+noe
+noe
+2345
+nope
+nope
+[$a=b"2", $b1=(not set), $b2=b"2345", $b3=(not set), $c=b"67890"]
+noe
+2345
+noe
+nope
+2345
+nope
+[$a=b"3", $b1=(not set), $b2=b"2345", $b3=(not set), $c=b"67890"]
+noe
+2345
+noe
+nope
+2345
+nope
+[$a=b"4", $b1=(not set), $b2=(not set), $b3=b"2345", $c=b"67890"]
+noe
+noe
+2345
+nope
+nope
+2345

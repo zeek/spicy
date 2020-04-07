@@ -1,0 +1,15 @@
+# @TEST-EXEC: printf 1234567890 | spicy-driver -d %INPUT >>output
+# @TEST-EXEC: printf 1234567890 | spicy-driver %INPUT >>output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type test = unit {
+    a: /1234/ %debug {
+        print self.a;
+    }
+
+    b: /567890/;
+
+    on b %debug { print self.b; }
+};

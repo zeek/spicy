@@ -1,0 +1,30 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+function void do_unpack(bytes data, hilti::RealType family, hilti::ByteOrder order, string expected) {
+    local real a;
+    local bytes r;
+    (a, r) = *unpack<real>(data, family, order);
+    assert ("%f" % a) == expected && r == b"XXX";
+}
+
+# We match expected values as string since floats/double don't compare well directly for equality.
+# See https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+do_unpack(b"@H\xf5\xc3XXX", hilti::RealType::IEEE754_Single, hilti::ByteOrder::Big, "3.140000");
+do_unpack(b"\xcd\xcc\x84\xc0XXX", hilti::RealType::IEEE754_Single, hilti::ByteOrder::Little, "-4.150000");
+do_unpack(b"\x40\x28\xB0\xFC\xD3\x2F\x6F\x3BXXX", hilti::RealType::IEEE754_Double, hilti::ByteOrder::Big, "12.345679");
+do_unpack(b"\x3B\x6F\x2F\xD3\xFC\xB0\x28\x40XXX", hilti::RealType::IEEE754_Double, hilti::ByteOrder::Little, "12.345679");
+
+# Check that stream version works, too.
+local stream s = stream(b"@H\xf5\xc3XXX");
+local view<stream> v = s;
+local real a;
+local view<stream> r;
+(a, r) = *unpack<real>(v, hilti::RealType::IEEE754_Single, hilti::ByteOrder::Big);
+assert ("%f" % a) == "3.140000" && r == b"XXX";
+
+}

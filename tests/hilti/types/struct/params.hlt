@@ -1,0 +1,45 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type F = struct {
+    int<64> i &default=0;
+};
+
+# Parameters require coercion with our arguments.
+type S = struct(string X, real Y, inout value_ref<F> f, strong_ref<F> g) {
+    method void test(string A, real B);
+};
+
+method void S::test(string A, real B) {
+    assert A == X;
+    assert B == Y;
+    f.i = 1;
+}
+
+global value_ref<F> f1;
+global auto s1 = new S("a", 3, f1, Null);
+assert f1.i == 0;
+s1.test("a", 3);
+assert f1.i == 1;
+
+global value_ref<F> f2;
+global S s2("b", 4, f2, Null);
+assert f2.i == 0;
+s2.test("b", 4);
+assert f2.i == 1;
+
+x();
+
+function void x() {
+    local value_ref<F> f3;
+    local S s3("c", 5, f3, Null);
+    assert f3.i == 0;
+    s3.test("c", 5);
+    assert f3.i == 1;
+}
+
+}

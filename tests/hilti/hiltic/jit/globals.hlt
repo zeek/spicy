@@ -1,0 +1,12 @@
+# @TEST-EXEC: ${HILTIC} -j -D compiler,jit %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+global string X = "Hello, world!";
+
+import hilti;
+
+hilti::print(X);
+
+}

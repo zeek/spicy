@@ -1,0 +1,27 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global auto re1 = /Foo|Bar/;
+global auto re2 = /^(Foo|Bar)/;
+
+global regexp re3;
+re3 = re1;
+
+hilti::print((1, True,  re1.find(b"Hello Foo!")));
+hilti::print((2, True,  re1.find(b"Hello Bar!")));
+hilti::print((3, False, re1.find(b"Hello Nobody!")));
+hilti::print((4, True,  re2.find(b"Foo!")));
+hilti::print((5, False, re2.find(b"Hello Foo!")));
+hilti::print((6, True,  re3.find(b"Hello Bar!")));
+hilti::print((7, False, re3.find(b"Hello Nobody!")));
+
+global auto re4 = /Foo|Bar!!!/;
+hilti::print((8, False, re4.find(b"Bar")));
+hilti::print((9, False, re4.find(b"Fo")));
+hilti::print((10, False, re4.find(b"Bar!!!")));
+
+}

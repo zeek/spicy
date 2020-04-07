@@ -1,0 +1,46 @@
+# @TEST-EXEC: ${HILTIC} -P -o Foo.h %INPUT
+# @TEST-EXEC: ${HILTIC} -j %INPUT driver.cc >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type T = struct {
+    method extern int<64> test(int<64> v) &static;
+};
+
+global T t;
+
+method extern int<64> T::test(int<64> v) &static {
+    return v + 2;
+}
+
+}
+
+@TEST-START-FILE driver.cc
+
+#include <hilti/rt/libhilti.h>
+
+#include "Foo.h"
+
+extern "C" int hilti_main() { // Point of entry for JIT
+    auto r = hlt::Foo::T::test(20);
+
+    while ( ! r ) {
+        std::cout << "suspended, resuming" << std::endl;
+        r.resume();
+    }
+
+    std::cout << "Done, result: " << r.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

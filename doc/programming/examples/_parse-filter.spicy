@@ -1,0 +1,15 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+type Filter = unit {
+    %filter
+
+    : bytes &eod &chunked {
+        self.forward($$.upper());
+    }
+};
+
+public type Foo = unit {
+    on %init { self.connect_filter(new Filter); }
+    x: bytes &size=5 { print self.x; }
+};

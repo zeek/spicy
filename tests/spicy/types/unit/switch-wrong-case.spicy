@@ -1,0 +1,15 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC-FAIL:  ${SPICYC} -c %INPUT >output 2>&1
+# @TEST-EXEC:       btest-diff output
+
+module Mini;
+
+public type test = unit {
+
+       a: bytes &size=1;
+
+       switch ( self.a ) {
+           b"1" -> b1: bytes &size=4 &default=b"<not set>";
+           2    -> b2: bytes &size=4 &default=b"<not set>";
+           };
+};

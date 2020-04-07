@@ -1,0 +1,21 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: echo "SGVsbG8sIFNwaWN5IQo=" | spicy-driver -p Test::X %INPUT.hlto >output
+# @TEST-EXEC: echo "SGVsbG8sIFNwaWN5IQo=" | spicy-driver -i 1 -p Test::X %INPUT.hlto >>output
+# @TEST-EXEC: echo "SGVsbG8sIFNwaWN5IQo=" | spicy-driver -d -p Test::X  %INPUT.hlto >>output
+# @TEST-EXEC: echo "SGVsbG8sIFNwaWN5IQo=" | spicy-driver -d -i 1 -p Test::X %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-GROUP: spicy-core
+
+module Test;
+
+import spicy;
+import filter;
+
+public type X = unit {
+    b1: bytes &size=5;
+    b2: bytes &size=5;
+    b3: bytes &size=4;
+    on %init { self.connect_filter(new filter::Base64Decode); }
+    on %done { print self; }
+};

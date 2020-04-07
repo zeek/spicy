@@ -1,0 +1,5 @@
+[$lines=(not set), $dashes=(not set), $last=(not set)]
+  item: [$line=b"AAA\\n"]
+  item: [$line=b"BBB\\n"]
+  item: [$line=b"CCC\\n"]
+[$lines=[[$line=b"AAA\n"], [$line=b"BBB\n"], [$line=b"CCC\n"]], $dashes=b"---\n", $last=b"XXX\n"]

@@ -1,0 +1,25 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+type X = struct {
+    string s;
+    bytes b;
+};
+
+global X x;
+x.s = "Test\n";
+x.b = b"Test\n";
+
+
+hilti::print("Test\n");
+hilti::print(b"Test\n");
+hilti::print(["Test\n"]);
+hilti::print([b"Test\n"]);
+hilti::print("%s" % "Test\n");
+hilti::print("%s" % b"Test\n");
+
+}

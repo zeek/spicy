@@ -1,0 +1,18 @@
+# @TEST-EXEC-FAIL: spicy-driver %INPUT </dev/null 2>output
+# @TEST-EXEC: btest-diff output
+#
+# Make sure we catch the type mismatch.
+
+module Test;
+
+import spicy;
+
+type X = unit(byteorder: string, expected: uint32) {
+  %byte-order = byteorder;
+  x: uint32 { assert self.x == expected; }
+};
+
+public type Y = unit {
+    a: X("little", 0x04030201) &parse=b"\x01\x02\x03\x04";
+    b: X("big",    0x01020304) &parse=b"\x01\x02\x03\x04";
+};

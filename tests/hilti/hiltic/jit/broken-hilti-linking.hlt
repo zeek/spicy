@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# Check that a failure with the HILTI linker's code doesn't produce leaks or other unexpected output.
+
+module Test {
+
+declare public time does_not_exist();
+
+does_not_exist();
+
+}

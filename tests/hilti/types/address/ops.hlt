@@ -1,0 +1,28 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+global a1 = 1.2.3.4;
+global a2 = [2001:db8:85a3:8d3:1319:8a2e:370:7348];
+global addr a3 = [::1.2.3.4];
+
+global hilti::AddressFamily family;
+
+hilti::print(a1);
+hilti::print(a2);
+hilti::print(a3);
+
+assert a1 != a2;
+assert a1 == a3;
+assert a1.family() == hilti::AddressFamily::IPv4;
+assert a1.family() == a3.family();
+assert a2.family() != a3.family();
+
+family = a1.family();
+hilti::print(family);
+hilti::print(a2.family());
+
+}

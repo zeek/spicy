@@ -1,0 +1,24 @@
+# @TEST-EXEC: echo 1234567890ab | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+type Foo = unit {
+    : bytes &size=1 { print "1", $$; }
+    y: bytes &size=1 { print "2", $$; }
+
+    on %done { print self; }
+};
+
+public type test = unit {
+       : bytes &size=2 { print "3", $$; }
+       b: bytes &size=2 { print "4", $$; }
+       : Foo { print "5", $$; }
+       c: bytes &size=2 { print "6", $$; }
+       : uint8[2] foreach { print "|", $$; }
+       d : bytes &size=2 { print "7", $$; }
+
+       on %done {
+           print self;
+       }
+};

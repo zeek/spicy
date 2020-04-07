@@ -1,0 +1,8 @@
+1, [$x=b"234"]
+[$a=[$x=b"234"], $b=(not set), $c=(not set), $d=(not set), $y=b"567890"]
+2, [$x=b"234"]
+[$a=(not set), $b=[$x=b"234"], $c=(not set), $d=(not set), $y=b"567890"]
+3, [$x=b"234"]
+[$a=(not set), $b=(not set), $c=[$x=b"234"], $d=(not set), $y=b"567890"]
+D, [$x=b"234"]
+[$a=(not set), $b=(not set), $c=(not set), $d=[$x=b"234"], $y=b"567890"]

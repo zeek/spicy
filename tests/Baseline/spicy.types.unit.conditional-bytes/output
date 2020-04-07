@@ -1,0 +1,2 @@
+[$len=2, $cond=0, $a=2, $x=(not set), $y=(not set), $z=3]
+[$len=2, $cond=1, $a=2, $x=b"\x03", $y=4, $z=5]

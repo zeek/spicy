@@ -1,0 +1,83 @@
+#! /bin/sh
+
+getClasses() {
+    includes=$1
+    base=$2
+    ns=$3
+
+    for f in $(find ${includes} -type f -name '*h'); do
+
+        cat ${f} | awk -v "base=${base}" '
+BEGIN {cls[base] = base}
+/^ *\/\/ *CHECK:/ { if ( $5 == base ) cls[$3] = 1; }
+!/class.* *: *public / { next; }
+$2 in cls { next; } { for ( c in cls ) if ( $0 ~ c ) print $2;}
+' | while read i; do echo ${ns}::$i; done;
+    done | grep -v expression::ResolvedOperatorBase
+}
+
+getOperators() {
+    includes=$1
+    for f in $(find ${includes} -type f -name '*h'); do
+        cat $f | awk -F '[,()]' '/^(STANDARD_|BEGIN_(OPERATOR|METHOD))/ { gsub(/^[ \t]+/,"",$3); printf "operator_::%s::%s\n", $2, $3; };'
+    done | grep -v operator_::ns::op
+}
+
+checkNodes() {
+    includes=$1
+    base=$2
+    ns=$3
+    file=$4
+
+    for n in $(getClasses ${includes} ${base} ${ns}); do
+        find_visitor ${n} ${file}
+    done
+}
+
+find_visitor() {
+    if ! grep -q "$1" $2; then
+        error "$1 visitor missing in $2"
+    fi
+}
+
+####
+
+error() {
+    echo "error: $@" >&2
+    have_errors=1
+}
+
+
+### Main
+
+if [ $# != 1 ]; then
+    echo "Usage: $(basename $0) <top-level-dist-dir>" >&2
+    exit 1
+fi
+
+basedir=$1
+have_errors=0
+
+cd ${basedir}
+
+for file in hilti/include/hilti/ast/nodes.decl hilti/src/compiler/visitors/printer.cc hilti/src/compiler/visitors/validator.cc; do
+    for x in isCtor:ctor isDeclaration:declaration isExpression:expression isStatement:statement TypeBase:type; do
+        base=$(echo ${x} | cut -d : -f 1)
+        ns=$(echo ${x} | cut -d : -f 2)
+        checkNodes hilti/include ${base} ${ns} ${file}
+    done
+done
+
+for n in $(getOperators hilti/include/ast/operators); do
+      find_visitor ${n} hilti/src/compiler/codegen/operators.cc
+done
+
+for file in spicy/include/spicy/ast/nodes.decl spicy/src/compiler/visitors/validator.cc; do
+    for x in isCtor:ctor isDeclaration:declaration isExpression:expression isStatement:statement TypeBase:type; do
+        base=$(echo ${x} | cut -d : -f 1)
+        ns=$(echo ${x} | cut -d : -f 2)
+        checkNodes spicy/include ${base} ${ns} ${file}
+    done
+done
+
+test "${have_errors}" = 0

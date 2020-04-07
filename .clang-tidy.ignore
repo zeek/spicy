@@ -1,0 +1,10 @@
+# Paths to source files to ignore when running clang-tidy. This is
+# evaluated by scripts/run-clang-tidy.
+#
+# Note that this doesn't catch header files to ignore. We use a
+# combination of HeaderFilterRegex and file names starting with "__" to
+# select which headers to skip.
+
+.*/3rdparty/
+hilti/src/rt/types/regexp.cc # Too many warnings due to usage of jrx C API.
+tests/

@@ -1,0 +1,16 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: printf "\241" | spicy-driver %INPUT.hlto >output 2>&1
+# @TEST-EXEC: printf "\265" | spicy-driver %INPUT.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type test = unit {
+
+       a: bytes &size=1;
+
+       switch ( self.a ) {
+           b"\xa1" -> : void { print 1; }
+           b"\xb5" -> : void { print 2; }
+           };
+};

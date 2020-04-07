@@ -1,0 +1,36 @@
+# @TEST-GROUP: no-jit
+#
+# Test that links two modules *separately*.
+#
+# @TEST-EXEC: ${HILTIC} -c -o world1.cc world1.hlt
+# @TEST-EXEC: ${HILTIC} -l -o linker1.cc world1.cc
+# @TEST-EXEC: cxx-compile -c -o world1.o world1.cc
+# @TEST-EXEC: cxx-compile -c -o linker1.o linker1.cc
+#
+# @TEST-EXEC: ${HILTIC} -c -o world2.cc world2.hlt
+# @TEST-EXEC: ${HILTIC} -l -o linker2.cc world2.cc
+# @TEST-EXEC: cxx-compile -c -o world2.o world2.cc
+# @TEST-EXEC: cxx-compile -c -o linker2.o linker2.cc
+#
+# @TEST-EXEC: cxx-link -o a.out world1.o linker1.o world2.o linker2.o
+# @TEST-EXEC: ./a.out >output
+# @TEST-EXEC: btest-diff output
+
+@TEST-START-FILE world1.hlt
+
+module World1 {
+global string X = "Hello, world 1!";
+import hilti;
+hilti::print(X);
+}
+
+@TEST-END-FILE
+@TEST-START-FILE world2.hlt
+
+module World2 {
+global string X = "Hello, world 2!";
+import hilti;
+hilti::print(X);
+}
+
+@TEST-END-FILE

@@ -1,0 +1,13 @@
+# @TEST-EXEC:  printf '\304\304' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type test = unit {
+       s1: bytes &size=1 &convert=$$.to_int(spicy::ByteOrder::Network);
+       s2: bytes &size=1 &convert=$$.to_uint(spicy::ByteOrder::Network);
+
+       on %done { print self; }
+};

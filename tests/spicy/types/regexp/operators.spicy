@@ -1,0 +1,27 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# Basic functionality tests for Spicy. HILTI provides the main tests for the type.
+
+module Test;
+
+import spicy;
+
+global r1 = /^Fo+Ba+r/;
+global r2 = /X(..)(..)(..)Y/;
+
+assert r1.find(b"FooBar") > 0;
+assert r1.find(b"FooB") < 0;
+assert r1.find(b"FxxBxxr") == 0;
+
+assert r2.find_groups(b"X123456Y") == [b"X123456Y", b"12", b"34", b"56"];
+assert r2.find_groups(b"XXXX") == [];
+assert r2.find_span(b"xxxX123456Yyyy") == (1, b"X123456Y");
+
+global ms: spicy::MatchState = r2.token_matcher();
+assert ms.advance(stream(b"X12")) == (-1, stream(b""));
+assert ms.advance(stream(b"345")) == (-1, stream(b""));
+
+local x = stream(b"6Y");
+x.freeze();
+assert ms.advance(x) == (1, stream(b""));

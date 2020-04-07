@@ -1,0 +1,50 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+
+module Foo;
+
+global uok = 0xFFFFFFFFFFFFFFFF;
+global iok = -0x8000000000000000;
+
+global i8c: int8 = -128;
+global i8d: int8 = 127;
+
+global u8b: uint8 = 0xFF;
+global u8c: uint8 = 0x80;
+
+global i16a: int16 = 'p';
+global i16b: int16 = 0x7FFF;
+global i16c: int16 = -32768;
+global i16d: int16 = -1;
+
+global u16b: uint16 = 0xFFFF;
+global u16c: uint16 = 0x8000;
+
+global i32a: int32 = 'p';
+global i32b: int32 = 0x7FFFFFFF;
+global i32c: int32 = -0x80000000;
+global i32d: int32 = -1;
+
+global u32b: uint32 = 0xFFFFFFFF;
+global u32c: uint32 = 0x80000000;
+
+global i64a: int64 = 9223372036854775807;
+global i64b: int64 = 0x7FFFFFFFFFFFFFFF;
+global i64c: int64 = -0x8000000000000000;
+global i64d: int64 = -1;
+
+global u64b: uint64 = 0xFFFFFFFFffffffff;
+global u64c: uint64 = 0x8000000000000000;
+
+# ******* Coerce to Real **********
+
+global mantissa53: real = 0x1FFFFFFFFFFFFF;
+assert mantissa53 == 0x1.FFFFFFFFFFFFFp52;
+
+global u_hi: real = 0xFFFFFFFFFFFFF800;
+assert u_hi == 0xFFFFFFFFFFFFF800p0;
+
+global i_lo: real = -0x7FFFFFFFFFFFF800;
+assert i_lo == -0x7FFFFFFFFFFFF800p0;
+
+global inexact: real = cast<real>(0x20000000000001);
+assert inexact == 0x20000000000000;

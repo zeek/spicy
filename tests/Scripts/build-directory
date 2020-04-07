@@ -1,0 +1,24 @@
+#! /bin/sh
+#
+# Infers the build directory and returns it.
+
+if [ -n "${SPICY_BUILD_DIRECTORY}" ]; then
+    echo ${SPICY_BUILD_DIRECTORY}
+    exit 0
+fi
+
+base=$(cd $(dirname $0) && pwd)
+
+for i in "${base}/../../build"; do
+    if [ -d ${i} -a -e ${i}/CMakeCache.txt ]; then
+        cd ${i}
+        pwd
+        exit 0
+    fi
+done
+
+# Fail silently if we got an installation directory. We are
+# probably running from with the alternative's settings and
+# can ignore the initial error.
+test -n "${SPICY_INSTALLATION_DIRECTORY}" || echo "cannot determine build directory, set SPICY_BUILD_DIRECTORY" >&2
+exit 1

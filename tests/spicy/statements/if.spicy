@@ -1,0 +1,40 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+
+module Foo;
+
+global X = 1;
+
+if ( X == 1 )
+    assert True;
+
+if ( X != 1 )
+    assert False;
+
+if ( X == 1 )
+    assert True;
+else
+    assert False;
+
+if ( X != 1 )
+    assert False;
+else
+    assert True;
+
+
+# @TEST-START-NEXT
+
+module testing;
+
+type TestUnit1 = unit() {
+    a: bytes &size=1 if ( True );
+};
+
+type TestUnit2 = unit() {
+    a: bytes &size=1;
+    b: bytes &size=1 if ( True );
+};
+
+type TestUnit3 = unit() {
+    a: uint16 &size=1;
+    b: bytes &size=1 if ( True );
+};

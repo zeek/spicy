@@ -1,0 +1,29 @@
+# @TEST-EXEC:  printf 'XXX\nXXX\nXXX\n---\nXXX\n' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module HTTP;
+
+const LINE = b"XXX\n";
+const DASHES = b"---\n";
+
+public type Test = unit {
+    on %init { print self; }
+
+    lines: Item[5] foreach {
+        print "[%d] %s" % (|self.lines|, self.lines);
+
+        if ( |self.lines| == 2 )
+            stop;
+
+        print "    -> new item is %s" % $$;
+    }
+
+    dashes: DASHES;
+    last: LINE;
+
+    on %done { print self; }
+    };
+
+type Item = unit {
+    line:   LINE;
+};

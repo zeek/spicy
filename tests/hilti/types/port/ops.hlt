@@ -1,0 +1,23 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+global p1 = 80/tcp;
+global p2 = 123/udp;
+
+hilti::print(p1);
+hilti::print(p2);
+hilti::print(p1.protocol());
+hilti::print(p2.protocol());
+
+assert p1 == 80/tcp;
+assert p1 != p2;
+
+assert p1.protocol() == hilti::Protocol::TCP;
+assert p2.protocol() == hilti::Protocol::UDP;
+assert p1.protocol() != p2.protocol();
+
+}

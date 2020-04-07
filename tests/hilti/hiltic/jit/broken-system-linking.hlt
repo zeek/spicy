@@ -1,0 +1,13 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: grep -q "__does_not_exist" output
+#
+# Check that a failure at the system link stage doesn't produce leaks or other unexpected output.
+
+module Test {
+
+# hilti::rt::__does_not_exist is declared in the runtime library's header, but not implemented.
+declare public time does_not_exist() &cxxname="hilti::rt::__does_not_exist";
+
+does_not_exist();
+
+}
