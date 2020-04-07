@@ -1,30 +1,44 @@
-
 environment:
     CCACHE_BASEDIR: $CIRRUS_WORKING_DIR
 
-container:
-    image: rsmmr/spicy-ci-ubuntu:latest
+clang10_debug_task:
+  container:
+    dockerfile: ci/Dockerfile.ci
+    docker_arguments:
+      matrix:
+        - zeek_packages: zeek zeek-core-dev
+        - zeek_packages: zeek-lts zeek-lts-core-dev
     cpu: 8
     memory: 16G
 
-clang9_debug_task:
-    configure_script:   ./ci/run-ci -b build-ci-debug configure debug --cxx-compiler clang++-9 --with-zeek /opt/zeek-debug --clang-format /opt/clang10/bin/clang-format --clang-tidy /opt/clang10/bin/clang-tidy
-    build_script:       ./ci/run-ci -b build-ci-debug build
-    test_build_script:  ./ci/run-ci -b build-ci-debug test-build
-    test_code_script:   ./ci/run-ci -b build-ci-debug test-code
-    install_script:     ./ci/run-ci -b build-ci-debug install
+  timeout_in: 120m
 
-    timeout_in: 120m
+  ccache_cache:
+    folder: /var/spool/ccache
+    fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
 
-    ccache_cache:
-        folder: /var/spool/ccache
-        fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+  sync_submodules_script: git submodule update --recursive --init
 
-    always:
-        ci_artifacts:
-            path: build-ci-debug/ci
+  configure_script:
+    - ./configure --generator=Ninja --with-zeek=/opt/zeek --with-cxx-compiler=clang++-10 --with-c-compiler=clang-10 --enable-ccache --enable-werror
+    - mkdir artifacts
+  build_script:
+    - ninja -C build -j5
+  test_build_script:
+    - ninja -C build check
+    - (cd tests && btest -j -b -f artifacts/diag.log -x artifacts/diag.xml)
+  test_code_script:
+    - pre-commit run -a
+    - CLANG_FORMAT=`which clang-format-10` ./scripts/run-clang-format
+    - CLANG_TIDY=`which clang-tidy-10` ./scripts/run-clang-tidy --fixit -j 5 || git diff > artifacts/clang-tidy.diff
+  install_script:
+    - ninja -C build install
 
-        junit_artifacts:
-            path: build-ci-debug/ci/diag.xml
-            type: text/xml
-            format: junit
+  always:
+    ci_artifacts:
+      path: artifacts
+
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
