@@ -41,12 +41,7 @@ branch=$(git symbolic-ref --short "${ref}" 2>/dev/null)
 test -n "${CI_COMMIT_REF_NAME}" && branch=${CI_COMMIT_REF_NAME} # GitLab
 test -n "${CIRRUS_BRANCH}" && branch=${CIRRUS_BRANCH} # Cirrus CI
 
-# Since we currently do not have any tags we cannot generate version numbers
-# like expected. Work around that by hardcoding a version number for now.
-#
-# TODO(bbannier): Remove the workaround once we have a tag.
-# describe=$(git describe --always --match "v*" "${describe_arg}" | sed 's/^v//g')
-describe=$(echo 'v0.3.0-264-g820111ea' | sed 's/^v//g')
+describe=$(git describe --always --match "v*" "${describe_arg}" | sed 's/^v//g')
 
 version=$(echo "${describe}" | awk -F - '{print $1}' | sed 's/^v//g')
 commit=$(echo "${describe}" | awk -F - '{print $2}')
