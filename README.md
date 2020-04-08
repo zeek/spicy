@@ -1,8 +1,6 @@
-Spicy — A C++ Parser Generator for Dissecting Protocols & Files
-===============================================================
+# Spicy — A C++ Parser Generator for Dissecting Protocols & Files
 
-Overview
---------
+## Overview
 
 Spicy is a C++ parser generator that makes it easy to create robust
 parsers for network protocols, file formats, and more. Spicy is a bit
@@ -22,64 +20,59 @@ Clang/LLVM), or ahead-of-time either by creating pre-compiled shared
 libraries or simply by giving you C++ code that you can link into your
 application.
 
-Spicy comes with a `Zeek <https://www.zeek.org>`_ plugin that enables
+Spicy comes with a [Zeek](https://www.zeek.org>) plugin that enables
 adding new protocols to Zeek without having to write any C++ code. You
 define the grammar, specify which Zeek events to generate, and Spicy
 takes care of the rest.
 
-Download
---------
+## Download
 
-There's are no releases yet. To download the source code from GitHub,
-run::
+There are no releases yet. To download the source code from GitHub, run:
 
+```
     # git clone --recursive https://github.com/zeek/spicy
+```
 
-Getting Started
----------------
+We will start providing binary builds soon.
 
-Read the documentation:
+## Getting Started
 
-    - `Spicy Manual <https://docs.zeek.org/projects/spicy>`_
-        * `Installation <https://docs.zeek.org/projects/spicy/installation.html>`_
-        * `Getting Started <https://docs.zeek.org/projects/spicy/getting-started.html>`_
-        * `FAQ <https://docs.zeek.org/projects/faq.html>`_
+- [Spicy Manual](https://docs.zeek.org/projects/spicy>)
+    * [Installation](https://docs.zeek.org/projects/spicy/installation.html>)
+    * [Getting Started](https://docs.zeek.org/projects/spicy/getting-started.html>)
+    * [FAQ](https://docs.zeek.org/projects/faq.html>)
 
-Getting in Touch
-----------------
+## Getting in Touch
 
 Having trouble using Spicy? Have ideas how to make Spicy better? We'd
 like to hear from you!
 
-    - Check out the `FAQ <http://docs.zeek.org/projects/spicy>`_ to see if any of that helps.
-    - Report issues on `GitHub <https://github.com/zeek/spicy/issues>`_.
-    - Ask the ``#spicy`` channel on `Zeek's Slack <zeekorg.slack.com>`_
-    - Send mail to the `Spicy mailing list <http://mailman.icsi.berkeley.edu/mailman/spicy>`_.
-        * We also have a separate read-only `mailing list for following git
-          activity <http://mailman.icsi.berkeley.edu/mailman/spicy-commits>`_
+- Check out the [FAQ](http://docs.zeek.org/projects/spicy>) to see if any of that helps.
+- Report issues on [GitHub](https://github.com/zeek/spicy/issues>).
+- Ask the `#spicy` channel [on `Zeek's Slack]](zeekorg.slack.com>).
+- Subscribe to the [Spicy mailing list](http://mailman.icsi.berkeley.edu/mailman/spicy>).
+- To follow deveopment, subscribe to the [commits mailing list](http://mailman.icsi.berkeley.edu/mailman/spicy-commits>) (it can
+  be noisy ...).
 
-Status
-------
+## Status
 
 Spicy is currently in a very early beta phase, it's *not* yet ready
 for production usage. You'll find plenty rough edges still, including
 unstable code, missing features, and confusing error messages if you
 do something unexpected. Specifics of the language and the toolchain
-may still change as well---there's no release yet, just a git
-``master`` branch that keeps moving. We don't recommend Spicy and its
-parsers for anything critical yet, but we're very interested in
-feedback as we're working to stabilize all this.
+may still change as well---there's no release yet, just a git `master`
+branch that keeps moving. We don't recommend Spicy and its parsers for
+anything critical yet, but we're very interested in feedback as we're
+working to stabilize all this.
 
-License
--------
+## License
 
 Spicy is open source and released under a BSD license, which allows
 for pretty much unrestricted use as long as you leave the license
 header in place. You fully own any parsers that Spicy generates from
 your grammars.
 
-History
--------
+## History
 
 Spicy was originally developed as a research prototype at the
 `International Computer Science Institute
