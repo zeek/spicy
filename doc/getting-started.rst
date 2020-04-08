@@ -53,31 +53,29 @@ an executable.
      :align: left
      :width: 50
 
-    Internally, Spicy employ another intermediary languge
-    called *HILTI* that sits between the Spicy source code and the
+    Internally, Spicy employs another intermediary language
+    called *HILTI*. HILTI sits between the Spicy source code and the
     generated C++ output. For more complex Spicy grammars, the HILTI
-    code is often easier to comprehend than the final C++ code, in
-    particular once we do some actual parsing.  To see that
-    intermediary HILTI code, execute ``spicy -p hello.spicy``. HILTI
-    is also where the ``*.hlto`` extensions comes from: It's an
+    code is often far easier to comprehend than the final C++ code.
+    To output intermediary HILTI code, execute ``spicyc -p hello.spicy``.
+    The ``.hlto`` extension stems from HILTI as well: It's a
     HILTI-generated object file.
 
 A Simple Parser
 ---------------
 
-To actually parse some data, we now look at small a example
-dissecting a HTTP-style request line, such as: ``GET /index.html
-HTTP/1.0``.
+In the following, we present a small parser to dissect a HTTP-style
+request line, such as: ``GET /index.html HTTP/1.0``.
 
-Generally, in Spicy you define parsers through types called "units"
+Generally, in Spicy you define parsers through types called *units*
 that describe the syntax of a protocol. A set of units forms a
-*grammar*. In practice, Spicy units typically correspond pretty
-directly to protocol data units (PDUs) as protocol specifications tend
-to define them. In addition to syntax, a Spicy unit type can also
-specify semantic actions---which we call *hooks*---that will execute
+*grammar*. In practice, Spicy units typically correspond
+to protocol data units (PDUs) as protocol specifications tend
+to define them. In addition to syntax, a Spicy unit can also
+specify semantic actions, called *hooks*, that will execute
 during parsing as the corresponding pieces are extracted.
 
-Here's a simple example for parsing an HTTP request line:
+Here's an example of a Spicy script for parsing HTTP request lines:
 
 .. literalinclude:: examples/my-http.spicy
    :lines: 4-
@@ -86,12 +84,12 @@ Here's a simple example for parsing an HTTP request line:
 In this example, you can see a number of things that are typical for
 Spicy code:
 
-    * A Spicy input script must always start with a ``module``
-      statement defining a namespace for the script's content.
+    * A Spicy input script starts with a ``module``
+      statement defining the namespace for the script's content.
 
     * The layout of a piece of data is defined by creating a ``unit``
       type. The type lists individual *fields* in the order they are
-      to be parsed. In the example, there are two such units defined:
+      to be parsed. In the example, two units are defined:
       ``RequestLine`` and ``Version``.
 
     * Each field inside a unit has a type and an optional name. The
@@ -106,43 +104,42 @@ Spicy code:
       ``Version``), or indirectly via globally defined constants (as
       in ``RequestLine``).
 
-    * If a field has a name, it can later be referred to for accessing
+    * If a field has a name, it can later be referenced to access
       its value. Consequently, in this example all fields with
-      semantic meanings come with names, while those which are
-      unlikely to be relevant later do not (e.g., whitespace).
+      semantic meaning have names, while those which are
+      unlikely to be relevant do not (e.g., whitespace).
 
-    * A unit field can have another unit as its type; here that's the
+    * A field can have another unit as its type; here that's the
       case for the ``version`` field in ``RequestLine``; we say that
       ``Version`` is a *subunit* of ``RequestLine``. The meaning for
-      parsing is straight-forward: When parsing the top-level unit
-      reaches the field with the subunit, it switches to processing
-      that field according to the subunit's definition. Once the
-      subunit is fully parsed, the top-level unit's next field is
-      processed as normal from the remaining input data.
+      parsing is straight-forward: When reaching a field with a subunit,
+      parsing switches to process that field according to its subunit.
+      Once parsing of the subunit completed, it continues
+      at the previous unit's next field with the remaining input data.
 
     * We can specify code to be executed when a unit has been
       completely parsed by implementing a hook called ``%done``.
       Inside the hook's code body, statements can refer to the unit
       instance currently being parsed through an implicitly defined
-      ``self`` identifier. Through ``self`, they can then access any
-      fields already parsed by using a standard attribute notation
-      (``self.<field>``). As the access to ``version`` shows, this
-      also works for getting to fields nested inside subunits. In the
-      example, we tell the generated parser to print out three of the
+      ``self`` identifier. Through ``self``, already parsed fields
+      can be accessed using standard attribute notation
+      (``self.<field>``). As the access to ``self.version.number`` shows,
+      this also works for fields nested inside subunits. In the given
+      example, the generated parser prints out three of the
       parsed fields whenever a ``RequestLine`` has been fully parsed.
 
-    * The ``public`` keyword declares the parser being generated for a
-      unit to be exposed to external host applications wanting to
-      deploy it. Only exported units can later be used as the starting
-      point for feeding input; non-public subunits cannot be directly
-      instantiated from host applications.
+    * The ``public`` keyword exposes the generated parser of a unit
+      to external host applications.
+      Only public units can be used as an entry point for feeding
+      input data; non-public subunits cannot be directly instantiated
+      from host applications.
 
 Now let us see how we turn this into an actual parser that we can run.
 Spicy comes with a tool called ``spicy-driver`` that acts as a
 generic, standalone host application for Spicy parsers: It compiles
 Spicy scripts into code and then feeds them its standard input as data
 to parse. Internally, ``spicy-driver`` uses much of the same machinery
-as ``spicyc``, it just provides additional code kicking off the actual
+as ``spicyc``, but provides additional code kicking off the actual
 parsing as well.
 
 With the above Spicy script in a file ``my-http.spicy``, we can use
@@ -151,35 +148,37 @@ With the above Spicy script in a file ``my-http.spicy``, we can use
     # echo "GET /index.html HTTP/1.0" | spicy-driver my-http.spicy
     GET, /index.html, 1.0
 
-As you see, the ``print`` statement inside the ``%done`` hook wrote
-out the three fields as we would expect (``print`` automatically
-separates its arguments with commas).  If we pass something into the
-driver that's malformed according to our grammar, the parser will
-complain::
+As shown, the ``print`` statement inside the ``%done`` hook prints
+the three fields as we would expect (``print`` automatically
+separates its arguments with commas).  If we pass malformed input to
+the driver, the parser complains::
 
     # echo "GET XXX/1.0" | spicy-driver request.spicy
     [fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (my-http.spicy:7)
 
-Using ``spicy-driver`` like this relies on Spicy's support for
-just-in-time compilation, just like ``spicyc -j``. In the background,
-there's C++ code being compiled without that we see it. Just like in
-the earlier example, we can also either use ``spicyc`` to precompile
-the C++ code into an object file that ``spicy-driver`` can then load,
-or use ``spicy-build`` to give us an actual executable::
+Using ``spicy-driver`` in this way relies on Spicy's support for
+just-in-time compilation, just like ``spicyc -j``. Behind the curtains,
+HILTI and C++ code is generated and compiled. As presented earlier,
+we can also precompile the parser into an object file using ``spicyc``
+and execute the object file with ``spicy-driver``::
 
     # spicyc -j -o my-http.hlto  my-http.spicy
     # echo "GET /index.html HTTP/1.0" | spicy-driver my-http.hlto
     GET, /index.html, 1.0
 
-::
+
+Alternatively, ``spicy-build`` can produce an executable file
+that can be run directly::
 
     # spicy-build -o a.out my-http.spicy
     # echo "GET /index.html HTTP/1.0" | ./a.out -p MyHTTP::RequestLine
     GET, /index.html, 1.0
 
-If you want to see the actual parsing code that Spicy generates, use
-``spicyc`` again: ``spicyc -c my-http.spicy`` will show the C++ code,
-and ``spicyc -p my-http.spicy`` will show the intermediary HILTI code.
+
+To inspect the generated parsing code, run ``spicyc -c my-http.spicy``
+to output the generated C++ code and ``spicyc -p my-http.spicy`` to
+output HILTI intermediary code.
+
 
 Zeek Integration
 ----------------
@@ -318,14 +317,11 @@ Custom Host Application
 -----------------------
 
 Spicy parsers expose a C++ API that any application can leverage to
-send them data for processing. The specifics off how to approach this
-depend quite a bit on the particular needs of the application (Is it
-just a single, static parser that's needed; or a set not known
-upfront, and compiled dynamically? Just a single input stream, or
-many? All data in one buffer, or coming in incrementally? How does the
-application want to access the parsed information?). That said, the
-most basic use case is quite straight-forward: feeding data into a
-specific parser. Here's a small C++ program that parses input with our
+parse input data. The specifics of how to approach this
+depend quite a bit on the particular needs of the application.
+However, the most basic use-case of feeding a single input stream into
+a specific parser is straight-forward. This is presented in the following
+small C++ program that parses input from ``stdin`` with our
 ``RequestLine`` parser:
 
 .. literalinclude:: examples/my-http.cc
@@ -342,18 +338,27 @@ specific parser. Here's a small C++ program that parses input with our
 The code in ``my-http.cc`` is indeed the core of what ``spicy-driver``
 does, if we ignore the dynamic JIT compilation.
 
+More advanced host application need to consider some of the following
+questions:
+
+* Does the application use a single static parser, a set of known parsers,
+  or dynamically compiled parsers?
+* Is there a single input stream or multiple input streams?
+* Is incremental parsing required, or is all data available at once?
+* How does the application want access the parsed information?
+
 .. note::
 
     Some additional pointers for application developers:
 
-    - ``my-http.cc`` is a very stripped down version of a file that's
-      installed along with Spicy into
-      ``share/spicy/spicy-driver-host.cc``. That code is compiled in
-      when executing ``spicy-build`` with the ``-s`` option, as we did
-      above. If you look at ``spicy-driver-host.cc``, among other
+    - ``my-http.cc`` is a very stripped down version of Spicy's driver
+      code installed into
+      ``share/spicy/spicy-driver-host.cc``. This code is compiled into
+      an executable when running ``spicy-build`` as we did above.
+      If you look at ``spicy-driver-host.cc``, among other
       things you'll also see how to dynamically query the runtime
-      system for the parsers available.
+      system for available parsers.
 
     - The code for the main ``spicy-driver`` tool is quite similar as
-      well, and in addition shows how to dynamically compiler Spicy
+      well, and in addition shows how to dynamically compile Spicy
       parsers just-in-time.
