@@ -1,13 +1,11 @@
 environment:
     CCACHE_BASEDIR: $CIRRUS_WORKING_DIR
 
-clang10_debug_task:
+clang9_zeek31_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile.ci
     docker_arguments:
-      matrix:
-        - zeek_packages: zeek zeek-core-dev
-        # - zeek_packages: zeek-lts zeek-lts-core-dev
+      - zeek_packages: zeek zeek-core-dev
     cpu: 8
     memory: 16G
 
@@ -16,37 +14,145 @@ clang10_debug_task:
   ccache_cache:
     folder: /var/spool/ccache
     fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-
   env:
     CCACHE_DIR: /var/spool/ccache
     CCACHE_COMPRESS: 1
-
-  sync_submodules_script: git submodule update --recursive --init
+    LD_LIBRARY_PATH: /usr/lib/llvm-9/lib/clang/9.0.0/lib/linux/
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`.
-  fetch_tags_script:
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
     - git fetch --tags
+    - git submodule update --recursive --init
 
-  configure_script:
-    - ./configure --generator=Ninja --with-zeek=/opt/zeek --with-cxx-compiler=clang++-10 --with-c-compiler=clang-10 --enable-ccache --enable-werror
-    - mkdir artifacts
-  build_script:
-    - ninja -C build -j5
-  test_build_script:
-    - ninja -C build check
-    - (cd tests && btest -j -b -f ../artifacts/diag.log -x ../artifacts/diag.xml)
-  test_code_script:
-    - pre-commit run -a
-    - CLANG_FORMAT=`which clang-format-10` ./scripts/run-clang-format
-    - CLANG_TIDY=`which clang-tidy-10` ./scripts/run-clang-tidy --fixit -j 5 || git diff > artifacts/clang-tidy.diff
-  install_script:
-    - ninja -C build install
+  # We currently run the build with sanitizers against llvm-9 since llvm-10 still triggers some warnings from inside LLVM.
+  #
+  # TODO(bbannier): Switch this job to llvm-10.
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-9 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10` --rpath /usr/lib/llvm-9/lib/clang/9.0.0/lib/linux/ --zeek-ld-preload /usr/lib/llvm-9/lib/clang/9.0.0/lib/linux/libclang_rt.asan-x86_64.so
+  build_script:       ./ci/run-ci -b build build
+  test_build_script:  ./ci/run-ci -b build test-build
+  test_code_script:   ./ci/run-ci -b build test-code
+  install_script:     ./ci/run-ci -b build install
 
   always:
     ci_artifacts:
       path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
 
+clang10_zeek31_ubuntu_release_task:
+  container:
+    dockerfile: ci/Dockerfile.ci
+    docker_arguments:
+      - zeek_packages: zeek-lts zeek-lts-core-dev
+    cpu: 8
+    memory: 16G
+
+  timeout_in: 120m
+
+  ccache_cache:
+    folder: /var/spool/ccache
+    fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+  env:
+    CCACHE_DIR: /var/spool/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-10 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10`
+  build_script:          ./ci/run-ci -b build build
+  test_build_script:     ./ci/run-ci -b build test-build
+  install_script:        ./ci/run-ci -b build install
+  cleanup_script:        ./ci/run-ci -b build cleanup
+  test_install_script:   ./ci/run-ci -b build test-install
+
+  always:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
+
+clang9_zeek30_ubuntu_release_task:
+  container:
+    dockerfile: ci/Dockerfile.ci
+    docker_arguments:
+      - zeek_packages: zeek-lts zeek-lts-core-dev
+    cpu: 8
+    memory: 16G
+
+  timeout_in: 120m
+
+  ccache_cache:
+    folder: /var/spool/ccache
+    fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+  env:
+    CCACHE_DIR: /var/spool/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-9 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10`
+  build_script:          ./ci/run-ci -b build build
+  install_script:        ./ci/run-ci -b build install
+  cleanup_script:        ./ci/run-ci -b build cleanup
+  test_install_script:   ./ci/run-ci -b build test-install
+
+  always:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
+
+gcc9_ubuntu_release_no_jit_task:
+  container:
+    dockerfile: ci/Dockerfile.ci
+    docker_arguments:
+      - zeek_packages: zeek-lts zeek-lts-core-dev
+    cpu: 8
+    memory: 16G
+
+  timeout_in: 120m
+
+  ccache_cache:
+    folder: /var/spool/ccache
+    fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+  env:
+    CCACHE_DIR: /var/spool/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler g++-9 --disable-jit
+  build_script:          ./ci/run-ci -b build build
+  install_script:        ./ci/run-ci -b build install
+  cleanup_script:        ./ci/run-ci -b build cleanup
+  test_install_script:   ./ci/run-ci -b build test-install-nojit
+
+  always:
+    ci_artifacts:
+      path: artifacts
     junit_artifacts:
       path: artifacts/diag.xml
       type: text/xml
