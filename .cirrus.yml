@@ -7,7 +7,7 @@ clang10_debug_task:
     docker_arguments:
       matrix:
         - zeek_packages: zeek zeek-core-dev
-        - zeek_packages: zeek-lts zeek-lts-core-dev
+        # - zeek_packages: zeek-lts zeek-lts-core-dev
     cpu: 8
     memory: 16G
 
@@ -17,7 +17,16 @@ clang10_debug_task:
     folder: /var/spool/ccache
     fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
 
+  env:
+    CCACHE_DIR: /var/spool/ccache
+    CCACHE_COMPRESS: 1
+
   sync_submodules_script: git submodule update --recursive --init
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`.
+  fetch_tags_script:
+    - git fetch --tags
 
   configure_script:
     - ./configure --generator=Ninja --with-zeek=/opt/zeek --with-cxx-compiler=clang++-10 --with-c-compiler=clang-10 --enable-ccache --enable-werror
@@ -26,7 +35,7 @@ clang10_debug_task:
     - ninja -C build -j5
   test_build_script:
     - ninja -C build check
-    - (cd tests && btest -j -b -f artifacts/diag.log -x artifacts/diag.xml)
+    - (cd tests && btest -j -b -f ../artifacts/diag.log -x ../artifacts/diag.xml)
   test_code_script:
     - pre-commit run -a
     - CLANG_FORMAT=`which clang-format-10` ./scripts/run-clang-format
