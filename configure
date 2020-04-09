@@ -79,6 +79,18 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
 "
 source_dir="$(cd "$(dirname "$0")" && pwd)"
 
+if [ ! -e "$source_dir/3rdparty/doctest/CMakeLists.txt" ] && [ -d "$source_dir/.git" ]; then
+    echo "\
+You seem to be missing the content of the 3rdparty/doctest directory.
+
+This typically means that you performed a non-recursive git clone of
+Spict. To check out the required subdirectories, please execute:
+
+  ( cd $source_dir && git submodule update --recursive --init )
+" >&2;
+    exit 1;
+fi
+
 # Function to append a CMake cache entry definition to the
 # cmake_cache_entries variable.
 #   $1 is the cache entry variable name
