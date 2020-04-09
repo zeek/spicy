@@ -1,4 +1,11 @@
 
+0.4.0-20 | 2020-04-09 15:11:43 +0000
+
+  * GH-159: Properly close quotes and parens in "hilti-flow" debug
+    statement.
+
+  * GH-146: Validate that &byte-order attributes have an argument.
+
 0.4.0-16 | 2020-04-09 15:06:04 +0000
 
   * GH-92: Documentation updates.

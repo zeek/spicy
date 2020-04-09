@@ -261,9 +261,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
     void operator()(const statement::Throw& n, position_t p) {
         if ( cg->options().debug_flow ) {
             if ( auto e = n.expression() )
-                block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: throw %s)", n.meta().location(), *e));
+                block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: throw %s"))", n.meta().location(), *e));
             else
-                block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: throw)", n.meta().location()));
+                block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: throw"))", n.meta().location()));
         }
 
         if ( auto e = n.expression() )
