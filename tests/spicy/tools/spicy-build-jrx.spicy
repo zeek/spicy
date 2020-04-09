@@ -1,0 +1,13 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: ${SPICY_BUILD} %INPUT
+
+module Foo;
+
+public type LengthType = unit {
+  islong: uint8;
+
+  switch ( self.islong ) {
+    # Include a `&convert` here which triggers a dependency on justrx.
+    1 -> length_parse: bytes &size=self.islong &convert=$$.to_uint();
+  };
+};

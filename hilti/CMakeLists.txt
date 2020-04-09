@@ -183,6 +183,12 @@ foreach ( lib hilti-rt hilti-rt-debug )
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
+
+    # Since only an OBJECT libraries usage requirements are propagated
+    # transitively, but not its object files, explicitly link against
+    # jrx-objects which is an OBJECT library itself and depended on by
+    # `jrx-objects`.
+    target_link_libraries(${lib} jrx-objects)
 endforeach ()
 
 # Build hilti-rt with release flags.
