@@ -84,7 +84,7 @@ If you are using `MacPorts <https://www.macports.org>`_:
 If you are using `Homebrew <https://brew.sh>`_:
 
     - ``# brew install llvm bison flex cmake ninja python@3.8 sphinx-doc``
-    - ``# pip install btest sphinx_rtd_theme``
+    - ``# pip3 install btest sphinx_rtd_theme``
     - When running Spicy's ``configure`` (see below), add
       ``--with-cxx-compiler=/usr/local/opt/llvm/bin/clang++ --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex``
 
