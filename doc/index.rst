@@ -1,9 +1,9 @@
 
 |today|.
 
-======================================================
-Spicy --- A C++ Parser Generator for Protocols & Files
-======================================================
+==================================================
+Spicy --- Generating Parsers for Protocols & Files
+==================================================
 
 .. literalinclude:: examples/frontpage.spicy
     :language: text
@@ -44,7 +44,7 @@ History
     <http://www.icsi.berkeley.edu/>`_ with funding from the `U.S.
     National Science Foundation <https://www.nsf.gov>`_. Since then,
     Spicy has been rebuilt from the ground up by `Corelight
-    <https://www.corelight.com>`_, who has contributed the new
+    <https://www.corelight.com>`_, which has contributed the new
     implementation to the Zeek Project.
 
 .. note::
@@ -65,11 +65,16 @@ Having trouble using Spicy? Have ideas how to make Spicy better? We'd
 like to hear from you!
 
     - Check out the `FAQ <http://docs.zeek.org/projects/spicy>`_ to see if any of that helps.
+
     - Report issues on `GitHub <https://github.com/zeek/spicy/issues>`_.
-    - Ask the ``#spicy`` channel on `Zeek's Slack <zeekorg.slack.com>`_
-    - Send mail to the `Spicy mailing list <http://mailman.icsi.berkeley.edu/mailman/spicy>`_.
-        * We also have a separate read-only `mailing list for following git
-          activity <http://mailman.icsi.berkeley.edu/mailman/spicy-commits>`_
+
+    - Ask the ``#spicy`` channel on `Zeek's Slack <https://zeekorg.slack.com>`_.
+
+    - Subscribe to the `Spicy mailing list <http://mailman.icsi.berkeley.edu/mailman/spicy>`_.
+
+    - To follow development, subscribe to the `commits mailing list
+      <http://mailman.icsi.berkeley.edu/mailman/spicy-commits>`_ (it
+      can be noisy).
 
 Documentation
 -------------

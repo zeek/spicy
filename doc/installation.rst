@@ -63,7 +63,9 @@ Docker files for building on selected Linux distributions, see :ref:`docker`.
     compilation, which will avoid the dependency on Clang/LLVM as long
     as your compiler is otherwise recent enough. However, you will
     then miss out on functionality and convenience. In particular, the
-    Zeek plugin currently requires JIT (:issue:`72`).
+    Zeek plugin currently requires JIT (:issue:`72`), unless you
+    precompile your code with a separate, JIT-enabled Spicy
+    installation first.
 
 .. rubric:: macOS
 

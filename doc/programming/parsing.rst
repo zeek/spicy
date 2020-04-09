@@ -1021,11 +1021,6 @@ the input stream:
 While this example is a bit contrived, the mechanisms becomes powerful
 once you have subunits that are recognizable by how they start:
 
-.. todo::
-
-   Bug (:issue:`87`): The following example actually ends up taking the
-   wrong branch in the ``A`` case.
-
 .. spicy-code:: parse-switch-lhead-2.spicy
 
     module Test;
