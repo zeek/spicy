@@ -104,6 +104,9 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         if ( a.tag() == "&size" && ! a.hasValue() )
             hilti::logger().error("&size must provide an expression", a);
 
+        else if ( a.tag() == "&byte-order" && ! a.hasValue() )
+            hilti::logger().error("&byte-order requires an expression", a);
+
         else if ( a.tag() == "&default" && ! a.hasValue() )
             hilti::logger().error("%default requires an argument", a);
 

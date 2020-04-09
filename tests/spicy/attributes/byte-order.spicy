@@ -1,0 +1,8 @@
+# @TEST-EXEC-FAIL: ${SPICYC} -p %INPUT 2> output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Type = unit {
+  foo: uint32 &byte-order;
+};
