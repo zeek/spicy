@@ -53,31 +53,30 @@ an executable.
      :align: left
      :width: 50
 
-    Internally, Spicy employ another intermediary languge
-    called *HILTI* that sits between the Spicy source code and the
-    generated C++ output. For more complex Spicy grammars, the HILTI
-    code is often easier to comprehend than the final C++ code, in
+    Internally, Spicy employs another intermediary language called
+    *HILTI* that sits between the Spicy source code and the generated
+    C++ output. For more complex Spicy grammars, the HILTI code is
+    often far easier to comprehend than the final C++ code, in
     particular once we do some actual parsing.  To see that
-    intermediary HILTI code, execute ``spicy -p hello.spicy``. HILTI
-    is also where the ``*.hlto`` extensions comes from: It's an
+    intermediary HILTI code, execute ``spicy -p hello.spicy``. The
+    ``.hlto`` extension comes from HILTI as well: It's an
     HILTI-generated object file.
 
 A Simple Parser
 ---------------
 
-To actually parse some data, we now look at small a example
-dissecting a HTTP-style request line, such as: ``GET /index.html
-HTTP/1.0``.
+To actually parse some data, we now look at a small example dissecting
+HTTP-style request lines, such as: ``GET /index.html HTTP/1.0``.
 
 Generally, in Spicy you define parsers through types called "units"
 that describe the syntax of a protocol. A set of units forms a
 *grammar*. In practice, Spicy units typically correspond pretty
 directly to protocol data units (PDUs) as protocol specifications tend
 to define them. In addition to syntax, a Spicy unit type can also
-specify semantic actions---which we call *hooks*---that will execute
-during parsing as the corresponding pieces are extracted.
+specify semantic actions, called *hooks*, that will execute during
+parsing as the corresponding pieces are extracted.
 
-Here's a simple example for parsing an HTTP request line:
+Here's an example of a Spicy script for parsing HTTP request lines:
 
 .. literalinclude:: examples/my-http.spicy
    :lines: 4-
@@ -86,12 +85,12 @@ Here's a simple example for parsing an HTTP request line:
 In this example, you can see a number of things that are typical for
 Spicy code:
 
-    * A Spicy input script must always start with a ``module``
-      statement defining a namespace for the script's content.
+    * A Spicy input script starts with a ``module`` statement defining
+      a namespace for the script's content.
 
     * The layout of a piece of data is defined by creating a ``unit``
       type. The type lists individual *fields* in the order they are
-      to be parsed. In the example, there are two such units defined:
+      to be parsed. The example defines two such units:
       ``RequestLine`` and ``Version``.
 
     * Each field inside a unit has a type and an optional name. The
@@ -106,10 +105,10 @@ Spicy code:
       ``Version``), or indirectly via globally defined constants (as
       in ``RequestLine``).
 
-    * If a field has a name, it can later be referred to for accessing
-      its value. Consequently, in this example all fields with
-      semantic meanings come with names, while those which are
-      unlikely to be relevant later do not (e.g., whitespace).
+    * If a field has a name, it can later be referenced to access its
+      value. Consequently, in this example all fields with semantic
+      meanings have names, while those which are unlikely to be
+      relevant later do not (e.g., whitespace).
 
     * A unit field can have another unit as its type; here that's the
       case for the ``version`` field in ``RequestLine``; we say that
@@ -131,18 +130,18 @@ Spicy code:
       example, we tell the generated parser to print out three of the
       parsed fields whenever a ``RequestLine`` has been fully parsed.
 
-    * The ``public`` keyword declares the parser being generated for a
-      unit to be exposed to external host applications wanting to
-      deploy it. Only exported units can later be used as the starting
-      point for feeding input; non-public subunits cannot be directly
-      instantiated from host applications.
+    * The ``public`` keyword exposes the generated parser of a unit to
+      to external host applications wanting to deploy it. Only public
+      units can be used as the starting point for feeding input;
+      non-public subunits cannot be directly instantiated by host
+      applications.
 
 Now let us see how we turn this into an actual parser that we can run.
 Spicy comes with a tool called ``spicy-driver`` that acts as a
 generic, standalone host application for Spicy parsers: It compiles
 Spicy scripts into code and then feeds them its standard input as data
 to parse. Internally, ``spicy-driver`` uses much of the same machinery
-as ``spicyc``, it just provides additional code kicking off the actual
+as ``spicyc``, but provides additional code kicking off the actual
 parsing as well.
 
 With the above Spicy script in a file ``my-http.spicy``, we can use
@@ -160,12 +159,12 @@ complain::
     # echo "GET XXX/1.0" | spicy-driver request.spicy
     [fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (my-http.spicy:7)
 
-Using ``spicy-driver`` like this relies on Spicy's support for
+Using ``spicy-driver`` in this way relies on Spicy's support for
 just-in-time compilation, just like ``spicyc -j``. In the background,
-there's C++ code being compiled without that we see it. Just like in
-the earlier example, we can also either use ``spicyc`` to precompile
-the C++ code into an object file that ``spicy-driver`` can then load,
-or use ``spicy-build`` to give us an actual executable::
+there's C++ code being generated and compiled without that we see it.
+Just like in the earlier example, we can also either use ``spicyc`` to
+precompile the C++ code into an object file that ``spicy-driver`` can
+then load, or use ``spicy-build`` to give us an actual executable::
 
     # spicyc -j -o my-http.hlto  my-http.spicy
     # echo "GET /index.html HTTP/1.0" | spicy-driver my-http.hlto
@@ -318,7 +317,7 @@ Custom Host Application
 -----------------------
 
 Spicy parsers expose a C++ API that any application can leverage to
-send them data for processing. The specifics off how to approach this
+send them data for processing. The specifics of how to approach this
 depend quite a bit on the particular needs of the application (Is it
 just a single, static parser that's needed; or a set not known
 upfront, and compiled dynamically? Just a single input stream, or
@@ -346,14 +345,15 @@ does, if we ignore the dynamic JIT compilation.
 
     Some additional pointers for application developers:
 
-    - ``my-http.cc`` is a very stripped down version of a file that's
+    - ``my-http.cc`` is a very stripped down version of a file
       installed along with Spicy into
-      ``share/spicy/spicy-driver-host.cc``. That code is compiled in
-      when executing ``spicy-build`` with the ``-s`` option, as we did
-      above. If you look at ``spicy-driver-host.cc``, among other
-      things you'll also see how to dynamically query the runtime
-      system for the parsers available.
+      ``share/spicy/spicy-driver-host.cc``. That code is compiled into
+      an executable when executing ``spicy-build`` with the ``-s``
+      option, as we did above. If you look at
+      ``spicy-driver-host.cc``, among other things you'll also see how
+      to dynamically query the runtime system for the parsers
+      available.
 
     - The code for the main ``spicy-driver`` tool is quite similar as
-      well, and in addition shows how to dynamically compiler Spicy
+      well, and in addition shows how to dynamically compiled Spicy
       parsers just-in-time.
