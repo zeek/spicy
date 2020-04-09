@@ -5,16 +5,16 @@
 Modules
 =======
 
-Spicy source code is structured around modules, which essentially
+Spicy source code is structured around modules, which
 introduce namespaces around other elements defined inside (e.g.,
 types, functions). Accordingly, all Spicy input files must start with
 ``module NAME;``, where ``NAME`` is scope that's being created.
 
 After that initial ``module`` statement, modules may contain arbitrary
 list of declarations (types, globals, functions), as well as code
-statement to execute. Any code defined at the global level will run
-once at the module's initialization time. That's what gives us Spicy's
-minimal ``hello-world`` module:
+statements to execute. Any code defined at the global level will run
+once at the module's initialization time. That's what enables Spicy's
+minimal ``hello-world`` module to look like the following:
 
 .. spicy-code:: module-hello-world.spicy
 
@@ -30,21 +30,17 @@ minimal ``hello-world`` module:
 
 To make the contents of another module accessible, Spicy provides an
 ``import NAME;`` statement that pulls in all public identifiers of the
-specified external module. Spicy searches for ``NAME`` along it's
-module search path. By default, that's the current directory plus the
-location where Spicy's pre-built library modules are installed. To
-find the module in one of those directories, its filename must be
-``NAME.spicy``, with case-sensitive matching
+specified external module. Spicy then searches for ``name.spicy``
+(i.e., the lower-case version of the imported module ``NAME`` plus a
+``.spicy`` extension) along it's module search path. By default,
+that's the current directory plus the location where Spicy's pre-built
+library modules are installed.
 
 ``spicy-config --libdirs`` shows the default search path. The Spicy
 tools ``spicy`` && ``spicy-driver`` provide ``--library-path`` options
-to add further custom directories.
-
-.. todo::
-
-    Actually ``spicy-driver`` does not have that option yet
-    (:issue:`88`). And we should also add an environment variable
-    ``SPICY_PATH``.
+to add further custom directories. They also allow to fully replace the
+built-in default search with a custom value by setting the environment
+variable ``SPICY_PATH``.
 
 There's a second version of the import statement that allows to import
 from relative locations inside the search path: ``import NAME from
@@ -58,5 +54,15 @@ prefixing them with the module's namespace::
 
     print MyModule::my_global_variable;
 
-Note that only identifiers declared as ``public`` become accessible
-across module boundaries.
+Generally, only identifiers declared as ``public`` become accessible
+across module boundaries. The one exception are types, which are
+implicitly public.
+
+.. note::
+
+    Spicy makes types implicitly public so that external :ref:`unit
+    hooks <unit_hooks>` always have access to them. We may consider a
+    more fine-grained model here in the future.
+
+Spicy comes with a set of :ref:`library modules <library>` that you
+may import in your code to gain access to their functionality.

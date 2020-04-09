@@ -9,8 +9,14 @@ Change log
 Migrating from the old prototype
 --------------------------------
 
-The following summarizes languages changes in Spicy compared to the
-`original research prototype <https://www.icir.org/hilti>`_ :
+Below we summarize language changes in Spicy compared to the `original
+research prototype <https://www.icir.org/hilti>`_. Note that some of
+the prototype's more advanced functionality has not yet been ported to
+the new code base; see the `corresponding list
+<https://github.com/zeek/spicy/issues?q=is%3Aissue+is%3Aopen+label%3A%22Port+V1%22>`_
+on GitHub for what's still missing.
+
+Changes:
 
 - Renamed ``export`` linkage to ``public``
 
