@@ -1,34 +1,30 @@
-FROM ubuntu:19.10
+FROM ubuntu:eoan
 
-WORKDIR /root
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
-ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy/"
-ENV DEBIAN_FRONTEND noninteractive
+CMD ["sh"]
 
-RUN apt-get update
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CCACHE_DIR=/var/spool/ccache
+ENV CCACHE_COMPRESS=1
 
-# Install development tools.
-RUN apt-get install -y ccache curl g++ gcc gdb git locales-all make ninja-build python3 python3-pip vim
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 \
+ # Zeek.
+ && echo 'deb http://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/ /' > /etc/apt/sources.list.d/security:zeek.list \
+ && curl https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/Release.key | apt-key add - \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends zeek-lts zeek-lts-core-dev \
+ # Spicy build and test dependencies.
+ && apt-get install -y --no-install-recommends git ninja-build ccache g++ llvm-9-dev libclang-9-dev bison flex libfl-dev python3 python3-pip zlib1g-dev jq locales-all python3-setuptools python3-wheel \
+ && pip3 install btest pre-commit \
+ # Spicy doc dependencies.
+ && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme \
+ # Cleanup.
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
-  # Need a more recent CMake than available.
-RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - && ln -s /usr/local/cmake-3.16.4-Linux-x86_64/bin/cmake /usr/local/bin
-
-# Install Spicy dependencies.
-RUN apt-get install -y bison clang-9 flex libclang-9-dev python3-sphinx python3-sphinx-rtd-theme
-RUN pip3 install btest
-
-# Install Zeek dependencies.
-RUN apt-get install -y libpcap-dev libssl-dev python-dev swig zlib1g-dev
-
-# Install Zeek.
-RUN mkdir -p /opt/zeek/src
-RUN cd /opt/zeek && git clone -b release/3.0 --recursive https://github.com/zeek/zeek src
-RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd .. && rm -rf build
-
-# Install Spicy.
-ADD . /opt/spicy/src
-
-RUN cd /opt/spicy/src && \
-    ./configure --prefix=/opt/spicy --with-zeek=/opt/zeek --generator=Ninja && \
-    cd build && ninja install && cd .. && rm -rf build
+# Install a recent CMake.
+WORKDIR /usr/local/cmake
+RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.15.0-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
+ENV PATH="/usr/local/cmake/bin:${PATH}"

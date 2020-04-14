@@ -188,3 +188,31 @@ macos_release_task:
     - ninja -C build all check
   test_build_script:
     - (cd tests && btest -j)
+
+docker_ubuntu_19_10_task:
+  trigger_type: manual
+  container:
+    dockerfile: docker/Dockerfile.ubuntu-19.10
+    cpu: 8
+    memory: 16G
+
+  timeout_in: 120m
+
+  ccache_cache:
+    folder: /var/spool/cache
+    fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+  env:
+    CCACHE_DIR: /var/spool/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache
+  build_script:
+    - ninja -C build install -j5
