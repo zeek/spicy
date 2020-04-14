@@ -1,5 +1,5 @@
-[debug/compiler] parsing file "/home/robin/work/spicy/tests/.tmp/hilti.ast.types/types.hlt"
-[debug/compiler] registering AST for module Foo ("/home/robin/work/spicy/tests/.tmp/hilti.ast.types/types.hlt")
+[debug/compiler] parsing file "/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.types/types.hlt"
+[debug/compiler] registering AST for module Foo ("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.types/types.hlt")
 [debug/compiler]   processing AST, round 1
 [debug/compiler]     performing missing imports for module Foo
 [debug/compiler]       updated cached AST for module Foo (final: no, requires_compilation: yes, dependencies: (none))
@@ -9,6 +9,7 @@
 [debug/compiler]     resolving IDs in module Foo
 [debug/compiler]     resolving operators in module Foo
 [debug/compiler]     coercing expressions for Foo
+[debug/compiler]   validating module Foo (post-transform)
 [debug/ast-final] # Foo: Final AST
 [debug/ast-final]   - Module %1 (types.hlt:5-10)
 [debug/ast-final]       | Foo -> Module %1
@@ -32,7 +33,6 @@
 [debug/ast-final]             - ctor::UnsignedInteger <value=1 width=64> (types.hlt:8)
 [debug/ast-final]           - expression::Ctor (types.hlt:8)
 [debug/ast-final]             - ctor::UnsignedInteger <value=2 width=64> (types.hlt:8)
-[debug/compiler]   validating module Foo (post-transform)
 [debug/compiler]   updated cached AST for module Foo (final: yes, requires_compilation: yes, dependencies: (none))
 module Foo {
 

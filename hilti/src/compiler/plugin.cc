@@ -53,7 +53,7 @@ static Plugin hilti_plugin() {
 
         .pre_validate = {},
 
-        .post_validate = [](const std::shared_ptr<hilti::Context>& ctx, const Node& n, Unit* u) { validateAST(n); },
+        .post_validate = [](const std::shared_ptr<hilti::Context>& ctx, Node* n, Unit* u) { validateAST(n); },
 
         .transform = {},
     };

@@ -22,11 +22,11 @@ static expression::Member memberExpression(const Expression& op) {
 }
 
 // Checks if an operand refers to a valid field inside a union.
-static inline void checkName(const Expression& op0, const Expression& op1) {
+static inline void checkName(const Expression& op0, const Expression& op1, Node& n) {
     auto id = memberExpression(op1).id().local();
 
     if ( auto f = op0.type().as<type::Union>().field(id); ! f )
-        logger().error(util::fmt("type does not have field '%s'", id));
+        n.setError(util::fmt("type does not have field '%s'", id));
 }
 
 // Returns the type of a union field referenced by an operand.
@@ -69,8 +69,8 @@ BEGIN_OPERATOR_CUSTOM_x(union_, MemberConst, Member)
                 {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
-        detail::checkName(i.op0(), i.op1());
+    void validate(const expression::ResolvedOperator& i, position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node);
     }
 
     std::string doc() const {
@@ -96,8 +96,8 @@ BEGIN_OPERATOR_CUSTOM_x(union_, MemberNonConst, Member)
                 {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
-        detail::checkName(i.op0(), i.op1());
+    void validate(const expression::ResolvedOperator& i, position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node);
     }
 
     std::string doc() const {
@@ -118,8 +118,8 @@ BEGIN_OPERATOR_CUSTOM(union_, HasMember)
                 {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
-        detail::checkName(i.op0(), i.op1());
+    void validate(const expression::ResolvedOperator& i, position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node);
     }
 
     std::string doc() const { return "Returns true if the union's field is set."; }

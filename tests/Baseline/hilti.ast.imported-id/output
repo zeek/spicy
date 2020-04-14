@@ -1,10 +1,10 @@
 [debug/compiler] parsing file "foo.hlt"
-[debug/compiler] registering AST for module Foo ("/home/robin/work/spicy/tests/.tmp/hilti.ast.imported-id/foo.hlt")
+[debug/compiler] registering AST for module Foo ("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.imported-id/foo.hlt")
 [debug/compiler]   processing AST, round 1
 [debug/compiler]     performing missing imports for module Foo
 [debug/compiler]       parsing file "./bar.hlt"
 [debug/compiler]       loaded module Bar from "./bar.hlt"
-[debug/compiler]       registering AST for module Bar ("/home/robin/work/spicy/tests/.tmp/hilti.ast.imported-id/bar.hlt")
+[debug/compiler]       registering AST for module Bar ("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.imported-id/bar.hlt")
 [debug/compiler]       updated cached AST for module Bar (final: no, requires_compilation: no, dependencies: Foo)
 [debug/compiler]       updated cached AST for module Foo (final: no, requires_compilation: yes, dependencies: Bar)
 [debug/compiler]     performing missing imports for module Bar
@@ -327,6 +327,8 @@
 [debug/compiler]     resolving operators in module Foo
 [debug/compiler]     coercing expressions for Bar
 [debug/compiler]     coercing expressions for Foo
+[debug/compiler]   validating module Bar (post-transform)
+[debug/compiler]   validating module Foo (post-transform)
 [debug/ast-final] # Foo: Final AST
 [debug/ast-final]   - Module %1 (foo.hlt:2-11)
 [debug/ast-final]       | Bar -> declaration::ImportedModule %11 <extension=.hlt path= scope=->
@@ -371,15 +373,13 @@
 [debug/ast-final]             - node::None (foo.hlt:9)
 [debug/ast-final]         - node::None (foo.hlt:9)
 [debug/ast-final]         - node::None (foo.hlt:6)
-[debug/compiler]   validating module Bar (post-transform)
-[debug/compiler]   validating module Foo (post-transform)
 [debug/compiler]   updated cached AST for module Bar (final: yes, requires_compilation: no, dependencies: Foo)
 [debug/compiler]   updated cached AST for module Foo (final: yes, requires_compilation: yes, dependencies: Bar)
 [debug/compiler]   compiling module Foo to C++
 [debug/compiler]     importing declarations from module Bar
 [debug/compiler]     finalizing module Foo
 // Begin of Foo (from "foo.hlt")
-// Compiled by HILTI version 0.3.0-branch
+// Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
 
@@ -394,6 +394,6 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", nullptr, nullptr, nullptr}); }
 
 /* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"/home/robin/work/spicy/tests/.tmp/hilti.ast.imported-id/foo.hlt","version":1}
+{"module":"Foo","namespace":"__hlt::Foo","path":"/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.imported-id/foo.hlt","version":1}
 */
 

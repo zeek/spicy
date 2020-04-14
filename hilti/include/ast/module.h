@@ -28,6 +28,7 @@ public:
     auto statements() const { return child<statement::Block>(1); }
     auto declarations() const { return childs<Declaration>(2, -1); }
     const auto& preserved() const { return _preserved; }
+    auto& preserved() { return _preserved; }
 
     bool isEmpty() const {
         // We always have an ID and a block as childs.

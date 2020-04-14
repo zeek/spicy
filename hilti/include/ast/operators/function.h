@@ -30,7 +30,7 @@ public:
         std::vector<operator_::Operand> operands() const { return _operands; }
         Type result(const std::vector<Expression>& /* ops */) const { return _result; }
         bool isLhs() const { return false; }
-        void validate(const expression::ResolvedOperator& /* i */, operator_::const_position_t /* p */) const {}
+        void validate(const expression::ResolvedOperator& /* i */, operator_::position_t /* p */) const {}
         std::string doc() const { return "<dynamic - no doc>"; }
         std::string docNamespace() const { return "<dynamic - no ns>"; }
 

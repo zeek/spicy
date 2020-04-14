@@ -32,7 +32,12 @@ std::string Node::render(bool include_location) const {
     auto location = (include_location && meta().location()) ? util::fmt(" (%s)", meta().location().render(true)) : "";
     auto id = rid() ? util::fmt(" %s", renderedRid()) : "";
     auto orig = originalNode() ? util::fmt(" (original %s)", originalNode()->renderedRid()) : "";
-    auto err = error() ? util::fmt(" [ERROR: %s]", *error()) : "";
+
+    std::string error_string;
+    if ( hasErrors() )
+        error_string =
+            util::join(util::transform(errors(), [](const auto& e) { return util::fmt(" [ERROR] %s", e.message); }),
+                       "");
 
     std::string type;
 

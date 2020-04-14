@@ -25,11 +25,11 @@ BEGIN_OPERATOR_CUSTOM(string, Modulo)
 
     std::vector<Operand> operands() const { return {{.type = type::String()}, {.type = type::Any()}}; }
 
-    void validate(const expression::ResolvedOperator& /* i */, operator_::const_position_t /* p */) const {
+    void validate(const expression::ResolvedOperator& /* i */, operator_::position_t /* p */) const {
         // TODO(robin): Not sure if we need this restriction. Let's try without.
         //
         // if ( i.op1().type().isA<type::Tuple>() && ! i.op1().isA<expression::Ctor>() )
-        //    logger().error("tuple argument to '%' must a be constant", i.op1());
+        //    p.node.setError("tuple argument to '%' must a be constant");
     }
 
     std::string doc() const { return "Renders a printf-style format string."; }

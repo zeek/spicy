@@ -225,19 +225,28 @@ Result<Nothing> Unit::compile() {
         if ( plugin::registry().hasHookFor(&Plugin::transform) ) {
             _dumpASTs(logging::debug::AstPreTransformed, "Pre-transformed AST", round);
 
-            if ( ! options().skip_validation ) {
-                auto valid = true;
-
-                for ( auto& [id, module] : modules )
-                    if ( ! runHooks(&Plugin::pre_validate, fmt("validating module %s (pre-transform)", id), context(),
-                                    *module, this) )
-                        valid = false;
-
-                if ( ! valid )
-                    return result::Error("errors encountered during pre-transform validation");
-            }
-
             for ( auto& [id, module] : modules ) {
+                bool found_errors = false;
+                if ( ! runHooks(&Plugin::pre_validate, fmt("validating module %s (pre-transform)", id), context(), &*module, this, &found_errors) )
+                    return result::Error("errors encountered during pre-transform validation");
+
+                if ( found_errors ) {
+                    // We may have some errors already set in the AST that we
+                    // don't want to report, as normally they'd go away
+                    // during further cycles. So we clear the AST and then
+                    // run the hook again to get just the errors that it puts
+                    // in place.
+                    detail::clearErrors(&*module);
+                    auto valid = _validateAST(id, NodeRef(module), [&](const ID& id, NodeRef& module) {
+                        bool found_errors = false;
+                        return runHooks(&Plugin::pre_validate, fmt("validating module %s (pre-transform, 2nd pass)", id), context(),
+                                        &*module, this, &found_errors);
+                    });
+
+                    assert(!valid);
+                    return result::Error("errors encountered during pre-transform validation");
+                }
+
                 if ( ! runModifyingHooks(&modified, &Plugin::transform, fmt("transforming module %s", id), context(),
                                          &*module, round == 1, this) )
                     return result::Error("errors encountered during source-to-source translation");
@@ -256,23 +265,30 @@ Result<Nothing> Unit::compile() {
     }
 
     auto& module = imported(_id);
+    auto current = _currentModules();
+
+    for ( auto& [id, module] : current ) {
+        auto valid = _validateASTs(module->as<Module>().id(), (*module).as<Module>().preserved(), [&](const ID& id, auto& preserved)  {
+            for ( auto& m : preserved )
+                detail::resetNodes(&m);
+
+            return runHooks(&Plugin::preserved_validate, fmt("validating module %s (preserved)", id), context(), &preserved, this);
+        });
+
+        if ( ! valid )
+            return result::Error("errors encountered during validation of preserved nodes");
+    }
+
+    auto valid = _validateASTs(current, [&](const ID& id, NodeRef& module) {
+        return runHooks(&Plugin::post_validate, fmt("validating module %s (post-transform)", id), context(),
+                        &*module, this);
+    });
 
     _dumpAST(module, logging::debug::AstFinal, "Final AST");
     _saveIterationASTs("Final AST", round);
 
-    if ( ! options().skip_validation ) {
-        for ( auto& [id, module] : _currentModules() ) {
-            if ( const auto& p = module->as<Module>().preserved(); ! p.empty() ) {
-                if ( ! runHooks(&Plugin::preserved_validate, fmt("validating module %s (preserved)", id), context(), p,
-                                this) )
-                    return result::Error("errors encountered during validation of preserved nodes");
-            }
-
-            if ( ! runHooks(&Plugin::post_validate, fmt("validating module %s (post-transform)", id), context(),
-                            *module, this) )
-                return result::Error("errors encountered during post-transform validation");
-        }
-    }
+    if ( ! valid )
+        return result::Error("errors encountered during post-transform validation");
 
     for ( auto& [id, module] : _currentModules() ) {
         _determineCompilationRequirements(*module);
@@ -495,11 +511,83 @@ void Unit::_determineCompilationRequirements(const Node& module) {
         v.dispatch(i);
 }
 
+bool Unit::_validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
+                         std::function<bool(const ID&, NodeRef&)> run_hooks_callback) {
+
+    if ( options().skip_validation )
+        return true;
+
+    auto valid = true;
+
+    for ( auto& [id, module] : modules ) {
+        if ( ! _validateAST(id, NodeRef(module), run_hooks_callback) )
+            valid = false;
+    }
+
+    return valid;
+}
+
+static bool _recursiveValidateAST(const Node& n, std::set<std::string>* reported) {
+    // We report errors on child nodes first, and then hide any further ones
+    // in parents along the way.
+
+    auto valid = true;
+
+    for ( const auto& c : n.childs() ) {
+        if ( ! _recursiveValidateAST(c, reported) )
+            valid = false;
+    }
+
+    if ( ! valid )
+        return false;
+
+    if ( auto e = n.error() ) {
+        // Suppress duplicates.
+        auto idx = fmt("%s|%s", *e, n.location());
+        if ( reported->find(idx) == reported->end() ) {
+            logger().error(*e, n.errorContext(), n.location());
+            reported->insert(idx);
+        }
+        return false;
+    }
+
+    return true;
+}
+
+bool Unit::_validateASTs(const ID& id, std::vector<Node>& nodes, std::function<bool(const ID&, std::vector<Node>&)> run_hooks_callback) {
+    if ( options().skip_validation )
+        return true;
+
+    if ( ! run_hooks_callback(id, nodes) )
+        return false;
+
+    std::set<std::string> reported;
+    auto valid = true;
+
+    for ( auto& n : nodes ) {
+        if ( ! _recursiveValidateAST(n, &reported) )
+            valid = false;
+    }
+
+    return valid;
+}
+
+bool Unit::_validateAST(const ID& id, NodeRef module, std::function<bool(const ID&, NodeRef&)> run_hooks_callback) {
+    if ( options().skip_validation )
+        return true;
+
+    if ( ! run_hooks_callback(id, module) )
+        return false;
+
+    std::set<std::string> reported;
+    return _recursiveValidateAST(*module, &reported);
+}
+
 void Unit::_dumpAST(const Node& module, const logging::DebugStream& stream, const std::string& prefix, int round) {
     if ( ! logger().isEnabled(stream) )
         return;
 
-    const auto& m = module.as<Module>();
+    auto& m = module.as<Module>();
 
     std::string r;
 

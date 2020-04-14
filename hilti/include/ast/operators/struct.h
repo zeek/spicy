@@ -22,11 +22,11 @@ static expression::Member memberExpression(const Expression& op) {
 }
 
 // Checks if an operand refers to a valid field inside a struct.
-static inline void checkName(const Expression& op0, const Expression& op1) {
+static inline void checkName(const Expression& op0, const Expression& op1, Node& node) {
     auto id = memberExpression(op1).id().local();
 
     if ( auto f = op0.type().as<type::Struct>().field(id); ! f )
-        logger().error(util::fmt("type does not have field '%s'", id), op0);
+        node.setError(util::fmt("type does not have field '%s'", id));
 }
 
 // Returns the type of a struct field referenced by an operand.
@@ -56,8 +56,8 @@ BEGIN_OPERATOR_CUSTOM_x(struct_, MemberNonConst, Member)
                 {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
-        detail::checkName(i.op0(), i.op1());
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node);
     }
 
     std::string doc() const {
@@ -84,8 +84,8 @@ BEGIN_OPERATOR_CUSTOM_x(struct_, MemberConst, Member)
                 {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
-        detail::checkName(i.op0(), i.op1());
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node);
     }
 
     std::string doc() const {
@@ -112,8 +112,8 @@ BEGIN_OPERATOR_CUSTOM(struct_, TryMember)
                 {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
-        detail::checkName(i.op0(), i.op1());
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node);
     }
 
     std::string doc() const {
@@ -138,8 +138,8 @@ BEGIN_OPERATOR_CUSTOM(struct_, HasMember)
                 {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
-        detail::checkName(i.op0(), i.op1());
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node);
     }
 
     std::string doc() const {
@@ -170,7 +170,7 @@ public:
         std::vector<operator_::Operand> operands() const { return _operands; }
         Type result(const std::vector<Expression>& /* ops */) const { return _result; }
         bool isLhs() const { return false; }
-        void validate(const expression::ResolvedOperator& /* i */, operator_::const_position_t /* p */) const {}
+        void validate(const expression::ResolvedOperator& /* i */, operator_::position_t p) const {}
         std::string doc() const { return "<dynamic - no doc>"; }
         std::string docNamespace() const { return "<dynamic - no ns>"; }
 

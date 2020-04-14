@@ -290,8 +290,13 @@ private:
 
     // Backend for the public import() methods.
     Result<context::ModuleIndex> _import(const std::filesystem::path& path, std::optional<ID> expected_name);
-    // Runs the validation pass (unless disabled).
-    Result<Nothing> _validateAST(const Node& module);
+    // Runs the validation pass and reports errors.
+    bool _validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
+                       std::function<bool(const ID&, NodeRef&)> run_hooks_callback);
+    // Runs the validation pass and reports errors.
+    bool _validateAST(const ID& id, NodeRef module, std::function<bool(const ID&, NodeRef&)> run_hooks_callback);
+    // Runs the validation pass on a set of nodes and reports errors.
+    bool _validateASTs(const ID& id, std::vector<Node>& nodes, std::function<bool(const ID&, std::vector<Node>&)> run_hooks_callback);
     // Updates the requires_compilation flags for all of a module's imports.
     void _determineCompilationRequirements(const Node& module);
     // Sends a debug dump of a module's AST to the global logger.

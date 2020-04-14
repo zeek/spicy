@@ -32,13 +32,13 @@ bool resolveIDs(hilti::Node* root, hilti::Unit* unit);
 bool applyCoercions(hilti::Node* root, hilti::Unit* unit);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void preTransformValidateAST(const hilti::Node& root, hilti::Unit* unit);
+void preTransformValidateAST(hilti::Node* root, hilti::Unit* unit, bool* found_errors);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void postTransformValidateAST(const hilti::Node& root, hilti::Unit* unit);
+void postTransformValidateAST(hilti::Node* root, hilti::Unit* unit);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void preservedValidateAST(const std::vector<hilti::Node>& nodes, hilti::Unit* unit);
+void preservedValidateAST(std::vector<hilti::Node>* nodes, hilti::Unit* unit);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
 bool printAST(const hilti::Node& root, hilti::printer::Stream& out); // NOLINT
