@@ -13,14 +13,14 @@ Module ``spicy``
 Types
 ~~~~~
 
-.. include:: /../html/autogen/spicy-types.spicy
+.. include:: /autogen/spicy-types.spicy
 
 .. _library_functions:
 
 Functions
 ~~~~~~~~~
 
-.. include:: /../html/autogen/spicy-functions.spicy
+.. include:: /autogen/spicy-functions.spicy
 
 .. _library_filters:
 
@@ -30,4 +30,4 @@ Module ``filter``
 Types
 ~~~~~
 
-.. include:: /../html/autogen/filter-types.spicy
+.. include:: /autogen/filter-types.spicy
