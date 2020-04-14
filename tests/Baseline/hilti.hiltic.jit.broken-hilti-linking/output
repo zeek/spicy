@@ -1,8 +1,8 @@
-Test.cc:15:44: error: use of undeclared identifier 'does_not_exist'; did you mean 'hilti::rt::__does_not_exist'?
-extern void __hlt::Test::__init_module() { does_not_exist(); }
-                                           ^~~~~~~~~~~~~~
-                                           hilti::rt::__does_not_exist
-/home/robin/work/spicy/hilti/include/hilti/rt/hilti.h:40:13: note: 'hilti::rt::__does_not_exist' declared here
+Test.cc:17:5: error: use of undeclared identifier 'does_not_exist'; did you mean 'hilti::rt::__does_not_exist'?
+    does_not_exist();
+    ^~~~~~~~~~~~~~
+    hilti::rt::__does_not_exist
+/home/robin/work/spicy/diagnostics/hilti/include/hilti/rt/hilti.h:40:13: note: 'hilti::rt::__does_not_exist' declared here
 extern void __does_not_exist();
             ^
 1 error generated.

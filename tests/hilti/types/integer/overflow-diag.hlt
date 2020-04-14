@@ -1,0 +1,13 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Makes sure we get line number information with overflow exception.
+
+module Foo {
+
+import hilti;
+
+global uint<8> j = 255;
+hilti::print(j + 1);
+
+}

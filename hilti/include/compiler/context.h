@@ -24,8 +24,7 @@ struct Options {
         false; /**< if true, generate code to log statements to debug stream "hilti-trace" (requires *debug*, too) */
     bool debug_flow = false; /**< if true, generate code to log function calls and returns to debug stream "hilti-flow"
                                 (requires *debug*, too) */
-    bool debug_location = false;  /**< if true, generate code to record current source code location during execution
-                                     (requires *debug*, too) */
+    bool track_location = true;  /**< if true, generate code to record current source code location during execution */
     bool skip_validation = false; /**< if true, skip AST validation; for debugging only, things will may downhiull
                                      quickly if an AST is not well-formed  */
     bool optimize = false;        /**< generated optimized code */

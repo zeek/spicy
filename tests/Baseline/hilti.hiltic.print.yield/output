@@ -1,5 +1,5 @@
-// Begin of Foo (from "/home/robin/work/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt")
-// Compiled by HILTI version 0.3.0-branch
+// Begin of Foo (from "/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt")
+// Compiled by HILTI version 0.4.0-30
 
 #include <hilti/rt/compiler-setup.h>
 
@@ -19,14 +19,23 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", nullptr, nullptr, nullptr}); }
 
 extern auto __hlt::Foo::test(const std::string& x) -> std::string {
+      __location__("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:12");
     hilti::rt::print(std::string("HILTI - 1 - argument: "), false);
+      __location__("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:13");
     hilti::rt::print(x, true);
+      __location__("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:15");
     hilti::rt::detail::yield();
+      __location__("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:16");
     hilti::rt::print(std::string("HILTI - 2"), true);
+      __location__("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:17");
     hilti::rt::detail::yield();
+      __location__("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:18");
     hilti::rt::print(std::string("HILTI - 3"), true);
+      __location__("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:19");
     hilti::rt::detail::yield();
+      __location__("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:20");
     hilti::rt::print(std::string("HILTI - Done"), true);
+      __location__("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:22");
     return std::string("test-result");
 }
 
@@ -41,6 +50,6 @@ extern auto hlt::Foo::test(const std::string& x) -> hilti::rt::Resumable {
 }
 
 /* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"/home/robin/work/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt","version":1}
+{"module":"Foo","namespace":"__hlt::Foo","path":"/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.yield/yield.hlt","version":1}
 */
 

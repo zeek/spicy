@@ -56,6 +56,12 @@ struct Context {
 
     /** Current indent level for debug messages. */
     uint64_t debug_indent{};
+
+    /**
+     * If non-null, a string descriging the most recent source code position.
+     * use `debug::setLocation()` to set.
+     */
+    const char* source_location{};
 };
 
 namespace context {

@@ -32,6 +32,9 @@ void warning(const std::string& msg);
             ::hilti::rt::debug::detail::print(stream, msg);                                                            \
     }
 
+/** Shortcut to `hilti::rt::debug::setLocation`. */
+#define __location__(x) ::hilti::rt::debug::setLocation(x);
+
 namespace debug {
 
 namespace detail {
@@ -76,13 +79,13 @@ inline void dedent(const std::string& stream) {
 /**
  * Returns the current source code location if set, or null if not.
  */
-inline const char* location() { return ::hilti::rt::detail::globalState()->source_location; }
+inline const char* location() { return ::hilti::rt::context::detail::get()->source_location; }
 
 /**
  * Sets the current source code location; or unsets if no argumet.
  * *loc* must point to a static string that won't go out of scope.
  */
-inline void setLocation(const char* l = nullptr) { ::hilti::rt::detail::globalState()->source_location = l; }
+inline void setLocation(const char* l = nullptr) { ::hilti::rt::context::detail::get()->source_location = l; }
 
 } // namespace debug
 } // namespace hilti::rt
