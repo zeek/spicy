@@ -46,8 +46,6 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
             [&](auto& dummy) {
                 std::vector<cxx::declaration::Argument> args;
                 std::vector<cxx::type::struct_::Member> fields;
-                std::vector<std::pair<cxx::declaration::Argument, std::string>> init_args;
-                std::vector<std::string> init_stmts;
 
                 cg->enablePrioritizeTypes();
 
@@ -68,8 +66,15 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                                                     codegen::TypeUsage::Storage);
                     }
 
+                    std::optional<cxx::Expression> default_;
+                    if ( auto x = p.default_() )
+                        default_ = cg->compile(*x);
+                    else
+                        default_ = cg->typeDefaultValue(p.type());
+
                     auto arg = cxx::declaration::Argument{.id = cxx::ID(fmt("__p_%s", p.id())),
                                                           .type = type,
+                                                          .default_ = std::move(default_),
                                                           .internal_type = internal_type};
                     args.emplace_back(std::move(arg));
                 }
@@ -151,85 +156,21 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                     if ( f.isOptional() )
                         t = fmt("std::optional<%s>", t);
 
-                    auto x = cxx::declaration::Local{.id = cxx::ID(f.id()),
-                                                     .type = t,
-                                                     .linkage = (f.isStatic() ? "inline static" : "")};
-
-                    fields.emplace_back(std::move(x));
-
+                    std::optional<cxx::Expression> default_;
                     if ( ! f.isOptional() ) {
-                        std::optional<cxx::Expression> default_;
-
                         if ( auto x = f.default_() )
                             default_ = cg->compile(*x);
                         else
                             default_ = cg->typeDefaultValue(f.type());
-
-                        if ( default_ )
-                            init_stmts.emplace_back(fmt("%s = %s", cxx::ID(f.id()), *default_));
                     }
 
-                    cxx::Type init_arg_type = (f.isOptional() ? t : cxx::Type(fmt("std::optional<%s>", t)));
-                    std::string init_arg_init;
-                    auto fid = cxx::ID(f.id());
-                    auto __fid = cxx::ID(fmt("__%s", f.id()));
+                    auto x = cxx::declaration::Local{.id = cxx::ID(f.id()),
+                                                     .type = t,
+                                                     .init = default_,
+                                                     .linkage = (f.isStatic() ? "inline static" : "")};
 
-                    if ( ! f.isInternal() ) {
-                        // Depending on whether &optional anr/or &default have
-                        // been given, the initialization of the field needs to
-                        // be somewhat different.
-                        if ( f.isOptional() )
-                            init_arg_init = fmt("%s = %s", fid, __fid);
-                        else if ( auto x = f.default_() )
-                            init_arg_init = fmt("%s = %s ? *%s : %s", fid, __fid, __fid, cg->compile(*x));
-                        else if ( auto x = cg->typeDefaultValue(f.type()) )
-                            init_arg_init = fmt("%s = %s ? *%s : %s", fid, __fid, __fid, *x);
-                        else
-                            init_arg_init = fmt("if ( %s ) %s = *%s", __fid, fid, __fid);
-
-                        auto init_arg = cxx::declaration::Argument{.id = __fid, .type = init_arg_type};
-                        init_args.emplace_back(init_arg, init_arg_init);
-                    }
+                    fields.emplace_back(std::move(x));
                 }
-
-                if ( init_args.size() ) {
-                    // Add member initialization function __init().
-                    auto init_init_args = std::vector<cxx::declaration::Argument>();
-                    auto init_init_body = cxx::Block();
-
-                    for ( const auto& a : init_args ) {
-                        init_init_args.push_back(a.first);
-                        init_init_body.addStatement(a.second);
-                    }
-
-                    auto init_init_decl =
-                        cxx::declaration::Function{.id = cxx::ID(sid), .args = init_init_args, .linkage = "inline"};
-                    fields.emplace_back(init_init_decl);
-
-                    auto init_init_impl =
-                        cxx::Function{.declaration = cxx::declaration::Function{.id = cxx::ID(scope, sid, sid.local()),
-                                                                                .args = init_init_args,
-                                                                                .linkage = "inline"},
-                                      .body = std::move(init_init_body)};
-
-                    cg->unit()->add(init_init_impl);
-                }
-
-                // Add __init function that initializes fields to their
-                // defaults. Note that we can't just init the fields directly
-                // inline, as not all types may be defined at this point.
-                auto init_default_body = cxx::Block(std::move(init_stmts));
-                auto init_default_decl =
-                    cxx::declaration::Function{.result = "void", .id = "__init", .linkage = "inline"};
-                fields.emplace_back(init_default_decl);
-
-                auto init_default_impl =
-                    cxx::Function{.declaration = cxx::declaration::Function{.result = "void",
-                                                                            .id = cxx::ID(scope, sid, "__init"),
-                                                                            .linkage = "inline"},
-                                  .body = std::move(init_default_body)};
-
-                cg->unit()->add(init_default_impl);
 
                 cg->disablePrioritizeTypes();
 
