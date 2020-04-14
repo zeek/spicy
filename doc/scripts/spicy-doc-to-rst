@@ -12,6 +12,11 @@ import sys
 import textwrap
 
 
+def fatalError(message: str):
+    print(message, file=sys.stderr)
+    sys.exit(1)
+
+
 def call(name):
     def _(op):
         return "{}({})".format(
@@ -108,7 +113,7 @@ TypeMappings = {
     "hilti::rt::bytes::Side": "spicy::Side",
 }
 
-LibraryType = re.compile('__library_type\("(.*)"\)')
+LibraryType = re.compile(r'__library_type\("(.*)"\)')
 
 
 def namespace(ns):
