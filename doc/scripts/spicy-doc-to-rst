@@ -11,6 +11,8 @@ import re
 import sys
 import textwrap
 
+from typing import Dict, List
+
 
 def fatalError(message: str):
     print(message, file=sys.stderr)
@@ -270,18 +272,18 @@ try:
 except ValueError as e:
     fatalError("cannot parse input: {}".format(e))
 
-operators = {}
-methods = {}
+operators: Dict[str, List[Operator]] = {}
+methods: Dict[str, List[Method]] = {}
 
 for op in meta:
     if op["kind"] == "MemberCall":
-        m = Method(op)
-        x = methods.setdefault(m.namespace, [])
-        x += [m]
+        m1 = Method(op)
+        x1 = methods.setdefault(m1.namespace, [])
+        x1 += [m1]
     else:
-        m = Operator(op)
-        x = operators.setdefault(m.namespace, [])
-        x += [m]
+        m2 = Operator(op)
+        x2 = operators.setdefault(m2.namespace, [])
+        x2 += [m2]
 
 if args.dir:
     keys = set(operators.keys()) | set(methods.keys())
@@ -321,21 +323,20 @@ for ns in keys:
     if "::iterator" in ns:
         prefix = "Iterator "
 
-    x = sorted(methods.get(ns, []))
-    if x:
+    x1 = sorted(methods.get(ns, []))
+    if x1:
         print(".. rubric:: %sMethods\n" % prefix, file=out)
 
-        for i in x:
-            print(i.rst(), file=out)
+        for method in x1:
+            print(method.rst(), file=out)
             print(file=out)
 
-    x = sorted(operators.get(ns, []))
-
-    if x:
+    x2 = sorted(operators.get(ns, []))
+    if x2:
         print(".. rubric:: %sOperators\n" % prefix, file=out)
 
-        for i in x:
-            print(i.rst(), file=out)
+        for operator in x2:
+            print(operator.rst(), file=out)
             print(file=out)
 
     if args.dir:
