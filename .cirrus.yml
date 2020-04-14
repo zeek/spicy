@@ -3,7 +3,7 @@ environment:
 
 clang9_zeek31_ubuntu_debug_task:
   container:
-    dockerfile: ci/Dockerfile.ci
+    dockerfile: ci/Dockerfile
     docker_arguments:
       - zeek_packages: zeek zeek-core-dev
     cpu: 8
@@ -46,7 +46,7 @@ clang9_zeek31_ubuntu_debug_task:
 clang10_zeek31_ubuntu_release_task:
   trigger_type: manual
   container:
-    dockerfile: ci/Dockerfile.ci
+    dockerfile: ci/Dockerfile
     docker_arguments:
       - zeek_packages: zeek-lts zeek-lts-core-dev
     cpu: 8
@@ -86,7 +86,7 @@ clang10_zeek31_ubuntu_release_task:
 clang9_zeek30_ubuntu_release_task:
   trigger_type: manual
   container:
-    dockerfile: ci/Dockerfile.ci
+    dockerfile: ci/Dockerfile
     docker_arguments:
       - zeek_packages: zeek-lts zeek-lts-core-dev
     cpu: 8
@@ -125,7 +125,7 @@ clang9_zeek30_ubuntu_release_task:
 gcc9_ubuntu_release_no_jit_task:
   trigger_type: manual
   container:
-    dockerfile: ci/Dockerfile.ci
+    dockerfile: ci/Dockerfile
     docker_arguments:
       - zeek_packages: zeek-lts zeek-lts-core-dev
     cpu: 8
