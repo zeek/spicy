@@ -438,7 +438,7 @@ template<typename... T>
 struct is_optional<std::optional<T...>> : std::true_type {};
 
 /** Available byte orders. */
-enum class ByteOrder { Little, Big, Network, Host };
+enum class ByteOrder { Little, Big, Network, Host, Undef = -1 };
 
 /**
  * Returns the byte order of the system we're running on. The result is
