@@ -1,12 +1,7 @@
 [$lines=(not set)]
-line: ABC
-
-line: DEF
-
-line: GHI
-
-line: 
-
-line: XYZ
-
-[$lines=[b"ABC\n", b"DEF\n", b"GHI\n", b"\n", b"XYZ\n"]]
+line: ABC\x0a
+line: DEF\x0a
+line: GHI\x0a
+line: \x0a
+line: XYZ\x0a
+[$lines=[b"ABC\x0a", b"DEF\x0a", b"GHI\x0a", b"\x0a", b"XYZ\x0a"]]

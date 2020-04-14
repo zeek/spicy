@@ -237,9 +237,11 @@ std::string escapeBytes(std::string_view s, bool escape_quotes = false, bool esc
  * @param str string to escape
  * @param escape_quotes if true, also escapes quotes characters
  * @param escape_control if false, do not escape control characters
+ * @param keep_hex if true, do not escape our custom "\xYY" escape codes
  * @return escaped std::string
  */
-std::string escapeUTF8(std::string_view s, bool escape_quotes = false, bool escape_control = true);
+std::string escapeUTF8(std::string_view s, bool escape_quotes = false, bool escape_control = true,
+                       bool keep_hex = false);
 
 /**
  * Joins elements of a container into a string, using a specified delimiter

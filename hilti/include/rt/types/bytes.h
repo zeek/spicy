@@ -354,7 +354,7 @@ public:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {
-    out << x.str();
+    out << escapeBytes(x.str(), false, true);
     return out;
 }
 
