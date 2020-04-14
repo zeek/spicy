@@ -4,15 +4,24 @@ repos:
 - repo: local
   hooks:
   - id: checkbashisms
-    name: check for bashisms in /bin/sh scripts
+    name: Check for bashisms in /bin/sh scripts
     entry: ./tests/Scripts/3rdparty/checkbashisms.pl
     language: script
     files: '.*\.sh'
+
   - id: autogen-docs
     name: Check that generated documentation is up-to-date
     entry: ./scripts/autogen-docs
     language: script
+
     pass_filenames: false
+  - id: clang-format
+    name: Run clang-format on code
+    entry: ./scripts/run-clang-format
+    args: ["--pre-commit-hook"]
+    files: ^(hilti|spicy|zeek)/.*\.(c|h|C|H|cpp|hpp|cc|hh|c\+\+|h\+\+|cxx|hxx)$
+    language: script
+
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v2.5.0
   hooks:
