@@ -168,7 +168,11 @@ struct VisitorPass1 : public visitor::PostOrder<void, VisitorPass1> {
 
     void operator()(const statement::For& s, position_t p) {
         auto wrapper = type::Computed(NodeRef(p.node), [](auto n) {
-            return n.template as<statement::For>().sequence().type().iteratorType(true).dereferencedType();
+            auto t = n.template as<statement::For>().sequence().type();
+            if ( t.template isA<type::Unknown>() )
+                return t;
+            else
+                return t.iteratorType(true).dereferencedType();
         });
 
         auto d = declaration::LocalVariable(s.id(), wrapper, {}, true, s.id().meta());

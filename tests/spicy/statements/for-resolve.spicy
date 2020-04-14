@@ -1,0 +1,18 @@
+# @TEST-EXEC: echo 1234567 | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Issue_181_badcast_02X_on_for_idx;
+
+public type caller = unit {
+  oneMember : usefulType { callAForLoop($$); }
+ };
+
+type usefulType = unit {
+ contentValue: bytes &size = 7;
+};
+
+function callAForLoop(oneMember: usefulType) {
+      for ( idx in oneMember.contentValue) {
+        print "%02X" % idx;
+      }
+}
