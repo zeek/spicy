@@ -296,7 +296,6 @@ if args.types:
     keys = set()
 
     for k in args.types.split(","):
-        keys.add(k)
         for i in operators.keys() | methods.keys():
             if i.startswith(k):
                 keys.add(i)
