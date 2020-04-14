@@ -8,6 +8,11 @@ repos:
     entry: ./tests/Scripts/3rdparty/checkbashisms.pl
     language: script
     files: '.*\.sh'
+  - id: autogen-docs
+    name: Check that generated documentation is up-to-date
+    entry: ./scripts/autogen-docs
+    language: script
+    pass_filenames: false
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v2.5.0
   hooks:
