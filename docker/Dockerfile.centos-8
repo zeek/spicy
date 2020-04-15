@@ -17,33 +17,26 @@ RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/
 # Need to compile Clang, there don't seem to be packages out there for v9.
 RUN mkdir -p /opt/clang9/src && \
     cd /opt/clang9/src && \
-    git clone --branch release/9.x --single-branch --recursive https://github.com/llvm/llvm-project.git && \
+    git clone --branch llvmorg-9.0.1 --single-branch --recursive https://github.com/llvm/llvm-project.git && \
     cd llvm-project && \
     mkdir build && \
     cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/opt/clang9 -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DLLVM_TARGETS_TO_BUILD=host -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON -G Ninja ../llvm && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DLLVM_TARGETS_TO_BUILD=host -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON -G Ninja ../llvm && \
     ninja install && \
-    cd ../.. && \
-    rm -rf /opt/clang9/src
+    cd ../../.. && \
+    rm -rf /opt/clang9
 
 # Install Spicy dependencies.
 RUN yum install -y flex python3-sphinx
 RUN pip3 install btest sphinx-rtd-theme
 
-  # Need a more recnet Bison than available.
+# Need a more recent Bison than available.
 RUN cd /opt && curl -L http://ftp.gnu.org/gnu/bison/bison-3.5.tar.gz | tar xzvf - && cd /opt/bison-3.5 && ./configure && make install
 
 # Install Zeek dependencies.
 RUN yum install -y libpcap-devel openssl-devel python3-devel swig zlib-devel
 
 # Install Zeek.
-RUN mkdir -p /opt/zeek/src
-RUN cd /opt/zeek && git clone -b release/3.0 --recursive https://github.com/zeek/zeek src
-RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd .. && rm -rf build
-
-# Install Spicy.
-ADD . /opt/spicy/src
-
-RUN cd /opt/spicy/src && \
-    ./configure --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=/opt/clang9/bin/clang++ --generator=Ninja && \
-    cd build && ninja install && cd .. && rm -rf build
+RUN cd /etc/yum.repos.d \
+ && curl -L 'https://download.opensuse.org/repositories/security:zeek/CentOS_8/security:zeek.repo' > zeek.repo \
+ && yum install -y zeek-lts zeek-lts-devel

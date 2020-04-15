@@ -19,12 +19,5 @@ RUN apk add fts-dev libpcap-dev linux-headers openssl-dev python-dev swig zlib-d
 
 # Install Zeek.
 RUN mkdir -p /opt/zeek/src
-RUN cd /opt/zeek && git clone -b release/3.0 --recursive https://github.com/zeek/zeek src
-RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd .. && rm -rf build
-
-# Install Spicy.
-ADD . /opt/spicy/src
-
-RUN cd /opt/spicy/src && \
-    LDFLAGS="-lucontext" ./configure --prefix=/opt/spicy --generator=Ninja --with-cxx-compiler=/usr/bin/clang++ --with-zeek=/opt/zeek --disable-gold && \
-    cd build && ninja install && cd .. && rm -rf build
+RUN cd /opt/zeek && git clone -b v3.0.3 --recursive https://github.com/zeek/zeek src
+RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd ../.. && rm -rf zeek
