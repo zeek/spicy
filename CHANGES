@@ -1,4 +1,13 @@
 
+0.4.0-29 | 2020-04-15 09:04:28 +0000
+
+  * Add pre-commit check that generated docs are up-to-date.
+
+  * Clean up spicy-doc-to-rst and make output stable.
+
+  * Add auto-generated docs to the tree so that one can build the full
+    documentation without needing to build Spicy itself.
+
 0.4.0-20 | 2020-04-09 15:11:43 +0000
 
   * GH-159: Properly close quotes and parens in "hilti-flow" debug

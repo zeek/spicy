@@ -11,25 +11,45 @@ import re
 import sys
 import textwrap
 
+from typing import Dict, List
+
+
+def fatalError(message: str):
+    print(message, file=sys.stderr)
+    sys.exit(1)
+
+
 def call(name):
     def _(op):
-        return "{}({})".format(name, op.operands[0].rst(in_operator=True, markup=False))
+        return "{}({})".format(
+            name,
+            op.operands[0].rst(in_operator=True, markup=False))
     return _
+
 
 def keyword(name):
     def _(op):
         return "{} {}".format(name, op.operands[0].rst(in_operator=True))
     return _
 
+
 def unary(prefix, postfix=""):
     def _(op):
-        return "op:{} {} op:{}".format(prefix, op.operands[0].rst(in_operator=True), postfix)
+        return "op:{} {} op:{}".format(
+            prefix,
+            op.operands[0].rst(in_operator=True),
+            postfix)
     return _
+
 
 def binary(token):
     def _(op):
-        return "{} <sp> op:{} <sp> {}".format(op.operands[0].rst(in_operator=True), token, op.operands[1].rst(in_operator=True))
+        return "{} <sp> op:{} <sp> {}".format(
+            op.operands[0].rst(in_operator=True),
+            token,
+            op.operands[1].rst(in_operator=True))
     return _
+
 
 Operators = {
     "Begin": call("begin"),
@@ -37,8 +57,13 @@ Operators = {
     "BitOr": binary("&"),
     "BitXor": binary("^"),
     "End": call("end"),
-    "Call": lambda op: "{}({})".format(op.operands[0].rst(in_operator=True), op.operands[1].rst(in_operator=True, markup=False)),
-    "Cast": lambda op: "cast<{}>({})".format(op.operands[0].rst(in_operator=True, markup=False), op.operands[1].rst(in_operator=True, markup=False)),
+    "Call": lambda op: "{}({})".format(
+        op.operands[0].rst(in_operator=True),
+        op.operands[1].rst(in_operator=True,
+                           markup=False)),
+    "Cast": lambda op: "cast<{}>({})".format(
+        op.operands[0].rst(in_operator=True, markup=False),
+        op.operands[1].rst(in_operator=True, markup=False)),
     "Deref": unary("*"),
     "DecrPostfix": unary("", "--"),
     "DecrPrefix": unary("++"),
@@ -53,7 +78,9 @@ Operators = {
     "HasMember": binary("?."),
     "TryMember": binary(".?"),
     "Member": binary("."),
-    "Index": lambda op: "{}[{}]".format(op.operands[0].rst(in_operator=True), op.operands[1].rst(in_operator=True, markup=False)),
+    "Index": lambda op: "{}[{}]".format(
+        op.operands[0].rst(in_operator=True),
+        op.operands[1].rst(in_operator=True, markup=False)),
     "IncrPostfix": unary("", "++"),
     "IncrPrefix": unary("++"),
     "LogicalAnd": binary("&&"),
@@ -88,13 +115,16 @@ TypeMappings = {
     "hilti::rt::bytes::Side": "spicy::Side",
 }
 
-LibraryType = re.compile('__library_type\("(.*)"\)')
+LibraryType = re.compile(r'__library_type\("(.*)"\)')
+
 
 def namespace(ns):
     return NamespaceMappings.get(ns, ns)
 
+
 def rstHeading(title, level):
     return "{}\n{}\n".format(title, "==-~"[level] * len(title))
+
 
 def fmtDoc(doc):
     n = []
@@ -106,6 +136,7 @@ def fmtDoc(doc):
             n += [wrapped]
 
     return "\n\n".join(n)
+
 
 def fmtType(ty, in_operator=False):
     ty = LibraryType.sub("\\1", ty)
@@ -119,14 +150,15 @@ def fmtType(ty, in_operator=False):
 
     return ty.replace(" ", "~").replace("<*>", "")
 
+
 class Operand:
     def __init__(self, m):
         self.const = m.get("const")
         self.default = m.get("default")
-        self.id = m.get("id");
-        self.optional = m.get("optional");
-        self.doc = m.get("doc");
-        self.type = m.get("type");
+        self.id = m.get("id")
+        self.optional = m.get("optional")
+        self.doc = m.get("doc")
+        self.type = m.get("type")
 
     def rst(self, in_operator=False, prefix="", markup=True):
         if self.doc:
@@ -136,7 +168,8 @@ class Operand:
 
         if not in_operator:
             default = " = {}".format(self.default) if self.default else ""
-            x = "{id}: {type}{default}".format(id=self.id, type=type, default=default).strip()
+            x = "{id}: {type}{default}".format(
+                id=self.id, type=type, default=default).strip()
         else:
             if markup:
                 x = "t:{type}".format(type=type)
@@ -147,6 +180,7 @@ class Operand:
             return "[ {}{} ]".format(prefix, x)
         else:
             return x
+
 
 class Operator:
     def __init__(self, m):
@@ -160,15 +194,25 @@ class Operator:
     def rst(self):
         try:
             sig = Operators[self.kind](self)
-        except:
-            print("error: operator {} not supported by spicy-doc-to-rst yet".format(self.kind), file=sys.stderr)
+        except KeyError:
+            print(
+                "error: "
+                "operator {} not supported by spicy-doc-to-rst yet".format(
+                    self.kind), file=sys.stderr)
             sys.exit(1)
 
         result = fmtType(self.rtype)
-        return ".. spicy:operator:: {ns}::{kind} {result} {sig}\n\n{doc}".format(ns=self.namespace, kind=self.kind, result=result, sig=sig, doc=fmtDoc(self.doc))
+        return ".. spicy:operator:: "\
+            "{ns}::{kind} {result} {sig}\n\n{doc}".format(
+                ns=self.namespace,
+                kind=self.kind,
+                result=result,
+                sig=sig,
+                doc=fmtDoc(self.doc))
 
     def __lt__(self, other):
         return self.kind < other.kind
+
 
 class Method:
     def __init__(self, m):
@@ -193,17 +237,30 @@ class Method:
         const = self.self.const == "const"
         self_ = fmtType(self.self.type)
         result = fmtType(self.rtype)
-        sig = ".. spicy:method:: {ns}::{id} {self} {id} {const} {result} ({args})\n\n{doc}".format(ns=self.namespace, result=result, self=self_, const=const, id=self.id, args=args, doc=fmtDoc(self.doc))
+        sig = ".. spicy:method:: "\
+            "{ns}::{id} {self} {id} {const} {result} ({args})\n\n{doc}".format(
+                ns=self.namespace,
+                result=result,
+                self=self_,
+                const=const,
+                id=self.id,
+                args=args,
+                doc=fmtDoc(self.doc))
         return sig
 
     def __lt__(self, other):
         return self.id < other.id
 
-## Main
+# Main
 
-parser = argparse.ArgumentParser(description="Converts the output of spicy-doc on stdin into reST")
-parser.add_argument("-d", action="store", dest="dir", metavar="DIR", help="create output for all types in given directory")
-parser.add_argument("-t", action="store", dest="types", metavar="TYPES", help="create output for specified, comma-separated types; without -d, output goes to stdout")
+
+parser = argparse.ArgumentParser(
+    description="Converts the output of spicy-doc on stdin into reST")
+parser.add_argument("-d", action="store", dest="dir", metavar="DIR",
+                    help="create output for all types in given directory")
+parser.add_argument("-t", action="store", dest="types", metavar="TYPES",
+                    help="create output for specified, comma-separated types;"
+                    "without -d, output goes to stdout")
 args = parser.parse_args()
 
 if not args.dir and not args.types:
@@ -215,31 +272,30 @@ try:
 except ValueError as e:
     fatalError("cannot parse input: {}".format(e))
 
-operators = {}
-methods = {}
+operators: Dict[str, List[Operator]] = {}
+methods: Dict[str, List[Method]] = {}
 
 for op in meta:
     if op["kind"] == "MemberCall":
-        m = Method(op)
-        x = methods.setdefault(m.namespace, [])
-        x += [m]
+        m1 = Method(op)
+        x1 = methods.setdefault(m1.namespace, [])
+        x1 += [m1]
     else:
-        m = Operator(op)
-        x = operators.setdefault(m.namespace, [])
-        x += [m]
+        m2 = Operator(op)
+        x2 = operators.setdefault(m2.namespace, [])
+        x2 += [m2]
 
 if args.dir:
     keys = set(operators.keys()) | set(methods.keys())
     try:
         os.makedirs(args.dir)
-    except:
+    except OSError:
         pass
 
 if args.types:
     keys = set()
 
     for k in args.types.split(","):
-        keys.add(k)
         for i in operators.keys() | methods.keys():
             if i.startswith(k):
                 keys.add(i)
@@ -266,21 +322,20 @@ for ns in keys:
     if "::iterator" in ns:
         prefix = "Iterator "
 
-    x = sorted(methods.get(ns, []))
-    if x:
+    x1 = sorted(methods.get(ns, []))
+    if x1:
         print(".. rubric:: %sMethods\n" % prefix, file=out)
 
-        for i in x:
-            print(i.rst(), file=out)
+        for method in x1:
+            print(method.rst(), file=out)
             print(file=out)
 
-    x = sorted(operators.get(ns, []))
-
-    if x:
+    x2 = sorted(operators.get(ns, []))
+    if x2:
         print(".. rubric:: %sOperators\n" % prefix, file=out)
 
-        for i in x:
-            print(i.rst(), file=out)
+        for operator in x2:
+            print(operator.rst(), file=out)
             print(file=out)
 
     if args.dir:

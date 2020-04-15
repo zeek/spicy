@@ -1,0 +1,112 @@
+.. _spicy_addressfamily:
+
+.. rubric:: ``spicy::AddressFamily``
+
+Specifies an address' IP family.
+
+.. spicy-code::
+
+    type AddressFamily = {
+        IPv4, # IP4 address
+        IPv6  # IPv6 address
+    };
+
+.. _spicy_base64stream:
+
+.. rubric:: ``spicy::Base64Stream``
+
+Captures the state of base64 encoding/decoding for the corresponding library functions.
+
+.. _spicy_bitorder:
+
+.. rubric:: ``spicy::BitOrder``
+
+Specifies the bit order for individual bit ranges inside a bitfield.
+
+.. spicy-code::
+
+    type BitOrder = {
+        LSB0,     # bits are interpreted as lowest-signficiant-bit coming first
+        MSB0      # bits are interpreted as most-signficiant-bit coming first
+    };
+
+.. _spicy_byteorder:
+
+.. rubric:: ``spicy::ByteOrder``
+
+Specifies byte order for data operations.
+
+.. spicy-code::
+
+    type ByteOrder = {
+        Little,   # data is in little-endian byte order
+        Big,      # data is in big-endian byte order
+        Network,  # data is in network byte order (same a big endian)
+        Host      # data is in byte order of the host we are executing on
+    };
+
+.. _spicy_matchstate:
+
+.. rubric:: ``spicy::MatchState``
+
+Captures state for incremenental regular expression matching.
+
+.. _spicy_protocol:
+
+.. rubric:: ``spicy::Protocol``
+
+Specifies a transport-layer prtocool.
+
+.. spicy-code::
+
+    type Protocol = {
+        TCP,
+        UDP,
+        ICMP
+    };
+
+.. _spicy_realtype:
+
+.. rubric:: ``spicy::RealType``
+
+Specifies the type of a real value.
+
+.. spicy-code::
+
+    type RealType = {
+        IEEE754_Single, # single precision in IEEE754 format
+        IEEE754_Double  # double precision in IEEE754 format
+    };
+
+.. _spicy_reassemblerpolicy:
+
+.. rubric:: ``spicy::ReassemblerPolicy``
+
+Specifies the policy for a sink's reassembler when encountering overlapping data.
+
+.. spicy-code::
+
+    type ReassemblerPolicy = {
+        First # take the original data & discard the new data
+    };
+
+.. _spicy_side:
+
+.. rubric:: ``spicy::Side``
+
+Specifies a side an operation should operate on.
+
+.. spicy-code::
+
+    type Side = {
+        Left,    # operate on left side
+        Right,   # operate on right side
+        Both     # operate on both sides
+    };
+
+.. _spicy_zlibstream:
+
+.. rubric:: ``spicy::ZlibStream``
+
+Captures the state of gzip decompression the corresponding library functions.
+

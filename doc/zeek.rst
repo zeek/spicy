@@ -425,7 +425,7 @@ Spicy grammars can import a provided library module ``zeek`` to gain
 access to a Zeek-specific functions that call back into Zeek's
 processing:
 
-.. include:: /../html/autogen/zeek-functions.spicy
+.. include:: /autogen/zeek-functions.spicy
 
 .. _zeek_configuration:
 

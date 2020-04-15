@@ -21,7 +21,7 @@ The address type stores both IPv4 and IPv6 addresses.
 - IPv4: ``1.2.3.4``
 - IPv6: ``[2001:db8:85a3:8d3:1319:8a2e:370:7348]``, ``[::1.2.3.4]``
 
-.. include:: /../html/autogen/types/address.rst
+.. include:: /autogen/types/address.rst
 
 .. _type_bitfield:
 
@@ -38,7 +38,7 @@ parsed inside a unit.
 - Each ``RANGE`` has one of the forms ``LABEL: A`` or ``LABEL: A..B``
   where ``A`` and ``B`` are a bit numbers.
 
-.. include:: /../html/autogen/types/bitfield.rst
+.. include:: /autogen/types/bitfield.rst
 
 .. _type_bool:
 
@@ -55,7 +55,7 @@ Boolean values can be true or false.
 
 - ``True``, ``False``
 
-.. include:: /../html/autogen/types/bool.rst
+.. include:: /autogen/types/bool.rst
 
 .. _type_bytes:
 
@@ -74,8 +74,8 @@ traverse their content.
 
 - ``b"Spicy"``, ``b""``
 
-.. include:: /../html/autogen/types/bytes.rst
-.. include:: /../html/autogen/types/bytes-iterator.rst
+.. include:: /autogen/types/bytes.rst
+.. include:: /autogen/types/bytes-iterator.rst
 
 .. _type_enum:
 
@@ -103,7 +103,7 @@ Enum types associate labels with a numerical values.
 - The individual labels represent constants of the corresponding type
   (e.g., ``MyEnum::MyFirstLabel`` is a constant of type ``MyEnum``).
 
-.. include:: /../html/autogen/types/enum.rst
+.. include:: /autogen/types/enum.rst
 
 .. _type_exception:
 
@@ -130,7 +130,7 @@ requires specifying the bitwidth of a type.
 - Unsigned integer: ``1234``, ``+1234``, ``uint8(42)``, ``uint16(42)``, ``uint32(42)``, ``uint64(42)``
 - Signed integer: ``-1234``, ``int8(42)``, ``int8(-42)``, ``int16(42)``, ``int32(42)``, ``int64(42)``
 
-.. include:: /../html/autogen/types/integer.rst
+.. include:: /autogen/types/integer.rst
 
 .. _type_port:
 
@@ -148,7 +148,7 @@ associated transport-layer protocol.
 
 - ``443/tcp``, ``53/udp``
 
-.. include:: /../html/autogen/types/port.rst
+.. include:: /autogen/types/port.rst
 
 .. _type_real:
 
@@ -165,7 +165,7 @@ Real
 
 - ``3.14``, ``10e9``, ``0x1.921fb78121fb8p+1``
 
-.. include:: /../html/autogen/types/real.rst
+.. include:: /autogen/types/real.rst
 
 .. _type_regexp:
 
@@ -193,7 +193,7 @@ differences and extensions:
   (useful for set matching).
 
 
-.. include:: /../html/autogen/types/regexp.rst
+.. include:: /autogen/types/regexp.rst
 
 .. _type_sink:
 
@@ -210,7 +210,7 @@ member of unit using the special ``sink`` keyword. You can, however,
 maintain references to sinks by assigning the unit member to a variable
 of type ``Sink&``.
 
-.. include:: /../html/autogen/types/sink.rst
+.. include:: /autogen/types/sink.rst
 
 .. rubric: Hooks
 
@@ -267,9 +267,9 @@ larger volumes of data during processing.
 - ``iterator<stream>``
 - ``view<stream>``
 
-.. include:: /../html/autogen/types/stream.rst
-.. include:: /../html/autogen/types/stream-iterator.rst
-.. include:: /../html/autogen/types/stream-view.rst
+.. include:: /autogen/types/stream.rst
+.. include:: /autogen/types/stream-iterator.rst
+.. include:: /autogen/types/stream-view.rst
 
 .. _type_string:
 
@@ -288,7 +288,7 @@ set. Internally, Spicy stores them as UTF-8.
 - ``"Spicy"``, ``""``
 - When specifying string constants, Spicy assumes them to be in UTF-8.
 
-.. include:: /../html/autogen/types/string.rst
+.. include:: /autogen/types/string.rst
 
 .. _type_tuple:
 
@@ -305,7 +305,7 @@ Tuples are heterogeneous containers of a fixed, ordered set of types.
 
 - ``(1, "string", True)``, ``(1, )``, ``()``
 
-.. include:: /../html/autogen/types/tuple.rst
+.. include:: /autogen/types/tuple.rst
 
 .. _type_unit:
 
@@ -325,8 +325,8 @@ Unit
   [$FIELD_1 = X_1, $FIELD_N = X_N, ...]`` where ``FIELD_I`` is the
   label of a corresponding field in ``my_unit``'s type.
 
-.. include:: /../html/autogen/types/unit.rst
-.. include:: /../html/autogen/types/struct.rst
+.. include:: /autogen/types/unit.rst
+.. include:: /autogen/types/struct.rst
 
 .. _type_vector:
 
@@ -351,8 +351,8 @@ given element type. They provide iterators to traverse their content.
 - Vectors can be initialized through coercions from a list value:
   ``vector<string> I = ["A", "B", "C"]``.
 
-.. include:: /../html/autogen/types/vector.rst
-.. include:: /../html/autogen/types/vector-iterator.rst
+.. include:: /autogen/types/vector.rst
+.. include:: /autogen/types/vector-iterator.rst
 
 .. _type_void:
 

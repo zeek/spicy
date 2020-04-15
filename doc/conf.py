@@ -18,7 +18,8 @@ import subprocess
 
 sys.path.insert(0, os.path.abspath('scripts'))
 
-os.environ["PATH"] = "%s/bin:%s" % (os.environ["SPICY_BUILD_DIRECTORY"], os.environ["PATH"])
+os.environ["PATH"] = "%s/bin:%s" % (
+    os.environ["SPICY_BUILD_DIRECTORY"], os.environ["PATH"])
 
 # -- Project information -----------------------------------------------------
 
@@ -39,7 +40,8 @@ extensions = [
     'spicy'
 ]
 
-exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store', '_build/autogen/types', '3rdparty/*', "_old-content"]
+exclude_patterns = [u'_build', 'autogen', 'Thumbs.db',
+                    '.DS_Store', '3rdparty/*', "_old-content"]
 
 templates_path = ['_templates']
 
@@ -52,9 +54,9 @@ todo_include_todos = True
 
 # Extlinks extension
 extlinks = {
-     "repo":  ("https://github.com/zeek/spicy/blob/master/%s", "#"),
-     "issue": ("https://github.com/zeek/spicy/issues/issues/%s", "#"),
-     "pr":    ("https://github.com/zeek/spicy/pulls/%s", "#"),
+    "repo":  ("https://github.com/zeek/spicy/blob/master/%s", "#"),
+    "issue": ("https://github.com/zeek/spicy/issues/issues/%s", "#"),
+    "pr":    ("https://github.com/zeek/spicy/pulls/%s", "#"),
 }
 
 # -- Options for HTML output -------------------------------------------------

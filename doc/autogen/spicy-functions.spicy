@@ -1,0 +1,36 @@
+.. _spicy_zlib_decompress:
+
+.. rubric:: ``function spicy::zlib_decompress(inout stream_: ZlibStream, data: bytes) : bytes``
+
+Decompresses a chunk of data through the given zlib stream.
+
+.. _spicy_zlib_finish:
+
+.. rubric:: ``function spicy::zlib_finish(inout stream_: ZlibStream) : bytes``
+
+Finalizes a zlib stream used for decompression.
+
+.. _spicy_base64_encode:
+
+.. rubric:: ``function spicy::base64_encode(inout stream_: Base64Stream, data: bytes) : bytes``
+
+Encodes a stream of data into base64.
+
+.. _spicy_base64_decode:
+
+.. rubric:: ``function spicy::base64_decode(inout stream_: Base64Stream, data: bytes) : bytes``
+
+Decodes a stream of base64 data back into the clear.
+
+.. _spicy_base64_finish:
+
+.. rubric:: ``function spicy::base64_finish(inout stream_: Base64Stream) : bytes``
+
+Finalizes a base64 stream used for decoding or encoding.
+
+.. _spicy_current_time:
+
+.. rubric:: ``function spicy::current_time() : time``
+
+Returns the current wall clock time.
+

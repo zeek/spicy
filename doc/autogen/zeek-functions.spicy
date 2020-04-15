@@ -1,0 +1,66 @@
+.. _spicy_confirm_protocol:
+
+.. rubric:: ``function zeek::confirm_protocol()``
+
+Triggers a DPD protocol confirmation for the current connection.
+
+.. _spicy_reject_protocol:
+
+.. rubric:: ``function zeek::reject_protocol(reason: string)``
+
+Triggers a DPD protocol violation for the current connection.
+
+.. _spicy_is_orig:
+
+.. rubric:: ``function zeek::is_orig() : bool``
+
+Returns true if we're are currently parsing the originator side of a connection.
+
+.. _spicy_flip_roles:
+
+.. rubric:: ``function zeek::flip_roles()``
+
+Instructs to Zeek to flip the directionality of the current connecction.
+
+.. _spicy_number_packets:
+
+.. rubric:: ``function zeek::number_packets() : uint64``
+
+Returns the number of packets seen so far on the current side of the current connection.
+
+.. _spicy_file_begin:
+
+.. rubric:: ``function zeek::file_begin()``
+
+Signals the beginning of a file to Zeek's file analysis, associating it with the current connection.
+
+.. _spicy_file_set_size:
+
+.. rubric:: ``function zeek::file_set_size(size: uint64)``
+
+Signals the expected size of a file to Zeek's file analysis.
+
+.. _spicy_file_data_in:
+
+.. rubric:: ``function zeek::file_data_in(data: bytes)``
+
+Passes file content on to Zeek's file analysis.
+
+.. _spicy_file_data_in_at_offset:
+
+.. rubric:: ``function zeek::file_data_in_at_offset(data: bytes, offset: uint64)``
+
+Passes file content at a specific offset on to Zeek's file analysis.
+
+.. _spicy_file_gap:
+
+.. rubric:: ``function zeek::file_gap(offset: uint64, len: uint64)``
+
+Signals a gap in a file to Zeek's file analysis.
+
+.. _spicy_file_end:
+
+.. rubric:: ``function zeek::file_end()``
+
+Signals the end of a file to Zeek's file analysis.
+
