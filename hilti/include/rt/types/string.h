@@ -25,20 +25,24 @@ std::string upper(const std::string& s);
 } // namespace string
 
 namespace detail::adl {
-inline std::string to_string(const std::string& x, adl::tag /*unused*/) { return fmt("\"%s\"", escapeUTF8(x, true)); }
+inline std::string to_string(const std::string& x, adl::tag /*unused*/) {
+    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
+}
 
-inline std::string to_string(std::string_view x, adl::tag /*unused*/) { return fmt("\"%s\"", escapeUTF8(x, true)); }
+inline std::string to_string(std::string_view x, adl::tag /*unused*/) {
+    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
+}
 
 } // namespace detail::adl
 
 template<>
 inline std::string detail::to_string_for_print<std::string>(const std::string& x) {
-    return escapeUTF8(x, false, false);
+    return escapeUTF8(x, false, false, true);
 }
 
 template<>
 inline std::string detail::to_string_for_print<std::string_view>(const std::string_view& x) {
-    return escapeUTF8(x, false, false);
+    return escapeUTF8(x, false, false, true);
 }
 
 

@@ -208,7 +208,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
     return s;
 }
 
-std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool escape_control) {
+std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool escape_control, bool keep_hex) {
     auto escapeControl = [escape_control](unsigned char c, const char* s) {
         return escape_control ? fmt(s) : std::string(1, c);
     };
@@ -228,8 +228,12 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
             break;
         }
 
-        if ( cp == '\\' )
-            esc += "\\\\";
+        if ( cp == '\\' ) {
+            if ( keep_hex && (p + n) < e && *(p + n) == 'x' )
+                esc += "\\";
+            else
+                esc += "\\\\";
+        }
 
         else if ( cp == '"' && escape_quotes )
             esc += "\\\"";
@@ -255,10 +259,6 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
 }
 
 std::string hilti::rt::escapeBytes(std::string_view s, bool escape_quotes, bool escape_control) {
-    auto escapeControl = [escape_control](char c, const char* s) {
-        return escape_control ? fmt(s) : std::string(1, c);
-    };
-
     auto p = s.data();
     auto e = p + s.size();
 
@@ -270,15 +270,6 @@ std::string hilti::rt::escapeBytes(std::string_view s, bool escape_quotes, bool 
 
         else if ( *p == '"' && escape_quotes )
             esc += "\\\"";
-
-        else if ( *p == '\n' )
-            esc += escapeControl(*p, "\\n");
-
-        else if ( *p == '\r' )
-            esc += escapeControl(*p, "\\r");
-
-        else if ( *p == '\t' )
-            esc += escapeControl(*p, "\\t");
 
         else if ( isprint(*p) )
             esc += *p;

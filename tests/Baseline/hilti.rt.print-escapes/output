@@ -1,9 +1,8 @@
 Test
 
-Test\n
+Test\x0a
 ["Test\n"]
-[b"Test\n"]
+[b"Test\x0a"]
 Test
 
-Test
-
+Test\x0a
