@@ -297,12 +297,14 @@ std::string cxx::type::Struct::str() const {
 
     auto fmt_member = [&](auto f) {
         if ( auto x = std::get_if<declaration::Local>(&f) ) {
-            if ( ! (util::startsWith(x->id.local(), "__") ||
-                    x->linkage == "inline static") ) { // Don't visit internal or static fields.
+            if ( ! (x->isInternal() || x->linkage == "inline static") ) // Don't visit internal or static fields.
                 visitor_calls.emplace_back(fmt("_(\"%s\", %s); ", x->id, x->id));
-            }
 
-            return fmt("%s;", x->str());
+            // We default initialize any members here that don't have an
+            // explicit "init" expression. Those that do will be initialized
+            // through our constructors.
+            cxx::Expression init = x->init ? "" : "{}";
+            return fmt("%s%s;", fmtDeclaration(x->id, x->type, x->args, x->linkage, {}), init);
         }
 
         if ( auto x = std::get_if<declaration::Function>(&f) ) {
@@ -328,10 +330,15 @@ std::string cxx::type::Struct::str() const {
     };
 
     auto fmt_argument = [&](auto a) {
+        // We default initialize any parameters here that don't have an
+        // explicit "default" expression. Those that do will be initialized
+        // through our constructors.
+        cxx::Expression default_ = a.default_ ? "" : "{}";
+
         if ( a.internal_type )
-            return fmt("%s %s;", a.internal_type, a.id);
+            return fmt("%s %s%s;", a.internal_type, a.id, default_);
         else
-            return fmt("%s %s;", a.type, a.id);
+            return fmt("%s %s%s;", a.type, a.id, default_);
     };
 
     std::vector<std::string> struct_fields;
@@ -339,7 +346,7 @@ std::string cxx::type::Struct::str() const {
     util::append(struct_fields, util::transform(args, fmt_argument));
 
     if ( add_ctors ) {
-        auto dctor = fmt("inline %s() { __init(); }", type_name);
+        auto dctor = fmt("inline %s();", type_name);
         auto cctor = fmt("%s(const %s&) = default;", type_name, type_name);
         auto mctor = fmt("%s(%s&&) = default;", type_name, type_name);
         auto cassign = fmt("%s& operator=(const %s&) = default;", type_name, type_name);
@@ -347,6 +354,22 @@ std::string cxx::type::Struct::str() const {
 
         for ( auto x : {dctor, cctor, mctor, cassign, massign} )
             struct_fields.emplace_back(x);
+
+        auto locals_user = util::filter(members, [](auto m) {
+            auto l = std::get_if<declaration::Local>(&m);
+            return l && ! l->isInternal();
+        });
+
+        if ( locals_user.size() ) {
+            auto locals_ctor_args = util::join(util::transform(locals_user,
+                                                               [&](auto x) {
+                                                                   auto& l = std::get<declaration::Local>(x);
+                                                                   return fmt("std::optional<%s> %s", l.type, l.id);
+                                                               }),
+                                               ", ");
+            auto locals_ctor = fmt("inline %s(%s);", type_name, locals_ctor_args);
+            struct_fields.emplace_back(std::move(locals_ctor));
+        }
 
         if ( args.size() ) {
             // Add decidated constructor to initialize the struct's arguments.
@@ -374,23 +397,82 @@ std::string cxx::type::Struct::inlineCode() const {
     if ( ! add_ctors )
         return "";
 
-    std::string params_ctor;
+    auto locals_user = util::filter(members, [](auto m) {
+        auto l = std::get_if<declaration::Local>(&m);
+        return l && ! l->isInternal();
+    });
+
+    auto locals_non_user = util::filter(members, [](auto m) {
+        auto l = std::get_if<declaration::Local>(&m);
+        return l && l->isInternal();
+    });
+
+    auto init_locals_user = [&]() {
+        return util::join(util::transform(locals_user,
+                                          [&](auto x) {
+                                              auto& l = std::get<declaration::Local>(x);
+                                              return l.init ? fmt("    %s = %s;\n", l.id, *l.init) : std::string();
+                                          }),
+                          "");
+    };
+
+    auto init_locals_non_user = [&]() {
+        return util::join(util::transform(locals_non_user,
+                                          [&](auto x) {
+                                              auto& l = std::get<declaration::Local>(x);
+                                              return l.init ? fmt("    %s = %s;\n", l.id, *l.init) : std::string();
+                                          }),
+                          "");
+    };
+
+    auto init_parameters = [&]() {
+        return util::join(util::transform(args,
+                                          [&](auto x) {
+                                              return x.default_ ? fmt("    %s = %s;\n", x.id, *x.default_) :
+                                                                  std::string();
+                                          }),
+                          "");
+    };
+
+    std::string inline_code;
+
+    // Create default constructor.
+    inline_code += fmt("inline %s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_user(),
+                       init_locals_non_user());
 
     if ( args.size() ) {
         // Create constructor taking the struct's parameters.
-        auto params_ctor_args =
-            util::join(util::transform(args, [&](auto x) { return fmt("%s %s", x.type, x.id); }), ", ");
-        auto params_ctor_inits =
-            util::join(util::transform(args, [&](auto x) { return fmt("%s(std::move(%s))", x.id, x.id); }), ",");
+        auto ctor_args = util::join(util::transform(args, [&](auto x) { return fmt("%s %s", x.type, x.id); }), ", ");
 
-        if ( params_ctor_inits.size() )
-            params_ctor_inits = fmt(" : %s", params_ctor_inits);
+        auto ctor_inits =
+            util::join(util::transform(args, [&](auto x) { return fmt("%s(std::move(%s))", x.id, x.id); }), ", ");
 
-        params_ctor =
-            fmt("inline %s::%s(%s)%s { __init(); }\n", type_name, type_name, params_ctor_args, params_ctor_inits);
+        inline_code += fmt("inline %s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits,
+                           init_locals_user(), init_locals_non_user());
     }
 
-    return params_ctor;
+    if ( locals_user.size() ) {
+        // Create constructor taking the struct's (non-function) fields..
+        auto ctor_args = util::join(util::transform(locals_user,
+                                                    [&](auto x) {
+                                                        auto& l = std::get<declaration::Local>(x);
+                                                        return fmt("std::optional<%s> %s_", l.type, l.id);
+                                                    }),
+                                    ", ");
+
+        auto ctor_inits =
+            util::join(util::transform(locals_user,
+                                       [&](auto x) {
+                                           auto& l = std::get<declaration::Local>(x);
+                                           return fmt("    if ( %s_ ) %s = std::move(*%s_);\n", l.id, l.id, l.id);
+                                       }),
+                       "");
+
+        inline_code +=
+            fmt("inline %s::%s(%s) : %s() {\n%s}\n\n", type_name, type_name, ctor_args, type_name, ctor_inits);
+    }
+
+    return inline_code;
 }
 
 std::string cxx::type::Union::str() const {

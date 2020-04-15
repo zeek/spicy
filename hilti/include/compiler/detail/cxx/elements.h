@@ -98,6 +98,10 @@ struct Local {
     std::optional<cxx::Expression> init;
     Linkage linkage;
 
+    // Returns true if the ID starts with two underscores, which is the
+    // namespace reserved for internal IDs.
+    bool isInternal() const { return util::startsWith(id.local(), "__"); }
+
     std::string str() const;
     operator std::string() const { return str(); }
 };
@@ -157,6 +161,7 @@ extern void from_json(const nlohmann::json& j, Type& t); // NOLINT
 struct Argument {
     cxx::ID id;
     cxx::Type type;
+    std::optional<cxx::Expression> default_;
     cxx::Type internal_type = "";
     operator std::string() const { return id ? util::fmt("%s %s", type, id) : std::string(type); }
 

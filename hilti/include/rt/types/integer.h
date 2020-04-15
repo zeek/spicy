@@ -138,6 +138,8 @@ inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
         case ByteOrder::Host:
             // Cannot reach, we check this above.
             abort_with_backtrace();
+
+        case ByteOrder::Undef: return result::Error("undefined byte order");
     }
 
     cannot_be_reached();

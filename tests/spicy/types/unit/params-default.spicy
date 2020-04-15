@@ -1,0 +1,21 @@
+# @TEST-EXEC:  echo 555555 | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Issue_163_segFault;
+
+public type getThirdChild = unit {
+    on %init {
+        print "getThirdChild";
+    }
+
+    chkInvokeID: TCAPTag(True);
+    chkInitialDPOpcode: TCAPTag;
+    childInitialDP: TCAPTag;
+};
+
+type TCAPTag = unit(consume: bool = False) {
+    on %init {
+        print "enterred TCAPTag";
+        print "is consume true: ", consume;
+      }
+};
