@@ -770,12 +770,6 @@ struct ProductionVisitor
                 break;
             }
             case production::look_ahead::Default::None: {
-                if ( alts1.empty() )
-                    exprs_alt1.push_back(look_ahead::None);
-
-                if ( alts2.empty() )
-                    exprs_alt2.push_back(look_ahead::None);
-
                 break;
             }
         }
