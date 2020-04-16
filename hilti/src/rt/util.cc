@@ -10,6 +10,7 @@
 
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/fiber.h>
 #include <hilti/rt/util.h>
 
 std::string hilti::rt::version() {

@@ -8,8 +8,6 @@
 #include <vector>
 
 #include <hilti/rt/backtrace.h>
-#include <hilti/rt/fmt.h>
-#include <hilti/rt/global-state.h>
 
 namespace hilti::rt {
 
@@ -88,6 +86,9 @@ HILTI_EXCEPTION(IndexError, RuntimeError)
 /** * Thrown when a default-less `switch` statement hits case that's no covered. */
 HILTI_EXCEPTION(UnhandledSwitchCase, RuntimeError)
 
+/** Thrown when a value is found to be outside of its permissible range. */
+HILTI_EXCEPTION(OutOfRange, RuntimeError)
+
 /**
  * Exception signaling that an operation could not complete due to lack of
  * input or I/O delays. The operation should be retried when that situation
@@ -104,7 +105,7 @@ public:
      * @param desc message describing the situation
      * @param location string indicating the location of the operation that couldn't complete
      */
-    WouldBlock(const std::string& desc, const std::string& location) : WouldBlock(fmt("%s (%s)", desc, location)) {}
+    WouldBlock(const std::string& desc, const std::string& location);
 };
 
 namespace exception {

@@ -14,6 +14,7 @@
 
 #include "hilti/compiler/detail/clang.h"
 
+#include <fstream>
 #include <functional>
 #include <iosfwd>
 #include <map>

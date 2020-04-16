@@ -41,6 +41,8 @@ Exception::Exception(std::string_view desc, std::string_view location)
 
 Exception::~Exception() = default;
 
+WouldBlock::WouldBlock(const std::string& desc, const std::string& location) : WouldBlock(fmt("%s (%s)", desc, location)) {}
+
 exception::DisableAbortOnExceptions::DisableAbortOnExceptions() {
     detail::globalState()->disable_abort_on_exceptions++;
 }

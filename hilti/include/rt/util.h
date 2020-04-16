@@ -27,6 +27,7 @@ void internalError(const std::string& msg) __attribute__((noreturn));
 #undef TINYFORMAT_ERROR
 #define TINYFORMAT_ERROR(reason) ::hilti::rt::internalError(reason)
 #include <hilti/3rdparty/tinyformat/tinyformat.h>
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fmt.h>
 
@@ -300,9 +301,17 @@ auto transform(const std::set<X>& x, F f) {
     return y;
 }
 
-/** Parses a numerical value from a character sequence into an integer. */
+class OutOfRange;
+
+/**
+ * Parses a numerical value from a character sequence into an integer.
+ * `base` must be between 2 and 26.
+ */
 template<class Iter, typename Result>
 inline Iter atoi_n(Iter s, Iter e, int base, Result* result) {
+    if ( base < 2 || base > 36 )
+        throw OutOfRange("base for numerical conversion must be between 2 and 36");
+
     Result n = 0;
     bool neg = false;
 

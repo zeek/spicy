@@ -83,8 +83,8 @@
 .. spicy:method:: bytes::to_int bytes to_int False int<64> ([ inout base: uint<64> ])
 
     Interprets the data as representing an ASCII-encoded number and
-    converts that into a signed integer, using a base of *base*. If *base*
-    is not given, the default is 10.
+    converts that into a signed integer, using a base of *base*. *base*
+    must be between 2 and 26. If *base* is not given, the default is 10.
 
 .. spicy:method:: bytes::to_int bytes to_int False int<64> (byte_order: enum~{~~})
 
@@ -107,8 +107,8 @@
 .. spicy:method:: bytes::to_uint bytes to_uint False uint<64> ([ inout base: uint<64> ])
 
     Interprets the data as representing an ASCII-encoded number and
-    converts that into an unsigned integer, using a base of *base*. If
-    *base* is not given, the default is 10.
+    converts that into an unsigned integer, using a base of *base*. *base*
+    must be between 2 and 26. If *base* is not given, the default is 10.
 
 .. spicy:method:: bytes::to_uint bytes to_uint False uint<64> (byte_order: enum~{~~})
 
