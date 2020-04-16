@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/ast/ctors/string.h>
+#include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/statements/switch.h>
@@ -17,9 +18,28 @@ using util::fmt;
 namespace {
 
 struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformVisitor> {
-    int errors = 0;
+    // Record error at location of current node.
+    void error(std::string msg, position_t& p,
+               hilti::node::ErrorPriority priority = hilti::node::ErrorPriority::Normal) {
+        p.node.addError(msg, p.node.location(), priority);
+        ++errors;
+    }
 
-    void error(std::string msg, position_t& p) { p.node.addError(msg); ++errors; }
+    // Record error with current node, but report with another node's location.
+    void error(std::string msg, position_t& p, const Node& n,
+               hilti::node::ErrorPriority priority = hilti::node::ErrorPriority::Normal) {
+        p.node.addError(msg, n.location(), priority);
+        ++errors;
+    }
+
+    // Record error with current node, but report with a custom location.
+    void error(std::string msg, position_t& p, Location l,
+               hilti::node::ErrorPriority priority = hilti::node::ErrorPriority::Normal) {
+        p.node.addError(msg, std::move(l), priority);
+        ++errors;
+    }
+
+    int errors = 0;
 
     void operator()(const statement::Print& /* n */, position_t p) {
         // TODO(robin): .
@@ -31,66 +51,72 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             error("'stop' can only be used inside a 'foreach' hook", p);
     }
 
-    void operator()(const type::Unit& n, position_t p) {
-        for ( const auto& i : n.items<spicy::type::unit::item::Property>() ) {
-            // TODO(robin): should maybe validate Property individually instead of within Unit validation?
-            if ( i.id().str() == "%random-access" ) {
-                if ( i.expression() )
-                    error("%random-access does not accept an argument", p);
-            }
-
-            else if ( i.id().str() == "%filter" ) {
-                if ( i.expression() )
-                    error("%filter does not accept an argument", p);
-            }
-
-            else if ( i.id().str() == "%byte-order" ) {
-                if ( ! i.expression() )
-                    error("%byte-order requires an expression", p);
-
-                // expression type is checked by code generater
-            }
-
-            else if ( i.id().str() == "%description" ) {
-                if ( ! i.expression() ) {
-                    error("%description requires an argument", p);
-                    return;
-                }
-
-                if ( ! i.expression()->type().isA<type::String>() )
-                    error("%description requires a string argument", p);
-            }
-
-            else if ( i.id().str() == "%mime-type" ) {
-                if ( ! i.expression() ) {
-                    error("%mime-type requires an argument", p);
-                    return;
-                }
-
-                if ( ! i.expression()->type().isA<type::String>() )
-                    error("%mime-type requires a string argument", p);
-
-                if ( auto x = i.expression()->tryAs<hilti::expression::Ctor>() ) {
-                    auto mt = x->ctor().as<hilti::ctor::String>().value();
-
-                    if ( ! spicy::rt::MIMEType::parse(mt) )
-                        error("%mime-type argument must follow \"main/sub\" form", p);
-                }
-            }
-
-            else if ( i.id().str() == "%port" ) {
-                if ( ! i.expression() ) {
-                    error("%ports requires an argument", p);
-                    return;
-                }
-
-                if ( ! i.expression()->type().tryAs<type::Port>() )
-                    error("%port requires a port as its argument", p);
-            }
-
-            else
-                error(fmt("unknown property '%s'", i.id().str()), p);
+    void operator()(const spicy::type::unit::item::Property& i, position_t p) {
+        if ( i.id().str() == "%random-access" ) {
+            if ( i.expression() )
+                error("%random-access does not accept an argument", p);
         }
+
+        else if ( i.id().str() == "%filter" ) {
+            if ( i.expression() )
+                error("%filter does not accept an argument", p);
+        }
+
+        else if ( i.id().str() == "%byte-order" ) {
+            if ( ! i.expression() )
+                error("%byte-order requires an expression", p);
+
+            // expression type is checked by code generater
+        }
+
+        else if ( i.id().str() == "%description" ) {
+            if ( ! i.expression() ) {
+                error("%description requires an argument", p);
+                return;
+            }
+
+            if ( ! i.expression()->type().isA<type::String>() )
+                error("%description requires a string argument", p);
+        }
+
+        else if ( i.id().str() == "%mime-type" ) {
+            if ( ! i.expression() ) {
+                error("%mime-type requires an argument", p);
+                return;
+            }
+
+            if ( ! i.expression()->type().isA<type::String>() )
+                error("%mime-type requires a string argument", p);
+
+            if ( auto x = i.expression()->tryAs<hilti::expression::Ctor>() ) {
+                auto mt = x->ctor().as<hilti::ctor::String>().value();
+
+                if ( ! spicy::rt::MIMEType::parse(mt) )
+                    error("%mime-type argument must follow \"main/sub\" form", p);
+            }
+        }
+
+        else if ( i.id().str() == "%port" ) {
+            if ( ! i.expression() ) {
+                error("%ports requires an argument", p);
+                return;
+            }
+
+            if ( ! i.expression()->type().tryAs<type::Port>() )
+                error("%port requires a port as its argument", p);
+        }
+
+        else
+            error(fmt("unknown property '%s'", i.id().str()), p);
+    }
+
+    void operator()(const spicy::type::unit::item::UnitHook& i, position_t p) {
+        auto decl = p.findParent<hilti::declaration::Type>();
+        if ( ! decl )
+            return;
+
+        if ( auto unit = decl->get().type().tryAs<type::Unit>() )
+            _checkHook(*unit, i, decl->get().linkage() == hilti::declaration::Linkage::Public, p);
     }
 
     void operator()(const Attribute& a, position_t p) {
@@ -295,6 +321,96 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 "cannot use type 'sink' for unit variables; use either a 'sink' item or a reference to a sink "
                 "('sink&')",
                 p);
+    }
+
+    void operator()(const spicy::declaration::UnitHook& u, position_t p) {
+        if ( const auto& ut = u.unitType() )
+            _checkHook(*ut, u.unitHook(), ut->isPublic(), p);
+        else
+            error("unknown unit type", p);
+    }
+
+    void _checkHook(const type::Unit& unit, const type::unit::item::UnitHook& hook, bool is_public, position_t& p) {
+        // Note: We can't use any of the unit.isX() methods here that depend
+        // on unit.isPublic() being set correctly, as they might not have
+        // happened yet.
+
+        auto params = hook.hook().type().parameters();
+        auto location = hook.location();
+
+        if ( ! hook.hook().type().result().type().isA<type::Void>() )
+            error("hook cannot have a return value", p, location);
+
+        if ( hook.id().namespace_() )
+            error("hook ID cannot be scoped", p, location);
+        else {
+            auto id = hook.id().local().str();
+            bool needs_sink_support = false;
+
+            if ( id.find(".") != std::string::npos )
+                error("cannot use paths in hooks; trigger on the top-level field instead", p, location);
+
+            else if ( util::startsWith(id, "0x25_") )  {
+                auto id_readable = util::replace(hook.id().local().str(), "0x25_", "%");
+
+                if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_error" ) {
+                    if ( params.size() != 0 )
+                        error(fmt("hook '%s' does not take any parameters", id_readable), p, location);
+                }
+
+                else if ( id == "0x25_gap" ) {
+                    needs_sink_support = true;
+                    if ( params.size() != 2 ||
+                         params[0].type() != type::UnsignedInteger(64) ||
+                         params[1].type() != type::UnsignedInteger(64) )
+                        error("signature for hook must be: %gap(seq: uint64, len: uint64)", p, location);
+                }
+
+                else if ( id == "0x25_overlap" ) {
+                    needs_sink_support = true;
+                    if ( params.size() != 3 ||
+                         params[0].type() != type::UnsignedInteger(64) ||
+                         params[1].type() != type::Bytes() ||
+                         params[2].type() != type::Bytes() )
+                        error("signature for hook must be: %overlap(seq: uint64, old: bytes, new_: bytes)", p, location);
+                }
+
+                else if ( id == "0x25_skipped" ) {
+                    needs_sink_support = true;
+                    if ( params.size() != 1 ||
+                         params[0].type() != type::UnsignedInteger(64) )
+                        error("signature for hook must be: %skipped(seq: uint64)", p, location);
+                }
+
+                else if ( id == "0x25_undelivered" ) {
+                    needs_sink_support = true;
+                    if ( params.size() != 2 ||
+                         params[0].type() != type::UnsignedInteger(64) ||
+                         params[1].type() != type::Bytes() )
+                        error("signature for hook must be: %undelivered(seq: uint64, data: bytes)", p, location);
+                }
+
+                else
+                    error(fmt("unknown hook '%s'", id_readable), p, location);
+
+<<<<<<< HEAD
+                if ( needs_sink_support && ! unit.supportsSinks() )
+                    error(fmt("cannot use hook '%s', unit type does not support sinks", id_readable), p, location);
+
+=======
+                if ( needs_sink_support && ! is_public ) // don't use supportsSink() here, see above
+                    error(fmt("cannot use hook '%s', unit type does not support sinks because it is not public",
+                              id_readable),
+                          p, location);
+>>>>>>> 607ad03... Fixup unit hook checjks,
+            }
+            else {
+                if ( auto i = unit.field(ID(id)); ! i )
+                    error(fmt("no field '%s' in unit type", id), p, location);
+                else if ( ! i->isA<spicy::type::unit::item::Field>() )
+                    error(fmt("'%s' does not support hooks", id), p, location);
+            }
+        }
     }
 };
 

@@ -124,3 +124,7 @@ void Driver::enableExpressionMode() {
 void Driver::disableDottedIDMode() { _scanner->disableDottedIDMode(); }
 
 void Driver::enableDottedIDMode() { _scanner->enableDottedIDMode(); }
+
+void Driver::disableHookIDMode() { _scanner->disableHookIDMode(); }
+
+void Driver::enableHookIDMode() { _scanner->enableHookIDMode(); }

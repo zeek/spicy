@@ -196,7 +196,7 @@ public:
     void addError(std::string msg, Location l, node::ErrorPriority priority, std::vector<std::string> context = {}) {
         node::Error error;
         error.message = std::move(msg);
-        error.location = location();
+        error.location = std::move(l);
         error.context = std::move(context);
         error.priority = priority;
 

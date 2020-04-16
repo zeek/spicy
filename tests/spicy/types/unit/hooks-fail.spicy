@@ -1,0 +1,28 @@
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+#
+# Various ways of access hooks that don't exist.
+
+module Mini;
+
+type test = unit {
+    on %init(i: string) {}
+    on Foo::bar {}
+
+    on %gap () {}
+    on %skipped () {}
+    on %overlap () {}
+    on %undelivered () {}
+
+    on x1 {}
+    on %x2 {}
+    on a.b.c {}
+
+    };
+
+on test::%init(i: string) {}
+on test::%gap () {}
+on test::y1 {}
+on test::%y2 {}
+on test::a.b.c {}
+on XXXX::x {}

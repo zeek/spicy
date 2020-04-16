@@ -24,6 +24,7 @@ using namespace spicy::detail::parser;
 %s IGNORE_NL
 
 %x DOTTED_ID
+%x HOOK_ID
 %x RE
 
 %{
@@ -214,9 +215,14 @@ b{string}             yylval->str = util::expandEscapes(std::string(yytext, 2, s
 <RE>(\\.|[^\\\/])*    yylval->str = util::replace(yytext, "\\/", "/"); return token::CREGEXP;
 <RE>[/\\\n]           return (token_type) yytext[0];
 
-<DOTTED_ID>{id}(\.{id})*  yylval->str = yytext; return token::DOTTED_IDENT;
+<DOTTED_ID>%?{id}(\.{id})*  yylval->str = yytext; return token::DOTTED_IDENT;
 <DOTTED_ID>{blank}+       yylloc->step();
 <DOTTED_ID>[\n]+          yylloc->lines(yyleng); yylloc->step();
+
+<HOOK_ID>%?{id}(\.{id})*  yylval->str = yytext; return token::HOOK_IDENT;
+<HOOK_ID>({id}::){1,}%?{id}(\.{id})*  yylval->str = yytext; return token::HOOK_IDENT;
+<HOOK_ID>{blank}+       yylloc->step();
+<HOOK_ID>[\n]+          yylloc->lines(yyleng); yylloc->step();
 
 %%
 
@@ -252,6 +258,16 @@ void spicy::detail::parser::Scanner::enableDottedIDMode()
 }
 
 void spicy::detail::parser::Scanner::disableDottedIDMode()
+{
+    yy_pop_state();
+}
+
+void spicy::detail::parser::Scanner::enableHookIDMode()
+{
+    yy_push_state(HOOK_ID);
+}
+
+void spicy::detail::parser::Scanner::disableHookIDMode()
 {
     yy_pop_state();
 }

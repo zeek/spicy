@@ -28,6 +28,8 @@ public:
     void disableExpressionMode();
     void enableDottedIDMode();
     void disableDottedIDMode();
+    void enableHookIDMode();
+    void disableHookIDMode();
 };
 
 } // namespace spicy::detail::parser

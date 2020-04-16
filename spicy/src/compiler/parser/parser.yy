@@ -71,6 +71,7 @@ static int _field_width = 0;
 %token <str>       IDENT          "identifier"
 %token <str>       SCOPED_IDENT   "scoped identifier"
 %token <str>       DOTTED_IDENT   "dotted identifier"
+%token <str>       HOOK_IDENT     "hook identifier"
 %token <str>       DOLLAR_IDENT   "$-identifier"
 %token <str>       ATTRIBUTE      "attribute"
 %token <str>       PROPERTY       "property"
@@ -715,8 +716,9 @@ opt_unit_hook_attributes
                                                  { $$ = hilti::AttributeSet::add($1, $2); }
               | /* empty */                      { $$ = {}; }
 
-unit_hook_id  : scoped_id                        { $$ = hilti::ID(util::replace($1, "%", "0x25_"), __loc__); }
-              | PROPERTY                         { $$ = hilti::ID(util::replace($1, "%", "0x25_"), __loc__); }  /* for %init/%done */
+unit_hook_id: { driver->enableHookIDMode(); }
+              HOOK_IDENT
+              { driver->disableHookIDMode(); } { $$ = hilti::ID(util::replace($2, "%", "0x25_"), __loc__); }
 
 unit_hook_attribute
               : FOREACH                          { $$ = hilti::Attribute("foreach", __loc__); }

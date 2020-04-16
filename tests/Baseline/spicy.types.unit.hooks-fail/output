@@ -1,0 +1,21 @@
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:9: hook '%init' does not take any parameters
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:10: hook ID cannot be scoped
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:12: signature for hook must be: %gap(seq: uint64, len: uint64)
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:12: cannot use hook '%gap', unit type does not support sinks because it is not public
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:13: signature for hook must be: %skipped(seq: uint64)
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:13: cannot use hook '%skipped', unit type does not support sinks because it is not public
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:14: signature for hook must be: %overlap(seq: uint64, old: bytes, new_: bytes)
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:14: cannot use hook '%overlap', unit type does not support sinks because it is not public
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:15: signature for hook must be: %undelivered(seq: uint64, data: bytes)
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:15: cannot use hook '%undelivered', unit type does not support sinks because it is not public
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:17: no field 'x1' in unit type
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:18: unknown hook '%x2'
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:19: cannot use paths in hooks; trigger on the top-level field instead
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:23: hook '%init' does not take any parameters
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:24: signature for hook must be: %gap(seq: uint64, len: uint64)
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:24: cannot use hook '%gap', unit type does not support sinks because it is not public
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:25: no field 'y1' in unit type
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:26: unknown hook '%y2'
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:27: cannot use paths in hooks; trigger on the top-level field instead
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.hooks-fail/hooks-fail.spicy:28: unknown unit type
+[error] spicyc: aborting after errors
