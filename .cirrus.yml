@@ -213,9 +213,11 @@ docker_ubuntu_19_10_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
     - ninja -C build install -j5
+  test_script:
+    - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
 
 docker_alpine_3_11_task:
   trigger_type: manual
@@ -241,9 +243,11 @@ docker_alpine_3_11_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --with-zeek=/opt/zeek --with-cxx-compiler=clang++
+    - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++
   build_script:
     - ninja -C build install -j5
+  test_script:
+    - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
 
 docker_centos_8_task:
   trigger_type: manual
@@ -269,6 +273,8 @@ docker_centos_8_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --with-zeek=/opt/zeek --with-cxx-compiler=clang++
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++
   build_script:
     - ninja -C build install -j5
+  test_script:
+    - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
