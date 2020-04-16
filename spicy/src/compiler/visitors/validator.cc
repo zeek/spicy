@@ -19,7 +19,7 @@ namespace {
 struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformVisitor> {
     int errors = 0;
 
-    void error(std::string msg, position_t& p) { p.node.setError(msg); ++errors; }
+    void error(std::string msg, position_t& p) { p.node.addError(msg); ++errors; }
 
     void operator()(const statement::Print& /* n */, position_t p) {
         // TODO(robin): .
@@ -299,11 +299,11 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 };
 
 struct PostTransformVisitor : public hilti::visitor::PreOrder<void, PostTransformVisitor> {
-    void error(std::string msg, position_t& p) { p.node.setError(msg); }
+    void error(std::string msg, position_t& p) { p.node.addError(msg); }
 };
 
 struct PreservedVisitor : public hilti::visitor::PreOrder<void, PreservedVisitor> {
-    void error(std::string msg, position_t& p) { p.node.setError(msg); }
+    void error(std::string msg, position_t& p) { p.node.addError(msg); }
 
     auto methodArgument(const hilti::expression::ResolvedOperatorBase& o, int i) {
         auto ctor = o.op2().as<hilti::expression::Ctor>().ctor();

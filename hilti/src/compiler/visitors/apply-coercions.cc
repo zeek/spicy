@@ -56,7 +56,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         if ( auto c = hilti::coerceExpression(e, t, style) )
             return c.nexpr;
 
-        n->setError(fmt("cannot coerce expression '%s' of type '%s' to type '%s'", e, e.type(), t));
+        n->addError(fmt("cannot coerce expression '%s' of type '%s' to type '%s'", e, e.type(), t));
         return {};
     }
 
@@ -70,7 +70,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         if ( ! coerced ) {
             auto src_types = util::join(util::transform(exprs, [&](auto e) { return fmt("%s", e.type()); }), ", ");
             auto dst_types = util::join(util::transform(dst.operands(), [&](auto o) { return fmt("%s", o); }), ", ");
-            n->setError(fmt("cannot coerce arguments '%s' of types '%s' to parameters '%s'", Expression(src), src_types,
+            n->addError(fmt("cannot coerce arguments '%s' of types '%s' to parameters '%s'", Expression(src), src_types,
                             dst_types));
             return result::Error("coercion failed");
         }
@@ -230,7 +230,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             }
         }
         else
-            p.node.setError("return outside of function");
+            p.node.addError("return outside of function");
     }
 
     void operator()(const statement::While& n, position_t p) {
@@ -271,7 +271,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
                 return;
             }
             else
-                p.node.setError(fmt("cannot coerce default expression to type '%s'", f.type()));
+                p.node.addError(fmt("cannot coerce default expression to type '%s'", f.type()));
         }
     }
 
@@ -353,7 +353,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             }
         }
         else
-            p.node.setError(fmt("cannot coerce expression '%s' to type '%s'", pc.expression(), pc.type()));
+            p.node.addError(fmt("cannot coerce expression '%s' to type '%s'", pc.expression(), pc.type()));
     }
 };
 

@@ -175,8 +175,8 @@ struct Plugin {
     Hook<void, std::shared_ptr<hilti::Context>, Node*, Unit*> post_validate;
 
     /**
-     * Hook called to validate correctness of AST nodes that a modules
-     * preserved before transformation. The hooks runs just before the
+     * Hook called to validate correctness of AST nodes that a module
+     * preserved before transformation. The hook runs just before the
      * ``post_validate`` hook. Any errors must be reported by setting the
      * nodes' error information.
      *

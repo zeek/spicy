@@ -58,8 +58,9 @@ struct Context {
     uint64_t debug_indent{};
 
     /**
-     * If non-null, a string descriging the most recent source code position.
-     * use `debug::setLocation()` to set.
+     * If non-null, a string describing the most recent source code position.
+     *
+     * Use `debug::setLocation()` to set the current source code location.
      */
     const char* source_location{};
 };

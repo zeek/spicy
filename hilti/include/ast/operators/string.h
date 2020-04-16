@@ -29,7 +29,7 @@ BEGIN_OPERATOR_CUSTOM(string, Modulo)
         // TODO(robin): Not sure if we need this restriction. Let's try without.
         //
         // if ( i.op1().type().isA<type::Tuple>() && ! i.op1().isA<expression::Ctor>() )
-        //    p.node.setError("tuple argument to '%' must a be constant");
+        //    p.node.addError("tuple argument to '%' must a be constant");
     }
 
     std::string doc() const { return "Renders a printf-style format string."; }

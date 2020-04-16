@@ -26,7 +26,7 @@ static inline void checkName(const Expression& op0, const Expression& op1, Node&
     auto id = memberExpression(op1).id().local();
 
     if ( auto f = op0.type().as<type::Struct>().field(id); ! f )
-        node.setError(util::fmt("type does not have field '%s'", id));
+        node.addError(util::fmt("type does not have field '%s'", id));
 }
 
 // Returns the type of a struct field referenced by an operand.

@@ -26,7 +26,7 @@ static inline void checkName(const Expression& op0, const Expression& op1, Node&
     auto id = memberExpression(op1).id().local();
 
     if ( auto f = op0.type().as<type::Union>().field(id); ! f )
-        n.setError(util::fmt("type does not have field '%s'", id));
+        n.addError(util::fmt("type does not have field '%s'", id));
 }
 
 // Returns the type of a union field referenced by an operand.

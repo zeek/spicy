@@ -3,6 +3,7 @@
 [error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:12-14: type 'void' cannot be used for variable declaration
 [error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:15-16: type 'void' cannot be used for variable declaration
 [error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:19: function must return a value
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:23: cannot coerce expression '42' of type 'uint<64>' to type 'void'
 [error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:23: void function cannot return a value
 [error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:31: cannot coerce expression '"1" == "2"' of type 'bool' to type 'real'
 [error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:32: cannot resolve operator: <string> == <uint<64>>

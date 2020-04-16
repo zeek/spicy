@@ -32,12 +32,12 @@ BEGIN_OPERATOR_CUSTOM(tuple, Index)
         if ( auto ec = i.op1().tryAs<expression::Ctor>() )
             if ( auto c = ec->ctor().tryAs<ctor::UnsignedInteger>() ) {
                 if ( c->value() < 0 || c->value() >= i.op0().type().as<type::Tuple>().types().size() )
-                    p.node.setError("tuple index out of range");
+                    p.node.addError("tuple index out of range");
 
                 return;
             }
 
-        p.node.setError("tuple index must be an integer constant");
+        p.node.addError("tuple index must be an integer constant");
     }
 
     std::string doc() const {
@@ -67,7 +67,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
         auto elem = i.operands()[0].type().as<type::Tuple>().elementByID(id);
 
         if ( ! elem )
-            p.node.setError("unknown tuple element");
+            p.node.addError("unknown tuple element");
     }
 
     std::string doc() const { return "Extracts the tuple element corresponding to the given ID."; }

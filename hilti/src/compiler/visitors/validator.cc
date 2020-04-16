@@ -13,8 +13,22 @@ using util::fmt;
 namespace {
 
 struct Visitor : public visitor::PostOrder<void, Visitor> {
-    void error(std::string msg, position_t& p) { p.node.setError(msg); }
-    void error(std::string msg, Node& node) { node.setError(msg); }
+    int errors = 0;
+
+    void error(std::string msg, position_t& p, node::ErrorPriority priority = node::ErrorPriority::Normal) {
+        p.node.addError(msg, p.node.location(), priority);
+        ++errors;
+    }
+
+    void error(std::string msg, position_t& p, const Node& n) {
+        p.node.addError(msg, n.location());
+        ++errors;
+    }
+
+    void error(std::string msg, position_t& p, Location l) {
+        p.node.addError(msg, std::move(l));
+        ++errors;
+    }
 
     void preDispatch(const Node& n, int level) override {
         // Validate that identifier names are not reused.
@@ -169,7 +183,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
     void operator()(const expression::UnresolvedID& n, position_t p) {
         // We prefer the error message from a parent UnresolvedOperator.
-        if ( ! p.node.error() && ! p.parent().isA<expression::UnresolvedOperator>() )
+        if ( ! p.node.hasErrors() && ! p.parent().isA<expression::UnresolvedOperator>() )
             error("unresolved ID", p);
     }
 
@@ -274,8 +288,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const expression::UnresolvedOperator& n, position_t p) {
-        if ( ! p.node.error() )
-            error("operator left unresolved", p);
+        error("operator left unresolved", p, node::ErrorPriority::Low);
     }
 
     ////// Types
@@ -380,8 +393,8 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const type::UnresolvedID& n, position_t p) {
-        if ( ! p.node.error() )
-            error("ID left unresolved", p);
+        if ( ! p.node.hasErrors() )
+            error("ID left unresolved", p, node::ErrorPriority::Low);
     }
 
     void operator()(const type::WeakReference& n, position_t p) {

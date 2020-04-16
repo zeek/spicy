@@ -28,7 +28,7 @@ static inline void checkName(const Expression& op0, const Expression& op1, Node&
     auto id = memberExpression(op1).id().local();
 
     if ( auto f = op0.type().as<type::Bitfield>().bits(id); ! f )
-        n.setError(util::fmt("bitfield type does not have attribute '%s'", id));
+        n.addError(util::fmt("bitfield type does not have attribute '%s'", id));
 }
 
 static inline Type itemType(const Expression& op0, const Expression& op1) {

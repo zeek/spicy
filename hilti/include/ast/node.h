@@ -51,13 +51,21 @@ inline std::string to_string(PropertyValue v) {
     return std::visit(Visitor(), v);
 };
 
-/** Internal error information associated with nodes. */
-struct Error {
-    std::string message;
-    std::vector<std::string> context;
+} // namespace detail
+
+/** Importance of reporting an error, relative to others. */
+enum class ErrorPriority {
+    Normal, /**< Normal priority error that will always be reported. */
+    Low     /**< Low priority error that will be reported only if no normal priority ones have been found. */
 };
 
-} // namespace detail
+/** Error information associated with nodes. */
+struct Error {
+    std::string message;                            /**< main error message to report  */
+    Location location;                              /**< location associated with the error */
+    std::vector<std::string> context;               /**< additional lines to print along with error as context */
+    ErrorPriority priority = ErrorPriority::Normal; /**< priortity of error */
+};
 
 /**
  * Properties associated with an AST node. A property is a key/value pair
@@ -136,40 +144,66 @@ public:
      */
     void setScope(std::shared_ptr<Scope> new_scope) { _scope = std::move(new_scope); }
 
-    /** Returns an error message associated with the node, if any. */
-    std::optional<std::string> error() const {
-        if ( _error )
-            return _error->message;
+    /** Returns any error messages associated with the node. */
+    std::vector<node::Error> errors() const {
+        if ( _errors )
+            return *_errors;
         else
             return {};
     }
 
-    /** Associated an error message with the node. */
-    void setError(std::string msg) {
-        if ( ! _error )
-            _error = std::make_unique<node::detail::Error>();
-
-        _error->message = std::move(msg);
-        _error->context.clear();
-    }
+    /** Returns true if there are any errors associated with the node. */
+    bool hasErrors() const { return _errors && _errors->size(); }
 
     /** Clears any error message associated with the node. */
-    void clearError() { _error.reset(); }
-
-    /** Adds a line of free-form context to the current error. */
-    void augmentError(std::string s) {
-        if ( ! _error )
-            _error = std::make_unique<node::detail::Error>();
-
-        _error->context.emplace_back(std::move(s));
+    void clearErrors() {
+        if ( _errors )
+            _errors.reset();
     }
 
-    /** Returns any context currently associated with the current error. */
-    std::vector<std::string> errorContext() const {
-        if ( _error )
-            return _error->context;
-        else
-            return {};
+    /**
+     * Associate an error message with the node. The error's location will be
+     * that of the current node, and it will have normal priority.
+     *
+     * @param msg error message to report
+     * @param context further lines of context to show along with error
+     *
+     */
+    void addError(std::string msg, std::vector<std::string> context = {}) {
+        addError(std::move(msg), location(), std::move(context));
+    }
+
+    /**
+     * Associate an error message with the node. The error will have normal
+     * priority.
+     *
+     * @param msg error message to report
+     * @param l custom location to associate with the error
+     * @param context further lines of context to show along with error
+     */
+    void addError(std::string msg, Location l, std::vector<std::string> context = {}) {
+        addError(std::move(msg), location(), node::ErrorPriority::Normal, std::move(context));
+    }
+
+    /**
+     * Associate an error message with the node.
+     *
+     * @param msg error message to report
+     * @param l custom location to associate with the error
+     * @param priority importance of showing the error
+     * @param context further lines of context to show along with error
+     */
+    void addError(std::string msg, Location l, node::ErrorPriority priority, std::vector<std::string> context = {}) {
+        node::Error error;
+        error.message = std::move(msg);
+        error.location = location();
+        error.context = std::move(context);
+        error.priority = priority;
+
+        if ( ! _errors )
+            _errors = std::make_unique<std::vector<node::Error>>();
+
+        _errors->push_back(std::move(error));
     }
 
     /**
@@ -257,7 +291,7 @@ private:
 
     std::shared_ptr<node_ref::detail::Control> _control_ptr = nullptr;
     mutable std::shared_ptr<Scope> _scope = nullptr;
-    mutable std::unique_ptr<node::detail::Error> _error = nullptr;
+    mutable std::unique_ptr<std::vector<node::Error>> _errors = nullptr;
 };
 
 /**

@@ -227,11 +227,13 @@ Result<Nothing> Unit::compile() {
 
             for ( auto& [id, module] : modules ) {
                 bool found_errors = false;
-                if ( ! runHooks(&Plugin::pre_validate, fmt("validating module %s (pre-transform)", id), context(), &*module, this, &found_errors) )
+
+                if ( ! runHooks(&Plugin::pre_validate, fmt("validating module %s (pre-transform)", id), context(),
+                                &*module, this, &found_errors) )
                     return result::Error("errors encountered during pre-transform validation");
 
                 if ( found_errors ) {
-                    // We may have some errors already set in the AST that we
+                    // We may have errors already set in the AST that we
                     // don't want to report, as normally they'd go away
                     // during further cycles. So we clear the AST and then
                     // run the hook again to get just the errors that it puts
@@ -239,11 +241,14 @@ Result<Nothing> Unit::compile() {
                     detail::clearErrors(&*module);
                     auto valid = _validateAST(id, NodeRef(module), [&](const ID& id, NodeRef& module) {
                         bool found_errors = false;
-                        return runHooks(&Plugin::pre_validate, fmt("validating module %s (pre-transform, 2nd pass)", id), context(),
-                                        &*module, this, &found_errors);
+                        return runHooks(&Plugin::pre_validate,
+                                        fmt("validating module %s (pre-transform, 2nd pass)", id), context(), &*module,
+                                        this, &found_errors);
                     });
 
-                    assert(!valid);
+                    assert(! valid); // we already know it's failing
+                    _dumpAST(module, logging::debug::AstFinal, "Final AST");
+                    _saveIterationASTs("Final AST", round);
                     return result::Error("errors encountered during pre-transform validation");
                 }
 
@@ -268,20 +273,26 @@ Result<Nothing> Unit::compile() {
     auto current = _currentModules();
 
     for ( auto& [id, module] : current ) {
-        auto valid = _validateASTs(module->as<Module>().id(), (*module).as<Module>().preserved(), [&](const ID& id, auto& preserved)  {
-            for ( auto& m : preserved )
-                detail::resetNodes(&m);
+        auto valid =
+            _validateASTs(module->as<Module>().id(), (*module).as<Module>().preserved(),
+                          [&](const ID& id, auto& preserved) {
+                              for ( auto& m : preserved )
+                                  detail::resetNodes(&m);
 
-            return runHooks(&Plugin::preserved_validate, fmt("validating module %s (preserved)", id), context(), &preserved, this);
-        });
+                              return runHooks(&Plugin::preserved_validate, fmt("validating module %s (preserved)", id),
+                                              context(), &preserved, this);
+                          });
 
-        if ( ! valid )
+        if ( ! valid ) {
+            _dumpAST(module, logging::debug::AstFinal, "Final AST");
+            _saveIterationASTs("Final AST", round);
             return result::Error("errors encountered during validation of preserved nodes");
+        }
     }
 
     auto valid = _validateASTs(current, [&](const ID& id, NodeRef& module) {
-        return runHooks(&Plugin::post_validate, fmt("validating module %s (post-transform)", id), context(),
-                        &*module, this);
+        return runHooks(&Plugin::post_validate, fmt("validating module %s (post-transform)", id), context(), &*module,
+                        this);
     });
 
     _dumpAST(module, logging::debug::AstFinal, "Final AST");
@@ -513,7 +524,6 @@ void Unit::_determineCompilationRequirements(const Node& module) {
 
 bool Unit::_validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
                          std::function<bool(const ID&, NodeRef&)> run_hooks_callback) {
-
     if ( options().skip_validation )
         return true;
 
@@ -527,49 +537,87 @@ bool Unit::_validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
     return valid;
 }
 
-static bool _recursiveValidateAST(const Node& n, std::set<std::string>* reported) {
-    // We report errors on child nodes first, and then hide any further ones
-    // in parents along the way.
-
+// Recursive helper function to traverse the AST and collect relevant errors. We
+// report errors on child nodes first, and then hide any further ones in parents
+// along the way (unless the child's error is low priority). If a node doesn't
+// have a location, we substitute the closest parent location.
+static bool _recursiveValidateAST(const Node& n, Location closest_location, std::vector<node::Error>* errors) {
     auto valid = true;
 
+    if ( n.location() )
+        closest_location = n.location();
+
     for ( const auto& c : n.childs() ) {
-        if ( ! _recursiveValidateAST(c, reported) )
+        if ( ! _recursiveValidateAST(c, closest_location, errors) )
             valid = false;
     }
 
     if ( ! valid )
         return false;
 
-    if ( auto e = n.error() ) {
-        // Suppress duplicates.
-        auto idx = fmt("%s|%s", *e, n.location());
-        if ( reported->find(idx) == reported->end() ) {
-            logger().error(*e, n.errorContext(), n.location());
-            reported->insert(idx);
+    if ( n.hasErrors() ) {
+        for ( auto&& e : n.errors() ) {
+            if ( ! e.location && closest_location )
+                e.location = closest_location;
+
+            errors->emplace_back(std::move(e));
         }
-        return false;
+
+        for ( const auto& e : n.errors() ) {
+            if ( e.priority == node::ErrorPriority::Normal )
+                return false;
+        }
+
+        return true;
     }
 
     return true;
 }
 
-bool Unit::_validateASTs(const ID& id, std::vector<Node>& nodes, std::function<bool(const ID&, std::vector<Node>&)> run_hooks_callback) {
+static void _reportErrors(const std::vector<node::Error>& errors) {
+    // We skip any low-priority errors at first. Only if we have only those,
+    // we will report them. We also generally suppress duplicates.
+    std::set<std::string> reported;
+
+    auto report_one = [&](const auto& e) {
+        auto idx = fmt("%s|%s", e.message, e.location);
+        if ( reported.find(idx) == reported.end() ) {
+            logger().error(e.message, e.context, e.location);
+            reported.insert(idx);
+        }
+    };
+
+    for ( const auto& e : errors ) {
+        if ( e.priority != node::ErrorPriority::Low )
+            report_one(e);
+    }
+
+    if ( reported.size() )
+        return;
+
+    for ( const auto& e : errors ) {
+        if ( e.priority == node::ErrorPriority::Low )
+            report_one(e);
+    }
+}
+
+bool Unit::_validateASTs(const ID& id, std::vector<Node>& nodes,
+                         std::function<bool(const ID&, std::vector<Node>&)> run_hooks_callback) {
     if ( options().skip_validation )
         return true;
 
     if ( ! run_hooks_callback(id, nodes) )
         return false;
 
-    std::set<std::string> reported;
-    auto valid = true;
+    std::vector<node::Error> errors;
+    for ( auto& n : nodes )
+        _recursiveValidateAST(n, Location(), &errors);
 
-    for ( auto& n : nodes ) {
-        if ( ! _recursiveValidateAST(n, &reported) )
-            valid = false;
-    }
+    if ( errors.empty() )
+        return true;
 
-    return valid;
+    _reportErrors(errors);
+    return false;
 }
 
 bool Unit::_validateAST(const ID& id, NodeRef module, std::function<bool(const ID&, NodeRef&)> run_hooks_callback) {
@@ -579,8 +627,14 @@ bool Unit::_validateAST(const ID& id, NodeRef module, std::function<bool(const I
     if ( ! run_hooks_callback(id, module) )
         return false;
 
-    std::set<std::string> reported;
-    return _recursiveValidateAST(*module, &reported);
+    std::vector<node::Error> errors;
+    _recursiveValidateAST(*module, Location(), &errors);
+
+    if ( errors.empty() )
+        return true;
+
+    _reportErrors(errors);
+    return false;
 }
 
 void Unit::_dumpAST(const Node& module, const logging::DebugStream& stream, const std::string& prefix, int round) {

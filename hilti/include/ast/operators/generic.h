@@ -33,7 +33,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
         auto data_type = i.op1().type().template as<type::Tuple>().types()[0];
 
         if ( ! (data_type.isA<type::Bytes>() || data_type.isA<type::stream::View>()) )
-            p.node.setError("unpack() can be used only with bytes or a stream view as input");
+            p.node.addError("unpack() can be used only with bytes or a stream view as input");
     }
 
     std::string doc() const { return "Unpacks a value from a binary representation."; }
@@ -57,7 +57,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Begin)
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         if ( ! type::isIterable(i.operands()[0].type()) )
-            p.node.setError("not an iterable type");
+            p.node.addError("not an iterable type");
     }
 
     std::string doc() const { return "Returns an iterator to the beginning of a container's content."; }
@@ -81,7 +81,7 @@ BEGIN_OPERATOR_CUSTOM(generic, End)
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         if ( ! type::isIterable(i.operands()[0].type()) )
-            p.node.setError("not an iterable type");
+            p.node.addError("not an iterable type");
     }
 
     std::string doc() const { return "Returns an iterator to the end of a container's content."; }
@@ -116,7 +116,7 @@ BEGIN_OPERATOR_CUSTOM(generic, New)
             t = tv->typeValue();
 
         if ( ! type::isAllocable(t) )
-            p.node.setError("not an allocable type");
+            p.node.addError("not an allocable type");
     }
 
     std::string doc() const {

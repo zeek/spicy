@@ -44,7 +44,7 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
             auto resolved = hilti::lookupID<hilti::Declaration>(*id, p);
 
             if ( ! resolved ) {
-                p.node.setError(resolved.error());
+                p.node.addError(resolved.error());
                 return;
             }
 
@@ -66,12 +66,12 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
                 if ( auto ctor = c->value().tryAs<hilti::expression::Ctor>() )
                     replaceNode(&p, resolveField(u, ctor->ctor()));
                 else
-                    p.node.setError("field value must be a constant");
+                    p.node.addError("field value must be a constant");
 
                 return;
             }
 
-            p.node.setError(util::fmt("field value must be a constant or type, but is a %s",
+            p.node.addError(util::fmt("field value must be a constant or type, but is a %s",
                                       resolved->first->as<hilti::Declaration>().displayName()));
         }
 
@@ -142,7 +142,7 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
             }
 
             else {
-                p.node.setError("$$ not supported here");
+                p.node.addError("$$ not supported here");
                 return;
             }
 
