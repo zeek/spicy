@@ -141,6 +141,9 @@ protected:
             throw InvalidIterator("iterators refer to differen objects");
     }
 
+    I& iterator() { return _i; }
+    const I& iterator() const { return _i; }
+
 private:
     I _i;
     std::weak_ptr<hilti::rt::detail::iterator::ControlBlock> _control;

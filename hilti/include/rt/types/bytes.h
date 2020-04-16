@@ -32,18 +32,53 @@ enum class Side {
 /** For Bytes::Decode, which character set to use. */
 enum class Charset { Undef, UTF8, ASCII };
 
-/** TODO: Remove */
-class SafeIterator : public hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::iterator, SafeIterator> {
+namespace detail {
+/** Wrapper around std::string::iterator to adapt dereference type. */
+class Iterator : public std::string::iterator {
 public:
-    using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::iterator, SafeIterator>;
+    using std::string::iterator::iterator;
+    Iterator(const std::string::iterator& i) : std::string::iterator(i) {}
+    Iterator(std::string::iterator&& i) : std::string::iterator(std::move(i)) {}
+
+    uint64_t operator*() const { return static_cast<uint8_t>(std::string::iterator::operator*()); }
+};
+
+/** Wrapper around std::string::const_iterator to adapt dereference type. */
+class ConstIterator : public std::string::const_iterator {
+public:
+    using std::string::const_iterator::const_iterator;
+    ConstIterator(const std::string::const_iterator& i) : std::string::const_iterator(i) {}
+    ConstIterator(std::string::const_iterator&& i) : std::string::const_iterator(std::move(i)) {}
+
+    uint64_t operator*() const { return static_cast<uint8_t>(std::string::const_iterator::operator*()); }
+};
+
+} // namespace detail
+
+/** TODO: Remove */
+class SafeIterator : public hilti::rt::detail::iterator::SafeIterator<Bytes, detail::Iterator, SafeIterator> {
+public:
+    using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, detail::Iterator, SafeIterator>;
     using Base::Base;
+
+    // Override to return non-reference.
+    auto operator*() const {
+        ensureValid();
+        return *iterator();
+    }
 };
 
 class SafeConstIterator
-    : public hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::const_iterator, SafeConstIterator> {
+    : public hilti::rt::detail::iterator::SafeIterator<Bytes, detail::ConstIterator, SafeConstIterator> {
 public:
-    using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::const_iterator, SafeConstIterator>;
+    using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, detail::ConstIterator, SafeConstIterator>;
     using Base::Base;
+
+    // Override to return non-reference.
+    auto operator*() const {
+        ensureValid();
+        return *iterator();
+    }
 
     template<typename T>
     auto& operator+=(const hilti::rt::integer::safe<T>& n) {
@@ -63,7 +98,7 @@ public:
     }
 };
 
-inline std::string to_string(const SafeConstIterator& /* i */, detail::adl::tag /*unused*/) {
+inline std::string to_string(const SafeConstIterator& /* i */, rt::detail::adl::tag /*unused*/) {
     return "<bytes iterator>";
 }
 

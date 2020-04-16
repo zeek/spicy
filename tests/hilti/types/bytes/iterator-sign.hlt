@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# Makes sure iterator deref returns bytes as unsigned.
+
+module X {
+
+import hilti;
+
+for ( idx in b"\x80\x79\x80" )
+    hilti::print("%02X" % idx);
+
+}
