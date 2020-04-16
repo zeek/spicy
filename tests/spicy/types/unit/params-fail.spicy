@@ -1,0 +1,16 @@
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC:      btest-diff output
+#
+# Missing/wrong parameters. Most of this is tested HILTI-side, just adding
+# minimal version here to make sure we report correctly inside Spicy as well.
+
+module Mini;
+
+import spicy;
+
+type Foo = unit(b: bool, s: string) {
+};
+
+public type Test = unit {
+    f: Foo();
+};

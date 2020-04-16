@@ -67,13 +67,8 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         auto dst = type::OperandList::fromParameters(params);
 
         auto coerced = coerceExpression(src, type::constant(dst), CoercionStyle::TryAllForFunctionCall);
-        if ( ! coerced ) {
-            auto src_types = util::join(util::transform(exprs, [&](auto e) { return fmt("%s", e.type()); }), ", ");
-            auto dst_types = util::join(util::transform(dst.operands(), [&](auto o) { return fmt("%s", o); }), ", ");
-            n->addError(fmt("cannot coerce arguments '%s' of types '%s' to parameters '%s'", Expression(src), src_types,
-                            dst_types));
+        if ( ! coerced )
             return result::Error("coercion failed");
-        }
 
         if ( ! coerced.nexpr )
             // No change.

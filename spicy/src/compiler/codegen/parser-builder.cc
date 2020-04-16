@@ -134,13 +134,16 @@ struct ProductionVisitor
             std::vector<Expression> args = {pb->state().data, pb->state().cur, pb->state().trim, pb->state().lahead,
                                             pb->state().lahead_end};
 
+            Location location;
             std::vector<Expression> type_args;
 
-            if ( meta.field() )
+            if ( meta.field() ) {
+                location = meta.fieldRef()->location();
                 type_args = meta.field()->arguments();
+            }
 
             Expression default_ =
-                builder::default_(builder::typeByID(*unit->unitType().typeID()), std::move(type_args));
+                builder::default_(builder::typeByID(*unit->unitType().typeID()), std::move(type_args), location);
 
             Expression self;
 

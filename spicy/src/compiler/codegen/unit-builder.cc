@@ -203,7 +203,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     v.addField(type::struct_::Field(type::struct_::Field("__parse_stage1", std::move(ft))));
 
     assert(unit.typeID());
-    Type s = hilti::type::Struct(unit.parameters(), std::move(v.fields));
+    Type s = hilti::type::Struct(unit.parameters(), std::move(v.fields), Location("XXX"));
     s = type::setTypeID(s, *unit.typeID());
     s = _pb.addParserMethods(s.as<hilti::type::Struct>(), unit, declare_only);
 

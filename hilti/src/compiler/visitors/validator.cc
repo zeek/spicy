@@ -20,6 +20,11 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         ++errors;
     }
 
+    void error(std::string msg, position_t& p) {
+        p.node.addError(msg);
+        ++errors;
+    }
+
     void error(std::string msg, position_t& p, const Node& n) {
         p.node.addError(msg, n.location());
         ++errors;
@@ -80,6 +85,9 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             if ( ! t.isA<type::Struct>() )
                 error("only struct types can have arguments", p);
         }
+
+        if ( auto st = n.type().tryAs<type::Struct>() )
+            _checkStructArguments(n.typeArguments(), st->parameters(), p);
     }
 
     void operator()(const declaration::Parameter& n, position_t p) {
@@ -116,11 +124,17 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             if ( ! n.type().isA<type::Struct>() )
                 error("only struct types can have arguments", p);
         }
+
+        if ( auto st = n.type().tryAs<type::Struct>() )
+            _checkStructArguments(n.typeArguments(), st->parameters(), p);
     }
 
     ////// Ctors
 
-    void operator()(const ctor::Default& c, position_t p) {}
+    void operator()(const ctor::Default& c, position_t p) {
+        if ( auto st = c.type().tryAs<type::Struct>() )
+            _checkStructArguments(c.typeArguments(), st->parameters(), p);
+    }
 
     void operator()(const ctor::List& n, position_t p) {
         auto t = n.elementType();
@@ -403,6 +417,45 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         if ( auto t = n.dereferencedType(); ! type::isAllocable(t) )
             error(fmt("type %s is not allocable and can thus not be used with weak references", t), p);
+    }
+
+    // Operators (only special cases here, most validation happens where they are defined)
+
+    void operator()(const operator_::generic::New& n, position_t p) {
+        // We reuse the _checkStructArguments() here, that's why this operator is covered here.
+        if ( auto t = n.operands()[0].type().tryAs<type::Type_>() ) {
+            if ( auto st = t->typeValue().tryAs<type::Struct>() ) {
+                std::vector<Expression> args;
+                if ( n.operands().size() > 1 ) {
+                    auto ctor = n.operands()[1].as<expression::Ctor>().ctor();
+                    if ( auto x = ctor.tryAs<ctor::Coerced>() )
+                        ctor = x->coercedCtor();
+
+                    args = ctor.as<ctor::Tuple>().value();
+                }
+
+                _checkStructArguments(args, st->parameters(), p);
+            }
+        }
+    }
+
+    void _checkStructArguments(const std::vector<Expression>& have, const std::vector<type::function::Parameter>& want,
+                               position_t& p) {
+        if ( have.size() > want.size() )
+            error(fmt("type expects %u parameter%s, but receives %u", have.size(), (have.size() > 1 ? "s" : ""),
+                      want.size()),
+                  p);
+
+        for ( auto i = 0; i < want.size(); i++ ) {
+            if ( i < have.size() ) {
+                if ( have[i].type() != want[i].type() )
+                    error(fmt("type expects %s for parameter %u, but receives %s", have[i].type(), i + 1,
+                              want[i].type()),
+                          p);
+            }
+            else if ( ! want[i].default_() )
+                error(fmt("type parameter %u is missing (%s)", i + 1, want[i].id()), p);
+        }
     }
 };
 
