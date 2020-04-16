@@ -1,6 +1,6 @@
 .. rubric:: Iterator Operators
 
-.. spicy:operator:: bytes::iterator::Deref uint<64> op:* t:iterator<bytes> op:
+.. spicy:operator:: bytes::iterator::Deref uint<8> op:* t:iterator<bytes> op:
 
     Returns the byte the iterator is pointing to.
 
