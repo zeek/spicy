@@ -52,7 +52,9 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
 
         auto id = ops[1].as<expression::Member>().id();
         auto elem = ops[0].type().as<type::Tuple>().elementByID(id);
-        assert(elem);
+        if ( ! elem )
+            return type::unknown;
+
         return elem->second;
     }
 
