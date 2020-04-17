@@ -259,6 +259,14 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             error("only a bytes field can have sinks attached", p);
     }
 
+    void operator()(const spicy::type::unit::item::UnresolvedField& u, position_t p) {
+        if ( auto id = u.unresolvedID() )
+            error(fmt("unknown ID '%s'", *id), p);
+        else
+            // I don't think this can actually happen ...
+            error("unit field left unresolved", p);
+    }
+
     void operator()(const spicy::type::unit::item::Switch& s, position_t p) {
         if ( s.cases().empty() ) {
             error("switch without cases", p);
@@ -350,7 +358,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             if ( id.find(".") != std::string::npos )
                 error("cannot use paths in hooks; trigger on the top-level field instead", p, location);
 
-            else if ( util::startsWith(id, "0x25_") )  {
+            else if ( util::startsWith(id, "0x25_") ) {
                 auto id_readable = util::replace(hook.id().local().str(), "0x25_", "%");
 
                 if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_error" ) {
@@ -360,32 +368,28 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
                 else if ( id == "0x25_gap" ) {
                     needs_sink_support = true;
-                    if ( params.size() != 2 ||
-                         params[0].type() != type::UnsignedInteger(64) ||
+                    if ( params.size() != 2 || params[0].type() != type::UnsignedInteger(64) ||
                          params[1].type() != type::UnsignedInteger(64) )
                         error("signature for hook must be: %gap(seq: uint64, len: uint64)", p, location);
                 }
 
                 else if ( id == "0x25_overlap" ) {
                     needs_sink_support = true;
-                    if ( params.size() != 3 ||
-                         params[0].type() != type::UnsignedInteger(64) ||
-                         params[1].type() != type::Bytes() ||
-                         params[2].type() != type::Bytes() )
-                        error("signature for hook must be: %overlap(seq: uint64, old: bytes, new_: bytes)", p, location);
+                    if ( params.size() != 3 || params[0].type() != type::UnsignedInteger(64) ||
+                         params[1].type() != type::Bytes() || params[2].type() != type::Bytes() )
+                        error("signature for hook must be: %overlap(seq: uint64, old: bytes, new_: bytes)", p,
+                              location);
                 }
 
                 else if ( id == "0x25_skipped" ) {
                     needs_sink_support = true;
-                    if ( params.size() != 1 ||
-                         params[0].type() != type::UnsignedInteger(64) )
+                    if ( params.size() != 1 || params[0].type() != type::UnsignedInteger(64) )
                         error("signature for hook must be: %skipped(seq: uint64)", p, location);
                 }
 
                 else if ( id == "0x25_undelivered" ) {
                     needs_sink_support = true;
-                    if ( params.size() != 2 ||
-                         params[0].type() != type::UnsignedInteger(64) ||
+                    if ( params.size() != 2 || params[0].type() != type::UnsignedInteger(64) ||
                          params[1].type() != type::Bytes() )
                         error("signature for hook must be: %undelivered(seq: uint64, data: bytes)", p, location);
                 }
@@ -393,16 +397,10 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 else
                     error(fmt("unknown hook '%s'", id_readable), p, location);
 
-<<<<<<< HEAD
-                if ( needs_sink_support && ! unit.supportsSinks() )
-                    error(fmt("cannot use hook '%s', unit type does not support sinks", id_readable), p, location);
-
-=======
                 if ( needs_sink_support && ! is_public ) // don't use supportsSink() here, see above
                     error(fmt("cannot use hook '%s', unit type does not support sinks because it is not public",
                               id_readable),
                           p, location);
->>>>>>> 607ad03... Fixup unit hook checjks,
             }
             else {
                 if ( auto i = unit.field(ID(id)); ! i )

@@ -72,9 +72,9 @@
 
 .. spicy:method:: sink::set_policy sink set_policy False void (policy: enum~{~~})
 
-    Sets a sink's reassembly policy for ambigious input. As long as data
+    Sets a sink's reassembly policy for ambiguous input. As long as data
     hasn't been trimmed, a sink detects overlapping chunks. The policy
-    decides how to handle ambigious overlaps. The default (and currently
+    decides how to handle ambiguous overlaps. The default (and currently
     only ...) policy is ``ReassemblerPolicy::First``, which resolved
     ambigiuities by taking the data from chunk that came first.
 
