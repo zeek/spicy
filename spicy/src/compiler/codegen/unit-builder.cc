@@ -210,7 +210,9 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     if ( unit.isPublic() || unit.isFilter() ) {
         auto builder = builder::Builder(context());
         auto description = unit.propertyItem("%description");
-        auto mime_types = util::transform(unit.propertyItems("%mime-type"), [](auto p) { return *p.expression(); });
+        auto mime_types = util::transform(unit.propertyItems("%mime-type"), [](auto p) {
+            return builder::library_type_value(*p.expression(), "spicy_rt::MIMEType");
+        });
         auto ports = util::transform(unit.propertyItems("%port"), [](auto p) { return *p.expression(); });
 
         Expression parse1 = builder::null();

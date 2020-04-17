@@ -13,27 +13,26 @@ using util::fmt;
 namespace {
 
 struct Visitor : public visitor::PostOrder<void, Visitor> {
-    int errors = 0;
-
+    // Record error at location of current node.
     void error(std::string msg, position_t& p, node::ErrorPriority priority = node::ErrorPriority::Normal) {
         p.node.addError(msg, p.node.location(), priority);
         ++errors;
     }
 
-    void error(std::string msg, position_t& p) {
-        p.node.addError(msg);
+    // Record error with current node, but report with another node's location.
+    void error(std::string msg, position_t& p, const Node& n,
+               node::ErrorPriority priority = node::ErrorPriority::Normal) {
+        p.node.addError(msg, n.location(), priority);
         ++errors;
     }
 
-    void error(std::string msg, position_t& p, const Node& n) {
-        p.node.addError(msg, n.location());
+    // Record error with current node, but report with a custom location.
+    void error(std::string msg, position_t& p, Location l, node::ErrorPriority priority = node::ErrorPriority::Normal) {
+        p.node.addError(msg, std::move(l), priority);
         ++errors;
     }
 
-    void error(std::string msg, position_t& p, Location l) {
-        p.node.addError(msg, std::move(l));
-        ++errors;
-    }
+    int errors = 0;
 
     void preDispatch(const Node& n, int level) override {
         // Validate that identifier names are not reused.
@@ -143,6 +142,26 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             error("non-empty list cannot have unknown type", p);
     }
 
+    void operator()(const ctor::Map& n, position_t p) {
+        auto kt = n.keyType();
+        auto et = n.elementType();
+
+        if ( ! n.value().empty() && (kt == type::unknown || et == type::unknown) )
+            error("non-empty map cannot have unknown type", p);
+
+        for ( const auto& [k, v] : n.value() ) {
+            if ( k.type() != kt ) {
+                error("type mismatch in map keys", p);
+                break;
+            }
+
+            if ( v.type() != et ) {
+                error("type mismatch in map values", p);
+                break;
+            }
+        }
+    }
+
     void operator()(const ctor::Null& c, position_t p) {}
 
     void operator()(const ctor::SignedInteger& n, position_t p) {
@@ -150,6 +169,20 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         if ( n.value() < min || n.value() > max )
             error("integer value out of range for type", p);
+    }
+
+    void operator()(const ctor::Set& n, position_t p) {
+        auto t = n.elementType();
+
+        if ( ! n.value().empty() && t == type::unknown )
+            error("non-empty set cannot have unknown type", p);
+
+        for ( const auto& e : n.value() ) {
+            if ( e.type() != n.elementType() ) {
+                error("type mismatch in set elements", p);
+                break;
+            }
+        }
     }
 
     void operator()(const ctor::Struct& n, position_t p) {
@@ -168,6 +201,13 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         if ( ! n.value().empty() && t == type::unknown )
             error("non-empty vector cannot have unknown type", p);
+
+        for ( const auto& e : n.value() ) {
+            if ( e.type() != n.elementType() ) {
+                error("type mismatch in vector elements", p);
+                break;
+            }
+        }
     }
 
     ////// Expressions
