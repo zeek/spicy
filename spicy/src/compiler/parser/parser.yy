@@ -527,7 +527,6 @@ base_type_no_attrs
               | OPTIONAL type_param_begin type type_param_end            { $$ = hilti::type::Optional($3, __loc__); }
               | VIEW type_param_begin type type_param_end                { $$ = viewForType(std::move($3), __loc__); }
 
-              | LIST type_param_begin type type_param_end                { $$ = hilti::type::Vector(std::move($3), __loc__); }
               | MAP type_param_begin type ',' type type_param_end        { $$ = hilti::type::Map(std::move($3), std::move($5), __loc__); }
               | SET type_param_begin type type_param_end                 { $$ = hilti::type::Set(std::move($3), __loc__); }
               | VECTOR type_param_begin type type_param_end              { $$ = hilti::type::Vector(std::move($3), __loc__); }

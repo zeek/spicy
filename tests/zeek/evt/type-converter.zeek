@@ -19,7 +19,7 @@ public type Test = unit {
 
     var s: set<uint64> = set<uint64>(1,2,3);
     var v: vector<bytes> = vector<bytes>(b"A", b"B", b"C");
-    var l: list<bytes> = list<bytes>(b"A", b"B", b"C");
+    var l: vector<bytes> = vector<bytes>(b"A", b"B", b"C");
 
     on %done { print self; }
 };

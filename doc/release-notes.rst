@@ -37,14 +37,14 @@ Changes:
 - ``uint<N>`` and ``int<N>`` are no longer accepted, use
   ``uintN/intN`` instead (which worked before already as well)
 
-- Use ``vector`` instead of ``list`` when parsing sequences. (``list``
-  is still partially supported as an alias, but not everywhere).
+- ``list<T>`` is no longer supported, use ``vector<T>`` instead.
 
-- New syntax for parsing sequences of unknown size: Use ``x: int8[]``
-  instead of ``x: vector<int8>``. When parsing sequences sub-units,
-  use: ``x: Item[]``; or, if further arguments/attributes are
-  required, ``x: (Item(1,2,3))[]``. (The latter isn't great, but
-  generally the old syntax was ambiguous.)
+- New syntax for parsing sequences: Use ``x: int8[5]`` instead of ``x:
+  vector<int8> &length=5``. For lists of unknown size, use ``x:
+  int8[]``. When parsing sequences sub-units, use: ``x: Item[]``; or,
+  if further arguments/attributes are required, ``x:
+  (Item(1,2,3))[]``. (The latter syntax isn't great, but the old
+  syntax was ambiguous.)
 
 - New syntax for functions: ``function f(<params>) [: <result>]``
   instead of ``<result> f(<params>)``
