@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <hilti/rt/autogen/config.h>
+#include <hilti/rt/exception.h>
 
 #ifdef CXX_FILESYSTEM_IS_EXPERIMENTAL
 #include <experimental/filesystem>
@@ -23,9 +24,11 @@ using namespace experimental;
 
 namespace hilti::rt {
 void internalError(const std::string& msg) __attribute__((noreturn));
+
 } // namespace hilti::rt
+
 #undef TINYFORMAT_ERROR
-#define TINYFORMAT_ERROR(reason) ::hilti::rt::internalError(reason)
+#define TINYFORMAT_ERROR(reason) throw ::hilti::rt::FormattingError(reason)
 #include <hilti/3rdparty/tinyformat/tinyformat.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>

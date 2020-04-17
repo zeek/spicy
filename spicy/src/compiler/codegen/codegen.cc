@@ -289,19 +289,19 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
         switch ( exprs.size() ) {
             case 0: {
                 auto call = builder::call("hilti::print", {builder::string("")});
-                replaceNode(&p, hilti::statement::Expression(call));
+                replaceNode(&p, hilti::statement::Expression(call, p.node.location()));
                 break;
             }
 
             case 1: {
                 auto call = builder::call("hilti::print", std::move(exprs));
-                replaceNode(&p, hilti::statement::Expression(call));
+                replaceNode(&p, hilti::statement::Expression(call, p.node.location()));
                 break;
             }
 
             default: {
                 auto call = builder::call("hilti::printValues", {builder::tuple(std::move(exprs))});
-                replaceNode(&p, hilti::statement::Expression(call));
+                replaceNode(&p, hilti::statement::Expression(call, p.node.location()));
                 break;
             }
         }

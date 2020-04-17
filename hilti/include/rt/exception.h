@@ -89,6 +89,18 @@ HILTI_EXCEPTION(UnhandledSwitchCase, RuntimeError)
 /** Thrown when a value is found to be outside of its permissible range. */
 HILTI_EXCEPTION(OutOfRange, RuntimeError)
 
+/** Thrown when fmt() reports a problem. */
+class FormattingError : public RuntimeError {
+public:
+    FormattingError(std::string desc) : RuntimeError(_sanitize(std::move(desc))) {}
+
+private:
+    std::string _sanitize(std::string desc) {
+        desc.erase(desc.find("tinyformat: "), 12);
+        return desc;
+    }
+};
+
 /**
  * Exception signaling that an operation could not complete due to lack of
  * input or I/O delays. The operation should be retried when that situation
