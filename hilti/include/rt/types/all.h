@@ -6,6 +6,7 @@
 #include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/error.h>
+#include <hilti/rt/types/function.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/interval.h>
 #include <hilti/rt/types/list.h>
