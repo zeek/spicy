@@ -212,7 +212,7 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
             return std::make_pair(true, std::nullopt);
         }
 
-        u->addError(util::fmt("type namespace %s is ambigious", id));
+        u->addError(util::fmt("type namespace %s is ambiguous", id));
         return std::make_pair(true, std::nullopt);
     }
 

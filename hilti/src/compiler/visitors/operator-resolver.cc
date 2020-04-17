@@ -201,13 +201,14 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         }
 
         if ( resolved.size() > 1 ) {
-            std::vector<std::string> context = { "candidates:" };
+            std::vector<std::string> context = {"candidates:"};
             for ( auto i : resolved )
                 context.emplace_back(util::fmt("- %s [%s]",
-                                              renderOperatorPrototype(i.as<expression::ResolvedOperator>()),
-                                              i.typename_()));
+                                               renderOperatorPrototype(i.as<expression::ResolvedOperator>()),
+                                               i.typename_()));
 
-            p.node.addError(util::fmt("operator usage is ambigious: %s", renderOperatorInstance(u)), std::move(context));
+            p.node.addError(util::fmt("operator usage is ambiguous: %s", renderOperatorInstance(u)),
+                            std::move(context));
             return true;
         }
 
@@ -288,27 +289,28 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
                 auto [id, func] = function(overloads[0]);
 
                 if ( func.type().flavor() != type::function::Flavor::Hook ) {
-                    std::vector<std::string> context = { "candidate functions:" };
+                    std::vector<std::string> context = {"candidate functions:"};
 
                     for ( auto i : overloads )
                         context.emplace_back(
                             util::fmt("- %s", renderOperatorPrototype(i.as<expression::ResolvedOperator>())));
 
-                    p.node.addError(util::fmt("call is ambigious: %s", renderOperatorInstance(u)), std::move(context));
+                    p.node.addError(util::fmt("call is ambiguous: %s", renderOperatorInstance(u)), std::move(context));
                     return true;
                 }
 
                 for ( auto& i : overloads ) {
                     auto [oid, ofunc] = function(i);
                     if ( id != oid || Type(func.type()) != Type(ofunc.type()) ) {
-                        std::vector<std::string> context = { "candidate functions:" };
+                        std::vector<std::string> context = {"candidate functions:"};
 
                         for ( auto i : overloads )
                             context.emplace_back(
                                 util::fmt("- %s", renderOperatorPrototype(i.as<expression::ResolvedOperator>())));
 
 
-                        p.node.addError(util::fmt("call is ambigious: %s", renderOperatorInstance(u)), std::move(context));
+                        p.node.addError(util::fmt("call is ambiguous: %s", renderOperatorInstance(u)),
+                                        std::move(context));
                         return true;
                     }
                 }
@@ -334,7 +336,8 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
             }
         }
 
-        p.node.addError(util::fmt("call does not match any function: %s", renderOperatorInstance(u)), std::move(context));
+        p.node.addError(util::fmt("call does not match any function: %s", renderOperatorInstance(u)),
+                        std::move(context));
         return true;
     }
 
@@ -394,16 +397,18 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
                 }
             }
 
-            p.node.addError(util::fmt("call does not match any method: %s", renderOperatorInstance(u)), std::move(context));
+            p.node.addError(util::fmt("call does not match any method: %s", renderOperatorInstance(u)),
+                            std::move(context));
             return true;
         }
 
         if ( overloads.size() > 1 ) {
-            std::vector<std::string> context = { "candidates:" };
+            std::vector<std::string> context = {"candidates:"};
             for ( auto i : overloads )
                 context.emplace_back(util::fmt("- %s", renderOperatorPrototype(i.as<expression::ResolvedOperator>())));
 
-            p.node.addError(util::fmt("method call to is ambigious: %s", renderOperatorInstance(u)), std::move(context));
+            p.node.addError(util::fmt("method call to is ambiguous: %s", renderOperatorInstance(u)),
+                            std::move(context));
             return true;
         }
 

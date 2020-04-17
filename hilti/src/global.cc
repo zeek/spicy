@@ -83,6 +83,6 @@ std::pair<bool, Result<std::pair<NodeRef, ID>>> hilti::detail::lookupID(const ID
                                resolved.front().node->meta().location());
     }
 
-    auto err = result::Error(util::fmt("ID '%s' is ambigious", id));
+    auto err = result::Error(util::fmt("ID '%s' is ambiguous", id));
     return std::make_pair(true, std::move(err));
 }
