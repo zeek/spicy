@@ -1,7 +1,12 @@
 # Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 cmake_minimum_required(VERSION 3.15.0)
-project(Spicy ASM C CXX)
+
+execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake
+    OUTPUT_VARIABLE SPICY_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+project(spicy VERSION "${SPICY_VERSION}" LANGUAGES ASM C CXX)
 
 set(flex_minimum_version "2.6")
 set(bison_minimum_version "3.4")
@@ -194,8 +199,8 @@ if ( NOT CLANG_RESOURCE_DIR )
 endif ()
 
 execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-version
-                OUTPUT_VARIABLE VERSION)
-string(STRIP "${VERSION}" VERSION)
+                OUTPUT_VARIABLE VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 message(
     "\n====================|  Spicy Build Summary  |===================="
