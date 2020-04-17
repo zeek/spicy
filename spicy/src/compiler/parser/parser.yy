@@ -29,7 +29,7 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 173
+%expect 172
 %expect-rr 140
 
 %union {}
@@ -647,7 +647,10 @@ unit_property : PROPERTY                         { $$ = type::unit::item::Proper
               | PROPERTY '=' expr ';'            { $$ = type::unit::item::Property(ID(std::move($1)), std::move($3), false, __loc__); };
 
 unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
-                                                 { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__); }
+                                                 {   if ( $3.isA<type::Vector>() )
+                                                         error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
+                                                     $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__);
+                                                 }
 
               | opt_unit_field_id opt_unit_field_engine ctor       opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__); }
