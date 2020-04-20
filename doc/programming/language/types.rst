@@ -406,7 +406,7 @@ given element type. They provide iterators to traverse their content.
   directly but must be coerced into a fully-defined vector type first.
 
 - ``vector<T>(E_1, E_2, ..., E_N)`` creates a vector of type ``T``,
-  initializing it with the elements ``E_I``. ``vector<T>()`` creates
+  initializing it with the ``N`` elements ``E_I``. ``vector<T>()`` creates
   an empty vector.
 
 - Vectors can be initialized through coercions from a list value:
