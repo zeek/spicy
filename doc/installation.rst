@@ -4,8 +4,92 @@
 Installation
 =============
 
+.. _docker:
+
+Using Docker
+------------
+
+The Spicy distribution comes with a :repo:`set of Docker files
+<docker>` that create images for selected Linux distributions. We walk
+through how to use these in the following. We also welcome
+contributions to support more Linux distributions. If you create a new
+Docker file, please file a :pr:`pull request <>`.
+
+Pre-requisites
+~~~~~~~~~~~~~~
+
+You first need to install Docker on your host system if you haven't yet.
+
+.. rubric:: Linux
+
+All major Linux distributions provide Docker. Install it using your
+package manager. Alternatively, follow the official
+`instructions <https://docs.docker.com/install/>`__.
+
+.. rubric:: macOS
+
+Install `Docker Desktop for Mac
+<https://docs.docker.com/docker-for-mac>`_ following the official
+`instructions <https://docs.docker.com/docker-for-mac/install>`__.
+
+.. note::
+
+    Docker Desktop for Mac uses a VM behind the scenes to host the
+    Docker runtime environment. By default it allocates 2 GB of RAM to
+    the VM. This is not enough to compile Spicy or Zeek and will cause
+    an error that looks something like this::
+
+        c++: internal compiler error: Killed (program cc1plus)
+        Please submit a full bug report,
+        with preprocessed source if appropriate.
+        See <file:///usr/share/doc/gcc-7/README.Bugs> for instructions.
+
+    This is due to the VM hitting an out-of-memory condition. To avoid
+    this you will need to allocate more RAM to the VM. Click on the Docker
+    Icon in your menubar and select "Preferences". Click on the "Advanced"
+    tab and then use the slider to select 8 GB of RAM. Docker Desktop will
+    restart and then you will be ready to go.
+
+Build Your Spicy Container
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can build your Spicy container from one of the Docker files coming
+with Spicy: Go into Spicy's ``docker`` directory and run ``make`` to
+see the container platforms available::
+
+    # cd spicy
+    # make
+
+    Run "make build-<platform>", then "make run-<platform>".
+
+    Available platforms:
+
+        alpine-3.11
+        ubuntu-19.10
+
+To build a Spicy container image based on, for example, Ubuntu 19.10, run::
+
+    # make build-ubuntu-19.10
+
+Once the container build has finished, you can double-check that the
+container image is now available in your local Docker registry::
+
+    # docker images | grep -e spicy -e REPO
+    REPOSITORY                                            TAG                 IMAGE ID            CREATED             SIZE
+    spicy-ubuntu-19.10                                    0.2.0-dev           6f48daf3ade3        2 minutes ago       2.45GB
+    spicy-ubuntu-19.10                                    latest              6f48daf3ade3        2 minutes ago       2.45GB
+
+Great, let's fire it up! ::
+
+    # make run-ubuntu-19.10
+    root@bc93113300bc:~# spicyc --version
+    0.2.0-dev
+
+Building from source
+--------------------
+
 Prerequisites
--------------
+~~~~~~~~~~~~~
 
 Spicy currently supports the following platforms:
 
@@ -132,7 +216,7 @@ That will give you ``clang++`` in ``/opt/clang9/bin``, so that you can
 ``--with-cxx-compiler=/opt/clang9/bin/clang++``.
 
 Installing the Spicy Toolchain
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Get the code::
 
@@ -198,84 +282,3 @@ non-standard location, make sure that ``<prefix>/bin`` is in your
 
 To build Spicy's documentation, run ``make`` inside the ``docs/`` directory.
 Documentation will be located in ``build/doc/html``.
-
-.. _docker:
-
-Using Docker
-------------
-
-The Spicy distribution comes with a :repo:`set of Docker files
-<docker>` that create images for selected Linux distributions. We walk
-through how to use these in the following. We also welcome
-contributions to support more Linux distributions. If you create a new
-Docker file, please file a :pr:`pull request <>`.
-
-Pre-requisites
-~~~~~~~~~~~~~~
-
-You first need to install Docker on your host system if you haven't yet.
-
-.. rubric:: Linux
-
-All major Linux distributions provide Docker. Install it using your
-package manager. Alternatively, follow the official
-`instructions <https://docs.docker.com/install/>`__.
-
-.. rubric:: macOS
-
-Install `Docker Desktop for Mac
-<https://docs.docker.com/docker-for-mac>`_ following the official
-`instructions <https://docs.docker.com/docker-for-mac/install>`__.
-
-.. note::
-
-    Docker Desktop for Mac uses a VM behind the scenes to host the
-    Docker runtime environment. By default it allocates 2 GB of RAM to
-    the VM. This is not enough to compile Spicy or Zeek and will cause
-    an error that looks something like this::
-
-        c++: internal compiler error: Killed (program cc1plus)
-        Please submit a full bug report,
-        with preprocessed source if appropriate.
-        See <file:///usr/share/doc/gcc-7/README.Bugs> for instructions.
-
-    This is due to the VM hitting an out-of-memory condition. To avoid
-    this you will need to allocate more RAM to the VM. Click on the Docker
-    Icon in your menubar and select "Preferences". Click on the "Advanced"
-    tab and then use the slider to select 8 GB of RAM. Docker Desktop will
-    restart and then you will be ready to go.
-
-Build Your Spicy Container
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You can build your Spicy container from one of the Docker files coming
-with Spicy: Go into Spicy's ``docker`` directory and run ``make`` to
-see the container platforms available::
-
-    # cd spicy
-    # make
-
-    Run "make build-<platform>", then "make run-<platform>".
-
-    Available platforms:
-
-        alpine-3.11
-        ubuntu-19.10
-
-To build a Spicy container image based on, for example, Ubuntu 19.10, run::
-
-    # make build-ubuntu-19.10
-
-Once the container build has finished, you can double-check that the
-container image is now available in your local Docker registry::
-
-    # docker images | grep -e spicy -e REPO
-    REPOSITORY                                            TAG                 IMAGE ID            CREATED             SIZE
-    spicy-ubuntu-19.10                                    0.2.0-dev           6f48daf3ade3        2 minutes ago       2.45GB
-    spicy-ubuntu-19.10                                    latest              6f48daf3ade3        2 minutes ago       2.45GB
-
-Great, let's fire it up! ::
-
-    # make run-ubuntu-19.10
-    root@bc93113300bc:~# spicyc --version
-    0.2.0-dev
