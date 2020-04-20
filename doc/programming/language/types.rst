@@ -296,7 +296,7 @@ the new sequence number *seq*.
 If data still buffered is skipped over through
 :spicy:method:`sink::skip`, it will be passed to this hook, before
 adjusting the current position. *seq* is the starting sequence number
-of the data, *data* the is data itself.
+of the data, *data* is the data itself.
 
 .. _type_stream:
 
