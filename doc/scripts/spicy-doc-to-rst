@@ -329,7 +329,7 @@ for ns in keys:
     already_recorded = set()
 
     def print_unique(s):
-        if not s in already_recorded:
+        if s not in already_recorded:
             print(s, file=out)
             print(file=out)
             already_recorded.add(s)
