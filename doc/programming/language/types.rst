@@ -311,7 +311,7 @@ and (2) trimming data no longer needed at the beginning. Other than
 those two operation, stream data cannot be modified; there's no way to
 change the actual content of a stream once it has been added to it.
 Streams provide *iterators* for traversal, and *views* for limiting
-visibility to a smaller window into the total stream.
+visibility to smaller windows into the total stream.
 
 Streams are key to Spicy's parsing process, although most of that
 happens behind the scenes. You will most likely encounter them when
