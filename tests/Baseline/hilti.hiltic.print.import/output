@@ -1,5 +1,5 @@
 // Begin of Foo (from "foo.hlt")
-// Compiled by HILTI version 0.4.0-30
+// Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
 
@@ -7,7 +7,7 @@
 
 namespace __hlt::Bar {
     using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
-        std::string bar;
+        std::string bar{};
         template<typename F> void __visit(F _) const { _("bar", bar); }
     };
 
@@ -18,7 +18,7 @@ namespace __hlt::Bar {
 
 namespace __hlt::Foo {
     using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
-        std::string foo;
+        std::string foo{};
         template<typename F> void __visit(F _) const { _("foo", foo); }
     };
 
@@ -55,7 +55,7 @@ extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule(
 */
 
 // Begin of Bar (from "bar.hlt")
-// Compiled by HILTI version 0.4.0-30
+// Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
 
@@ -63,7 +63,7 @@ extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule(
 
 namespace __hlt::Bar {
     using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
-        std::string bar;
+        std::string bar{};
         template<typename F> void __visit(F _) const { _("bar", bar); }
     };
 
@@ -76,7 +76,7 @@ namespace __hlt::Bar {
 
 namespace __hlt::Foo {
     using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
-        std::string foo;
+        std::string foo{};
         template<typename F> void __visit(F _) const { _("foo", foo); }
     };
 
@@ -111,7 +111,7 @@ extern void __hlt::Bar::__register_module() { hilti::rt::detail::registerModule(
 */
 
 // Begin of __linker__
-// Compiled by HILTI version 0.4.0-30
+// Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
 

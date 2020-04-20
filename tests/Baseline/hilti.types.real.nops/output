@@ -7,7 +7,7 @@ assert 0x1.999999999999ap-4 == 0x1.999999999999ap-4;
 
 }
 // Begin of Foo (from "/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.real.nops/nops.hlt")
-// Compiled by HILTI version 0.4.0-30
+// Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
 
@@ -15,8 +15,8 @@ assert 0x1.999999999999ap-4 == 0x1.999999999999ap-4;
 
 namespace __hlt::Foo {
     using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
-        double d;
-        double r;
+        double d{};
+        double r{};
         template<typename F> void __visit(F _) const { _("d", d); _("r", r); }
     };
 

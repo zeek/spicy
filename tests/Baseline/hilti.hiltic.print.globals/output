@@ -1,5 +1,5 @@
 // Begin of Foo (from "/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.hiltic.print.globals/globals.hlt")
-// Compiled by HILTI version 0.4.0-30
+// Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
 
@@ -7,7 +7,7 @@
 
 namespace __hlt::Foo {
     using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
-        std::string X;
+        std::string X{};
         template<typename F> void __visit(F _) const { _("X", X); }
     };
 
@@ -37,7 +37,7 @@ extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule(
 */
 
 // Begin of __linker__
-// Compiled by HILTI version 0.4.0-30
+// Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
 
