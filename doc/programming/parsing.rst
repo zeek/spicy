@@ -890,7 +890,7 @@ give a vector an explicit termination condition (as discussed in
 :ref:`parse_vector`), Spicy will look at what's expected to come
 *after* the container. As long as that's something clearly
 recognizable (e.g., a specific value of an atomic type, or a match for
-regular expression), it'll terminate the vector accordingly.
+a regular expression), it'll terminate the vector accordingly.
 
 Here's an example:
 
