@@ -2,7 +2,7 @@
 
 .. spicy:operator:: bytes::iterator::Deref uint<64> op:* t:iterator<bytes> op:
 
-    Returns the byte the iterator is pointing to.
+    Returns the character the iterator is pointing to.
 
 .. spicy:operator:: bytes::iterator::Difference int<64> t:iterator<bytes> <sp> op:- <sp> t:iterator<bytes>
 
@@ -14,17 +14,17 @@
 .. spicy:operator:: bytes::iterator::Equal bool t:iterator<bytes> <sp> op:== <sp> t:iterator<bytes>
 
     Compares the two positions. The result is undefined if they are not
-    refering to the same bytes value.
+    referring to the same bytes value.
 
 .. spicy:operator:: bytes::iterator::Greater bool t:iterator<bytes> <sp> op:> <sp> t:iterator<bytes>
 
     Compares the two positions. The result is undefined if they are not
-    refering to the same bytes value.
+    referring to the same bytes value.
 
 .. spicy:operator:: bytes::iterator::GreaterEqual bool t:iterator<bytes> <sp> op:>= <sp> t:iterator<bytes>
 
     Compares the two positions. The result is undefined if they are not
-    refering to the same bytes value.
+    referring to the same bytes value.
 
 .. spicy:operator:: bytes::iterator::IncrPostfix iterator<bytes> op: t:iterator<bytes> op:++
 
@@ -34,15 +34,15 @@
 
     Advances the iterator by one byte, returning the new position.
 
-.. spicy:operator:: bytes::iterator::Lower bool t:iterator<bytes> <sp> op:> <sp> t:iterator<bytes>
+.. spicy:operator:: bytes::iterator::Lower bool t:iterator<bytes> <sp> op:< <sp> t:iterator<bytes>
 
     Compares the two positions. The result is undefined if they are not
-    refering to the same bytes value.
+    referring to the same bytes value.
 
-.. spicy:operator:: bytes::iterator::LowerEqual bool t:iterator<bytes> <sp> op:>= <sp> t:iterator<bytes>
+.. spicy:operator:: bytes::iterator::LowerEqual bool t:iterator<bytes> <sp> op:<= <sp> t:iterator<bytes>
 
     Compares the two positions. The result is undefined if they are not
-    refering to the same bytes value.
+    referring to the same bytes value.
 
 .. spicy:operator:: bytes::iterator::Sum iterator<bytes> t:iterator<bytes> <sp> op:+ <sp> t:uint<64>
 
@@ -55,5 +55,5 @@
 .. spicy:operator:: bytes::iterator::Unequal bool t:iterator<bytes> <sp> op:!= <sp> t:iterator<bytes>
 
     Compares the two positions. The result is undefined if they are not
-    refering to the same bytes value.
+    referring to the same bytes value.
 

@@ -30,17 +30,13 @@
 
     Returns the vector element at the given index.
 
-.. spicy:operator:: vector::Index <type~of~element> t:vector[uint<64>]
-
-    Returns the vector element at the given index.
-
 .. spicy:operator:: vector::Size uint<64> op:| t:vector op:|
 
     Returns the number of elements a vector contains.
 
 .. spicy:operator:: vector::Sum vector t:vector <sp> op:+ <sp> t:vector
 
-    Returns the concatentation of two vectors.
+    Returns the concatenation of two vectors.
 
 .. spicy:operator:: vector::SumAssign vector t:vector <sp> op:+= <sp> t:vector
 

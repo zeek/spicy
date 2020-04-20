@@ -15,13 +15,13 @@
 
     Returns true if the stream value has been frozen.
 
-.. spicy:method:: stream::trim stream trim False void (i: iterator<stream>)
+.. spicy:method:: stream::trim stream trim False void (inout i: iterator<stream>)
 
     Trims the stream value by removing all data from its beginning up to
     (but not including) the position *i*. The iterator *i* will remain
     valid afterwards and will still point to the same location, which will
-    now be the beginning of the stream value. All existigng iterators
-    poiting to *i* or beyond will remain valid and keep their offsets as
+    now be the beginning of the stream's value. All existing iterators
+    pointing to *i* or beyond will remain valid and keep their offsets as
     well. The effect of this operation is undefined if *i* does not
     actually refer to a location inside the stream value. Trimming is
     permitted even on frozen values.
