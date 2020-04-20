@@ -35,7 +35,7 @@ BEGIN_METHOD(sink, Close)
                                            .doc = R"(
 Closes a sink by disconnecting all parsing units. Afterwards the sink's state
 is as if it had just been created (so new units can be connected). Note that a
-sink it automatically closed when the unit it is part of is done parsing. Also
+sink is automatically closed when the unit it is part of is done parsing. Also
 note that a previously connected parsing unit can *not* be reconnected; trying
 to do so will still thrown a ``UnitAlreadyConnected`` exception.
 )"};
