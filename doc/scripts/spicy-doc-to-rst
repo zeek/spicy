@@ -54,7 +54,7 @@ def binary(token):
 Operators = {
     "Begin": call("begin"),
     "BitAnd": binary("&"),
-    "BitOr": binary("&"),
+    "BitOr": binary("|"),
     "BitXor": binary("^"),
     "End": call("end"),
     "Call": lambda op: "{}({})".format(
@@ -85,8 +85,8 @@ Operators = {
     "IncrPrefix": unary("++"),
     "LogicalAnd": binary("&&"),
     "LogicalOr": binary("||"),
-    "Lower": binary(">"),
-    "LowerEqual": binary(">="),
+    "Lower": binary("<"),
+    "LowerEqual": binary("<="),
     "Modulo": binary("%"),
     "Multiple": binary("*"),
     "MultipleAssign": binary("*="),
@@ -154,6 +154,7 @@ def fmtType(ty, in_operator=False):
 class Operand:
     def __init__(self, m):
         self.const = m.get("const")
+        self.mutable = m.get("mutable")
         self.default = m.get("default")
         self.id = m.get("id")
         self.optional = m.get("optional")
@@ -176,11 +177,8 @@ class Operand:
             else:
                 x = "{type}".format(type=type)
 
-        if self.optional:
-            return "[ {}{} ]".format(prefix, x)
-        else:
-            return x
-
+        x = "{}{}".format(prefix, x)
+        return "[ {} ]".format(x) if self.optional else x
 
 class Operator:
     def __init__(self, m):
@@ -226,7 +224,7 @@ class Method:
 
     def rst(self):
         def arg(a):
-            if a.const:
+            if a.const or not a.mutable:
                 qual = ""
             else:
                 qual = "inout "
@@ -322,21 +320,33 @@ for ns in keys:
     if "::iterator" in ns:
         prefix = "Iterator "
 
+    # In the following we remove duplicate entries where multiple items end up
+    # turning into the same reST rendering. This happens when the difference is
+    # only in typing issues that we don't track in the documentation. An example
+    # is the vector's index operators for constant and non-constant instances,
+    # respectively. Other duplications are coming from joining namspaces for
+    # integers.
+    already_recorded = set()
+
+    def print_unique(s):
+        if not s in already_recorded:
+            print(s, file=out)
+            print(file=out)
+            already_recorded.add(s)
+
     x1 = sorted(methods.get(ns, []))
     if x1:
         print(".. rubric:: %sMethods\n" % prefix, file=out)
 
         for method in x1:
-            print(method.rst(), file=out)
-            print(file=out)
+            print_unique(method.rst())
 
     x2 = sorted(operators.get(ns, []))
     if x2:
         print(".. rubric:: %sOperators\n" % prefix, file=out)
 
         for operator in x2:
-            print(operator.rst(), file=out)
-            print(file=out)
+            print_unique(operator.rst())
 
     if args.dir:
         out.close()

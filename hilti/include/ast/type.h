@@ -300,11 +300,15 @@ inline bool isViewable(const Type& t) { return effectiveType(t)._isViewable(); }
 /** Returns true for HILTI types that are always to be placed on the heap. */
 inline bool isOnHeap(const Type& t) { return effectiveType(t)._isOnHeap(); }
 
-/** Returns true if the type is a constant. */
+/**
+ * Returns true if the type is marked constant.
+ *
+ * \todo Note that currently we track this consistently only for mutable
+ * types. Ideally, this would always return true for non-mutable types, but
+ * doing so breaks some coercion code currently.
+ */
 inline bool isConstant(const Type& t) {
-    auto et = effectiveType(t);
-
-    return et.flags().has(type::Flag::Constant);
+    return effectiveType(t).flags().has(type::Flag::Constant);
 }
 
 /** Returns a `const` version of a type. */
