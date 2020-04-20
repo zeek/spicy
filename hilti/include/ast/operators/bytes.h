@@ -62,7 +62,7 @@ STANDARD_OPERATOR_2(bytes::iterator, SumAssign, type::bytes::Iterator(), type::b
 STANDARD_OPERATOR_1(bytes, Size, type::UnsignedInteger(64), type::constant(type::Bytes()),
                     "Returns the number of bytes the value contains.");
 STANDARD_OPERATOR_2(bytes, Equal, type::Bool(), type::constant(type::Bytes()), type::constant(type::Bytes()),
-                    "Compares two bytes values lexicographially.");
+                    "Compares two bytes values lexicographically.");
 STANDARD_OPERATOR_2(bytes, Unequal, type::Bool(), type::constant(type::Bytes()), type::constant(type::Bytes()),
                     "Compares two bytes values lexicographically.");
 STANDARD_OPERATOR_2(bytes, Greater, type::Bool(), type::constant(type::Bytes()), type::constant(type::Bytes()),
