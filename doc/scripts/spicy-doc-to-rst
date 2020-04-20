@@ -330,8 +330,7 @@ for ns in keys:
 
     def print_unique(s):
         if s not in already_recorded:
-            print(s, file=out)
-            print(file=out)
+            print(s, "\n", file=out)
             already_recorded.add(s)
 
     x1 = sorted(methods.get(ns, []))
