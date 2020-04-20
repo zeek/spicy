@@ -181,7 +181,7 @@ expressions through the type's equality operator, coercing
 ``CTRL_EXPR`` accordingly first where necessary. If ``local IDENT`` is
 specified, the blocks have access to a corresponding local variable
 that holds the value of the control expression. If no ``default`` is
-given, the runtime will throw a ``UnhandledSwitchCase`` exception if
+given, the runtime will throw an ``UnhandledSwitchCase`` exception if
 there's no matching case.
 
 .. note::

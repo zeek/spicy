@@ -33,7 +33,8 @@ BEGIN_CTOR(enum_, Ctor)
 
     auto signature() const {
         return Signature{.args = {{.id = "value", .type = type::UnsignedInteger(type::Wildcard())}}, .doc = R"(
-Instantiates an enum instance intialized from an integer value. The value does *not* need to correspond to any of the type's enumerator labels.
+Instantiates an enum instance initialized from an integer value. The value does
+*not* need to correspond to any of the type's enumerator labels.
 )"};
     }
 END_CTOR

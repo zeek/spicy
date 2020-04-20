@@ -528,11 +528,11 @@ Address
 ^^^^^^^
 
 Spicy parses :ref:`addresses <type_address>` from either 4 bytes of
-input for IPv4 addresses, or 16 bytes for IPv6 address. To select the
-type, a unit field of type ``address`` must come with either an
+input for IPv4 addresses, or 16 bytes for IPv6 addresses. To select
+the type, a unit field of type ``addr`` must come with either an
 ``&ipv4`` or ``&ipv6`` attribute.
 
-By default, addresses are assumed to be represented in network-byte
+By default, addresses are assumed to be represented in network byte
 order. Alternatively, a different byte order can be specified through
 a ``&byte-order`` attribute specifying the desired
 :ref:`spicy_byteorder`.
@@ -562,8 +562,8 @@ Bitfield
 Bitfields parse an integer value of a given size, and then make
 selected smaller bit ranges within that value available individually
 through dedicated identifiers. For example, the following unit parses
-4 bytes as an ``uint32`` and makes the value of bit 0 available as
-``f.x1``, bits 1 to 2 as ``f.x2``, and bits 3 to 5 as ``f.x3``,
+4 bytes as an ``uint32`` and then makes the value of bit 0 available
+as ``f.x1``, bits 1 to 2 as ``f.x2``, and bits 3 to 5 as ``f.x3``,
 respectively:
 
 .. spicy-code:: parse-bitfield.spicy
@@ -878,19 +878,19 @@ Look-Ahead
 
 Internally, Spicy builds an LR(1) grammar for each unit that it
 parses, meaning that it can actually look *ahead* in the parsing
-stream to determine how process the current input location. Roughly
-speaking, if (1) the current construct does not have a clear
-end-condition defined (such a specific length), and (2) a specific
-value is expected to be found; then the parser will keep looking for
+stream to determine how to process the current input location. Roughly
+speaking, if (1) the current construct does not have a clear end
+condition defined (such a specific length), and (2) a specific value
+is expected to be found next; then the parser will keep looking for
 that value and end the current construct once it finds it.
 
-"Construct" is deliberately a bit of a fuzzy term here, but think of
-vector parsing as the most common instance of this: If you don't give
-a vector an explicit termination condition (as discussed in
-:ref:`parse_vector`), Spicy will look at what's expected to come after
-the container. As long as that's something clearly recognizable (e.g.,
-a specific value of a atomic type; a match for regular expression),
-it'll terminate the vector accordingly.
+"Construct" deliberately remains a bit of a fuzzy term here, but think
+of vector parsing as the most common instance of this: If you don't
+give a vector an explicit termination condition (as discussed in
+:ref:`parse_vector`), Spicy will look at what's expected to come
+*after* the container. As long as that's something clearly
+recognizable (e.g., a specific value of an atomic type, or a match for
+regular expression), it'll terminate the vector accordingly.
 
 Here's an example:
 
@@ -1260,21 +1260,21 @@ declaration of ``A``. That's the connector, kept as state inside
 connects the sink to a new instance of ``B``; that'll be the receiver
 for data that ``A`` is going to write into the sink. That writing
 happens inside the field hook for ``data``: once we have parsed that
-field, we write what we go to the sink using its built-in
+field, we write what will go to the sink using its built-in
 :spicy:method:`sink::write` method. With that write operation, the
 data will emerge as input for the instance of ``B`` that we created
-earlier, and that one just proceed parsing it normally. As the output
+earlier, and that will just proceed parsing it normally. As the output
 shows, in the end both unit instances end up having their fields set.
 
-As a replacement for using the :spicy:method:`sink::write` in the
+As an alternative for using the :spicy:method:`sink::write` in the
 example, there's some syntactic sugar for fields of type ``bytes``
 (like ``data`` here): We can just replace the hook with a ``->``
-operator to have the parsed data automatically forwarded into the
+operator to have the parsed data automatically be forwarded to the
 sink: ``data: bytes &size=self.length -> self.b``.
 
 Sinks have a number of further methods, see :ref:`type_sink` for the
-complete reference. Most of them we will also refer in the following
-when discussing additional functionality that sinks provide.
+complete reference. Most of them we will also encounter in the
+following when discussing additional functionality that sinks provide.
 
 Using Filters
 ^^^^^^^^^^^^^

@@ -33,7 +33,7 @@ BEGIN_METHOD(sink, Close)
                                            .id = "close",
                                            .args = {},
                                            .doc = R"(
-Closes a sink by disconnecting all parsing units. Afterwards, the sink's state
+Closes a sink by disconnecting all parsing units. Afterwards the sink's state
 is as if it had just been created (so new units can be connected). Note that a
 sink it automatically closed when the unit it is part of is done parsing. Also
 note that a previously connected parsing unit can *not* be reconnected; trying
@@ -65,10 +65,10 @@ BEGIN_METHOD(sink, ConnectMIMETypeString)
                                            .id = "connect_mime_type",
                                            .args = {{.id = "mt", .type = type::String()}},
                                            .doc = R"(
-Connects parsing units to a sink for all parsers that support a given MIME type.
-All subsequent write operations to the sink will pass their data on to these
-parsing units. The MIME type may have wildcards for type or subtype, and will
-then connect units for all matching parsers.
+Connects parsing units to a sink for all parsers that support a given MIME
+type. All subsequent write operations to the sink will pass their data on to
+these parsing units. The MIME type may have wildcards for type or subtype, and
+the method will then connect units for all matching parsers.
 )"};
     }
 END_METHOD
@@ -80,10 +80,10 @@ BEGIN_METHOD(sink, ConnectMIMETypeBytes)
                                            .id = "connect_mime_type",
                                            .args = {{.id = "mt", .type = type::Bytes()}},
                                            .doc = R"(
-Connects parsing units to a sink for all parsers that support a given MIME type.
-All subsequent write operations to the sink will pass their data on to these
-parsing units. The MIME type may have wildcards for type or subtype, and will
-then connect units for all matching parsers.
+Connects parsing units to a sink for all parsers that support a given MIME
+type. All subsequent write operations to the sink will pass their data on to
+these parsing units. The MIME type may have wildcards for type or subtype, and
+the method will then connect units for all matching parsers.
 )"};
     }
 END_METHOD
@@ -97,11 +97,11 @@ BEGIN_METHOD(sink, ConnectFilter)
                                                      .type = hilti::type::StrongReference(
                                                          spicy::type::Unit(type::Wildcard()))}},
                                            .doc = R"(
-Connects a filter unit to the sink that will transform it's input transparently
-before forwaring it for parsing to other connected units.
+Connects a filter unit to the sink that will transform its input transparently
+before forwarding it for parsing to other connected units.
 
 Multiple filters can be added to a sink, in which case they will be chained
-into a pipeline and the data is passed through them in the order they have been
+into a pipeline and the data will be passed through them in the order they have been
 added. The parsing will then be carried out on the output of the last filter in
 the chain.
 
@@ -133,7 +133,7 @@ BEGIN_METHOD(sink, SequenceNumber)
                                            .args = {},
                                            .doc = R"(
 Returns the current sequence number of the sink's input stream, which is one
-beyond all data that has been put in order and delivered so far.
+beyond the index of the last byte that has been put in order and delivered so far.
 )"};
     }
 END_METHOD
@@ -146,7 +146,7 @@ BEGIN_METHOD(sink, SetAutoTrim)
                                            .args = {{.id = "enable", .type = type::Bool()}},
                                            .doc = R"(
 Enables or disables auto-trimming. If enabled (which is the default) sink input
-data is trimmed automatically once in-order and procssed. See ``trim()`` for
+data is trimmed automatically once in-order and processed. See ``trim()`` for
 more information about trimming.
 )"};
     }
@@ -181,11 +181,11 @@ BEGIN_METHOD(sink, SetPolicy)
                                                         type::Enum(type::Wildcard())}, // TODO(robin): Specify full type
                                                },
                                            .doc = R"(
-Sets a sink's reassembly policy for ambigious input. As long as data hasn't
+Sets a sink's reassembly policy for ambiguous input. As long as data hasn't
 been trimmed, a sink detects overlapping chunks. The policy decides how to
-handle ambigious overlaps. The default (and currently only ...) policy is
-``ReassemblerPolicy::First``, which resolved ambigiuities by taking the data
-from chunk that came first.
+handle ambiguous overlaps. The default (and currently only) policy is
+``ReassemblerPolicy::First``, which resolved ambiguities by taking the data
+from the chunk that came first.
 )"};
     }
 END_METHOD
@@ -200,12 +200,12 @@ BEGIN_METHOD(sink, Skip)
                                                    {.id = "seq", .type = type::UnsignedInteger(64)},
                                                },
                                            .doc = R"(
-Skips ahead in the input stream. *seq* is is the sequence number where to
-continue parsing. If there's still data buffered before that position it will
-be ignored, and if auto-skip is on also immediately deleted. If new data is
-passed in later before *seq*, that will likewise be ignored. If the input stream
-is currently stuck inside a gap, and *seq* is beyond that gap, the stream will
-resume processing at *seq*.
+Skips ahead in the input stream. *seq* is the sequence number where to continue
+parsing. If there's still data buffered before that position it will be
+ignored; if auto-skip is also active, it will be immediately deleted as well.
+If new data is passed in later that comes before *seq*, that will likewise be
+ignored. If the input stream is currently stuck inside a gap, and *seq* lies
+beyond that gap, the stream will resume processing at *seq*.
 )"};
     }
 END_METHOD
@@ -223,11 +223,11 @@ BEGIN_METHOD(sink, Trim)
 Deletes all data that's still buffered internally up to *seq*. If processing the
 input stream hasn't reached *seq* yet, parsing will also skip ahead to *seq*.
 
-Trimming the input stream releases the memory, but means that the sink won't be
+Trimming the input stream releases the memory, but that means that the sink won't be
 able to detect any further data mismatches.
 
 Note that by default, auto-trimming is enabled, which means all data is trimmed
-automatically once in-order and procssed.
+automatically once in-order and processed.
 )"};
     }
 END_METHOD
@@ -246,14 +246,14 @@ passing input in incrementally: The units will parse the pieces as if they were
 a single stream of data. If no sequence number *seq* is provided, the data is
 assumed to represent a chunk to be appended to the current end of the input
 stream. If a sequence number is provided, out-of-order data will be buffered
-and reassembled before passing on. If *len* is provided, the data is assumed
+and reassembled before being passed on. If *len* is provided, the data is assumed
 to represent that many bytes inside the sequence space; if not provided, *len*
 defaults to the length of *data*.
 
-If no units are connected, the call does not have any effect. If multple are
+If no units are connected, the call does not have any effect. If multiple units are
 connected and one parsing unit throws an exception, parsing of subsequent units
-does not proceed. Note that the order in which the data is parssed to each unit
-is undefined, though.
+does not proceed. Note that the order in which the data is parsed to each unit
+is undefined.
 
 .. todo:: The error semantics for multiple units aren't great.
 
