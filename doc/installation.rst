@@ -4,6 +4,58 @@
 Installation
 =============
 
+Spicy can be installed from :ref:`pre-built binaries (Linux) <prebuilt_linux>`
+or with :ref:`Homebrew (macOS) <prebuilt_macos>`, executed via :ref:`Docker
+containers <docker>`, or :ref:`built from source <building_from_source>`.
+
+Pre-built binaries
+------------------
+
+.. _prebuilt_linux:
+
+Linux
+~~~~~
+
+We provide pre-built binaries for some platforms from the Git ``master``
+branch. Artifacts are distributed as TAR archives which can be unpacked to any
+location::
+
+    # Unpack archive to e.g., /opt/spicy overwriting any previous installation.
+    # Writing to /opt/spicy likely requires superuser priviledges.
+    # The path # /opt/spicy can be replaced with a custom path.
+    rm -rf /opt/spicy && mkdir /opt/spicy
+    tar xf spicy-linux.tar.gz -C /opt/spicy --strip-components=1
+
+The binaries might require installation of additional dependencies;
+see the ``Dockerfile`` for the respective platform.
+
+ubuntu-19.10
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu_19_10/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-19.10>`__
+
+alpine-3.11
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_11_task/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.11>`__
+
+centos-8
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8_task/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-8>`__
+
+.. _prebuilt_macos:
+
+macOS
+~~~~~
+
+We provide a Homebrew formula for installation of ``HEAD`` versions of Spicy on
+MacOS 10.15/Catalina. After `installing Homebrew
+<https://docs.brew.sh/Installation>`_ add the Zeek tap::
+
+    brew tap zeek/zeek
+
+To install Spicy execute::
+
+    brew install spicy
+
 .. _docker:
 
 Using Docker
@@ -85,6 +137,8 @@ Great, let's fire it up! ::
     # make run-ubuntu-19.10
     root@bc93113300bc:~# spicyc --version
     0.2.0-dev
+
+.. _building_from_source:
 
 Building from source
 --------------------

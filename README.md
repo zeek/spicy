@@ -53,11 +53,12 @@ takes care of the rest.
 
 ## Installation
 
-There are no releases yet. To build the source code from GitHub,
-follow the [installation instructions](https://docs.zeek.org/projects/spicy/installation.html).
-
-We will start providing binary packages soon.
-
+While there are no dedicated releases yet, we provide pre-built Spicy
+binaries for some Linux platforms as well as a Homebrew formula for
+installation on macOS. You can also use one of the included Docker
+files, or just build Spicy from source directly. See the [installation
+instructions](https://docs.zeek.org/projects/spicy/installation.html)
+for more information on any of these options.
 
 ## Documentation
 
