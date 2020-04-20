@@ -250,4 +250,9 @@ message(
     "\n================================================================\n"
 )
 
+# Hide version number in package filename so that we can e.g., provide
+# unmodified links to the latest version.
+string(TOLOWER ${CMAKE_SYSTEM_NAME} SPICY_SYSTEM_NAME)
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${SPICY_SYSTEM_NAME}")
+
 include(CPack)
