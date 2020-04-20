@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <sys/resource.h>
+#include <unistd.h>
 
 #include <hilti/3rdparty/utf8proc/utf8proc.h>
 

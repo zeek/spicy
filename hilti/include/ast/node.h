@@ -65,6 +65,12 @@ struct Error {
     Location location;                              /**< location associated with the error */
     std::vector<std::string> context;               /**< additional lines to print along with error as context */
     ErrorPriority priority = ErrorPriority::Normal; /**< priortity of error */
+
+    // Comparision considers message & location, so that we can unique based
+    // on those two.
+    bool operator<(const Error& other) const {
+        return std::tie(message, location) < std::tie(other.message, other.location);
+    }
 };
 
 /**
@@ -291,7 +297,7 @@ private:
 
     std::shared_ptr<node_ref::detail::Control> _control_ptr = nullptr;
     mutable std::shared_ptr<Scope> _scope = nullptr;
-    mutable std::unique_ptr<std::vector<node::Error>> _errors = nullptr;
+    std::unique_ptr<std::vector<node::Error>> _errors = nullptr;
 };
 
 /**

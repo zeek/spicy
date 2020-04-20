@@ -96,7 +96,9 @@ public:
 
 private:
     std::string _sanitize(std::string desc) {
-        desc.erase(desc.find("tinyformat: "), 12);
+        if ( auto pos = desc.find("tinyformat: "); pos != std::string::npos )
+            desc.erase(pos, 12);
+
         return desc;
     }
 };

@@ -38,7 +38,7 @@ std::string Node::render(bool include_location) const {
         error_string =
             util::join(util::transform(errors(),
                                        [](const auto& e) {
-                                           return util::fmt(" [ERROR] %s%s", e.message,
+                                           return util::fmt("  [ERROR] %s%s", e.message,
                                                             (e.priority == node::ErrorPriority::Low ? " (low prio)" :
                                                                                                       ""));
                                        }),

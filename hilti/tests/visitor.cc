@@ -248,3 +248,32 @@ TEST_CASE("Copy node by value") {
     CHECK(hilti::type::isConstant(t4));
     CHECK(! hilti::type::isConstant(t));
 }
+
+
+TEST_CASE("Sort node errors") {
+    hilti::node::Error e1 = {.message = "A", .location = hilti::Location("foo.txt:1"), .context = {"xxx"}};
+    hilti::node::Error e2 = {.message = "A", .location = hilti::Location("foo.txt:1"), .context = {"yyy"}};
+    hilti::node::Error e3 = {.message = "A", .location = hilti::Location("foo.txt:2"), .context = {"xxx"}};
+    hilti::node::Error e4 = {.message = "B", .location = hilti::Location("foo.txt:1"), .context = {"yyy"}};
+    hilti::node::Error e5 = {.message = "B", .location = hilti::Location("xxx.txt:1"), .context = {"yyy"}};
+
+    // e1 == e1
+    CHECK(! (e1 < e1));
+    CHECK(! (e1 < e1));
+
+    CHECK(e1 < e3);
+    CHECK(! (e3 < e1));
+
+    // e1 == e2
+    CHECK(! (e1 < e2));
+    CHECK(! (e2 < e1));
+
+    CHECK(e1 < e4);
+    CHECK(! (e4 < e1));
+
+    CHECK(e3 < e4);
+    CHECK(! (e4 < e3));
+
+    CHECK(e4 < e5);
+    CHECK(! (e5 < e4));
+}

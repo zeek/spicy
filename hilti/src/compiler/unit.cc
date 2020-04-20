@@ -523,7 +523,7 @@ void Unit::_determineCompilationRequirements(const Node& module) {
 }
 
 bool Unit::_validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
-                         std::function<bool(const ID&, NodeRef&)> run_hooks_callback) {
+                         const std::function<bool(const ID&, NodeRef&)>& run_hooks_callback) {
     if ( options().skip_validation )
         return true;
 
@@ -537,10 +537,20 @@ bool Unit::_validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
     return valid;
 }
 
-// Recursive helper function to traverse the AST and collect relevant errors. We
-// report errors on child nodes first, and then hide any further ones in parents
-// along the way (unless the child's error is low priority). If a node doesn't
-// have a location, we substitute the closest parent location.
+/**
+ * Recursive helper function to traverse the AST and collect relevant errors.
+ * We pick errors on child nodes first, and then hide any further ones
+ * located in parents along the way (unless the child's error is low
+ * priority). If a node doesn't have a location, we substitute the closest
+ * parent location.
+ *
+ * @param n root node for validation
+ * @param closest_location location closest to *n* on the path leading to it
+ * @param errors errors recorded for reporting so far; function will extend this
+ * @return true if no normal priority errors were found inside the subtree
+ * starting at *n*, which means that errors above the node should be
+ * reported; false if errors above *n* should not be reported.
+ */
 static bool _recursiveValidateAST(const Node& n, Location closest_location, std::vector<node::Error>* errors) {
     auto valid = true;
 
@@ -565,9 +575,12 @@ static bool _recursiveValidateAST(const Node& n, Location closest_location, std:
 
         for ( const auto& e : n.errors() ) {
             if ( e.priority == node::ErrorPriority::Normal )
+                // Normal errors found, i.e., the subtree is not valid.
                 return false;
         }
 
+        // Only low priority errors, i.e., treat as "valid" in the sense that
+        // we will report errors on the path leading to the node.
         return true;
     }
 
@@ -577,13 +590,12 @@ static bool _recursiveValidateAST(const Node& n, Location closest_location, std:
 static void _reportErrors(const std::vector<node::Error>& errors) {
     // We skip any low-priority errors at first. Only if we have only those,
     // we will report them. We also generally suppress duplicates.
-    std::set<std::string> reported;
+    std::set<node::Error> reported;
 
     auto report_one = [&](const auto& e) {
-        auto idx = fmt("%s|%s", e.message, e.location);
-        if ( reported.find(idx) == reported.end() ) {
+        if ( reported.find(e) == reported.end() ) {
             logger().error(e.message, e.context, e.location);
-            reported.insert(idx);
+            reported.insert(e);
         }
     };
 
@@ -602,7 +614,7 @@ static void _reportErrors(const std::vector<node::Error>& errors) {
 }
 
 bool Unit::_validateASTs(const ID& id, std::vector<Node>& nodes,
-                         std::function<bool(const ID&, std::vector<Node>&)> run_hooks_callback) {
+                         const std::function<bool(const ID&, std::vector<Node>&)>& run_hooks_callback) {
     if ( options().skip_validation )
         return true;
 
@@ -620,7 +632,8 @@ bool Unit::_validateASTs(const ID& id, std::vector<Node>& nodes,
     return false;
 }
 
-bool Unit::_validateAST(const ID& id, NodeRef module, std::function<bool(const ID&, NodeRef&)> run_hooks_callback) {
+bool Unit::_validateAST(const ID& id, NodeRef module,
+                        const std::function<bool(const ID&, NodeRef&)>& run_hooks_callback) {
     if ( options().skip_validation )
         return true;
 
@@ -641,7 +654,7 @@ void Unit::_dumpAST(const Node& module, const logging::DebugStream& stream, cons
     if ( ! logger().isEnabled(stream) )
         return;
 
-    auto& m = module.as<Module>();
+    const auto& m = module.as<Module>();
 
     std::string r;
 

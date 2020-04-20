@@ -38,7 +38,8 @@ class Stream;
  * equivalents.
  *
  * A plugin implements a set of hook methods that get called by the
- * compilation process at the appropiate times.
+ * compilation process at the appropiate times. All hooks should be
+ * stateless, apart from changing the AST where appropiate.
  *
  * @note HILTI compilation itself is also implemented through a default
  * plugin that's always available. `Unit` cycles through all available

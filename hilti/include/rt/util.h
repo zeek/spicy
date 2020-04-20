@@ -30,7 +30,6 @@ void internalError(const std::string& msg) __attribute__((noreturn));
 #undef TINYFORMAT_ERROR
 #define TINYFORMAT_ERROR(reason) throw ::hilti::rt::FormattingError(reason)
 #include <hilti/3rdparty/tinyformat/tinyformat.h>
-#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fmt.h>
 

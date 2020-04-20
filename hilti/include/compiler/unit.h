@@ -293,14 +293,14 @@ private:
 
     // Runs a validation pass on a set of modules and reports any errors.
     bool _validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
-                       std::function<bool(const ID&, NodeRef&)> run_hooks_callback);
+                       const std::function<bool(const ID&, NodeRef&)>& run_hooks_callback);
 
     // Runs a validation pass on a module and reports any errors.
-    bool _validateAST(const ID& id, NodeRef module, std::function<bool(const ID&, NodeRef&)> run_hooks_callback);
+    bool _validateAST(const ID& id, NodeRef module, const std::function<bool(const ID&, NodeRef&)>& run_hooks_callback);
 
     // Runs a validation pass on a set of nodes and reports any errors.
     bool _validateASTs(const ID& id, std::vector<Node>& nodes,
-                       std::function<bool(const ID&, std::vector<Node>&)> run_hooks_callback);
+                       const std::function<bool(const ID&, std::vector<Node>&)>& run_hooks_callback);
     // Updates the requires_compilation flags for all of a module's imports.
     void _determineCompilationRequirements(const Node& module);
     // Sends a debug dump of a module's AST to the global logger.
