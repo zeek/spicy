@@ -18,9 +18,6 @@ import subprocess
 
 sys.path.insert(0, os.path.abspath('scripts'))
 
-os.environ["PATH"] = "%s/bin:%s" % (
-    os.environ["SPICY_BUILD_DIRECTORY"], os.environ["PATH"])
-
 # -- Project information -----------------------------------------------------
 
 project = u'Spicy'
