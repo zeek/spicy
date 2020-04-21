@@ -1,2 +1,2 @@
-[error] cannot coerce expression '-1' of type 'int<64>' to type 'uint<64>'
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.count-fail/count-fail.spicy:10: cannot coerce expression '-1' of type 'int<64>' to type 'uint<64>'
 [error] spicyc: aborting after errors

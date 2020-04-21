@@ -7,6 +7,7 @@
 #include <variant>
 
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/fmt.h>
 #include <hilti/rt/safe-int.h>
 
 namespace hilti::rt {

@@ -38,7 +38,8 @@ class Stream;
  * equivalents.
  *
  * A plugin implements a set of hook methods that get called by the
- * compilation process at the appropiate times.
+ * compilation process at the appropiate times. All hooks should be
+ * stateless, apart from changing the AST where appropiate.
  *
  * @note HILTI compilation itself is also implemented through a default
  * plugin that's always available. `Unit` cycles through all available
@@ -153,35 +154,38 @@ struct Plugin {
     Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> apply_coercions;
 
     /**
-     * Hook called to validate correctness of an AST, pre-transformation.
-     * Any errors must be reported through the global `Logger`.
+     * Hook called to validate correctness of an AST, pre-transformation. Any
+     * errors must be reported by setting the nodes' error information.
      *
      * @param arg1 compiler context that's in use
      * @param arg2 root node of AST; the hook may not modify the AST
      * @param arg3 current unit being compiled
+     * @param arg4 pointer to boolean that the hook must set to true to
+     * indicate that errors were encountered.
      */
-    Hook<void, std::shared_ptr<hilti::Context>, const Node&, Unit*> pre_validate;
+    Hook<void, std::shared_ptr<hilti::Context>, Node*, Unit*, bool*> pre_validate;
 
     /**
      * Hook called to validate correctness of an AST, post-transformation.
-     * Any errors must be reported through the global `Logger`.
+     * Any errors must be reported by setting the nodes' error information.
      *
      * @param arg1 compiler context that's in use
      * @param arg2 root node of AST; the hook may not modify the AST
      * @param arg3 current unit being compiled
      */
-    Hook<void, std::shared_ptr<hilti::Context>, const Node&, Unit*> post_validate;
+    Hook<void, std::shared_ptr<hilti::Context>, Node*, Unit*> post_validate;
 
     /**
-     * Hook called to validate correctness of AST nodes that a modules preserved before transformation.
-     * The hooks runs just before the ``post_validate`` hook.
-     * Any errors must be reported through the global `Logger`.
+     * Hook called to validate correctness of AST nodes that a module
+     * preserved before transformation. The hook runs just before the
+     * ``post_validate`` hook. Any errors must be reported by setting the
+     * nodes' error information.
      *
      * @param arg1 compiler context that's in use
      * @param arg2 preserved nodes to validate
      * @param arg3 current unit being compiled
      */
-    Hook<void, std::shared_ptr<hilti::Context>, const std::vector<Node>&, Unit*> preserved_validate;
+    Hook<void, std::shared_ptr<hilti::Context>, std::vector<Node>*, Unit*> preserved_validate;
 
     /**
      * Hook called to replace any custom AST nodes with standard HILTI

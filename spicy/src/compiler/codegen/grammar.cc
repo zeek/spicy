@@ -346,7 +346,7 @@ Result<Nothing> Grammar::_check() {
         auto isect = util::set_intersection(syms1, syms2);
 
         if ( isect.size() )
-            return hilti::result::Error(fmt("%s is ambigious for look-ahead symbol(s) { %s }\n", _productionLocation(p),
+            return hilti::result::Error(fmt("%s is ambiguous for look-ahead symbol(s) { %s }\n", _productionLocation(p),
                                             util::join(isect, ", ")));
 
         for ( const auto& q : util::set_union(laheads.first, laheads.second) ) {

@@ -7,6 +7,7 @@
 
 #include <hilti/ast/ctors/all.h>
 #include <hilti/ast/expressions/all.h>
+#include <hilti/ast/types/id.h>
 
 namespace hilti::builder {
 
@@ -309,6 +310,11 @@ inline Expression type_wrapped(Expression e, Type t, const Meta& m = Meta()) {
 inline Expression expect_type(Expression e, Type expected, const Meta& m = Meta()) {
     return expression::TypeWrapped(e, std::move(expected), expression::TypeWrapped::ValidateTypeMatch(),
                                    m ? std::move(m) : e.meta());
+}
+
+// Forces interpreting a given expression as a value of a __library_type.
+inline Expression library_type_value(Expression e, ID library_type, const Meta& m = Meta()) {
+    return expression::TypeWrapped(e, hilti::type::UnresolvedID(std::move(library_type), m), m);
 }
 
 } // namespace hilti::builder

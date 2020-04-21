@@ -13,6 +13,27 @@ using util::fmt;
 namespace {
 
 struct Visitor : public visitor::PostOrder<void, Visitor> {
+    // Record error at location of current node.
+    void error(std::string msg, position_t& p, node::ErrorPriority priority = node::ErrorPriority::Normal) {
+        p.node.addError(msg, p.node.location(), priority);
+        ++errors;
+    }
+
+    // Record error with current node, but report with another node's location.
+    void error(std::string msg, position_t& p, const Node& n,
+               node::ErrorPriority priority = node::ErrorPriority::Normal) {
+        p.node.addError(msg, n.location(), priority);
+        ++errors;
+    }
+
+    // Record error with current node, but report with a custom location.
+    void error(std::string msg, position_t& p, Location l, node::ErrorPriority priority = node::ErrorPriority::Normal) {
+        p.node.addError(msg, std::move(l), priority);
+        ++errors;
+    }
+
+    int errors = 0;
+
     void preDispatch(const Node& n, int level) override {
         // Validate that identifier names are not reused.
         for ( const auto& [id, nodes] : n.scope()->items() ) {
@@ -33,6 +54,8 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                           (node->typeid_() == firstNode->typeid_() || firstNode->isA<Module>()) )
                     continue;
 
+                // TODO: Should make preDispatch() recevie a non-const node
+                // so that we can set errors here.
                 logger().error(fmt("redefinition of '%s' defined in %s", id, firstNode->location()), node->location());
             }
         }
@@ -40,17 +63,17 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
     ////// Declarations
 
-    void operator()(const declaration::Constant& n) {
+    void operator()(const declaration::Constant& n, position_t p) {
         if ( n.value().type().isWildcard() )
-            logger().error("cannot use wildcard type for constants", n);
+            error("cannot use wildcard type for constants", p);
     }
 
-    void operator()(const declaration::LocalVariable& n) {
+    void operator()(const declaration::LocalVariable& n, position_t p) {
         if ( ! type::isAllocable(n.type()) )
-            logger().error(fmt("type '%s' cannot be used for variable declaration", n.type()), n);
+            error(fmt("type '%s' cannot be used for variable declaration", n.type()), p);
 
         if ( n.type().isWildcard() )
-            logger().error("cannot use wildcard type for variables", n);
+            error("cannot use wildcard type for variables", p);
 
         if ( ! n.typeArguments().empty() ) {
             auto t = n.type();
@@ -59,189 +82,239 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                 t = t.dereferencedType();
 
             if ( ! t.isA<type::Struct>() )
-                logger().error("only struct types can have arguments", n);
+                error("only struct types can have arguments", p);
         }
+
+        if ( auto st = n.type().tryAs<type::Struct>() )
+            _checkStructArguments(n.typeArguments(), st->parameters(), p);
     }
 
-    void operator()(const declaration::Parameter& n, const_position_t p) {
+    void operator()(const declaration::Parameter& n, position_t p) {
         if ( ! type::isAllocable(n.type()) && n.type() != type::Any() )
-            logger().error(fmt("type '%s' cannot be used for function parameter", n.type()), n);
+            error(fmt("type '%s' cannot be used for function parameter", n.type()), p);
 
         if ( n.type().isWildcard() ) {
             if ( auto d = p.parent(3).tryAs<declaration::Function>() ) {
                 if ( ! AttributeSet::find(d->function().attributes(), "&cxxname") )
-                    logger().error(fmt("parameter '%s' cannot have wildcard type; only allowed with runtime library "
-                                       "functions declared with &cxxname",
-                                       n.id()),
-                                   n);
+                    error(fmt("parameter '%s' cannot have wildcard type; only allowed with runtime library "
+                              "functions declared with &cxxname",
+                              n.id()),
+                          p);
             }
 
             if ( auto d = p.parent(4).tryAs<declaration::Type>() ) {
                 if ( ! AttributeSet::find(d->attributes(), "&cxxname") )
-                    logger().error(fmt("parameter '%s' cannot have wildcard type; only allowed with methods in runtime "
-                                       "library structs declared with &cxxname",
-                                       n.id()),
-                                   n);
+                    error(fmt("parameter '%s' cannot have wildcard type; only allowed with methods in runtime "
+                              "library structs declared with &cxxname",
+                              n.id()),
+                          p);
             }
         }
     }
 
-    void operator()(const declaration::GlobalVariable& n) {
+    void operator()(const declaration::GlobalVariable& n, position_t p) {
         if ( ! type::isAllocable(n.type()) )
-            logger().error(fmt("type '%s' cannot be used for variable declaration", n.type()), n);
+            error(fmt("type '%s' cannot be used for variable declaration", n.type()), p);
 
         if ( n.type().isWildcard() )
-            logger().error("cannot use wildcard type for variables", n);
+            error("cannot use wildcard type for variables", p);
 
         if ( auto args = n.typeArguments(); args.size() ) {
             if ( ! n.type().isA<type::Struct>() )
-                logger().error("only struct types can have arguments", n);
+                error("only struct types can have arguments", p);
         }
+
+        if ( auto st = n.type().tryAs<type::Struct>() )
+            _checkStructArguments(n.typeArguments(), st->parameters(), p);
     }
 
     ////// Ctors
 
-    void operator()(const ctor::Default& c, const_position_t p) {}
+    void operator()(const ctor::Default& c, position_t p) {
+        if ( auto st = c.type().tryAs<type::Struct>() )
+            _checkStructArguments(c.typeArguments(), st->parameters(), p);
+    }
 
-    void operator()(const ctor::List& n) {
+    void operator()(const ctor::List& n, position_t p) {
         auto t = n.elementType();
 
         if ( ! n.value().empty() && t == type::unknown )
-            logger().error("non-empty list cannot have unknown type", n);
+            error("non-empty list cannot have unknown type", p);
     }
 
-    void operator()(const ctor::Null& c, const_position_t p) {}
+    void operator()(const ctor::Map& n, position_t p) {
+        auto kt = n.keyType();
+        auto et = n.elementType();
 
-    void operator()(const ctor::SignedInteger& n) {
+        if ( ! n.value().empty() && (kt == type::unknown || et == type::unknown) )
+            error("non-empty map cannot have unknown type", p);
+
+        for ( const auto& [k, v] : n.value() ) {
+            if ( k.type() != kt ) {
+                error("type mismatch in map keys", p);
+                break;
+            }
+
+            if ( v.type() != et ) {
+                error("type mismatch in map values", p);
+                break;
+            }
+        }
+    }
+
+    void operator()(const ctor::Null& c, position_t p) {}
+
+    void operator()(const ctor::SignedInteger& n, position_t p) {
         auto [min, max] = util::signed_integer_range(n.type().width());
 
         if ( n.value() < min || n.value() > max )
-            logger().error("integer value out of range for type", n);
+            error("integer value out of range for type", p);
     }
 
-    void operator()(const ctor::Struct& n) {
-        // TODO(robin): .
-    }
-
-    void operator()(const ctor::UnsignedInteger& n) {
-        auto [min, max] = util::unsigned_integer_range(n.type().width());
-
-        if ( n.value() < min || n.value() > max )
-            logger().error("integer value out of range for type", n);
-    }
-
-    void operator()(const ctor::Vector& n) {
+    void operator()(const ctor::Set& n, position_t p) {
         auto t = n.elementType();
 
         if ( ! n.value().empty() && t == type::unknown )
-            logger().error("non-empty vector cannot have unknown type", n);
+            error("non-empty set cannot have unknown type", p);
+
+        for ( const auto& e : n.value() ) {
+            if ( e.type() != n.elementType() ) {
+                error("type mismatch in set elements", p);
+                break;
+            }
+        }
+    }
+
+    void operator()(const ctor::Struct& n, position_t p) {
+        // TODO(robin): .
+    }
+
+    void operator()(const ctor::UnsignedInteger& n, position_t p) {
+        auto [min, max] = util::unsigned_integer_range(n.type().width());
+
+        if ( n.value() < min || n.value() > max )
+            error("integer value out of range for type", p);
+    }
+
+    void operator()(const ctor::Vector& n, position_t p) {
+        auto t = n.elementType();
+
+        if ( ! n.value().empty() && t == type::unknown )
+            error("non-empty vector cannot have unknown type", p);
+
+        for ( const auto& e : n.value() ) {
+            if ( e.type() != n.elementType() ) {
+                error("type mismatch in vector elements", p);
+                break;
+            }
+        }
     }
 
     ////// Expressions
 
-    void operator()(const expression::Assign& n) {
+    void operator()(const expression::Assign& n, position_t p) {
         if ( ! n.target().isLhs() )
-            logger().error(fmt("cannot assign to expression: %s", to_node(n)), n);
+            error(fmt("cannot assign to expression: %s", to_node(n)), p);
     }
 
-    void operator()(const expression::ListComprehension& n) {
+    void operator()(const expression::ListComprehension& n, position_t p) {
         if ( ! type::isIterable(n.input().type()) )
-            logger().error("input value not iterable", n);
+            error("input value not iterable", p);
     }
 
-    void operator()(const expression::Ternary& n) {
+    void operator()(const expression::Ternary& n, position_t p) {
         if ( ! hilti::type::sameExceptForConstness(n.true_().type(), n.false_().type()) )
-            logger().error(fmt("types of alternatives do not match in ternary expression (%s vs. %s)", n.true_().type(),
-                               n.false_().type()),
-                           n);
+            error(fmt("types of alternatives do not match in ternary expression (%s vs. %s)", n.true_().type(),
+                      n.false_().type()),
+                  p);
     }
 
-    void operator()(const expression::TypeWrapped& n) {
+    void operator()(const expression::TypeWrapped& n, position_t p) {
         if ( n.validateTypeMatch() && n.expression().type() != n.type() )
-            logger().error(fmt("type mismatch, expression has type '%s', but expected '%s'", n.expression().type(),
-                               n.type()),
-                           n);
+            error(fmt("type mismatch, expression has type '%s', but expected '%s'", n.expression().type(), n.type()),
+                  p);
     }
 
     void operator()(const expression::UnresolvedID& n, position_t p) {
-        if ( ! p.node.error() )
-            logger().error("expression left unresolved", n);
+        // We prefer the error message from a parent UnresolvedOperator.
+        if ( ! p.node.hasErrors() && ! p.parent().isA<expression::UnresolvedOperator>() )
+            error("unresolved ID", p);
     }
 
     ////// Statements
 
-    void operator()(const statement::For& n) {
+    void operator()(const statement::For& n, position_t p) {
         if ( ! type::isIterable(n.sequence().type()) )
-            logger().error("value not iterable", n);
+            error("value not iterable", p);
     }
 
-    void operator()(const statement::If& n) {
+    void operator()(const statement::If& n, position_t p) {
         if ( ! (n.init() || n.condition()) )
-            logger().error("'if' header lacking both condition and declaration", n);
+            error("'if' header lacking both condition and declaration", p);
     }
 
-    void operator()(const statement::Break& n, const_position_t p) {
+    void operator()(const statement::Break& n, position_t p) {
         auto w = p.findParent<statement::While>();
         auto f = p.findParent<statement::For>();
 
         if ( ! (f || w) ) {
-            logger().error("'break' outside of loop", n);
+            error("'break' outside of loop", p);
             return;
         }
     }
 
-    void operator()(const statement::Continue& n, const_position_t p) {
+    void operator()(const statement::Continue& n, position_t p) {
         auto w = p.findParent<statement::While>();
         auto f = p.findParent<statement::For>();
 
         if ( ! (f || w) ) {
-            logger().error("'continue' outside of loop", n);
+            error("'continue' outside of loop", p);
             return;
         }
     }
 
-    void operator()(const statement::Return& n, const_position_t p) {
+    void operator()(const statement::Return& n, position_t p) {
         auto func = p.findParent<Function>();
 
         if ( ! func ) {
-            logger().error("'return' outside of function", n);
+            error("'return' outside of function", p);
             return;
         }
 
         if ( func->get().type().result().type() == type::Void() ) {
             if ( n.expression() )
-                logger().error("void function cannot return a value", n);
+                error("void function cannot return a value", p);
         }
         else {
             if ( ! n.expression() )
-                logger().error("function must return a value", n);
+                error("function must return a value", p);
         }
     }
 
-    void operator()(const statement::Switch& n) {
+    void operator()(const statement::Switch& n, position_t p) {
         if ( n.cases().empty() )
-            logger().error("switch statement has no cases", n);
+            error("switch statement has no cases", p);
     }
 
-    void operator()(const statement::Throw& n, const_position_t p) {
+    void operator()(const statement::Throw& n, position_t p) {
         if ( auto e = n.expression() ) {
             if ( ! e->type().isA<type::Exception>() )
-                logger().error("'throw' argument must be an exception");
+                error("'throw' argument must be an exception", p);
         }
         else {
             if ( ! p.findParent<statement::try_::Catch>() )
-                logger().error("'throw' without expression can only be inside 'catch'", n);
+                error("'throw' without expression can only be inside 'catch'", p);
         }
     }
 
-    void operator()(const statement::try_::Catch& n) {
+    void operator()(const statement::try_::Catch& n, position_t p) {
         if ( n.parameter() && ! n.parameter()->type().isA<type::Exception>() )
-            logger().error("type of catch parameter must be an exception", n.meta().location());
+            error("type of catch parameter must be an exception", p);
     }
 
-    void operator()(const statement::Try& n) {
+    void operator()(const statement::Try& n, position_t p) {
         if ( n.catches().empty() ) {
-            logger().error("'try' statement without any 'catch'");
+            error("'try' statement without any 'catch'", p);
             return;
         }
 
@@ -253,205 +326,183 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         }
 
         if ( defaults > 1 )
-            logger().error("'try` statement cannot have more than one defaullt `catch`");
+            error("'try` statement cannot have more than one defaullt `catch`", p);
     }
 
-    void operator()(const statement::While& n) {
+    void operator()(const statement::While& n, position_t p) {
         if ( ! (n.init() || n.condition()) )
-            logger().error("'while' header lacking both condition and declaration");
+            error("'while' header lacking both condition and declaration", p);
     }
 
-    void operator()(const expression::ResolvedOperator& n, const_position_t p) {
+    void operator()(const expression::ResolvedOperator& n, position_t p) {
         // We are running after both overload resolution and the
         // apply-coercion pass, so operands types are ensured to be fine at
         // this point, so only need to run operator-specific validation.
         n.operator_().validate(n, p);
     }
 
-    void operator()(const expression::UnresolvedOperator& n, const_position_t p) {
-        if ( ! p.node.error() )
-            logger().error("operator left unresolved", n);
+    void operator()(const expression::UnresolvedOperator& n, position_t p) {
+        error("operator left unresolved", p, node::ErrorPriority::Low);
     }
 
     ////// Types
 
-    void operator()(const type::Exception& n) {
+    void operator()(const type::Exception& n, position_t p) {
         if ( n.baseType() && ! n.baseType()->isA<type::Exception>() )
-            logger().error("exception's base type must be an exception type as well");
+            error("exception's base type must be an exception type as well", p);
     }
 
-    void operator()(const type::Function& n) {
+    void operator()(const type::Function& n, position_t p) {
         if ( n.flavor() == type::function::Flavor::Hook ) {
             auto r = n.result().type();
             if ( ! (r == type::Void() || r.isA<type::Optional>()) )
-                logger().error(fmt("hooks must have return type either void or optional<T>"));
+                error(fmt("hooks must have return type either void or optional<T>"), p);
         }
     }
 
-    void operator()(const type::SignedInteger& n) {
+    void operator()(const type::SignedInteger& n, position_t p) {
         auto w = n.width();
 
         if ( w != 8 && w != 16 && w != 32 && w != 64 && ! n.isWildcard() )
-            logger().error(fmt("integer type's width must be one of 8/16/32/64, but is %d", n.width()), n);
+            error(fmt("integer type's width must be one of 8/16/32/64, but is %d", n.width()), p);
     }
 
-    void operator()(const type::UnsignedInteger& n) {
+    void operator()(const type::UnsignedInteger& n, position_t p) {
         auto w = n.width();
 
         if ( w != 8 && w != 16 && w != 32 && w != 64 && ! n.isWildcard() )
-            logger().error(fmt("integer type's width must be one of 8/16/32/64, but is %d", n.width()), n);
+            error(fmt("integer type's width must be one of 8/16/32/64, but is %d", n.width()), p);
     }
 
-    void operator()(const type::Optional& n) {
+    void operator()(const type::Optional& n, position_t p) {
         if ( n.isWildcard() )
             return;
 
         if ( auto t = n.dereferencedType(); ! type::isAllocable(t) )
-            logger().error(fmt("type %s cannot be used inside optional", t), n);
+            error(fmt("type %s cannot be used inside optional", t), p);
     }
 
-    void operator()(const type::StrongReference& n) {
+    void operator()(const type::StrongReference& n, position_t p) {
         if ( n.isWildcard() )
             return;
 
         if ( auto t = n.dereferencedType(); ! type::isAllocable(t) )
-            logger().error(fmt("type %s is not allocable and can thus not be used with references", t), n);
+            error(fmt("type %s is not allocable and can thus not be used with references", t), p);
     }
 
-    void operator()(const type::Result& n) {
+    void operator()(const type::Result& n, position_t p) {
         if ( n.isWildcard() )
             return;
 
         if ( auto t = n.dereferencedType(); ! type::isAllocable(t) )
-            logger().error(fmt("type %s cannot be used inside result", t), n);
+            error(fmt("type %s cannot be used inside result", t), p);
     }
 
-    void operator()(const type::Struct& n) {
+    void operator()(const type::Struct& n, position_t p) {
         std::set<ID> seen;
 
         for ( const auto& f : n.fields() ) {
             if ( seen.find(f.id()) != seen.end() && ! f.type().isA<type::Function>() )
-                logger().error("duplicate attribute in struct type", n);
+                error("duplicate attribute in struct type", p);
 
             seen.insert(f.id());
 
             if ( f.isStatic() && f.default_() )
-                logger().error("&default is currently not supported for static fields", n);
+                error("&default is currently not supported for static fields", p);
         }
 
-        for ( const auto& p : n.parameters() ) {
-            switch ( p.kind() ) {
+        for ( const auto& param : n.parameters() ) {
+            switch ( param.kind() ) {
                 case declaration::parameter::Kind::Copy:
                 case declaration::parameter::Kind::In:
                     // Nothing to check.
                     break;
 
                 case declaration::parameter::Kind::InOut:
-                    if ( ! type::isReferenceType(p.type()) )
-                        logger().error("only parameters of reference type can be 'inout' for struct parameters", n);
+                    if ( ! type::isReferenceType(param.type()) )
+                        error("only parameters of reference type can be 'inout' for struct parameters", p);
                     break;
 
-                case declaration::parameter::Kind::Unknown:
-                    logger().error("parameter kind unexpectedly not known", n);
-                    break;
+                case declaration::parameter::Kind::Unknown: error("parameter kind unexpectedly not known", p); break;
             }
         }
     }
 
-    void operator()(const type::Union& n) {
+    void operator()(const type::Union& n, position_t p) {
         std::set<ID> seen;
 
         for ( const auto& f : n.fields() ) {
             if ( seen.find(f.id()) != seen.end() )
-                logger().error("duplicate attribute in union type", n);
+                error("duplicate attribute in union type", p);
 
             seen.insert(f.id());
         }
     }
 
-    void operator()(const type::Tuple& n) {
+    void operator()(const type::Tuple& n, position_t p) {
         for ( const auto& t : n.types() ) {
             if ( ! type::isAllocable(t) )
-                logger().error(fmt("type '%s' cannot be used inside a tuple", t), n);
+                error(fmt("type '%s' cannot be used inside a tuple", t), p);
         }
     }
 
     void operator()(const type::UnresolvedID& n, position_t p) {
-        if ( ! p.node.error() )
-            logger().error("ID left unresolved", n);
+        if ( ! p.node.hasErrors() )
+            error("ID left unresolved", p, node::ErrorPriority::Low);
     }
 
-    void operator()(const type::WeakReference& n) {
+    void operator()(const type::WeakReference& n, position_t p) {
         if ( n.isWildcard() )
             return;
 
         if ( auto t = n.dereferencedType(); ! type::isAllocable(t) )
-            logger().error(fmt("type %s is not allocable and can thus not be used with weak references", t), n);
+            error(fmt("type %s is not allocable and can thus not be used with weak references", t), p);
+    }
+
+    // Operators (only special cases here, most validation happens where they are defined)
+
+    void operator()(const operator_::generic::New& n, position_t p) {
+        // We reuse the _checkStructArguments() here, that's why this operator is covered here.
+        if ( auto t = n.operands()[0].type().tryAs<type::Type_>() ) {
+            if ( auto st = t->typeValue().tryAs<type::Struct>() ) {
+                std::vector<Expression> args;
+                if ( n.operands().size() > 1 ) {
+                    auto ctor = n.operands()[1].as<expression::Ctor>().ctor();
+                    if ( auto x = ctor.tryAs<ctor::Coerced>() )
+                        ctor = x->coercedCtor();
+
+                    args = ctor.as<ctor::Tuple>().value();
+                }
+
+                _checkStructArguments(args, st->parameters(), p);
+            }
+        }
+    }
+
+    void _checkStructArguments(const std::vector<Expression>& have, const std::vector<type::function::Parameter>& want,
+                               position_t& p) {
+        if ( have.size() > want.size() )
+            error(fmt("type expects %u parameter%s, but receives %u", have.size(), (have.size() > 1 ? "s" : ""),
+                      want.size()),
+                  p);
+
+        for ( auto i = 0; i < want.size(); i++ ) {
+            if ( i < have.size() ) {
+                if ( have[i].type() != want[i].type() )
+                    error(fmt("type expects %s for parameter %u, but receives %s", have[i].type(), i + 1,
+                              want[i].type()),
+                          p);
+            }
+            else if ( ! want[i].default_() )
+                error(fmt("type parameter %u is missing (%s)", i + 1, want[i].id()), p);
+        }
     }
 };
 
 } // anonymous namespace
 
-static int _validateAST(const Node& root, bool do_dispatch) {
-    util::timing::Collector _("hilti/compiler/validator");
-
-    std::unordered_set<std::string> errors;
-
+void hilti::detail::validateAST(Node* root) {
     auto v = Visitor();
-    for ( auto i : v.walk(root) ) {
-        if ( auto e = i.node.error() ) {
-            // To avoid showing chains of errors triggering each other, we
-            // report only the 1st error per source location. (The more
-            // precise way would be: do not report current node if any child
-            // has an error, but this is easier and should be good enough for
-            // now.)
-            if ( errors.find(i.node.location()) == errors.end() ) {
-                logger().error(*e, i.node.errorContext(), i.node.location());
-                errors.insert(i.node.location());
-            }
-        }
-
-        if ( do_dispatch )
-            v.dispatch(i);
-    }
-
-    return static_cast<int>(errors.size());
-}
-
-void hilti::detail::validateAST(const Node& root) { _validateAST(root, true); }
-
-bool hilti::reportErrorsInAST(const Node& root) { return _validateAST(root, false) != 0; }
-
-int64_t detail::errorsInAST(const Node& n) {
-    int64_t errors = 0;
-
-    for ( const auto& i : ::hilti::visitor::PreOrder<>().walk(n) ) {
-        if ( i.node.error() )
-            ++errors;
-    }
-
-    return errors;
-}
-
-uint64_t detail::hashAST(const Node& n) {
-    uint64_t hash = 0;
-
-    for ( const auto& i : ::hilti::visitor::PreOrder<>().walk(n) ) {
-        hash = (hash << 1U) | (hash >> 63U);
-        hash ^= static_cast<uint64_t>(i.node.identity());
-    }
-
-    return hash;
-}
-
-int64_t detail::unresolvedInAST(const Node& n) {
-    int64_t unresolved = 0;
-
-    for ( const auto& i : ::hilti::visitor::PreOrder<>().walk(n) ) {
-        if ( i.node.isA<::hilti::expression::UnresolvedID>() || i.node.isA<::hilti::expression::UnresolvedOperator>() ||
-             i.node.isA<::hilti::type::UnresolvedID>() )
-            ++unresolved;
-    }
-
-    return unresolved;
+    for ( auto i : v.walk(root) )
+        v.dispatch(i);
 }

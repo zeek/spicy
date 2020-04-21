@@ -40,7 +40,7 @@ class UnresolvedOperator;
 
 namespace operator_ {
 
-using position_t = visitor::Position<const Node&>;
+using position_t = visitor::Position<Node&>;
 using const_position_t = visitor::Position<const Node&>;
 
 using OperandType =

@@ -29,11 +29,11 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
         return {{.type = type::Type_(type::Wildcard())}, {.type = type::Tuple(type::Wildcard())}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /*p */) const {
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         auto data_type = i.op1().type().template as<type::Tuple>().types()[0];
 
         if ( ! (data_type.isA<type::Bytes>() || data_type.isA<type::stream::View>()) )
-            logger().error("unpack() can be used only with bytes or a stream view as input", i);
+            p.node.addError("unpack() can be used only with bytes or a stream view as input");
     }
 
     std::string doc() const { return "Unpacks a value from a binary representation."; }
@@ -55,9 +55,9 @@ BEGIN_OPERATOR_CUSTOM(generic, Begin)
         };
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         if ( ! type::isIterable(i.operands()[0].type()) )
-            logger().error("not an iterable type", i);
+            p.node.addError("not an iterable type");
     }
 
     std::string doc() const { return "Returns an iterator to the beginning of a container's content."; }
@@ -79,9 +79,9 @@ BEGIN_OPERATOR_CUSTOM(generic, End)
         };
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         if ( ! type::isIterable(i.operands()[0].type()) )
-            logger().error("not an iterable type", i);
+            p.node.addError("not an iterable type");
     }
 
     std::string doc() const { return "Returns an iterator to the end of a container's content."; }
@@ -109,14 +109,14 @@ BEGIN_OPERATOR_CUSTOM(generic, New)
         };
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         auto t = i.operands()[0].type();
 
         if ( auto tv = i.operands()[0].type().tryAs<type::Type_>() )
             t = tv->typeValue();
 
         if ( ! type::isAllocable(t) )
-            logger().error("not an allocable type", i);
+            p.node.addError("not an allocable type");
     }
 
     std::string doc() const {
@@ -148,7 +148,7 @@ public:
         std::vector<operator_::Operand> operands() const { return {}; } // Won't participate in overload resolution
         Type result(const std::vector<Expression>& ops) const { return ops[1].as<expression::Type_>().typeValue(); }
         bool isLhs() const { return false; }
-        void validate(const expression::ResolvedOperator& /* i */, operator_::const_position_t /* p */) const {}
+        void validate(const expression::ResolvedOperator& /* i */, operator_::position_t /* p */) const {}
         std::string doc() const { return "<dynamic - no doc>"; }
         std::string docNamespace() const { return "<dynamic - no ns>"; }
 

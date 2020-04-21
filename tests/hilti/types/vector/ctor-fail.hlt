@@ -1,0 +1,8 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+local auto x = vector<uint<8>>(b"foo",);
+
+}

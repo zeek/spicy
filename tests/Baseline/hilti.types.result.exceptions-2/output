@@ -1,1 +1,1 @@
-uncaught exception hilti::rt::result::NoError: <no error>
+uncaught exception hilti::rt::result::NoError: <no error> (/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.result.exceptions-2/exceptions.hlt:8)

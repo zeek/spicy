@@ -181,9 +181,9 @@ BEGIN_METHOD(sink, SetPolicy)
                                                         type::Enum(type::Wildcard())}, // TODO(robin): Specify full type
                                                },
                                            .doc = R"(
-Sets a sink's reassembly policy for ambigious input. As long as data hasn't
+Sets a sink's reassembly policy for ambiguous input. As long as data hasn't
 been trimmed, a sink detects overlapping chunks. The policy decides how to
-handle ambigious overlaps. The default (and currently only ...) policy is
+handle ambiguous overlaps. The default (and currently only ...) policy is
 ``ReassemblerPolicy::First``, which resolved ambigiuities by taking the data
 from chunk that came first.
 )"};

@@ -24,11 +24,11 @@ static hilti::expression::Member memberExpression(const Expression& op) {
 }
 
 // Checks if an operand refers to a valid field inside a bitfield.
-static inline void checkName(const Expression& op0, const Expression& op1) {
+static inline void checkName(const Expression& op0, const Expression& op1, Node& n) {
     auto id = memberExpression(op1).id().local();
 
     if ( auto f = op0.type().as<type::Bitfield>().bits(id); ! f )
-        hilti::logger().error(util::fmt("bitfield type does not have attribute '%s'", id));
+        n.addError(util::fmt("bitfield type does not have attribute '%s'", id));
 }
 
 static inline Type itemType(const Expression& op0, const Expression& op1) {
@@ -57,8 +57,8 @@ BEGIN_OPERATOR_CUSTOM(bitfield, Member)
                 {.type = type::Member(type::Wildcard()), .doc = "<attribute>"}};
     }
 
-    void validate(const hilti::expression::ResolvedOperator& i, hilti::operator_::const_position_t /* p */) const {
-        detail::checkName(i.op0(), i.op1());
+    void validate(const hilti::expression::ResolvedOperator& i, hilti::operator_::position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node);
     }
 
     std::string doc() const {

@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <sys/resource.h>
+#include <unistd.h>
 
 #include <hilti/3rdparty/utf8proc/utf8proc.h>
 
@@ -10,6 +11,7 @@
 
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/fiber.h>
 #include <hilti/rt/util.h>
 
 std::string hilti::rt::version() {

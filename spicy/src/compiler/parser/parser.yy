@@ -29,7 +29,7 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 173
+%expect 172
 %expect-rr 140
 
 %union {}
@@ -71,6 +71,7 @@ static int _field_width = 0;
 %token <str>       IDENT          "identifier"
 %token <str>       SCOPED_IDENT   "scoped identifier"
 %token <str>       DOTTED_IDENT   "dotted identifier"
+%token <str>       HOOK_IDENT     "hook identifier"
 %token <str>       DOLLAR_IDENT   "$-identifier"
 %token <str>       ATTRIBUTE      "attribute"
 %token <str>       PROPERTY       "property"
@@ -526,7 +527,6 @@ base_type_no_attrs
               | OPTIONAL type_param_begin type type_param_end            { $$ = hilti::type::Optional($3, __loc__); }
               | VIEW type_param_begin type type_param_end                { $$ = viewForType(std::move($3), __loc__); }
 
-              | LIST type_param_begin type type_param_end                { $$ = hilti::type::Vector(std::move($3), __loc__); }
               | MAP type_param_begin type ',' type type_param_end        { $$ = hilti::type::Map(std::move($3), std::move($5), __loc__); }
               | SET type_param_begin type type_param_end                 { $$ = hilti::type::Set(std::move($3), __loc__); }
               | VECTOR type_param_begin type type_param_end              { $$ = hilti::type::Vector(std::move($3), __loc__); }
@@ -647,7 +647,10 @@ unit_property : PROPERTY                         { $$ = type::unit::item::Proper
               | PROPERTY '=' expr ';'            { $$ = type::unit::item::Property(ID(std::move($1)), std::move($3), false, __loc__); };
 
 unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
-                                                 { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__); }
+                                                 {   if ( $3.isA<type::Vector>() )
+                                                         error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
+                                                     $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__);
+                                                 }
 
               | opt_unit_field_id opt_unit_field_engine ctor       opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__); }
@@ -715,8 +718,9 @@ opt_unit_hook_attributes
                                                  { $$ = hilti::AttributeSet::add($1, $2); }
               | /* empty */                      { $$ = {}; }
 
-unit_hook_id  : scoped_id                        { $$ = hilti::ID(util::replace($1, "%", "0x25_"), __loc__); }
-              | PROPERTY                         { $$ = hilti::ID(util::replace($1, "%", "0x25_"), __loc__); }  /* for %init/%done */
+unit_hook_id: { driver->enableHookIDMode(); }
+              HOOK_IDENT
+              { driver->disableHookIDMode(); } { $$ = hilti::ID(util::replace($2, "%", "0x25_"), __loc__); }
 
 unit_hook_attribute
               : FOREACH                          { $$ = hilti::Attribute("foreach", __loc__); }

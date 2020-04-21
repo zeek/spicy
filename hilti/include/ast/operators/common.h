@@ -57,8 +57,7 @@ private:                                                                        
                                                                                                                        \
     bool isLhs() const { return signature().lhs; }                                                                     \
                                                                                                                        \
-    void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::const_position_t /* p */)      \
-        const {}                                                                                                       \
+    void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::position_t /* p */) const {}   \
                                                                                                                        \
     __END_OPERATOR_CUSTOM
 
@@ -214,8 +213,7 @@ private:                                                                        
                                                                                                                        \
     bool isLhs() const { return false; }                                                                               \
                                                                                                                        \
-    void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::const_position_t /* p */)      \
-        const {}                                                                                                       \
+    void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::position_t /* p */) const {}   \
                                                                                                                        \
     __END_OPERATOR_CUSTOM
 
@@ -251,8 +249,7 @@ private:                                                                        
                                                                                                                        \
     bool isLhs() const { return false; }                                                                               \
                                                                                                                        \
-    void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::const_position_t /* p */)      \
-        const {}                                                                                                       \
+    void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::position_t /* p */) const {}   \
                                                                                                                        \
     __END_OPERATOR_CUSTOM
 

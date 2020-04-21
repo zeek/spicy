@@ -1,0 +1,2 @@
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.vector.ctor-fail/ctor-fail.hlt:6: type mismatch in vector elements
+[error] hiltic: aborting after errors

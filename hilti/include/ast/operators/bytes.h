@@ -260,9 +260,9 @@ BEGIN_METHOD(bytes, ToIntAscii)
                          .args = {{.id = "base", .type = type::UnsignedInteger(64), .optional = true}},
                          .doc =
                              R"(
-Interprets the data as representing an ASCII-encoded number and converts
-that into a signed integer, using a base of *base*. If *base* is not given, the
-default is 10.
+Interprets the data as representing an ASCII-encoded number and converts that
+into a signed integer, using a base of *base*. *base* must be between 2 and 36.
+If *base* is not given, the default is 10.
 )"};
     }
 END_METHOD
@@ -275,9 +275,9 @@ BEGIN_METHOD(bytes, ToUIntAscii)
                          .args = {{.id = "base", .type = type::UnsignedInteger(64), .optional = true}},
                          .doc =
                              R"(
-Interprets the data as representing an ASCII-encoded number and converts
-that into an unsigned integer, using a base of *base*. If *base* is not given, the
-default is 10.
+Interprets the data as representing an ASCII-encoded number and converts that
+into an unsigned integer, using a base of *base*. *base* must be between 2 and
+36. If *base* is not given, the default is 10.
 )"};
     }
 END_METHOD

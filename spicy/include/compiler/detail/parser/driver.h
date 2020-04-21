@@ -131,6 +131,8 @@ public:
     void disableExpressionMode();
     void enableDottedIDMode();
     void disableDottedIDMode();
+    void enableHookIDMode();
+    void disableHookIDMode();
     void setDestinationModule(Module m) { _module = std::move(m); }
     void setDestinationExpression(Expression e) { _expression = std::move(e); }
     int nextToken();

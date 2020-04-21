@@ -1,10 +1,10 @@
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.ast.validation/validation.hlt:11: integer type's width must be one of 8/16/32/64, but is 65
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.ast.validation/validation.hlt:12: integer type's width must be one of 8/16/32/64, but is 0
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.ast.validation/validation.hlt:12-14: type 'void' cannot be used for variable declaration
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.ast.validation/validation.hlt:15-16: type 'void' cannot be used for variable declaration
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.ast.validation/validation.hlt:19: function must return a value
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.ast.validation/validation.hlt:23: cannot coerce expression '42' of type 'uint<64>' to type 'void'
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.ast.validation/validation.hlt:23: void function cannot return a value
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.ast.validation/validation.hlt:31: cannot coerce expression '"1" == "2"' of type 'bool' to type 'real'
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.ast.validation/validation.hlt:32: cannot resolve operator: <string> == <uint<64>>
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:11: integer type's width must be one of 8/16/32/64, but is 65
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:12: integer type's width must be one of 8/16/32/64, but is 0
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:12-14: type 'void' cannot be used for variable declaration
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:15-16: type 'void' cannot be used for variable declaration
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:19: function must return a value
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:23: cannot coerce expression '42' of type 'uint<64>' to type 'void'
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:23: void function cannot return a value
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:31: cannot coerce expression '"1" == "2"' of type 'bool' to type 'real'
+[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.validation/validation.hlt:32: cannot resolve operator: <string> == <uint<64>>
 [error] hiltic: aborting after errors

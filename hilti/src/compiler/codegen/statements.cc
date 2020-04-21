@@ -16,8 +16,8 @@ inline auto traceStatement(CodeGen* cg, cxx::Block* b, const Statement& s) {
     if ( s.isA<statement::Block>() )
         return;
 
-    if ( cg->options().debug_location )
-        b->addStatement(fmt("hilti::rt::debug::setLocation(\"%s\")", s.meta().location()));
+    if ( cg->options().track_location && s.meta().location() )
+        b->addStatement(fmt("  __location__(\"%s\")", s.meta().location()));
 
     if ( cg->options().debug_trace )
         b->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-trace", "%s: %s"))", s.meta().location(),

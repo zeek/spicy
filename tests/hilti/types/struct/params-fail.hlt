@@ -1,0 +1,30 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type A = struct {
+};
+
+type B = struct(string X, real Y = 3.14) {
+};
+
+local A a1("a");
+local auto a2 = default<A>("a");
+global A a3("a");
+global auto a4 = new A("a");
+
+local B b1(42);
+local auto b2 = default<B>(42);
+global B b3(42);
+global auto b4 = new B(42);
+global auto b5 = new B;
+
+global auto a5 = new A(); # pass
+global auto a6 = new A; # pass
+local auto b5 = new B("x", 3.14); # pass
+local auto b6 = new B("x"); # pass
+
+}

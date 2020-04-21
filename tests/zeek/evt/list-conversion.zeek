@@ -12,7 +12,7 @@ public function bro_convert(a: uint8) : tuple<uint64, uint64> {
 }
 
 public type Test = unit {
-    a: list<uint8> &count=5;
+    a: uint8[5];
     b: int16;
     c: uint16;
 };

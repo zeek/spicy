@@ -90,7 +90,7 @@ TEST_CASE("example1") {
 
     CHECK(finalize(&g, S) ==
           hilti::Result<hilti::Nothing>(hilti::result::Error(
-              "grammar example1, production A is ambigious for look-ahead symbol(s) { b\"a\" (bytes) }")));
+              "grammar example1, production A is ambiguous for look-ahead symbol(s) { b\"a\" (bytes) }")));
 }
 
 TEST_CASE("example2") {

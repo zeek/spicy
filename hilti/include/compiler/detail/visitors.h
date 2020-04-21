@@ -64,29 +64,6 @@ void resetNodes(Node* root);
  */
 void clearErrors(Node* root);
 
-/** Returns the number of nodes in an AST that have an error flagged. */
-extern int64_t errorsInAST(const Node& n);
-
-/**
- * Reports all errors already recorded in the AST through the logger.
- *
- * @note this may filter out some errors to to avoid the output becoming
- * noisy, such as when one error has triggered a chain of other ones.
- *
- * @return number of errors reported
- */
-int reportErrorsInAST(const Node& root, Unit* unit);
-
-/**
- * Returns the number of nodes in an AST that are "unresolved". A node is
- * unresolved if it's type is out of a small set of AST node types that the
- * ID and operator resolvers replace.
- */
-extern int64_t unresolvedInAST(const Node& n);
-
-/** Returns a hash of an AST that stays stable as long as no nodes change. */
-uint64_t hashAST(const Node& n);
-
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 void buildScopes(const std::vector<std::pair<ID, NodeRef>>& modules, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
@@ -100,7 +77,7 @@ std::optional<Type> coerceType(Type t, const Type& dst, bitmask<CoercionStyle> s
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 bool applyCoercions(Node* root, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-void validateAST(const Node& root);
+void validateAST(Node* root);
 
 
 } // namespace detail

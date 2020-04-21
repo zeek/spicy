@@ -196,18 +196,19 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
             resolved = _resolve(candidates, u.operands(), u.meta(), u.kind() == operator_::Kind::Cast);
 
         if ( resolved.empty() ) {
-            p.node.setError(util::fmt("cannot resolve operator: %s", renderOperatorInstance(u)));
+            p.node.addError(util::fmt("cannot resolve operator: %s", renderOperatorInstance(u)));
             return false;
         }
 
         if ( resolved.size() > 1 ) {
-            p.node.setError(util::fmt("operator usage is ambigious: %s", renderOperatorInstance(u)));
-            p.node.augmentError("candidates:");
+            std::vector<std::string> context = {"candidates:"};
             for ( auto i : resolved )
-                p.node.augmentError(util::fmt("- %s [%s]",
-                                              renderOperatorPrototype(i.as<expression::ResolvedOperator>()),
-                                              i.typename_()));
+                context.emplace_back(util::fmt("- %s [%s]",
+                                               renderOperatorPrototype(i.as<expression::ResolvedOperator>()),
+                                               i.typename_()));
 
+            p.node.addError(util::fmt("operator usage is ambiguous: %s", renderOperatorInstance(u)),
+                            std::move(context));
             return true;
         }
 
@@ -236,14 +237,14 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
             return false;
 
         if ( ! args_ctor ) {
-            p.node.setError("function call's argument must be a tuple constant");
+            p.node.addError("function call's argument must be a tuple constant");
             return true;
         }
 
         auto args = args_ctor->ctor().tryAs<ctor::Tuple>();
 
         if ( ! args ) {
-            p.node.setError("function call's argument must be a tuple constant");
+            p.node.addError("function call's argument must be a tuple constant");
             return true;
         }
 
@@ -259,12 +260,12 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
                 auto d = r.node->tryAs<declaration::Function>();
 
                 if ( ! d ) {
-                    p.node.setError(util::fmt("ID '%s' resolves to something other than just functions", callee->id()));
+                    p.node.addError(util::fmt("ID '%s' resolves to something other than just functions", callee->id()));
                     return true;
                 }
 
                 if ( r.external && d->linkage() != declaration::Linkage::Public ) {
-                    p.node.setError(util::fmt("function has not been declared public: %s", r.qualified));
+                    p.node.addError(util::fmt("function has not been declared public: %s", r.qualified));
                     return true;
                 }
 
@@ -288,24 +289,28 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
                 auto [id, func] = function(overloads[0]);
 
                 if ( func.type().flavor() != type::function::Flavor::Hook ) {
-                    p.node.setError(util::fmt("call is ambigious: %s", renderOperatorInstance(u)));
-                    p.node.augmentError("candidate functions:");
+                    std::vector<std::string> context = {"candidate functions:"};
+
                     for ( auto i : overloads )
-                        p.node.augmentError(
+                        context.emplace_back(
                             util::fmt("- %s", renderOperatorPrototype(i.as<expression::ResolvedOperator>())));
 
+                    p.node.addError(util::fmt("call is ambiguous: %s", renderOperatorInstance(u)), std::move(context));
                     return true;
                 }
 
                 for ( auto& i : overloads ) {
                     auto [oid, ofunc] = function(i);
                     if ( id != oid || Type(func.type()) != Type(ofunc.type()) ) {
-                        p.node.setError(util::fmt("call is ambigious: %s", renderOperatorInstance(u)));
-                        p.node.augmentError("candidate functions:");
+                        std::vector<std::string> context = {"candidate functions:"};
+
                         for ( auto i : overloads )
-                            p.node.augmentError(
+                            context.emplace_back(
                                 util::fmt("- %s", renderOperatorPrototype(i.as<expression::ResolvedOperator>())));
 
+
+                        p.node.addError(util::fmt("call is ambiguous: %s", renderOperatorInstance(u)),
+                                        std::move(context));
                         return true;
                     }
                 }
@@ -321,16 +326,18 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
             return true;
         }
 
-        p.node.setError(util::fmt("call does not match any function: %s", renderOperatorInstance(u)));
+        std::vector<std::string> context;
 
         if ( ! candidates.empty() ) {
-            p.node.augmentError("candidate functions:");
+            context.emplace_back("candidate functions:");
             for ( const auto& i : candidates ) {
                 auto rop = i.instantiate(u.operands(), u.meta()).as<expression::ResolvedOperator>();
-                p.node.augmentError(util::fmt("- %s", renderOperatorPrototype(rop)));
+                context.emplace_back(util::fmt("- %s", renderOperatorPrototype(rop)));
             }
         }
 
+        p.node.addError(util::fmt("call does not match any function: %s", renderOperatorInstance(u)),
+                        std::move(context));
         return true;
     }
 
@@ -348,27 +355,27 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
             return false;
 
         if ( ! args_ctor ) {
-            p.node.setError("method call's argument must be a tuple constant");
+            p.node.addError("method call's argument must be a tuple constant");
             return true;
         }
 
         auto args = args_ctor->ctor().tryAs<ctor::Tuple>();
 
         if ( ! args ) {
-            p.node.setError("method call's argument must be a tuple constant");
+            p.node.addError("method call's argument must be a tuple constant");
             return true;
         }
 
         auto fields = stype->fields(callee->id());
 
         if ( fields.empty() ) {
-            p.node.setError(util::fmt("struct type does not have a method `%s`", callee->id()));
+            p.node.addError(util::fmt("struct type does not have a method `%s`", callee->id()));
             return false; // Continue trying to find another match.
         }
 
         for ( auto& f : fields ) {
             if ( ! f.type().isA<type::Function>() ) {
-                p.node.setError(util::fmt("struct attribute '%s' is not a function", callee->id()));
+                p.node.addError(util::fmt("struct attribute '%s' is not a function", callee->id()));
                 return true;
             }
         }
@@ -380,25 +387,28 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         std::vector<Node> overloads = _resolve(candidates, operands, u.meta());
 
         if ( overloads.empty() ) {
-            p.node.setError(util::fmt("call does not match any method: %s", renderOperatorInstance(u)));
+            std::vector<std::string> context;
 
             if ( ! candidates.empty() ) {
-                p.node.augmentError("candidate methods:");
+                context.emplace_back("candidate methods:");
                 for ( const auto& i : candidates ) {
                     auto rop = i.instantiate(u.operands(), u.meta()).as<expression::ResolvedOperator>();
-                    p.node.augmentError(util::fmt("- %s", renderOperatorPrototype(rop)));
+                    context.emplace_back(util::fmt("- %s", renderOperatorPrototype(rop)));
                 }
             }
 
+            p.node.addError(util::fmt("call does not match any method: %s", renderOperatorInstance(u)),
+                            std::move(context));
             return true;
         }
 
         if ( overloads.size() > 1 ) {
-            p.node.setError(util::fmt("method call to is ambigious: %s", renderOperatorInstance(u)));
-            p.node.augmentError("candidates:");
+            std::vector<std::string> context = {"candidates:"};
             for ( auto i : overloads )
-                p.node.augmentError(util::fmt("- %s", renderOperatorPrototype(i.as<expression::ResolvedOperator>())));
+                context.emplace_back(util::fmt("- %s", renderOperatorPrototype(i.as<expression::ResolvedOperator>())));
 
+            p.node.addError(util::fmt("method call to is ambiguous: %s", renderOperatorInstance(u)),
+                            std::move(context));
             return true;
         }
 

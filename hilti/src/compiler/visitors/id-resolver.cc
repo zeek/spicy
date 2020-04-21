@@ -39,7 +39,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         auto resolved = lookupID<declaration::Type>(u.id(), p);
 
         if ( ! resolved ) {
-            p.node.setError(resolved.error());
+            p.node.addError(resolved.error());
             return;
         }
 
@@ -104,7 +104,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         auto resolved = lookupID<Declaration>(u.id(), p);
 
         if ( ! resolved ) {
-            p.node.setError(resolved.error());
+            p.node.addError(resolved.error());
             return;
         }
 

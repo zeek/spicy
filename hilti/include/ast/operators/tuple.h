@@ -28,16 +28,16 @@ BEGIN_OPERATOR_CUSTOM(tuple, Index)
         return {{.type = type::Tuple(type::Wildcard())}, {.type = type::UnsignedInteger(64)}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         if ( auto ec = i.op1().tryAs<expression::Ctor>() )
             if ( auto c = ec->ctor().tryAs<ctor::UnsignedInteger>() ) {
                 if ( c->value() < 0 || c->value() >= i.op0().type().as<type::Tuple>().types().size() )
-                    logger().error("tuple index out of range", i);
+                    p.node.addError("tuple index out of range");
 
                 return;
             }
 
-        logger().error("tuple index must be an integer constant", i);
+        p.node.addError("tuple index must be an integer constant");
     }
 
     std::string doc() const {
@@ -52,7 +52,9 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
 
         auto id = ops[1].as<expression::Member>().id();
         auto elem = ops[0].type().as<type::Tuple>().elementByID(id);
-        assert(elem);
+        if ( ! elem )
+            return type::unknown;
+
         return elem->second;
     }
 
@@ -62,12 +64,12 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
         return {{.type = type::Tuple(type::Wildcard())}, {.type = type::Member(type::Wildcard()), .doc = "<id>"}};
     }
 
-    void validate(const expression::ResolvedOperator& i, operator_::const_position_t /* p */) const {
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         auto id = i.operands()[1].as<expression::Member>().id();
         auto elem = i.operands()[0].type().as<type::Tuple>().elementByID(id);
 
         if ( ! elem )
-            logger().error("unknown tuple element", i);
+            p.node.addError("unknown tuple element");
     }
 
     std::string doc() const { return "Extracts the tuple element corresponding to the given ID."; }

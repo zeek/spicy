@@ -56,12 +56,6 @@ struct GlobalState {
     std::vector<std::unique_ptr<Fiber>> fiber_cache;
 
     /**
-     * If non-null, a string descriging the most recent source code position.
-     * use `debug::setLocation()` to set.
-     */
-    const char* source_location{};
-
-    /**
      * List of HILTI modules registered with the runtime. This is filled through `registerModule()`, which in turn gets
      * called through a module's global constructors at initialization time.
      *

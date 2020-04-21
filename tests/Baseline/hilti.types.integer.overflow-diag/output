@@ -1,0 +1,1 @@
+uncaught exception hilti::rt::Overflow: integer overflow (/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.integer.overflow-diag/overflow-diag.hlt:11)

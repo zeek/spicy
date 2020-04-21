@@ -208,11 +208,11 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
                     return std::make_pair(false, r.node);
             }
 
-            u->setError(util::fmt("ID %s does not resolve to a type (but to %s)", id, r.node->typename_()));
+            u->addError(util::fmt("ID %s does not resolve to a type (but to %s)", id, r.node->typename_()));
             return std::make_pair(true, std::nullopt);
         }
 
-        u->setError(util::fmt("type namespace %s is ambigious", id));
+        u->addError(util::fmt("type namespace %s is ambiguous", id));
         return std::make_pair(true, std::nullopt);
     }
 
@@ -221,7 +221,7 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
             auto ns = f.id().namespace_();
 
             if ( ns.empty() ) {
-                p.node.setError("method lacks a type namespace");
+                p.node.addError("method lacks a type namespace");
                 return;
             }
 
@@ -238,7 +238,7 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
                 auto fields = t.fields(f.id().local());
 
                 if ( fields.empty() ) {
-                    p.node.setError(util::fmt("type %s does not have a method '%s'", ns, f.id().local()));
+                    p.node.addError(util::fmt("type %s does not have a method '%s'", ns, f.id().local()));
                     return;
                 }
 
@@ -247,7 +247,7 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
                     auto sft = sf.type().tryAs<type::Function>();
 
                     if ( ! sft ) {
-                        p.node.setError(util::fmt("%s is not a method", ID(ns, f.id().local())));
+                        p.node.addError(util::fmt("%s is not a method", ID(ns, f.id().local())));
                         return;
                     }
 
@@ -256,7 +256,7 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
                 }
 
                 if ( ! found ) {
-                    p.node.setError(
+                    p.node.addError(
                         util::fmt("type %s does not have a method '%s' matching the signature", ns, f.id().local()));
                     return;
                 }
@@ -265,7 +265,7 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
                 return;
             }
 
-            p.node.setError(util::fmt("cannot resolve type namespace %s", ns));
+            p.node.addError(util::fmt("cannot resolve type namespace %s", ns));
         }
     }
 };
@@ -275,13 +275,13 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
 void hilti::detail::resetNodes(Node* root) {
     for ( const auto& i : hilti::visitor::PreOrder<>().walk(root) ) {
         i.node.scope()->clear();
-        i.node.clearError();
+        i.node.clearErrors();
     }
 }
 
 void hilti::detail::clearErrors(Node* root) {
     for ( const auto& i : hilti::visitor::PreOrder<>().walk(root) )
-        i.node.clearError();
+        i.node.clearErrors();
 }
 
 void hilti::detail::buildScopes(const std::vector<std::pair<ID, NodeRef>>& modules, Unit* unit) {

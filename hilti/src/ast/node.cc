@@ -32,7 +32,17 @@ std::string Node::render(bool include_location) const {
     auto location = (include_location && meta().location()) ? util::fmt(" (%s)", meta().location().render(true)) : "";
     auto id = rid() ? util::fmt(" %s", renderedRid()) : "";
     auto orig = originalNode() ? util::fmt(" (original %s)", originalNode()->renderedRid()) : "";
-    auto err = error() ? util::fmt(" [ERROR: %s]", *error()) : "";
+
+    std::string error_string;
+    if ( hasErrors() )
+        error_string =
+            util::join(util::transform(errors(),
+                                       [](const auto& e) {
+                                           return util::fmt("  [ERROR] %s%s", e.message,
+                                                            (e.priority == node::ErrorPriority::Low ? " (low prio)" :
+                                                                                                      ""));
+                                       }),
+                       "");
 
     std::string type;
 
@@ -42,7 +52,7 @@ std::string Node::render(bool include_location) const {
     else if ( auto x = this->tryAs<type::ResolvedID>() )
         type = util::fmt(" (type: %s)", x->type());
 
-    auto s = util::fmt("%s%s%s%s%s%s%s", name, id, orig, sprops, type, location, err);
+    auto s = util::fmt("%s%s%s%s%s%s%s", name, id, orig, sprops, type, location, error_string);
 
     if ( auto t = this->tryAs<Type>() ) {
         std::vector<std::string> flags;

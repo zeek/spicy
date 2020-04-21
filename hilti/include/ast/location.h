@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 #include <hilti/base/util.h>
 
@@ -49,6 +50,10 @@ public:
 
     /** Forwards to `render()`. */
     operator std::string() const { return render(); }
+
+    bool operator<(const Location& other) const {
+        return std::tie(_file, _from, _to) < std::tie(other._file, other._from, other._to);
+    }
 
 private:
     std::filesystem::path _file;

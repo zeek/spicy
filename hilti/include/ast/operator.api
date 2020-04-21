@@ -32,7 +32,7 @@ class Operator(trait::isOperator) {
      * @param p position of `o` in the AST being validated; can be used to derive further context about the usage
      * @return false if the instantiation doesn't reflect a correct usage of the operator
      */
-    void validate(const expression::ResolvedOperator& o, operator_::const_position_t p) const;
+    void validate(const expression::ResolvedOperator& o, operator_::position_t p) const;
 
     /**
      * Returns the HILTI type that the operator yields when evaluated with a

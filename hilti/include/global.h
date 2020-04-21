@@ -62,14 +62,6 @@ extern void render(logging::DebugStream stream, const Node& node, bool include_s
  */
 inline void print(std::ostream& out, const Node& node, bool compact = false) { node.print(out, compact); }
 
-/**
- * Logs all errors currently recorded in an AST.
- *
- * @param root node of AST
- * @return true if aany errors are recorded in the AST
- */
-bool reportErrorsInAST(const Node& root);
-
 namespace detail {
 /** Internal backend to `hilti::lookupID()`. */
 extern std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, const Node& n);
