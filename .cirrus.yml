@@ -2,7 +2,6 @@ environment:
     CCACHE_BASEDIR: $CIRRUS_WORKING_DIR
 
 clang9_zeek31_ubuntu_debug_task:
-  trigger_type: manual
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
@@ -48,7 +47,6 @@ clang9_zeek31_ubuntu_debug_task:
       type: application/gzip
 
 clang10_zeek31_ubuntu_release_task:
-  trigger_type: manual
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
@@ -93,7 +91,6 @@ clang10_zeek31_ubuntu_release_task:
       type: application/gzip
 
 clang9_zeek30_ubuntu_release_task:
-  trigger_type: manual
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
@@ -137,7 +134,6 @@ clang9_zeek30_ubuntu_release_task:
       type: application/gzip
 
 gcc9_ubuntu_release_no_jit_task:
-  trigger_type: manual
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
@@ -181,7 +177,6 @@ gcc9_ubuntu_release_no_jit_task:
       type: application/gzip
 
 macos_release_task:
-  trigger_type: manual
   osx_instance:
     image: catalina-base
 
@@ -218,7 +213,6 @@ macos_release_task:
       type: application/gzip
 
 docker_ubuntu_19_10_task:
-  trigger_type: manual
   container:
     dockerfile: docker/Dockerfile.ubuntu-19.10
     cpu: 8
@@ -255,7 +249,6 @@ docker_ubuntu_19_10_task:
       type: application/gzip
 
 docker_alpine_3_11_task:
-  trigger_type: manual
   container:
     dockerfile: docker/Dockerfile.alpine-3.11
     cpu: 8
@@ -292,7 +285,6 @@ docker_alpine_3_11_task:
       type: application/gzip
 
 docker_centos_8_task:
-  trigger_type: manual
   container:
     dockerfile: docker/Dockerfile.centos-8
     cpu: 8

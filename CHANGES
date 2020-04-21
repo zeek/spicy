@@ -1,4 +1,12 @@
 
+0.4.0-109 | 2020-04-21 11:40:41 +0000
+
+  * Execute CI jobs automatically.
+
+  * Fix potential sign-unsigned mismatch in comparison.
+
+  * Fix unused variable warning.
+
 0.4.0-105 | 2020-04-21 10:41:25 +0000
 
   * Update documentation links in README.

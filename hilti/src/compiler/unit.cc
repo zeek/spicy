@@ -246,7 +246,8 @@ Result<Nothing> Unit::compile() {
                                         this, &found_errors);
                     });
 
-                    assert(! valid); // we already know it's failing
+                    (void)valid;     // Fore use of `valid` since below `assert` might become a noop.
+                    assert(! valid); // We already know it's failing.
                     _dumpAST(module, logging::debug::AstFinal, "Final AST");
                     _saveIterationASTs("Final AST", round);
                     return result::Error("errors encountered during pre-transform validation");
