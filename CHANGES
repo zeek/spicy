@@ -1,4 +1,9 @@
 
+0.4.0-96 | 2020-04-21 08:27:51 +0000
+
+  * GH-129: Add infrastructure and documentation for providing binary
+    packages.
+
 0.4.0-91 | 2020-04-21 07:38:18 +0000
 
   * GH-174: Fix a number of smaller documentation issues.
