@@ -1,4 +1,8 @@
 
+0.4.0-105 | 2020-04-21 10:41:25 +0000
+
+  * Update documentation links in README.
+
 0.4.0-104 | 2020-04-21 10:15:14 +0000
 
   * Tweak documentation build for standalone operation.

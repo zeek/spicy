@@ -65,15 +65,15 @@ for more information on any of these options.
 Please read the [Spicy Manual](https://docs.zeek.org/projects/spicy),
 which provides the following sections:
 
-* [Installation](https://dev.corelight.io/docs/spicy/installation.html)
-* [Getting Started](https://dev.corelight.io/docs/spicy/getting-started.html)
-* [FAQ](https://dev.corelight.io/docs/spicy/faq.html)
-* [Tutorial: A Real Analyzer](https://dev.corelight.io/docs/spicy/tutorial/index.html) (Missing)
-* [Programming in Spicy](https://dev.corelight.io/docs/spicy/programming/index.html)
-* [Toolchain](https://dev.corelight.io/docs/spicy/toolchain.html)
-* [Zeek Integration](https://dev.corelight.io/docs/spicy/zeek.html)
-* [Release Notes](https://dev.corelight.io/docs/spicy/release-notes.html)
-* [Developer's Manual](https://dev.corelight.io/docs/spicy/development/index.html)
+* [Installation](https://docs.zeek.org/projects/spicy/en/latest/installation.html)
+* [Getting Started](https://docs.zeek.org/projects/spicy/en/latest/getting-started.html)
+* [FAQ](https://docs.zeek.org/projects/spicy/en/latest/faq.html)
+* [Tutorial: A Real Analyzer](https://docs.zeek.org/projects/spicy/en/latest/tutorial/index.html) (Missing)
+* [Programming in Spicy](https://docs.zeek.org/projects/spicy/en/latest/programming/index.html)
+* [Toolchain](https://docs.zeek.org/projects/spicy/en/latest/toolchain.html)
+* [Zeek Integration](https://docs.zeek.org/projects/spicy/en/latest/zeek.html)
+* [Release Notes](https://docs.zeek.org/projects/spicy/en/latest/release-notes.html)
+* [Developer's Manual](https://docs.zeek.org/projects/spicy/en/latest/development/index.html)
 
 
 ## Getting in Touch
