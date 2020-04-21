@@ -52,6 +52,7 @@ def binary(token):
 
 
 Operators = {
+    "Add": keyword("add"),
     "Begin": call("begin"),
     "BitAnd": binary("&"),
     "BitOr": binary("|"),
@@ -64,6 +65,7 @@ Operators = {
     "Cast": lambda op: "cast<{}>({})".format(
         op.operands[0].rst(in_operator=True, markup=False),
         op.operands[1].rst(in_operator=True, markup=False)),
+    "Delete": keyword("delete"),
     "Deref": unary("*"),
     "DecrPostfix": unary("", "--"),
     "DecrPrefix": unary("++"),
