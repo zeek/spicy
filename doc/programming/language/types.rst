@@ -133,7 +133,7 @@ requires specifying the bitwidth of a type.
 
 .. include:: /autogen/types/integer.rst
 
-.. _type_set:
+.. _type_map:
 
 Map
 ---

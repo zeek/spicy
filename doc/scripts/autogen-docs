@@ -6,7 +6,7 @@
 set -o errexit
 set -o nounset
 
-ROOTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)/.."
+ROOTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)/../.."
 BUILDDIR="${ROOTDIR}/build"
 SPICYDOC="${BUILDDIR}/bin/spicy-doc"
 SPICYDTR="${ROOTDIR}/doc/scripts/spicy-doc-to-rst"
@@ -24,5 +24,5 @@ if [[ ! -x ${BUILDDIR}/bin/spicy-doc ]]; then
     >&2 echo "Could not find required executable ${BUILDDIR}/bin/spicy-doc"
     exit 1
 fi
-SPICY_TYPES=address,bitfield,bool,bytes,enum,exception,integer,list,port,real,regexp,sink,stream,string,struct,tuple,unit,vector
+SPICY_TYPES=address,bitfield,bool,bytes,enum,exception,integer,list,map,port,real,regexp,set,sink,stream,string,struct,tuple,unit,vector
 "${SPICYDOC}" | ${SPICYDTR} -t "${SPICY_TYPES}" -d "${AUTOGEN}/types"
