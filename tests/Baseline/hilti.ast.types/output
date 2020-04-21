@@ -1,5 +1,5 @@
-[debug/compiler] parsing file "/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.types/types.hlt"
-[debug/compiler] registering AST for module Foo ("/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.ast.types/types.hlt")
+[debug/compiler] parsing file "/Users/bbannier/src/spicy/tests/.tmp/hilti.ast.types/types.hlt"
+[debug/compiler] registering AST for module Foo ("/Users/bbannier/src/spicy/tests/.tmp/hilti.ast.types/types.hlt")
 [debug/compiler]   processing AST, round 1
 [debug/compiler]     performing missing imports for module Foo
 [debug/compiler]       updated cached AST for module Foo (final: no, requires_compilation: yes, dependencies: (none))
@@ -13,26 +13,26 @@
 [debug/ast-final] # Foo: Final AST
 [debug/ast-final]   - Module %1 (types.hlt:5-10)
 [debug/ast-final]       | Foo -> Module %1
-[debug/ast-final]       | x1 -> declaration::GlobalVariable %2 <linkage=private>
-[debug/ast-final]       | x2 -> declaration::GlobalVariable %3 <linkage=private>
-[debug/ast-final]     - ID <name=Foo> (types.hlt:5)
+[debug/ast-final]       | x1 -> declaration::GlobalVariable %2 <linkage="private">
+[debug/ast-final]       | x2 -> declaration::GlobalVariable %3 <linkage="private">
+[debug/ast-final]     - ID <name="Foo"> (types.hlt:5)
 [debug/ast-final]     - statement::Block (types.hlt:5-10)
-[debug/ast-final]     - declaration::GlobalVariable %2 <linkage=private> (types.hlt:5-7)
-[debug/ast-final]       - ID <name=x1> (types.hlt:7)
+[debug/ast-final]     - declaration::GlobalVariable %2 <linkage="private"> (types.hlt:5-7)
+[debug/ast-final]       - ID <name="x1"> (types.hlt:7)
 [debug/ast-final]       - type::Bytes (types.hlt:5-7) (non-const)
 [debug/ast-final]       - expression::Ctor (types.hlt:7)
-[debug/ast-final]         - ctor::Bytes <value=abc> (types.hlt:7)
-[debug/ast-final]     - declaration::GlobalVariable %3 <linkage=private> (types.hlt:7-8)
-[debug/ast-final]       - ID <name=x2> (types.hlt:8)
-[debug/ast-final]       - type::Tuple <wildcard=false> (types.hlt:8) (non-const)
-[debug/ast-final]         - type::UnsignedInteger <width=64> (types.hlt:8) (non-const)
-[debug/ast-final]         - type::UnsignedInteger <width=64> (types.hlt:8) (non-const)
+[debug/ast-final]         - ctor::Bytes <value="abc"> (types.hlt:7)
+[debug/ast-final]     - declaration::GlobalVariable %3 <linkage="private"> (types.hlt:7-8)
+[debug/ast-final]       - ID <name="x2"> (types.hlt:8)
+[debug/ast-final]       - type::Tuple <wildcard="false"> (types.hlt:8) (non-const)
+[debug/ast-final]         - type::UnsignedInteger <width="64"> (types.hlt:8) (non-const)
+[debug/ast-final]         - type::UnsignedInteger <width="64"> (types.hlt:8) (non-const)
 [debug/ast-final]       - expression::Ctor (types.hlt:8)
 [debug/ast-final]         - ctor::Tuple (types.hlt:8)
 [debug/ast-final]           - expression::Ctor (types.hlt:8)
-[debug/ast-final]             - ctor::UnsignedInteger <value=1 width=64> (types.hlt:8)
+[debug/ast-final]             - ctor::UnsignedInteger <value="1" width="64"> (types.hlt:8)
 [debug/ast-final]           - expression::Ctor (types.hlt:8)
-[debug/ast-final]             - ctor::UnsignedInteger <value=2 width=64> (types.hlt:8)
+[debug/ast-final]             - ctor::UnsignedInteger <value="2" width="64"> (types.hlt:8)
 [debug/compiler]   updated cached AST for module Foo (final: yes, requires_compilation: yes, dependencies: (none))
 module Foo {
 

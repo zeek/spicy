@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <iomanip>
+
 #include <hilti/ast/expressions/id.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/types/id.h>
@@ -9,7 +11,7 @@ using namespace hilti;
 
 std::string Node::render(bool include_location) const {
     auto f = [&](const node::Properties::value_type& x) {
-        return util::fmt("%s=%s", x.first, node::detail::to_string(x.second));
+        return util::fmt("%s=%s", x.first, std::quoted(node::detail::to_string(x.second)));
     };
 
     std::vector<std::string> props;
