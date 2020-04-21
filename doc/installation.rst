@@ -65,6 +65,7 @@ see the container platforms available::
     Available platforms:
 
         alpine-3.11
+        centos-8
         ubuntu-19.10
 
 To build a Spicy container image based on, for example, Ubuntu 19.10, run::
