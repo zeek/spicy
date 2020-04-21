@@ -38,6 +38,12 @@ class SafeIterator : public hilti::rt::detail::iterator::SafeIterator<Bytes, std
 public:
     using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::iterator, SafeIterator>;
     using Base::Base;
+
+    // Override to return expected type.
+    uint8_t operator*() const {
+        ensureValid();
+        return *iterator();
+    }
 };
 
 class SafeConstIterator
@@ -45,6 +51,12 @@ class SafeConstIterator
 public:
     using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::const_iterator, SafeConstIterator>;
     using Base::Base;
+
+    // Override to return expected type.
+    uint8_t operator*() const {
+        ensureValid();
+        return *iterator();
+    }
 
     template<typename T>
     auto& operator+=(const hilti::rt::integer::safe<T>& n) {
@@ -64,7 +76,7 @@ public:
     }
 };
 
-inline std::string to_string(const SafeConstIterator& /* i */, detail::adl::tag /*unused*/) {
+inline std::string to_string(const SafeConstIterator& /* i */, rt::detail::adl::tag /*unused*/) {
     return "<bytes iterator>";
 }
 

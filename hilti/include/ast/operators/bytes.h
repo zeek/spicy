@@ -16,7 +16,7 @@ namespace operator_ {
 
 // bytes::Iterator
 
-STANDARD_OPERATOR_1(bytes::iterator, Deref, type::UnsignedInteger(64), type::constant(type::bytes::Iterator()),
+STANDARD_OPERATOR_1(bytes::iterator, Deref, type::UnsignedInteger(8), type::constant(type::bytes::Iterator()),
                     "Returns the byte the iterator is pointing to.");
 STANDARD_OPERATOR_1(bytes::iterator, IncrPostfix, type::bytes::Iterator(), type::bytes::Iterator(),
                     "Advances the iterator by one byte, returning the previous position.");
