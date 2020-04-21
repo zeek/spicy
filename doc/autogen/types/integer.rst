@@ -12,20 +12,6 @@
 
     Computes the bit-wise 'xor' of the two integers.
 
-.. spicy:operator:: integer::Cast real cast<int>(type<real>)
-
-    Converts the value into a real, accepting any loss of information.
-
-.. spicy:operator:: integer::Cast int cast<int>(type<int>)
-
-    Converts the value to another signed integer type, accepting any loss
-    of information.
-
-.. spicy:operator:: integer::Cast uint cast<int>(type<uint>)
-
-    Converts the value to an unsigned integer type, accepting any loss of
-    information.
-
 .. spicy:operator:: integer::Cast real cast<uint>(type<real>)
 
     Converts the value into a real, accepting any loss of information.
@@ -40,47 +26,61 @@
     Converts the value to another unsigned integer type, accepting any
     loss of information.
 
-.. spicy:operator:: integer::DecrPostfix int op: t:int op:--
+.. spicy:operator:: integer::Cast real cast<int>(type<real>)
 
-    Decrements the value, returning the old value.
+    Converts the value into a real, accepting any loss of information.
+
+.. spicy:operator:: integer::Cast int cast<int>(type<int>)
+
+    Converts the value to another signed integer type, accepting any loss
+    of information.
+
+.. spicy:operator:: integer::Cast uint cast<int>(type<uint>)
+
+    Converts the value to an unsigned integer type, accepting any loss of
+    information.
 
 .. spicy:operator:: integer::DecrPostfix uint op: t:uint op:--
 
     Decrements the value, returning the old value.
 
-.. spicy:operator:: integer::DecrPrefix int op:++ t:int op:
+.. spicy:operator:: integer::DecrPostfix int op: t:int op:--
 
-    Increments the value, returning the new value.
+    Decrements the value, returning the old value.
 
 .. spicy:operator:: integer::DecrPrefix uint op:++ t:uint op:
 
     Increments the value, returning the new value.
 
-.. spicy:operator:: integer::Difference uint t:uint <sp> op:- <sp> t:uint
+.. spicy:operator:: integer::DecrPrefix int op:++ t:int op:
 
-    Returns the difference between the two integers.
+    Increments the value, returning the new value.
 
 .. spicy:operator:: integer::Difference uint t:uint <sp> op:- <sp> t:uint
 
     Computes the difference between the two integers.
 
-.. spicy:operator:: integer::DifferenceAssign int t:int <sp> op:+= <sp> t:int
+.. spicy:operator:: integer::Difference uint t:uint <sp> op:- <sp> t:uint
 
-    Decrements the first value by the second, assigning the new value.
+    Returns the difference between the two integers.
 
 .. spicy:operator:: integer::DifferenceAssign uint t:uint <sp> op:+= <sp> t:uint
 
     Decrements the first value by the second.
 
+.. spicy:operator:: integer::DifferenceAssign int t:int <sp> op:+= <sp> t:int
+
+    Decrements the first value by the second, assigning the new value.
+
 .. spicy:operator:: integer::Division uint t:uint <sp> op:/ <sp> t:uint
 
     Divides the first integer by the second.
 
-.. spicy:operator:: integer::DivisionAssign int t:int <sp> op:+/ <sp> t:int
+.. spicy:operator:: integer::DivisionAssign uint t:uint <sp> op:+/ <sp> t:uint
 
     Divides the first value by the second, assigning the new value.
 
-.. spicy:operator:: integer::DivisionAssign uint t:uint <sp> op:+/ <sp> t:uint
+.. spicy:operator:: integer::DivisionAssign int t:int <sp> op:+/ <sp> t:int
 
     Divides the first value by the second, assigning the new value.
 
@@ -96,19 +96,19 @@
 
     Compares the two integers.
 
-.. spicy:operator:: integer::IncrPostfix int op: t:int op:++
-
-    Increments the value, returning the old value.
-
 .. spicy:operator:: integer::IncrPostfix uint op: t:uint op:++
 
     Increments the value, returning the old value.
 
-.. spicy:operator:: integer::IncrPrefix int op:++ t:int op:
+.. spicy:operator:: integer::IncrPostfix int op: t:int op:++
+
+    Increments the value, returning the old value.
+
+.. spicy:operator:: integer::IncrPrefix uint op:++ t:uint op:
 
     Increments the value, returning the new value.
 
-.. spicy:operator:: integer::IncrPrefix uint op:++ t:uint op:
+.. spicy:operator:: integer::IncrPrefix int op:++ t:int op:
 
     Increments the value, returning the new value.
 
@@ -128,11 +128,11 @@
 
     Multiplies the first integer by the second.
 
-.. spicy:operator:: integer::MultipleAssign int t:int <sp> op:*= <sp> t:int
+.. spicy:operator:: integer::MultipleAssign uint t:uint <sp> op:*= <sp> t:uint
 
     Multiplies the first value by the second, assigning the new value.
 
-.. spicy:operator:: integer::MultipleAssign uint t:uint <sp> op:*= <sp> t:uint
+.. spicy:operator:: integer::MultipleAssign int t:int <sp> op:*= <sp> t:int
 
     Multiplies the first value by the second, assigning the new value.
 
@@ -158,19 +158,19 @@
 
 .. spicy:operator:: integer::Sum uint t:uint <sp> op:+ <sp> t:uint
 
-    Returns the sum of the integers.
+    Computes the sum of the integers.
 
 .. spicy:operator:: integer::Sum uint t:uint <sp> op:+ <sp> t:uint
 
-    Computes the sum of the integers.
-
-.. spicy:operator:: integer::SumAssign int t:int <sp> op:+= <sp> t:int
-
-    Increments the first integer by the second, assigning the new value.
+    Returns the sum of the integers.
 
 .. spicy:operator:: integer::SumAssign uint t:uint <sp> op:+= <sp> t:uint
 
     Increments the first value by the second.
+
+.. spicy:operator:: integer::SumAssign int t:int <sp> op:+= <sp> t:int
+
+    Increments the first integer by the second, assigning the new value.
 
 .. spicy:operator:: integer::Unequal bool t:uint <sp> op:!= <sp> t:uint
 

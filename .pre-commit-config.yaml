@@ -11,7 +11,7 @@ repos:
 
   - id: autogen-docs
     name: Check that generated documentation is up-to-date
-    entry: ./scripts/autogen-docs
+    entry: ./doc/scripts/autogen-docs
     language: script
 
     pass_filenames: false

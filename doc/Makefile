@@ -22,6 +22,6 @@ html: Makefile autogen-docs
 
 autogen-docs:
 	@echo Auto-generating reference documentation ...
-	(cd $(BUILDDIR)/.. && ./scripts/autogen-docs)
+	(cd $(BUILDDIR)/.. && ./doc/scripts/autogen-docs)
 
 .PHONY: Makefile autogen-docs
