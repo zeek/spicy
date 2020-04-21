@@ -15,8 +15,8 @@ public type Base64Stream = __library_type("spicy::rt::base64::Stream");
 
 ## Specifies the bit order for individual bit ranges inside a bitfield.
 public type BitOrder = enum {
-    LSB0,     # bits are interpreted as lowest-signficiant-bit coming first
-    MSB0      # bits are interpreted as most-signficiant-bit coming first
+    LSB0,     # bits are interpreted as lowest-significant-bit coming first
+    MSB0      # bits are interpreted as most-significant-bit coming first
 } &cxxname="hilti::rt::integer::BitOrder";
 
 ## Specifies byte order for data operations.
@@ -27,7 +27,7 @@ public type ByteOrder = enum {
     Host      # data is in byte order of the host we are executing on
 } &cxxname="hilti::rt::ByteOrder";
 
-## Captures state for incremenental regular expression matching.
+## Captures state for incremental regular expression matching.
 public type MatchState = __library_type("hilti::rt::regexp::MatchState");
 
 ## Specifies a transport-layer prtocool.

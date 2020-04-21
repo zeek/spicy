@@ -26,8 +26,8 @@ Specifies the bit order for individual bit ranges inside a bitfield.
 .. spicy-code::
 
     type BitOrder = {
-        LSB0,     # bits are interpreted as lowest-signficiant-bit coming first
-        MSB0      # bits are interpreted as most-signficiant-bit coming first
+        LSB0,     # bits are interpreted as lowest-significant-bit coming first
+        MSB0      # bits are interpreted as most-significant-bit coming first
     };
 
 .. _spicy_byteorder:
@@ -49,7 +49,7 @@ Specifies byte order for data operations.
 
 .. rubric:: ``spicy::MatchState``
 
-Captures state for incremenental regular expression matching.
+Captures state for incremental regular expression matching.
 
 .. _spicy_protocol:
 

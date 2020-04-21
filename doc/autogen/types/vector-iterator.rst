@@ -6,7 +6,7 @@
 
 .. spicy:operator:: vector::iterator::Equal bool t:iterator<vector> <sp> op:== <sp> t:iterator<vector>
 
-    Returns true if two vectors iterators refer to the same location.
+    Returns true if two vector iterators refer to the same location.
 
 .. spicy:operator:: vector::iterator::IncrPostfix iterator<vector> op: t:iterator<vector> op:++
 
@@ -20,5 +20,5 @@
 
 .. spicy:operator:: vector::iterator::Unequal bool t:iterator<vector> <sp> op:!= <sp> t:iterator<vector>
 
-    Returns true if two vectors iterators refer to different locations.
+    Returns true if two vector iterators refer to different locations.
 

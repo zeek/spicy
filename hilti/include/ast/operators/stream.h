@@ -15,7 +15,7 @@ namespace operator_ {
 // stream::Iterator
 
 STANDARD_OPERATOR_1(stream::iterator, Deref, type::UnsignedInteger(64), type::constant(type::stream::Iterator()),
-                    "Returns the byte the iterator is pointing to.");
+                    "Returns the character the iterator is pointing to.");
 STANDARD_OPERATOR_1(stream::iterator, IncrPostfix, type::stream::Iterator(), type::stream::Iterator(),
                     "Advances the iterator by one byte, returning the previous position.");
 STANDARD_OPERATOR_1(stream::iterator, IncrPrefix, type::stream::Iterator(), type::stream::Iterator(),
@@ -24,33 +24,33 @@ STANDARD_OPERATOR_1(stream::iterator, IncrPrefix, type::stream::Iterator(), type
 STANDARD_OPERATOR_2(
     stream::iterator, Equal, type::Bool(), type::constant(type::stream::Iterator()),
     type::constant(type::stream::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same stream value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same stream value.");
 STANDARD_OPERATOR_2(
     stream::iterator, Unequal, type::Bool(), type::constant(type::stream::Iterator()),
     type::constant(type::stream::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same stream value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same stream value.");
 STANDARD_OPERATOR_2(
     stream::iterator, Lower, type::Bool(), type::constant(type::stream::Iterator()),
     type::constant(type::stream::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same stream value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same stream value.");
 STANDARD_OPERATOR_2(
     stream::iterator, LowerEqual, type::Bool(), type::constant(type::stream::Iterator()),
     type::constant(type::stream::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same stream value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same stream value.");
 STANDARD_OPERATOR_2(
     stream::iterator, Greater, type::Bool(), type::constant(type::stream::Iterator()),
     type::constant(type::stream::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same stream value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same stream value.");
 STANDARD_OPERATOR_2(
     stream::iterator, GreaterEqual, type::Bool(), type::constant(type::stream::Iterator()),
     type::constant(type::stream::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same stream value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same stream value.");
 STANDARD_OPERATOR_2(
     stream::iterator, Difference, type::SignedInteger(64), type::constant(type::stream::Iterator()),
     type::constant(type::stream::Iterator()),
     "Returns the number of stream between the two iterators. The result will be negative if the second iterator points "
     "to a location before the first. The result is undefined if the iterators do not refer to the same stream "
-    "instace.");
+    "instance.");
 STANDARD_OPERATOR_2(stream::iterator, Sum, type::stream::Iterator(), type::constant(type::stream::Iterator()),
                     type::UnsignedInteger(64), "Advances the iterator by the given number of stream.")
 STANDARD_OPERATOR_2(stream::iterator, SumAssign, type::stream::Iterator(), type::stream::Iterator(),
@@ -120,7 +120,7 @@ BEGIN_METHOD(stream::view, AdvanceBy)
                          .args = {{.id = "i", .type = type::stream::Iterator()}},
                          .doc = R"(
 Advances the view's starting position to a given iterator *i*, returning the new
-view. The iterator must be refering to the same stream values as the view, and
+view. The iterator must be referring to the same stream values as the view, and
 it must be equal or ahead of the view's starting position.
 )"};
     }
@@ -135,7 +135,7 @@ BEGIN_METHOD(stream::view, Limit)
                          .doc = R"(
 Returns a new view that keeps the current start but cuts off the end *i*
 characters from that beginning. The returned view will not be able to expand any
-further. The iterator must be refering to the same stream values as the view,
+further. The iterator must be referring to the same stream values as the view,
 and it must be inside the current view's range.
 )"};
     }
@@ -301,8 +301,8 @@ BEGIN_METHOD(stream, Trim)
                          .doc = R"(
 Trims the stream value by removing all data from its beginning up to (but not
 including) the position *i*. The iterator *i* will remain valid afterwards and
-will still point to the same location, which will now be the beginning of the stream
-value. All existigng iterators poiting to *i* or beyond will remain valid and keep
+will still point to the same location, which will now be the beginning of the stream's
+value. All existing iterators pointing to *i* or beyond will remain valid and keep
 their offsets as well. The effect of this operation is undefined if *i* does not
 actually refer to a location inside the stream value. Trimming is permitted
 even on frozen values.

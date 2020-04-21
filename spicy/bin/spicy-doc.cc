@@ -93,6 +93,7 @@ static json operandToJSON(const hilti::operator_::Operand& o) {
 
     op["type"] = formatType(hilti::type::nonConstant(t));
     op["const"] = hilti::type::isConstant(t);
+    op["mutable"] = hilti::type::isMutable(t);
 
     if ( o.id )
         op["id"] = std::string(*o.id);

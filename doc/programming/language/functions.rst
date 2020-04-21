@@ -19,9 +19,8 @@ A ``public`` function will be :ref:`accessible from other modules
 has return type other than void, all paths through the body must end
 in a :ref:`statement_return` returning a corresponding value.
 
-A parameter specifications can be postfixed with a default value:
-``NAME: TYPE = DEFAULT``. Callers may then skip providing that
-parameter.
+A parameter specification can be postfixed with a default value:
+``NAME: TYPE = DEFAULT``. Callers may then omit that parameter.
 
 By default, by parameters are passed by constant reference and hence
 remain read-only inside the function's body. To make a parameter

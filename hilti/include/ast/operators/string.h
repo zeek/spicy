@@ -16,7 +16,7 @@ STANDARD_OPERATOR_2(string, Unequal, type::Bool(), type::String(), type::String(
 STANDARD_OPERATOR_1(string, Size, type::UnsignedInteger(64), type::String(),
                     "Returns the number of characters the string contains.");
 STANDARD_OPERATOR_2(string, Sum, type::String(), type::String(), type::String(),
-                    "Returns the concatentation of two strings.");
+                    "Returns the concatenation of two strings.");
 
 BEGIN_OPERATOR_CUSTOM(string, Modulo)
     Type result(const std::vector<Expression>& /* ops */) const { return type::String(); }

@@ -42,10 +42,10 @@ STANDARD_OPERATOR_1(map::iterator, IncrPrefix, operator_::sameTypeAs(0, "iterato
                     "Advances the iterator by one map element, returning the new position.");
 STANDARD_OPERATOR_2(map::iterator, Equal, type::Bool(), type::constant(type::map::Iterator(type::Wildcard())),
                     operator_::sameTypeAs(0, "iterator<map<*>>"),
-                    "Returns true if two maps iterators refer to the same location.");
+                    "Returns true if two map iterators refer to the same location.");
 STANDARD_OPERATOR_2(map::iterator, Unequal, type::Bool(), type::constant(type::map::Iterator(type::Wildcard())),
                     operator_::sameTypeAs(0, "iterator<map<*>>"),
-                    "Returns true if two maps iterators refer to different locations.");
+                    "Returns true if two map iterators refer to different locations.");
 
 STANDARD_OPERATOR_1(map, Size, type::UnsignedInteger(64), type::constant(type::Map(type::Wildcard())),
                     "Returns the number of elements a map contains.");

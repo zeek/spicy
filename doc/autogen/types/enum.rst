@@ -2,7 +2,7 @@
 
 .. spicy:operator:: enum_::Call enum~{~~} t:type<enum~{~~}>(<operand~list>)
 
-    Instantiates an enum instance intialized from an integer value. The
+    Instantiates an enum instance initialized from an integer value. The
     value does *not* need to correspond to any of the type's enumerator
     labels.
 

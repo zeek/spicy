@@ -45,7 +45,7 @@ parsed inside a unit.
 Bool
 ----
 
-Boolean values can be true or false.
+Boolean values can be ``True`` or ``False``.
 
 .. rubric:: Type
 
@@ -94,9 +94,10 @@ Enum types associate labels with a numerical values.
   a value distinct from all other ones. When coerced into a boolean,
   an enum will be true iff it's not ``Undef``.
 
-.. note:: An instance of a enum can assume a numerical value that does
-   not map to any of its defined label. If printed, it will render
-   into ``<unknown-N>`` in that case, with ``N`` being its value.
+.. note:: An instance of an enum can assume a numerical value that
+   does not map to any of its defined labels. If printed, it will then
+   render into ``<unknown-N>`` in that case, with ``N`` being the
+   decimal expression of its numeric value.
 
 .. rubric:: Constants
 
@@ -131,6 +132,36 @@ requires specifying the bitwidth of a type.
 - Signed integer: ``-1234``, ``int8(42)``, ``int8(-42)``, ``int16(42)``, ``int32(42)``, ``int64(42)``
 
 .. include:: /autogen/types/integer.rst
+
+.. _type_set:
+
+Map
+---
+
+Maps are containers holding key/value pairs of elements, with fast
+lookup for keys to retrieve the corresponding value. They provide
+iterators to traverse their content, with no particular ordering.
+
+.. rubric:: Types
+
+- ``map<K, V>`` specifies a map with key type ``K`` and value type ``V``.
+- ``iterator<map<K, V>>``
+
+.. rubric:: Constants
+
+- ``map(K_1: V_1, K_2: V_2, ..., K_N: V_N)`` creates a map of ``N``
+  elements, initializing it with the given key/value pairs. The keys
+  ``K_I`` must all have the same type, and the values ``V_I`` must
+  likewise all have the same type. ``map()`` creates an empty map of
+  unknown key/value types; this cannot be used directly but must be
+  coerced into a fully-defined map type first.
+
+- ``map<K, V>(K_1: V_1, K_2: V_2, ..., K_N: V_N)`` creates a map of
+  type ``map<K, V>``, initializing it with the given key/value pairs.
+  ``map<K, V>()`` creates an empty map.
+
+.. include:: /autogen/types/map.rst
+.. include:: /autogen/types/map-iterator.rst
 
 .. _type_port:
 
@@ -192,8 +223,34 @@ differences and extensions:
 - ``{#<number>}`` associates a numerical ID with a regular expression
   (useful for set matching).
 
-
 .. include:: /autogen/types/regexp.rst
+
+.. _type_set:
+
+Set
+---
+
+Sets are containers for unique elements with fast lookup. They provide
+iterators to traverse their content, with no particular ordering.
+
+.. rubric:: Types
+
+- ``set<T>`` specifies a set with unique elements of type ``T``.
+- ``iterator<set<T>>``
+
+.. rubric:: Constants
+
+- ``set(E_1, E_2, ..., E_N)`` creates a set of ``N`` elements.
+  The values ``E_I`` must all have the same type. ``set()`` creates
+  an empty set of unknown element type; this cannot be used
+  directly but must be coerced into a fully-defined set type first.
+
+- ``set<T>(E_1, E_2, ..., E_N)`` creates a set of type ``T``,
+  initializing it with the elements ``E_I``. ``set<T>()`` creates
+  an empty set.
+
+.. include:: /autogen/types/set.rst
+.. include:: /autogen/types/set-iterator.rst
 
 .. _type_sink:
 
@@ -237,27 +294,27 @@ the new sequence number *seq*.
 .. spicy:method:: %on_undelivered sink %on_skipped False - (seq: uint64, data: bytes)
 
 If data still buffered is skipped over through
-:spicy:method:`sink::skip` , it will be passed to this hook before
-being adjusting the current position. *seq* the starting sequence
-number of the data, *data* the data itself.
+:spicy:method:`sink::skip`, it will be passed to this hook, before
+adjusting the current position. *seq* is the starting sequence number
+of the data, *data* is the data itself.
 
 .. _type_stream:
 
 Stream
 ------
 
-A ``stream`` is data structure aimed at efficiently representing a
-potentially large, incrementally built input stream of raw data. You
-can think of it as a :ref:`type_bytes` type that's optimized for (1)
-efficiently appending new chunks of data at the end, and (2) trimming
-data no longer needed at the beginning. Other than those two
-operation, stream data cannot be modified; there's no way to change
-the actual content of a stream once it has been added. Streams
-provides *iterators* for traversal, and *views* for limiting
-visibility to a smaller window into the total stream.
+A ``stream`` is data structure that efficiently represents a
+potentially large, incrementally provided input stream of raw data.
+You can think of it as a :ref:`bytes <type_bytes>` type that's
+optimized for (1) efficiently appending new chunks of data at the end,
+and (2) trimming data no longer needed at the beginning. Other than
+those two operation, stream data cannot be modified; there's no way to
+change the actual content of a stream once it has been added to it.
+Streams provide *iterators* for traversal, and *views* for limiting
+visibility to smaller windows into the total stream.
 
 Streams are key to Spicy's parsing process, although most of that
-happens behind the scenes. Most likely you will encounter them when
+happens behind the scenes. You will most likely encounter them when
 using :ref:`random_access`. They may also be useful for buffering
 larger volumes of data during processing.
 
@@ -347,6 +404,10 @@ given element type. They provide iterators to traverse their content.
   The values ``E_I`` must all have the same type. ``vector()`` creates
   an empty vector of unknown element type; this cannot be used
   directly but must be coerced into a fully-defined vector type first.
+
+- ``vector<T>(E_1, E_2, ..., E_N)`` creates a vector of type ``T``,
+  initializing it with the ``N`` elements ``E_I``. ``vector<T>()`` creates
+  an empty vector.
 
 - Vectors can be initialized through coercions from a list value:
   ``vector<string> I = ["A", "B", "C"]``.

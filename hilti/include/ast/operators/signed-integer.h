@@ -69,7 +69,7 @@ STANDARD_OPERATOR_2(signed_integer, Division, detail::widestTypeSigned(), detail
                     detail::widestTypeSigned(), "Divides the first integer by the second.");
 STANDARD_OPERATOR_2(signed_integer, DivisionAssign, operator_::sameTypeAs(0, "int"),
                     type::SignedInteger(type::Wildcard()), operator_::sameTypeAs(0, "int"),
-                    "Dividies the first value by the second, assigning the new value.");
+                    "Divides the first value by the second, assigning the new value.");
 STANDARD_OPERATOR_2(signed_integer, Equal, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),
                     "Compares the two integers.");
 STANDARD_OPERATOR_2(signed_integer, Greater, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),

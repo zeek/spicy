@@ -38,11 +38,11 @@
 
     Compares the two reals.
 
-.. spicy:operator:: real::Lower bool t:real <sp> op:> <sp> t:real
+.. spicy:operator:: real::Lower bool t:real <sp> op:< <sp> t:real
 
     Compares the two reals.
 
-.. spicy:operator:: real::LowerEqual bool t:real <sp> op:>= <sp> t:real
+.. spicy:operator:: real::LowerEqual bool t:real <sp> op:<= <sp> t:real
 
     Compares the two reals.
 

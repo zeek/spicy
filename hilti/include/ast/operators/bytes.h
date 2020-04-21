@@ -17,7 +17,7 @@ namespace operator_ {
 // bytes::Iterator
 
 STANDARD_OPERATOR_1(bytes::iterator, Deref, type::UnsignedInteger(8), type::constant(type::bytes::Iterator()),
-                    "Returns the byte the iterator is pointing to.");
+                    "Returns the character the iterator is pointing to.");
 STANDARD_OPERATOR_1(bytes::iterator, IncrPostfix, type::bytes::Iterator(), type::bytes::Iterator(),
                     "Advances the iterator by one byte, returning the previous position.");
 STANDARD_OPERATOR_1(bytes::iterator, IncrPrefix, type::bytes::Iterator(), type::bytes::Iterator(),
@@ -26,27 +26,27 @@ STANDARD_OPERATOR_1(bytes::iterator, IncrPrefix, type::bytes::Iterator(), type::
 STANDARD_OPERATOR_2(
     bytes::iterator, Equal, type::Bool(), type::constant(type::bytes::Iterator()),
     type::constant(type::bytes::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same bytes value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same bytes value.");
 STANDARD_OPERATOR_2(
     bytes::iterator, Unequal, type::Bool(), type::constant(type::bytes::Iterator()),
     type::constant(type::bytes::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same bytes value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same bytes value.");
 STANDARD_OPERATOR_2(
     bytes::iterator, Lower, type::Bool(), type::constant(type::bytes::Iterator()),
     type::constant(type::bytes::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same bytes value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same bytes value.");
 STANDARD_OPERATOR_2(
     bytes::iterator, LowerEqual, type::Bool(), type::constant(type::bytes::Iterator()),
     type::constant(type::bytes::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same bytes value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same bytes value.");
 STANDARD_OPERATOR_2(
     bytes::iterator, Greater, type::Bool(), type::constant(type::bytes::Iterator()),
     type::constant(type::bytes::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same bytes value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same bytes value.");
 STANDARD_OPERATOR_2(
     bytes::iterator, GreaterEqual, type::Bool(), type::constant(type::bytes::Iterator()),
     type::constant(type::bytes::Iterator()),
-    "Compares the two positions. The result is undefined if they are not refering to the same bytes value.");
+    "Compares the two positions. The result is undefined if they are not referring to the same bytes value.");
 STANDARD_OPERATOR_2(
     bytes::iterator, Difference, type::SignedInteger(64), type::constant(type::bytes::Iterator()),
     type::constant(type::bytes::Iterator()),
@@ -76,7 +76,7 @@ STANDARD_OPERATOR_2(bytes, Lower, type::Bool(), type::constant(type::Bytes()), t
 STANDARD_OPERATOR_2(bytes, LowerEqual, type::Bool(), type::constant(type::Bytes()), type::constant(type::Bytes()),
                     "Compares two bytes values lexicographically.");
 STANDARD_OPERATOR_2(bytes, Sum, type::constant(type::Bytes()), type::constant(type::Bytes()),
-                    type::constant(type::Bytes()), "Returns the concatentation of two bytes values.");
+                    type::constant(type::Bytes()), "Returns the concatenation of two bytes values.");
 STANDARD_OPERATOR_2x(bytes, SumAssignBytes, SumAssign, type::Bytes(), type::Bytes(), type::constant(type::Bytes()),
                      "Appends one bytes value to another.");
 STANDARD_OPERATOR_2x(bytes, SumAssignStreamView, SumAssign, type::Bytes(), type::Bytes(),
@@ -91,7 +91,7 @@ BEGIN_METHOD(bytes, Find)
                          .doc = R"(
 Searches *needle* in the value's content. Returns a tuple of a boolean and an
 iterator. If *needle* was found, the boolean will be true and the iterator will
-point to its first occurance. If *needle* was not found, the boolean will be
+point to its first occurrence. If *needle* was not found, the boolean will be
 false and the iterator will point to the last position so that everything before
 it is guaranteed to not contain even a partial match of *needle*. Note that for a
 simple yes/no result, you should use the ``in`` operator instead of this method,
@@ -109,7 +109,7 @@ BEGIN_METHOD(bytes, LowerCase)
                                    .type = type::Enum(type::Wildcard()),
                                    .default_ = builder::id("hilti::Charset::UTF8")}},
                          .doc = R"(
-Returns a lower-case version of the bytes value, assuming its encoded in character set *charset*.
+Returns a lower-case version of the bytes value, assuming it is encoded in character set *charset*.
 )"};
     }
 END_METHOD
@@ -123,7 +123,7 @@ BEGIN_METHOD(bytes, UpperCase)
                                    .type = type::Enum(type::Wildcard()),
                                    .default_ = builder::id("hilti::Charset::UTF8")}},
                          .doc = R"(
-Returns an upper-case version of the bytes value, assuming its encoded in character set *charset*.
+Returns an upper-case version of the bytes value, assuming it is encoded in character set *charset*.
 )"};
     }
 END_METHOD
@@ -147,7 +147,7 @@ BEGIN_METHOD(bytes, Split)
                          .id = "split",
                          .args = {{.id = "sep", .type = type::constant(type::Bytes()), .optional = true}},
                          .doc = R"(
-Splits the bytes value at each occurence of *sep* and returns a vector
+Splits the bytes value at each occurrence of *sep* and returns a vector
 containing the individual pieces, with all separators removed. If the separator
 is not found, the returned vector will have the whole bytes value as its single
 element. If the separator is not given, or empty, the split will take place at
@@ -163,7 +163,7 @@ BEGIN_METHOD(bytes, Split1)
                          .id = "split1",
                          .args = {{.id = "sep", .type = type::constant(type::Bytes()), .optional = true}},
                          .doc = R"(
-Splits the bytes value at the first occurence of *sep* and returns the two parts
+Splits the bytes value at the first occurrence of *sep* and returns the two parts
 as a 2-tuple, with the separator removed. If the separator is not found, the
 returned tuple will have the whole bytes value as its first element and an empty value
 as its second element. If the separator is not given, or empty, the split will
@@ -242,13 +242,16 @@ END_METHOD
 
 BEGIN_METHOD(bytes, Join)
     auto signature() const {
-        return Signature{
-            .self = type::constant(type::Bytes()),
-            .result = type::Bytes(),
-            .id = "join",
-            .args = {{.id = "parts", .type = type::Vector(type::Wildcard())}},
-            .doc =
-                R"(Returns the concatenation of all elements in the *parts* list rendered as printable-strings and separated by the bytes value providing this method.)"};
+        return Signature{.self = type::constant(type::Bytes()),
+                         .result = type::Bytes(),
+                         .id = "join",
+                         .args = {{.id = "parts", .type = type::Vector(type::Wildcard())}},
+                         .doc =
+                             R"(
+Returns the concatenation of all elements in the *parts* list rendered as
+printable strings. The portions will be separated by the bytes value to
+which this method is invoked as a member.
+)"};
     }
 END_METHOD
 
@@ -364,7 +367,7 @@ BEGIN_METHOD(bytes, Match)
                          .doc =
                              R"(
 Matches the ``bytes`` object against the regular expression *regex*. Returns the matching
-part or, if *group* is given the corresponding subgroup.
+part or, if *group* is given, then the corresponding subgroup.
 )"};
     }
 END_METHOD

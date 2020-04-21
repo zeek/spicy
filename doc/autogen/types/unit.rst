@@ -10,7 +10,7 @@
     Filters can be connected only before a unit's parsing begins. The
     latest possible point is from inside the target unit's `%init` hook.
 
-.. spicy:method:: unit::forward unit forward False void (data: bytes)
+.. spicy:method:: unit::forward unit forward False void (inout data: bytes)
 
     If the unit is connected as a filter to another one, this method
     forwards transformed input over to that other one to parse. If the
@@ -24,7 +24,7 @@
 
 .. spicy:method:: unit::input unit input False iterator<stream> ()
 
-    Returns an iterator refering to the input location where the current
+    Returns an iterator referring to the input location where the current
     unit has begun parsing. If this method is called before the units
     parsing has begun, it will throw a runtime exception. Once available,
     the input position will remain accessible for the unit's entire life
@@ -39,9 +39,8 @@
     relative to the unit's start. If executed from inside a field hook,
     the offset will represent the first byte that the field has been
     parsed from. If this method is called before the unit's parsing has
-    begun at all, it will throw a runtime exception. Once parsing has
-    started, the offset will remain available for the unit's entire life
-    time.
+    begun, it will throw a runtime exception. Once parsing has started,
+    the offset will remain available for the unit's entire life time.
 
     Usage of this method requires the unit to be declared with the
     `%random-access` property.

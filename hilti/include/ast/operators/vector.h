@@ -23,10 +23,10 @@ STANDARD_OPERATOR_1(vector::iterator, IncrPrefix, operator_::sameTypeAs(0, "iter
                     "Advances the iterator by one vector element, returning the new position.");
 STANDARD_OPERATOR_2(vector::iterator, Equal, type::Bool(), type::constant(type::vector::Iterator(type::Wildcard())),
                     operator_::sameTypeAs(0, "iterator<vector<*>>"),
-                    "Returns true if two vectors iterators refer to the same location.");
+                    "Returns true if two vector iterators refer to the same location.");
 STANDARD_OPERATOR_2(vector::iterator, Unequal, type::Bool(), type::constant(type::vector::Iterator(type::Wildcard())),
                     operator_::sameTypeAs(0, "iterator<vector<*>>"),
-                    "Returns true if two vectors iterators refer to different locations.");
+                    "Returns true if two vector iterators refer to different locations.");
 
 STANDARD_OPERATOR_1(vector, Size, type::UnsignedInteger(64), type::constant(type::Vector(type::Wildcard())),
                     "Returns the number of elements a vector contains.");
@@ -41,7 +41,7 @@ STANDARD_OPERATOR_2(vector, Unequal, type::Bool(), type::constant(type::Vector(t
                     operator_::sameTypeAs(0, "vector<*>"), "Compares two vectors element-wise.");
 
 STANDARD_OPERATOR_2(vector, Sum, operator_::sameTypeAs(0, "vector<*>"), type::Vector(type::Wildcard()),
-                    operator_::sameTypeAs(0, "vector<*>"), "Returns the concatentation of two vectors.")
+                    operator_::sameTypeAs(0, "vector<*>"), "Returns the concatenation of two vectors.")
 STANDARD_OPERATOR_2(vector, SumAssign, operator_::sameTypeAs(0, "vector<*>"), type::Vector(type::Wildcard()),
                     operator_::sameTypeAs(0, "vector<*>"), "Concatenates another vector to the vector.")
 

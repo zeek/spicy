@@ -1,4 +1,50 @@
 
+0.4.0-91 | 2020-04-21 07:38:18 +0000
+
+  * GH-174: Fix a number of smaller documentation issues.
+
+  * GH-191: Change bytes iterator's deref operator to return uint8
+    instead of uint64, and fix implementation to no longer use a
+    signed integer ingternally.
+
+  * GH-153: Prettify error messages for fmt() problems.
+
+  * GH-154: Fix crash when accessing an unknown tuple element.
+
+  * GH-171: Fix spelling in some diagnostic messages.
+
+  * GH-175: Catch unresolved unit fields during validation.
+
+  * GH-198: Show functions as "<function>" when rendering them.
+
+  * GH-203: Add type check for elements in vector/set/map constructors.
+
+  * GH-204: Remove support for legacy syntax for parsing sequences.
+    "vector<T>" is no longer supported for parsing sequences; one must
+    now use the new "T[]" syntax instead.
+
+  * Remove Spicy's legacy list type (which was just an alias for
+    "vector").
+
+  * GH-181: Validate correct usage of struct/unit parameters.
+
+  * Add a number of validation checks for unit hooks.
+
+  * GH-195: Add range check for bytes' to_int() base parameter, which
+    now must be between 2 and 36.
+
+  * GH-155: Overhaul AST error reporting for more concise error
+    messages.
+
+  * GH-119: Generally include location information when throwing
+    runtime exceptions.
+
+  * Add packaging to CMake setup and CI jobs.
+
+  * Set proper CMake project version.
+
+  * Execute installation tests in Docker CI tasks.
+
 0.4.0-48 | 2020-04-15 16:56:28 +0000
 
   * GH-163: Fix initialization of &default struct parameters.

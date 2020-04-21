@@ -14,7 +14,7 @@
 
 .. spicy:operator:: string::Sum string t:string <sp> op:+ <sp> t:string
 
-    Returns the concatentation of two strings.
+    Returns the concatenation of two strings.
 
 .. spicy:operator:: string::Unequal bool t:string <sp> op:!= <sp> t:string
 
