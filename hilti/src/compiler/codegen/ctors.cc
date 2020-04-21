@@ -22,7 +22,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const ctor::Bool& n) { return n.value() ? "true" : "false"; }
 
-    result_t operator()(const ctor::Bytes& n) { return fmt("\"%s\"_b", util::escapeBytes(n.value(), true)); }
+    result_t operator()(const ctor::Bytes& n) { return fmt("\"%s\"_b", util::escapeBytesForCxx(n.value())); }
 
     result_t operator()(const ctor::Coerced& n) { return cg->compile(n.coercedCtor()); }
 
@@ -137,7 +137,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const ctor::Stream& n) {
-        return fmt("hilti::rt::Stream(\"%s\"_b)", util::escapeBytes(n.value(), true));
+        return fmt("hilti::rt::Stream(\"%s\"_b)", util::escapeBytesForCxx(n.value()));
     }
 
     result_t operator()(const ctor::String& n) { return fmt("std::string(\"%s\")", util::escapeUTF8(n.value(), true)); }
