@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <unistd.h>
+
 #include <sys/errno.h>
 #include <sys/stat.h>
 #include <sys/time.h>
