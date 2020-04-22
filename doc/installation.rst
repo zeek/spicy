@@ -34,11 +34,11 @@ ubuntu-19.10
     `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-19.10>`__
 
 alpine-3.11
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_11_task/packages/build/spicy-linux.tar.gz>`,
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_11/packages/build/spicy-linux.tar.gz>`,
     `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.11>`__
 
 centos-8
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8_task/packages/build/spicy-linux.tar.gz>`,
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8/packages/build/spicy-linux.tar.gz>`,
     `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-8>`__
 
 .. _prebuilt_macos:
