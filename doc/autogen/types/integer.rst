@@ -12,27 +12,27 @@
 
     Computes the bit-wise 'xor' of the two integers.
 
-.. spicy:operator:: integer::Cast real cast<int>(type<real>)
-
-    Converts the value into a real, accepting any loss of information.
-
 .. spicy:operator:: integer::Cast int cast<int>(type<int>)
 
     Converts the value to another signed integer type, accepting any loss
     of information.
 
-.. spicy:operator:: integer::Cast uint cast<int>(type<uint>)
+.. spicy:operator:: integer::Cast int cast<uint>(type<int>)
 
-    Converts the value to an unsigned integer type, accepting any loss of
+    Converts the value to signed integer type, accepting any loss of
     information.
+
+.. spicy:operator:: integer::Cast real cast<int>(type<real>)
+
+    Converts the value into a real, accepting any loss of information.
 
 .. spicy:operator:: integer::Cast real cast<uint>(type<real>)
 
     Converts the value into a real, accepting any loss of information.
 
-.. spicy:operator:: integer::Cast int cast<uint>(type<int>)
+.. spicy:operator:: integer::Cast uint cast<int>(type<uint>)
 
-    Converts the value to signed integer type, accepting any loss of
+    Converts the value to an unsigned integer type, accepting any loss of
     information.
 
 .. spicy:operator:: integer::Cast uint cast<uint>(type<uint>)
@@ -58,11 +58,11 @@
 
 .. spicy:operator:: integer::Difference uint t:uint <sp> op:- <sp> t:uint
 
-    Returns the difference between the two integers.
+    Computes the difference between the two integers.
 
 .. spicy:operator:: integer::Difference uint t:uint <sp> op:- <sp> t:uint
 
-    Computes the difference between the two integers.
+    Returns the difference between the two integers.
 
 .. spicy:operator:: integer::DifferenceAssign int t:int <sp> op:+= <sp> t:int
 
@@ -158,11 +158,11 @@
 
 .. spicy:operator:: integer::Sum uint t:uint <sp> op:+ <sp> t:uint
 
-    Returns the sum of the integers.
+    Computes the sum of the integers.
 
 .. spicy:operator:: integer::Sum uint t:uint <sp> op:+ <sp> t:uint
 
-    Computes the sum of the integers.
+    Returns the sum of the integers.
 
 .. spicy:operator:: integer::SumAssign int t:int <sp> op:+= <sp> t:int
 
