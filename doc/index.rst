@@ -70,10 +70,10 @@ like to hear from you!
 
     - Ask the ``#spicy`` channel on `Zeek's Slack <https://zeekorg.slack.com>`_.
 
-    - Subscribe to the `Spicy mailing list <http://mailman.icsi.berkeley.edu/mailman/spicy>`_.
+    - Subscribe to the `Spicy mailing list <http://mailman.icsi.berkeley.edu/mailman/listinfo/spicy>`_.
 
     - To follow development, subscribe to the `commits mailing list
-      <http://mailman.icsi.berkeley.edu/mailman/spicy-commits>`_ (it
+      <http://mailman.icsi.berkeley.edu/mailman/listinfo/spicy-commits>`_ (it
       can be noisy).
 
 Documentation
