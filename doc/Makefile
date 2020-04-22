@@ -24,4 +24,7 @@ autogen-docs:
 	@echo Auto-generating reference documentation ...
 	(cd $(BUILDDIR)/.. && ./doc/scripts/autogen-docs)
 
-.PHONY: Makefile autogen-docs
+check:
+	@$(SPHINXBUILD) -b linkcheck $(SOURCEDIR) $(DESTDIR)/linkcheck
+
+.PHONY: Makefile autogen-docs check
