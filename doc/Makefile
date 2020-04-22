@@ -6,7 +6,7 @@ SPHINXOPTS    = -W --keep-going -n
 SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = Spicy
 BUILDDIR      = $(PWD)/../build
-SOURCEDIR     = $(BUILDDIR)/doc-root
+SOURCEDIR     = $(PWD)
 DESTDIR       = $(BUILDDIR)/html
 
 all: html

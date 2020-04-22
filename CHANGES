@@ -1,4 +1,9 @@
 
+0.4.0-111 | 2020-04-22 10:23:15 +0000
+
+  * Build documentation from documentation folder instead of from a
+    symlink inside the build directory.
+
 0.4.0-109 | 2020-04-21 11:40:41 +0000
 
   * Execute CI jobs automatically.
