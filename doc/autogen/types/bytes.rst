@@ -66,19 +66,19 @@
     If *side* is given, it indicates which side of the value should be
     stripped; ``Side::Both`` is the default if not given.
 
-.. spicy:method:: bytes::sub bytes sub False bytes (inout end: iterator<bytes>)
+.. spicy:method:: bytes::sub bytes sub False bytes (begin: uint<64>, end: uint<64>)
 
-    Returns the subsequence from the value's beginning to (but not
-    including) *end*.
+    Returns the subsequence from offset *begin* to (but not including)
+    offset *end*.
 
 .. spicy:method:: bytes::sub bytes sub False bytes (inout begin: iterator<bytes>, inout end: iterator<bytes>)
 
     Returns the subsequence from *begin* to (but not including) *end*.
 
-.. spicy:method:: bytes::sub bytes sub False bytes (begin: uint<64>, end: uint<64>)
+.. spicy:method:: bytes::sub bytes sub False bytes (inout end: iterator<bytes>)
 
-    Returns the subsequence from offset *begin* to (but not including)
-    offset *end*.
+    Returns the subsequence from the value's beginning to (but not
+    including) *end*.
 
 .. spicy:method:: bytes::to_int bytes to_int False int<64> ([ base: uint<64> ])
 

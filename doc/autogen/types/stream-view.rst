@@ -1,16 +1,16 @@
 .. rubric:: View Methods
 
+.. spicy:method:: stream::view::advance view<stream> advance False view<stream> (i: uint<64>)
+
+    Advances the view's starting position by *i* stream, returning the new
+    view.
+
 .. spicy:method:: stream::view::advance view<stream> advance False view<stream> (inout i: iterator<stream>)
 
     Advances the view's starting position to a given iterator *i*,
     returning the new view. The iterator must be referring to the same
     stream values as the view, and it must be equal or ahead of the view's
     starting position.
-
-.. spicy:method:: stream::view::advance view<stream> advance False view<stream> (i: uint<64>)
-
-    Advances the view's starting position by *i* stream, returning the new
-    view.
 
 .. spicy:method:: stream::view::at view<stream> at False iterator<stream> (i: uint<64>)
 
@@ -46,21 +46,21 @@
 
     Returns true if the view starts with *b*.
 
-.. spicy:method:: stream::view::sub view<stream> sub False view<stream> (inout end: iterator<stream>)
+.. spicy:method:: stream::view::sub view<stream> sub False view<stream> (begin: uint<64>, end: uint<64>)
 
-    Returns a new view of the subsequence from *begin* to (but not
-    including) *end*.
+    Returns a new view of the subsequence from offset *begin* to (but not
+    including) offset *end*. The offsets are relative to the beginning of
+    the view.
 
 .. spicy:method:: stream::view::sub view<stream> sub False view<stream> (inout begin: iterator<stream>, inout end: iterator<stream>)
 
     Returns a new view of the subsequence from *begin* to (but not
     including) *end*.
 
-.. spicy:method:: stream::view::sub view<stream> sub False view<stream> (begin: uint<64>, end: uint<64>)
+.. spicy:method:: stream::view::sub view<stream> sub False view<stream> (inout end: iterator<stream>)
 
-    Returns a new view of the subsequence from offset *begin* to (but not
-    including) offset *end*. The offsets are relative to the beginning of
-    the view.
+    Returns a new view of the subsequence from *begin* to (but not
+    including) *end*.
 
 .. rubric:: View Operators
 
@@ -72,15 +72,15 @@
 
     Compares the views lexicographically.
 
-.. spicy:operator:: stream::view::In bool t:view<stream> <sp> op:in <sp> t:bytes
-
-    Returns true if the right-hand-side view contains the left-hand-side
-    bytes as a subsequence.
-
 .. spicy:operator:: stream::view::In bool t:bytes <sp> op:in <sp> t:view<stream>
 
     Returns true if the right-hand-side bytes contains the left-hand-side
     view as a subsequence.
+
+.. spicy:operator:: stream::view::In bool t:view<stream> <sp> op:in <sp> t:bytes
+
+    Returns true if the right-hand-side view contains the left-hand-side
+    bytes as a subsequence.
 
 .. spicy:operator:: stream::view::Size uint<64> op:| t:view<stream> op:|
 

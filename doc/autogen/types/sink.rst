@@ -123,14 +123,14 @@
 
 .. rubric:: Operators
 
+.. spicy:operator:: sink::Size uint<64> op:| t:sink op:|
+
+    Returns the number of bytes written into the sink so far. If the sink
+    has filters attached, this returns the value after filtering.
+
 .. spicy:operator:: sink::Size uint<64> op:| t:strong_ref<sink> op:|
 
     Returns the number of bytes written into the referenced sink so far.
     If the sink has filters attached, this returns the value after
     filtering.
-
-.. spicy:operator:: sink::Size uint<64> op:| t:sink op:|
-
-    Returns the number of bytes written into the sink so far. If the sink
-    has filters attached, this returns the value after filtering.
 
