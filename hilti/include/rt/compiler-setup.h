@@ -8,6 +8,7 @@
 #if __clang__
 // Clang-specific options.
 #pragma clang diagnostic ignored "-Wunused-comparison"
+#pragma clang diagnostic ignored "-Wunused-value"
 #endif
 
 #if __GNUC__

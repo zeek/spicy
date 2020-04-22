@@ -712,7 +712,7 @@ expr_f        : ctor                             { $$ = hilti::expression::Ctor(
                                                  { $$ = hilti::expression::ListComprehension(std::move($6), std::move($2), std::move($4), std::move($8),  __loc__); }
               | expr_g
 
-expr_g        : '(' expr ')'                     { $$ = std::move($2); }
+expr_g        : '(' expr ')'                     { $$ = hilti::expression::Grouping(std::move($2)); }
               | scoped_id                        { $$ = hilti::expression::UnresolvedID(std::move($1), __loc__); }
 
 
