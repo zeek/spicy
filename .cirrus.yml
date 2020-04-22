@@ -15,15 +15,6 @@ clang9_zeek31_ubuntu_debug_task:
     ccache_cache:
       folder: /var/spool/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-    ci_artifacts:
-      path: artifacts
-    junit_artifacts:
-      path: artifacts/diag.xml
-      type: text/xml
-      format: junit
-    packages_artifacts:
-      path: build/spicy-*.tar.gz
-      type: application/gzip
 
   env:
     CCACHE_DIR: /var/spool/ccache
@@ -45,6 +36,20 @@ clang9_zeek31_ubuntu_debug_task:
   test_build_script:  ./ci/run-ci -b build test-build
   test_code_script:   ./ci/run-ci -b build test-code
   install_script:     ./ci/run-ci -b build install
+  packaging_script:
+    - ninja -C build package
+
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
+  on_failure:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
 
 clang10_zeek31_ubuntu_release_task:
   container:
@@ -60,15 +65,6 @@ clang10_zeek31_ubuntu_release_task:
     ccache_cache:
       folder: /var/spool/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-    ci_artifacts:
-      path: artifacts
-    junit_artifacts:
-      path: artifacts/diag.xml
-      type: text/xml
-      format: junit
-    packages_artifacts:
-      path: build/spicy-*.tar.gz
-      type: application/gzip
 
   env:
     CCACHE_DIR: /var/spool/ccache
@@ -90,6 +86,18 @@ clang10_zeek31_ubuntu_release_task:
   packaging_script:
     - ninja -C build package
 
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
+  on_failure:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
+
 clang9_zeek30_ubuntu_release_task:
   container:
     dockerfile: ci/Dockerfile
@@ -104,15 +112,6 @@ clang9_zeek30_ubuntu_release_task:
     ccache_cache:
       folder: /var/spool/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-    ci_artifacts:
-      path: artifacts
-    junit_artifacts:
-      path: artifacts/diag.xml
-      type: text/xml
-      format: junit
-    packages_artifacts:
-      path: build/spicy-*.tar.gz
-      type: application/gzip
 
   env:
     CCACHE_DIR: /var/spool/ccache
@@ -133,6 +132,18 @@ clang9_zeek30_ubuntu_release_task:
   packaging_script:
     - ninja -C build package
 
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
+  on_failure:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
+
 gcc9_ubuntu_release_no_jit_task:
   container:
     dockerfile: ci/Dockerfile
@@ -147,15 +158,6 @@ gcc9_ubuntu_release_no_jit_task:
     ccache_cache:
       folder: /var/spool/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-    ci_artifacts:
-      path: artifacts
-    junit_artifacts:
-      path: artifacts/diag.xml
-      type: text/xml
-      format: junit
-    packages_artifacts:
-      path: build/spicy-*.tar.gz
-      type: application/gzip
 
   env:
     CCACHE_DIR: /var/spool/ccache
@@ -176,6 +178,18 @@ gcc9_ubuntu_release_no_jit_task:
   packaging_script:
     - ninja -C build package
 
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
+  on_failure:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
+
 macos_release_task:
   osx_instance:
     image: catalina-base
@@ -184,9 +198,6 @@ macos_release_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-    packages_artifacts:
-      path: build/spicy-*.tar.gz
-      type: application/gzip
 
   environment:
     CCACHE_DIR: /tmp/ccache
@@ -212,6 +223,10 @@ macos_release_task:
   packaging_script:
     - ninja -C build package
 
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
 docker_ubuntu_19_10_task:
   container:
     dockerfile: docker/Dockerfile.ubuntu-19.10
@@ -224,9 +239,6 @@ docker_ubuntu_19_10_task:
     ccache_cache:
       folder: /var/spool/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-    packages_artifacts:
-      path: build/spicy-*.tar.gz
-      type: application/gzip
 
   env:
     CCACHE_DIR: /var/spool/ccache
@@ -248,6 +260,10 @@ docker_ubuntu_19_10_task:
   packaging_script:
     - ninja -C build package
 
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
 docker_alpine_3_11_task:
   container:
     dockerfile: docker/Dockerfile.alpine-3.11
@@ -260,9 +276,6 @@ docker_alpine_3_11_task:
     ccache_cache:
       folder: /var/spool/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-    packages_artifacts:
-      path: build/spicy-*.tar.gz
-      type: application/gzip
 
   env:
     CCACHE_DIR: /var/spool/ccache
@@ -284,6 +297,10 @@ docker_alpine_3_11_task:
   packaging_script:
     - ninja -C build package
 
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
 docker_centos_8_task:
   container:
     dockerfile: docker/Dockerfile.centos-8
@@ -296,9 +313,7 @@ docker_centos_8_task:
     ccache_cache:
       folder: /var/spool/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-    packages_artifacts:
-      path: build/spicy-*.tar.gz
-      type: application/gzip
+
   env:
     CCACHE_DIR: /var/spool/ccache
     CCACHE_COMPRESS: 1
@@ -318,3 +333,7 @@ docker_centos_8_task:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
     - ninja -C build package
+
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
