@@ -33,6 +33,16 @@ using namespace spicy::detail::parser;
 static hilti::Meta toMeta(spicy::detail::parser::location l) {
     return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line));
 }
+
+static std::string expandEscapes(Driver* driver, std::string s, spicy::detail::parser::location l) {
+    try {
+        return util::expandEscapes(s);
+    } catch ( const hilti::rt::Exception& ) {
+        driver->error("invalid escape sequence", toMeta(l));
+        return "<error>";
+    }
+}
+
 %}
 
 address4  ({digits}"."){3}{digits}
@@ -197,8 +207,8 @@ Null                  return token::CNULL;
 {address6}            yylval->str = std::string(yytext, 1, strlen(yytext) - 2); return token::CADDRESS;
 
 {digits}|0x{hexs}     yylval->uint = util::chars_to_uint64(yytext, 0, range_error_int); return token::CUINTEGER;
-{string}              yylval->str = util::expandEscapes(std::string(yytext, 1, strlen(yytext) - 2)); return token::CSTRING;
-b{string}             yylval->str = util::expandEscapes(std::string(yytext, 2, strlen(yytext) - 3)); return token::CBYTES;
+{string}              yylval->str = expandEscapes(driver, std::string(yytext, 1, strlen(yytext) - 2), *yylloc); return token::CSTRING;
+b{string}             yylval->str = expandEscapes(driver, std::string(yytext, 2, strlen(yytext) - 3), *yylloc); return token::CBYTES;
 '.'                   yylval->uint = *(yytext +1); return token::CUINTEGER;
 
 {decfloat}|{hexfloat} yylval->real = util::chars_to_double(yytext, range_error_real); return token::CUREAL;
