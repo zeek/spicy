@@ -11,7 +11,7 @@ import re
 import sys
 import textwrap
 
-from typing import Dict, List
+from typing import Dict, List, Set
 
 
 def fatalError(message: str):
@@ -182,6 +182,7 @@ class Operand:
         x = "{}{}".format(prefix, x)
         return "[ {} ]".format(x) if self.optional else x
 
+
 class Operator:
     def __init__(self, m):
         self.doc = m.get("doc")
@@ -211,7 +212,9 @@ class Operator:
                 doc=fmtDoc(self.doc))
 
     def __lt__(self, other):
-        return self.kind < other.kind
+        # Sort by string representation to make sure
+        # the rendered output has a fixed order.
+        return self.rst() < other.rst()
 
 
 class Method:
@@ -249,7 +252,9 @@ class Method:
         return sig
 
     def __lt__(self, other):
-        return self.id < other.id
+        # Sort by string representation to make sure
+        # the rendered output has a fixed order.
+        return self.rst() < other.rst()
 
 # Main
 
@@ -300,7 +305,7 @@ if args.types:
             if i.startswith(k):
                 keys.add(i)
 
-for ns in keys:
+for ns in sorted(keys):
     if args.dir:
         fname = namespace(ns)
 
@@ -324,11 +329,11 @@ for ns in keys:
 
     # In the following we remove duplicate entries where multiple items end up
     # turning into the same reST rendering. This happens when the difference is
-    # only in typing issues that we don't track in the documentation. An example
-    # is the vector's index operators for constant and non-constant instances,
-    # respectively. Other duplications are coming from joining namspaces for
-    # integers.
-    already_recorded = set()
+    # only in typing issues that we don't track in the documentation. An
+    # example is the vector's index operators for constant and non-constant
+    # instances, respectively. Other duplications are coming from joining
+    # namspaces for integers.
+    already_recorded: Set[str] = set()
 
     def print_unique(s):
         if s not in already_recorded:
@@ -339,14 +344,14 @@ for ns in keys:
     if x1:
         print(".. rubric:: %sMethods\n" % prefix, file=out)
 
-        for method in x1:
+        for method in sorted(x1):
             print_unique(method.rst())
 
     x2 = sorted(operators.get(ns, []))
     if x2:
         print(".. rubric:: %sOperators\n" % prefix, file=out)
 
-        for operator in x2:
+        for operator in sorted(x2):
             print_unique(operator.rst())
 
     if args.dir:
