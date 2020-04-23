@@ -58,6 +58,8 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("hilti::rt::DeferredExpression<%s>([=]() -> %s { return %s; })", type, type, value);
     }
 
+    result_t operator()(const expression::Grouping& n) { return fmt("(%s)", cg->compile(n.expression())); }
+
     result_t operator()(const expression::Keyword& n) {
         switch ( n.kind() ) {
             case expression::keyword::Kind::Self: return cg->self();

@@ -69,11 +69,12 @@ hilti::declaration::Type : isDeclaration
 
 hilti::expression::Assign : isExpression
 hilti::expression::Coerced : isExpression
-hilti::expression::PendingCoerced : isExpression
 hilti::expression::Ctor : isExpression
 hilti::expression::Deferred : isExpression
+hilti::expression::Grouping : isExpression
 hilti::expression::Keyword : isExpression
 hilti::expression::ListComprehension : isExpression
+hilti::expression::PendingCoerced : isExpression
 hilti::expression::LogicalAnd : isExpression
 hilti::expression::LogicalOr : isExpression
 hilti::expression::LogicalNot : isExpression

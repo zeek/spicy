@@ -397,6 +397,8 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const expression::Ctor& n) { out << n.ctor(); }
 
+    void operator()(const expression::Grouping& n) { out << '(' << n.expression() << ')'; }
+
     result_t operator()(const expression::Keyword& n) {
         switch ( n.kind() ) {
             case expression::keyword::Kind::Self: out << "self";
