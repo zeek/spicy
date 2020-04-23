@@ -81,7 +81,7 @@ which provides the following sections:
 Having trouble using Spicy? Have ideas how to make Spicy better? We'd
 like to hear from you!
 
-- Check out the [FAQ](http://docs.zeek.org/projects/spicy) to see if any of that helps.
+- Check out the [FAQ](https://docs.zeek.org/projects/spicy/en/latest/faq.html) to see if any of that helps.
 
 - Report issues on [GitHub](https://github.com/zeek/spicy/issues).
 
