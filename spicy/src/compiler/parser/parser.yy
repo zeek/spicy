@@ -869,7 +869,7 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | '+' CUREAL                       { $$ = hilti::ctor::Real($2, __loc__); }
               | '-' CUREAL                       { $$ = hilti::ctor::Real(-$2, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
-              | '+' CUINTEGER                    { $$ = hilti::ctor::UnsignedInteger($2, 64, __loc__); }
+              | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger($2, 64, __loc__); }
               | '-' CUINTEGER                    { if ($2 > 0x8000000000000000) error(@$, "integer overflow on negation");
                                                    $$ = hilti::ctor::SignedInteger(-$2, 64, __loc__); }
               | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }

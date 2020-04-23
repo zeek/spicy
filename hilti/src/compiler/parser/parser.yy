@@ -726,7 +726,7 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
               | const_real                       { $$ = hilti::ctor::Real($1, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
-              | '+' CUINTEGER                    { $$ = hilti::ctor::UnsignedInteger($2, 64, __loc__); }
+              | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger($2, 64, __loc__); }
               | '-' CUINTEGER                    { if ( $2 > 0x8000000000000000 ) error(@$, "integer overflow on negation");
                                                    $$ = hilti::ctor::SignedInteger(-$2, 64, __loc__); }
               | CNULL                            { $$ = hilti::ctor::Null(__loc__); }

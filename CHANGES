@@ -1,4 +1,19 @@
 
+0.4.0-130 | 2020-04-23 10:44:12 +0000
+
+  * GH-170: Change "+<int>" to create a signed integer value. It used
+    to create an unsigned integer.
+
+  * GH-225: Preserve parentheses inside expressions during code
+    generation.
+
+  * GH-231: Add range check to digits in Spicy's atoi_n().
+
+  * GH-210: Catch & report broken escape sequences in HILTI/Spicy code
+    at parse time.
+
+  * GH-217: Fix code generation of escaped C++ string literals.
+
 0.4.0-120 | 2020-04-22 15:40:34 +0000
 
   * Fix package artifact links in docs.
