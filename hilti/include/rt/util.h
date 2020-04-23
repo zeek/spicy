@@ -334,7 +334,7 @@ inline Iter atoi_n(Iter s, Iter e, int base, Result* result) {
         auto c = *s;
         unsigned int d = 0;
 
-        if ( isdigit(c) )
+        if ( c >= '0' && c < '0' + base )
             d = c - '0';
 
         else if ( c >= 'a' && c < 'a' - 10 + base )
