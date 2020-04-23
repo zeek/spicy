@@ -120,5 +120,5 @@ Spicy was originally developed as a research prototype at the
 [International Computer Science Institute](http://www.icsi.berkeley.edu)
 with funding from the [U.S. National Science Foundation](https://www.nsf.gov).
 Since then, Spicy has been rebuilt from the ground up by
-[Corelight](https://www.corelight.com>), which has contributed the new
+[Corelight](https://www.corelight.com), which has contributed the new
 implementation to the Zeek Project.
