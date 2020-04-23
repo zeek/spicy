@@ -11,11 +11,8 @@ on DNS::Message::%done {
 }
 
 on DNS::Header::%done {
-    if ( zeek::is_orig() && self.flags.qr && zeek::number_packets() == 1 ) {
-        print "before flip", zeek::is_orig();
+    if ( zeek::is_orig() && self.flags.qr && zeek::number_packets() == 1 )
         zeek::flip_roles();
-        print "after flip", zeek::is_orig();
-    }
 }
 
 # Follow Zeek's heuristic if it's a query.
