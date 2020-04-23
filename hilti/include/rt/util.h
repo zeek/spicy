@@ -229,9 +229,13 @@ std::string expandEscapes(std::string s);
  * @param str string to escape
  * @param escape_quotes if true, also escapes quotes characters
  * @param escape_control if false, do not escape control characters
+ * @param use_octal use `\NNN` instead of `\XX` (needed for C++)
  * @return escaped string
+ *
+ * \todo This is getting messy; should use enums instead of booleans.
  */
-std::string escapeBytes(std::string_view s, bool escape_quotes = false, bool escape_control = true);
+std::string escapeBytes(std::string_view s, bool escape_quotes = false, bool escape_control = true,
+                        bool use_octal = false);
 
 /*
  * Escapes non-printable and control characters in an UTF8 string. This
@@ -242,6 +246,8 @@ std::string escapeBytes(std::string_view s, bool escape_quotes = false, bool esc
  * @param escape_control if false, do not escape control characters
  * @param keep_hex if true, do not escape our custom "\xYY" escape codes
  * @return escaped std::string
+ *
+ * \todo This is getting messy; should use enums instead of booleans.
  */
 std::string escapeUTF8(std::string_view s, bool escape_quotes = false, bool escape_control = true,
                        bool keep_hex = false);

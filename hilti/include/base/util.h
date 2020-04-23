@@ -409,6 +409,15 @@ using hilti::rt::escapeUTF8;
 using hilti::rt::expandEscapes;
 
 /**
+ * Wrapper for `escapeBytes` that produces a valid C++ string literal.
+ *
+ * @param s string to escape
+ * @return escaped std::string
+ *
+ */
+inline std::string escapeBytesForCxx(std::string_view s) { return escapeBytes(std::move(s), true, true, true); }
+
+/**
  * Turns an arbitrary string into something that can be used as C-level
  * identifier.
  *

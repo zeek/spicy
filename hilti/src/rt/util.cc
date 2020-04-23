@@ -260,7 +260,7 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
     return esc;
 }
 
-std::string hilti::rt::escapeBytes(std::string_view s, bool escape_quotes, bool escape_control) {
+std::string hilti::rt::escapeBytes(std::string_view s, bool escape_quotes, bool escape_control, bool use_octal) {
     auto p = s.data();
     auto e = p + s.size();
 
@@ -276,6 +276,8 @@ std::string hilti::rt::escapeBytes(std::string_view s, bool escape_quotes, bool 
         else if ( isprint(*p) )
             esc += *p;
 
+        else if ( use_octal )
+            esc += fmt("\\%03o", static_cast<uint8_t>(*p));
         else
             esc += fmt("\\x%02x", static_cast<uint8_t>(*p));
 
