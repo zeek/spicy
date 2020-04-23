@@ -1,5 +1,7 @@
 FROM ubuntu:eoan
 
+ARG SKIP_BUILD=
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 CMD ["sh"]
@@ -30,3 +32,7 @@ RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.1
 ENV PATH="/usr/local/cmake/bin:${PATH}"
 
 WORKDIR /root
+
+# Install Spicy.
+ADD . /opt/spicy/src
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)

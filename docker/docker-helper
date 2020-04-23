@@ -7,6 +7,8 @@ usage() {
     exit 1
 }
 
+test $# = 2 || usage
+
 version=$(../scripts/autogen-version --short)
 cmd=$1
 platform=$2
@@ -18,23 +20,19 @@ fi
 
 case "${cmd}" in
     build)
-        test $# = 3 || usage
-        DOCKER_BUILDKIT=1 docker build -t "spicy-base-${platform}:${version}" -f "Dockerfile.${platform}" .. || exit 1
-        docker tag "$(docker inspect --format='{{.Id}}' "spicy-base-${platform}:${version}")" "spicy-${platform}:latest"
-        IMG=spicy-build-$RANDOM
-        docker run --name "${IMG}" -v "$(pwd)"/..:/spicy "spicy-base-${platform}:${version}" sh -c "git clone --recurse-submodules /spicy /opt/spicy/src && cd /opt/spicy/src && $3" || exit 1
-        docker commit "${IMG}" "spicy-${platform}:${version}"
-        docker commit ${IMG} "spicy-${platform}:latest"
-        docker rm "${IMG}"
+        DOCKER_BUILDKIT=1 docker build \
+            -t "spicy-${platform}:${version}" \
+            -f "Dockerfile.${platform}" .. || exit 1
+        docker tag \
+            "$(docker inspect --format='{{.Id}}' "spicy-${platform}:${version}")" \
+            "spicy-${platform}:latest"
         ;;
 
     test)
-        test $# = 2 || usage
         docker run "spicy-${platform}:latest" /bin/sh -c "cd /opt/spicy/src/tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -q -j -d"
         ;;
 
     run)
-        test $# = 2 || usage
         docker run --cap-add SYS_PTRACE -i -t "spicy-${platform}:latest" /bin/bash
         ;;
 

@@ -1,5 +1,7 @@
 FROM centos:8
 
+ARG SKIP_BUILD=
+
 WORKDIR /root
 
 ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
@@ -40,3 +42,9 @@ RUN yum install -y libpcap-devel openssl-devel python3-devel swig zlib-devel
 RUN cd /etc/yum.repos.d \
  && curl -L 'https://download.opensuse.org/repositories/security:zeek/CentOS_8/security:zeek.repo' > zeek.repo \
  && yum install -y zeek-lts zeek-lts-devel
+
+WORKDIR /root
+
+# Install Spicy.
+ADD . /opt/spicy/src
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build)

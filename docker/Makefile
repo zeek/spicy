@@ -12,7 +12,7 @@ help:
 	@echo
 
 build-ubuntu-19.10:
-	./docker-helper build ubuntu-19.10 './configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install -j5 && rm -rf build'
+	./docker-helper build ubuntu-19.10
 
 test-ubuntu-19.10: build-ubuntu-19.10
 	./docker-helper test ubuntu-19.10
@@ -21,7 +21,7 @@ run-ubuntu-19.10:
 	./docker-helper run ubuntu-19.10
 
 build-alpine-3.11:
-	./docker-helper build alpine-3.11 'LDFLAGS="-lucontext" ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build'
+	./docker-helper build alpine-3.11
 
 test-alpine-3.11: build-alpine-3.11
 	./docker-helper test alpine-3.11
@@ -30,7 +30,7 @@ run-alpine-3.11:
 	./docker-helper run alpine-3.11
 
 build-centos-8:
-	./docker-helper build centos-8 './configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build'
+	./docker-helper build centos-8
 
 test-centos-8: build-centos-8
 	./docker-helper test centos-8

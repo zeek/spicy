@@ -1,5 +1,7 @@
 FROM alpine:3.11
 
+ARG SKIP_BUILD=
+
 WORKDIR /root
 
 ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
@@ -21,3 +23,9 @@ RUN apk add fts-dev libpcap-dev linux-headers openssl-dev python-dev swig zlib-d
 RUN mkdir -p /opt/zeek/src
 RUN cd /opt/zeek && git clone -b v3.0.3 --recursive https://github.com/zeek/zeek src
 RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd ../.. && rm -rf zeek
+
+WORKDIR /root
+
+# Install Spicy.
+ADD . /opt/spicy/src
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && LDFLAGS="-lucontext" ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build)
