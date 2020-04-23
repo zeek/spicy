@@ -25,6 +25,6 @@ autogen-docs:
 	(cd $(BUILDDIR)/.. && ./doc/scripts/autogen-docs)
 
 check:
-	@$(SPHINXBUILD) -b linkcheck $(SOURCEDIR) $(DESTDIR)/linkcheck
+	@$(SPHINXBUILD) -q -b linkcheck $(SOURCEDIR) $(DESTDIR)/linkcheck
 
 .PHONY: Makefile autogen-docs check
