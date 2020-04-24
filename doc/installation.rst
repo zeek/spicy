@@ -54,7 +54,7 @@ MacOS 10.15/Catalina. After `installing Homebrew
 
 To install Spicy execute::
 
-    brew install spicy
+    brew install --HEAD spicy
 
 .. _docker:
 
