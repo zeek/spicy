@@ -109,7 +109,7 @@ std::tuple<bool, SafeConstIterator> View::find(const Bytes& v, const SafeConstIt
     if ( v.isEmpty() )
         return std::make_tuple(true, n ? n : _begin);
 
-    auto first = *v.safeBegin();
+    auto first = *v.begin();
 
     for ( auto i = UnsafeConstIterator(n ? n : _begin); true; ++i ) {
         if ( i == UnsafeConstIterator(safeEnd()) )

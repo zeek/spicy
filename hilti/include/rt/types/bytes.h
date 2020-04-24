@@ -130,13 +130,13 @@ public:
     const std::string& str() const { return *this; }
 
     /** Returns an interator representing the first byte of the instance. */
-    Iterator safeBegin() const { return {*this, Base::begin()}; }
+    Iterator begin() const { return {*this, Base::begin()}; }
 
     /** Returns an interator representing the end of the instance. */
-    Iterator safeEnd() const { return Iterator(*this, Base::end()); }
+    Iterator end() const { return Iterator(*this, Base::end()); }
 
     /** Returns an iterator refering to the given offset. */
-    Iterator at(Offset o) const { return safeBegin() + o; }
+    Iterator at(Offset o) const { return begin() + o; }
 
     /** Returns true if the data's size is zero. */
     bool isEmpty() const { return empty(); }
@@ -151,10 +151,10 @@ public:
      * @param n optional starting point, which must be inside the same instance
      */
     Iterator find(value_type b, const Iterator& n = Iterator()) const {
-        if ( auto i = Base::find(b, (n ? n - safeBegin() : 0)); i != Base::npos )
-            return safeBegin() + i;
+        if ( auto i = Base::find(b, (n ? n - begin() : 0)); i != Base::npos )
+            return begin() + i;
         else
-            return safeEnd();
+            return end();
     }
 
     /**
@@ -175,14 +175,14 @@ public:
      * @param from iterator pointing to start of subrange
      * @param to iterator pointing to just beyond subrange
      */
-    Bytes sub(const Iterator& from, const Iterator& to) const { return substr(from - safeBegin(), to - from); }
+    Bytes sub(const Iterator& from, const Iterator& to) const { return substr(from - begin(), to - from); }
 
     /**
      * Extracts a subrange of bytes from the beginning.
      *
      * @param to iterator pointing to just beyond subrange
      */
-    Bytes sub(const Iterator& to) const { return sub(safeBegin(), to); }
+    Bytes sub(const Iterator& to) const { return sub(begin(), to); }
 
     /**
      * Extracts a subrange of bytes.
@@ -387,8 +387,8 @@ inline std::string detail::to_string_for_print<Bytes>(const Bytes& x) {
 }
 
 namespace detail::adl {
-inline auto safe_begin(const Bytes& x, adl::tag /*unused*/) { return x.safeBegin(); }
-inline auto safe_end(const Bytes& x, adl::tag /*unused*/) { return x.safeEnd(); }
+inline auto begin(const Bytes& x, adl::tag /*unused*/) { return x.begin(); }
+inline auto end(const Bytes& x, adl::tag /*unused*/) { return x.end(); }
 inline std::string to_string(const Bytes& x, adl::tag /*unused*/) { return fmt("b\"%s\"", escapeBytes(x.str(), true)); }
 } // namespace detail::adl
 

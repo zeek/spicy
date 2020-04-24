@@ -228,7 +228,7 @@ int32_t RegExp::find(const Bytes& data) const {
 }
 
 static Bytes _subslice(const Bytes& data, jrx_offset so, jrx_offset eo) {
-    return Bytes(data.sub(data.safeBegin() + so, data.safeBegin() + eo));
+    return Bytes(data.sub(data.begin() + so, data.begin() + eo));
 }
 
 std::tuple<int32_t, Bytes> RegExp::findSpan(const Bytes& data) const {
