@@ -1,4 +1,10 @@
 
+0.4.0-140 | 2020-04-24 09:18:51 +0000
+
+  * Tune update-changes configuration. (Robin Sommer, Corelight)
+
+  * GH-245: Fix typo in documentation. (Dominik Charousset)
+
 0.4.0-136 | 2020-04-23 16:53:22 +0000
 
   * Update link in README. (Yacin Nadji)
