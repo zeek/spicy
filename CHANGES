@@ -1,4 +1,16 @@
 
+0.4.0-148 | 2020-04-24 13:19:22 +0000
+
+  * GH-226: Add CI setup for building published Docker images. This
+    patch adds an `update_dockerhub` target to ``docker/Makefile``,
+    which builds, tests and uploads images to Dockerhub. It also
+    changes the Dockerfiles in ``docker/`` back to include Spicy build
+    commands, so that they become practically self-documenting
+    (Benjamin Bannier, Corelight).
+
+  * GH-222: Output changes to make rendered ASTs easier to parse
+    (Benjamin Bannier, Corelight)
+
 0.4.0-140 | 2020-04-24 09:18:51 +0000
 
   * Tune update-changes configuration. (Robin Sommer, Corelight)
