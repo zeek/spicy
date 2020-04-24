@@ -123,7 +123,7 @@ Spicy code:
       completely parsed by implementing a hook called ``%done``.
       Inside the hook's code body, statements can refer to the unit
       instance currently being parsed through an implicitly defined
-      ``self`` identifier. Through ``self`, they can then access any
+      ``self`` identifier. Through ``self``, they can then access any
       fields already parsed by using a standard attribute notation
       (``self.<field>``). As the access to ``version`` shows, this
       also works for getting to fields nested inside subunits. In the
