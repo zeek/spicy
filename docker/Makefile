@@ -1,4 +1,3 @@
-
 all: help
 
 help:
@@ -37,3 +36,18 @@ test-centos-8: build-centos-8
 
 run-centos-8:
 	./docker-helper run centos-8
+
+update_dockerhub: test-alpine-3.11 test-centos-8 test-ubuntu-19.10
+	@: $${DOCKER_USERNAME:?"DOCKER_USERNAME must be set"}
+	@: $${DOCKER_PASSWORD:?"DOCKER_PASSWORD must be set"}
+	docker login --username="$$DOCKER_USERNAME" --password="$$DOCKER_PASSWORD"; \
+	IMAGES="alpine-3.11 centos-8 ubuntu-19.10"; \
+	VERSION=$$(../scripts/autogen-version --short); \
+	for image in $${IMAGES}; do \
+		for version in "$$VERSION" latest; do \
+			IMAGE="spicy-$$image":"$$version"; \
+			docker tag "$$IMAGE" "$$DOCKER_USERNAME/$$IMAGE"; \
+			docker push "$$DOCKER_USERNAME/$$IMAGE"; \
+		done \
+	done; \
+	docker logout
