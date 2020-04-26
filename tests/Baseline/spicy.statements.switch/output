@@ -1,1 +1,1 @@
-uncaught exception hilti::rt::UnhandledSwitchCase: 3 (fail.spicy:5-8)
+uncaught exception hilti::rt::UnhandledSwitchCase: 3 (fail.spicy:5:1-8:2)

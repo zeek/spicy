@@ -1,2 +1,2 @@
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.switch-duplicate-case/switch-duplicate-case.spicy:11-15: duplicate case
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.unit.switch-duplicate-case/switch-duplicate-case.spicy:11:8-15:14: duplicate case
 [error] spicyc: aborting after errors

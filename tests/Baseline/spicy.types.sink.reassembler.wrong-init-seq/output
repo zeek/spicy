@@ -1,1 +1,1 @@
-[fatal error] terminating with uncaught exception of type spicy::rt::sink::Error: sink cannot update initial sequence number after activity has already been seen (/home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.sink.reassembler.wrong-init-seq/wrong-init-seq.spicy:14)
+[fatal error] terminating with uncaught exception of type spicy::rt::sink::Error: sink cannot update initial sequence number after activity has already been seen (/Users/bbannier/src/spicy/tests/.tmp/spicy.types.sink.reassembler.wrong-init-seq/wrong-init-seq.spicy:14:9)

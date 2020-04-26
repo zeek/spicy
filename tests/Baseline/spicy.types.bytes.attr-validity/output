@@ -1,4 +1,4 @@
-[error] /home/robin/work/spicy/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:7: bytes field requires one of &size, &eod, or &until
-[error] /home/robin/work/spicy/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:8: &until must provide an expression
-[error] /home/robin/work/spicy/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:10: &eod incompatible with &until
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:7:5: bytes field requires one of &size, &eod, or &until
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:8:16: &until must provide an expression
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:10:5: &eod incompatible with &until
 [error] spicy-driver: aborting after errors

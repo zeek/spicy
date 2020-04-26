@@ -1,11 +1,11 @@
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:22: cannot resolve operator: <const vector<uint<64>>>.push_back(<uint<64>>)
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:23: cannot assign to expression: v = v2
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:24: cannot assign to expression: v[5] = 1
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:25: cannot assign to expression: (x, v) = ("X", v)
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:26: call does not match any function: p2(<const vector<uint<64>>>)
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:26:   candidate functions:
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:26:   - p2(<vector<uint<64>>>)
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:29: call does not match any method: <Foo::Z>.x(<const vector<uint<64>>>)
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:29:   candidate methods:
-[error] /home/robin/work/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:29:   - <Foo::Z>.x(<vector<uint<64>>>)
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:22:5: cannot resolve operator: <const vector<uint<64>>>.push_back(<uint<64>>)
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:23:5: cannot assign to expression: v = v2
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:24:5: cannot assign to expression: v[5] = 1
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:25:5: cannot assign to expression: (x, v) = ("X", v)
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:26:5: call does not match any function: p2(<const vector<uint<64>>>)
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:26:5:   candidate functions:
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:26:5:   - p2(<vector<uint<64>>>)
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:29:5: call does not match any method: <Foo::Z>.x(<const vector<uint<64>>>)
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:29:5:   candidate methods:
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.const-violations/const-violations.hlt:29:5:   - <Foo::Z>.x(<vector<uint<64>>>)
 [error] hiltic: aborting after errors

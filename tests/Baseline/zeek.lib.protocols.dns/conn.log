@@ -3,8 +3,8 @@
 #empty_field	(empty)
 #unset_field	-
 #path	conn
-#open	2020-03-29-15-32-20
+#open	2020-04-27-21-57-08
 #fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	orig_ip_bytes	resp_pkts	resp_ip_bytes	tunnel_parents
 #types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
 964953086.310131	CHhAvVGS1DHFjwGM9	10.20.1.31	53	207.158.192.40	53	udp	dns	-	-	-	S0	-	-	0	D^	1	461	0	0	-
-#close	2020-03-29-15-32-20
+#close	2020-04-27-21-57-08

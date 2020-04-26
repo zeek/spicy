@@ -1,1 +1,1 @@
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: insufficient input for &size (/home/robin/work/spicy/tests/.tmp/spicy.types.bytes.parse-length-error/parse-length-error.spicy:8)
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: insufficient input for &size (/Users/bbannier/src/spicy/tests/.tmp/spicy.types.bytes.parse-length-error/parse-length-error.spicy:8:16)

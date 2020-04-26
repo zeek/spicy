@@ -31,7 +31,7 @@ using namespace spicy::detail::parser;
 #define YY_USER_ACTION yylloc->columns(yyleng);
 
 static hilti::Meta toMeta(spicy::detail::parser::location l) {
-    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line));
+    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line, l.begin.column, l.end.column));
 }
 
 static std::string expandEscapes(Driver* driver, std::string s, spicy::detail::parser::location l) {

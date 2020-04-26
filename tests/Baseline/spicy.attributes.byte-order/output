@@ -1,2 +1,2 @@
-[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.attributes.byte-order/byte-order.spicy:7: &byte-order requires an expression
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.attributes.byte-order/byte-order.spicy:7:15: &byte-order requires an expression
 [error] spicyc: aborting after errors

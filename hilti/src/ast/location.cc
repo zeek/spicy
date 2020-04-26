@@ -12,11 +12,17 @@ Location::operator bool() const { return _file != location::None._file; }
 std::string Location::render(bool no_path) const {
     std::string lines;
 
-    if ( _from >= 0 ) {
-        lines = util::fmt(":%d", _from);
+    if ( _from_line >= 0 ) {
+        if ( _from_character >= 0 )
+            lines = util::fmt(":%d:%d", _from_line, _from_character);
+        else
+            lines = util::fmt(":%d", _from_line);
 
-        if ( _to >= 0 && _to != _from ) {
-            lines += util::fmt("-%d", _to);
+        if ( _to_line >= 0 && _to_line != _from_line ) {
+            if ( _to_character >= 0 )
+                lines += util::fmt("-%d:%d", _to_line, _to_character);
+            else
+                lines += util::fmt("-%d", _to_line);
         }
     }
 

@@ -1,2 +1,2 @@
-[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.duplicate/duplicate.hlt:15-16: redefinition of 'i' defined in /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.duplicate/duplicate.hlt:12-15
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.duplicate/duplicate.hlt:15:14-16:14: redefinition of 'i' defined in /Users/bbannier/src/spicy/tests/.tmp/hilti.validation.duplicate/duplicate.hlt:12:14-15:14
 [error] hiltic: aborting after errors

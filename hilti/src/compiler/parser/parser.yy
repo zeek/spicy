@@ -40,7 +40,7 @@ namespace hilti { namespace detail { class Parser; } }
 #define yylex driver->scanner()->lex
 
 static hilti::Meta toMeta(hilti::detail::parser::location l) {
-    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line));
+    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line, l.begin.column, l.end.column));
 }
 
 static hilti::Type iteratorForType(hilti::Type t, bool const_, hilti::Meta m) {

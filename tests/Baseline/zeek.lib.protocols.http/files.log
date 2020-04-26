@@ -3,9 +3,9 @@
 #empty_field	(empty)
 #unset_field	-
 #path	files
-#open	2020-03-29-15-26-42
+#open	2020-04-27-21-57-10
 #fields	ts	fuid	tx_hosts	rx_hosts	conn_uids	source	depth	analyzers	mime_type	filename	duration	local_orig	is_orig	seen_bytes	total_bytes	missing_bytes	overflow_bytes	timedout	parent_fuid	md5	sha1	sha256	extracted	extracted_cutoff	extracted_size
 #types	time	string	set[addr]	set[addr]	set[string]	string	count	set[string]	string	string	interval	bool	bool	count	count	count	count	bool	string	string	string	string	string	bool	count
 1363709111.086948	FYWSop3C6glckoyKMi	141.142.228.5	54.243.55.129	CHhAvVGS1DHFjwGM9	HTTP	0	MD5,SHA1	text/plain	-	0.000000	-	T	11	11	0	0	F	-	5eb63bbbe01eeed093cb22bb8f5acdc3	2aae6c35c94fcfb415dbe95f408b9ce91ee846ed	-	-	-	-
 1363709111.129368	F25UR31MqF16EHYCGk	54.243.55.129	141.142.228.5	CHhAvVGS1DHFjwGM9	HTTP	0	MD5,SHA1	text/json	-	0.000000	-	F	366	366	0	0	F	-	c9337794df612aeaa901dcf9fa446bca	6a1582672c203210c6d18d700322060b676365e7	-	-	-	-
-#close	2020-03-29-15-26-42
+#close	2020-04-27-21-57-10

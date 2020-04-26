@@ -1,5 +1,5 @@
-// Begin of Foo (from "/home/robin/work/spicy/tests/.tmp/hilti.hiltic.print.empty/empty.hlt")
-// Compiled by HILTI version 0.2.0-dev
+// Begin of Foo (from "/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.empty/empty.hlt")
+// Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
 
@@ -14,17 +14,17 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", nullptr, nullptr, nullptr}); }
 
 /* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"/home/robin/work/spicy/tests/.tmp/hilti.hiltic.print.empty/empty.hlt","version":1}
+{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.empty/empty.hlt","version":1}
 */
 
 // Begin of __linker__
-// Compiled by HILTI version 0.2.0-dev
+// Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
 
 // 
 // Linker code generated for modules:
-//   - Foo (/home/robin/work/spicy/tests/.tmp/hilti.hiltic.print.empty/empty.hlt)
+//   - Foo (/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.empty/empty.hlt)
 
 #include <hilti/rt/libhilti.h>
 
