@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+if ( True ) { }
+else { }
+
+hilti::print("done");
+
+}
