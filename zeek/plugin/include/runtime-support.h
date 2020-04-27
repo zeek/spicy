@@ -290,7 +290,7 @@ inline Val* to_val(const hilti::rt::Bytes& b, BroType* target, std::string_view 
     if ( target->Tag() != ::TYPE_STRING )
         throw TypeMismatch("string", target, location);
 
-    return new ::StringVal(b);
+    return new ::StringVal(b.str());
 }
 
 /**

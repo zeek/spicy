@@ -94,13 +94,14 @@ inline std::ostream& operator<<(std::ostream& out, const SafeConstIterator& /* x
 /**
  * HILTI's bytes instance, built on top of a std::string.
  */
-class Bytes : public std::string, public hilti::rt::detail::iterator::Controllee {
+class Bytes : protected std::string, public hilti::rt::detail::iterator::Controllee {
 public:
     using Base = std::string;
     using Iterator = bytes::SafeConstIterator;
     using Offset = uint64_t;
 
     using Base::Base;
+    using Base::data;
 
     /**
      * Creates a bytes instance from a UTF8 string, transforming the contents
@@ -129,13 +130,13 @@ public:
     /** Returns the bytes' data as a string instance. */
     const std::string& str() const { return *this; }
 
-    /** Returns an interator representing the first byte of the instance. */
+    /** Returns an iterator representing the first byte of the instance. */
     Iterator begin() const { return {*this, Base::begin()}; }
 
-    /** Returns an interator representing the end of the instance. */
+    /** Returns an iterator representing the end of the instance. */
     Iterator end() const { return Iterator(*this, Base::end()); }
 
-    /** Returns an iterator refering to the given offset. */
+    /** Returns an iterator referring to the given offset. */
     Iterator at(Offset o) const { return begin() + o; }
 
     /** Returns true if the data's size is zero. */
@@ -175,7 +176,7 @@ public:
      * @param from iterator pointing to start of subrange
      * @param to iterator pointing to just beyond subrange
      */
-    Bytes sub(const Iterator& from, const Iterator& to) const { return substr(from - begin(), to - from); }
+    Bytes sub(const Iterator& from, const Iterator& to) const { return {substr(from - begin(), to - from)}; }
 
     /**
      * Extracts a subrange of bytes from the beginning.
@@ -190,7 +191,7 @@ public:
      * @param offset of start of subrage
      * @param offset of one byeond end of subrage
      */
-    Bytes sub(Offset from, Offset to) const { return substr(from, to - from); }
+    Bytes sub(Offset from, Offset to) const { return {substr(from, to - from)}; }
 
     /**
      * Extracts a subrange of bytes from the beginning.
@@ -257,7 +258,7 @@ public:
     Vector<Bytes> split() {
         Vector<Bytes> x;
         for ( auto& v : hilti::rt::split(*this) )
-            x.push_back(Bytes(v));
+            x.emplace_back(Bytes::Base(v));
         return x;
     }
 
@@ -274,7 +275,7 @@ public:
     Vector<Bytes> split(const Bytes& sep) const {
         Vector<Bytes> x;
         for ( auto& v : hilti::rt::split(*this, sep) )
-            x.push_back(Bytes(v));
+            x.push_back(Bytes::Base(v));
         return x;
     }
 
@@ -368,6 +369,34 @@ public:
      * @return the matching group, or unset if no match
      */
     Result<Bytes> match(const RegExp& re, unsigned int group = 0);
+
+    // Add some operators over `Base`.
+    friend bool operator==(const Bytes& a, const Bytes& b) {
+        return static_cast<const Bytes::Base&>(a) == static_cast<const Bytes::Base&>(b);
+    }
+
+    friend bool operator!=(const Bytes& a, const Bytes& b) { return ! (a == b); }
+
+
+    friend bool operator<(const Bytes& a, const Bytes& b) {
+        return static_cast<const Bytes::Base&>(a) < static_cast<const Bytes::Base&>(b);
+    }
+
+    friend bool operator<=(const Bytes& a, const Bytes& b) {
+        return static_cast<const Bytes::Base&>(a) <= static_cast<const Bytes::Base&>(b);
+    }
+
+    friend bool operator>(const Bytes& a, const Bytes& b) {
+        return static_cast<const Bytes::Base&>(a) > static_cast<const Bytes::Base&>(b);
+    }
+
+    friend bool operator>=(const Bytes& a, const Bytes& b) {
+        return static_cast<const Bytes::Base&>(a) >= static_cast<const Bytes::Base&>(b);
+    }
+
+    friend Bytes operator+(const Bytes& a, const Bytes& b) {
+        return static_cast<const Bytes::Base&>(a) + static_cast<const Bytes::Base&>(b);
+    }
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {
@@ -377,7 +406,7 @@ inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {
 
 namespace bytes {
 inline namespace literals {
-inline Bytes operator"" _b(const char* str, size_t size) { return Bytes(str, size); }
+inline Bytes operator"" _b(const char* str, size_t size) { return Bytes(Bytes::Base(str, size)); }
 } // namespace literals
 } // namespace bytes
 
@@ -387,8 +416,8 @@ inline std::string detail::to_string_for_print<Bytes>(const Bytes& x) {
 }
 
 namespace detail::adl {
-inline auto begin(const Bytes& x, adl::tag /*unused*/) { return x.begin(); }
-inline auto end(const Bytes& x, adl::tag /*unused*/) { return x.end(); }
+inline auto safe_begin(const Bytes& x, adl::tag /*unused*/) { return x.begin(); }
+inline auto safe_end(const Bytes& x, adl::tag /*unused*/) { return x.end(); }
 inline std::string to_string(const Bytes& x, adl::tag /*unused*/) { return fmt("b\"%s\"", escapeBytes(x.str(), true)); }
 } // namespace detail::adl
 
