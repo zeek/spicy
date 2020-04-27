@@ -1,4 +1,15 @@
 
+0.4.0-154 | 2020-04-27 11:58:00 +0000
+
+  * GH-242: Suppress any output from doc's `make check` by default.
+    (Benjamin Bannier, Corelight)
+
+  * GH-251: Ignore package links in documentation linkcheck.
+    (Benjamin Bannier, Corelight)
+
+  * Edit pass on documentation's reassembly section. (Robin Sommer,
+    Corelight)
+
 0.4.0-148 | 2020-04-24 13:19:22 +0000
 
   * GH-226: Add CI setup for building published Docker images. This
