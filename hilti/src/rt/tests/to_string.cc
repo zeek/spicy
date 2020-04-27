@@ -22,6 +22,7 @@ TEST_CASE("to_string") {
         CHECK_EQ(to_string(2), "2");
         CHECK_EQ(to_string(1.5), "1.5");
         CHECK_EQ(to_string(1.5), "1.5");
+        CHECK_EQ(to_string("abc"), "\"abc\"");
     }
 
     SUBCASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }

@@ -33,6 +33,11 @@ inline std::string to_string(std::string_view x, adl::tag /*unused*/) {
     return fmt("\"%s\"", escapeUTF8(x, true, true, true));
 }
 
+template<typename CharT, size_t N>
+inline std::string to_string(const CharT (&x)[N], adl::tag /*unused*/) {
+    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
+}
+
 } // namespace detail::adl
 
 template<>
