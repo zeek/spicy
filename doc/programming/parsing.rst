@@ -1324,7 +1324,7 @@ Reassembly (or defragmentation) of out-of-order data chunks is a common requirem
 for many protocols. Sinks have that functionality built-in by
 allowing you to associate a position inside a virtual sequence space with each
 chunk of data. Sinks will then pass their data on to
-connected units only once they have collected a continuous, in-order range of bytes. 
+connected units only once they have collected a continuous, in-order range of bytes.
 
 The easiest way to leverage this
 is to simply associate sequence numbers with each
@@ -1363,5 +1363,5 @@ number zero. You can change that base number by calling the
 sink method :spicy:method:`sink::set_initial_sequence_number`. You can
 control Spicy's gap handling, including when to stop buffering data
 because you know nothing further will arrive anymore. Spicy can also
-notify you about unsuccessful reassembly through a series of built-in unit hooks. 
+notify you about unsuccessful reassembly through a series of built-in unit hooks.
 See :ref:`type_sink` for a reference of the available functionality.
