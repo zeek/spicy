@@ -39,8 +39,10 @@ public:
     using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::iterator, SafeIterator>;
     using Base::Base;
 
+    using reference = uint8_t;
+
     // Override to return expected type.
-    uint8_t operator*() const {
+    reference operator*() const {
         ensureValid();
         return *iterator();
     }
@@ -52,8 +54,10 @@ public:
     using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::const_iterator, SafeConstIterator>;
     using Base::Base;
 
+    using reference = uint8_t;
+
     // Override to return expected type.
-    uint8_t operator*() const {
+    reference operator*() const {
         ensureValid();
         return *iterator();
     }
