@@ -270,7 +270,8 @@ add_executable(hilti-rt-tests
                src/rt/tests/fiber.cc
                src/rt/tests/reference.cc
                src/rt/tests/result.cc
-               src/rt/tests/stream.cc)
+               src/rt/tests/stream.cc
+               src/rt/tests/to_string.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_link_libraries(hilti-rt-tests PRIVATE hilti-rt doctest)
 add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)

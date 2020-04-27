@@ -224,9 +224,15 @@ inline bool operator!=(const Empty& /*unused*/, const Vector<T, Allocator>& v) {
 namespace detail::adl {
 template<typename T, typename Allocator>
 inline std::string to_string(const Vector<T, Allocator>& x, adl::tag /*unused*/) {
+    using detail::adl::to_string;
     return fmt("[%s]",
                rt::join(rt::transform(x, [](const std::optional<T>& y) { return (y ? rt::to_string(*y) : "(unset)"); }),
                         ", "));
+}
+
+template<typename T, typename Allocator>
+inline std::string to_string(const std::vector<T, Allocator>& x, adl::tag /*unused*/) {
+    return to_string(static_cast<const Vector<T, Allocator>&>(x), adl::tag{});
 }
 
 template<typename T, typename Allocator>
