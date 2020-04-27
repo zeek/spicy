@@ -67,3 +67,6 @@ html_static_path = ['_static']
 html_theme_options = {
     "style_external_links": True
 }
+
+linkcheck_ignore = [
+    r'https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/.*']
