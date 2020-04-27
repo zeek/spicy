@@ -1320,12 +1320,13 @@ the connection would be established through the equivalent of
 Reassembly
 ^^^^^^^^^^
 
-Reassembly (or defragmentation) of data chunks is a common requirement
+Reassembly (or defragmentation) of out-of-order data chunks is a common requirement
 for many protocols. Sinks have that functionality built-in by
-allowing you to associate position in virtual sequence space with each
-chunk that's written into them. Sinks will then pass data on to
-connected units only once they have a continuous range of bytes ready
-at the current position in the input. The easiest way to leverage this
+allowing you to associate a position inside a virtual sequence space with each
+chunk of data. Sinks will then pass their data on to
+connected units only once they have collected a continuous, in-order range of bytes. 
+
+The easiest way to leverage this
 is to simply associate sequence numbers with each
 :spicy:method:`sink::write` operation:
 
@@ -1356,11 +1357,11 @@ is to simply associate sequence numbers with each
     :show-with: foo.spicy
 
 
-By default, Spicy expected the sequence space to start at zero, so the
-first bytes of the input stream needs to passed in with sequence
-number zero. You can optionally change the base number by calling the
+By default, Spicy expects the sequence space to start at zero, so the
+first byte of the input stream needs to be passed in with sequence
+number zero. You can change that base number by calling the
 sink method :spicy:method:`sink::set_initial_sequence_number`. You can
-also control the gap handling, including when to stop buffering data
-because you know nothing else will arrive; and receiving notifications
-in that case through a series of built-in unit hook. See
-:ref:`type_sink` for a reference of the available functionality.
+control Spicy's gap handling, including when to stop buffering data
+because you know nothing further will arrive anymore. Spicy can also
+notify you about unsuccessful reassembly through a series of built-in unit hooks. 
+See :ref:`type_sink` for a reference of the available functionality.
