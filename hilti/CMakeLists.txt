@@ -267,6 +267,7 @@ target_link_libraries(jit-test PRIVATE hilti)
 add_executable(hilti-rt-tests
                src/rt/tests/main.cc
                src/rt/tests/address.cc
+               src/rt/tests/bytes.cc
                src/rt/tests/fiber.cc
                src/rt/tests/reference.cc
                src/rt/tests/result.cc
