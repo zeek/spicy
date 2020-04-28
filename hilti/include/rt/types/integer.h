@@ -48,6 +48,8 @@ inline std::string to_string(hilti::rt::integer::safe<int8_t> x, adl::tag /*unus
     return fmt("%" PRId8, *x.Ptr());
 }
 
+inline std::string to_string(hilti::rt::integer::safe<char> x, adl::tag /*unused*/) { return fmt("%" PRId8, *x.Ptr()); }
+
 inline std::string to_string(uint64_t x, adl::tag /*unused*/) { return fmt("%" PRIu64, x); }
 
 inline std::string to_string(int64_t x, adl::tag /*unused*/) { return fmt("%" PRId64, x); }

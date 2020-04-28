@@ -4,11 +4,7 @@
 
 #include <cstdint>
 
-#include <hilti/rt/extension-points.h>
-#include <hilti/rt/hilti.h>
 #include <hilti/rt/libhilti.h>
-#include <hilti/rt/types/optional.h>
-#include <hilti/rt/types/vector.h>
 
 using namespace hilti::rt;
 
@@ -23,6 +19,12 @@ TEST_CASE("to_string") {
         CHECK_EQ(to_string(1.5), "1.5");
         CHECK_EQ(to_string(1.5), "1.5");
         CHECK_EQ(to_string("abc"), "\"abc\"");
+    }
+
+    SUBCASE("safe-int") {
+        using integer::safe;
+        CHECK_EQ(to_string(safe<int8_t>(-1)), "-1");
+        CHECK_EQ(to_string(safe<char>(-1)), "-1");
     }
 
     SUBCASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }
