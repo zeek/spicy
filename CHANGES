@@ -1,4 +1,12 @@
 
+0.4.0-162 | 2020-04-28 10:14:01 +0000
+
+  * GH-219: Clean up string interface exposed by ``rt::Bytes`` to
+    remove overloading ambiguities. (Benjamin Bannier, Corelight)
+
+  * GH-257: Fix documentation whitespace issues and remove outdated
+    FIXMEs around usages of `Result`. (Benjamin Bannier, Corelight)
+
 0.4.0-154 | 2020-04-27 11:58:00 +0000
 
   * GH-242: Suppress any output from doc's `make check` by default.

@@ -15,6 +15,8 @@ using namespace hilti::rt::stream;
 using hilti::rt::to_string;
 
 TEST_CASE("Constructors") {
+    auto b = "xyz"_b;
+    CHECK(b.size());
     auto x = Stream("xyz"_b);
     CHECK(to_string(x) == R"(b"xyz")");
     CHECK(! x.isEmpty());
@@ -197,7 +199,7 @@ TEST_CASE("sub") {
 
     auto f = [](const stream::View& v) { return v.sub(v.safeBegin() + 15, v.safeBegin() + 25); };
 
-    CHECK(f(x.view()).data() == "6789012345"_b);
+    CHECK(Bytes(f(x.view()).data()) == "6789012345"_b);
 }
 
 TEST_CASE("freezing") {
@@ -320,10 +322,10 @@ TEST_CASE("Block iteration") {
     CHECK(block->is_last);
     CHECK(! v.nextBlock(block));
 
-    x.append("567");
-    x.append("890");
-    x.append("abc");
-    x.append("def");
+    x.append("567"_b);
+    x.append("890"_b);
+    x.append("abc"_b);
+    x.append("def"_b);
 
     v = x.view();
     block = v.firstBlock();

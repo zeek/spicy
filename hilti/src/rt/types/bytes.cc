@@ -10,28 +10,28 @@ using namespace hilti::rt::bytes;
 
 std::tuple<bool, Bytes::Iterator> Bytes::find(const Bytes& v, const Iterator& n) const {
     if ( v.isEmpty() )
-        return std::make_tuple(true, n ? n : safeBegin());
+        return std::make_tuple(true, n ? n : begin());
 
-    auto first = *v.safeBegin();
+    auto first = *v.begin();
 
-    for ( auto i = Iterator(n ? n : safeBegin()); true; ++i ) {
-        if ( i == safeEnd() )
+    for ( auto i = Iterator(n ? n : begin()); true; ++i ) {
+        if ( i == end() )
             return std::make_tuple(false, i);
 
         if ( *i != first )
             continue;
 
         auto x = i;
-        auto y = v.safeBegin();
+        auto y = v.begin();
 
         for ( ;; ) {
-            if ( x == safeEnd() )
+            if ( x == end() )
                 return std::make_tuple(false, i);
 
             if ( *x++ != *y++ )
                 break;
 
-            if ( y == v.safeEnd() )
+            if ( y == v.end() )
                 return std::make_tuple(true, i);
         }
     }
