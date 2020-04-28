@@ -3,6 +3,9 @@
 
 module X {
 
-vector(1, "B", 3);
+import hilti;
+
+for ( indx in [1, -2, 3] )
+    hilti::print(indx);
 
 }

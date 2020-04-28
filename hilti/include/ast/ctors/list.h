@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <hilti/ast/builder/type.h>
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/list.h>
@@ -15,7 +16,7 @@ namespace ctor {
 /** AST node for a List constructor. */
 class List : public NodeBase, public hilti::trait::isCtor {
 public:
-    List(std::vector<Expression> e, Meta m = Meta()) : NodeBase(nodes(inferType(e, m), e), m) {}
+    List(std::vector<Expression> e, Meta m = Meta()) : NodeBase(nodes(builder::typeOfExpressions(e), e), m) {}
     List(Type t, std::vector<Expression> e, Meta m = Meta())
         : NodeBase(nodes(std::move(t), std::move(e)), std::move(m)) {}
 
@@ -38,11 +39,6 @@ public:
     auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-private:
-    Type inferType(const std::vector<Expression>& e, const Meta& /* m */) {
-        return e.size() ? e.front().type() : type::unknown;
-    }
 };
 
 } // namespace ctor

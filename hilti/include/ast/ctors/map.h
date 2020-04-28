@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <hilti/ast/builder/type.h>
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/map.h>
@@ -50,10 +51,9 @@ public:
 
 private:
     std::vector<Type> _inferTypes(const std::vector<Element>& e, const Meta& /* m */) {
-        if ( e.size() )
-            return {e.front().first.type(), e.front().second.type()};
-
-        return {type::unknown, type::unknown};
+        auto keys = util::transform(e, [](const auto& e) { return e.first; });
+        auto values = util::transform(e, [](const auto& e) { return e.second; });
+        return {builder::typeOfExpressions(keys), builder::typeOfExpressions(values)};
     }
 
     std::vector<Expression> _flatten(const std::vector<Element>& elems) {

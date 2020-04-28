@@ -3,6 +3,6 @@
 
 module X {
 
-vector(1, "B", 3);
+set(1, "B", 3);
 
 }

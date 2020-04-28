@@ -1,0 +1,9 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+local value_ref<string> x = "foo"; # type that coerces to string
+assert set("foo", "bar") == set<string>(x, "bar");
+
+}
