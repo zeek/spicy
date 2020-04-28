@@ -332,7 +332,7 @@ specific parser. Here's a small C++ program that parses input with our
 
 .. code::
 
-    # spicy-build -o a.out my-http.cc my-http.spicy
+    # spicy-build -o a.out -S my-http.cc my-http.spicy
     # echo "GET /index.html HTTP/1.0" | ./a.out
     GET, /index.html, 1.0
     # echo 'Hello, World!' | ./a.out
@@ -348,7 +348,7 @@ does, if we ignore the dynamic JIT compilation.
     - ``my-http.cc`` is a very stripped down version of a file
       installed along with Spicy into
       ``share/spicy/spicy-driver-host.cc``. That code is compiled into
-      an executable when executing ``spicy-build`` with the ``-s``
+      an executable when executing ``spicy-build`` with the ``-S``
       option, as we did above. If you look at
       ``spicy-driver-host.cc``, among other things you'll also see how
       to dynamically query the runtime system for the parsers
