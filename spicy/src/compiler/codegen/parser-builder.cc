@@ -337,7 +337,7 @@ struct ProductionVisitor
                             build_parse_stage1_logic();
 
                         auto result = build_parse_stage2_logic();
-                        builder()->addReturn(std::move(result));
+                        builder()->addReturn(result);
 
                         end_try(try_);
                         popState();
@@ -931,7 +931,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             visitor.pushDestination(builder::id("unit"));
             visitor.parseProduction(*grammar.root());
             visitor.popDestination();
-            builder()->addReturn(builder::move(state().cur));
+            builder()->addReturn(state().cur);
             popState();
 
             auto body_ext_overload1 = popBuilder();
@@ -957,7 +957,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
         visitor.pushDestination(builder::id("unit"));
         visitor.parseProduction(*grammar.root());
         visitor.popDestination();
-        builder()->addReturn(builder::move(state().cur));
+        builder()->addReturn(state().cur);
         popState();
 
         auto body_ext_overload2 = popBuilder();
