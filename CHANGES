@@ -1,4 +1,18 @@
 
+0.4.0-171 | 2020-04-28 19:08:50 +0000
+
+  * Add a section to the development manual on the structure of the
+    runtime libraries. (Robin Sommer, Corelight)
+
+  * Fix `hilti::rt::to_string` for character literals. (Benjamin
+    Bannier, Corelight)
+
+  * GH-179: Enable `hilti::rt::to_string` for `std::vector`. (Benjamin
+    Bannier, Corelight)
+
+  * Remove return of rvalue when generating parse functions. (Benjamin
+    Bannier, Corelight)
+
 0.4.0-162 | 2020-04-28 10:14:01 +0000
 
   * GH-219: Clean up string interface exposed by ``rt::Bytes`` to
