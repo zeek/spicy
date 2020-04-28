@@ -28,7 +28,7 @@ repos:
   - id: trailing-whitespace
     exclude: '^tests/Baseline'
   - id: end-of-file-fixer
-    exclude: '^tests/Baseline|^doc/autogen'
+    exclude: '^tests/Baseline|^doc/autogen|^doc/_static'
   - id: check-yaml
   - id: check-added-large-files
 
