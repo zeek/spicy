@@ -37,7 +37,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
             return ctor::Bool(c.value().id() != ID("Undef"), c.meta());
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::Map& c) {
@@ -50,13 +50,13 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                 if ( k && v )
                     nelemns.emplace_back(*k.coerced, *v.coerced);
                 else
-                    return {}; // FIXME(bbannier): issue for void?
+                    return {};
             }
 
             return ctor::Map(t->keyType(), t->elementType(), nelemns, c.meta());
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::Null& c) {
@@ -69,7 +69,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( auto t = dst.tryAs<type::WeakReference>() )
             return ctor::WeakReference(t->dereferencedType());
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::List& c) {
@@ -79,7 +79,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                 if ( auto x = hilti::coerceExpression(e, t->elementType(), CoercionStyle::TryAllForAssignment) )
                     nexprs.push_back(*x.coerced);
                 else
-                    return {}; // FIXME(bbannier): issue for void?
+                    return {};
             }
             return ctor::List(t->elementType(), std::move(nexprs), c.meta());
         }
@@ -92,7 +92,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                 if ( auto x = hilti::coerceExpression(e, dt, CoercionStyle::TryAllForAssignment) )
                     nexprs.push_back(*x.coerced);
                 else
-                    return {}; // FIXME(bbannier): issue for void?
+                    return {};
             }
             return ctor::Vector(dt, std::move(nexprs), c.meta());
         }
@@ -105,12 +105,12 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                 if ( auto x = hilti::coerceExpression(e, dt, CoercionStyle::TryAllForAssignment) )
                     nexprs.push_back(*x.coerced);
                 else
-                    return {}; // FIXME(bbannier): issue for void?
+                    return {};
             }
             return ctor::Set(dt, std::move(nexprs), c.meta());
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::Real& c) {
@@ -167,7 +167,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
             }
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::Set& c) {
@@ -177,12 +177,12 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                 if ( auto x = hilti::coerceExpression(e, t->elementType(), style) )
                     nexprs.push_back(*x.coerced);
                 else
-                    return {}; // FIXME(bbannier): issue for void?
+                    return {};
             }
             return ctor::Set(t->elementType(), std::move(nexprs), c.meta());
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::SignedInteger& c) {
@@ -217,7 +217,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
             return ctor::Bool(c.value() != 0, c.meta());
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::Vector& c) {
@@ -227,12 +227,12 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                 if ( auto x = hilti::coerceExpression(e, t->elementType(), style) )
                     nexprs.push_back(*x.coerced);
                 else
-                    return {}; // FIXME(bbannier): issue for void?
+                    return {};
             }
             return ctor::Vector(t->elementType(), std::move(nexprs), c.meta());
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::UnsignedInteger& c) {
@@ -267,7 +267,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                 return ctor::Real(double(c.value()));
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::Tuple& c) {
@@ -276,7 +276,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
             auto vt = t.value().types();
 
             if ( vc.size() != vt.size() )
-                return {}; // FIXME(bbannier): issue for void?
+                return {};
 
             std::vector<Expression> coerced;
             coerced.reserve(vc.size());
@@ -286,13 +286,13 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                     coerced.push_back(*x.coerced);
                 }
                 else
-                    return {}; // FIXME(bbannier): issue for void?
+                    return {};
             }
 
             return ctor::Tuple(std::move(coerced), c.meta());
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const ctor::Struct& c) {
@@ -315,7 +315,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
 
             // Check for fields in ctor that type does not have.
             if ( ! util::set_difference(src_fields, dst_fields).empty() )
-                return {}; // FIXME(bbannier): issue for void?
+                return {};
 
             // Check for fields in type that ctor does not have, they must be
             // optional,
@@ -333,7 +333,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
 
             if ( ! x.empty() )
                 // Uninitialized fields.
-                return {}; // FIXME(bbannier): issue for void?
+                return {};
 
             // Coerce each field.
             std::vector<ctor::struct_::Field> nf;
@@ -346,13 +346,13 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                     nf.emplace_back(sf.id(), *ne.coerced);
                 else
                     // Cannot coerce.
-                    return {}; // FIXME(bbannier): issue for void?
+                    return {};
             }
 
             return ctor::Struct(std::move(nf), *dtype, c.meta());
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 };
 
@@ -366,7 +366,7 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Null& c) {
@@ -379,21 +379,21 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
         if ( auto t = dst.tryAs<type::WeakReference>() )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Bytes& c) {
         if ( dst.tryAs<type::Stream>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Error& e) {
         if ( auto t = dst.tryAs<type::Result>() )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::List& e) {
@@ -403,14 +403,14 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
         if ( auto t = dst.tryAs<type::Vector>(); t && t->elementType() == e.elementType() )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Optional& r) {
         if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::StrongReference& r) {
@@ -427,7 +427,7 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
                 return dst;
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Result& r) {
@@ -437,7 +437,7 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
         if ( auto t = dst.tryAs<type::Optional>(); t && t->dereferencedType() == r.dereferencedType() )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::SignedInteger& src) {
@@ -449,21 +449,21 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
                 return dst;
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Stream& c) {
         if ( auto t = dst.tryAs<type::stream::View>() )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::stream::View& c) {
         if ( dst.tryAs<type::Bytes>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Type_& src) {
@@ -473,14 +473,14 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
                 return type::Type_(*x);
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Union& c) {
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::UnsignedInteger& src) {
@@ -498,7 +498,7 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
                 return dst;
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Tuple& src) {
@@ -507,17 +507,17 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
             auto vt = t->types();
 
             if ( vc.size() != vt.size() )
-                return {}; // FIXME(bbannier): issue for void?
+                return {};
 
             for ( auto i = std::make_pair(vc.cbegin(), vt.cbegin()); i.first != vc.cend(); ++i.first, ++i.second ) {
                 if ( auto x = hilti::coerceType(*i.first, *i.second); ! x )
-                    return {}; // FIXME(bbannier): issue for void?
+                    return {};
             }
 
             return dst;
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::ValueReference& r) {
@@ -532,7 +532,7 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
         if ( r.dereferencedType() == dst )
             return dst;
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::WeakReference& r) {
@@ -549,7 +549,7 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
                 return dst;
         }
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 };
 

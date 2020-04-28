@@ -199,7 +199,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         for ( const auto& t : n.types() )
             addDependency(t);
 
-        return {}; // FIXME(bbannier): issue for void?
+        return {};
     }
 
     result_t operator()(const type::Union& n, const position_t p) {
