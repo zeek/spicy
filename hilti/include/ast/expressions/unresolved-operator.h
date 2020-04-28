@@ -25,9 +25,11 @@ public:
     }
 
     /** Implements `Expression` interface. */
-    bool isLhs() const { logger().internalError("UnresolvedOperator::isLhs() not supported"); }
+
+    // Dummy implementations as the node will be rejected in validation anyway.
+    bool isLhs() const { return false; }
     /** Implements `Expression` interface. */
-    bool isTemporary() const { logger().internalError("UnresolvedOperator::isTemporary() not supported"); }
+    bool isTemporary() const { return false; }
     /** Implements `Expression` interface. */
     auto type() const { return type::unknown; }
     /** Implements `Expression` interface. */
