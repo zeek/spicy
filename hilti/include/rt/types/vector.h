@@ -133,9 +133,6 @@ public:
         return V::back();
     }
 
-    /** Sets an index, auto-growing the vector if necessary. */
-    T& set(uint64_t i, T t) { return (V::data()[i] = std::move(t)); }
-
     Vector& operator=(const Vector&) = default;
     Vector& operator=(Vector&&) noexcept = default;
 
