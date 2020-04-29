@@ -20,7 +20,10 @@ struct VisitorPass1 : public visitor::PostOrder<void, VisitorPass1> {
     explicit VisitorPass1(Unit* unit) : unit(unit) {}
     Unit* unit;
 
-    void operator()(const Module& m, position_t p) { p.node.scope()->insert(m.id(), NodeRef(p.node)); }
+    void operator()(const Module& m, position_t p) {
+        Node d = Declaration(declaration::Module(NodeRef(p.node), m.meta()));
+        p.node.scope()->insert(m.id(), std::move(d));
+    }
 
     void operator()(const declaration::ImportedModule& m, position_t p) {
         auto& other = unit->imported(m.id());

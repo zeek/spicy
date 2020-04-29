@@ -4,6 +4,7 @@
 
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/declarations/imported-module.h>
+#include <hilti/ast/declarations/module.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/scope.h>
 
@@ -63,9 +64,14 @@ std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, boo
                 return createRefs(i->second, h, external);
 
             for ( const auto& v : (*i).second ) {
+                Scope* scope = (*v).scope().get();
+
+                if ( auto m = v->tryAs<declaration::Module>() )
+                    scope = m->root().scope().get();
+
                 auto e = v->isA<declaration::ImportedModule>();
 
-                if ( auto x = _findID((*v).scope().get(), ID(t), external || e); ! x.empty() )
+                if ( auto x = _findID(scope, ID(t), external || e); ! x.empty() )
                     return createRefs(x, h, external);
             }
 
