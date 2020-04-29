@@ -1,2 +1,2 @@
-[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.integer.ctor-fail-3/ctor-fail.spicy:1:34: syntax error, unexpected '-', expecting unsigned integer value
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.integer.ctor-fail-3/ctor-fail.spicy:1:34: syntax error, unexpected '-', expecting unsigned integer value or '+'
 [error] spicyc: parse error

@@ -865,9 +865,7 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | CNULL                            { $$ = hilti::ctor::Null(__loc__); }
               | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
 
-              | CUREAL                           { $$ = hilti::ctor::Real($1, __loc__); }
-              | '+' CUREAL                       { $$ = hilti::ctor::Real($2, __loc__); }
-              | '-' CUREAL                       { $$ = hilti::ctor::Real(-$2, __loc__); }
+              | const_real                       { $$ = hilti::ctor::Real($1, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
               | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger($2, 64, __loc__); }
               | '-' CUINTEGER                    { if ($2 > 0x8000000000000000) error(@$, "integer overflow on negation");
@@ -879,18 +877,14 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | TIME '(' const_uint ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3 * 1000000000), __loc__); }
               | STREAM '(' CBYTES ')'            { $$ = hilti::ctor::Stream(std::move($3), __loc__); }
 
-              | UINT8 '(' CUINTEGER ')'          { $$ = hilti::ctor::UnsignedInteger($3, 8, __loc__); }
-              | UINT16 '(' CUINTEGER ')'         { $$ = hilti::ctor::UnsignedInteger($3, 16, __loc__); }
-              | UINT32 '(' CUINTEGER ')'         { $$ = hilti::ctor::UnsignedInteger($3, 32, __loc__); }
-              | UINT64 '(' CUINTEGER ')'         { $$ = hilti::ctor::UnsignedInteger($3, 64, __loc__); }
-              | INT8 '(' CUINTEGER ')'           { $$ = hilti::ctor::SignedInteger($3, 8, __loc__); }
-              | INT16 '(' CUINTEGER ')'          { $$ = hilti::ctor::SignedInteger($3, 16, __loc__); }
-              | INT32 '(' CUINTEGER ')'          { $$ = hilti::ctor::SignedInteger($3, 32, __loc__); }
-              | INT64 '(' CUINTEGER ')'          { $$ = hilti::ctor::SignedInteger($3, 64, __loc__); }
-              | INT8 '(' '-' CUINTEGER ')'       { $$ = hilti::ctor::SignedInteger(-$4, 8, __loc__); }
-              | INT16 '(' '-' CUINTEGER ')'      { $$ = hilti::ctor::SignedInteger(-$4, 16, __loc__); }
-              | INT32 '(' '-' CUINTEGER ')'      { $$ = hilti::ctor::SignedInteger(-$4, 32, __loc__); }
-              | INT64 '(' '-' CUINTEGER ')'      { $$ = hilti::ctor::SignedInteger(-$4, 64, __loc__); }
+              | UINT8 '(' const_uint ')'         { $$ = hilti::ctor::UnsignedInteger($3, 8, __loc__); }
+              | UINT16 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 16, __loc__); }
+              | UINT32 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 32, __loc__); }
+              | UINT64 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 64, __loc__); }
+              | INT8 '(' const_sint ')'          { $$ = hilti::ctor::SignedInteger($3, 8, __loc__); }
+              | INT16 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 16, __loc__); }
+              | INT32 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 32, __loc__); }
+              | INT64 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 64, __loc__); }
 
               | list                             { $$ = std::move($1); }
               | map                              { $$ = std::move($1); }
