@@ -210,7 +210,7 @@ public:
 
     Block& operator+=(const Block& other);
 
-    operator bool() const { return ! _stmts.empty(); }
+    operator bool() const { return ! (_stmts.empty() && _tmps.empty()); }
 
     friend ::hilti::detail::cxx::Formatter& operator<<(Formatter& f, const Block& x);
 
