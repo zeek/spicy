@@ -1,0 +1,2 @@
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.integer.ops-fail/ops-fail.spicy:12:15: unsupported operator: <uint<64>> & <int<64>>
+[error] spicyc: aborting after errors
