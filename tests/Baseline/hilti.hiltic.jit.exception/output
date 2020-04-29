@@ -1,2 +1,2 @@
 HILTI - Begin
-Caught exception: test exception (/home/robin/work/spicy/tests/.tmp/hilti.hiltic.jit.exception/exception.hlt:13)
+Caught exception: test exception (/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.jit.exception/exception.hlt:13:11)

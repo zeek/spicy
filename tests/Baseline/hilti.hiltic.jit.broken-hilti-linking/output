@@ -2,7 +2,7 @@ Test.cc:17:5: error: use of undeclared identifier 'does_not_exist'; did you mean
     does_not_exist();
     ^~~~~~~~~~~~~~
     hilti::rt::__does_not_exist
-/home/robin/work/spicy/diagnostics/hilti/include/hilti/rt/hilti.h:40:13: note: 'hilti::rt::__does_not_exist' declared here
+/Users/bbannier/src/spicy/hilti/include/hilti/rt/hilti.h:40:13: note: 'hilti::rt::__does_not_exist' declared here
 extern void __does_not_exist();
             ^
 1 error generated.

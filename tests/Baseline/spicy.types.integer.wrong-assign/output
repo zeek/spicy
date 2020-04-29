@@ -1,2 +1,2 @@
-[error] /home/robin/work/spicy/tests/.tmp/spicy.types.integer.wrong-assign/wrong-assign.spicy:9: cannot coerce expression 'Test::a' of type 'int<32>' to type 'uint<32>'
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.integer.wrong-assign/wrong-assign.spicy:9:1: cannot coerce expression 'Test::a' of type 'int<32>' to type 'uint<32>'
 [error] spicyc: aborting after errors

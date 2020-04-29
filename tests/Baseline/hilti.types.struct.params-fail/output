@@ -1,10 +1,10 @@
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:14: type expects 1 parameter, but receives 0
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:15: type expects 1 parameter, but receives 0
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:19: type expects uint<64> for parameter 1, but receives string
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:20: type expects uint<64> for parameter 1, but receives string
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:15-16: type expects 1 parameter, but receives 0
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:17: type expects 1 parameter, but receives 0
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:20-21: type expects uint<64> for parameter 1, but receives string
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:22: type expects uint<64> for parameter 1, but receives string
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:23: type parameter 1 is missing (X)
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:14:1: type expects 1 parameter, but receives 0
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:15:17: type expects 1 parameter, but receives 0
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:19:1: type expects uint<64> for parameter 1, but receives string
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:20:17: type expects uint<64> for parameter 1, but receives string
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:15:33-16:18: type expects 1 parameter, but receives 0
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:17:18: type expects 1 parameter, but receives 0
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:20:32-21:17: type expects uint<64> for parameter 1, but receives string
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:22:18: type expects uint<64> for parameter 1, but receives string
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.params-fail/params-fail.hlt:23:18: type parameter 1 is missing (X)
 [error] hiltic: aborting after errors

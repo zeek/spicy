@@ -30,7 +30,7 @@ using namespace hilti::detail::parser;
 #define YY_USER_ACTION yylloc->columns(yyleng);
 
 static hilti::Meta toMeta(hilti::detail::parser::location l) {
-    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line));
+    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line, l.begin.column, l.end.column));
 }
 
 static std::string expandEscapes(Driver* driver, std::string s, hilti::detail::parser::location l) {

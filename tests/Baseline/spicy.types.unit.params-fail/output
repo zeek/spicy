@@ -1,3 +1,3 @@
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.params-fail/params-fail.spicy:15: type parameter 1 is missing (b)
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.params-fail/params-fail.spicy:15: type parameter 2 is missing (s)
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.unit.params-fail/params-fail.spicy:15:5: type parameter 1 is missing (b)
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.unit.params-fail/params-fail.spicy:15:5: type parameter 2 is missing (s)
 [error] spicyc: aborting after errors

@@ -1,5 +1,5 @@
-[error] /home/will/repos/spicy/tests/.tmp/hilti.types.real.coercion-fail/coercion-fail.hlt:6-8: cannot coerce expression '0x1.028f5c28f5c29p+0' of type 'real' to type 'bool'
-[error] /home/will/repos/spicy/tests/.tmp/hilti.types.real.coercion-fail/coercion-fail.hlt:8-9: cannot coerce expression '0x0p+0' of type 'real' to type 'bool'
-[error] /home/will/repos/spicy/tests/.tmp/hilti.types.real.coercion-fail/coercion-fail.hlt:9-11: cannot coerce expression '18446744073709551615' of type 'uint<64>' to type 'real'
-[error] /home/will/repos/spicy/tests/.tmp/hilti.types.real.coercion-fail/coercion-fail.hlt:11-13: cannot coerce expression '9007199254740993' of type 'uint<64>' to type 'real'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.real.coercion-fail/coercion-fail.hlt:6:14-8:27: cannot coerce expression '0x1.028f5c28f5c29p+0' of type 'real' to type 'bool'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.real.coercion-fail/coercion-fail.hlt:8:27-9:26: cannot coerce expression '0x0p+0' of type 'real' to type 'bool'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.real.coercion-fail/coercion-fail.hlt:9:26-11:36: cannot coerce expression '18446744073709551615' of type 'uint<64>' to type 'real'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.real.coercion-fail/coercion-fail.hlt:11:36-13:34: cannot coerce expression '9007199254740993' of type 'uint<64>' to type 'real'
 [error] hiltic: aborting after errors

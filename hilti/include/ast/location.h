@@ -19,11 +19,18 @@ public:
      * will match `location::None`.
      *
      * @param file file name/path associated with the location; empty if unknown.
-     * @param from first line number of the described range; -1 if not availabl.
-     * @param to last line number of the described range; -1 if not availabl.
+     * @param from_line first line number of the described range; -1 if not availabl.
+     * @param to_line last line number of the described range; -1 if not availabl.
+     * @param from_character first character number of the described range; -1 if not availabl.
+     * @param to_character first character number of the described range; -1 if not availabl.
      */
-    Location(std::filesystem::path file = "", int from = -1, int to = -1)
-        : _file(std::move(file)), _from(from), _to(to) {}
+    Location(std::filesystem::path file = "", int from_line = -1, int to_line = -1, int from_character = -1,
+             int to_character = -1)
+        : _file(std::move(file)),
+          _from_line(from_line),
+          _to_line(to_line),
+          _from_character(from_character),
+          _to_character(to_character) {}
 
     Location(const Location&) = default;
     Location(Location&&) = default;
@@ -32,8 +39,8 @@ public:
     ~Location() = default;
 
     auto file() const { return _file.generic_string(); }
-    auto from() const { return _from; }
-    auto to() const { return _to; }
+    auto from() const { return _from_line; }
+    auto to() const { return _to_line; }
 
     /**
      * Returns a string representation of the location.
@@ -52,13 +59,17 @@ public:
     operator std::string() const { return render(); }
 
     bool operator<(const Location& other) const {
-        return std::tie(_file, _from, _to) < std::tie(other._file, other._from, other._to);
+        return std::tie(_file, _from_line, _from_character, _to_line, _to_character) <
+               std::tie(other._file, other._from_line, other._from_character, other._to_line, other._to_character);
     }
 
 private:
     std::filesystem::path _file;
-    int _from;
-    int _to;
+    int _from_line = -1;
+    int _to_line = -1;
+
+    int _from_character = -1;
+    int _to_character = -1;
 };
 
 /** Forwards to `Location::render()`. */

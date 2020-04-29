@@ -1,3 +1,3 @@
-uncaught exception hilti::rt::AssertionFailure: failed expression 'False' (false1.hlt:1)
-uncaught exception hilti::rt::AssertionFailure: Test message (false2.hlt:1)
-uncaught exception hilti::rt::AssertionFailure: Test message for missing exception (false3.hlt:1)
+uncaught exception hilti::rt::AssertionFailure: failed expression 'False' (false1.hlt:1:14)
+uncaught exception hilti::rt::AssertionFailure: Test message (false2.hlt:1:14)
+uncaught exception hilti::rt::AssertionFailure: Test message for missing exception (false3.hlt:1:14)

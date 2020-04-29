@@ -1,6 +1,6 @@
 [$i=1]
 [$i=1]
 [$i=1]
-[error] test.spicy:4: cannot import module 'Bar': cannot find file
+[error] test.spicy:4:1: cannot import module 'Bar': cannot find file
 [error] spicy-driver: aborting after errors
 [$i=1]

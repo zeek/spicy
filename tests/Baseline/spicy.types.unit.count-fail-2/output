@@ -1,2 +1,2 @@
-[error] /home/robin/work/spicy/diagnostics/tests/.tmp/spicy.types.unit.count-fail-2/count-fail.spicy:5: cannot coerce expression 'True' of type 'bool' to type 'uint<64>'
+[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.unit.count-fail-2/count-fail.spicy:5:6: cannot coerce expression 'True' of type 'bool' to type 'uint<64>'
 [error] spicyc: aborting after errors

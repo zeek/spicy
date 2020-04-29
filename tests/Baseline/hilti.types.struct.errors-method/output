@@ -1,6 +1,6 @@
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:15: type X does not have a method 'x' matching the signature
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:16: type X does not have a method 'y'
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:17: X::s is not a method
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:18: method lacks a type namespace
-[error] /Users/robin/work/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:20: unknown ID 'self'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:15:1: type X does not have a method 'x' matching the signature
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:16:1: type X does not have a method 'y'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:17:1: X::s is not a method
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:18:1: method lacks a type namespace
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.errors-method/errors-method.hlt:20:34: unknown ID 'self'
 [error] hiltic: aborting after errors

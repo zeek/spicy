@@ -1,6 +1,6 @@
-[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:6: Invalid ID 'a-b': cannot contain '-'
-[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:7: Invalid ID '__private_name': cannot start with '__'
-[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:9: Invalid ID 'Bar-Baz': cannot contain '-'
-[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:14: Invalid ID 'a-b': cannot contain '-'
-[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:17: Invalid ID 'f-1': cannot contain '-'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:6:7: Invalid ID 'a-b': cannot contain '-'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:7:7: Invalid ID '__private_name': cannot start with '__'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:9:6: Invalid ID 'Bar-Baz': cannot contain '-'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:14:11: Invalid ID 'a-b': cannot contain '-'
+[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.id.validation/validation.hlt:17:15: Invalid ID 'f-1': cannot contain '-'
 [error] hiltic: parse error

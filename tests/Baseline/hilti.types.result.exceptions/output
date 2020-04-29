@@ -1,1 +1,1 @@
-uncaught exception hilti::rt::result::NoResult: trouble... (/home/robin/work/spicy/diagnostics/tests/.tmp/hilti.types.result.exceptions/exceptions.hlt:12)
+uncaught exception hilti::rt::result::NoResult: trouble... (/Users/bbannier/src/spicy/tests/.tmp/hilti.types.result.exceptions/exceptions.hlt:12:9)

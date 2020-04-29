@@ -1,4 +1,12 @@
 
+0.4.0-173 | 2020-04-29 08:20:21 +0000
+
+  * Report column information in error messages. Locations are emitted
+    as `<line>:<character>` so that e.g., the second character on the
+    fourth line would be displayed as `4:2`. This extends to ranges as
+    well which look e.g., like `1:1-2:30`. (Benjamin Bannier,
+    Corelight)
+
 0.4.0-171 | 2020-04-28 19:08:50 +0000
 
   * Add a section to the development manual on the structure of the
