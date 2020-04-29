@@ -13,9 +13,17 @@
 #pragma once
 
 #include <algorithm>
-#include <memory>
+#include <cinttypes>
+#include <cstddef>
+#include <cstdint>
+#include <new>
+#include <optional>
+#include <ostream>
+#include <type_traits>
+#include <vector>
 
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/fmt.h>
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/util.h>
 
