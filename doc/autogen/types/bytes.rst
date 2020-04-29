@@ -5,7 +5,7 @@
     Returns an iterator representing the offset *i* inside the bytes
     value.
 
-.. spicy:method:: bytes::decode bytes decode False string (charset: enum~{~~})
+.. spicy:method:: bytes::decode bytes decode False string (charset: enum~{~~} = hilti::Charset::UTF8)
 
     Interprets the ``bytes`` as representing an binary string encoded with
     the given character set, and converts it into a UTF8 string.

@@ -348,7 +348,9 @@ BEGIN_METHOD(bytes, Decode)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::String(),
                          .id = "decode",
-                         .args = {{.id = "charset", .type = type::Enum(type::Wildcard())}},
+                         .args = {{.id = "charset",
+                                   .type = type::Enum(type::Wildcard()),
+                                   .default_ = builder::id("hilti::Charset::UTF8")}},
                          .doc =
                              R"(
 Interprets the ``bytes`` as representing an binary string encoded with the given
