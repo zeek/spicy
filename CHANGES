@@ -1,4 +1,23 @@
 
+0.4.0-187 | 2020-04-30 10:26:13 +0000
+
+  * Improve `vector` implementation. (Benjamin Bannier, Corelight)
+
+        - Fix semantics of safe mutating access to `hilti::rt::Vector` elements.
+        - Remove broken `rt::Vector::set`.
+        - Fix includes of `hilti/rt/types/vector.h`.
+        - Add unit test for a couple of `hilti::rt::Vector` methods.`
+
+  * GH-272: Document precompiled MacOS packages. (Benjamin Bannier, Corelight)
+
+0.4.0-179 | 2020-04-29 15:15:14 +0200
+
+  * GH-192: Remove internal errors that we ended up running into during AST
+    validation. (Robin Sommer, Corelight)
+
+  * GH-178: Fix spurious semicolons in C++ output and potential problem in C++
+    block rendering (Robin Sommer, Corelight)
+
 0.4.0-173 | 2020-04-29 08:20:21 +0000
 
   * Report column information in error messages. Locations are emitted

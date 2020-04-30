@@ -4,9 +4,10 @@
 Installation
 =============
 
-Spicy can be installed from :ref:`pre-built binaries (Linux) <prebuilt_linux>`
-or with :ref:`Homebrew (macOS) <prebuilt_macos>`, executed via :ref:`Docker
-containers <docker>`, or :ref:`built from source <building_from_source>`.
+Spicy can be installed from pre-built binaries (:ref:`Linux <prebuilt_linux>`,
+:ref:`MacOS <prebuilt_macos>`) or with :ref:`Homebrew (macOS)
+<homebrew_macos>`, executed via :ref:`Docker containers <docker>`, or
+:ref:`built from source <building_from_source>`.
 
 Pre-built binaries
 ------------------
@@ -41,10 +42,12 @@ centos-8
     :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8/packages/build/spicy-linux.tar.gz>`,
     `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-8>`__
 
-.. _prebuilt_macos:
-
 macOS
 ~~~~~
+
+.. _homebrew_macos:
+
+.. rubric:: Homebrew
 
 We provide a Homebrew formula for installation of ``HEAD`` versions of Spicy on
 MacOS 10.15/Catalina. After `installing Homebrew
@@ -55,6 +58,22 @@ MacOS 10.15/Catalina. After `installing Homebrew
 To install Spicy execute::
 
     brew install --HEAD spicy
+
+.. _prebuilt_macos:
+
+.. rubric:: Pre-built binaries
+
+We also provide :download:`pre-built binaries <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_release/packages/build/spicy-darwin.tar.gz>`.
+To prevent MacOS from quarantining the files, you should download and unpack
+with the command line, e.g.::
+
+    curl -L https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_release/packages/build/spicy-darwin.tar.gz -o spicy-darwin.tar.gz
+    tar xf spicy-darwin.tar.gz
+
+These binaries require LLVM, and Zeek if you want to use the Spicy plugin for it::
+
+    brew install llvm
+    brew install zeek  # for Zeek integration
 
 .. _docker:
 

@@ -13,9 +13,17 @@
 #pragma once
 
 #include <algorithm>
-#include <memory>
+#include <cinttypes>
+#include <cstddef>
+#include <cstdint>
+#include <new>
+#include <optional>
+#include <ostream>
+#include <type_traits>
+#include <vector>
 
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/fmt.h>
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/util.h>
 
@@ -125,20 +133,24 @@ public:
         return V::back();
     }
 
-    /** Sets an index, auto-growing the vector if necessary. */
-    T& set(uint64_t i, T t) { return (V::data()[i] = std::move(t)); }
-
     Vector& operator=(const Vector&) = default;
     Vector& operator=(Vector&&) noexcept = default;
 
-    const T& operator[](uint64_t i) const {
+    const T& operator[](uint64_t i) const& {
         if ( i >= V::size() )
             throw IndexError(fmt("vector index %" PRIu64 " out of range", i));
 
         return V::data()[i];
     }
 
-    auto operator[](uint64_t i);
+    T operator[](uint64_t i) && {
+        if ( i >= V::size() )
+            throw IndexError(fmt("vector index %" PRIu64 " out of range", i));
+
+        return V::data()[i];
+    }
+
+    auto operator[](uint64_t i) &;
 
     Vector operator+(const Vector& other) const {
         Vector v(*this);
@@ -161,27 +173,38 @@ public:
 
     AssignProxy(V* v, uint64_t i) : _v(v), _i(i) {}
 
-    // TODO(robin): Not sure why we can't return by reference here, compiler says it
-    // would be a temporary.
-    T get() const {
-        if ( _i >= _v->size() )
-            throw IndexError(fmt("vector index %" PRIu64 " out of range", _i));
-
-        return (*_v)[_i];
-    }
-
     AssignProxy& operator=(T t) {
         _v->resize(std::max(static_cast<uint64_t>(_v->size()), _i + 1));
-        (*_v)[_i] = std::move(t);
+        get() = std::move(t);
         return *this;
     }
 
     operator T() const { return get(); }
 
-    bool operator==(const T& t) { return get() == t; }
-    bool operator!=(const T& t) { return get() != t; }
+    bool operator==(const T& t) const { return get() == t; }
+    bool operator!=(const T& t) const { return get() != t; }
+
+    friend std::ostream& operator<<(std::ostream& out, const AssignProxy& x) {
+        out << x.get();
+        return out;
+    }
 
 private:
+    // Get a mutable reference to the wrapped value.
+    //
+    // This method is `const` so we can use it in both `const` and non-`const`
+    // contexts, but `private` since it is not safe (it would e.g., allow
+    // mutating elements of `const` vectors).
+    T& get() const {
+        if ( _i >= _v->size() )
+            throw IndexError(fmt("vector index %" PRIu64 " out of range", _i));
+
+        // Forward to the containers subscript operator.
+        //
+        // `AssignProxy`s are only created for non-const `Vector`s so these casts are safe.
+        return const_cast<T&>(const_cast<const V&>(*_v)[_i]);
+    }
+
     V* _v;
     uint64_t _i;
 };
@@ -189,14 +212,8 @@ private:
 } // namespace vector::detail
 
 template<typename T, typename Allocator>
-inline auto Vector<T, Allocator>::operator[](uint64_t i) {
-    return hilti::rt::vector::detail::template AssignProxy<T, Allocator>(this, i);
-}
-
-template<typename T, typename Allocator>
-inline std::ostream& operator<<(std::ostream& out, const hilti::rt::vector::detail::AssignProxy<T, Allocator>& x) {
-    out << x.get();
-    return out;
+inline auto Vector<T, Allocator>::operator[](uint64_t i) & {
+    return hilti::rt::vector::detail::AssignProxy(this, i);
 }
 
 namespace vector {
@@ -237,7 +254,7 @@ inline std::string to_string(const std::vector<T, Allocator>& x, adl::tag /*unus
 
 template<typename T, typename Allocator>
 inline std::string to_string(const vector::detail::AssignProxy<T, Allocator>& x, adl::tag /*unused*/) {
-    return hilti::rt::to_string(x.get());
+    return hilti::rt::to_string(T(x));
 }
 
 inline std::string to_string(const vector::Empty& /* x */, adl::tag /*unused*/) { return "[]"; }

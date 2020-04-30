@@ -544,10 +544,18 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Block& x) {
                 f << b;
             }
             else {
-                if ( compact_block && ! b )
-                    f << s << ';';
-                else if ( ! b )
-                    f << s << eos() << b;
+                if ( ! b ) {
+                    f << s;
+
+                    if ( b.ensureBracesForBlock() )
+                        f << ' ';
+                    else if ( compact_block )
+                        f << ';';
+                    else
+                        f << eos();
+
+                    f << b;
+                }
                 else {
                     if ( ! s.empty() )
                         f << s << ' ';

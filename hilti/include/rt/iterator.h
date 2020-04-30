@@ -2,10 +2,11 @@
 
 #pragma once
 
+#include <memory>
+#include <utility>
+
 #include <hilti/rt/exception.h>
 #include <hilti/rt/safe-int.h>
-
-#include <utility>
 
 namespace hilti::rt {
 
