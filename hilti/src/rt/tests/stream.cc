@@ -14,6 +14,8 @@ using namespace hilti::rt::bytes;
 using namespace hilti::rt::stream;
 using hilti::rt::to_string;
 
+TEST_SUITE_BEGIN("Stream");
+
 TEST_CASE("Constructors") {
     auto b = "xyz"_b;
     CHECK(b.size());
@@ -389,3 +391,5 @@ TEST_CASE("Block iteration") {
     CHECK(block->is_last);
     CHECK(! v.nextBlock(block));
 }
+
+TEST_SUITE_END();

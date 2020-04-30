@@ -48,6 +48,8 @@ static hilti::Result<hilti::Nothing> finalize(spicy::detail::codegen::Grammar* g
     return hilti::Nothing();
 }
 
+TEST_SUITE_BEGIN("Grammar");
+
 TEST_CASE("basic") {
     auto g = spicy::detail::codegen::Grammar("basic");
     auto l1 = literal("l1", "l1-val");
@@ -152,3 +154,5 @@ TEST_CASE("example4") {
     g.resolve(&all, sequence("All", {list2, colon}));
     CHECK(finalize(&g, all));
 }
+
+TEST_SUITE_END();

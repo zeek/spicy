@@ -27,6 +27,8 @@ static auto ast() {
     return hilti::Node{std::move(m)};
 }
 
+TEST_SUITE_BEGIN("Visitor");
+
 TEST_CASE("Single-shot, result, constant node") {
     struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         using base_t::base_t;
@@ -249,7 +251,6 @@ TEST_CASE("Copy node by value") {
     CHECK(! hilti::type::isConstant(t));
 }
 
-
 TEST_CASE("Sort node errors") {
     hilti::node::Error e1 = {.message = "A", .location = hilti::Location("foo.txt:1"), .context = {"xxx"}};
     hilti::node::Error e2 = {.message = "A", .location = hilti::Location("foo.txt:1"), .context = {"yyy"}};
@@ -277,3 +278,5 @@ TEST_CASE("Sort node errors") {
     CHECK(e4 < e5);
     CHECK(! (e5 < e4));
 }
+
+TEST_SUITE_END();

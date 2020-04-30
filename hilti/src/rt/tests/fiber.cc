@@ -16,6 +16,8 @@ public:
 };
 
 
+TEST_SUITE_BEGIN("fiber");
+
 TEST_CASE("init") { hilti::rt::init(); }
 
 TEST_CASE("execute-void") {
@@ -207,3 +209,5 @@ TEST_CASE("stats") {
     REQUIRE(stats.cached == 2);
     REQUIRE(stats.max == 2);
 }
+
+TEST_SUITE_END();
