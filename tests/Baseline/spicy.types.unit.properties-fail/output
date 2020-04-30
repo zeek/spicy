@@ -1,0 +1,12 @@
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:9:5: %port requires an argument
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:10:5: %port requires a port as its argument
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:11:5: %description requires an argument
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:12:5: %description requires a string argument
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:13:5: %random-access does not accept an argument
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:14:5: %filter does not accept an argument
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:15:5: %byte-order requires an expression
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:16:5: %mime-type requires an argument
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:17:5: %mime-type requires a string argument
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:18:5: %mime-type argument must follow "main/sub" form
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.properties-fail/properties-fail.spicy:19:5: unknown property '%unknown'
+[error] spicyc: aborting after errors

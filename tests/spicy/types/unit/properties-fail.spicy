@@ -1,0 +1,20 @@
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC:      btest-diff output
+#
+# Wrong use of unit properties.
+
+module Test;
+
+public type Foo = unit {
+    %port;
+    %port = 42;
+    %description;
+    %description = True;
+    %random-access = True;
+    %filter = "string";
+    %byte-order;
+    %mime-type;
+    %mime-type = 42;
+    %mime-type = "kaputt";
+    %unknown;
+};

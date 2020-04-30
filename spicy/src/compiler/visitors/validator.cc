@@ -85,8 +85,10 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 return;
             }
 
-            if ( ! i.expression()->type().isA<type::String>() )
+            if ( ! i.expression()->type().isA<type::String>() ) {
                 error("%mime-type requires a string argument", p);
+                return;
+            }
 
             if ( auto x = i.expression()->tryAs<hilti::expression::Ctor>() ) {
                 auto mt = x->ctor().as<hilti::ctor::String>().value();
@@ -98,7 +100,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
         else if ( i.id().str() == "%port" ) {
             if ( ! i.expression() ) {
-                error("%ports requires an argument", p);
+                error("%port requires an argument", p);
                 return;
             }
 
