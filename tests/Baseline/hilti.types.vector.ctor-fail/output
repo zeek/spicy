@@ -1,2 +1,2 @@
-[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.vector.ctor-fail/ctor-fail.hlt:6:16: type mismatch in vector elements
+[error] /home/robin/work/spicy/topic/tests/.tmp/hilti.types.vector.ctor-fail/ctor-fail.hlt:6:1: vector elements have inconsistent types
 [error] hiltic: aborting after errors

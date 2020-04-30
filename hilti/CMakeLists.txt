@@ -47,6 +47,7 @@ autogen_dispatchers(SOURCES_TYPE_ERASED ${AUTOGEN_H}/__dispatchers.h
 
 set(SOURCES_COMPILER
     src/ast/builder/builder.cc
+    src/ast/builder/type.cc
     src/ast/expression.cc
     src/ast/expressions
     src/ast/expressions/id.cc

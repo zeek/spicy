@@ -136,30 +136,19 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const ctor::List& n, position_t p) {
-        auto t = n.elementType();
-
-        if ( ! n.value().empty() && t == type::unknown )
-            error("non-empty list cannot have unknown type", p);
+        if ( ! n.value().empty() && n.elementType() == type::unknown ) {
+            // List constructors are often used to initialize other elements,
+            // and those may coerce them into the right type even if the
+            // elements aren't consistent. We assume we are all good in that
+            // case.
+            if ( auto c = p.parent().tryAs<ctor::Coerced>(); ! c || c->type() == type::unknown )
+                error("list elements have inconsistent types", p);
+        }
     }
 
     void operator()(const ctor::Map& n, position_t p) {
-        auto kt = n.keyType();
-        auto et = n.elementType();
-
-        if ( ! n.value().empty() && (kt == type::unknown || et == type::unknown) )
-            error("non-empty map cannot have unknown type", p);
-
-        for ( const auto& [k, v] : n.value() ) {
-            if ( k.type() != kt ) {
-                error("type mismatch in map keys", p);
-                break;
-            }
-
-            if ( v.type() != et ) {
-                error("type mismatch in map values", p);
-                break;
-            }
-        }
+        if ( ! n.value().empty() && (n.keyType() == type::unknown || n.elementType() == type::unknown) )
+            error("map elements have inconsistent types", p);
     }
 
     void operator()(const ctor::Null& c, position_t p) {}
@@ -172,17 +161,8 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const ctor::Set& n, position_t p) {
-        auto t = n.elementType();
-
-        if ( ! n.value().empty() && t == type::unknown )
-            error("non-empty set cannot have unknown type", p);
-
-        for ( const auto& e : n.value() ) {
-            if ( e.type() != n.elementType() ) {
-                error("type mismatch in set elements", p);
-                break;
-            }
-        }
+        if ( ! n.value().empty() && n.elementType() == type::unknown )
+            error("set elements have inconsistent types", p);
     }
 
     void operator()(const ctor::Struct& n, position_t p) {
@@ -197,17 +177,8 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const ctor::Vector& n, position_t p) {
-        auto t = n.elementType();
-
-        if ( ! n.value().empty() && t == type::unknown )
-            error("non-empty vector cannot have unknown type", p);
-
-        for ( const auto& e : n.value() ) {
-            if ( e.type() != n.elementType() ) {
-                error("type mismatch in vector elements", p);
-                break;
-            }
-        }
+        if ( ! n.value().empty() && n.elementType() == type::unknown )
+            error("vector elements have inconsistent types", p);
     }
 
     ////// Expressions

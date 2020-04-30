@@ -77,8 +77,118 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         return {coerced.nexpr->as<expression::Ctor>().ctor().as<ctor::Tuple>().value()};
     }
 
+    Result<std::optional<std::vector<Expression>>> coerceExpressions(const Type& dst,
+                                                                     const std::vector<Expression>& exprs) {
+        bool changed = false;
+        std::vector<Expression> nexprs;
+
+        for ( const auto& e : exprs ) {
+            auto coerced = coerceExpression(e, type::constant(dst), CoercionStyle::TryAllForAssignment);
+            if ( ! coerced )
+                return result::Error("coercion failed");
+
+            if ( coerced.nexpr )
+                changed = true;
+
+            nexprs.emplace_back(std::move(*coerced.coerced));
+        }
+
+        if ( changed )
+            return {std::move(nexprs)};
+        else
+            // No change.
+            return {std::nullopt};
+    }
+
     void operator()(const Attribute& n) {
         // TODO(robin): Coerce attributes with expressions.
+    }
+
+    void operator()(const ctor::List& n, position_t p) {
+        if ( auto t = n.elementType(); t != type::unknown ) {
+            // Coerce all elements to the type's element type.
+            auto coerced = coerceExpressions(t, n.value());
+            if ( ! coerced ) {
+                p.node.addError("type mismatch in list elements");
+                return;
+            }
+
+            if ( *coerced ) {
+                auto m = ctor::List(std::move(t), **coerced, n.meta());
+                replaceNode(&p, std::move(m));
+            }
+        }
+    }
+
+    void operator()(const ctor::Map& n, position_t p) {
+        auto keys = util::transform(n.value(), [](const auto& e) { return e.first; });
+        auto values = util::transform(n.value(), [](const auto& e) { return e.second; });
+        bool changed = false;
+
+        if ( auto t = n.keyType(); t != type::unknown ) {
+            // Coerce all elements to the type's element type.
+            auto coerced = coerceExpressions(t, keys);
+            if ( ! coerced ) {
+                p.node.addError("type mismatch in map keys");
+                return;
+            }
+
+            if ( *coerced ) {
+                keys = **coerced;
+                changed = true;
+            }
+        }
+
+        if ( auto t = n.elementType(); t != type::unknown ) {
+            // Coerce all elements to the type's element type.
+            auto coerced = coerceExpressions(t, values);
+            if ( ! coerced ) {
+                p.node.addError("type mismatch in map values");
+                return;
+            }
+
+            if ( *coerced ) {
+                values = **coerced;
+                changed = true;
+            }
+        }
+
+        if ( changed ) {
+            auto m = ctor::Map(n.keyType(), n.elementType(), util::zip2(keys, values), n.meta());
+            replaceNode(&p, std::move(m));
+        }
+    }
+
+    void operator()(const ctor::Set& n, position_t p) {
+        if ( auto t = n.elementType(); t != type::unknown ) {
+            // Coerce all elements to the type's element type.
+            auto coerced = coerceExpressions(t, n.value());
+            if ( ! coerced ) {
+                p.node.addError("type mismatch in set elements");
+                return;
+            }
+
+            if ( *coerced ) {
+                auto m = ctor::Set(std::move(t), **coerced, n.meta());
+                replaceNode(&p, std::move(m));
+            }
+        }
+    }
+
+    void operator()(const ctor::Vector& n, position_t p) {
+        if ( auto t = n.elementType(); t != type::unknown ) {
+            // Coerce all elements to the type's element type.
+            auto coerced = coerceExpressions(t, n.value());
+            if ( ! coerced ) {
+                p.node.addError("type mismatch in vector elements");
+                return;
+            }
+
+            if ( *coerced ) {
+                auto m = ctor::Vector(std::move(t), **coerced, n.meta());
+                replaceNode(&p, std::move(m));
+            }
+        }
     }
 
     void operator()(const ctor::Default& n, position_t p) {

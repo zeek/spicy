@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <hilti/ast/builder/type.h>
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/unknown.h>
@@ -15,7 +16,8 @@ namespace ctor {
 /** AST node for a vector constructor. */
 class Vector : public NodeBase, public hilti::trait::isCtor {
 public:
-    Vector(const std::vector<Expression>& e, const Meta& m = Meta()) : NodeBase(nodes(_inferType(e, m), e), m) {}
+    Vector(const std::vector<Expression>& e, const Meta& m = Meta())
+        : NodeBase(nodes(builder::typeOfExpressions(e), e), m) {}
     Vector(Type t, std::vector<Expression> e, Meta m = Meta())
         : NodeBase(nodes(std::move(t), std::move(e)), std::move(m)) {}
 
@@ -38,11 +40,6 @@ public:
     auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-private:
-    Type _inferType(const std::vector<Expression>& e, const Meta& /* m */) {
-        return e.size() ? e.front().type() : type::unknown;
-    }
 };
 
 } // namespace ctor

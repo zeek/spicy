@@ -1,4 +1,9 @@
 
+0.4.0-189 | 2020-04-30 10:33:54 +0000
+
+  * GH-196: Reject container constructors with inconsistent types, and
+    coerce elements once the type is known. (Robin Sommer, Corelight)
+
 0.4.0-187 | 2020-04-30 10:26:13 +0000
 
   * Improve `vector` implementation. (Benjamin Bannier, Corelight)

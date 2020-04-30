@@ -31,4 +31,10 @@ hilti::print(l3);
 hilti::print(l4);
 hilti::print(l5);
 
+local value_ref<string> x = "foo"; # type that coerces to string
+assert list("foo", "bar") == list<string>(x, "bar");
+
+local vector<string> y = [x, "bar"];
+assert list("foo", "bar") == y;
+
 }
