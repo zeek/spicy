@@ -6,7 +6,7 @@ import spicy;
 
 ## A filter that performs zlib decompression.
 type Zlib = unit {
-    %filter
+    %filter;
 
     data: bytes &chunked &eod {
         self.forward(spicy::zlib_decompress(self.z, self.data));
@@ -21,7 +21,7 @@ type Zlib = unit {
 
 ## A filter that performs Base64 decoding.
 type Base64Decode = unit {
-    %filter
+    %filter;
 
     data: bytes &chunked &eod {
         self.forward(spicy::base64_decode(self.z, self.data));

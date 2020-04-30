@@ -487,10 +487,12 @@ Meta data
 
 Units can provide meta data about their semantics through *properties*
 that both Spicy itself and host applications can access. One defines
-properties inside the unit's type as ``%<property> = <value>`` tuples.
-Currently, the following properties are defined:
+properties inside the unit's type through either a ``%<property> =
+<value>;`` tuple, or just as ``%<property>;`` if the property does not
+take an argument. Currently, units support the following meta data
+properties:
 
-``%mime-type``
+``%mime-type = STRING``
     A string of the form ``"<type>/<subtype>"`` that defines the MIME
     type for content the unit knows how to parse. This may include a
     ``*`` wildcard for either the type or subtype. We use a
@@ -501,18 +503,21 @@ Currently, the following properties are defined:
     You can specify this property more than once to associate a unit
     with multiple types.
 
-``%port``
-    A :ref:`type_port` to associate this unit with. This property has
-    no built-in effect, but host applications may use of the
-    information to decide which unit type to use for parsing a
-    connection's payload.
-
-``%description``
+``%description = STRING``
     A short textual description of the unit type (i.e., the parser
     that it defines). Host applications have access to this property,
     and ``spicy-driver`` includes the information into the list of
     available parsers that it prints with the ``--list-parsers``
     option.
+
+``%port = PORT_VALUE``
+    A :ref:`type_port` to associate this unit with. This property has
+    no built-in effect, but host applications may use of the
+    information to decide which unit type to use for parsing a
+    connection's payload.
+
+Units support some further properties for other purposes, which we
+introduce in the corresponding sections.
 
 Parsing Types
 =============
@@ -1122,7 +1127,7 @@ Here's an example that parses input data twice with different sub units:
     module Test;
 
     public type Foo = unit {
-        %random-access
+        %random-access;
 
         on %init() { self.start = self.input(); }
 
@@ -1186,7 +1191,7 @@ to see it:
     module Test;
 
     type Filter = unit {
-        %filter
+        %filter;
 
         : bytes &eod &chunked {
             self.forward($$.upper());

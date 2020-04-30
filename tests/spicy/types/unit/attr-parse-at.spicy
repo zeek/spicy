@@ -8,7 +8,7 @@ type Foo = unit {
 };
 
 public type test = unit {
-    %random-access
+    %random-access;
 
     a: bytes &size=4;
     b: bytes &size=4;

@@ -2,7 +2,7 @@
 module Test;
 
 public type Foo = unit {
-    %random-access
+    %random-access;
 
     on %init() { self.start = self.input(); }
 

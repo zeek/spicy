@@ -10,7 +10,7 @@ import spicy;
 public type Main = unit {
     # Disable trimming, as that means the subunit will get the full data
     # instances and must pay attention to its current view.
-    %random-access
+    %random-access;
 
     a: bytes &size=5;
     b: Sub;
@@ -34,7 +34,7 @@ public type Sub = unit {
 };
 
 type MyFilter = unit {
-    %filter
+    %filter;
 
     x: bytes &size=1 { self.forward(self.x.upper()); }
     y: bytes &size=2 { self.forward(self.y.upper()); }

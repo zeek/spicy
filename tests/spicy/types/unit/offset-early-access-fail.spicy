@@ -6,7 +6,7 @@ module Mini;
 import spicy;
 
 type Sub = unit {
-    %random-access
+    %random-access;
 
     x: uint16;
     y: uint8;
