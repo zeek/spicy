@@ -43,6 +43,9 @@ TEST_CASE("Vector") {
     CHECK_EQ(to_string(Vector<int8_t>({1})), "[1]");
     CHECK_EQ(to_string(Vector<int8_t>({1, 2})), "[1, 2]");
     CHECK_EQ(to_string(Vector<Vector<int8_t>>({{1, 2}})), "[[1, 2]]");
+
+    CHECK_EQ(to_string(Vector<Vector<int8_t>>({{1, 2}}).begin()), "<vector iterator>");
+    CHECK_EQ(to_string(Vector<Vector<int8_t>>({{1, 2}}).cbegin()), "<const vector iterator>");
 }
 
 TEST_CASE("optional") {

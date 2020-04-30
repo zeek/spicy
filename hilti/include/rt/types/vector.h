@@ -16,8 +16,11 @@
 #include <cinttypes>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <initializer_list>
+#include <memory>
 #include <new>
+#include <optional>
 #include <ostream>
 #include <type_traits>
 #include <vector>
@@ -29,6 +32,9 @@
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
+
+/** Exception flagging invalid arguments passed to a function. */
+HILTI_EXCEPTION(InvalidArgument, RuntimeError);
 
 namespace vector {
 
@@ -73,25 +79,78 @@ bool operator!=(Allocator<T, D1> const&, Allocator<U, D2> const&) noexcept {
     return false;
 }
 
-template<typename T, typename Allocator = std::allocator<T>>
-class SafeIterator
-    : public hilti::rt::detail::iterator::SafeIterator<
-          Vector<T, Allocator>, typename Vector<T, Allocator>::SafeIterator, SafeIterator<T, Allocator>> {
+template<typename T, typename Allocator>
+class Iterator {
+    using V = Vector<T, Allocator>;
+
+    std::weak_ptr<Vector<T, Allocator>*> _control;
+    typename V::size_type _index = 0;
+
 public:
-    using Base =
-        hilti::rt::detail::iterator::SafeIterator<Vector<T, Allocator>, typename Vector<T, Allocator>::SafeIterator,
-                                                  SafeIterator<T, Allocator>>;
-    using Base::Base;
+    Iterator() = default;
+    Iterator(typename V::size_type&& index, const typename V::C& control)
+        : _control(control), _index(std::move(index)) {}
+
+    typename V::reference operator*();
+
+    Iterator& operator++() {
+        ++_index;
+        return *this;
+    }
+
+    Iterator operator++(int) {
+        auto ret = *this;
+        ++(*this);
+        return ret;
+    }
+
+    friend bool operator==(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index == b._index;
+    }
+
+    friend bool operator!=(const Iterator& a, const Iterator& b) { return ! (a == b); }
+
+private:
+    std::optional<std::reference_wrapper<V>> _container();
 };
 
-template<typename T, typename Allocator = std::allocator<T>>
-class SafeConstIterator
-    : public hilti::rt::detail::iterator::SafeIterator<
-          const Vector<T, Allocator>, typename Vector<T, Allocator>::ConstIterator, SafeConstIterator<T, Allocator>> {
+template<typename T, typename Allocator>
+class ConstIterator {
+    using V = Vector<T, Allocator>;
+
+    std::weak_ptr<Vector<T, Allocator>*> _control;
+    typename V::size_type _index = 0;
+
 public:
-    using Base = hilti::rt::detail::iterator::SafeIterator<
-        const Vector<T, Allocator>, typename Vector<T, Allocator>::ConstIterator, SafeConstIterator<T, Allocator>>;
-    using Base::Base;
+    ConstIterator() = default;
+    ConstIterator(typename V::size_type&& index, const typename V::C& control)
+        : _control(control), _index(std::move(index)) {}
+
+    typename V::const_reference operator*();
+
+    ConstIterator& operator++() {
+        ++_index;
+        return *this;
+    }
+
+    ConstIterator operator++(int) {
+        auto ret = *this;
+        ++(*this);
+        return ret;
+    }
+
+    friend bool operator==(const ConstIterator& a, const ConstIterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index == b._index;
+    }
+
+    friend bool operator!=(const ConstIterator& a, const ConstIterator& b) { return ! (a == b); }
+
+private:
+    std::optional<std::reference_wrapper<V>> _container();
 };
 
 } // namespace vector
@@ -100,18 +159,27 @@ public:
 
 /** HILTI's `Vector` is just strong typedef for `std::vector`. */
 template<typename T, typename Allocator>
-class Vector : protected std::vector<T, Allocator>, public hilti::rt::detail::iterator::Controllee {
+class Vector : protected std::vector<T, Allocator> {
 public:
     using V = std::vector<T, Allocator>;
-    using C = hilti::rt::detail::iterator::Controllee;
 
-    using ConstIterator = typename V::const_iterator;
-    using SafeIterator = typename V::iterator;
+    using size_type = typename V::size_type;
+    using reference = T&;
+    using const_reference = const T&;
+    using iterator = vector::Iterator<T, Allocator>;
+    using const_iterator = vector::ConstIterator<T, Allocator>;
+
+    using C = std::shared_ptr<Vector*>;
+    C _control = std::make_shared<Vector<T, Allocator>*>(this);
 
     Vector() = default;
-    Vector(const Vector&) = default;
-    Vector(Vector&&) noexcept = default;
+
+    // Constructing from other `Vector` updates the data, but keeps the control block alive.
+    Vector(const Vector& x) : V(x) {}
+    Vector(Vector&& x) noexcept : V(std::move(x)) {}
+
     Vector(std::initializer_list<T> init, const Allocator& alloc = Allocator()) : V(std::move(init), alloc) {}
+
     Vector(const std::list<T>& l) : std::vector<T>(l.begin(), l.end()) {}
     Vector(std::list<T>&& l) : std::vector<T>(std::move_iterator(l.begin()), std::move_iterator(l.end())) {}
     ~Vector() = default;
@@ -132,8 +200,16 @@ public:
         return V::back();
     }
 
-    Vector& operator=(const Vector&) = default;
-    Vector& operator=(Vector&&) noexcept = default;
+    // Assigning from other `Vector` updates the data, but keeps the control block alive.
+    Vector& operator=(const Vector& x) {
+        static_cast<V&>(*this) = static_cast<const V&>(x);
+        return *this;
+    }
+
+    Vector& operator=(Vector&& x) noexcept {
+        static_cast<V&>(*this) = static_cast<V&&>(std::move(x));
+        return *this;
+    }
 
     const T& operator[](uint64_t i) const& {
         if ( i >= V::size() )
@@ -163,18 +239,26 @@ public:
     }
 
     Vector& operator+=(const Vector& other) {
-        V::insert(V::end(), other.begin(), other.end());
+        V::insert(V::end(), other.V::begin(), other.V::end());
         return *this;
     }
+
+    auto begin() { return iterator(0u, _control); }
+    auto end() { return iterator(size(), _control); }
+
+    auto begin() const { return const_iterator(0u, _control); }
+    auto end() const { return const_iterator(size(), _control); }
+
+    auto cbegin() const { return const_iterator(0u, _control); }
+    auto cend() const { return const_iterator(size(), _control); }
 
     // Methods of `std::vector`.
     using typename V::value_type;
     using V::at;
-    using V::begin;
     using V::clear;
     using V::emplace_back;
     using V::empty;
-    using V::end;
+    using V::pop_back;
     using V::push_back;
     using V::reserve;
     using V::size;
@@ -222,33 +306,33 @@ inline std::string to_string(const std::vector<T, Allocator>& x, adl::tag /*unus
 inline std::string to_string(const vector::Empty& /* x */, adl::tag /*unused*/) { return "[]"; }
 
 template<typename T, typename Allocator>
-inline std::string to_string(const vector::SafeIterator<T, Allocator>& /*unused*/, adl::tag /*unused*/) {
+inline std::string to_string(const vector::Iterator<T, Allocator>& /*unused*/, adl::tag /*unused*/) {
     return "<vector iterator>";
 }
 
 template<typename T, typename Allocator>
-inline std::string to_string(const vector::SafeConstIterator<T, Allocator>& /*unused*/, adl::tag /*unused*/) {
+inline std::string to_string(const vector::ConstIterator<T, Allocator>& /*unused*/, adl::tag /*unused*/) {
     return "<const vector iterator>";
 }
 
 template<typename T, typename Allocator>
 inline auto safe_begin(const Vector<T, Allocator>& x, adl::tag /*unused*/) {
-    return vector::SafeConstIterator<T, Allocator>(x, x.begin());
+    return x.cbegin();
 }
 
 template<typename T, typename Allocator>
 inline auto safe_begin(Vector<T, Allocator>& x, adl::tag /*unused*/) {
-    return vector::SafeIterator<T, Allocator>(x, x.begin());
+    return x.begin();
 }
 
 template<typename T, typename Allocator>
 inline auto safe_end(const Vector<T, Allocator>& x, adl::tag /*unused*/) {
-    return vector::SafeConstIterator<T, Allocator>(x, x.end());
+    return x.cend();
 }
 
 template<typename T, typename Allocator>
 inline auto safe_end(Vector<T, Allocator>& x, adl::tag /*unused*/) {
-    return vector::SafeIterator<T, Allocator>(x, x.end());
+    return x.end();
 }
 
 } // namespace detail::adl
@@ -265,20 +349,70 @@ inline std::ostream& operator<<(std::ostream& out, const vector::Empty& x) {
 }
 
 template<typename T, typename Allocator>
-inline std::ostream& operator<<(std::ostream& out, const vector::SafeIterator<T, Allocator>& x) {
-    out << to_string(x);
-    return out;
-}
-
-template<typename T, typename Allocator>
-inline std::ostream& operator<<(std::ostream& out, const vector::SafeConstIterator<T, Allocator>& x) {
-    out << to_string(x);
-    return out;
-}
-
-template<typename T, typename Allocator>
 bool operator!=(const Vector<T, Allocator>& a, const Vector<T, Allocator>& b) {
     return ! (a == b);
+}
+
+template<typename T, typename Allocator>
+typename Vector<T, Allocator>::reference vector::Iterator<T, Allocator>::operator*() {
+    if ( auto&& c = _container() ) {
+        auto&& data = c->get();
+
+        if ( _index >= data.size() ) {
+            throw InvalidIterator(fmt("index %s out of bounds", _index));
+        }
+
+        return data[_index];
+    }
+
+    throw InvalidIterator("bound object has expired");
+}
+
+namespace vector {
+
+template<typename T, typename Allocator>
+inline std::ostream& operator<<(std::ostream& out, const vector::Iterator<T, Allocator>& /*unused*/) {
+    return out << "<vector iterator>";
+}
+
+template<typename T, typename Allocator>
+inline std::ostream& operator<<(std::ostream& out, const vector::ConstIterator<T, Allocator>& /*unused*/) {
+    return out << "<const vector iterator>";
+}
+
+} // namespace vector
+
+template<typename T, typename Allocator>
+std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::Iterator<T, Allocator>::_container() {
+    if ( auto l = _control.lock() ) {
+        return {std::ref(**l)};
+    }
+
+    return std::nullopt;
+}
+
+template<typename T, typename Allocator>
+typename Vector<T, Allocator>::const_reference vector::ConstIterator<T, Allocator>::operator*() {
+    if ( auto&& c = _container() ) {
+        auto&& data = c->get();
+
+        if ( _index >= data.size() ) {
+            throw InvalidIterator(fmt("index %s out of bounds", _index));
+        }
+
+        return data[_index];
+    }
+
+    throw InvalidIterator("bound object has expired");
+}
+
+template<typename T, typename Allocator>
+std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::ConstIterator<T, Allocator>::_container() {
+    if ( auto l = _control.lock() ) {
+        return {std::ref(**l)};
+    }
+
+    return std::nullopt;
 }
 
 } // namespace hilti::rt

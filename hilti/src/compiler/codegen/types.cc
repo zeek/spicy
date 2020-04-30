@@ -403,14 +403,14 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
 
     result_t operator()(const type::vector::Iterator& n) {
-        auto i = (n.isConstant() ? "SafeConstIterator" : "SafeIterator");
+        auto i = (n.isConstant() ? "const_iterator" : "iterator");
         auto x = cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage);
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n.dereferencedType()) )
             allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
-        auto t = fmt("hilti::rt::vector::%s<%s%s>", i, x, allocator);
+        auto t = fmt("hilti::rt::Vector<%s%s>::%s", x, allocator, i);
         return CxxTypes{.base_type = fmt("%s", t)};
     }
 
