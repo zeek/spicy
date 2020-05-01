@@ -29,7 +29,7 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 172
+%expect 170
 %expect-rr 142
 
 %union {}
@@ -956,7 +956,7 @@ struct_elems  : struct_elems ',' struct_elem     { $$ = std::move($1); $$.push_b
 
 struct_elem   : '$' local_id  '=' expr           { $$ = hilti::ctor::struct_::Field(std::move($2), std::move($4)); }
 
-regexp        : re_patterns opt_attributes       { $$ = hilti::ctor::RegExp(std::move($1), std::move($2), __loc__); }
+regexp        : re_patterns                      { $$ = hilti::ctor::RegExp(std::move($1), {}, __loc__); }
 
 re_patterns   : re_patterns '|' re_pattern_constant
                                                  { $$ = $1; $$.push_back(std::move($3)); }
