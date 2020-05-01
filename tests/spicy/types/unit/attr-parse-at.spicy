@@ -7,6 +7,10 @@ type Foo = unit {
     all: bytes &size=10;
 };
 
+type Bar = unit {
+    all: bytes &eod;
+};
+
 public type test = unit {
     %random-access;
 
@@ -14,11 +18,12 @@ public type test = unit {
     b: bytes &size=4;
 
     C: Foo &parse-at=self.input();
+    D: Bar &parse-at=self.input() &size=5;
 
     d: bytes &size=2;
 
     on %done {
-        print self.a, self.b, self.C.all, self.d;
+        print self.a, self.b, self.C.all, self.D.all, self.d;
         }
 
 };

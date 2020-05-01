@@ -187,6 +187,49 @@ There's also a programmatic way to change a field's type to something
 that's different than what's being parsed, see the
 :ref:`attribute_convert`.
 
+.. _attribute_size:
+
+.. rubric:: Limiting Input Size
+
+You can limit the input that a field receives by attaching a
+``&size=EXPR`` attribute that specifies the number of raw bytes to
+make available. This works on top of any other attributes that control
+the field's parsing. From the field's perspective, such a size limit
+acts just like reaching the end of the input stream at the specified
+position. Example:
+
+.. spicy-code:: size.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        x: int16[] &size=6;
+        y: bytes &eod;
+        on %done { print self; }
+    };
+
+.. spicy-output:: size.spicy
+    :exec: printf '\000\001\000\002\000\003xyz' | spicy-driver %INPUT
+    :show-with: foo.spicy
+
+As you can see, ``x`` receives 6 bytes of input, which it then turns
+into three 16-bit integers.
+
+Normally, the field must consume all the bytes specified by ``&size``,
+otherwise a parse error will be triggered. Some types support an
+additional ``&eod`` attribute to lift this restrictions; we discuss
+that in the corresponding type's section where applicable.
+
+After a field with a ``&size=EXPR`` attribute, parsing will always
+move ahead the full amount of bytes, even if the field permitted to
+not consume them all.
+
+.. todo::
+
+    Parsing a regular expression would make a nice exmaple for
+    ``&size`` as well, but we currently have a bug there
+    (:issue:`286`).
+
 .. rubric:: Anonymous Fields
 
 Field names are optional. If skipped, the field becomes an *anonymous*
@@ -645,11 +688,18 @@ stop. The following attributes are supported:
     Consumes all subsequent data until the end of the input is reached.
 
 ``&size=N``
-    Consumes exactly ``N`` bytes.
+    Consumes exactly ``N`` bytes. The attribute may be combined with
+    ``&eod`` to consume up to ``N`` bytes instead (i.e., permit
+    running out of input before the size limit is reached).
+
+    (This attribute :ref:`works for fields of all types
+    <attribute_size>`. We list it here because it's particularly
+    common to use it with `bytes`.)
 
 ``&until=DELIM``
     Consumes bytes until the specified delimiter is found. ``DELIM``
-    must be of type ``bytes`` itself.
+    must be of type ``bytes`` itself. The delimiter will not be
+    included into the resulting value.
 
 ``&until-including=DELIM``
     Similar to ``&until``, but this does include the delimiter
@@ -668,6 +718,11 @@ execute with the new part as their ``$$``. Parsing with ``&chunked``
 will eventually still consume the same number of bytes overall, but it
 avoids buffering everything in cases where that's either infeasible or
 simply not not needed.
+
+.. note::
+
+    ``&chunked`` can currently not be combined with ``&until`` or
+    ``&until-including``.
 
 Bytes fields support parsing constants: If a ``bytes`` constant is
 specified instead of a field type, parsing will expect to find the
@@ -785,17 +840,19 @@ loop. To that end, vectors support the following attributes:
     Parses the vector from the subsequent ``N`` bytes of input data.
     This effectively limits the available input to the corresponding
     window, letting the vector parse elements until it runs out of
-    data.
+    data. (This attribute :ref:`works for fields of all types
+    <attribute_size>`. We list it here because it's particularly
+    common to use it with vectors.)
 
-``&until=VAL``
-    Parses elements until one with the value ``VAL`` is encountered.
-    ``VAL`` must be of the same type as the vector's elements. Once
+``&until=EXPR``
+    Parses elements until one with the value ``EXPR`` is encountered.
+    ``EXPR`` must be of the same type as the vector's elements. Once
     the specified element is encountered, vector parsing stops
     *without* including the matching one into the field's vector
     value.
 
-``&until-including=VAL``
-    Similar to ``&until``, but does include the final element ``VAL``
+``&until-including=EXPR``
+    Similar to ``&until``, but does include the final element ``EXPR``
     into the field's vector when stopping parsing.
 
 ``&while=EXPR``
