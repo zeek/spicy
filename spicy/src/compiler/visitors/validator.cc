@@ -160,7 +160,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
         else if ( a.tag() == "&while" || a.tag() == "&until_including" ) {
             if ( auto f = getAttrField(p) ) {
-                if ( ! f->parseType().isA<type::Vector>() )
+                if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>()) )
                     error(fmt("%s is only valid for fields of type bytes or vector", a.tag()), p);
                 else if ( ! a.hasValue() )
                     error(fmt("%s must provide an expression", a.tag()), p);
@@ -224,14 +224,21 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         if ( f.parseType().isA<type::Bytes>() && ! f.ctor() ) {
             auto eod_attr = AttributeSet::find(f.attributes(), "&eod");
             auto until_attr = AttributeSet::find(f.attributes(), "&until");
+            auto until_including_attr = AttributeSet::find(f.attributes(), "&until_including");
 
-            if ( eod_attr ) {
-                if ( until_attr )
-                    error("&eod incompatible with &until", p);
+            std::vector<std::string> attrs_present;
+            for ( const auto& i : {eod_attr, parse_from_attr, parse_at_attr, until_attr, until_including_attr} ) {
+                if ( i )
+                    attrs_present.emplace_back(i->tag());
             }
 
-            else if ( ! until_attr && ! size_attr && ! parse_from_attr && ! parse_at_attr )
-                error("bytes field requires one of &size, &eod, or &until", p);
+            // &size can be combined with any other attribute, or be used standalone.
+
+            if ( attrs_present.size() > 1 )
+                error(fmt("attributes cannot be combined: %s", util::join(attrs_present, ", ")), p);
+
+            if ( attrs_present.empty() && ! size_attr )
+                error("bytes field requires one of &eod, &parse_at, &parse_from, &size, &until, &until-including", p);
         }
 
         if ( f.parseType().isA<type::Address>() ) {

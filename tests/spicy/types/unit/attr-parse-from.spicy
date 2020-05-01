@@ -5,7 +5,7 @@ module Mini;
 
 public type test = unit {
     a: bytes &size=5;
-    B: bytes &size=5 &parse-from=b"ABCDE";
+    B: bytes &parse-from=b"ABCDE";
     C: bytes &parse-from=b"FGHI";
     d: bytes &size=5;
 
