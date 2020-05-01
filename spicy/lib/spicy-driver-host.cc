@@ -50,14 +50,14 @@ void SpicyDriver::usage() {
            "\n"
            "Options:\n"
            "\n"
-           "  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI "
-           "exceptions.\n"
-           "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
            "  -i | --increment <i>            Feed data incrementenally in chunks of size n.\n"
            "  -l | --list-parsers             List available parsers and exit.\n"
            "  -p | --parser <name>            Use parser <name> to process input. Only neeeded if more than one parser "
            "is available.\n"
            "  -v | --version                  Print version information.\n"
+           "  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI "
+           "exceptions.\n"
+           "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
            "\n";
 }
 
