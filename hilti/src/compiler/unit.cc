@@ -498,11 +498,12 @@ void Unit::_determineCompilationRequirements(const Node& module) {
         void operator()(const declaration::ImportedModule& n, const_position_t p) {
             for ( const auto& i : p.node.scope()->items() ) {
                 for ( const auto& m : i.second ) {
-                    if ( ! m->template isA<Module>() )
+                    auto md = m->tryAs<declaration::Module>();
+                    if ( ! md )
                         continue;
 
                     auto v = VisitorModule();
-                    for ( auto i : v.walk(*m) ) {
+                    for ( auto i : v.walk(md->root()) ) {
                         if ( auto x = v.dispatch(i); ! (x && *x) )
                             continue;
 

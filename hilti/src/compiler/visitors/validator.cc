@@ -51,7 +51,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                 if ( node->isA<declaration::Function>() && node->typeid_() == firstNode->typeid_() )
                     continue;
                 else if ( node->isA<declaration::ImportedModule>() &&
-                          (node->typeid_() == firstNode->typeid_() || firstNode->isA<Module>()) )
+                          (node->typeid_() == firstNode->typeid_() || firstNode->isA<declaration::Module>()) )
                     continue;
 
                 // TODO: Should make preDispatch() recevie a non-const node

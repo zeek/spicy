@@ -63,6 +63,7 @@ hilti::declaration::Function : isDeclaration
 hilti::declaration::GlobalVariable : isDeclaration
 hilti::declaration::ImportedModule : isDeclaration
 hilti::declaration::LocalVariable : isDeclaration
+hilti::declaration::Module : isDeclaration
 hilti::declaration::Parameter : isDeclaration
 hilti::declaration::Property : isDeclaration
 hilti::declaration::Type : isDeclaration

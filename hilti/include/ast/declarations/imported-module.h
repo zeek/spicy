@@ -32,9 +32,9 @@ public:
     ImportedModule(ID id, std::filesystem::path path, Meta m = Meta())
         : NodeBase({std::move(id)}, std::move(m)), _path(std::move(path)) {}
 
-    Result<Module> module() const {
+    Result<hilti::Module> module() const {
         if ( _module )
-            return _module->template as<Module>();
+            return _module->template as<hilti::Module>();
 
         return result::Error("module reference not initialized yet");
     }
