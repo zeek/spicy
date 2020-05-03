@@ -6,7 +6,7 @@ module Mini;
 import spicy;
 
 type Sub = unit {
-    %random-access
+    %random-access;
 
     on %init   { print "Sub:init", self.offset(); }
     x: uint16  { print "Sub:x", self.offset(); }
@@ -14,7 +14,7 @@ type Sub = unit {
 };
 
 public type Test = unit {
-    %random-access
+    %random-access;
 
     on %init           { print "Main:init", self.offset(); }
     : Sub[3]   foreach { print "Main:Sub", self.offset(); }

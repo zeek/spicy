@@ -6,7 +6,7 @@ module Mini;
 import spicy;
 
 public type Test = unit {
-    %random-access
+    %random-access;
     x1: Sub(self, 0);
     x2: Sub(self, 3);
     on %done   { print self; }

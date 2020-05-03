@@ -23,7 +23,7 @@ public type Main = unit {
 };
 
 type MyFilter = unit {
-    %filter
+    %filter;
 
     x: bytes &size=2 { self.forward(b"ABC"); }
     y: bytes &size=3 { self.forward(b"DEFGH"); }

@@ -1,4 +1,33 @@
 
+0.4.0-203 | 2020-05-03 15:37:30 +0000
+
+  * GH-265: Require unit properties to end with a semicolon. We were
+    inconsistent with that. Note that this will break existing code
+    that wasn't using the semicolons, including some examples from the
+    documentation (which have been updated). For example, it's now
+    `%filter;` instead of `%filter`. (Robin Sommer, Corelight)
+
+  * GH-266: Fix missing validation of unit properties. (Robin Sommer,
+    Corelight)
+
+  * GH-262: Allow signs in intN/uintN() constructors. (Robin Sommer,
+    Corelight)
+
+  * GH-254: Make UTF8 default for bytes::decode(). (Robin Sommer,
+    Corelight)
+
+  * GH-248: Fix AST inconsistency with how modules were stored in
+    scopes. (Robin Sommer, Corelight)
+
+  * GH-263: Improve error messages for unresolved operators and IDs.
+   (Robin Sommer, Corelight)
+
+  * Improve suppression of repetitive errors. (Robin Sommer,
+    Corelight)
+
+  * Avoid leaking passwords into command lines in `docker/Makefile`.
+    (Benjamin Bannier, Corelight)
+
 0.4.0-189 | 2020-04-30 10:33:54 +0000
 
   * GH-196: Reject container constructors with inconsistent types, and

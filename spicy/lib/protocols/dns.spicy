@@ -14,7 +14,7 @@ type RRType = enum {
 };
 
 public type Message = unit {
-    %random-access
+    %random-access;
 
     header:     Header;
     question:   (Question(self))[self.header.qdcount];
@@ -118,7 +118,7 @@ type Pointer = unit(msg: Message, label: Label) {
     };
 
 type Label = unit(msg: Message, inout name: Name) {
-    %random-access
+    %random-access;
 
     len: bitfield(8) {
         offset: 0..5;
