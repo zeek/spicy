@@ -36,3 +36,5 @@ global i64d = int64(-1);
 
 global u64b = uint64(0xFFFFFFFFffffffff);
 global u64c = uint64(0x8000000000000000);
+
+assert int64(+01) == +1;
