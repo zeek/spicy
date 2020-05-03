@@ -313,7 +313,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const expression::UnresolvedOperator& n, position_t p) {
-        error("operator left unresolved", p, node::ErrorPriority::Low);
+        error(fmt("unsupported operator: %s", hilti::detail::renderOperatorInstance(n)), p, node::ErrorPriority::Low);
     }
 
     ////// Types
@@ -419,7 +419,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
     void operator()(const type::UnresolvedID& n, position_t p) {
         if ( ! p.node.hasErrors() )
-            error("ID left unresolved", p, node::ErrorPriority::Low);
+            error(fmt("unknown ID '%s'", n.id()), p, node::ErrorPriority::Low);
     }
 
     void operator()(const type::WeakReference& n, position_t p) {

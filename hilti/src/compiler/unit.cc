@@ -541,51 +541,52 @@ bool Unit::_validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
 /**
  * Recursive helper function to traverse the AST and collect relevant errors.
  * We pick errors on child nodes first, and then hide any further ones
- * located in parents along the way (unless the child's error is low
- * priority). If a node doesn't have a location, we substitute the closest
- * parent location.
+ * located in parents along the way. We take only the first error in each
+ * priority class (normal & low). If a node doesn't have a location, we
+ * substitute the closest parent location.
  *
  * @param n root node for validation
  * @param closest_location location closest to *n* on the path leading to it
  * @param errors errors recorded for reporting so far; function will extend this
- * @return true if no normal priority errors were found inside the subtree
- * starting at *n*, which means that errors above the node should be
- * reported; false if errors above *n* should not be reported.
+ * @return two booleans with the 1st indicating if we have already found a
+ * normal priroity error on the path, and the 2nd if we have already found a
+ * low priority error on the path.
  */
-static bool _recursiveValidateAST(const Node& n, Location closest_location, std::vector<node::Error>* errors) {
-    auto valid = true;
+static std::pair<bool, bool> _recursiveValidateAST(const Node& n, Location closest_location,
+                                                   std::vector<node::Error>* errors) {
+    auto have_normal = false;
+    auto have_low = false;
 
     if ( n.location() )
         closest_location = n.location();
 
     for ( const auto& c : n.childs() ) {
-        if ( ! _recursiveValidateAST(c, closest_location, errors) )
-            valid = false;
+        auto [normal, low] = _recursiveValidateAST(c, closest_location, errors);
+        have_normal = (have_normal || normal);
+        have_low = (have_low || low);
     }
 
-    if ( ! valid )
-        return false;
+    if ( have_normal )
+        return std::make_pair(have_normal, have_low);
 
     if ( n.hasErrors() ) {
         for ( auto&& e : n.errors() ) {
             if ( ! e.location && closest_location )
                 e.location = closest_location;
 
-            errors->emplace_back(std::move(e));
+            if ( ! (have_normal || have_low) )
+                errors->emplace_back(std::move(e));
         }
 
         for ( const auto& e : n.errors() ) {
             if ( e.priority == node::ErrorPriority::Normal )
-                // Normal errors found, i.e., the subtree is not valid.
-                return false;
+                return std::make_pair(true, have_low);
+            else
+                return std::make_pair(have_normal, true);
         }
-
-        // Only low priority errors, i.e., treat as "valid" in the sense that
-        // we will report errors on the path leading to the node.
-        return true;
     }
 
-    return true;
+    return std::make_pair(have_normal, have_low);
 }
 
 static void _reportErrors(const std::vector<node::Error>& errors) {

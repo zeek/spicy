@@ -1,0 +1,17 @@
+# @TEST-EXEC-FAIL:  ${SPICYC} -c %INPUT >output 2>&1
+# @TEST-EXEC:       btest-diff output
+#
+# This should report exactly one error, the unsupported int operator.
+
+module Issue_263;
+
+public type Foo = unit {
+    version: int64;
+
+    on %done {
+        if ( (1 & self.version) == 1 )
+            print "0x%08LX" % self.version;
+
+    print "0x%x" % self.version;
+    }
+};
