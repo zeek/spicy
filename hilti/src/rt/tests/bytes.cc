@@ -9,14 +9,14 @@
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
-TEST_CASE("Bytes") {
-    SUBCASE("iteration") {
-        // Validate that when iterating we yield the `Iterator`'s `reference` type.
-        // This is a regression test for #219.
-        for ( auto x : Bytes() ) {
-            (void)x;
-            static_assert(std::is_same_v<decltype(x), Bytes::Iterator::reference>);
-        }
+TEST_SUITE_BEGIN("Bytes");
+
+TEST_CASE("iteration") {
+    // Validate that when iterating we yield the `Iterator`'s `reference` type.
+    // This is a regression test for #219.
+    for ( auto x : Bytes() ) {
+        (void)x;
+        static_assert(std::is_same_v<decltype(x), Bytes::Iterator::reference>);
     }
 
     SUBCASE("to_string") {
@@ -24,3 +24,5 @@ TEST_CASE("Bytes") {
         CHECK_EQ(to_string("\0\2\3\0\6\7A\01"_b), "b\"\\x00\\x02\\x03\\x00\\x06\\x07A\\x01\"");
     }
 }
+
+TEST_SUITE_END();

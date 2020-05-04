@@ -1,4 +1,11 @@
 
+0.4.0-208 | 2020-05-04 10:49:21 +0000
+
+  * Use doctest test suites as top-level grouping. (Benjamin Bannier, Corelight)
+
+  * GH-268: Properly escape data when stringifying streams. (Benjamin
+    Bannier, Corelight)
+
 0.4.0-203 | 2020-05-03 15:37:30 +0000
 
   * GH-265: Require unit properties to end with a semicolon. We were

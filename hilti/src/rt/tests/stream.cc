@@ -14,6 +14,8 @@ using namespace hilti::rt::bytes;
 using namespace hilti::rt::stream;
 using hilti::rt::to_string;
 
+TEST_SUITE_BEGIN("Stream");
+
 TEST_CASE("Constructors") {
     auto b = "xyz"_b;
     CHECK(b.size());
@@ -399,3 +401,5 @@ TEST_CASE("to_string") {
     REQUIRE_EQ(to_string(view), to_string(bytes));
     CHECK_EQ(to_string(stream.safeBegin()), fmt("<offset=0 data=%s>", to_string(bytes)));
 }
+
+TEST_SUITE_END();

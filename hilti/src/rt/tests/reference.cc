@@ -10,6 +10,27 @@
 
 using namespace hilti::rt;
 
+struct T : public hilti::rt::trait::isStruct, hilti::rt::Controllable<T> {
+    int x;
+
+    void foo(int y) {
+        // Ensure we can reconstruct a value ref from "this".
+        auto self = ValueReference<T>::self(this);
+        REQUIRE(x == y);
+        REQUIRE(self->x == y);
+    }
+};
+
+namespace hilti::rt::detail::adl {
+
+inline std::string to_string(int x, tag /*unused*/) { return hilti::rt::fmt("%d", x); }
+
+inline std::string to_string(const T& x, tag /*unused*/) { return hilti::rt::fmt("x=%d", x.x); }
+
+} // namespace hilti::rt::detail::adl
+
+TEST_SUITE_BEGIN("reference");
+
 TEST_CASE("value-reference-int") {
     using T = int;
 
@@ -35,25 +56,6 @@ TEST_CASE("value-reference-int") {
     REQUIRE(*x5 == 21);
     REQUIRE(x4.isNull());
 }
-
-struct T : public hilti::rt::trait::isStruct, hilti::rt::Controllable<T> {
-    int x;
-
-    void foo(int y) {
-        // Ensure we can reconstruct a value ref from "this".
-        auto self = ValueReference<T>::self(this);
-        REQUIRE(x == y);
-        REQUIRE(self->x == y);
-    }
-};
-
-namespace hilti::rt::detail::adl {
-
-inline std::string to_string(int x, tag /*unused*/) { return hilti::rt::fmt("%d", x); }
-
-inline std::string to_string(const T& x, tag /*unused*/) { return hilti::rt::fmt("x=%d", x.x); }
-
-} // namespace hilti::rt::detail::adl
 
 TEST_CASE("value-reference-struct") {
     ValueReference<T> x1;
@@ -134,3 +136,5 @@ TEST_CASE("cyclic") {
     __foo->t = __test;
     test->f = (*__foo);
 }
+
+TEST_SUITE_END();
