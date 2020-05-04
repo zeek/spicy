@@ -37,31 +37,15 @@ TEST_CASE("concat") {
 }
 
 TEST_CASE("subscript") {
-    // Size check in subscript access is only performed eagerly if the
-    // access yields an rvalue. If it yields an lvalue the check is
-    // performed lazily and only at the point where the value is accessed.
+    CHECK_THROWS_WITH_AS(Vector<int>()[47], "vector index 47 out of range", const IndexError&);
 
-    SUBCASE("lvalue-semantics") {
-        Vector<int> xs;
+    Vector<int> xs;
+    REQUIRE_EQ(xs.size(), 0u);
+    CHECK_EQ(xs[3], int());
+    CHECK_EQ(xs.size(), 4u);
 
-        // No size check since no access to yielded value.
-        CHECK_NOTHROW(xs[47]);
-
-        // Access to the yielded value triggers a size check.
-        CHECK_THROWS_WITH_AS((void)int(xs[47]), "vector index 47 out of range", const IndexError&);
-
-        // Assigning to the yielded value potentially resizes the vector.
-        xs[47] = 11;
-        CHECK_EQ(xs.size(), 47 + 1); // Vector resized.
-        CHECK_EQ(xs[12], int());     // Added elements default-initialzed.
-        CHECK_EQ(xs[47], 11);        // Assignment is to added value.
-    }
-
-    SUBCASE("rvalue-semantics") {
-        const Vector<int> xs;
-        CHECK_THROWS_WITH_AS(xs[47], "vector index 47 out of range", const IndexError&);
-        CHECK_THROWS_WITH_AS(Vector<int>()[47], "vector index 47 out of range", const IndexError&);
-    }
+    const auto ys = xs;
+    CHECK_THROWS_WITH_AS(ys[47], "vector index 47 out of range", const IndexError&);
 }
 
 TEST_SUITE_END();
