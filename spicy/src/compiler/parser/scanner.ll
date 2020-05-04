@@ -165,6 +165,7 @@ uint32                return token::UINT32;
 uint64                return token::UINT64;
 uint8                 return token::UINT8;
 unit                  return token::UNIT;
+unset                 return token::UNSET;
 var                   return token::VAR;
 vector                return token::VECTOR;
 view                  return token::VIEW;

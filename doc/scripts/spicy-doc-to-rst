@@ -97,6 +97,7 @@ Operators = {
     "Pack": keyword("pack"),
     "Power": binary("**"),
     "Unpack": keyword("unpack"),
+    "Unset": keyword("unset"),
     "SignNeg": unary("-"),
     "Size": unary("|", "|"),
     "ShiftLeft": binary("<<"),

@@ -22,11 +22,17 @@ static expression::Member memberExpression(const Expression& op) {
 }
 
 // Checks if an operand refers to a valid field inside a struct.
-static inline void checkName(const Expression& op0, const Expression& op1, Node& node) {
+static inline void checkName(const Expression& op0, const Expression& op1, Node& node, bool check_optional = false) {
     auto id = memberExpression(op1).id().local();
+    auto f = op0.type().as<type::Struct>().field(id);
 
-    if ( auto f = op0.type().as<type::Struct>().field(id); ! f )
+    if ( ! f ) {
         node.addError(util::fmt("type does not have field '%s'", id));
+        return;
+    }
+
+    if ( check_optional && ! f->isOptional() )
+        node.addError(util::fmt("field '%s' is not &optional", id));
 }
 
 // Returns the type of a struct field referenced by an operand.
@@ -40,6 +46,27 @@ static inline Type itemType(const Expression& op0, const Expression& op1) {
 }
 
 } // namespace struct_::detail
+
+BEGIN_OPERATOR_CUSTOM(struct_, Unset)
+    Type result(const std::vector<Expression>& ops) const { return type::Void(); }
+
+    bool isLhs() const { return true; }
+
+    std::vector<Operand> operands() const {
+        return {{.type = type::Struct(type::Wildcard()), .doc = "struct"},
+                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+    }
+
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node, true);
+    }
+
+    std::string doc() const {
+        return R"(
+Clears an optional field.
+)";
+    }
+END_OPERATOR_CUSTOM_x
 
 BEGIN_OPERATOR_CUSTOM_x(struct_, MemberNonConst, Member)
     Type result(const std::vector<Expression>& ops) const {

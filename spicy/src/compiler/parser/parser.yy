@@ -30,7 +30,7 @@ namespace spicy { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 172
-%expect-rr 140
+%expect-rr 142
 
 %union {}
 %{
@@ -105,7 +105,6 @@ static int _field_width = 0;
 %token         CASE
 %token         CAST
 %token         CATCH
-%token         CLEAR
 %token         CONST
 %token         CONSTANT
 %token         CONTINUE
@@ -196,6 +195,7 @@ static int _field_width = 0;
 %token         UINT64
 %token         UINT8
 %token         UNIT
+%token         UNSET
 %token         VAR
 %token         VECTOR
 %token         VIEW
@@ -469,14 +469,22 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
                                                    $$ = hilti::statement::Expression(std::move(expr), __loc__);
                                                  }
 
-
               | DELETE expr ';'                  { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
                                                    if ( ! (op && op->kind() == hilti::operator_::Kind::Index) )
-                                                        error(@$, "'add' must be used with index expression only");
+                                                        error(@$, "'delete' must be used with index expressions only");
 
                                                    auto expr = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Delete, op->operands(), __loc__);
                                                    $$ = hilti::statement::Expression(std::move(expr), __loc__);
                                                  }
+
+              | UNSET expr ';'                   { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
+                                                   if ( ! (op && op->kind() == hilti::operator_::Kind::Member) )
+                                                        error(@$, "'unset' must be used with member expressions only");
+
+                                                   auto expr = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unset, op->operands(), __loc__);
+                                                   $$ = hilti::statement::Expression(std::move(expr), __loc__);
+                                                 }
+
               ;
 
 opt_else_block
