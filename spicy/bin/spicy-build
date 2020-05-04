@@ -8,9 +8,9 @@ $(basename $0) [options] <input files>
 
     -d          Build a debug version.
     -o <file>   Destination name for the compiled executable; default is "a.out".
-    -S          Do not compile the "spicy-driver" host application into executable.
-    -v          Verbose output, display command lines executing.
     -t          Do not delete tmp files (useful for inspecting, and use with debugger)
+    -v          Verbose output, display command lines executing.
+    -S          Do not compile the "spicy-driver" host application into executable.
 
 Input files may be anything that spicyc can compile to C++.
 
@@ -18,7 +18,7 @@ EOF
 }
 
 mktmp() {
-    base=$1
+    base=$(basename $1)
     ext=$2
     cnt=0
     while : ; do
@@ -78,7 +78,15 @@ test -z "${inputs}" && usage && exit 1
 test -z "${out}" && usage && exit 1
 
 base=$(cd $(dirname $0)/.. && pwd)
-dest=$(pwd)/${out}.$$.tmp.d
+
+if [ "${out}" != "${out#/}" ]; then
+    # absolute path
+    dest=${out}.$$.tmp.d
+else
+    # relative path
+    dest=$(pwd)/${out}.$$.tmp.d
+fi
+
 rm -rf "${dest}"
 mkdir -p "${dest}"
 
