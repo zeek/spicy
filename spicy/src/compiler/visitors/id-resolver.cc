@@ -128,7 +128,7 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
 
             else if ( auto a = p.findParent<Attribute>() ) {
                 // Inside an attribute expression.
-                if ( a->get().tag() == "&until" || a->get().tag() == "&until_including" || a->get().tag() == "&while" )
+                if ( a->get().tag() == "&until" || a->get().tag() == "&until-including" || a->get().tag() == "&while" )
                     dd = type::Computed(hilti::builder::memberCall(hilti::builder::member(hilti::builder::id("self"),
                                                                                           f->get().id()),
                                                                    "front", {}),

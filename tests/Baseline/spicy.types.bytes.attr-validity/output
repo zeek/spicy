@@ -1,4 +1,4 @@
-[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:7:5: bytes field requires one of &eod, &parse_at, &parse_from, &size, &until, &until_including
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:7:5: bytes field requires one of &eod, &parse_at, &parse_from, &size, &until, &until-including
 [error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:8:16: &until must provide an expression
 [error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.bytes.attr-validity/attr-validity.spicy:10:5: attributes cannot be combined: &eod, &until
 [error] spicy-driver: aborting after errors

@@ -158,7 +158,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             }
         }
 
-        else if ( a.tag() == "&while" || a.tag() == "&until_including" ) {
+        else if ( a.tag() == "&while" || a.tag() == "&until-including" ) {
             if ( auto f = getAttrField(p) ) {
                 if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>()) )
                     error(fmt("%s is only valid for fields of type bytes or vector", a.tag()), p);
@@ -224,7 +224,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         if ( f.parseType().isA<type::Bytes>() && ! f.ctor() ) {
             auto eod_attr = AttributeSet::find(f.attributes(), "&eod");
             auto until_attr = AttributeSet::find(f.attributes(), "&until");
-            auto until_including_attr = AttributeSet::find(f.attributes(), "&until_including");
+            auto until_including_attr = AttributeSet::find(f.attributes(), "&until-including");
 
             std::vector<std::string> attrs_present;
             for ( const auto& i : {eod_attr, parse_from_attr, parse_at_attr, until_attr, until_including_attr} ) {

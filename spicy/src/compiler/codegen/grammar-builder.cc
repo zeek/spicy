@@ -68,7 +68,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         auto count = AttributeSet::find(field.attributes(), "&count");
         auto size = AttributeSet::find(field.attributes(), "&size");
         auto until = AttributeSet::find(field.attributes(), "&until");
-        auto until_including = AttributeSet::find(field.attributes(), "&until_including");
+        auto until_including = AttributeSet::find(field.attributes(), "&until-including");
         auto while_ = AttributeSet::find(field.attributes(), "&while");
         auto repeat = field.repeatCount();
 

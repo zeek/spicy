@@ -651,7 +651,11 @@ stop. The following attributes are supported:
     Consumes bytes until the specified delimiter is found. ``DELIM``
     must be of type ``bytes`` itself.
 
-One of ``&eod``/``&size``/``&until`` must be given.
+``&until-including=DELIM``
+    Similar to ``&until``, but this does include the delimiter
+    ``DELIM`` into the resulting value.
+
+One of these attributes must be provided.
 
 On top of that, bytes fields support the attribute ``&chunked`` to
 change how the parsed data is processed and stored. Normally, a bytes
@@ -790,7 +794,7 @@ loop. To that end, vectors support the following attributes:
     *without* including the matching one into the field's vector
     value.
 
-``&until_including=VAL``
+``&until-including=VAL``
     Similar to ``&until``, but does include the final element ``VAL``
     into the field's vector when stopping parsing.
 

@@ -169,7 +169,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         auto eod_attr = AttributeSet::find(meta.field()->attributes(), "&eod");
         auto size_attr = AttributeSet::find(meta.field()->attributes(), "&size");
         auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until");
-        auto until_including_attr = AttributeSet::find(meta.field()->attributes(), "&until_including");
+        auto until_including_attr = AttributeSet::find(meta.field()->attributes(), "&until-including");
         auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");
         bool parse_attr = false;
 
@@ -252,7 +252,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
             pushBuilder(body, [&]() {
                 pb->waitForInput(until_bytes_size_var,
                                  fmt("end-of-data reached before %s expression found",
-                                     (until_attr ? "&until" : "&until_including")),
+                                     (until_attr ? "&until" : "&until-including")),
                                  t.meta());
 
                 auto find = builder::memberCall(state().cur, "find", {until_bytes_var});

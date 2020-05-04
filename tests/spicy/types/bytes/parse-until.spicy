@@ -6,7 +6,7 @@ module Test;
 public type X = unit {
     b1 : b"abc";
     b2 : bytes &until=b"def";
-    b3 : bytes &until_including=b"def";
+    b3 : bytes &until-including=b"def";
 
     on %done { print self; }
 };

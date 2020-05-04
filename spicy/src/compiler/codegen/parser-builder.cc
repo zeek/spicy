@@ -1024,7 +1024,7 @@ Expression ParserBuilder::newContainerItem(const type::unit::item::Field& field,
     if ( auto a = AttributeSet::find(field.attributes(), "&until") )
         addl_stop_condition = a->valueAs<spicy::Expression>();
 
-    if ( auto a = AttributeSet::find(field.attributes(), "&until_including") ) {
+    if ( auto a = AttributeSet::find(field.attributes(), "&until-including") ) {
         addl_stop_condition = a->valueAs<spicy::Expression>();
         push_after_condition = false;
     }
