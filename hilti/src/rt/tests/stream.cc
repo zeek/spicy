@@ -389,3 +389,13 @@ TEST_CASE("Block iteration") {
     CHECK(block->is_last);
     CHECK(! v.nextBlock(block));
 }
+
+TEST_CASE("to_string") {
+    // Stream data should be rendered like the underlying `Bytes`.
+    const auto bytes = "ABC"_b;
+    const auto stream = Stream(bytes);
+    const auto view = stream.view();
+    REQUIRE_EQ(to_string(stream), to_string(bytes));
+    REQUIRE_EQ(to_string(view), to_string(bytes));
+    CHECK_EQ(to_string(stream.safeBegin()), fmt("<offset=0 data=%s>", to_string(bytes)));
+}

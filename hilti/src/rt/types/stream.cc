@@ -1,7 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "rt/types/stream.h"
+
+#include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
-#include <hilti/rt/types/stream.h>
 
 using namespace hilti::rt;
 using namespace hilti::rt::stream;
@@ -414,9 +416,9 @@ std::string hilti::rt::detail::adl::to_string(const stream::SafeConstIterator& x
         auto y = x + 10;
         auto v = stream::View(x, y);
         if ( y.isEnd() )
-            return fmt("%s", v);
+            return fmt("%s", hilti::rt::to_string(v));
 
-        return fmt("%s...", v);
+        return fmt("%s...", hilti::rt::to_string(v));
     };
 
     if ( x.isExpired() )
@@ -425,7 +427,7 @@ std::string hilti::rt::detail::adl::to_string(const stream::SafeConstIterator& x
     if ( x.isUnset() )
         return "<uninitialized>";
 
-    return fmt("<offset=%" PRIu64 " data=\"%s\">", x.offset(), str(x));
+    return fmt("<offset=%" PRIu64 " data=%s>", x.offset(), str(x));
 }
 
 void SafeConstIterator::debugPrint(std::ostream& out) const {
