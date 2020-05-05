@@ -16,7 +16,6 @@ assert v[1] != "X";
 v[5] = "e";
 assert v[5] == "e";
 assert v[4] == "";
-assert-exception hilti::print(v[100]); # Need to use the result to trigger exeception;
 
 v.push_back("f");
 v.push_back("g");

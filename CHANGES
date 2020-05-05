@@ -1,4 +1,9 @@
 
+0.4.0-216 | 2020-05-05 12:25:40 +0000
+
+  * GH-212: Resize eagerly when accessing out-of-bounds Vector
+    elements. (Benjamin Bannier, Corelight)
+
 0.4.0-214 | 2020-05-04 10:51:06 +0000
 
   * GH-267: Fix spicy-build to support absolute output paths. (Robin

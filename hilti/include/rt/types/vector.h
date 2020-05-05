@@ -150,7 +150,12 @@ public:
         return V::data()[i];
     }
 
-    auto operator[](uint64_t i) &;
+    T& operator[](uint64_t i) & {
+        if ( i >= V::size() )
+            V::resize(i + 1);
+
+        return V::data()[i];
+    }
 
     Vector operator+(const Vector& other) const {
         Vector v(*this);
@@ -163,58 +168,6 @@ public:
         return *this;
     }
 };
-
-namespace vector::detail {
-
-template<typename T, typename Allocator>
-class AssignProxy {
-public:
-    using V = std::vector<T, Allocator>;
-
-    AssignProxy(V* v, uint64_t i) : _v(v), _i(i) {}
-
-    AssignProxy& operator=(T t) {
-        _v->resize(std::max(static_cast<uint64_t>(_v->size()), _i + 1));
-        get() = std::move(t);
-        return *this;
-    }
-
-    operator T() const { return get(); }
-
-    bool operator==(const T& t) const { return get() == t; }
-    bool operator!=(const T& t) const { return get() != t; }
-
-    friend std::ostream& operator<<(std::ostream& out, const AssignProxy& x) {
-        out << x.get();
-        return out;
-    }
-
-private:
-    // Get a mutable reference to the wrapped value.
-    //
-    // This method is `const` so we can use it in both `const` and non-`const`
-    // contexts, but `private` since it is not safe (it would e.g., allow
-    // mutating elements of `const` vectors).
-    T& get() const {
-        if ( _i >= _v->size() )
-            throw IndexError(fmt("vector index %" PRIu64 " out of range", _i));
-
-        // Forward to the containers subscript operator.
-        //
-        // `AssignProxy`s are only created for non-const `Vector`s so these casts are safe.
-        return const_cast<T&>(const_cast<const V&>(*_v)[_i]);
-    }
-
-    V* _v;
-    uint64_t _i;
-};
-
-} // namespace vector::detail
-
-template<typename T, typename Allocator>
-inline auto Vector<T, Allocator>::operator[](uint64_t i) & {
-    return hilti::rt::vector::detail::AssignProxy(this, i);
-}
 
 namespace vector {
 /** Place-holder type for an empty vector that doesn't have a known element type. */
@@ -250,11 +203,6 @@ inline std::string to_string(const Vector<T, Allocator>& x, adl::tag /*unused*/)
 template<typename T, typename Allocator>
 inline std::string to_string(const std::vector<T, Allocator>& x, adl::tag /*unused*/) {
     return to_string(static_cast<const Vector<T, Allocator>&>(x), adl::tag{});
-}
-
-template<typename T, typename Allocator>
-inline std::string to_string(const vector::detail::AssignProxy<T, Allocator>& x, adl::tag /*unused*/) {
-    return hilti::rt::to_string(T(x));
 }
 
 inline std::string to_string(const vector::Empty& /* x */, adl::tag /*unused*/) { return "[]"; }
