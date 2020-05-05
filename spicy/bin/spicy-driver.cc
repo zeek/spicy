@@ -17,6 +17,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"debug", no_argument, nullptr, 'd'},
                                               {"debug-addl", required_argument, nullptr, 'X'},
                                               {"disable-jit", no_argument, nullptr, 'J'},
+                                              {"file", required_argument, nullptr, 'f'},
                                               {"help", no_argument, nullptr, 'h'},
                                               {"increment", required_argument, nullptr, 'i'},
                                               {"library-path", required_argument, nullptr, 'L'},
@@ -45,6 +46,7 @@ public:
 
     bool opt_list_parsers = false;
     int opt_increment = 0;
+    std::string opt_file = "/dev/stdin";
     std::string opt_parser;
 
 private:
@@ -62,6 +64,7 @@ void SpicyDriver::usage() {
            "\n"
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
            "  -i | --increment <i>            Feed data incrementenally in chunks of size n.\n"
+           "  -f | --file <path>              Read input from <path> instead of stdin.\n"
            "  -l | --list-parsers             List available parsers and exit.\n"
            "  -p | --parser <name>            Use parser <name> to process input. Only neeeded if more than one parser "
            "is available.\n"
@@ -100,7 +103,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABD:hdJX:OVlp:i:SRL:", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABD:f:hdJX:OVlp:i:SRL:", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -112,6 +115,11 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
 
             case 'd': {
                 compiler_options.debug = true;
+                break;
+            }
+
+            case 'f': {
+                opt_file = optarg;
                 break;
             }
 
@@ -220,7 +228,7 @@ int main(int argc, char** argv) {
             if ( ! parser )
                 fatalError(parser.error());
 
-            std::ifstream in("/dev/stdin", std::ios::in | std::ios::binary);
+            std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
 
             if ( ! in.is_open() )
                 fatalError("cannot open stdin for reading");

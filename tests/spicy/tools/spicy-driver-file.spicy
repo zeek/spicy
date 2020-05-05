@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicy-driver -f input.dat %INPUT >>output
+# @TEST-EXEC: spicy-build %INPUT
+# @TEST-EXEC: ./a.out -f input.dat >>output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Foo = unit {
+    x: bytes &eod;
+    on %done { print self; }
+};
+
+# @TEST-START-FILE input.dat
+1
+2
+3
+# @TEST-END-FILE

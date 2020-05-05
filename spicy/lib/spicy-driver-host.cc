@@ -17,6 +17,7 @@
 using spicy::rt::fmt;
 
 static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
+                                              {"file", required_argument, nullptr, 'f'},
                                               {"help", no_argument, nullptr, 'h'},
                                               {"increment", required_argument, nullptr, 'i'},
                                               {"list-parsers", no_argument, nullptr, 'l'},
@@ -41,6 +42,7 @@ public:
     bool opt_list_parsers = false;
     bool opt_show_backtraces = false;
     int opt_increment = 0;
+    std::string opt_file = "/dev/stdin";
     std::string opt_parser;
 };
 
@@ -50,6 +52,7 @@ void SpicyDriver::usage() {
            "\n"
            "Options:\n"
            "\n"
+           "  -f | --file <path>              Read input from <path> instead of stdin.\n"
            "  -i | --increment <i>            Feed data incrementenally in chunks of size n.\n"
            "  -l | --list-parsers             List available parsers and exit.\n"
            "  -p | --parser <name>            Use parser <name> to process input. Only neeeded if more than one parser "
@@ -63,7 +66,7 @@ void SpicyDriver::usage() {
 
 void SpicyDriver::parseOptions(int argc, char** argv) {
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABhdlp:i:v", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABhdf:lp:i:v", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -71,6 +74,10 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
         switch ( c ) {
             case 'A': opt_abort_on_exceptions = true; break;
             case 'B': opt_show_backtraces = true; break;
+            case 'f': {
+                opt_file = optarg;
+                break;
+            }
             case 'i':
                 opt_increment = atoi(optarg); /* NOLINT */
                 break;
@@ -108,7 +115,7 @@ int main(int argc, char** argv) {
             if ( ! parser )
                 fatalError(parser.error());
 
-            std::ifstream in("/dev/stdin", std::ios::in | std::ios::binary);
+            std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
 
             if ( ! in.is_open() )
                 fatalError("cannot open stdin for reading");
