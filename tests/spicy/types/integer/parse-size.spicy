@@ -1,0 +1,22 @@
+# @TEST-EXEC:      spicyc -j -o x.hlto %INPUT
+# @TEST-EXEC:      printf "\001\002\003\004\005\006" | spicy-driver -p X::Foo1 x.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf "\001\002\003\004\005\006" | spicy-driver -p X::Foo2 x.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf "\001\002\003\004\005\006" | spicy-driver -p X::Foo3 x.hlto >>output 2>&1
+# @TEST-EXEC:      btest-diff output
+
+module X;
+
+public type Foo1 = unit {
+    x: int32 &size=4; # Works, we'll parse exactly 4 bytes.
+    on %done { print "%x" % self.x; }
+};
+
+public type Foo2 = unit {
+    x: int32 &size=2; # Fails, we're missing 2 bytes of input.
+    on %done { print "%x" % self.x; }
+};
+
+public type Foo3 = unit {
+    x: int32 &size=6; # Fails, we're not consuming 2 bytes of input.
+    on %done { print "%x" % self.x; }
+};

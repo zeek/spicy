@@ -484,8 +484,23 @@ struct ProductionVisitor
         auto ncur = state().ncur;
         state().ncur = {};
 
-        if ( auto a = AttributeSet::find(field.attributes(), "&size") )
+        if ( auto a = AttributeSet::find(field.attributes(), "&size") ) {
+            // Make sure we parsed the entire &size amount.
+            auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
+                                            builder::memberCall(*ncur, "offset", {}));
+            auto insufficient = builder()->addIf(std::move(missing));
+            pushBuilder(insufficient, [&]() {
+                // We didn't parse all the data, which is an error.
+                if ( ! field.isTransient() && destination() && ! destination()->type().isA<type::Void>() )
+                    // Clear the field in case the type parsing has started
+                    // to fill it.
+                    builder()->addExpression(builder::unset(state().self, field->id()));
+
+                pb->parseError("&size amount not consumed", a->meta());
+            });
+
             popState();
+        }
 
         if ( AttributeSet::find(field.attributes(), "&parse-from") ||
              AttributeSet::find(field.attributes(), "&parse-at") ) {
@@ -493,13 +508,13 @@ struct ProductionVisitor
             popState();
         }
 
+        if ( ncur )
+            builder()->addAssign(state().cur, *ncur);
+
         auto dst = popDestination();
 
         if ( dst && pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
             pb->newValueForField(field, *dst);
-
-        if ( ncur )
-            builder()->addAssign(state().cur, *ncur);
 
         if ( field.condition() )
             popBuilder();
