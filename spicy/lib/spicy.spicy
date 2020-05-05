@@ -75,3 +75,6 @@ public function base64_finish(inout stream_: Base64Stream) : bytes &cxxname="spi
 
 ## Returns the current wall clock time.
 public function current_time() : time &cxxname="hilti::rt::time::current_time";
+
+## Returns the value of an environment variable, if set.
+public function getenv(name: string) : optional<string> &cxxname="spicy::rt::getenv";

@@ -34,3 +34,9 @@ Finalizes a base64 stream used for decoding or encoding.
 
 Returns the current wall clock time.
 
+.. _spicy_getenv:
+
+.. rubric:: ``function spicy::getenv(name: string) : optional<string>``
+
+Returns the value of an environment variable, if set.
+

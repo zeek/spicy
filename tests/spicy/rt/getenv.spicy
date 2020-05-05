@@ -1,0 +1,9 @@
+# @TEST-EXEC: SPICY_TEST1=xxx SPICY_TEST2= spicyc -j %INPUT
+
+module Test;
+
+import spicy;
+
+assert *spicy::getenv("SPICY_TEST1") == "xxx";
+assert *spicy::getenv("SPICY_TEST2") == "";
+assert ! spicy::getenv("does-not-exist");
