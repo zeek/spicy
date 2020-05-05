@@ -294,7 +294,6 @@ model_methods += ["bool {}() const final;".format(t.method)
 def mmi(m):
     result = "return data().{}({});".format(
         m.name, ", ".join([a.name for a in m.params]))
-    # FIXME(bbannier): issue for void?
     default = "return {};".format(
         m.default) if m.default else "throw std::bad_cast();"
     if m.traits:
