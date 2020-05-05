@@ -294,7 +294,7 @@ public:
      * method.
      */
     template<typename T>
-    Bytes join(const std::vector<T>& parts) const {
+    Bytes join(const Vector<T>& parts) const {
         Bytes rval;
 
         for ( auto i = 0; i < parts.size(); ++i ) {

@@ -4,6 +4,7 @@
 
 #include <cxxabi.h>
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 #include <string_view>
@@ -12,6 +13,7 @@
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/types/vector_fwd.h>
 
 #ifdef CXX_FILESYSTEM_IS_EXPERIMENTAL
 #include <experimental/filesystem>
@@ -23,6 +25,7 @@ using namespace experimental;
 #endif
 
 namespace hilti::rt {
+
 void internalError(const std::string& msg) __attribute__((noreturn));
 
 } // namespace hilti::rt
@@ -306,6 +309,14 @@ auto transform(const std::set<X>& x, F f) {
     std::set<Y> y;
     for ( const auto& i : x )
         y.insert(f(i));
+    return y;
+}
+
+template<typename X, typename Allocator, typename F>
+auto transform(const Vector<X, Allocator>& x, F f) {
+    using Y = typename std::result_of<F(X&)>::type;
+    Vector<Y> y;
+    std::transform(x.begin(), x.end(), std::back_inserter(y), [&](const auto& value) { return f(value); });
     return y;
 }
 

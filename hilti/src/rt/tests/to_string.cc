@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/types/vector.h>
 
 using namespace hilti::rt;
 
@@ -32,9 +33,16 @@ TEST_CASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }
 
 TEST_CASE("vector") {
     CHECK_EQ(to_string(std::vector<int8_t>()), "[]");
-    CHECK_EQ(to_string(std::vector{int8_t{1}}), "[1]");
-    CHECK_EQ(to_string(std::vector{int8_t{1}, 2}), "[1, 2]");
-    CHECK_EQ(to_string(std::vector{std::vector{int8_t{1}, 2}}), "[1, 2]");
+    CHECK_EQ(to_string(std::vector<int8_t>({1})), "[1]");
+    CHECK_EQ(to_string(std::vector<int8_t>({1, 2})), "[1, 2]");
+    CHECK_EQ(to_string(std::vector<std::vector<int8_t>>({{1, 2}})), "[[1, 2]]");
+}
+
+TEST_CASE("Vector") {
+    CHECK_EQ(to_string(Vector<int8_t>()), "[]");
+    CHECK_EQ(to_string(Vector<int8_t>({1})), "[1]");
+    CHECK_EQ(to_string(Vector<int8_t>({1, 2})), "[1, 2]");
+    CHECK_EQ(to_string(Vector<Vector<int8_t>>({{1, 2}})), "[[1, 2]]");
 }
 
 TEST_CASE("optional") {

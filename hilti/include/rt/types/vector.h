@@ -16,8 +16,8 @@
 #include <cinttypes>
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <new>
-#include <optional>
 #include <ostream>
 #include <type_traits>
 #include <vector>
@@ -25,12 +25,10 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/iterator.h>
+#include <hilti/rt/types/vector_fwd.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
-
-template<typename T, typename Allocator = std::allocator<T>>
-class Vector;
 
 namespace vector {
 
@@ -102,7 +100,7 @@ public:
 
 /** HILTI's `Vector` is just strong typedef for `std::vector`. */
 template<typename T, typename Allocator>
-class Vector : public std::vector<T, Allocator>, public hilti::rt::detail::iterator::Controllee {
+class Vector : protected std::vector<T, Allocator>, public hilti::rt::detail::iterator::Controllee {
 public:
     using V = std::vector<T, Allocator>;
     using C = hilti::rt::detail::iterator::Controllee;
@@ -113,6 +111,7 @@ public:
     Vector() = default;
     Vector(const Vector&) = default;
     Vector(Vector&&) noexcept = default;
+    Vector(std::initializer_list<T> init, const Allocator& alloc = Allocator()) : V(std::move(init), alloc) {}
     Vector(const std::list<T>& l) : std::vector<T>(l.begin(), l.end()) {}
     Vector(std::list<T>&& l) : std::vector<T>(std::move_iterator(l.begin()), std::move_iterator(l.end())) {}
     ~Vector() = default;
@@ -167,6 +166,22 @@ public:
         V::insert(V::end(), other.begin(), other.end());
         return *this;
     }
+
+    // Methods of `std::vector`.
+    using typename V::value_type;
+    using V::at;
+    using V::begin;
+    using V::clear;
+    using V::emplace_back;
+    using V::empty;
+    using V::end;
+    using V::push_back;
+    using V::reserve;
+    using V::size;
+
+    friend bool operator==(const Vector& a, const Vector& b) {
+        return static_cast<const V&>(a) == static_cast<const V&>(b);
+    }
 };
 
 namespace vector {
@@ -195,14 +210,13 @@ namespace detail::adl {
 template<typename T, typename Allocator>
 inline std::string to_string(const Vector<T, Allocator>& x, adl::tag /*unused*/) {
     using detail::adl::to_string;
-    return fmt("[%s]",
-               rt::join(rt::transform(x, [](const std::optional<T>& y) { return (y ? rt::to_string(*y) : "(unset)"); }),
-                        ", "));
+    return fmt("[%s]", rt::join(rt::transform(x, [](const T& y) { return rt::to_string(y); }), ", "));
 }
 
 template<typename T, typename Allocator>
 inline std::string to_string(const std::vector<T, Allocator>& x, adl::tag /*unused*/) {
-    return to_string(static_cast<const Vector<T, Allocator>&>(x), adl::tag{});
+    using detail::adl::to_string;
+    return fmt("[%s]", rt::join(rt::transform(x, [](const T& y) { return rt::to_string(y); }), ", "));
 }
 
 inline std::string to_string(const vector::Empty& /* x */, adl::tag /*unused*/) { return "[]"; }
@@ -260,6 +274,11 @@ template<typename T, typename Allocator>
 inline std::ostream& operator<<(std::ostream& out, const vector::SafeConstIterator<T, Allocator>& x) {
     out << to_string(x);
     return out;
+}
+
+template<typename T, typename Allocator>
+bool operator!=(const Vector<T, Allocator>& a, const Vector<T, Allocator>& b) {
+    return ! (a == b);
 }
 
 } // namespace hilti::rt
