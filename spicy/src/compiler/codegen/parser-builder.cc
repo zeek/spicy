@@ -817,10 +817,7 @@ struct ProductionVisitor
             parseProduction(i);
     }
 
-    void operator()(const production::Variable& p) {
-        auto field = p.meta().field();
-        pb->parseType(p.type(), field, destination());
-    }
+    void operator()(const production::Variable& p) { pb->parseType(p.type(), p.meta(), destination()); }
 };
 
 } // namespace spicy::detail::codegen

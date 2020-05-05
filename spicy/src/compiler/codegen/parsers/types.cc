@@ -20,11 +20,10 @@ namespace builder = hilti::builder;
 namespace {
 
 struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
-    Visitor(ParserBuilder* pb_, const std::optional<type::unit::item::Field>& field_,
-            const std::optional<Expression>& dst_, bool is_try_)
-        : pb(pb_), field(field_), dst(dst_), is_try(is_try_) {}
+    Visitor(ParserBuilder* pb_, const production::Meta& meta_, const std::optional<Expression>& dst_, bool is_try_)
+        : pb(pb_), meta(meta_), dst(dst_), is_try(is_try_) {}
     ParserBuilder* pb;
-    const std::optional<type::unit::item::Field>& field;
+    const production::Meta& meta;
     const std::optional<Expression>& dst;
     bool is_try;
 
@@ -42,8 +41,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         if ( dst )
             return *dst;
 
-        if ( field )
-            return builder()->addTmp("x", field->parseType());
+        if ( meta.field() )
+            return builder()->addTmp("x", meta.field()->parseType());
 
         return builder()->addTmp("x", t);
     }
@@ -79,7 +78,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     Expression fieldByteOrder() {
         std::optional<Expression> byte_order;
 
-        if ( const auto& a = AttributeSet::find(field->attributes(), "&byte-order") )
+        if ( const auto& a = AttributeSet::find(meta.field()->attributes(), "&byte-order") )
             byte_order = *a->valueAs<spicy::Expression>();
         else if ( const auto& p = state().unit.get().propertyItem("%byte-order") )
             byte_order = *p->expression();
@@ -92,8 +91,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     }
 
     result_t operator()(const hilti::type::Address& t) {
-        auto v4 = AttributeSet::find(field->attributes(), "&ipv4");
-        auto v6 = AttributeSet::find(field->attributes(), "&ipv6");
+        auto v4 = AttributeSet::find(meta.field()->attributes(), "&ipv4");
+        auto v6 = AttributeSet::find(meta.field()->attributes(), "&ipv6");
         assert(! (v4 && v6));
 
         if ( v4 )
@@ -112,7 +111,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         auto value = builder()->addTmp("bitfield", itype);
         performUnpack(value, itype, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
 
-        builder()->addDebugMsg("spicy", fmt("%s = %%s", field->id()), {value});
+        builder()->addDebugMsg("spicy", fmt("%s = %%s", meta.field()->id()), {value});
         builder()->addDebugIndent("spicy");
 
         std::vector<Expression> extracted_bits;
@@ -120,7 +119,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         for ( const auto& b : t.bits() ) {
             auto bit_order = builder::id("spicy_rt::BitOrder::LSB0");
 
-            if ( const auto& a = AttributeSet::find(field->attributes(), "&bit-order") )
+            if ( const auto& a = AttributeSet::find(meta.field()->attributes(), "&bit-order") )
                 bit_order = *a->valueAs<spicy::Expression>();
             else if ( const auto& p = state().unit.get().propertyItem("%bit-order") )
                 bit_order = *p->expression();
@@ -150,7 +149,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     }
 
     result_t operator()(const hilti::type::Real& t) {
-        auto type = AttributeSet::find(field->attributes(), "&type");
+        auto type = AttributeSet::find(meta.field()->attributes(), "&type");
         assert(type);
         return performUnpack(destination(t), type::Real(), 4,
                              {state().cur, *type->valueAs<Expression>(), fieldByteOrder()}, t.meta(), is_try);
@@ -167,14 +166,14 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     result_t operator()(const hilti::type::Void& /* t */) { return hilti::expression::Void(); }
 
     result_t operator()(const hilti::type::Bytes& t) {
-        auto eod_attr = AttributeSet::find(field->attributes(), "&eod");
-        auto size_attr = AttributeSet::find(field->attributes(), "&size");
-        auto until_attr = AttributeSet::find(field->attributes(), "&until");
-        auto chunked_attr = AttributeSet::find(field->attributes(), "&chunked");
+        auto eod_attr = AttributeSet::find(meta.field()->attributes(), "&eod");
+        auto size_attr = AttributeSet::find(meta.field()->attributes(), "&size");
+        auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until");
+        auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");
         bool parse_attr = false;
 
-        if ( (AttributeSet::find(field->attributes(), "&parse-from") ||
-              AttributeSet::find(field->attributes(), "&parse-at")) &&
+        if ( (AttributeSet::find(meta.field()->attributes(), "&parse-from") ||
+              AttributeSet::find(meta.field()->attributes(), "&parse-at")) &&
              ! (size_attr || until_attr) )
             parse_attr = true;
 
@@ -189,8 +188,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                     builder()->addAssign(target, state().cur);
                     pb->advanceInput(builder::size(state().cur));
 
-                    if ( field )
-                        pb->newValueForField(*field, target);
+                    if ( meta.field() )
+                        pb->newValueForField(*meta.field(), target);
                 });
             };
 
@@ -276,24 +275,23 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
 } // namespace
 
-Expression ParserBuilder::_parseType(const Type& t, const std::optional<type::unit::item::Field>& field,
-                                     const std::optional<Expression>& dst, bool is_try) {
+Expression ParserBuilder::_parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst,
+                                     bool is_try) {
     assert(! is_try || (t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>()));
 
-    if ( auto e = Visitor(this, field, dst, is_try).dispatch(t) )
+    if ( auto e = Visitor(this, meta, dst, is_try).dispatch(t) )
         return std::move(*e);
 
     hilti::logger().internalError(fmt("codegen: type parser did not return expression for '%s'", t));
 }
 
-Expression ParserBuilder::parseType(const Type& t, const std::optional<type::unit::item::Field>& field,
-                                    const std::optional<Expression>& dst) {
-    return _parseType(t, field, dst, /*is_try =*/false);
+Expression ParserBuilder::parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst) {
+    return _parseType(t, meta, dst, /*is_try =*/false);
 }
 
-Expression ParserBuilder::parseTypeTry(const Type& t, const std::optional<type::unit::item::Field>& field,
+Expression ParserBuilder::parseTypeTry(const Type& t, const production::Meta& meta,
                                        const std::optional<Expression>& dst) {
     assert(t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>());
 
-    return _parseType(t, field, dst, /*is_try =*/true);
+    return _parseType(t, meta, dst, /*is_try =*/true);
 }
