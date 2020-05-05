@@ -30,7 +30,7 @@ namespace spicy { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 170
-%expect-rr 142
+%expect-rr 143
 
 %union {}
 %{
@@ -673,6 +673,8 @@ unit_field_in_container
               : ctor opt_unit_field_args opt_attributes
                                                  { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
               | scoped_id opt_unit_field_args opt_attributes
+                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
+              | base_type opt_unit_field_args opt_attributes
                                                  { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
 
 unit_wide_hook : ON unit_hook_id unit_hook       { $$ = spicy::type::unit::item::UnitHook(std::move($2), std::move($3), __loc__); }

@@ -1,0 +1,4 @@
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.vector.parse-subitem-attrs-fail/parse-subitem-attrs-fail.spicy:7:9: bytes field requires one of &eod, &parse_at, &parse_from, &size, &until, &until-including
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.vector.parse-subitem-attrs-fail/parse-subitem-attrs-fail.spicy:8:5: vector elements cannot have &chunked attribute
+[error] /home/robin/work/spicy/topic/tests/.tmp/spicy.types.vector.parse-subitem-attrs-fail/parse-subitem-attrs-fail.spicy:9:5: vector elements cannot have &convert attribute
+[error] spicyc: aborting after errors

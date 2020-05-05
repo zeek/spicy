@@ -209,17 +209,29 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
     }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {
+        auto count_attr = AttributeSet::find(f.attributes(), "&count");
+        auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
+        auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
         auto repeat = f.repeatCount();
         auto size_attr = AttributeSet::find(f.attributes(), "&size");
-        auto count_attr = AttributeSet::find(f.attributes(), "&count");
-        auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
-        auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
 
         if ( count_attr && (repeat && ! repeat->type().isA<type::Null>()) )
             error("cannot have both `[..]` and &count", p);
 
         if ( parse_from_attr && parse_at_attr )
             error("cannot have both &parse-from and &parse-at", p);
+
+        if ( auto item = f.vectorItem() ) {
+            if ( auto item_field = item->tryAs<spicy::type::unit::item::Field>() ) {
+                const auto& item_attrs = item_field->attributes();
+
+                if ( AttributeSet::has(item_attrs, "&chunked") )
+                    error("vector elements cannot have &chunked attribute", p);
+
+                if ( AttributeSet::has(item_attrs, "&convert") )
+                    error("vector elements cannot have &convert attribute", p);
+            }
+        }
 
         if ( f.parseType().isA<type::Bytes>() && ! f.ctor() ) {
             auto eod_attr = AttributeSet::find(f.attributes(), "&eod");

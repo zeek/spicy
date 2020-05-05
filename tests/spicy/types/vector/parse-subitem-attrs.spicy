@@ -1,0 +1,13 @@
+# @TEST-EXEC: printf 1234567890 | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Foo = unit {
+    x: (bytes &parse-from=b"abc")[3];
+    y: (bytes &size=2)[];
+
+    on %done {
+        print self;
+       }
+};

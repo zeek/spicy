@@ -166,73 +166,64 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     result_t operator()(const hilti::type::Void& /* t */) { return hilti::expression::Void(); }
 
     result_t operator()(const hilti::type::Bytes& t) {
+        auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");
         auto eod_attr = AttributeSet::find(meta.field()->attributes(), "&eod");
         auto size_attr = AttributeSet::find(meta.field()->attributes(), "&size");
         auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until");
         auto until_including_attr = AttributeSet::find(meta.field()->attributes(), "&until-including");
-        auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");
-        bool parse_attr = false;
+
+        bool to_eod = eod_attr.has_value(); // parse to end of input data
+        bool parse_attr = false;            // do we have a &parse-* attribute
 
         if ( (AttributeSet::find(meta.field()->attributes(), "&parse-from") ||
               AttributeSet::find(meta.field()->attributes(), "&parse-at")) &&
-             ! (size_attr || until_attr || until_including_attr) )
+             ! (until_attr || until_including_attr) )
             parse_attr = true;
+
+        if ( size_attr ) {
+            // If we have a &size attribute, our input will have been
+            // truncated accordingly. If no other attributes are set, we'll
+            // parse to the end of our (limited) input data.
+            if ( ! (until_attr || until_including_attr || parse_attr) )
+                to_eod = true;
+        }
 
         auto target = destination(t);
 
-        if ( eod_attr || parse_attr || size_attr ) {
-            pb->enableDefaultNewValueForField(false);
-
-            auto new_data = [&]() {
-                auto have_data = builder()->addIf(builder::size(state().cur));
-                pushBuilder(have_data, [&]() {
-                    builder()->addAssign(target, state().cur);
-                    pb->advanceInput(builder::size(state().cur));
-
-                    if ( meta.field() )
-                        pb->newValueForField(*meta.field(), target);
-                });
-            };
-
-            auto check_size = [&](const auto& have) {
-                auto want = builder::coerceTo(*size_attr->valueAs<Expression>(), type::UnsignedInteger(64));
-                auto insufficient = builder()->addIf(builder::unequal(have, want));
-                pushBuilder(insufficient);
-                pb->parseError("insufficient input for &size", size_attr->meta());
-                popBuilder();
-            };
+        if ( to_eod || parse_attr ) {
+            if ( meta.field() && chunked_attr && ! meta.container() )
+                pb->enableDefaultNewValueForField(false);
 
             if ( chunked_attr ) {
-                std::optional<Expression> orig_begin;
-
-                if ( size_attr && ! eod_attr )
-                    orig_begin = builder()->addTmp("orig_begin", builder::begin(state().cur));
-
                 auto loop = builder()->addWhile(builder::bool_(true));
                 pushBuilder(loop, [&]() {
                     builder()->addLocal("more_data", pb->waitForInputOrEod(builder::integer(1)));
-                    new_data();
+
+                    auto have_data = builder()->addIf(builder::size(state().cur));
+                    pushBuilder(have_data, [&]() {
+                        builder()->addAssign(target, state().cur);
+                        pb->advanceInput(builder::size(state().cur));
+
+                        if ( meta.field() && ! meta.container() )
+                            pb->newValueForField(*meta.field(), target);
+                    });
+
                     auto at_eod = builder()->addIf(builder::not_(builder::id("more_data")));
-
-                    pushBuilder(at_eod);
-
-                    if ( orig_begin )
-                        check_size(builder::difference(builder::begin(state().cur), *orig_begin));
-
-                    builder()->addBreak();
-
-                    popBuilder();
+                    at_eod->addBreak();
                 });
             }
 
             else {
                 pb->waitForEod();
-
-                if ( size_attr && ! eod_attr )
-                    check_size(builder::size(state().cur));
-
-                new_data();
+                builder()->addAssign(target, state().cur);
+                pb->advanceInput(builder::size(state().cur));
             }
+
+            if ( eod_attr && size_attr )
+                // With &eod, it's ok if we don't consume the full amount.
+                // However, the code calling us won't know that, so we simply
+                // pretend that we have processed it all.
+                pb->advanceInput(builder::end(state().cur));
 
             return target;
         }
