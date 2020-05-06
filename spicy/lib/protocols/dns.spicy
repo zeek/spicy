@@ -127,8 +127,10 @@ type Label = unit(msg: Message, inout name: Name) {
 
     switch ( self.len.compressed ) {
         0 ->    label: bytes &size=self.len.offset {
-                    name.label += b".";
-                    name.label += self.label;
+                    if ( |self.label| ) {
+                        name.label += b".";
+                        name.label += self.label;
+                        }
                     }
 
         3 ->    ptr: Pointer(msg, self) &parse-at=self.input() {

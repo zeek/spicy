@@ -170,7 +170,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 auto old_cur = builder()->addTmp("ocur", state().cur);
 
                 // Parse value as an instance of the corresponding type.
-                auto x = pb->parseType(type, production.meta().field(), {});
+                auto x = pb->parseType(type, production.meta(), {});
 
                 // Compare parsed value against expected value.
                 auto no_match =
@@ -190,7 +190,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
             case LiteralMode::Try: {
                 auto old_cur = builder()->addTmp("ocur", state().cur);
-                auto x = pb->parseTypeTry(type, production.meta().field(), {});
+                auto x = pb->parseTypeTry(type, production.meta(), {});
                 auto new_cur = builder()->addTmp("ncur", state().cur);
                 builder()->addAssign(state().cur, old_cur);
 

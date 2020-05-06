@@ -221,12 +221,10 @@ public:
     }
 
     /** Generates code that parses an instance of a specific type. */
-    Expression parseType(const Type& t, const std::optional<type::unit::item::Field>& field,
-                         const std::optional<Expression>& dst);
+    Expression parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst);
 
     /** Generates code that parses an instance of a specific type into an expression yielding a `Result` of `t`. */
-    Expression parseTypeTry(const Type& t, const std::optional<type::unit::item::Field>& field,
-                            const std::optional<Expression>& dst);
+    Expression parseTypeTry(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst);
 
     /** Returns the type for a `parse_stageX` unit method. */
     hilti::type::Function parseMethodFunctionType(std::optional<type::function::Parameter> addl_param = {},
@@ -396,8 +394,8 @@ private:
     friend struct spicy::detail::codegen::ProductionVisitor;
     CodeGen* _cg;
 
-    Expression _parseType(const Type& t, const std::optional<type::unit::item::Field>& field,
-                          const std::optional<Expression>& dst, bool is_try);
+    Expression _parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst,
+                          bool is_try);
 
     std::vector<ParserState> _states;
     std::vector<std::shared_ptr<hilti::builder::Builder>> _builders;

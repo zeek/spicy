@@ -1,2 +1,3 @@
-[error] /Users/bbannier/src/spicy/tests/.tmp/hilti.types.struct.errors/errors.hlt:14:14: type does not have field 'DoesNotExist'
+[error] /home/robin/work/spicy/topic/tests/.tmp/hilti.types.struct.errors/errors.hlt:14:14: type does not have field 'DoesNotExist'
+[error] /home/robin/work/spicy/topic/tests/.tmp/hilti.types.struct.errors/errors.hlt:15:1: field 's' is not &optional
 [error] hiltic: aborting after errors

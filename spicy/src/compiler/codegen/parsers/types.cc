@@ -20,11 +20,10 @@ namespace builder = hilti::builder;
 namespace {
 
 struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
-    Visitor(ParserBuilder* pb_, const std::optional<type::unit::item::Field>& field_,
-            const std::optional<Expression>& dst_, bool is_try_)
-        : pb(pb_), field(field_), dst(dst_), is_try(is_try_) {}
+    Visitor(ParserBuilder* pb_, const production::Meta& meta_, const std::optional<Expression>& dst_, bool is_try_)
+        : pb(pb_), meta(meta_), dst(dst_), is_try(is_try_) {}
     ParserBuilder* pb;
-    const std::optional<type::unit::item::Field>& field;
+    const production::Meta& meta;
     const std::optional<Expression>& dst;
     bool is_try;
 
@@ -42,8 +41,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         if ( dst )
             return *dst;
 
-        if ( field )
-            return builder()->addTmp("x", field->parseType());
+        if ( meta.field() )
+            return builder()->addTmp("x", meta.field()->parseType());
 
         return builder()->addTmp("x", t);
     }
@@ -79,7 +78,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     Expression fieldByteOrder() {
         std::optional<Expression> byte_order;
 
-        if ( const auto& a = AttributeSet::find(field->attributes(), "&byte-order") )
+        if ( const auto& a = AttributeSet::find(meta.field()->attributes(), "&byte-order") )
             byte_order = *a->valueAs<spicy::Expression>();
         else if ( const auto& p = state().unit.get().propertyItem("%byte-order") )
             byte_order = *p->expression();
@@ -92,8 +91,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     }
 
     result_t operator()(const hilti::type::Address& t) {
-        auto v4 = AttributeSet::find(field->attributes(), "&ipv4");
-        auto v6 = AttributeSet::find(field->attributes(), "&ipv6");
+        auto v4 = AttributeSet::find(meta.field()->attributes(), "&ipv4");
+        auto v6 = AttributeSet::find(meta.field()->attributes(), "&ipv6");
         assert(! (v4 && v6));
 
         if ( v4 )
@@ -112,7 +111,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         auto value = builder()->addTmp("bitfield", itype);
         performUnpack(value, itype, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
 
-        builder()->addDebugMsg("spicy", fmt("%s = %%s", field->id()), {value});
+        builder()->addDebugMsg("spicy", fmt("%s = %%s", meta.field()->id()), {value});
         builder()->addDebugIndent("spicy");
 
         std::vector<Expression> extracted_bits;
@@ -120,7 +119,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         for ( const auto& b : t.bits() ) {
             auto bit_order = builder::id("spicy_rt::BitOrder::LSB0");
 
-            if ( const auto& a = AttributeSet::find(field->attributes(), "&bit-order") )
+            if ( const auto& a = AttributeSet::find(meta.field()->attributes(), "&bit-order") )
                 bit_order = *a->valueAs<spicy::Expression>();
             else if ( const auto& p = state().unit.get().propertyItem("%bit-order") )
                 bit_order = *p->expression();
@@ -150,7 +149,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     }
 
     result_t operator()(const hilti::type::Real& t) {
-        auto type = AttributeSet::find(field->attributes(), "&type");
+        auto type = AttributeSet::find(meta.field()->attributes(), "&type");
         assert(type);
         return performUnpack(destination(t), type::Real(), 4,
                              {state().cur, *type->valueAs<Expression>(), fieldByteOrder()}, t.meta(), is_try);
@@ -167,85 +166,85 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     result_t operator()(const hilti::type::Void& /* t */) { return hilti::expression::Void(); }
 
     result_t operator()(const hilti::type::Bytes& t) {
-        auto eod_attr = AttributeSet::find(field->attributes(), "&eod");
-        auto size_attr = AttributeSet::find(field->attributes(), "&size");
-        auto until_attr = AttributeSet::find(field->attributes(), "&until");
-        auto chunked_attr = AttributeSet::find(field->attributes(), "&chunked");
-        bool parse_attr = false;
+        auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");
+        auto eod_attr = AttributeSet::find(meta.field()->attributes(), "&eod");
+        auto size_attr = AttributeSet::find(meta.field()->attributes(), "&size");
+        auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until");
+        auto until_including_attr = AttributeSet::find(meta.field()->attributes(), "&until-including");
 
-        if ( (AttributeSet::find(field->attributes(), "&parse-from") ||
-              AttributeSet::find(field->attributes(), "&parse-at")) &&
-             ! (size_attr || until_attr) )
+        bool to_eod = eod_attr.has_value(); // parse to end of input data
+        bool parse_attr = false;            // do we have a &parse-* attribute
+
+        if ( (AttributeSet::find(meta.field()->attributes(), "&parse-from") ||
+              AttributeSet::find(meta.field()->attributes(), "&parse-at")) &&
+             ! (until_attr || until_including_attr) )
             parse_attr = true;
+
+        if ( size_attr ) {
+            // If we have a &size attribute, our input will have been
+            // truncated accordingly. If no other attributes are set, we'll
+            // parse to the end of our (limited) input data.
+            if ( ! (until_attr || until_including_attr || parse_attr) )
+                to_eod = true;
+        }
 
         auto target = destination(t);
 
-        if ( eod_attr || parse_attr || size_attr ) {
-            pb->enableDefaultNewValueForField(false);
-
-            auto new_data = [&]() {
-                auto have_data = builder()->addIf(builder::size(state().cur));
-                pushBuilder(have_data, [&]() {
-                    builder()->addAssign(target, state().cur);
-                    pb->advanceInput(builder::size(state().cur));
-
-                    if ( field )
-                        pb->newValueForField(*field, target);
-                });
-            };
-
-            auto check_size = [&](const auto& have) {
-                auto want = builder::coerceTo(*size_attr->valueAs<Expression>(), type::UnsignedInteger(64));
-                auto insufficient = builder()->addIf(builder::unequal(have, want));
-                pushBuilder(insufficient);
-                pb->parseError("insufficient input for &size", size_attr->meta());
-                popBuilder();
-            };
+        if ( to_eod || parse_attr ) {
+            if ( meta.field() && chunked_attr && ! meta.container() )
+                pb->enableDefaultNewValueForField(false);
 
             if ( chunked_attr ) {
-                std::optional<Expression> orig_begin;
-
-                if ( size_attr && ! eod_attr )
-                    orig_begin = builder()->addTmp("orig_begin", builder::begin(state().cur));
-
                 auto loop = builder()->addWhile(builder::bool_(true));
                 pushBuilder(loop, [&]() {
                     builder()->addLocal("more_data", pb->waitForInputOrEod(builder::integer(1)));
-                    new_data();
+
+                    auto have_data = builder()->addIf(builder::size(state().cur));
+                    pushBuilder(have_data, [&]() {
+                        builder()->addAssign(target, state().cur);
+                        pb->advanceInput(builder::size(state().cur));
+
+                        if ( meta.field() && ! meta.container() )
+                            pb->newValueForField(*meta.field(), target);
+                    });
+
                     auto at_eod = builder()->addIf(builder::not_(builder::id("more_data")));
-
-                    pushBuilder(at_eod);
-
-                    if ( orig_begin )
-                        check_size(builder::difference(builder::begin(state().cur), *orig_begin));
-
-                    builder()->addBreak();
-
-                    popBuilder();
+                    at_eod->addBreak();
                 });
             }
 
             else {
                 pb->waitForEod();
-
-                if ( size_attr && ! eod_attr )
-                    check_size(builder::size(state().cur));
-
-                new_data();
+                builder()->addAssign(target, state().cur);
+                pb->advanceInput(builder::size(state().cur));
             }
+
+            if ( eod_attr && size_attr )
+                // With &eod, it's ok if we don't consume the full amount.
+                // However, the code calling us won't know that, so we simply
+                // pretend that we have processed it all.
+                pb->advanceInput(builder::end(state().cur));
 
             return target;
         }
 
-        if ( until_attr ) {
-            auto until_expr = builder::coerceTo(*until_attr->valueAs<Expression>(), hilti::type::Bytes());
+        if ( until_attr || until_including_attr ) {
+            Expression until_expr;
+            if ( until_attr )
+                until_expr = builder::coerceTo(*until_attr->valueAs<Expression>(), hilti::type::Bytes());
+            else
+                until_expr = builder::coerceTo(*until_including_attr->valueAs<Expression>(), hilti::type::Bytes());
+
             auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
             auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
 
             builder()->addAssign(target, builder::bytes(""));
             auto body = builder()->addWhile(builder::bool_(true));
             pushBuilder(body, [&]() {
-                pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found", t.meta());
+                pb->waitForInput(until_bytes_size_var,
+                                 fmt("end-of-data reached before %s expression found",
+                                     (until_attr ? "&until" : "&until-including")),
+                                 t.meta());
 
                 auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
                 auto found_id = ID("found");
@@ -255,7 +254,16 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 builder()->addLocal(found_id, type::Bool());
                 builder()->addLocal(it_id, type::stream::Iterator());
                 builder()->addAssign(builder::tuple({found, it}), find);
-                builder()->addSumAssign(target, builder::memberCall(state().cur, "sub", {it}));
+
+                Expression match;
+
+                if ( until_attr )
+                    match = builder::memberCall(state().cur, "sub", {it});
+                else
+                    // until_including
+                    match = builder::memberCall(state().cur, "sub", {builder::sum(it, until_bytes_size_var)});
+
+                builder()->addSumAssign(target, match);
 
                 auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
@@ -276,24 +284,23 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
 } // namespace
 
-Expression ParserBuilder::_parseType(const Type& t, const std::optional<type::unit::item::Field>& field,
-                                     const std::optional<Expression>& dst, bool is_try) {
+Expression ParserBuilder::_parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst,
+                                     bool is_try) {
     assert(! is_try || (t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>()));
 
-    if ( auto e = Visitor(this, field, dst, is_try).dispatch(t) )
+    if ( auto e = Visitor(this, meta, dst, is_try).dispatch(t) )
         return std::move(*e);
 
     hilti::logger().internalError(fmt("codegen: type parser did not return expression for '%s'", t));
 }
 
-Expression ParserBuilder::parseType(const Type& t, const std::optional<type::unit::item::Field>& field,
-                                    const std::optional<Expression>& dst) {
-    return _parseType(t, field, dst, /*is_try =*/false);
+Expression ParserBuilder::parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst) {
+    return _parseType(t, meta, dst, /*is_try =*/false);
 }
 
-Expression ParserBuilder::parseTypeTry(const Type& t, const std::optional<type::unit::item::Field>& field,
+Expression ParserBuilder::parseTypeTry(const Type& t, const production::Meta& meta,
                                        const std::optional<Expression>& dst) {
     assert(t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>());
 
-    return _parseType(t, field, dst, /*is_try =*/true);
+    return _parseType(t, meta, dst, /*is_try =*/true);
 }

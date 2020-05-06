@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Foo = unit {
+    x: (bytes)[3];
+    y: (bytes &eod &chunked)[3];
+    z: (bytes &eod &convert=$$)[];
+};

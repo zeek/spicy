@@ -6,11 +6,12 @@ module Foo {
 import hilti;
 
 type X = struct {
-    string s &optional;
+    string s;
 };
 
 global X x;
 
 hilti::print(x.DoesNotExist);
+unset x.s;
 
 }

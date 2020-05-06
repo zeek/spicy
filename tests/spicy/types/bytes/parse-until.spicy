@@ -1,4 +1,4 @@
-# @TEST-EXEC:  printf 'abc12345def' | spicy-driver %INPUT >output 2>&1
+# @TEST-EXEC:  printf 'abc12345def12345defXX' | spicy-driver %INPUT >output 2>&1
 # @TEST-EXEC:  btest-diff output
 
 module Test;
@@ -6,6 +6,7 @@ module Test;
 public type X = unit {
     b1 : b"abc";
     b2 : bytes &until=b"def";
+    b3 : bytes &until-including=b"def";
 
     on %done { print self; }
 };

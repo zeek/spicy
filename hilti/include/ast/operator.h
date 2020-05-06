@@ -256,7 +256,8 @@ enum class Kind {
     TryMember,
     Unequal,
     Unknown,
-    Unpack
+    Unpack,
+    Unset
 };
 
 /** Returns true for operator types that HILTI considers commutative. */
@@ -307,7 +308,8 @@ constexpr auto is_commutative(Kind k) {
         case Kind::SumAssign:
         case Kind::TryMember:
         case Kind::Unknown:
-        case Kind::Unpack: return false;
+        case Kind::Unpack:
+        case Kind::Unset: return false;
         default: util::cannot_be_reached();
     };
 }
@@ -357,7 +359,8 @@ constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Add, "add"},
                                               {Kind::TryMember, ".?"},
                                               {Kind::Unequal, "!="},
                                               {Kind::Unknown, "<unknown>"},
-                                              {Kind::Unpack, "unpack"}};
+                                              {Kind::Unpack, "unpack"},
+                                              {Kind::Unset, "unset"}};
 } // namespace detail
 
 /**

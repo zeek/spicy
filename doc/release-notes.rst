@@ -18,15 +18,17 @@ on GitHub for what's still missing.
 
 Changes:
 
-- Renamed ``export`` linkage to ``public``
+- Renamed ``export`` linkage to ``public``.
 
-- Renamed ``%byteorder`` property to ``%byte-order``
+- Renamed ``%byteorder`` property to ``%byte-order``.
 
-- Renamed ``&byteorder`` attribute to ``&byte-order``
+- Renamed ``&byteorder`` attribute to ``&byte-order``.
 
-- Renamed ``&bitorder`` attribute to ``&bit-order``
+- Renamed ``&bitorder`` attribute to ``&bit-order``.
 
-- Renamed ``&length`` attribute to ``&size``
+- Renamed ``&length`` attribute to ``&size``.
+
+- Renamed ``&until_including`` attribute to ``&until-including``.
 
 - Replaced ``&parse`` with separate ``&parse-from`` (taking a "bytes"
   instance) and ``&parse-at`` (taking a stream iterator) attributes.

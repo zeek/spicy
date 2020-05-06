@@ -712,6 +712,11 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return structMember(n, n.op1());
     }
 
+    result_t operator()(const operator_::struct_::Unset& n) {
+        auto id = n.op1().as<expression::Member>().id();
+        return fmt("%s.reset()", memberAccess(n, std::move(id)));
+    }
+
     /// Union
 
     unsigned int unionFieldIndex(const Expression& op0, const Expression& op1) {

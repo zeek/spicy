@@ -1,4 +1,37 @@
 
+0.4.0-226 | 2020-05-06 15:12:52 +0000
+
+  * Apply a set of tweaks to specifics of &size. (Robin Sommer,
+    Corelight)
+
+    - We now enforce that a field consumes all its &size characters of
+      input, unless explicitly overridden where a types allow for that
+      (as, e.g., "bytes" does with an additional &eod).
+
+    - We slightly change semantics for parsing bytes: A &size of zero
+      will now set the field an empty bytes value; it used to leave
+      the field unset.
+
+    - Document that &size works with all fields (which it already
+      did).
+
+    - Clean up the implementation of &size.
+
+  * GH-289: Do not perform look-ahead parsing for vectors fed from
+    &parse-from/at. (Robin Sommer, Corelight)
+
+  * GH-288: Rename "&until_including" attribute to "&until-including".
+    (Robin Sommer, Corelight)
+
+  * GH-269: Add support for "&until-including" when parsing bytes.
+    (Robin Sommer, Corelight)
+
+  * GH-286: Fix Bison parser's attribute association for regular
+    expressions. (Robin Sommer, Corelight)
+
+  * Add an "unset" operator to HILTI's struct type to clear optional
+    types. (Robin Sommer, Corelight)
+
 0.4.0-216 | 2020-05-05 12:25:40 +0000
 
   * GH-212: Resize eagerly when accessing out-of-bounds Vector

@@ -158,9 +158,9 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             }
         }
 
-        else if ( a.tag() == "&while" || a.tag() == "&until_including" ) {
+        else if ( a.tag() == "&while" || a.tag() == "&until-including" ) {
             if ( auto f = getAttrField(p) ) {
-                if ( ! f->parseType().isA<type::Vector>() )
+                if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>()) )
                     error(fmt("%s is only valid for fields of type bytes or vector", a.tag()), p);
                 else if ( ! a.hasValue() )
                     error(fmt("%s must provide an expression", a.tag()), p);
@@ -209,11 +209,11 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
     }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {
+        auto count_attr = AttributeSet::find(f.attributes(), "&count");
+        auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
+        auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
         auto repeat = f.repeatCount();
         auto size_attr = AttributeSet::find(f.attributes(), "&size");
-        auto count_attr = AttributeSet::find(f.attributes(), "&count");
-        auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
-        auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
 
         if ( count_attr && (repeat && ! repeat->type().isA<type::Null>()) )
             error("cannot have both `[..]` and &count", p);
@@ -221,17 +221,36 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         if ( parse_from_attr && parse_at_attr )
             error("cannot have both &parse-from and &parse-at", p);
 
+        if ( auto item = f.vectorItem() ) {
+            if ( auto item_field = item->tryAs<spicy::type::unit::item::Field>() ) {
+                const auto& item_attrs = item_field->attributes();
+
+                if ( AttributeSet::has(item_attrs, "&chunked") )
+                    error("vector elements cannot have &chunked attribute", p);
+
+                if ( AttributeSet::has(item_attrs, "&convert") )
+                    error("vector elements cannot have &convert attribute", p);
+            }
+        }
+
         if ( f.parseType().isA<type::Bytes>() && ! f.ctor() ) {
             auto eod_attr = AttributeSet::find(f.attributes(), "&eod");
             auto until_attr = AttributeSet::find(f.attributes(), "&until");
+            auto until_including_attr = AttributeSet::find(f.attributes(), "&until-including");
 
-            if ( eod_attr ) {
-                if ( until_attr )
-                    error("&eod incompatible with &until", p);
+            std::vector<std::string> attrs_present;
+            for ( const auto& i : {eod_attr, parse_from_attr, parse_at_attr, until_attr, until_including_attr} ) {
+                if ( i )
+                    attrs_present.emplace_back(i->tag());
             }
 
-            else if ( ! until_attr && ! size_attr && ! parse_from_attr && ! parse_at_attr )
-                error("bytes field requires one of &size, &eod, or &until", p);
+            // &size can be combined with any other attribute, or be used standalone.
+
+            if ( attrs_present.size() > 1 )
+                error(fmt("attributes cannot be combined: %s", util::join(attrs_present, ", ")), p);
+
+            if ( attrs_present.empty() && ! size_attr )
+                error("bytes field requires one of &eod, &parse_at, &parse_from, &size, &until, &until-including", p);
         }
 
         if ( f.parseType().isA<type::Address>() ) {

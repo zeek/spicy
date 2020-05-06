@@ -29,8 +29,8 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 172
-%expect-rr 140
+%expect 170
+%expect-rr 143
 
 %union {}
 %{
@@ -105,7 +105,6 @@ static int _field_width = 0;
 %token         CASE
 %token         CAST
 %token         CATCH
-%token         CLEAR
 %token         CONST
 %token         CONSTANT
 %token         CONTINUE
@@ -196,6 +195,7 @@ static int _field_width = 0;
 %token         UINT64
 %token         UINT8
 %token         UNIT
+%token         UNSET
 %token         VAR
 %token         VECTOR
 %token         VIEW
@@ -469,14 +469,22 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
                                                    $$ = hilti::statement::Expression(std::move(expr), __loc__);
                                                  }
 
-
               | DELETE expr ';'                  { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
                                                    if ( ! (op && op->kind() == hilti::operator_::Kind::Index) )
-                                                        error(@$, "'add' must be used with index expression only");
+                                                        error(@$, "'delete' must be used with index expressions only");
 
                                                    auto expr = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Delete, op->operands(), __loc__);
                                                    $$ = hilti::statement::Expression(std::move(expr), __loc__);
                                                  }
+
+              | UNSET expr ';'                   { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
+                                                   if ( ! (op && op->kind() == hilti::operator_::Kind::Member) )
+                                                        error(@$, "'unset' must be used with member expressions only");
+
+                                                   auto expr = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unset, op->operands(), __loc__);
+                                                   $$ = hilti::statement::Expression(std::move(expr), __loc__);
+                                                 }
+
               ;
 
 opt_else_block
@@ -665,6 +673,8 @@ unit_field_in_container
               : ctor opt_unit_field_args opt_attributes
                                                  { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
               | scoped_id opt_unit_field_args opt_attributes
+                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
+              | base_type opt_unit_field_args opt_attributes
                                                  { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
 
 unit_wide_hook : ON unit_hook_id unit_hook       { $$ = spicy::type::unit::item::UnitHook(std::move($2), std::move($3), __loc__); }
@@ -948,7 +958,7 @@ struct_elems  : struct_elems ',' struct_elem     { $$ = std::move($1); $$.push_b
 
 struct_elem   : '$' local_id  '=' expr           { $$ = hilti::ctor::struct_::Field(std::move($2), std::move($4)); }
 
-regexp        : re_patterns opt_attributes       { $$ = hilti::ctor::RegExp(std::move($1), std::move($2), __loc__); }
+regexp        : re_patterns                      { $$ = hilti::ctor::RegExp(std::move($1), {}, __loc__); }
 
 re_patterns   : re_patterns '|' re_pattern_constant
                                                  { $$ = $1; $$.push_back(std::move($3)); }

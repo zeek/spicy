@@ -52,4 +52,8 @@ hilti::print(x);
 hilti::print(y);
 hilti::print(z);
 
+hilti::print(z?.s1);
+unset z.s1;
+hilti::print(z?.s1);
+
 }

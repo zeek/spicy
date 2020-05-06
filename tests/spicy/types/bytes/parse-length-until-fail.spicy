@@ -1,0 +1,9 @@
+# @TEST-EXEC-FAIL: printf '12345Xabc' | spicy-driver %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module X;
+
+public type Foo = unit {
+    x: bytes &size=5 &until=b"X"; # Fails, &size reached before X
+    y: bytes &eod;
+};

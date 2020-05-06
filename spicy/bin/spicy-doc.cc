@@ -74,6 +74,7 @@ static std::string kindToString(hilti::operator_::Kind kind) {
         KIND_TO_STRING(hilti::operator_::Kind::Unequal);
         KIND_TO_STRING(hilti::operator_::Kind::Unpack);
         KIND_TO_STRING(hilti::operator_::Kind::Unknown);
+        KIND_TO_STRING(hilti::operator_::Kind::Unset);
 
         default: util::cannot_be_reached();
     }

@@ -145,6 +145,7 @@ type                  return token::TYPE;
 uint                  return token::UINT;
 union                 return token::UNION;
 unpack                return token::UNPACK;
+unset                 return token::UNSET;
 value_ref             return token::VALUE_REF;
 vector                return token::VECTOR;
 view                  return token::VIEW;

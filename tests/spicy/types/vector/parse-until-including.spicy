@@ -4,7 +4,7 @@
 module Mini;
 
 public type test = unit {
-    ints: int8[] &until_including=($$ == 3)
+    ints: int8[] &until-including=($$ == 3)
           foreach { print $$; }
     last: int8;
 

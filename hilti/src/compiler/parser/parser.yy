@@ -29,7 +29,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 94
-%expect-rr 176
+%expect-rr 178
 
 %union {}
 %{
@@ -190,6 +190,7 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
 %token UINT "uint"
 %token UNION "union"
 %token UNPACK "unpack"
+%token UNSET "unset"
 %token VECTOR "vector"
 %token VIEW "view"
 %token VOID "void"
@@ -449,15 +450,22 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
                                                    $$ = hilti::statement::Expression(std::move(expr), __loc__);
                                                  }
 
-
               | DELETE expr ';'                  { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
                                                    if ( ! (op && op->kind() == hilti::operator_::Kind::Index) )
-                                                        error(@$, "'add' must be used with index expression only");
+                                                        error(@$, "'delete' must be used with index expressions only");
 
                                                    auto expr = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Delete, op->operands(), __loc__);
                                                    $$ = hilti::statement::Expression(std::move(expr), __loc__);
                                                  }
-        ;
+
+              | UNSET expr ';'                   { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
+                                                   if ( ! (op && op->kind() == hilti::operator_::Kind::Member) )
+                                                        error(@$, "'unset' must be used with member expressions only");
+
+                                                   auto expr = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unset, op->operands(), __loc__);
+                                                   $$ = hilti::statement::Expression(std::move(expr), __loc__);
+                                                 }
+;
 
 opt_else_block
               : ELSE block                       { $$ = std::move($2); }

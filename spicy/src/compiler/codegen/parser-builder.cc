@@ -106,11 +106,10 @@ struct ProductionVisitor
 
     // Returns a boolean expression that's 'true' if a 'stop' was encountered.
     Expression _parseProduction(const Production& p, const production::Meta& meta, bool forwarding) {
-        const auto is_field_owner =
-            (meta.field() && meta.isFieldProduction() && ! p.isA<production::Resolved>() && ! meta.container());
+        const auto is_field_owner = (meta.field() && meta.isFieldProduction() && ! p.isA<production::Resolved>());
 
-        if ( is_field_owner )
-            preParseField(p, meta);
+        if ( meta.field() && meta.isFieldProduction() )
+            preParseField(p, meta, is_field_owner);
 
         beginProduction(p);
 
@@ -248,6 +247,7 @@ struct ProductionVisitor
                         pstate.self = hilti::expression::UnresolvedID(ID("self"));
                         pstate.data = builder::id("__data");
                         pstate.cur = builder::id("__cur");
+                        pstate.ncur = {};
                         pstate.trim = builder::id("__trim");
                         pstate.lahead = builder::id("__lah");
                         pstate.lahead_end = builder::id("__lahe");
@@ -321,6 +321,7 @@ struct ProductionVisitor
                         pstate.self = hilti::expression::UnresolvedID(ID("self"));
                         pstate.data = builder::id("__data");
                         pstate.cur = builder::id("__cur");
+                        pstate.ncur = {};
                         pstate.trim = builder::id("__trim");
                         pstate.lahead = builder::id("__lah");
                         pstate.lahead_end = builder::id("__lahe");
@@ -389,13 +390,13 @@ struct ProductionVisitor
 
         endProduction(p);
 
-        if ( is_field_owner )
-            postParseField(p, *meta.field());
+        if ( meta.field() && meta.isFieldProduction() )
+            postParseField(p, meta, is_field_owner);
 
         return stop;
     }
 
-    void preParseField(const Production& /* i */, const production::Meta& meta) {
+    void preParseField(const Production& /* i */, const production::Meta& meta, bool is_field_owner) {
         // Helper function that returns a computed type that delays
         // determining a field's actual type to when it's needed.
         auto field_type = [&]() -> Type {
@@ -405,32 +406,35 @@ struct ProductionVisitor
             return type::Computed(meta.fieldRef(), callback);
         };
 
-        pb->enableDefaultNewValueForField(true);
+        const auto& field = meta.field();
+        assert(field); // Must only be called if we have a field.
 
-        auto field = *meta.field();
+        if ( field && is_field_owner && ! meta.container() ) {
+            pb->enableDefaultNewValueForField(true);
 
-        if ( field.parseType().isA<type::Void>() ) {
-            // No value to store.
-            pushDestination(hilti::expression::Void());
-        }
-        else if ( AttributeSet::find(field.attributes(), "&convert") ) {
-            // Need a temporary for the parsed field.
-            auto dst = builder()->addTmp(fmt("parsed_%s", field.id()), field.parseType());
-            pushDestination(dst);
-        }
-        else if ( field.isTransient() ) {
-            // Won't have the field in the emitted C++ code, so we need a temporary.
-            auto ftype = field_type();
-            auto dst = builder()->addTmp(fmt("transient_%s", field.id()), ftype);
-            pushDestination(builder::type_wrapped(dst, ftype, field.meta()));
-        }
-        else {
-            // Can store parsed value directly in struct field.
-            auto dst = builder::member(pb->state().self, field.id());
-            pushDestination(builder::type_wrapped(dst, field_type(), field.meta()));
+            if ( field->parseType().isA<type::Void>() ) {
+                // No value to store.
+                pushDestination(hilti::expression::Void());
+            }
+            else if ( AttributeSet::find(field->attributes(), "&convert") ) {
+                // Need a temporary for the parsed field.
+                auto dst = builder()->addTmp(fmt("parsed_%s", field->id()), field->parseType());
+                pushDestination(dst);
+            }
+            else if ( field->isTransient() ) {
+                // Won't have the field in the emitted C++ code, so we need a temporary.
+                auto ftype = field_type();
+                auto dst = builder()->addTmp(fmt("transient_%s", field->id()), ftype);
+                pushDestination(builder::type_wrapped(dst, ftype, field->meta()));
+            }
+            else {
+                // Can store parsed value directly in struct field.
+                auto dst = builder::member(pb->state().self, field->id());
+                pushDestination(builder::type_wrapped(dst, field_type(), field->meta()));
+            }
         }
 
-        if ( auto a = AttributeSet::find(field.attributes(), "&parse-from") ) {
+        if ( auto a = AttributeSet::find(field->attributes(), "&parse-from") ) {
             // Redirect input to a bytes value.
             auto pstate = state();
             pstate.trim = builder::bool_(false);
@@ -441,12 +445,13 @@ struct ProductionVisitor
             auto tmp = builder()->addTmp("parse_from", type::ValueReference(type::Stream()), *expr);
             pstate.data = tmp;
             pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
+            pstate.ncur = {};
             builder()->addMemberCall(tmp, "freeze", {});
 
             pushState(std::move(pstate));
         }
 
-        if ( auto a = AttributeSet::find(field.attributes(), "&parse-at") ) {
+        if ( auto a = AttributeSet::find(field->attributes(), "&parse-at") ) {
             // Redirect input to a stream position.
             auto pstate = state();
             pstate.trim = builder::bool_(false);
@@ -457,13 +462,14 @@ struct ProductionVisitor
             auto cur = builder::memberCall(state().cur, "advance", {*expr});
 
             pstate.cur = builder()->addTmp("parse_cur", cur);
+            pstate.ncur = {};
             pushState(std::move(pstate));
         }
 
-        if ( auto c = field.condition() )
+        if ( auto c = field->condition() )
             pushBuilder(builder()->addIf(*c));
 
-        if ( auto a = AttributeSet::find(field.attributes(), "&size") ) {
+        if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
             // Limit input to the specified length.
             auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
             auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
@@ -478,30 +484,55 @@ struct ProductionVisitor
             pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
             pushState(std::move(pstate));
         }
+        else {
+            auto pstate = state();
+            pstate.ncur = {};
+            pushState(std::move(pstate));
+        }
     }
 
-    void postParseField(const Production& /* i */, const type::unit::item::Field& field) {
+    void postParseField(const Production& /* i */, const production::Meta& meta, bool is_field_owner) {
+        const auto& field = meta.field();
+        assert(field); // Must only be called if we have a field.
+
         auto ncur = state().ncur;
         state().ncur = {};
 
-        if ( auto a = AttributeSet::find(field.attributes(), "&size") )
-            popState();
+        if ( auto a = AttributeSet::find(field->attributes(), "&size"); a && is_field_owner ) {
+            // Make sure we parsed the entire &size amount.
+            auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
+                                            builder::memberCall(*ncur, "offset", {}));
+            auto insufficient = builder()->addIf(std::move(missing));
+            pushBuilder(insufficient, [&]() {
+                // We didn't parse all the data, which is an error.
+                if ( ! field->isTransient() && destination() && ! destination()->type().isA<type::Void>() )
+                    // Clear the field in case the type parsing has started
+                    // to fill it.
+                    builder()->addExpression(builder::unset(state().self, field->id()));
 
-        if ( AttributeSet::find(field.attributes(), "&parse-from") ||
-             AttributeSet::find(field.attributes(), "&parse-at") ) {
+                pb->parseError("&size amount not consumed", a->meta());
+            });
+        }
+
+        popState(); // From &size (pushed even if absent).
+
+        if ( AttributeSet::find(field->attributes(), "&parse-from") ||
+             AttributeSet::find(field->attributes(), "&parse-at") ) {
             ncur = {};
             popState();
         }
 
-        auto dst = popDestination();
-
-        if ( dst && pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
-            pb->newValueForField(field, *dst);
-
         if ( ncur )
             builder()->addAssign(state().cur, *ncur);
 
-        if ( field.condition() )
+        if ( is_field_owner && ! meta.container() ) {
+            auto dst = popDestination();
+
+            if ( dst && pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
+                pb->newValueForField(*field, *dst);
+        }
+
+        if ( field->condition() )
             popBuilder();
     }
 
@@ -817,10 +848,7 @@ struct ProductionVisitor
             parseProduction(i);
     }
 
-    void operator()(const production::Variable& p) {
-        auto field = p.meta().field();
-        pb->parseType(p.type(), field, destination());
-    }
+    void operator()(const production::Variable& p) { pb->parseType(p.type(), p.meta(), destination()); }
 };
 
 } // namespace spicy::detail::codegen
@@ -1027,7 +1055,7 @@ Expression ParserBuilder::newContainerItem(const type::unit::item::Field& field,
     if ( auto a = AttributeSet::find(field.attributes(), "&until") )
         addl_stop_condition = a->valueAs<spicy::Expression>();
 
-    if ( auto a = AttributeSet::find(field.attributes(), "&until_including") ) {
+    if ( auto a = AttributeSet::find(field.attributes(), "&until-including") ) {
         addl_stop_condition = a->valueAs<spicy::Expression>();
         push_after_condition = false;
     }
