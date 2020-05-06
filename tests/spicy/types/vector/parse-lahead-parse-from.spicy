@@ -1,0 +1,14 @@
+# @TEST-EXEC:  printf x | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# This tests that look-ahead is not applied to fields with &parse-from.
+# If it were, the grammar would be ambigious.
+
+module Test;
+
+public type Foo = unit {
+    x: uint8[] &parse-from=b"abc";
+    y: uint8;
+
+    on %done { print self; }
+};

@@ -67,6 +67,8 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         auto id = uniquer.get(field.id());
         auto count = AttributeSet::find(field.attributes(), "&count");
         auto size = AttributeSet::find(field.attributes(), "&size");
+        auto parse_at = AttributeSet::find(field.attributes(), "&parse-at");
+        auto parse_from = AttributeSet::find(field.attributes(), "&parse-from");
         auto until = AttributeSet::find(field.attributes(), "&until");
         auto until_including = AttributeSet::find(field.attributes(), "&until-including");
         auto while_ = AttributeSet::find(field.attributes(), "&while");
@@ -89,6 +91,10 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         if ( size )
             // When parsing, our view will be limited to the specified input
             // size, so just iterate until EOD.
+            return production::ForEach(id, sub, true, loc);
+
+        if ( parse_at || parse_from )
+            // Custom input, just iterate until EOD.
             return production::ForEach(id, sub, true, loc);
 
         if ( while_ || until || until_including )
