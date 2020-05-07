@@ -25,6 +25,7 @@ cmake_use_ccache="no"
 cmake_use_gold="yes"
 cmake_use_sanitizers=""
 cmake_use_werror="false"
+cmake_use_wdocumentation="false"
 cmake_zeek_root_dir="/usr/local/zeek"
 
 display_cmake=0
@@ -61,6 +62,7 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --enable-ccache                    Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
     --enable-debug                     Compile debug version (same as --build-type=Debug) [default: off]
     --enable-sanitizer[=<names>]       Enable sanitizer(s), default if not further specified is \"address\"
+    --enable-wdocumentation            Check Doxygen comments [default: ${cmake_use_wdocumentation}]
     --enable-werror                    Treat compiler warnings as errors [default: ${cmake_use_werror}]
     --generator=<generator>            CMake generator to use (see cmake --help)
     --prefix=PATH                      Installation prefix [default: ${cmake_install_prefix}]
@@ -119,6 +121,7 @@ while [ $# -ne 0 ]; do
         --enable-debug)                    cmake_build_type="Debug";;
         --enable-sanitizer)                cmake_use_sanitizers="address";;
         --enable-sanitizer=*)              cmake_use_sanitizers="${optargs}";;
+        --enable-wdocumentation)           cmake_use_wdocumentation="yes";;
         --enable-werror)                   cmake_use_werror="yes";;
         --disable-jit)                     cmake_hilti_have_jit="no";;
         --generator=*)                     cmake_generator="${optarg}";;
@@ -172,6 +175,7 @@ append_cache_entry LLVM_ROOT                    PATH   "${cmake_llvm_root}"
 append_cache_entry USE_CCACHE                   BOOL   "${cmake_use_ccache}"
 append_cache_entry USE_GOLD                     BOOL   "${cmake_use_gold}"
 append_cache_entry USE_SANITIZERS               STRING "${cmake_use_sanitizers}"
+append_cache_entry USE_WDOCUMENTATION           BOOL   "${cmake_use_wdocumentation}"
 append_cache_entry USE_WERROR                   BOOL   "${cmake_use_werror}"
 append_cache_entry ZEEK_ROOT_DIR                PATH   "${cmake_zeek_root_dir}"
 append_cache_entry CPACK_BINARY_STGZ            BOOL   "OFF"

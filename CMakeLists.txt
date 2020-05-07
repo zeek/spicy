@@ -83,11 +83,22 @@ else ()
    set(HILTI_HAVE_SANITIZER "no" CACHE BOOL "Using sanitizer")
 endif()
 
-if (USE_WERROR)
+if(USE_WDOCUMENTATION)
+    set(wdocumentation_flag "-Wdocumentation")
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag(${wdocumentation_flag} SPICY_HAS_WDOCUMENTATION_FLAG)
+    if(NOT SPICY_HAS_WDOCUMENTATION_FLAG)
+        message(FATAL_ERROR "${CMAKE_CXX_COMPILER} does not support ${wdocumentation_flag}")
+    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${wdocumentation_flag}")
+    set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${wdocumentation_flag}")
+endif()
+
+if(USE_WERROR)
     set(werror_flags "-Werror")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")
     set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${werror_flags}")
-endif ()
+endif()
 
 ## Load modules
 
