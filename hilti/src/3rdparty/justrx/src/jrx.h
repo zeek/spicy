@@ -24,10 +24,10 @@ static const jrx_assertion JRX_ASSERTION_BOD = 1 << 3;               ///< Beginn
 static const jrx_assertion JRX_ASSERTION_EOD = 1 << 4;               ///< End of data.
 static const jrx_assertion JRX_ASSERTION_WORD_BOUNDARY = 1 << 5;     ///< A word boundary.
 static const jrx_assertion JRX_ASSERTION_NOT_WORD_BOUNDARY = 1 << 6; ///< Not a word boundary.
-static const jrx_assertion JRX_ASSERTION_CUSTOM1 = 1 << 12; ///< Assertion for custom usage.
-static const jrx_assertion JRX_ASSERTION_CUSTOM2 = 1 << 13; ///< Assertion for custom usage.
-static const jrx_assertion JRX_ASSERTION_CUSTOM3 = 1 << 14; ///< Assertion for custom usage.
-static const jrx_assertion JRX_ASSERTION_CUSTOM4 = 1 << 15; ///< Assertion for custom usage.
+static const jrx_assertion JRX_ASSERTION_CUSTOM1 = 1 << 12;          ///< Assertion for custom usage.
+static const jrx_assertion JRX_ASSERTION_CUSTOM2 = 1 << 13;          ///< Assertion for custom usage.
+static const jrx_assertion JRX_ASSERTION_CUSTOM3 = 1 << 14;          ///< Assertion for custom usage.
+static const jrx_assertion JRX_ASSERTION_CUSTOM4 = 1 << 15;          ///< Assertion for custom usage.
 
 struct jrx_nfa;
 struct jrx_dfa;
@@ -57,7 +57,7 @@ struct jrx_match_state {
 };
 
 struct jrx_regex_t {
-    size_t re_nsub; ///< Number of capture expressions in regular expression (POSIX).
+    size_t re_nsub;      ///< Number of capture expressions in regular expression (POSIX).
     int cflags;          // RE_* flags for compilation.
     int nmatch;          // Max. number of subexpression caller is interested in; -1 for all.
     struct jrx_nfa* nfa; // Compiled NFA, or NULL.
@@ -68,9 +68,8 @@ struct jrx_regex_t {
 typedef jrx_offset regoff_t;
 
 typedef struct jrx_regmatch_t {
-    regoff_t rm_so; //< Zero-based start offset of match (POSIX).
-    regoff_t
-        rm_eo; //< End offset of match (POSIX). It locates the first byte after the match. (POSIX).
+    regoff_t rm_so; ///< Zero-based start offset of match (POSIX).
+    regoff_t rm_eo; ///< End offset of match (POSIX). It locates the first byte after the match. (POSIX).
 } jrx_regmatch_t;
 
 // POSIX options. We use macros here for compatibility with code using
@@ -86,23 +85,22 @@ typedef struct jrx_regmatch_t {
 #define REG_NOTEOL (1 << 5)
 
 // Non-standard options.
-#define REG_DEBUG (1 << 6) //< Enable debugging output to stderr.
-#define REG_STD_MATCHER                                                                            \
-    (1 << 7) //< Force usage of the (slower) standard matcher even with REG_NOSUB.
-#define REG_ANCHOR                                                                                 \
-    (1 << 8) //< Anchor matching at beginning. The effect is that of an implicit '^' at the
-             // beginning.
-#define REG_LAZY (1 << 9)         //< Build DFA incrementally.
-#define REG_FIRST_MATCH (1 << 10) //< Take first match, rather than longest.
+#define REG_DEBUG (1 << 6)       ///< Enable debugging output to stderr.
+#define REG_STD_MATCHER (1 << 7) ///< Force usage of the (slower) standard matcher even with REG_NOSUB.
+#define REG_ANCHOR                                                                                                     \
+    (1 << 8)                      ///< Anchor matching at beginning. The effect is that of an implicit '^' at the
+                                  /// beginning.
+#define REG_LAZY (1 << 9)         ///< Build DFA incrementally.
+#define REG_FIRST_MATCH (1 << 10) ///< Take first match, rather than longest.
 
 // Non-standard error codes..
-#define REG_OK 0           //< Everything is fine.
-#define REG_NOTSUPPORTED 1 //< A non-supported feature has been used.
+#define REG_OK 0           ///< Everything is fine.
+#define REG_NOTSUPPORTED 1 ///< A non-supported feature has been used.
 
 // POSIX error codes.
-#define REG_BADPAT 3  //< A bad pattern was giving for compilation.
-#define REG_NOMATCH 4 //< No match has been found.
-#define REG_EMEM 5    //< Running out of memory.
+#define REG_BADPAT 3  ///< A bad pattern was giving for compilation.
+#define REG_NOMATCH 4 ///< No match has been found.
+#define REG_EMEM 5    ///< Running out of memory.
 
 // We actually do not raise these POSIX errors but define them for
 // completeness.
@@ -130,8 +128,7 @@ typedef struct jrx_regmatch_t {
 // These are POSIX compatible.
 extern int jrx_regcomp(jrx_regex_t* preg, const char* pattern, int cflags);
 extern size_t jrx_regerror(int errcode, const jrx_regex_t* preg, char* errbuf, size_t errbuf_size);
-extern int jrx_regexec(const jrx_regex_t* preg, const char* string, size_t nmatch,
-                       jrx_regmatch_t pmatch[], int eflags);
+extern int jrx_regexec(const jrx_regex_t* preg, const char* string, size_t nmatch, jrx_regmatch_t pmatch[], int eflags);
 extern void jrx_regfree(jrx_regex_t* preg);
 
 // These are non-POSIX extensions.
@@ -139,18 +136,15 @@ extern void jrx_regset_init(jrx_regex_t* preg, int nmatch, int cflags);
 extern void jrx_regset_done(jrx_regex_t* preg, int cflags);
 extern int jrx_regset_add(jrx_regex_t* preg, const char* pattern, unsigned int len);
 extern int jrx_regset_finalize(jrx_regex_t* preg);
-extern int jrx_regexec_partial(const jrx_regex_t* preg, const char* buffer, unsigned int len,
-                               jrx_assertion first, jrx_assertion last, jrx_match_state* ms,
-                               int find_partial_matches);
-extern int jrx_reggroups(const jrx_regex_t* preg, jrx_match_state* ms, size_t nmatch,
-                         jrx_regmatch_t pmatch[]);
+extern int jrx_regexec_partial(const jrx_regex_t* preg, const char* buffer, unsigned int len, jrx_assertion first,
+                               jrx_assertion last, jrx_match_state* ms, int find_partial_matches);
+extern int jrx_reggroups(const jrx_regex_t* preg, jrx_match_state* ms, size_t nmatch, jrx_regmatch_t pmatch[]);
 extern int jrx_num_groups(jrx_regex_t* preg);
 extern int jrx_is_anchored(jrx_regex_t* preg);
 extern int jrx_can_transition(jrx_match_state* ms);
 extern int jrx_current_accept(jrx_match_state* ms);
 
-extern jrx_match_state* jrx_match_state_init(const jrx_regex_t* preg, jrx_offset begin,
-                                             jrx_match_state* ms);
+extern jrx_match_state* jrx_match_state_init(const jrx_regex_t* preg, jrx_offset begin, jrx_match_state* ms);
 extern void jrx_match_state_copy(jrx_match_state* from, jrx_match_state* to); // supports only min-matcher state
 extern void jrx_match_state_done(jrx_match_state* ms);
 
