@@ -27,7 +27,7 @@ extern void __hlt::Foo::__init_globals(hilti::rt::Context* ctx) {
 
 extern void __hlt::Foo::__init_module() {
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.globals/globals.hlt:11:1");
-    hilti::rt::print(Foo::__globals()->X, true);
+    ::hilti::rt::print(Foo::__globals()->X, true);
 }
 
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, &__init_globals, &__globals_index}); }

@@ -8,16 +8,16 @@ module spicy;
 public type AddressFamily = enum {
     IPv4, # IP4 address
     IPv6  # IPv6 address
-} &cxxname="hilti::rt::AddressFamily";
+} &cxxname="::hilti::rt::AddressFamily";
 
 ## Captures the state of base64 encoding/decoding for the corresponding library functions.
-public type Base64Stream = __library_type("spicy::rt::base64::Stream");
+public type Base64Stream = __library_type("::spicy::rt::base64::Stream");
 
 ## Specifies the bit order for individual bit ranges inside a bitfield.
 public type BitOrder = enum {
     LSB0,     # bits are interpreted as lowest-significant-bit coming first
     MSB0      # bits are interpreted as most-significant-bit coming first
-} &cxxname="hilti::rt::integer::BitOrder";
+} &cxxname="::hilti::rt::integer::BitOrder";
 
 ## Specifies byte order for data operations.
 public type ByteOrder = enum {
@@ -25,53 +25,53 @@ public type ByteOrder = enum {
     Big,      # data is in big-endian byte order
     Network,  # data is in network byte order (same a big endian)
     Host      # data is in byte order of the host we are executing on
-} &cxxname="hilti::rt::ByteOrder";
+} &cxxname="::hilti::rt::ByteOrder";
 
 ## Captures state for incremental regular expression matching.
-public type MatchState = __library_type("hilti::rt::regexp::MatchState");
+public type MatchState = __library_type("::hilti::rt::regexp::MatchState");
 
 ## Specifies a transport-layer prtocool.
 public type Protocol = enum {
     TCP,
     UDP,
     ICMP
-} &cxxname="hilti::rt::Protocol";
+} &cxxname="::hilti::rt::Protocol";
 
 ## Specifies the type of a real value.
 public type RealType = enum {
     IEEE754_Single, # single precision in IEEE754 format
     IEEE754_Double  # double precision in IEEE754 format
-} &cxxname="hilti::rt::real::Type";
+} &cxxname="::hilti::rt::real::Type";
 
 ## Specifies the policy for a sink's reassembler when encountering overlapping data.
 public type ReassemblerPolicy = enum {
     First # take the original data & discard the new data
-} &cxxname="spicy::rt::sink::ReassemblerPolicy";
+} &cxxname="::spicy::rt::sink::ReassemblerPolicy";
 
 ## Specifies a side an operation should operate on.
 public type Side = enum {
     Left,    # operate on left side
     Right,   # operate on right side
     Both     # operate on both sides
-} &cxxname="hilti::rt::bytes::Side";
+} &cxxname="::hilti::rt::bytes::Side";
 
 ## Captures the state of gzip decompression the corresponding library functions.
-public type ZlibStream = __library_type("spicy::rt::zlib::Stream");
+public type ZlibStream = __library_type("::spicy::rt::zlib::Stream");
 
 ## Decompresses a chunk of data through the given zlib stream.
-public function zlib_decompress(inout stream_: ZlibStream, data: bytes) : bytes &cxxname="spicy::rt::zlib::decompress" ;
+public function zlib_decompress(inout stream_: ZlibStream, data: bytes) : bytes &cxxname="::spicy::rt::zlib::decompress" ;
 
 ## Finalizes a zlib stream used for decompression.
-public function zlib_finish(inout stream_: ZlibStream) : bytes &cxxname="spicy::rt::zlib::finish";
+public function zlib_finish(inout stream_: ZlibStream) : bytes &cxxname="::spicy::rt::zlib::finish";
 
 ## Encodes a stream of data into base64.
-public function base64_encode(inout stream_: Base64Stream, data: bytes) : bytes &cxxname="spicy::rt::base64::encode" ;
+public function base64_encode(inout stream_: Base64Stream, data: bytes) : bytes &cxxname="::spicy::rt::base64::encode" ;
 
 ## Decodes a stream of base64 data back into the clear.
-public function base64_decode(inout stream_: Base64Stream, data: bytes) : bytes &cxxname="spicy::rt::base64::decode" ;
+public function base64_decode(inout stream_: Base64Stream, data: bytes) : bytes &cxxname="::spicy::rt::base64::decode" ;
 
 ## Finalizes a base64 stream used for decoding or encoding.
-public function base64_finish(inout stream_: Base64Stream) : bytes &cxxname="spicy::rt::base64::finish";
+public function base64_finish(inout stream_: Base64Stream) : bytes &cxxname="::spicy::rt::base64::finish";
 
 ## Returns the current wall clock time.
-public function current_time() : time &cxxname="hilti::rt::time::current_time";
+public function current_time() : time &cxxname="::hilti::rt::time::current_time";

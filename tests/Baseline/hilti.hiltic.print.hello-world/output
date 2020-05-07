@@ -14,7 +14,7 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.hello-world/hello-world.hlt:9:1");
-    hilti::rt::print(std::string("Hello, world!"), true);
+    ::hilti::rt::print(std::string("Hello, world!"), true);
 }
 
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, nullptr, nullptr}); }
