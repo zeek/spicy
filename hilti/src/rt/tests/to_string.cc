@@ -39,6 +39,8 @@ TEST_CASE("vector") {
 }
 
 TEST_CASE("Vector") {
+    CHECK_EQ(to_string(vector::Empty()), "[]");
+
     CHECK_EQ(to_string(Vector<int8_t>()), "[]");
     CHECK_EQ(to_string(Vector<int8_t>({1})), "[1]");
     CHECK_EQ(to_string(Vector<int8_t>({1, 2})), "[1, 2]");
