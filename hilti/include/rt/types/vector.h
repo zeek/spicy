@@ -358,12 +358,6 @@ inline std::string to_string(const Vector<T, Allocator>& x, adl::tag /*unused*/)
     return fmt("[%s]", rt::join(rt::transform(x, [](const T& y) { return rt::to_string(y); }), ", "));
 }
 
-template<typename T, typename Allocator>
-inline std::string to_string(const std::vector<T, Allocator>& x, adl::tag /*unused*/) {
-    using detail::adl::to_string;
-    return fmt("[%s]", rt::join(rt::transform(x, [](const T& y) { return rt::to_string(y); }), ", "));
-}
-
 inline std::string to_string(const vector::Empty& /* x */, adl::tag /*unused*/) { return "[]"; }
 
 template<typename T, typename Allocator>
