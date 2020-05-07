@@ -155,9 +155,17 @@ private:
 
 } // namespace vector
 
-// Proxy to faciliate safe assignment.
-
-/** HILTI's `Vector` is just strong typedef for `std::vector`. */
+/** HILTI's `Vector` is a `std::vector`-like type with additional safety guarantees.
+ *
+ * In particular it guarantees that
+ *
+ * - bounds checking for subscript element access
+ * - iterators remain valid when elements are added, removed, or the whole
+ *   `Vector` is reassigned.
+ *
+ * If not otherwise specified, member functions have the semantics of
+ * `std::vector` member functions.
+ * */
 template<typename T, typename Allocator>
 class Vector : protected std::vector<T, Allocator> {
 public:
@@ -175,8 +183,8 @@ public:
     Vector() = default;
 
     // Constructing from other `Vector` updates the data, but keeps the control block alive.
-    Vector(const Vector& x) : V(x) {}
-    Vector(Vector&& x) noexcept : V(std::move(x)) {}
+    Vector(const Vector& other) : V(other) {}
+    Vector(Vector&& other) noexcept : V(std::move(other)) {}
 
     Vector(std::initializer_list<T> init, const Allocator& alloc = Allocator()) : V(std::move(init), alloc) {}
 
@@ -184,7 +192,11 @@ public:
     Vector(std::list<T>&& l) : std::vector<T>(std::move_iterator(l.begin()), std::move_iterator(l.end())) {}
     ~Vector() = default;
 
-    /** Returns the first element of the vector. */
+    /** Returns the last element of the `vector`.
+     *
+     * @return a reference to the last element
+     * @throw `IndexError` if the `Vector` is empty
+     */
     const T& front() const {
         if ( V::empty() )
             throw IndexError("vector is empty");
@@ -192,7 +204,11 @@ public:
         return V::front();
     }
 
-    /** Returns the last element of the vector. */
+    /** Returns the last element of the `vector`.
+     *
+     * @return a reference to the last element
+     * @throw `IndexError` if the `Vector` is empty
+     */
     const T& back() const {
         if ( V::empty() )
             throw IndexError("vector is empty");
@@ -200,17 +216,38 @@ public:
         return V::back();
     }
 
-    // Assigning from other `Vector` updates the data, but keeps the control block alive.
-    Vector& operator=(const Vector& x) {
-        static_cast<V&>(*this) = static_cast<const V&>(x);
+    /** Replaces the contents of this `Vector` with another `Vector`.
+     *
+     * In contrast to assignments of `std::vector` iterators remain valid and
+     * after assignment will point to positions in the assigned vector.
+     *
+     * @param other the `Vector` to assign
+     * @return a reference to the changed `Vector`
+     */
+    Vector& operator=(const Vector& other) {
+        static_cast<V&>(*this) = static_cast<const V&>(other);
         return *this;
     }
 
-    Vector& operator=(Vector&& x) noexcept {
-        static_cast<V&>(*this) = static_cast<V&&>(std::move(x));
+    /** Replaces the contents of this `Vector` with another `Vector`.
+     *
+     * In contrast to assignments of `std::vector` iterators remain valid and
+     * after assignment will point to positions in the assigned vector.
+     *
+     * @param other the `Vector` to assign
+     * @return a reference to the changed `Vector`
+     */
+    Vector& operator=(Vector&& other) noexcept {
+        static_cast<V&>(*this) = static_cast<V&&>(std::move(other));
         return *this;
     }
 
+    /** Accesses specified element.
+     *
+     * @param i position of the element to return
+     * @return a reference to the element
+     * @throw `IndexError` if the position is out of bounds.
+     */
     const T& operator[](uint64_t i) const& {
         if ( i >= V::size() )
             throw IndexError(fmt("vector index %" PRIu64 " out of range", i));
@@ -218,6 +255,12 @@ public:
         return V::data()[i];
     }
 
+    /** Accesses specified element.
+     *
+     * @param i position of the element to return
+     * @return the element
+     * @throw `IndexError` if the position is out of bounds.
+     */
     T operator[](uint64_t i) && {
         if ( i >= V::size() )
             throw IndexError(fmt("vector index %" PRIu64 " out of range", i));
@@ -225,6 +268,14 @@ public:
         return V::data()[i];
     }
 
+    /** Accesses specified element.
+     *
+     * This overload will attempt to resize the `Vector` so that a valid
+     * element can be returned regardless of the current size of the `Vector`.
+     *
+     * @param i position of the element to return
+     * @return a reference to the element
+     */
     T& operator[](uint64_t i) & {
         if ( i >= V::size() )
             V::resize(i + 1);
@@ -232,12 +283,22 @@ public:
         return V::data()[i];
     }
 
+    /** Concatenates this `Vector` and another `Vector`.
+     *
+     * @param other the other `Vector` to append
+     * @return the concatenation of this `Vector` and the other `Vector`
+     */
     Vector operator+(const Vector& other) const {
         Vector v(*this);
         v += other;
         return v;
     }
 
+    /** Appends a `Vector` in place.
+     *
+     * @param other the `Vector` to append
+     * @return a reference to the modified `Vector`
+     */
     Vector& operator+=(const Vector& other) {
         V::insert(V::end(), other.V::begin(), other.V::end());
         return *this;
