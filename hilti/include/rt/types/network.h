@@ -21,7 +21,7 @@ public:
      * Constructs a network from prefix address and length.
      *
      * @param prefix address, which's *length* lower bits will be masked out.
-     * @param prefix length, which must be in the range from 0-32 for IPv4
+     * @param length prefix length, which must be in the range from 0-32 for IPv4
      * addresses; and 0-128 for IPv6 addresses.
      */
     Network(const Address& prefix, int length) : _prefix(prefix), _length(length) { _mask(); }
@@ -30,7 +30,7 @@ public:
      *
      * @param prefix string representation of an address, which's *length*
      * lower bits will be masked out.
-     * @param prefix length, which must be in the range from 0-32 for IPv4
+     * @param length prefix length, which must be in the range from 0-32 for IPv4
      * addresses; and 0-128 for IPv6 addresses.
      *
      * @throws RuntimeError if it cannot parse the prefix into a valid IPv4 or IPv6 address.

@@ -22,7 +22,7 @@ public:
     /**
      * Creates an assert statement that expects an exception to evaluate to true at runtime.
      *
-     * @param e expression to evaluate at runtime
+     * @param expr expression to evaluate at runtime
      * @param msg message to report an runtime if assertions fails
      * @param m meta informatio for AST node
      */
@@ -33,9 +33,8 @@ public:
      * Creates an assert statement that expects an exception to occur when
      * the expression is evaluated.
      *
-     * @param assert::Exception tag to select this constructor
-     * @param e expression to evaluate at runtime
-     * @param type exception type that's expected to be thrown when *e* is evaluated; unset of any exception
+     * @param expr expression to evaluate at runtime
+     * @param excpt exception type that's expected to be thrown when *e* is evaluated; unset of any exception
      * @param msg message to report an runtime if assertions fails
      * @param m meta informatio for AST node
      */

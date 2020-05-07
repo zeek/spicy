@@ -630,8 +630,8 @@ public:
     /**
      * Extracts subrange of bytes from the view, returned as a new view.
      *
-     * @param offset of start of subrage, relative to beginning of view
-     * @param offset of one byeond end of subrage, relative to beginning of view
+     * @param from offset of start of subrange, relative to beginning of view
+     * @param to offset of one beyond end of subrange, relative to beginning of view
      */
     View sub(Offset from, Offset to) const { return View(safeBegin() + from, safeBegin() + to); }
 

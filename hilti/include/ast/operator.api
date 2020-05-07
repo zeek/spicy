@@ -30,7 +30,6 @@ class Operator(trait::isOperator) {
      *
      * @param o instantiated operator expression
      * @param p position of `o` in the AST being validated; can be used to derive further context about the usage
-     * @return false if the instantiation doesn't reflect a correct usage of the operator
      */
     void validate(const expression::ResolvedOperator& o, operator_::position_t p) const;
 
@@ -56,8 +55,6 @@ class Operator(trait::isOperator) {
     /**
      * Describes the operands that the operator accepts, such as their types
      * and default values.
-     *
-     * @return
      */
     std::vector<hilti::operator_::Operand> operands() const;
 
@@ -66,7 +63,7 @@ class Operator(trait::isOperator) {
      * given set of operands. The returned expression will typically be a
      * `expression::ResolvedOperator`.
      *
-     * @param ops operands to instantiate the operator with
+     * @param operands operands to instantiate the operator with
      * @param m meta information to associated with the instantiated expression
      * @return new expression to integrate into AST
      */

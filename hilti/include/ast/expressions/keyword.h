@@ -66,7 +66,7 @@ public:
     /**
      * Returns a new keyword expression with the resulting type replaced.
      *
-     * @param d original expression
+     * @param e original expression
      * @param t new type
      * @return new expression that's equal to original one but with the resulting type replaced
      */

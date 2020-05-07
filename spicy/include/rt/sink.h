@@ -78,7 +78,7 @@ template<typename U>
  * the runtime library to run a specific hook, given a generic unit pointer.
  *
  * @tparam Unit unit type that the hook belongs to
- * @tparam Member function pointer to hook
+ * @tparam Hook member function pointer to hook
  * @tparam Args hook parameters
  * @return function of type `void (hilti::rt::StrongReferenceGeneric, <args>`
  */

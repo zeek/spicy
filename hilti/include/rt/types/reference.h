@@ -429,7 +429,7 @@ public:
      * Reinitializes the reference with a newly allocated value, releasing
      * any previous ownership still held.
      *
-     * @param t value to allocate and then refer to
+     * @param other value to allocate and then refer to
      */
     StrongReference& operator=(T other) {
         Base::operator=(std::make_shared<T>(std::move(other)));

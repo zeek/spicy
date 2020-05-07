@@ -47,7 +47,7 @@ public:
      * Constructs an address from binary representation of an IPv6 address.
      *
      * @param addr6a upper bits of IPv6 address in host byte order
-     * @param addr6a lower bits of IPv6 address in host byte order
+     * @param addr6b lower bits of IPv6 address in host byte order
      */
     explicit Address(uint64_t addr6a, uint64_t addr6b) : _a1(addr6a), _a2(addr6b){};
 

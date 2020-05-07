@@ -167,7 +167,7 @@ private:
     /**
      * Compiles module to a native shared library.
      *
-     * @param LLVM module to save
+     * @param module LLVM module to save
      * @return path to the created library
      */
     Result<Library> compileModule(llvm::Module&& module);

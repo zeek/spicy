@@ -135,11 +135,11 @@ public:
     std::optional<context::CachedModule> lookupModule(const std::filesystem::path& path);
 
     /**
-     * Returns all (direct) dependencies that a modulee imports. This
-     * information may be correct yet, if `final` isn't set in the module
+     * Returns all (direct) dependencies that a module imports. This
+     * information may not be correct, yet, if `final` isn't set in the module
      * meta data.
      *
-     * @param meta data for all dependencies
+     * @param id id of the module to look up
      */
     std::vector<context::CachedModule> lookupDependenciesForModule(const ID& id);
 

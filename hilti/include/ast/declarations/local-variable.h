@@ -67,7 +67,7 @@ public:
      * Returns a new local variable declaration with the type replaced.
      *
      * @param d original declaration
-     * @param b new type
+     * @param t new type
      * @return new declaration that's equal to original one but with the type replaced
      */
     static Declaration setType(const LocalVariable& d, std::optional<hilti::Type> t) {
@@ -101,7 +101,7 @@ public:
      * Returns a new local variable declaration with the type argument expressions replaced.
      *
      * @param d original declaration
-     * @param i new init expresssion
+     * @param args init expresssions
      * @return new declaration that's equal to original one but with the init expression replaced
      */
     static Declaration setTypeArguments(const LocalVariable& d, std::vector<hilti::Expression> args) {

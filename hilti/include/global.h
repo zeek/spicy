@@ -41,7 +41,7 @@ extern void render(std::ostream& out, const Node& node, bool include_scopes = fa
  * Log a debug representation of an AST node to a debug stream. The output
  * will include all the node's children recursively.
  *
- * @param stream
+ * @param stream stream to log on
  * @param node the node
  * @param include_scopes if true, include a dump of each node's identifier
  *        scope
@@ -75,7 +75,6 @@ extern std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, co
  * @tparam D class implementing the `Declaration` interface that we expecting the ID to resolve to
  * @param id id to look up
  * @param p AST position where to start the lookup; we'll traverse up the AST from there
- * @param n node to use for error reporting if something goes wrong
  * @return node if resolved, or an appropiate error if not
  */
 template<typename D>

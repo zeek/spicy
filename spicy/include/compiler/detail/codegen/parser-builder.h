@@ -87,7 +87,7 @@ struct ParserState {
      * Generates code that prints a representation of the state to the
      * `spicy-verbose` debug stream.
      *
-     * @param block bock to add the generated code to
+     * @param b block to add the generated code to
      */
     void printDebug(const std::shared_ptr<hilti::builder::Builder>& b) const;
 
@@ -280,7 +280,6 @@ public:
      * Generates code that waits for either more input becoming available or
      * end of data being reached..
      *
-     * @param location location associated with the operation
      * @return A boolean expression that's true if more bytes have become
      * available, and false if end-of-data has been reached.
      */

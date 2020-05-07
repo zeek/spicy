@@ -107,10 +107,10 @@ namespace detail {
  * Registers a parser with the runtime as being available. This is
  * automatically called for generated parsers during their initialization.
  *
- * @tparam The `UnitRef<T>` type for the unit that the parser parses, as
+ * @tparam UnitRef The `UnitRef<T>` type for the unit that the parser parses, as
  * passed when calling into the runtime.
  *
- * @param parser parser to register.
+ * @param p parser to register.
  *
  * @param instance arbitrary instance of `Unit`; this is not actually used,
  * we add the parameters just so that the template parameter `Unit` can be
@@ -118,7 +118,7 @@ namespace detail {
  */
 template<typename UnitRef>
 inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-references)
-                           UnitRef /* not used, just for template instantiation */) {
+                           UnitRef /* not used, just for template instantiation */ instance) {
     // Note: This may may be called before spicy::rt::init(), and during
     // hilti::rt::init(). Cannot rely on any library functionality being
     // intialized yet.
@@ -161,7 +161,7 @@ void printParserState(const std::string& unit_id, const hilti::rt::ValueReferenc
  * @param data current input data
  * @param cur view of *data* that's being parsed
  * @param min desired number of bytes
- * @param filter filter state associated with current unit instance (which may be null)
+ * @param filters filter state associated with current unit instance (which may be null)
  * @return true if mininum number of bytes are available; false if end-of-data
  * has been reached
  */
@@ -175,7 +175,7 @@ extern bool waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data
  *
  * @param data current input data
  * @param cur view of *data* that's being parsed
- * @param filter filter state associated with current unit instance (which may be null)
+ * @param filters filter state associated with current unit instance (which may be null)
  */
 extern void waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
                        const hilti::rt::stream::View& cur,
@@ -191,9 +191,7 @@ extern void waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NO
  * @param min desired number of bytes
  * @param error_msg message to report with parse error if end-of-data is been reached
  * @param location location associated with the situation
- * @param filter filter state associated with current unit instance (which may be null)
- * @return true if mininum number of bytes are available; false if end-of-data
- * has been reached
+ * @param filters filter state associated with current unit instance (which may be null)
  */
 extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
                          const hilti::rt::stream::View& cur, uint64_t min, const std::string& error_msg,
@@ -206,7 +204,7 @@ extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // 
  *
  * @param data current input data
  * @param cur view of *data* that's being parsed
- * @param filter filter state associated with current unit instance (which may be null)
+ * @param filters filter state associated with current unit instance (which may be null)
  * @return true if mininum number of bytes are available; false if end-of-data
  * has been reached
  */
@@ -223,9 +221,7 @@ extern bool waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data
  * @param cur view of *data* that's being parsed
  * @param error_msg message to report with parse error if end-of-data is been reached
  * @param location location associated with the situation
- * @param filter filter state associated with current unit instance (which may be null)
- * @return true if mininum number of bytes are available; false if end-of-data
- * has been reached
+ * @param filters filters state associated with current unit instance (which may be null)
  */
 extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
                          const hilti::rt::stream::View& cur, const std::string& error_msg, const std::string& location,

@@ -212,9 +212,9 @@ CoercedExpression coerceExpression(const Expression& e, const Type& dst,
  * node).
  *
  * @param e expression to coerce
- * @param src explicitly specified source type; this can be different from
+ * @param src_ explicitly specified source type; this can be different from
  * the type of *e* and will be used instead of that
- * @param dst target type
+ * @param dst_ target type
  * @param style coercion style to use, given as a bitmask of any style
  * specifiers that apply
  * @return the *result* will evaluate to true if coercion was successful; if
@@ -261,8 +261,8 @@ Result<Ctor> coerceCtor(Ctor c, const Type& dst, bitmask<CoercionStyle> style = 
  * type. If the type is already of the right type, it will just be returned
  *  back.
  *
- * @param c ctor to coerce
- * @param dst target type
+ * @param src_ ctor to coerce
+ * @param dst_ target type
  * @param style coercion style to use
  * @return if the coercion was successful, the returned new value (which may be the same as the old)
  */

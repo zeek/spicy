@@ -63,7 +63,7 @@ public:
     /**
      * Returns a new "while" statement with the condition expression replaced.
      *
-     * @param d original statement
+     * @param e original statement
      * @param c new condition expresssion
      * @return new statement that's equal to original one but with the condition replaced
      */

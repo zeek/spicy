@@ -35,7 +35,7 @@ public:
     /**
      * Returns a new assign expression with the target expression replaced.
      *
-     * @param d original expression
+     * @param e original expression
      * @param t new target expresssion
      * @return new expression that's equal to original one but with the target expression replaced
      */
@@ -48,8 +48,8 @@ public:
     /**
      * Returns a new assign expression with the source expression replaced.
      *
-     * @param d original expression
-     * @param t new source expresssion
+     * @param e original expression
+     * @param s new source expresssion
      * @return new expression that's equal to original one but with the source expression replaced
      */
     static Expression setSource(const Assign& e, const Expression& s) {

@@ -96,7 +96,8 @@ public:
      * `setDriverOptions()` and `setCompilerOptions()` provide alternative
      * ways to set thhe options directly.
      *
-     * @param argc,argv command line arguments to parse
+     * @param argc number of command line arguments to parse
+     * @param argv command line arguments to parse
      * @return set if succesfull; otherwise the result provides an error message
      */
     Result<Nothing> parseOptions(int argc, char** argv);
@@ -124,7 +125,7 @@ public:
      * `hookNewASTPreCompilation()` hook will be called immediately for the
      * new module after it has been parsed.
      *
-     * @param input source of HILTI module to compile
+     * @param path source of HILTI module to compile
      * @return set if succesfull; otherwise the result provides an error message
      */
     Result<Nothing> addInput(const std::filesystem::path& path);
@@ -273,7 +274,7 @@ protected:
      * Helper function to augment an `result::Error` with a message that
      * includig driver name and, optionally, a file the error refers to.
      *
-     * @param msg error message
+     * @param err error message
      * @param p file to associate with the error, emoty for none
      * @return error with an appropiately set message
      */

@@ -87,7 +87,7 @@ protected:
      * Loads C++ code from an input stream.
      *
      * @param id name to associate with the input for logging and error messages.
-     * @param path stream to read from
+     * @param in stream to read from
      * @return true if succesful
      */
     bool load(const std::string& id, std::istream& in);

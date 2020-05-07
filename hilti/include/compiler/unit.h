@@ -110,7 +110,7 @@ public:
      * other extensions as well
      * @param scope if given, qualifies the ID with a path prefix to find the
      * module (e.g., a scope of `a.b.c` will search the module in `<search path>/a/b/c/<name>`.)
-     * @param  dirs additional directories to search first
+     * @param search_dirs additional directories to search first
      * @return the modules' cache index if successfull,or an appropiate error result if not
      */
     Result<context::ModuleIndex> import(const ID& id, const std::filesystem::path& ext, std::optional<ID> scope = {},

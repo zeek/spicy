@@ -50,10 +50,10 @@ extern void cannot_be_reached() __attribute__((noreturn));
 /** Statistics about the current state of memory allocations. */
 struct MemoryStatistics {
     // Note when changing this, update `memory_statistucs()`.
-    uint64_t memory_heap;   //< current size of heap in bytes
-    uint64_t num_fibers;    //< number of fibers currently in use
-    uint64_t max_fibers;    //< high-water mark for number of fibers in use
-    uint64_t cached_fibers; //< number of fibers currently cached for reuse
+    uint64_t memory_heap;   ///< current size of heap in bytes
+    uint64_t num_fibers;    ///< number of fibers currently in use
+    uint64_t max_fibers;    ///< high-water mark for number of fibers in use
+    uint64_t cached_fibers; ///< number of fibers currently cached for reuse
 };
 
 /** Returns statistics about the current state of memory allocations. */
@@ -217,7 +217,7 @@ constexpr auto enumerate(T&& iterable) {
  *    \\xXX          8-bit hex value
  *    ============   ============================
  *
- * @param str string to expand
+ * @param s string to expand
  * @return A UTF8 string with escape sequences expanded
  */
 std::string expandEscapes(std::string s);
@@ -226,7 +226,7 @@ std::string expandEscapes(std::string s);
  * Escapes non-printable characters in a raw string. This produces a new
  * string that can be reverted by expandEscapes().
  *
- * @param str string to escape
+ * @param s string to escape
  * @param escape_quotes if true, also escapes quotes characters
  * @param escape_control if false, do not escape control characters
  * @param use_octal use `\NNN` instead of `\XX` (needed for C++)
@@ -241,7 +241,7 @@ std::string escapeBytes(std::string_view s, bool escape_quotes = false, bool esc
  * Escapes non-printable and control characters in an UTF8 string. This
  * produces a new string that can be reverted by expandEscapes().
  *
- * @param str string to escape
+ * @param s string to escape
  * @param escape_quotes if true, also escapes quotes characters
  * @param escape_control if false, do not escape control characters
  * @param keep_hex if true, do not escape our custom "\xYY" escape codes

@@ -109,7 +109,6 @@ public:
      *
      * @param s string assumed to be in UTF8 (as all runtime strings)
      * @param cs character set to use for the binary encoding
-     * @return bytes instances encoding *s* in character set *cs*
      */
     Bytes(std::string s, bytes::Charset cs);
 
@@ -188,8 +187,8 @@ public:
     /**
      * Extracts a subrange of bytes.
      *
-     * @param offset of start of subrage
-     * @param offset of one byeond end of subrage
+     * @param from offset of start of subrage
+     * @param to offset of one byeond end of subrage
      */
     Bytes sub(Offset from, Offset to) const { return {substr(from, to - from)}; }
 
@@ -356,7 +355,7 @@ public:
      * Interprets the data as an binary representation of a integer value
      * representing seconds since the UNIX epoch, and extracts that.
      *
-     * @param base base to use for conversion
+     * @param byte_order byte order the time is encoded in
      * @return converted time value
      */
     Time toTime(hilti::rt::ByteOrder byte_order) const { return Time(toUInt(byte_order) * 1000000000); }

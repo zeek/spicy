@@ -357,9 +357,9 @@ constexpr std::pair<uintmax_t, uintmax_t> unsigned_integer_range(int width) {
 /**
  * Converts digits to an unsigned integer relative to a given base.
  *
- * @param dgts: null-terminated chars: decimal digits, hexits or base-n-digits
- * @param base: base to use {0,2,3,...,36} (base 0 auto-detects like strtoull).
- * @param handler: an error-handling function object or lambda.
+ * @param dgts null-terminated chars: decimal digits, hexits or base-n-digits
+ * @param base base to use {0,2,3,...,36} (base 0 auto-detects like strtoull).
+ * @param handler an error-handling function object or lambda.
  */
 template<typename Error>
 uint64_t chars_to_uint64(const char* dgts, unsigned int base, Error handler) {
@@ -376,8 +376,8 @@ uint64_t chars_to_uint64(const char* dgts, unsigned int base, Error handler) {
 /**
  * Converts digits to double precision floating point.
  *
- * @param dgts: null-terminated chars: decimal floating-point or hexfloat format.
- * @param handler: an error-handling function object or lambda.
+ * @param dgts null-terminated chars: decimal floating-point or hexfloat format.
+ * @param handler an error-handling function object or lambda.
  */
 template<typename Error>
 double chars_to_double(const char* dgts, Error handler) {
@@ -395,9 +395,9 @@ double chars_to_double(const char* dgts, Error handler) {
 /**
  * Converts an integer into a string relative to a given base.
  *
- * @param value: value to convert
- * @param base: base to use
- * @param n: The maximum number of characters to include. If the final string would
+ * @param value value to convert
+ * @param base base to use
+ * @param n The maximum number of characters to include. If the final string would
  * be longer than this, it's cut off. If smaller than zero, includes all.
  *
  * @return converted string

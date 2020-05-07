@@ -70,7 +70,7 @@ public:
      * Returns a new global variable declaration with its type replaced.
      *
      * @param d original declaration
-     * @param b new type
+     * @param t new type
      * @return new declaration that's equal to original one but with the type replaced
      */
     static Declaration setType(const GlobalVariable& d, std::optional<hilti::Type> t) {
@@ -87,7 +87,7 @@ public:
      * Returns a new global variable declaration with the init expression replaced.
      *
      * @param d original declaration
-     * @param b new init expresssion
+     * @param i new init expresssion
      * @return new declaration that's equal to original one but with the init expression replaced
      */
     static Declaration setInit(const GlobalVariable& d, const hilti::Expression& i) {
@@ -100,7 +100,7 @@ public:
      * Returns a new global variable declaration with the type argument expressions replaced.
      *
      * @param d original declaration
-     * @param i new init expresssion
+     * @param args init expresssions
      * @return new declaration that's equal to original one but with the init expression replaced
      */
     static Declaration setTypeArguments(const GlobalVariable& d, std::vector<hilti::Expression> args) {

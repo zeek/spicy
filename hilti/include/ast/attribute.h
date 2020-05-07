@@ -110,7 +110,8 @@ public:
     /**
      * Sets or replaces an attributes's associated argument.
      *
-     * @param the node to assign as the attribute's argument
+     * @param n the node to assign as the attribute's argument
+     * @param a the attribute to set
      * @return a new attribute with the value changed
      */
     static Attribute setValue(const Attribute& a, Node n) {
@@ -195,7 +196,8 @@ public:
     /**
      * Returns true if there's an attribute with a given name in the set.
      *
-     * @param true if found
+     * @param tag the name to look up
+     * @return true if found
      */
     bool has(std::string_view tag) const { return find(tag).has_value(); }
 
@@ -254,7 +256,8 @@ public:
      * dealing correctly with an unset optional set.
      *
      * @param attrs set to inspect
-     * @param true if found
+     * @param tag the name to look up
+     * @return true if found
      */
     static bool has(const std::optional<AttributeSet>& attrs, std::string_view tag) {
         if ( attrs )

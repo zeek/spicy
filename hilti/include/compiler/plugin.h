@@ -18,6 +18,10 @@
 #include <hilti/compiler/coercion.h>
 #include <hilti/compiler/context.h>
 
+// Disable checking of Doxygen comments as this file heavily uses function variables.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation"
+
 namespace hilti {
 
 class Unit;
@@ -298,3 +302,5 @@ public:
 } // namespace plugin
 
 } // namespace hilti
+
+#pragma clang diagnostic pop

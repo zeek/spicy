@@ -44,7 +44,7 @@ public:
      * Returns a new local default constructor with the type argument expressions replaced.
      *
      * @param d original declaration
-     * @param i new init expresssion
+     * @param args new init expresssion
      * @return new declaration that's equal to original one but with the init expression replaced
      */
     static Ctor setTypeArguments(const Default& d, std::vector<hilti::Expression> args) {

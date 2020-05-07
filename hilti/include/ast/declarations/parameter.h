@@ -81,7 +81,7 @@ public:
      * Returns a new parameter declaration with its type replaced.
      *
      * @param d original declaration
-     * @param b new type
+     * @param t new type
      * @return new declaration that's equal to original one but with the type replaced
      */
     static Declaration setType(const Parameter& d, std::optional<hilti::Type> t) {

@@ -171,7 +171,6 @@ public:
      * @param symbol symbol associated with the production; the symbol must
      *               be unique within the grammar the production is (or will
      *               be) part of (unless it's empty).
-     * @param m meta data associated with the
      * @param l location associated with the production
      */
     ProductionBase(std::string symbol, Location l = location::None)
