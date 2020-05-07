@@ -104,7 +104,7 @@ function run_configure {
     if [ "${build_type}" == "release" ]; then
         :
     elif [ "${build_type}" == "debug" ]; then
-        configure="${configure} --enable-debug --enable-sanitizer"
+        configure="${configure} --enable-debug --enable-sanitizer --enable-wdocumentation"
     else
         usage
     fi
