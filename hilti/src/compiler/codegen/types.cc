@@ -394,10 +394,10 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     }
 
     result_t operator()(const type::set::Iterator& n) {
-        auto i = (n.isConstant() ? "SafeConstIterator" : "SafeIterator");
+        auto i = (n.isConstant() ? "const_iterator" : "iterator");
         auto x = cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage);
 
-        auto t = fmt("hilti::rt::set::%s<%s>", i, x);
+        auto t = fmt("hilti::rt::Set<%s>::%s", x, i);
         return CxxTypes{.base_type = fmt("%s", t)};
     }
 

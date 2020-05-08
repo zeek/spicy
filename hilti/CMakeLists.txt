@@ -272,6 +272,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/fiber.cc
                src/rt/tests/reference.cc
                src/rt/tests/result.cc
+               src/rt/tests/set.cc
                src/rt/tests/stream.cc
                src/rt/tests/to_string.cc
                src/rt/tests/vector.cc)

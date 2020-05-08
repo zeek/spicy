@@ -315,7 +315,7 @@ auto transform(const std::set<X>& x, F f) {
 
 /** Applies a function to each element of a `rt::Set`. */
 template<typename X, typename F>
-auto transform(const hilti::rt::Set<X>& x, F f) {
+auto transform(const Set<X>& x, F f) {
     using Y = typename std::result_of<F(X&)>::type;
     hilti::rt::Set<Y> y;
     for ( const auto& i : x )
