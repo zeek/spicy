@@ -12,8 +12,10 @@
 #pragma once
 
 #include <algorithm>
+#include <initializer_list>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
@@ -51,13 +53,18 @@ public:
 
 /** HILTI's `Map` is an extended version `std::map`. */
 template<typename K, typename V>
-class Map : public std::map<K, V>, public hilti::rt::detail::iterator::Controllee {
+class Map : protected std::map<K, V>, public hilti::rt::detail::iterator::Controllee {
 public:
     using M = std::map<K, V>;
     using C = hilti::rt::detail::iterator::Controllee;
 
+    using value_type = typename M::value_type;
+
     using ConstIterator = typename M::const_iterator;
     using SafeIterator = typename M::iterator;
+
+    Map() = default;
+    Map(std::initializer_list<value_type> init) : M(std::move(init)) {}
 
     /** Returns true if a specific key is part of the set. */
     bool contains(const K& k) { return this->find(k) != this->end(); }
@@ -83,6 +90,16 @@ public:
 
     const V& operator[](const K& k) const { return get(k); }
     auto operator[](const K& k);
+
+    // Methods of `std::map`.
+    using M::begin;
+    using M::clear;
+    using M::end;
+    using M::erase;
+    using M::size;
+
+    friend bool operator==(const Map& a, const Map& b) { return static_cast<const M&>(a) == static_cast<const M&>(b); }
+    friend bool operator!=(const Map& a, const Map& b) { return ! (a == b); }
 };
 
 namespace map::detail {
