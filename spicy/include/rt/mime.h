@@ -13,6 +13,8 @@ namespace spicy::rt {
 
 namespace mime {
 
+constexpr char INVALID_NAME[] = "";
+
 /**
  * Exception thrown by MIMEType if it cannot parse a type specification.
  */
@@ -57,13 +59,19 @@ public:
             throw mime::InvalidType(hilti::rt::fmt("cannot parse MIME type %s", type));
     }
 
-    MIMEType() = delete;
+    MIMEType() = default;
 
     /** Returns the main type, with '*' reflecting a wildcard. */
-    std::string mainType() const { return _main; };
+    std::string mainType() const {
+        ensureValid();
+        return _main;
+    };
 
     /** Returns the sub type, with '*' reflecting a wildcard. */
-    std::string subType() const { return _sub; };
+    std::string subType() const {
+        ensureValid();
+        return _sub;
+    };
 
     ~MIMEType() = default;
     MIMEType(const MIMEType&) = default;
@@ -76,11 +84,13 @@ public:
     /**
      * Converts the type into textual key suitable for using as an index in map.
      *
-     * @return If the main type is a wilcard, returns an empty string. If the
+     * @return If the main type is a wildcard, returns an empty string. If the
      * sub type is a wildcard, returns just the main type. Otherwise returns
      * the standard `main/sub` form.
      */
     std::string asKey() const {
+        ensureValid();
+
         if ( _main == "*" )
             return "";
 
@@ -91,7 +101,7 @@ public:
     }
 
     /**
-     * Parses a string `a/b` into a MIME tyoe.
+     * Parses a string `a/b` into a MIME type.
      *
      * @param string of the form `main/sub`.
      * @return parsed type, or an error if not parseable
@@ -105,8 +115,22 @@ public:
     }
 
 private:
-    std::string _main; /**< Main type. */
-    std::string _sub;  /**< sub type. */
+    /** Ensure that the MIME type is valid.
+     *
+     * This class in general assumes that `_main` and `_sub` are valid names
+     * for MIME types, but we also want this class to be default-constructible,
+     * e.g., to initialize global variables. This function checks that the
+     * instance was constructed with valid `_main` and `_sub`.
+     *
+     * @throw `InvalidType` if the instance was not initialized with a proper type
+     */
+    void ensureValid() const {
+        if ( _main == mime::INVALID_NAME || _sub == mime::INVALID_NAME )
+            throw mime::InvalidType("MIME type is uninitialized");
+    }
+
+    std::string _main = mime::INVALID_NAME; /**< Main type. */
+    std::string _sub = mime::INVALID_NAME;  /**< sub type. */
 };
 
 } // namespace spicy::rt
