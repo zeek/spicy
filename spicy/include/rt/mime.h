@@ -2,7 +2,11 @@
 
 #pragma once
 
+#include <string>
+#include <string_view>
+
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/types/result.h>
 #include <hilti/rt/util.h>
 
 namespace spicy::rt {

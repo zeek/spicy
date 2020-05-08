@@ -2,8 +2,11 @@
 
 #pragma once
 
+#include <string>
+
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/result.h>
+#include <hilti/rt/types/error.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
