@@ -13,6 +13,7 @@
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/vector_fwd.h>
 
 #ifdef CXX_FILESYSTEM_IS_EXPERIMENTAL
@@ -307,6 +308,16 @@ template<typename X, typename F>
 auto transform(const std::set<X>& x, F f) {
     using Y = typename std::result_of<F(X&)>::type;
     std::set<Y> y;
+    for ( const auto& i : x )
+        y.insert(f(i));
+    return y;
+}
+
+/** Applies a function to each element of a `rt::Set`. */
+template<typename X, typename F>
+auto transform(const hilti::rt::Set<X>& x, F f) {
+    using Y = typename std::result_of<F(X&)>::type;
+    hilti::rt::Set<Y> y;
     for ( const auto& i : x )
         y.insert(f(i));
     return y;

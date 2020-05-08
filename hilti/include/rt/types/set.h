@@ -17,12 +17,10 @@
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
+#include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
-
-template<typename T>
-class Set;
 
 namespace set {
 
@@ -47,7 +45,7 @@ public:
 
 /** HILTI's `Set` is an extended version `std::set`. */
 template<typename T>
-class Set : public std::set<T>, public hilti::rt::detail::iterator::Controllee {
+class Set : protected std::set<T>, public hilti::rt::detail::iterator::Controllee {
 public:
     using V = std::set<T>;
     using C = hilti::rt::detail::iterator::Controllee;
@@ -67,6 +65,16 @@ public:
 
     /** Returns true if a specific element is part of the set. */
     bool contains(const T& t) { return this->find(t) != this->end(); }
+
+    // Methods of `std::set`.
+    using V::begin;
+    using V::cbegin;
+    using V::cend;
+    using V::end;
+    using V::insert;
+
+    friend bool operator==(const Set& a, const Set& b) { return static_cast<const V&>(a) == static_cast<const V&>(b); }
+    friend bool operator!=(const Set& a, const Set& b) { return ! (a == b); }
 };
 
 namespace set {
