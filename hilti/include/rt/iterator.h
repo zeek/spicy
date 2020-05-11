@@ -139,7 +139,7 @@ protected:
 
     void ensureSame(const SafeIterator& other) const {
         if ( _control.lock() != other._control.lock() )
-            throw InvalidIterator("iterators refer to differen objects");
+            throw InvalidIterator("iterators refer to different objects");
     }
 
     I& iterator() { return _i; }

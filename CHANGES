@@ -1,4 +1,20 @@
 
+0.4.0-245 | 2020-05-11 08:39:49 +0000
+
+  * Redo implementation of `hilti::rt::Vector`. (Benjamin Bannier, Corelight)
+
+    - Hide that `rt::Vector` inherits from `std::vector` from users.
+    - Replace iterators of `rt::Vector` with safe alternatives.
+    - Add Doxygen comments to `rt::Vector`.
+    - Remove support for stringification of `std::vector` in hilti::rt.
+    - Add test for stringification of `Empty` vector.
+    - Make `rt::MIMEType` default-constructible.
+    - Fix includes of `rt/mime.h`.
+    - Use less ambiguous form for generated `rt::Vector` constructors.
+
+  * Require Zeek plugin for Zeek protocol parser tests. (Benjamin
+    Bannier, Corelight)
+
 0.4.0-234 | 2020-05-11 08:33:55 +0000
 
   * GH-229: Add a Spicy function to render bytes as hex string.

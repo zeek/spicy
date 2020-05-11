@@ -182,7 +182,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             // Can only be the empty list.
             return "hilti::rt::vector::Empty()";
 
-        return fmt("hilti::rt::Vector<%s>{{%s}}", cg->compile(n.elementType(), codegen::TypeUsage::Storage),
+        return fmt("hilti::rt::Vector<%s>({%s})", cg->compile(n.elementType(), codegen::TypeUsage::Storage),
                    util::join(util::transform(n.value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));
     }
 
