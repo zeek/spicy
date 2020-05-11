@@ -37,12 +37,16 @@ STANDARD_OPERATOR_2(real, SumAssign, type::Real(), type::Real(), type::Real(),
                     "Adds the first real to the second, assigning the new value.");
 STANDARD_OPERATOR_2(real, Unequal, type::Bool(), type::Real(), type::Real(), "Compares the two reals.");
 
-STANDARD_OPERATOR_2x(real, CastUnsignedInteger, Cast, operator_::typedType(1, "uint<*>"), type::Real(),
+STANDARD_OPERATOR_2x(real, CastToUnsignedInteger, Cast, operator_::typedType(1, "uint<*>"), type::Real(),
                      type::Type_(type::UnsignedInteger(type::Wildcard())),
                      "Converts the value to an unsigned integer type, accepting any loss of information.");
-STANDARD_OPERATOR_2x(real, CastSignedInteger, Cast, operator_::typedType(1, "int<*>"), type::Real(),
+STANDARD_OPERATOR_2x(real, CastToSignedInteger, Cast, operator_::typedType(1, "int<*>"), type::Real(),
                      type::Type_(type::SignedInteger(type::Wildcard())),
                      "Converts the value to a signed integer type, accepting any loss of information.");
+STANDARD_OPERATOR_2x(real, CastToTime, Cast, type::Time(), type::Real(), type::Type_(type::Time()),
+                     "Interprets the value as number of seconds since the UNIX epoch.");
+STANDARD_OPERATOR_2x(real, CastToInterval, Cast, type::Interval(), type::Real(), type::Type_(type::Interval()),
+                     "Interprets the value as number of seconds.");
 
 } // namespace operator_
 } // namespace hilti

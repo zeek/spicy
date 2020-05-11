@@ -96,16 +96,23 @@ STANDARD_OPERATOR_2(signed_integer, SumAssign, operator_::sameTypeAs(0, "int"), 
                     "Increments the first integer by the second, assigning the new value.");
 STANDARD_OPERATOR_2(signed_integer, Unequal, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),
                     "Compares the two integers.");
-
-STANDARD_OPERATOR_2x(signed_integer, CastUnsigned, Cast, operator_::typedType(1, "uint<*>"),
-                     type::SignedInteger(type::Wildcard()), type::Type_(type::UnsignedInteger(type::Wildcard())),
-                     "Converts the value to an unsigned integer type, accepting any loss of information.");
-STANDARD_OPERATOR_2x(signed_integer, CastSigned, Cast, operator_::typedType(1, "int<*>"),
-                     type::SignedInteger(type::Wildcard()), type::Type_(type::SignedInteger(type::Wildcard())),
-                     "Converts the value to another signed integer type, accepting any loss of information.");
-STANDARD_OPERATOR_2x(signed_integer, CastReal, Cast, operator_::typedType(1, "real"),
-                     type::SignedInteger(type::Wildcard()), type::Type_(type::Real()),
+STANDARD_OPERATOR_2x(signed_integer, CastToSigned, Cast,
+                    operator_::typedType(1, "int<*>"),
+                    type::SignedInteger(type::Wildcard()),
+                    type::Type_(type::SignedInteger(type::Wildcard())),
+                    "Converts the value into another signed integer type, accepting any loss of information.");
+STANDARD_OPERATOR_2x(signed_integer, CastToUnsigned, Cast,
+                    operator_::typedType(1, "uint<*>"),
+                    type::SignedInteger(type::Wildcard()),
+                    type::Type_(type::UnsignedInteger(type::Wildcard())),
+                     "Converts the value into an unsigned integer type, accepting any loss of information.");
+STANDARD_OPERATOR_2x(signed_integer, CastToReal, Cast,
+                     type::Real(),
+                     type::SignedInteger(type::Wildcard()),
+                     type::Type_(type::Real()),
                      "Converts the value into a real, accepting any loss of information.");
+STANDARD_OPERATOR_2x(signed_integer, CastToInterval, Cast, type::Interval(), type::SignedInteger(type::Wildcard()),
+                     type::Type_(type::Interval()), "Interprets the value as number of seconds.");
 
 } // namespace operator_
 } // namespace hilti

@@ -26,13 +26,7 @@ STANDARD_OPERATOR_2(interval, LowerEqual, type::Bool(), type::Interval(), type::
 STANDARD_OPERATOR_2x(interval, MultipleUnsignedInteger, Multiple, type::Interval(), type::Interval(),
                      type::UnsignedInteger(64), "Multiples the interval with the given factor.");
 STANDARD_OPERATOR_2x(interval, MultipleReal, Multiple, type::Interval(), type::Interval(), type::Real(),
-                     "Multiples the interval with the given factor.");
-STANDARD_OPERATOR_2x(interval, CastFromReal, Cast, type::Interval(), type::Real(), type::Type_(type::Interval()),
-                     "Interprets the real value as number of seconds.");
-STANDARD_OPERATOR_2x(interval, CastFromSignedInteger, Cast, type::Interval(), type::SignedInteger(type::Wildcard()),
-                     type::Type_(type::Interval()), "Interprets the signed integer value as number of seconds.");
-STANDARD_OPERATOR_2x(interval, CastFromUnsignedInteger, Cast, type::Interval(), type::UnsignedInteger(type::Wildcard()),
-                     type::Type_(type::Interval()), "Interprets the unsigned integer value as number of seconds.");
+                     "Multiplies the interval with the given factor.");
 
 BEGIN_METHOD(interval, Seconds)
     auto signature() const {

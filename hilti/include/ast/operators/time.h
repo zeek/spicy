@@ -25,11 +25,6 @@ STANDARD_OPERATOR_2(time, Greater, type::Bool(), type::Time(), type::Time(), "Co
 STANDARD_OPERATOR_2(time, GreaterEqual, type::Bool(), type::Time(), type::Time(), "Compares the times.");
 STANDARD_OPERATOR_2(time, Lower, type::Bool(), type::Time(), type::Time(), "Compares the times.");
 STANDARD_OPERATOR_2(time, LowerEqual, type::Bool(), type::Time(), type::Time(), "Compares the times.");
-STANDARD_OPERATOR_2x(time, CastFromReal, Cast, type::Time(), type::Real(), type::Type_(type::Time()),
-                     "Interprets the real value as number of seconds since the UNIX epoch.");
-STANDARD_OPERATOR_2x(time, CastFromUnsignedInteger, Cast, type::Time(), type::UnsignedInteger(type::Wildcard()),
-                     type::Type_(type::Time()),
-                     "Interprets the unsigned integer value as number of seconds since the UNIX epoch.");
 
 BEGIN_METHOD(time, Seconds)
     auto signature() const {
