@@ -108,7 +108,7 @@ Alternatively, we can tell the parser through an attribute that our
 input is arriving in, say, little-endian instead. To do that, we
 import the ``spicy`` library module, which provides an enum type
 :ref:`spicy_byteorder` that we can give to a ``&byte-order`` field
-attribute that integer fields support:
+attribute for fields that support it:
 
 .. spicy-code:: basic-unit-parse-byte-order.spicy
 
@@ -167,7 +167,7 @@ with an error. Example:
 
 :ref:`Regular expressions <parse_regexp>` extend this scheme a bit
 further: If a field specifies a regular expression constant rather
-than a type, the field will have have type :ref:`type_bytes` and store
+than a type, the field will have type :ref:`type_bytes` and store
 the data that ends up matching the regular expression:
 
 .. spicy-code:: regexp.spicy
@@ -185,7 +185,7 @@ the data that ends up matching the regular expression:
 
 There's also a programmatic way to change a field's type to something
 that's different than what's being parsed, see the
-:ref:`attribute_convert`.
+:ref:`&convert attribute <attribute_convert>`.
 
 .. _attribute_size:
 
@@ -396,7 +396,7 @@ There are three location where hooks can be implemented:
 
    When a hook executes, it has access to the current unit instance
    through the ``self`` identifier. The state of that instance will
-   reflect where parsing is at at that time. In particular, any field
+   reflect where parsing is at that time. In particular, any field
    that haven't been parsed yet, will remain unset. (You can use the
    ``?.`` unit operator to test if a field has received a value yet.)
 
@@ -450,7 +450,7 @@ would rather leave a variable unset by default, you can add
 Unit Parameters
 ===============
 
-Unit types can receive parameters upon instantion, which will then be
+Unit types can receive parameters upon instantiation, which will then be
 available to any code inside the type's declaration:
 
 .. spicy-code:: unit-params.spicy
@@ -566,7 +566,7 @@ Parsing Types
 =============
 
 Several, but not all, of Spicy's :ref:`data types <types>` can be
-parsed from binary data. In the following we summary the types that
+parsed from binary data. In the following we summarize the types that
 can, along with any options they support to control specifics of how
 they unpack binary representations.
 
@@ -871,6 +871,14 @@ requires special syntax are units with parameters. In that case, one
 needs to wrap the ``ELEM_TYPE`` in additional parentheses, and then
 add the parameters to it (e.g., ``x: (MyUnit("arg1"))[]``).
 
+.. note::
+
+    The ``x: (<T>)[]`` syntax is quite flexbile. In fact, ``<T>`` is
+    not limited to subunits, but allows for any standard field
+    specification definining how to parse the vector elements. For
+    example, ``x: (bytes &size=5)[];`` parses a vector of 5-character
+    ``bytes`` instances.
+
 .. _hook_foreach:
 
 When parsing a vector, Spicy supports using a special kind of field
@@ -946,7 +954,7 @@ Internally, Spicy builds an LR(1) grammar for each unit that it
 parses, meaning that it can actually look *ahead* in the parsing
 stream to determine how to process the current input location. Roughly
 speaking, if (1) the current construct does not have a clear end
-condition defined (such a specific length), and (2) a specific value
+condition defined (such as a specific length), and (2) a specific value
 is expected to be found next; then the parser will keep looking for
 that value and end the current construct once it finds it.
 
@@ -993,7 +1001,7 @@ look-ahead parsing.
 ^^^^^^^^^^
 
 Spicy supports a ``switch`` construct as way to branch into one
-of several parsing alternatives. There are two variants of this, a
+of several parsing alternatives. There are two variants of this, an
 explicit branch and one driving by look-ahead:
 
 .. rubric:: Branch by expression
@@ -1084,7 +1092,7 @@ the input stream:
     :exec: printf 'A' | spicy-driver %INPUT
     :show-with: foo.spicy
 
-While this example is a bit contrived, the mechanisms becomes powerful
+While this example is a bit contrived, the mechanism becomes powerful
 once you have subunits that are recognizable by how they start:
 
 .. spicy-code:: parse-switch-lhead-2.spicy
@@ -1158,7 +1166,7 @@ parsed from the data starting at that location.
 
 While a unit is being parsed, you may revert the current input
 position backwards to any location between the first byte the unit has
-has seen and the current position. To enable this functionality, the
+seen and the current position. To enable this functionality, the
 unit needs to be declared with the ``%random-access`` property. You
 can use a set of built-in unit methods to control the current position:
 
@@ -1240,10 +1248,10 @@ A filter is itself just a ``unit`` that comes with an additional property
 original input to be transformed. The filter calls an internally
 provided unit method :spicy:method:`unit::forward` to pass any
 transformed data on to the main unit that it's attached to. The filter
-can call ``forward`` arbitrary many times, each time forwarding a
+can call ``forward`` arbitrarily many times, each time forwarding a
 subsequent chunk of input. To attach a filter to a unit, one calls the
 method :spicy:method:`unit::connect_filter` with an instance of the
-filter's type. Putting that all together, this is an example of simple
+filter's type. Putting that all together, this is an example of a simple
 a filter that upper-cases all input before the main parsing unit gets
 to see it:
 
@@ -1366,7 +1374,7 @@ selection through a generalized notion of MIME types: Units can
 declare which MIME types they know how to parse (see
 :ref:`unit_meta_data`) , and sinks have
 :spicy:method:`sink::connect_mime_type` method that will instantiate and
-connect any that match their argument (if that's multiple, all we
+connect any that match their argument (if that's multiple, all will
 connected and all will receive the same data).
 
 "MIME type" can mean actual MIME types, such ``text/html``.
@@ -1375,7 +1383,7 @@ Applications can, however, also define their own notion of
 use ``x-port/443`` as convention to trigger parsers by well-known
 port. An SSL unit would then declare ``%mime-type = "x-port/443``, and
 the connection would be established through the equivalent of
-``connect_mime("x-port/%d" % resp_port_of_connection)``.
+``connect_mime_type("x-port/%d" % resp_port_of_connection)``.
 
 .. todo:
 

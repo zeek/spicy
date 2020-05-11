@@ -136,7 +136,7 @@
 
     Multiplies the first value by the second, assigning the new value.
 
-.. spicy:operator:: integer::Negate uint op:- t:uint op:
+.. spicy:operator:: integer::Negate uint op:~ t:uint op:
 
     Computes the bit-wise negation of the integer.
 

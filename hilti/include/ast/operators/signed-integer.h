@@ -18,7 +18,7 @@ inline static auto widestTypeSigned() {
     return [=](const std::vector<Expression>& orig_ops,
                const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
         if ( orig_ops.empty() && resolved_ops.empty() )
-            return type::DocOnly("uint<*>");
+            return type::DocOnly("int<*>");
 
         int w1 = 0;
         int w2 = 0;
@@ -61,7 +61,7 @@ STANDARD_OPERATOR_1(signed_integer, IncrPrefix, operator_::sameTypeAs(0, "int"),
 STANDARD_OPERATOR_1(signed_integer, SignNeg, operator_::sameTypeAs(0, "int"), type::SignedInteger(type::Wildcard()),
                     "Inverts the sign of the integer.");
 STANDARD_OPERATOR_2(signed_integer, Difference, detail::widestTypeSigned(), detail::widestTypeSigned(),
-                    detail::widestTypeSigned(), "Returns the difference between the two integers.");
+                    detail::widestTypeSigned(), "Computes the difference between the two integers.");
 STANDARD_OPERATOR_2(signed_integer, DifferenceAssign, operator_::sameTypeAs(0, "int"),
                     type::SignedInteger(type::Wildcard()), operator_::sameTypeAs(0, "int"),
                     "Decrements the first value by the second, assigning the new value.");
@@ -90,10 +90,10 @@ STANDARD_OPERATOR_2(signed_integer, MultipleAssign, operator_::sameTypeAs(0, "in
 STANDARD_OPERATOR_2(signed_integer, Power, detail::widestTypeSigned(), detail::widestTypeSigned(),
                     detail::widestTypeSigned(), "Computes the first integer raised to the power of the second.");
 STANDARD_OPERATOR_2(signed_integer, Sum, detail::widestTypeSigned(), detail::widestTypeSigned(),
-                    detail::widestTypeSigned(), "Returns the sum of the integers.");
+                    detail::widestTypeSigned(), "Computes the sum of the integers.");
 STANDARD_OPERATOR_2(signed_integer, SumAssign, operator_::sameTypeAs(0, "int"), type::SignedInteger(type::Wildcard()),
                     operator_::sameTypeAs(0, "int"),
-                    "Increments the first integer by the second, assigning the new value.");
+                    "Increments the first integer by the second.");
 STANDARD_OPERATOR_2(signed_integer, Unequal, type::Bool(), detail::widestTypeSigned(), detail::widestTypeSigned(),
                     "Compares the two integers.");
 STANDARD_OPERATOR_2x(signed_integer, CastToSigned, Cast,

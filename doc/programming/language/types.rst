@@ -203,7 +203,7 @@ Real
 Regular Expression
 ------------------
 
-Spicy's provide POSIX-style regular expressions.
+Spicy provides POSIX-style regular expressions.
 
 .. rubric:: Type
 
@@ -383,7 +383,35 @@ Unit
   label of a corresponding field in ``my_unit``'s type.
 
 .. include:: /autogen/types/unit.rst
-.. include:: /autogen/types/struct.rst
+
+.. These are copied and adapted from the corresponding struct
+.. operators. We have to hardcode them as we currently we have no
+.. way to pull the struct operators over into the unit type.
+
+.. rubric:: Operators
+
+.. spicy:operator:: unit::HasMember bool t:unit <sp> op:?. <sp> t:<field>
+
+    Returns true if the unit's field has a value assigned (not counting
+    any ``&default``).
+
+.. spicy:operator:: unit::Member <field~type> t:unit <sp> op:. <sp> t:<field>
+
+    Retrieves the value of a unit's field. If the field does not yet have
+    a value assigned, it returns its ``&default`` expression if that has
+    been defined; otherwise it triggers an exception.
+
+.. spicy:operator:: unit::TryMember <field~type> t:unit <sp> op:.? <sp> t:<field>
+
+    Retrieves the value of a unit's field. If the field does not yet have
+    a value assigned, it returns its ``&default`` expression if that has
+    been defined. Otherwise it triggers an exception, unless used in a
+    context that specfically allows for that situation (such as,
+    inside the Zeek plugin's `evt` files).
+
+.. spicy:operator:: unit::Unset void unset <sp> t:unit.<field>
+
+    Resets a field back to its original uninitalized state.
 
 .. _type_vector:
 

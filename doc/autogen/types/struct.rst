@@ -20,7 +20,7 @@
     execution, similar to the standard dereference operator, unless the
     host application specifically handles this exception differently).
 
-.. spicy:operator:: struct::Unset void unset t:struct
+.. spicy:operator:: struct::Unset void unset <sp> t:struct.<field>
 
     Clears an optional field.
 

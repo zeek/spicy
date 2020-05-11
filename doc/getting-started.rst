@@ -348,10 +348,9 @@ does, if we ignore the dynamic JIT compilation.
     - ``my-http.cc`` is a very stripped down version of a file
       installed along with Spicy into
       ``share/spicy/spicy-driver-host.cc``. That code is compiled into
-      an executable when executing ``spicy-build`` with the ``-s``
-      option, as we did above. If you look at
-      ``spicy-driver-host.cc``, among other things you'll also see how
-      to dynamically query the runtime system for the parsers
+      the executable by default when executing ``spicy-build``. If you
+      look at ``spicy-driver-host.cc``, among other things you'll also
+      see how to dynamically query the runtime system for the parsers
       available.
 
     - The code for the main ``spicy-driver`` tool is quite similar as

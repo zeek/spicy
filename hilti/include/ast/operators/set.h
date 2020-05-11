@@ -36,9 +36,9 @@ STANDARD_OPERATOR_2(set, Unequal, type::Bool(), type::constant(type::Set(type::W
                     operator_::sameTypeAs(0, "set<*>"), "Compares two sets element-wise.");
 STANDARD_OPERATOR_2(set, In, type::Bool(), type::Any(), type::constant(type::Set(type::Wildcard())),
                     "Returns true if an element is part of the set.");
-STANDARD_OPERATOR_2(set, Add, type::Void(), type::Set(type::Wildcard()), operator_::constantElementType(0),
+STANDARD_OPERATOR_2(set, Add, type::Void(), type::Set(type::Wildcard()), operator_::constantElementType(0, "element"),
                     "Adds an element to the set.")
-STANDARD_OPERATOR_2(set, Delete, type::Void(), type::Set(type::Wildcard()), operator_::constantElementType(0),
+STANDARD_OPERATOR_2(set, Delete, type::Void(), type::Set(type::Wildcard()), operator_::constantElementType(0, "element"),
                     "Removes an element from the set.")
 
 BEGIN_METHOD(set, Clear)

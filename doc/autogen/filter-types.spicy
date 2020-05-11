@@ -1,0 +1,20 @@
+.. _spicy_zlib:
+
+.. rubric:: ``spicy::Zlib``
+
+A filter that performs zlib decompression.
+
+::
+
+ type Zlib = unit;
+
+.. _spicy_base64decode:
+
+.. rubric:: ``spicy::Base64Decode``
+
+A filter that performs Base64 decoding.
+
+::
+
+ type Base64Decode = unit;
+

@@ -103,7 +103,7 @@ STANDARD_OPERATOR_2(unsigned_integer, Sum, detail::widestTypeUnsigned(), detail:
                     detail::widestTypeUnsigned(), "Computes the sum of the integers.");
 STANDARD_OPERATOR_2(unsigned_integer, SumAssign, operator_::sameTypeAs(0, "uint"),
                     type::UnsignedInteger(type::Wildcard()), operator_::sameTypeAs(0, "uint"),
-                    "Increments the first value by the second.");
+                    "Increments the first integer by the second.");
 STANDARD_OPERATOR_2(unsigned_integer, Unequal, type::Bool(), detail::widestTypeUnsigned(), detail::widestTypeUnsigned(),
                     "Compares the two integers.");
 STANDARD_OPERATOR_2x(unsigned_integer, CastToUnsigned, Cast,

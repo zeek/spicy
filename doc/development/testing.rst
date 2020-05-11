@@ -67,7 +67,7 @@ using ``doctest`` and are executed through ``btest`` as well, so just
 running tests per above will have these included.
 
 Alternatively, the test binaries in the build directory can be executed to
-excercise the tests, or one can use the ``check`` build target to execute all
+exercise the tests, or one can use the ``check`` build target to execute all
 unit tests.
 
 Sanitizers

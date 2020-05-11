@@ -21,9 +21,9 @@ tags. The following choices are available:
     The compiler internally rewrites ASTs in multiple rounds until
     they stabilize. Activating this stream will print the ASTs into
     files ``dbg.*`` on disk after each round. This is pretty noisy,
-    and is be most helpful as a last resort if it's hard to understand
-    some aspect of AST processing without seeing really *all* the
-    changes.
+    and maybe most helpful as a last resort when it's otherwise hard
+    to understand some aspects of AST processing without seeing really
+    *all* the changes.
 
 ``ast-final``
     Prints out all the final ASTs, with all transformations, ID &

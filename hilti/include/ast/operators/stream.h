@@ -76,7 +76,7 @@ BEGIN_METHOD(stream::iterator, IsFrozen)
                          .id = "is_frozen",
                          .args = {},
                          .doc = R"(
-Returns whether the stream value that the iterator referes to has been frozen.
+Returns whether the stream value that the iterator refers to has been frozen.
 )"};
     }
 END_METHOD
@@ -135,8 +135,7 @@ BEGIN_METHOD(stream::view, Limit)
                          .doc = R"(
 Returns a new view that keeps the current start but cuts off the end *i*
 characters from that beginning. The returned view will not be able to expand any
-further. The iterator must be referring to the same stream values as the view,
-and it must be inside the current view's range.
+further.
 )"};
     }
 END_METHOD
@@ -204,7 +203,7 @@ BEGIN_METHOD(stream::view, SubIterators)
                          .args = {{.id = "begin", .type = type::stream::Iterator()},
                                   {.id = "end", .type = type::stream::Iterator()}},
                          .doc = R"(
-Returns a new view of the subsequence from *begin* to (but not including)
+Returns a new view of the subsequence from *begin* up to (but not including)
 *end*.
 )"};
     }
@@ -217,8 +216,8 @@ BEGIN_METHOD(stream::view, SubIterator)
                          .id = "sub",
                          .args = {{.id = "end", .type = type::stream::Iterator()}},
                          .doc = R"(
-Returns a new view of the subsequence from *begin* to (but not including)
-*end*.
+Returns a new view of the subsequence from the beginning of the stream up to
+(but not including) *end*.
 )"};
     }
 END_METHOD

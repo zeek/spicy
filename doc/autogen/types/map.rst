@@ -12,7 +12,7 @@
 
 .. rubric:: Operators
 
-.. spicy:operator:: map::Delete void delete t:map
+.. spicy:operator:: map::Delete void delete <sp> t:map[<type~of~key>]
 
     Removes an element from the map.
 

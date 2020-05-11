@@ -6,11 +6,11 @@
 
 .. rubric:: Operators
 
-.. spicy:operator:: set::Add void add t:set
+.. spicy:operator:: set::Add void add <sp> t:set[<type~of~element>]
 
     Adds an element to the set.
 
-.. spicy:operator:: set::Delete void delete t:set
+.. spicy:operator:: set::Delete void delete <sp> t:set[<type~of~element>]
 
     Removes an element from the set.
 

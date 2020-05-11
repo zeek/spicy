@@ -78,7 +78,7 @@ public:
 
     /**
      * Parses some options command-line style *before* Zeek-side scripts have
-     * been procssed. Most of the option processing happens in
+     * been processed. Most of the option processing happens in
      * `parseOptionsPostScript()` instead, except for things that must be in
      * place already before script processing.
      *
