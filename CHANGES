@@ -1,4 +1,27 @@
 
+0.4.0-234 | 2020-05-11 08:33:55 +0000
+
+  * GH-229: Add a Spicy function to render bytes as hex string.
+    (Benjamin Bannier, Corelight)
+
+        ## Returns a bytes value rendered as a hex string.
+        public function bytes_to_hexstring(value: bytes) : string;
+
+  * GH-200: Add library function `spicy::getenv()` to retrieve environment
+    variables. (Robin Sommer, Corelight)
+
+        ## Returns the value of an environment variable, if set.
+        public function getenv(name: string) : optional<string>;
+
+  * GH-200: Add option -f to `spicy-driver` to read input from file.
+    (Robin Sommer, Corelight)
+
+  * Use fully qualified IDs for internal `&cxxname` in libraries
+    `hilti.hlt` and `spicy.spicy`. (Benjamin Bannier, Corelight)
+
+  * Fix shell commands in `docker/Makefile`. (Benjamin Bannier,
+    Corelight)
+
 0.4.0-226 | 2020-05-06 15:12:52 +0000
 
   * Apply a set of tweaks to specifics of &size. (Robin Sommer,

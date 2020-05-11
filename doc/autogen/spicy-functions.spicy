@@ -40,3 +40,9 @@ Returns the current wall clock time.
 
 Returns a bytes value rendered as a hex string.
 
+.. _spicy_getenv:
+
+.. rubric:: ``function spicy::getenv(name: string) : optional<string>``
+
+Returns the value of an environment variable, if set.
+

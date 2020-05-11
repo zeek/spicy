@@ -78,3 +78,6 @@ public function current_time() : time &cxxname="::hilti::rt::time::current_time"
 
 ## Returns a bytes value rendered as a hex string.
 public function bytes_to_hexstring(value: bytes) : string &cxxname="::spicy::rt::bytes_to_hexstring";
+
+## Returns the value of an environment variable, if set.
+public function getenv(name: string) : optional<string> &cxxname="spicy::rt::getenv";

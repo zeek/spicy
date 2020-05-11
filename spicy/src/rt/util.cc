@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <cstdlib>
+
 #include <hilti/rt/autogen/version.h>
 
 #include <hilti/rt/types/bytes.h>
@@ -27,4 +29,11 @@ std::string spicy::rt::bytes_to_hexstring(const hilti::rt::Bytes& value) {
         result += hilti::rt::fmt("%02X", x);
 
     return result;
+}
+
+std::optional<std::string> spicy::rt::getenv(const std::string& name) {
+    if ( auto x = ::getenv(name.c_str()) )
+        return {x};
+    else
+        return {};
 }
