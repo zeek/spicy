@@ -80,7 +80,7 @@ template<typename T, typename Allocator>
 class Iterator {
     using V = Vector<T, Allocator>;
 
-    std::weak_ptr<Vector<T, Allocator>*> _control;
+    std::weak_ptr<V*> _control;
     typename V::size_type _index = 0;
 
 public:
