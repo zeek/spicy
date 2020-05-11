@@ -15,9 +15,9 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
       __location__("/Users/bbannier/src/spicy/tests/.tmp/spicy.tools.spicyc-hello-world/spicyc-hello-world.spicy:8:1");
-    hilti::rt::print(std::string("Hello, world!"), true);
+    ::hilti::rt::print(std::string("Hello, world!"), true);
       __location__("/Users/bbannier/src/spicy/tests/.tmp/spicy.tools.spicyc-hello-world/spicyc-hello-world.spicy:9:1");
-    hilti::rt::printValues(std::make_tuple(std::string("Hello"), std::string("world!")), true);
+    ::hilti::rt::printValues(std::make_tuple(std::string("Hello"), std::string("world!")), true);
 }
 
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, nullptr, nullptr}); }

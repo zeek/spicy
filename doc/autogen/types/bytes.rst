@@ -59,7 +59,7 @@
 
     Returns true if the bytes value starts with *b*.
 
-.. spicy:method:: bytes::strip bytes strip False bytes ([ side: spicy::Side ], [ set: bytes ])
+.. spicy:method:: bytes::strip bytes strip False bytes ([ side: ::hilti::rt::bytes::Side ], [ set: bytes ])
 
     Removes leading and/or trailing sequences of all characters in *set*
     from the bytes value. If *set* is not given, removes all white spaces.

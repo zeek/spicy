@@ -1,0 +1,8 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+
+module Test;
+
+import spicy;
+
+assert spicy::bytes_to_hexstring(b"\x01\x23\x45") == "012345";
+assert spicy::bytes_to_hexstring(b"\x08\x61\xC4\x68\x00") == "0861C46800";

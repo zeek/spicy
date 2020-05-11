@@ -34,3 +34,9 @@ Finalizes a base64 stream used for decoding or encoding.
 
 Returns the current wall clock time.
 
+.. _spicy_bytes_to_hexstring:
+
+.. rubric:: ``function spicy::bytes_to_hexstring(value: bytes) : string``
+
+Returns a bytes value rendered as a hex string.
+

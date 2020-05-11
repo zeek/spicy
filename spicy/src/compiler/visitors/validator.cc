@@ -269,7 +269,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
             if ( type ) {
                 if ( auto t = type->valueAs<Expression>()->type().tryAs<type::Enum>();
-                     ! (t && t->cxxID() && *t->cxxID() == ID("hilti::rt::real::Type")) )
+                     ! (t && t->cxxID() && *t->cxxID() == ID("::hilti::rt::real::Type")) )
                     error("&type attribute must be a spicy::RealType", p);
             }
             else
