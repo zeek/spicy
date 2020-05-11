@@ -1,10 +1,14 @@
 Release Notes
 =============
 
-Change log
+.. contents::
+    :local:
+
+
+Change Log
 ----------
 
-.. include:: /CHANGES.rst
+.. literalinclude:: /../CHANGES
 
 Migrating from the old prototype
 --------------------------------
