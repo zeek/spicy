@@ -33,9 +33,6 @@
 
 namespace hilti::rt {
 
-/** Exception flagging invalid arguments passed to a function. */
-HILTI_EXCEPTION(InvalidArgument, RuntimeError);
-
 namespace vector {
 
 /**
