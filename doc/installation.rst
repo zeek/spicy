@@ -250,7 +250,7 @@ If you are using `Homebrew <https://brew.sh>`_:
 
 Instead of using the MacPorts/Homebrew versions of Clang, you can also
 use the prebuilt `Clang/LLVM 9.0 binary package
-<http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-darwin-apple.tar.xz>`_
+<https://github.com/llvm/llvm-project/releases/download/llvmorg-9.0.1/clang+llvm-9.0.1-x86_64-apple-darwin.tar.xz>`_
 from LLVM's `download page <http://releases.llvm.org/download.html>`_
 and untar that into, e.g., ``/opt/clang9/``, then ``configure`` Spicy
 with ``--with-cxx-compiler=/opt/clang9/bin/clang++``
