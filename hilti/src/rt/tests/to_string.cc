@@ -5,6 +5,8 @@
 #include <cstdint>
 
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/set.h>
 #include <hilti/rt/types/vector.h>
 
 using namespace hilti::rt;
@@ -48,6 +50,13 @@ TEST_CASE("optional") {
     CHECK_EQ(to_string(std::optional<int8_t>(2)), "2");
     CHECK_EQ(to_string(std::optional<std::optional<int8_t>>()), "(not set)");
     CHECK_EQ(to_string(std::optional<std::optional<int8_t>>(2)), "2");
+}
+
+TEST_CASE("Set") {
+    CHECK_EQ(to_string(set::Empty()), "{}");
+    CHECK_EQ(to_string(Set<int>()), "{}");
+    CHECK_EQ(to_string(Set<int>({1})), "{1}");
+    CHECK_EQ(to_string(Set<int>({1, 2, 3})), "{1, 2, 3}");
 }
 
 TEST_SUITE_END();

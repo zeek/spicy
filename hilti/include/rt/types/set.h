@@ -12,6 +12,7 @@
 #pragma once
 
 #include <algorithm>
+#include <initializer_list>
 #include <memory>
 #include <set>
 
@@ -123,6 +124,7 @@ public:
     Set(Set&&) noexcept = default;
     Set(const std::list<T>& l) : std::set<T>(l.begin(), l.end()) {}
     Set(std::list<T>&& l) : std::set<T>(std::move_iterator(l.begin()), std::move_iterator(l.end())) {}
+    Set(std::initializer_list<T> l) : std::set<T>(std::move(l)) {}
     ~Set() = default;
 
     Set& operator=(const Set&) = default;
