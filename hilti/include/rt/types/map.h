@@ -49,7 +49,7 @@ public:
 
 } // namespace map
 
-// Proxy to faciliate safe assignment.
+// Proxy to facilitate safe assignment.
 
 /** HILTI's `Map` is an extended version `std::map`. */
 template<typename K, typename V>
@@ -87,9 +87,8 @@ public:
 
         throw IndexError("key does not exist");
     }
-
-    const V& operator[](const K& k) const { return get(k); }
-    auto operator[](const K& k);
+    const V& operator[](const K& k) const { return static_cast<const M&>(*this)[k]; }
+    V& operator[](const K& k) { return static_cast<M&>(*this)[k]; }
 
     // Methods of `std::map`.
     using M::begin;
@@ -101,50 +100,6 @@ public:
     friend bool operator==(const Map& a, const Map& b) { return static_cast<const M&>(a) == static_cast<const M&>(b); }
     friend bool operator!=(const Map& a, const Map& b) { return ! (a == b); }
 };
-
-namespace map::detail {
-
-template<typename K, typename V>
-class AssignProxy {
-public:
-    using M = std::map<K, V>;
-
-    AssignProxy(M* m, K k) : _m(m), _k(std::move(k)) {}
-
-    const V& get() const {
-        if ( _m->find(_k) != _m->end() )
-            return (*_m)[_k];
-
-        throw IndexError(fmt("map key does not exist"));
-    }
-
-    AssignProxy& operator=(V v) {
-        (*_m)[_k] = std::move(v);
-        return *this;
-    }
-
-    operator V() const { return get(); }
-
-    bool operator==(const V& v) { return get() == v; }
-    bool operator!=(const V& v) { return get() != v; }
-
-private:
-    M* _m;
-    K _k;
-};
-
-} // namespace map::detail
-
-template<typename K, typename V>
-inline auto Map<K, V>::operator[](const K& k) {
-    return hilti::rt::map::detail::template AssignProxy<K, V>(this, k);
-}
-
-template<typename K, typename V>
-inline std::ostream& operator<<(std::ostream& out, const hilti::rt::map::detail::AssignProxy<K, V>& x) {
-    out << x.get();
-    return out;
-}
 
 namespace map {
 /** Place-holder type for an empty map that doesn't have a known element type. */
@@ -174,14 +129,9 @@ inline std::string to_string(const Map<K, V>& x, adl::tag /*unused*/) {
     std::vector<std::string> r;
 
     for ( const auto& i : x )
-        r.push_back(fmt("%s: %s", i.first, i.second));
+        r.push_back(fmt("%s: %s", hilti::rt::to_string(i.first), hilti::rt::to_string(i.second)));
 
     return fmt("{%s}", rt::join(r, ", "));
-}
-
-template<typename K, typename V>
-inline std::string to_string(const map::detail::AssignProxy<K, V>& x, adl::tag /*unused*/) {
-    return hilti::rt::to_string(x.get());
 }
 
 inline std::string to_string(const map::Empty& x, adl::tag /*unused*/) { return "{}"; }

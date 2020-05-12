@@ -1,2 +1,2 @@
-{1: AAA, 2: BBB, 3: CCC}
-b"BBB"
+{1: b"AAA", 2: b"BBB", 3: b"CCC"}
+BBB
