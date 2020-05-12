@@ -385,11 +385,11 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     }
 
     result_t operator()(const type::map::Iterator& n) {
-        auto i = (n.isConstant() ? "SafeConstIterator" : "SafeIterator");
+        auto i = (n.isConstant() ? "const_iterator" : "iterator");
         auto k = cg->compile(n.containerType().as<type::Map>().keyType(), codegen::TypeUsage::Storage);
         auto v = cg->compile(n.containerType().as<type::Map>().elementType(), codegen::TypeUsage::Storage);
 
-        auto t = fmt("hilti::rt::map::%s<%s, %s>", i, k, v);
+        auto t = fmt("hilti::rt::Map<%s, %s>::%s", k, v, i);
         return CxxTypes{.base_type = fmt("%s", t)};
     }
 

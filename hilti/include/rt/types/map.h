@@ -30,54 +30,173 @@ class Map;
 namespace map {
 
 template<typename K, typename V>
-class SafeIterator : public hilti::rt::detail::iterator::SafeIterator<Map<K, V>, typename Map<K, V>::SafeIterator,
-                                                                      SafeIterator<K, V>> {
+class Iterator {
+    using M = Map<K, V>;
+
+    std::weak_ptr<M*> _control;
+    typename M::M::iterator _iterator;
+
 public:
-    using Base =
-        hilti::rt::detail::iterator::SafeIterator<Map<K, V>, typename Map<K, V>::SafeIterator, SafeIterator<K, V>>;
-    using Base::Base;
+    Iterator() = default;
+
+    friend class Map<K, V>;
+
+    friend bool operator==(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different maps");
+
+        return a._iterator == b._iterator;
+    }
+
+    friend bool operator!=(const Iterator& a, const Iterator& b) { return ! (a == b); }
+
+    Iterator& operator++() {
+        if ( ! _control.lock() ) {
+            throw IndexError("iterator is invalid");
+        }
+
+        ++_iterator;
+        return *this;
+    }
+
+    Iterator operator++(int) {
+        auto ret = *this;
+        ++(*this);
+        return ret;
+    }
+
+    const typename M::M::value_type* operator->() const { return &operator*(); }
+
+    typename M::M::const_reference operator*() const {
+        if ( auto&& l = _control.lock() ) {
+            // Iterators to `end` cannot be dereferenced.
+            if ( _iterator == static_cast<const typename M::M&>(**l).cend() )
+                throw IndexError("iterator is invalid");
+
+            return *_iterator;
+        }
+
+        throw IndexError("iterator is invalid");
+    }
+
+private:
+    friend class Map<K, V>;
+
+    Iterator(typename M::M::iterator iterator, const typename M::C& control)
+        : _control(control), _iterator(std::move(iterator)) {}
 };
 
 template<typename K, typename V>
-class SafeConstIterator
-    : public hilti::rt::detail::iterator::SafeIterator<const Map<K, V>, typename Map<K, V>::ConstIterator,
-                                                       SafeConstIterator<K, V>> {
+class ConstIterator {
+    using M = Map<K, V>;
+
+    std::weak_ptr<M*> _control;
+    typename M::M::const_iterator _iterator;
+
 public:
-    using Base = hilti::rt::detail::iterator::SafeIterator<const Map<K, V>, typename Map<K, V>::ConstIterator,
-                                                           SafeConstIterator<K, V>>;
-    using Base::Base;
+    ConstIterator() = default;
+
+    friend bool operator==(const ConstIterator& a, const ConstIterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different sets");
+
+        return a._iterator == b._iterator;
+    }
+
+    friend bool operator!=(const ConstIterator& a, const ConstIterator& b) { return ! (a == b); }
+
+    ConstIterator& operator++() {
+        if ( ! _control.lock() ) {
+            throw IndexError("iterator is invalid");
+        }
+
+        ++_iterator;
+        return *this;
+    }
+
+    ConstIterator operator++(int) {
+        auto ret = *this;
+        ++(*this);
+        return ret;
+    }
+
+    const typename M::M::value_type* operator->() const { return &operator*(); }
+
+    typename M::M::const_reference operator*() const {
+        if ( auto&& l = _control.lock() ) {
+            // Iterators to `end` cannot be dereferenced.
+            if ( _iterator == static_cast<const typename M::M&>(**l).cend() )
+                throw IndexError("iterator is invalid");
+
+            return *_iterator;
+        }
+
+        throw IndexError("iterator is invalid");
+    }
+
+private:
+    friend class Map<K, V>;
+
+    ConstIterator(typename M::M::const_iterator iterator, const typename M::C& control)
+        : _control(control), _iterator(std::move(iterator)) {}
 };
+
 
 } // namespace map
 
 // Proxy to facilitate safe assignment.
 
-/** HILTI's `Map` is an extended version `std::map`. */
+/** HILTI's `Map` is a `std::map`-like type with additional safety guarantees.
+ *
+ * In particular it guarantees that iterators are either valid, or throw an
+ * exception when accessed.
+ *
+ * If not otherwise specified, we follow the semantics on iterator invalidation
+ * of `std::map` with the caveat that iterators which cannot be dereferenced
+ * can become invalid through mutating `Map` operations. We still validate
+ * invalid dereferencing of such iterators.
+ *
+ *     rt::Map<int, int> map;
+ *     auto it = map.begin(); // Valid iterator which cannot be dereferenced.
+ *
+ *     // Mutating the map invalidates not dereferencable iterators.
+ *     map.insert({1, 1});
+ *
+ *     *it; // Iterator now invalid, throws.
+ *
+ * If not otherwise specified, member functions have the semantics of
+ * `std::map` member functions.
+ * */
 template<typename K, typename V>
-class Map : protected std::map<K, V>, public hilti::rt::detail::iterator::Controllee {
+class Map : protected std::map<K, V> {
 public:
     using M = std::map<K, V>;
-    using C = hilti::rt::detail::iterator::Controllee;
+    using C = std::shared_ptr<Map<K, V>*>;
 
+    C _control = std::make_shared<Map<K, V>*>(this);
+
+    using key_type = typename M::key_type;
     using value_type = typename M::value_type;
 
-    using ConstIterator = typename M::const_iterator;
-    using SafeIterator = typename M::iterator;
+    using iterator = typename map::Iterator<K, V>;
+    using const_iterator = typename map::ConstIterator<K, V>;
 
     Map() = default;
     Map(std::initializer_list<value_type> init) : M(std::move(init)) {}
 
-    /** Returns true if a specific key is part of the set. */
-    bool contains(const K& k) { return this->find(k) != this->end(); }
+    /** Checks whether a key is set in the map.
+     *
+     * @param `k` the key to check for
+     * @return `true` if the key is set in the map
+     */
+    bool contains(const K& k) { return this->find(k) != static_cast<const M&>(*this).end(); }
 
     /**
-     * Returns the value for a given key, with an optional default if not foound.
+     * Attempts to get the value for a key.
      *
      * @param k key to retrieve
-     * @param default_ if given, a defautl to return if *k* is not part of the
-     * map.
-     * @throws `IndexError` if `k` is not part of the map and no default has
-     * been given.
+     * @return the value
+     * @throw `IndexError` if `k` is not set in the map
      */
     const V& get(const K& k) const {
         try {
@@ -87,18 +206,81 @@ public:
         }
     }
 
-    const V& operator[](const K& k) const { return static_cast<const M&>(*this)[k]; }
-    V& operator[](const K& k) { return static_cast<M&>(*this)[k]; }
+    /** Access an element by key
+     *
+     * This function invalidates all iterators into the map.
+     *
+     * @param k key of the element
+     * @return a reference to the element
+     */
+    V& operator[](const K& k) & {
+        this->invalidateIterators();
+
+        return static_cast<M&>(*this)[k];
+    }
+
+    /** Access an element by key
+     *
+     * This function invalidates all iterators into the map iff `k` was not present in the map.
+     *
+     * @param k key of the element
+     * @return a reference to the element
+     * @throw `IndexError` if `k` is not set in the map
+     */
+    auto operator[](const K& k) && { return this->get(k); }
+
+    auto begin() const { return this->cbegin(); }
+    auto end() const { return this->cend(); }
+
+    auto begin() { return iterator(static_cast<M&>(*this).begin(), _control); }
+
+    auto end() { return iterator(static_cast<M&>(*this).end(), _control); }
+
+    auto cbegin() const { return const_iterator(static_cast<const M&>(*this).begin(), _control); }
+
+    auto cend() const { return const_iterator(static_cast<const M&>(*this).end(), _control); }
+
+
+    /** Erases all elements from the map.
+     *
+     * This function invalidates all iterators into the map.
+     */
+    auto clear() {
+        this->invalidateIterators();
+
+        return static_cast<M&>(*this).clear();
+    }
+
+    /** Removes an element from the map.
+     *
+     * This function invalidates all iterators into the map iff an element was removed.
+     *
+     * @param key key of the element to remove
+     * @return 1 if the element was in the set, 0 otherwise
+     */
+    auto erase(const key_type& key) {
+        auto removed = static_cast<M&>(*this).erase(key);
+
+        if ( removed ) {
+            this->invalidateIterators();
+        }
+
+        return removed;
+    }
 
     // Methods of `std::map`.
-    using M::begin;
-    using M::clear;
-    using M::end;
-    using M::erase;
     using M::size;
 
     friend bool operator==(const Map& a, const Map& b) { return static_cast<const M&>(a) == static_cast<const M&>(b); }
     friend bool operator!=(const Map& a, const Map& b) { return ! (a == b); }
+
+    friend map::Iterator<K, V>;
+    friend map::ConstIterator<K, V>;
+
+    void invalidateIterators() {
+        // Update control block to invalidate all iterators previously created from it.
+        _control = std::make_shared<Map<K, V>*>(this);
+    }
 };
 
 namespace map {
@@ -121,6 +303,16 @@ template<typename K, typename V>
 inline bool operator!=(const Empty& /*unused*/, const Map<K, V>& v) {
     return ! v.empty();
 }
+
+template<typename K, typename V>
+inline std::ostream& operator<<(std::ostream& out, const map::Iterator<K, V>& it) {
+    return out << to_string(it);
+}
+
+template<typename K, typename V>
+inline std::ostream& operator<<(std::ostream& out, const map::ConstIterator<K, V>& it) {
+    return out << to_string(it);
+}
 } // namespace map
 
 namespace detail::adl {
@@ -137,58 +329,42 @@ inline std::string to_string(const Map<K, V>& x, adl::tag /*unused*/) {
 inline std::string to_string(const map::Empty& x, adl::tag /*unused*/) { return "{}"; }
 
 template<typename K, typename V>
-inline std::string to_string(const map::SafeIterator<K, V>& /*unused*/, adl::tag /*unused*/) {
+inline std::string to_string(const map::Iterator<K, V>& /*unused*/, adl::tag /*unused*/) {
     return "<map iterator>";
 }
 
 template<typename K, typename V>
-inline std::string to_string(const map::SafeConstIterator<K, V>& /*unused*/, adl::tag /*unused*/) {
+inline std::string to_string(const map::ConstIterator<K, V>& /*unused*/, adl::tag /*unused*/) {
     return "<const map iterator>";
 }
 
 template<typename K, typename V>
 inline auto safe_begin(const Map<K, V>& x, adl::tag /*unused*/) {
-    return map::SafeConstIterator<K, V>(x, x.begin());
+    return x.begin();
 }
 
 template<typename K, typename V>
 inline auto safe_begin(Map<K, V>& x, adl::tag /*unused*/) {
-    return map::SafeIterator<K, V>(x, x.begin());
+    return x.begin();
 }
 
 template<typename K, typename V>
 inline auto safe_end(const Map<K, V>& x, adl::tag /*unused*/) {
-    return map::SafeConstIterator<K, V>(x, x.end());
+    return x.end();
 }
 
 template<typename K, typename V>
 inline auto safe_end(Map<K, V>& x, adl::tag /*unused*/) {
-    return map::SafeIterator<K, V>(x, x.end());
+    return x.end();
 }
 
 } // namespace detail::adl
 
 template<typename K, typename V>
 inline std::ostream& operator<<(std::ostream& out, const Map<K, V>& x) {
-    out << to_string(x);
-    return out;
+    return out << to_string(x);
 }
 
-inline std::ostream& operator<<(std::ostream& out, const map::Empty& x) {
-    out << to_string(x);
-    return out;
-}
-
-template<typename K, typename V>
-inline std::ostream& operator<<(std::ostream& out, const map::SafeIterator<K, V>& x) {
-    out << to_string(x);
-    return out;
-}
-
-template<typename K, typename V>
-inline std::ostream& operator<<(std::ostream& out, const map::SafeConstIterator<K, V>& x) {
-    out << to_string(x);
-    return out;
-}
+inline std::ostream& operator<<(std::ostream& out, const map::Empty& x) { return out << to_string(x); }
 
 } // namespace hilti::rt
