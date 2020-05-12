@@ -9,7 +9,7 @@
     Returns the number of bytes between the two iterators. The result will
     be negative if the second iterator points to a location before the
     first. The result is undefined if the iterators do not refer to the
-    same bytes instace.
+    same bytes instance.
 
 .. spicy:operator:: bytes::iterator::Equal bool t:iterator<bytes> <sp> op:== <sp> t:iterator<bytes>
 

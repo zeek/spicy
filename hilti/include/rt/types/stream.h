@@ -64,7 +64,7 @@ namespace detail {
 class UnsafeConstIterator;
 
 /**
- * One block of continous data inside a stream instace. A stream instance
+ * One block of continous data inside a stream instance. A stream instance
  * chains these to represent all of its content.
  */
 class Chunk {
@@ -749,7 +749,7 @@ inline std::ostream& operator<<(std::ostream& out, const View& x) {
  * Container for raw binary data that's going to be processed in streaming
  * mode.. The underlying data storage is optimized for cheap append
  * operations even with large instances, but does not allow for modifications
- * of existing data. It also ensures that iterators bound to an instace can
+ * of existing data. It also ensures that iterators bound to an instance can
  * reliably detect if the instance gets deleted.
  */
 class Stream {
@@ -806,7 +806,7 @@ public:
 
     ~Stream() = default;
 
-    /** Returns the number of stream the instance contains. */
+    /** Returns the number of stream characters the instance contains. */
     Size size() const { return tail()->offset() + tail()->size() - head()->offset(); }
 
     /** Returns true if the instance's size is zero. */

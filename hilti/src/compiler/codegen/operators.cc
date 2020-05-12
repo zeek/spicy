@@ -230,11 +230,6 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::enum_::Equal& n) { return binary(n, "=="); }
     result_t operator()(const operator_::enum_::Unequal& n) { return binary(n, "!="); }
 
-    result_t operator()(const operator_::enum_::CastFromUnsignedInteger& n) {
-        auto t = n.op1().type().as<type::Type_>().typeValue();
-        return fmt("static_cast<%s>(%s.Ref())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
-    }
-
     result_t operator()(const operator_::enum_::CastToSignedInteger& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
@@ -269,13 +264,6 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     // Interval
 
-    result_t operator()(const operator_::interval::CastFromReal& n) { return fmt("hilti::rt::Interval(%f)", op0(n)); }
-    result_t operator()(const operator_::interval::CastFromSignedInteger& n) {
-        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64 ") * 1000000000)", op0(n));
-    }
-    result_t operator()(const operator_::interval::CastFromUnsignedInteger& n) {
-        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<uint64_t>(%" PRIu64 ") * 1000000000)", op0(n));
-    }
     result_t operator()(const operator_::interval::Difference& n) { return binary(n, "-"); }
     result_t operator()(const operator_::interval::Equal& n) { return binary(n, "=="); }
     result_t operator()(const operator_::interval::Greater& n) { return binary(n, ">"); }
@@ -346,7 +334,8 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     /// Real
 
-    result_t operator()(const operator_::real::SignNeg& n) { return fmt("(-%s)", op0(n)); }
+    result_t operator()(const operator_::real::CastToInterval& n) { return fmt("hilti::rt::Interval(%f)", op0(n)); }
+    result_t operator()(const operator_::real::CastToTime& n) { return fmt("hilti::rt::Time(%f)", op0(n)); }
     result_t operator()(const operator_::real::Difference& n) { return binary(n, "-"); }
     result_t operator()(const operator_::real::DifferenceAssign& n) { return binary(n, "-="); }
     result_t operator()(const operator_::real::Division& n) { return binary(n, "/"); }
@@ -360,16 +349,17 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::real::Multiple& n) { return binary(n, "*"); }
     result_t operator()(const operator_::real::MultipleAssign& n) { return binary(n, "*="); }
     result_t operator()(const operator_::real::Power& n) { return fmt("std::pow(%s, %s)", op0(n), op1(n)); }
+    result_t operator()(const operator_::real::SignNeg& n) { return fmt("(-%s)", op0(n)); }
     result_t operator()(const operator_::real::Sum& n) { return binary(n, "+"); }
     result_t operator()(const operator_::real::SumAssign& n) { return binary(n, "+="); }
     result_t operator()(const operator_::real::Unequal& n) { return binary(n, "!="); }
 
-    result_t operator()(const operator_::real::CastSignedInteger& n) {
+    result_t operator()(const operator_::real::CastToSignedInteger& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
-    result_t operator()(const operator_::real::CastUnsignedInteger& n) {
+    result_t operator()(const operator_::real::CastToUnsignedInteger& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
@@ -748,6 +738,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     // Signed integer
 
+    result_t operator()(const operator_::signed_integer::CastToInterval& n) {
+        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64 ") * 1000000000)", op0(n));
+    }
     result_t operator()(const operator_::signed_integer::DecrPostfix& n) { return fmt("%s--", op0(n)); }
     result_t operator()(const operator_::signed_integer::DecrPrefix& n) { return fmt("--%s", op0(n)); }
     result_t operator()(const operator_::signed_integer::Difference& n) { return fmt("%s - %s", op0(n), op1(n)); }
@@ -774,27 +767,23 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::signed_integer::SumAssign& n) { return fmt("%s += %s", op0(n), op1(n)); }
     result_t operator()(const operator_::signed_integer::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
-    result_t operator()(const operator_::signed_integer::CastSigned& n) {
+    result_t operator()(const operator_::signed_integer::CastToSigned& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
-    result_t operator()(const operator_::signed_integer::CastUnsigned& n) {
+    result_t operator()(const operator_::signed_integer::CastToUnsigned& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
-    result_t operator()(const operator_::signed_integer::CastReal& n) {
+    result_t operator()(const operator_::signed_integer::CastToReal& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     // Time
 
-    result_t operator()(const operator_::time::CastFromReal& n) { return fmt("hilti::rt::Time(%f)", op0(n)); }
-    result_t operator()(const operator_::time::CastFromUnsignedInteger& n) {
-        return fmt("hilti::rt::Time(hilti::rt::integer::safe<uint64_t>(%" PRIu64 ") * 1000000000)", op0(n));
-    }
     result_t operator()(const operator_::time::DifferenceInterval& n) { return binary(n, "-"); }
     result_t operator()(const operator_::time::Equal& n) { return binary(n, "=="); }
     result_t operator()(const operator_::time::Greater& n) { return binary(n, ">"); }
@@ -829,6 +818,16 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::unsigned_integer::BitAnd& n) { return fmt("(%s & %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::BitOr& n) { return fmt("(%s | %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::BitXor& n) { return fmt("(%s ^ %s)", op0(n), op1(n)); }
+    result_t operator()(const operator_::unsigned_integer::CastToEnum& n) {
+        auto t = n.op1().type().as<type::Type_>().typeValue();
+        return fmt("static_cast<%s>(%s.Ref())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
+    }
+    result_t operator()(const operator_::unsigned_integer::CastToInterval& n) {
+        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<uint64_t>(%" PRIu64 ") * 1000000000)", op0(n));
+    }
+    result_t operator()(const operator_::unsigned_integer::CastToTime& n) {
+        return fmt("hilti::rt::Time(hilti::rt::integer::safe<uint64_t>(%" PRIu64 ") * 1000000000)", op0(n));
+    }
     result_t operator()(const operator_::unsigned_integer::DecrPostfix& n) { return fmt("%s--", op0(n)); }
     result_t operator()(const operator_::unsigned_integer::DecrPrefix& n) { return fmt("--%s", op0(n)); }
     result_t operator()(const operator_::unsigned_integer::Difference& n) { return fmt("%s - %s", op0(n), op1(n)); }
@@ -861,17 +860,17 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::unsigned_integer::SumAssign& n) { return fmt("%s += %s", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
-    result_t operator()(const operator_::unsigned_integer::CastSigned& n) {
+    result_t operator()(const operator_::unsigned_integer::CastToSigned& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
-    result_t operator()(const operator_::unsigned_integer::CastUnsigned& n) {
+    result_t operator()(const operator_::unsigned_integer::CastToUnsigned& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
-    result_t operator()(const operator_::unsigned_integer::CastReal& n) {
+    result_t operator()(const operator_::unsigned_integer::CastToReal& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }

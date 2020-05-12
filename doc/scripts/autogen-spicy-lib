@@ -57,12 +57,13 @@ awk -v "target=$1" -v "ns=$2" '
         next;
     }
 
-    # Units (for which we do not member currently; and at least for filters we also do not wany to)
-    /public type .* = unit/ {
+    # Units (for which we do not record member currently; and at least for filters we also do not wany to)
+    /(public )?type .* = unit/ {
+        unit = ($1 == "public" ? $3 : $2)
         if ( target == "types" ) {
-            printf(".. _spicy_%s:\n\n", tolower($3));
-            printf(".. rubric:: ``%s::%s``\n\n", ns, $3);
-            printf("%s\n\n::\n\n type %s = unit;\n\n", comment, $3);
+            printf(".. _spicy_%s:\n\n", tolower(unit));
+            printf(".. rubric:: ``%s::%s``\n\n", ns, unit);
+            printf("%s\n\n::\n\n type %s = unit;\n\n", comment, unit);
         }
 
         comment = "";

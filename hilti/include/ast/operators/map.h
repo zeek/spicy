@@ -55,7 +55,7 @@ STANDARD_OPERATOR_2(map, Unequal, type::Bool(), type::constant(type::Map(type::W
                     operator_::sameTypeAs(0, "map<*>"), "Compares two maps element-wise.");
 STANDARD_OPERATOR_2(map, In, type::Bool(), type::Any(), type::constant(type::Map(type::Wildcard())),
                     "Returns true if an element is part of the map.");
-STANDARD_OPERATOR_2(map, Delete, type::Void(), type::Map(type::Wildcard()), detail::constantKeyType(0),
+STANDARD_OPERATOR_2(map, Delete, type::Void(), type::Map(type::Wildcard()), detail::constantKeyType(0, "element"),
                     "Removes an element from the map.")
 
 STANDARD_OPERATOR_2x(map, IndexConst, Index, operator_::constantElementType(0),

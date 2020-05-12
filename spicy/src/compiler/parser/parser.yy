@@ -933,12 +933,12 @@ opt_tuple_elems2
 tuple_elem    : expr                             { $$ = std::move($1); }
               | NONE                             { $$ = hilti::expression::Ctor(hilti::ctor::Null(__loc__), __loc__); }
 
-list          : LIST '(' opt_exprs ')'           { $$ = hilti::ctor::List(std::move($3), __loc__); }
+list          : '[' opt_exprs ']'                { $$ = hilti::ctor::List(std::move($2), __loc__); }
+              | LIST '(' opt_exprs ')'           { $$ = hilti::ctor::List(std::move($3), __loc__); }
               | LIST type_param_begin type type_param_end '(' opt_tuple_elems1 ')'
                                                  { $$ = hilti::ctor::List(std::move($3), std::move($6), __loc__); }
 
-vector        : '[' opt_exprs ']'                { $$ = hilti::ctor::List(std::move($2), __loc__); }
-              | VECTOR '(' opt_exprs ')'         { $$ = hilti::ctor::Vector(std::move($3), __loc__); }
+vector        : VECTOR '(' opt_exprs ')'         { $$ = hilti::ctor::Vector(std::move($3), __loc__); }
               | VECTOR type_param_begin type type_param_end '(' opt_tuple_elems1 ')'
                                                  { $$ = hilti::ctor::Vector(std::move($3), std::move($6), __loc__); }
 

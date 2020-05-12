@@ -143,7 +143,7 @@ void debug(const std::string_view& msg);
 Val* current_file(std::string_view location);
 
 /**
- * Returns true if we're are currently parsing the originator side of a
+ * Returns true if we're currently parsing the originator side of a
  * connection.
  */
 bool is_orig();

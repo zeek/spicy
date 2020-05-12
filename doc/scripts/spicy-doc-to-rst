@@ -13,7 +13,6 @@ import textwrap
 
 from typing import Dict, List, Set
 
-
 def fatalError(message: str):
     print(message, file=sys.stderr)
     sys.exit(1)
@@ -29,7 +28,7 @@ def call(name):
 
 def keyword(name):
     def _(op):
-        return "{} {}".format(name, op.operands[0].rst(in_operator=True))
+        return "{} <sp> {}".format(name, op.operands[0].rst(in_operator=True))
     return _
 
 
@@ -52,7 +51,10 @@ def binary(token):
 
 
 Operators = {
-    "Add": keyword("add"),
+    "Add": lambda op: "add <sp> {}[{}]".format(
+        op.operands[0].rst(in_operator=True),
+        op.operands[1].rst(in_operator=True, markup=False)
+        ),
     "Begin": call("begin"),
     "BitAnd": binary("&"),
     "BitOr": binary("|"),
@@ -63,9 +65,12 @@ Operators = {
         op.operands[1].rst(in_operator=True,
                            markup=False)),
     "Cast": lambda op: "cast<{}>({})".format(
-        op.operands[0].rst(in_operator=True, markup=False),
-        op.operands[1].rst(in_operator=True, markup=False)),
-    "Delete": keyword("delete"),
+        TypedType.sub("\\1", op.operands[1].rst(in_operator=True, markup=False)),
+        op.operands[0].rst(in_operator=True, markup=False)),
+    "Delete": lambda op: "delete <sp> {}[{}]".format(
+        op.operands[0].rst(in_operator=True),
+        op.operands[1].rst(in_operator=True, markup=False)
+        ),
     "Deref": unary("*"),
     "DecrPostfix": unary("", "--"),
     "DecrPrefix": unary("++"),
@@ -92,12 +97,15 @@ Operators = {
     "Modulo": binary("%"),
     "Multiple": binary("*"),
     "MultipleAssign": binary("*="),
-    "Negate": unary("-"),
+    "Negate": unary("~"),
     "New": keyword("new"),
     "Pack": keyword("pack"),
     "Power": binary("**"),
     "Unpack": keyword("unpack"),
-    "Unset": keyword("unset"),
+    "Unset": lambda op: "unset <sp> {}.{}".format(
+        op.operands[0].rst(in_operator=True),
+        op.operands[1].rst(in_operator=True, markup=False)
+        ),
     "SignNeg": unary("-"),
     "Size": unary("|", "|"),
     "ShiftLeft": binary("<<"),
@@ -119,6 +127,7 @@ TypeMappings = {
 }
 
 LibraryType = re.compile(r'__library_type\("(.*)"\)')
+TypedType = re.compile(r'type<(.*)>')
 
 
 def namespace(ns):

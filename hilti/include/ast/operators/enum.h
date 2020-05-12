@@ -15,10 +15,6 @@ STANDARD_OPERATOR_2(enum_, Equal, type::Bool(), type::constant(type::Enum(type::
                     operator_::sameTypeAs(0, "enum<*>"), "Compares two enum values.");
 STANDARD_OPERATOR_2(enum_, Unequal, type::Bool(), type::constant(type::Enum(type::Wildcard())),
                     operator_::sameTypeAs(0, "enum<*>"), "Compares two enum values.");
-STANDARD_OPERATOR_2x(enum_, CastFromUnsignedInteger, Cast, operator_::typedType(1, "enum<*>"),
-                     type::UnsignedInteger(type::Wildcard()), type::Type_(type::Enum(type::Wildcard())),
-                     "Casts an unsigned integer value to an enum instance. The value does *not* need to correspond to "
-                     "any of the type's enumerator labels");
 STANDARD_OPERATOR_2x(
     enum_, CastToSignedInteger, Cast, operator_::typedType(1, "int"), type::Enum(type::Wildcard()),
     type::Type_(type::SignedInteger(type::Wildcard())),

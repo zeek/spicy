@@ -2,7 +2,7 @@
 
 .. spicy:method:: stream::iterator::is_frozen iterator<stream> is_frozen False bool ()
 
-    Returns whether the stream value that the iterator referes to has been
+    Returns whether the stream value that the iterator refers to has been
     frozen.
 
 .. spicy:method:: stream::iterator::offset iterator<stream> offset False uint<64> ()

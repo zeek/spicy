@@ -1,4 +1,19 @@
 
+0.4.0-260 | 2020-05-12 10:37:16 +0000
+
+  * Documentation updates. (Robin Sommer, Corelight)
+
+    - GH-230: Fix a series of smaller inaccuricies and typos. Reported by Duffy Ocraven.
+    - Document list type.
+    - Include CHANGES into the documentation's release notes.
+    - Update link to macOS LLVM binaries. (Robin Sommer, Corelight)
+
+  * Clean up parsing of list constructor. (Robin Sommer, Corelight)
+
+  * Clean up cast operators. (Robin Sommer, Corelight)
+
+  * Remove a couple of empty source files. (Robin Sommer, Corelight)
+
 0.4.0-251 | 2020-05-12 10:33:24 +0000
 
   * Redo implementation of `hilti::rt::Set`. (Benjamin Bannier, Corelight)
@@ -177,7 +192,7 @@
 
 0.4.0-162 | 2020-04-28 10:14:01 +0000
 
-  * GH-219: Clean up string interface exposed by ``rt::Bytes`` to
+  * GH-219: Clean up string interface exposed by `rt::Bytes` to
     remove overloading ambiguities. (Benjamin Bannier, Corelight)
 
   * GH-257: Fix documentation whitespace issues and remove outdated
@@ -197,9 +212,9 @@
 0.4.0-148 | 2020-04-24 13:19:22 +0000
 
   * GH-226: Add CI setup for building published Docker images. This
-    patch adds an `update_dockerhub` target to ``docker/Makefile``,
+    patch adds an `update_dockerhub` target to `docker/Makefile`,
     which builds, tests and uploads images to Dockerhub. It also
-    changes the Dockerfiles in ``docker/`` back to include Spicy build
+    changes the Dockerfiles in `docker/` back to include Spicy build
     commands, so that they become practically self-documenting
     (Benjamin Bannier, Corelight).
 

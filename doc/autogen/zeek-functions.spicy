@@ -14,13 +14,13 @@ Triggers a DPD protocol violation for the current connection.
 
 .. rubric:: ``function zeek::is_orig() : bool``
 
-Returns true if we're are currently parsing the originator side of a connection.
+Returns true if we're currently parsing the originator side of a connection.
 
 .. _spicy_flip_roles:
 
 .. rubric:: ``function zeek::flip_roles()``
 
-Instructs to Zeek to flip the directionality of the current connecction.
+Instructs Zeek to flip the directionality of the current connection.
 
 .. _spicy_number_packets:
 

@@ -241,7 +241,7 @@ public:
      * Removes leading and/or trailing sequences of all characters of a set
      * from the bytes instance.
      *
-     * @param side side of bytes instace to be stripped.
+     * @param side side of bytes instance to be stripped.
      * @param set characters to remove; removes all whitespace if empty
      */
     Bytes strip(const Bytes& set, bytes::Side side = bytes::Side::Both) const;
@@ -250,7 +250,7 @@ public:
      * Removes leading and/or trailing sequences of white space from the
      * bytes instance.
      *
-     * @param side side of bytes instace to be stripped.
+     * @param side side of bytes instance to be stripped.
      */
     Bytes strip(bytes::Side side = bytes::Side::Both) const;
 

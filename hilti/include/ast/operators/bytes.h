@@ -51,7 +51,8 @@ STANDARD_OPERATOR_2(
     bytes::iterator, Difference, type::SignedInteger(64), type::constant(type::bytes::Iterator()),
     type::constant(type::bytes::Iterator()),
     "Returns the number of bytes between the two iterators. The result will be negative if the second iterator points "
-    "to a location before the first. The result is undefined if the iterators do not refer to the same bytes instace.");
+    "to a location before the first. The result is undefined if the iterators do not refer to the same bytes "
+    "instance.");
 STANDARD_OPERATOR_2(bytes::iterator, Sum, type::bytes::Iterator(), type::constant(type::bytes::Iterator()),
                     type::UnsignedInteger(64), "Advances the iterator by the given number of bytes.")
 STANDARD_OPERATOR_2(bytes::iterator, SumAssign, type::bytes::Iterator(), type::bytes::Iterator(),

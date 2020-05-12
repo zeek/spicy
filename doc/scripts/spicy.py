@@ -89,7 +89,7 @@ class SpicyOperator(SpicyGeneric):
                 op += " "
 
             else:
-                op += a
+                op += a.replace("~", " ")
 
         signode += nodes.literal("", op)
 

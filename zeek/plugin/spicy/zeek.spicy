@@ -12,10 +12,10 @@ public function confirm_protocol() : void &cxxname="::spicy::zeek::rt::confirm_p
 ## Triggers a DPD protocol violation for the current connection.
 public function reject_protocol(reason: string) : void &cxxname="::spicy::zeek::rt::reject_protocol";
 
-## Returns true if we're are currently parsing the originator side of a connection.
+## Returns true if we're currently parsing the originator side of a connection.
 public function is_orig() : bool &cxxname="::spicy::zeek::rt::is_orig";
 
-## Instructs to Zeek to flip the directionality of the current connecction.
+## Instructs Zeek to flip the directionality of the current connection.
 public function flip_roles() : void &cxxname="::spicy::zeek::rt::flip_roles";
 
 ## Returns the number of packets seen so far on the current side of the current connection.

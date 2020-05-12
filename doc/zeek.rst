@@ -115,7 +115,7 @@ For example, ``spicy::BitTorrent`` turns into
 ``Analyzer::ANALYZER_SPICY_BITTORRENT``.
 
 The analyzer's name is also what goes into Zeek signatures to activate
-an analyzer DPD-style. If they name is ``spicy::BitTorrent``, you'd
+an analyzer DPD-style. If the name is ``spicy::BitTorrent``, you'd
 write ``enable "spicy::BitTorrent"`` into the signature.
 
 .. note::
@@ -151,7 +151,7 @@ properties are supported:
         automatically activate your analyzer with corresponding
         connections. Each port must be specified in Spicy's :ref:`syntax
         for port constants <type_port>` (e.g., ``80/tcp``). The ports'
-        transport protocol better matches that of the analyzer.
+        transport protocol must match that of the analyzer.
 
         .. todo::
 
@@ -274,6 +274,7 @@ the pieces going into such an event definition:
         ``enum { ... }``, ``enum { ... }``, [1]
         ``int(8|16|32|64)``, ``int``,
         ``list<T>``, ``vector of T``,
+        "``map<V,K>``", "``table[V] of K``",
         ``optional<T>``, ``T``,  [2]
         ``port``, ``port``,
         ``real``, ``double``,
@@ -305,7 +306,7 @@ the pieces going into such an event definition:
                   field is left unset.
 
                 - If the element's expression uses the
-                  :spicy:op:`struct::TryMember` operator and that
+                  :spicy:op:`.? <unit::TryMember>` operator and that
                   fails to produce a value, the record field is
                   likewise left unset.
 
@@ -368,9 +369,9 @@ insert ``import`` statements into the ``*.evt`` file that work
         Imports Spicy module ``NAME``.
 
     ``import NAME from X.Y.Z;``
-        Searches the module ``NAME`` (i.e., ``NAME.spicy``) inside a
-        sub-directory ``X/Y/Z`` along the search path, and then
-        imports it.
+        Searches for the module ``NAME`` (i.e., for the filename
+        ``NAME.spicy``) inside a sub-directory ``X/Y/Z`` along the
+        search path, and then imports it.
 
 .. _zeek_compiling:
 
@@ -393,7 +394,7 @@ into its compilation pipeline.
 This approach can be quite convenient, in particular during
 development of new analyzers as it makes it easy to iterate---just
 restart Zeek to pick up any changes. The disadvantage is that
-compiling Spicy parsers take a noticeable amount of time, which you'll
+compiling Spicy parsers takes a noticeable amount of time, which you'll
 incur every time Zeek starts up.
 
 Ahead Of Time Compilation
@@ -410,7 +411,7 @@ output. To repeat the :ref:`example <example_zeek_my_http>` from the
     GET, /index.html, 1.0
     Zeek saw from 127.0.0.1: GET /index.html 1.0
 
-While this requires approach requires an additional step every time
+While this approach requires an additional step every time
 something changes, starting up Zeek now executes quickly.
 
 Run ``spicyz -h`` to see some additional options it provides, which
@@ -422,7 +423,7 @@ Controlling Zeek from Spicy
 ===========================
 
 Spicy grammars can import a provided library module ``zeek`` to gain
-access to a Zeek-specific functions that call back into Zeek's
+access to Zeek-specific functions that call back into Zeek's
 processing:
 
 .. include:: /autogen/zeek-functions.spicy
@@ -462,7 +463,7 @@ example, to compile a debug version of all analyzers, set
       -d             Include debug instrumentation into generated code.
       -D <streams>   Activate compile-time debugging output for given debug streams (comma-separated).
       -O             Build optimized release version of generated code.
-      -o <out.hlto>  Save precompiled code into file and exist.
+      -o <out.hlto>  Save precompiled code into file and exit.
       -R             Report a break-down of compiler's execution time.
       -V             Don't validate ASTs (for debugging only).
       -X <addl>      Implies -d and adds selected additional instrumentation (comma-separated).
@@ -590,14 +591,14 @@ stream through the ``HILTI_DEBUG`` environment variable::
 After the initial initialization, you see the data arriving and the
 event being generated for Zeek. The plugin also reports that we didn't
 define a unit for the responder side---which we know in this case, but
-if that comes unexpected you probably found a problem.
+if that appears unexpectedly you probably found a problem.
 
 .. note::
 
     If you're running Zeek with ``SPICY_PLUGIN_OPTIONS="-D zeek -d"``,
     you'll actually get the complete output of both what the compiler
     is doing (per above) and what's happening at runtime. That may be
-    more convinient, but `HILTI_DEBUG` can do more (see below) and
+    more convenient, but `HILTI_DEBUG` can do more (see below) and
     might be the better starting point.
 
 So we know now that our analyzer is receiving the anticipated data to
@@ -618,7 +619,7 @@ setting ``HILTI_DEBUG=spicy`` tends to be helpful::
     [spicy]   anon_4 = \n
 
 If everything looks right with the parsing, and the right events are
-genreated too, then the final part is to check out the events that
+generated too, then the final part is to check out the events that
 arrive on the Zeek side. To get Zeek to see an event that the plugin
 raises, you need to have at least one handler implemented for it in
 one of your Zeek scripts. You can then load Zeek's

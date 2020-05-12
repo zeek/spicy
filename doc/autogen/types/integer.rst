@@ -12,32 +12,49 @@
 
     Computes the bit-wise 'xor' of the two integers.
 
-.. spicy:operator:: integer::Cast int cast<int>(type<int>)
+.. spicy:operator:: integer::Cast enum cast<enum~{~~}>(uint)
 
-    Converts the value to another signed integer type, accepting any loss
+    Converts the value into an enum instance. The value does *not* need to
+    correspond to any of the target type's enumerator labels
+
+.. spicy:operator:: integer::Cast int cast<int>(int)
+
+    Converts the value into another signed integer type, accepting any
+    loss of information.
+
+.. spicy:operator:: integer::Cast int cast<int>(uint)
+
+    Converts the value into a signed integer type, accepting any loss of
+    information.
+
+.. spicy:operator:: integer::Cast interval cast<interval>(int)
+
+    Interprets the value as number of seconds.
+
+.. spicy:operator:: integer::Cast interval cast<interval>(uint)
+
+    Interprets the value as number of seconds.
+
+.. spicy:operator:: integer::Cast real cast<real>(int)
+
+    Converts the value into a real, accepting any loss of information.
+
+.. spicy:operator:: integer::Cast real cast<real>(uint)
+
+    Converts the value into a real, accepting any loss of information.
+
+.. spicy:operator:: integer::Cast time cast<time>(uint)
+
+    Interprets the value as number of seconds since the UNIX epoch.
+
+.. spicy:operator:: integer::Cast uint cast<uint>(int)
+
+    Converts the value into an unsigned integer type, accepting any loss
     of information.
 
-.. spicy:operator:: integer::Cast int cast<uint>(type<int>)
+.. spicy:operator:: integer::Cast uint cast<uint>(uint)
 
-    Converts the value to signed integer type, accepting any loss of
-    information.
-
-.. spicy:operator:: integer::Cast real cast<int>(type<real>)
-
-    Converts the value into a real, accepting any loss of information.
-
-.. spicy:operator:: integer::Cast real cast<uint>(type<real>)
-
-    Converts the value into a real, accepting any loss of information.
-
-.. spicy:operator:: integer::Cast uint cast<int>(type<uint>)
-
-    Converts the value to an unsigned integer type, accepting any loss of
-    information.
-
-.. spicy:operator:: integer::Cast uint cast<uint>(type<uint>)
-
-    Converts the value to another unsigned integer type, accepting any
+    Converts the value into another unsigned integer type, accepting any
     loss of information.
 
 .. spicy:operator:: integer::DecrPostfix int op: t:int op:--
@@ -56,13 +73,13 @@
 
     Increments the value, returning the new value.
 
-.. spicy:operator:: integer::Difference uint t:uint <sp> op:- <sp> t:uint
+.. spicy:operator:: integer::Difference int t:int <sp> op:- <sp> t:int
 
     Computes the difference between the two integers.
 
 .. spicy:operator:: integer::Difference uint t:uint <sp> op:- <sp> t:uint
 
-    Returns the difference between the two integers.
+    Computes the difference between the two integers.
 
 .. spicy:operator:: integer::DifferenceAssign int t:int <sp> op:+= <sp> t:int
 
@@ -71,6 +88,10 @@
 .. spicy:operator:: integer::DifferenceAssign uint t:uint <sp> op:+= <sp> t:uint
 
     Decrements the first value by the second.
+
+.. spicy:operator:: integer::Division int t:int <sp> op:/ <sp> t:int
+
+    Divides the first integer by the second.
 
 .. spicy:operator:: integer::Division uint t:uint <sp> op:/ <sp> t:uint
 
@@ -84,11 +105,23 @@
 
     Divides the first value by the second, assigning the new value.
 
+.. spicy:operator:: integer::Equal bool t:int <sp> op:== <sp> t:int
+
+    Compares the two integers.
+
 .. spicy:operator:: integer::Equal bool t:uint <sp> op:== <sp> t:uint
 
     Compares the two integers.
 
+.. spicy:operator:: integer::Greater bool t:int <sp> op:> <sp> t:int
+
+    Compares the two integers.
+
 .. spicy:operator:: integer::Greater bool t:uint <sp> op:> <sp> t:uint
+
+    Compares the two integers.
+
+.. spicy:operator:: integer::GreaterEqual bool t:int <sp> op:>= <sp> t:int
 
     Compares the two integers.
 
@@ -112,7 +145,15 @@
 
     Increments the value, returning the new value.
 
+.. spicy:operator:: integer::Lower bool t:int <sp> op:< <sp> t:int
+
+    Compares the two integers.
+
 .. spicy:operator:: integer::Lower bool t:uint <sp> op:< <sp> t:uint
+
+    Compares the two integers.
+
+.. spicy:operator:: integer::LowerEqual bool t:int <sp> op:<= <sp> t:int
 
     Compares the two integers.
 
@@ -120,9 +161,17 @@
 
     Compares the two integers.
 
+.. spicy:operator:: integer::Modulo int t:int <sp> op:% <sp> t:int
+
+    Computes the modulus of the first integer divided by the second.
+
 .. spicy:operator:: integer::Modulo uint t:uint <sp> op:% <sp> t:uint
 
     Computes the modulus of the first integer divided by the second.
+
+.. spicy:operator:: integer::Multiple int t:int <sp> op:* <sp> t:int
+
+    Multiplies the first integer by the second.
 
 .. spicy:operator:: integer::Multiple uint t:uint <sp> op:* <sp> t:uint
 
@@ -136,9 +185,13 @@
 
     Multiplies the first value by the second, assigning the new value.
 
-.. spicy:operator:: integer::Negate uint op:- t:uint op:
+.. spicy:operator:: integer::Negate uint op:~ t:uint op:
 
     Computes the bit-wise negation of the integer.
+
+.. spicy:operator:: integer::Power int t:int <sp> op:** <sp> t:int
+
+    Computes the first integer raised to the power of the second.
 
 .. spicy:operator:: integer::Power uint t:uint <sp> op:** <sp> t:uint
 
@@ -156,21 +209,25 @@
 
     Inverts the sign of the integer.
 
-.. spicy:operator:: integer::Sum uint t:uint <sp> op:+ <sp> t:uint
+.. spicy:operator:: integer::Sum int t:int <sp> op:+ <sp> t:int
 
     Computes the sum of the integers.
 
 .. spicy:operator:: integer::Sum uint t:uint <sp> op:+ <sp> t:uint
 
-    Returns the sum of the integers.
+    Computes the sum of the integers.
 
 .. spicy:operator:: integer::SumAssign int t:int <sp> op:+= <sp> t:int
 
-    Increments the first integer by the second, assigning the new value.
+    Increments the first integer by the second.
 
 .. spicy:operator:: integer::SumAssign uint t:uint <sp> op:+= <sp> t:uint
 
-    Increments the first value by the second.
+    Increments the first integer by the second.
+
+.. spicy:operator:: integer::Unequal bool t:int <sp> op:!= <sp> t:int
+
+    Compares the two integers.
 
 .. spicy:operator:: integer::Unequal bool t:uint <sp> op:!= <sp> t:uint
 

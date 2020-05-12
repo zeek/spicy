@@ -133,7 +133,37 @@ requires specifying the bitwidth of a type.
 
 .. include:: /autogen/types/integer.rst
 
-.. _type_map:
+.. _type_list:
+
+List
+----
+
+Spicy uses lists only in a limited form as temporary values, usually
+for initializing other containers. That means you can only create list
+constants, but you cannot declare variables or unit fields to have a
+``list`` type (use :ref:`vector <type_vector>` instead).
+
+.. rubric:: Constants
+
+- ``[E_1, E_2, ..., E_N]`` creates a list of ``N`` elements. The
+  values ``E_I`` must all have the same type. ``[]`` creates an empty
+  list of unknown element type.
+
+- ``[EXPR for ID in ITERABLE]`` creates a list by evaluating ``EXPR``
+  for all elements in ``ITERABLE``, assembling the individual results
+  into the final list value. The extended form ``[EXPR for ID in
+  SEQUENCE if COND]`` includes only elements into the result for which
+  ``COND`` evaluates to ``True``. Both ``EXPR`` and ``COND`` can use
+  ``ID`` to refer to the current element.
+
+- ``list(E_1, E_2, ..., E_N)`` is the same as ``[E_1, E_2, ...,
+  E_N]``, and ``list()`` is the same as ``[]``.
+
+- ``list<T>(E_1, E_2, ..., E_N)`` creates a list of type ``T``,
+  initializing it with the ``N`` elements ``E_I``. ``list<T>()``
+  creates an empty list.
+
+.. include:: /autogen/types/list.rst
 
 Map
 ---
@@ -203,7 +233,7 @@ Real
 Regular Expression
 ------------------
 
-Spicy's provide POSIX-style regular expressions.
+Spicy provides POSIX-style regular expressions.
 
 .. rubric:: Type
 
@@ -383,7 +413,36 @@ Unit
   label of a corresponding field in ``my_unit``'s type.
 
 .. include:: /autogen/types/unit.rst
-.. include:: /autogen/types/struct.rst
+
+.. These are copied and adapted from the corresponding struct
+.. operators. We have to hardcode them as we currently have no
+.. way to pull the struct operators over into the unit type
+.. automatically.
+
+.. rubric:: Operators
+
+.. spicy:operator:: unit::HasMember bool t:unit <sp> op:?. <sp> t:<field>
+
+    Returns true if the unit's field has a value assigned (not counting
+    any ``&default``).
+
+.. spicy:operator:: unit::Member <field~type> t:unit <sp> op:. <sp> t:<field>
+
+    Retrieves the value of a unit's field. If the field does not yet have
+    a value assigned, it returns its ``&default`` expression if that has
+    been defined; otherwise it triggers an exception.
+
+.. spicy:operator:: unit::TryMember <field~type> t:unit <sp> op:.? <sp> t:<field>
+
+    Retrieves the value of a unit's field. If the field does not yet have
+    a value assigned, it returns its ``&default`` expression if that has
+    been defined. Otherwise it triggers an exception, unless used in a
+    context that specfically allows for that situation (such as,
+    inside the Zeek plugin's `evt` files).
+
+.. spicy:operator:: unit::Unset void unset <sp> t:unit.<field>
+
+    Resets a field back to its original uninitalized state.
 
 .. _type_vector:
 
@@ -409,7 +468,7 @@ given element type. They provide iterators to traverse their content.
   initializing it with the ``N`` elements ``E_I``. ``vector<T>()`` creates
   an empty vector.
 
-- Vectors can be initialized through coercions from a list value:
+- Vectors can be initialized through coercion from a list value:
   ``vector<string> I = ["A", "B", "C"]``.
 
 .. include:: /autogen/types/vector.rst

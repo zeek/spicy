@@ -7,7 +7,7 @@
     connected). Note that a sink is automatically closed when the unit it
     is part of is done parsing. Also note that a previously connected
     parsing unit can *not* be reconnected; trying to do so will still
-    thrown a ``UnitAlreadyConnected`` exception.
+    throw a ``UnitAlreadyConnected`` exception.
 
 .. spicy:method:: sink::connect sink connect False void (u: strong_ref<unit>)
 
