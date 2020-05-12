@@ -12,6 +12,7 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 #include <initializer_list>
 #include <map>
 #include <memory>
@@ -73,20 +74,19 @@ public:
      * Returns the value for a given key, with an optional default if not foound.
      *
      * @param k key to retrieve
-     * @param default_ if given, a defautl to return if *k* is not part of the map.
-     *
+     * @param default_ if given, a defautl to return if *k* is not part of the
+     * map.
      * @throws `IndexError` if `k` is not part of the map and no default has
      * been given.
      */
-    const V& get(const K& k, std::optional<V> default_ = {}) const {
-        if ( const auto& i = this->find(k); i != this->end() )
-            return i->second;
-
-        if ( default_ )
-            return *default_;
-
-        throw IndexError("key does not exist");
+    const V& get(const K& k) const {
+        try {
+            return this->at(k);
+        } catch ( const std::out_of_range& ) {
+            throw IndexError("key is unset");
+        }
     }
+
     const V& operator[](const K& k) const { return static_cast<const M&>(*this)[k]; }
     V& operator[](const K& k) { return static_cast<M&>(*this)[k]; }
 
