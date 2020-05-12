@@ -1,4 +1,12 @@
 
+0.4.0-251 | 2020-05-12 10:33:24 +0000
+
+  * Redo implementation of `hilti::rt::Set`. (Benjamin Bannier, Corelight)
+
+    - Hide that `rt::Set` inherits from `std::set` from users.
+    - Make iterators of `rt::Set` safe.
+    - Add test of rt::Set stringification.
+
 0.4.0-245 | 2020-05-11 08:39:49 +0000
 
   * Redo implementation of `hilti::rt::Vector`. (Benjamin Bannier, Corelight)

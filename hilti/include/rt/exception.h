@@ -89,6 +89,9 @@ HILTI_EXCEPTION(UnhandledSwitchCase, RuntimeError)
 /** Thrown when a value is found to be outside of its permissible range. */
 HILTI_EXCEPTION(OutOfRange, RuntimeError)
 
+/** Exception flagging invalid arguments passed to a function. */
+HILTI_EXCEPTION(InvalidArgument, RuntimeError);
+
 /** Thrown when fmt() reports a problem. */
 class FormattingError : public RuntimeError {
 public:
