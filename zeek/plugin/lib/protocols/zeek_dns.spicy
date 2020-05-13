@@ -1,4 +1,6 @@
 # Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+#
+# Augment standard DNS grammar with Zeek-specific logic.
 
 module Zeek_DNS;
 

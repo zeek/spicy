@@ -1,12 +1,4 @@
 # Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
-#
-# TODO:
-#
-# - Continued headers
-# - decode URIs
-# - connection: keep-alive, close
-# - software versions
-# - partial content
 
 module HTTP;
 
@@ -179,20 +171,10 @@ type Body = unit(inout msg: Message, delivery_mode: DeliveryMode, is_request: bo
     }
 
 	on %done priority=15 {
-        # TODO: Does this FIXME still apply?
-        #
-	    # FIXME: Currently the sink becomes invalid after parsing for
-		# the current instance finished. That's not great. See
-		# ParserBuilder::_finalizeParseObject() to fix.
 		msg.body_len = |self.data|;
  		}
 
 	on %error priority=15 {
-        # TODO: Does this FIXME still apply?
-        #
-	    # FIXME: Currently the sink becomes invalid after parsing for
-		# the current instance finished. That's not great. See
-		# ParserBuilder::_finalizeParseObject() to fix.
 		msg.body_len = |self.data|;
  		}
 };
