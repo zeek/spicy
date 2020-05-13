@@ -22,7 +22,7 @@
 
     Returns the difference between the two values.
 
-.. spicy:operator:: real::DifferenceAssign real t:real <sp> op:+= <sp> t:real
+.. spicy:operator:: real::DifferenceAssign real t:real <sp> op:-= <sp> t:real
 
     Subtracts the second value from the first, assigning the new value.
 
@@ -30,7 +30,7 @@
 
     Divides the first value by the second.
 
-.. spicy:operator:: real::DivisionAssign real t:real <sp> op:+/ <sp> t:real
+.. spicy:operator:: real::DivisionAssign real t:real <sp> op:+= <sp> t:real
 
     Divides the first value by the second, assigning the new value.
 
