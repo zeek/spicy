@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <hilti/rt/fmt.h>
+#include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/map.h>
 
 #include <doctest/doctest.h>
@@ -16,6 +18,57 @@ TEST_CASE("get") {
 
     m[1] = 2;
     CHECK_EQ(m.get(1), 2);
+}
+
+TEST_CASE("subscript") {
+    SUBCASE("rvalue") {
+        using M = Map<int, int>;
+        CHECK_THROWS_WITH_AS(M()[99], "key is unset", const IndexError&);
+    }
+
+    SUBCASE("const lvalue") {
+        const Map<int, int> m;
+        CHECK_THROWS_WITH_AS(m[99], "key is unset", const IndexError&);
+    }
+
+    SUBCASE("mut lvalue") {
+        Map<int, int> m;
+
+        m[1] = 11;
+        CHECK(m.contains(1));
+        CHECK_EQ(m[1].operator int(), 11);
+        int m1 = m[1];
+        CHECK_EQ(m1, 11);
+        CHECK_THROWS_WITH_AS(m[99].operator int(), "key is unset", const IndexError&);
+
+        // Proxy objects perform lazy insertion.
+        auto p = m[2];
+        (void)p;
+        CHECK(! m.contains(2));
+
+        // Proxy objects stringify to the referenced value if it exists, and throw otherwise.
+        CHECK_EQ(to_string(m[1]), "11");
+        CHECK_THROWS_WITH_AS(to_string(m[2]), "key is unset", const IndexError&);
+
+        CHECK_EQ(fmt("%s", m[1]), "11");
+
+        // Proxy objects only invalidate iterators if an element was actually inserted.
+        m = Map<int, int>{{1, 11}};
+        REQUIRE(m.size());
+        auto begin = m.begin();
+        REQUIRE_EQ(begin->first, 1);
+        REQUIRE_EQ(begin->second, 11);
+
+        // Just modify existing entry.
+        m[1] = 111;
+        CHECK_EQ(begin->first, 1);
+        CHECK_EQ(begin->second, 111);
+
+        // Invalidating insertion of new entry.
+        m[2] = 22;
+        REQUIRE(m.contains(2));
+        CHECK_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
+    }
 }
 
 TEST_CASE("contains") {
