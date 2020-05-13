@@ -105,7 +105,6 @@ type CharacterString = unit(msg: Message) {
 type Name = unit(msg: Message) {
     : (Label(msg, self))[] &until=($$.len.offset == 0 || $$.len.compressed != 0);
 
-    # Parsed labels are appended here.
     var label: bytes = b"";
 };
 

@@ -81,11 +81,11 @@
 
     Computes the difference between the two integers.
 
-.. spicy:operator:: integer::DifferenceAssign int t:int <sp> op:+= <sp> t:int
+.. spicy:operator:: integer::DifferenceAssign int t:int <sp> op:-= <sp> t:int
 
     Decrements the first value by the second, assigning the new value.
 
-.. spicy:operator:: integer::DifferenceAssign uint t:uint <sp> op:+= <sp> t:uint
+.. spicy:operator:: integer::DifferenceAssign uint t:uint <sp> op:-= <sp> t:uint
 
     Decrements the first value by the second.
 
@@ -97,11 +97,11 @@
 
     Divides the first integer by the second.
 
-.. spicy:operator:: integer::DivisionAssign int t:int <sp> op:+/ <sp> t:int
+.. spicy:operator:: integer::DivisionAssign int t:int <sp> op:+= <sp> t:int
 
     Divides the first value by the second, assigning the new value.
 
-.. spicy:operator:: integer::DivisionAssign uint t:uint <sp> op:+/ <sp> t:uint
+.. spicy:operator:: integer::DivisionAssign uint t:uint <sp> op:+= <sp> t:uint
 
     Divides the first value by the second, assigning the new value.
 
