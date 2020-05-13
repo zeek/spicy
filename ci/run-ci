@@ -195,7 +195,10 @@ function run_build {
     (cd ${build} && ninja -j5) || exit 1
 
     log_stage "Building docs ..."
-    (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc html check) || exit 1
+    (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc html) || exit 1
+
+    log_stage "Checking docs ..."
+    (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc check) || true
 }
 
 function run_install {
