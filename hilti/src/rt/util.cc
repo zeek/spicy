@@ -3,6 +3,9 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+#include <cerrno>
+#include <cstring>
+
 #include <hilti/3rdparty/utf8proc/utf8proc.h>
 
 #include <hilti/rt/autogen/version.h>
@@ -12,6 +15,7 @@
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
+#include <hilti/rt/fmt.h>
 #include <hilti/rt/util.h>
 
 std::string hilti::rt::version() {
@@ -308,4 +312,25 @@ hilti::rt::ByteOrder hilti::rt::systemByteOrder() {
 #else
 #error Neither LITTLE_ENDIAN nor BIG_ENDIAN defined.
 #endif
+}
+
+std::string hilti::rt::strftime(const std::string& format, const hilti::rt::Time& time) {
+    auto seconds = static_cast<time_t>(time.seconds());
+
+    std::tm tm;
+
+    constexpr size_t size = 128;
+    char mbstr[size];
+
+    auto localtime = ::localtime_r(&seconds, &tm);
+    if ( ! localtime )
+        throw InvalidArgument(hilti::rt::fmt("cannot convert timestamp to local time: %s", std::strerror(errno)));
+
+
+    auto n = std::strftime(mbstr, size, format.c_str(), localtime);
+
+    if ( ! n )
+        throw InvalidArgument("could not format timestamp");
+
+    return mbstr;
 }
