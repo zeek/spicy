@@ -132,6 +132,17 @@ public:
     bool compile();
 
 private:
+    /**
+     * Extracts the next semicolon-terminated block from an input stream,
+     * accounting for special EVT constructs like strings and comments.
+     *
+     * @param in stream to read from
+     * @param lineno pointer to integer that will be increased with line breaks
+     * @return the read block of data, with comments removed, and empty if end of
+     * data has been reached; error will be set if parsing failed
+     */
+    hilti::Result<std::string> getNextEvtBlock(std::istream& in, int* lineno) const;
+
     // Parsers for parts from EVT files.
     glue::ProtocolAnalyzer parseProtocolAnalyzer(const std::string& chunk);
     glue::FileAnalyzer parseFileAnalyzer(const std::string& chunk);
