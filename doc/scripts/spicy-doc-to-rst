@@ -77,7 +77,7 @@ Operators = {
     "Difference": binary("-"),
     "DifferenceAssign": binary("-="),
     "Division": binary("/"),
-    "DivisionAssign": binary("+="),
+    "DivisionAssign": binary("/="),
     "Equal": binary("=="),
     "Greater": binary(">"),
     "GreaterEqual": binary(">="),

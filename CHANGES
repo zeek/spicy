@@ -1,4 +1,15 @@
 
+0.4.0-270 | 2020-05-14 07:00:54 +0000
+
+  * Clean up example code. (Robin Sommer, Corelight)
+
+  * Change structure of example section, and add more links. (Robin
+    Sommer, Corelight)
+
+  * Make autogen-docs script more robust. (Robin Sommer, Corelight)
+
+  * Fix documentation of -= and /= opertators. (Robin Sommer, Corelight)
+
 0.4.0-264 | 2020-05-13 14:18:08 +0000
 
   * Add an end-to-end TFTP analyzer for Zeek, it comes with a Zeek
