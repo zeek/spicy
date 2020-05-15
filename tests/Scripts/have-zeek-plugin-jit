@@ -1,0 +1,5 @@
+#! /bin/sh
+#
+# Returns success if we have comnpiled the Zeek plugin (1) at all, and (2) with with JIT suport.
+
+spicy-config --zeek-plugin-path >/dev/null && test $(spicy-config --zeek-jit-support) == "yes"

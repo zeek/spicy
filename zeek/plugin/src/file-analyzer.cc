@@ -7,6 +7,7 @@
 
 using namespace spicy::zeek;
 using namespace spicy::zeek::rt;
+using namespace plugin::Zeek_Spicy;
 
 FileAnalyzer::FileAnalyzer(RecordVal* args, file_analysis::File* file) : ::file_analysis::Analyzer(args, file) {
     cookie::FileAnalyzer cookie;
@@ -48,7 +49,7 @@ int FileAnalyzer::FeedChunk(int len, const u_char* data, bool eod) {
 
     if ( ! _parser ) {
         const auto& cookie = std::get<cookie::FileAnalyzer>(_cookie);
-        _parser = SpicyPlugin.parserForFileAnalyzer(cookie.analyzer->Tag());
+        _parser = OurPlugin->parserForFileAnalyzer(cookie.analyzer->Tag());
 
         if ( ! _parser ) {
             DebugMsg("no unit specificed for parsing");

@@ -14,8 +14,8 @@
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
-#include <hilti/rt/types/list_fwd.h>
 #include <hilti/rt/result.h>
+#include <hilti/rt/types/list_fwd.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector_fwd.h>

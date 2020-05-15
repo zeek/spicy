@@ -21,14 +21,21 @@ set(CMAKE_C_FLAGS ${save_c_flags})
 set(CMAKE_CXX_FLAGS ${save_cxx_flags})
 
 zeek_plugin_begin(Zeek Spicy)
+
 zeek_plugin_cc(src/file-analyzer.cc)
 zeek_plugin_cc(src/plugin.cc)
 zeek_plugin_cc(src/protocol-analyzer.cc)
 zeek_plugin_cc(src/runtime-support.cc)
 zeek_plugin_cc(src/zeek-reporter.cc)
+
+if ( ZEEK_HAVE_JIT )
+zeek_plugin_cc(src/plugin-jit.cc)
+endif ()
+
 zeek_plugin_bif(src/consts.bif)
 zeek_plugin_bif(src/events.bif)
 zeek_plugin_bif(src/functions.bif)
+
 zeek_plugin_dist_files(spicy/zeek.spicy)
 zeek_plugin_dist_files(spicy/zeek_rt.hlt)
 

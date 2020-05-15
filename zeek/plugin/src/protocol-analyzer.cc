@@ -7,6 +7,7 @@
 
 using namespace spicy::zeek;
 using namespace spicy::zeek::rt;
+using namespace plugin::Zeek_Spicy;
 
 ProtocolAnalyzer::ProtocolAnalyzer(::analyzer::Analyzer* analyzer) {
     static uint64_t analyzer_counter = 0;
@@ -69,7 +70,7 @@ int ProtocolAnalyzer::FeedChunk(bool is_orig, int len, const u_char* data, bool 
 
     if ( ! endp->parser ) {
         const auto& cookie = std::get<cookie::ProtocolAnalyzer>(endp->cookie);
-        endp->parser = SpicyPlugin.parserForProtocolAnalyzer(cookie.analyzer->GetAnalyzerTag(), is_orig);
+        endp->parser = OurPlugin->parserForProtocolAnalyzer(cookie.analyzer->GetAnalyzerTag(), is_orig);
 
         if ( ! endp->parser ) {
             DebugMsg(*endp, "no unit specificed for parsing");

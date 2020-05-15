@@ -10,43 +10,17 @@
 // Spicy headers
 #include <hilti/rt/types/port.h>
 
-// Zeek plugin headers
-#ifdef ZEEK_HAVE_JIT
-#include <compiler/driver.h>
-#endif
-
 namespace spicy::rt {
 struct Parser;
 }
 
 namespace plugin::Zeek_Spicy {
 
-class Plugin;
-
-#ifdef ZEEK_HAVE_JIT
-/** Customized Spicy-to-Zeek Driver class that the plugin employs. */
-class Driver : public spicy::zeek::Driver {
-public:
-    using spicy::zeek::Driver::Driver;
-
-protected:
-    /** Overidden from driver class. */
-    void hookAddInput(const std::filesystem::path& path) override;
-    void hookAddInput(const hilti::Module& m, const std::filesystem::path& path) override;
-
-    /** Overidden from driver class. */
-    void hookNewEnumType(const spicy::zeek::EnumInfo& e) override;
-
-private:
-    friend class Plugin;
-    void _initialize();
-
-    bool _initialized = false;
-    std::vector<std::filesystem::path> _import_paths;
-};
-#endif
-
-/** Dynamic Zeek plugin. */
+/**
+ * Dynamic Zeek plugin. This class does not implement any JIT compilation.
+ * For that, we have a separate PluginJIT that derives from this one.
+ *
+ */
 class Plugin : public ::plugin::Plugin {
 public:
     Plugin();
@@ -139,7 +113,7 @@ protected:
      * @param paths The directories to search. Multiple directories can be
      * given at once by separating them with a colon.
      */
-    void addLibraryPaths(const std::string& dirs);
+    virtual void addLibraryPaths(const std::string& dirs);
 
     // Overriding method from Zeek's plugin API.
     plugin::Configuration Configure() override;
@@ -157,12 +131,6 @@ protected:
     int HookLoadFile(const LoadType type, const std::string& file, const std::string& resolved) override;
 
 private:
-#ifdef ZEEK_HAVE_JIT
-    void _compile();
-#endif
-
-    void _execute();
-
     /** Captures a registered protocol analyzer. */
     struct ProtocolAnalyzerInfo {
         // Filled in when registering the analyzer.
@@ -194,11 +162,13 @@ private:
 
     std::vector<ProtocolAnalyzerInfo> _protocol_analyzers_by_subtype;
     std::vector<FileAnalyzerInfo> _file_analyzers_by_subtype;
-
-#ifdef ZEEK_HAVE_JIT
-    std::unique_ptr<Driver> _driver;
-#endif
 };
+
+// Will be initalized to point to whatever type of plugin is instantiated.
+extern Plugin* OurPlugin;
+
 } // namespace plugin::Zeek_Spicy
 
+#ifndef ZEEK_HAVE_JIT
 extern plugin::Zeek_Spicy::Plugin SpicyPlugin;
+#endif
