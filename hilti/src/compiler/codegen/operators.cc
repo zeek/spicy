@@ -307,15 +307,15 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::map::Get& n) {
         auto [self, args] = methodArguments(n);
 
-        std::string x = args[0];
+        std::string k = args[0];
         ;
 
-        if ( auto default_ = optionalArgument(args, 1); ! default_.empty() ) {
-            x += ", ";
-            x += default_;
-        }
-
-        return fmt("%s.get(%s)", self, x);
+        if ( auto default_ = optionalArgument(args, 1); ! default_.empty() )
+            return fmt(
+                "[](auto&& m, auto&& k, auto&& default_) { return m.contains(k)? m.get(k) : default_; }(%s, %s, %s)",
+                self, k, default_);
+        else
+            return fmt("%s.get(%s)", self, k);
     }
 
     result_t operator()(const operator_::map::Clear& n) {

@@ -1,4 +1,18 @@
 
+0.4.0-280 | 2020-05-15 07:11:01 +0000
+
+  * Rework implementation of `hilti::rt::Map`. (Benjamin Bannier, Corelight)
+
+    - Hide that `rt::Map` inherits from `std::map` from users.
+    - Make iterators of `rt::Mao` safe.
+    - Slim down `AssignProxy`.
+    - Fix `rt::Map::get`.
+    - Add test for `rt::Map` stringification.
+
+  * Fix display of compiler flags in JIT debug log. (Benjamin Bannier, Corelight)
+
+  * Document using Docker Hub images. (Benjamin Bannier, Corelight)
+
 0.4.0-270 | 2020-05-14 07:00:54 +0000
 
   * Clean up example code. (Robin Sommer, Corelight)

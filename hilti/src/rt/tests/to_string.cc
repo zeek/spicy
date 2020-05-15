@@ -5,7 +5,9 @@
 #include <cstdint>
 
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/map.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/vector.h>
 
@@ -57,6 +59,13 @@ TEST_CASE("Set") {
     CHECK_EQ(to_string(Set<int>()), "{}");
     CHECK_EQ(to_string(Set<int>({1})), "{1}");
     CHECK_EQ(to_string(Set<int>({1, 2, 3})), "{1, 2, 3}");
+}
+
+TEST_CASE("Map") {
+    CHECK_EQ(to_string(map::Empty()), "{}");
+    CHECK_EQ(to_string(Map<int, int>()), "{}");
+    CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}})), "{1: b\"abc\"}");
+    CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}, {2, "def"_b}})), "{1: b\"abc\", 2: b\"def\"}");
 }
 
 TEST_SUITE_END();
