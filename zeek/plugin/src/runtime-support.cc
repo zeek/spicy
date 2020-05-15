@@ -121,11 +121,11 @@ void rt::debug(const Cookie& cookie, const std::string_view& msg) {
     if ( const auto p = std::get_if<cookie::ProtocolAnalyzer>(&cookie) ) {
         auto name = p->analyzer->GetAnalyzerName();
         ZEEK_DEBUG(
-            util::fmt("[%s/%" PRIu32 "/%s] %s", name, p->analyzer->GetID(), (p->is_orig ? "orig" : "resp"), msg));
+            hilti::rt::fmt("[%s/%" PRIu32 "/%s] %s", name, p->analyzer->GetID(), (p->is_orig ? "orig" : "resp"), msg));
     }
     else if ( const auto f = std::get_if<cookie::FileAnalyzer>(&cookie) ) {
         auto name = ::file_mgr->GetComponentName(f->analyzer->Tag());
-        ZEEK_DEBUG(util::fmt("[%s/%" PRIu32 "] %s", name, f->analyzer->GetID(), msg));
+        ZEEK_DEBUG(hilti::rt::fmt("[%s/%" PRIu32 "] %s", name, f->analyzer->GetID(), msg));
     }
     else
         throw ValueUnavailable("neither $conn nor $file available for debug logging");
@@ -197,7 +197,7 @@ void rt::reject_protocol(const std::string& reason) {
 }
 
 static string _file_id(const rt::cookie::ProtocolAnalyzer& c) {
-    auto id = util::fmt("%" PRIu64 ".%" PRIu64 ".%d", c.analyzer_id, c.file_id, (int)c.is_orig);
+    auto id = hilti::rt::fmt("%" PRIu64 ".%" PRIu64 ".%d", c.analyzer_id, c.file_id, (int)c.is_orig);
     return ::file_mgr->HashHandle(id);
 }
 

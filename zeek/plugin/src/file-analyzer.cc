@@ -26,9 +26,9 @@ void FileAnalyzer::Done() {
 inline void FileAnalyzer::DebugMsg(const std::string_view& msg, int len, const u_char* data, bool eod) {
 #ifdef ZEEK_DEBUG_BUILD
     if ( data ) { // NOLINT(bugprone-branch-clone) pylint believes the two branches are the same
-        zeek::rt::debug(_cookie, util::fmt("%s: |%s%s| (eod=%s)", msg,
-                                           fmt_bytes(reinterpret_cast<const char*>(data), min(40, len)),
-                                           len > 40 ? "..." : "", (eod ? "true" : "false")));
+        zeek::rt::debug(_cookie, hilti::rt::fmt("%s: |%s%s| (eod=%s)", msg,
+                                                fmt_bytes(reinterpret_cast<const char*>(data), min(40, len)),
+                                                len > 40 ? "..." : "", (eod ? "true" : "false")));
     }
 
     else
@@ -104,7 +104,7 @@ int FileAnalyzer::FeedChunk(int len, const u_char* data, bool eod) {
         std::string s = "Spicy parse error: " + e.description();
 
         if ( e.location().size() )
-            s += util::fmt("%s (%s)", s, e.location());
+            s += hilti::rt::fmt("%s (%s)", s, e.location());
 
         DebugMsg(s.c_str());
         reporter::weird(cookie.analyzer->GetFile(), s);
@@ -120,7 +120,7 @@ int FileAnalyzer::FeedChunk(int len, const u_char* data, bool eod) {
 
         std::string msg_dbg = msg_zeek;
         if ( e.location().size() )
-            msg_dbg += util::fmt("%s (%s)", msg_dbg, e.location());
+            msg_dbg += hilti::rt::fmt("%s (%s)", msg_dbg, e.location());
 
         DebugMsg(msg_dbg);
         reporter::analyzerError(cookie.analyzer, msg_zeek,
@@ -153,7 +153,7 @@ bool FileAnalyzer::DeliverStream(const u_char* data, uint64_t len) {
     int rc = FeedChunk(len, data, false);
 
     if ( rc >= 0 ) {
-        DebugMsg(::util::fmt("parsing %s, skipping further file data", (rc > 0 ? "finished" : "failed")));
+        DebugMsg(::hilti::rt::fmt("parsing %s, skipping further file data", (rc > 0 ? "finished" : "failed")));
         _skip = true;
         return false;
     }

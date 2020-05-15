@@ -10,7 +10,6 @@
 #include <string>
 
 #include <hilti/rt/exception.h>
-#include <hilti/rt/util.h>
 
 namespace hilti::rt {
 

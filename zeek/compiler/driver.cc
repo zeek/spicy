@@ -20,8 +20,6 @@
 using namespace spicy::zeek;
 using Driver = spicy::zeek::Driver;
 
-const hilti::logging::DebugStream spicy::zeek::debug::ZeekPlugin("zeek");
-
 /** Visitor to extract unit information from an HILTI AST before it's compiled. */
 struct VisitorPreCompilation : public hilti::visitor::PreOrder<void, VisitorPreCompilation> {
     explicit VisitorPreCompilation(Driver* driver, hilti::ID module, std::filesystem::path path)

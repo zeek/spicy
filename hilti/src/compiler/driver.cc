@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <getopt.h>
 
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <utility>
@@ -466,8 +467,12 @@ Result<Nothing> Driver::addInput(const std::filesystem::path& path) {
     else if ( path.extension() == ".hlto" ) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
 
-        if ( auto load = Library(path).open(); ! load )
-            return error(util::fmt("could not load library file %s: %s", path, load.error()));
+        try {
+            if ( auto load = Library(path).open(); ! load )
+                return error(util::fmt("could not load library file %s: %s", path, load.error()));
+        } catch ( const std::runtime_error& e ) {
+            hilti::rt::fatalError(e.what());
+        }
 
         return Nothing();
     }

@@ -11,7 +11,9 @@
 #include <hilti/rt/types/port.h>
 
 // Zeek plugin headers
+#ifdef HILTI_HAVE_JIT
 #include <compiler/driver.h>
+#endif
 
 namespace spicy::rt {
 struct Parser;
@@ -21,6 +23,7 @@ namespace plugin::Zeek_Spicy {
 
 class Plugin;
 
+#ifdef HILTI_HAVE_JIT
 /** Customized Spicy-to-Zeek Driver class that the plugin employs. */
 class Driver : public spicy::zeek::Driver {
 public:
@@ -41,6 +44,7 @@ private:
     bool _initialized = false;
     std::vector<std::filesystem::path> _import_paths;
 };
+#endif
 
 /** Dynamic Zeek plugin. */
 class Plugin : public ::plugin::Plugin {
@@ -153,7 +157,11 @@ protected:
     int HookLoadFile(const LoadType type, const std::string& file, const std::string& resolved) override;
 
 private:
+#ifdef HILTI_HAVE_JIT
     void _compile();
+#endif
+
+    void _execute();
 
     /** Captures a registered protocol analyzer. */
     struct ProtocolAnalyzerInfo {
@@ -184,9 +192,12 @@ private:
         const spicy::rt::Parser* parser;
     };
 
-    std::unique_ptr<Driver> _driver;
     std::vector<ProtocolAnalyzerInfo> _protocol_analyzers_by_subtype;
     std::vector<FileAnalyzerInfo> _file_analyzers_by_subtype;
+
+#ifdef HILTI_HAVE_JIT
+    std::unique_ptr<Driver> _driver;
+#endif
 };
 } // namespace plugin::Zeek_Spicy
 

@@ -48,8 +48,17 @@ else ()
 endif ()
 
 target_include_directories(${_plugin_lib} PRIVATE include)
-target_link_libraries(${_plugin_lib} zeek-compiler)
-target_link_libraries(${_plugin_lib} spicy $<IF:$<CONFIG:Debug>,spicy-rt-debug,spicy-rt>)
+
+# For JIT support.
+target_link_libraries(${_plugin_lib} $<$<BOOL:${HILTI_HAVE_JIT}>:zeek-compiler>)
+target_link_libraries(${_plugin_lib} $<$<BOOL:${HILTI_HAVE_JIT}>:spicy>)
+
+target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
+target_link_libraries(${_plugin_lib} std::filesystem ${CMAKE_DL_LIBS})
+
+# Create an alias for the plugin target.
+add_custom_target(zeek-plugin DEPENDS ${_plugin_lib})
 
 set(AUTOGEN_H  "${CMAKE_CURRENT_BINARY_DIR}/zeek-spicy/autogen")
 file(MAKE_DIRECTORY ${AUTOGEN_H})

@@ -13,6 +13,6 @@ using NoResult = hilti::rt::result::NoResult;
 template<typename T>
 using Result = hilti::rt::Result<T>;
 
-struct Nothing {};
+using Nothing = hilti::rt::Nothing;
 
 } // namespace hilti

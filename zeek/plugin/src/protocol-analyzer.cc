@@ -40,9 +40,9 @@ inline void ProtocolAnalyzer::DebugMsg(const ProtocolAnalyzer::Endpoint& endp, c
                                        const u_char* data, bool eod) {
 #ifdef ZEEK_DEBUG_BUILD
     if ( data ) { // NOLINT(bugprone-branch-clone) pylint believes the two branches are the same
-        zeek::rt::debug(endp.cookie, util::fmt("%s: |%s%s| (eod=%s)", msg,
-                                               fmt_bytes(reinterpret_cast<const char*>(data), min(40, len)),
-                                               len > 40 ? "..." : "", (eod ? "true" : "false")));
+        zeek::rt::debug(endp.cookie, hilti::rt::fmt("%s: |%s%s| (eod=%s)", msg,
+                                                    fmt_bytes(reinterpret_cast<const char*>(data), min(40, len)),
+                                                    len > 40 ? "..." : "", (eod ? "true" : "false")));
     }
 
     else
@@ -126,7 +126,7 @@ int ProtocolAnalyzer::FeedChunk(bool is_orig, int len, const u_char* data, bool 
         std::string s = "Spicy parse error: " + e.description();
 
         if ( e.location().size() )
-            s += util::fmt("%s (%s)", s, e.location());
+            s += hilti::rt::fmt("%s (%s)", s, e.location());
 
         DebugMsg(*endp, s.c_str());
         reporter::weird(cookie.analyzer->Conn(), s);
@@ -142,7 +142,7 @@ int ProtocolAnalyzer::FeedChunk(bool is_orig, int len, const u_char* data, bool 
 
         std::string msg_dbg = msg_zeek;
         if ( e.location().size() )
-            msg_dbg += util::fmt("%s (%s)", msg_dbg, e.location());
+            msg_dbg += hilti::rt::fmt("%s (%s)", msg_dbg, e.location());
 
         DebugMsg(*endp, msg_dbg);
         reporter::analyzerError(cookie.analyzer, msg_zeek,
@@ -218,13 +218,13 @@ void TCP_Analyzer::DeliverStream(int len, const u_char* data, bool is_orig) {
 
     if ( rc >= 0 ) {
         if ( is_orig ) {
-            DebugMsg(is_orig,
-                     ::util::fmt("parsing %s, skipping further originator payload", (rc > 0 ? "finished" : "failed")));
+            DebugMsg(is_orig, ::hilti::rt::fmt("parsing %s, skipping further originator payload",
+                                               (rc > 0 ? "finished" : "failed")));
             skip_orig = true;
         }
         else {
-            DebugMsg(is_orig,
-                     ::util::fmt("parsing %s, skipping further responder payload", (rc > 0 ? "finished" : "failed")));
+            DebugMsg(is_orig, ::hilti::rt::fmt("parsing %s, skipping further responder payload",
+                                               (rc > 0 ? "finished" : "failed")));
             skip_resp = true;
         }
 
