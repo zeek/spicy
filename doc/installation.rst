@@ -121,8 +121,25 @@ Install `Docker Desktop for Mac
     tab and then use the slider to select 8 GB of RAM. Docker Desktop will
     restart and then you will be ready to go.
 
-Build Your Spicy Container
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using Pre-built Docker Images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We provide Docker images with nightly Spicy builds for the following platforms:
+
+* `ubuntu-19.10 <https://hub.docker.com/repository/docker/zeekurity/spicy-ubuntu-19.10>`__
+* `centos-8 <https://hub.docker.com/repository/docker/zeekurity/spicy-centos-8>`__
+* `alpine-3.11 <https://hub.docker.com/repository/docker/zeekurity/spicy-alpine-3.11>`__
+
+To run the image execute the command for the desired platform::
+
+    docker run -it zeekurity/spicy-ubuntu-19.10:latest
+    docker run -it zeekurity/spicy-centos-8:latest
+    docker run -it zeekurity/spicy-alpine-3.11:latest
+
+Spicy is installed in `/opt/spicy`.
+
+Build Your Own Spicy Container
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can build your Spicy container from one of the Docker files coming
 with Spicy: Go into Spicy's ``docker`` directory and run ``make`` to
