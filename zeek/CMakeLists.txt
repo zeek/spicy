@@ -2,7 +2,7 @@
 
 add_subdirectory(plugin)
 
-if ( HILTI_HAVE_JIT )
+if ( ZEEK_HAVE_JIT )
 add_subdirectory(compiler)
 endif()
 

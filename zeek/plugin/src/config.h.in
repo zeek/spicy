@@ -2,6 +2,8 @@
 
 namespace spicy::zeek::configuration {
 
+#cmakedefine ZEEK_HAVE_JIT
+
 inline const auto CxxZeekIncludeDirectory = "${ZEEK_INCLUDE_DIR}";
 
 inline const auto CxxRuntimeIncludeDirectoryBuild = "${CMAKE_CURRENT_SOURCE_DIR}/include";

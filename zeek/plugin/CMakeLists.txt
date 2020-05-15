@@ -50,8 +50,8 @@ endif ()
 target_include_directories(${_plugin_lib} PRIVATE include)
 
 # For JIT support.
-target_link_libraries(${_plugin_lib} $<$<BOOL:${HILTI_HAVE_JIT}>:zeek-compiler>)
-target_link_libraries(${_plugin_lib} $<$<BOOL:${HILTI_HAVE_JIT}>:spicy>)
+target_link_libraries(${_plugin_lib} $<$<BOOL:${ZEEK_HAVE_JIT}>:zeek-compiler>)
+target_link_libraries(${_plugin_lib} $<$<BOOL:${ZEEK_HAVE_JIT}>:spicy>)
 
 target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)

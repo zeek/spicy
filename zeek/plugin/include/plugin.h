@@ -11,7 +11,7 @@
 #include <hilti/rt/types/port.h>
 
 // Zeek plugin headers
-#ifdef HILTI_HAVE_JIT
+#ifdef ZEEK_HAVE_JIT
 #include <compiler/driver.h>
 #endif
 
@@ -23,7 +23,7 @@ namespace plugin::Zeek_Spicy {
 
 class Plugin;
 
-#ifdef HILTI_HAVE_JIT
+#ifdef ZEEK_HAVE_JIT
 /** Customized Spicy-to-Zeek Driver class that the plugin employs. */
 class Driver : public spicy::zeek::Driver {
 public:
@@ -157,7 +157,7 @@ protected:
     int HookLoadFile(const LoadType type, const std::string& file, const std::string& resolved) override;
 
 private:
-#ifdef HILTI_HAVE_JIT
+#ifdef ZEEK_HAVE_JIT
     void _compile();
 #endif
 
@@ -195,7 +195,7 @@ private:
     std::vector<ProtocolAnalyzerInfo> _protocol_analyzers_by_subtype;
     std::vector<FileAnalyzerInfo> _file_analyzers_by_subtype;
 
-#ifdef HILTI_HAVE_JIT
+#ifdef ZEEK_HAVE_JIT
     std::unique_ptr<Driver> _driver;
 #endif
 };
