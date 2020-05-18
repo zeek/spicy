@@ -244,7 +244,8 @@ hilti::Result<std::string> GlueCompiler::getNextEvtBlock(std::istream& in, int* 
 
     while ( true ) {
         char cur;
-        if ( in.get(cur) ) {
+        in.get(cur);
+        if ( in.eof() ) {
             chunk = util::trim(std::move(chunk));
             if ( chunk.empty() )
                 // Legitimate end of data.
