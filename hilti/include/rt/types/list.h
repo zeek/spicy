@@ -173,7 +173,17 @@ inline std::ostream& operator<<(std::ostream& out, const list::ConstIterator<T>&
 
 } // namespace list
 
-/** HILTI's `List` is just strong typedef for `std::list`. */
+/** HILTI's `List` is a `std::list`-like type with additional safety guarantees.
+ *
+ * In particular it guarantees that
+ *
+ * - iterators cannot go out of bounds
+ * - iterators remain valid as long as the underlying data is around; unsafe
+ *   access is caught at runtime
+ *
+ * If not otherwise specified, member functions have the semantics of
+ * `sts::list` member functions.
+ */
 template<typename T>
 class List : protected std::list<T> {
 public:
