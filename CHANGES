@@ -1,4 +1,9 @@
 
+0.4.0-282 | 2020-05-18 08:28:08 +0000
+
+  * GH-312: Fix comment parsing in EVT files. (Robin Sommer,
+    Corelight)
+
 0.4.0-280 | 2020-05-15 07:11:01 +0000
 
   * Rework implementation of `hilti::rt::Map`. (Benjamin Bannier, Corelight)

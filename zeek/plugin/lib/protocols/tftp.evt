@@ -1,6 +1,6 @@
 protocol analyzer spicy::TFTP over UDP:
-    parse with TFTP::Message,
-    port 69/udp;
+    parse with TFTP::Message,   # entry point for parsing TFTP payload
+    port 69/udp;                # use analyzer for sessions on UDP port 69
 
 import TFTP;
 
