@@ -2,6 +2,8 @@
 
 #include <hilti/rt/util.h>
 
+#include <zeek-spicy/autogen/config.h>
+
 // Zeek includes
 #if ZEEK_DEBUG_BUILD
 #define DEBUG

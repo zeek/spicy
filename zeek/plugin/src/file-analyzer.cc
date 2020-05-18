@@ -1,5 +1,6 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <zeek-spicy/autogen/config.h>
 #include <zeek-spicy/file-analyzer.h>
 #include <zeek-spicy/plugin.h>
 #include <zeek-spicy/runtime-support.h>
@@ -25,7 +26,7 @@ void FileAnalyzer::Done() {
 }
 
 inline void FileAnalyzer::DebugMsg(const std::string_view& msg, int len, const u_char* data, bool eod) {
-#ifdef ZEEK_DEBUG_BUILD
+#if ZEEK_DEBUG_BUILD
     if ( data ) { // NOLINT(bugprone-branch-clone) pylint believes the two branches are the same
         zeek::rt::debug(_cookie, hilti::rt::fmt("%s: |%s%s| (eod=%s)", msg,
                                                 fmt_bytes(reinterpret_cast<const char*>(data), min(40, len)),

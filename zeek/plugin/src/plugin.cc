@@ -3,14 +3,14 @@
 #include <dlfcn.h>
 #include <exception>
 
-#include <zeek-spicy/autogen/config.h>
-
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/types/vector.h>
 #include <spicy/rt/init.h>
 #include <spicy/rt/parser.h>
+
+#include <zeek-spicy/autogen/config.h>
 
 // Zeek includes
 #if ZEEK_DEBUG_BUILD

@@ -2,9 +2,9 @@
 
 #include <dlfcn.h>
 
-#include <zeek-spicy/autogen/config.h>
-
 #include <spicy/rt/parser.h>
+
+#include <zeek-spicy/autogen/config.h>
 
 // Zeek includes
 #if ZEEK_DEBUG_BUILD
@@ -50,15 +50,6 @@ void plugin::Zeek_Spicy::Driver::_initialize() {
         return;
 
     ZEEK_DEBUG("Initializing driver");
-
-#if ZEEK_DEBUG_BUILD
-    // Setting ZEEK_DEBUG_BUILD when Zeek was compiled in debug mode. The
-    // runtime headers use that to, in turn, set DEBUG when including Zeek
-    // headers.
-    auto& config = hilti::configuration();
-    config.runtime_cxx_flags_debug.emplace_back("-DZEEK_DEBUG_BUILD");
-    config.runtime_cxx_flags_release.emplace_back("-DZEEK_DEBUG_BUILD");
-#endif
 
     // Initialize HILTI compiler options. We dont't use the `BifConst::*`
     // constants here as they may not have been initialized yet.

@@ -13,7 +13,8 @@
 #include <hilti/ast/location.h>
 #include <hilti/base/util.h>
 
-#include "debug.h"
+#include <compiler/debug.h>
+
 #include "plugin.h"
 
 class Connection; // From Zeek.

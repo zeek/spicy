@@ -48,7 +48,6 @@ set(BRO_PLUGIN_BRO_PLUGIN_INSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/zeek-install
 zeek_plugin_end()
 
 if ( ZEEK_DEBUG_BUILD )
-    target_compile_definitions(${_plugin_lib} PRIVATE "ZEEK_DEBUG_BUILD")
     set(ZEEK_DEBUG_BUILD_CXX "true") # Prettify output
 else ()
     set(ZEEK_DEBUG_BUILD_CXX "false")
