@@ -447,11 +447,6 @@ Result<Nothing> ClangJIT::Implementation::jit() {
 
         shared_library.emplace(std::move(*library));
 
-        // Load the created library.
-        if ( auto load = shared_library->open(); ! load ) {
-            return load.error();
-        }
-
         if ( dump_code ) {
             constexpr char id[] = "__LINKED__";
             std::string path = std::string("dbg.") + id + SHARED_LIBRARY_EXTENSION;

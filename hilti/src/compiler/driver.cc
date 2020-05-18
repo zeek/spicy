@@ -655,14 +655,23 @@ Result<Nothing> Driver::compile() {
         if ( auto rc = jitUnits(); ! rc )
             return rc;
 
-        if ( ! _driver_options.output_path.empty() ) {
-            // Save code to disk rather than execute.
-            HILTI_DEBUG(logging::debug::Driver, fmt("saving precompiled code to %s", _driver_options.output_path));
+        assert(_jit);
+        auto library = _jit->retrieveLibrary();
 
-            assert(_jit);
-            auto library = _jit->retrieveLibrary();
+        if ( _driver_options.output_path.empty() ) {
+            // Ok if not available.
+            if ( library ) {
+                if ( auto loaded = library->get().open(); ! loaded )
+                    return loaded.error();
+            }
+        }
+        else {
+            // Save code to disk rather than execute.
             if ( ! library )
+                // We don't have any code.
                 return library.error();
+
+            HILTI_DEBUG(logging::debug::Driver, fmt("saving precompiled code to %s", _driver_options.output_path));
 
             if ( auto success = library->get().save(_driver_options.output_path); ! success )
                 return result::Error(

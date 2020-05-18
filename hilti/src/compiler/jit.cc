@@ -124,6 +124,9 @@ Result<std::reference_wrapper<const Library>> JIT::retrieveLibrary() const {
         return result::Error("no JIT object code available");
     }
 
+    if ( ! _jit->retrieveLibrary() )
+        return result::Error("no library available");
+
     return *_jit->retrieveLibrary();
 }
 
