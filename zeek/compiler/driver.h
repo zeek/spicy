@@ -34,7 +34,7 @@ struct EnumInfo {
 class Driver : public hilti::Driver {
 public:
     /** Constructor. */
-    Driver(const std::string& argv0);
+    Driver(const std::string& argv0 = "");
 
     /** Destructor. */
     ~Driver();

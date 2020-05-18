@@ -300,11 +300,11 @@ while to start up. That's of course because we're compiling C++ code
 in the background again before any packet processing can even begin.
 To accelerate the startup, we can once more precompile our analyzer
 similar to what we did before with ``spicyc``. We'll use a different
-tool for that here, though: ``spicyz`` is a small shell wrapper around
-Zeek itself that activates a dedicated precompilation mode for the
-Spicy plugin. We give ``spicyz`` (1) an output ``*.hlto`` file to
-write the compiled analyzer into; and (2) the ``*.spicy`` and
-``*.evt`` inputs that we handed to Zeek above::
+tool here, though: ``spicyz`` is a small standalone application for
+precompiling analyzers for the Spicy plugin to later load. We give
+``spicyz`` (1) the ``*.spicy`` and ``*.evt`` inputs that we handed to
+Zeek above; and (2) an output ``*.hlto`` file to write the compiled
+analyzer into:
 
     # spicyz -o my-http-analyzer.hlto my-http.spicy my-http.evt
     # zeek -Cr request-line.pcap my-http-analyzer.hlto my-http.zeek
