@@ -274,6 +274,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/set.cc
                src/rt/tests/stream.cc
                src/rt/tests/to_string.cc
+               src/rt/tests/util.cc
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_link_libraries(hilti-rt-tests PRIVATE hilti-rt doctest)

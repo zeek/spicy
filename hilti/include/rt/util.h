@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cxxabi.h>
+
 #include <list>
 #include <memory>
 #include <set>
@@ -14,6 +15,7 @@
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/types/set_fwd.h>
+#include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector_fwd.h>
 
 #ifdef CXX_FILESYSTEM_IS_EXPERIMENTAL
@@ -486,5 +488,19 @@ enum class ByteOrder { Little, Big, Network, Host, Undef = -1 };
  * either `ByteOrder::Little` or `ByteOrder::Big`.
  */
 extern ByteOrder systemByteOrder();
+
+/** Formats a time according to user-specified format string.
+ *
+ * This function uses the currently active locale and timezone to format
+ * values. Formatted strings cannot exceed 128 bytes.
+ *
+ * @param format a POSIX-conformant format string, see
+ *        https://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html
+ *        for the available format specifiers
+ * @param time timestamp to format
+ * @return formatted timestamp
+ * @throw `InvalidArgument` if the timestamp could not be formatted
+ */
+std::string strftime(const std::string& format, const Time& time);
 
 } // namespace hilti::rt
