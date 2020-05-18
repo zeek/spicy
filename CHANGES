@@ -1,4 +1,10 @@
 
+0.4.0-286 | 2020-05-18 10:38:44 +0000
+
+  * Remove FAQ pointer from README. (Robin Sommer, Corelight)
+
+  * Fix bug in EVT reading. (Robin Sommer, Corelight)
+
 0.4.0-284 | 2020-05-18 08:29:49 +0000
 
   * GH-237: Add library function `spicy::strftime`. (Benjamin Bannier,
