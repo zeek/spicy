@@ -744,11 +744,16 @@ Result<Nothing> Driver::outputUnits() {
     for ( auto& unit : _hlts ) {
         if ( auto cxx = unit.cxxCode() ) {
             if ( _driver_options.output_cxx ) {
-                auto output = openOutput(output_path, false);
+                auto cxx_path = output_path;
+
+                if ( _driver_options.output_cxx_prefix.size() )
+                    cxx_path = fmt("%s_%s.cc", _driver_options.output_cxx_prefix, cxx->id());
+
+                auto output = openOutput(cxx_path, false);
                 if ( ! output )
                     return output.error();
 
-                HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", unit.id(), output_path));
+                HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", unit.id(), cxx_path));
                 cxx->save(*output);
             }
 
