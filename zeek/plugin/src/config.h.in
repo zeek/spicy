@@ -17,4 +17,8 @@ inline const auto CxxRuntimeIncludeDirectoryInstallation = "${PLUGIN_INSTALL_DIR
 inline const auto CxxAutogenIncludeDirectoryBuild = "${CMAKE_CURRENT_BINARY_DIR}";
 
 inline const auto CxxBrokerIncludeDirectory = "${BROKER_INCLUDE_DIR}";
+
+inline const auto PluginLibraryDirectoryBuild = "${CMAKE_CURRENT_SOURCE_DIR}/spicy";
+inline const auto PluginLibraryDirectoryInstallation = "${PLUGIN_INSTALL_DIR}/spicy";
+
 }

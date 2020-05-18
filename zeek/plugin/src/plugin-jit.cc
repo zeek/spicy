@@ -60,8 +60,10 @@ void plugin::Zeek_Spicy::Driver::_initialize() {
     hilti_options.cxx_include_paths = {spicy::zeek::configuration::CxxZeekIncludeDirectory,
                                        spicy::zeek::configuration::CxxBrokerIncludeDirectory};
 
-    if ( hilti::configuration().uses_build_directory )
+    if ( hilti::configuration().uses_build_directory ) {
+        hilti_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxAutogenIncludeDirectoryBuild);
         hilti_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxRuntimeIncludeDirectoryBuild);
+    }
     else
         hilti_options.cxx_include_paths.emplace_back(
             spicy::zeek::configuration::CxxRuntimeIncludeDirectoryInstallation);

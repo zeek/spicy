@@ -89,6 +89,7 @@ make_install_rpath(rpath_install ${PLUGIN_INSTALL_DIR}/lib ${CMAKE_INSTALL_FULL_
 set_target_properties(${_plugin_lib} PROPERTIES INSTALL_RPATH "${rpath_install}")
 
 install_headers(include zeek-spicy runtime-support.h cookie.h)
+install_headers(${CMAKE_CURRENT_BINARY_DIR}/zeek-spicy/autogen zeek-spicy/autogen config.h)
 
 # This may need additional permissions, but we just leave it fail in that case.
 install_symlink("${PLUGIN_INSTALL_DIR}" "${ZEEK_PLUGIN_DIR}/Zeek_Spicy")
