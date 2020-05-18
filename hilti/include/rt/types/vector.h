@@ -185,8 +185,8 @@ public:
 
     Vector(std::initializer_list<T> init, const Allocator& alloc = Allocator()) : V(std::move(init), alloc) {}
 
-    Vector(const std::list<T>& l) : std::vector<T>(l.begin(), l.end()) {}
-    Vector(std::list<T>&& l) : std::vector<T>(std::move_iterator(l.begin()), std::move_iterator(l.end())) {}
+    Vector(const rt::List<T>& l) : std::vector<T>(l.begin(), l.end()) {}
+    Vector(rt::List<T>&& l) : std::vector<T>(std::move_iterator(l.begin()), std::move_iterator(l.end())) {}
     ~Vector() = default;
 
     /** Returns the last element of the `vector`.

@@ -9,10 +9,13 @@
 
 #pragma once
 
+#include <initializer_list>
 #include <list>
+#include <utility>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
+#include <hilti/rt/types/list_fwd.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -41,15 +44,36 @@ public:
 
 /** HILTI's `List` is just strong typedef for `std::list`. */
 template<typename T>
-class List : public std::list<T>, public detail::iterator::Controllee {
+class List : protected std::list<T>, public detail::iterator::Controllee {
 public:
     using L = std::list<T>;
     using C = detail::iterator::Controllee;
 
+    using typename L::value_type;
+
     using ConstIterator = typename L::const_iterator;
     using SafeIterator = typename L::iterator;
 
-    using typename L::list;
+    List() = default;
+    List(std::initializer_list<T> xs) : L(std::move(xs)) {}
+    List(const List&) = default;
+    List(List&&) = default;
+
+    List& operator=(const List&) = default;
+    List& operator=(List&&) = default;
+
+    // Methods of `std::list`.
+    using L::begin;
+    using L::emplace_back;
+    using L::empty;
+    using L::end;
+    using L::push_back;
+
+    friend bool operator==(const List& a, const List& b) {
+        return static_cast<const L&>(a) == static_cast<const L&>(b);
+    }
+
+    friend bool operator!=(const List& a, const List& b) { return ! (a == b); }
 };
 
 namespace list {
