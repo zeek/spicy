@@ -148,7 +148,7 @@ TEST_CASE("Iterator") {
         CHECK_THROWS_WITH_AS(*end, "iterator is invalid", const IndexError&);
     }
 
-    SUBCASE("strinfication") {
+    SUBCASE("stringification") {
         CHECK_EQ(to_string(Map<int, int>({{1, 11}}).begin()), "<map iterator>");
         CHECK_EQ(to_string(Map<int, int>({{1, 11}}).cbegin()), "<const map iterator>");
 
