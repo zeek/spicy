@@ -2,11 +2,24 @@
 
 #include <doctest/doctest.h>
 
+#include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/list.h>
 
 using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("List");
+
+TEST_CASE("equal") {
+    CHECK_EQ(List<int>(), list::Empty());
+    CHECK_EQ(list::Empty(), List<int>());
+
+    CHECK_NE(List<int>({1}), list::Empty());
+    CHECK_NE(list::Empty(), List<int>({1}));
+
+    CHECK_EQ(List<int>(), List<int>());
+    CHECK_NE(List<int>({1}), List<int>());
+    CHECK_EQ(List<int>({1}), List<int>({1}));
+}
 
 TEST_CASE("iterator") {
     SUBCASE("equality") {
