@@ -2,15 +2,19 @@
 
 #ifndef __clang_analyzer__
 
+#undef yyerror
+#define yyerror RE_Error
+
 #include <justrx/jrx-intern.h>
 #include <justrx/nfa.h>
 
 #include <stdio.h>
 
-extern void RE_error(void* scanner, jrx_nfa_context* nfactx, jrx_nfa** nfa, const char* msg);
+// NOTE: This function is not called `RE_error` to avoid a name collision with a Bison-internal name.
+extern void RE_Error(void* scanner, jrx_nfa_context* nfactx, jrx_nfa** nfa, const char* msg);
 extern int RE_lex(void* yylval_param, void* yyscanner);
 
-#define parse_error(msg) RE_error(scanner, 0, 0, msg)
+#define parse_error(msg) RE_Error(scanner, 0, 0, msg)
 
 %}
 
