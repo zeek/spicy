@@ -7,6 +7,7 @@
 #include <hilti/rt/libhilti.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/list.h>
 #include <hilti/rt/types/map.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/vector.h>
@@ -66,6 +67,14 @@ TEST_CASE("Map") {
     CHECK_EQ(to_string(Map<int, int>()), "{}");
     CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}})), "{1: b\"abc\"}");
     CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}, {2, "def"_b}})), "{1: b\"abc\", 2: b\"def\"}");
+}
+
+TEST_CASE("List") {
+    CHECK_EQ(to_string(list::Empty()), "[]");
+    CHECK_EQ(to_string(List<int>()), "[]");
+    CHECK_EQ(to_string(List<int>({1, 2, 3})), "[1, 2, 3]");
+    CHECK_EQ(to_string(List<List<int>>({{1, 2, 3}, {1, 2}})), "[[1, 2, 3], [1, 2]]");
+    CHECK_EQ(to_string(List<Bytes>({"abc"_b})), "[b\"abc\"]");
 }
 
 TEST_SUITE_END();

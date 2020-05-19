@@ -1,4 +1,12 @@
 
+0.4.0-293 | 2020-05-19 06:57:49 +0000
+
+  * Rework implementation of `hilti::rt::List`. (Benjamin Bannier, Corelight)
+
+    - Hide that `rt::List` inherits from `std::list` from users.
+    - Make iterators of `rt::List` safe.
+    - Add tests for `rt::List`.
+
 0.4.0-286 | 2020-05-18 10:38:44 +0000
 
   * Remove FAQ pointer from README. (Robin Sommer, Corelight)
@@ -20,7 +28,7 @@
   * Rework implementation of `hilti::rt::Map`. (Benjamin Bannier, Corelight)
 
     - Hide that `rt::Map` inherits from `std::map` from users.
-    - Make iterators of `rt::Mao` safe.
+    - Make iterators of `rt::Map` safe.
     - Slim down `AssignProxy`.
     - Fix `rt::Map::get`.
     - Add test for `rt::Map` stringification.

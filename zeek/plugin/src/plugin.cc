@@ -4,6 +4,7 @@
 
 #include <hilti/ast/types/enum.h>
 #include <hilti/base/util.h>
+#include <hilti/rt/types/vector.h>
 #include <spicy/rt/parser.h>
 
 // Zeek includes
@@ -134,11 +135,11 @@ void plugin::Zeek_Spicy::Driver::hookNewEnumType(const EnumInfo& e) {
         return std::make_tuple(l.id().str(), hilti::rt::integer::safe<int64_t>(l.value()));
     });
 
-    // Convert vector to list.
-    std::list<decltype(labels)::value_type> l;
-    l.assign(labels.begin(), labels.end());
+    hilti::rt::Vector<decltype(labels)::value_type> xs;
+    xs.reserve(labels.size());
+    std::copy(std::move_iterator(labels.begin()), std::move_iterator(labels.end()), std::back_inserter(xs));
 
-    ::SpicyPlugin.registerEnumType(e.id.namespace_(), e.id.local(), std::move(l));
+    ::SpicyPlugin.registerEnumType(e.id.namespace_(), e.id.local(), std::move(xs));
 }
 
 plugin::Zeek_Spicy::Plugin::Plugin() {

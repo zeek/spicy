@@ -14,6 +14,7 @@
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/types/list_fwd.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector_fwd.h>
@@ -315,6 +316,15 @@ auto transform(const std::set<X>& x, F f) {
     return y;
 }
 
+/** Applies a function to each element of a `rt::List`. */
+template<typename X, typename F>
+auto transform(const List<X>& x, F f) {
+    using Y = typename std::result_of<F(X&)>::type;
+    List<Y> y;
+    std::transform(x.begin(), x.end(), std::back_inserter(y), [&](const auto& value) { return f(value); });
+    return y;
+}
+
 /** Applies a function to each element of a `rt::Set`. */
 template<typename X, typename F>
 auto transform(const Set<X>& x, F f) {
@@ -325,6 +335,7 @@ auto transform(const Set<X>& x, F f) {
     return y;
 }
 
+/** Applies a function to each element of a `rt::Vector`. */
 template<typename X, typename Allocator, typename F>
 auto transform(const Vector<X, Allocator>& x, F f) {
     using Y = typename std::result_of<F(X&)>::type;
