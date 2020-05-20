@@ -272,6 +272,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/list.cc
                src/rt/tests/map.cc
                src/rt/tests/reference.cc
+               src/rt/tests/regexp.cc
                src/rt/tests/result.cc
                src/rt/tests/set.cc
                src/rt/tests/stream.cc

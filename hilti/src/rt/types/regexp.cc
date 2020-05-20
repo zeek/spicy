@@ -120,6 +120,8 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
     cur += 0; // this will normalize the internal chunk
     jrx_accept_id rc = 0;
 
+    unsigned consumed = 0; // Counter for the size of the consumed data.
+
     // We iterate over raw arrays of continous memory underlying the
     // stream data, using the internal API.
     for ( auto chunk = cur.chunk(); chunk; chunk = chunk->next().get() ) {
@@ -127,8 +129,16 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
             last |= (JRX_ASSERTION_EOL | JRX_ASSERTION_EOD);
 
         auto block_start = (chunk == cur.chunk() ? chunk->data(data.safeBegin().offset()) : chunk->begin());
-        auto block_end = chunk->end();
-        auto block_len = (block_end - block_start);
+        auto block_len = (chunk->end() - block_start);
+
+        // Since chunks are raw pointers with no knowledge of the size of the
+        // passed data, make sure we do not consume more data than is in the
+        // input after creating the chunk.
+        consumed += block_len;
+        if ( consumed > data.size() ) {
+            is_final = true;
+            block_len -= consumed - data.size();
+        }
 
 #ifdef _DEBUG_MATCHING
         std::cerr << fmt("feeding |%s| data.offset=%lu\n",
