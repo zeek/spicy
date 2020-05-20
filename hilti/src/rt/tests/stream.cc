@@ -403,3 +403,70 @@ TEST_CASE("to_string") {
 }
 
 TEST_SUITE_END();
+
+TEST_SUITE_BEGIN("View");
+
+TEST_CASE("advance") {
+    auto input = "1234567890"_b;
+    auto stream = Stream(input);
+    auto view = stream.view();
+
+    REQUIRE_EQ(view.size(), input.size());
+
+    auto advance = 5;
+    view = view.advance(advance);
+
+    CHECK_EQ(view.size(), input.size() - advance);
+    CHECK(view.startsWith("67890"_b));
+}
+
+TEST_CASE("sub") {
+    auto input = "1234567890"_b;
+    auto stream = Stream(input);
+    auto view = stream.view();
+
+    CHECK_EQ(view.sub(view.safeEnd()), view);
+    CHECK_EQ(view.sub(view.safeBegin() + view.size()), view);
+    CHECK_EQ(view.sub(view.safeBegin() + (view.size() - 1)), "123456789"_b);
+
+    view = view.limit(5);
+
+    CHECK_EQ(view.sub(view.safeEnd()), view);
+    CHECK_EQ(view.sub(view.safeBegin() + view.size()), view);
+    CHECK_EQ(view.sub(view.safeBegin() + (view.size() - 1)), "1234"_b);
+}
+
+TEST_CASE("trimmed view can be appended") {
+    auto input = "1234567890"_b;
+    auto stream = Stream(input);
+    auto view = stream.view();
+    REQUIRE_EQ(view.size(), input.size());
+
+    // Trimming removes specified amount of data.
+    auto trimmed = view.trim(view.safeBegin() + 3);
+    CHECK_EQ(trimmed.size(), input.size() - 3);
+    CHECK(trimmed.startsWith("4567890"_b));
+
+    // Trimmed view expands when data is added.
+    stream.append("123"_b);
+    CHECK_EQ(trimmed.size(), input.size() - 3 + 3);
+    CHECK(trimmed.startsWith("4567890123"));
+}
+
+TEST_CASE("trimmed view inherits limit") {
+    auto input = "1234567890"_b;
+    auto stream = Stream(input);
+    auto view = stream.view();
+    REQUIRE_EQ(view.size(), input.size());
+
+    auto limit = 5;
+    auto limited = view.limit(limit);
+    REQUIRE_EQ(limited.size(), limit);
+
+    auto trim = 3;
+    auto trimmed = limited.trim(limited.safeBegin() + trim);
+
+    CHECK_EQ(trimmed.size(), limit - trim);
+}
+
+TEST_SUITE_END();
