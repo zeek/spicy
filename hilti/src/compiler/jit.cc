@@ -1,7 +1,5 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <dlfcn.h>
-
 #include <fstream>
 #include <utility>
 
@@ -65,49 +63,6 @@ bool CxxCode::save(std::ostream& out) const {
     return ! out.fail();
 }
 
-Library::Library(const std::filesystem::path& path) {
-    auto path_ = util::createTemporaryFile(path.filename());
-    if ( ! path_ ) {
-        logger().fatalError(util::fmt("could not add library %s: %s", path, path_.error()));
-    }
-
-    std::error_code ec;
-    std::filesystem::copy(path, *path_, std::filesystem::copy_options::overwrite_existing, ec);
-    if ( ec )
-        logger().fatalError(util::fmt("could not store library %s at %s: %s", path, *path_, ec.message()));
-
-    _path = std::filesystem::absolute(std::move(*path_));
-}
-
-Library::~Library() {
-    std::error_code ec;
-    std::filesystem::remove(_path, ec);
-
-    if ( ec ) {
-        logger().error(util::fmt("could not remove library %s from store: %s", ec.message()));
-    }
-}
-
-Result<Nothing> Library::open() const {
-    constexpr auto mode = RTLD_LAZY | RTLD_GLOBAL;
-
-    if ( ! ::dlopen(_path.c_str(), mode) )
-        return result::Error(util::fmt("failed to load library %s: %s", _path, dlerror()));
-
-    return Nothing();
-}
-
-Result<Nothing> Library::save(const std::filesystem::path& path) const {
-    std::error_code ec;
-    std::filesystem::copy(_path, path, std::filesystem::copy_options::overwrite_existing, ec);
-
-    if ( ec ) {
-        return result::Error(ec.message());
-    }
-
-    return Nothing();
-}
-
 #ifdef HILTI_HAVE_JIT
 #include <hilti/compiler/detail/clang.h>
 
@@ -169,6 +124,9 @@ Result<std::reference_wrapper<const Library>> JIT::retrieveLibrary() const {
         return result::Error("no JIT object code available");
     }
 
+    if ( ! _jit->retrieveLibrary() )
+        return result::Error("no library available");
+
     return *_jit->retrieveLibrary();
 }
 
@@ -214,16 +172,6 @@ Result<std::reference_wrapper<const Library>> JIT::retrieveLibrary() const {
     constexpr char message[] = "jit: support for just-in-time compilation not available";
     logger().error(message);
     return result::Error(message);
-}
-
-bool JIT::initRuntime() {
-    logger().error("jit: support for just-in-time compilation not available");
-    return false;
-}
-
-bool JIT::finishRuntime() {
-    logger().error("jit: support for just-in-time compilation not available");
-    return false;
 }
 
 std::string JIT::compilerVersion() { return "<no JIT compiler>"; }

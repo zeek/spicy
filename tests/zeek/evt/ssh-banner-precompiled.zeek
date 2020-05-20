@@ -1,6 +1,6 @@
 # @TEST-REQUIRES: have-zeek-plugin
 #
-# @TEST-EXEC: LD_PRELOAD=${ZEEK_LD_PRELOAD} ASAN_OPTIONS=detect_leaks=0 ${SPICYZ} -o ssh.hlto ssh.spicy ./ssh.evt
+# @TEST-EXEC: spicyz -o ssh.hlto ssh.spicy ./ssh.evt
 # @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace ssh.hlto %INPUT >output
 # @TEST-EXEC: btest-diff output
 

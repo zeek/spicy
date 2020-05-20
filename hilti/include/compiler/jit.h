@@ -8,6 +8,7 @@
 #include <hilti/base/util.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/cxx/unit.h>
+#include <hilti/rt/library.h>
 
 namespace hilti {
 
@@ -97,42 +98,7 @@ private:
     std::optional<std::string> _code;
 };
 
-/**
- * Container for storing code compiled into a native shared library.
- *
- * This class loads the underlying library it wraps into its internal store on
- * construction and subsequently does not depend on it anymore.
- */
-class Library {
-public:
-    Library(const std::filesystem::path& path);
-    ~Library();
-
-    // Since this library has exclusive ownership of some path it cannot be copied.
-    Library(const Library&) = delete;
-    Library& operator=(const Library&) = delete;
-
-    Library(Library&&) = default;
-    Library& operator=(Library&&) = default;
-
-    /**
-     * Load the library into the current process
-     *
-     * @return nothing or an error
-     * */
-    Result<Nothing> open() const;
-
-    /**
-     * Save this library under a different path.
-     *
-     * @parm path the path where this library should be stored
-     * @return nothing or an error
-     */
-    Result<Nothing> save(const std::filesystem::path& path) const;
-
-private:
-    std::filesystem::path _path; // Absolute path to the physical file wrapped by this instance.
-};
+using hilti::rt::Library;
 
 /**
  * Just-in-time compiler.

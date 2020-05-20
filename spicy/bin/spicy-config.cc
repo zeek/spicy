@@ -38,6 +38,7 @@ Available options:
     --zeek                  Print the path to the Zeek executable
     --zeek-prefix           Print the path to the Zeek installation prefix
     --zeek-plugin-path      Print the path to go into ZEEK_PLUGIN_PATH for enabling the Zeek Spicy plugin
+    --zeek-jit-support      Prints 'yes' if the Zeek plugin was compiled with JIT support, 'no' otherwise.
     --version               Print Spicy version.
 
 )";
@@ -158,6 +159,19 @@ int main(int argc, char** argv) {
             else
                 result.emplace_back(hilti::configuration().lib_directory / "spicy/Zeek_Spicy");
 
+            continue;
+#else
+            exit(1);
+#endif
+        }
+
+        if ( opt == "--zeek-jit-support" ) {
+#ifdef HAVE_ZEEK
+#ifdef ZEEK_HAVE_JIT
+            result.emplace_back("yes");
+#else
+            result.emplace_back("no");
+#endif
             continue;
 #else
             exit(1);

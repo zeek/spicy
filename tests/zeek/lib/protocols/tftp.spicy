@@ -1,6 +1,6 @@
 # @TEST-REQUIRES: have-zeek-plugin
 #
-# @TEST-EXEC: run-spicyz -o tftp.hlto ${DIST}/spicy/lib/protocols/tftp.spicy ${DIST}/zeek/plugin/lib/protocols/tftp.evt ${DIST}/zeek/plugin/lib/protocols/zeek_tftp.spicy
+# @TEST-EXEC: spicyz -o tftp.hlto ${DIST}/spicy/lib/protocols/tftp.spicy ${DIST}/zeek/plugin/lib/protocols/tftp.evt ${DIST}/zeek/plugin/lib/protocols/zeek_tftp.spicy
 # @TEST-EXEC: ${SCRIPTS}/run-zeek -NN tftp.hlto | grep -q spicy_TFTP
 # @TEST-EXEC: ${SCRIPTS}/run-zeek -r ${TRACES}/tftp_rrq.pcap tftp.hlto ${DIST}/zeek/plugin/lib/protocols/tftp.zeek && cat conn.log | sort >conn.rrq.log && mv tftp.log tftp.rrq.log
 # @TEST-EXEC: ${SCRIPTS}/run-zeek -r ${TRACES}/tftp_wrq.pcap tftp.hlto ${DIST}/zeek/plugin/lib/protocols/tftp.zeek && cat conn.log | sort >conn.wrq.log && mv tftp.log tftp.wrq.log

@@ -1,4 +1,36 @@
 
+0.4.0-309 | 2020-05-20 12:35:36 +0000
+
+  * GH-299: Support compiling the Zeek plugin without JIT support.
+    (Robin Sommer, Corelight)
+
+    If configured with `--disable-jit`, the Zeek plugin will now still
+    be built and will support loading pre-compiled HLTO files. The
+    plugin will have dependencies only on system libraries, and hence
+    can be installed on systems that don't have the Spicy libraries
+    available.
+
+    There's also a new configure option `--disable-jit-for-zeek` that
+    disables JIT support just for the Zeek plugin, creating the same
+    dependency-free result.
+
+  * GH-83: Add standalone tool spicyz to precompile analyzers for
+    Zeek. (Robin Sommer, Corelight)
+
+    This replaces the previous shell wrapper around Zeek, meaning that
+    we can now precompile Zeek analyzers without actually relying on
+    having a Zeek binary itself available. (We continue to require
+    access to the Zeek development headers.)
+
+    As a bonus feature, the new spicyz comes with an option "-c
+    <prefix>" that, instead of producing a fully compiled HLTO, just
+    writes out all the generated C++ code into files, each named
+    "<prefix>-<module ID>.cc". This goes along way towards supporting
+    compiling Spicy analyzers statically into an application, similar
+    to how BinPAC is being used (GH-72).
+
+  * Fix for Bison versions >= 3.6. (Robin Sommer, Corelight)
+
 0.4.0-295 | 2020-05-20 07:23:14 +0000
 
   * Fix a couple typos in documentation. (Robin Sommer, Corelight)

@@ -31,8 +31,8 @@ void __internal_error(const std::string& s);
 #define TINYFORMAT_ERROR(reason) ::util::detail::__internal_error(reason)
 #include <hilti/3rdparty/tinyformat/tinyformat.h>
 #include <hilti/base/result.h>
-#include <hilti/base/util.h>
 #include <hilti/rt/unpack.h>
+#include <hilti/rt/util.h>
 
 /**
  * Helper macro to mark variables that are intentionally unused. This
@@ -436,7 +436,7 @@ extern hilti::Result<std::filesystem::path> findInPaths(const std::filesystem::p
                                                         const std::vector<std::filesystem::path>& paths);
 
 /** Turns a path into an absolute path with all dots removed. */
-std::filesystem::path normalizePath(const std::filesystem::path& p);
+using hilti::rt::normalizePath;
 
 /**
  * Creates a temporary file in the system temporary directory.
@@ -444,7 +444,7 @@ std::filesystem::path normalizePath(const std::filesystem::path& p);
  * @param prefix prefix to use for the file's basename
  * @return a valid path or an error
  * */
-hilti::Result<std::filesystem::path> createTemporaryFile(const std::string& prefix = "");
+using hilti::rt::createTemporaryFile;
 
 /** Returns the path of the current executable. */
 std::filesystem::path currentExecutable();

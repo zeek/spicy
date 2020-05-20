@@ -35,11 +35,12 @@ enum class Dependencies {
  * @note Only one of the `output_*` can be used at any time.
  */
 struct Options {
-    bool include_linker = false;                           /**< if true, perform custom HILTI linker phase */
-    bool output_hilti = false;                             /**< render HILTI inputs back into HILTI source code */
-    bool output_prototypes = false;                        /**< output C++ prototypes for generated code */
-    bool output_cxx = false;                               /**< output generated C++ code */
-    bool output_linker = false;                            /**< output generated HILTI linker C++ code */
+    bool include_linker = false;    /**< if true, perform custom HILTI linker phase */
+    bool output_hilti = false;      /**< render HILTI inputs back into HILTI source code */
+    bool output_prototypes = false; /**< output C++ prototypes for generated code */
+    bool output_cxx = false;        /**< output generated C++ code */
+    std::string output_cxx_prefix;  /**< when outputting generated C++ code, prefix each module name with this string */
+    bool output_linker = false;     /**< output generated HILTI linker C++ code */
     Dependencies output_dependencies = Dependencies::None; /**< output dependencies for compiled modules */
     bool execute_code = false;                             /**< compile code, and execute unless output_path is set */
     bool disable_jit = false;         /**< whether we should forcibly disable JIT, used for testing */

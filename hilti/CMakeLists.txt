@@ -141,6 +141,7 @@ set(SOURCES_RUNTIME
     src/rt/fiber.cc
     src/rt/global-state.cc
     src/rt/init.cc
+    src/rt/library.cc
     src/rt/logging.cc
     src/rt/main.cc
     src/rt/types/address.cc

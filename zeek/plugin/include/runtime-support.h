@@ -8,6 +8,8 @@
 
 #include <optional>
 
+#include <zeek-spicy/autogen/config.h>
+
 #if ZEEK_DEBUG_BUILD
 #define DEBUG
 #endif

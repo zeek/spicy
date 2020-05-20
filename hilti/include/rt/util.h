@@ -14,6 +14,7 @@
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/result.h>
 #include <hilti/rt/types/list_fwd.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/time.h>
@@ -65,6 +66,17 @@ struct MemoryStatistics {
 
 /** Returns statistics about the current state of memory allocations. */
 MemoryStatistics memory_statistics();
+
+/**
+ * Creates a temporary file in the system temporary directory.
+ *
+ * @param prefix prefix to use for the file's basename
+ * @return a valid path or an error
+ * */
+hilti::rt::Result<std::filesystem::path> createTemporaryFile(const std::string& prefix = "");
+
+/** Turns a path into an absolute path with all dots removed. */
+std::filesystem::path normalizePath(const std::filesystem::path& p);
 
 /**
  * Returns a string view with all characters of a given set removed.

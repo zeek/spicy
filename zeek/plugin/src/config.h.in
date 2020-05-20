@@ -1,10 +1,24 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#pragma once
+
 namespace spicy::zeek::configuration {
+
+#cmakedefine ZEEK_HAVE_JIT
+
+// We make sure this is always defined, either as 0 or 1, so that we
+// can catch when this header wasn't included.
+#cmakedefine01 ZEEK_DEBUG_BUILD
 
 inline const auto CxxZeekIncludeDirectory = "${ZEEK_INCLUDE_DIR}";
 
 inline const auto CxxRuntimeIncludeDirectoryBuild = "${CMAKE_CURRENT_SOURCE_DIR}/include";
 inline const auto CxxRuntimeIncludeDirectoryInstallation = "${PLUGIN_INSTALL_DIR}/include";
+inline const auto CxxAutogenIncludeDirectoryBuild = "${CMAKE_CURRENT_BINARY_DIR}";
+
 inline const auto CxxBrokerIncludeDirectory = "${BROKER_INCLUDE_DIR}";
+
+inline const auto PluginLibraryDirectoryBuild = "${CMAKE_CURRENT_SOURCE_DIR}/spicy";
+inline const auto PluginLibraryDirectoryInstallation = "${PLUGIN_INSTALL_DIR}/spicy";
+
 }
