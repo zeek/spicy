@@ -57,7 +57,7 @@ While there are no dedicated releases yet, we provide pre-built Spicy
 binaries for some Linux platforms as well as a Homebrew formula for
 installation on macOS. You can also use one of the included Docker
 files, or just build Spicy from source directly. See the [installation
-instructions](https://docs.zeek.org/projects/spicy/installation.html)
+instructions](https://docs.zeek.org/projects/spicy/en/latest/installation.html)
 for more information on any of these options.
 
 ## Documentation
