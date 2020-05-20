@@ -37,7 +37,7 @@ parser. We observed only negligible differences.
 .. rubric:: DNS
 
 A comprehensive DNS parser. This parser was used with the original
-Spicy prototype to compare output with Zeek's native handwritten HTTP
+Spicy prototype to compare output with Zeek's native handwritten DNS
 parser. We observed only negligible differences.
 
 The DNS parser is a good example of using :ref:`random access

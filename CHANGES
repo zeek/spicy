@@ -1,4 +1,8 @@
 
+0.4.0-295 | 2020-05-20 07:23:14 +0000
+
+  * Fix a couple typos in documentation. (Robin Sommer, Corelight)
+
 0.4.0-293 | 2020-05-19 06:57:49 +0000
 
   * Rework implementation of `hilti::rt::List`. (Benjamin Bannier, Corelight)
