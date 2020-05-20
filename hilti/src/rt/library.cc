@@ -2,6 +2,7 @@
 
 #include <dlfcn.h>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/logging.h>
 
@@ -9,16 +10,16 @@ using namespace hilti::rt;
 
 hilti::rt::Library::Library(const std::filesystem::path& path) {
     if ( ! std::filesystem::exists(path) )
-        throw std::runtime_error(fmt("no such library: %s", path));
+        throw EnvironmentError(fmt("no such library: %s", path));
 
     auto path_ = createTemporaryFile(path.filename());
     if ( ! path_ )
-        throw std::runtime_error(fmt("could not add library %s: %s", path, path_.error()));
+        throw EnvironmentError(fmt("could not add library %s: %s", path, path_.error()));
 
     std::error_code ec;
     std::filesystem::copy(path, *path_, std::filesystem::copy_options::overwrite_existing, ec);
     if ( ec )
-        throw std::runtime_error(fmt("could not store library %s at %s: %s", path, *path_, ec.message()));
+        throw EnvironmentError(fmt("could not store library %s at %s: %s", path, *path_, ec.message()));
 
     _path = std::filesystem::absolute(std::move(*path_));
 }

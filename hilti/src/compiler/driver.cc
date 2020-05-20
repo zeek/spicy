@@ -470,7 +470,7 @@ Result<Nothing> Driver::addInput(const std::filesystem::path& path) {
         try {
             if ( auto load = Library(path).open(); ! load )
                 return error(util::fmt("could not load library file %s: %s", path, load.error()));
-        } catch ( const std::runtime_error& e ) {
+        } catch ( const hilti::rt::EnvironmentError& e ) {
             hilti::rt::fatalError(e.what());
         }
 
@@ -746,8 +746,10 @@ Result<Nothing> Driver::outputUnits() {
             if ( _driver_options.output_cxx ) {
                 auto cxx_path = output_path;
 
-                if ( _driver_options.output_cxx_prefix.size() )
+                if ( _driver_options.output_cxx_prefix.size() ) {
+                    assert(cxx->id().size());
                     cxx_path = fmt("%s_%s.cc", _driver_options.output_cxx_prefix, cxx->id());
+                }
 
                 auto output = openOutput(cxx_path, false);
                 if ( ! output )

@@ -141,7 +141,11 @@ const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForFileAnalyzer(const
 plugin::Configuration plugin::Zeek_Spicy::Plugin::Configure() {
     plugin::Configuration config;
     config.name = "Zeek::Spicy";
+#ifdef ZEEK_HAVE_JIT
     config.description = "Support for Spicy parsers (*.spicy, *.evt, *.hlto)";
+#else
+    config.description = "Support for Spicy parsers (*.hlto)";
+#endif
     config.version.major = PROJECT_VERSION_MAJOR;
     config.version.minor = PROJECT_VERSION_MINOR;
     config.version.patch = PROJECT_VERSION_PATCH;
@@ -319,7 +323,7 @@ int plugin::Zeek_Spicy::Plugin::HookLoadFile(const LoadType type, const std::str
         try {
             if ( auto load = hilti::rt::Library(file).open(); ! load )
                 hilti::rt::fatalError(hilti::rt::fmt("could not open library file %s: %s", file, load.error()));
-        } catch ( const std::runtime_error& e ) {
+        } catch ( const hilti::rt::EnvironmentError& e ) {
             hilti::rt::fatalError(e.what());
         }
 

@@ -213,7 +213,7 @@ hilti::Result<hilti::Nothing> Driver::parseOptionsPostScript(const std::string& 
     return hilti::Nothing();
 }
 
-bool Driver::loadFile(std::filesystem::path file, const std::filesystem::path& relative_to) {
+hilti::Result<hilti::Nothing> Driver::loadFile(std::filesystem::path file, const std::filesystem::path& relative_to) {
     if ( ! relative_to.empty() && file.is_relative() ) {
         if ( auto p = relative_to / file; std::filesystem::exists(p) )
             file = p;
@@ -222,10 +222,8 @@ bool Driver::loadFile(std::filesystem::path file, const std::filesystem::path& r
     if ( ! std::filesystem::exists(file) ) {
         if ( auto path = util::findInPaths(file, hiltiOptions().library_paths) )
             file = *path;
-        else {
-            hilti::logger().error(::util::fmt("Spicy plugin cannot find file %s", file));
-            return false;
-        }
+        else
+            return hilti::result::Error(util::fmt("Spicy plugin cannot find file %s", file));
     }
 
     auto rpath = util::normalizePath(file);
@@ -233,56 +231,50 @@ bool Driver::loadFile(std::filesystem::path file, const std::filesystem::path& r
 
     if ( ext == ".evt" ) {
         ZEEK_DEBUG(util::fmt("Loading EVT file %s", rpath));
-        return _glue->loadEvtFile(rpath);
+        if ( _glue->loadEvtFile(rpath) )
+            return hilti::Nothing();
+        else
+            return hilti::result::Error(util::fmt("error loading EVT file %s", rpath));
     }
 
     if ( ext == ".spicy" ) {
         ZEEK_DEBUG(util::fmt("Loading Spicy file %s", rpath));
-        if ( auto rc = addInput(rpath); ! rc ) {
-            hilti::logger().error(rc.error().description());
-            return false;
-        }
+        if ( auto rc = addInput(rpath); ! rc )
+            return rc.error();
 
-        return true;
+        return hilti::Nothing();
     }
 
     if ( ext == ".hlt" ) {
         ZEEK_DEBUG(util::fmt("Loading HILTI file %s", rpath));
         if ( auto rc = addInput(rpath) )
-            return true;
-        else {
-            hilti::logger().error(rc.error().description());
-            return false;
-        }
+            return hilti::Nothing();
+        else
+            return rc.error();
     }
 
     if ( ext == ".hlto" ) {
         ZEEK_DEBUG(util::fmt("Loading precompiled HILTI code %s", rpath));
         if ( auto rc = addInput(rpath) )
-            return true;
-        else {
-            hilti::logger().error(rc.error().description());
-            return false;
-        }
+            return hilti::Nothing();
+        else
+            return rc.error();
     }
 
-    hilti::logger().internalError(::util::fmt("unknown file type passed to Spicy loader: %s", rpath));
-    return false;
+    return hilti::result::Error(util::fmt("unknown file type passed to Spicy loader: %s", rpath));
 }
 
-bool Driver::compile() {
+hilti::Result<hilti::Nothing> Driver::compile() {
     if ( ! hasInputs() )
-        return true;
+        return hilti::Nothing();
 
     ZEEK_DEBUG("Running Spicy driver");
 
-    if ( auto x = hilti::Driver::compile(); ! x ) {
-        hilti::logger().error(x.error().description());
-        return false;
-    }
+    if ( auto x = hilti::Driver::compile(); ! x )
+        return x.error();
 
     ZEEK_DEBUG("Done with Spicy driver");
-    return true;
+    return hilti::Nothing();
 }
 
 hilti::Result<UnitInfo> Driver::lookupUnit(const hilti::ID& unit) {

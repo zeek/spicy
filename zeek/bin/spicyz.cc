@@ -60,7 +60,7 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
     while ( true ) {
         int c = getopt_long(argc, argv, "ABc:CdX:D:L:o:ORTvh", long_driver_options, nullptr);
 
-        if ( c < 0 )
+        if ( c == -1 )
             break;
 
         switch ( c ) {
@@ -98,7 +98,7 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
                 compiler_options->debug = true;
 
                 if ( auto r = compiler_options->parseDebugAddl(arg); ! r )
-                    return hilti::result::Error(r.error());
+                    return hilti::result::Error("nothing to do");
 
                 break;
             }
@@ -113,7 +113,7 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
                         std::cerr << "  " << s << "\n";
 
                     std::cerr << "\n";
-                    exit(0);
+                    return Nothing();
                 }
 
                 for ( const auto& s : util::split(arg, ",") ) {
@@ -141,7 +141,7 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
 
             case 'h': usage(); return Nothing();
 
-            default: usage(); return hilti::result::Error(util::fmt("option %c not implemented", c));
+            default: usage(); return hilti::result::Error("could not parse options");
         }
     }
 
@@ -150,11 +150,6 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
 
     if ( driver_options->inputs.empty() )
         return hilti::result::Error("no input file given");
-
-    if ( ! compiler_options->debug ) {
-        if ( compiler_options->debug_trace || compiler_options->debug_flow )
-            return hilti::result::Error("cannot use --optimize with --cgdebug");
-    }
 
     if ( driver_options->output_path.empty() )
         return hilti::result::Error("no output file for object code given, use -o <file>.hlto");
@@ -195,7 +190,7 @@ int main(int argc, char** argv) {
 
     if ( auto rc = parseOptions(argc, argv, &driver_options, &compiler_options); ! rc ) {
         hilti::logger().error(rc.error().description());
-        exit(1);
+        return 1;
     }
 
     if ( driver_options.output_cxx )
@@ -215,12 +210,16 @@ int main(int argc, char** argv) {
     driver.initialize();
 
     for ( auto p : driver.driverOptions().inputs ) {
-        if ( ! driver.loadFile(p) )
-            exit(1); // error already reported
+        if ( auto rc = driver.loadFile(p); ! rc ) {
+            hilti::logger().error(rc.error().description());
+            return 1;
+        }
     }
 
-    if ( ! driver.compile() )
-        exit(1); // error already reported
+    if ( auto rc = driver.compile(); ! rc ) {
+        hilti::logger().error(rc.error().description());
+        return 1;
+    }
 
-    exit(0);
+    return 0;
 }

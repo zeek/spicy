@@ -163,8 +163,8 @@ void plugin::Zeek_Spicy::PluginJIT::InitPostScript() {
 
     for ( auto p : _driver->driverOptions().inputs ) {
         ZEEK_DEBUG(hilti::rt::fmt("Loading input file %s", p));
-        if ( ! _driver->loadFile(p) )
-            spicy::zeek::reporter::fatalError(hilti::rt::fmt("error loading %s", p));
+        if ( auto rc = _driver->loadFile(p); ! rc )
+            spicy::zeek::reporter::fatalError(hilti::rt::fmt("error loading %s: %s", p, rc.error().description()));
     }
 
     {
@@ -172,13 +172,12 @@ void plugin::Zeek_Spicy::PluginJIT::InitPostScript() {
         ZEEK_DEBUG("Compiling input files");
         hilti::logging::DebugPushIndent _(debug::ZeekPlugin);
 
-        if ( ! _driver->compile() )
-            exit(1);
+        if ( auto rc = _driver->compile(); ! rc )
+            spicy::zeek::reporter::fatalError(hilti::rt::fmt("error during compilation: %s", rc.error().description()));
 
-        if ( ! _driver->driverOptions().output_path.empty() ) {
+        if ( ! _driver->driverOptions().output_path.empty() )
             // If an output path is set, we're in precompilation mode, just exit.
             exit(0);
-        }
 
         // If there are errors, compile() should have flagged that through its
         // exit code.
@@ -195,7 +194,12 @@ int plugin::Zeek_Spicy::PluginJIT::HookLoadFile(const LoadType type, const std::
 
     if ( ext == ".spicy" || ext == ".evt" || ext == ".hlt" || ext == ".hlto" ) {
         ZEEK_DEBUG(hilti::rt::fmt("Loading input file '%s'", file));
-        return _driver->loadFile(file) ? 1 : 0;
+        if ( auto rc = _driver->loadFile(file); ! rc ) {
+            spicy::zeek::reporter::fatalError(hilti::rt::fmt("error loading %s: %s", file, rc.error().description()));
+            return 0;
+        }
+
+        return 1;
     }
 
     return plugin::Zeek_Spicy::Plugin::HookLoadFile(type, file, resolved);
