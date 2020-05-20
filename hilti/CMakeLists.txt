@@ -280,7 +280,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/util.cc
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
-target_link_libraries(hilti-rt-tests PRIVATE hilti-rt doctest)
+target_link_libraries(hilti-rt-tests PRIVATE hilti-rt-objects doctest)
 add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)
 
 add_executable(hilti-tests
