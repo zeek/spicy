@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <hilti/base/logger.h>
 #include <hilti/rt/logging.h>
 
 namespace spicy::zeek::debug {

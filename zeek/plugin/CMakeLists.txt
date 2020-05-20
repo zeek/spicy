@@ -55,6 +55,10 @@ endif ()
 
 target_include_directories(${_plugin_lib} PRIVATE include)
 
+# Without JIT support, we won't have the "compiler/" include directory available
+# through the "zeek-compiler" target, so add it no matter what.
+target_include_directories(${_plugin_lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
+
 # For JIT support.
 target_link_libraries(${_plugin_lib} $<$<BOOL:${ZEEK_HAVE_JIT}>:zeek-compiler>)
 target_link_libraries(${_plugin_lib} $<$<BOOL:${ZEEK_HAVE_JIT}>:spicy>)
