@@ -1,4 +1,8 @@
 
+0.4.0-311 | 2020-05-21 07:54:43 +0000
+
+  * Fix JIT-less build of Zeek plugin. (Robin Sommer, Corelight)
+
 0.4.0-309 | 2020-05-20 12:35:36 +0000
 
   * GH-299: Support compiling the Zeek plugin without JIT support.

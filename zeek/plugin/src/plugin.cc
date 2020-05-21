@@ -161,7 +161,7 @@ void plugin::Zeek_Spicy::Plugin::InitPreScript() {
     if ( auto dir = getenv("ZEEK_SPICY_PATH") )
         addLibraryPaths(dir);
 
-    addLibraryPaths(util::normalizePath(OurPlugin->PluginDirectory()).string() + "/spicy");
+    addLibraryPaths(hilti::rt::normalizePath(OurPlugin->PluginDirectory()).string() + "/spicy");
 
     ZEEK_DEBUG("Beginning pre-script initialization (runtime)");
 }
@@ -196,12 +196,12 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         spicy::rt::init();
     } catch ( const hilti::rt::Exception& e ) {
         std::cerr << hilti::rt::fmt("uncaught runtime exception %s during initialization: %s",
-                                    util::demangle(typeid(e).name()), e.what())
+                                    hilti::rt::demangle(typeid(e).name()), e.what())
                   << std::endl;
         exit(1);
     } catch ( const std::runtime_error& e ) {
         std::cerr << hilti::rt::fmt("uncaught C++ exception %s during initialization: %s",
-                                    util::demangle(typeid(e).name()), e.what())
+                                    hilti::rt::demangle(typeid(e).name()), e.what())
                   << std::endl;
         exit(1);
     }

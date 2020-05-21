@@ -19,6 +19,10 @@
 #include <zeek-spicy/plugin-jit.h>
 #include <zeek-spicy/zeek-reporter.h>
 
+namespace spicy::zeek::debug {
+const hilti::logging::DebugStream ZeekPlugin("zeek");
+}
+
 #ifdef ZEEK_HAVE_JIT
 plugin::Zeek_Spicy::PluginJIT SpicyPlugin;
 plugin::Zeek_Spicy::Plugin* ::plugin::Zeek_Spicy::OurPlugin = &SpicyPlugin;
@@ -30,8 +34,6 @@ void ::spicy::zeek::debug::do_log(const std::string_view& msg) {
     HILTI_RT_DEBUG("zeek", msg);
     HILTI_DEBUG(::spicy::zeek::debug::ZeekPlugin, std::string(msg));
 }
-
-const ::hilti::logging::DebugStream spicy::zeek::debug::ZeekPlugin("zeek");
 
 void plugin::Zeek_Spicy::Driver::hookAddInput(const std::filesystem::path& path) {
     // Need to initialized before 1st input gets added, as the options need

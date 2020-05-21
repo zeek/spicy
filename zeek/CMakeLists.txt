@@ -1,10 +1,7 @@
 # Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-if ( ZEEK_HAVE_JIT )
-add_subdirectory(compiler)
-endif()
-
 add_subdirectory(plugin)
+add_subdirectory(compiler)
 
 add_executable(spicyz bin/spicyz.cc)
 target_compile_options(spicyz PRIVATE "-Wall")
