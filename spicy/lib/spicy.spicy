@@ -80,4 +80,16 @@ public function current_time() : time &cxxname="::hilti::rt::time::current_time"
 public function bytes_to_hexstring(value: bytes) : string &cxxname="::spicy::rt::bytes_to_hexstring";
 
 ## Returns the value of an environment variable, if set.
-public function getenv(name: string) : optional<string> &cxxname="spicy::rt::getenv";
+public function getenv(name: string) : optional<string> &cxxname="::spicy::rt::getenv";
+
+##  Formats a time according to user-specified format string.
+##
+## This function uses the currently active locale and timezone to format
+## values. Formatted strings cannot exceed 128 bytes.
+##
+## The format string can contain format specifiers supported by POSIX strftime, see
+## https://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html.
+##
+## This function can raise InvalidArgument if the timestamp could not be
+## converted to local time or formatted.
+public function strftime(format: string, timestamp: time) : string &cxxname="::hilti::rt::strftime";

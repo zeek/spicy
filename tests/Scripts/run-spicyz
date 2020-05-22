@@ -1,5 +1,0 @@
-#! /bin/sh
-#
-# Wrapper around spicyz to set environment, similar to run-zeek.
-
-LD_PRELOAD=${ZEEK_LD_PRELOAD} ASAN_OPTIONS=detect_leaks=0 spicyz $@

@@ -34,7 +34,7 @@ struct EnumInfo {
 class Driver : public hilti::Driver {
 public:
     /** Constructor. */
-    Driver(const std::string& argv0);
+    Driver(const std::string& argv0 = "");
 
     /** Destructor. */
     ~Driver();
@@ -47,7 +47,7 @@ public:
      * @param file file to load, which will be searched across all current search paths
      * @param relative_to if given, relative paths will be interpreted as relative to this directory
      */
-    bool loadFile(std::filesystem::path file, const std::filesystem::path& relative_to = {});
+    hilti::Result<hilti::Nothing> loadFile(std::filesystem::path file, const std::filesystem::path& relative_to = {});
 
     /**
      * After user scripts have been read, compiles and links all resulting
@@ -58,7 +58,7 @@ public:
      *
      * @return False if an error occured. It will have been reported already.
      */
-    bool compile();
+    hilti::Result<hilti::Nothing> compile();
 
     /**
      * Returns a meta information for unit type. The Spicy module defining

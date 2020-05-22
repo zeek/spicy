@@ -1,0 +1,11 @@
+# Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+module Zeek_TFTP;
+
+import TFTP from protocols;
+
+import zeek;
+
+on TFTP::Request::%done {
+    zeek::confirm_protocol();
+}

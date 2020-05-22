@@ -77,6 +77,9 @@ HILTI_EXCEPTION(RuntimeError, Exception)
 /** Base class for exceptions created by HILTI programs. */
 HILTI_EXCEPTION(UserException, Exception)
 
+/** Thrown for trouble encountered while managing the runtime environment. */
+HILTI_EXCEPTION(EnvironmentError, Exception)
+
 /** Thrown when an `assert` statement fails. */
 HILTI_EXCEPTION(AssertionFailure, RuntimeError)
 

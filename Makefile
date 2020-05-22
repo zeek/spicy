@@ -7,6 +7,10 @@ build:
 	@if [ -e build/Makefile ]; then $(MAKE) -C build; else true; fi
 	@if [ -e build/build.ninja ]; then ninja -C build; else true; fi
 
+zeek-plugin:
+	@if [ -e build/Makefile ]; then $(MAKE) -C build zeek-plugin; else true; fi
+	@if [ -e build/build.ninja ]; then ninja -C build zeek-plugin; else true; fi
+
 install:
 	@if [ -e build/Makefile ]; then $(MAKE) -C build install; else true; fi
 	@if [ -e build/build.ninja ]; then ninja -C build install; else true; fi

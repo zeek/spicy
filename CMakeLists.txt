@@ -166,11 +166,16 @@ if ( NOT CLANG_JIT_FOUND )
     set(HILTI_HAVE_JIT no)
 endif ()
 
+if ( NOT HILTI_HAVE_JIT )
+    set(ZEEK_HAVE_JIT no)
+endif ()
+
 if ( ZEEK_FOUND )
     set(HAVE_ZEEK yes)
     add_subdirectory(zeek)
 else ()
     set(HAVE_ZEEK no)
+    set(ZEEK_HAVE_JIT no)
 endif ()
 
 # Set up testing infrastructure.
@@ -218,6 +223,7 @@ message(
     "\n"
     "\nJIT enabled:           ${HILTI_HAVE_JIT}"
     "\nZeek plugin enabled:   ${HAVE_ZEEK}"
+    "\nZeek JIT enabled:      ${ZEEK_HAVE_JIT}"
     "\n"
     "\nUse ccache:            ${USE_CCACHE}"
     "\nUse gold linker:       ${USE_GOLD}"

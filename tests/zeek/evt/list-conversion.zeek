@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: have-zeek-plugin
+# @TEST-REQUIRES: have-zeek-plugin-jit
 #
 # @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace listconv.spicy ./listconv.evt %INPUT >output
 # @TEST-EXEC: btest-diff output

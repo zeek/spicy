@@ -19,6 +19,7 @@ cmake_clang_resource_dir=""
 cmake_flex_root=""
 cmake_generator=""
 cmake_hilti_have_jit="yes"
+cmake_zeek_have_jit="yes"
 cmake_install_prefix="/usr/local"
 cmake_llvm_root=""
 cmake_use_ccache="no"
@@ -57,6 +58,7 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --build-dir=DIR                    Place build files in directory [default: ${cmake_build_directory}]
     --build-type=TYPE                  Set build type (Debug,Release,RelWithDebInfo) [default: ${cmake_build_type}]
     --disable-jit                      Do not compile in support for JIT compilation
+    --disable-jit-for-zeek             Do not compile support for JIT compilation into Zeek plugin
     --disable-gold                     On Linux, do not try to use the gold linker
     --enable-ccache                    Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
     --enable-debug                     Compile debug version (same as --build-type=Debug) [default: off]
@@ -114,13 +116,13 @@ while [ $# -ne 0 ]; do
         --build-dir=*|--builddir=*)        cmake_build_directory="${optarg}";;
         --build-type=*)                    cmake_build_type="${optarg}";;
         --disable-jit)                     cmake_hilti_have_jit="no";;
+        --disable-jit-for-zeek)            cmake_zeek_have_jit="no";;
         --disable-gold)                    cmake_use_gold="no";;
         --enable-ccache)                   cmake_use_ccache="yes";;
         --enable-debug)                    cmake_build_type="Debug";;
         --enable-sanitizer)                cmake_use_sanitizers="address";;
         --enable-sanitizer=*)              cmake_use_sanitizers="${optargs}";;
         --enable-werror)                   cmake_use_werror="yes";;
-        --disable-jit)                     cmake_hilti_have_jit="no";;
         --generator=*)                     cmake_generator="${optarg}";;
         --prefix=*)                        cmake_install_prefix="${optarg}";;
         --with-clang-root=*)               cmake_clang_root="${optarg}";;
@@ -168,6 +170,7 @@ append_cache_entry CXX_SYSTEM_INCLUDE_DIRS      PATH   "${cmake_cxx_system_inclu
 append_cache_entry CMAKE_INSTALL_PREFIX         PATH   "${cmake_install_prefix}"
 append_cache_entry FLEX_ROOT                    PATH   "${cmake_flex_root}"
 append_cache_entry HILTI_HAVE_JIT               BOOL   "${cmake_hilti_have_jit}"
+append_cache_entry ZEEK_HAVE_JIT                BOOL   "${cmake_zeek_have_jit}"
 append_cache_entry LLVM_ROOT                    PATH   "${cmake_llvm_root}"
 append_cache_entry USE_CCACHE                   BOOL   "${cmake_use_ccache}"
 append_cache_entry USE_GOLD                     BOOL   "${cmake_use_gold}"

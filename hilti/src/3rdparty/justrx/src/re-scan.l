@@ -5,13 +5,15 @@
 
 #ifndef __clang_analyzer__
 
+#undef yyerror
+#define yyerror RE_Error
+
 #include <justrx/jrx-intern.h>
 #include <justrx/nfa.h>
 #include <justrx/util.h>
 #include <justrx/autogen/re-parse.h>
 
-#define RE_error RE_error
-void RE_error(yyscan_t scanner, const char* msg);
+void RE_Error(yyscan_t scanner, const char* msg);
 
 %}
 
@@ -60,14 +62,14 @@ ACCEPT_ID       \{#[[:digit:]]+\}
 	"[:upper:]"     BEGIN(CCL); yylval->dynccl = JRX_STD_CCL_UPPER; return TOK_DYNCCL;
 	"[:digit:]"     BEGIN(CCL); yylval->dynccl = JRX_STD_CCL_DIGIT; return TOK_DYNCCL;
 	"[:blank:]"     BEGIN(CCL); yylval->dynccl = JRX_STD_CCL_BLANK; return TOK_DYNCCL;
-	{CCL_EXPR}      RE_error(yyscanner, "bad character class"); BEGIN(CCL); return TOK_DYNCCL;
+	{CCL_EXPR}      RE_Error(yyscanner, "bad character class"); BEGIN(CCL); return TOK_DYNCCL;
 }
 
 <COUNT>{
 	[[:digit:]]+    yylval->count = atoi(yytext); return TOK_COUNT;
 	","             return ',';
 	"}"             BEGIN(INITIAL); return '}';
-	.	            RE_error(yyscanner, "bad character inside {}'s"); BEGIN(INITIAL); return '}';
+	.	            RE_Error(yyscanner, "bad character inside {}'s"); BEGIN(INITIAL); return '}';
 }
 
 <INITIAL,CCL_FIRST,CCL>{ESCSEQ}	{
@@ -82,7 +84,7 @@ ACCEPT_ID       \{#[[:digit:]]+\}
 
 %%
 
-void RE_error(yyscan_t scanner, const char* msg)
+void RE_Error(yyscan_t scanner, const char* msg)
 {
     const char** errmsg = RE_get_extra(scanner);
     if ( errmsg && ! *errmsg )

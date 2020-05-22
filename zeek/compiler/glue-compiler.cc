@@ -235,6 +235,73 @@ GlueCompiler::GlueCompiler(Driver* driver) : _driver(driver) {}
 
 GlueCompiler::~GlueCompiler() {}
 
+hilti::Result<std::string> GlueCompiler::getNextEvtBlock(std::istream& in, int* lineno) const {
+    std::string chunk;
+
+    // Parser need to track whether we are inside a string or a comment.
+    enum State { Default, InComment, InString } state = Default;
+    char prev = '\0';
+
+    while ( true ) {
+        char cur;
+        in.get(cur);
+        if ( in.eof() ) {
+            chunk = util::trim(std::move(chunk));
+            if ( chunk.empty() )
+                // Legitimate end of data.
+                return std::string();
+            else
+                // End of input before semicolon.
+                return hilti::result::Error("unexpected end of file");
+        }
+
+        switch ( state ) {
+            case Default:
+                if ( cur == '"' && prev != '\\' )
+                    state = InString;
+
+                if ( cur == '#' && prev != '\\' ) {
+                    state = InComment;
+                    continue;
+                }
+
+                if ( cur == '\n' )
+                    ++*lineno;
+
+                if ( cur == ';' ) {
+                    // End of block found.
+                    chunk = util::trim(std::move(chunk));
+                    if ( chunk.size() )
+                        return chunk + ';';
+                    else
+                        return hilti::result::Error("empty block");
+                }
+
+                break;
+
+            case InString:
+                if ( cur == '"' && prev != '\\' )
+                    state = Default;
+
+                if ( cur == '\n' )
+                    ++*lineno;
+
+                break;
+
+            case InComment:
+                if ( cur != '\n' )
+                    // skip
+                    continue;
+
+                state = Default;
+                ++*lineno;
+        }
+
+        chunk += cur;
+        prev = cur;
+    }
+}
+
 bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
     std::ifstream in(path);
 
@@ -247,73 +314,48 @@ bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
     _locations.emplace_back(path);
 
     std::vector<glue::Event> new_events;
+    int lineno = 1;
 
     try {
-        int lineno = 0;
-        std::string chunk;
+        while ( true ) {
+            _locations.emplace_back(path, lineno);
 
-        while ( ! in.eof() ) {
-            _locations.emplace_back(path, ++lineno);
+            auto chunk = getNextEvtBlock(in, &lineno);
+            if ( ! chunk )
+                throw ParseError(chunk.error());
 
-            std::string line;
-            std::getline(in, line);
+            if ( chunk->empty() )
+                break; // end of input
 
-            // Skip comments and empty lines.
-            auto i = line.find_first_not_of(" \t");
-            if ( i == std::string::npos || line[i] == '#' ) {
-                _locations.pop_back();
-                continue;
-            }
-
-            if ( chunk.size() )
-                chunk += " ";
-
-            chunk += line.substr(i, std::string::npos);
-
-            // See if we have a semicolon-terminated chunk now.
-            i = line.find_last_not_of(" \t");
-            if ( i == std::string::npos )
-                i = line.size() - 1;
-
-            if ( line[i] != ';' ) {
-                // Nope, keep adding.
-                _locations.pop_back();
-                continue;
-            }
-
-            // Got it, parse the chunk.
-            chunk = util::trim(chunk);
-
-            if ( looking_at(chunk, 0, "protocol") ) {
-                auto a = parseProtocolAnalyzer(chunk);
+            if ( looking_at(*chunk, 0, "protocol") ) {
+                auto a = parseProtocolAnalyzer(*chunk);
                 _protocol_analyzers.push_back(a);
                 ZEEK_DEBUG(util::fmt("  Got protocol analyzer definition for %s", a.name));
             }
 
-
-            else if ( looking_at(chunk, 0, "file") ) {
-                auto a = parseFileAnalyzer(chunk);
+            else if ( looking_at(*chunk, 0, "file") ) {
+                auto a = parseFileAnalyzer(*chunk);
                 _file_analyzers.push_back(a);
                 ZEEK_DEBUG(util::fmt("  Got file analyzer definition for %s", a.name));
             }
 
-            else if ( looking_at(chunk, 0, "on") ) {
-                auto ev = parseEvent(chunk);
+            else if ( looking_at(*chunk, 0, "on") ) {
+                auto ev = parseEvent(*chunk);
                 ev.file = path;
                 new_events.push_back(ev);
                 ZEEK_DEBUG(util::fmt("  Got event definition for %s", ev.name));
             }
 
-            else if ( looking_at(chunk, 0, "import") ) {
+            else if ( looking_at(*chunk, 0, "import") ) {
                 size_t i = 0;
-                eat_token(chunk, &i, "import");
+                eat_token(*chunk, &i, "import");
 
-                hilti::ID module = extract_id(chunk, &i);
+                hilti::ID module = extract_id(*chunk, &i);
                 std::optional<hilti::ID> scope;
 
-                if ( looking_at(chunk, i, "from") ) {
-                    eat_token(chunk, &i, "from");
-                    scope = extract_path(chunk, &i);
+                if ( looking_at(*chunk, i, "from") ) {
+                    eat_token(*chunk, &i, "from");
+                    scope = extract_path(*chunk, &i);
                     ZEEK_DEBUG(util::fmt("  Got module %s to import from scope %s", module, *scope));
                 }
                 else
@@ -325,12 +367,8 @@ bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
             else
                 throw ParseError("expected 'import', '{file,protocol} analyzer', or 'on'");
 
-            chunk = "";
             _locations.pop_back();
         }
-
-        if ( chunk.size() )
-            throw ParseError("unterminated line at end of file");
 
     } catch ( const ParseError& e ) {
         if ( *e.what() )

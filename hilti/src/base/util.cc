@@ -1,8 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <errno.h>
 #include <unistd.h>
 
-#include <sys/errno.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 
@@ -149,35 +149,6 @@ hilti::Result<std::filesystem::path> util::findInPaths(const std::filesystem::pa
     }
 
     return hilti::result::Error(fmt("%s not found", file));
-}
-
-std::filesystem::path util::normalizePath(const std::filesystem::path& p) {
-    if ( p.empty() )
-        return "";
-
-    if ( ! std::filesystem::exists(p) )
-        return p;
-
-    char buffer[PATH_MAX];
-    return realpath(std::filesystem::absolute(p).native().c_str(), buffer);
-}
-
-hilti::Result<std::filesystem::path> util::createTemporaryFile(const std::string& prefix) {
-    std::error_code ec;
-    auto tmp_dir = std::filesystem::temp_directory_path(ec);
-
-    if ( ec )
-        return hilti::result::Error(fmt("could not create temporary file: %s", ec.message()));
-
-    auto template_ = (tmp_dir / (prefix + "-XXXXXX")).native();
-
-    auto handle = ::mkstemp(template_.data());
-    if ( handle == -1 )
-        return hilti::result::Error(fmt("could not create temporary file in '%s': %s", tmp_dir, strerror(errno)));
-
-    ::close(handle);
-
-    return std::filesystem::path(template_);
 }
 
 std::filesystem::path util::currentExecutable() { return normalizePath(::FindExecutable()); }

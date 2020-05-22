@@ -2,22 +2,18 @@
 
 #pragma once
 
-#include <hilti/base/logger.h>
 #include <hilti/rt/logging.h>
 
 namespace spicy::zeek::debug {
-extern const ::hilti::logging::DebugStream ZeekPlugin;
-}
+// Backend for performing debug logging. Must be implemented by application
+// using the functionality.
+extern void do_log(const std::string_view& msg);
+} // namespace spicy::zeek::debug
 
-// Macro helper to send debug message both HILTI-side loggers: compiler and
-// runtime.
+// Macro helper to report debug messages.
 //
-// TODO(robin): Once we start using the Zeek compiler code outside of Zeek
-// itself, we'll need to differentiate this further: We should then send the
-// compiler's log message only to the HILTI logger intead (and not the HILTI
-// runtime's logger).
-#define ZEEK_DEBUG(msg)                                                                                                \
-    {                                                                                                                  \
-        HILTI_RT_DEBUG("zeek", msg);                                                                                   \
-        HILTI_DEBUG(::spicy::zeek::debug::ZeekPlugin, msg);                                                            \
-    }
+// This forwards to another function that must be implemeneted externally to
+// do the actual logging. The function can decide where to send it to, which
+// may, depending compilation mode, maybe the HILTI logger, the runtime's
+// logger, or both.
+#define ZEEK_DEBUG(msg) spicy::zeek::debug::do_log(msg);

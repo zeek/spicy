@@ -5,6 +5,8 @@
 // Zeek headers
 #include <file_analysis/Analyzer.h>
 
+#include <zeek-spicy/autogen/config.h>
+
 #if ZEEK_DEBUG_BUILD
 #define DEBUG
 #endif

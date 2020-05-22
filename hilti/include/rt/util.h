@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cxxabi.h>
+
 #include <list>
 #include <memory>
 #include <set>
@@ -13,7 +14,10 @@
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/result.h>
+#include <hilti/rt/types/list_fwd.h>
 #include <hilti/rt/types/set_fwd.h>
+#include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector_fwd.h>
 
 #ifdef CXX_FILESYSTEM_IS_EXPERIMENTAL
@@ -62,6 +66,17 @@ struct MemoryStatistics {
 
 /** Returns statistics about the current state of memory allocations. */
 MemoryStatistics memory_statistics();
+
+/**
+ * Creates a temporary file in the system temporary directory.
+ *
+ * @param prefix prefix to use for the file's basename
+ * @return a valid path or an error
+ * */
+hilti::rt::Result<std::filesystem::path> createTemporaryFile(const std::string& prefix = "");
+
+/** Turns a path into an absolute path with all dots removed. */
+std::filesystem::path normalizePath(const std::filesystem::path& p);
 
 /**
  * Returns a string view with all characters of a given set removed.
@@ -313,6 +328,15 @@ auto transform(const std::set<X>& x, F f) {
     return y;
 }
 
+/** Applies a function to each element of a `rt::List`. */
+template<typename X, typename F>
+auto transform(const List<X>& x, F f) {
+    using Y = typename std::result_of<F(X&)>::type;
+    List<Y> y;
+    std::transform(x.begin(), x.end(), std::back_inserter(y), [&](const auto& value) { return f(value); });
+    return y;
+}
+
 /** Applies a function to each element of a `rt::Set`. */
 template<typename X, typename F>
 auto transform(const Set<X>& x, F f) {
@@ -323,6 +347,7 @@ auto transform(const Set<X>& x, F f) {
     return y;
 }
 
+/** Applies a function to each element of a `rt::Vector`. */
 template<typename X, typename Allocator, typename F>
 auto transform(const Vector<X, Allocator>& x, F f) {
     using Y = typename std::result_of<F(X&)>::type;
@@ -486,5 +511,19 @@ enum class ByteOrder { Little, Big, Network, Host, Undef = -1 };
  * either `ByteOrder::Little` or `ByteOrder::Big`.
  */
 extern ByteOrder systemByteOrder();
+
+/** Formats a time according to user-specified format string.
+ *
+ * This function uses the currently active locale and timezone to format
+ * values. Formatted strings cannot exceed 128 bytes.
+ *
+ * @param format a POSIX-conformant format string, see
+ *        https://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html
+ *        for the available format specifiers
+ * @param time timestamp to format
+ * @return formatted timestamp
+ * @throw `InvalidArgument` if the timestamp could not be formatted
+ */
+std::string strftime(const std::string& format, const Time& time);
 
 } // namespace hilti::rt

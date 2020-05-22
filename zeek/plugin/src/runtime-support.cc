@@ -2,6 +2,8 @@
 
 #include <hilti/rt/util.h>
 
+#include <zeek-spicy/autogen/config.h>
+
 // Zeek includes
 #if ZEEK_DEBUG_BUILD
 #define DEBUG
@@ -22,22 +24,23 @@
 #include <zeek-spicy/zeek-reporter.h>
 
 using namespace spicy::zeek;
+using namespace plugin::Zeek_Spicy;
 
 void rt::register_protocol_analyzer(const std::string& name, hilti::rt::Protocol proto,
                                     const hilti::rt::Vector<hilti::rt::Port>& ports, const std::string& parser_orig,
                                     const std::string& parser_resp, const std::string& replaces) {
-    ::SpicyPlugin.registerProtocolAnalyzer(name, proto, ports, parser_orig, parser_resp, replaces);
+    OurPlugin->registerProtocolAnalyzer(name, proto, ports, parser_orig, parser_resp, replaces);
 }
 
 void rt::register_file_analyzer(const std::string& name, const hilti::rt::Vector<std::string>& mime_types,
                                 const std::string& parser) {
-    ::SpicyPlugin.registerFileAnalyzer(name, mime_types, parser);
+    OurPlugin->registerFileAnalyzer(name, mime_types, parser);
 }
 
 void rt::register_enum_type(
     const std::string& ns, const std::string& id,
     const hilti::rt::Vector<std::tuple<std::string, hilti::rt::integer::safe<int64_t>>>& labels) {
-    ::SpicyPlugin.registerEnumType(ns, id, labels);
+    OurPlugin->registerEnumType(ns, id, labels);
 }
 
 ::EventHandlerPtr rt::internal_handler(const std::string& name) {
@@ -121,11 +124,11 @@ void rt::debug(const Cookie& cookie, const std::string_view& msg) {
     if ( const auto p = std::get_if<cookie::ProtocolAnalyzer>(&cookie) ) {
         auto name = p->analyzer->GetAnalyzerName();
         ZEEK_DEBUG(
-            util::fmt("[%s/%" PRIu32 "/%s] %s", name, p->analyzer->GetID(), (p->is_orig ? "orig" : "resp"), msg));
+            hilti::rt::fmt("[%s/%" PRIu32 "/%s] %s", name, p->analyzer->GetID(), (p->is_orig ? "orig" : "resp"), msg));
     }
     else if ( const auto f = std::get_if<cookie::FileAnalyzer>(&cookie) ) {
         auto name = ::file_mgr->GetComponentName(f->analyzer->Tag());
-        ZEEK_DEBUG(util::fmt("[%s/%" PRIu32 "] %s", name, f->analyzer->GetID(), msg));
+        ZEEK_DEBUG(hilti::rt::fmt("[%s/%" PRIu32 "] %s", name, f->analyzer->GetID(), msg));
     }
     else
         throw ValueUnavailable("neither $conn nor $file available for debug logging");
@@ -179,7 +182,7 @@ void rt::confirm_protocol() {
     assert(cookie);
 
     if ( auto x = std::get_if<cookie::ProtocolAnalyzer>(cookie) ) {
-        auto tag = SpicyPlugin.tagForProtocolAnalyzer(x->analyzer->GetAnalyzerTag());
+        auto tag = OurPlugin->tagForProtocolAnalyzer(x->analyzer->GetAnalyzerTag());
         return x->analyzer->ProtocolConfirmation(tag);
     }
     else
@@ -197,7 +200,7 @@ void rt::reject_protocol(const std::string& reason) {
 }
 
 static string _file_id(const rt::cookie::ProtocolAnalyzer& c) {
-    auto id = util::fmt("%" PRIu64 ".%" PRIu64 ".%d", c.analyzer_id, c.file_id, (int)c.is_orig);
+    auto id = hilti::rt::fmt("%" PRIu64 ".%" PRIu64 ".%d", c.analyzer_id, c.file_id, (int)c.is_orig);
     return ::file_mgr->HashHandle(id);
 }
 
@@ -210,8 +213,8 @@ void rt::file_set_size(uint64_t size) {
     assert(cookie);
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
-        ::file_mgr->SetSize(size, SpicyPlugin.tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()),
-                            c->analyzer->Conn(), c->is_orig, _file_id(*c));
+        ::file_mgr->SetSize(size, OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
+                            c->is_orig, _file_id(*c));
     else
         throw ValueUnavailable("no current connection available");
 }
@@ -222,7 +225,7 @@ void rt::file_data_in(const hilti::rt::Bytes& data) {
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
         ::file_mgr->DataIn(reinterpret_cast<const unsigned char*>(data.data()), data.size(),
-                           SpicyPlugin.tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
+                           OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
                            c->is_orig, _file_id(*c));
     else
         throw ValueUnavailable("no current connection available");
@@ -234,7 +237,7 @@ void rt::file_data_in_at_offset(const hilti::rt::Bytes& data, uint64_t offset) {
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
         ::file_mgr->DataIn(reinterpret_cast<const unsigned char*>(data.data()), data.size(), offset,
-                           SpicyPlugin.tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
+                           OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
                            c->is_orig, _file_id(*c));
     else
         throw ValueUnavailable("no current connection available");
@@ -245,7 +248,7 @@ void rt::file_gap(uint64_t offset, uint64_t len) {
     assert(cookie);
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
-        ::file_mgr->Gap(offset, len, SpicyPlugin.tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()),
+        ::file_mgr->Gap(offset, len, OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()),
                         c->analyzer->Conn(), c->is_orig, _file_id(*c));
     else
         throw ValueUnavailable("no current connection available");

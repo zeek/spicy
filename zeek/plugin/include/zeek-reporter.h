@@ -10,9 +10,6 @@
 #include <stdlib.h>
 #include <string>
 
-#include <hilti/ast/location.h>
-#include <hilti/base/util.h>
-
 #include <compiler/debug.h>
 
 #include "plugin.h"
@@ -21,10 +18,6 @@ class Connection; // From Zeek.
 namespace file_analysis {
 class File;
 } // namespace file_analysis
-
-namespace spicy::zeek::debug {
-extern const hilti::logging::DebugStream ZeekPlugin;
-}
 
 namespace spicy::zeek::reporter {
 

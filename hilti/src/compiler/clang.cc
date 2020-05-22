@@ -447,11 +447,6 @@ Result<Nothing> ClangJIT::Implementation::jit() {
 
         shared_library.emplace(std::move(*library));
 
-        // Load the created library.
-        if ( auto load = shared_library->open(); ! load ) {
-            return load.error();
-        }
-
         if ( dump_code ) {
             constexpr char id[] = "__LINKED__";
             std::string path = std::string("dbg.") + id + SHARED_LIBRARY_EXTENSION;
@@ -636,7 +631,7 @@ Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
     auto driver = std::make_unique<clang::driver::Driver>(args[0], llvm::sys::getDefaultTargetTriple(), diagnostics);
 
     HILTI_DEBUG(logging::debug::Jit,
-                util::fmt("compiling shared library %s with flags: %s", *library_path, util::join(args)));
+                util::fmt("compiling shared library %s with flags: %s", *library_path, util::join(args, " ")));
 
     auto cargs = util::transform(args, [](auto& s) -> const char* { return s.c_str(); });
     auto compilation = std::unique_ptr<clang::driver::Compilation>(driver->BuildCompilation(cargs));

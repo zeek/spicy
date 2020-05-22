@@ -442,17 +442,20 @@ command-line arguments:
     :start-after: doc-start
     :end-before:  doc-end
 
-However, when changing options note that most values need to be in
-effect at the time the Spicy plugin compiles any code. A ``redef``
-from another script should work fine, as scripts are fully processed
-before compilation kicks off. However, changing values from the
-command-line (via Zeek's ``var=value``) won't be processed in time due
-to intricacies of Zeek's timing. Hence, to make it easier to change an
-option from the command-line, the Spicy plugin also supports an
-environment variable ``SPICY_PLUGIN_OPTIONS`` that accepts a subset of
-``spicy-driver`` command-line options in the form of a string. For
-example, to compile a debug version of all analyzers, set
-``SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
+Note, however, that most of those options affect code generation. It's
+usually easier to set them through `spicyz` when precompiling an
+analyzer. If you are using Zeek itself to compile an analyzer
+just-in-time, keep in mind that any code generation options need to be
+in effect at the time the Spicy plugin kicks of the compilation
+process. A ``redef`` from another script should work fine, as scripts
+are fully processed before compilation starts. However, changing
+values from the command-line (via Zeek's ``var=value``) won't be
+processed in time due to intricacies of Zeek's timing. To make it
+easier to change an option from the command-line, the Spicy plugin
+also supports an environment variable ``SPICY_PLUGIN_OPTIONS`` that
+accepts a subset of ``spicy-driver`` command-line options in the form
+of a string. For example, to compile a debug version of all analyzers,
+set ``SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
 
 .. code-block:: text
 
@@ -468,8 +471,8 @@ example, to compile a debug version of all analyzers, set
       -V             Don't validate ASTs (for debugging only).
       -X <addl>      Implies -d and adds selected additional instrumentation (comma-separated).
 
-To get that usage message, run ``spicyz -h`` (recall that ``spicyz``
-is just a wrapper around Zeek).
+To get that usage message, set ``SPICY_PLUGIN_OPTIONS=-h`` when
+running Zeek.
 
 Debugging
 =========
@@ -477,7 +480,7 @@ Debugging
 If Zeek doesn't seem to be doing the right thing with your Spicy
 analyzer, there are several ways to debug what's going on. To help
 with that, make sure to compile your analyzer with ``spicy::debug=T``
-(or ``SPICY_PLUGIN_OPTIONS=-d``, or ``spicyz -d``); and, if possible,
+(or ``spicyz -d``, or ``SPICY_PLUGIN_OPTIONS=-d``); and, if possible,
 use a debug version of Zeek (i.e., build Zeek with ``./configure
 --enable-debug``).
 

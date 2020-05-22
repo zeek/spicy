@@ -8,6 +8,7 @@
 #include <hilti/base/util.h>
 
 #cmakedefine HAVE_ZEEK
+#cmakedefine ZEEK_HAVE_JIT
 
 #ifdef HAVE_ZEEK
 #define ZEEK_EXECUTABLE "@ZEEK_EXE@"
@@ -24,7 +25,7 @@ struct Configuration {
      */
     Configuration();
 
-    bool uses_build_directory;    /**< True if all information pertains to running outside of the build directory. */
+    bool uses_build_directory; /**< True if all information pertains to running outside of the build directory. */
 
     std::filesystem::path spicyc; /**< Full path to `spicyc` binary */
     std::vector<std::filesystem::path>

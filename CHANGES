@@ -1,4 +1,103 @@
 
+0.4.0-311 | 2020-05-21 07:54:43 +0000
+
+  * Fix JIT-less build of Zeek plugin. (Robin Sommer, Corelight)
+
+0.4.0-309 | 2020-05-20 12:35:36 +0000
+
+  * GH-299: Support compiling the Zeek plugin without JIT support.
+    (Robin Sommer, Corelight)
+
+    If configured with `--disable-jit`, the Zeek plugin will now still
+    be built and will support loading pre-compiled HLTO files. The
+    plugin will have dependencies only on system libraries, and hence
+    can be installed on systems that don't have the Spicy libraries
+    available.
+
+    There's also a new configure option `--disable-jit-for-zeek` that
+    disables JIT support just for the Zeek plugin, creating the same
+    dependency-free result.
+
+  * GH-83: Add standalone tool spicyz to precompile analyzers for
+    Zeek. (Robin Sommer, Corelight)
+
+    This replaces the previous shell wrapper around Zeek, meaning that
+    we can now precompile Zeek analyzers without actually relying on
+    having a Zeek binary itself available. (We continue to require
+    access to the Zeek development headers.)
+
+    As a bonus feature, the new spicyz comes with an option "-c
+    <prefix>" that, instead of producing a fully compiled HLTO, just
+    writes out all the generated C++ code into files, each named
+    "<prefix>-<module ID>.cc". This goes along way towards supporting
+    compiling Spicy analyzers statically into an application, similar
+    to how BinPAC is being used (GH-72).
+
+  * Fix for Bison versions >= 3.6. (Robin Sommer, Corelight)
+
+0.4.0-295 | 2020-05-20 07:23:14 +0000
+
+  * Fix a couple typos in documentation. (Robin Sommer, Corelight)
+
+0.4.0-293 | 2020-05-19 06:57:49 +0000
+
+  * Rework implementation of `hilti::rt::List`. (Benjamin Bannier, Corelight)
+
+    - Hide that `rt::List` inherits from `std::list` from users.
+    - Make iterators of `rt::List` safe.
+    - Add tests for `rt::List`.
+
+0.4.0-286 | 2020-05-18 10:38:44 +0000
+
+  * Remove FAQ pointer from README. (Robin Sommer, Corelight)
+
+  * Fix bug in EVT reading. (Robin Sommer, Corelight)
+
+0.4.0-284 | 2020-05-18 08:29:49 +0000
+
+  * GH-237: Add library function `spicy::strftime`. (Benjamin Bannier,
+    Corelight)
+
+0.4.0-282 | 2020-05-18 08:28:08 +0000
+
+  * GH-312: Fix comment parsing in EVT files. (Robin Sommer,
+    Corelight)
+
+0.4.0-280 | 2020-05-15 07:11:01 +0000
+
+  * Rework implementation of `hilti::rt::Map`. (Benjamin Bannier, Corelight)
+
+    - Hide that `rt::Map` inherits from `std::map` from users.
+    - Make iterators of `rt::Map` safe.
+    - Slim down `AssignProxy`.
+    - Fix `rt::Map::get`.
+    - Add test for `rt::Map` stringification.
+
+  * Fix display of compiler flags in JIT debug log. (Benjamin Bannier, Corelight)
+
+  * Document using Docker Hub images. (Benjamin Bannier, Corelight)
+
+0.4.0-270 | 2020-05-14 07:00:54 +0000
+
+  * Clean up example code. (Robin Sommer, Corelight)
+
+  * Change structure of example section, and add more links. (Robin
+    Sommer, Corelight)
+
+  * Make autogen-docs script more robust. (Robin Sommer, Corelight)
+
+  * Fix documentation of -= and /= opertators. (Robin Sommer, Corelight)
+
+0.4.0-264 | 2020-05-13 14:18:08 +0000
+
+  * Add an end-to-end TFTP analyzer for Zeek, it comes with a Zeek
+    script producing a typical ``tftp.log`` log file. This analyzer is
+    a good introductory example because the Spicy side is pretty
+    straight-forward. (Robin Sommer, Corelight)
+
+  * GH-306: Do not fail documentation build for broken links.
+    (Benjamin Bannier, Corelight)
+
 0.4.0-260 | 2020-05-12 10:37:16 +0000
 
   * Documentation updates. (Robin Sommer, Corelight)

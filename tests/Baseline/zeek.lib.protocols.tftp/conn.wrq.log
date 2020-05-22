@@ -1,0 +1,11 @@
+#close	2020-05-13-11-31-50
+#empty_field	(empty)
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	orig_ip_bytes	resp_pkts	resp_ip_bytes	tunnel_parents
+#open	2020-05-13-11-31-50
+#path	conn
+#separator \x09
+#set_separator	,
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
+#unset_field	-
+1367053679.452740	CHhAvVGS1DHFjwGM9	192.168.0.1	57509	192.168.0.13	69	udp	spicy_tftp	-	-	-	S0	-	-	0	D	1	48	0	0	-
+1367053679.510626	ClEkJM2Vm5giqnMf4h	192.168.0.13	2087	192.168.0.1	57509	udp	spicy_tftp_data	0.246451	200	24795	SF	-	-	0	Dd	50	1600	49	26167	-

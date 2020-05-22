@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <getopt.h>
 
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <utility>
@@ -466,8 +467,12 @@ Result<Nothing> Driver::addInput(const std::filesystem::path& path) {
     else if ( path.extension() == ".hlto" ) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
 
-        if ( auto load = Library(path).open(); ! load )
-            return error(util::fmt("could not load library file %s: %s", path, load.error()));
+        try {
+            if ( auto load = Library(path).open(); ! load )
+                return error(util::fmt("could not load library file %s: %s", path, load.error()));
+        } catch ( const hilti::rt::EnvironmentError& e ) {
+            hilti::rt::fatalError(e.what());
+        }
 
         return Nothing();
     }
@@ -650,14 +655,23 @@ Result<Nothing> Driver::compile() {
         if ( auto rc = jitUnits(); ! rc )
             return rc;
 
-        if ( ! _driver_options.output_path.empty() ) {
-            // Save code to disk rather than execute.
-            HILTI_DEBUG(logging::debug::Driver, fmt("saving precompiled code to %s", _driver_options.output_path));
+        assert(_jit);
+        auto library = _jit->retrieveLibrary();
 
-            assert(_jit);
-            auto library = _jit->retrieveLibrary();
+        if ( _driver_options.output_path.empty() ) {
+            // Ok if not available.
+            if ( library ) {
+                if ( auto loaded = library->get().open(); ! loaded )
+                    return loaded.error();
+            }
+        }
+        else {
+            // Save code to disk rather than execute.
             if ( ! library )
+                // We don't have any code.
                 return library.error();
+
+            HILTI_DEBUG(logging::debug::Driver, fmt("saving precompiled code to %s", _driver_options.output_path));
 
             if ( auto success = library->get().save(_driver_options.output_path); ! success )
                 return result::Error(
@@ -730,11 +744,18 @@ Result<Nothing> Driver::outputUnits() {
     for ( auto& unit : _hlts ) {
         if ( auto cxx = unit.cxxCode() ) {
             if ( _driver_options.output_cxx ) {
-                auto output = openOutput(output_path, false);
+                auto cxx_path = output_path;
+
+                if ( _driver_options.output_cxx_prefix.size() ) {
+                    assert(cxx->id().size());
+                    cxx_path = fmt("%s_%s.cc", _driver_options.output_cxx_prefix, cxx->id());
+                }
+
+                auto output = openOutput(cxx_path, false);
                 if ( ! output )
                     return output.error();
 
-                HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", unit.id(), output_path));
+                HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", unit.id(), cxx_path));
                 cxx->save(*output);
             }
 

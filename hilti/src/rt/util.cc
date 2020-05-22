@@ -1,7 +1,12 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <limits.h>
+#include <stdlib.h>
 #include <sys/resource.h>
 #include <unistd.h>
+
+#include <cerrno>
+#include <cstring>
 
 #include <hilti/3rdparty/utf8proc/utf8proc.h>
 
@@ -12,6 +17,7 @@
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
+#include <hilti/rt/fmt.h>
 #include <hilti/rt/util.h>
 
 std::string hilti::rt::version() {
@@ -59,6 +65,35 @@ hilti::rt::MemoryStatistics hilti::rt::memory_statistics() {
     stats.cached_fibers = fibers.cached;
 
     return stats;
+}
+
+hilti::rt::Result<std::filesystem::path> hilti::rt::createTemporaryFile(const std::string& prefix) {
+    std::error_code ec;
+    auto tmp_dir = std::filesystem::temp_directory_path(ec);
+
+    if ( ec )
+        return hilti::rt::result::Error(fmt("could not create temporary file: %s", ec.message()));
+
+    auto template_ = (tmp_dir / (prefix + "-XXXXXX")).native();
+
+    auto handle = ::mkstemp(template_.data());
+    if ( handle == -1 )
+        return hilti::rt::result::Error(fmt("could not create temporary file in '%s': %s", tmp_dir, strerror(errno)));
+
+    ::close(handle);
+
+    return std::filesystem::path(template_);
+}
+
+std::filesystem::path hilti::rt::normalizePath(const std::filesystem::path& p) {
+    if ( p.empty() )
+        return "";
+
+    if ( ! std::filesystem::exists(p) )
+        return p;
+
+    char buffer[PATH_MAX];
+    return realpath(std::filesystem::absolute(p).native().c_str(), buffer);
 }
 
 std::vector<std::string_view> hilti::rt::split(std::string_view s, std::string_view delim) {
@@ -308,4 +343,25 @@ hilti::rt::ByteOrder hilti::rt::systemByteOrder() {
 #else
 #error Neither LITTLE_ENDIAN nor BIG_ENDIAN defined.
 #endif
+}
+
+std::string hilti::rt::strftime(const std::string& format, const hilti::rt::Time& time) {
+    auto seconds = static_cast<time_t>(time.seconds());
+
+    std::tm tm;
+
+    constexpr size_t size = 128;
+    char mbstr[size];
+
+    auto localtime = ::localtime_r(&seconds, &tm);
+    if ( ! localtime )
+        throw InvalidArgument(hilti::rt::fmt("cannot convert timestamp to local time: %s", std::strerror(errno)));
+
+
+    auto n = std::strftime(mbstr, size, format.c_str(), localtime);
+
+    if ( ! n )
+        throw InvalidArgument("could not format timestamp");
+
+    return mbstr;
 }

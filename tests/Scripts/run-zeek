@@ -5,4 +5,4 @@
 # We disable any leak checking for Zeek because there are plenty.
 
 zeek="$(spicy-config --zeek) -G $(dirname $0)/../random.seed"
-LD_PRELOAD=${ZEEK_LD_PRELOAD} ASAN_OPTIONS=detect_leaks=0 ${zeek} $@
+LD_PRELOAD=${ZEEK_LD_PRELOAD} ASAN_OPTIONS=detect_leaks=0:detect_odr_violation=0 ${zeek} $@

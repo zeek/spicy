@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: have-zeek-plugin
+# @TEST-REQUIRES: have-zeek-plugin-jit
 #
 # @TEST-EXEC: ASAN_OPTIONS=detect_leaks=0 ${ZEEK} -r ${TRACES}/ssh-single-conn.trace conv.spicy ./conv.evt %INPUT >output
 # @TEST-EXEC: btest-diff output

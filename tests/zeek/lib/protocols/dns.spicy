@@ -1,6 +1,6 @@
 # @TEST-REQUIRES: have-zeek-plugin
 #
-# @TEST-EXEC: run-spicyz -o dns.hlto ${DIST}/spicy/lib/protocols/dns.spicy ${DIST}/zeek/plugin/lib/protocols/dns.evt
+# @TEST-EXEC: spicyz -o dns.hlto ${DIST}/spicy/lib/protocols/dns.spicy ${DIST}/zeek/plugin/lib/protocols/dns.evt
 # @TEST-EXEC: ${SCRIPTS}/run-zeek -NN dns.hlto | grep -q spicy_DNS
 # @TEST-EXEC: ${SCRIPTS}/run-zeek -r ${TRACES}/dns53.pcap dns.hlto
 # @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff conn.log

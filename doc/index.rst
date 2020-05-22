@@ -32,6 +32,9 @@ Overview
     C++ code. You define the grammar, specify which Zeek events to
     generate, and Spicy takes care of the rest.
 
+    See our growing :ref:`collection of example grammars <examples>`
+    to get a sense of how Spicy works.
+
 License
     Spicy is open source and released under a BSD license, which
     allows for pretty much unrestricted use as long as you leave the

@@ -141,6 +141,7 @@ set(SOURCES_RUNTIME
     src/rt/fiber.cc
     src/rt/global-state.cc
     src/rt/init.cc
+    src/rt/library.cc
     src/rt/logging.cc
     src/rt/main.cc
     src/rt/types/address.cc
@@ -268,11 +269,14 @@ add_executable(hilti-rt-tests
                src/rt/tests/address.cc
                src/rt/tests/bytes.cc
                src/rt/tests/fiber.cc
+               src/rt/tests/list.cc
+               src/rt/tests/map.cc
                src/rt/tests/reference.cc
                src/rt/tests/result.cc
                src/rt/tests/set.cc
                src/rt/tests/stream.cc
                src/rt/tests/to_string.cc
+               src/rt/tests/util.cc
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_link_libraries(hilti-rt-tests PRIVATE hilti-rt doctest)

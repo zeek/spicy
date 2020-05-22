@@ -53,7 +53,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             // Can only be the empty list.
             return "hilti::rt::list::Empty()";
 
-        return fmt("hilti::rt::List<%s>{{%s}}", cg->compile(n.elementType(), codegen::TypeUsage::Storage),
+        return fmt("hilti::rt::List<%s>({%s})", cg->compile(n.elementType(), codegen::TypeUsage::Storage),
                    util::join(util::transform(n.value(), [this](auto e) { return cg->compile(e); }), ", "));
     }
 
