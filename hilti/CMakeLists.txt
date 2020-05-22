@@ -130,8 +130,6 @@ set_target_properties(hilti PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
 ##### Runtime library.
 
-add_subdirectory(src/3rdparty/justrx)
-
 set(SOURCES_RUNTIME
     src/rt/backtrace.cc
     src/rt/configuration.cc
@@ -178,7 +176,7 @@ foreach ( lib hilti-rt hilti-rt-debug )
     # referenced target is built before the dependent target is linked, we also
     # explicitly depend on jrx-objects to make sure all its objects are build.
     add_dependencies(${lib}-objects jrx-objects)
-    target_include_directories(${lib}-objects PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/justrx/include)
+    target_include_directories(${lib}-objects PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/justrx/include)
     target_link_libraries(${lib}-objects      PRIVATE $<TARGET_OBJECTS:jrx-objects>)
 
     add_library(${lib} STATIC)
