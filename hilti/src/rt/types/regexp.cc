@@ -30,6 +30,10 @@ struct regexp::MatchState::Pimpl {
 regexp::MatchState::MatchState(const RegExp& re) {
     _pimpl = std::make_unique<Pimpl>();
     _pimpl->_jrx = re._jrxShared();
+
+    if ( re.patterns().empty() )
+        throw regexp::PatternError("trying to match empty pattern set");
+
     jrx_match_state_init(_pimpl->_jrx.get(), 0, &_pimpl->_ms);
 }
 

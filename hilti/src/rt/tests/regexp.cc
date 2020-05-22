@@ -80,6 +80,10 @@ TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("MatchState");
 
+TEST_CASE("construct") {
+    CHECK_THROWS_WITH_AS(RegExp().tokenMatcher(), "trying to match empty pattern set", const regexp::PatternError&);
+}
+
 TEST_CASE("advance") {
     // TODO(bbannier): This should return (1, 3).
     CHECK_EQ(RegExp("123").tokenMatcher().advance("123"_b, false), std::make_tuple(-1, 3));
