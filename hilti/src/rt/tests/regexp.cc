@@ -132,4 +132,28 @@ TEST_CASE("advance on limited view") {
     }
 }
 
+TEST_CASE("reassign") {
+    const auto re = RegExp("123", regexp::Flags());
+
+    // Create and complete a matcher.
+    auto ms1 = re.tokenMatcher();
+    REQUIRE_EQ(ms1.advance("123"_b, true), std::make_tuple(1, 3));
+    REQUIRE_THROWS_WITH_AS(ms1.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
+
+    // After assigning from a fresh value the matcher can match again.
+    ms1 = re.tokenMatcher();
+    CHECK_EQ(ms1.advance("123"_b, true), std::make_tuple(1, 3));
+
+    // A matcher copy-constructed from an completed matcher is also completed.
+    REQUIRE_THROWS_WITH_AS(ms1.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
+    auto ms2(std::move(ms1));
+    CHECK_THROWS_WITH_AS(ms2.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
+
+    // Same is true if matching on a different input type.
+    REQUIRE_THROWS_WITH_AS(ms2.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
+    auto ms3(std::move(ms2));
+    CHECK_THROWS_WITH_AS(ms3.advance(Stream("123"_b).view()), "matching already complete",
+                         const regexp::MatchStateReuse&);
+}
+
 TEST_SUITE_END();
