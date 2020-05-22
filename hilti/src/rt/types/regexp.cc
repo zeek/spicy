@@ -540,7 +540,7 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const bytes::View& da
 
 std::string hilti::rt::detail::adl::to_string(const RegExp& x, adl::tag /*unused*/) {
     if ( x.patterns().empty() )
-        return "<regexp wo/ pattern>";
+        return "<regexp w/o pattern>";
 
     auto p = join(transform(x.patterns(), [&](auto s) { return fmt("/%s/", s); }), " | ");
 

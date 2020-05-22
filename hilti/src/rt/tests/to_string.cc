@@ -9,6 +9,7 @@
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/list.h>
 #include <hilti/rt/types/map.h>
+#include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/vector.h>
 
@@ -75,6 +76,18 @@ TEST_CASE("List") {
     CHECK_EQ(to_string(List<int>({1, 2, 3})), "[1, 2, 3]");
     CHECK_EQ(to_string(List<List<int>>({{1, 2, 3}, {1, 2}})), "[[1, 2, 3], [1, 2]]");
     CHECK_EQ(to_string(List<Bytes>({"abc"_b})), "[b\"abc\"]");
+}
+
+TEST_CASE("RegExp") {
+    CHECK_EQ(to_string(RegExp()), "<regexp w/o pattern>");
+    CHECK_EQ(to_string(RegExp("a", regexp::Flags())), "/a/");
+    CHECK_EQ(to_string(RegExp("a", regexp::Flags({.no_sub = 1}))), "/a/ &nosub");
+    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a"}), regexp::Flags())), "/a/ &nosub");
+    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a", "b"}), regexp::Flags())), "/a/ | /b/ &nosub");
+
+    CHECK_EQ(to_string(RegExp("/", regexp::Flags())), "///");
+
+    CHECK_EQ(to_string(RegExp("", regexp::Flags()).tokenMatcher()), "<regexp-match-state>");
 }
 
 TEST_SUITE_END();
