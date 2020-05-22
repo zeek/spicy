@@ -80,6 +80,27 @@ TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("MatchState");
 
+TEST_CASE("advance") {
+    // TODO(bbannier): This should return (1, 3).
+    CHECK_EQ(RegExp("123").tokenMatcher().advance("123"_b, false), std::make_tuple(-1, 3));
+    CHECK_EQ(RegExp("123").tokenMatcher().advance("123"_b, true), std::make_tuple(1, 3));
+
+    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "123"})).tokenMatcher().advance("123"_b, true),
+             std::make_tuple(2, 3));
+
+    // TODO(bbannier): This should either match immediatetly with (1, 0), or never (0, 0).
+    CHECK_EQ(RegExp("").tokenMatcher().advance("123"_b, false), std::make_tuple(-1, 3));
+
+    auto re = RegExp("123").tokenMatcher();
+    REQUIRE_EQ(re.advance(""_b, true), std::make_tuple(0, 0));
+    CHECK_THROWS_WITH_AS(re.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
+
+    CHECK_THROWS_WITH_AS(regexp::MatchState().advance("123"_b, true),
+                         "no regular expression associated with match state", const regexp::PatternError&);
+    CHECK_THROWS_WITH_AS(regexp::MatchState().advance(Stream("123"_b).view()),
+                         "no regular expression associated with match state", const regexp::PatternError&);
+}
+
 TEST_CASE("advance on limited view") {
     const auto input = "1234567890"_b;
 
