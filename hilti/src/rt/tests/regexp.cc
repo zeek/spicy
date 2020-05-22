@@ -12,6 +12,13 @@
 using namespace hilti::rt;
 using namespace hilti::rt::bytes::literals;
 
+namespace std {
+template<typename A, typename B>
+std::ostream& operator<<(std::ostream& stream, const std::tuple<A, B>& xs) {
+    return stream << '[' << to_string(std::get<0>(xs)) << ", " << to_string(std::get<1>(xs)) << ']';
+}
+} // namespace std
+
 TEST_SUITE_BEGIN("RegExp");
 
 TEST_CASE("find") {
@@ -32,6 +39,26 @@ TEST_CASE("find") {
 
     // Ambiguous case, captured here to ensure consistency.
     CHECK_EQ(RegExp(std::vector<std::string>({"abc", "abc"})).find(" abc "_b), 1);
+}
+
+TEST_CASE("findSpan") {
+    CHECK_EQ(RegExp("abc").findSpan("abc"_b), std::make_tuple(1, "abc"_b));
+    CHECK_EQ(RegExp("abc").findSpan(" abc"_b), std::make_tuple(1, "abc"_b));
+    CHECK_EQ(RegExp("abc").findSpan("abc "_b), std::make_tuple(1, "abc"_b));
+    CHECK_EQ(RegExp("abc").findSpan(" abc "_b), std::make_tuple(1, "abc"_b));
+
+    CHECK_EQ(RegExp("^abc$").findSpan("abc"_b), std::make_tuple(1, "abc"_b));
+    CHECK_EQ(RegExp("abc$").findSpan("123"_b), std::make_tuple(-1, ""_b));
+    // TODO(bbannier): This should never match and return `0`.
+    CHECK_EQ(RegExp("^abc$").findSpan("123"_b), std::make_tuple(-1, ""_b));
+
+    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "123"})).findSpan(" abc "_b), std::make_tuple(1, "abc"_b));
+    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "123"})).findSpan(" 123 "_b), std::make_tuple(2, "123"_b));
+
+    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "123"})).find(""_b), -1);
+
+    // Ambiguous case, captured here to ensure consistency.
+    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "abc"})).findSpan(" abc "_b), std::make_tuple(1, "abc"_b));
 }
 
 TEST_SUITE_END();
