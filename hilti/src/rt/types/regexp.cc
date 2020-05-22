@@ -3,14 +3,16 @@
 // Note: We don't run clang-tidy on this file. The use of the JRX's C
 // interface triggers all kinds of warnings.
 
+#include "hilti/rt/types/regexp.h"
+
+#include <cassert>
+#include <utility>
+
+#include <hilti/rt/util.h>
+
 extern "C" {
 #include <justrx/jrx.h>
 }
-
-#include <hilti/rt/types/regexp.h>
-#include <hilti/rt/util.h>
-
-#include <utility>
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
@@ -201,8 +203,7 @@ RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) : 
 }
 
 void RegExp::_newJrx() {
-    if ( _jrx_shared )
-        throw regexp::PatternError("regexp already compiled");
+    assert(! _jrx_shared && "regexp already compiled");
 
     int cflags = (REG_EXTENDED | REG_LAZY); // | REG_DEBUG;
 
@@ -228,8 +229,7 @@ void RegExp::_compileOne(std::string pattern, int idx) {
 }
 
 int32_t RegExp::find(const Bytes& data) const {
-    if ( ! _jrx() )
-        throw regexp::PatternError("regexp not compiled");
+    assert(_jrx() && "regexp not compiled");
 
     jrx_match_state ms;
     jrx_accept_id acc = _search_pattern(&ms, data, nullptr, nullptr, false, true);
@@ -242,8 +242,7 @@ static Bytes _subslice(const Bytes& data, jrx_offset so, jrx_offset eo) {
 }
 
 std::tuple<int32_t, Bytes> RegExp::findSpan(const Bytes& data) const {
-    if ( ! _jrx() )
-        throw regexp::PatternError("regexp not compiled");
+    assert(_jrx() && "regexp not compiled");
 
     jrx_offset so = -1;
     jrx_offset eo = -1;
@@ -259,8 +258,7 @@ std::tuple<int32_t, Bytes> RegExp::findSpan(const Bytes& data) const {
 }
 
 Vector<Bytes> RegExp::findGroups(const Bytes& data) const {
-    if ( ! _jrx() )
-        throw regexp::PatternError("regexp not compiled");
+    assert(_jrx() && "regexp not compiled");
 
     if ( _patterns.size() > 1 )
         throw regexp::NotSupported("cannot capture groups during set matching");

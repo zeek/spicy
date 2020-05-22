@@ -178,7 +178,7 @@ private:
     friend class regexp::MatchState;
 
     jrx_regex_t* _jrx() const {
-        assert(_jrx_shared);
+        assert(_jrx_shared && "regexp not compiled");
         return _jrx_shared.get();
     }
     const auto& _jrxShared() const { return _jrx_shared; }
