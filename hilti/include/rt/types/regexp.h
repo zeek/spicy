@@ -137,7 +137,7 @@ public:
      * @return If the returned integer is larger than zero, the regexp was
      * found; for sets compiled via `compileSet` the integer value then
      * indicates the ID of the pattern that was found. If the function
-     * returns zero, no match was found and that wwon't change if further
+     * returns zero, no match was found and that won't change if further
      * data gets added to the input data. If the returned value is smaller than
      * 0, a partial match was found (i.e., no match yet but adding further
      * data could change that).

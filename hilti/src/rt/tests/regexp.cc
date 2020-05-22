@@ -12,6 +12,30 @@
 using namespace hilti::rt;
 using namespace hilti::rt::bytes::literals;
 
+TEST_SUITE_BEGIN("RegExp");
+
+TEST_CASE("find") {
+    CHECK_GT(RegExp("abc").find("abc"_b), 0);
+    CHECK_GT(RegExp("abc").find(" abc"_b), 0);
+    CHECK_GT(RegExp("abc").find("abc "_b), 0);
+    CHECK_GT(RegExp("abc").find(" abc "_b), 0);
+
+    CHECK_EQ(RegExp("^abc$").find("abc"_b), 1);
+    CHECK_EQ(RegExp("abc$").find("123"_b), -1);
+    // TODO(bbannier): This should never match and return `0`.
+    CHECK_EQ(RegExp("^abc$").find("123"_b), -1);
+
+    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "123"})).find(" abc "_b), 1);
+    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "123"})).find(" 123 "_b), 2);
+
+    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "123"})).find(""_b), -1);
+
+    // Ambiguous case, captured here to ensure consistency.
+    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "abc"})).find(" abc "_b), 1);
+}
+
+TEST_SUITE_END();
+
 TEST_SUITE_BEGIN("MatchState");
 
 TEST_CASE("advance on limited view") {
