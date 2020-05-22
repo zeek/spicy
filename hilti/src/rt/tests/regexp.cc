@@ -61,6 +61,16 @@ TEST_CASE("findSpan") {
     CHECK_EQ(RegExp(std::vector<std::string>({"abc", "abc"})).findSpan(" abc "_b), std::make_tuple(1, "abc"_b));
 }
 
+TEST_CASE("findGroups") {
+    CHECK_EQ(RegExp("abc").findGroups(" abc "_b), Vector<Bytes>({"abc"_b}));
+    CHECK_EQ(RegExp("123").findGroups(" abc "_b), Vector<Bytes>());
+
+    CHECK_THROWS_WITH_AS(RegExp(std::vector<std::string>({"abc", "123"})).findGroups("abc"_b),
+                         "cannot capture groups during set matching", const regexp::NotSupported&);
+
+    CHECK_EQ(RegExp("(a)bc").findGroups(" abc "_b), Vector<Bytes>({"abc"_b, "a"_b}));
+}
+
 TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("MatchState");
