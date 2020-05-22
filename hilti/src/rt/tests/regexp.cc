@@ -71,6 +71,11 @@ TEST_CASE("findGroups") {
     CHECK_EQ(RegExp("(a)bc").findGroups(" abc "_b), Vector<Bytes>({"abc"_b, "a"_b}));
 }
 
+TEST_CASE("construct") {
+    CHECK_THROWS_WITH_AS(RegExp(std::vector<std::string>()), "trying to compile empty pattern set",
+                         const regexp::PatternError&);
+}
+
 TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("MatchState");
