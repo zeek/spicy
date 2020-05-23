@@ -11,6 +11,7 @@
 #include <hilti/rt/types/map.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/set.h>
+#include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
 
 using namespace hilti::rt;
@@ -88,6 +89,14 @@ TEST_CASE("RegExp") {
     CHECK_EQ(to_string(RegExp("/", regexp::Flags())), "///");
 
     CHECK_EQ(to_string(RegExp("", regexp::Flags()).tokenMatcher()), "<regexp-match-state>");
+}
+
+TEST_CASE("Time") {
+    CHECK_EQ(to_string(Time()), "<not set>");
+    CHECK_EQ(to_string(Time(uint64_t(0))), "<not set>");
+    CHECK_EQ(to_string(Time(double(0))), "<not set>");
+
+    CHECK_EQ(to_string(Time(uint64_t(1))), "1970-01-01T00:00:00.000000001Z");
 }
 
 TEST_SUITE_END();
