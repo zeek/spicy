@@ -120,9 +120,11 @@ set_source_files_properties(src/compiler/clang.cc PROPERTIES COMPILE_DEFINITIONS
 add_library(hilti ${SOURCES_COMPILER})
 add_dependencies(hilti version)
 target_compile_options(hilti PRIVATE "-Wall")
+target_compile_options(hilti PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti PRIVATE $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
-target_link_libraries(hilti PRIVATE std::filesystem)
+target_link_libraries(hilti PRIVATE std::filesystem ${CMAKE_DL_LIBS})
+target_link_options(hilti   PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
