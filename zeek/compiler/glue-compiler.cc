@@ -198,10 +198,13 @@ static hilti::rt::Port extract_port(const std::string& chunk, size_t* i) {
         throw ParseError("cannot parse port specification");
 
     hilti::rt::Protocol proto;
-    uint16_t port;
+    uint64_t port;
 
     s = chunk.substr(*i, j - *i);
     util::atoi_n(s.begin(), s.end(), 10, &port);
+
+    if ( port > 65535 )
+        throw ParseError("port outside of valid range");
 
     *i = j;
 
@@ -228,7 +231,7 @@ static hilti::rt::Port extract_port(const std::string& chunk, size_t* i) {
     else
         throw ParseError("cannot parse port specification");
 
-    return {port, proto};
+    return {static_cast<uint16_t>(port), proto};
 }
 
 GlueCompiler::GlueCompiler(Driver* driver) : _driver(driver) {}

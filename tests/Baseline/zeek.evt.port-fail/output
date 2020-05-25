@@ -1,0 +1,2 @@
+[error] /Users/robin/work/spicy/topic2/tests/.tmp/zeek.evt.port-fail/port-fail.evt:1: port outside of valid range
+[error] error loading EVT file "/Users/robin/work/spicy/topic2/tests/.tmp/zeek.evt.port-fail/port-fail.evt"
