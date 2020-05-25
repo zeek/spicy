@@ -6,6 +6,7 @@
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/statements/switch.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/result.h>
 #include <spicy/ast/all.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/hook.h>
@@ -16,6 +17,115 @@ using namespace spicy;
 using util::fmt;
 
 namespace {
+
+// Helper to validate that a type is parseable.
+hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::item::Field& f) {
+    if ( pt.isA<type::Bitfield>() )
+        return hilti::Nothing();
+
+    if ( pt.isA<type::Bytes>() ) {
+        if ( f.ctor() )
+            return hilti::Nothing();
+
+        auto eod_attr = AttributeSet::find(f.attributes(), "&eod");
+        auto until_attr = AttributeSet::find(f.attributes(), "&until");
+        auto until_including_attr = AttributeSet::find(f.attributes(), "&until-including");
+        auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
+        auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
+        auto size_attr = AttributeSet::find(f.attributes(), "&size");
+
+        std::vector<std::string> attrs_present;
+        for ( const auto& i : {eod_attr, parse_from_attr, parse_at_attr, until_attr, until_including_attr} ) {
+            if ( i )
+                attrs_present.emplace_back(i->tag());
+        }
+
+        // &size can be combined with any other attribute, or be used standalone.
+
+        if ( attrs_present.size() > 1 )
+            return hilti::result::Error(fmt("attributes cannot be combined: %s", util::join(attrs_present, ", ")));
+
+        if ( attrs_present.empty() && ! size_attr )
+            return hilti::result::Error(
+                "bytes field requires one of &eod, &parse_at, &parse_from, &size, &until, &until-including");
+
+        return hilti::Nothing();
+    }
+
+    if ( pt.isA<type::Address>() ) {
+        auto v4 = AttributeSet::find(f.attributes(), "&ipv4");
+        auto v6 = AttributeSet::find(f.attributes(), "&ipv6");
+
+        if ( ! (v4 || v6) )
+            return hilti::result::Error("address field must come with either &ipv4 or &ipv6 attribute");
+
+        if ( v4 && v6 )
+            return hilti::result::Error("address field cannot have both &ipv4 and &ipv6 attributes");
+
+        return hilti::Nothing();
+    }
+
+    if ( pt.isA<type::Real>() ) {
+        auto type = AttributeSet::find(f.attributes(), "&type");
+
+        if ( type ) {
+            if ( auto t = type->valueAs<Expression>()->type().tryAs<type::Enum>();
+                 ! (t && t->cxxID() && *t->cxxID() == ID("::hilti::rt::real::Type")) )
+                return hilti::result::Error("&type attribute must be a spicy::RealType");
+        }
+        else
+            return hilti::result::Error("field of type real must with a &type attribute");
+
+        return hilti::Nothing();
+    }
+
+    if ( pt.isA<type::SignedInteger>() || pt.isA<type::UnsignedInteger>() )
+        return hilti::Nothing();
+
+    if ( pt.isA<type::Unit>() )
+        return hilti::Nothing();
+
+    if ( const auto& x = pt.tryAs<type::ValueReference>() ) {
+        auto dt = x->dereferencedType();
+
+        if ( dt.originalNode() )
+            dt = dt.originalNode()->as<Type>();
+
+        if ( auto rc = isParseableType(dt, f); ! rc )
+            return rc;
+
+        return hilti::Nothing();
+    }
+
+    if ( pt.isA<type::Void>() )
+        return hilti::Nothing();
+
+    // A vector can be parsed either through a sub-item, or through a type.
+
+    if ( auto item = f.vectorItem() ) {
+        if ( auto item_field = item->tryAs<spicy::type::unit::item::Field>() ) {
+            const auto& item_attrs = item_field->attributes();
+
+            if ( AttributeSet::has(item_attrs, "&chunked") )
+                return hilti::result::Error("vector elements cannot have &chunked attribute");
+
+            if ( AttributeSet::has(item_attrs, "&convert") )
+                return hilti::result::Error("vector elements cannot have &convert attribute");
+        }
+
+        return hilti::Nothing();
+    }
+
+    else if ( const auto& x = pt.tryAs<type::Vector>() ) {
+        if ( auto rc = isParseableType(x->elementType(), f); ! rc )
+            return rc;
+
+        return hilti::Nothing();
+    }
+
+    return hilti::result::Error(fmt("not a parseable type (%s)", pt));
+}
+
 
 struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformVisitor> {
     // Record error at location of current node.
@@ -213,7 +323,6 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
         auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
         auto repeat = f.repeatCount();
-        auto size_attr = AttributeSet::find(f.attributes(), "&size");
 
         if ( count_attr && (repeat && ! repeat->type().isA<type::Null>()) )
             error("cannot have both `[..]` and &count", p);
@@ -221,63 +330,25 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         if ( parse_from_attr && parse_at_attr )
             error("cannot have both &parse-from and &parse-at", p);
 
-        if ( auto item = f.vectorItem() ) {
-            if ( auto item_field = item->tryAs<spicy::type::unit::item::Field>() ) {
-                const auto& item_attrs = item_field->attributes();
-
-                if ( AttributeSet::has(item_attrs, "&chunked") )
-                    error("vector elements cannot have &chunked attribute", p);
-
-                if ( AttributeSet::has(item_attrs, "&convert") )
-                    error("vector elements cannot have &convert attribute", p);
-            }
-        }
-
-        if ( f.parseType().isA<type::Bytes>() && ! f.ctor() ) {
-            auto eod_attr = AttributeSet::find(f.attributes(), "&eod");
-            auto until_attr = AttributeSet::find(f.attributes(), "&until");
-            auto until_including_attr = AttributeSet::find(f.attributes(), "&until-including");
-
-            std::vector<std::string> attrs_present;
-            for ( const auto& i : {eod_attr, parse_from_attr, parse_at_attr, until_attr, until_including_attr} ) {
-                if ( i )
-                    attrs_present.emplace_back(i->tag());
-            }
-
-            // &size can be combined with any other attribute, or be used standalone.
-
-            if ( attrs_present.size() > 1 )
-                error(fmt("attributes cannot be combined: %s", util::join(attrs_present, ", ")), p);
-
-            if ( attrs_present.empty() && ! size_attr )
-                error("bytes field requires one of &eod, &parse_at, &parse_from, &size, &until, &until-including", p);
-        }
-
-        if ( f.parseType().isA<type::Address>() ) {
-            auto v4 = AttributeSet::find(f.attributes(), "&ipv4");
-            auto v6 = AttributeSet::find(f.attributes(), "&ipv6");
-
-            if ( ! (v4 || v6) )
-                error("address field must come with either &ipv4 or &ipv6 attribute", p);
-
-            if ( v4 && v6 )
-                error("address field cannot have both &ipv4 and &ipv6 attributes", p);
-        }
-
-        if ( f.parseType().isA<type::Real>() ) {
-            auto type = AttributeSet::find(f.attributes(), "&type");
-
-            if ( type ) {
-                if ( auto t = type->valueAs<Expression>()->type().tryAs<type::Enum>();
-                     ! (t && t->cxxID() && *t->cxxID() == ID("::hilti::rt::real::Type")) )
-                    error("&type attribute must be a spicy::RealType", p);
-            }
-            else
-                error("field of type real must with a &type attribute", p);
-        }
-
         if ( f.sinks().size() && ! f.parseType().isA<type::Bytes>() )
             error("only a bytes field can have sinks attached", p);
+
+        if ( const auto& c = f.ctor() ) {
+            // Check that constants are of a supported type.
+            const auto& t = c->type();
+
+            if ( ! (t.isA<type::Bytes>() || t.isA<type::RegExp>() || t.isA<type::SignedInteger>() ||
+                    t.isA<type::UnsignedInteger>()) )
+                error(fmt("not a parseable constant (%s)", *c), p);
+        }
+
+        else {
+            // Check that parsing type is supported.
+            if ( auto rc = isParseableType(f.parseType(), f); ! rc ) {
+                error(rc.error(), p);
+                return;
+            }
+        }
     }
 
     void operator()(const spicy::type::unit::item::UnresolvedField& u, position_t p) {
