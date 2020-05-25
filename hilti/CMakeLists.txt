@@ -120,7 +120,7 @@ add_dependencies(hilti version)
 target_compile_options(hilti PRIVATE "-Wall")
 target_link_libraries(hilti PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti PRIVATE $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
-target_link_libraries(hilti PRIVATE std::filesystem ${CMAKE_DL_LIBS})
+target_link_libraries(hilti PRIVATE std::filesystem)
 target_include_directories(hilti PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
@@ -164,7 +164,7 @@ foreach ( lib hilti-rt hilti-rt-debug )
     add_library(${lib}-objects OBJECT ${SOURCES_RUNTIME})
     add_dependencies(${lib}-objects version)
     target_compile_options(${lib}-objects PRIVATE "-fPIC")
-    target_link_libraries(${lib}-objects PRIVATE std::filesystem)
+    target_link_libraries(${lib}-objects PRIVATE std::filesystem ${CMAKE_DL_LIBS})
     target_include_directories(${lib}-objects PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
     target_include_directories(${lib}-objects PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
     target_include_directories(${lib}-objects PRIVATE include/3rdparty/libtask)
@@ -272,6 +272,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/list.cc
                src/rt/tests/map.cc
                src/rt/tests/reference.cc
+               src/rt/tests/regexp.cc
                src/rt/tests/result.cc
                src/rt/tests/set.cc
                src/rt/tests/stream.cc
@@ -279,7 +280,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/util.cc
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
-target_link_libraries(hilti-rt-tests PRIVATE hilti-rt doctest)
+target_link_libraries(hilti-rt-tests PRIVATE hilti-rt-objects doctest)
 add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)
 
 add_executable(hilti-tests

@@ -1,4 +1,8 @@
 
+0.4.0-317 | 2020-05-25 09:54:25 +0200
+
+  * GH-286: Fix regexp handling to respect &size. (Benjamin Bannier, Corelight)
+
 0.4.0-311 | 2020-05-21 07:54:43 +0000
 
   * Fix JIT-less build of Zeek plugin. (Robin Sommer, Corelight)
