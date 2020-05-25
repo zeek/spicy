@@ -19,22 +19,28 @@ using namespace hilti::rt::bytes;
 
 // #define _DEBUG_MATCHING
 
-struct regexp::MatchState::Pimpl {
+class regexp::MatchState::Pimpl {
+public:
     jrx_accept_id _acc = 0;
     jrx_assertion _first = JRX_ASSERTION_BOL | JRX_ASSERTION_BOD;
-    ;
+
     jrx_match_state _ms{};
     std::shared_ptr<jrx_regex_t> _jrx;
+
+    ~Pimpl() { jrx_match_state_done(&_ms); }
+
+    Pimpl(std::shared_ptr<jrx_regex_t> jrx) : _jrx(std::move(jrx)) { jrx_match_state_init(_jrx.get(), 0, &_ms); }
+
+    Pimpl(const Pimpl& other) : _acc(other._acc), _first(other._first), _jrx(other._jrx) {
+        jrx_match_state_copy(&other._ms, &_ms);
+    }
 };
 
 regexp::MatchState::MatchState(const RegExp& re) {
-    _pimpl = std::make_unique<Pimpl>();
-    _pimpl->_jrx = re._jrxShared();
-
     if ( re.patterns().empty() )
         throw regexp::PatternError("trying to match empty pattern set");
 
-    jrx_match_state_init(_pimpl->_jrx.get(), 0, &_pimpl->_ms);
+    _pimpl = std::make_unique<Pimpl>(re._jrxShared());
 }
 
 regexp::MatchState::MatchState(const MatchState& other) {
@@ -44,11 +50,7 @@ regexp::MatchState::MatchState(const MatchState& other) {
     if ( other._pimpl->_jrx->cflags & REG_STD_MATCHER )
         throw InvalidArgument("cannot copy match state of regexp with sub-expressions support");
 
-    _pimpl = std::make_unique<Pimpl>();
-    _pimpl->_acc = other._pimpl->_acc;
-    _pimpl->_first = other._pimpl->_first;
-    _pimpl->_jrx = other._pimpl->_jrx;
-    jrx_match_state_copy(&other._pimpl->_ms, &_pimpl->_ms);
+    _pimpl = std::make_unique<Pimpl>(*other._pimpl);
 }
 
 regexp::MatchState& regexp::MatchState::operator=(const MatchState& other) {
@@ -58,14 +60,8 @@ regexp::MatchState& regexp::MatchState::operator=(const MatchState& other) {
     if ( other._pimpl->_jrx->cflags & REG_STD_MATCHER )
         throw InvalidArgument("cannot copy match state of regexp with sub-expressions support");
 
-    if ( _pimpl )
-        jrx_match_state_done(&_pimpl->_ms);
+    _pimpl = std::make_unique<Pimpl>(*other._pimpl);
 
-    _pimpl = std::make_unique<Pimpl>();
-    _pimpl->_acc = other._pimpl->_acc;
-    _pimpl->_first = other._pimpl->_first;
-    _pimpl->_jrx = other._pimpl->_jrx;
-    jrx_match_state_copy(&other._pimpl->_ms, &_pimpl->_ms);
     return *this;
 }
 
@@ -73,10 +69,7 @@ regexp::MatchState::MatchState() noexcept = default;
 regexp::MatchState& regexp::MatchState::operator=(MatchState&&) noexcept = default;
 regexp::MatchState::MatchState(MatchState&&) noexcept = default;
 
-regexp::MatchState::~MatchState() {
-    if ( _pimpl )
-        jrx_match_state_done(&_pimpl->_ms);
-}
+regexp::MatchState::~MatchState() = default;
 
 std::tuple<int32_t, stream::View> regexp::MatchState::advance(const stream::View& data) {
     if ( ! _pimpl )

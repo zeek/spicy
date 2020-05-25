@@ -97,7 +97,7 @@ private:
     // TODO(robin): PIMPLing here means we have to alllocate dynamic memory, which
     // isn't great for this class. However, without PIMPL we get a new dependency on
     // 'jrx.h', which isn't great either. Better ideas?
-    struct Pimpl;
+    class Pimpl;
     std::unique_ptr<Pimpl> _pimpl;
 };
 
