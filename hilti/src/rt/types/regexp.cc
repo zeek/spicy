@@ -41,6 +41,9 @@ regexp::MatchState::MatchState(const MatchState& other) {
     if ( this == &other )
         return;
 
+    if ( other._pimpl->_jrx->cflags & REG_STD_MATCHER )
+        throw InvalidArgument("cannot copy match state of regexp with sub-expressions support");
+
     _pimpl = std::make_unique<Pimpl>();
     _pimpl->_acc = other._pimpl->_acc;
     _pimpl->_first = other._pimpl->_first;
@@ -51,6 +54,9 @@ regexp::MatchState::MatchState(const MatchState& other) {
 regexp::MatchState& regexp::MatchState::operator=(const MatchState& other) {
     if ( this == &other )
         return *this;
+
+    if ( other._pimpl->_jrx->cflags & REG_STD_MATCHER )
+        throw InvalidArgument("cannot copy match state of regexp with sub-expressions support");
 
     if ( _pimpl )
         jrx_match_state_done(&_pimpl->_ms);

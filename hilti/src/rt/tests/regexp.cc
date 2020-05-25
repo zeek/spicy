@@ -133,27 +133,51 @@ TEST_CASE("advance on limited view") {
 }
 
 TEST_CASE("reassign") {
-    const auto re = RegExp("123", regexp::Flags());
+    SUBCASE("inherits state") {
+        const auto re = RegExp("123");
 
-    // Create and complete a matcher.
-    auto ms1 = re.tokenMatcher();
-    REQUIRE_EQ(ms1.advance("123"_b, true), std::make_tuple(1, 3));
-    REQUIRE_THROWS_WITH_AS(ms1.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
+        // Create and complete a matcher.
+        auto ms1 = re.tokenMatcher();
+        REQUIRE_EQ(ms1.advance("123"_b, true), std::make_tuple(1, 3));
+        REQUIRE_THROWS_WITH_AS(ms1.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
 
-    // After assigning from a fresh value the matcher can match again.
-    ms1 = re.tokenMatcher();
-    CHECK_EQ(ms1.advance("123"_b, true), std::make_tuple(1, 3));
+        // After assigning from a fresh value the matcher can match again.
+        ms1 = re.tokenMatcher();
+        CHECK_EQ(ms1.advance("123"_b, true), std::make_tuple(1, 3));
 
-    // A matcher copy-constructed from an completed matcher is also completed.
-    REQUIRE_THROWS_WITH_AS(ms1.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
-    auto ms2(std::move(ms1));
-    CHECK_THROWS_WITH_AS(ms2.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
+        // A matcher copy-constructed from an completed matcher is also completed.
+        REQUIRE_THROWS_WITH_AS(ms1.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
+        auto ms2(std::move(ms1));
+        CHECK_THROWS_WITH_AS(ms2.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
 
-    // Same is true if matching on a different input type.
-    REQUIRE_THROWS_WITH_AS(ms2.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
-    auto ms3(std::move(ms2));
-    CHECK_THROWS_WITH_AS(ms3.advance(Stream("123"_b).view()), "matching already complete",
-                         const regexp::MatchStateReuse&);
+        // Same is true if matching on a different input type.
+        REQUIRE_THROWS_WITH_AS(ms2.advance("123"_b, true), "matching already complete", const regexp::MatchStateReuse&);
+        auto ms3(std::move(ms2));
+        CHECK_THROWS_WITH_AS(ms3.advance(Stream("123"_b).view()), "matching already complete",
+                             const regexp::MatchStateReuse&);
+    }
+
+    SUBCASE("no copy from REG_STD_MATCHER regexp") {
+        const auto re = RegExp("123", regexp::Flags({.no_sub = 0}));
+        const auto ms1 = re.tokenMatcher();
+
+        CHECK_THROWS_WITH_AS(regexp::MatchState{ms1}, "cannot copy match state of regexp with sub-expressions support",
+                             const InvalidArgument&);
+
+        auto ms2 = regexp::MatchState();
+        CHECK_THROWS_WITH_AS(ms2.operator=(ms1), "cannot copy match state of regexp with sub-expressions support",
+                             const InvalidArgument&);
+    }
+
+    SUBCASE("copy from non-REG_STD_MATCHER regexp") {
+        const auto re = RegExp("123", regexp::Flags({.no_sub = 1}));
+        const auto ms1 = re.tokenMatcher();
+
+        CHECK_NOTHROW(regexp::MatchState{ms1});
+
+        auto ms2 = regexp::MatchState();
+        CHECK_NOTHROW(ms2.operator=(ms1));
+    }
 }
 
 TEST_SUITE_END();
