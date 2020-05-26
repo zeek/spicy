@@ -26,7 +26,7 @@ TEST_CASE("advance on limited view") {
 
     SUBCASE("match until limit") {
         // Match a regexp ending in a wildcard so it could match the entire input.
-        auto&& [rc, unconsumed] = RegExp("123.*", regexp::Flags()).tokenMatcher().advance(limited);
+        auto&& [rc, unconsumed] = RegExp("123.*").tokenMatcher().advance(limited);
 
         CHECK_EQ(rc, 1);             // Match found, cannot consume more data.
         CHECK(unconsumed.isEmpty()); // Should have consumed entire input.
@@ -35,7 +35,7 @@ TEST_CASE("advance on limited view") {
 
     SUBCASE("no match in limit") {
         // Match a regexp matching the input, but not the passed, limited view.
-        auto&& [rc, unconsumed] = RegExp(input.data(), regexp::Flags()).tokenMatcher().advance(limited);
+        auto&& [rc, unconsumed] = RegExp(input.data()).tokenMatcher().advance(limited);
 
         CHECK_EQ(rc, -1); // No match found yet in available, limited data.
     }

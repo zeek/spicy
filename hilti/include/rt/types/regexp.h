@@ -113,7 +113,7 @@ public:
      * @param flags compilation flags for the regexp
      * @exception `PatternError` if the pattern cannot be compiled
      */
-    RegExp(std::string pattern, regexp::Flags flags);
+    RegExp(std::string pattern, regexp::Flags flags = regexp::Flags());
 
     /**
      * Instantiates a new regular expression instance performing parallel set
@@ -124,7 +124,7 @@ public:
      * @param flags compilation flags for the regexp
      * @exception `PatternError` if a pattern cannot be compiled
      */
-    RegExp(const std::vector<std::string>& patterns, regexp::Flags flags);
+    RegExp(const std::vector<std::string>& patterns, regexp::Flags flags = regexp::Flags());
 
     RegExp() = default;
 
