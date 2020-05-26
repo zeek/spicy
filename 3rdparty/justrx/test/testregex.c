@@ -686,7 +686,7 @@ static int escape(char* s)
     char* e;
     int c;
 
-    for ( b = t = s; *t == *s; s++, t++ )
+    for ( b = t = s; (*t = *s); s++, t++ )
         if ( *s == '\\' )
             switch ( *++s ) {
             case '\\':
@@ -698,7 +698,7 @@ static int escape(char* s)
                 *t = '\b';
                 break;
             case 'c':
-                if ( *t == *++s )
+                if (( *t = *++s ))
                     *t &= 037;
                 else
                     s--;
@@ -1224,7 +1224,7 @@ int main(int argc, char** argv)
     if ( ! *argv )
         argv = filter;
     locale = 0;
-    while ( state.file == *argv++ ) {
+    while (( state.file = *argv++ )) {
         if ( streq(state.file, "-") || streq(state.file, "/dev/stdin") ||
              streq(state.file, "/dev/fd/0") ) {
             state.file = 0;
@@ -1240,7 +1240,7 @@ int main(int argc, char** argv)
         level = 1;
         if ( ! (test & (TEST_ACTUAL | TEST_BASELINE | TEST_FAIL | TEST_PASS | TEST_SUMMARY)) ) {
             printf("TEST\t%s ", unit);
-            if ( s == state.file ) {
+            if (( s = state.file )) {
                 subunit = p = 0;
                 for ( ;; ) {
                     switch ( *s++ ) {
@@ -1323,7 +1323,7 @@ int main(int argc, char** argv)
             signal(SIGBUS, gotcha);
             signal(SIGSEGV, gotcha);
         }
-        while ( p == mygetline(fp) ) {
+        while (( p = mygetline(fp) )) {
             /* parse: */
 
             line = p;
@@ -1641,7 +1641,7 @@ int main(int argc, char** argv)
                 bad("too few fields\n", NiL, NiL, 0, test);
             while ( i < elementsof(field) )
                 field[i++] = 0;
-            if ( re == field[1] ) {
+            if (( re = field[1] )) {
                 if ( streq(re, "SAME") ) {
                     re = ppat;
                     test |= TEST_SAME;
