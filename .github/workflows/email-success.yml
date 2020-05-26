@@ -1,0 +1,14 @@
+on:
+  check_suite:
+    type: ['completed']
+
+name: Email about successful Cirrus CI builds
+jobs:
+  continue:
+    name: After Cirrus CI Failure
+    if: github.event.check_suite.app.name == 'Cirrus CI' && github.event.check_suite.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Cirrus CI ${{ github.event.check_suite.conclusion }} on ${{ github.event.check_suite.head_branch }} branch!"
+          echo "SHA ${{ github.event.check_suite.head_sha }}"
