@@ -1,4 +1,8 @@
 
+0.4.0-318 | 2020-05-26 10:07:38 +0000
+
+  * Change Slack links to point to Zeek's Connect page. (Robin Sommer, Corelight)
+
 0.4.0-317 | 2020-05-25 09:54:25 +0200
 
   * GH-286: Fix regexp handling to respect &size. (Benjamin Bannier, Corelight)

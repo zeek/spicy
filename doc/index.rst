@@ -71,7 +71,7 @@ like to hear from you!
 
     - Report issues on `GitHub <https://github.com/zeek/spicy/issues>`_.
 
-    - Ask the ``#spicy`` channel on `Zeek's Slack <https://zeekorg.slack.com>`_.
+    - Ask the ``#spicy`` channel on `Zeek's Slack <https://zeek.org/connect>`_.
 
     - Subscribe to the `Spicy mailing list <http://mailman.icsi.berkeley.edu/mailman/listinfo/spicy>`_.
 
