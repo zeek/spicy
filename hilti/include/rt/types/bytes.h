@@ -128,7 +128,7 @@ public:
     void append(const stream::View& view) { Base::append(view.data()); }
 
     /** Returns the bytes' data as a string instance. */
-    const std::string& str() const { return *this; }
+    const std::string& str() const& { return *this; }
 
     /** Returns an iterator representing the first byte of the instance. */
     Iterator begin() const { return {*this, Base::begin()}; }
