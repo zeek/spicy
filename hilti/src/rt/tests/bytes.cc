@@ -11,6 +11,16 @@ using namespace hilti::rt::bytes;
 
 TEST_SUITE_BEGIN("Bytes");
 
+TEST_CASE("at") {
+    const auto b = "123"_b;
+    CHECK_EQ(b.at(0), b.begin());
+    CHECK_EQ(*b.at(0), '1');
+    CHECK_EQ(*b.at(1), '2');
+    CHECK_EQ(*b.at(2), '3');
+    CHECK_EQ(b.at(3), b.end());
+    // CHECK_THROWS_WITH_AS(*b.at(5), "invalid index", const IndexError&); // TODO(bbannier): Catch invalid access.
+}
+
 TEST_CASE("find") {
     const auto b = "123"_b;
     const auto empty = ""_b;
