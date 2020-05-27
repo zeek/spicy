@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/integer.h>
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
@@ -81,6 +82,97 @@ TEST_CASE("iteration") {
     for ( auto x : Bytes() ) {
         (void)x;
         static_assert(std::is_same_v<decltype(x), Bytes::Iterator::reference>);
+    }
+}
+
+TEST_CASE("Iterator") {
+    const auto b = "123"_b;
+    const auto bb = "123"_b;
+
+    SUBCASE("coupled lifetime") {
+        CHECK_NOTHROW(*b.begin()); // Iterator valid since container is alife.
+
+        auto it = ""_b.begin();
+        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+    }
+
+    SUBCASE("increment") {
+        auto it = b.begin();
+        CHECK_EQ(*(it++), '1');
+        CHECK_EQ(*it, '2');
+        CHECK_EQ(*(++it), '3');
+        it += 1;
+        CHECK_EQ(it, b.end());
+
+        CHECK_EQ(*(b.begin() + 2), '3');
+        CHECK_EQ(*(b.begin() + integer::safe<uint8_t>(2)), '3');
+
+        it = b.begin();
+        it += integer::safe<uint64_t>(2);
+        CHECK_EQ(*it, '3');
+    }
+
+    SUBCASE("bounds check") {
+        CHECK_EQ(*b.begin(), '1');
+        CHECK_THROWS_WITH_AS(*b.end(), "index 3 out of bounds", const IndexError&);
+    }
+
+    SUBCASE("equality") {
+        CHECK_EQ(b.begin(), b.begin());
+        CHECK_NE(b.begin(), b.end());
+
+        CHECK_THROWS_WITH_AS(operator==(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                             const InvalidArgument&);
+    }
+
+    SUBCASE("distance") {
+        CHECK_EQ(b.end() - b.begin(), b.size());
+        CHECK_EQ(b.begin() - b.end(), -b.size());
+        CHECK_EQ(b.end() - b.end(), 0);
+        CHECK_EQ(b.begin() - b.begin(), 0);
+
+        CHECK_THROWS_WITH_AS(operator-(b.begin(), bb.begin()),
+                             "cannot perform arithmetic with iterators into different bytes", const InvalidArgument&);
+    }
+
+    SUBCASE("ordering") {
+        SUBCASE("less") {
+            REQUIRE_FALSE(b.isEmpty());
+
+            CHECK_LT(b.begin(), b.end());
+            CHECK_FALSE(operator<(b.end(), b.begin()));
+            CHECK_THROWS_WITH_AS(operator<(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                                 const InvalidArgument&);
+        }
+
+        SUBCASE("less equal") {
+            REQUIRE_FALSE(b.isEmpty());
+
+            CHECK_LE(b.begin(), b.end());
+            CHECK_LE(b.begin(), b.begin());
+            CHECK_FALSE(operator<=(b.end(), b.begin()));
+            CHECK_THROWS_WITH_AS(operator<=(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                                 const InvalidArgument&);
+        }
+
+        SUBCASE("greater") {
+            REQUIRE_FALSE(b.isEmpty());
+
+            CHECK_GT(b.end(), b.begin());
+            CHECK_FALSE(operator>(b.begin(), b.end()));
+            CHECK_THROWS_WITH_AS(operator>(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                                 const InvalidArgument&);
+        }
+
+        SUBCASE("greater equal") {
+            REQUIRE_FALSE(b.isEmpty());
+
+            CHECK_GE(b.end(), b.begin());
+            CHECK_GE(b.begin(), b.begin());
+            CHECK_FALSE(operator>=(b.begin(), b.end()));
+            CHECK_THROWS_WITH_AS(operator>=(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                                 const InvalidArgument&);
+        }
     }
 }
 
