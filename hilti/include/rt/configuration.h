@@ -30,6 +30,9 @@ struct Configuration {
 
     /** Colon-separated list of debug streams to enable. Default comes from HILTI_DEBUG. */
     std::string debug_streams;
+
+    /** Output stream for hilti::print(). If unset, printing will be silenced. */
+    std::optional<std::reference_wrapper<std::ostream>> cout;
 };
 
 namespace configuration {
