@@ -1,4 +1,16 @@
 
+0.4.0-325 | 2020-05-27 06:49:26 +0000
+
+  * GH-333: Validate that unit fields have parseable types. (Robin Sommer, Corelight)
+
+  * GH-330: Add range check to port parsing in EVT files. (Robin
+    Sommer, Corelight)
+
+  * GH-335: Add support for converting maps from Spicy to Zeek. (Robin
+    Sommer, Corelight)
+
+  * Send emails for successful CI builds. (Benjamin Bannier, Corelight)
+
 0.4.0-318 | 2020-05-26 10:07:38 +0000
 
   * Change Slack links to point to Zeek's Connect page. (Robin Sommer, Corelight)

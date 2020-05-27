@@ -1,0 +1,2 @@
+[error] /Users/robin/work/spicy/topic2/tests/.tmp/spicy.types.unit.parseable-fail/parseable-fail.spicy:9:5: not a parseable constant ("anything")
+[error] spicyc: aborting after errors

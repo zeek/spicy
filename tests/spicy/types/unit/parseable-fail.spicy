@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC:      btest-diff output
+
+module Test;
+
+const Marker = "anything";
+
+public type Header = unit {
+    stuff:	Marker; # Not a parseable type
+};
