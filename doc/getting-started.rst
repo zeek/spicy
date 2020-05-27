@@ -173,7 +173,7 @@ then load, or use ``spicy-build`` to give us an actual executable::
 ::
 
     # spicy-build -o a.out my-http.spicy
-    # echo "GET /index.html HTTP/1.0" | ./a.out -p MyHTTP::RequestLine
+    # echo "GET /index.html HTTP/1.0" | ./a.out
     GET, /index.html, 1.0
 
 If you want to see the actual parsing code that Spicy generates, use
