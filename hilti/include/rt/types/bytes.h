@@ -33,21 +33,6 @@ enum class Side {
 /** For Bytes::Decode, which character set to use. */
 enum class Charset { Undef, UTF8, ASCII };
 
-/** TODO: Remove */
-class SafeIterator : public hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::iterator, SafeIterator> {
-public:
-    using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::iterator, SafeIterator>;
-    using Base::Base;
-
-    using reference = uint8_t;
-
-    // Override to return expected type.
-    reference operator*() const {
-        ensureValid();
-        return *iterator();
-    }
-};
-
 class SafeConstIterator
     : public hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::const_iterator, SafeConstIterator> {
 public:
