@@ -1,6 +1,10 @@
-# @TEST-REQUIRES: have-zeek-plugin-jit
+# @TEST-REQUIRES: have-zeek-plugin
 #
-# @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace  ssh.spicy ./ssh.evt %INPUT >output
+# @TEST-EXEC: spicyz -o ssh.hlto ssh.spicy ./ssh.evt
+# @TEST-EXEC: echo === confirmation >>output
+# @TEST-EXEC: ${ZEEK} -b -r ${TRACES}/ssh-single-conn.trace -s ./ssh.sig Zeek::Spicy ssh.hlto %INPUT >>output
+# @TEST-EXEC: echo === violation >>output
+# @TEST-EXEC: ${ZEEK} -b -r ${TRACES}/http-post.trace -s ./ssh.sig Zeek::Spicy ssh.hlto %INPUT >>output
 # @TEST-EXEC: btest-diff output
 #
 ## @TEST-GROUP: spicy-core
@@ -11,9 +15,14 @@ event ssh::banner(c: connection, is_orig: bool, version: string, software: strin
 	}
 
 event protocol_confirmation(c: connection, atype: Analyzer::Tag, aid: count)
-    {
-    print atype, aid;
-    }
+	{
+	print "confirm", atype, aid;
+	}
+
+event protocol_violation(c: connection, atype: Analyzer::Tag, aid: count, reason: string)
+	{
+	print "violation", atype, aid;
+	}
 
 # @TEST-START-FILE ssh.spicy
 module SSH;
@@ -27,13 +36,24 @@ public type Banner = unit {
     software: /[^\r\n]*/;
 
     on %done { zeek::confirm_protocol(); }
+    on %error { zeek::reject_protocol("kaputt"); }
 };
+# @TEST-END-FILE
+
+# @TEST-START-FILE ssh.sig
+
+signature ssh_server {
+    ip-proto == tcp
+    payload /./
+    enable "spicy_SSH"
+    tcp-state responder
+}
 # @TEST-END-FILE
 
 # @TEST-START-FILE ssh.evt
 protocol analyzer spicy::SSH over TCP:
-    parse with SSH::Banner,
-    port 22/tcp;
+    # no port, we're using the signature
+    parse with SSH::Banner;
 
 on SSH::Banner -> event ssh::banner($conn, $is_orig, self.version, self.software);
 # @TEST-END-FILE
