@@ -1,11 +1,11 @@
 .. rubric:: Methods
 
-.. spicy:method:: vector::back vector back False <type~element> ()
+.. spicy:method:: vector::back vector back False <type~of~element> ()
 
     Returns the last element of the vector. It throws an exception if the
     vector is empty.
 
-.. spicy:method:: vector::front vector front False <type~element> ()
+.. spicy:method:: vector::front vector front False <type~of~element> ()
 
     Returns the first element of the vector. It throws an exception if the
     vector is empty.
@@ -25,10 +25,6 @@
 .. spicy:operator:: vector::Equal bool t:vector <sp> op:== <sp> t:vector
 
     Compares two vectors element-wise.
-
-.. spicy:operator:: vector::Index <type~element> t:vector[uint<64>]
-
-    Returns the vector element at the given index.
 
 .. spicy:operator:: vector::Index <type~of~element> t:vector[uint<64>]
 

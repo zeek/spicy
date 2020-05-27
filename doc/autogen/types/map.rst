@@ -24,13 +24,9 @@
 
     Returns true if an element is part of the map.
 
-.. spicy:operator:: map::Index <type~element> t:map[<any>]
-
-    Returns the map's element for the given key.
-
 .. spicy:operator:: map::Index <type~of~element> t:map[<any>]
 
-    Returns the map's element for the given key. The key must exists,
+    Returns the map's element for the given key. The key must exist,
     otherwise the operation will throw a runtime error.
 
 .. spicy:operator:: map::Size uint<64> op:| t:map op:|
