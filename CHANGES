@@ -1,4 +1,15 @@
 
+0.4.0-348 | 2020-05-27 13:03:22 +0200
+
+  * GH-335: Add http_all_headers() event to HTTP EVT file.
+
+    The event isn't used anywhere by default in Zeek, but it's a nice
+    example of transforming Spicy information on the fly to match a
+    Zeek-side event signature.
+
+    #335 (Robin Sommer, Corelight)
+
+
 0.4.0-346 | 2020-05-27 13:00:28 +0200
 
   * jrx: Fix leak in `jrx_match_state_done`. (Benjamin Bannier, Corelight)

@@ -12,6 +12,16 @@ public function create_http_message_stats(msg: HTTP::Message) : tuple<time, bool
     return (cast<time>(0), False, b"", (msg.has_body ? msg.body_len : 0), 0 , 0);
 }
 
+# Create an map of all headers as http_all_headers() expects it.
+public function convert_all_headers(headers: vector<HTTP::Header>) : map<uint64, tuple<bytes, bytes>> {
+    local hdrs: map<uint64, tuple<bytes, bytes>>;
+
+    for ( i in headers )
+        hdrs[|hdrs|] = (i.name, i.content);
+
+    return hdrs;
+}
+
 on HTTP::RequestLine::%done {
     zeek::confirm_protocol();
     # zeek::rule_match(zeek::PatternType::HTTP_REQUEST, self.uri, True, True, True);
