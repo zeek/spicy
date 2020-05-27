@@ -77,13 +77,13 @@ int jrx_match_state_advance_min(jrx_match_state* ms, jrx_char cp, jrx_assertion 
             return aid;
         }
 
-        
+
             if ( ms->dfa->options & JRX_OPTION_DEBUG )
                 fputs("\n", stderr);
 
             // Partial match.
             return -1;
-        
+
     }
 
     if ( ms->dfa->options & JRX_OPTION_DEBUG )
@@ -105,7 +105,7 @@ int jrx_match_state_advance_min(jrx_match_state* ms, jrx_char cp, jrx_assertion 
     return 0;
 }
 
-void jrx_match_state_copy(jrx_match_state* from, jrx_match_state* to) {
+void jrx_match_state_copy(const jrx_match_state* from, jrx_match_state* to) {
     if ( from->cflags & REG_STD_MATCHER )
         jrx_internal_error("jrx_match_state_copy() used with state from standard matcher; that's not supported");
 

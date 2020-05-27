@@ -3,4 +3,4 @@
 /abc/ | /ghi/ &nosub
 /ghi/ &nosub
 /ghi/ &nosub
-<regexp wo/ pattern>
+<regexp w/o pattern>

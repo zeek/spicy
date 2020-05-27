@@ -234,10 +234,10 @@ static jrx_ccl* _ccl_intersect(jrx_ccl* ccl1, jrx_ccl* ccl2)
     if ( ! ccl_is_empty(nccl) )
         return nccl;
 
-    
+
         _ccl_delete(nccl);
         return 0;
-    
+
 }
 
 jrx_ccl_group* ccl_group_create()

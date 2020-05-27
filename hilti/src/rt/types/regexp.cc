@@ -3,57 +3,65 @@
 // Note: We don't run clang-tidy on this file. The use of the JRX's C
 // interface triggers all kinds of warnings.
 
+#include "hilti/rt/types/regexp.h"
+
+#include <cassert>
+#include <utility>
+
+#include <hilti/rt/util.h>
+
 extern "C" {
 #include <justrx/jrx.h>
 }
-
-#include <hilti/rt/types/regexp.h>
-#include <hilti/rt/util.h>
-
-#include <utility>
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
 // #define _DEBUG_MATCHING
 
-struct regexp::MatchState::Pimpl {
+class regexp::MatchState::Pimpl {
+public:
     jrx_accept_id _acc = 0;
     jrx_assertion _first = JRX_ASSERTION_BOL | JRX_ASSERTION_BOD;
-    ;
+
     jrx_match_state _ms{};
     std::shared_ptr<jrx_regex_t> _jrx;
+
+    ~Pimpl() { jrx_match_state_done(&_ms); }
+
+    Pimpl(std::shared_ptr<jrx_regex_t> jrx) : _jrx(std::move(jrx)) { jrx_match_state_init(_jrx.get(), 0, &_ms); }
+
+    Pimpl(const Pimpl& other) : _acc(other._acc), _first(other._first), _jrx(other._jrx) {
+        jrx_match_state_copy(&other._ms, &_ms);
+    }
 };
 
 regexp::MatchState::MatchState(const RegExp& re) {
-    _pimpl = std::make_unique<Pimpl>();
-    _pimpl->_jrx = re._jrxShared();
-    jrx_match_state_init(_pimpl->_jrx.get(), 0, &_pimpl->_ms);
+    if ( re.patterns().empty() )
+        throw regexp::PatternError("trying to match empty pattern set");
+
+    _pimpl = std::make_unique<Pimpl>(re._jrxShared());
 }
 
 regexp::MatchState::MatchState(const MatchState& other) {
     if ( this == &other )
         return;
 
-    _pimpl = std::make_unique<Pimpl>();
-    _pimpl->_acc = other._pimpl->_acc;
-    _pimpl->_first = other._pimpl->_first;
-    _pimpl->_jrx = other._pimpl->_jrx;
-    jrx_match_state_copy(&other._pimpl->_ms, &_pimpl->_ms);
+    if ( other._pimpl->_jrx->cflags & REG_STD_MATCHER )
+        throw InvalidArgument("cannot copy match state of regexp with sub-expressions support");
+
+    _pimpl = std::make_unique<Pimpl>(*other._pimpl);
 }
 
 regexp::MatchState& regexp::MatchState::operator=(const MatchState& other) {
     if ( this == &other )
         return *this;
 
-    if ( _pimpl )
-        jrx_match_state_done(&_pimpl->_ms);
+    if ( other._pimpl->_jrx->cflags & REG_STD_MATCHER )
+        throw InvalidArgument("cannot copy match state of regexp with sub-expressions support");
 
-    _pimpl = std::make_unique<Pimpl>();
-    _pimpl->_acc = other._pimpl->_acc;
-    _pimpl->_first = other._pimpl->_first;
-    _pimpl->_jrx = other._pimpl->_jrx;
-    jrx_match_state_copy(&other._pimpl->_ms, &_pimpl->_ms);
+    _pimpl = std::make_unique<Pimpl>(*other._pimpl);
+
     return *this;
 }
 
@@ -61,10 +69,7 @@ regexp::MatchState::MatchState() noexcept = default;
 regexp::MatchState& regexp::MatchState::operator=(MatchState&&) noexcept = default;
 regexp::MatchState::MatchState(MatchState&&) noexcept = default;
 
-regexp::MatchState::~MatchState() {
-    if ( _pimpl )
-        jrx_match_state_done(&_pimpl->_ms);
-}
+regexp::MatchState::~MatchState() = default;
 
 std::tuple<int32_t, stream::View> regexp::MatchState::advance(const stream::View& data) {
     if ( ! _pimpl )
@@ -201,8 +206,7 @@ RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) : 
 }
 
 void RegExp::_newJrx() {
-    if ( _jrx_shared )
-        throw regexp::PatternError("regexp already compiled");
+    assert(! _jrx_shared && "regexp already compiled");
 
     int cflags = (REG_EXTENDED | REG_LAZY); // | REG_DEBUG;
 
@@ -228,8 +232,7 @@ void RegExp::_compileOne(std::string pattern, int idx) {
 }
 
 int32_t RegExp::find(const Bytes& data) const {
-    if ( ! _jrx() )
-        throw regexp::PatternError("regexp not compiled");
+    assert(_jrx() && "regexp not compiled");
 
     jrx_match_state ms;
     jrx_accept_id acc = _search_pattern(&ms, data, nullptr, nullptr, false, true);
@@ -242,8 +245,7 @@ static Bytes _subslice(const Bytes& data, jrx_offset so, jrx_offset eo) {
 }
 
 std::tuple<int32_t, Bytes> RegExp::findSpan(const Bytes& data) const {
-    if ( ! _jrx() )
-        throw regexp::PatternError("regexp not compiled");
+    assert(_jrx() && "regexp not compiled");
 
     jrx_offset so = -1;
     jrx_offset eo = -1;
@@ -259,8 +261,7 @@ std::tuple<int32_t, Bytes> RegExp::findSpan(const Bytes& data) const {
 }
 
 Vector<Bytes> RegExp::findGroups(const Bytes& data) const {
-    if ( ! _jrx() )
-        throw regexp::PatternError("regexp not compiled");
+    assert(_jrx() && "regexp not compiled");
 
     if ( _patterns.size() > 1 )
         throw regexp::NotSupported("cannot capture groups during set matching");
@@ -542,7 +543,7 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const bytes::View& da
 
 std::string hilti::rt::detail::adl::to_string(const RegExp& x, adl::tag /*unused*/) {
     if ( x.patterns().empty() )
-        return "<regexp wo/ pattern>";
+        return "<regexp w/o pattern>";
 
     auto p = join(transform(x.patterns(), [&](auto s) { return fmt("/%s/", s); }), " | ");
 

@@ -9,7 +9,10 @@
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/list.h>
 #include <hilti/rt/types/map.h>
+#include <hilti/rt/types/port.h>
+#include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/set.h>
+#include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
 
 using namespace hilti::rt;
@@ -75,6 +78,41 @@ TEST_CASE("List") {
     CHECK_EQ(to_string(List<int>({1, 2, 3})), "[1, 2, 3]");
     CHECK_EQ(to_string(List<List<int>>({{1, 2, 3}, {1, 2}})), "[[1, 2, 3], [1, 2]]");
     CHECK_EQ(to_string(List<Bytes>({"abc"_b})), "[b\"abc\"]");
+}
+
+TEST_CASE("Port") {
+    CHECK_EQ(to_string(Port()), "0/<unknown>");
+    CHECK_EQ(to_string(Port(1234, Protocol::TCP)), "1234/tcp");
+    CHECK_EQ(to_string(Port(1234, Protocol::UDP)), "1234/udp");
+    CHECK_EQ(to_string(Port(1234, Protocol::ICMP)), "1234/icmp");
+    CHECK_EQ(to_string(Port(1234, Protocol::Undef)), "1234/<unknown>");
+}
+
+TEST_CASE("Protocol") {
+    CHECK_EQ(to_string(Protocol::TCP), "Protocol::TCP");
+    CHECK_EQ(to_string(Protocol::UDP), "Protocol::UDP");
+    CHECK_EQ(to_string(Protocol::ICMP), "Protocol::ICMP");
+    CHECK_EQ(to_string(Protocol::Undef), "<unknown protocol>");
+}
+
+TEST_CASE("RegExp") {
+    CHECK_EQ(to_string(RegExp()), "<regexp w/o pattern>");
+    CHECK_EQ(to_string(RegExp("a", regexp::Flags())), "/a/");
+    CHECK_EQ(to_string(RegExp("a", regexp::Flags({.no_sub = 1}))), "/a/ &nosub");
+    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a"}), regexp::Flags())), "/a/ &nosub");
+    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a", "b"}), regexp::Flags())), "/a/ | /b/ &nosub");
+
+    CHECK_EQ(to_string(RegExp("/", regexp::Flags())), "///");
+
+    CHECK_EQ(to_string(RegExp("", regexp::Flags()).tokenMatcher()), "<regexp-match-state>");
+}
+
+TEST_CASE("Time") {
+    CHECK_EQ(to_string(Time()), "<not set>");
+    CHECK_EQ(to_string(Time(uint64_t(0))), "<not set>");
+    CHECK_EQ(to_string(Time(double(0))), "<not set>");
+
+    CHECK_EQ(to_string(Time(uint64_t(1))), "1970-01-01T00:00:00.000000001Z");
 }
 
 TEST_SUITE_END();

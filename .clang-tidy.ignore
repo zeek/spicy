@@ -5,6 +5,6 @@
 # combination of HeaderFilterRegex and file names starting with "__" to
 # select which headers to skip.
 
-.*/3rdparty/
+.*3rdparty/
 hilti/src/rt/types/regexp.cc # Too many warnings due to usage of jrx C API.
 tests/

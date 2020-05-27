@@ -97,7 +97,7 @@ private:
     // TODO(robin): PIMPLing here means we have to alllocate dynamic memory, which
     // isn't great for this class. However, without PIMPL we get a new dependency on
     // 'jrx.h', which isn't great either. Better ideas?
-    struct Pimpl;
+    class Pimpl;
     std::unique_ptr<Pimpl> _pimpl;
 };
 
@@ -113,7 +113,7 @@ public:
      * @param flags compilation flags for the regexp
      * @exception `PatternError` if the pattern cannot be compiled
      */
-    RegExp(std::string pattern, regexp::Flags flags);
+    RegExp(std::string pattern, regexp::Flags flags = regexp::Flags());
 
     /**
      * Instantiates a new regular expression instance performing parallel set
@@ -124,7 +124,7 @@ public:
      * @param flags compilation flags for the regexp
      * @exception `PatternError` if a pattern cannot be compiled
      */
-    RegExp(const std::vector<std::string>& patterns, regexp::Flags flags);
+    RegExp(const std::vector<std::string>& patterns, regexp::Flags flags = regexp::Flags());
 
     RegExp() = default;
 
@@ -137,7 +137,7 @@ public:
      * @return If the returned integer is larger than zero, the regexp was
      * found; for sets compiled via `compileSet` the integer value then
      * indicates the ID of the pattern that was found. If the function
-     * returns zero, no match was found and that wwon't change if further
+     * returns zero, no match was found and that won't change if further
      * data gets added to the input data. If the returned value is smaller than
      * 0, a partial match was found (i.e., no match yet but adding further
      * data could change that).
@@ -178,7 +178,7 @@ private:
     friend class regexp::MatchState;
 
     jrx_regex_t* _jrx() const {
-        assert(_jrx_shared);
+        assert(_jrx_shared && "regexp not compiled");
         return _jrx_shared.get();
     }
     const auto& _jrxShared() const { return _jrx_shared; }

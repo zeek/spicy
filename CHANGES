@@ -1,4 +1,12 @@
 
+0.4.0-346 | 2020-05-27 13:00:28 +0200
+
+  * jrx: Fix leak in `jrx_match_state_done`. (Benjamin Bannier, Corelight)
+  * jrx: Fix test harness. (Benjamin Bannier, Corelight)
+  * Fix leaks of jrx state when copying `regexp::MatchState`. (Benjamin Bannier, Corelight)
+  * jrx: Allow copying from const. (Benjamin Bannier, Corelight)
+  * Bump doctest to 2.3.8. (Benjamin Bannier, Corelight)
+
 0.4.0-325 | 2020-05-27 06:49:26 +0000
 
   * GH-333: Validate that unit fields have parseable types. (Robin Sommer, Corelight)
