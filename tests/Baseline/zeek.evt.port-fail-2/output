@@ -1,0 +1,2 @@
+[error] /Users/robin/work/spicy/topic2/tests/.tmp/zeek.evt.port-fail-2/port-fail.evt:1: cannot parse port specification
+[error] error loading EVT file "/Users/robin/work/spicy/topic2/tests/.tmp/zeek.evt.port-fail-2/port-fail.evt"
