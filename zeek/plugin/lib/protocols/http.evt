@@ -16,6 +16,7 @@ on HTTP::Message               -> event http_message_done($conn, $is_orig, Zeek_
 on HTTP::Message::%error       -> event http_message_done($conn, $is_orig, Zeek_HTTP::create_http_message_stats(self));
 
 on HTTP::Message::end_of_hdr   -> event http_content_type($conn, $is_orig, self.content_type[0], self.content_type[1]);
+on HTTP::Message::end_of_hdr   -> event http_all_headers($conn, $is_orig, Zeek_HTTP::convert_all_headers(self.headers));
 
 on HTTP::Content::data         -> event http_entity_data($conn, $is_orig, |self.data|, self.data);
 on HTTP::Header                -> event http_header($conn, $is_orig, self.name, self.content);
