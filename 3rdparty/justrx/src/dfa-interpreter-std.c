@@ -210,15 +210,14 @@ jrx_match_state* jrx_match_state_init(const jrx_regex_t* preg, jrx_offset begin,
 
 void jrx_match_state_done(jrx_match_state* ms)
 {
-    if ( ms->dfa->options & JRX_OPTION_NO_CAPTURE )
-        return;
-
-    set_for_each(match_accept, ms->accepts, acc)
+    if ( ! (ms->dfa->options & JRX_OPTION_NO_CAPTURE ))
     {
-        if ( acc.tags )
-            free(acc.tags);
+        set_for_each(match_accept, ms->accepts, acc)
+        {
+            if ( acc.tags )
+                free(acc.tags);
+        }
     }
-
     set_match_accept_delete(ms->accepts);
 
     free(ms->tags1);
