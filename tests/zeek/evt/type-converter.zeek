@@ -20,6 +20,7 @@ public type Test = unit {
     var s: set<uint64> = set<uint64>(1,2,3);
     var v: vector<bytes> = vector<bytes>(b"A", b"B", b"C");
     var l: vector<bytes> = vector<bytes>(b"A", b"B", b"C");
+    var m: map<int64, string> = map(1: "A", 2: "B", 3: "C");
 
     on %done { print self; }
 };
@@ -45,7 +46,8 @@ on Conv::Test -> event conv::test($conn,
                                   self.h,
 				  self.s,
 				  self.v,
-				  self.l
+				  self.l,
+				  self.m
                                   );
 
 @TEST-END-FILE
@@ -63,7 +65,8 @@ event conv::test(x: connection,
                  h: string,
 		 s: set[count],
 		 v: vector of string,
-		 l: vector of string
+		 l: vector of string,
+		 m: table[int] of string
                 )
 	{
 	print x$id;
@@ -79,4 +82,5 @@ event conv::test(x: connection,
 	print s;
 	print v;
 	print l;
+	print m;
 	}

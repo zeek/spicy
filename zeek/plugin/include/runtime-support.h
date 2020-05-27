@@ -218,6 +218,8 @@ template<typename T, typename std::enable_if_t<hilti::rt::is_tuple<T>::value>* =
 Val* to_val(const T& t, BroType* target, std::string_view location);
 template<typename T, typename std::enable_if_t<std::is_enum<T>::value>* = nullptr>
 Val* to_val(const T& t, BroType* target, std::string_view location);
+template<typename K, typename V>
+Val* to_val(const hilti::rt::Map<K, V>& s, BroType* target, std::string_view location);
 template<typename T>
 Val* to_val(const hilti::rt::Set<T>& s, BroType* target, std::string_view location);
 template<typename T>
@@ -504,11 +506,11 @@ inline Val* to_val(const hilti::rt::Vector<T>& v, BroType* target, std::string_v
         throw TypeMismatch("vector", target, location);
 
     auto vt = target->AsVectorType();
-    auto zv = new VectorVal(vt);
+    auto zv = std::make_unique<VectorVal>(vt);
     for ( auto i : v )
         zv->Assign(zv->Size(), to_val(i, vt->YieldType(), location));
 
-    return zv;
+    return zv.release();
 }
 
 /**
@@ -521,15 +523,46 @@ inline Val* to_val(const hilti::rt::List<T>& v, BroType* target, std::string_vie
         throw TypeMismatch("list", target, location);
 
     auto vt = target->AsVectorType();
-    auto zv = new VectorVal(vt);
+    auto zv = std::make_unique<VectorVal>(vt);
     for ( auto i : v )
         zv->Assign(zv->Size(), to_val(i, vt->YieldType(), location));
 
-    return zv;
+    return zv.release();
 }
 
 /**
- * Converts a Spicy-side vector to a Zeek value. The result is returned with
+ * Converts a Spicy-side map to a Zeek value. The result is returned with
+ * ref count +1.
+ */
+template<typename K, typename V>
+inline Val* to_val(const hilti::rt::Map<K, V>& m, BroType* target, std::string_view location) {
+    if constexpr ( hilti::rt::is_tuple<K>::value )
+        throw TypeMismatch("internal error: sets with tuples not yet supported in to_val()");
+
+    if ( target->Tag() != ::TYPE_TABLE )
+        throw TypeMismatch("map", target, location);
+
+    auto tt = target->AsTableType();
+    if ( tt->IsSet() )
+        throw TypeMismatch("map", target, location);
+
+    if ( tt->IndexTypes()->length() != 1 )
+        throw TypeMismatch("map with non-tuple elements", target, location);
+
+    auto zv = std::make_unique<TableVal>(tt);
+
+    for ( auto i : m ) {
+        auto k = to_val(i.first, (*tt->IndexTypes())[0], location);
+        auto v = to_val(i.second, tt->YieldType(), location);
+        zv->Assign(k, v);
+        Unref(k);
+    }
+
+    return zv.release();
+} // namespace spicy::zeek::rt
+
+/**
+ * Converts a Spicy-side set to a Zeek value. The result is returned with
  * ref count +1.
  */
 template<typename T>
@@ -541,11 +574,11 @@ inline Val* to_val(const hilti::rt::Set<T>& s, BroType* target, std::string_view
     if ( ! tt->IsSet() )
         throw TypeMismatch("set", target, location);
 
-    auto zv = new TableVal(tt);
+    auto zv = std::make_unique<TableVal>(tt);
 
     for ( auto i : s ) {
         if constexpr ( hilti::rt::is_tuple<T>::value )
-            throw TypeMismatch("internal error: sets with tuples not yet support in to_val()");
+            throw TypeMismatch("internal error: sets with tuples not yet supported in to_val()");
         else {
             if ( tt->IndexTypes()->length() != 1 )
                 throw TypeMismatch("set with non-tuple elements", target, location);
@@ -556,7 +589,7 @@ inline Val* to_val(const hilti::rt::Set<T>& s, BroType* target, std::string_view
         }
     }
 
-    return zv;
+    return zv.release();
 }
 
 /**
@@ -573,7 +606,7 @@ inline Val* to_val(const T& t, BroType* target, std::string_view location) {
     if ( std::tuple_size<T>::value != rtype->NumFields() )
         throw TypeMismatch("tuple", target, location);
 
-    auto rval = new ::RecordVal(rtype);
+    auto rval = std::make_unique<::RecordVal>(rtype);
     int idx = 0;
     hilti::rt::tuple_for_each(t, [&](const auto& x) {
         Val* v = nullptr;
@@ -610,7 +643,7 @@ inline Val* to_val(const T& t, BroType* target, std::string_view location) {
         idx++;
     });
 
-    return rval;
+    return rval.release();
 }
 
 /**
