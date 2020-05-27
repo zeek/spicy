@@ -161,7 +161,7 @@ Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) {
     auto groups = re.findGroups(*this);
 
     if ( groups.empty() )
-        return result::Error("not matches found");
+        return result::Error("no matches found");
     else
         return groups.at(group);
 }
