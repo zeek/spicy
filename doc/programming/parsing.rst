@@ -397,7 +397,7 @@ There are three location where hooks can be implemented:
    When a hook executes, it has access to the current unit instance
    through the ``self`` identifier. The state of that instance will
    reflect where parsing is at that time. In particular, any field
-   that haven't been parsed yet, will remain unset. (You can use the
+   that hasn't been parsed yet, will remain unset. (You can use the
    ``?.`` unit operator to test if a field has received a value yet.)
 
 Unit Variables
