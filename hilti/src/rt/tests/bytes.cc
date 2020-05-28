@@ -2,6 +2,8 @@
 
 #include <doctest/doctest.h>
 
+#include <ostream>
+#include <tuple>
 #include <type_traits>
 
 #include <hilti/rt/types/bytes.h>
@@ -9,6 +11,13 @@
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
+
+namespace std {
+template<typename X, typename Y>
+ostream& operator<<(ostream& stream, const tuple<X, Y>& xs) {
+    return stream << '(' << hilti::rt::to_string(get<0>(xs)) << ", " << hilti::rt::to_string(get<1>(xs)) << ')';
+}
+} // namespace std
 
 TEST_SUITE_BEGIN("Bytes");
 
@@ -82,6 +91,60 @@ TEST_CASE("iteration") {
     for ( auto x : Bytes() ) {
         (void)x;
         static_assert(std::is_same_v<decltype(x), Bytes::Iterator::reference>);
+    }
+}
+
+TEST_CASE("split") {
+    SUBCASE("separator") {
+        CHECK_EQ("12 45"_b.split(" "), Vector({"12"_b, "45"_b}));
+        CHECK_EQ("12 45 678"_b.split(" "), Vector({"12"_b, "45"_b, "678"_b}));
+        CHECK_EQ("12345"_b.split("34"), Vector({"12"_b, "5"_b}));
+        CHECK_EQ(" 2345"_b.split(" "), Vector({""_b, "2345"_b}));
+        // CHECK_EQ("12345"_b.split(""), Vector({"12345"_b})); // FIXME(bbannier)
+        CHECK_EQ(" "_b.split(" "), Vector({""_b}));
+        CHECK_EQ(""_b.split(" "), Vector({""_b}));
+        CHECK_EQ(""_b.split(""), Vector({""_b}));
+    }
+
+    SUBCASE("whitespace") {
+        CHECK_EQ("12 45"_b.split(), Vector({"12"_b, "45"_b}));
+        CHECK_EQ("12 45 678"_b.split(), Vector({"12"_b, "45"_b, "678"_b}));
+
+        // TODO(bbannier): This should be symmetric with `split(" ")`.
+        CHECK_EQ(" 2345"_b.split(), Vector({"2345"_b}));
+
+        // TODO(bbannier): This should be symmetric with `split(" ")`.
+        CHECK_EQ(" "_b.split(), Vector<Bytes>());
+
+        // TODO(bbannier): This should be symmetric with `split(" ")`.
+        CHECK_EQ(""_b.split(), Vector<Bytes>());
+
+        CHECK_EQ("1"_b.split(), Vector({"1"_b}));
+    }
+}
+
+TEST_CASE("split1") {
+    SUBCASE("separator") {
+        CHECK_EQ("12 45"_b.split1(" "), std::make_tuple("12"_b, "45"_b));
+        CHECK_EQ("12 45 678"_b.split1(" "), std::make_tuple("12"_b, "45 678"_b));
+        CHECK_EQ("12345"_b.split1("34"), std::make_tuple("12"_b, "5"_b));
+        CHECK_EQ(" 2345"_b.split1(" "), std::make_tuple(""_b, "2345"_b));
+        CHECK_EQ("12345"_b.split1(""), std::make_tuple(""_b, "12345"_b));
+        CHECK_EQ("1"_b.split1(" "), std::make_tuple("1"_b, ""_b));
+        CHECK_EQ(""_b.split1("1"), std::make_tuple(""_b, ""_b));
+        CHECK_EQ(""_b.split1(""), std::make_tuple(""_b, ""_b));
+    }
+
+    SUBCASE("whitespace") {
+        CHECK_EQ("12 45"_b.split1(), std::make_tuple("12"_b, "45"_b));
+        CHECK_EQ("12 45 678"_b.split1(), std::make_tuple("12"_b, "45 678"_b));
+
+        // TODO(bbannier): This should be symmetric with `split(" ")`.
+        CHECK_EQ(" 2345"_b.split1(), std::make_tuple(""_b, "2345"_b));
+
+        CHECK_EQ(" "_b.split1(), std::make_tuple(""_b, ""_b));
+        CHECK_EQ(""_b.split1(), std::make_tuple(""_b, ""_b));
+        CHECK_EQ("1"_b.split1(), std::make_tuple("1"_b, ""_b));
     }
 }
 
