@@ -240,7 +240,7 @@ public:
     Bytes strip(bytes::Side side = bytes::Side::Both) const;
 
     /** Splits the data at sequences of whitespace, returning the parts. */
-    Vector<Bytes> split() {
+    Vector<Bytes> split() const {
         Vector<Bytes> x;
         for ( auto& v : hilti::rt::split(*this) )
             x.emplace_back(Bytes::Base(v));
@@ -353,7 +353,7 @@ public:
      * @param group capture group to return
      * @return the matching group, or unset if no match
      */
-    Result<Bytes> match(const RegExp& re, unsigned int group = 0);
+    Result<Bytes> match(const RegExp& re, unsigned int group = 0) const;
 
     // Add some operators over `Base`.
     friend bool operator==(const Bytes& a, const Bytes& b) {

@@ -157,7 +157,7 @@ uint64_t Bytes::toUInt(ByteOrder byte_order) const {
     return i;
 }
 
-Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) {
+Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
     auto groups = re.findGroups(*this);
 
     if ( group >= groups.size() )
