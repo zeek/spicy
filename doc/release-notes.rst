@@ -30,6 +30,9 @@ Changes:
 
 - Renamed ``&bitorder`` attribute to ``&bit-order``.
 
+- All unit-level properties now need to conclude with a semicolon (e.g.,
+  ``%random-access;``).
+
 - Renamed ``&length`` attribute to ``&size``.
 
 - Renamed ``&until_including`` attribute to ``&until-including``.
@@ -68,6 +71,9 @@ Changes:
 - Generally, types don't coerce implicitly to bool anymore except in
   specific language contexts, such as in statements with boolean
   conditions.
+
+- Units using any of the random access methods (e.g., ``input()``),
+  now need to explicitly add a unit property `%random-access`.
 
 - Filters can now be implemented in Spicy itself. The pre-built
   ``filter::Base64Decode`` and ``filter::Zlib`` provide the base64 and

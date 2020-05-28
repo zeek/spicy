@@ -213,7 +213,7 @@ To build Spicy, you will need:
              You can compile Spicy with that, but you won't get JIT as
              it's missing the development libraries.
 
-    - For integration with Zeek (which, in turn, requires JIT):
+    - For integration with Zeek:
 
         * `Zeek <https://www.zeek.org>`_  >= 3.0
 
@@ -237,10 +237,7 @@ Docker files for building on selected Linux distributions, see :ref:`docker`.
     You *can* build Spicy without support for just-in-time
     compilation, which will avoid the dependency on Clang/LLVM as long
     as your compiler is otherwise recent enough. However, you will
-    then miss out on functionality and convenience. In particular, the
-    Zeek plugin currently requires JIT (:issue:`72`), unless you
-    precompile your code with a separate, JIT-enabled Spicy
-    installation first.
+    then miss out on functionality and convenience.
 
 .. rubric:: macOS
 
@@ -341,6 +338,12 @@ the following lines::
 
     JIT enabled:           yes
     Zeek plugin enabled:   yes
+
+Normally, the Zeek plugin will then compile with JIT support as well.
+Alternatively, you can build the Zeek plugin without JIT support by
+configuring with ``--disable-jit-for-zeek``. The plugin will then not
+link against any Spicy libraries, meaning it will be portable across
+systems of the same platform, without needing to install Spicy there.
 
 .. note::
 

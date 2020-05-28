@@ -88,7 +88,7 @@ inline auto elementType(unsigned int op, const char* doc = "<type of element>", 
     };
 }
 
-inline auto constantElementType(unsigned int op, const char* doc = "<type element>") {
+inline auto constantElementType(unsigned int op, const char* doc = "<type of element>") {
     return [=](const std::vector<Expression>& /* orig_ops */,
                const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
         if ( resolved_ops.empty() )

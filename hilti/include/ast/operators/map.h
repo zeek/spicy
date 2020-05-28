@@ -60,9 +60,10 @@ STANDARD_OPERATOR_2(map, Delete, type::Void(), type::Map(type::Wildcard()), deta
 
 STANDARD_OPERATOR_2x(map, IndexConst, Index, operator_::constantElementType(0),
                      type::constant(type::Map(type::Wildcard())), type::Any(),
-                     "Returns the map's element for the given key.");
+                     "Returns the map's element for the given key. The key must exist, otherwise the operation "
+                     "will throw a runtime error.");
 STANDARD_OPERATOR_2x_lhs(map, IndexNonConst, Index, operator_::elementType(0), type::Map(type::Wildcard()), type::Any(),
-                         "Returns the map's element for the given key. The key must exists, otherwise the operation "
+                         "Returns the map's element for the given key. The key must exist, otherwise the operation "
                          "will throw a runtime error.");
 
 

@@ -1,4 +1,10 @@
 
+0.4.0-356 | 2020-05-28 10:23:04 +0000
+
+  * Small documentation updates, including some notes on DPD
+    integration and standalone plugin builds. (Robin Sommer,
+    Corelight)
+
 0.4.0-348 | 2020-05-27 13:03:22 +0200
 
   * GH-335: Add http_all_headers() event to HTTP EVT file.

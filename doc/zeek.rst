@@ -53,6 +53,12 @@ directory where the installation placed the plugin. ``spicy-config
     # zeek -N Zeek::Spicy
     Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version 0.3.0)
 
+If you want to move the plugin to other systems, you can find a binary
+distribution inside your build directory at
+``zeek/plugin/Zeek_Spicy.tgz``. If you have built the plugin without
+JIT support (``configure --disable-jit-for-zeek ...``), it will not
+require a Spicy installation to operate.
+
 .. note::
 
     Developer's note: You can also point ``ZEEK_PLUGIN_PATH`` to the
@@ -186,7 +192,7 @@ As a full example, here's what a new HTTP analyzer could look like::
 Defining file analyzers works quite similar to protocol analyzers,
 through ``*.evt`` sections like this::
 
-    file  analyzer ANALYZER_NAME:
+    file analyzer ANALYZER_NAME:
         PROPERTY_1,
         PROPERTY_2,
         ...
@@ -397,6 +403,8 @@ restart Zeek to pick up any changes. The disadvantage is that
 compiling Spicy parsers takes a noticeable amount of time, which you'll
 incur every time Zeek starts up.
 
+.. _spicyz:
+
 Ahead Of Time Compilation
 -------------------------
 
@@ -427,6 +435,33 @@ access to Zeek-specific functions that call back into Zeek's
 processing:
 
 .. include:: /autogen/zeek-functions.spicy
+
+.. _zeek_dpd:
+
+Dynamic Protocol Detection (DPD)
+================================
+
+Spicy protocol analyzers support Zeek's *Dynamic Protocol Detection*
+(DPD), i.e., analysis independent of any well-known ports. To use that
+with your analyzer, add two pieces:
+
+1. A `Zeek signature
+   <https://docs.zeek.org/en/current/frameworks/signatures.html>`_ to
+   activate your analyzer based on payload patterns. Just like with
+   any of Zeek's standard analyzers, a signature can activate a Spicy
+   analyzer through the ``enable "<name>"`` keyword. The name of the
+   analyzer comes out of the EVT file: it is the ``ANALYZER_NAME``
+   with the double colons replaced with an underscore (e.g.,
+   ``spicy::HTTP`` turns into ``enable "spicy_HTTP"``.
+
+2. You should call ``zeek::confirm_protocol()`` (see
+   :ref:`zeek_functions`) from a hook inside your grammar at a point
+   when the parser can be reasonably certain that it is processing the
+   expected protocol. Optionally, you may also call
+   ``zeek::reject_protocol()`` when you're sure the parser is *not*
+   parsing the right protocol (e.g., inside an :ref:`%error
+   <on_error>` hook). Doing so will let Zeek stop feeding it more
+   data.
 
 .. _zeek_configuration:
 
