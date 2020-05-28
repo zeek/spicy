@@ -33,43 +33,107 @@ enum class Side {
 /** For Bytes::Decode, which character set to use. */
 enum class Charset { Undef, UTF8, ASCII };
 
-class SafeConstIterator
-    : public hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::const_iterator, SafeConstIterator> {
+class Iterator {
+    using B = std::string;
+    using difference_type = B::const_iterator::difference_type;
+
+    std::weak_ptr<B*> _control;
+    typename B::size_type _index = 0;
+
 public:
-    using Base = hilti::rt::detail::iterator::SafeIterator<Bytes, std::string::const_iterator, SafeConstIterator>;
-    using Base::Base;
+    Iterator() = default;
 
-    using reference = uint8_t;
+    Iterator(typename B::size_type index, const std::weak_ptr<B*> control)
+        : _control(control), _index(std::move(index)) {}
 
-    // Override to return expected type.
-    reference operator*() const {
-        ensureValid();
-        return *iterator();
+    uint8_t operator*() const {
+        if ( auto&& l = _control.lock() ) {
+            auto&& data = static_cast<B&>(**l);
+
+            if ( _index >= data.size() )
+                throw IndexError(fmt("index %s out of bounds", _index));
+
+            return data[_index];
+        }
+
+        throw InvalidIterator("bound object has expired");
     }
 
     template<typename T>
     auto& operator+=(const hilti::rt::integer::safe<T>& n) {
-        return Base::operator+=(n.Ref());
+        return *this += n.Ref();
     }
 
-    auto& operator+=(uint64_t n) { return Base::operator+=(n); }
+    auto& operator+=(uint64_t n) {
+        _index += n;
+        return *this;
+    }
 
     template<typename T>
     auto operator+(const hilti::rt::integer::safe<T>& n) const {
-        return Base::operator+(n.Ref());
+        return *this + n.Ref();
     }
 
     template<typename T>
     auto operator+(const T& n) const {
-        return Base::operator+(n);
+        return Iterator{_index + n, _control};
+    }
+
+    explicit operator bool() const { return bool(_control.lock()); }
+
+    auto& operator++() {
+        ++_index;
+        return *this;
+    }
+
+    auto operator++(int) {
+        auto result = *this;
+        ++_index;
+        return result;
+    }
+
+    friend auto operator==(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different bytes");
+        return a._index == b._index;
+    }
+
+    friend bool operator!=(const Iterator& a, const Iterator& b) { return ! (a == b); }
+
+    friend auto operator<(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different bytes");
+        return a._index < b._index;
+    }
+
+    friend auto operator<=(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different bytes");
+        return a._index <= b._index;
+    }
+
+    friend auto operator>(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different bytes");
+        return a._index > b._index;
+    }
+
+    friend auto operator>=(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different bytes");
+        return a._index >= b._index;
+    }
+
+    friend difference_type operator-(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot perform arithmetic with iterators into different bytes");
+        return a._index - b._index;
     }
 };
 
-inline std::string to_string(const SafeConstIterator& /* i */, rt::detail::adl::tag /*unused*/) {
-    return "<bytes iterator>";
-}
+inline std::string to_string(const Iterator& /* i */, rt::detail::adl::tag /*unused*/) { return "<bytes iterator>"; }
 
-inline std::ostream& operator<<(std::ostream& out, const SafeConstIterator& /* x */) {
+inline std::ostream& operator<<(std::ostream& out, const Iterator& /* x */) {
     out << "<bytes iterator>";
     return out;
 }
@@ -82,7 +146,9 @@ inline std::ostream& operator<<(std::ostream& out, const SafeConstIterator& /* x
 class Bytes : protected std::string, public hilti::rt::detail::iterator::Controllee {
 public:
     using Base = std::string;
-    using Iterator = bytes::SafeConstIterator;
+    using const_iterator = bytes::Iterator;
+    using Base::const_reference;
+    using Base::reference;
     using Offset = uint64_t;
 
     using Base::Base;
@@ -100,11 +166,19 @@ public:
 
     Bytes(Base&& str) : Base(std::move(str)) {}
     Bytes(const Bytes&) = default;
-    Bytes(Bytes&&) noexcept = default;
-    ~Bytes() = default;
+    Bytes(Bytes&&) = default;
 
-    Bytes& operator=(const Bytes&) = default;
-    Bytes& operator=(Bytes&&) noexcept = default;
+    Bytes& operator=(const Bytes& b) {
+        invalidateIterators();
+        this->Base::operator=(b);
+        return *this;
+    }
+
+    Bytes& operator=(Bytes&& b) {
+        invalidateIterators();
+        this->Base::operator=(std::move(b));
+        return *this;
+    }
 
     /** Appends the contents of a stream view to the data. */
     void append(const Bytes& d) { Base::append(d.str()); }
@@ -116,13 +190,13 @@ public:
     const std::string& str() const& { return *this; }
 
     /** Returns an iterator representing the first byte of the instance. */
-    Iterator begin() const { return {*this, Base::begin()}; }
+    const_iterator begin() const { return const_iterator(0u, _control); }
 
     /** Returns an iterator representing the end of the instance. */
-    Iterator end() const { return Iterator(*this, Base::end()); }
+    const_iterator end() const { return const_iterator(size(), _control); }
 
     /** Returns an iterator referring to the given offset. */
-    Iterator at(Offset o) const { return begin() + o; }
+    const_iterator at(Offset o) const { return begin() + o; }
 
     /** Returns true if the data's size is zero. */
     bool isEmpty() const { return empty(); }
@@ -136,7 +210,7 @@ public:
      * @param b byte to search
      * @param n optional starting point, which must be inside the same instance
      */
-    Iterator find(value_type b, const Iterator& n = Iterator()) const {
+    const_iterator find(value_type b, const const_iterator& n = const_iterator()) const {
         if ( auto i = Base::find(b, (n ? n - begin() : 0)); i != Base::npos )
             return begin() + i;
         else
@@ -153,7 +227,7 @@ public:
      * if no, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*.
      */
-    std::tuple<bool, Iterator> find(const Bytes& v, const Iterator& n = Iterator()) const;
+    std::tuple<bool, const_iterator> find(const Bytes& v, const const_iterator& n = const_iterator()) const;
 
     /**
      * Extracts a subrange of bytes.
@@ -161,14 +235,16 @@ public:
      * @param from iterator pointing to start of subrange
      * @param to iterator pointing to just beyond subrange
      */
-    Bytes sub(const Iterator& from, const Iterator& to) const { return {substr(from - begin(), to - from)}; }
+    Bytes sub(const const_iterator& from, const const_iterator& to) const {
+        return {substr(from - begin(), to - from)};
+    }
 
     /**
      * Extracts a subrange of bytes from the beginning.
      *
      * @param to iterator pointing to just beyond subrange
      */
-    Bytes sub(const Iterator& to) const { return sub(begin(), to); }
+    Bytes sub(const const_iterator& to) const { return sub(begin(), to); }
 
     /**
      * Extracts a subrange of bytes.
@@ -382,6 +458,12 @@ public:
     friend Bytes operator+(const Bytes& a, const Bytes& b) {
         return static_cast<const Bytes::Base&>(a) + static_cast<const Bytes::Base&>(b);
     }
+
+private:
+    friend bytes::Iterator;
+    std::shared_ptr<Base*> _control = std::make_shared<Base*>(static_cast<Base*>(this));
+
+    void invalidateIterators() { _control = std::make_shared<Base*>(static_cast<Base*>(this)); }
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {

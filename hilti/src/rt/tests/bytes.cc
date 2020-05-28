@@ -28,7 +28,7 @@ TEST_CASE("at") {
     CHECK_EQ(*b.at(1), '2');
     CHECK_EQ(*b.at(2), '3');
     CHECK_EQ(b.at(3), b.end());
-    // CHECK_THROWS_WITH_AS(*b.at(5), "invalid index", const IndexError&); // TODO(bbannier): Catch invalid access.
+    CHECK_THROWS_WITH_AS(*b.at(5), "index 5 out of bounds", const IndexError&);
 }
 
 TEST_CASE("find") {
@@ -90,7 +90,7 @@ TEST_CASE("iteration") {
     // This is a regression test for #219.
     for ( auto x : Bytes() ) {
         (void)x;
-        static_assert(std::is_same_v<decltype(x), Bytes::Iterator::reference>);
+        static_assert(std::is_same_v<decltype(x), uint8_t>);
     }
 }
 

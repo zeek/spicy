@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <hilti/rt/types/bytes.h>
+#include "hilti/rt/types/bytes.h"
+
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/stream.h>
@@ -8,13 +9,13 @@
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
-std::tuple<bool, Bytes::Iterator> Bytes::find(const Bytes& v, const Iterator& n) const {
+std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_iterator& n) const {
     if ( v.isEmpty() )
         return std::make_tuple(true, n ? n : begin());
 
     auto first = *v.begin();
 
-    for ( auto i = Iterator(n ? n : begin()); true; ++i ) {
+    for ( auto i = const_iterator(n ? n : begin()); true; ++i ) {
         if ( i == end() )
             return std::make_tuple(false, i);
 
