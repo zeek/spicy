@@ -100,7 +100,7 @@ TEST_CASE("split") {
         CHECK_EQ("12 45 678"_b.split(" "), Vector({"12"_b, "45"_b, "678"_b}));
         CHECK_EQ("12345"_b.split("34"), Vector({"12"_b, "5"_b}));
         CHECK_EQ(" 2345"_b.split(" "), Vector({""_b, "2345"_b}));
-        // CHECK_EQ("12345"_b.split(""), Vector({"12345"_b})); // FIXME(bbannier)
+        CHECK_EQ("12345"_b.split(""), Vector({"12345"_b}));
         CHECK_EQ(" "_b.split(" "), Vector({""_b}));
         CHECK_EQ(""_b.split(" "), Vector({""_b}));
         CHECK_EQ(""_b.split(""), Vector({""_b}));

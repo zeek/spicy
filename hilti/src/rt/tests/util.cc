@@ -39,7 +39,7 @@ TEST_CASE("split") {
     CHECK_EQ(split("12345", "1"), std::vector<std::string_view>({"", "2345"}));
     CHECK_EQ(split("12345", "23"), std::vector<std::string_view>({"1", "45"}));
     CHECK_EQ(split("12345", "a"), std::vector<std::string_view>({"12345"}));
-    // CHECK_EQ(split("12345", ""), std::vector<std::string_view>({"12345"})); // FIXME(bbannier)
+    CHECK_EQ(split("12345", ""), std::vector<std::string_view>({"12345"}));
 }
 
 TEST_SUITE_END();

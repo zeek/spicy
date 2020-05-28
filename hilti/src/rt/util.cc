@@ -97,6 +97,9 @@ std::filesystem::path hilti::rt::normalizePath(const std::filesystem::path& p) {
 }
 
 std::vector<std::string_view> hilti::rt::split(std::string_view s, std::string_view delim) {
+    if ( delim.empty() )
+        return {s};
+
     std::vector<std::string_view> l;
 
     do {
