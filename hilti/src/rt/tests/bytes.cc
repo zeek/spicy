@@ -31,6 +31,30 @@ TEST_CASE("at") {
     CHECK_THROWS_WITH_AS(*b.at(5), "index 5 out of bounds", const IndexError&);
 }
 
+TEST_CASE("extract") {
+    SUBCASE("sufficient data") {
+        unsigned char dst1[3] = {0};
+        CHECK_EQ("123456"_b.extract(dst1), "456"_b);
+        CHECK_EQ(dst1[0], '1');
+        CHECK_EQ(dst1[1], '2');
+        CHECK_EQ(dst1[2], '3');
+
+        unsigned char dst2[3] = {0};
+        CHECK_EQ("123"_b.extract(dst2), ""_b);
+        CHECK_EQ(dst2[0], '1');
+        CHECK_EQ(dst2[1], '2');
+        CHECK_EQ(dst2[2], '3');
+    }
+
+    SUBCASE("insufficient data") {
+        unsigned char dst1[3] = {0};
+        CHECK_THROWS_WITH_AS(""_b.extract(dst1), "insufficient data in source", const InvalidArgument&);
+
+        unsigned char dst2[1] = {0};
+        CHECK_THROWS_WITH_AS(""_b.extract(dst2), "insufficient data in source", const InvalidArgument&);
+    }
+}
+
 TEST_CASE("find") {
     const auto b = "123"_b;
     const auto empty = ""_b;

@@ -270,6 +270,9 @@ public:
      */
     template<int N>
     Bytes extract(unsigned char (&dst)[N]) const {
+        if ( N > size() )
+            throw InvalidArgument("insufficient data in source");
+
         memcpy(dst, data(), N);
         return sub(N, std::string::npos);
     }
