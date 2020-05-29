@@ -21,6 +21,13 @@ ostream& operator<<(ostream& stream, const tuple<X, Y>& xs) {
 
 TEST_SUITE_BEGIN("Bytes");
 
+TEST_CASE("add") {
+    CHECK_EQ("123"_b + "456"_b, "123456"_b);
+    CHECK_EQ("123"_b + ""_b, "123"_b);
+    CHECK_EQ(""_b + "123"_b, "123"_b);
+    CHECK_EQ(""_b + ""_b, ""_b);
+}
+
 TEST_CASE("at") {
     const auto b = "123"_b;
     CHECK_EQ(b.at(0), b.begin());
