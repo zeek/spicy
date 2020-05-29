@@ -172,6 +172,17 @@ TEST_CASE("split1") {
     }
 }
 
+TEST_CASE("startsWith") {
+    CHECK("123"_b.startsWith(""_b));
+    CHECK("123"_b.startsWith("1"_b));
+    CHECK("123"_b.startsWith("12"_b));
+    CHECK("123"_b.startsWith("123"_b));
+
+    CHECK_FALSE("123"_b.startsWith("1234"_b));
+    CHECK_FALSE("123"_b.startsWith("a"_b));
+    CHECK_FALSE(""_b.startsWith("a"_b));
+}
+
 TEST_CASE("sub") {
     const auto b = "123456"_b;
 
