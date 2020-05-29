@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/list.h>
