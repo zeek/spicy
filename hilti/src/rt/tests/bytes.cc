@@ -148,6 +148,27 @@ TEST_CASE("split1") {
     }
 }
 
+TEST_CASE("assign") {
+    auto b = "123"_b;
+    auto it = b.begin();
+
+    REQUIRE_EQ(to_string(b), "b\"123\"");
+    REQUIRE_EQ(*it, '1');
+
+    SUBCASE("rvalue") {
+        b = "abc"_b;
+        CHECK_EQ(to_string(b), "b\"abc\"");
+        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+    }
+
+    SUBCASE("lvalue") {
+        const auto bb = "abc"_b;
+        b = bb;
+        CHECK_EQ(to_string(b), "b\"abc\"");
+        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+    }
+}
+
 TEST_CASE("Iterator") {
     const auto b = "123"_b;
     const auto bb = "123"_b;
