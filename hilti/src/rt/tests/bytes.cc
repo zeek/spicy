@@ -55,6 +55,50 @@ TEST_CASE("extract") {
     }
 }
 
+TEST_CASE("comparison") {
+    const auto b = "123"_b;
+
+    SUBCASE("equal") {
+        CHECK_EQ(b, b);
+        CHECK_EQ(Bytes(b), b);
+        CHECK_NE("abc"_b, b);
+        CHECK_NE(""_b, b);
+        CHECK_EQ(""_b, ""_b);
+    }
+
+    SUBCASE("less") {
+        CHECK_FALSE(operator<(b, b));
+        CHECK_LT("123"_b, "124"_b);
+        CHECK_FALSE(operator<("124"_b, "123"_b));
+        CHECK_LT("12"_b, "123"_b);
+        CHECK_FALSE(operator<("123"_b, "12"_b));
+    }
+
+    SUBCASE("less equal") {
+        CHECK_LE(b, b);
+        CHECK_LE("123"_b, "124"_b);
+        CHECK_FALSE(operator<=("124"_b, "123"_b));
+        CHECK_LE("12"_b, "123"_b);
+        CHECK_FALSE(operator<=("123"_b, "12"_b));
+    }
+
+    SUBCASE("greater") {
+        CHECK_FALSE(operator>(b, b));
+        CHECK_GT("124"_b, "123"_b);
+        CHECK_FALSE(operator>("123"_b, "124"_b));
+        CHECK_GT("123"_b, "12"_b);
+        CHECK_FALSE(operator>("12"_b, "123"_b));
+    }
+
+    SUBCASE("grater equal") {
+        CHECK_GE(b, b);
+        CHECK_GE("124"_b, "123"_b);
+        CHECK_FALSE(operator>=("123"_b, "124"_b));
+        CHECK_GE("123"_b, "12"_b);
+        CHECK_FALSE(operator>=("12"_b, "123"_b));
+    }
+}
+
 TEST_CASE("find") {
     const auto b = "123"_b;
     const auto empty = ""_b;
