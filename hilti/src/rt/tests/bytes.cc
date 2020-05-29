@@ -216,6 +216,17 @@ TEST_CASE("sub") {
     }
 }
 
+TEST_CASE("toTime") {
+    CHECK_EQ("10"_b.toTime(), Time(10.0));
+    CHECK_EQ("10"_b.toTime(2), Time(2.0));
+
+    CHECK_EQ(""_b.toTime(), Time());
+    CHECK_THROWS_WITH_AS("abc"_b.toTime(), "cannot parse bytes as unsigned integer", const RuntimeError&);
+
+    CHECK_EQ("\x00\x01"_b.toTime(ByteOrder::Big), Time(1.0));
+    CHECK_EQ("\x01\x00"_b.toTime(ByteOrder::Little), Time(1.0));
+}
+
 TEST_CASE("append") {
     auto b = "123"_b;
     auto it = b.begin();
