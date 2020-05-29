@@ -148,6 +148,39 @@ TEST_CASE("split1") {
     }
 }
 
+TEST_CASE("sub") {
+    const auto b = "123456"_b;
+
+    SUBCASE("end offset") {
+        CHECK_EQ(b.sub(0), ""_b);
+        CHECK_EQ(b.sub(b.size()), b);
+        CHECK_EQ(b.sub(99), b);
+        CHECK_EQ(b.sub(3), "123"_b);
+    }
+
+    SUBCASE("start/end offsets") {
+        CHECK_EQ(b.sub(0, 0), ""_b);
+        CHECK_EQ(b.sub(b.size(), b.size()), ""_b);
+        CHECK_EQ(b.sub(0, b.size()), b);
+        CHECK_EQ(b.sub(0, 3), "123"_b);
+        CHECK_EQ(b.sub(3, 0), "456"_b);
+    }
+
+    SUBCASE("end iterator") {
+        CHECK_EQ(b.sub(b.begin()), ""_b);
+        CHECK_EQ(b.sub(b.end()), b);
+    }
+
+    SUBCASE("start/end iterator") {
+        CHECK_EQ(b.sub(b.begin(), b.end()), b);
+        CHECK_EQ(b.sub(b.begin(), b.begin()), ""_b);
+
+        const auto bb = "123"_b;
+        CHECK_THROWS_WITH_AS(b.sub(b.begin(), bb.begin()),
+                             "cannot perform arithmetic with iterators into different bytes", const InvalidArgument&);
+    }
+}
+
 TEST_CASE("append") {
     auto b = "123"_b;
     auto it = b.begin();
