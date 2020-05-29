@@ -148,6 +148,29 @@ TEST_CASE("split1") {
     }
 }
 
+TEST_CASE("append") {
+    auto b = "123"_b;
+    auto it = b.begin();
+
+    REQUIRE_EQ(to_string(b), "b\"123\"");
+    REQUIRE_EQ(*it, '1');
+
+    SUBCASE("Bytes") {
+        b.append("456"_b);
+
+        CHECK_EQ(to_string(b), "b\"123456\"");
+        CHECK_EQ(*it, '1');
+    }
+
+    SUBCASE("View") {
+        auto stream = Stream("456");
+        b.append(stream.view());
+
+        CHECK_EQ(to_string(b), "b\"123456\"");
+        CHECK_EQ(*it, '1');
+    }
+}
+
 TEST_CASE("assign") {
     auto b = "123"_b;
     auto it = b.begin();
