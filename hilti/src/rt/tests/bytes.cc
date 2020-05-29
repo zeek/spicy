@@ -234,6 +234,20 @@ TEST_CASE("startsWith") {
     CHECK_FALSE(""_b.startsWith("a"_b));
 }
 
+TEST_CASE("strip") {
+    SUBCASE("whitespace") {
+        CHECK_EQ("\t 123 "_b.strip(bytes::Side::Left), "123 "_b);
+        CHECK_EQ(" 123 \v"_b.strip(bytes::Side::Right), " 123"_b);
+        CHECK_EQ("\r\f 123 \n"_b.strip(bytes::Side::Both), "123"_b);
+    }
+
+    SUBCASE("bytes") {
+        CHECK_EQ("\t 123 "_b.strip("\t\r "_b, bytes::Side::Left), "123 "_b);
+        CHECK_EQ(" 123 \v"_b.strip(" \v"_b, bytes::Side::Right), " 123"_b);
+        CHECK_EQ("\r\f 123 \n"_b.strip("\n \f\r"_b, bytes::Side::Both), "123"_b);
+    }
+}
+
 TEST_CASE("sub") {
     const auto b = "123456"_b;
 
