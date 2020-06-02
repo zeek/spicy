@@ -14,7 +14,8 @@ assert j - i == 10;
 assert i * j == 200;
 assert l / i == 3;
 assert l / i == 3;
-assert l % k == 10;
+assert l %k == 10; # skip space to test parser
+assert l &k == 20; # skip space to test parser
 assert i ** m == 1000;
 assert i << 2 == 40;
 assert k >> 2 == 5;
