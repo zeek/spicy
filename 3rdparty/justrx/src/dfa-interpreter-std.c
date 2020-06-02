@@ -248,7 +248,7 @@ int jrx_match_state_advance(jrx_match_state* ms, jrx_char cp, jrx_assertion asse
         return 0;
 
     if ( ms->dfa->options & JRX_OPTION_DEBUG )
-        fprintf(stderr, "> in state #%d at offset %d with input symbol %d and assertions %d ",
+        fprintf(stderr, "> in state #%u at offset %d with input symbol %u and assertions %u ",
                 ms->state, ms->offset, cp, assertions);
 
     vec_for_each(dfa_transition, state->trans, trans)
