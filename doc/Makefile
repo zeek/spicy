@@ -17,7 +17,7 @@ clean:
 html: Makefile autogen-docs
 	@rm -f "$(BUILDDIR)/doc-root" && ln -s "../doc" "$(BUILDDIR)/doc-root"
 	@  # The RTD theme might be producing RemovedInSphinx30Warning
-	@PYTHONWARNINGS="ignore" $(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(DESTDIR)" $(SPHINXOPTS) $(O)
+	@PYTHONWARNINGS="ignore" PATH=$(BUILDDIR)/bin:$$PATH $(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(DESTDIR)" $(SPHINXOPTS) $(O)
 	@echo Built documentation in $(DESTDIR)/html/index.html
 
 autogen-docs:
