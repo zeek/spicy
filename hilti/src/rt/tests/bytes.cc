@@ -38,6 +38,17 @@ TEST_CASE("at") {
     CHECK_THROWS_WITH_AS(*b.at(5), "index 5 out of bounds", const IndexError&);
 }
 
+TEST_CASE("decode") {
+    CHECK_EQ("123"_b.decode(bytes::Charset::ASCII), "123");
+    CHECK_EQ("abc"_b.decode(bytes::Charset::ASCII), "abc");
+    CHECK_EQ("abc"_b.decode(bytes::Charset::UTF8), "abc");
+    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(bytes::Charset::UTF8), "\xF0\x9F\x98\x85");
+    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(bytes::Charset::ASCII), "\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd");
+
+    CHECK_THROWS_WITH_AS("123"_b.decode(bytes::Charset::Undef), "unknown character set for decoding",
+                         const RuntimeError&);
+}
+
 TEST_CASE("extract") {
     SUBCASE("sufficient data") {
         unsigned char dst1[3] = {0};
