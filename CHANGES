@@ -1,4 +1,12 @@
 
+0.4.0-362 | 2020-06-02 15:20:59 +0000
+
+  * GH-282: Set PATH when building documation so that we find the
+    Spicy tools. (Robin Sommer, Corelight)
+
+  * GH-348: Fix integer overflows in regexp parsing & matching.
+    (Robin Sommer, Corelight)
+
 0.4.0-356 | 2020-05-28 10:23:04 +0000
 
   * Small documentation updates, including some notes on DPD
