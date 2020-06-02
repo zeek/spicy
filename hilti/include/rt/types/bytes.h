@@ -361,7 +361,7 @@ public:
     Bytes join(const Vector<T>& parts) const {
         Bytes rval;
 
-        for ( auto i = 0; i < parts.size(); ++i ) {
+        for ( size_t i = 0; i < parts.size(); ++i ) {
             if ( i > 0 )
                 rval += *this;
 

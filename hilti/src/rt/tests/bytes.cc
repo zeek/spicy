@@ -176,6 +176,12 @@ TEST_CASE("find") {
     }
 }
 
+TEST_CASE("join") {
+    CHECK_EQ(""_b.join(Vector<int>({1, 2, 3})), "123"_b);
+    CHECK_EQ("😎"_b.join(Vector<int>({1, 2, 3})), "1😎2😎3"_b);
+    CHECK_EQ("😎"_b.join(Vector<Bytes>({"\x00"_b, "\x01"_b, "\x02"_b})), "\\x00😎\\x01😎\\x02"_b);
+}
+
 TEST_CASE("lower") {
     CHECK_EQ("ABC123"_b.lower(bytes::Charset::UTF8).str(), "abc123");
     CHECK_EQ("ABC123"_b.lower(bytes::Charset::ASCII).str(), "abc123");
