@@ -250,6 +250,8 @@ differences and extensions:
   ``[:digit:]``, ``[:upper:]``, ``[:blank:]``.
 - ``\b`` asserts a word-boundary, ``\B`` matches asserts no word
   boundary.
+- ``\xXX`` matches a byte with the binary hex value ``XX`` (e.g.,
+  ``\xff`` matches a byte of decimal value 255).
 - ``{#<number>}`` associates a numerical ID with a regular expression
   (useful for set matching).
 

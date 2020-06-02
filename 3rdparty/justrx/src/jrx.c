@@ -100,7 +100,10 @@ static int _regexec_partial_std(const jrx_regex_t* preg, const char* buffer, uns
         if ( len == 1 )
             assertions |= last;
 
-        if ( jrx_match_state_advance(ms, *p++, assertions) == 0 ) {
+        // We cast to uint8_t here first because otherwise the automatic cast
+        // would appply sign extension and mistreat characters inside the
+        // negative space.
+        if ( jrx_match_state_advance(ms, (uint8_t)*p++, assertions) == 0 ) {
             jrx_match_accept acc = _pick_accept(ms->accepts);
             return acc.aid ? acc.aid : 0;
         }
@@ -134,7 +137,10 @@ static int _regexec_partial_min(const jrx_regex_t* preg, const char* buffer, uns
         if ( len == 1 )
             assertions |= last;
 
-        jrx_accept_id rc = jrx_match_state_advance_min(ms, *p++, assertions);
+        // We cast to uint8_t here first because otherwise the automatic cast
+        // would appply sign extension and mistreat characters inside the
+        // negative space.
+        jrx_accept_id rc = jrx_match_state_advance_min(ms, (uint8_t)*p++, assertions);
 
         if ( ! rc ) {
             ms->offset = eo;

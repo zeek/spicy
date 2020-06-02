@@ -14,7 +14,7 @@ static void print_error(int rc, regex_t* re, const char* prefix)
     printf("%s, %s\n", prefix, buffer);
 }
 
-static void do_match(char** argv, int argc, int opt, int options, char* data)
+static void do_match(char** argv, int argc, int opt, int options, uint8_t* data)
 {
     const int max_captures = 20;
 
@@ -41,7 +41,7 @@ static void do_match(char** argv, int argc, int opt, int options, char* data)
         return;
     }
 
-    rc = regexec(&re, data, max_captures, pmatch, 0);
+    rc = regexec(&re, (const char*)data, max_captures, pmatch, 0);
 
     if ( rc != 0 ) {
         print_error(rc, &re, "pattern not found");
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
     int lazy = 0;
 
     int i;
-    char* d;
+    uint8_t* d;
 
     while ( argc > opt ) {
         if ( strcmp(argv[opt], "-d") == 0 )
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    char* data = readInput();
+    uint8_t* data = (uint8_t*)readInput();
 
     fprintf(stderr, "=== Pattern: %s\n", argv[opt]);
 
@@ -127,7 +127,7 @@ int main(int argc, char** argv)
         if ( isprint(*d) )
             fputc(*d, stderr);
         else
-            fprintf(stderr, "\\x%02x", (int)*d);
+            fprintf(stderr, "\\x%02x", *d);
     }
     fputs("\n", stderr);
 

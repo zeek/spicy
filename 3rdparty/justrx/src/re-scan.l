@@ -43,17 +43,17 @@ ACCEPT_ID       \{#[[:digit:]]+\}
 	"\\b"	yylval->assertion = JRX_ASSERTION_WORD_BOUNDARY; return TOK_ASSERTION;
 	"\\B"	yylval->assertion = JRX_ASSERTION_NOT_WORD_BOUNDARY; return TOK_ASSERTION;
 
-	.       yylval->cp = yytext[0]; return TOK_CODEPOINT;
+	.       yylval->cp = (uint8_t)yytext[0]; return TOK_CODEPOINT;
 }
 
 <CCL_FIRST>{
 	"^"            return TOK_NEGATE_CCL;
-	.              BEGIN(CCL); yylval->cp = yytext[0]; return TOK_CODEPOINT;
+	.              BEGIN(CCL); yylval->cp = (uint8_t)yytext[0]; return TOK_CODEPOINT;
 }
 
 <CCL>{
 	-/[^\]]         return '-';
-	[^\]]           yylval->cp = yytext[0]; return TOK_CODEPOINT;
+	[^\]]           yylval->cp = (uint8_t)yytext[0]; return TOK_CODEPOINT;
 	"]"             BEGIN(INITIAL); return ']';
 }
 

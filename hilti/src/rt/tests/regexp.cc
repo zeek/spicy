@@ -76,6 +76,22 @@ TEST_CASE("construct") {
                          const regexp::PatternError&);
 }
 
+TEST_CASE("binary data") {
+    CHECK_GT(RegExp("\xf0\xfe\xff").find("\xf0\xfe\xff"_b), 0);    // Pass in raw data directly.
+    CHECK_GT(RegExp("\\xF0\\xFe\\xff").find("\xf0\xfe\xff"_b), 0); // Let the ctor unescape
+
+    auto x = RegExp("[\\x7F\\x80]*").findSpan("\x7f\x80\x7f\x80$$$"_b);
+    CHECK_GT(std::get<0>(x), 0);
+    CHECK_EQ(std::get<1>(x).size(), 4); // check for expected length of match
+
+    x = RegExp("abc\\x00def").findSpan("$$abc\000def%%"_b);
+    CHECK_GT(std::get<0>(x), 0);
+    CHECK_EQ(std::get<1>(x).size(), 7); // check for expected length of match
+
+    // Try escaped data & pattern, which will be matched literally as ASCII characters.
+    CHECK_GT(RegExp("\\\\xFF\\\\xFF").find("\\xFF\\xFF"_b), 0);
+}
+
 TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("MatchState");

@@ -483,9 +483,9 @@ void ccl_print(jrx_ccl* ccl, FILE* file)
     else {
         set_for_each(char_range, ccl->ranges, r)
         {
-            fprintf(file, "(%d-", r.begin);
+            fprintf(file, "(%u-", r.begin);
             if ( r.end < JRX_CHAR_MAX )
-                fprintf(file, "%d)", r.end);
+                fprintf(file, "%u)", r.end);
             else
                 fprintf(file, "max)");
         }
