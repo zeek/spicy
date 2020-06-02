@@ -281,6 +281,56 @@ TEST_CASE("sub") {
     }
 }
 
+TEST_CASE("toInt") {
+    SUBCASE("with base") {
+        CHECK_EQ("100"_b.toInt(), 100);
+        CHECK_EQ("100"_b.toInt(2), 4);
+        CHECK_EQ("-100"_b.toInt(2), -4);
+
+        CHECK_THROWS_WITH_AS("12a"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
+    }
+
+    SUBCASE("with byte order") {
+        CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
+        CHECK_EQ("100"_b.toInt(ByteOrder::Network), 3223600);
+        CHECK_EQ("100"_b.toInt(ByteOrder::Little), 3158065);
+        if ( systemByteOrder() == ByteOrder::Little )
+            CHECK_EQ("100"_b.toInt(ByteOrder::Host), 3158065);
+        else
+            CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
+
+
+        CHECK_THROWS_WITH_AS("1234567890"_b.toInt(ByteOrder::Big), "more than max of 8 bytes for conversion to integer",
+                             const RuntimeError&);
+
+        CHECK_THROWS_WITH_AS("100"_b.toInt(ByteOrder::Undef), "cannot convert value to undefined byte order",
+                             const RuntimeError&);
+    }
+}
+
+TEST_CASE("toUInt") {
+    SUBCASE("with base") {
+        CHECK_EQ("100"_b.toUInt(), 100u);
+        CHECK_EQ("100"_b.toUInt(2), 4u);
+        CHECK_EQ("-100"_b.toUInt(2), static_cast<uint64_t>(-4)); // Wrap-around.
+
+        CHECK_THROWS_WITH_AS("12a"_b.toUInt(), "cannot parse bytes as unsigned integer", const RuntimeError&);
+    }
+
+    SUBCASE("with byte order") {
+        CHECK_EQ("100"_b.toUInt(ByteOrder::Big), 3223600U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder::Network), 3223600U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder::Little), 3158065U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder::Host), 3158065U);
+
+        CHECK_THROWS_WITH_AS("1234567890"_b.toUInt(ByteOrder::Big),
+                             "more than max of 8 bytes for conversion to integer", const RuntimeError&);
+
+        CHECK_THROWS_WITH_AS("100"_b.toInt(ByteOrder::Undef), "cannot convert value to undefined byte order",
+                             const RuntimeError&);
+    }
+}
+
 TEST_CASE("toTime") {
     CHECK_EQ("10"_b.toTime(), Time(10.0));
     CHECK_EQ("10"_b.toTime(2), Time(2.0));

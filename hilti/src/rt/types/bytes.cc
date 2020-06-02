@@ -141,8 +141,13 @@ int64_t Bytes::toInt(ByteOrder byte_order) const {
 }
 
 uint64_t Bytes::toUInt(ByteOrder byte_order) const {
-    if ( byte_order == hilti::rt::ByteOrder::Host )
-        return toInt(systemByteOrder());
+    switch ( byte_order ) {
+        case ByteOrder::Undef: throw RuntimeError("cannot convert value to undefined byte order");
+        case ByteOrder::Host: return toInt(systemByteOrder());
+        case ByteOrder::Little: [[fallthrough]];
+        case ByteOrder::Network: [[fallthrough]];
+        case ByteOrder::Big: break;
+    }
 
     if ( size() > 8 )
         throw RuntimeError("more than max of 8 bytes for conversion to integer");
