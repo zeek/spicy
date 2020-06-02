@@ -253,14 +253,18 @@ void spicy::detail::parser::Scanner::disablePatternMode()
     yy_pop_state();
 }
 
+static int expression_mode = 0;
+
 void spicy::detail::parser::Scanner::enableExpressionMode()
 {
-    yy_push_state(EXPRESSION);
+    if ( expression_mode++ >= 0 )
+        yy_push_state(EXPRESSION);
 }
 
 void spicy::detail::parser::Scanner::disableExpressionMode()
 {
-    yy_pop_state();
+    if ( --expression_mode >= 0 )
+        yy_pop_state();
 }
 
 void spicy::detail::parser::Scanner::enableDottedIDMode()

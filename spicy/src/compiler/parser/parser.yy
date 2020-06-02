@@ -29,8 +29,8 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 170
-%expect-rr 143
+%expect 140
+%expect-rr 135
 
 %union {}
 %{
@@ -760,13 +760,17 @@ unit_switch_case
               | '*'   ARROW '{' unit_items '}'   { $$ = type::unit::item::switch_::Case($4, __loc__); }
               | exprs ARROW unit_item            { $$ = type::unit::item::switch_::Case($1, {$3}, __loc__); }
               | '*'   ARROW unit_item            { $$ = type::unit::item::switch_::Case(std::vector<type::unit::Item>{$3}, __loc__); }
-              | unit_field                       { $$ = type::unit::item::switch_::Case($1, __loc__); }
+              | ARROW unit_field                 { $$ = type::unit::item::switch_::Case($2, __loc__); }
 
 /* --- End of Spicy units --- */
 
 /* Expressions */
 
-expr          : expr_0                           { $$ = std::move($1); }
+expr          :
+              { driver->enableExpressionMode(); }
+              expr_0
+              { driver->disableExpressionMode(); }
+                                                 { $$ = std::move($2); }
               ;
 
 opt_exprs     : exprs                            { $$ = std::move($1); }
@@ -847,7 +851,8 @@ expr_d        : expr_d '(' opt_exprs ')'         { $$ = hilti::expression::Unres
 expr_e        : CAST type_param_begin type type_param_end '(' expr ')'   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Cast, {std::move($6), hilti::expression::Type_(std::move($3))}, __loc__); }
               | BEGIN_ '(' expr ')'              { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Begin, {std::move($3)}, __loc__); }
               | END_ '(' expr ')'                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::End, {std::move($3)}, __loc__); }
-              | NEW expr                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {std::move($2), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
+              | NEW ctor                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Ctor(std::move($2), __loc__), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
+              | NEW scoped_id                    { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::UnresolvedID(std::move($2), __loc__), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
               | NEW scoped_id '(' opt_exprs ')'  { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::UnresolvedID(std::move($2), __loc__), hilti::expression::Ctor(hilti::ctor::Tuple(std::move($4), __loc__))}, __loc__); }
               | expr_f                           { $$ = std::move($1); }
 
