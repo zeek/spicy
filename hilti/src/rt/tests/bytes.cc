@@ -176,6 +176,16 @@ TEST_CASE("find") {
     }
 }
 
+TEST_CASE("lower") {
+    CHECK_EQ("ABC123"_b.lower(bytes::Charset::UTF8).str(), "abc123");
+    CHECK_EQ("ABC123"_b.lower(bytes::Charset::ASCII).str(), "abc123");
+    CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::UTF8).str(), "gänsefüßchen");
+    CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::ASCII).str(), "g??????nsef????????????chen");
+
+    CHECK_THROWS_WITH_AS("123"_b.lower(bytes::Charset::Undef), "unknown character set for decoding",
+                         const RuntimeError&);
+}
+
 TEST_CASE("match") {
     const auto b = "123"_b;
     CHECK_EQ(b.match(RegExp("2"), 0), Result("2"_b));
@@ -363,6 +373,16 @@ TEST_CASE("toTime") {
 
     CHECK_EQ("\x00\x01"_b.toTime(ByteOrder::Big), Time(1.0));
     CHECK_EQ("\x01\x00"_b.toTime(ByteOrder::Little), Time(1.0));
+}
+
+TEST_CASE("upper") {
+    CHECK_EQ("abc123"_b.upper(bytes::Charset::UTF8).str(), "ABC123");
+    CHECK_EQ("abc123"_b.upper(bytes::Charset::ASCII).str(), "ABC123");
+    CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::UTF8).str(), "GÄNSEFÜẞCHEN");
+    CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::ASCII).str(), "G??????NSEF????????????CHEN");
+
+    CHECK_THROWS_WITH_AS("123"_b.upper(bytes::Charset::Undef), "unknown character set for decoding",
+                         const RuntimeError&);
 }
 
 TEST_CASE("append") {
