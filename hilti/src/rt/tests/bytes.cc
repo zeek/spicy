@@ -38,6 +38,18 @@ TEST_CASE("at") {
     CHECK_THROWS_WITH_AS(*b.at(5), "index 5 out of bounds", const IndexError&);
 }
 
+TEST_CASE("construct") {
+    CHECK_EQ(Bytes("123", bytes::Charset::ASCII).str(), "123");
+    CHECK_EQ(Bytes("abc", bytes::Charset::ASCII).str(), "abc");
+    CHECK_EQ(Bytes("abc", bytes::Charset::UTF8).str(), "abc");
+
+    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::UTF8).str(), "\xF0\x9F\x98\x85");
+    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII).str(), "????");
+
+    CHECK_THROWS_WITH_AS(Bytes("123", bytes::Charset::Undef), "unknown character set for encoding",
+                         const RuntimeError&);
+}
+
 TEST_CASE("decode") {
     CHECK_EQ("123"_b.decode(bytes::Charset::ASCII), "123");
     CHECK_EQ("abc"_b.decode(bytes::Charset::ASCII), "abc");

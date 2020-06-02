@@ -47,9 +47,7 @@ Bytes::Bytes(std::string s, bytes::Charset cs) {
 
         case bytes::Charset::ASCII: {
             // Convert all bytes to 7-bit codepoints.
-            std::string s;
-            for ( auto c : *this )
-                s += (c >= 32 && c < 0x7f) ? static_cast<char>(c) : '?';
+            std::for_each(s.begin(), s.end(), [](auto&& c) { c = (c >= 32 && c < 0x7f) ? static_cast<char>(c) : '?'; });
 
             *this = std::move(s);
             return;
