@@ -59,7 +59,7 @@ E         ([Ee][+-]?{digits})
 P         ([Pp][+-]?{digits})
 decfloat  {digits}{E}|{digit}*\.{digits}{E}?|{digits}\.{digit}+{E}?
 hexfloat  0[xX]({hexit}+{P}|{hexit}*\.{hexit}+{P}?|{hexit}+\.{hexit}+{P}?)
-id        [a-zA-Z_]|[a-zA-Z_][a-zA-Z_0-9-]*[a-zA-Z_0-9]|[$][$]
+id        [a-zA-Z_]|[a-zA-Z_][a-zA-Z_0-9]*[a-zA-Z_0-9]|[$][$]
 property  %[a-zA-Z_][a-zA-Z_0-9-]*
 string    \"(\\.|[^\\"])*\"
 
