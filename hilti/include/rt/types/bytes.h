@@ -140,8 +140,11 @@ inline std::ostream& operator<<(std::ostream& out, const Iterator& /* x */) {
 
 } // namespace bytes
 
-/**
- * HILTI's bytes instance, built on top of a std::string.
+/** HILTI's `Bytes` is a `std::string`-like type for wrapping raw bytes with
+ * additional safety guarantees.
+ *
+ * If not otherwise specified, member functions have the semantics of
+ * `std::string` member functions.
  */
 class Bytes : protected std::string, public hilti::rt::detail::iterator::Controllee {
 public:
@@ -168,12 +171,26 @@ public:
     Bytes(const Bytes&) = default;
     Bytes(Bytes&&) = default;
 
+    /** Replaces the contents of this `Bytes` with another `Bytes`.
+     *
+     * This function invalidates all iterators.
+     *
+     * @param b the `Bytes` to assign
+     * @return a reference to the changed `Bytes`
+     */
     Bytes& operator=(const Bytes& b) {
         invalidateIterators();
         this->Base::operator=(b);
         return *this;
     }
 
+    /** Replaces the contents of this `Bytes` with another `Bytes`.
+     *
+     * This function invalidates all iterators.
+     *
+     * @param b the `Bytes` to assign
+     * @return a reference to the changed `Bytes`
+     */
     Bytes& operator=(Bytes&& b) {
         invalidateIterators();
         this->Base::operator=(std::move(b));
@@ -234,6 +251,7 @@ public:
      *
      * @param from iterator pointing to start of subrange
      * @param to iterator pointing to just beyond subrange
+     * @return a `Bytes` instance for the subrange
      */
     Bytes sub(const const_iterator& from, const const_iterator& to) const {
         return {substr(from - begin(), to - from)};
@@ -243,6 +261,7 @@ public:
      * Extracts a subrange of bytes from the beginning.
      *
      * @param to iterator pointing to just beyond subrange
+     * @return a `Bytes` instance for the subrange
      */
     Bytes sub(const const_iterator& to) const { return sub(begin(), to); }
 
@@ -251,6 +270,7 @@ public:
      *
      * @param offset of start of subrage
      * @param offset of one byeond end of subrage
+     * @return a `Bytes` instance for the subrange
      */
     Bytes sub(Offset from, Offset to) const { return {substr(from, to - from)}; }
 
@@ -258,6 +278,7 @@ public:
      * Extracts a subrange of bytes from the beginning.
      *
      * @param to offset of one beyond end of subrange
+     * @return a `Bytes` instance for the subrange
      */
     Bytes sub(Offset to) const { return sub(0, to); }
 
@@ -295,10 +316,15 @@ public:
      * back afterwards.
      *
      * @param cs character set for decoding/encoding
+     * @return an upper case version of the instance
      */
     Bytes upper(bytes::Charset cs) const { return Bytes(hilti::rt::string::upper(decode(cs)), cs); }
 
-    /** Returns an upper-case version of the instance. */
+    /** Returns an upper-case version of the instance.
+     *
+     * @param cs character set for decoding/encoding
+     * @return a lower case version of the instance
+     */
     Bytes lower(bytes::Charset cs) const { return Bytes(hilti::rt::string::lower(decode(cs)), cs); }
 
     /**
@@ -307,6 +333,7 @@ public:
      *
      * @param side side of bytes instance to be stripped.
      * @param set characters to remove; removes all whitespace if empty
+     * @return a stripped version of the instance
      */
     Bytes strip(const Bytes& set, bytes::Side side = bytes::Side::Both) const;
 
@@ -315,6 +342,7 @@ public:
      * bytes instance.
      *
      * @param side side of bytes instance to be stripped.
+     * @return a stripped version of the instance
      */
     Bytes strip(bytes::Side side = bytes::Side::Both) const;
 
@@ -346,6 +374,9 @@ public:
     /**
      * Splits the data (only) at the first occurance of a separator,
      * returning the two parts.
+     *
+     * @param sep `Bytes` sequence to split at
+     * @return a tuple of head and tail of the split instance
      */
     std::tuple<Bytes, Bytes> split1(const Bytes& sep) const {
         auto p = hilti::rt::split1(str(), sep);
