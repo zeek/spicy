@@ -1,0 +1,229 @@
+# Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+module Zeek_DHCP;
+
+import DHCP from protocols;
+# import DHCP;
+import zeek;
+
+on DHCP::Message::%done {
+    zeek::confirm_protocol();
+}
+
+on DHCP::Message::%error {
+    zeek::reject_protocol("error while parsing DHCP request");
+}
+
+public function create_options(msg: DHCP::Message):
+    tuple<
+        options: optional<vector<uint32>>,
+        subnet_mask: optional<addr>,
+        routers: optional<vector<addr>>,
+        dns_servers: optional<vector<addr>>,
+        host_name: optional<string>,
+        domain_name: optional<string>,
+        forwarding: optional<bool>,
+        broadcast: optional<addr>,
+        vendor: optional<string>,
+        nbns: optional<vector<addr>>,
+        addr_request: optional<addr>,
+        lease: optional<interval>,
+        serv_addr: optional<addr>,
+        param_list: optional<vector<uint32>>,
+        message: optional<string>,
+        max_msg_size: optional<uint32>,
+        renewal_time: optional<interval>,
+        rebinding_time: optional<interval>,
+        vendor_class: optional<string>,
+        client_id: optional<tuple<
+            uint32,   # hwtype  # TODO(bbannier): name these fields once #415 is fixed.
+            string>>, # hwaddr
+        user_class: optional<string>,
+        client_fqdn: optional<tuple<
+            uint32,   # flags
+            uint32,   # rcode1
+            uint32,   # rcode2
+            string>>, # domain_name
+        sub_opt: optional<vector<tuple<
+            uint32,    # code
+            string>>>, # value
+        auto_config: optional<bool>,
+        auto_proxy_config: optional<string>,
+        time_offset: optional<int64>,
+        time_servers: optional<vector<addr>>,
+        name_servers: optional<vector<addr>>,
+        ntp_servers: optional<vector<addr>>> {
+    local options = [cast<uint32>(option.code) for option in msg.options.options];
+
+    local requested_address: optional<addr>;
+    local param_list: optional<vector<uint32>>;
+    local client_id: optional<tuple<uint32, string>>;
+    local time_offset: optional<int64>;
+    local routers: optional<vector<addr>>;
+    local time_servers: optional<vector<addr>>;
+    local name_servers: optional<vector<addr>>;
+    local domain_name_servers: optional<vector<addr>>;
+    local host_name: optional<string>;
+    local domain_name: optional<string>;
+    local forwarding: optional<bool>;
+    local broadcast_address: optional<addr>;
+    local network_time_protocol_servers: optional<vector<addr>>;
+    local vendor_specific_information: optional<string>;
+    local netbios_over_tcpip_name_servers: optional<vector<addr>>;
+    local ip_address_lease_time: optional<interval>;
+    local server_identifier: optional<addr>;
+    local message: optional<string>;
+    local maximum_dhcp_message_size: optional<uint32>;
+    local renewal_time_value: optional<interval>;
+    local rebind_time_value: optional<interval>;
+    local class_identifier: optional<string>;
+    local user_class: optional<string>;
+
+    for (option in msg.options.options) {
+        if (option?.requested_address)
+            requested_address = option.requested_address;
+
+        if (option?.request_values) {
+            local values: vector<uint32>;
+
+            for (value in values)
+                values.push_back(cast<uint32>(value));
+
+            param_list = values;
+        }
+
+        if (option?.client_type) {
+            client_id = (
+                cast<uint32>(option.client_type),
+                "%02x:%02x:%02x:%02x:%02x:%02x" % (
+                    *option.client_identifier.at(0),
+                    *option.client_identifier.at(1),
+                    *option.client_identifier.at(2),
+                    *option.client_identifier.at(3),
+                    *option.client_identifier.at(4),
+                    *option.client_identifier.at(5)));
+        }
+
+        if (option?.time_offset)
+            time_offset = option.time_offset;
+
+        if (option?.routers)
+            routers = option.routers;
+
+        if (option?.time_servers)
+            time_servers = option.time_servers;
+
+        if (option?.name_servers)
+            name_servers = option.name_servers;
+
+        if (option?.domain_name_servers)
+            domain_name_servers = option.domain_name_servers;
+
+        if (option?.host_name)
+            host_name = option.host_name;
+
+        if (option?.domain_name)
+            domain_name = option.domain_name;
+
+        if (option?.forwarding)
+            forwarding = (option.forwarding != 0);
+
+        if (option?.broadcast_address)
+            broadcast_address = option.broadcast_address;
+
+        if (option?.network_time_protocol_servers)
+            network_time_protocol_servers = option.network_time_protocol_servers;
+
+        if (option?.vendor_specific_information)
+            vendor_specific_information = option.vendor_specific_information;
+
+        if (option?.netbios_over_tcpip_name_servers)
+            netbios_over_tcpip_name_servers = option.netbios_over_tcpip_name_servers;
+
+        if (option?.ip_address_lease_time)
+            ip_address_lease_time = cast<interval>(option.ip_address_lease_time);
+
+        if (option?.server_identifier)
+            server_identifier = option.server_identifier;
+
+        if (option?.message)
+            message = option.message;
+
+        if (option?.maximum_dhcp_message_size)
+            maximum_dhcp_message_size = cast<uint32>(option.maximum_dhcp_message_size);
+
+        if (option?.renewal_time_value)
+            renewal_time_value = cast<interval>(option.renewal_time_value);
+
+        if (option?.rebind_time_value)
+            rebind_time_value = cast<interval>(option.rebind_time_value);
+
+        if (option?.class_identifier)
+            class_identifier = option.class_identifier;
+
+        if (option?.user_class)
+            user_class = option.user_class.decode(hilti::Charset::ASCII);
+    }
+
+    return (
+        options,
+        0.0.0.0,            # TODO(bbannier): parse option 1.
+        routers,
+        domain_name_servers,
+        host_name,
+        domain_name,
+        forwarding,
+        broadcast_address,
+        vendor_specific_information,
+        netbios_over_tcpip_name_servers,
+        requested_address,
+        ip_address_lease_time,
+        server_identifier,
+        param_list,
+        message,
+        maximum_dhcp_message_size,
+        renewal_time_value,
+        rebind_time_value,
+        class_identifier,
+        client_id,
+        user_class,
+        (0, 0, 0, ""),      # TODO(bbannier): parse option 81.
+        vector(),           # TODO(bbannier): parse option 82.
+        False,              # TODO(bbannier): parse option 116.
+        "",                 # TODO(bbannier): parse option 252.
+        time_offset,
+        time_servers,
+        name_servers,
+        network_time_protocol_servers,
+    );
+}
+
+public function create_msg(msg: DHCP::Message):
+    tuple<
+        op: uint32,
+        m_type: uint32,
+        xid: uint32,
+        secs: interval,
+        flags: uint32,
+        ciaddr: addr,
+        yiaddr: addr,
+        siaddr: addr,
+        giaddr: addr,
+        chaddr: string,
+        sname: optional<string>,
+        file_n: optional<string>> {
+    return (
+        cast<uint32>(msg.op),
+        cast<uint32>(msg.htype),
+        msg.xid,
+        cast<interval>(msg.secs),
+        cast<uint32>(msg.flags),
+        msg.ciaddr,
+        msg.yiaddr,
+        msg.siaddr,
+        msg.giaddr,
+        msg.chaddr.decode(hilti::Charset::ASCII),
+        msg.sname,
+        msg.file_n
+    );
+}
