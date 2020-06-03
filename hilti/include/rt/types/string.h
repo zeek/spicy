@@ -13,13 +13,26 @@ namespace hilti::rt {
 
 namespace string {
 
-/** Returns the length of a UTF8 string. */
+/** Computes the length of a UTF8 string.
+ *
+ * @param s input UTF8 string
+ * @return the length of the input string
+ * @throws RuntimeError if the input is not a valid UTF8 string
+ */
 size_t size(const std::string& s);
 
-/** Returns a lower-case version of an UTF8 string. */
+/** Computes a lower-case version of an UTF8 string.
+ * @param s input UTF8 string
+ * @return a lower-case version of the input string
+ * @throws RuntimeError if the input is not a valid UTF8 string
+ */
 std::string lower(const std::string& s);
 
-/** Returns an upper-case version of an UTF8 string. */
+/** Computes a upper-case version of an UTF8 string.
+ * @param s input UTF8 string
+ * @return a upper-case version of the input string
+ * @throws RuntimeError if the input is not a valid UTF8 string
+ */
 std::string upper(const std::string& s);
 
 } // namespace string

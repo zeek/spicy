@@ -1,7 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "hilti/rt/types/string.h"
+
 #include <hilti/3rdparty/utf8proc/utf8proc.h>
-#include <hilti/rt/types/string.h>
+#include <hilti/rt/exception.h>
 
 using namespace hilti::rt;
 
@@ -16,7 +18,7 @@ size_t string::size(const std::string& s) {
         auto n = utf8proc_iterate(p, e - p, &cp);
 
         if ( n < 0 )
-            internalError("illegal UTF8 sequence in string");
+            throw RuntimeError("illegal UTF8 sequence in string");
 
         ++len;
         p += n;
@@ -37,7 +39,7 @@ std::string string::upper(const std::string& s) {
         auto n = utf8proc_iterate(p, e - p, &cp);
 
         if ( n < 0 )
-            internalError("illegal UTF8 sequence in string");
+            throw RuntimeError("illegal UTF8 sequence in string");
 
         auto m = utf8proc_encode_char(utf8proc_toupper(cp), buf);
         rval += std::string(reinterpret_cast<char*>(buf), m);
@@ -59,7 +61,7 @@ std::string string::lower(const std::string& s) {
         auto n = utf8proc_iterate(p, e - p, &cp);
 
         if ( n < 0 )
-            internalError("illegal UTF8 sequence in string");
+            throw RuntimeError("illegal UTF8 sequence in string");
 
         auto m = utf8proc_encode_char(utf8proc_tolower(cp), buf);
         rval += std::string(reinterpret_cast<char*>(buf), m);

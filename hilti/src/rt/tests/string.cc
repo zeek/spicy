@@ -1,0 +1,32 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#include <doctest/doctest.h>
+
+#include <hilti/rt/types/string.h>
+
+using namespace hilti::rt;
+
+TEST_SUITE_BEGIN("string");
+
+TEST_CASE("lower") {
+    CHECK_EQ(string::lower(""), "");
+    CHECK_EQ(string::lower("123Abc"), "123abc");
+    CHECK_EQ(string::lower("GÄNSEFÜẞCHEN"), "gänsefüßchen");
+    CHECK_THROWS_WITH_AS(string::lower("\xc3\x28"), "illegal UTF8 sequence in string", const RuntimeError&);
+}
+
+TEST_CASE("size") {
+    CHECK_EQ(string::size(""), 0u);
+    CHECK_EQ(string::size("123Abc"), 6u);
+    CHECK_EQ(string::size("Gänsefüßchen"), 12);
+    CHECK_THROWS_WITH_AS(string::size("\xc3\x28"), "illegal UTF8 sequence in string", const RuntimeError&);
+}
+
+TEST_CASE("upper") {
+    CHECK_EQ(string::upper(""), "");
+    CHECK_EQ(string::upper("123Abc"), "123ABC");
+    CHECK_EQ(string::upper("Gänsefüßchen"), "GÄNSEFÜẞCHEN");
+    CHECK_THROWS_WITH_AS(string::upper("\xc3\x28"), "illegal UTF8 sequence in string", const RuntimeError&);
+}
+
+TEST_SUITE_END();
