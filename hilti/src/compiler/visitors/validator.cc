@@ -305,6 +305,13 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             error("'while' header lacking both condition and declaration", p);
     }
 
+    void operator()(const expression::ResolvedID& n, position_t p) {
+        if ( auto decl = p.findParent<Declaration>() ) {
+            if ( n.id() == decl->get().id() )
+                error("ID cannot be used inside its own declaration", p);
+        }
+    }
+
     void operator()(const expression::ResolvedOperator& n, position_t p) {
         // We are running after both overload resolution and the
         // apply-coercion pass, so operands types are ensured to be fine at
