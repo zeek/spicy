@@ -306,7 +306,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const expression::ResolvedID& n, position_t p) {
-        if ( auto decl = p.findParent<Declaration>() ) {
+        if ( auto decl = p.findParent<Declaration>(); decl && ! decl->get().isA<declaration::Function>() ) {
             if ( n.id() == decl->get().id() )
                 error("ID cannot be used inside its own declaration", p);
         }
