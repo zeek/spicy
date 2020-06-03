@@ -6,8 +6,8 @@ clang9_zeek31_ubuntu_debug_task:
     dockerfile: ci/Dockerfile
     docker_arguments:
       - zeek_packages: zeek zeek-core-dev
-    cpu: 8
-    memory: 16G
+    cpu: 4
+    memory: 8G
 
   timeout_in: 120m
 
@@ -56,8 +56,8 @@ clang10_zeek31_ubuntu_release_task:
     dockerfile: ci/Dockerfile
     docker_arguments:
       - zeek_packages: zeek-lts zeek-lts-core-dev
-    cpu: 8
-    memory: 16G
+    cpu: 4
+    memory: 8G
 
   timeout_in: 120m
 
@@ -103,8 +103,8 @@ clang9_zeek30_ubuntu_release_task:
     dockerfile: ci/Dockerfile
     docker_arguments:
       - zeek_packages: zeek-lts zeek-lts-core-dev
-    cpu: 8
-    memory: 16G
+    cpu: 4
+    memory: 8G
 
   timeout_in: 120m
 
@@ -149,8 +149,8 @@ gcc9_ubuntu_release_no_jit_task:
     dockerfile: ci/Dockerfile
     docker_arguments:
       - zeek_packages: zeek-lts zeek-lts-core-dev
-    cpu: 8
-    memory: 16G
+    cpu: 4
+    memory: 10G
 
   timeout_in: 120m
 
@@ -230,8 +230,8 @@ macos_release_task:
 docker_ubuntu_19_10_task:
   container:
     dockerfile: docker/Dockerfile.ubuntu-19.10
-    cpu: 8
-    memory: 16G
+    cpu: 4
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -269,8 +269,8 @@ docker_ubuntu_19_10_task:
 docker_alpine_3_11_task:
   container:
     dockerfile: docker/Dockerfile.alpine-3.11
-    cpu: 8
-    memory: 16G
+    cpu: 4
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -308,8 +308,8 @@ docker_alpine_3_11_task:
 docker_centos_8_task:
   container:
     dockerfile: docker/Dockerfile.centos-8
-    cpu: 8
-    memory: 16G
+    cpu: 4
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
