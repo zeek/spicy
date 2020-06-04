@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 namespace hilti::rt {
 
@@ -26,9 +27,9 @@ void safe_end() = delete;
 
 /** Converts a HILTI runtime type into a string representation. */
 template<typename T>
-std::string to_string(const T& x) {
+std::string to_string(T&& x) {
     using detail::adl::to_string;
-    return to_string(x, detail::adl::tag{});
+    return to_string(std::forward<T>(x), detail::adl::tag{});
 }
 
 /**

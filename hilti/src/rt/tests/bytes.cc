@@ -2,26 +2,527 @@
 
 #include <doctest/doctest.h>
 
+#include <ostream>
+#include <tuple>
 #include <type_traits>
 
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/integer.h>
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
+namespace std {
+template<typename X, typename Y>
+ostream& operator<<(ostream& stream, const tuple<X, Y>& xs) {
+    return stream << '(' << hilti::rt::to_string(get<0>(xs)) << ", " << hilti::rt::to_string(get<1>(xs)) << ')';
+}
+} // namespace std
+
 TEST_SUITE_BEGIN("Bytes");
+
+TEST_CASE("add") {
+    CHECK_EQ("123"_b + "456"_b, "123456"_b);
+    CHECK_EQ("123"_b + ""_b, "123"_b);
+    CHECK_EQ(""_b + "123"_b, "123"_b);
+    CHECK_EQ(""_b + ""_b, ""_b);
+}
+
+TEST_CASE("at") {
+    const auto b = "123"_b;
+    CHECK_EQ(b.at(0), b.begin());
+    CHECK_EQ(*b.at(0), '1');
+    CHECK_EQ(*b.at(1), '2');
+    CHECK_EQ(*b.at(2), '3');
+    CHECK_EQ(b.at(3), b.end());
+    CHECK_THROWS_WITH_AS(*b.at(5), "index 5 out of bounds", const IndexError&);
+}
+
+TEST_CASE("construct") {
+    CHECK_EQ(Bytes("123", bytes::Charset::ASCII).str(), "123");
+    CHECK_EQ(Bytes("abc", bytes::Charset::ASCII).str(), "abc");
+    CHECK_EQ(Bytes("abc", bytes::Charset::UTF8).str(), "abc");
+
+    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::UTF8).str(), "\xF0\x9F\x98\x85");
+    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII).str(), "????");
+
+    CHECK_THROWS_WITH_AS(Bytes("123", bytes::Charset::Undef), "unknown character set for encoding",
+                         const RuntimeError&);
+}
+
+TEST_CASE("decode") {
+    CHECK_EQ("123"_b.decode(bytes::Charset::ASCII), "123");
+    CHECK_EQ("abc"_b.decode(bytes::Charset::ASCII), "abc");
+    CHECK_EQ("abc"_b.decode(bytes::Charset::UTF8), "abc");
+    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(bytes::Charset::UTF8), "\xF0\x9F\x98\x85");
+    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(bytes::Charset::ASCII), "\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd");
+
+    CHECK_THROWS_WITH_AS("123"_b.decode(bytes::Charset::Undef), "unknown character set for decoding",
+                         const RuntimeError&);
+}
+
+TEST_CASE("extract") {
+    SUBCASE("sufficient data") {
+        unsigned char dst1[3] = {0};
+        CHECK_EQ("123456"_b.extract(dst1), "456"_b);
+        CHECK_EQ(dst1[0], '1');
+        CHECK_EQ(dst1[1], '2');
+        CHECK_EQ(dst1[2], '3');
+
+        unsigned char dst2[3] = {0};
+        CHECK_EQ("123"_b.extract(dst2), ""_b);
+        CHECK_EQ(dst2[0], '1');
+        CHECK_EQ(dst2[1], '2');
+        CHECK_EQ(dst2[2], '3');
+    }
+
+    SUBCASE("insufficient data") {
+        unsigned char dst1[3] = {0};
+        CHECK_THROWS_WITH_AS(""_b.extract(dst1), "insufficient data in source", const InvalidArgument&);
+
+        unsigned char dst2[1] = {0};
+        CHECK_THROWS_WITH_AS(""_b.extract(dst2), "insufficient data in source", const InvalidArgument&);
+    }
+}
+
+TEST_CASE("comparison") {
+    const auto b = "123"_b;
+
+    SUBCASE("equal") {
+        CHECK_EQ(b, b);
+        CHECK_EQ(Bytes(b), b);
+        CHECK_NE("abc"_b, b);
+        CHECK_NE(""_b, b);
+        CHECK_EQ(""_b, ""_b);
+    }
+
+    SUBCASE("less") {
+        CHECK_FALSE(operator<(b, b));
+        CHECK_LT("123"_b, "124"_b);
+        CHECK_FALSE(operator<("124"_b, "123"_b));
+        CHECK_LT("12"_b, "123"_b);
+        CHECK_FALSE(operator<("123"_b, "12"_b));
+    }
+
+    SUBCASE("less equal") {
+        CHECK_LE(b, b);
+        CHECK_LE("123"_b, "124"_b);
+        CHECK_FALSE(operator<=("124"_b, "123"_b));
+        CHECK_LE("12"_b, "123"_b);
+        CHECK_FALSE(operator<=("123"_b, "12"_b));
+    }
+
+    SUBCASE("greater") {
+        CHECK_FALSE(operator>(b, b));
+        CHECK_GT("124"_b, "123"_b);
+        CHECK_FALSE(operator>("123"_b, "124"_b));
+        CHECK_GT("123"_b, "12"_b);
+        CHECK_FALSE(operator>("12"_b, "123"_b));
+    }
+
+    SUBCASE("grater equal") {
+        CHECK_GE(b, b);
+        CHECK_GE("124"_b, "123"_b);
+        CHECK_FALSE(operator>=("123"_b, "124"_b));
+        CHECK_GE("123"_b, "12"_b);
+        CHECK_FALSE(operator>=("12"_b, "123"_b));
+    }
+}
+
+TEST_CASE("find") {
+    const auto b = "123"_b;
+    const auto empty = ""_b;
+
+    SUBCASE("single byte") {
+        SUBCASE("default start") {
+            CHECK_EQ(b.find('2'), b.at(1));
+            CHECK_EQ(b.find('a'), b.end());
+            CHECK_EQ(empty.find('a'), empty.end());
+        }
+
+        SUBCASE("start at target") {
+            CHECK_EQ(b.find('2', b.at(1)), b.at(1));
+            CHECK_EQ(b.find('a', b.at(1)), b.end());
+        }
+
+        SUBCASE("start beyond target") {
+            CHECK_EQ(b.find('2', b.at(2)), b.end());
+            CHECK_EQ(b.find('a', b.at(2)), b.end());
+            CHECK_EQ(b.find('a', b.end()), b.end());
+        }
+    }
+
+    SUBCASE("range of bytes") {
+        SUBCASE("default start") {
+            CHECK_EQ(b.find("23"_b), std::make_tuple(true, b.at(1)));
+            CHECK_EQ(b.find("234"_b), std::make_tuple(false, b.at(1)));
+            CHECK_EQ(b.find("22"_b), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find("a"_b), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find(""_b), std::make_tuple(true, b.begin()));
+            CHECK_EQ(empty.find("a"_b), std::make_tuple(false, empty.end()));
+            CHECK_EQ(empty.find(""_b), std::make_tuple(true, empty.begin()));
+        }
+
+        SUBCASE("start at target") {
+            CHECK_EQ(b.find("23", b.at(1)), std::make_tuple(true, b.at(1)));
+            CHECK_EQ(b.find("ab", b.at(1)), std::make_tuple(false, b.end()));
+        }
+
+        SUBCASE("start beyond target") {
+            CHECK_EQ(b.find("23", b.at(2)), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find("ab", b.at(2)), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find("ab", b.end()), std::make_tuple(false, b.end()));
+        }
+    }
+}
+
+TEST_CASE("join") {
+    CHECK_EQ(""_b.join(Vector<int>({1, 2, 3})), "123"_b);
+    CHECK_EQ("😎"_b.join(Vector<int>({1, 2, 3})), "1😎2😎3"_b);
+    CHECK_EQ("😎"_b.join(Vector<Bytes>({"\x00"_b, "\x01"_b, "\x02"_b})), "\\x00😎\\x01😎\\x02"_b);
+}
+
+TEST_CASE("lower") {
+    CHECK_EQ("ABC123"_b.lower(bytes::Charset::UTF8).str(), "abc123");
+    CHECK_EQ("ABC123"_b.lower(bytes::Charset::ASCII).str(), "abc123");
+    CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::UTF8).str(), "gänsefüßchen");
+    CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::ASCII).str(), "g??????nsef????????????chen");
+
+    CHECK_THROWS_WITH_AS("123"_b.lower(bytes::Charset::Undef), "unknown character set for decoding",
+                         const RuntimeError&);
+}
+
+TEST_CASE("match") {
+    const auto b = "123"_b;
+    CHECK_EQ(b.match(RegExp("2"), 0), Result("2"_b));
+    CHECK_EQ(b.match(RegExp("a"), 0), Result<Bytes>(result::Error("no matches found")));
+    CHECK_EQ(b.match(RegExp("2"), 1), Result<Bytes>(result::Error("no matches found")));
+}
 
 TEST_CASE("iteration") {
     // Validate that when iterating we yield the `Iterator`'s `reference` type.
     // This is a regression test for #219.
     for ( auto x : Bytes() ) {
         (void)x;
-        static_assert(std::is_same_v<decltype(x), Bytes::Iterator::reference>);
+        static_assert(std::is_same_v<decltype(x), uint8_t>);
+    }
+}
+
+TEST_CASE("split") {
+    SUBCASE("separator") {
+        CHECK_EQ("12 45"_b.split(" "), Vector({"12"_b, "45"_b}));
+        CHECK_EQ("12 45 678"_b.split(" "), Vector({"12"_b, "45"_b, "678"_b}));
+        CHECK_EQ("12345"_b.split("34"), Vector({"12"_b, "5"_b}));
+        CHECK_EQ(" 2345"_b.split(" "), Vector({""_b, "2345"_b}));
+        CHECK_EQ("12345"_b.split(""), Vector({"12345"_b}));
+        CHECK_EQ(" "_b.split(" "), Vector({""_b}));
+        CHECK_EQ(""_b.split(" "), Vector({""_b}));
+        CHECK_EQ(""_b.split(""), Vector({""_b}));
     }
 
-    SUBCASE("to_string") {
-        CHECK_EQ(to_string("ABC"_b), "b\"ABC\"");
-        CHECK_EQ(to_string("\0\2\3\0\6\7A\01"_b), "b\"\\x00\\x02\\x03\\x00\\x06\\x07A\\x01\"");
+    SUBCASE("whitespace") {
+        CHECK_EQ("12 45"_b.split(), Vector({"12"_b, "45"_b}));
+        CHECK_EQ("12 45 678"_b.split(), Vector({"12"_b, "45"_b, "678"_b}));
+
+        // TODO(bbannier): This should be symmetric with `split(" ")`.
+        CHECK_EQ(" 2345"_b.split(), Vector({"2345"_b}));
+
+        // TODO(bbannier): This should be symmetric with `split(" ")`.
+        CHECK_EQ(" "_b.split(), Vector<Bytes>());
+
+        // TODO(bbannier): This should be symmetric with `split(" ")`.
+        CHECK_EQ(""_b.split(), Vector<Bytes>());
+
+        CHECK_EQ("1"_b.split(), Vector({"1"_b}));
+    }
+}
+
+TEST_CASE("split1") {
+    SUBCASE("separator") {
+        CHECK_EQ("12 45"_b.split1(" "), std::make_tuple("12"_b, "45"_b));
+        CHECK_EQ("12 45 678"_b.split1(" "), std::make_tuple("12"_b, "45 678"_b));
+        CHECK_EQ("12345"_b.split1("34"), std::make_tuple("12"_b, "5"_b));
+        CHECK_EQ(" 2345"_b.split1(" "), std::make_tuple(""_b, "2345"_b));
+        CHECK_EQ("12345"_b.split1(""), std::make_tuple(""_b, "12345"_b));
+        CHECK_EQ("1"_b.split1(" "), std::make_tuple("1"_b, ""_b));
+        CHECK_EQ(""_b.split1("1"), std::make_tuple(""_b, ""_b));
+        CHECK_EQ(""_b.split1(""), std::make_tuple(""_b, ""_b));
+    }
+
+    SUBCASE("whitespace") {
+        CHECK_EQ("12 45"_b.split1(), std::make_tuple("12"_b, "45"_b));
+        CHECK_EQ("12 45 678"_b.split1(), std::make_tuple("12"_b, "45 678"_b));
+
+        // TODO(bbannier): This should be symmetric with `split(" ")`.
+        CHECK_EQ(" 2345"_b.split1(), std::make_tuple(""_b, "2345"_b));
+
+        CHECK_EQ(" "_b.split1(), std::make_tuple(""_b, ""_b));
+        CHECK_EQ(""_b.split1(), std::make_tuple(""_b, ""_b));
+        CHECK_EQ("1"_b.split1(), std::make_tuple("1"_b, ""_b));
+    }
+}
+
+TEST_CASE("startsWith") {
+    CHECK("123"_b.startsWith(""_b));
+    CHECK("123"_b.startsWith("1"_b));
+    CHECK("123"_b.startsWith("12"_b));
+    CHECK("123"_b.startsWith("123"_b));
+
+    CHECK_FALSE("123"_b.startsWith("1234"_b));
+    CHECK_FALSE("123"_b.startsWith("a"_b));
+    CHECK_FALSE(""_b.startsWith("a"_b));
+}
+
+TEST_CASE("strip") {
+    SUBCASE("whitespace") {
+        CHECK_EQ("\t 123 "_b.strip(bytes::Side::Left), "123 "_b);
+        CHECK_EQ(" 123 \v"_b.strip(bytes::Side::Right), " 123"_b);
+        CHECK_EQ("\r\f 123 \n"_b.strip(bytes::Side::Both), "123"_b);
+    }
+
+    SUBCASE("bytes") {
+        CHECK_EQ("\t 123 "_b.strip("\t\r "_b, bytes::Side::Left), "123 "_b);
+        CHECK_EQ(" 123 \v"_b.strip(" \v"_b, bytes::Side::Right), " 123"_b);
+        CHECK_EQ("\r\f 123 \n"_b.strip("\n \f\r"_b, bytes::Side::Both), "123"_b);
+    }
+}
+
+TEST_CASE("sub") {
+    const auto b = "123456"_b;
+
+    SUBCASE("end offset") {
+        CHECK_EQ(b.sub(0), ""_b);
+        CHECK_EQ(b.sub(b.size()), b);
+        CHECK_EQ(b.sub(99), b);
+        CHECK_EQ(b.sub(3), "123"_b);
+    }
+
+    SUBCASE("start/end offsets") {
+        CHECK_EQ(b.sub(0, 0), ""_b);
+        CHECK_EQ(b.sub(b.size(), b.size()), ""_b);
+        CHECK_EQ(b.sub(0, b.size()), b);
+        CHECK_EQ(b.sub(0, 3), "123"_b);
+        CHECK_EQ(b.sub(3, 0), "456"_b);
+    }
+
+    SUBCASE("end iterator") {
+        CHECK_EQ(b.sub(b.begin()), ""_b);
+        CHECK_EQ(b.sub(b.end()), b);
+    }
+
+    SUBCASE("start/end iterator") {
+        CHECK_EQ(b.sub(b.begin(), b.end()), b);
+        CHECK_EQ(b.sub(b.begin(), b.begin()), ""_b);
+
+        const auto bb = "123"_b;
+        CHECK_THROWS_WITH_AS(b.sub(b.begin(), bb.begin()),
+                             "cannot perform arithmetic with iterators into different bytes", const InvalidArgument&);
+    }
+}
+
+TEST_CASE("toInt") {
+    SUBCASE("with base") {
+        CHECK_EQ("100"_b.toInt(), 100);
+        CHECK_EQ("100"_b.toInt(2), 4);
+        CHECK_EQ("-100"_b.toInt(2), -4);
+
+        CHECK_THROWS_WITH_AS("12a"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
+    }
+
+    SUBCASE("with byte order") {
+        CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
+        CHECK_EQ("100"_b.toInt(ByteOrder::Network), 3223600);
+        CHECK_EQ("100"_b.toInt(ByteOrder::Little), 3158065);
+        if ( systemByteOrder() == ByteOrder::Little )
+            CHECK_EQ("100"_b.toInt(ByteOrder::Host), 3158065);
+        else
+            CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
+
+
+        CHECK_THROWS_WITH_AS("1234567890"_b.toInt(ByteOrder::Big), "more than max of 8 bytes for conversion to integer",
+                             const RuntimeError&);
+
+        CHECK_THROWS_WITH_AS("100"_b.toInt(ByteOrder::Undef), "cannot convert value to undefined byte order",
+                             const RuntimeError&);
+    }
+}
+
+TEST_CASE("toUInt") {
+    SUBCASE("with base") {
+        CHECK_EQ("100"_b.toUInt(), 100u);
+        CHECK_EQ("100"_b.toUInt(2), 4u);
+        CHECK_EQ("-100"_b.toUInt(2), static_cast<uint64_t>(-4)); // Wrap-around.
+
+        CHECK_THROWS_WITH_AS("12a"_b.toUInt(), "cannot parse bytes as unsigned integer", const RuntimeError&);
+    }
+
+    SUBCASE("with byte order") {
+        CHECK_EQ("100"_b.toUInt(ByteOrder::Big), 3223600U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder::Network), 3223600U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder::Little), 3158065U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder::Host), 3158065U);
+
+        CHECK_THROWS_WITH_AS("1234567890"_b.toUInt(ByteOrder::Big),
+                             "more than max of 8 bytes for conversion to integer", const RuntimeError&);
+
+        CHECK_THROWS_WITH_AS("100"_b.toInt(ByteOrder::Undef), "cannot convert value to undefined byte order",
+                             const RuntimeError&);
+    }
+}
+
+TEST_CASE("toTime") {
+    CHECK_EQ("10"_b.toTime(), Time(10.0));
+    CHECK_EQ("10"_b.toTime(2), Time(2.0));
+
+    CHECK_EQ(""_b.toTime(), Time());
+    CHECK_THROWS_WITH_AS("abc"_b.toTime(), "cannot parse bytes as unsigned integer", const RuntimeError&);
+
+    CHECK_EQ("\x00\x01"_b.toTime(ByteOrder::Big), Time(1.0));
+    CHECK_EQ("\x01\x00"_b.toTime(ByteOrder::Little), Time(1.0));
+}
+
+TEST_CASE("upper") {
+    CHECK_EQ("abc123"_b.upper(bytes::Charset::UTF8).str(), "ABC123");
+    CHECK_EQ("abc123"_b.upper(bytes::Charset::ASCII).str(), "ABC123");
+    CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::UTF8).str(), "GÄNSEFÜẞCHEN");
+    CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::ASCII).str(), "G??????NSEF????????????CHEN");
+
+    CHECK_THROWS_WITH_AS("123"_b.upper(bytes::Charset::Undef), "unknown character set for decoding",
+                         const RuntimeError&);
+}
+
+TEST_CASE("append") {
+    auto b = "123"_b;
+    auto it = b.begin();
+
+    REQUIRE_EQ(to_string(b), "b\"123\"");
+    REQUIRE_EQ(*it, '1');
+
+    SUBCASE("Bytes") {
+        b.append("456"_b);
+
+        CHECK_EQ(to_string(b), "b\"123456\"");
+        CHECK_EQ(*it, '1');
+    }
+
+    SUBCASE("View") {
+        auto stream = Stream("456");
+        b.append(stream.view());
+
+        CHECK_EQ(to_string(b), "b\"123456\"");
+        CHECK_EQ(*it, '1');
+    }
+}
+
+TEST_CASE("assign") {
+    auto b = "123"_b;
+    auto it = b.begin();
+
+    REQUIRE_EQ(to_string(b), "b\"123\"");
+    REQUIRE_EQ(*it, '1');
+
+    SUBCASE("rvalue") {
+        b = "abc"_b;
+        CHECK_EQ(to_string(b), "b\"abc\"");
+        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+    }
+
+    SUBCASE("lvalue") {
+        const auto bb = "abc"_b;
+        b = bb;
+        CHECK_EQ(to_string(b), "b\"abc\"");
+        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+    }
+}
+
+TEST_CASE("Iterator") {
+    const auto b = "123"_b;
+    const auto bb = "123"_b;
+
+    SUBCASE("coupled lifetime") {
+        CHECK_NOTHROW(*b.begin()); // Iterator valid since container is alife.
+
+        auto it = ""_b.begin();
+        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+    }
+
+    SUBCASE("increment") {
+        auto it = b.begin();
+        CHECK_EQ(*(it++), '1');
+        CHECK_EQ(*it, '2');
+        CHECK_EQ(*(++it), '3');
+        it += 1;
+        CHECK_EQ(it, b.end());
+
+        CHECK_EQ(*(b.begin() + 2), '3');
+        CHECK_EQ(*(b.begin() + integer::safe<uint8_t>(2)), '3');
+
+        it = b.begin();
+        it += integer::safe<uint64_t>(2);
+        CHECK_EQ(*it, '3');
+    }
+
+    SUBCASE("bounds check") {
+        CHECK_EQ(*b.begin(), '1');
+        CHECK_THROWS_WITH_AS(*b.end(), "index 3 out of bounds", const IndexError&);
+    }
+
+    SUBCASE("equality") {
+        CHECK_EQ(b.begin(), b.begin());
+        CHECK_NE(b.begin(), b.end());
+
+        CHECK_THROWS_WITH_AS(operator==(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                             const InvalidArgument&);
+    }
+
+    SUBCASE("distance") {
+        CHECK_EQ(b.end() - b.begin(), b.size());
+        CHECK_EQ(b.begin() - b.end(), -b.size());
+        CHECK_EQ(b.end() - b.end(), 0);
+        CHECK_EQ(b.begin() - b.begin(), 0);
+
+        CHECK_THROWS_WITH_AS(operator-(b.begin(), bb.begin()),
+                             "cannot perform arithmetic with iterators into different bytes", const InvalidArgument&);
+    }
+
+    SUBCASE("ordering") {
+        SUBCASE("less") {
+            REQUIRE_FALSE(b.isEmpty());
+
+            CHECK_LT(b.begin(), b.end());
+            CHECK_FALSE(operator<(b.end(), b.begin()));
+            CHECK_THROWS_WITH_AS(operator<(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                                 const InvalidArgument&);
+        }
+
+        SUBCASE("less equal") {
+            REQUIRE_FALSE(b.isEmpty());
+
+            CHECK_LE(b.begin(), b.end());
+            CHECK_LE(b.begin(), b.begin());
+            CHECK_FALSE(operator<=(b.end(), b.begin()));
+            CHECK_THROWS_WITH_AS(operator<=(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                                 const InvalidArgument&);
+        }
+
+        SUBCASE("greater") {
+            REQUIRE_FALSE(b.isEmpty());
+
+            CHECK_GT(b.end(), b.begin());
+            CHECK_FALSE(operator>(b.begin(), b.end()));
+            CHECK_THROWS_WITH_AS(operator>(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                                 const InvalidArgument&);
+        }
+
+        SUBCASE("greater equal") {
+            REQUIRE_FALSE(b.isEmpty());
+
+            CHECK_GE(b.end(), b.begin());
+            CHECK_GE(b.begin(), b.begin());
+            CHECK_FALSE(operator>=(b.begin(), b.end()));
+            CHECK_THROWS_WITH_AS(operator>=(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+                                 const InvalidArgument&);
+        }
     }
 }
 

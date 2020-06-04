@@ -1,4 +1,29 @@
 
+0.4.0-393 | 2020-06-04 08:41:28 +0200
+
+  * Add test cases for `rt::Bytes` member functions. (Benjamin Bannier, Corelight)
+
+  * Fix construction of `rt::Bytes` from string and charset. (Benjamin Bannier, Corelight)
+
+  * Fix handling of undefined byte order in ByteOrder conversions to integers. (Benjamin Bannier, Corelight)
+
+  * Prevent throwing `std::out_of_range` from `rt::Bytes::extract`. (Benjamin Bannier, Corelight)
+
+  * Fix ADL for `rt::to_string`.
+
+  * Add additional safety to `bytes::Iterator`.
+
+    We now also catch e.g., out-of-bounds accesses. (Benjamin Bannier, Corelight)
+
+  * Made some `rt::Bytes` methods `const`. (Benjamin Bannier, Corelight)
+
+  * Fix `rt::util::split` for empty delimter case. (Benjamin Bannier, Corelight)
+
+  * Remove rvalue overload of `rt::Bytes::str`.
+
+    This function returns a naked, unchecked reference to internal data and
+    is not safe to use on rvalues. (Benjamin Bannier, Corelight)
+
 0.4.0-364 | 2020-06-04 08:40:25 +0200
 
   * Make functions of `rt::string` throw instead of triggering internal errors

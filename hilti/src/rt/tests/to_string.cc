@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/list.h>
@@ -14,6 +15,7 @@
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
+#include <hilti/rt/util.h>
 
 using namespace hilti::rt;
 
@@ -38,6 +40,18 @@ TEST_CASE("safe-int") {
 }
 
 TEST_CASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }
+
+TEST_CASE("Bytes") {
+    CHECK_EQ(to_string("ABC"_b), "b\"ABC\"");
+    CHECK_EQ(to_string("\0\2\3\0\6\7A\01"_b), "b\"\\x00\\x02\\x03\\x00\\x06\\x07A\\x01\"");
+    CHECK_EQ(fmt("%s", "\0\2\3\0\6\7A\01"_b), "\\x00\\x02\\x03\\x00\\x06\\x07A\\x01");
+
+    CHECK_EQ(to_string_for_print("ABC"_b), "ABC");
+    CHECK_EQ(to_string_for_print("\0\2\3\0\6\7A\01"_b), "\\x00\\x02\\x03\\x00\\x06\\x07A\\x01");
+
+    CHECK_EQ(to_string("ABC"_b.begin()), "<bytes iterator>");
+    CHECK_EQ(fmt("%s", "ABC"_b.begin()), "<bytes iterator>");
+}
 
 TEST_CASE("Vector") {
     CHECK_EQ(to_string(vector::Empty()), "[]");

@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <hilti/rt/types/bytes.h>
+#include "hilti/rt/types/bytes.h"
+
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/stream.h>
@@ -8,13 +9,13 @@
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
-std::tuple<bool, Bytes::Iterator> Bytes::find(const Bytes& v, const Iterator& n) const {
+std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_iterator& n) const {
     if ( v.isEmpty() )
         return std::make_tuple(true, n ? n : begin());
 
     auto first = *v.begin();
 
-    for ( auto i = Iterator(n ? n : begin()); true; ++i ) {
+    for ( auto i = const_iterator(n ? n : begin()); true; ++i ) {
         if ( i == end() )
             return std::make_tuple(false, i);
 
@@ -46,9 +47,7 @@ Bytes::Bytes(std::string s, bytes::Charset cs) {
 
         case bytes::Charset::ASCII: {
             // Convert all bytes to 7-bit codepoints.
-            std::string s;
-            for ( auto c : *this )
-                s += (c >= 32 && c < 0x7f) ? static_cast<char>(c) : '?';
+            std::for_each(s.begin(), s.end(), [](auto&& c) { c = (c >= 32 && c < 0x7f) ? static_cast<char>(c) : '?'; });
 
             *this = std::move(s);
             return;
@@ -140,8 +139,13 @@ int64_t Bytes::toInt(ByteOrder byte_order) const {
 }
 
 uint64_t Bytes::toUInt(ByteOrder byte_order) const {
-    if ( byte_order == hilti::rt::ByteOrder::Host )
-        return toInt(systemByteOrder());
+    switch ( byte_order ) {
+        case ByteOrder::Undef: throw RuntimeError("cannot convert value to undefined byte order");
+        case ByteOrder::Host: return toInt(systemByteOrder());
+        case ByteOrder::Little: [[fallthrough]];
+        case ByteOrder::Network: [[fallthrough]];
+        case ByteOrder::Big: break;
+    }
 
     if ( size() > 8 )
         throw RuntimeError("more than max of 8 bytes for conversion to integer");
@@ -157,11 +161,11 @@ uint64_t Bytes::toUInt(ByteOrder byte_order) const {
     return i;
 }
 
-Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) {
+Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
     auto groups = re.findGroups(*this);
 
-    if ( groups.empty() )
-        return result::Error("not matches found");
-    else
-        return groups.at(group);
+    if ( group >= groups.size() )
+        return result::Error("no matches found");
+
+    return groups.at(group);
 }
