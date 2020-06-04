@@ -3,3 +3,6 @@ Y::Undef
 X::A1
 Y::B2
 [$x1=X::Undef, $x2=(not set), $y1=(not set)]
+[]
+[]
+[X::A1, X::A2]
