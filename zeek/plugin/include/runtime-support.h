@@ -102,7 +102,7 @@ void raise_event(EventHandlerPtr handler, const hilti::rt::Vector<Val*>& args, s
  * Returns the Zeek type of an event's i'th argument. The result's ref count
  * is not increased.
  */
-BroType* event_arg_type(EventHandlerPtr handler, uint64_t idx);
+BroType* event_arg_type(EventHandlerPtr handler, uint64_t idx, std::string_view location);
 
 /**
  * Retrieves the connection ID for the currently processed Zeek connection.

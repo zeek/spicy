@@ -86,9 +86,15 @@ void rt::raise_event(EventHandlerPtr handler, const hilti::rt::Vector<Val*>& arg
     ::mgr.QueueEventFast(handler, vl);
 }
 
-BroType* rt::event_arg_type(EventHandlerPtr handler, uint64_t idx) {
+BroType* rt::event_arg_type(EventHandlerPtr handler, uint64_t idx, std::string_view location) {
     assert(handler);
-    return (*handler->FType()->ArgTypes()->Types())[idx];
+
+    auto zeek_args = handler->FType()->ArgTypes()->Types();
+    if ( idx >= static_cast<uint64_t>(zeek_args->length()) )
+        throw TypeMismatch(fmt("more parameters given than the %d that the Zeek event expects", zeek_args->length()),
+                           location);
+
+    return (*zeek_args)[idx];
 }
 
 Val* rt::current_conn(std::string_view location) {
