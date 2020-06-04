@@ -109,6 +109,30 @@ public:
 
     friend bool operator!=(const Iterator& a, const Iterator& b) { return ! (a == b); }
 
+    friend auto operator<(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index < b._index;
+    }
+
+    friend auto operator<=(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index <= b._index;
+    }
+
+    friend auto operator>(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index > b._index;
+    }
+
+    friend auto operator>=(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index >= b._index;
+    }
+
 private:
     std::optional<std::reference_wrapper<V>> _container();
 };
@@ -145,6 +169,30 @@ public:
     }
 
     friend bool operator!=(const ConstIterator& a, const ConstIterator& b) { return ! (a == b); }
+
+    friend auto operator<(const ConstIterator& a, const ConstIterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index < b._index;
+    }
+
+    friend auto operator<=(const ConstIterator& a, const ConstIterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index <= b._index;
+    }
+
+    friend auto operator>(const ConstIterator& a, const ConstIterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index > b._index;
+    }
+
+    friend auto operator>=(const ConstIterator& a, const ConstIterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot compare iterators into different vectors");
+        return a._index >= b._index;
+    }
 
 private:
     std::optional<std::reference_wrapper<V>> _container();

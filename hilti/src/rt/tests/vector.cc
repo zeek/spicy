@@ -129,6 +129,44 @@ TEST_CASE("Iterator") {
         auto xs1 = ++xs.begin();
         CHECK_NE(xs.begin(), xs1);
     }
+
+    SUBCASE("ordering") {
+        SUBCASE("less") {
+            REQUIRE_FALSE(xs.empty());
+
+            CHECK_LT(xs.begin(), xs.end());
+            CHECK_FALSE(operator<(xs.end(), xs.begin()));
+            CHECK_THROWS_WITH_AS(operator<(Vector<int>().begin(), Vector<int>().begin()),
+                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+        }
+
+        SUBCASE("less equal") {
+            REQUIRE_FALSE(xs.empty());
+
+            CHECK_LE(xs.begin(), xs.end());
+            CHECK_FALSE(operator<=(xs.end(), xs.begin()));
+            CHECK_THROWS_WITH_AS(operator<=(Vector<int>().begin(), Vector<int>().begin()),
+                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+        }
+
+        SUBCASE("greater") {
+            REQUIRE_FALSE(xs.empty());
+
+            CHECK_GT(xs.end(), xs.begin());
+            CHECK_FALSE(operator>(xs.begin(), xs.end()));
+            CHECK_THROWS_WITH_AS(operator>(Vector<int>().begin(), Vector<int>().begin()),
+                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+        }
+
+        SUBCASE("greater equal") {
+            REQUIRE_FALSE(xs.empty());
+
+            CHECK_GE(xs.end(), xs.begin());
+            CHECK_FALSE(operator>=(xs.begin(), xs.end()));
+            CHECK_THROWS_WITH_AS(operator>=(Vector<int>().begin(), Vector<int>().begin()),
+                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+        }
+    }
 }
 
 TEST_CASE("ConstIterator") {
@@ -163,6 +201,44 @@ TEST_CASE("ConstIterator") {
 
         auto xs1 = ++xs.cbegin();
         CHECK_NE(xs.cbegin(), xs1);
+    }
+
+    SUBCASE("ordering") {
+        SUBCASE("less") {
+            REQUIRE_FALSE(xs.empty());
+
+            CHECK_LT(xs.cbegin(), xs.cend());
+            CHECK_FALSE(operator<(xs.cend(), xs.cbegin()));
+            CHECK_THROWS_WITH_AS(operator<(Vector<int>().cbegin(), Vector<int>().cbegin()),
+                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+        }
+
+        SUBCASE("less equal") {
+            REQUIRE_FALSE(xs.empty());
+
+            CHECK_LE(xs.cbegin(), xs.cend());
+            CHECK_FALSE(operator<=(xs.cend(), xs.cbegin()));
+            CHECK_THROWS_WITH_AS(operator<=(Vector<int>().cbegin(), Vector<int>().cbegin()),
+                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+        }
+
+        SUBCASE("greater") {
+            REQUIRE_FALSE(xs.empty());
+
+            CHECK_GT(xs.cend(), xs.cbegin());
+            CHECK_FALSE(operator>(xs.cbegin(), xs.cend()));
+            CHECK_THROWS_WITH_AS(operator>(Vector<int>().cbegin(), Vector<int>().cbegin()),
+                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+        }
+
+        SUBCASE("greater equal") {
+            REQUIRE_FALSE(xs.empty());
+
+            CHECK_GE(xs.cend(), xs.cbegin());
+            CHECK_FALSE(operator>=(xs.cbegin(), xs.cend()));
+            CHECK_THROWS_WITH_AS(operator>=(Vector<int>().cbegin(), Vector<int>().cbegin()),
+                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+        }
     }
 }
 
