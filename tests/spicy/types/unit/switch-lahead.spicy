@@ -37,10 +37,10 @@ type D = unit {
 
 public type test = unit {
        switch {
-           a: A;
-           b: B;
-           c: C;
-           d: D;
+           -> a: A;
+           -> b: B;
+           -> c: C;
+           -> d: D;
 
            # These two both work:
            #      d: D;

@@ -3,9 +3,9 @@ module Test;
 
 public type Foo = unit {
     switch {
-        a: b"A";
-        b: b"B";
-        c: b"C";
+        -> a: b"A";
+        -> b: b"B";
+        -> c: b"C";
     };
 
     on %done { print self; }

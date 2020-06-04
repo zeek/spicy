@@ -144,7 +144,6 @@ private:
     int _line{};
     Parser* _parser = nullptr;
     Scanner* _scanner = nullptr;
-    int _expression_mode = 0;
     int _next_token = 0;
 };
 

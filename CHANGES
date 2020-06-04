@@ -1,28 +1,53 @@
 
+0.4.0-406 | 2020-06-04 09:14:27 +0000
+
+  * GH-354: No longer allow dashes inside identifiers. (Robin Sommer, Corelight)
+
+  * GH-350: Restrict parsing of attributes and properties to avoid
+    ambiguities. (Robin Sommer, Corelight)
+
+  * Clean up the expression mode in the Spicy Bison parser. (Robin Sommer, Corelight)
+
+    This comes with a couple of grammar changes to avoid ambiguitues:
+
+        - "new X" no longer allowes full expressions for X, just values or
+          identifiers.
+
+        - Switch cases that use look-ahead now also need to be introduced
+          with an arrow, e.g.:
+
+               switch {
+                   -> a: A;
+                   -> b: B;
+                   -> c: C;
+               };
+
+  * Reduce resources requested from Cirrus. (Robin Sommer, Corelight)
+
+  * Make iterators into vectors ordered. (Benjamin Bannier, Corelight)
+
+  * GH-343: Fix duplicate evaluation of if-condition when used with
+    &parse-at. (Robin Sommer, Corelight)
+
+  * Add validation check for initializations that use the ID that's
+    currently being declared. (Robin Sommer, Corelight)
+
+  * Fix mailing list links in README. (Robin Sommer, Corelight)
+
 0.4.0-393 | 2020-06-04 08:41:28 +0200
 
-  * Add test cases for `rt::Bytes` member functions. (Benjamin Bannier, Corelight)
+  * Rework implementation of `hilti::rt::Bytes`.
+   - Add test cases for `rt::Bytes` member functions.
+   - Fix construction of `rt::Bytes` from string and charset.
+   - Fix handling of undefined byte order in ByteOrder conversions to integers.
+   - Prevent throwing `std::out_of_range` from `rt::Bytes::extract`.
+   - Add additional safety to `bytes::Iterator`.
+   - Made some `rt::Bytes` methods `const`.
+   - Remove rvalue overload of `rt::Bytes::str`.
 
-  * Fix construction of `rt::Bytes` from string and charset. (Benjamin Bannier, Corelight)
-
-  * Fix handling of undefined byte order in ByteOrder conversions to integers. (Benjamin Bannier, Corelight)
-
-  * Prevent throwing `std::out_of_range` from `rt::Bytes::extract`. (Benjamin Bannier, Corelight)
-
-  * Fix ADL for `rt::to_string`.
-
-  * Add additional safety to `bytes::Iterator`.
-
-    We now also catch e.g., out-of-bounds accesses. (Benjamin Bannier, Corelight)
-
-  * Made some `rt::Bytes` methods `const`. (Benjamin Bannier, Corelight)
+  * Fix ADL for `rt::to_string`. (Benjamin Bannier, Corelight)
 
   * Fix `rt::util::split` for empty delimter case. (Benjamin Bannier, Corelight)
-
-  * Remove rvalue overload of `rt::Bytes::str`.
-
-    This function returns a naked, unchecked reference to internal data and
-    is not safe to use on rvalues. (Benjamin Bannier, Corelight)
 
 0.4.0-364 | 2020-06-04 08:40:25 +0200
 

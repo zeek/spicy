@@ -21,7 +21,7 @@ type B = unit {
 
 public type test = unit {
        switch {
-           a: A;
-           b: B;
+           -> a: A;
+           -> b: B;
            };
 };

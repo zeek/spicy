@@ -50,8 +50,6 @@ hilti::Result<hilti::Node> Driver::parse(std::istream& in, const std::string& fi
         _parser->set_debug_level(1);
     }
 
-    _expression_mode = 1;
-    _scanner->enableExpressionMode();
     _parser->parse();
 
     if ( hilti::logger().errors() > old_errors )
@@ -89,8 +87,6 @@ hilti::Result<hilti::Node> Driver::parseExpression(const std::string& expression
         _parser->set_debug_level(1);
     }
 
-    _expression_mode = 1;
-    _scanner->enableExpressionMode();
     _parser->parse();
 
     if ( hilti::logger().errors() > old_errors )
@@ -111,15 +107,9 @@ void Driver::disablePatternMode() { _scanner->disablePatternMode(); }
 
 void Driver::enablePatternMode() { _scanner->enablePatternMode(); }
 
-void Driver::disableExpressionMode() {
-    if ( --_expression_mode == 0 )
-        _scanner->disableExpressionMode();
-}
+void Driver::disableExpressionMode() { _scanner->disableExpressionMode(); }
 
-void Driver::enableExpressionMode() {
-    if ( _expression_mode++ == 0 )
-        _scanner->enableExpressionMode();
-}
+void Driver::enableExpressionMode() { _scanner->enableExpressionMode(); }
 
 void Driver::disableDottedIDMode() { _scanner->disableDottedIDMode(); }
 

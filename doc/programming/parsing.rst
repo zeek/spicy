@@ -1080,9 +1080,9 @@ the input stream:
 
     public type Foo = unit {
         switch {
-            a: b"A";
-            b: b"B";
-            c: b"C";
+            -> a: b"A";
+            -> b: b"B";
+            -> c: b"C";
         };
 
         on %done { print self; }
@@ -1109,8 +1109,8 @@ once you have subunits that are recognizable by how they start:
 
     public type Foo = unit {
         switch {
-            a: A;
-            b: B;
+            -> a: A;
+            -> b: B;
         };
 
         on %done { print self; }
