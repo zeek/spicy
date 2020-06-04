@@ -45,6 +45,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
 pygments_style = 'sphinx'
+highlight_language = 'none'
 
 # Todo extension
 todo_include_todos = True

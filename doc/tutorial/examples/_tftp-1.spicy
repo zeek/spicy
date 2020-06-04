@@ -1,0 +1,8 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module TFTP;
+
+public type Packet = unit {
+    opcode: uint16;
+
+    on %done { print self; }
+};

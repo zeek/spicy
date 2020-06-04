@@ -93,6 +93,8 @@ an ``*.evt``.
     The syntax for ``*.evt`` files comes with some legacy pieces that
     aren't particularly pretty. We may clean that up at some point.
 
+.. _zeek_evt_analyzer_setup:
+
 Analyzer Setup
 --------------
 
@@ -507,6 +509,8 @@ set ``SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
 
 To get that usage message, set ``SPICY_PLUGIN_OPTIONS=-h`` when
 running Zeek.
+
+.. _zeek_debugging:
 
 Debugging
 =========

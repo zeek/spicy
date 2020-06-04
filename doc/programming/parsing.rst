@@ -102,6 +102,8 @@ The output comes of course from the ``print`` statement inside the
 ``%done`` hook, which executes once the unit has been fully parsed.
 (We will discuss unit hooks further below.)
 
+.. _attribute_order:
+
 By default, Spicy assumes integers that it parses to be represented in
 network byte order (i.e., big-endian), hence the output above.
 Alternatively, we can tell the parser through an attribute that our
@@ -275,7 +277,7 @@ currently being parsed:
 
 .. _attribute_convert:
 
-.. rubric:: On-the-fly Type Conversion with ``&convert``
+.. rubric:: On-the-fly Type Conversion with &convert
 
 Fields may use an attribute ``&convert=EXPR`` to transform the value
 that was just being parsed before storing it as the field's final

@@ -222,6 +222,8 @@ have had permission to write into the Zeek plugin directory. See
 :ref:`zeek_installation` for how to point Zeek to the right location
 manually.
 
+.. _example_zeek_my_http_adding_analyzer:
+
 .. rubric:: Adding a Protocol Analyzer
 
 Now we can go ahead and add a new protocol analyzer to Zeek. We

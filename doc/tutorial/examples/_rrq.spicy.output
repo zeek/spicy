@@ -1,0 +1,3 @@
+# Automatically generated; do not edit. -- <HASH> cat tutorial/examples/udp-contents.orig.1367411051.972852.dat | spicy-driver %INPUT/cat udp-contents.orig.1367411051.972852.dat | spicy-driver rrq.spicy/False
+# cat udp-contents.orig.1367411051.972852.dat | spicy-driver rrq.spicy
+[$opcode=1, $filename=b"rfc1350.txt", $mode=b"octet"]

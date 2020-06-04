@@ -1,0 +1,3 @@
+# Automatically generated; do not edit. -- <HASH> cat tutorial/examples/udp-contents.resp.1367411052.081790.dat | spicy-driver %INPUT/cat udp-contents.resp.1367411052.081790.dat | spicy-driver tftp.spicy/False
+# cat udp-contents.resp.1367411052.081790.dat | spicy-driver tftp.spicy
+[$opcode=4, $rrq=(not set), $ack=[$num=1]]

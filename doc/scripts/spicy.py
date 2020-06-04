@@ -268,6 +268,24 @@ class SpicyCode(CodeBlock):
             f.write(text)
             f.close()
 
+
+        ntext = ""
+        include = 1
+        for line in text.split("\n"):
+            if "%hide-begin%" in line:
+                include -= 1
+                continue
+
+            if "%hide-end%" in line:
+                include += 1
+                continue
+
+            if include > 0:
+                ntext += line + "\n"
+
+        ntext = ntext.strip()
+        literal[0] = nodes.literal_block(ntext, ntext)
+
         return literal
 
 class SpicyOutput(LiteralInclude):

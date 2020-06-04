@@ -1,0 +1,10 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module TFTP;                          # [1]
+
+public type ReadRequest = unit {      # [2]
+    opcode:   uint16;                 # [3]
+    filename: bytes &until=b"\x00";   # [4]
+    mode:     bytes &until=b"\x00";   # [5]
+
+    on %done { print self; }          # [6]
+};

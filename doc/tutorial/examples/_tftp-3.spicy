@@ -1,0 +1,19 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module TFTP;
+
+public type Packet = unit {
+    opcode: uint16;
+
+    switch ( self.opcode ) {
+        1 -> rrq: ReadRequest;
+    };
+
+    on %done { print self; }
+};
+
+# %hide-begin%
+type ReadRequest = unit {
+    filename: bytes &until=b"\x00";
+    mode:     bytes &until=b"\x00";
+};
+# %hide-end%
