@@ -17,9 +17,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
-          echo "Cirrus CI ${{ github.event.check_suite.conclusion }} on ${{ github.event.check_suite.head_branch }} branch!"
+          echo "Cirrus CI ${{ github.event.check_suite.conclusion }} on SHA ${{ github.event.check_suite.head_sha }}"
           echo "SHA ${{ github.event.check_suite.head_sha }}"
           echo $MESSAGE
-          echo "##[error]See $CHECK_RUN_URL for details" && true
+          echo "See $CHECK_RUN_URL for details" && true
         env:
           CHECK_RUN_URL: ${{ fromJson(steps.get_success_check_run.outputs.data).check_runs[0].html_url }}
