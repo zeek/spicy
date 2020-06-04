@@ -1,0 +1,6 @@
+# @TEST-EXEC-FAIL: hiltic -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test {
+    local x = 2 * x;
+}

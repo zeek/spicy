@@ -1,0 +1,2 @@
+[error] /Users/robin/work/spicy/topic2/tests/.tmp/hilti.validation.declaration-cycle/declaration-cycle.hlt:5:19: ID cannot be used inside its own declaration
+[error] hiltic: aborting after errors

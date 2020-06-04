@@ -409,85 +409,89 @@ struct ProductionVisitor
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
-        if ( field && is_field_owner && ! meta.container() ) {
-            pb->enableDefaultNewValueForField(true);
+        if ( is_field_owner ) {
+            // We are the field's owner, apply the various attributes.
 
-            if ( field->parseType().isA<type::Void>() ) {
-                // No value to store.
-                pushDestination(hilti::expression::Void());
+            if ( ! meta.container() ) {
+                pb->enableDefaultNewValueForField(true);
+
+                if ( field->parseType().isA<type::Void>() ) {
+                    // No value to store.
+                    pushDestination(hilti::expression::Void());
+                }
+                else if ( AttributeSet::find(field->attributes(), "&convert") ) {
+                    // Need a temporary for the parsed field.
+                    auto dst = builder()->addTmp(fmt("parsed_%s", field->id()), field->parseType());
+                    pushDestination(dst);
+                }
+                else if ( field->isTransient() ) {
+                    // Won't have the field in the emitted C++ code, so we need a temporary.
+                    auto ftype = field_type();
+                    auto dst = builder()->addTmp(fmt("transient_%s", field->id()), ftype);
+                    pushDestination(builder::type_wrapped(dst, ftype, field->meta()));
+                }
+                else {
+                    // Can store parsed value directly in struct field.
+                    auto dst = builder::member(pb->state().self, field->id());
+                    pushDestination(builder::type_wrapped(dst, field_type(), field->meta()));
+                }
             }
-            else if ( AttributeSet::find(field->attributes(), "&convert") ) {
-                // Need a temporary for the parsed field.
-                auto dst = builder()->addTmp(fmt("parsed_%s", field->id()), field->parseType());
-                pushDestination(dst);
+
+            if ( auto a = AttributeSet::find(field->attributes(), "&parse-from") ) {
+                // Redirect input to a bytes value.
+                auto pstate = state();
+                pstate.trim = builder::bool_(false);
+                pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
+                pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
+                auto expr = a->valueAs<Expression>();
+
+                auto tmp = builder()->addTmp("parse_from", type::ValueReference(type::Stream()), *expr);
+                pstate.data = tmp;
+                pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
+                pstate.ncur = {};
+                builder()->addMemberCall(tmp, "freeze", {});
+
+                pushState(std::move(pstate));
             }
-            else if ( field->isTransient() ) {
-                // Won't have the field in the emitted C++ code, so we need a temporary.
-                auto ftype = field_type();
-                auto dst = builder()->addTmp(fmt("transient_%s", field->id()), ftype);
-                pushDestination(builder::type_wrapped(dst, ftype, field->meta()));
+
+            if ( auto a = AttributeSet::find(field->attributes(), "&parse-at") ) {
+                // Redirect input to a stream position.
+                auto pstate = state();
+                pstate.trim = builder::bool_(false);
+                pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
+                pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
+                auto expr = a->valueAs<Expression>();
+
+                auto cur = builder::memberCall(state().cur, "advance", {*expr});
+
+                pstate.cur = builder()->addTmp("parse_cur", cur);
+                pstate.ncur = {};
+                pushState(std::move(pstate));
+            }
+
+            if ( auto c = field->condition() )
+                pushBuilder(builder()->addIf(*c));
+
+            if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
+                // Limit input to the specified length.
+                auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
+                auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
+
+                // Establish limited view, remembering position to continue at.
+                // We always advance by the full amount eventually (as saved
+                // here), even though generally the parsing might not consume
+                // everything. That way, &size can be used to unconditionally
+                // skip a certain of amount of data.
+                auto pstate = state();
+                pstate.cur = limited;
+                pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
+                pushState(std::move(pstate));
             }
             else {
-                // Can store parsed value directly in struct field.
-                auto dst = builder::member(pb->state().self, field->id());
-                pushDestination(builder::type_wrapped(dst, field_type(), field->meta()));
+                auto pstate = state();
+                pstate.ncur = {};
+                pushState(std::move(pstate));
             }
-        }
-
-        if ( auto a = AttributeSet::find(field->attributes(), "&parse-from") ) {
-            // Redirect input to a bytes value.
-            auto pstate = state();
-            pstate.trim = builder::bool_(false);
-            pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
-            pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
-            auto expr = a->valueAs<Expression>();
-
-            auto tmp = builder()->addTmp("parse_from", type::ValueReference(type::Stream()), *expr);
-            pstate.data = tmp;
-            pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
-            pstate.ncur = {};
-            builder()->addMemberCall(tmp, "freeze", {});
-
-            pushState(std::move(pstate));
-        }
-
-        if ( auto a = AttributeSet::find(field->attributes(), "&parse-at") ) {
-            // Redirect input to a stream position.
-            auto pstate = state();
-            pstate.trim = builder::bool_(false);
-            pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
-            pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
-            auto expr = a->valueAs<Expression>();
-
-            auto cur = builder::memberCall(state().cur, "advance", {*expr});
-
-            pstate.cur = builder()->addTmp("parse_cur", cur);
-            pstate.ncur = {};
-            pushState(std::move(pstate));
-        }
-
-        if ( auto c = field->condition() )
-            pushBuilder(builder()->addIf(*c));
-
-        if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
-            // Limit input to the specified length.
-            auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
-            auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
-
-            // Establish limited view, remembering position to continue at.
-            // We always advance by the full amount eventually (as saved
-            // here), even though generally the parsing might not consume
-            // everything. That way, &size can be used to unconditionally
-            // skip a certain of amount of data.
-            auto pstate = state();
-            pstate.cur = limited;
-            pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
-            pushState(std::move(pstate));
-        }
-        else {
-            auto pstate = state();
-            pstate.ncur = {};
-            pushState(std::move(pstate));
         }
     }
 
@@ -495,45 +499,55 @@ struct ProductionVisitor
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
-        auto ncur = state().ncur;
-        state().ncur = {};
-
-        if ( auto a = AttributeSet::find(field->attributes(), "&size"); a && is_field_owner ) {
-            // Make sure we parsed the entire &size amount.
-            auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
-                                            builder::memberCall(*ncur, "offset", {}));
-            auto insufficient = builder()->addIf(std::move(missing));
-            pushBuilder(insufficient, [&]() {
-                // We didn't parse all the data, which is an error.
-                if ( ! field->isTransient() && destination() && ! destination()->type().isA<type::Void>() )
-                    // Clear the field in case the type parsing has started
-                    // to fill it.
-                    builder()->addExpression(builder::unset(state().self, field->id()));
-
-                pb->parseError("&size amount not consumed", a->meta());
-            });
+        if ( ! is_field_owner ) {
+            // Just need to move position ahead.
+            if ( state().ncur ) {
+                builder()->addAssign(state().cur, *state().ncur);
+                state().ncur = {};
+            }
         }
+        else {
+            // We are the field's owner, post-process the various attributes.
+            auto ncur = state().ncur;
+            state().ncur = {};
 
-        popState(); // From &size (pushed even if absent).
+            if ( auto a = AttributeSet::find(field->attributes(), "&size"); a && is_field_owner ) {
+                // Make sure we parsed the entire &size amount.
+                auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
+                                                builder::memberCall(*ncur, "offset", {}));
+                auto insufficient = builder()->addIf(std::move(missing));
+                pushBuilder(insufficient, [&]() {
+                    // We didn't parse all the data, which is an error.
+                    if ( ! field->isTransient() && destination() && ! destination()->type().isA<type::Void>() )
+                        // Clear the field in case the type parsing has started
+                        // to fill it.
+                        builder()->addExpression(builder::unset(state().self, field->id()));
 
-        if ( AttributeSet::find(field->attributes(), "&parse-from") ||
-             AttributeSet::find(field->attributes(), "&parse-at") ) {
-            ncur = {};
-            popState();
+                    pb->parseError("&size amount not consumed", a->meta());
+                });
+            }
+
+            popState(); // From &size (pushed even if absent).
+
+            if ( AttributeSet::find(field->attributes(), "&parse-from") ||
+                 AttributeSet::find(field->attributes(), "&parse-at") ) {
+                ncur = {};
+                popState();
+            }
+
+            if ( ncur )
+                builder()->addAssign(state().cur, *ncur);
+
+            if ( ! meta.container() ) {
+                auto dst = popDestination();
+
+                if ( dst && pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
+                    pb->newValueForField(*field, *dst);
+            }
+
+            if ( field->condition() )
+                popBuilder();
         }
-
-        if ( ncur )
-            builder()->addAssign(state().cur, *ncur);
-
-        if ( is_field_owner && ! meta.container() ) {
-            auto dst = popDestination();
-
-            if ( dst && pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
-                pb->newValueForField(*field, *dst);
-        }
-
-        if ( field->condition() )
-            popBuilder();
     }
 
     // Returns a boolean expression that's 'true' if a 'stop' was encountered.
