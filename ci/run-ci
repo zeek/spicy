@@ -190,9 +190,11 @@ function run_build {
     export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
 
     log_stage "Building code ..."
-    # The level of parallelism choosen here is tuned so that we do not trigger
-    # OOM kills in the Docker environments configured in `.cirrus.yml`.
-    (cd ${build} && ninja -j5) || exit 1
+
+    # The level of parallelism choosen here is tuned for what's configured
+    # in `.cirrus.yml` so that (1) we align with number of CPUs, and (2) we
+    # do not trigger OOM kills in the Docker environments.
+    (cd ${build} && ninja -j4) || exit 1
 
     log_stage "Building docs ..."
     (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc html) || exit 1
