@@ -11,8 +11,8 @@ type B = unit {
 
 public type Foo = unit {
     switch {
-        a: A;
-        b: B;
+        -> a: A;
+        -> b: B;
     };
 
     on %done { print self; }
