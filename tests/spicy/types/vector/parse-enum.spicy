@@ -1,0 +1,26 @@
+# @TEST-EXEC:  printf "\001\002\001\002\001\002\001\002" | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Foo;
+
+type X = enum { Red = 1, Blue = 2, Green = 3 };
+
+function fn1(xs: vector<uint8>): vector<uint8> { return xs; }
+function fn2(xs: vector<uint8>): vector<X> { return [X(x) for x in xs]; }
+
+function fn4(xs: vector<uint8>): uint64 {
+    local y = 0;
+    for ( x in xs )
+        y += x;
+
+    return y;
+}
+
+public type P = unit {
+    x1: uint8[] &size=2 &convert=fn1($$);
+    x2: uint8[] &size=2 &convert=fn2($$);
+    x3: uint8[] &size=2 &convert=[X(x) for x in $$];
+    x4: uint8[] &size=2 &convert=fn4($$);
+
+    on %done { print self; }
+};

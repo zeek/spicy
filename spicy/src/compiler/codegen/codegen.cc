@@ -417,7 +417,7 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
             if ( ! st )
                 return type::unknown;
 
-            return st->field(id.local())->type().as<type::Vector>().elementType();
+            return st->field(id.local())->auxType()->as<type::Vector>().elementType();
         };
 
         auto element_type = type::Computed(ut, cb);

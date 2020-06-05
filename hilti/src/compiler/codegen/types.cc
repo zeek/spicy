@@ -233,6 +233,13 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         return cxx::declaration::Type{.id = id, .type = t};
     }
 
+    result_t operator()(const type::Vector& n, const position_t p) {
+        if ( n.elementType() != type::unknown )
+            addDependency(n.elementType());
+
+        return {};
+    }
+
     result_t operator()(const type::Enum& n, const position_t p) {
         auto scope = cxx::ID{cg->unit()->cxxNamespace()};
         auto sid = cxx::ID{(n.typeID() ? std::string(*n.typeID()) : fmt("enum_%p", &n))};
@@ -255,7 +262,10 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
         auto labels = util::transform(n.labels(), [](auto l) { return std::make_pair(cxx::ID(l.id()), l.value()); });
         auto t = cxx::type::Enum{.labels = std::move(labels), .type_name = cxx::ID(id.local())};
-        return cxx::declaration::Type{.id = id, .type = t};
+        auto decl = cxx::declaration::Type{.id = id, .type = t};
+        dependencies.push_back(decl);
+        cg->unit()->prioritizeType(id);
+        return decl;
     }
 
     result_t operator()(const type::Exception& n, const position_t p) {

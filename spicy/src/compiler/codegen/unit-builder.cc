@@ -31,7 +31,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
     void addField(hilti::type::struct_::Field f) { fields.emplace_back(std::move(f)); }
 
-    void operator()(const spicy::type::unit::item::Field& f, const position_t /* p */) {
+    void operator()(const spicy::type::unit::item::Field& f, position_t p) {
         if ( ! f.parseType().isA<type::Void>() ) {
             // Create struct field.
             AttributeSet attrs({Attribute("&optional")});
@@ -45,7 +45,9 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
                 // times.
                 attrs = AttributeSet::add(attrs, Attribute("&no-emit"));
 
-            auto nf = hilti::type::struct_::Field(f.id(), f.itemType(), std::move(attrs), f.meta());
+            // We set the field's auxiliary type to the parse type, so that
+            // we retain that information.
+            auto nf = hilti::type::struct_::Field(f.id(), f.itemType(), f.parseType(), std::move(attrs), f.meta());
             addField(std::move(nf));
         }
 

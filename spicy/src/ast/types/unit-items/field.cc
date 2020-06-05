@@ -32,16 +32,39 @@ static Type _adaptType(const type::unit::item::Field& field, const Type& t, bool
     return type::effectiveType(t);
 }
 
-Type spicy::type::unit::item::Field::parseType() const { return _adaptType(*this, _originalType(), false); }
-
-Type spicy::type::unit::item::Field::itemType() const {
+Type spicy::type::unit::item::Field::parseType() const {
     if ( isContainer() ) {
-        auto itype = _adaptType(*this, parseType().as<type::Vector>().elementType(), true);
+        Type etype = _originalType().as<type::Vector>().elementType();
+        auto itype = _adaptType(*this, etype, false);
         return type::Vector(itype, itype.meta());
     }
 
+    return _adaptType(*this, _originalType(), false);
+}
+
+Type spicy::type::unit::item::Field::itemType() const {
     if ( auto a = AttributeSet::find(attributes(), "&convert") )
         return hilti::type::Computed(*a->valueAs<Expression>(), meta());
 
+    if ( isContainer() ) {
+        Type etype = _originalType().as<type::Vector>().elementType();
+        auto itype = _adaptType(*this, etype, true);
+        return type::Vector(itype, itype.meta());
+    }
+
     return _adaptType(*this, _originalType(), true);
+}
+
+Type spicy::type::unit::item::Field::vectorElementTypeThroughSelf(ID id) {
+    return hilti::type::Computed(hilti::builder::id("self"), [id](Node& n) {
+        Type t = n.as<Expression>().type();
+
+        if ( auto x = t.tryAs<hilti::type::ValueReference>() )
+            t = x->dereferencedType();
+
+        if ( auto x = t.tryAs<hilti::type::Struct>() )
+            return x->field(id)->auxType()->as<type::Vector>().elementType();
+
+        return hilti::type::unknown;
+    });
 }

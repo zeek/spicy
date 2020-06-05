@@ -116,8 +116,7 @@ struct ProductionVisitor
         std::optional<Expression> container_element;
 
         if ( const auto& c = meta.container(); c && ! forwarding ) {
-            auto etype =
-                type::Computed(builder::memberCall(builder::member(builder::id("self"), c->id()), "front", {}), false);
+            auto etype = type::unit::item::Field::vectorElementTypeThroughSelf(c->id());
             container_element = builder()->addTmp("elem", etype);
             pushDestination(container_element);
         }
