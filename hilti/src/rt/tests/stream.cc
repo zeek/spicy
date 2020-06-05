@@ -123,6 +123,49 @@ TEST_CASE("Constructors") {
     }
 }
 
+TEST_CASE("equal") {
+    const auto b1 = "123"_b;
+    const auto b2 = "abc"_b;
+    const auto b_ = ""_b;
+
+    const auto s1 = Stream(b1);
+    const auto s2 = Stream(b2);
+    const auto s_ = Stream();
+
+    SUBCASE("Stream") {
+        CHECK_EQ(s1, s1);
+        CHECK_EQ(s1, Stream(s1));
+        CHECK_EQ(make_stream({"12"_b, "34"_b}), make_stream({"12"_b, "34"_b}));
+        CHECK_EQ(make_stream({"1234"_b}), make_stream({"12"_b, "34"_b}));
+        CHECK_NE(make_stream({"12"_b, "cd"_b}), make_stream({"12"_b, "34"_b}));
+        CHECK_EQ(s_, s_);
+        CHECK_NE(s1, s_);
+        CHECK_NE(s1, s2);
+    }
+
+    SUBCASE("Bytes") {
+        CHECK_EQ(s1, b1);
+        CHECK_EQ(make_stream({"12"_b, "34"_b}), "1234"_b);
+        CHECK_NE(s1, b2);
+        CHECK_NE(s1, b_);
+    }
+
+    SUBCASE("View") {
+        CHECK_EQ(s1, s1.view());
+        CHECK_EQ(s1, s1.view(true));
+        CHECK_EQ(s1, s1.view(false));
+        CHECK_EQ(s1, Stream(s1).view());
+        CHECK_NE(s1, s2.view());
+        CHECK_NE(s1, s_.view());
+
+        {
+            auto s = make_stream({"12"_b, "34"_b});
+            CHECK_EQ(s, s.view(true));
+            CHECK_EQ(s, s.view(false));
+        }
+    }
+}
+
 TEST_CASE("Growing") {
     // rvalue append
     auto x = Stream("1234567890"_b);
