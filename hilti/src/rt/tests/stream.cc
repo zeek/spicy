@@ -509,6 +509,38 @@ TEST_CASE("advance") {
     CHECK(view.startsWith("67890"_b));
 }
 
+TEST_CASE("equal") {
+    const auto b1 = "123"_b;
+    const auto b2 = "abc"_b;
+    const auto b_ = ""_b;
+
+    const auto s1 = Stream(b1);
+    const auto s2 = Stream(b2);
+    const auto s_ = Stream(b_);
+
+    const auto v1 = s1.view();
+    const auto v2 = s2.view();
+    const auto v_ = s_.view();
+
+    SUBCASE("Bytes") {
+        CHECK_EQ(v1, b1);
+        CHECK_EQ(v_, b_);
+        CHECK_NE(v1, b2);
+    }
+
+    SUBCASE("Stream") {
+        CHECK_EQ(v1, s1);
+        CHECK_EQ(v_, s_);
+        CHECK_NE(v1, s2);
+    }
+
+    SUBCASE("View") {
+        CHECK_EQ(v1, v1);
+        CHECK_EQ(v_, v_);
+        CHECK_NE(v1, v2);
+    }
+}
+
 TEST_CASE("sub") {
     auto input = "1234567890"_b;
     auto stream = Stream(input);
