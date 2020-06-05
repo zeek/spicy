@@ -915,7 +915,8 @@ bool GlueCompiler::CreateSpicyHook(glue::Event* ev) {
                 return false;
             }
 
-            auto ztype = builder::call("zeek_rt::event_arg_type", {builder::id(handler_id), builder::integer(i)}, meta);
+            auto ztype = builder::call("zeek_rt::event_arg_type",
+                                       {builder::id(handler_id), builder::integer(i), location(e)}, meta);
             val = builder::call("zeek_rt::to_val", {std::move(*expr), ztype, location(e)}, meta);
         }
 
