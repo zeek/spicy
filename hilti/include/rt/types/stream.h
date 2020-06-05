@@ -739,7 +739,7 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const View& x) {
-    out << x.data();
+    out << escapeBytes(x.data());
     return out;
 }
 
@@ -937,18 +937,18 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Stream& x) {
-    out << x.data();
+    out << escapeBytes(x.data());
     return out;
 }
 
 template<>
 inline std::string detail::to_string_for_print<Stream>(const Stream& x) {
-    return escapeUTF8(x.data(), true);
+    return escapeBytes(x.data(), true);
 }
 
 template<>
 inline std::string detail::to_string_for_print<stream::View>(const stream::View& x) {
-    return escapeUTF8(x.data(), true);
+    return escapeBytes(x.data(), true);
 }
 
 namespace detail::adl {
@@ -957,10 +957,10 @@ inline auto safe_end(const Stream& x, adl::tag /*unused*/) { return x.safeEnd();
 inline auto safe_begin(const stream::View& x, adl::tag /*unused*/) { return x.safeBegin(); }
 inline auto safe_end(const stream::View& x, adl::tag /*unused*/) { return x.safeEnd(); }
 inline std::string to_string(const Stream& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeUTF8(x.data(), true));
+    return fmt("b\"%s\"", escapeBytes(x.data(), true));
 }
 inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeUTF8(x.data(), true));
+    return fmt("b\"%s\"", escapeBytes(x.data(), true));
 }
 } // namespace detail::adl
 
