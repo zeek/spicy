@@ -422,7 +422,7 @@ struct ProductionVisitor
                 else if ( AttributeSet::find(field->attributes(), "&convert") ) {
                     // Need a temporary for the parsed field.
                     auto dst = builder()->addTmp(fmt("parsed_%s", field->id()), field->parseType());
-                    pushDestination(dst);
+                    pushDestination(builder::type_wrapped(dst, field->parseType(), field->meta()));
                 }
                 else if ( field->isTransient() ) {
                     // Won't have the field in the emitted C++ code, so we need a temporary.
