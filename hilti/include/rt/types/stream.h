@@ -313,8 +313,6 @@ public:
         return out;
     }
 
-    void* chain() const { return content(); }
-
     /** Returns true if the iterator remains unintialized. */
     bool isUnset() const {
         const auto unset = std::weak_ptr<detail::Chain>();
@@ -692,8 +690,6 @@ public:
 
     const SafeConstIterator& safeBegin() const { return _begin; }
     SafeConstIterator safeEnd() const { return _end ? *_end : _begin.end(); }
-
-    void* chain() const { return _begin.chain(); }
 
     /** State for block-wise iteration of a stream instance. */
     struct Block {
