@@ -76,6 +76,43 @@ TEST_CASE("Constructors") {
     CHECK_EQ(Stream("abc"_b), Stream("abc"_b));
     CHECK_NE(Stream("abc"_b), Stream("def"_b));
     CHECK_NE(Stream("abc"_b), Stream(""_b));
+
+    CHECK_EQ(Stream(std::vector<Byte>({'1', '2', '3'})), Stream("123"_b));
+
+    {
+        auto xs = "123"_b;
+        const auto s = Stream(xs.data(), xs.size());
+        CHECK_EQ(s, Stream("123"_b));
+        // Underlying data is copied.
+        xs = "456"_b;
+        CHECK_EQ(s, Stream("123"_b));
+    }
+
+    {
+        auto s = Stream("123"_b);
+        CHECK_EQ(Stream(std::move(s)), Stream("123"_b));
+    }
+
+    {
+        const auto SmallBufferSize = stream::detail::Chunk::SmallBufferSize;
+
+        auto d1 = std::string(1, '\x01');
+        REQUIRE_LT(d1.size(), SmallBufferSize);
+        CHECK_EQ(Stream(d1.c_str()).data(), d1);
+
+        auto d2 = std::string(SmallBufferSize + 10, '\x01');
+        CHECK_EQ(Stream(d2.c_str()).data(), d2);
+    }
+
+    { // Self-assignment is a no-op.
+        auto s = Stream("123"_b);
+
+        *&s = s; // Assign through a pointer to not trigger compiler warnings about self-assignments.
+        CHECK_EQ(s, Stream("123"_b));
+
+        *&s = std::move(s); // Assign through a pointer to not trigger compiler warnings about self-assignments.
+        CHECK_EQ(s, Stream("123"_b));
+    }
 }
 
 TEST_CASE("Growing") {

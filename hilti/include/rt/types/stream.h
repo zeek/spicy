@@ -770,7 +770,7 @@ public:
     /** Creates an instance from a bytes instance. */
     explicit Stream(const Bytes& d);
 
-    /** Creates an instance for C-style ASCIIZ string, not including the final null byte. The data will be copied. */
+    /** Creates an instance for C-style ASCII string, not including the final null byte. The data will be copied. */
     explicit Stream(const char* d) : Stream(chunkFromArray(0, d, strlen(d))) {}
 
     /** Creates an instance from an existing memory block. The data will be copied. */
