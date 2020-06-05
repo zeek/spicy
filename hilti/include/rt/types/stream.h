@@ -904,11 +904,6 @@ private:
 
     Chunk* tail() { return _content->tail.get(); }
 
-    int compare(const Stream& other) const { return compare(begin(), end(), other.begin(), other.end()); }
-
-    static int compare(UnsafeConstIterator s1, const UnsafeConstIterator& e1, UnsafeConstIterator s2,
-                       const UnsafeConstIterator& e2);
-
     template<int N>
     inline Chunk chunkFromArray(Offset o, std::array<Byte, N> d) {
         if constexpr ( N <= Chunk::SmallBufferSize )

@@ -308,22 +308,6 @@ void Stream::unfreeze() {
         c->unfreeze();
 }
 
-int Stream::compare(UnsafeConstIterator s1, const UnsafeConstIterator& e1, UnsafeConstIterator s2,
-                    const UnsafeConstIterator& e2) {
-    while ( s1 != e1 && s2 != e2 ) {
-        if ( auto c = (*s1++ - *s2++); c != 0 )
-            return c;
-    }
-
-    if ( s1 != e1 )
-        return 1;
-
-    if ( s2 != e2 )
-        return -1;
-
-    return 0;
-}
-
 Stream::Content Stream::deepCopyContent() const {
     std::shared_ptr<Chunk> head;
     std::shared_ptr<Chunk> tail;
