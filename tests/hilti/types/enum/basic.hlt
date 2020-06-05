@@ -38,4 +38,22 @@ assert X::A1;
 assert !X::Undef;
 assert x && X::A1 ;
 
+# Passing back from function
+function vector<X> x1() {
+    return [];
+}
+
+function vector<X> x2() {
+    return vector<X>();
+}
+
+function vector<X> x3() {
+    return [X::A1, X::A2];
+}
+
+
+hilti::print(x1());
+hilti::print(x2());
+hilti::print(x3());
+
 }

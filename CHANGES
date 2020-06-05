@@ -1,4 +1,15 @@
 
+0.4.0-411 | 2020-06-05 07:28:40 +0000
+
+  * GH-361: Fix construction of vectors with element types that
+    provide default values. (Robin Sommer, Corelight)
+
+  * GH-365: Zeek plugin: Catch if more parameters are given in an EVT
+    spec than Zeek expects. (Robin Sommer, Corelight)
+
+  * Remove branch name from Cirrus CI emails due to API limitations.
+    (Benjamin Bannier, Corelight)
+
 0.4.0-406 | 2020-06-04 09:14:27 +0000
 
   * GH-354: No longer allow dashes inside identifiers. (Robin Sommer, Corelight)
