@@ -49,7 +49,7 @@ address6  ("["({hexs}:){7}{hexs}"]")|("["0x{hexs}({hexs}|:)*"::"({hexs}|:)*"]")|
 
 attribute \&[a-zA-Z_][a-zA-Z_0-9-]*
 blank     [ \t]
-comment   [ \t]*#[^\n]*\n
+comment   [ \t]*#[^\n]*\n?
 digit     [0-9]
 digits    {digit}+
 hexit     [0-9a-fA-F]
