@@ -56,9 +56,8 @@ static std::string renderOperator(operator_::Kind kind, const std::vector<std::s
         case operator_::Kind::TryMember: return fmt("%s.?%s", ops[0], ops[1]);
         case operator_::Kind::Unequal: return fmt("%s != %s", ops[0], ops[1]);
         case operator_::Kind::Unpack: return fmt("unpack<%s>(%s)", ops[0], ops[1]);
-
         case operator_::Kind::Unknown: logger().internalError("\"unknown\" operator");
-        default: util::cannot_be_reached();
+        case operator_::Kind::Unset: return fmt("unset %s", ops[0]);
     }
 }
 
