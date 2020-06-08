@@ -436,9 +436,18 @@ std::string cxx::type::Struct::inlineCode() const {
 
     std::string inline_code;
 
-    // Create default constructor.
-    inline_code += fmt("inline %s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_user(),
-                       init_locals_non_user());
+    // Create default constructor. This initializes user-controlled members
+    // only if there are no struct parameters. If there are, we wouldn't have
+    // access to them here yet and hence some init expressions might not
+    // evaluate. However, in that case we will run through the
+    // parameter-based constructors normally anyways, so don't need this
+    // here.
+    if ( args.size() )
+        inline_code +=
+            fmt("inline %s::%s() {\n%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_non_user());
+    else
+        inline_code += fmt("inline %s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(),
+                           init_locals_user(), init_locals_non_user());
 
     if ( args.size() ) {
         // Create constructor taking the struct's parameters.
@@ -452,7 +461,7 @@ std::string cxx::type::Struct::inlineCode() const {
     }
 
     if ( locals_user.size() ) {
-        // Create constructor taking the struct's (non-function) fields..
+        // Create constructor taking the struct's (non-function) fields.
         auto ctor_args = util::join(util::transform(locals_user,
                                                     [&](auto x) {
                                                         auto& l = std::get<declaration::Local>(x);

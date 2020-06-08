@@ -133,9 +133,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         if ( auto p = n.declaration().tryAs<declaration::Parameter>(); p && p->isStructParameter() ) {
             // Need to adjust here for potential automatic change to a weak reference.
             if ( type::isReferenceType(p->type()) )
-                return cxx::Expression(fmt("__self->__p_%s.derefAsValue()", p->id()));
+                return cxx::Expression(fmt("%s->__p_%s.derefAsValue()", cg->self(), p->id()));
             else
-                return cxx::Expression(fmt("__self->__p_%s", p->id()));
+                return cxx::Expression(fmt("%s->__p_%s", cg->self(), p->id()));
         }
 
         return cxx::ID(n.id());

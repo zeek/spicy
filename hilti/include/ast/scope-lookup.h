@@ -5,7 +5,7 @@
 #pragma once
 
 #include <optional>
-#include <string>
+#include <utility>
 
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/id.h>
@@ -18,7 +18,7 @@ namespace hilti::scope {
 
 namespace detail {
 /** Internal backend to `hilti::lookupID()`. */
-extern std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, const Node& n);
+std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, const Node& n);
 } // namespace detail
 
 /**
@@ -34,7 +34,7 @@ extern std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, co
  */
 template<typename D>
 Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<Node&>& p) {
-    for ( auto i = p.path.rbegin(); i != p.path.rend(); i++ ) {
+    for ( auto i = p.path.rbegin(); i != p.path.rend(); ++i ) {
         auto [stop, resolved] = detail::lookupID(id, **i);
 
         if ( resolved ) {
@@ -61,7 +61,9 @@ Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<No
         // in remainder of the path except for the top-level module, to which
         // we then jump directly. One exception: If the type is part of a
         // type declaration, we need to check the declaration's scope still
-        // as well.
+        // as well; that's the "if" clause below allowing to go one further
+        // step up, and the "else" clause then stopping during the next
+        // round.
         bool skip_to_module = false;
 
         if ( auto t = (*i)->tryAs<Type>(); t && t->hasFlag(type::Flag::NoInheritScope) ) {
@@ -71,7 +73,6 @@ Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<No
 
             skip_to_module = true;
         }
-
         else if ( auto t = (*i)->tryAs<declaration::Type>(); t && t->type().hasFlag(type::Flag::NoInheritScope) )
             skip_to_module = true;
 

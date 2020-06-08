@@ -319,13 +319,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
         if ( n.linkage() == declaration::Linkage::Struct && ! f.isStatic() ) {
             if ( ! is_hook ) {
-                // TODO(robin): This should compile the struct type, not
-                // hardcode the runtime representation. However, we do not
-                // have access to the type currently.
-                auto self =
-                    cxx::declaration::Local{.id = "__self",
-                                            .type = "auto",
-                                            .init = fmt("hilti::rt::ValueReference<%s>::self(this)", id_struct_type)};
+                // Need a LHS value for __self.
+                auto self = cxx::declaration::Local{.id = "__self",
+                                                    .type = "auto",
+                                                    .init = fmt("%s::__self()", id_struct_type)};
                 body.addStatementAtFront(std::move(self));
             }
 

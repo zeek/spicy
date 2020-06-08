@@ -1,7 +1,5 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <utility>
-
 #include <hilti/ast/ctors/enum.h>
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/module.h>
