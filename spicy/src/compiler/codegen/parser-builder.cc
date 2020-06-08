@@ -116,8 +116,7 @@ struct ProductionVisitor
         std::optional<Expression> container_element;
 
         if ( const auto& c = meta.container(); c && ! forwarding ) {
-            auto etype =
-                type::Computed(builder::memberCall(builder::member(builder::id("self"), c->id()), "front", {}), false);
+            auto etype = type::unit::item::Field::vectorElementTypeThroughSelf(c->id());
             container_element = builder()->addTmp("elem", etype);
             pushDestination(container_element);
         }
@@ -422,7 +421,7 @@ struct ProductionVisitor
                 else if ( AttributeSet::find(field->attributes(), "&convert") ) {
                     // Need a temporary for the parsed field.
                     auto dst = builder()->addTmp(fmt("parsed_%s", field->id()), field->parseType());
-                    pushDestination(dst);
+                    pushDestination(builder::type_wrapped(dst, field->parseType(), field->meta()));
                 }
                 else if ( field->isTransient() ) {
                     // Won't have the field in the emitted C++ code, so we need a temporary.

@@ -128,7 +128,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         if ( auto c = n.ctor() ) {
             prod = productionForCtor(*c, n.id());
 
-            if ( n.itemType().isA<type::Vector>() || n.itemType().isA<type::List>() )
+            if ( n.parseType().isA<type::Vector>() || n.parseType().isA<type::List>() )
                 prod = productionForLoop(prod, p);
         }
         else if ( n.vectorItem() ) {

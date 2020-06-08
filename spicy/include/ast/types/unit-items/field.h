@@ -81,7 +81,7 @@ public:
     auto hooks() const { return childs<Hook>(_sinks_end, -1); }
     Engine engine() const { return _engine; }
 
-    auto isContainer() const { return parseType().isA<type::Vector>(); }
+    bool isContainer() const { return repeatCount().has_value(); }
     auto isTransient() const { return _is_anonynmous; }
 
     Type parseType() const;
@@ -102,6 +102,21 @@ public:
 
     // Node interface.
     auto properties() const { return node::Properties{{"engine", to_string(_engine)}}; }
+
+    // Helper function for vector fields that returns the type of the
+    // vector's elements. The helper can be used in situations where the
+    // field type might not be fully resolved. It computes the type
+    // indirectly and dynamically: It looks up the struct that `self` is
+    // currently pointing to, and then extracts the auxiliary type from the
+    // struct's field named *id*. That type must be a vector, from which it
+    // then retrieves the element type.
+    //
+    // This is rather specialized of course, but necessary in some contexts.
+    // Note that it can only be used (1) at code locations where ``self``
+    // evaluates to the desired struct, and (2) the field's auxiliary type
+    // has been set to a vector type (as we do for structs corresponding to
+    // units, where the auxiliary type is the parse type of the field).
+    static Type vectorElementTypeThroughSelf(ID id);
 
 private:
     Type _originalType() const { return child<Type>(1); }

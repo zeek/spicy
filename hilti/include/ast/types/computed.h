@@ -36,6 +36,8 @@ public:
     Computed(NodeRef r, Callback cb, Meta m = Meta())
         : TypeBase(nodes(node::none), std::move(m)), _node(std::move(std::move(r))), _callback(std::move(cb)) {}
     Computed(Expression e, Meta m = Meta()) : TypeBase(nodes(std::move(e)), std::move(m)) {}
+    Computed(Expression e, Callback cb, Meta m = Meta())
+        : TypeBase(nodes(std::move(e)), std::move(m)), _node(NodeRef(childs()[0])), _callback(std::move(cb)) {}
     Computed(Expression e, bool change_constness_to, Meta m = Meta())
         : TypeBase(nodes(std::move(e)), std::move(m)), _change_constness_to(change_constness_to) {}
     Computed(Type t, Meta m = Meta()) : TypeBase(nodes(std::move(t)), std::move(m)) {}

@@ -1,4 +1,11 @@
 
+0.4.0-415 | 2020-06-08 08:28:19 +0000
+
+  * GH-368: Fix &convert for vectors of enums. (Robin Sommer, Corelight)
+
+  * Add missing HILTI printer code for "unset" operator. (Robin
+    Sommer, Corelight)
+
 0.4.0-411 | 2020-06-05 07:28:40 +0000
 
   * GH-361: Fix construction of vectors with element types that

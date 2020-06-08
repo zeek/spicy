@@ -11,7 +11,7 @@ NodeRef::NodeRef(Node& n) : _control(n._control()) {}
 
 Node* NodeRef::_node() const {
     if ( ! _control )
-        throw node_ref::Invalid("accesd to uninitalized node reference");
+        throw node_ref::Invalid("access to uninitialized node reference");
 
     if ( ! _control->_node )
         throw node_ref::Invalid("dangling node reference");

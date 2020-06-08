@@ -19,17 +19,32 @@ namespace struct_ {
 /** AST node for a struct field. */
 class Field : public NodeBase {
 public:
-    Field() : NodeBase({ID("<no id>"), type::unknown, node::none}, Meta()) {}
+    Field() : NodeBase({ID("<no id>"), type::unknown, node::none, node::none}, Meta()) {}
     Field(ID id, Type t, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(t), std::move(attrs)), std::move(m)) {}
+        : NodeBase(nodes(std::move(id), std::move(t), node::none, std::move(attrs)), std::move(m)) {}
+    Field(ID id, Type t, Type aux_type, std::optional<AttributeSet> attrs, Meta m = Meta())
+        : NodeBase(nodes(std::move(id), std::move(t), std::move(aux_type), std::move(attrs)), std::move(m)) {}
     Field(ID id, ::hilti::function::CallingConvention cc, type::Function ft, std::optional<AttributeSet> attrs = {},
           Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(ft), std::move(attrs)), std::move(m)), _cc(cc) {}
+        : NodeBase(nodes(std::move(id), std::move(ft), node::none, std::move(attrs)), std::move(m)), _cc(cc) {}
 
     auto id() const { return child<ID>(0); }
     auto type() const { return type::effectiveType(child<Type>(1)); }
     auto callingConvention() const { return _cc; }
-    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
+    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
+
+    /**
+     * Returns the auxiliary type as passed into the corresponding
+     * constructor, if any. The auxiliary type isn't used for anything by
+     * HILTI itself, but it's as a node in aside the AST for use by external
+     * code.
+     */
+    std::optional<Type> auxType() const {
+        if ( auto t = childs()[2].tryAs<Type>() )
+            return type::effectiveType(*t);
+        else
+            return {};
+    }
 
     std::optional<Expression> default_() const {
         if ( auto a = AttributeSet::find(attributes(), "&default") )
@@ -38,10 +53,7 @@ public:
         return {};
     }
 
-    auto isInternal() const {
-        return AttributeSet::find(attributes(), "&internal");
-        ;
-    }
+    auto isInternal() const { return AttributeSet::find(attributes(), "&internal"); }
     auto isOptional() const { return AttributeSet::find(attributes(), "&optional"); }
     auto isStatic() const { return AttributeSet::find(attributes(), "&static"); }
     auto isNoEmit() const { return AttributeSet::find(attributes(), "&no-emit"); }
@@ -50,11 +62,7 @@ public:
     auto& _typeNode() { return childs()[1]; }
 
     /** Implements the `Node` interface. */
-    auto properties() const {
-        return node::Properties{
-            {"cc", to_string(_cc)},
-        };
-    }
+    auto properties() const { return node::Properties{{"cc", to_string(_cc)}}; }
 
     bool operator==(const Field& other) const {
         return id() == other.id() && type() == other.type() && attributes() == other.attributes() && _cc == other._cc;
@@ -69,13 +77,13 @@ public:
      */
     static Field setAttributes(const Field& f, const AttributeSet& attrs) {
         auto x = Field(f);
-        x.childs()[2] = attrs;
+        x.childs()[3] = attrs;
         return x;
     }
 
 private:
     ::hilti::function::CallingConvention _cc = ::hilti::function::CallingConvention::Standard;
-};
+}; // namespace struct_
 
 inline Node to_node(Field f) { return Node(std::move(f)); }
 

@@ -56,7 +56,7 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
                 Type tt = hilti::type::ResolvedID(*id, NodeRef(resolved->first), u.meta());
 
                 if ( t->type().isA<type::Unit>() || AttributeSet::has(t->attributes(), "&on-heap") )
-                    tt = hilti::type::ValueReference(tt);
+                    tt = hilti::type::ValueReference(tt, u.meta());
 
                 replaceNode(&p, resolveField(u, tt));
                 return;
@@ -118,10 +118,7 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
             if ( auto t = p.findParent<spicy::Hook>() ) {
                 // Inside a field's hook.
                 if ( t->get().isForEach() )
-                    dd = type::Computed(hilti::builder::memberCall(hilti::builder::member(hilti::builder::id("self"),
-                                                                                          f->get().id()),
-                                                                   "front", {}),
-                                        false);
+                    dd = type::unit::item::Field::vectorElementTypeThroughSelf(f->get().id());
                 else
                     dd = f->get().itemType();
             }
@@ -129,10 +126,7 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
             else if ( auto a = p.findParent<Attribute>() ) {
                 // Inside an attribute expression.
                 if ( a->get().tag() == "&until" || a->get().tag() == "&until-including" || a->get().tag() == "&while" )
-                    dd = type::Computed(hilti::builder::memberCall(hilti::builder::member(hilti::builder::id("self"),
-                                                                                          f->get().id()),
-                                                                   "front", {}),
-                                        false);
+                    dd = type::unit::item::Field::vectorElementTypeThroughSelf(f->get().id());
                 else {
                     dd = f->get().parseType();
 
