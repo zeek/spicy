@@ -56,6 +56,7 @@ set(SOURCES_COMPILER
     src/ast/node.cc
     src/ast/node_ref.cc
     src/ast/scope.cc
+    src/ast/scope-lookup.cc
     src/ast/type.cc
     src/ast/types/enum.cc
     src/ast/types/integer.cc

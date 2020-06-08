@@ -3,6 +3,7 @@
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/id.h>
 #include <hilti/ast/expressions/type.h>
+#include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/types/id.h>
 #include <hilti/compiler/detail/visitors.h>
 #include <hilti/compiler/unit.h>
@@ -36,7 +37,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     void operator()(const Module& m) { module_id = m.id(); }
 
     void operator()(const type::UnresolvedID& u, position_t p) {
-        auto resolved = lookupID<declaration::Type>(u.id(), p);
+        auto resolved = scope::lookupID<declaration::Type>(u.id(), p);
 
         if ( ! resolved ) {
             p.node.addError(resolved.error());
@@ -101,7 +102,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const expression::UnresolvedID& u, position_t p) {
-        auto resolved = lookupID<Declaration>(u.id(), p);
+        auto resolved = scope::lookupID<Declaration>(u.id(), p);
 
         if ( ! resolved ) {
             p.node.addError(resolved.error());
@@ -141,7 +142,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         // TODO(robin): Not quite sure in which cases this happen, ideally it
         // shouldn't be necessary to re-lookup an ID once it has been
         // resolved.
-        auto resolved = lookupID<Declaration>(u.id(), p);
+        auto resolved = scope::lookupID<Declaration>(u.id(), p);
 
         if ( ! resolved )
             return;
