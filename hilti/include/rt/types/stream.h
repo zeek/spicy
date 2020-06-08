@@ -513,7 +513,7 @@ namespace detail {
 template<int N>
 inline UnsafeConstIterator extract(Byte* dst, const UnsafeConstIterator& i, const SafeConstIterator& end) {
     if ( i == end )
-        throw WouldBlock("end of stream views");
+        throw WouldBlock("end of stream view");
 
     *dst = *i;
     return extract<N - 1>(dst + 1, i + 1, end);
