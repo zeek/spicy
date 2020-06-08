@@ -59,6 +59,8 @@ static std::string renderOperator(operator_::Kind kind, const std::vector<std::s
         case operator_::Kind::Unknown: logger().internalError("\"unknown\" operator");
         case operator_::Kind::Unset: return fmt("unset %s", ops[0]);
     }
+
+    util::cannot_be_reached();
 }
 
 static std::string renderExpressionType(const Expression& e) {
