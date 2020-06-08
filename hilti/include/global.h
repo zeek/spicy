@@ -84,35 +84,35 @@ Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<No
     while ( i != p.path.rend() ) {
         auto [stop, resolved] = detail::lookupID(id, **i);
 
-        if ( ! stop ) {
-            if ( auto t = (*i)->tryAs<Type>(); t && t->hasFlag(type::Flag::NoInheritScope) ) {
-                // Advance to module scope directly.
-                while ( ++i != p.path.rend() ) {
-                    if ( (*i)->isA<Module>() )
-                        break;
+        if ( resolved ) {
+            if ( auto d = (*resolved).first->tryAs<D>() ) {
+                if ( ! resolved->second.namespace_() ) {
+                    // If it's from module's scope, qualify the ID.
+                    if ( auto m = (*i)->tryAs<Module>() )
+                        return std::make_pair(resolved->first, ID(m->id(), resolved->second));
                 }
+
+                else
+                    return std::move(resolved);
             }
             else
-                ++i;
-
-            continue;
+                return result::Error(util::fmt("ID '%s' does not resolve to a %s (but to %s)", id, typeid(D).name(),
+                                               (*resolved).first->as<Declaration>().displayName()));
         }
 
-        if ( ! resolved )
+        if ( stop )
+            // Pass back error.
             return std::move(resolved);
 
-        if ( auto d = (*resolved).first->tryAs<D>() ) {
-            if ( ! resolved->second.namespace_() ) {
-                // If it's from module's scope, qualify the ID.
-                if ( auto m = (*i)->tryAs<Module>() )
-                    return std::make_pair(resolved->first, ID(m->id(), resolved->second));
+        if ( auto t = (*i)->tryAs<Type>(); t && t->hasFlag(type::Flag::NoInheritScope) ) {
+            // Advance to module scope directly.
+            while ( ++i != p.path.rend() ) {
+                if ( (*i)->isA<Module>() )
+                    break;
             }
-
-            return std::move(resolved);
         }
-
-        return result::Error(util::fmt("ID '%s' does not resolve to a %s (but to %s)", id, typeid(D).name(),
-                                       (*resolved).first->as<Declaration>().displayName()));
+        else
+            ++i;
     }
 
     return result::Error(util::fmt("unknown ID '%s'", id));
