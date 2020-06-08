@@ -5,12 +5,14 @@
 
 awk -v "target=$1" -v "ns=$2" '
     # Collect comments.
-    /^##/    { if ( comment == "" )
+    /^##/    {
+              gsub("^## *", "", $0);
+
+              if ( comment == "" )
                   comment = $0;
               else
-                  comment "\n" $0;
+                  comment = comment "\n" $0;
 
-              gsub("^## *", "", comment);
               next;
             }
 
