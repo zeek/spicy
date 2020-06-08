@@ -150,7 +150,7 @@ gcc9_ubuntu_release_no_jit_task:
     docker_arguments:
       - zeek_packages: zeek-lts zeek-lts-core-dev
     cpu: 4
-    memory: 10G
+    memory: 12G
 
   timeout_in: 120m
 
