@@ -865,11 +865,14 @@ public:
         return stream::View(safeBegin(), safeEnd());
     }
 
-    stream::detail::UnsafeConstIterator begin() const { return {{}, head()->offset(), head()}; }
-    stream::detail::UnsafeConstIterator end() const {
+    stream::detail::UnsafeConstIterator unsafeBegin() const { return {{}, head()->offset(), head()}; }
+    stream::detail::UnsafeConstIterator unsafeEnd() const {
         auto t = tail();
         return {{}, t->offset() + t->size(), t};
     }
+
+    auto begin() const { return safeBegin(); }
+    auto end() const { return safeEnd(); }
 
     /** Returns a copy of the data the stream refers to. */
     std::string data() const;

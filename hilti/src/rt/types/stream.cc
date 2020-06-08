@@ -225,7 +225,7 @@ void Stream::appendContent(Content&& ocontent) {
     auto& ch = _content;
     auto& och = ocontent;
 
-    size_t offset = end().offset();
+    size_t offset = unsafeEnd().offset();
 
     for ( auto x = och->head; x; x = x->next() )
         x->setOffset(x->offset() + offset);
@@ -347,7 +347,7 @@ std::string Stream::data() const {
     std::string s;
     s.reserve(size());
 
-    for ( auto i = begin(); i != end(); ++i )
+    for ( auto i = unsafeBegin(); i != unsafeEnd(); ++i )
         s += static_cast<char>(*i);
 
     return s;
