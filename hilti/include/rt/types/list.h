@@ -256,7 +256,10 @@ hilti::rt::List<O> make(const C& input, std::function<O(I)> func, std::function<
 }
 
 /** Place-holder type for an empty list that doesn't have a known element type. */
-struct Empty {};
+struct Empty {
+    auto begin() const& { return this; }
+    auto end() const& { return this; }
+};
 
 template<typename T>
 inline bool operator==(const List<T>& v, const Empty& /*unused*/) {
