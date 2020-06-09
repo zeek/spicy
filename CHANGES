@@ -1,4 +1,12 @@
 
+0.4.0-424 | 2020-06-09 15:22:26 +0000
+
+  * GH-355: Allow access to unit parameters inside default expressions for unit
+    variables. (Robin Sommer, Corelight)
+
+  * GH-315: Fix autogen-spicy-lib to extract multi-line comments.
+    (Robin Sommer, Corelight)
+
 0.4.0-417 | 2020-06-08 10:26:32 +0000
 
   * Increase CI memory limit for GCC further. (Robin Sommer, Corelight)

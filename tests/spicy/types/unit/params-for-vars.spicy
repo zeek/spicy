@@ -1,0 +1,17 @@
+# @TEST-EXEC:  printf '\007' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Test;
+
+public type Foo = unit {
+  : Bar("bar", self);
+
+  var y: string = "foo";
+};
+
+type Bar = unit(bar: string, foo: Foo) {
+    i: int8;
+    var bar: string = bar;
+    var foo: string = foo.y;
+    on %done { print self; }
+};

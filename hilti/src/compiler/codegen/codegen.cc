@@ -6,6 +6,7 @@
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/module.h>
+#include <hilti/ast/scope-lookup.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
@@ -242,7 +243,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             d.linkage = "extern";
             d.id = id_hook_impl;
 
-            auto self = lookupID<declaration::Type>(id_struct_type, p);
+            auto self = scope::lookupID<declaration::Type>(id_struct_type, p);
             assert(self);
 
             // TODO(robin): This should compile the struct type, not hardcode
@@ -318,13 +319,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
         if ( n.linkage() == declaration::Linkage::Struct && ! f.isStatic() ) {
             if ( ! is_hook ) {
-                // TODO(robin): This should compile the struct type, not
-                // hardcode the runtime representation. However, we do not
-                // have access to the type currently.
-                auto self =
-                    cxx::declaration::Local{.id = "__self",
-                                            .type = "auto",
-                                            .init = fmt("hilti::rt::ValueReference<%s>::self(this)", id_struct_type)};
+                // Need a LHS value for __self.
+                auto self = cxx::declaration::Local{.id = "__self",
+                                                    .type = "auto",
+                                                    .init = fmt("%s::__self()", id_struct_type)};
                 body.addStatementAtFront(std::move(self));
             }
 

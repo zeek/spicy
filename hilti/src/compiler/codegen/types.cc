@@ -111,10 +111,11 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                             args.emplace_back("__self");
 
                             auto method_body = cxx::Block();
+
+                            // Need a LHS for __self.
                             auto self = cxx::declaration::Local{.id = "__self",
                                                                 .type = "auto",
-                                                                .init = fmt("hilti::rt::ValueReference<%s>::self(this)",
-                                                                            id_type)};
+                                                                .init = fmt("%s::__self()", id_type)};
                             method_body.addLocal(self);
                             method_body.addStatement(fmt("return %s(%s)", id_hook, util::join(args, ", ")));
 
@@ -158,10 +159,12 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
                     std::optional<cxx::Expression> default_;
                     if ( ! f.isOptional() ) {
+                        cg->pushSelf("__self()");
                         if ( auto x = f.default_() )
                             default_ = cg->compile(*x);
                         else
                             default_ = cg->typeDefaultValue(f.type());
+                        cg->popSelf();
                     }
 
                     auto x = cxx::declaration::Local{.id = cxx::ID(f.id()),
@@ -171,6 +174,17 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
                     fields.emplace_back(std::move(x));
                 }
+
+                cxx::Block self_body;
+                self_body.addStatement(util::fmt("return hilti::rt::ValueReference<%s>::self(this)", id));
+
+                auto self = cxx::declaration::Function{.result = "auto",
+                                                       .id = "__self",
+                                                       .args = {},
+                                                       .linkage = "inline",
+                                                       .inline_body = std::move(self_body)};
+
+                fields.emplace_back(std::move(self));
 
                 cg->disablePrioritizeTypes();
 

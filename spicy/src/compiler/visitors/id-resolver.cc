@@ -8,6 +8,7 @@
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/id.h>
 #include <hilti/ast/expressions/keyword.h>
+#include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/types/id.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/global.h>
@@ -41,7 +42,7 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
 
     void operator()(const type::unit::item::UnresolvedField& u, position_t p) {
         if ( auto id = u.unresolvedID() ) {
-            auto resolved = hilti::lookupID<hilti::Declaration>(*id, p);
+            auto resolved = hilti::scope::lookupID<hilti::Declaration>(*id, p);
 
             if ( ! resolved ) {
                 p.node.addError(resolved.error());
