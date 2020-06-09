@@ -37,7 +37,7 @@ void Driver::_debug_stats(const hilti::rt::ValueReference<hilti::rt::Stream>& da
         return fmt("%" PRIu64, n);
     };
 
-    auto data_begin = data->unsafeBegin().offset();
+    auto data_begin = data->begin().offset();
     auto data_end = data_begin + data->size();
     auto data_chunks = pretty_print(data->numberChunks());
     auto data_size_cur = pretty_print(data->size());
