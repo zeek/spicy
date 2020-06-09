@@ -45,7 +45,7 @@ Clang/LLVM), or ahead-of-time either by creating pre-compiled shared
 libraries or simply by giving you C++ code that you can link into your
 application.
 
-Spicy comes with a [Zeek](https://www.zeek.org>) plugin that enables
+Spicy comes with a [Zeek](https://www.zeek.org) plugin that enables
 adding new protocols to Zeek without having to write any C++ code. You
 define the grammar, specify which Zeek events to generate, and Spicy
 takes care of the rest.
