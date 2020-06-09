@@ -387,6 +387,9 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
             if ( f.isStatic() && f.default_() )
                 error("&default is currently not supported for static fields", p);
+
+            if ( auto d = f.default_(); d && d->type() != f.type() )
+                error(fmt("type mismatch for &default expression, expecting type %s", f.type()), p);
         }
 
         for ( const auto& param : n.parameters() ) {

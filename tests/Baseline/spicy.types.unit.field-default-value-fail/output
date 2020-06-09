@@ -1,2 +1,2 @@
-[error] /Users/bbannier/src/spicy/tests/.tmp/spicy.types.unit.field-default-value-fail/field-default-value-fail.spicy:7:12: %default requires an argument
+[error] /Users/robin/work/spicy/topic2/tests/.tmp/spicy.types.unit.field-default-value-fail/field-default-value-fail.spicy:7:12: &default requires an argument
 [error] spicyc: aborting after errors

@@ -1,0 +1,2 @@
+[error] /Users/robin/work/spicy/topic2/tests/.tmp/spicy.types.unit.field-default-value-fail-2/field-default-value-fail.spicy:2:12-6:3: type mismatch for &default expression, expecting type bytes
+[error] spicyc: aborting after errors
