@@ -155,8 +155,8 @@ template<typename T>
 class SafeRange {
 public:
     SafeRange(const T& t) : _t(t) {}
-    auto begin() const { return safe_begin(_t); }
-    auto end() const { return safe_end(_t); }
+    auto begin() const { return _t.begin(); }
+    auto end() const { return _t.end(); }
 
 private:
     const T& _t;
@@ -165,8 +165,8 @@ private:
 } // namespace detail::iterator
 
 /**
- * Wrapper around safe_begin/safe_end that returns an object suitable to
- * operate range-based for loop on to iterator over a sequence.
+ * Wrapper that returns an object suitable to operate
+ * range-based for loop on to iterator over a sequence.
  */
 template<typename T>
 auto safe_range(const T& t) {

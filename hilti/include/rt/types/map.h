@@ -395,27 +395,6 @@ template<typename K, typename V>
 inline std::string to_string(const map::detail::AssignProxy<K, V>& p, adl::tag /*unused*/) {
     return hilti::rt::to_string(V(p));
 }
-
-template<typename K, typename V>
-inline auto safe_begin(const Map<K, V>& x, adl::tag /*unused*/) {
-    return x.begin();
-}
-
-template<typename K, typename V>
-inline auto safe_begin(Map<K, V>& x, adl::tag /*unused*/) {
-    return x.begin();
-}
-
-template<typename K, typename V>
-inline auto safe_end(const Map<K, V>& x, adl::tag /*unused*/) {
-    return x.end();
-}
-
-template<typename K, typename V>
-inline auto safe_end(Map<K, V>& x, adl::tag /*unused*/) {
-    return x.end();
-}
-
 } // namespace detail::adl
 
 template<typename K, typename V>

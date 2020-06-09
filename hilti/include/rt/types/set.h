@@ -218,27 +218,6 @@ template<typename T>
 inline std::string to_string(const set::Iterator<T>& /*unused*/, adl::tag /*unused*/) {
     return "<set iterator>";
 }
-
-template<typename T>
-inline auto safe_begin(const Set<T>& x, adl::tag /*unused*/) {
-    return x.begin();
-}
-
-template<typename T>
-inline auto safe_begin(Set<T>& x, adl::tag /*unused*/) {
-    return x.begin();
-}
-
-template<typename T>
-inline auto safe_end(const Set<T>& x, adl::tag /*unused*/) {
-    return x.end();
-}
-
-template<typename T>
-inline auto safe_end(Set<T>& x, adl::tag /*unused*/) {
-    return x.end();
-}
-
 } // namespace detail::adl
 
 template<typename T>

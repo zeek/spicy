@@ -941,10 +941,6 @@ inline std::string detail::to_string_for_print<stream::View>(const stream::View&
 }
 
 namespace detail::adl {
-inline auto safe_begin(const Stream& x, adl::tag /*unused*/) { return x.safeBegin(); }
-inline auto safe_end(const Stream& x, adl::tag /*unused*/) { return x.safeEnd(); }
-inline auto safe_begin(const stream::View& x, adl::tag /*unused*/) { return x.safeBegin(); }
-inline auto safe_end(const stream::View& x, adl::tag /*unused*/) { return x.safeEnd(); }
 inline std::string to_string(const Stream& x, adl::tag /*unused*/) {
     return fmt("b\"%s\"", escapeBytes(x.data(), true));
 }

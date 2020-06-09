@@ -517,8 +517,6 @@ inline std::string detail::to_string_for_print<Bytes>(const Bytes& x) {
 }
 
 namespace detail::adl {
-inline auto safe_begin(const Bytes& x, adl::tag /*unused*/) { return x.begin(); }
-inline auto safe_end(const Bytes& x, adl::tag /*unused*/) { return x.end(); }
 inline std::string to_string(const Bytes& x, adl::tag /*unused*/) { return fmt("b\"%s\"", escapeBytes(x.str(), true)); }
 } // namespace detail::adl
 
