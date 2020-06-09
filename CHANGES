@@ -1,4 +1,11 @@
 
+0.4.0-426 | 2020-06-09 17:16:13 +0000
+
+  * Increase CI memory limit for Ubuntu Docker further. (Robin Sommer,
+    Corelight)
+
+  * GH-352: Fix Zeek link in README. (Robin Sommer, Corelight)
+
 0.4.0-424 | 2020-06-09 15:22:26 +0000
 
   * GH-355: Allow access to unit parameters inside default expressions for unit

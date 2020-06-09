@@ -231,7 +231,7 @@ docker_ubuntu_19_10_task:
   container:
     dockerfile: docker/Dockerfile.ubuntu-19.10
     cpu: 4
-    memory: 12G
+    memory: 16G
     docker_arguments:
       - SKIP_BUILD: 1
 
