@@ -681,12 +681,15 @@ public:
     /** Returns a copy of the data the view refers to. */
     std::string data() const;
 
-    detail::UnsafeConstIterator begin() const {
+    detail::UnsafeConstIterator unsafeBegin() const {
         _begin.check();
         return detail::UnsafeConstIterator(_begin);
     }
 
-    detail::UnsafeConstIterator end() const { return detail::UnsafeConstIterator(safeEnd()); }
+    detail::UnsafeConstIterator unsafeEnd() const { return detail::UnsafeConstIterator(safeEnd()); }
+
+    auto begin() const { return safeBegin(); }
+    auto end() const { return safeEnd(); }
 
     const SafeConstIterator& safeBegin() const { return _begin; }
     SafeConstIterator safeEnd() const { return _end ? *_end : _begin.end(); }

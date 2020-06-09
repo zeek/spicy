@@ -137,8 +137,8 @@ std::tuple<bool, SafeConstIterator> View::find(const Bytes& v, const SafeConstIt
 }
 
 bool View::startsWith(const Bytes& b) const {
-    auto s1 = begin();
-    auto e1 = end();
+    auto s1 = unsafeBegin();
+    auto e1 = unsafeEnd();
     auto s2 = b.begin();
     auto e2 = b.end();
 
@@ -151,15 +151,15 @@ bool View::startsWith(const Bytes& b) const {
 }
 
 void View::copyRaw(Byte* dst) const {
-    for ( auto i = begin(); i != end(); ++i )
+    for ( auto i = unsafeBegin(); i != unsafeEnd(); ++i )
         *dst++ = *i;
 }
 
 std::optional<View::Block> View::firstBlock() const {
-    if ( begin() == end() )
+    if ( unsafeBegin() == unsafeEnd() )
         return {};
 
-    auto chunk = begin().chunk();
+    auto chunk = unsafeBegin().chunk();
     bool is_last = chunk->isLast();
 
     if ( _end && _end->offset() <= chunk->offset() + chunk->size() )
@@ -183,14 +183,14 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
 
     bool is_last = false;
 
-    if ( end().offset() >= chunk_start_offset && end().offset() <= chunk_end_offset )
+    if ( unsafeEnd().offset() >= chunk_start_offset && unsafeEnd().offset() <= chunk_end_offset )
         is_last = true;
 
     if ( is_last ) {
         uint64_t size;
 
-        if ( end().offset() < chunk_end_offset )
-            size = (end().offset() - chunk_start_offset);
+        if ( unsafeEnd().offset() < chunk_end_offset )
+            size = (unsafeEnd().offset() - chunk_start_offset);
         else
             size = chunk->size();
 
@@ -357,7 +357,7 @@ std::string stream::View::data() const {
     std::string s;
     s.reserve(size());
 
-    for ( auto i = begin(); i != end(); ++i )
+    for ( auto i = unsafeBegin(); i != unsafeEnd(); ++i )
         s += static_cast<char>(*i);
 
     return s;
@@ -369,10 +369,10 @@ bool stream::View::operator==(const View& other) const {
     if ( size() != other.size() )
         return false;
 
-    auto i = begin();
-    auto j = other.begin();
+    auto i = unsafeBegin();
+    auto j = other.unsafeBegin();
 
-    while ( i != end() ) {
+    while ( i != unsafeEnd() ) {
         if ( *i++ != *j++ )
             return false;
     }
@@ -384,10 +384,10 @@ bool stream::View::operator==(const Bytes& other) const {
     if ( size() != other.size() )
         return false;
 
-    auto i = begin();
+    auto i = unsafeBegin();
     auto j = other.begin();
 
-    while ( i != end() ) {
+    while ( i != unsafeEnd() ) {
         if ( *i++ != *j++ )
             return false;
     }
