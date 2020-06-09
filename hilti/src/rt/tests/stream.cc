@@ -212,62 +212,99 @@ TEST_CASE("Growing") {
     CHECK_EQ(x.numberChunks(), 3);
 }
 
-TEST_CASE("Iterators") {
-    auto x = Stream("12345"_b);
+TEST_CASE("iteration") {
+    SUBCASE("sees data") {
+        // This test is value-parameterized over `x`.
+        Stream x;
 
-    std::string s;
-    for ( auto i : x )
-        s += i;
+        SUBCASE("single chunk") { x = make_stream({"12345"_b}); }
+        SUBCASE("multiple chunks") { x = make_stream({"12"_b, "34"_b, "5"_b}); }
 
-    CHECK_EQ(s, "12345");
+        std::string s;
+        for ( auto i : x )
+            s += i;
 
-    x = Stream("12345"_b);
-    x.append("1234567890"_b);
-    x.append("1234567890"_b);
-    x.append("1234567890"_b);
-    x.append("1234567890"_b);
+        CHECK_EQ(s, "12345");
+    }
 
-    s = "";
-    for ( auto i : x )
-        s += i;
+    SUBCASE("see data updates") {
+        auto x = Stream("12345"_b);
+        x.append("1234567890"_b);
+        x.append("1234567890"_b);
+        x.append("1234567890"_b);
+        x.append("1234567890"_b);
 
-    CHECK_EQ(s, "123451234567890123456789012345678901234567890");
+        std::string s;
+        for ( auto i : x )
+            s += i;
 
-    auto i = x.safeBegin();
-    i += 7;
-    CHECK_EQ(*i, '3');
-    i += 7;
-    CHECK_EQ(*i, '0');
-    i += 1;
-    CHECK_EQ(*i, '1');
+        CHECK_EQ(s, "123451234567890123456789012345678901234567890");
+    }
 
-    auto j = x.safeEnd();
-    CHECK_NE(j, i);
-    CHECK_EQ(j, x.safeEnd());
+    SUBCASE("equality") {
+        SUBCASE("unchanged stream") {
+            // This test is value-parameterized over `x`.
+            Stream x;
 
-    x.append("abc"_b);
-    CHECK_NE(j, x.safeEnd());
-    CHECK_EQ(*j, 'a');
+            SUBCASE("single chunk") { x = make_stream({"1234512345678901"_b}); }
+            SUBCASE("multiple chunks") {
+                x = make_stream({"12"_b, "34"_b, "51"_b, "23"_b, "45"_b, "67"_b, "89"_b, "01"_b});
+            }
 
-    ++j;
-    CHECK_NE(j, x.safeEnd());
-    ++j;
-    CHECK_NE(j, x.safeEnd());
-    ++j;
-    CHECK_EQ(j, x.safeEnd());
+            auto i = x.safeBegin();
+            i += 7;
+            CHECK_EQ(*i, '3');
+            i += 7;
+            CHECK_EQ(*i, '0');
+            i += 1;
+            CHECK_EQ(*i, '1');
+        }
 
-    j += 5;
-    CHECK_THROWS_AS(*j, InvalidIterator);
-    x.append("1234567890"_b);
-    CHECK_EQ(*j, '6');
+        SUBCASE("updated stream") {
+            // This test is value-parameterized over `x`.
+            Stream x;
 
-    x = Stream(""_b);
-    i = x.safeBegin();
-    CHECK_THROWS_AS(*i, InvalidIterator);
-    x.append("1"_b);
-    CHECK_EQ(*i, '1');
+            SUBCASE("single chunk") { x = make_stream({"123"_b}); }
+            SUBCASE("multiple chunks") { x = make_stream({"1"_b, "2"_b, "3"_b}); }
 
-    CHECK_THROWS_AS((void)(*j == '6'), InvalidIterator); // j now invalid.
+            const auto i = x.safeBegin();
+            auto j = x.end();
+            CHECK_NE(j, i);
+            CHECK_EQ(j, x.safeEnd());
+
+            x.append("abc"_b);
+            CHECK_NE(j, x.safeEnd());
+            CHECK_EQ(*j, 'a');
+
+            ++j;
+            CHECK_NE(j, x.safeEnd());
+            ++j;
+            CHECK_NE(j, x.safeEnd());
+            ++j;
+            CHECK_EQ(j, x.safeEnd());
+        }
+    }
+
+    SUBCASE("rangecheck") {
+        // This test is value-parameterized over `x`.
+        Stream x;
+
+        SUBCASE("single chunk") { x = make_stream({"123"_b}); }
+        SUBCASE("multiple chunks") { x = make_stream({"1"_b, "2"_b, "3"_b}); }
+
+        auto i = x.begin();
+
+        i += 3; // Points beyond the end of the available data.
+        CHECK_THROWS_AS(*i, InvalidIterator);
+
+        x.append("456"_b);
+        CHECK_EQ(*i, '4'); // Enough data available now.
+    }
+
+    SUBCASE("lifetime bound by underlying stream") {
+        auto j = Stream().begin();
+        CHECK_THROWS_AS((void)(*j == '6'), InvalidIterator); // j now invalid.
+    }
 }
 
 TEST_CASE("sub") {
