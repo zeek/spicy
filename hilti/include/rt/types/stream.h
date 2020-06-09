@@ -157,14 +157,6 @@ public:
     void debugPrint(std::ostream& out) const;
 
 private:
-    Byte* begin() {
-        if ( auto a = std::get_if<Array>(&_data) )
-            return a->second.data();
-
-        auto& v = std::get<Vector>(_data);
-        return v.data();
-    }
-
     // Note: We must not have a pointer to the parent stream instance in
     // chunks because the parent may be on the stack with a shorter life
     // time.
