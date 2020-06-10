@@ -501,6 +501,24 @@ TEST_CASE("iteration") {
 
         CHECK(it.isExpired());
     }
+
+    SUBCASE("dereference") {
+        CHECK_THROWS_WITH_AS(*stream::SafeConstIterator(), "not initialized", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*Stream().begin(), "offset outside of valid range (1)", const InvalidIterator&);
+
+        auto s = Stream("123");
+        REQUIRE_FALSE(s.isEmpty());
+
+        const auto begin = s.begin();
+        const auto end = s.end();
+        CHECK_EQ(*begin, '1');
+        CHECK_THROWS_WITH_AS(*end, "offset outside of valid range (1)", const InvalidIterator&);
+
+        s.trim(end);
+        REQUIRE(s.isEmpty());
+        CHECK_THROWS_WITH_AS(*begin, "invalidated iterator", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*end, "offset outside of valid range (1)", const InvalidIterator&);
+    }
 }
 
 TEST_CASE("sub") {
