@@ -422,6 +422,22 @@ TEST_CASE("iteration") {
         CHECK_EQ(past_end - middle, 4);
         CHECK_EQ(past_end - end, 2);
     }
+
+    SUBCASE("increment") {
+        // This test is value-parameterized over `s`.
+        Stream s;
+
+        SUBCASE("single chunk") { s = make_stream({"123"_b}); }
+        SUBCASE("multiple chunks") { s = make_stream({"1"_b, "2"_b, "3"_b}); }
+
+        auto it = s.begin();
+        REQUIRE_EQ(*it, '1');
+
+        CHECK_EQ(*(it++), '1');
+        CHECK_EQ(*it, '2');
+        CHECK_EQ(*(++it), '3');
+        CHECK_EQ(*it, '3');
+    }
 }
 
 TEST_CASE("sub") {
