@@ -30,6 +30,12 @@ TEST_CASE("size") {
     CHECK_EQ(make_stream({"12"_b, "3\x00"_b}).size(), 4u);
 }
 
+TEST_CASE("isEmpty") {
+    CHECK(Stream().isEmpty());
+    CHECK_FALSE(Stream("123"_b).isEmpty());
+    CHECK_FALSE(Stream("\x00"_b).isEmpty());
+}
+
 TEST_CASE("Constructors") {
     auto x = Stream("xyz"_b);
     CHECK_EQ(to_string(x), R"(b"xyz")");
