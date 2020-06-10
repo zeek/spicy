@@ -24,10 +24,13 @@ auto make_stream(std::initializer_list<Bytes> xs) {
     return s;
 }
 
+TEST_CASE("size") {
+    CHECK_EQ(make_stream({}).size(), 0u);
+    CHECK_EQ(make_stream({"123\x00"_b}).size(), 4u);
+    CHECK_EQ(make_stream({"12"_b, "3\x00"_b}).size(), 4u);
+}
+
 TEST_CASE("Constructors") {
-    auto b = "xyz"_b;
-    CHECK_GT(b.size(), 0);
-    CHECK_FALSE(b.isEmpty());
     auto x = Stream("xyz"_b);
     CHECK_EQ(to_string(x), R"(b"xyz")");
     CHECK_FALSE(x.isEmpty());
