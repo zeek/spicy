@@ -6,6 +6,7 @@
 #include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/operator.h>
+#include <hilti/ast/types/id.h>
 
 namespace hilti {
 
@@ -28,6 +29,21 @@ inline std::ostream& operator<<(std::ostream& out, ResolvedOperator i) { return 
 using ResolvedOperator = resolved_operator::detail::ResolvedOperator;
 using resolved_operator::detail::to_node;
 
+namespace detail {
+
+// Generally we want to compute the result type of operators dynamically
+// because updates to their child nodes may lead to changes. For unresolved
+// IDs, however, we need to store the type in the AST for it get to resolved.
+// This function implements that distinction.
+inline Type type_to_store(Type t) {
+    if ( t.isA<type::UnresolvedID>() )
+        return t;
+    else
+        return type::unknown;
+}
+
+} // namespace detail
+
 /**
  * Base class for an AST node for an expression representing a resolved operator usage.
  *
@@ -36,7 +52,7 @@ using resolved_operator::detail::to_node;
 class ResolvedOperatorBase : public NodeBase, public trait::isExpression, public trait::isResolvedOperator {
 public:
     ResolvedOperatorBase(const Operator& op, const std::vector<Expression>& operands, Meta meta = Meta())
-        : NodeBase(nodes(op.result(operands), operands), std::move(meta)), _operator(op) {}
+        : NodeBase(nodes(detail::type_to_store(op.result(operands)), operands), std::move(meta)), _operator(op) {}
 
     auto& operator_() const { return _operator; }
     auto kind() const { return _operator.kind(); }
@@ -47,8 +63,7 @@ public:
         if ( ! childs()[0].isA<type::Unknown>() )
             return child<Type>(0);
         else
-            // If the result couldn't be computed yet at instantiation time,
-            // try again.
+            // If the result wasn't stored at instantiation time, try again.
             return _operator.result(operands());
     }
 
