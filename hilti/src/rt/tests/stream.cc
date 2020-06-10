@@ -467,6 +467,27 @@ TEST_CASE("iteration") {
         CHECK(stream::SafeConstIterator().isUnset());
         CHECK_FALSE(Stream().begin().isUnset());
     }
+
+    SUBCASE("isEnd") {
+        CHECK(stream::SafeConstIterator().isEnd());
+        CHECK(Stream().begin().isEnd());
+        CHECK(Stream().end().isEnd());
+        CHECK_FALSE(Stream("123"_b).begin().isEnd());
+        CHECK(Stream("123"_b).end().isEnd());
+
+        {
+            auto s = Stream("123"_b);
+            auto it1 = s.end();
+            auto it2 = it1 + 1;
+            REQUIRE(it1.isEnd());
+            REQUIRE(it2.isEnd());
+
+            s.append("4"_b);
+
+            REQUIRE_FALSE(it1.isEnd());
+            REQUIRE(it2.isEnd());
+        }
+    }
 }
 
 TEST_CASE("sub") {
