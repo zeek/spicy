@@ -305,6 +305,78 @@ TEST_CASE("iteration") {
         auto j = Stream().begin();
         CHECK_THROWS_AS((void)(*j == '6'), InvalidIterator); // j now invalid.
     }
+
+    SUBCASE("invariant when data added") {
+        auto s = Stream("0123"_b);
+        auto i0 = s.begin();
+        auto i1 = i0 + 1;
+        REQUIRE_EQ(*i0, '0');
+        REQUIRE_EQ(*i1, '1');
+
+        s.append("456789"_b);
+
+        CHECK_EQ(*i0, '0');
+        CHECK_EQ(*i1, '1');
+    }
+
+    SUBCASE("difference") {
+        const auto [s, before_begin] = []() {
+            auto s = Stream(" 123"_b);
+            const auto before_begin = s.begin();
+
+            s.trim(before_begin + 1);
+            REQUIRE_EQ(s, "123"_b);
+
+            return std::make_tuple(std::move(s), before_begin);
+        }();
+
+        REQUIRE_FALSE(before_begin.isExpired());
+
+        const auto begin = s.begin();
+        const auto middle = begin + 1;
+        const auto end = s.end();
+        const auto past_end = end + 2;
+
+        CHECK_GT(begin, before_begin);
+        CHECK_LT(begin, middle);
+        CHECK_LT(begin, end);
+        CHECK_LT(begin, past_end);
+
+        CHECK_EQ(begin - before_begin, 1);
+        CHECK_EQ(begin - middle, -1);
+        CHECK_EQ(begin - end, -3);
+        CHECK_EQ(begin - past_end, -5);
+
+        CHECK_GT(middle, before_begin);
+        CHECK_GT(middle, begin);
+        CHECK_LT(middle, end);
+        CHECK_LT(middle, past_end);
+
+        CHECK_EQ(middle - before_begin, 2);
+        CHECK_EQ(middle - begin, 1);
+        CHECK_EQ(middle - end, -2);
+        CHECK_EQ(middle - past_end, -4);
+
+        CHECK_GT(end, before_begin);
+        CHECK_GT(end, begin);
+        CHECK_GT(end, middle);
+        CHECK_LT(end, past_end);
+
+        CHECK_EQ(end - before_begin, 4);
+        CHECK_EQ(end - begin, 3);
+        CHECK_EQ(end - middle, 2);
+        CHECK_EQ(end - past_end, -2);
+
+        CHECK_GT(past_end, before_begin);
+        CHECK_GT(past_end, begin);
+        CHECK_GT(past_end, middle);
+        CHECK_GT(past_end, end);
+
+        CHECK_EQ(past_end - before_begin, 6);
+        CHECK_EQ(past_end - begin, 5);
+        CHECK_EQ(past_end - middle, 4);
+        CHECK_EQ(past_end - end, 2);
+    }
 }
 
 TEST_CASE("sub") {
