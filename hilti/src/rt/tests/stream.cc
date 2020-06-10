@@ -488,6 +488,19 @@ TEST_CASE("iteration") {
             REQUIRE(it2.isEnd());
         }
     }
+
+    SUBCASE("isExpired") {
+        auto it = stream::SafeConstIterator();
+        CHECK_FALSE(stream::SafeConstIterator().isExpired());
+
+        {
+            auto s = Stream("123"_b);
+            it = s.begin();
+            CHECK_FALSE(it.isExpired());
+        }
+
+        CHECK(it.isExpired());
+    }
 }
 
 TEST_CASE("sub") {
