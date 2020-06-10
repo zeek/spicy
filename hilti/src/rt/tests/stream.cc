@@ -454,6 +454,14 @@ TEST_CASE("iteration") {
         CHECK_EQ(*(++it), '3');
         CHECK_EQ(*it, '3');
     }
+
+    SUBCASE("bool") {
+        CHECK_FALSE(stream::SafeConstIterator());
+        CHECK(Stream().begin());
+        CHECK(Stream().end());
+        CHECK(Stream("123"_b).begin());
+        CHECK(Stream("123"_b).end());
+    }
 }
 
 TEST_CASE("sub") {
