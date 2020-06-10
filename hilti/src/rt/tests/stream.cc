@@ -600,56 +600,6 @@ TEST_CASE("to_string") {
     CHECK_EQ(to_string(stream.safeBegin()), fmt("<offset=0 data=%s>", to_string(bytes)));
 }
 
-TEST_SUITE_END();
-
-TEST_SUITE_BEGIN("View");
-
-TEST_CASE("advance") {
-    auto input = "1234567890"_b;
-    auto stream = Stream(input);
-    auto view = stream.view();
-
-    REQUIRE_EQ(view.size(), input.size());
-
-    auto advance = 5;
-    view = view.advance(advance);
-
-    CHECK_EQ(view.size(), input.size() - advance);
-    CHECK(view.startsWith("67890"_b));
-}
-
-TEST_CASE("equal") {
-    const auto b1 = "123"_b;
-    const auto b2 = "abc"_b;
-    const auto b_ = ""_b;
-
-    const auto s1 = Stream(b1);
-    const auto s2 = Stream(b2);
-    const auto s_ = Stream(b_);
-
-    const auto v1 = s1.view();
-    const auto v2 = s2.view();
-    const auto v_ = s_.view();
-
-    SUBCASE("Bytes") {
-        CHECK_EQ(v1, b1);
-        CHECK_EQ(v_, b_);
-        CHECK_NE(v1, b2);
-    }
-
-    SUBCASE("Stream") {
-        CHECK_EQ(v1, s1);
-        CHECK_EQ(v_, s_);
-        CHECK_NE(v1, s2);
-    }
-
-    SUBCASE("View") {
-        CHECK_EQ(v1, v1);
-        CHECK_EQ(v_, v_);
-        CHECK_NE(v1, v2);
-    }
-}
-
 template<typename T, int N>
 std::vector<T> vec(T (&xs)[N]) {
     std::vector<T> ys;
@@ -657,81 +607,129 @@ std::vector<T> vec(T (&xs)[N]) {
     return ys;
 }
 
-TEST_CASE("extract") {
-    const auto s = Stream("1234567890"_b);
-    const auto v = s.view();
+TEST_CASE("View") {
+    SUBCASE("advance") {
+        auto input = "1234567890"_b;
+        auto stream = Stream(input);
+        auto view = stream.view();
 
-    SUBCASE("1") {
-        Byte dst[1] = {'0'};
-        CHECK_EQ(v.extract(dst), "234567890"_b);
-        CHECK_EQ(vec(dst), std::vector<Byte>({'1'}));
+        REQUIRE_EQ(view.size(), input.size());
+
+        auto advance = 5;
+        view = view.advance(advance);
+
+        CHECK_EQ(view.size(), input.size() - advance);
+        CHECK(view.startsWith("67890"_b));
     }
 
-    SUBCASE("3") {
-        Byte dst[3] = {'0'};
-        CHECK_EQ(v.extract(dst), "4567890"_b);
-        CHECK_EQ(vec(dst), std::vector<Byte>({'1', '2', '3'}));
+    SUBCASE("equal") {
+        const auto b1 = "123"_b;
+        const auto b2 = "abc"_b;
+        const auto b_ = ""_b;
+
+        const auto s1 = Stream(b1);
+        const auto s2 = Stream(b2);
+        const auto s_ = Stream(b_);
+
+        const auto v1 = s1.view();
+        const auto v2 = s2.view();
+        const auto v_ = s_.view();
+
+        SUBCASE("Bytes") {
+            CHECK_EQ(v1, b1);
+            CHECK_EQ(v_, b_);
+            CHECK_NE(v1, b2);
+        }
+
+        SUBCASE("Stream") {
+            CHECK_EQ(v1, s1);
+            CHECK_EQ(v_, s_);
+            CHECK_NE(v1, s2);
+        }
+
+        SUBCASE("View") {
+            CHECK_EQ(v1, v1);
+            CHECK_EQ(v_, v_);
+            CHECK_NE(v1, v2);
+        }
     }
 
-    SUBCASE("all") {
-        Byte dst[10] = {'0'};
-        CHECK_EQ(v.extract(dst), ""_b);
-        CHECK_EQ(vec(dst), std::vector<Byte>({'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}));
+    SUBCASE("extract") {
+        const auto s = Stream("1234567890"_b);
+        const auto v = s.view();
+
+        SUBCASE("1") {
+            Byte dst[1] = {'0'};
+            CHECK_EQ(v.extract(dst), "234567890"_b);
+            CHECK_EQ(vec(dst), std::vector<Byte>({'1'}));
+        }
+
+        SUBCASE("3") {
+            Byte dst[3] = {'0'};
+            CHECK_EQ(v.extract(dst), "4567890"_b);
+            CHECK_EQ(vec(dst), std::vector<Byte>({'1', '2', '3'}));
+        }
+
+        SUBCASE("all") {
+            Byte dst[10] = {'0'};
+            CHECK_EQ(v.extract(dst), ""_b);
+            CHECK_EQ(vec(dst), std::vector<Byte>({'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}));
+        }
+
+        SUBCASE("empty") {
+            Byte dst[1] = {'0'};
+            CHECK_THROWS_WITH_AS(Stream().view().extract(dst), "end of stream view", const WouldBlock&);
+        }
     }
 
-    SUBCASE("empty") {
-        Byte dst[1] = {'0'};
-        CHECK_THROWS_WITH_AS(Stream().view().extract(dst), "end of stream view", const WouldBlock&);
+    SUBCASE("sub") {
+        auto input = "1234567890"_b;
+        auto stream = Stream(input);
+        auto view = stream.view();
+
+        CHECK_EQ(view.sub(view.safeEnd()), view);
+        CHECK_EQ(view.sub(view.safeBegin() + view.size()), view);
+        CHECK_EQ(view.sub(view.safeBegin() + (view.size() - 1)), "123456789"_b);
+
+        view = view.limit(5);
+
+        CHECK_EQ(view.sub(view.safeEnd()), view);
+        CHECK_EQ(view.sub(view.safeBegin() + view.size()), view);
+        CHECK_EQ(view.sub(view.safeBegin() + (view.size() - 1)), "1234"_b);
     }
-}
 
-TEST_CASE("sub") {
-    auto input = "1234567890"_b;
-    auto stream = Stream(input);
-    auto view = stream.view();
+    SUBCASE("trimmed view can be appended") {
+        auto input = "1234567890"_b;
+        auto stream = Stream(input);
+        auto view = stream.view();
+        REQUIRE_EQ(view.size(), input.size());
 
-    CHECK_EQ(view.sub(view.safeEnd()), view);
-    CHECK_EQ(view.sub(view.safeBegin() + view.size()), view);
-    CHECK_EQ(view.sub(view.safeBegin() + (view.size() - 1)), "123456789"_b);
+        // Trimming removes specified amount of data.
+        auto trimmed = view.trim(view.safeBegin() + 3);
+        CHECK_EQ(trimmed.size(), input.size() - 3);
+        CHECK(trimmed.startsWith("4567890"_b));
 
-    view = view.limit(5);
+        // Trimmed view expands when data is added.
+        stream.append("123"_b);
+        CHECK_EQ(trimmed.size(), input.size() - 3 + 3);
+        CHECK(trimmed.startsWith("4567890123"));
+    }
 
-    CHECK_EQ(view.sub(view.safeEnd()), view);
-    CHECK_EQ(view.sub(view.safeBegin() + view.size()), view);
-    CHECK_EQ(view.sub(view.safeBegin() + (view.size() - 1)), "1234"_b);
-}
+    SUBCASE("trimmed view inherits limit") {
+        auto input = "1234567890"_b;
+        auto stream = Stream(input);
+        auto view = stream.view();
+        REQUIRE_EQ(view.size(), input.size());
 
-TEST_CASE("trimmed view can be appended") {
-    auto input = "1234567890"_b;
-    auto stream = Stream(input);
-    auto view = stream.view();
-    REQUIRE_EQ(view.size(), input.size());
+        auto limit = 5;
+        auto limited = view.limit(limit);
+        REQUIRE_EQ(limited.size(), limit);
 
-    // Trimming removes specified amount of data.
-    auto trimmed = view.trim(view.safeBegin() + 3);
-    CHECK_EQ(trimmed.size(), input.size() - 3);
-    CHECK(trimmed.startsWith("4567890"_b));
+        auto trim = 3;
+        auto trimmed = limited.trim(limited.safeBegin() + trim);
 
-    // Trimmed view expands when data is added.
-    stream.append("123"_b);
-    CHECK_EQ(trimmed.size(), input.size() - 3 + 3);
-    CHECK(trimmed.startsWith("4567890123"));
-}
-
-TEST_CASE("trimmed view inherits limit") {
-    auto input = "1234567890"_b;
-    auto stream = Stream(input);
-    auto view = stream.view();
-    REQUIRE_EQ(view.size(), input.size());
-
-    auto limit = 5;
-    auto limited = view.limit(limit);
-    REQUIRE_EQ(limited.size(), limit);
-
-    auto trim = 3;
-    auto trimmed = limited.trim(limited.safeBegin() + trim);
-
-    CHECK_EQ(trimmed.size(), limit - trim);
+        CHECK_EQ(trimmed.size(), limit - trim);
+    }
 }
 
 TEST_SUITE_END();
