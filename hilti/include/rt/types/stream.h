@@ -348,11 +348,20 @@ private:
 
     detail::Chunk* chunk() const {
         normalize();
-        return _chunk.lock().get();
+
+        if ( auto&& l = _chunk.lock() )
+            return l.get();
+        else
+            return nullptr;
     }
+
     detail::Chain* content() const {
         normalize();
-        return _content.lock().get();
+
+        if ( auto&& l = _content.lock() )
+            return l.get();
+        else
+            return nullptr;
     }
 
     void check() const {
