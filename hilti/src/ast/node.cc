@@ -65,6 +65,9 @@ std::string Node::render(bool include_location) const {
             s += util::fmt(" (cxx-id: %s)", *cppid);
     }
 
+    else if ( auto e = this->tryAs<Expression>() )
+        s += (e->isConstant() ? " (const)" : " (non-const)");
+
     // Format errors last on the line since they are not properly delimited.
     if ( hasErrors() )
         for ( auto&& e : errors() )
