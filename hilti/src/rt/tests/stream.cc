@@ -120,6 +120,43 @@ TEST_CASE("construct") {
 }
 
 TEST_CASE("assign") {
+    SUBCASE("from lvalue") {
+        auto x = Stream("123"_b);
+        auto y = Stream("abc"_b);
+        auto it = y.begin();
+        REQUIRE_NOTHROW(*it);
+
+        y = x;
+        CHECK_EQ(y, x);
+        CHECK_THROWS_WITH_AS(*it, "deleted stream object", const InvalidIterator&);
+    }
+
+    SUBCASE("multiple chunks") {
+        // This test is value-parameterized over these values.
+        Stream x;
+        Stream y;
+
+        SUBCASE("both chunked") {
+            x = make_stream({"12"_b, "34"_b});
+            y = make_stream({"ab"_b, "cd"_b});
+        }
+
+        SUBCASE("LHS chunked") {
+            x = make_stream({"1234"_b});
+            y = make_stream({"ab"_b, "cd"_b});
+        }
+
+        SUBCASE("RHS chunked") {
+            x = make_stream({"12"_b, "34"_b});
+            y = make_stream({"abcd"_b});
+        }
+
+        REQUIRE_EQ(y.data(), "abcd");
+
+        y = x;
+        CHECK_EQ(y.data(), "1234");
+    }
+
     SUBCASE("self-assign") { // Self-assignment is a no-op.
         auto s = Stream("123"_b);
 
