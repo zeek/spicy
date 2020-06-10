@@ -36,67 +36,64 @@ TEST_CASE("isEmpty") {
     CHECK_FALSE(Stream("\x00"_b).isEmpty());
 }
 
-TEST_CASE("Constructors") {
-    auto x = Stream("xyz"_b);
-    CHECK_EQ(to_string(x), R"(b"xyz")");
-    CHECK_FALSE(x.isEmpty());
-    CHECK_EQ(x.size().Ref(), 3);
-    CHECK_EQ(x.numberChunks(), 1);
+TEST_CASE("construct") {
+    SUBCASE("small") {
+        auto x = Stream("xyz"_b);
+        CHECK_EQ(to_string(x), R"(b"xyz")");
+        CHECK_FALSE(x.isEmpty());
+        CHECK_EQ(x.size().Ref(), 3);
+        CHECK_EQ(x.numberChunks(), 1);
+    }
 
-    auto y = Stream("123456789012345678901234567890123"_b); // Exceeds small buffer size.
-    CHECK_FALSE(y.isEmpty());
-    CHECK_EQ(y.size().Ref(), 33);
-    CHECK_EQ(y.numberChunks(), 1);
-    CHECK_EQ(to_string(y), R"(b"123456789012345678901234567890123")");
+    SUBCASE("big") {
+        auto y = Stream("123456789012345678901234567890123"_b); // Exceeds small buffer size.
+        CHECK_FALSE(y.isEmpty());
+        CHECK_EQ(y.size().Ref(), 33);
+        CHECK_EQ(y.numberChunks(), 1);
+        CHECK_EQ(to_string(y), R"(b"123456789012345678901234567890123")");
+    }
 
-    auto z = x;
-    x = Stream(""_b);
-    CHECK_EQ(to_string(z), R"(b"xyz")");
-    CHECK_EQ(to_string(x), R"(b"")");
-    CHECK_FALSE(z.isEmpty());
-    CHECK_EQ(z.size().Ref(), 3);
+    SUBCASE("empty") {
+        auto x = Stream(""_b);
+        CHECK_EQ(to_string(x), R"(b"")");
+        CHECK(x.isEmpty());
+        CHECK_EQ(x.size().Ref(), 0);
+    }
 
-    z = y;
-    y = Stream(""_b);
-    CHECK_EQ(to_string(z), R"(b"123456789012345678901234567890123")");
-    CHECK_EQ(to_string(y), R"(b"")");
-    CHECK_FALSE(z.isEmpty());
-    CHECK_EQ(z.size().Ref(), 33);
+    SUBCASE("from small") {
+        auto x = Stream("xyz"_b);
+        auto z = x;
+        CHECK_EQ(to_string(z), R"(b"xyz")");
+        CHECK_FALSE(z.isEmpty());
+        CHECK_EQ(z.size().Ref(), 3);
+    }
 
-    x = Stream("xyz"_b);
-    z = std::move(x);
-    CHECK_EQ(to_string(z), R"(b"xyz")");
-    CHECK_FALSE(z.isEmpty());
-    CHECK_EQ(z.size().Ref(), 3);
+    SUBCASE("from big") {
+        auto y = Stream("123456789012345678901234567890123"_b); // Exceeds small buffer size.
+        auto z = y;
+        CHECK_EQ(to_string(z), R"(b"123456789012345678901234567890123")");
+        CHECK_FALSE(z.isEmpty());
+        CHECK_EQ(z.size().Ref(), 33);
+    }
 
-    y = Stream("123456789012345678901234567890123"_b); // Exceeds small buffer size.
-    z = std::move(y);
-    CHECK_EQ(to_string(z), R"(b"123456789012345678901234567890123")");
-    CHECK_FALSE(z.isEmpty());
-    CHECK_EQ(z.size().Ref(), 33);
+    SUBCASE("from empty") {
+        auto m = Stream();
+        m = Stream(""_b);
+        CHECK_EQ(to_string(m), R"(b"")");
+        CHECK(m.isEmpty());
+        CHECK_EQ(m.size().Ref(), 0);
+    }
 
-    Stream m;
-    CHECK_EQ(to_string(m), R"(b"")");
-    CHECK(m.isEmpty());
-    CHECK_EQ(m.size().Ref(), 0);
-
-    m = Stream(""_b);
-    CHECK_EQ(to_string(m), R"(b"")");
-    CHECK(m.isEmpty());
-    CHECK_EQ(m.size().Ref(), 0);
-
-    x = Stream("foo"_b);
-    CHECK_FALSE(x.isFrozen());
-    x.freeze();
-    CHECK(x.isFrozen());
-
-    CHECK_EQ(Stream("abc"_b), Stream("abc"_b));
-    CHECK_NE(Stream("abc"_b), Stream("def"_b));
-    CHECK_NE(Stream("abc"_b), Stream(""_b));
+    SUBCASE("unfrozen") {
+        auto x = Stream("foo"_b);
+        CHECK_FALSE(x.isFrozen());
+        x.freeze();
+        CHECK(x.isFrozen());
+    }
 
     CHECK_EQ(Stream(std::vector<Byte>({'1', '2', '3'})), Stream("123"_b));
 
-    {
+    SUBCASE("from memory block") {
         auto xs = "123"_b;
         const auto s = Stream(xs.data(), xs.size());
         CHECK_EQ(s, Stream("123"_b));
@@ -105,12 +102,12 @@ TEST_CASE("Constructors") {
         CHECK_EQ(s, Stream("123"_b));
     }
 
-    {
+    SUBCASE("from rvalue") {
         auto s = Stream("123"_b);
         CHECK_EQ(Stream(std::move(s)), Stream("123"_b));
     }
 
-    {
+    SUBCASE("from string") {
         const auto SmallBufferSize = stream::detail::Chunk::SmallBufferSize;
 
         auto d1 = std::string(1, '\x01');
@@ -120,8 +117,10 @@ TEST_CASE("Constructors") {
         auto d2 = std::string(SmallBufferSize + 10, '\x01');
         CHECK_EQ(Stream(d2.c_str()).data(), d2);
     }
+}
 
-    { // Self-assignment is a no-op.
+TEST_CASE("assign") {
+    SUBCASE("self-assign") { // Self-assignment is a no-op.
         auto s = Stream("123"_b);
 
         *&s = s; // Assign through a pointer to not trigger compiler warnings about self-assignments.
