@@ -423,6 +423,22 @@ TEST_CASE("iteration") {
         CHECK_EQ(past_end - end, 2);
     }
 
+    SUBCASE("ordering") {
+        // This test is value-parameterized over `s`.
+        Stream s;
+
+        SUBCASE("single chunk") { s = make_stream({"123"_b}); }
+        SUBCASE("multiple chunks") { s = make_stream({"1"_b, "2"_b, "3"_b}); }
+
+        CHECK_LE(s.begin(), s.begin());
+        CHECK_LE(s.begin(), s.end());
+        CHECK_LT(s.begin(), s.end());
+
+        CHECK_GE(s.begin(), s.begin());
+        CHECK_GE(s.end(), s.begin());
+        CHECK_GT(s.end(), s.begin());
+    }
+
     SUBCASE("increment") {
         // This test is value-parameterized over `s`.
         Stream s;
