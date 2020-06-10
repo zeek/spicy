@@ -137,13 +137,11 @@ TEST_CASE("Stream") {
         CHECK_EQ(to_string(Stream("01234567890123456789"_b).safeBegin()), "<offset=0 data=b\"0123456789\"...>");
         CHECK_EQ(to_string(Stream("01234567890123456789"_b).safeEnd()), "<offset=20 data=b\"\">");
         CHECK_EQ(to_string(stream::SafeConstIterator()), "<uninitialized>");
-
-        // TODO(bbannier): This test cast currently segfaults. Reenable it once the underlying lifetime issue is fixed.
-        // CHECK_EQ(to_string([]() {
-        //              auto s = Stream();
-        //              return s.safeBegin();
-        //          }()),
-        //          "<expired>");
+        CHECK_EQ(to_string([]() {
+                     auto s = Stream();
+                     return s.safeBegin();
+                 }()),
+                 "<expired>");
     }
 }
 

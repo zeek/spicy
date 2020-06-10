@@ -202,7 +202,12 @@ public:
     Offset offset() const { return _offset; }
 
     /** Returns true if the stream instance that the iterator is bound to has been frozen.  */
-    bool isFrozen() const { return chunk()->isFrozen(); }
+    bool isFrozen() const {
+        if ( auto* c = chunk() )
+            return c->isFrozen();
+        else
+            return false;
+    }
 
     /**
      * Returns an iterator corresponding to the end position of the
@@ -215,14 +220,18 @@ public:
 
         if ( isEnd() )
             e = *this;
-        else if ( chunk()->isLast() )
-            e = {_content, chunk()->offset() + chunk()->size(), _chunk};
-        else {
-            auto l = chunk()->last();
-            assert(l);
-            assert(l->isLast());
-            e = {_content, l->offset() + l->size(), l};
+        else if ( auto* c = chunk() ) {
+            if ( c->isLast() )
+                e = {_content, c->offset() + c->size(), _chunk};
+            else {
+                auto l = c->last();
+                assert(l);
+                assert(l->isLast());
+                e = {_content, l->offset() + l->size(), l};
+            }
         }
+        else
+            cannot_be_reached();
 
         assert(e.isEnd());
         return e;
@@ -327,7 +336,7 @@ public:
         if ( isUnset() )
             return false;
 
-        if ( content()->head && _offset >= content()->head->offset() )
+        if ( auto* c = content(); c && c->head && _offset >= c->head->offset() )
             return false;
 
         return true;
@@ -400,7 +409,12 @@ private:
         normalize();
     }
 
-    Byte dereference() const { return chunk()->at(_offset); }
+    Byte dereference() const {
+        if ( auto* c = chunk() )
+            return c->at(_offset);
+
+        cannot_be_reached();
+    }
 
     std::weak_ptr<detail::Chain> _content;       // Parent stream object.
     Offset _offset = 0;                          // Offset inside parent stream object.
