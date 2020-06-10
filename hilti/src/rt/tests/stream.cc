@@ -462,6 +462,11 @@ TEST_CASE("iteration") {
         CHECK(Stream("123"_b).begin());
         CHECK(Stream("123"_b).end());
     }
+
+    SUBCASE("isUnset") {
+        CHECK(stream::SafeConstIterator().isUnset());
+        CHECK_FALSE(Stream().begin().isUnset());
+    }
 }
 
 TEST_CASE("sub") {
