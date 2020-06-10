@@ -211,50 +211,64 @@ TEST_CASE("equal") {
     }
 }
 
-TEST_CASE("Growing") {
-    // rvalue append
-    auto x = Stream("1234567890"_b);
-    CHECK_EQ(x.size().Ref(), 10);
-    CHECK_EQ(x.numberChunks(), 1);
+TEST_CASE("append") {
+    auto s = Stream("123"_b);
 
-    x.append(""_b);
-    CHECK_EQ(to_string(x), R"(b"1234567890")");
-    CHECK_EQ(x.size().Ref(), 10);
-    CHECK_EQ(x.numberChunks(), 1);
+    const auto empty = ""_b;
+    const auto xs = "456"_b;
 
-    x.append("1*3*5*7*9*"_b);
-    CHECK_EQ(to_string(x), R"(b"12345678901*3*5*7*9*")");
-    CHECK_EQ(x.size().Ref(), 20);
-    CHECK_EQ(x.numberChunks(), 2);
+    REQUIRE_EQ(s.size(), 3);
+    REQUIRE_EQ(s.numberChunks(), 1);
 
-    x.append("123456789012345"_b);
-    CHECK_EQ(to_string(x), R"(b"12345678901*3*5*7*9*123456789012345")");
-    CHECK_EQ(x.size().Ref(), 35);
-    CHECK_EQ(x.numberChunks(), 3);
+    SUBCASE("lvalue Bytes") {
+        s.append(empty);
+        CHECK_EQ(s, "123"_b);
+        CHECK_EQ(s.size(), 3);
+        CHECK_EQ(s.numberChunks(), 1);
 
-    // lvalue append
-    x = Stream("1234567890"_b);
-    CHECK_EQ(x.size().Ref(), 10);
-    CHECK_EQ(x.numberChunks(), 1);
+        s.append(xs);
+        CHECK_EQ(s, "123456"_b);
+        CHECK_EQ(s.size(), 6);
+        CHECK_EQ(s.numberChunks(), 2);
 
-    auto y1 = ""_b;
-    auto y2 = "1*3*5*7*9*"_b;
-    auto y3 = "123456789012345"_b;
+        s.freeze();
+        CHECK_NOTHROW(s.append(empty));
+        CHECK_THROWS_WITH_AS(s.append(xs), "stream object is frozen", const Frozen&);
+    }
 
-    x.append(y1);
-    CHECK_EQ(to_string(x), R"(b"1234567890")");
-    CHECK_EQ(x.size().Ref(), 10);
-    CHECK_EQ(x.numberChunks(), 1);
+    SUBCASE("rvalue Bytes") {
+        s.append(std::move(empty));
+        CHECK_EQ(s, "123"_b);
+        CHECK_EQ(s.size(), 3);
+        CHECK_EQ(s.numberChunks(), 1);
 
-    x.append(y2);
-    CHECK_EQ(to_string(x), R"(b"12345678901*3*5*7*9*")");
-    CHECK_EQ(x.size().Ref(), 20);
-    CHECK_EQ(x.numberChunks(), 2);
+        s.append(std::move(xs));
+        CHECK_EQ(s, "123456"_b);
+        CHECK_EQ(s.size(), 6);
+        CHECK_EQ(s.numberChunks(), 2);
 
-    x.append(y3);
-    CHECK_EQ(to_string(x), R"(b"12345678901*3*5*7*9*123456789012345")");
-    CHECK_EQ(x.size().Ref(), 35);
-    CHECK_EQ(x.numberChunks(), 3);
+        s.freeze();
+        CHECK_NOTHROW(s.append(""_b));
+        CHECK_THROWS_WITH_AS(s.append("456"_b), "stream object is frozen", const Frozen&);
+    }
+
+    SUBCASE("raw memory") {
+        const char* data = "456";
+
+        s.append(data, 0);
+        CHECK_EQ(s, "123"_b);
+        CHECK_EQ(s.size(), 3);
+        CHECK_EQ(s.numberChunks(), 1);
+
+        s.append(data, strlen(data));
+        CHECK_EQ(s, "123456"_b);
+        CHECK_EQ(s.size(), 6);
+        CHECK_EQ(s.numberChunks(), 2);
+
+        s.freeze();
+        CHECK_NOTHROW(s.append(data, 0));
+        CHECK_THROWS_WITH_AS(s.append(data, strlen(data)), "stream object is frozen", const Frozen&);
+    }
 }
 
 TEST_CASE("iteration") {
