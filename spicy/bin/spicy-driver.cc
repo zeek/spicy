@@ -88,7 +88,7 @@ void SpicyDriver::usage() {
            "\n"
            "Inputs can be "
         << exts
-        << ", .cc/.cxx, *.o.\n"
+        << ", .cc/.cxx, *.o, *.hlto.\n"
            "\n";
 }
 
