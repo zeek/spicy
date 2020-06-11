@@ -192,7 +192,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             cxx::Block b;
             b.setEnsureBracesforBlock();
             b.addTmp(cxx::declaration::Local{.id = "__seq", .type = "auto", .init = seq});
-            b.addForRange(true, id, fmt("hilti::rt::safe_range(__seq)"), body);
+            b.addForRange(true, id, fmt("hilti::rt::range(__seq)"), body);
             block->addBlock(std::move(b));
         }
     }
