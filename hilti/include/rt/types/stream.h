@@ -881,10 +881,10 @@ public:
     bool isFrozen() const { return _frozen; }
 
     /** Returns an iterator representing the first byte of the instance. */
-    stream::SafeConstIterator safeBegin() const { return {_content, _content->head->offset(), _content->head}; }
+    stream::SafeConstIterator begin() const { return {_content, _content->head->offset(), _content->head}; }
 
     /** Returns an iterator representing the end of the instance. */
-    stream::SafeConstIterator safeEnd() const {
+    stream::SafeConstIterator end() const {
         auto& t = _content->tail;
         return {_content, t->offset() + t->size(), t};
     }
@@ -892,7 +892,7 @@ public:
     /** Returns an iterator representing a specific offset.
      * @param offset offset to use for the created iterator
      */
-    stream::SafeConstIterator at(Offset offset) const { return safeBegin() + (offset - safeBegin().offset()); }
+    stream::SafeConstIterator at(Offset offset) const { return begin() + (offset - begin().offset()); }
 
     /**
      * Returns a view representing the entire instance.
@@ -902,9 +902,9 @@ public:
      */
     stream::View view(bool expanding = true) const {
         if ( expanding )
-            return stream::View(safeBegin());
+            return stream::View(begin());
 
-        return stream::View(safeBegin(), safeEnd());
+        return stream::View(begin(), end());
     }
 
     stream::detail::UnsafeConstIterator unsafeBegin() const { return {{}, head()->offset(), head()}; }
@@ -912,9 +912,6 @@ public:
         auto t = tail();
         return {{}, t->offset() + t->size(), t};
     }
-
-    auto begin() const { return safeBegin(); }
-    auto end() const { return safeEnd(); }
 
     /** Returns a copy of the data the stream refers to. */
     std::string data() const;

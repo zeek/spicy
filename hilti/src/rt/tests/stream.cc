@@ -310,7 +310,7 @@ TEST_CASE("iteration") {
                 x = make_stream({"12"_b, "34"_b, "51"_b, "23"_b, "45"_b, "67"_b, "89"_b, "01"_b});
             }
 
-            auto i = x.safeBegin();
+            auto i = x.begin();
             i += 7;
             CHECK_EQ(*i, '3');
             i += 7;
@@ -326,21 +326,21 @@ TEST_CASE("iteration") {
             SUBCASE("single chunk") { x = make_stream({"123"_b}); }
             SUBCASE("multiple chunks") { x = make_stream({"1"_b, "2"_b, "3"_b}); }
 
-            const auto i = x.safeBegin();
+            const auto i = x.begin();
             auto j = x.end();
             CHECK_NE(j, i);
-            CHECK_EQ(j, x.safeEnd());
+            CHECK_EQ(j, x.end());
 
             x.append("abc"_b);
-            CHECK_NE(j, x.safeEnd());
+            CHECK_NE(j, x.end());
             CHECK_EQ(*j, 'a');
 
             ++j;
-            CHECK_NE(j, x.safeEnd());
+            CHECK_NE(j, x.end());
             ++j;
-            CHECK_NE(j, x.safeEnd());
+            CHECK_NE(j, x.end());
             ++j;
-            CHECK_EQ(j, x.safeEnd());
+            CHECK_EQ(j, x.end());
         }
     }
 
@@ -543,15 +543,15 @@ TEST_CASE("sub") {
     x.append("1234567890"_b);
     x.append("1234567890"_b);
 
-    auto i = (x.safeBegin() + 5);
-    auto j = (x.safeBegin() + 15);
+    auto i = (x.begin() + 5);
+    auto j = (x.begin() + 15);
 
     CHECK_EQ(x.view().sub(i, j), "6789012345"_b);
 
     auto y = Stream("12345"_b);
-    CHECK_EQ(y.view().sub(y.safeBegin(), y.safeEnd()), "12345"_b);
-    CHECK_EQ(y.view().sub(y.safeBegin(), y.safeBegin()), ""_b);
-    CHECK_EQ(y.view().sub(y.safeEnd(), y.safeEnd()), ""_b);
+    CHECK_EQ(y.view().sub(y.begin(), y.end()), "12345"_b);
+    CHECK_EQ(y.view().sub(y.begin(), y.begin()), ""_b);
+    CHECK_EQ(y.view().sub(y.end(), y.end()), ""_b);
 
     auto f = [](const stream::View& v) { return v.sub(v.begin() + 15, v.begin() + 25); };
 
@@ -566,7 +566,7 @@ TEST_CASE("freezing") {
     x.append("123456789D"_b);
     x.append("E234567890"_b);
 
-    auto i = (x.safeBegin() + 25);
+    auto i = (x.begin() + 25);
     CHECK_FALSE(i.isFrozen());
     x.freeze();
     CHECK(i.isFrozen());
@@ -576,14 +576,14 @@ TEST_CASE("freezing") {
 
 TEST_CASE("convert view to stream") {
     auto x = Stream("12345"_b);
-    auto v = stream::View(x.safeBegin() + 1, x.safeBegin() + 3);
+    auto v = stream::View(x.begin() + 1, x.begin() + 3);
     CHECK(v == "23"_b);
     auto y = Stream(v);
     CHECK(y == "23"_b);
 
     x.append("ABCDEF"_b);
     x.append("GHJI"_b);
-    v = stream::View(x.safeBegin() + 1, x.safeBegin() + 12);
+    v = stream::View(x.begin() + 1, x.begin() + 12);
     CHECK_EQ(v, "2345ABCDEFG"_b);
     y = Stream(v);
     CHECK_EQ(y, "2345ABCDEFG"_b);
@@ -618,7 +618,7 @@ TEST_CASE("Trim") {
     x.trim(x.at(10));
     CHECK_EQ(x.size().Ref(), 62);
     x.trim(x.at(20));
-    CHECK_EQ(x.safeBegin().offset().Ref(), 20);
+    CHECK_EQ(x.begin().offset().Ref(), 20);
     CHECK_EQ(x.size().Ref(), 52);
     x.trim(x.at(32));
     CHECK_EQ(x.size().Ref(), 40);
@@ -627,7 +627,7 @@ TEST_CASE("Trim") {
     CHECK_EQ(x.size().Ref(), 22);
     CHECK_EQ(x.numberChunks(), 3);
     x.trim(x.at(65));
-    CHECK_EQ(x.safeBegin().offset().Ref(), 65);
+    CHECK_EQ(x.begin().offset().Ref(), 65);
     CHECK_EQ(x.size().Ref(), 7);
     CHECK_EQ(x, "4567890"_b);
     CHECK_EQ(x.numberChunks(), 1);
@@ -635,11 +635,11 @@ TEST_CASE("Trim") {
     CHECK_EQ(x.size().Ref(), 0);
     CHECK_EQ(x, ""_b);
     CHECK_EQ(x.numberChunks(), 1); // will stay the same
-    CHECK_EQ(x.safeBegin().offset().Ref(), 72);
+    CHECK_EQ(x.begin().offset().Ref(), 72);
 
     y.trim(y.at(100));
     CHECK_EQ(y.size().Ref(), 0);
-    CHECK_EQ(y.safeBegin().offset().Ref(), 100);
+    CHECK_EQ(y.begin().offset().Ref(), 100);
 
     auto z = Stream("12345"_b);
     z.trim(z.at(3));
@@ -652,8 +652,8 @@ TEST_CASE("Trim") {
 
 TEST_CASE("Trim with existing iterator and append") {
     auto x = Stream("01"_b);
-    auto i = x.safeBegin();
-    auto j = x.safeBegin();
+    auto i = x.begin();
+    auto j = x.begin();
 
     i += 3;
     x.append("2345"_b);
@@ -753,7 +753,7 @@ TEST_CASE("to_string") {
     const auto view = stream.view();
     REQUIRE_EQ(to_string(stream), to_string(bytes));
     REQUIRE_EQ(to_string(view), to_string(bytes));
-    CHECK_EQ(to_string(stream.safeBegin()), fmt("<offset=0 data=%s>", to_string(bytes)));
+    CHECK_EQ(to_string(stream.begin()), fmt("<offset=0 data=%s>", to_string(bytes)));
 }
 
 template<typename T, int N>

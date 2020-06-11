@@ -133,13 +133,13 @@ TEST_CASE("Stream") {
     CHECK_EQ(fmt("%s", Stream("Gänsefüßchen\x00\x01\x02"_b)), "G\\xc3\\xa4nsef\\xc3\\xbc\\xc3\\x9fchen\\x00\\x01\\x02");
 
     SUBCASE("iterator") {
-        CHECK_EQ(to_string(Stream("0123456789"_b).safeBegin()), "<offset=0 data=b\"0123456789\">");
-        CHECK_EQ(to_string(Stream("01234567890123456789"_b).safeBegin()), "<offset=0 data=b\"0123456789\"...>");
-        CHECK_EQ(to_string(Stream("01234567890123456789"_b).safeEnd()), "<offset=20 data=b\"\">");
+        CHECK_EQ(to_string(Stream("0123456789"_b).begin()), "<offset=0 data=b\"0123456789\">");
+        CHECK_EQ(to_string(Stream("01234567890123456789"_b).begin()), "<offset=0 data=b\"0123456789\"...>");
+        CHECK_EQ(to_string(Stream("01234567890123456789"_b).end()), "<offset=20 data=b\"\">");
         CHECK_EQ(to_string(stream::SafeConstIterator()), "<uninitialized>");
         CHECK_EQ(to_string([]() {
                      auto s = Stream();
-                     return s.safeBegin();
+                     return s.begin();
                  }()),
                  "<expired>");
     }
