@@ -53,11 +53,11 @@ else ()
     set(ZEEK_DEBUG_BUILD_CXX "false")
 endif ()
 
-target_include_directories(${_plugin_lib} PRIVATE include)
+target_include_directories(${_plugin_lib} BEFORE PRIVATE include)
 
 # Without JIT support, we won't have the "compiler/" include directory available
 # through the "zeek-compiler" target, so add it no matter what.
-target_include_directories(${_plugin_lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_include_directories(${_plugin_lib} BEFORE PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 # For JIT support.
 target_link_libraries(${_plugin_lib} $<$<BOOL:${ZEEK_HAVE_JIT}>:zeek-compiler>)

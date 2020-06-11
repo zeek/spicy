@@ -170,7 +170,7 @@ if ( CLANG_JIT_FOUND )
     message(STATUS "Linking against clang libraries '${clang_libs}'")
 
     add_library(clang-jit INTERFACE)
-    target_include_directories(clang-jit INTERFACE ${LLVM_INCLUDE_DIRS})
+    target_include_directories(clang-jit BEFORE INTERFACE ${LLVM_INCLUDE_DIRS})
     target_compile_definitions(clang-jit INTERFACE ${LLVM_DEFINITIONS})
     target_link_options(clang-jit INTERFACE "LINKER:-rpath;${LLVM_LIBRARY_DIR}")
     target_link_libraries(clang-jit INTERFACE ${llvm_libs} ${clang_libs})
