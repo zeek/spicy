@@ -162,7 +162,10 @@ struct VisitorPass1 : public visitor::PostOrder<void, VisitorPass1> {
             if ( lc.input().type().template isA<type::Unknown>() )
                 return lc.input().type();
 
-            return lc.input().type().iteratorType(true).dereferencedType();
+            if ( auto t = lc.input().type(); type::isIterable(t) )
+                return t.iteratorType(true).dereferencedType();
+            else
+                return type::unknown;
         });
 
         auto d = declaration::LocalVariable(e.id(), wrapper, {}, true, e.id().meta());
@@ -174,8 +177,11 @@ struct VisitorPass1 : public visitor::PostOrder<void, VisitorPass1> {
             auto t = n.template as<statement::For>().sequence().type();
             if ( t.template isA<type::Unknown>() )
                 return t;
-            else
-                return t.iteratorType(true).dereferencedType();
+
+            if ( ! type::isIterable(t) )
+                return type::unknown;
+
+            return t.iteratorType(true).dereferencedType();
         });
 
         auto d = declaration::LocalVariable(s.id(), wrapper, {}, true, s.id().meta());
