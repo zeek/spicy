@@ -211,6 +211,8 @@ void Driver::dumpUnit(const Unit& unit) {
 Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     int num_output_types = 0;
 
+    opterr = 0; // don't print errors
+
     while ( true ) {
         int c = getopt_long(argc, argv, "ABlKL:OcCpPvjJhvVdX:o:D:TEeSR", long_driver_options, nullptr);
 
@@ -334,7 +336,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
             case 'V': _compiler_options.skip_validation = true; break;
 
             case 'h': usage(); return Nothing();
-
+            case '?': usage(); return error("unknown option");
             default: usage(); return error(fmt("option %c not implemented", c));
         }
     }

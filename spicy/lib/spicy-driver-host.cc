@@ -84,7 +84,9 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'l': opt_list_parsers = true; break;
             case 'p': opt_parser = optarg; break;
             case 'v': std::cerr << "spicy-driver v" << hilti::rt::version() << std::endl; exit(0);
+
             case 'h': usage(); exit(0);
+            case '?': usage(); exit(1); // getopt reports error
             default: usage(); fatalError(fmt("option %c not supported", c));
         }
     }
