@@ -613,7 +613,7 @@ public:
      *
      * @param i the number of stream to advance.
      */
-    View advance(integer::safe<uint64_t> i) const { return View(safeBegin() + i, _end); }
+    View advance(integer::safe<uint64_t> i) const { return View(begin() + i, _end); }
 
     /**
      * Extracts a subrange of bytes from the view, returned as a new view.
@@ -629,7 +629,7 @@ public:
      *
      * @param to iterator pointing to just beyond subrange
      */
-    View sub(SafeConstIterator to) const { return View(safeBegin(), std::move(to)); }
+    View sub(SafeConstIterator to) const { return View(begin(), std::move(to)); }
 
     /**
      * Extracts subrange of bytes from the view, returned as a new view.
@@ -637,7 +637,7 @@ public:
      * @param from offset of start of subrange, relative to beginning of view
      * @param to offset of one beyond end of subrange, relative to beginning of view
      */
-    View sub(Offset from, Offset to) const { return View(safeBegin() + from, safeBegin() + to); }
+    View sub(Offset from, Offset to) const { return View(begin() + from, begin() + to); }
 
     /**
      * Extracts subrange of stream from the beginning of the view, returned as
@@ -645,10 +645,10 @@ public:
      *
      * @param to of one beyond end of subrange, relative to beginning of view
      */
-    View sub(Offset to) const { return View(safeBegin(), safeBegin() + to); }
+    View sub(Offset to) const { return View(begin(), begin() + to); }
 
     /** Returns an iterator representing an offset inside the view's data */
-    SafeConstIterator at(Offset offset) const { return safeBegin() + (offset - safeBegin().offset()); }
+    SafeConstIterator at(Offset offset) const { return begin() + (offset - begin().offset()); }
 
     /**
      * Returns a new view moves the beginning to a subsequent iterator while
@@ -662,7 +662,7 @@ public:
      * at a specified offset from that beginning. The returned view will not
      * be able to expand any further.
      */
-    View limit(Offset incr) const { return View(safeBegin(), safeBegin() + incr); }
+    View limit(Offset incr) const { return View(begin(), begin() + incr); }
 
     /**
      * Extracts a fixed number of stream from the view.
@@ -673,7 +673,7 @@ public:
      */
     template<int N>
     View extract(Byte (&dst)[N]) const {
-        return View(SafeConstIterator(detail::extract<N>(dst, detail::UnsafeConstIterator(_begin), safeEnd())), _end);
+        return View(SafeConstIterator(detail::extract<N>(dst, detail::UnsafeConstIterator(_begin), end())), _end);
     }
 
     /**
@@ -692,13 +692,10 @@ public:
         return detail::UnsafeConstIterator(_begin);
     }
 
-    detail::UnsafeConstIterator unsafeEnd() const { return detail::UnsafeConstIterator(safeEnd()); }
+    detail::UnsafeConstIterator unsafeEnd() const { return detail::UnsafeConstIterator(end()); }
 
-    auto begin() const { return safeBegin(); }
-    auto end() const { return safeEnd(); }
-
-    const SafeConstIterator& safeBegin() const { return _begin; }
-    SafeConstIterator safeEnd() const { return _end ? *_end : _begin.end(); }
+    const SafeConstIterator& begin() const { return _begin; }
+    SafeConstIterator end() const { return _end ? *_end : _begin.end(); }
 
     /** State for block-wise iteration of a stream instance. */
     struct Block {

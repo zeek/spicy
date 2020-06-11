@@ -553,7 +553,7 @@ TEST_CASE("sub") {
     CHECK_EQ(y.view().sub(y.safeBegin(), y.safeBegin()), ""_b);
     CHECK_EQ(y.view().sub(y.safeEnd(), y.safeEnd()), ""_b);
 
-    auto f = [](const stream::View& v) { return v.sub(v.safeBegin() + 15, v.safeBegin() + 25); };
+    auto f = [](const stream::View& v) { return v.sub(v.begin() + 15, v.begin() + 25); };
 
     CHECK_EQ(Bytes(f(x.view()).data()), "6789012345"_b);
 }
@@ -843,15 +843,15 @@ TEST_CASE("View") {
         auto stream = Stream(input);
         auto view = stream.view();
 
-        CHECK_EQ(view.sub(view.safeEnd()), view);
-        CHECK_EQ(view.sub(view.safeBegin() + view.size()), view);
-        CHECK_EQ(view.sub(view.safeBegin() + (view.size() - 1)), "123456789"_b);
+        CHECK_EQ(view.sub(view.end()), view);
+        CHECK_EQ(view.sub(view.begin() + view.size()), view);
+        CHECK_EQ(view.sub(view.begin() + (view.size() - 1)), "123456789"_b);
 
         view = view.limit(5);
 
-        CHECK_EQ(view.sub(view.safeEnd()), view);
-        CHECK_EQ(view.sub(view.safeBegin() + view.size()), view);
-        CHECK_EQ(view.sub(view.safeBegin() + (view.size() - 1)), "1234"_b);
+        CHECK_EQ(view.sub(view.end()), view);
+        CHECK_EQ(view.sub(view.begin() + view.size()), view);
+        CHECK_EQ(view.sub(view.begin() + (view.size() - 1)), "1234"_b);
     }
 
     SUBCASE("trimmed view can be appended") {
@@ -861,7 +861,7 @@ TEST_CASE("View") {
         REQUIRE_EQ(view.size(), input.size());
 
         // Trimming removes specified amount of data.
-        auto trimmed = view.trim(view.safeBegin() + 3);
+        auto trimmed = view.trim(view.begin() + 3);
         CHECK_EQ(trimmed.size(), input.size() - 3);
         CHECK(trimmed.startsWith("4567890"_b));
 
@@ -882,7 +882,7 @@ TEST_CASE("View") {
         REQUIRE_EQ(limited.size(), limit);
 
         auto trim = 3;
-        auto trimmed = limited.trim(limited.safeBegin() + trim);
+        auto trimmed = limited.trim(limited.begin() + trim);
 
         CHECK_EQ(trimmed.size(), limit - trim);
     }

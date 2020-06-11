@@ -70,22 +70,22 @@ void Chunk::trim(Offset o) {
 }
 
 SafeConstIterator View::find(Byte b, const SafeConstIterator& n) const {
-    for ( auto i = UnsafeConstIterator(n ? n : _begin); i != UnsafeConstIterator(safeEnd()); ++i ) {
+    for ( auto i = UnsafeConstIterator(n ? n : _begin); i != UnsafeConstIterator(end()); ++i ) {
         if ( *i == b )
             return SafeConstIterator(i);
     }
 
-    return safeEnd();
+    return end();
 }
 
 std::tuple<bool, SafeConstIterator> View::find(const View& v, const SafeConstIterator& n) const {
     if ( v.isEmpty() )
         return std::make_tuple(true, n ? n : _begin);
 
-    auto first = *v.safeBegin();
+    auto first = *v.begin();
 
     for ( auto i = UnsafeConstIterator(n ? n : _begin); true; ++i ) {
-        if ( i == UnsafeConstIterator(safeEnd()) )
+        if ( i == UnsafeConstIterator(end()) )
             return std::make_tuple(false, SafeConstIterator(i));
 
         if ( *i != first )
@@ -95,13 +95,13 @@ std::tuple<bool, SafeConstIterator> View::find(const View& v, const SafeConstIte
         auto y = UnsafeConstIterator(v._begin);
 
         for ( ;; ) {
-            if ( x == UnsafeConstIterator(safeEnd()) )
+            if ( x == UnsafeConstIterator(end()) )
                 return std::make_tuple(false, SafeConstIterator(i));
 
             if ( *x++ != *y++ )
                 break;
 
-            if ( y == UnsafeConstIterator(v.safeEnd()) )
+            if ( y == UnsafeConstIterator(v.end()) )
                 return std::make_tuple(true, SafeConstIterator(i));
         }
     }
@@ -114,7 +114,7 @@ std::tuple<bool, SafeConstIterator> View::find(const Bytes& v, const SafeConstIt
     auto first = *v.begin();
 
     for ( auto i = UnsafeConstIterator(n ? n : _begin); true; ++i ) {
-        if ( i == UnsafeConstIterator(safeEnd()) )
+        if ( i == UnsafeConstIterator(end()) )
             return std::make_tuple(false, SafeConstIterator(i));
 
         if ( *i != first )
@@ -124,7 +124,7 @@ std::tuple<bool, SafeConstIterator> View::find(const Bytes& v, const SafeConstIt
         auto y = v.begin();
 
         for ( ;; ) {
-            if ( x == UnsafeConstIterator(safeEnd()) )
+            if ( x == UnsafeConstIterator(end()) )
                 return std::make_tuple(false, SafeConstIterator(i));
 
             if ( *x++ != *y++ )
@@ -327,7 +327,7 @@ Stream::Content Stream::deepCopyContent() const {
 }
 
 Size View::size() const {
-    if ( safeEnd().offset() <= _begin.offset() )
+    if ( end().offset() <= _begin.offset() )
         return 0;
 
     // Not so great: Because our end offset may point beyond what's currently
@@ -335,9 +335,9 @@ Size View::size() const {
     //
     // TODO(robin): We can build a better loop though.
     Size s = 0;
-    auto x = safeEnd();
-    auto end = detail::UnsafeConstIterator(safeEnd());
-    for ( auto i = detail::UnsafeConstIterator(_begin); i != end; ++i )
+    auto x = end();
+    auto end_ = detail::UnsafeConstIterator(end());
+    for ( auto i = detail::UnsafeConstIterator(_begin); i != end_; ++i )
         s++;
 
     return s;

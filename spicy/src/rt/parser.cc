@@ -27,10 +27,10 @@ void detail::printParserState(const std::string& unit_id, const hilti::rt::Value
     std::string lah_str = "n/a";
     std::string lah_dots;
 
-    auto [input_data, input_dots] = str(cur.safeBegin(), cur.safeEnd());
+    auto [input_data, input_dots] = str(cur.begin(), cur.end());
 
     if ( lahead ) {
-        std::tie(lah_data, lah_dots) = str(cur.safeBegin(), lahead_end);
+        std::tie(lah_data, lah_dots) = str(cur.begin(), lahead_end);
         lah_str = hilti::rt::fmt("%" PRId32, lahead);
     }
 
@@ -90,7 +90,7 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
                                               data.get(), cur.size()));
         hilti::rt::detail::yield();
 
-        auto x = cur.safeEnd();
+        auto x = cur.end();
         x += 0;
 
         if ( filters ) {
