@@ -12,8 +12,9 @@
 
 #include <hilti/base/util.h>
 
-enum class Foo { AAA, BBB, CCC };
+TEST_SUITE_BEGIN("util");
 
+enum class Foo { AAA, BBB, CCC };
 constexpr util::enum_::Value<Foo> values[] = {
     {Foo::AAA, "aaa"},
     {Foo::BBB, "bbb"},
@@ -21,17 +22,14 @@ constexpr util::enum_::Value<Foo> values[] = {
 };
 
 constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Foo>(s, values); }
-constexpr auto to_string(Foo f) { return util::enum_::to_string(f, values); }
 
-TEST_SUITE_BEGIN("util");
-
-TEST_CASE("enum string conversion") {
+TEST_CASE("enum::_from_string") {
     CHECK(from_string("aaa") == Foo::AAA);
     CHECK(from_string("ccc") == Foo::CCC);
     CHECK_THROWS_AS(from_string("xxx"), std::out_of_range); // NOLINT
 }
 
-TEST_CASE("C++ bytes escaping") {
+TEST_CASE("escapeBytesForCxx") {
     CHECK(util::escapeBytesForCxx("aaa") == "aaa");
     CHECK(util::escapeBytesForCxx("\xff") == "\\377");
     CHECK(util::escapeBytesForCxx("\x02"
