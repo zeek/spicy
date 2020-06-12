@@ -145,7 +145,7 @@ struct Type {
     std::string inline_code = "";
     bool forward_decl = false;
     bool forward_decl_prio = false;
-    bool no_using = false;
+    bool no_using = false; // turned on automatically for types starting with "struct"
 
     bool operator==(const Type& other) const {
         return id == other.id && type == other.type && inline_code == other.inline_code &&
