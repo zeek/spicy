@@ -122,8 +122,8 @@ target_compile_options(hilti PRIVATE "-Wall")
 target_link_libraries(hilti PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti PRIVATE $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
 target_link_libraries(hilti PRIVATE std::filesystem)
-target_include_directories(hilti PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_include_directories(hilti PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+target_include_directories(hilti BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(hilti BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 # Unclear why we need this: Without it, the generated Bison/Flex get a broken
 # include path on some systems. (Seen on Ubuntu 19.10).
@@ -164,9 +164,9 @@ foreach ( lib hilti-rt hilti-rt-debug )
     add_dependencies(${lib}-objects version)
     target_compile_options(${lib}-objects PRIVATE "-fPIC")
     target_link_libraries(${lib}-objects PRIVATE std::filesystem ${CMAKE_DL_LIBS})
-    target_include_directories(${lib}-objects PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-    target_include_directories(${lib}-objects PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
-    target_include_directories(${lib}-objects PRIVATE include/3rdparty/libtask)
+    target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+    target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+    target_include_directories(${lib}-objects BEFORE PRIVATE include/3rdparty/libtask)
 
     # The following should instead just be:
     #
@@ -177,7 +177,7 @@ foreach ( lib hilti-rt hilti-rt-debug )
     # referenced target is built before the dependent target is linked, we also
     # explicitly depend on jrx-objects to make sure all its objects are build.
     add_dependencies(${lib}-objects jrx-objects)
-    target_include_directories(${lib}-objects PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/justrx/include)
+    target_include_directories(${lib}-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/justrx/include)
     target_link_libraries(${lib}-objects      PRIVATE $<TARGET_OBJECTS:jrx-objects>)
 
     add_library(${lib} STATIC)

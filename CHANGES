@@ -1,4 +1,19 @@
 
+0.4.0-428 | 2020-06-12 08:06:23 +0200
+
+  * GH-274: Unbreak build for when other Spicy headers are already installed.
+
+    If Spicy headers were already installed into a path somewhere in the
+    include lookup, we could have found the same header twice, preferring
+    the installed header over the one of the current checkout. This could
+    have lead to diagnostics about duplicate definitions since due to use of
+    `#pragma once` in our headers the compiler would not have detected that
+    a header was already included (and even if it would have detected this,
+    it would have included the incorrect header).
+
+    This patch adds include paths from the current checkout before any
+    system paths.
+
 0.4.0-426 | 2020-06-09 17:16:13 +0000
 
   * Increase CI memory limit for Ubuntu Docker further. (Robin Sommer,

@@ -31,13 +31,13 @@ set(SOURCES
 
 add_library(jrx ${SOURCES})
 # target_link_libraries(jrx ${FLEX_LIBRARIES})
-target_include_directories(jrx PUBLIC include)
-target_include_directories(jrx PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(jrx BEFORE PUBLIC include)
+target_include_directories(jrx BEFORE PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(jrx-objects OBJECT ${SOURCES})
 target_compile_options(jrx-objects PRIVATE "-fPIC")
 # target_link_libraries(jrx-objects ${FLEX_LIBRARIES})
-target_include_directories(jrx-objects PUBLIC include)
-target_include_directories(jrx-objects PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(jrx-objects BEFORE PUBLIC include)
+target_include_directories(jrx-objects BEFORE PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(test)

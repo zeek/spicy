@@ -79,8 +79,8 @@ target_compile_options(spicy PRIVATE "-Wall")
 target_link_libraries(spicy  PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
 target_link_libraries(spicy  PUBLIC hilti)
 target_link_libraries(spicy  PRIVATE std::filesystem)
-target_include_directories(spicy PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_include_directories(spicy PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+target_include_directories(spicy BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(spicy BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 # Unclear why we need this: Without it, the generated Bison/Flex get a broken
 # include path on some systems. (Seen on Ubuntu 19.10).
@@ -107,9 +107,9 @@ foreach ( lib spicy-rt spicy-rt-debug )
     target_compile_options(${lib}-objects PRIVATE "-fPIC")
     target_link_libraries(${lib}-objects PRIVATE std::filesystem)
     target_link_libraries(${lib}-objects PUBLIC ZLIB::ZLIB)
-    target_include_directories(${lib}-objects PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-    target_include_directories(${lib}-objects PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
-    target_include_directories(${lib}-objects PRIVATE include/3rdparty/libtask)
+    target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+    target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+    target_include_directories(${lib}-objects BEFORE PRIVATE include/3rdparty/libtask)
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
