@@ -16,6 +16,14 @@ using hilti::rt::to_string;
 
 TEST_SUITE_BEGIN("Stream");
 
+auto make_stream(std::initializer_list<Bytes> xs) {
+    Stream s;
+    for ( auto&& x : xs )
+        s.append(x);
+
+    return s;
+}
+
 TEST_CASE("Constructors") {
     auto b = "xyz"_b;
     CHECK_GT(b.size(), 0);
