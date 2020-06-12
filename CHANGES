@@ -1,4 +1,8 @@
 
+0.4.0-430 | 2020-06-12 08:07:16 +0200
+
+  * Reenable some already passing clang-tidy checks. (Benjamin Bannier, Corelight)
+
 0.4.0-428 | 2020-06-12 08:06:23 +0200
 
   * GH-274: Unbreak build for when other Spicy headers are already installed.
