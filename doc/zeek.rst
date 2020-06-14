@@ -416,7 +416,6 @@ output. To repeat the :ref:`example <example_zeek_my_http>` from the
 
     # spicyz -o my-http-analyzer.hlto my-http.spicy my-http.evt
     # zeek -Cr request-line.pcap my-http-analyzer.hlto my-http.zeek
-    GET, /index.html, 1.0
     Zeek saw from 127.0.0.1: GET /index.html 1.0
 
 While this approach requires an additional step every time

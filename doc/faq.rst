@@ -22,3 +22,10 @@ distribution inside your build directory at
 
 Yes, see the :ref:`corresponding section <zeek_dpd>` on how to add it
 to your analyzers.
+
+.. rubric:: I have ``print`` statements in my Spicy grammar, why do I not see any output when running Zeek?
+
+The Zeek plugin by default disables the output of Spicy-side ``print``
+statements. To enable them, add ``Spicy::enable_print=T`` to the Zeek
+command line (or ``redef Spicy::enable_print=T;`` to a Zeek script
+that you are loading).

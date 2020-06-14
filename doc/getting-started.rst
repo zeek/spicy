@@ -279,7 +279,6 @@ Finally we can put together our pieces by pointing Zeek to all the
 files we got::
 
     # zeek -Cr request-line.pcap my-http.spicy my-http.evt my-http.zeek
-    GET, /index.html, 1.0
     Zeek saw from 127.0.0.1: GET /index.html 1.0
 
 When Zeek starts up here, it passes any ``*.spicy`` and ``*.evt`` on
@@ -290,10 +289,14 @@ usual, now activating our new analyzer whenever it sees a TCP
 connection on port 12345. Accordingly, the ``MyHTTP::request_line``
 event gets generated once the parser gets to process the session's
 payload. The Zeek event handler then executes and prints the output we
-would expect. (Note how we are in fact getting *two* lines of output:
-The first line is still from the Spicy-side ``print`` statement inside
-the ``RequestLine`` unit. One would normally remove that statement at
-this point.)
+would expect.
+
+.. note::
+
+    By default, the Zeek plugin suppresses any output from Spicy-side
+    ``print`` statements. You can add ``Spicy::enable_print=T`` to the
+    command line to see it. In the example above, you would then get
+    an additional line of output: ``GET, /index.html, 1.0``.
 
 If you tried the above, you will have noticed that Zeek took a little
 while to start up. That's of course because we're compiling C++ code
@@ -308,7 +311,6 @@ analyzer into:
 
     # spicyz -o my-http-analyzer.hlto my-http.spicy my-http.evt
     # zeek -Cr request-line.pcap my-http-analyzer.hlto my-http.zeek
-    GET, /index.html, 1.0
     Zeek saw from 127.0.0.1: GET /index.html 1.0
 
 That ``zeek`` execution is now happening instantaneously.

@@ -23,6 +23,15 @@ export {
 
     # Disable code valdidation.
     const skip_validation = F &redef;
+
+    # Show output of Spicy print statements.
+    const enable_print = F &redef;
+
+    # abort() instead of throwing HILTI # exceptions.
+    const abort_on_exceptions = F &redef;
+
+    # Include backtraces when reporting unhandled exceptions.
+    const show_backtraces = F &redef;
 }
 # doc-end
 

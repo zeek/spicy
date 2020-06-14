@@ -4,6 +4,7 @@
 #include <exception>
 
 #include <hilti/rt/autogen/version.h>
+#include <hilti/rt/configuration.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/types/vector.h>
@@ -16,6 +17,7 @@
 #if ZEEK_DEBUG_BUILD
 #define DEBUG
 #endif
+#include <Expr.h>
 #include <analyzer/Manager.h>
 #include <analyzer/protocol/tcp/TCP.h>
 #include <analyzer/protocol/udp/UDP.h>
@@ -185,11 +187,17 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
     // Init runtime, which will trigger all initialization code to execute.
     ZEEK_DEBUG("Initializing Spicy runtime");
 
-    // TODO: How to set these options.
-    // auto config = hilti::rt::configuration::get();
-    // config.abort_on_exceptions = _driver_options.abort_on_exceptions;
-    // config.show_backtraces = _driver_options.show_backtraces;
-    // hilti::rt::configuration::set(config);
+    auto config = hilti::rt::configuration::get();
+
+    if ( internal_const_val("Spicy::enable_print")->AsBool() )
+        config.cout = std::cout;
+    else
+        config.cout.reset();
+
+    config.abort_on_exceptions = internal_const_val("Spicy::abort_on_exceptions")->AsBool();
+    config.show_backtraces = internal_const_val("Spicy::show_backtraces")->AsBool();
+
+    hilti::rt::configuration::set(config);
 
     try {
         hilti::rt::init();
