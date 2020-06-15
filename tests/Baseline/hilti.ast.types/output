@@ -1,5 +1,5 @@
-[debug/compiler] parsing file "/home/robin/work/spicy/topic/tests/.tmp/hilti.ast.types/types.hlt"
-[debug/compiler] registering AST for module Foo ("/home/robin/work/spicy/topic/tests/.tmp/hilti.ast.types/types.hlt")
+[debug/compiler] parsing file "/Users/robin/work/spicy/topic2/tests/.tmp/hilti.ast.types/types.hlt"
+[debug/compiler] registering AST for module Foo ("/Users/robin/work/spicy/topic2/tests/.tmp/hilti.ast.types/types.hlt")
 [debug/compiler]   processing AST, round 1
 [debug/compiler]     performing missing imports for module Foo
 [debug/compiler]       updated cached AST for module Foo (final: no, requires_compilation: yes, dependencies: (none))
@@ -20,18 +20,18 @@
 [debug/ast-final]     - declaration::GlobalVariable %3 <linkage="private"> (types.hlt:5:13-7:20)
 [debug/ast-final]       - ID <name="x1"> (types.hlt:7:8)
 [debug/ast-final]       - type::Bytes (types.hlt:5:13-7:20) (non-const)
-[debug/ast-final]       - expression::Ctor (types.hlt:7:13)
+[debug/ast-final]       - expression::Ctor (types.hlt:7:13) (non-const)
 [debug/ast-final]         - ctor::Bytes <value="abc"> (types.hlt:7:13)
 [debug/ast-final]     - declaration::GlobalVariable %4 <linkage="private"> (types.hlt:7:20-8:20)
 [debug/ast-final]       - ID <name="x2"> (types.hlt:8:8)
 [debug/ast-final]       - type::Tuple <wildcard="false"> (types.hlt:8:13) (non-const)
 [debug/ast-final]         - type::UnsignedInteger <width="64"> (types.hlt:8:13) (non-const)
 [debug/ast-final]         - type::UnsignedInteger <width="64"> (types.hlt:8:13) (non-const)
-[debug/ast-final]       - expression::Ctor (types.hlt:8:13)
+[debug/ast-final]       - expression::Ctor (types.hlt:8:13) (const)
 [debug/ast-final]         - ctor::Tuple (types.hlt:8:13)
-[debug/ast-final]           - expression::Ctor (types.hlt:8:14)
+[debug/ast-final]           - expression::Ctor (types.hlt:8:14) (const)
 [debug/ast-final]             - ctor::UnsignedInteger <value="1" width="64"> (types.hlt:8:14)
-[debug/ast-final]           - expression::Ctor (types.hlt:8:17)
+[debug/ast-final]           - expression::Ctor (types.hlt:8:17) (const)
 [debug/ast-final]             - ctor::UnsignedInteger <value="2" width="64"> (types.hlt:8:17)
 [debug/compiler]   updated cached AST for module Foo (final: yes, requires_compilation: yes, dependencies: (none))
 module Foo {

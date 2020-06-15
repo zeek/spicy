@@ -6,3 +6,11 @@ module Foo;
 type Bar = unit {
   a: uint8 &default;
 };
+
+@TEST-START-NEXT
+
+module Foo;
+
+type Bar = unit {
+  b: bytes &default="x" &eod;
+};

@@ -88,7 +88,7 @@ void SpicyDriver::usage() {
            "\n"
            "Inputs can be "
         << exts
-        << ", .cc/.cxx, *.o.\n"
+        << ", .cc/.cxx, *.o, *.hlto.\n"
            "\n";
 }
 
@@ -185,10 +185,10 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
 
             case 'v': std::cerr << "spicy-driver v" << hilti::configuration().version_string_long << std::endl; exit(0);
 
-            case 'h': usage(); exit(0);
-
             case 'L': compiler_options.library_paths.emplace_back(optarg); break;
 
+            case 'h': usage(); exit(0);
+            case '?': usage(); exit(1); // getopt reports error
             default: usage(); fatalError(fmt("option %c not supported", c));
         }
     }

@@ -1,0 +1,22 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT > output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+local x: bytes;
+
+b"" = b"bytes"; # assign to non-lhs
+x = "string"; # type mismatch
+
+type X = unit {
+    x: bytes &eod;
+
+    on %init {
+        self.x = "string"; # type mismatch
+    }
+};
+
+function f(a: X, inout b: X) {
+    a.x = b"bytes"; # assign to non-lhs
+    b.x = "string"; # type mismatch
+}

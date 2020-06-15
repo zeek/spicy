@@ -32,3 +32,6 @@ assert b"  abc  ".strip(spicy::Side::Left) == b"abc  ";
 assert b"  abc  ".strip(spicy::Side::Right) == b"  abc";
 assert b"  abc  ".strip(spicy::Side::Both) == b"abc";
 assert b"123abc456".strip(spicy::Side::Both, b"1234567890") == b"abc";
+
+# Test operator precendence
+assert b"23" in b"12345" || False;

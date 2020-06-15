@@ -123,7 +123,7 @@ Result<hilti::Module> Unit::parse(const std::shared_ptr<Context>& context, const
     in.open(path);
 
     if ( ! in )
-        return result::Error(fmt("cannot open HILTI source file %s", path));
+        return result::Error(fmt("cannot open source file %s", path));
 
     auto plugin = plugin::registry().pluginForExtension(path.extension());
 

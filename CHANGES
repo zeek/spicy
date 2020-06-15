@@ -1,4 +1,31 @@
 
+0.4.0-477 | 2020-06-15 07:36:43 +0000
+
+  * GH-293: Fix precedence of "in" operator. (Robin Sommer, Corelight)
+
+  * GH-319: When using &convert with a list expression, transparently
+    turn the result into a vector. (Robin Sommer, Corelight)
+
+  * GH-324: Fix error message that was too specific about source type.
+    (Robin Sommer, Corelight)
+
+  * GH-325: Fix a couple of segfaults in scope builder when hitting
+    invalid code. (Robin Sommer, Corelight)
+
+  * Update spicy-driver usage message. (Robin Sommer, Corelight)
+
+  * Handle unknown options in getopt() consistently in driver code.
+    (Robin Sommer, Corelight)
+
+  * GH-344: Type check assignments and fix constness propagation.
+    (Robin Sommer, Corelight)
+
+  * GH-345: Validate type of &default expressions. (Robin Sommer,
+    Corelight)
+
+  * Add more debug information about constness to AST. (Robin Sommer,
+    Corelight)
+
 0.4.0-467 | 2020-06-15 07:18:03 +0000
 
   * Redo testing of `hilti::rt::Stream` and clean up implementation (Benjamin Bannier, Corelight)

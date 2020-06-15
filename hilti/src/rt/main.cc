@@ -35,6 +35,7 @@ __attribute__((weak)) int hilti::main(int argc, char** argv) {
 
         switch ( c ) { // NOLINT
             case 'h': usage(argv[0]); break;
+            case '?': usage(argv[0]); exit(1);
             default: usage(argv[0]); exit(1);
         }
     }

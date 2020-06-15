@@ -186,6 +186,13 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     void operator()(const expression::Assign& n, position_t p) {
         if ( ! n.target().isLhs() )
             error(fmt("cannot assign to expression: %s", to_node(n)), p);
+
+        if ( ! p.node.hasErrors() ) { // no need for more checks if coercer has already flagged it
+            if ( ! type::sameExceptForConstness(n.source().type(), n.target().type()) )
+                error(fmt("type mismatch for assignment, expected type %s but got %s", n.target().type(),
+                          n.source().type()),
+                      p);
+        }
     }
 
     void operator()(const expression::ListComprehension& n, position_t p) {
@@ -387,6 +394,9 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
             if ( f.isStatic() && f.default_() )
                 error("&default is currently not supported for static fields", p);
+
+            if ( auto d = f.default_(); d && d->type() != f.type() )
+                error(fmt("type mismatch for &default expression, expecting type %s", f.type()), p);
         }
 
         for ( const auto& param : n.parameters() ) {

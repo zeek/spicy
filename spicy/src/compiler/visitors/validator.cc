@@ -249,8 +249,19 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         else if ( a.tag() == "&byte-order" && ! a.hasValue() )
             error("&byte-order requires an expression", p);
 
-        else if ( a.tag() == "&default" && ! a.hasValue() )
-            error("%default requires an argument", p);
+        else if ( a.tag() == "&default" ) {
+            if ( auto f = getAttrField(p) ) {
+                if ( ! a.hasValue() )
+                    error("&default requires an argument", p);
+                else {
+                    if ( auto x = a.valueAs<Expression>(); ! x ) {
+                        error(x.error(), p);
+                    }
+
+                    // expression type is checked HILTI-side.
+                }
+            }
+        }
 
         else if ( a.tag() == "&eod" ) {
             if ( auto f = getAttrField(p) ) {

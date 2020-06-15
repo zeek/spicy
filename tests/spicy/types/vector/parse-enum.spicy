@@ -22,5 +22,9 @@ public type P = unit {
     x3: uint8[] &size=2 &convert=[X(x) for x in $$];
     x4: uint8[] &size=2 &convert=fn4($$);
 
-    on %done { print self; }
+    on %done {
+        # Make sure x3 turned into a vector.
+        assert self.x3[0] == X::Red;
+        print self;
+        }
 };

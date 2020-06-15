@@ -67,7 +67,8 @@ static std::vector<Node> _resolve(const std::vector<Operator>& candidates, const
             return {};
 
         auto r = c.instantiate(nops->second, meta);
-        HILTI_DEBUG(logging::debug::Resolver, util::fmt("-> %s, resolves to %s", dbg_msg, to_node(r)));
+        HILTI_DEBUG(logging::debug::Resolver, util::fmt("-> %s, resolves to %s %s", dbg_msg, to_node(r),
+                                                        (r.isConstant() ? "(const)" : "(non-const)")));
         return r;
     };
 

@@ -2,6 +2,8 @@
 
 #include <hilti/ast/builder/all.h>
 #include <hilti/ast/types/computed.h>
+#include <hilti/ast/types/list.h>
+#include <hilti/ast/types/vector.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/types/bitfield.h>
 #include <spicy/ast/types/unit-items/field.h>
@@ -43,8 +45,20 @@ Type spicy::type::unit::item::Field::parseType() const {
 }
 
 Type spicy::type::unit::item::Field::itemType() const {
-    if ( auto a = AttributeSet::find(attributes(), "&convert") )
-        return hilti::type::Computed(*a->valueAs<Expression>(), meta());
+    if ( auto a = AttributeSet::find(attributes(), "&convert") ) {
+        hilti::type::Computed::Callback cb = [](Node& n) -> Type {
+            auto t = type::effectiveType(n.as<Expression>().type());
+
+            // If there's list comprehension, morph the type into a vector.
+            // Assignment will transparently work.
+            if ( auto x = t.tryAs<type::List>() )
+                return hilti::type::Vector(x->elementType(), x->meta());
+
+            return t;
+        };
+
+        return hilti::type::Computed(*a->valueAs<Expression>(), cb, meta());
+    }
 
     if ( isContainer() ) {
         Type etype = _originalType().as<type::Vector>().elementType();
