@@ -61,9 +61,9 @@ Operators = {
     "BitXor": binary("^"),
     "End": call("end"),
     "Call": lambda op: "{}({})".format(
-        op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True,
-                           markup=False)),
+        op.operands[0].rst(in_operator=True,
+                           markup=False),
+        ", ".join(arg.rst(in_operator=True, markup=False) for arg in op.operands[1:])),
     "Cast": lambda op: "cast<{}>({})".format(
         TypedType.sub("\\1", op.operands[1].rst(in_operator=True, markup=False)),
         op.operands[0].rst(in_operator=True, markup=False)),
@@ -160,8 +160,11 @@ def fmtType(ty, in_operator=False):
     if ty == "any":
         return "<any>"
 
-    return ty.replace(" ", "~").replace("<*>", "")
-
+    old = ty
+    ty = ty.replace("<*>", "")
+    ty = re.sub("\s+{\s+}", "", ty) # e.g., "enum { }" -> "enum"
+    ty = re.sub("type<([^>0-9]+)>", "\\1-type", ty) # e.g., type<enum> -> "enum-type"
+    return ty.replace(" ", "~")
 
 class Operand:
     def __init__(self, m):

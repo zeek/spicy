@@ -72,7 +72,7 @@
     initial number. If the initial number is not set, the sink implicitly
     uses zero instead.
 
-.. spicy:method:: sink::set_policy sink set_policy False void (policy: enum~{~~})
+.. spicy:method:: sink::set_policy sink set_policy False void (policy: enum)
 
     Sets a sink's reassembly policy for ambiguous input. As long as data
     hasn't been trimmed, a sink will detect overlapping chunks. This

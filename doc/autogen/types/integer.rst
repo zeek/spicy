@@ -12,47 +12,47 @@
 
     Computes the bit-wise 'xor' of the two integers.
 
-.. spicy:operator:: integer::Cast enum cast<enum~{~~}>(uint)
+.. spicy:operator:: integer::Cast enum cast<enum-type>(uint)
 
     Converts the value into an enum instance. The value does *not* need to
     correspond to any of the target type's enumerator labels
 
-.. spicy:operator:: integer::Cast int cast<int>(int)
+.. spicy:operator:: integer::Cast int cast<int-type>(int)
 
     Converts the value into another signed integer type, accepting any
     loss of information.
 
-.. spicy:operator:: integer::Cast int cast<int>(uint)
+.. spicy:operator:: integer::Cast int cast<int-type>(uint)
 
     Converts the value into a signed integer type, accepting any loss of
     information.
 
-.. spicy:operator:: integer::Cast interval cast<interval>(int)
+.. spicy:operator:: integer::Cast interval cast<interval-type>(int)
 
     Interprets the value as number of seconds.
 
-.. spicy:operator:: integer::Cast interval cast<interval>(uint)
+.. spicy:operator:: integer::Cast interval cast<interval-type>(uint)
 
     Interprets the value as number of seconds.
 
-.. spicy:operator:: integer::Cast real cast<real>(int)
+.. spicy:operator:: integer::Cast real cast<real-type>(int)
 
     Converts the value into a real, accepting any loss of information.
 
-.. spicy:operator:: integer::Cast real cast<real>(uint)
+.. spicy:operator:: integer::Cast real cast<real-type>(uint)
 
     Converts the value into a real, accepting any loss of information.
 
-.. spicy:operator:: integer::Cast time cast<time>(uint)
+.. spicy:operator:: integer::Cast time cast<time-type>(uint)
 
     Interprets the value as number of seconds since the UNIX epoch.
 
-.. spicy:operator:: integer::Cast uint cast<uint>(int)
+.. spicy:operator:: integer::Cast uint cast<uint-type>(int)
 
     Converts the value into an unsigned integer type, accepting any loss
     of information.
 
-.. spicy:operator:: integer::Cast uint cast<uint>(uint)
+.. spicy:operator:: integer::Cast uint cast<uint-type>(uint)
 
     Converts the value into another unsigned integer type, accepting any
     loss of information.
