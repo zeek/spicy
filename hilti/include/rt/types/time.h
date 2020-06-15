@@ -83,7 +83,8 @@ public:
     }
 
     Interval operator-(const Time& other) const {
-        return Interval(integer::safe<int64_t>(_nsecs) - integer::safe<int64_t>(other._nsecs));
+        return Interval(integer::safe<int64_t>(_nsecs) - integer::safe<int64_t>(other._nsecs),
+                        Interval::NanosecondTag());
     }
 
     /** Returns true if the time is non-zero (i.e., not unset) */

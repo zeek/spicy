@@ -18,33 +18,31 @@ namespace hilti::rt {
  */
 class Interval {
 public:
-    /**
-     * Constructs a time from a nanoseconds value.
-     *
-     * @param nsecs nanonseconds since the UNIX epoch.
-     */
-    explicit Interval(int64_t nsecs = 0) : _nsecs(nsecs) {}
+    struct SecondTag {};
+    struct NanosecondTag {};
+
+    Interval() = default;
 
     /**
      * Constructs an interval from an unsigned integer value.
      *
      * @param nsecs interval in nanoseconds.
      */
-    explicit Interval(hilti::rt::integer::safe<int64_t> nsecs) : _nsecs(nsecs) {}
+    explicit Interval(hilti::rt::integer::safe<int64_t> nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
 
     /**
      * Constructs an interval from an unsigned integer value.
      *
      * @param nsecs interval in nanoseconds.
      */
-    explicit Interval(hilti::rt::integer::safe<uint64_t> nsecs) : _nsecs(nsecs) {}
+    explicit Interval(hilti::rt::integer::safe<uint64_t> nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
 
     /**
      * Constructs an interval from a double value.
      *
      * @param secs interval in seconds.
      */
-    explicit Interval(double secs) : _nsecs(static_cast<int64_t>(secs * 1e9)) {}
+    explicit Interval(double secs, SecondTag /*unused*/) : _nsecs(static_cast<int64_t>(secs * 1e9)) {}
 
     Interval(const Interval&) = default;
     Interval(Interval&&) noexcept = default;
@@ -54,10 +52,10 @@ public:
     Interval& operator=(Interval&&) noexcept = default;
 
     /** Returns interval as seconds. */
-    double seconds() const { return _nsecs / 1e9; }
+    double seconds() const { return _nsecs.Ref() / 1e9; }
 
     /** Returns interval as nanoseconds. */
-    int64_t nanoseconds() const { return _nsecs; }
+    int64_t nanoseconds() const { return _nsecs.Ref(); }
 
     bool operator==(const Interval& other) const { return _nsecs == other._nsecs; }
     bool operator!=(const Interval& other) const { return _nsecs != other._nsecs; }
@@ -66,31 +64,30 @@ public:
     bool operator>(const Interval& other) const { return _nsecs > other._nsecs; }
     bool operator>=(const Interval& other) const { return _nsecs >= other._nsecs; }
 
-    Interval operator+(const Interval& other) const { return Interval(_nsecs + other._nsecs); }
-    Interval operator-(const Interval& other) const { return Interval(_nsecs - other._nsecs); }
+    Interval operator+(const Interval& other) const { return Interval(_nsecs + other._nsecs, NanosecondTag()); }
+    Interval operator-(const Interval& other) const { return Interval(_nsecs - other._nsecs, NanosecondTag()); }
 
-    Interval operator*(hilti::rt::integer::safe<std::int64_t> i) const {
-        return Interval(static_cast<int64_t>(_nsecs * i));
-    }
+    Interval operator*(hilti::rt::integer::safe<std::int64_t> i) const { return Interval(_nsecs * i, NanosecondTag()); }
+
     Interval operator*(hilti::rt::integer::safe<std::uint64_t> i) const {
-        return Interval(static_cast<int64_t>(_nsecs * i));
+        return Interval(_nsecs * i.Ref(), NanosecondTag());
     }
 
-    Interval operator*(double i) const { return Interval(static_cast<int64_t>(_nsecs * i)); }
+    Interval operator*(double i) const { return Interval(integer::safe<int64_t>(_nsecs.Ref() * i), NanosecondTag()); }
 
     /** Returns true if the interval is non-zero. */
-    operator bool() const { return _nsecs == 0.0; }
+    operator bool() const { return _nsecs.Ref() == 0; }
 
     /** Returns a humand-readable representation of the interval. */
     operator std::string() const {
-        int64_t secs = _nsecs / 1000000000;
+        int64_t secs = _nsecs / 1'000'000'000;
         // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-        double frac = (_nsecs % 1000000000) / 1e9;
+        double frac = (_nsecs.Ref() % 1'000'000'000) / 1e9;
         return fmt("%.6fs", static_cast<double>(secs) + frac);
     }
 
 private:
-    int64_t _nsecs = 0;
+    integer::safe<int64_t> _nsecs = 0;
 };
 
 namespace detail::adl {

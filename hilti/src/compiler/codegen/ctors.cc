@@ -45,7 +45,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const ctor::Interval& n) {
-        return fmt("hilti::rt::Interval(static_cast<int64_t>(%" PRId64 "))", n.value().nanoseconds());
+        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
+                   "), hilti::rt::Interval::NanosecondTag())",
+                   n.value().nanoseconds());
     }
 
     result_t operator()(const ctor::List& n) {
