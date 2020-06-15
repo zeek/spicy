@@ -1,4 +1,27 @@
 
+0.4.0-467 | 2020-06-15 07:18:03 +0000
+
+  * Redo testing of `hilti::rt::Stream` and clean up implementation (Benjamin Bannier, Corelight)
+    - Add Doxygen documentation to `rt::Stream`.
+    - Add `begin` and `end` methods for `rt::list::Empty`.
+    - Add additional nullptr checks when acessing `rt::Stream` iterator chunks or contents.
+    - Fix escaping of `rt::Stream` and `rt::View` in stringification
+      to ensure all non-printable byte sequences are escaped.
+    - Make `rt::stream::View` iterators be safe by default.
+    - Prevent nullptr dereference in `rt::Stream` iterator `chunk` and `content`.
+    - Remove `rt::Stream::safe_[begin|end]`.
+    - Remove `rt::stream::View::safe_[begin|end]`.
+    - Remove `safe_begin` and `safe_end` extension points.
+    - Remove unused `Chunk::begin`.
+    - Remove unused `rt::Stream::chain` function.
+    - Remove unused `rt::Stream::compare` functions.
+    - Remove use of unsafe iterators in a few places.
+    - Rename `rt::iterator::safe_range` to drop the 'safe' qualifier.
+    - Add lots of tests new cases, and reorganize exists test cases.
+
+  * Add `begin` and `end` methods for `rt::list::Empty`. (Benjamin
+    Bannier, Corelight)
+
 0.4.0-430 | 2020-06-12 08:07:16 +0200
 
   * Reenable some already passing clang-tidy checks. (Benjamin Bannier, Corelight)

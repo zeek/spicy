@@ -27,10 +27,10 @@ void detail::printParserState(const std::string& unit_id, const hilti::rt::Value
     std::string lah_str = "n/a";
     std::string lah_dots;
 
-    auto [input_data, input_dots] = str(cur.safeBegin(), cur.safeEnd());
+    auto [input_data, input_dots] = str(cur.begin(), cur.end());
 
     if ( lahead ) {
-        std::tie(lah_data, lah_dots) = str(cur.safeBegin(), lahead_end);
+        std::tie(lah_data, lah_dots) = str(cur.begin(), lahead_end);
         lah_str = hilti::rt::fmt("%" PRId32, lahead);
     }
 
@@ -48,7 +48,7 @@ void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, cons
     auto min = std::numeric_limits<uint64_t>::max();
 
     if ( ! cur.isOpenEnded() )
-        min = cur.end().offset() - cur.begin().offset();
+        min = cur.unsafeEnd().offset() - cur.unsafeBegin().offset();
 
     waitForInputOrEod(data, cur, min, std::move(filters));
 }
@@ -90,7 +90,7 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
                                               data.get(), cur.size()));
         hilti::rt::detail::yield();
 
-        auto x = cur.safeEnd();
+        auto x = cur.end();
         x += 0;
 
         if ( filters ) {
@@ -121,7 +121,7 @@ bool detail::atEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, con
 }
 
 bool detail::haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur) {
-    return data->isFrozen() || cur.end().offset() < data->end().offset();
+    return data->isFrozen() || cur.unsafeEnd().offset() < data->unsafeEnd().offset();
     // We've the reached end-of-data if either (1) the bytes object is frozen
     // (then the input won't change anymore), or (2) our view is limited to
     // something before the current end (then even appending more data to the
@@ -132,5 +132,5 @@ bool detail::haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, c
     if ( cur.isOpenEnded() )
         return false;
 
-    return cur.end().offset() <= data->end().offset();
+    return cur.unsafeEnd().offset() <= data->unsafeEnd().offset();
 }

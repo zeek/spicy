@@ -1,21 +1,17 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-// TODO(robin): These classes need a cleanup. The current structure is still an
-// artifact of previousky having just a single type for bytes and streams.
-
 #pragma once
 
 #include <any>
-#include <utility>
-#include <variant>
-
 #include <array>
+#include <cassert>
 #include <cinttypes>
 #include <cstddef>
 #include <cstring>
 #include <memory>
 #include <optional>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <hilti/rt/exception.h>
@@ -28,19 +24,17 @@
 namespace hilti::rt {
 
 class Bytes;
-
 class Stream;
+
 namespace stream {
 class View;
-} // namespace stream
-namespace stream {
 class SafeConstIterator;
 } // namespace stream
 
 namespace detail::adl {
-extern std::string to_string(const Stream& x, adl::tag /*unused*/);
-extern std::string to_string(const stream::View& x, adl::tag /*unused*/);
-extern std::string to_string(const stream::SafeConstIterator& x, adl::tag /*unused*/);
+std::string to_string(const Stream& x, adl::tag /*unused*/);
+std::string to_string(const stream::View& x, adl::tag /*unused*/);
+std::string to_string(const stream::SafeConstIterator& x, adl::tag /*unused*/);
 } // namespace detail::adl
 
 namespace stream {
@@ -51,7 +45,7 @@ using Byte = uint8_t;
 /** Offset within a stream instance. */
 using Offset = integer::safe<uint64_t>;
 
-/** Size of a stream instance in numer of elements stores. */
+/** Size of a stream instance in number of elements stores. */
 using Size = integer::safe<uint64_t>;
 
 /**
@@ -64,7 +58,7 @@ namespace detail {
 class UnsafeConstIterator;
 
 /**
- * One block of continous data inside a stream instance. A stream instance
+ * One block of continuous data inside a stream instance. A stream instance
  * chains these to represent all of its content.
  */
 class Chunk {
@@ -157,14 +151,6 @@ public:
     void debugPrint(std::ostream& out) const;
 
 private:
-    Byte* begin() {
-        if ( auto a = std::get_if<Array>(&_data) )
-            return a->second.data();
-
-        auto& v = std::get<Vector>(_data);
-        return v.data();
-    }
-
     // Note: We must not have a pointer to the parent stream instance in
     // chunks because the parent may be on the stack with a shorter life
     // time.
@@ -194,13 +180,13 @@ struct Chain {
 /**
  * SafeConstIterator for traversing the content of a stream instance.
  *
- * Unlike the standard `Iterator`, this iterator version protects against the
- * stream instance being no longer available by throwing an `InvalidIterator`
+ * Unlike the STL-style iterators, this iterator protects against the stream
+ * instance being no longer available by throwing an `InvalidIterator`
  * exception if it's still accessed.
  *
  * A safe iterator can also be advanced beyond the end of a stream instead.
- * If the instance gets expanded later, the iterator will be refer to that
- * new data.
+ * If the instance gets expanded later, the iterator will be refer to any data
+ * at the iterator's position.
  */
 class SafeConstIterator {
 public:
@@ -210,7 +196,12 @@ public:
     Offset offset() const { return _offset; }
 
     /** Returns true if the stream instance that the iterator is bound to has been frozen.  */
-    bool isFrozen() const { return chunk()->isFrozen(); }
+    bool isFrozen() const {
+        if ( auto* c = chunk() )
+            return c->isFrozen();
+        else
+            return false;
+    }
 
     /**
      * Returns an iterator corresponding to the end position of the
@@ -223,14 +214,18 @@ public:
 
         if ( isEnd() )
             e = *this;
-        else if ( chunk()->isLast() )
-            e = {_content, chunk()->offset() + chunk()->size(), _chunk};
-        else {
-            auto l = chunk()->last();
-            assert(l);
-            assert(l->isLast());
-            e = {_content, l->offset() + l->size(), l};
+        else if ( auto* c = chunk() ) {
+            if ( c->isLast() )
+                e = {_content, c->offset() + c->size(), _chunk};
+            else {
+                auto l = c->last();
+                assert(l);
+                assert(l->isLast());
+                e = {_content, l->offset() + l->size(), l};
+            }
         }
+        else
+            cannot_be_reached();
 
         assert(e.isEnd());
         return e;
@@ -268,8 +263,8 @@ public:
 
     /**
      * Return the size of the range defined by the two iterators. The result
-     * will be negative if the instances's location comes before the
-     * arguments's location.
+     * will be negative if the instance's location comes before the
+     * argument's location.
      */
     integer::safe<int64_t> operator-(const SafeConstIterator& other) const {
         return static_cast<int64_t>(offset()) - static_cast<int64_t>(other.offset());
@@ -278,7 +273,7 @@ public:
     /**
      * Returns true if another iterator bound to the same stream instance
      * refers to the same location. The result is undefined if the iterators
-     * aren't refering to the same stream instance.
+     * aren't referring to the same stream instance.
      */
     bool operator==(const SafeConstIterator& other) const {
         check();
@@ -289,20 +284,20 @@ public:
     /**
      * Returns true if another iterator bound to the same stream instance does
      * not refer to the same location. The result is undefined if the
-     * iterators aren't refering to the same stream instance.
+     * iterators aren't referring to the same stream instance.
      */
     bool operator!=(const SafeConstIterator& other) const { return ! (*this == other); }
 
-    /** Compares the offset of two iterators refering to the same stream instance. */
+    /** Compares the offset of two iterators referring to the same stream instance. */
     bool operator<(const SafeConstIterator& other) const { return offset() < other.offset(); }
 
-    /** Compares the offset of two iterators refering to the same stream instance. */
+    /** Compares the offset of two iterators referring to the same stream instance. */
     bool operator<=(const SafeConstIterator& other) const { return offset() <= other.offset(); }
 
-    /** Compares the offset of two iterators refering to the same stream instance. */
+    /** Compares the offset of two iterators referring to the same stream instance. */
     bool operator>(const SafeConstIterator& other) const { return offset() > other.offset(); }
 
-    /** Compares the offset of two iterators refering to the same stream instance. */
+    /** Compares the offset of two iterators referring to the same stream instance. */
     bool operator>=(const SafeConstIterator& other) const { return offset() >= other.offset(); }
 
     /** Returns true if the iterator is bound to a stream instance. */
@@ -313,9 +308,7 @@ public:
         return out;
     }
 
-    void* chain() const { return content(); }
-
-    /** Returns true if the iterator remains unintialized. */
+    /** Returns true if the iterator remains uninitialized. */
     bool isUnset() const {
         const auto unset = std::weak_ptr<detail::Chain>();
         return ! (_content.owner_before(unset) || unset.owner_before(_content));
@@ -325,7 +318,7 @@ public:
     bool isEnd() const { return (! chunk()) || (chunk()->isLast() && _offset >= chunk()->offset() + chunk()->size()); }
 
     /**
-     * Returns true if the iterator was once valid but the underlying btes
+     * Returns true if the iterator was once valid but the underlying bytes
      * instance has by now expired.
      */
     bool isExpired() const {
@@ -337,7 +330,7 @@ public:
         if ( isUnset() )
             return false;
 
-        if ( content()->head && _offset >= content()->head->offset() )
+        if ( auto* c = content(); c && c->head && _offset >= c->head->offset() )
             return false;
 
         return true;
@@ -358,11 +351,20 @@ private:
 
     detail::Chunk* chunk() const {
         normalize();
-        return _chunk.lock().get();
+
+        if ( auto&& l = _chunk.lock() )
+            return l.get();
+        else
+            return nullptr;
     }
+
     detail::Chain* content() const {
         normalize();
-        return _content.lock().get();
+
+        if ( auto&& l = _content.lock() )
+            return l.get();
+        else
+            return nullptr;
     }
 
     void check() const {
@@ -384,7 +386,7 @@ private:
         if ( ! isUnset() ) {
             if ( auto content = _content.lock().get(); content && content->head && _offset >= content->head->offset() )
                 // New in-range data was appended but current chunk is expired.
-                // Reinit from beginning of stream data.
+                // Reinitialize from beginning of stream data.
                 _chunk = content->head;
         }
 
@@ -401,7 +403,12 @@ private:
         normalize();
     }
 
-    Byte dereference() const { return chunk()->at(_offset); }
+    Byte dereference() const {
+        if ( auto* c = chunk() )
+            return c->at(_offset);
+
+        cannot_be_reached();
+    }
 
     std::weak_ptr<detail::Chain> _content;       // Parent stream object.
     Offset _offset = 0;                          // Offset inside parent stream object.
@@ -509,13 +516,10 @@ private:
     const detail::Chunk* _chunk = nullptr;
 };
 
-} // namespace detail
-
-namespace detail {
 template<int N>
 inline UnsafeConstIterator extract(Byte* dst, const UnsafeConstIterator& i, const SafeConstIterator& end) {
     if ( i == end )
-        throw WouldBlock("end of stream views");
+        throw WouldBlock("end of stream view");
 
     *dst = *i;
     return extract<N - 1>(dst + 1, i + 1, end);
@@ -565,15 +569,15 @@ public:
     bool isOpenEnded() const { return ! _end.has_value(); }
 
     /**
-     * Returns the position of the first occurence of a byte inside the view.
+     * Returns the position of the first occurrence of a byte inside the view.
      *
      * @param b byte to search
-     * @param n optional starting point, which must be inside the vier
+     * @param n optional starting point, which must be inside the view
      */
     SafeConstIterator find(Byte b, const SafeConstIterator& n = SafeConstIterator()) const;
 
     /**
-     * Searches for the first occurence of another view's data.
+     * Searches for the first occurrence of another view's data.
      *
      * @param v data to search for
      * @param n optional starting point, which must be inside this view
@@ -585,7 +589,7 @@ public:
     std::tuple<bool, SafeConstIterator> find(const View& v, const SafeConstIterator& n = SafeConstIterator()) const;
 
     /**
-     * Searches for the first occurence of data.
+     * Searches for the first occurrence of data.
      *
      * @param v data to search for
      * @param n optional starting point, which must be inside this view
@@ -609,7 +613,7 @@ public:
      *
      * @param i the number of stream to advance.
      */
-    View advance(integer::safe<uint64_t> i) const { return View(safeBegin() + i, _end); }
+    View advance(integer::safe<uint64_t> i) const { return View(begin() + i, _end); }
 
     /**
      * Extracts a subrange of bytes from the view, returned as a new view.
@@ -625,30 +629,30 @@ public:
      *
      * @param to iterator pointing to just beyond subrange
      */
-    View sub(SafeConstIterator to) const { return View(safeBegin(), std::move(to)); }
+    View sub(SafeConstIterator to) const { return View(begin(), std::move(to)); }
 
     /**
      * Extracts subrange of bytes from the view, returned as a new view.
      *
-     * @param offset of start of subrage, relative to beginning of view
-     * @param offset of one byeond end of subrage, relative to beginning of view
+     * @param from offset of start of subrange, relative to beginning of view
+     * @param to offset of one beyond end of subrange, relative to beginning of view
      */
-    View sub(Offset from, Offset to) const { return View(safeBegin() + from, safeBegin() + to); }
+    View sub(Offset from, Offset to) const { return View(begin() + from, begin() + to); }
 
     /**
      * Extracts subrange of stream from the beginning of the view, returned as
      * a new view.
      *
-     * @param to of one byeond end of subrange, relative to beginning of view
+     * @param to of one beyond end of subrange, relative to beginning of view
      */
-    View sub(Offset to) const { return View(safeBegin(), safeBegin() + to); }
+    View sub(Offset to) const { return View(begin(), begin() + to); }
 
     /** Returns an iterator representing an offset inside the view's data */
-    SafeConstIterator at(Offset offset) const { return safeBegin() + (offset - safeBegin().offset()); }
+    SafeConstIterator at(Offset offset) const { return begin() + (offset - begin().offset()); }
 
     /**
      * Returns a new view moves the beginning to a subsequent iterator while
-     * not changing the end. In particluar, this maintains a view capapbility
+     * not changing the end. In particular, this maintains a view capability
      * to expand to an underlying data instance's growth.
      */
     View trim(const SafeConstIterator& nbegin) const { return _end ? View(nbegin, *_end) : View(nbegin); }
@@ -658,18 +662,18 @@ public:
      * at a specified offset from that beginning. The returned view will not
      * be able to expand any further.
      */
-    View limit(Offset incr) const { return View(safeBegin(), safeBegin() + incr); }
+    View limit(Offset incr) const { return View(begin(), begin() + incr); }
 
     /**
      * Extracts a fixed number of stream from the view.
      *
      * @tparam N number of stream to extract
-     * @param dst attry to writes stream into
+     * @param dst target array to write stream data into
      * @return new view that has it's starting position advanced by N
      */
     template<int N>
     View extract(Byte (&dst)[N]) const {
-        return View(SafeConstIterator(detail::extract<N>(dst, detail::UnsafeConstIterator(_begin), safeEnd())), _end);
+        return View(SafeConstIterator(detail::extract<N>(dst, detail::UnsafeConstIterator(_begin), end())), _end);
     }
 
     /**
@@ -683,17 +687,15 @@ public:
     /** Returns a copy of the data the view refers to. */
     std::string data() const;
 
-    detail::UnsafeConstIterator begin() const {
+    detail::UnsafeConstIterator unsafeBegin() const {
         _begin.check();
         return detail::UnsafeConstIterator(_begin);
     }
 
-    detail::UnsafeConstIterator end() const { return detail::UnsafeConstIterator(safeEnd()); }
+    detail::UnsafeConstIterator unsafeEnd() const { return detail::UnsafeConstIterator(end()); }
 
-    const SafeConstIterator& safeBegin() const { return _begin; }
-    SafeConstIterator safeEnd() const { return _end ? *_end : _begin.end(); }
-
-    void* chain() const { return _begin.chain(); }
+    const SafeConstIterator& begin() const { return _begin; }
+    SafeConstIterator end() const { return _end ? *_end : _begin.end(); }
 
     /** State for block-wise iteration of a stream instance. */
     struct Block {
@@ -739,7 +741,7 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const View& x) {
-    out << x.data();
+    out << escapeBytes(x.data());
     return out;
 }
 
@@ -764,28 +766,48 @@ public:
 
     Stream() : Stream(Chunk("")) {}
 
-    /** Creates an instance from a vector of stream. */
+    /** Creates an instance from a vector of `Bytes`.
+     * @param d `vector` to create the stream from
+     */
     explicit Stream(std::vector<Byte> d) : Stream(Chunk(0, std::move(d))) {}
 
-    /** Creates an instance from a bytes instance. */
+    /** Creates an instance from a bytes instance.
+     * @param d `Bytes` instance to the create the stream from
+     */
     explicit Stream(const Bytes& d);
 
-    /** Creates an instance for C-style ASCIIZ string, not including the final null byte. The data will be copied. */
+    /** Creates an instance for C-style ASCII string, not including the final null byte. The data will be copied.
+     * @param d null-terminated string to create the stream from
+     */
     explicit Stream(const char* d) : Stream(chunkFromArray(0, d, strlen(d))) {}
 
     /** Creates an instance from an existing memory block. The data will be copied. */
     Stream(const char* d, Size n) : Stream(chunkFromArray(0, d, n)) {}
 
-    /** Creates an instance from an existing stream view.  */
+    /** Creates an instance from an existing stream view.
+     * @param d `View` to create the stream from
+     */
     Stream(const stream::View& d) : Stream(Chunk(d)) {}
 
-    /** Creates an instance from a series of static-sized blocks. */
+    /** Creates an instance from a series of static-sized blocks.
+     * @param d a vector of `N`-sized arrays to create the stream from
+     */
     template<int N>
     Stream(std::vector<std::array<Byte, N>> d) : Stream(chunkFromArray(0, std::move(d))) {}
 
+    /** Constructs a stream from another stream instance.
+     * @param other instance to create this stream from
+     */
     Stream(const Stream& other) noexcept : _content(other.deepCopyContent()), _frozen(other._frozen) {}
+
+    /** Constructs a stream from another stream instance.
+     * @param other instance to create this stream from
+     */
     Stream(Stream&& other) noexcept : _content(std::move(other._content)), _frozen(other._frozen) {}
 
+    /* Assigns from another stream instance. This invalidates all existing iterators.
+     * @param other the stream instance to assign from
+     */
     Stream& operator=(Stream&& other) noexcept {
         if ( &other == this )
             return *this;
@@ -795,6 +817,9 @@ public:
         return *this;
     }
 
+    /* Assigns from another stream instance. This invalidates all existing iterators.
+     * @param other the stream instance to assign from
+     */
     Stream& operator=(const Stream& other) {
         if ( &other == this )
             return *this;
@@ -812,19 +837,28 @@ public:
     /** Returns true if the instance's size is zero. */
     bool isEmpty() const { return size() == 0; }
 
-    /** For internal debugging: Returns the number of dynamic chunbks allocated. */
+    /** For internal debugging: Returns the number of dynamic chunks allocated. */
     int numberChunks() const;
 
-    /** Appends the content of a bytes instance. */
+    /** Appends the content of a bytes instance. This function does not invalidate iterators.
+     * @param data `Bytes` to append
+     */
     void append(const Bytes& data);
 
-    /** Appends the content of a bytes instance. */
+    /** Appends the content of a bytes instance. This function does not invalidate iterators.
+     * @param data `Bytes` to append
+     */
     void append(Bytes&& data);
 
-    /** Appends the content of a raw memory area, taking ownership. */
+    /** Appends the content of a raw memory area, taking ownership. This function does not invalidate iterators.
+     * @param data pointer to `Bytes` to append
+     */
     void append(std::unique_ptr<const Byte*> data);
 
-    /** Appends the content of a raw memory area, copying the data. */
+    /** Appends the content of a raw memory area, copying the data. This function does not invalidate iterators.
+     * @param data pointer to the data to append
+     * @param len length of the data to append
+     */
     void append(const char* data, size_t len);
 
     /**
@@ -832,6 +866,8 @@ public:
      * iterator. All existing iterators pointing beyond that point will
      * remain valid and keep their offsets the same. Trimming is permitted
      * even on frozen instances.
+     *
+     * @param i iterator one past the last data element to trim
      */
     void trim(const stream::SafeConstIterator& i);
 
@@ -844,33 +880,35 @@ public:
     /** Returns true if the instance is currently frozen. */
     bool isFrozen() const { return _frozen; }
 
-    /** Returns an interator representing the first byte of the instance. */
-    stream::SafeConstIterator safeBegin() const { return {_content, _content->head->offset(), _content->head}; }
+    /** Returns an iterator representing the first byte of the instance. */
+    stream::SafeConstIterator begin() const { return {_content, _content->head->offset(), _content->head}; }
 
-    /** Returns an interator representing the end of the instance. */
-    stream::SafeConstIterator safeEnd() const {
+    /** Returns an iterator representing the end of the instance. */
+    stream::SafeConstIterator end() const {
         auto& t = _content->tail;
         return {_content, t->offset() + t->size(), t};
     }
 
-    /** Returns an interator representing a specific offset. */
-    stream::SafeConstIterator at(Offset offset) const { return safeBegin() + (offset - safeBegin().offset()); }
+    /** Returns an iterator representing a specific offset.
+     * @param offset offset to use for the created iterator
+     */
+    stream::SafeConstIterator at(Offset offset) const { return begin() + (offset - begin().offset()); }
 
     /**
      * Returns a view representing the entire instance.
      *
      * @param expanding if true, the returned view will automatically grow
-     * along with the stream object if more data gets added.
+     *                  along with the stream object if more data gets added.
      */
     stream::View view(bool expanding = true) const {
         if ( expanding )
-            return stream::View(safeBegin());
+            return stream::View(begin());
 
-        return stream::View(safeBegin(), safeEnd());
+        return stream::View(begin(), end());
     }
 
-    stream::detail::UnsafeConstIterator begin() const { return {{}, head()->offset(), head()}; }
-    stream::detail::UnsafeConstIterator end() const {
+    stream::detail::UnsafeConstIterator unsafeBegin() const { return {{}, head()->offset(), head()}; }
+    stream::detail::UnsafeConstIterator unsafeEnd() const {
         auto t = tail();
         return {{}, t->offset() + t->size(), t};
     }
@@ -904,11 +942,6 @@ private:
 
     Chunk* tail() { return _content->tail.get(); }
 
-    int compare(const Stream& other) const { return compare(begin(), end(), other.begin(), other.end()); }
-
-    static int compare(UnsafeConstIterator s1, const UnsafeConstIterator& e1, UnsafeConstIterator s2,
-                       const UnsafeConstIterator& e2);
-
     template<int N>
     inline Chunk chunkFromArray(Offset o, std::array<Byte, N> d) {
         if constexpr ( N <= Chunk::SmallBufferSize )
@@ -937,30 +970,26 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Stream& x) {
-    out << x.data();
+    out << escapeBytes(x.data());
     return out;
 }
 
 template<>
 inline std::string detail::to_string_for_print<Stream>(const Stream& x) {
-    return escapeUTF8(x.data(), true);
+    return escapeBytes(x.data(), true);
 }
 
 template<>
 inline std::string detail::to_string_for_print<stream::View>(const stream::View& x) {
-    return escapeUTF8(x.data(), true);
+    return escapeBytes(x.data(), true);
 }
 
 namespace detail::adl {
-inline auto safe_begin(const Stream& x, adl::tag /*unused*/) { return x.safeBegin(); }
-inline auto safe_end(const Stream& x, adl::tag /*unused*/) { return x.safeEnd(); }
-inline auto safe_begin(const stream::View& x, adl::tag /*unused*/) { return x.safeBegin(); }
-inline auto safe_end(const stream::View& x, adl::tag /*unused*/) { return x.safeEnd(); }
 inline std::string to_string(const Stream& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeUTF8(x.data(), true));
+    return fmt("b\"%s\"", escapeBytes(x.data(), true));
 }
 inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeUTF8(x.data(), true));
+    return fmt("b\"%s\"", escapeBytes(x.data(), true));
 }
 } // namespace detail::adl
 

@@ -53,9 +53,9 @@ Sink::ChunkList::iterator Sink::_addAndCheck(std::optional<hilti::rt::Bytes> dat
         uint64_t prefix_len = c->rseq - rseq;
 
         if ( data ) {
-            auto prefix = data->sub(safe_begin(*data) + prefix_len);
+            auto prefix = data->sub(data->begin() + prefix_len);
             new_c = _chunks.insert(c, Chunk(std::move(prefix), rseq, rseq + prefix_len));
-            data = data->sub(safe_begin(*data) + prefix_len, safe_end(*data));
+            data = data->sub(data->begin() + prefix_len, data->end());
         }
 
         rseq += prefix_len;
@@ -82,7 +82,7 @@ Sink::ChunkList::iterator Sink::_addAndCheck(std::optional<hilti::rt::Bytes> dat
 
     if ( data && overlap_len < new_c_len ) {
         // Recurse to resolve remainder of the new data.
-        data = data->sub(safe_begin(*data) + overlap_len, safe_end(*data));
+        data = data->sub(data->begin() + overlap_len, data->end());
         rseq += overlap_len;
 
         if ( new_c == c )
@@ -178,7 +178,7 @@ void Sink::_newData(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
         rseq += amount_old;
 
         if ( data )
-            data = data->sub(safe_begin(*data) + amount_old, safe_end(*data));
+            data = data->sub(data->begin() + amount_old, data->end());
     }
 
     if ( _chunks.empty() ) {

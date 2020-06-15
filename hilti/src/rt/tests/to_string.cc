@@ -13,6 +13,7 @@
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/set.h>
+#include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
 #include <hilti/rt/util.h>
@@ -72,13 +73,6 @@ TEST_CASE("optional") {
     CHECK_EQ(to_string(std::optional<std::optional<int8_t>>(2)), "2");
 }
 
-TEST_CASE("Set") {
-    CHECK_EQ(to_string(set::Empty()), "{}");
-    CHECK_EQ(to_string(Set<int>()), "{}");
-    CHECK_EQ(to_string(Set<int>({1})), "{1}");
-    CHECK_EQ(to_string(Set<int>({1, 2, 3})), "{1, 2, 3}");
-}
-
 TEST_CASE("Map") {
     CHECK_EQ(to_string(map::Empty()), "{}");
     CHECK_EQ(to_string(Map<int, int>()), "{}");
@@ -121,12 +115,54 @@ TEST_CASE("RegExp") {
     CHECK_EQ(to_string(RegExp("", regexp::Flags()).tokenMatcher()), "<regexp-match-state>");
 }
 
+TEST_CASE("Set") {
+    CHECK_EQ(to_string(set::Empty()), "{}");
+    CHECK_EQ(to_string(Set<int>()), "{}");
+    CHECK_EQ(to_string(Set<int>({1})), "{1}");
+    CHECK_EQ(to_string(Set<int>({1, 2, 3})), "{1, 2, 3}");
+}
+
+TEST_CASE("Stream") {
+    CHECK_EQ(to_string(Stream()), "b\"\"");
+    CHECK_EQ(to_string(Stream("Gänsefüßchen\x00\x01\x02"_b)),
+             "b\"G\\xc3\\xa4nsef\\xc3\\xbc\\xc3\\x9fchen\\x00\\x01\\x02\"");
+    CHECK_EQ(to_string_for_print(Stream("Gänsefüßchen\x00\x01\x02"_b)),
+             "G\\xc3\\xa4nsef\\xc3\\xbc\\xc3\\x9fchen\\x00\\x01\\x02");
+
+    CHECK_EQ(fmt("%s", Stream()), "");
+    CHECK_EQ(fmt("%s", Stream("Gänsefüßchen\x00\x01\x02"_b)), "G\\xc3\\xa4nsef\\xc3\\xbc\\xc3\\x9fchen\\x00\\x01\\x02");
+
+    SUBCASE("iterator") {
+        CHECK_EQ(to_string(Stream("0123456789"_b).begin()), "<offset=0 data=b\"0123456789\">");
+        CHECK_EQ(to_string(Stream("01234567890123456789"_b).begin()), "<offset=0 data=b\"0123456789\"...>");
+        CHECK_EQ(to_string(Stream("01234567890123456789"_b).end()), "<offset=20 data=b\"\">");
+        CHECK_EQ(to_string(stream::SafeConstIterator()), "<uninitialized>");
+        CHECK_EQ(to_string([]() {
+                     auto s = Stream();
+                     return s.begin();
+                 }()),
+                 "<expired>");
+    }
+}
+
 TEST_CASE("Time") {
     CHECK_EQ(to_string(Time()), "<not set>");
     CHECK_EQ(to_string(Time(uint64_t(0))), "<not set>");
     CHECK_EQ(to_string(Time(double(0))), "<not set>");
 
     CHECK_EQ(to_string(Time(uint64_t(1))), "1970-01-01T00:00:00.000000001Z");
+}
+
+TEST_CASE("View") {
+    CHECK_EQ(to_string(Stream().view()), "b\"\"");
+    CHECK_EQ(to_string(Stream("Gänsefüßchen\x00\x01\x02"_b).view()),
+             "b\"G\\xc3\\xa4nsef\\xc3\\xbc\\xc3\\x9fchen\\x00\\x01\\x02\"");
+    CHECK_EQ(to_string_for_print(Stream("Gänsefüßchen\x00\x01\x02"_b).view()),
+             "G\\xc3\\xa4nsef\\xc3\\xbc\\xc3\\x9fchen\\x00\\x01\\x02");
+
+    CHECK_EQ(fmt("%s", Stream().view()), "");
+    CHECK_EQ(fmt("%s", Stream("Gänsefüßchen\x00\x01\x02"_b).view()),
+             "G\\xc3\\xa4nsef\\xc3\\xbc\\xc3\\x9fchen\\x00\\x01\\x02");
 }
 
 TEST_SUITE_END();

@@ -55,32 +55,6 @@ TEST_CASE("subscript") {
     CHECK_EQ(Vector<int>({0, 1, 2, 3, 4, 5})[5], 5);
 }
 
-TEST_CASE("safe_begin") {
-    SUBCASE("element removed") {
-        Vector<int> xs({1});
-        auto it = safe_begin(xs);
-        CHECK_EQ(*it, 1);
-        xs.pop_back();
-        CHECK_THROWS_WITH_AS(*it, "index 0 out of bounds", const InvalidIterator&);
-    }
-
-    SUBCASE("container removed") {
-        auto it = []() {
-            Vector<int> xs({1});
-            return safe_begin(xs);
-        }();
-        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
-    }
-
-    SUBCASE("container removed (const)") {
-        auto it = []() {
-            const Vector<int> xs({1});
-            return safe_begin(xs);
-        }();
-        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
-    }
-}
-
 TEST_CASE("assign") {
     SUBCASE("lvalue") {
         Vector<int> xs;

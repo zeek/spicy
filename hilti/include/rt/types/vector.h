@@ -414,27 +414,6 @@ template<typename T, typename Allocator>
 inline std::string to_string(const vector::ConstIterator<T, Allocator>& /*unused*/, adl::tag /*unused*/) {
     return "<const vector iterator>";
 }
-
-template<typename T, typename Allocator>
-inline auto safe_begin(const Vector<T, Allocator>& x, adl::tag /*unused*/) {
-    return x.cbegin();
-}
-
-template<typename T, typename Allocator>
-inline auto safe_begin(Vector<T, Allocator>& x, adl::tag /*unused*/) {
-    return x.begin();
-}
-
-template<typename T, typename Allocator>
-inline auto safe_end(const Vector<T, Allocator>& x, adl::tag /*unused*/) {
-    return x.cend();
-}
-
-template<typename T, typename Allocator>
-inline auto safe_end(Vector<T, Allocator>& x, adl::tag /*unused*/) {
-    return x.end();
-}
-
 } // namespace detail::adl
 
 template<typename T, typename Allocator>

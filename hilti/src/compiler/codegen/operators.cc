@@ -376,9 +376,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return cg->unpack(n.op0().type().as<type::Type_>().typeValue(), args[0], util::slice(args, 1, -1));
     }
 
-    result_t operator()(const operator_::generic::Begin& n) { return fmt("hilti::rt::safe_begin(%s)", op0(n)); }
+    result_t operator()(const operator_::generic::Begin& n) { return fmt("%s.begin()", op0(n)); }
 
-    result_t operator()(const operator_::generic::End& n) { return fmt("hilti::rt::safe_end(%s)", op0(n)); }
+    result_t operator()(const operator_::generic::End& n) { return fmt("%s.end()", op0(n)); }
 
     result_t operator()(const operator_::generic::New& n) {
         if ( auto tv = n.op0().type().tryAs<type::Type_>() ) {

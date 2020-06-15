@@ -256,7 +256,10 @@ hilti::rt::List<O> make(const C& input, std::function<O(I)> func, std::function<
 }
 
 /** Place-holder type for an empty list that doesn't have a known element type. */
-struct Empty {};
+struct Empty {
+    auto begin() const& { return this; }
+    auto end() const& { return this; }
+};
 
 template<typename T>
 inline bool operator==(const List<T>& v, const Empty& /*unused*/) {
@@ -275,8 +278,6 @@ inline bool operator!=(const Empty& /*unused*/, const List<T>& v) {
     return ! v.empty();
 }
 
-inline auto safe_begin(const Empty& x, detail::adl::tag /*unused*/) { return &x; }
-inline auto safe_end(const Empty& x, detail::adl::tag /*unused*/) { return &x; }
 } // namespace list
 
 namespace detail::adl {
@@ -296,27 +297,6 @@ template<typename T>
 inline std::string to_string(const list::ConstIterator<T>& /*unused*/, adl::tag /*unused*/) {
     return "<const list iterator>";
 }
-
-template<typename T>
-inline auto safe_begin(const List<T>& x, adl::tag /*unused*/) {
-    return x.begin();
-}
-
-template<typename T>
-inline auto safe_end(const List<T>& x, adl::tag /*unused*/) {
-    return x.end();
-}
-
-template<typename T>
-inline auto safe_begin(List<T>& x, adl::tag /*unused*/) {
-    return x.begin();
-}
-
-template<typename T>
-inline auto safe_end(List<T>& x, adl::tag /*unused*/) {
-    return x.end();
-}
-
 } // namespace detail::adl
 
 template<typename T>

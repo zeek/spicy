@@ -82,10 +82,10 @@ std::tuple<int32_t, stream::View> regexp::MatchState::advance(const stream::View
 
     if ( rc >= 0 ) {
         _pimpl->_jrx = nullptr;
-        return std::make_tuple(rc, data.trim(data.safeBegin() + offset));
+        return std::make_tuple(rc, data.trim(data.begin() + offset));
     }
 
-    return std::make_tuple(rc, data.trim(data.safeBegin() + data.size()));
+    return std::make_tuple(rc, data.trim(data.begin() + data.size()));
 }
 
 std::tuple<int32_t, uint64_t> regexp::MatchState::advance(const Bytes& data, bool is_final) {
@@ -121,7 +121,7 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
         return std::make_pair(is_final ? _pimpl->_acc : -1, 0);
     }
 
-    stream::detail::UnsafeConstIterator cur(data.safeBegin());
+    stream::detail::UnsafeConstIterator cur(data.begin());
     cur += 0; // this will normalize the internal chunk
     jrx_accept_id rc = 0;
 
@@ -133,7 +133,7 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
         if ( is_final && chunk->isLast() )
             last |= (JRX_ASSERTION_EOL | JRX_ASSERTION_EOD);
 
-        auto block_start = (chunk == cur.chunk() ? chunk->data(data.safeBegin().offset()) : chunk->begin());
+        auto block_start = (chunk == cur.chunk() ? chunk->data(data.begin().offset()) : chunk->begin());
         auto block_len = (chunk->end() - block_start);
 
         // Since chunks are raw pointers with no knowledge of the size of the
