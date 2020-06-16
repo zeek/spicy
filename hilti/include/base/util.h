@@ -209,7 +209,7 @@ std::vector<T> slice(const std::vector<T>& v, unsigned int begin, unsigned int e
 
 /**
  * Joins elements of a vector into a string, using a given delimiter to
- * separate then.
+ * separate them.
  */
 template<typename T>
 std::string join(const T& l, const std::string& delim = "") {
@@ -228,7 +228,7 @@ std::string join(const T& l, const std::string& delim = "") {
 
 /**
  * Joins elements of an initializer list into a string, using a given
- * delimiter to separate then.
+ * delimiter to separate them.
  */
 template<typename T>
 std::string join(const std::initializer_list<T>& l, const std::string& delim = "") {
