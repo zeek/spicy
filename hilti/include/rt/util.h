@@ -57,7 +57,7 @@ extern void cannot_be_reached() __attribute__((noreturn));
 
 /** Statistics about the current state of memory allocations. */
 struct MemoryStatistics {
-    // Note when changing this, update `memory_statistucs()`.
+    // Note when changing this, update `memory_statistics()`.
     uint64_t memory_heap;   //< current size of heap in bytes
     uint64_t num_fibers;    //< number of fibers currently in use
     uint64_t max_fibers;    //< high-water mark for number of fibers in use
@@ -135,7 +135,7 @@ inline std::string_view ltrim(std::string_view s) noexcept { return ltrim(s, det
 inline std::string_view trim(std::string_view s) noexcept { return trim(s, detail::whitespace_chars); }
 
 /**
- * Splits a string at all occurrences of a delimiter. Successive occurences
+ * Splits a string at all occurrences of a delimiter. Successive occurrences
  * of the delimiter will be split into multiple pieces.
  *
  * \note This function is not UTF8-aware.
@@ -150,7 +150,7 @@ std::vector<std::string_view> split(std::string_view s, std::string_view delim);
 std::vector<std::string_view> split(std::string_view s);
 
 /**
- * Splits a string once at the 1st occurece of succesive whitespace. Leaves
+ * Splits a string once at the 1st occurrence of successive whitespace. Leaves
  * the 2nd element of the result pair unset if whitespace does not occur.
  *
  * \note This function is not UTF8-aware.
@@ -158,7 +158,7 @@ std::vector<std::string_view> split(std::string_view s);
 extern std::pair<std::string, std::string> split1(std::string s);
 
 /**
- * Splits a string once at the last occurece of succesive whitespace. Leaves
+ * Splits a string once at the last occurrence of successive whitespace. Leaves
  * the 2nd element of the result pair unset if whitespace does not occur.
 
  * \note This function is not UTF8-aware.
@@ -166,7 +166,7 @@ extern std::pair<std::string, std::string> split1(std::string s);
 extern std::pair<std::string, std::string> rsplit1(std::string s);
 
 /**
- * Splits a string once at the 1st occurece of a delimiter. Leaves the 2nd
+ * Splits a string once at the 1st occurrence of a delimiter. Leaves the 2nd
  * element of the result pair unset if the delimiter does not occur.
  *
  * \note This function is not UTF8-aware.
@@ -174,7 +174,7 @@ extern std::pair<std::string, std::string> rsplit1(std::string s);
 extern std::pair<std::string, std::string> split1(std::string s, const std::string& delim);
 
 /**
- * Splits a string once at the last occurece of a delimiter. Leaves the 1st
+ * Splits a string once at the last occurrence of a delimiter. Leaves the 1st
  * element of the result pair unset if the delimiter does not occur.
  *
  * \note This function is not UTF8-aware.
@@ -196,7 +196,7 @@ std::string replace(std::string s, std::string_view o, std::string_view n);
 inline bool startsWith(const std::string& s, const std::string& prefix) { return s.find(prefix) == 0; }
 
 /**
- * Python-style enumerate() that teturns an iterable yielding pairs `(index,
+ * Python-style enumerate() that returns an iterable yielding pairs `(index,
  * val)`. From http://reedbeta.com/blog/python-like-enumerate-in-cpp17/.
  */
 template<typename T, typename TIter = decltype(std::begin(std::declval<T>())),
