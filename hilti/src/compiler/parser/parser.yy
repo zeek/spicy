@@ -744,8 +744,8 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | CPORT                            { $$ = hilti::ctor::Port(hilti::ctor::Port::Value($1), __loc__); }
               | INTERVAL '(' const_real ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3), __loc__); }
               | INTERVAL '(' const_sint ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3), __loc__); }
-              | TIME '(' const_real ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3), __loc__); }
-              | TIME '(' const_uint ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3 * 1000000000), __loc__); }
+              | TIME '(' const_real ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
+              | TIME '(' const_uint ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3 * 1000000000, hilti::rt::Time::NanosecondTag()), __loc__); }
               | STREAM '(' CBYTES ')'            { $$ = hilti::ctor::Stream(std::move($3), __loc__); }
 
               | ERROR '(' CSTRING ')'            { $$ = hilti::ctor::Error(std::move($3), __loc__); }

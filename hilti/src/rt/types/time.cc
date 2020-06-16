@@ -14,7 +14,7 @@ Time time::current_time() {
         throw RuntimeError("gettimeofday failed in current_time()");
 
     double t = double(tv.tv_sec) + double(tv.tv_usec) / 1e6;
-    return Time(t);
+    return Time(t, Time::SecondTag());
 }
 
 Time::operator std::string() const {
@@ -22,8 +22,8 @@ Time::operator std::string() const {
         return "<not set>";
 
     // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-    double frac = (_nsecs % 1000000000) / 1e9;
-    time_t secs = _nsecs / 1000000000;
+    double frac = (_nsecs.Ref() % 1000000000) / 1e9;
+    time_t secs = _nsecs.Ref() / 1000000000;
 
     char buffer[60];
     struct tm tm {};

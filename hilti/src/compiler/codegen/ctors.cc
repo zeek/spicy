@@ -165,7 +165,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
                               ", "));
     }
 
-    result_t operator()(const ctor::Time& n) { return fmt("hilti::rt::Time(%f)", n.value().seconds()); }
+    result_t operator()(const ctor::Time& n) {
+        return fmt("hilti::rt::Time(%f, hilti::rt::Time::SecondTag())", n.value().seconds());
+    }
 
     result_t operator()(const ctor::Enum& n) {
         auto id = cg->compile(n.type(), codegen::TypeUsage::Storage);

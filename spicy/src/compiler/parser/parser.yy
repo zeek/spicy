@@ -888,8 +888,8 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
               | INTERVAL '(' const_real ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3), __loc__); }
               | INTERVAL '(' const_sint ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3), __loc__); }
-              | TIME '(' const_real ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3), __loc__); }
-              | TIME '(' const_uint ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3 * 1000000000), __loc__); }
+              | TIME '(' const_real ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
+              | TIME '(' const_uint ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3 * 1000000000, hilti::rt::Time::NanosecondTag()), __loc__); }
               | STREAM '(' CBYTES ')'            { $$ = hilti::ctor::Stream(std::move($3), __loc__); }
 
               | UINT8 '(' const_uint ')'         { $$ = hilti::ctor::UnsignedInteger($3, 8, __loc__); }
