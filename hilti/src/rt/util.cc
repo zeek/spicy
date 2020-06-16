@@ -100,7 +100,12 @@ std::vector<std::string_view> hilti::rt::split(std::string_view s, std::string_v
     if ( delim.empty() )
         return {s};
 
+    if ( s.size() < delim.size() )
+        return {s};
+
     std::vector<std::string_view> l;
+
+    const bool ends_in_delim = (s.substr(s.size() - delim.size()) == delim);
 
     do {
         size_t p = s.find(delim);
@@ -110,6 +115,9 @@ std::vector<std::string_view> hilti::rt::split(std::string_view s, std::string_v
 
         s.remove_prefix(p + delim.size());
     } while ( ! s.empty() );
+
+    if ( ends_in_delim )
+        l.push_back("");
 
     return l;
 }

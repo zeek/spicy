@@ -278,6 +278,39 @@ TEST_CASE("rsplit1") {
     }
 }
 
+TEST_CASE("split") {
+    using str_vec = std::vector<std::string_view>;
+
+    SUBCASE("w/ delim") {
+        CHECK_EQ(split("a:b:c", ""), str_vec({"a:b:c"}));
+        CHECK_EQ(split("", ""), str_vec({""}));
+        CHECK_EQ(split("a:b:c", ":"), str_vec({"a", "b", "c"}));
+        CHECK_EQ(split("a:b::c", ":"), str_vec({"a", "b", "", "c"}));
+        CHECK_EQ(split("a:b:::c", ":"), str_vec({"a", "b", "", "", "c"}));
+        CHECK_EQ(split(":a:b:c", ":"), str_vec({"", "a", "b", "c"}));
+        CHECK_EQ(split("::a:b:c", ":"), str_vec({"", "", "a", "b", "c"}));
+        CHECK_EQ(split("a:b:c:", ":"), str_vec({"a", "b", "c", ""}));
+        CHECK_EQ(split("a:b:c::", ":"), str_vec({"a", "b", "c", "", ""}));
+        CHECK_EQ(split("", ":"), str_vec({""}));
+
+        CHECK_EQ(split("12345", "1"), std::vector<std::string_view>({"", "2345"}));
+        CHECK_EQ(split("12345", "23"), std::vector<std::string_view>({"1", "45"}));
+        CHECK_EQ(split("12345", "a"), std::vector<std::string_view>({"12345"}));
+        CHECK_EQ(split("12345", ""), std::vector<std::string_view>({"12345"}));
+    }
+
+    SUBCASE("w/o delim") {
+        CHECK_EQ(split("a b c"), str_vec({"a", "b", "c"}));
+        CHECK_EQ(split("a\t b c"), str_vec({"a", "b", "c"}));
+        CHECK_EQ(split("a    b       c"), str_vec({"a", "b", "c"}));
+        CHECK_EQ(split("   a    b \t \n c"), str_vec({"a", "b", "c"}));
+        CHECK_EQ(split("\n   a    b       c\t "), str_vec({"a", "b", "c"}));
+        CHECK_EQ(split(""), str_vec{});
+        CHECK_EQ(split("\t\v\n\r"), str_vec{});
+        CHECK_EQ(split(" \n "), str_vec{});
+    }
+}
+
 TEST_CASE("split1") {
     auto str_pair = std::make_pair<std::string, std::string>;
 
