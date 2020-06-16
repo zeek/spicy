@@ -89,8 +89,8 @@ void plugin::Zeek_Spicy::Driver::_initialize() {
     driver_options.dump_code = internal_const_val("Spicy::dump_code")->AsBool();
     driver_options.report_times = internal_const_val("Spicy::report_times")->AsBool();
 
-    for ( auto s : util::split(internal_const_val("Spicy::codegen_debug")->AsStringVal()->ToStdString(), ",") ) {
-        s = util::trim(s);
+    for ( auto s : hilti::util::split(internal_const_val("Spicy::codegen_debug")->AsStringVal()->ToStdString(), ",") ) {
+        s = hilti::util::trim(s);
 
         if ( s.size() && ! driver_options.logger->debugEnable(s) )
             reporter::fatalError(hilti::rt::fmt("Unknown Spicy debug stream '%s'", s));

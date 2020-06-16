@@ -5,7 +5,7 @@
 #include <hilti/base/cache.h>
 #include <hilti/base/util.h>
 
-namespace util {
+namespace hilti::util {
 
 /**
  * Specialized cache that makes IDs unique, based on previously created ones.
@@ -42,4 +42,4 @@ public:
     void remove(const ID& id) { this->Cache<ID, bool>::remove(id); }
 };
 
-} // namespace util
+} // namespace hilti::util

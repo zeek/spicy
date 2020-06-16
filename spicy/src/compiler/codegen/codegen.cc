@@ -25,7 +25,7 @@ using namespace spicy;
 using namespace spicy::detail;
 using namespace spicy::detail::codegen;
 
-using util::fmt;
+using hilti::util::fmt;
 
 namespace builder = hilti::builder;
 
@@ -336,7 +336,7 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
 } // anonymous namespace
 
 bool CodeGen::compileModule(hilti::Node* root, bool init, hilti::Unit* u) {
-    util::timing::Collector _("spicy/compiler/codegen");
+    hilti::util::timing::Collector _("spicy/compiler/codegen");
 
     _hilti_unit = u;
     _root = root;

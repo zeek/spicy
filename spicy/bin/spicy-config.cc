@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    cout << util::join(result.begin(), result.end(), " ") << std::endl;
+    cout << hilti::util::join(result.begin(), result.end(), " ") << std::endl;
 
     return 0;
 }

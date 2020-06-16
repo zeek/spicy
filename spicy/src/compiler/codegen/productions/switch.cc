@@ -25,19 +25,19 @@ std::string codegen::production::Switch::render() const {
         std::vector<std::string> exprs;
 
         for ( const auto& e : c.first )
-            exprs.push_back(util::fmt("%s", e));
+            exprs.push_back(hilti::util::fmt("%s", e));
 
         if ( r.size() )
             r += " | ";
 
-        r += util::fmt("[%s] -> %s", util::join(exprs, ","), c.second.symbol());
+        r += hilti::util::fmt("[%s] -> %s", hilti::util::join(exprs, ","), c.second.symbol());
     }
 
     if ( _default ) {
         if ( r.size() )
             r += " | ";
 
-        r += util::fmt(" | * -> %s", _default->symbol());
+        r += hilti::util::fmt(" | * -> %s", _default->symbol());
     }
 
     return r;

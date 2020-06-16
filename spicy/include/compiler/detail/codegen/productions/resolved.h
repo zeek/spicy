@@ -22,7 +22,7 @@ public:
     Resolved(const Location& l = location::None)
         : ProductionBase("", l),
           _symbol(std::make_shared<std::string>("<unresolved>")),
-          _rsymbol(util::fmt("ref:%d", ++_cnt)) {}
+          _rsymbol(hilti::util::fmt("ref:%d", ++_cnt)) {}
     std::string render() const { return symbol(); }
 
     const std::string& symbol() const { return *_symbol; }

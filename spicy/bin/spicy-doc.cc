@@ -25,7 +25,7 @@ static std::string formatType(const hilti::Type& t) {
 }
 
 #define KIND_TO_STRING(k)                                                                                              \
-    case k: return util::split(#k, "::").back();
+    case k: return hilti::util::split(#k, "::").back();
 
 static std::string kindToString(hilti::operator_::Kind kind) {
     switch ( kind ) {
@@ -76,7 +76,7 @@ static std::string kindToString(hilti::operator_::Kind kind) {
         KIND_TO_STRING(hilti::operator_::Kind::Unknown);
         KIND_TO_STRING(hilti::operator_::Kind::Unset);
 
-        default: util::cannot_be_reached();
+        default: hilti::util::cannot_be_reached();
     }
 }
 

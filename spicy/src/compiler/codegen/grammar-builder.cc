@@ -14,7 +14,7 @@ using namespace spicy;
 using namespace spicy::detail;
 using namespace spicy::detail::codegen;
 
-using util::fmt;
+using hilti::util::fmt;
 
 namespace {
 
@@ -25,8 +25,8 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
 
     using CurrentField = std::pair<const spicy::type::unit::item::Field&, std::reference_wrapper<hilti::Node>&>;
     std::vector<CurrentField> fields;
-    util::Cache<std::string, Production> cache;
-    util::Uniquer<std::string> uniquer;
+    hilti::util::Cache<std::string, Production> cache;
+    hilti::util::Uniquer<std::string> uniquer;
 
     auto currentField() { return fields.back(); }
 

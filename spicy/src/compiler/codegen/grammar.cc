@@ -7,7 +7,7 @@
 using namespace spicy;
 using namespace spicy::detail;
 using namespace spicy::detail::codegen;
-using util::fmt;
+using hilti::util::fmt;
 
 class UnknownReference : public std::runtime_error {
 public:
@@ -120,7 +120,7 @@ void Grammar::_simplify() {
         changed = false;
         auto closure = _computeClosure(*root());
 
-        for ( const auto& p : util::set_difference(util::map_values(_prods), closure) ) {
+        for ( const auto& p : hilti::util::set_difference(hilti::util::map_values(_prods), closure) ) {
             _prods.erase(p.symbol());
             _nterms.erase(std::remove(_nterms.begin(), _nterms.end(), p.symbol()), _nterms.end());
             changed = true;
@@ -155,7 +155,7 @@ bool Grammar::_add(std::map<std::string, std::set<std::string>>* tbl, const Prod
     assert(t != tbl->end());
 
     auto set = t->second;
-    auto union_ = util::set_union(set, src);
+    auto union_ = hilti::util::set_union(set, src);
 
     if ( union_.size() == set.size() )
         // All in there already.
@@ -202,7 +202,7 @@ std::set<std::string> Grammar::_getFirstOfRhs(const std::vector<Production>& rhs
         if ( p.isTerminal() )
             return {p.symbol()};
 
-        first = util::set_union(first, _first[p.symbol()]);
+        first = hilti::util::set_union(first, _first[p.symbol()]);
 
         if ( ! _nullable[p.symbol()] )
             break;
@@ -286,11 +286,11 @@ Result<Nothing> Grammar::_computeTables() {
             auto rhs = *r++;
 
             for ( const auto& term : _getFirstOfRhs(rhs) )
-                laheads[i] = util::set_union(laheads[i], {term});
+                laheads[i] = hilti::util::set_union(laheads[i], {term});
 
             if ( _isNullable(rhs.begin(), rhs.end()) ) {
                 for ( const auto& term : _follow[sym] )
-                    laheads[i] = util::set_union(laheads[i], {term});
+                    laheads[i] = hilti::util::set_union(laheads[i], {term});
             }
         }
 
@@ -343,13 +343,13 @@ Result<Nothing> Grammar::_check() {
             return hilti::result::Error(
                 fmt("no look-ahead symbol for either alternative in %s\n", _productionLocation(p)));
 
-        auto isect = util::set_intersection(syms1, syms2);
+        auto isect = hilti::util::set_intersection(syms1, syms2);
 
         if ( isect.size() )
             return hilti::result::Error(fmt("%s is ambiguous for look-ahead symbol(s) { %s }\n", _productionLocation(p),
-                                            util::join(isect, ", ")));
+                                            hilti::util::join(isect, ", ")));
 
-        for ( const auto& q : util::set_union(laheads.first, laheads.second) ) {
+        for ( const auto& q : hilti::util::set_union(laheads.first, laheads.second) ) {
             if ( ! q.isTerminal() )
                 return hilti::result::Error(
                     fmt("%s: look-ahead cannot depend on non-terminal\n", _productionLocation(p)));
@@ -387,12 +387,12 @@ void Grammar::printTables(std::ostream& out, bool verbose) {
     out << std::endl << "  -- First_1:" << std::endl;
 
     for ( const auto& i : _first )
-        out << fmt("     %s = { %s }", i.first, util::join(i.second, ", ")) << std::endl;
+        out << fmt("     %s = { %s }", i.first, hilti::util::join(i.second, ", ")) << std::endl;
 
     out << std::endl << "  -- Follow:" << std::endl;
 
     for ( const auto& i : _follow )
-        out << fmt("     %s = { %s }", i.first, util::join(i.second, ", ")) << std::endl;
+        out << fmt("     %s = { %s }", i.first, hilti::util::join(i.second, ", ")) << std::endl;
 
     out << std::endl;
 }

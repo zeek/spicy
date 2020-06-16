@@ -3,13 +3,12 @@
 import argparse
 import string
 import sys
-import os
 import re
 
 Template = """
 class ${class};
 
-${class_comment}class Concept : public util::type_erasure::ConceptBase {
+${class_comment}class Concept : public hilti::util::type_erasure::ConceptBase {
 public:
     $concept_ctors
     virtual ~Concept() = default;
@@ -22,7 +21,7 @@ private:
 };
 
 template<typename T>
-using ModelBase = util::type_erasure::ModelBase<T, Concept${attrs_types}>;
+using ModelBase = hilti::util::type_erasure::ModelBase<T, Concept${attrs_types}>;
 
 template<class T>
 class Model : public ModelBase<T> {
@@ -35,7 +34,7 @@ public:
     std::shared_ptr<Concept> _clone_ptr() const final;
 };
 
-using ErasedBase = util::type_erasure::ErasedBase<$class_requires, Concept, Model${attrs_types}>;
+using ErasedBase = hilti::util::type_erasure::ErasedBase<$class_requires, Concept, Model${attrs_types}>;
 
 class $class : public ErasedBase$class_traits {
 public:
@@ -59,7 +58,7 @@ $class Model<T>::_clone() const { return T(data()); }
 
 template<typename T>
 std::shared_ptr<Concept> Model<T>::_clone_ptr() const {
-    if constexpr ( std::is_base_of<util::type_erasure::trait::Singleton, T>::value )
+    if constexpr ( std::is_base_of<hilti::util::type_erasure::trait::Singleton, T>::value )
         return nullptr;
     else
         return std::make_shared<Model>(T(data()));

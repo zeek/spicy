@@ -128,7 +128,7 @@ private:
     const int _sinks_start;
     const int _sinks_end;
 
-    static inline util::Uniquer<ID> _uniquer;
+    static inline hilti::util::Uniquer<ID> _uniquer;
 };
 
 } // namespace spicy::type::unit::item

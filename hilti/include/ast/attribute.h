@@ -74,17 +74,17 @@ public:
             if ( auto e = value().tryAs<Expression>() )
                 return *e;
 
-            return result::Error(util::fmt("value for attribute '%s' must be an expression", _tag));
+            return result::Error(hilti::util::fmt("value for attribute '%s' must be an expression", _tag));
         }
 
         if constexpr ( std::is_same<T, std::string>::value ) {
             if ( auto e = value().tryAs<expression::Ctor>() )
                 if ( auto s = e->ctor().tryAs<ctor::String>() )
                     return s->value();
-            return result::Error(util::fmt("value for attribute '%s' must be a string", _tag));
+            return result::Error(hilti::util::fmt("value for attribute '%s' must be a string", _tag));
         }
 
-        logger().internalError(util::fmt("unsupported attribute value type requested (%s)", typeid(T).name()));
+        logger().internalError(hilti::util::fmt("unsupported attribute value type requested (%s)", typeid(T).name()));
     }
 
     /** Implements the `Node` interface. */

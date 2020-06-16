@@ -96,7 +96,7 @@ public:
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return util::slice(childs(), 1); }
+    auto typeParameters() const { return hilti::util::slice(childs(), 1); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Node` interface. */

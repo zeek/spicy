@@ -29,7 +29,7 @@ public:
     bool atomic() const { return false; }
     bool supportsSynchronize() const { return hasSize() || (_prods.size() && _prods.front().supportsSynchronize()); }
     std::string render() const {
-        return util::join(util::transform(_prods, [](const auto& p) { return p.symbol(); }), " ");
+        return hilti::util::join(hilti::util::transform(_prods, [](const auto& p) { return p.symbol(); }), " ");
     }
 
 public:

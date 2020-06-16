@@ -98,8 +98,9 @@ void Driver::usage(std::ostream& out) {
 }
 
 hilti::Result<hilti::Nothing> Driver::parseOptionsPreScript(const std::string& options) {
-    auto args = util::filter(util::transform(util::split(options), [](auto o) { return util::trim(o); }),
-                             [](auto o) { return o.size(); });
+    auto args = hilti::util::filter(hilti::util::transform(hilti::util::split(options),
+                                                           [](auto o) { return hilti::util::trim(o); }),
+                                    [](auto o) { return o.size(); });
 
     auto idx = 0;
     auto argc = args.size();
@@ -118,9 +119,9 @@ hilti::Result<hilti::Nothing> Driver::parseOptionsPreScript(const std::string& o
                     return hilti::result::Error("argument missing");
 
                 auto optarg = args[idx++];
-                for ( const auto& s : util::split(optarg, ",") ) {
+                for ( const auto& s : hilti::util::split(optarg, ",") ) {
                     if ( ! ::hilti::logger().debugEnable(s) )
-                        return hilti::result::Error(util::fmt("unknown debug stream '%s'", s));
+                        return hilti::result::Error(hilti::util::fmt("unknown debug stream '%s'", s));
                 }
                 break;
             }
@@ -142,8 +143,9 @@ hilti::Result<hilti::Nothing> Driver::parseOptionsPostScript(const std::string& 
                                                              hilti::Options* compiler_options) {
     // We do our own options parsing here (instead of using getopt()) so that
     // we don't interfere with anything Zeek-side.
-    auto args = util::filter(util::transform(util::split(options), [](auto o) { return util::trim(o); }),
-                             [](auto o) { return o.size(); });
+    auto args = hilti::util::filter(hilti::util::transform(hilti::util::split(options),
+                                                           [](auto o) { return hilti::util::trim(o); }),
+                                    [](auto o) { return o.size(); });
 
     auto idx = 0;
     auto argc = args.size();
@@ -206,7 +208,7 @@ hilti::Result<hilti::Nothing> Driver::parseOptionsPostScript(const std::string& 
                 break;
             }
 
-            default: return hilti::result::Error(util::fmt("option -%c not supported", c));
+            default: return hilti::result::Error(hilti::util::fmt("option -%c not supported", c));
         }
     }
 
@@ -220,25 +222,25 @@ hilti::Result<hilti::Nothing> Driver::loadFile(std::filesystem::path file, const
     }
 
     if ( ! std::filesystem::exists(file) ) {
-        if ( auto path = util::findInPaths(file, hiltiOptions().library_paths) )
+        if ( auto path = hilti::util::findInPaths(file, hiltiOptions().library_paths) )
             file = *path;
         else
-            return hilti::result::Error(util::fmt("Spicy plugin cannot find file %s", file));
+            return hilti::result::Error(hilti::util::fmt("Spicy plugin cannot find file %s", file));
     }
 
-    auto rpath = util::normalizePath(file);
+    auto rpath = hilti::util::normalizePath(file);
     auto ext = rpath.extension();
 
     if ( ext == ".evt" ) {
-        ZEEK_DEBUG(util::fmt("Loading EVT file %s", rpath));
+        ZEEK_DEBUG(hilti::util::fmt("Loading EVT file %s", rpath));
         if ( _glue->loadEvtFile(rpath) )
             return hilti::Nothing();
         else
-            return hilti::result::Error(util::fmt("error loading EVT file %s", rpath));
+            return hilti::result::Error(hilti::util::fmt("error loading EVT file %s", rpath));
     }
 
     if ( ext == ".spicy" ) {
-        ZEEK_DEBUG(util::fmt("Loading Spicy file %s", rpath));
+        ZEEK_DEBUG(hilti::util::fmt("Loading Spicy file %s", rpath));
         if ( auto rc = addInput(rpath); ! rc )
             return rc.error();
 
@@ -246,7 +248,7 @@ hilti::Result<hilti::Nothing> Driver::loadFile(std::filesystem::path file, const
     }
 
     if ( ext == ".hlt" ) {
-        ZEEK_DEBUG(util::fmt("Loading HILTI file %s", rpath));
+        ZEEK_DEBUG(hilti::util::fmt("Loading HILTI file %s", rpath));
         if ( auto rc = addInput(rpath) )
             return hilti::Nothing();
         else
@@ -254,14 +256,14 @@ hilti::Result<hilti::Nothing> Driver::loadFile(std::filesystem::path file, const
     }
 
     if ( ext == ".hlto" ) {
-        ZEEK_DEBUG(util::fmt("Loading precompiled HILTI code %s", rpath));
+        ZEEK_DEBUG(hilti::util::fmt("Loading precompiled HILTI code %s", rpath));
         if ( auto rc = addInput(rpath) )
             return hilti::Nothing();
         else
             return rc.error();
     }
 
-    return hilti::result::Error(util::fmt("unknown file type passed to Spicy loader: %s", rpath));
+    return hilti::result::Error(hilti::util::fmt("unknown file type passed to Spicy loader: %s", rpath));
 }
 
 hilti::Result<hilti::Nothing> Driver::compile() {
@@ -295,7 +297,7 @@ void Driver::hookNewASTPreCompilation(const ID& id, const std::optional<std::fil
         v.dispatch(i);
 
     for ( const auto& e : v.enums ) {
-        ZEEK_DEBUG(util::fmt("  Got public enum type '%s'", e.id));
+        ZEEK_DEBUG(hilti::util::fmt("  Got public enum type '%s'", e.id));
         hookNewEnumType(e);
         _enums.push_back(e);
     }
@@ -312,7 +314,7 @@ void Driver::hookNewASTPostCompilation(const ID& id, const std::optional<std::fi
         v.dispatch(i);
 
     for ( auto&& u : v.units ) {
-        ZEEK_DEBUG(util::fmt("  Got unit type '%s'", u.id));
+        ZEEK_DEBUG(hilti::util::fmt("  Got unit type '%s'", u.id));
         hookNewUnitType(u);
         _units[u.id] = std::move(u);
     }

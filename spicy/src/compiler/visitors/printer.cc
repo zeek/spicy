@@ -8,7 +8,7 @@
 #include <spicy/compiler/detail/visitors.h>
 
 using namespace spicy;
-using util::fmt;
+using hilti::util::fmt;
 
 namespace {
 
@@ -65,7 +65,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 } // anonymous namespace
 
 bool detail::printAST(const hilti::Node& root, hilti::printer::Stream& out) {
-    util::timing::Collector _("spicy/printer");
+    hilti::util::timing::Collector _("spicy/printer");
 
     return Visitor(out).dispatch(root);
 }

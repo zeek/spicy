@@ -12,7 +12,7 @@
 using namespace spicy;
 using namespace spicy::detail;
 using namespace spicy::detail::codegen;
-using util::fmt;
+using hilti::util::fmt;
 
 namespace builder = hilti::builder;
 
@@ -79,7 +79,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 return builder::ternary(builder::and_(pb->waitForInputOrEod(len), cond),
                                         builder::sum(builder::begin(state().cur), len), builder::begin(state().cur));
 
-            default: util::cannot_be_reached();
+            default: hilti::util::cannot_be_reached();
         }
     }
 
@@ -147,7 +147,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 // RegExp are special-cased by the parser generator and handled
                 // directly there, so that we should get here in try mode.
                 hilti::logger().internalError("unexpected literal mode Try when parsing regexp literals");
-            default: util::cannot_be_reached();
+            default: hilti::util::cannot_be_reached();
         }
     }
 
@@ -200,7 +200,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 return builder::begin(builder::ternary(match, new_cur, old_cur));
             }
 
-            default: util::cannot_be_reached();
+            default: hilti::util::cannot_be_reached();
         }
     }
 

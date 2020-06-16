@@ -4,6 +4,8 @@
 
 #include <functional>
 
+#include <hilti/compiler/context.h>
+
 #include <spicy/ast/aliases.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
@@ -40,11 +42,11 @@ enum class LiteralMode {
 };
 
 namespace detail {
-constexpr util::enum_::Value<LiteralMode> literal_modes[] = {{LiteralMode::Default, "default"},
-                                                             {LiteralMode::Try, "try"}};
+constexpr hilti::util::enum_::Value<LiteralMode> literal_modes[] = {{LiteralMode::Default, "default"},
+                                                                    {LiteralMode::Try, "try"}};
 } // namespace detail
 
-constexpr auto to_string(LiteralMode cc) { return util::enum_::to_string(cc, detail::literal_modes); }
+constexpr auto to_string(LiteralMode cc) { return hilti::util::enum_::to_string(cc, detail::literal_modes); }
 
 namespace look_ahead {
 

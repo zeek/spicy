@@ -39,7 +39,7 @@ public:
             for ( const auto& info : a.second ) {
                 int status;
                 auto n = abi::__cxa_demangle(info.typename_().c_str(), nullptr, nullptr, &status);
-                HILTI_DEBUG(logging::debug::Overloads, util::fmt("registered %s for operator '%s'", (n ? n : info.typename_().c_str()), to_string(info.kind())));
+                HILTI_DEBUG(logging::debug::Overloads, hilti::util::fmt("registered %s for operator '%s'", (n ? n : info.typename_().c_str()), to_string(info.kind())));
             }
         }
 #endif

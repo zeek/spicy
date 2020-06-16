@@ -12,7 +12,7 @@
 
 #include <hilti/base/util.h>
 
-namespace util::type_erasure {
+namespace hilti::util::type_erasure {
 
 // If this defined, we track the number of type-erased instances by their
 // actual type, and then print out a summary of the top types at the end as
@@ -101,7 +101,7 @@ public:
         if constexpr ( std::is_base_of<trait::TypeErased, T>::value )
             return data().typename_(); // NOLINT
 
-        return util::typename_<T>();
+        return hilti::util::typename_<T>();
     }
 
     std::pair<const ConceptBase*, const void*> _childAs(const std::type_info& ti) const final {
@@ -180,10 +180,10 @@ public:
         if ( auto p = _tryAs<T>() )
             return *p;
 
-        std::cerr << util::fmt("internal error: unexpected type, want %s but have %s", util::typename_<T>(),
-                               typename_())
+        std::cerr << hilti::util::fmt("internal error: unexpected type, want %s but have %s",
+                                      hilti::util::typename_<T>(), typename_())
                   << std::endl;
-        util::abort_with_backtrace();
+        hilti::util::abort_with_backtrace();
     }
 
     /**
@@ -195,10 +195,10 @@ public:
         if ( auto p = _tryAs<T>() )
             return *p;
 
-        std::cerr << util::fmt("internal error: unexpected type, want %s but have %s", util::typename_<T>(),
-                               typename_())
+        std::cerr << hilti::util::fmt("internal error: unexpected type, want %s but have %s",
+                                      hilti::util::typename_<T>(), typename_())
                   << std::endl;
-        util::abort_with_backtrace();
+        hilti::util::abort_with_backtrace();
     }
 
     /**
@@ -273,4 +273,4 @@ private:
     std::shared_ptr<Concept> _data;
 };
 
-} // namespace util::type_erasure
+} // namespace hilti::util::type_erasure

@@ -48,7 +48,7 @@ static hilti::Type iteratorForType(hilti::Type t, bool const_, hilti::Meta m) {
     if ( hilti::type::isIterable(t) )
         return t.iteratorType(const_);
     else {
-        hilti::logger().error(util::fmt("type '%s' is not iterable", t), m.location());
+        hilti::logger().error(hilti::util::fmt("type '%s' is not iterable", t), m.location());
         return hilti::type::Error(m);
         }
 }
@@ -57,7 +57,7 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
     if ( hilti::type::isViewable(t) )
         return t.viewType();
     else {
-        hilti::logger().error(util::fmt("type '%s' is not viewable", t), m.location());
+        hilti::logger().error(hilti::util::fmt("type '%s' is not viewable", t), m.location());
         return hilti::type::Error(m);
         }
 }
@@ -276,9 +276,9 @@ module        : MODULE local_id ';'
 local_id      : IDENT                            { std::string name($1);
 
                                                    if (name.find('-') != std::string::npos)
-                                                       hilti::logger().error(util::fmt("Invalid ID '%s': cannot contain '-'", name), __loc__.location());
+                                                       hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot contain '-'", name), __loc__.location());
                                                    if (name.substr(0, 2) == "__")
-                                                       hilti::logger().error(util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
+                                                       hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
 
                                                    $$ = hilti::ID(std::move(name), __loc__);
                                                  }
@@ -730,7 +730,7 @@ opt_unit_hook_attributes
 
 unit_hook_id: { driver->enableHookIDMode(); }
               HOOK_IDENT
-              { driver->disableHookIDMode(); } { $$ = hilti::ID(util::replace($2, "%", "0x25_"), __loc__); }
+              { driver->disableHookIDMode(); } { $$ = hilti::ID(hilti::util::replace($2, "%", "0x25_"), __loc__); }
 
 unit_hook_attribute
               : FOREACH                          { $$ = hilti::Attribute("foreach", __loc__); }

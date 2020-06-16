@@ -14,7 +14,7 @@ using namespace hilti::rt;
 
 namespace std {
 ostream& operator<<(ostream& stream, const vector<string_view>& xs) {
-    return stream << '[' << util::join(xs, ", ") << ']';
+    return stream << '[' << hilti::util::join(xs, ", ") << ']';
 }
 } // namespace std
 

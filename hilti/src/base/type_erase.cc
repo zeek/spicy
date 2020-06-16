@@ -6,7 +6,7 @@
 #include <hilti/base/type_erase.h>
 #include <hilti/base/util.h>
 
-using namespace util;
+using namespace hilti::util;
 
 #ifdef HILTI_TYPE_ERASURE_PROFILE
 namespace util::type_erasure::detail {
