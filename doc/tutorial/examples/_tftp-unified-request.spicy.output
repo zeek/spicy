@@ -1,0 +1,4 @@
+# Automatically generated; do not edit. -- <HASH> cat tutorial/examples/udp-contents.orig.1367411051.972852.dat | spicy-driver %INPUT/cat udp-contents.orig.1367411051.972852.dat | spicy-driver tftp.spicy/False
+# cat udp-contents.orig.1367411051.972852.dat | spicy-driver tftp.spicy
+We got a read request.
+[$opcode=Opcode::RRQ, $rrq=[$filename=b"rfc1350.txt", $mode=b"octet"], $wrq=(not set), $data=(not set), $ack=(not set), $error=(not set)]

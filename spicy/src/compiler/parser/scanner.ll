@@ -50,7 +50,7 @@ address6  ("["({hexs}:){7}{hexs}"]")|("["0x{hexs}({hexs}|:)*"::"({hexs}|:)*"]")|
 
 attribute \&(bit-order|byte-order|chunked|convert|count|cxxname|default|eod|internal|ipv4|ipv6|length|no-emit|nosub|on-heap|optional|parse-at|parse-from|priority|size|static|synchronize|transient|type|until|until-including|while)
 blank     [ \t]
-comment   [ \t]*#[^\n]*\n
+comment   [ \t]*#[^\n]*\n?
 digit     [0-9]
 digits    {digit}+
 hexit     [0-9a-fA-F]

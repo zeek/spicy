@@ -1,0 +1,46 @@
+# Automatically generated; edit in Sphinx source code, not here.
+# %hide-begin%
+module TFTP;
+
+type Opcode = enum { RRQ = 1, WRQ = 2, DATA = 3, ACK = 4, ERROR = 5 };
+
+public type Packet = unit {
+    opcode: uint16 &convert=Opcode($$);
+# %hide-end%
+
+    switch ( self.opcode ) {
+        Opcode::RRQ   -> rrq:   ReadRequest;
+        Opcode::WRQ   -> wrq:   WriteRequest;
+        Opcode::DATA  -> data:  Data;
+        Opcode::ACK   -> ack:   Acknowledgement;
+        Opcode::ERROR -> error: Error;
+        };
+
+# %hide-begin%
+    on %done { print self; }
+};
+
+type ReadRequest = unit {
+    filename: bytes &until=b"\x00";
+    mode:     bytes &until=b"\x00";
+};
+
+type WriteRequest = unit {
+    filename: bytes &until=b"\x00";
+    mode:     bytes &until=b"\x00";
+};
+
+type Data = unit {
+    num:  uint16;
+    data: bytes &eod; # parse until end of data (i.e., packet) is reached
+};
+
+type Acknowledgement = unit {
+    num: uint16;
+};
+
+type Error = unit {
+    code: uint16;
+    msg:  bytes &until=b"\x00";
+};
+# %hide-end%

@@ -1,0 +1,11 @@
+--2020-06-04 15:26:06--  https://wiki.wireshark.org/SampleCaptures?action=AttachFile
+Resolving wiki.wireshark.org (wiki.wireshark.org)... 172.67.75.43, 104.26.11.240, 104.26.10.240, ...
+Connecting to wiki.wireshark.org (wiki.wireshark.org)|172.67.75.43|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘SampleCaptures?action=AttachFile’
+
+SampleCaptures?action=AttachFile                   [<=>                                                                                                  ]       0  --.-KB/s               SampleCaptures?action=AttachFile                   [ <=>                                                                                                 ] 454.28K  --.-KB/s    in 0.1s    
+
+2020-06-04 15:26:08 (3.31 MB/s) - ‘SampleCaptures?action=AttachFile’ saved [465179]
+

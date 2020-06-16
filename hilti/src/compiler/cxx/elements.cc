@@ -632,7 +632,7 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::Type&
 
     f.enterNamespace(id.namespace_());
 
-    if ( ! x.no_using && id.local() )
+    if ( ! x.no_using && id.local() && ! util::startsWith(x.type, "struct") )
         f << fmt("using %s = ", id.local()) << x.type << eos();
     else
         f << x.type << eos();

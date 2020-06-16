@@ -5,7 +5,7 @@
     Returns an iterator representing the offset *i* inside the bytes
     value.
 
-.. spicy:method:: bytes::decode bytes decode False string (charset: enum~{~~} = hilti::Charset::UTF8)
+.. spicy:method:: bytes::decode bytes decode False string (charset: enum = hilti::Charset::UTF8)
 
     Interprets the ``bytes`` as representing an binary string encoded with
     the given character set, and converts it into a UTF8 string.
@@ -27,7 +27,7 @@
     as printable strings. The portions will be separated by the bytes
     value to which this method is invoked as a member.
 
-.. spicy:method:: bytes::lower bytes lower False bytes (charset: enum~{~~} = hilti::Charset::UTF8)
+.. spicy:method:: bytes::lower bytes lower False bytes (charset: enum = hilti::Charset::UTF8)
 
     Returns a lower-case version of the bytes value, assuming it is
     encoded in character set *charset*.
@@ -86,7 +86,7 @@
     converts that into a signed integer, using a base of *base*. *base*
     must be between 2 and 36. If *base* is not given, the default is 10.
 
-.. spicy:method:: bytes::to_int bytes to_int False int<64> (byte_order: enum~{~~})
+.. spicy:method:: bytes::to_int bytes to_int False int<64> (byte_order: enum)
 
     Interprets the ``bytes`` as representing an binary number encoded with
     the given byte order, and converts it into signed integer.
@@ -98,7 +98,7 @@
     time value using a base of *base*. If *base* is not given, the default
     is 10.
 
-.. spicy:method:: bytes::to_time bytes to_time False time (byte_order: enum~{~~})
+.. spicy:method:: bytes::to_time bytes to_time False time (byte_order: enum)
 
     Interprets the ``bytes`` as representing as number of seconds since
     the epoch in the form of an binary number encoded with the given byte
@@ -110,12 +110,12 @@
     converts that into an unsigned integer, using a base of *base*. *base*
     must be between 2 and 36. If *base* is not given, the default is 10.
 
-.. spicy:method:: bytes::to_uint bytes to_uint False uint<64> (byte_order: enum~{~~})
+.. spicy:method:: bytes::to_uint bytes to_uint False uint<64> (byte_order: enum)
 
     Interprets the ``bytes`` as representing an binary number encoded with
     the given byte order, and converts it into an unsigned integer.
 
-.. spicy:method:: bytes::upper bytes upper False bytes (charset: enum~{~~} = hilti::Charset::UTF8)
+.. spicy:method:: bytes::upper bytes upper False bytes (charset: enum = hilti::Charset::UTF8)
 
     Returns an upper-case version of the bytes value, assuming it is
     encoded in character set *charset*.

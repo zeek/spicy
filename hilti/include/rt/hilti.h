@@ -9,6 +9,7 @@
 
 #include <iostream>
 
+#include <hilti/rt/configuration.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/util.h>
 
@@ -17,23 +18,33 @@ namespace hilti::rt {
 /** Corresponds to `hilti::print`. */
 template<typename T>
 void print(const T& t, bool newline = true) {
-    std::cout << hilti::rt::to_string_for_print(t);
+    if ( ! configuration::get().cout )
+        return;
+
+    auto& cout = configuration::get().cout->get();
+
+    cout << hilti::rt::to_string_for_print(t);
 
     if ( newline )
-        std::cout << std::endl;
+        cout << std::endl;
     else
-        std::cout.flush();
+        cout.flush();
 }
 
 /** Corresponds to `hilti::printValues`. */
 template<typename T, typename std::enable_if_t<is_tuple<T>::value>* = nullptr>
 void printValues(const T& t, bool newline = true) {
-    std::cout << join_tuple_for_print(t);
+    if ( ! configuration::get().cout )
+        return;
+
+    auto& cout = configuration::get().cout->get();
+
+    cout << join_tuple_for_print(t);
 
     if ( newline )
-        std::cout << std::endl;
+        cout << std::endl;
     else
-        std::cout.flush();
+        cout.flush();
 }
 
 // Just for testing: Declaring a function that's not implementd.

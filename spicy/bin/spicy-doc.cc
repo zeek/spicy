@@ -129,7 +129,17 @@ int main(int argc, char** argv) {
             operator_["namespace"] = o.docNamespace();
             operator_["rtype"] = formatType(o.result({}));
 
-            if ( o.kind() == hilti::operator_::Kind::MemberCall ) {
+            if ( o.kind() == hilti::operator_::Kind::Call ) {
+                auto operands = o.operands();
+                auto callee = operands[0];
+                auto params = std::get<hilti::Type>(operands[1].type).as<hilti::type::OperandList>();
+
+                operator_["operands"].push_back(operandToJSON(callee));
+
+                for ( const auto& p : params.operands() )
+                    operator_["operands"].push_back(operandToJSON(p));
+            }
+            else if ( o.kind() == hilti::operator_::Kind::MemberCall ) {
                 auto operands = o.operands();
                 auto self = operands[0];
                 auto method = std::get<hilti::Type>(operands[1].type).as<hilti::type::Member>();

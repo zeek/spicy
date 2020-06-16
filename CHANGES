@@ -1,4 +1,26 @@
 
+0.4.0-484 | 2020-06-16 07:15:25 +0000
+
+  * Add new tutorial chapter. (Robin Sommer, Corelight)
+
+  * Add Zeek-side option "Spicy::enable_print" to control whether the
+    output of Spicy-side "print" output is shown. Default is off
+    (which is a change in behaviour compared to previous versions).
+
+  * Clean up representation of type arguments and function calls in
+    auto-generated operator reference. (Robin Sommer, Corelight)
+
+  * Make the target stream of hilti::print() configurable. Default
+    remains standard output. Leaving it unset will silence
+    hilti::print(). (Robin Sommer, Corelight)
+
+  * Do not use use "using X === ..." for forward-declaring struct
+    types in C++ output, as that could accidentally pull in IDs from
+    outer namespaces. (Robin Sommer, Corelight)
+
+  * Fix scanner for accepting comment lines at end of file without
+    terminating newline. (Robin Sommer, Corelight)
+
 0.4.0-477 | 2020-06-15 07:36:43 +0000
 
   * GH-293: Fix precedence of "in" operator. (Robin Sommer, Corelight)

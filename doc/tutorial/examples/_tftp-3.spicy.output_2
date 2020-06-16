@@ -1,0 +1,3 @@
+# Automatically generated; do not edit. -- <HASH> cat tutorial/examples/udp-contents.resp.1367411052.081790.dat | spicy-driver %INPUT/cat udp-contents.resp.1367411052.081790.dat | spicy-driver tftp.spicy/True
+# cat udp-contents.resp.1367411052.081790.dat | spicy-driver tftp.spicy
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: no matching case in switch statement (:7:5-9:7)

@@ -1,6 +1,6 @@
 # @TEST-REQUIRES: have-zeek-plugin-jit
 #
-# @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace tupleenum.spicy ./tupleenum.evt %INPUT | sort >output
+# @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace tupleenum.spicy ./tupleenum.evt %INPUT Spicy::enable_print=T | sort >output
 # @TEST-EXEC: btest-diff output
 
 type Foo: record {

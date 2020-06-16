@@ -93,6 +93,8 @@ an ``*.evt``.
     The syntax for ``*.evt`` files comes with some legacy pieces that
     aren't particularly pretty. We may clean that up at some point.
 
+.. _zeek_evt_analyzer_setup:
+
 Analyzer Setup
 --------------
 
@@ -416,7 +418,6 @@ output. To repeat the :ref:`example <example_zeek_my_http>` from the
 
     # spicyz -o my-http-analyzer.hlto my-http.spicy my-http.evt
     # zeek -Cr request-line.pcap my-http-analyzer.hlto my-http.zeek
-    GET, /index.html, 1.0
     Zeek saw from 127.0.0.1: GET /index.html 1.0
 
 While this approach requires an additional step every time
@@ -508,6 +509,8 @@ set ``SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
 
 To get that usage message, set ``SPICY_PLUGIN_OPTIONS=-h`` when
 running Zeek.
+
+.. _zeek_debugging:
 
 Debugging
 =========

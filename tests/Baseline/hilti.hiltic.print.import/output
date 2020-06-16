@@ -6,7 +6,7 @@
 #include <hilti/rt/libhilti.h>
 
 namespace __hlt::Bar {
-    using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+    struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
         std::string bar{};
         template<typename F> void __visit(F _) const { _("bar", bar); }
     };
@@ -17,7 +17,7 @@ namespace __hlt::Bar {
 }
 
 namespace __hlt::Foo {
-    using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+    struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
         std::string foo{};
         template<typename F> void __visit(F _) const { _("foo", foo); }
     };
@@ -51,7 +51,7 @@ extern void __hlt::Foo::__init_module() {
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, &__init_globals, &__globals_index}); }
 
 /* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.import/foo.hlt","version":1}
+{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.import/foo.hlt","version":1}
 */
 
 // Begin of Bar (from "bar.hlt")
@@ -62,7 +62,7 @@ extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule(
 #include <hilti/rt/libhilti.h>
 
 namespace __hlt::Bar {
-    using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+    struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
         std::string bar{};
         template<typename F> void __visit(F _) const { _("bar", bar); }
     };
@@ -75,7 +75,7 @@ namespace __hlt::Bar {
 }
 
 namespace __hlt::Foo {
-    using __globals_t = struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+    struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
         std::string foo{};
         template<typename F> void __visit(F _) const { _("foo", foo); }
     };
@@ -107,7 +107,7 @@ extern void __hlt::Bar::__init_module() {
 extern void __hlt::Bar::__register_module() { hilti::rt::detail::registerModule({ "Bar", &__init_module, &__init_globals, &__globals_index}); }
 
 /* __HILTI_LINKER_V1__
-{"module":"Bar","namespace":"__hlt::Bar","path":"/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.import/bar.hlt","version":1}
+{"module":"Bar","namespace":"__hlt::Bar","path":"/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.import/bar.hlt","version":1}
 */
 
 // Begin of __linker__
@@ -117,8 +117,8 @@ extern void __hlt::Bar::__register_module() { hilti::rt::detail::registerModule(
 
 // 
 // Linker code generated for modules:
-//   - Bar (/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.import/bar.hlt)
-//   - Foo (/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.import/foo.hlt)
+//   - Bar (/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.import/bar.hlt)
+//   - Foo (/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.import/foo.hlt)
 
 #include <hilti/rt/libhilti.h>
 
