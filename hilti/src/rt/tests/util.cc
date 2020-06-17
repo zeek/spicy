@@ -95,6 +95,36 @@ TEST_CASE("enumerate") {
     CHECK_EQ(input, std::vector<char>(input.size(), ' '));
 }
 
+TEST_CASE("escapeBytes") {
+    SUBCASE("escape_quotes") {
+        // This test is value-parameterized over `quote` and `escape_quotes`.
+        std::string quote;
+        bool escape_quotes{};
+        SUBCASE("true") {
+            escape_quotes = true;
+            quote = "\\\"";
+        }
+        SUBCASE("false") {
+            escape_quotes = false;
+            quote = "\"";
+        }
+
+        CHECK_EQ(escapeBytes("", escape_quotes), "");
+        CHECK_EQ(escapeBytes("a\"b\n12", escape_quotes), std::string("a") + quote + "b\\x0a12");
+        CHECK_EQ(escapeBytes("a\"b\\n12", escape_quotes), std::string("a") + quote + "b\\\\n12");
+        CHECK_EQ(escapeBytes("a\"b\\\n12", escape_quotes), std::string("a") + quote + "b\\\\\\x0a12");
+        CHECK_EQ(escapeBytes("a\"b\t12", escape_quotes), std::string("a") + quote + "b\\x0912");
+    }
+
+    SUBCASE("use_octal") {
+        CHECK_EQ(escapeBytes("", false, true, true), "");
+        CHECK_EQ(escapeBytes("ab\n12", false, true, true), "ab\\01212");
+        CHECK_EQ(escapeBytes("ab\\n12", false, true, true), "ab\\\\n12");
+        CHECK_EQ(escapeBytes("ab\\\n12", false, true, true), "ab\\\\\\01212");
+        CHECK_EQ(escapeBytes("ab\t12", false, true, true), "ab\\01112");
+    }
+}
+
 TEST_CASE("isDebugVersion") {
 #if HILTI_RT_BUILD_TYPE_DEBUG
     CHECK(isDebugVersion());
