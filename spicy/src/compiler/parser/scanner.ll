@@ -36,7 +36,7 @@ static hilti::Meta toMeta(spicy::detail::parser::location l) {
 
 static std::string expandEscapes(Driver* driver, std::string s, spicy::detail::parser::location l) {
     try {
-        return util::expandEscapes(s);
+        return hilti::util::expandEscapes(s);
     } catch ( const hilti::rt::Exception& ) {
         driver->error("invalid escape sequence", toMeta(l));
         return "<error>";
@@ -207,12 +207,12 @@ Null                  return token::CNULL;
 {address4}            yylval->str = yytext; return token::CADDRESS;
 {address6}            yylval->str = std::string(yytext, 1, strlen(yytext) - 2); return token::CADDRESS;
 
-{digits}|0x{hexs}     yylval->uint = util::chars_to_uint64(yytext, 0, range_error_int); return token::CUINTEGER;
+{digits}|0x{hexs}     yylval->uint = hilti::util::chars_to_uint64(yytext, 0, range_error_int); return token::CUINTEGER;
 {string}              yylval->str = expandEscapes(driver, std::string(yytext, 1, strlen(yytext) - 2), *yylloc); return token::CSTRING;
 b{string}             yylval->str = expandEscapes(driver, std::string(yytext, 2, strlen(yytext) - 3), *yylloc); return token::CBYTES;
 '.'                   yylval->uint = *(yytext +1); return token::CUINTEGER;
 
-{decfloat}|{hexfloat} yylval->real = util::chars_to_double(yytext, range_error_real); return token::CUREAL;
+{decfloat}|{hexfloat} yylval->real = hilti::util::chars_to_double(yytext, range_error_real); return token::CUREAL;
 
 {id}                   yylval->str = yytext; return token::IDENT;
 {id}(::{id}){1,}(::{property})?       yylval->str = yytext; return token::SCOPED_IDENT;
@@ -223,7 +223,7 @@ b{string}             yylval->str = expandEscapes(driver, std::string(yytext, 2,
 
 .                     driver->error("invalid character", toMeta(*yylloc));
 
-<RE>(\\.|[^\\\/])*    yylval->str = util::replace(yytext, "\\/", "/"); return token::CREGEXP;
+<RE>(\\.|[^\\\/])*    yylval->str = hilti::util::replace(yytext, "\\/", "/"); return token::CREGEXP;
 <RE>[/\\\n]           return (token_type) yytext[0];
 
 <DOTTED_ID>%?{id}(\.{id})*  yylval->str = yytext; return token::DOTTED_IDENT;

@@ -42,7 +42,7 @@ static void eat_token(const std::string& chunk, std::string::size_type* i, const
     auto j = looking_at(chunk, *i, token);
 
     if ( ! j )
-        throw ParseError(util::fmt("expected token '%s'", token));
+        throw ParseError(hilti::util::fmt("expected token '%s'", token));
 
     *i = j;
 }
@@ -86,7 +86,7 @@ static hilti::ID extract_id(const std::string& chunk, size_t* i) {
 
     auto id = chunk.substr(*i, j - *i);
     *i = j;
-    return hilti::ID(util::replace(id, "%", "0x25_"));
+    return hilti::ID(hilti::util::replace(id, "%", "0x25_"));
 }
 
 static std::filesystem::path extract_path(const std::string& chunk, size_t* i) {
@@ -125,7 +125,7 @@ static int extract_int(const std::string& chunk, size_t* i) {
     *i = j;
 
     int integer;
-    util::atoi_n(sint.begin(), sint.end(), 10, &integer);
+    hilti::util::atoi_n(sint.begin(), sint.end(), 10, &integer);
     return integer;
 }
 
@@ -180,7 +180,7 @@ static std::string extract_expr(const std::string& chunk, size_t* i) {
             break;
     }
 
-    auto expr = util::trim(chunk.substr(*i, j - *i));
+    auto expr = hilti::util::trim(chunk.substr(*i, j - *i));
     *i = j;
     return expr;
 }
@@ -201,7 +201,7 @@ static hilti::rt::Port extract_port(const std::string& chunk, size_t* i) {
     uint64_t port;
 
     s = chunk.substr(*i, j - *i);
-    util::atoi_n(s.begin(), s.end(), 10, &port);
+    hilti::util::atoi_n(s.begin(), s.end(), 10, &port);
 
     if ( port > 65535 )
         throw ParseError("port outside of valid range");
@@ -249,7 +249,7 @@ hilti::Result<std::string> GlueCompiler::getNextEvtBlock(std::istream& in, int* 
         char cur;
         in.get(cur);
         if ( in.eof() ) {
-            chunk = util::trim(std::move(chunk));
+            chunk = hilti::util::trim(std::move(chunk));
             if ( chunk.empty() )
                 // Legitimate end of data.
                 return std::string();
@@ -273,7 +273,7 @@ hilti::Result<std::string> GlueCompiler::getNextEvtBlock(std::istream& in, int* 
 
                 if ( cur == ';' ) {
                     // End of block found.
-                    chunk = util::trim(std::move(chunk));
+                    chunk = hilti::util::trim(std::move(chunk));
                     if ( chunk.size() )
                         return chunk + ';';
                     else
@@ -309,11 +309,11 @@ bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
     std::ifstream in(path);
 
     if ( ! in ) {
-        hilti::logger().error(util::fmt("cannot open %s", path));
+        hilti::logger().error(hilti::util::fmt("cannot open %s", path));
         return false;
     }
 
-    ZEEK_DEBUG(util::fmt("Loading events from %s", path.c_str()));
+    ZEEK_DEBUG(hilti::util::fmt("Loading events from %s", path.c_str()));
     _locations.emplace_back(path);
 
     std::vector<glue::Event> new_events;
@@ -333,20 +333,20 @@ bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
             if ( looking_at(*chunk, 0, "protocol") ) {
                 auto a = parseProtocolAnalyzer(*chunk);
                 _protocol_analyzers.push_back(a);
-                ZEEK_DEBUG(util::fmt("  Got protocol analyzer definition for %s", a.name));
+                ZEEK_DEBUG(hilti::util::fmt("  Got protocol analyzer definition for %s", a.name));
             }
 
             else if ( looking_at(*chunk, 0, "file") ) {
                 auto a = parseFileAnalyzer(*chunk);
                 _file_analyzers.push_back(a);
-                ZEEK_DEBUG(util::fmt("  Got file analyzer definition for %s", a.name));
+                ZEEK_DEBUG(hilti::util::fmt("  Got file analyzer definition for %s", a.name));
             }
 
             else if ( looking_at(*chunk, 0, "on") ) {
                 auto ev = parseEvent(*chunk);
                 ev.file = path;
                 new_events.push_back(ev);
-                ZEEK_DEBUG(util::fmt("  Got event definition for %s", ev.name));
+                ZEEK_DEBUG(hilti::util::fmt("  Got event definition for %s", ev.name));
             }
 
             else if ( looking_at(*chunk, 0, "import") ) {
@@ -359,10 +359,10 @@ bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
                 if ( looking_at(*chunk, i, "from") ) {
                     eat_token(*chunk, &i, "from");
                     scope = extract_path(*chunk, &i);
-                    ZEEK_DEBUG(util::fmt("  Got module %s to import from scope %s", module, *scope));
+                    ZEEK_DEBUG(hilti::util::fmt("  Got module %s to import from scope %s", module, *scope));
                 }
                 else
-                    ZEEK_DEBUG(util::fmt("  Got module %s to import", module));
+                    ZEEK_DEBUG(hilti::util::fmt("  Got module %s to import", module));
 
                 _imports.emplace_back(hilti::ID(module), std::move(scope));
             }
@@ -401,11 +401,11 @@ glue::ProtocolAnalyzer GlueCompiler::parseProtocolAnalyzer(const std::string& ch
 
     eat_token(chunk, &i, "protocol");
     eat_token(chunk, &i, "analyzer");
-    a.name = util::replace(extract_id(chunk, &i), "::", "_");
+    a.name = hilti::util::replace(extract_id(chunk, &i), "::", "_");
 
     eat_token(chunk, &i, "over");
 
-    auto proto = util::tolower(extract_id(chunk, &i).str());
+    auto proto = hilti::util::tolower(extract_id(chunk, &i).str());
 
     if ( proto == "tcp" )
         a.protocol = hilti::rt::Protocol::TCP;
@@ -417,7 +417,7 @@ glue::ProtocolAnalyzer GlueCompiler::parseProtocolAnalyzer(const std::string& ch
         a.protocol = hilti::rt::Protocol::ICMP;
 
     else
-        throw ParseError(util::fmt("unknown transport protocol '%s'", proto));
+        throw ParseError(hilti::util::fmt("unknown transport protocol '%s'", proto));
 
     eat_token(chunk, &i, ":");
 
@@ -506,7 +506,7 @@ glue::FileAnalyzer GlueCompiler::parseFileAnalyzer(const std::string& chunk) {
 
     eat_token(chunk, &i, "file");
     eat_token(chunk, &i, "analyzer");
-    a.name = util::replace(extract_id(chunk, &i).str(), "::", "_");
+    a.name = hilti::util::replace(extract_id(chunk, &i).str(), "::", "_");
 
     eat_token(chunk, &i, ":");
 
@@ -604,20 +604,20 @@ bool GlueCompiler::compile() {
     init_module.add(std::move(import_));
 
     for ( auto&& [id, m] : _spicy_modules )
-        m->spicy_module = hilti::Module(hilti::ID(util::fmt("SpicyHooks_%s", id)));
+        m->spicy_module = hilti::Module(hilti::ID(hilti::util::fmt("SpicyHooks_%s", id)));
 
     if ( ! PopulateEvents() )
         return false;
 
     for ( auto& a : _protocol_analyzers ) {
-        ZEEK_DEBUG(util::fmt("Adding protocol analyzer '%s'", a.name));
+        ZEEK_DEBUG(hilti::util::fmt("Adding protocol analyzer '%s'", a.name));
 
         if ( a.unit_name_orig ) {
             if ( auto ui = _driver->lookupUnit(a.unit_name_orig) )
                 a.unit_orig = *ui;
             else {
                 hilti::logger().error(
-                    util::fmt("unknown unit type %s with protocol analyzer %s", a.unit_name_orig, a.name));
+                    hilti::util::fmt("unknown unit type %s with protocol analyzer %s", a.unit_name_orig, a.name));
                 return false;
             }
         }
@@ -627,7 +627,7 @@ bool GlueCompiler::compile() {
                 a.unit_resp = *ui;
             else {
                 hilti::logger().error(
-                    util::fmt("unknown unit type %s with protocol analyzer %s", a.unit_name_resp, a.name));
+                    hilti::util::fmt("unknown unit type %s with protocol analyzer %s", a.unit_name_resp, a.name));
                 return false;
             }
         }
@@ -643,7 +643,7 @@ bool GlueCompiler::compile() {
         auto register_ =
             builder::call("zeek_rt::register_protocol_analyzer",
                           {builder::string(a.name), builder::id(protocol),
-                           builder::vector(util::transform(a.ports, [](auto p) { return builder::port(p); })),
+                           builder::vector(hilti::util::transform(a.ports, [](auto p) { return builder::port(p); })),
                            builder::string(a.unit_name_orig), builder::string(a.unit_name_resp),
                            builder::string(a.replaces)});
 
@@ -651,13 +651,14 @@ bool GlueCompiler::compile() {
     }
 
     for ( auto& a : _file_analyzers ) {
-        ZEEK_DEBUG(util::fmt("Adding file analyzer '%s'", a.name));
+        ZEEK_DEBUG(hilti::util::fmt("Adding file analyzer '%s'", a.name));
 
         if ( a.unit_name ) {
             if ( auto ui = _driver->lookupUnit(a.unit_name) )
                 a.unit = *ui;
             else {
-                hilti::logger().error(util::fmt("unknown unit type %s with file analyzer %s", a.unit_name, a.name));
+                hilti::logger().error(
+                    hilti::util::fmt("unknown unit type %s with file analyzer %s", a.unit_name, a.name));
                 return false;
             }
         }
@@ -665,7 +666,8 @@ bool GlueCompiler::compile() {
         auto register_ =
             builder::call("zeek_rt::register_file_analyzer",
                           {builder::string(a.name),
-                           builder::vector(util::transform(a.mime_types, [](auto m) { return builder::string(m); })),
+                           builder::vector(
+                               hilti::util::transform(a.mime_types, [](auto m) { return builder::string(m); })),
                            builder::string(a.unit_name)});
 
         init_module.add(std::move(register_));
@@ -714,7 +716,7 @@ bool GlueCompiler::compile() {
         m->spicy_module->add(std::move(import_));
 
         // Create a vector of unique parent paths from all EVTs files going into this module.
-        auto search_dirs = util::transform(m->evts, [](auto p) { return p.parent_path(); });
+        auto search_dirs = hilti::util::transform(m->evts, [](auto p) { return p.parent_path(); });
         auto search_dirs_vec = std::vector<std::filesystem::path>(search_dirs.begin(), search_dirs.end());
 
         // Import any dependencies.
@@ -750,7 +752,7 @@ bool GlueCompiler::PopulateEvents() {
             // to a unit now.
             ev.unit = ev.path.namespace_();
             if ( ! ev.unit ) {
-                hilti::logger().error(::util::fmt("unit type missing in hook '%s'", ev.path));
+                hilti::logger().error(hilti::util::fmt("unit type missing in hook '%s'", ev.path));
                 return false;
             }
 
@@ -759,7 +761,7 @@ bool GlueCompiler::PopulateEvents() {
                 ev.hook = ev.path;
             }
             else {
-                hilti::logger().error(::util::fmt("unknown unit type '%s'", ev.unit));
+                hilti::logger().error(hilti::util::fmt("unknown unit type '%s'", ev.unit));
                 return false;
             }
         }
@@ -773,7 +775,8 @@ bool GlueCompiler::PopulateEvents() {
             i->second->evts.insert(ev.file);
         }
         else
-            hilti::logger().internalError(util::fmt("module %s not known in Spicy module list", uinfo.module_id));
+            hilti::logger().internalError(
+                hilti::util::fmt("module %s not known in Spicy module list", uinfo.module_id));
 
         // Create accesor expression for event parameters.
         int nr = 0;
@@ -813,7 +816,7 @@ static hilti::Result<hilti::Expression> _parseArgument(const std::string& expres
                                                        const hilti::Meta& meta) {
     auto expr = spicy::parseExpression(expression, meta);
     if ( ! expr )
-        return hilti::result::Error(::util::fmt("error parsing event argument expression '%s'", expression));
+        return hilti::result::Error(hilti::util::fmt("error parsing event argument expression '%s'", expression));
 
     // If the expression uses the ".?" operator, we need to defer evaluation
     // so that we can handle potential exceptions at runtime.
@@ -826,17 +829,17 @@ static hilti::Result<hilti::Expression> _parseArgument(const std::string& expres
 }
 
 bool GlueCompiler::CreateSpicyHook(glue::Event* ev) {
-    auto mangled_event_name = util::fmt("%s_%p", util::replace(ev->name.str(), "::", "_"), ev);
+    auto mangled_event_name = hilti::util::fmt("%s_%p", hilti::util::replace(ev->name.str(), "::", "_"), ev);
     auto meta = Meta(ev->location);
 
     // Find the Spicy module that this event belongs to.
-    ZEEK_DEBUG(util::fmt("Adding Spicy hook '%s' for event %s", ev->hook, ev->name));
+    ZEEK_DEBUG(hilti::util::fmt("Adding Spicy hook '%s' for event %s", ev->hook, ev->name));
 
     auto import_ = hilti::declaration::ImportedModule(ev->unit_module_id, ev->unit_module_path);
     ev->spicy_module->spicy_module->add(std::move(import_));
 
     // Define Zeek-side event handler.
-    auto handler_id = ID(util::fmt("__zeek_handler_%s", mangled_event_name));
+    auto handler_id = ID(hilti::util::fmt("__zeek_handler_%s", mangled_event_name));
     auto handler = builder::global(handler_id, builder::call("zeek_rt::internal_handler", {builder::string(ev->name)}),
                                    hilti::declaration::Linkage::Private, meta);
     ev->spicy_module->spicy_module->add(std::move(handler));
@@ -848,7 +851,7 @@ bool GlueCompiler::CreateSpicyHook(glue::Event* ev) {
     if ( ev->condition.size() ) {
         auto cond = spicy::parseExpression(ev->condition, meta);
         if ( ! cond ) {
-            hilti::logger().error(::util::fmt("error parsing conditional expression '%s'", ev->condition));
+            hilti::logger().error(hilti::util::fmt("error parsing conditional expression '%s'", ev->condition));
             return false;
         }
 
@@ -865,8 +868,8 @@ bool GlueCompiler::CreateSpicyHook(glue::Event* ev) {
     if ( _driver->hiltiOptions().debug ) {
         std::vector<Expression> fmt_args = {builder::string(ev->name)};
 
-        for ( const auto& [i, e] : util::enumerate(ev->expression_accessors) ) {
-            if ( util::startsWith(e.expression, "$") ) {
+        for ( const auto& [i, e] : hilti::util::enumerate(ev->expression_accessors) ) {
+            if ( hilti::util::startsWith(e.expression, "$") ) {
                 fmt_args.emplace_back(builder::string(e.expression));
                 continue;
             }
@@ -879,7 +882,7 @@ bool GlueCompiler::CreateSpicyHook(glue::Event* ev) {
         }
 
         std::vector<std::string> fmt_ctrls(fmt_args.size() - 1, "%s");
-        auto fmt_str = util::fmt("-> event %%s(%s)", util::join(fmt_ctrls, ", "));
+        auto fmt_str = hilti::util::fmt("-> event %%s(%s)", hilti::util::join(fmt_ctrls, ", "));
         auto msg = builder::modulo(builder::string(fmt_str), builder::tuple(std::move(fmt_args)));
         auto call = builder::call("zeek_rt::debug", {std::move(msg)});
         body.addExpression(std::move(call));
@@ -904,8 +907,8 @@ bool GlueCompiler::CreateSpicyHook(glue::Event* ev) {
         else if ( e.expression == "$is_orig" )
             val = builder::call("zeek_rt::current_is_orig", {location(e)}, meta);
         else {
-            if ( util::startsWith(e.expression, "$") ) {
-                hilti::logger().error(::util::fmt("unknown reserved parameter '%s'", e.expression));
+            if ( hilti::util::startsWith(e.expression, "$") ) {
+                hilti::logger().error(hilti::util::fmt("unknown reserved parameter '%s'", e.expression));
                 return false;
             }
 

@@ -47,7 +47,7 @@ static hilti::Type iteratorForType(hilti::Type t, bool const_, hilti::Meta m) {
     if ( hilti::type::isIterable(t) )
         return t.iteratorType(const_);
     else {
-        hilti::logger().error(util::fmt("type '%s' is not iterable", t), m.location());
+        hilti::logger().error(hilti::util::fmt("type '%s' is not iterable", t), m.location());
         return hilti::type::Error(m);
         }
 }
@@ -56,7 +56,7 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
     if ( hilti::type::isViewable(t) )
         return t.viewType();
     else {
-        hilti::logger().error(util::fmt("type '%s' is not viewable", t), m.location());
+        hilti::logger().error(hilti::util::fmt("type '%s' is not viewable", t), m.location());
         return hilti::type::Error(m);
         }
 }

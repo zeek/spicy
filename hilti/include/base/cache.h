@@ -7,7 +7,7 @@
 #include <optional>
 #include <string>
 
-namespace util {
+namespace hilti::util {
 
 /** Simple cache to remember a computed value for a given key. */
 template<typename Key, typename Value>
@@ -74,4 +74,4 @@ private:
     std::map<Key, Value> _cache;
 };
 
-} // namespace util
+} // namespace hilti::util

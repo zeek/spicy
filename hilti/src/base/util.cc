@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "hilti/base/util.h"
+
 #include <errno.h>
 #include <unistd.h>
 
@@ -14,12 +16,12 @@
 #include <hilti/3rdparty/utf8proc/utf8proc.h>
 
 #include <hilti/base/logger.h>
-#include <hilti/base/util.h>
 #include <hilti/rt/backtrace.h>
 
-using namespace util;
+using namespace hilti;
+using namespace hilti::util;
 
-void detail::__internal_error(const std::string& s) { hilti::logger().internalError(s); }
+void detail::__internal_error(const std::string& s) { logger().internalError(s); }
 
 void util::cannot_be_reached() { hilti::logger().internalError("code is executing that should not be reachable"); }
 

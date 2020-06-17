@@ -13,7 +13,7 @@
 using namespace spicy;
 using namespace spicy::detail;
 using namespace spicy::detail::codegen;
-using util::fmt;
+using hilti::util::fmt;
 
 namespace builder = hilti::builder;
 

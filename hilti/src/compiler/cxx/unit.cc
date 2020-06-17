@@ -12,8 +12,8 @@
 
 using namespace hilti::detail::cxx;
 using namespace hilti::detail::cxx::formatter;
+using hilti::util::fmt;
 using nlohmann::json;
-using util::fmt;
 
 Unit::Unit(std::shared_ptr<Context> context) : _context(std::move(context)) {}
 

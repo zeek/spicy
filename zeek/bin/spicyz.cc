@@ -116,9 +116,10 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
                     return Nothing();
                 }
 
-                for ( const auto& s : util::split(arg, ",") ) {
+                for ( const auto& s : hilti::util::split(arg, ",") ) {
                     if ( ! driver_options->logger->debugEnable(s) )
-                        return hilti::result::Error(util::fmt("Unknown debug stream '%s', use 'help' for list", arg));
+                        return hilti::result::Error(
+                            hilti::util::fmt("Unknown debug stream '%s', use 'help' for list", arg));
                 }
 
                 break;
@@ -154,7 +155,7 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
     if ( driver_options->output_path.empty() )
         return hilti::result::Error("no output file for object code given, use -o <file>.hlto");
 
-    if ( ! util::endsWith(driver_options->output_path, ".hlto") )
+    if ( ! hilti::util::endsWith(driver_options->output_path, ".hlto") )
         return hilti::result::Error("output file must have '.hlto' extension");
 
     return Nothing();

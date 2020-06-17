@@ -10,7 +10,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace util {
+namespace hilti::util {
 
 namespace timing {
 
@@ -153,4 +153,4 @@ protected:
 
 } // namespace timing
 
-} // namespace util
+} // namespace hilti::util

@@ -22,7 +22,7 @@ public:
     bool eodOk() const { return _eod_ok ? _eod_ok : nullable(); }
     bool atomic() const { return false; }
     bool supportsSynchronize() const { return hasSize() || _body.supportsSynchronize(); }
-    std::string render() const { return util::fmt("foreach: %s", _body.symbol()); }
+    std::string render() const { return hilti::util::fmt("foreach: %s", _body.symbol()); }
 
 private:
     Production _body;

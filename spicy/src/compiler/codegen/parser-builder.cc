@@ -31,7 +31,7 @@
 using namespace spicy;
 using namespace spicy::detail;
 using namespace spicy::detail::codegen;
-using util::fmt;
+using hilti::util::fmt;
 
 namespace builder = hilti::builder;
 
@@ -80,16 +80,16 @@ struct ProductionVisitor
 
     ParserBuilder* pb;
     const Grammar& grammar;
-    util::Cache<std::string, ID> parse_functions;
+    hilti::util::Cache<std::string, ID> parse_functions;
     std::vector<hilti::type::struct_::Field> new_fields;
     std::vector<std::optional<Expression>> _destinations = {{}};
 
     void beginProduction(const Production& p) {
-        builder()->addComment(fmt("Begin parsing production: %s", util::trim(std::string(p))),
+        builder()->addComment(fmt("Begin parsing production: %s", hilti::util::trim(std::string(p))),
                               hilti::statement::comment::Separator::Before);
         if ( pb->options().debug ) {
             pb->state().printDebug(builder());
-            builder()->addDebugMsg("spicy-verbose", fmt("- parsing production: %s", util::trim(std::string(p))));
+            builder()->addDebugMsg("spicy-verbose", fmt("- parsing production: %s", hilti::util::trim(std::string(p))));
             builder()->addCall("hilti::debugIndent", {builder::string("spicy-verbose")});
         }
 
@@ -100,7 +100,7 @@ struct ProductionVisitor
         if ( pb->options().debug )
             builder()->addCall("hilti::debugDedent", {builder::string("spicy-verbose")});
 
-        builder()->addComment(fmt("End parsing production: %s", util::trim(std::string(p))),
+        builder()->addComment(fmt("End parsing production: %s", hilti::util::trim(std::string(p))),
                               hilti::statement::comment::Separator::After);
     }
 
@@ -570,7 +570,7 @@ struct ProductionVisitor
 
         // Collect all expected terminals.
         auto& lahs = lp.lookAheads();
-        auto tokens = util::set_union(lahs.first, lahs.second);
+        auto tokens = hilti::util::set_union(lahs.first, lahs.second);
 
         auto regexps = std::vector<Production>();
         auto other = std::vector<Production>();
@@ -584,7 +584,7 @@ struct ProductionVisitor
             first_token = false;
 
             // Create the joint regular expression. The token IDs become the regexps' IDs.
-            auto patterns = util::transform(regexps, [](const auto& c) {
+            auto patterns = hilti::util::transform(regexps, [](const auto& c) {
                 return std::make_pair(c.template as<production::Ctor>()
                                           .ctor()
                                           .template as<hilti::ctor::RegExp>()
@@ -596,7 +596,7 @@ struct ProductionVisitor
 
             for ( const auto& p : patterns ) {
                 for ( const auto& r : p.first )
-                    flattened.push_back(util::fmt("%s{#%" PRId64 "}", r, p.second));
+                    flattened.push_back(hilti::util::fmt("%s{#%" PRId64 "}", r, p.second));
             }
 
             auto re = hilti::ID(fmt("__re_%" PRId64, lp.symbol()));
@@ -802,10 +802,12 @@ struct ProductionVisitor
         // Now use the freshly set look-ahead symbol to switch accordingly.
         auto& lahs = p.lookAheads();
 
-        auto alts1 = util::filter(lahs.first, [](const auto& p) { return p.isLiteral(); });
-        auto alts2 = util::filter(lahs.second, [](const auto& p) { return p.isLiteral(); });
-        auto exprs_alt1 = util::transform_to_vector(alts1, [](const auto& p) { return builder::integer(p.tokenID()); });
-        auto exprs_alt2 = util::transform_to_vector(alts2, [](const auto& p) { return builder::integer(p.tokenID()); });
+        auto alts1 = hilti::util::filter(lahs.first, [](const auto& p) { return p.isLiteral(); });
+        auto alts2 = hilti::util::filter(lahs.second, [](const auto& p) { return p.isLiteral(); });
+        auto exprs_alt1 =
+            hilti::util::transform_to_vector(alts1, [](const auto& p) { return builder::integer(p.tokenID()); });
+        auto exprs_alt2 =
+            hilti::util::transform_to_vector(alts2, [](const auto& p) { return builder::integer(p.tokenID()); });
 
         switch ( p.default_() ) {
             case production::look_ahead::Default::First: {
@@ -950,11 +952,11 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
         if ( t.parameters().empty() ) {
             // Create parse1() body.
             pushBuilder();
-            builder()->addLocal("unit",
-                                builder::value_reference(builder::default_(builder::typeByID(*t.typeID()),
-                                                                           util::transform(t.parameters(), [](auto p) {
-                                                                               return builder::id(p.id());
-                                                                           }))));
+            builder()->addLocal("unit", builder::value_reference(
+                                            builder::default_(builder::typeByID(*t.typeID()),
+                                                              hilti::util::transform(t.parameters(), [](auto p) {
+                                                                  return builder::id(p.id());
+                                                              }))));
             builder()->addLocal("ncur", type::stream::View(),
                                 builder::ternary(builder::id("cur"), builder::deref(builder::id("cur")),
                                                  builder::cast(builder::deref(builder::id("data")),

@@ -34,7 +34,7 @@ public:
     bool atomic() const { return false; }
     bool supportsSynchronize() const { return hasSize(); }
     std::string render() const {
-        return util::fmt("true: %s / false: %s", _alternatives.first.symbol(), _alternatives.second.symbol());
+        return hilti::util::fmt("true: %s / false: %s", _alternatives.first.symbol(), _alternatives.second.symbol());
     }
 
 private:

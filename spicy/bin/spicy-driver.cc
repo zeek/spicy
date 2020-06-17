@@ -55,7 +55,7 @@ private:
 };
 
 void SpicyDriver::usage() {
-    auto exts = util::join(hilti::plugin::registry().supportedExtensions(), ", ");
+    auto exts = hilti::util::join(hilti::plugin::registry().supportedExtensions(), ", ");
 
     std::cerr
         << "Usage: cat <data> | spicy-driver [options] <inputs> ...\n"
@@ -161,7 +161,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
                     exit(0);
                 }
 
-                for ( const auto& s : util::split(arg, ",") ) {
+                for ( const auto& s : hilti::util::split(arg, ",") ) {
                     if ( ! driver_options.logger->debugEnable(s) )
                         fatalError(fmt("unknown debug stream '%s', use 'help' for list", arg));
                 }
@@ -238,14 +238,14 @@ int main(int argc, char** argv) {
         }
 
     } catch ( const std::exception& e ) {
-        std::cerr << util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
-                               util::demangle(typeid(e).name()), e.what())
+        std::cerr << hilti::util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
+                                      hilti::util::demangle(typeid(e).name()), e.what())
                   << std::endl;
         exit(1);
     }
 
     if ( driver.driverOptions().report_times )
-        util::timing::summary(std::cerr);
+        hilti::util::timing::summary(std::cerr);
 
     return 0;
 }

@@ -17,7 +17,7 @@
 using namespace spicy;
 using namespace spicy::detail;
 
-using util::fmt;
+using hilti::util::fmt;
 
 namespace builder = hilti::builder;
 
@@ -81,7 +81,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
         std::set<ID> seen;
 
-        for ( const auto& [n, c] : util::enumerate(f.cases()) ) {
+        for ( const auto& [n, c] : hilti::util::enumerate(f.cases()) ) {
             for ( const auto& i : c.items() ) {
                 if ( auto f = i.tryAs<spicy::type::unit::item::Field>() ) {
                     if ( seen.find(f->id()) != seen.end() )
@@ -212,10 +212,10 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     if ( unit.isPublic() || unit.isFilter() ) {
         auto builder = builder::Builder(context());
         auto description = unit.propertyItem("%description");
-        auto mime_types = util::transform(unit.propertyItems("%mime-type"), [](auto p) {
+        auto mime_types = hilti::util::transform(unit.propertyItems("%mime-type"), [](auto p) {
             return builder::library_type_value(*p.expression(), "spicy_rt::MIMEType");
         });
-        auto ports = util::transform(unit.propertyItems("%port"), [](auto p) { return *p.expression(); });
+        auto ports = hilti::util::transform(unit.propertyItems("%port"), [](auto p) { return *p.expression(); });
 
         Expression parse1 = builder::null();
         if ( unit.parameters().empty() )
@@ -239,8 +239,8 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                               {builder::id(ID(*unit.typeID(), "__parser")), builder::strong_reference(unit)}));
 
         auto register_unit =
-            builder::function(ID(fmt("__register_%s", util::replace(*unit.typeID(), "::", "_"))), type::Void(), {},
-                              builder.block(), type::function::Flavor::Standard, declaration::Linkage::Init);
+            builder::function(ID(fmt("__register_%s", hilti::util::replace(*unit.typeID(), "::", "_"))), type::Void(),
+                              {}, builder.block(), type::function::Flavor::Standard, declaration::Linkage::Init);
         addDeclaration(std::move(register_unit));
     }
 

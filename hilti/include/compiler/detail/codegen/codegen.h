@@ -100,8 +100,8 @@ private:
     std::vector<detail::cxx::declaration::Local> _tmps;
     std::map<std::string, int> _tmp_counters;
     std::vector<hilti::Type> _need_decls;
-    util::Cache<cxx::ID, codegen::CxxTypes> _cache_types_storage;
-    util::Cache<cxx::ID, cxx::declaration::Type> _cache_types_declarations;
+    hilti::util::Cache<cxx::ID, codegen::CxxTypes> _cache_types_storage;
+    hilti::util::Cache<cxx::ID, cxx::declaration::Type> _cache_types_declarations;
     int _prioritize_types = 0;
 };
 

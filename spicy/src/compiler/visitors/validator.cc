@@ -14,7 +14,7 @@
 #include <spicy/rt/mime.h>
 
 using namespace spicy;
-using util::fmt;
+using hilti::util::fmt;
 
 namespace {
 
@@ -43,7 +43,8 @@ hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::
         // &size can be combined with any other attribute, or be used standalone.
 
         if ( attrs_present.size() > 1 )
-            return hilti::result::Error(fmt("attributes cannot be combined: %s", util::join(attrs_present, ", ")));
+            return hilti::result::Error(
+                fmt("attributes cannot be combined: %s", hilti::util::join(attrs_present, ", ")));
 
         if ( attrs_present.empty() && ! size_attr )
             return hilti::result::Error(
@@ -461,8 +462,8 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             if ( id.find(".") != std::string::npos )
                 error("cannot use paths in hooks; trigger on the top-level field instead", p, location);
 
-            else if ( util::startsWith(id, "0x25_") ) {
-                auto id_readable = util::replace(hook.id().local().str(), "0x25_", "%");
+            else if ( hilti::util::startsWith(id, "0x25_") ) {
+                auto id_readable = hilti::util::replace(hook.id().local().str(), "0x25_", "%");
 
                 if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_error" ) {
                     if ( params.size() != 0 )
@@ -599,7 +600,7 @@ struct PreservedVisitor : public hilti::visitor::PreOrder<void, PreservedVisitor
 } // anonymous namespace
 
 void spicy::detail::preTransformValidateAST(Node* root, hilti::Unit* /* unit */, bool* found_errors) {
-    util::timing::Collector _("spicy/compiler/validator");
+    hilti::util::timing::Collector _("spicy/compiler/validator");
 
     auto v = PreTransformVisitor();
     for ( auto i : v.walk(root) )
@@ -609,7 +610,7 @@ void spicy::detail::preTransformValidateAST(Node* root, hilti::Unit* /* unit */,
 }
 
 void spicy::detail::postTransformValidateAST(Node* root, hilti::Unit* /* unit */) {
-    util::timing::Collector _("spicy/compiler/validator");
+    hilti::util::timing::Collector _("spicy/compiler/validator");
 
     auto v = PostTransformVisitor();
     for ( auto i : v.walk(root) )
@@ -617,7 +618,7 @@ void spicy::detail::postTransformValidateAST(Node* root, hilti::Unit* /* unit */
 }
 
 void spicy::detail::preservedValidateAST(std::vector<Node>* nodes, hilti::Unit* /* unit */) {
-    util::timing::Collector _("spicy/compiler/validator");
+    hilti::util::timing::Collector _("spicy/compiler/validator");
 
     auto v = PreservedVisitor();
     for ( auto& root : *nodes ) {

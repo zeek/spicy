@@ -21,18 +21,20 @@
 #include <vector>
 
 #include <hilti/autogen/config.h>
+#include <hilti/base/result.h>
+#include <hilti/rt/unpack.h>
+#include <hilti/rt/util.h>
 
-namespace util::detail {
+namespace hilti::util::detail {
 /** Helper that forwards to `Logger`. */
 void __internal_error(const std::string& s);
-} // namespace util::detail
+} // namespace hilti::util::detail
 
 #undef TINYFORMAT_ERROR
 #define TINYFORMAT_ERROR(reason) ::util::detail::__internal_error(reason)
 #include <hilti/3rdparty/tinyformat/tinyformat.h>
-#include <hilti/base/result.h>
-#include <hilti/rt/unpack.h>
-#include <hilti/rt/util.h>
+
+namespace hilti {
 
 /**
  * Helper macro to mark variables that are intentionally unused. This
@@ -655,3 +657,5 @@ constexpr auto to_string(Enum value, const Value<Enum> (&values)[Size]) {
 } // namespace enum_
 
 } // namespace util
+
+} // namespace hilti

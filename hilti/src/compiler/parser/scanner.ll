@@ -35,7 +35,7 @@ static hilti::Meta toMeta(hilti::detail::parser::location l) {
 
 static std::string expandEscapes(Driver* driver, std::string s, hilti::detail::parser::location l) {
     try {
-        return util::expandEscapes(s);
+        return hilti::util::expandEscapes(s);
     } catch ( const hilti::rt::Exception& ) {
         driver->error("invalid escape sequence", toMeta(l));
         return "<error>";
@@ -184,10 +184,10 @@ Null                  return token::CNULL;
 False                 yylval->bool_ = false; return token::CBOOL;
 True                  yylval->bool_ = true; return token::CBOOL;
 
-{digits}|0x{hexs}     yylval->uint = util::chars_to_uint64(yytext, 0, range_error_int); return token::CUINTEGER;
+{digits}|0x{hexs}     yylval->uint = hilti::util::chars_to_uint64(yytext, 0, range_error_int); return token::CUINTEGER;
 '.'                   yylval->uint = *(yytext +1); return token::CUINTEGER;
 
-{decfloat}|{hexfloat} yylval->real = util::chars_to_double(yytext, range_error_real); return token::CUREAL;
+{decfloat}|{hexfloat} yylval->real = hilti::util::chars_to_double(yytext, range_error_real); return token::CUREAL;
 {string}              yylval->str = expandEscapes(driver, std::string(yytext, 1, strlen(yytext) - 2), *yylloc); return token::CSTRING;
 b{string}             yylval->str = expandEscapes(driver, std::string(yytext, 2, strlen(yytext) - 3), *yylloc); return token::CBYTES;
 {digits}\/(tcp|udp)   yylval->str = yytext; return token::CPORT;
@@ -203,7 +203,7 @@ b{string}             yylval->str = expandEscapes(driver, std::string(yytext, 2,
 
 .                     driver->error("invalid character", toMeta(*yylloc));
 
-<RE>(\\.|[^\\\/])*    yylval->str = util::replace(yytext, "\\/", "/"); return token::CREGEXP;
+<RE>(\\.|[^\\\/])*    yylval->str = hilti::util::replace(yytext, "\\/", "/"); return token::CREGEXP;
 <RE>[/\\\n]           return (token_type) yytext[0];
 
 <DOTTED_ID>{id}(\.{id})*  yylval->str = yytext; return token::DOTTED_IDENT;

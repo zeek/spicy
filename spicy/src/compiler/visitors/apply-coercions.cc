@@ -31,7 +31,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 } // anonymous namespace
 
 bool spicy::detail::applyCoercions(Node* root, hilti::Unit* /* unit */) {
-    util::timing::Collector _("spicy/compiler/apply-coercions");
+    hilti::util::timing::Collector _("spicy/compiler/apply-coercions");
 
     auto v = Visitor();
     for ( auto i : v.walk(root) )

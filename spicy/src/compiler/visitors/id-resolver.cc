@@ -72,8 +72,8 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
                 return;
             }
 
-            p.node.addError(util::fmt("field value must be a constant or type, but is a %s",
-                                      resolved->first->as<hilti::Declaration>().displayName()));
+            p.node.addError(hilti::util::fmt("field value must be a constant or type, but is a %s",
+                                             resolved->first->as<hilti::Declaration>().displayName()));
         }
 
         else if ( auto c = u.ctor() )
@@ -156,7 +156,7 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
 } // anonymous namespace
 
 bool spicy::detail::resolveIDs(hilti::Node* root, hilti::Unit* unit) {
-    util::timing::Collector _("spicy/compiler/id-resolver");
+    hilti::util::timing::Collector _("spicy/compiler/id-resolver");
 
     auto v1 = Visitor1(unit);
     for ( auto i : v1.walk(root) )

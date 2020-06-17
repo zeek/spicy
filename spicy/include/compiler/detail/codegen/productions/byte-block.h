@@ -28,7 +28,7 @@ public:
     bool eodOk() const { return nullable(); }
     bool atomic() const { return false; }
     bool supportsSynchronize() const { return hasSize(); }
-    std::string render() const { return util::fmt("byte-block(%s): %s", _expression, _body.symbol()); }
+    std::string render() const { return hilti::util::fmt("byte-block(%s): %s", _expression, _body.symbol()); }
 
 private:
     Expression _expression;

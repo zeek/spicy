@@ -35,7 +35,7 @@ public:
                _type.propertyItem("synchronize-after") || _type.propertyItem("synchronize-before");
     }
     std::string render() const {
-        return util::join(util::transform(_fields, [](const auto& p) { return p.symbol(); }), " ");
+        return hilti::util::join(hilti::util::transform(_fields, [](const auto& p) { return p.symbol(); }), " ");
     }
 
 private:

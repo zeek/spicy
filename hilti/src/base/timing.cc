@@ -4,11 +4,11 @@
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
 
-using namespace util;
-using namespace util::timing;
-using namespace util::timing::detail;
+using namespace hilti::util;
+using namespace hilti::util::timing;
+using namespace hilti::util::timing::detail;
 
-using util::fmt;
+using hilti::util::fmt;
 
 static std::string prettyTime(Duration d) {
     static const std::vector<std::pair<std::string, double>> units = {{"w ", 1e9 * 60 * 60 * 24 * 7},

@@ -15,13 +15,15 @@
 TEST_SUITE_BEGIN("util");
 
 enum class Foo { AAA, BBB, CCC };
-constexpr util::enum_::Value<Foo> values[] = {
+constexpr hilti::util::enum_::Value<Foo> values[] = {
     {Foo::AAA, "aaa"},
     {Foo::BBB, "bbb"},
     {Foo::CCC, "ccc"},
 };
 
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Foo>(s, values); }
+constexpr auto from_string(const std::string_view& s) { return hilti::util::enum_::from_string<Foo>(s, values); }
+
+TEST_SUITE_BEGIN("util");
 
 TEST_CASE("enum::_from_string") {
     CHECK(from_string("aaa") == Foo::AAA);
@@ -30,15 +32,15 @@ TEST_CASE("enum::_from_string") {
 }
 
 TEST_CASE("escapeBytesForCxx") {
-    CHECK(util::escapeBytesForCxx("aaa") == "aaa");
-    CHECK(util::escapeBytesForCxx("\xff") == "\\377");
-    CHECK(util::escapeBytesForCxx("\x02"
-                                  "\x10"
-                                  "\x32"
-                                  "\x41"
-                                  "\x15"
-                                  "\x01"
-                                  "\x0A") == "\\002\\0202A\\025\\001\\012");
+    CHECK(hilti::util::escapeBytesForCxx("aaa") == "aaa");
+    CHECK(hilti::util::escapeBytesForCxx("\xff") == "\\377");
+    CHECK(hilti::util::escapeBytesForCxx("\x02"
+                                         "\x10"
+                                         "\x32"
+                                         "\x41"
+                                         "\x15"
+                                         "\x01"
+                                         "\x0A") == "\\002\\0202A\\025\\001\\012");
 }
 
 TEST_SUITE_END();
