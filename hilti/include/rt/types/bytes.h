@@ -409,7 +409,7 @@ public:
      * @param base base to use for conversion
      * @return converted integer value
      */
-    int64_t toInt(uint64_t base = 10) const;
+    integer::safe<int64_t> toInt(uint64_t base = 10) const;
 
     /**
      * Interprets the data as an ASCII representation of an unsigned integer
@@ -418,7 +418,7 @@ public:
      * @param base base to use for conversion
      * @return converted integer value
      */
-    uint64_t toUInt(uint64_t base = 10) const;
+    integer::safe<uint64_t> toUInt(uint64_t base = 10) const;
 
     /**
      * Interprets the data as an binary representation of a signed integer
@@ -445,7 +445,9 @@ public:
      * @param base base to use for conversion
      * @return converted time value
      */
-    Time toTime(uint64_t base = 10) const { return Time(toUInt(base) * 1000000000); }
+    Time toTime(uint64_t base = 10) const {
+        return Time(toUInt(base) * integer::safe<uint64_t>(1'000'000'000), Time::NanosecondTag());
+    }
 
     /**
      * Interprets the data as an binary representation of a integer value
@@ -454,7 +456,9 @@ public:
      * @param base base to use for conversion
      * @return converted time value
      */
-    Time toTime(hilti::rt::ByteOrder byte_order) const { return Time(toUInt(byte_order) * 1000000000); }
+    Time toTime(hilti::rt::ByteOrder byte_order) const {
+        return Time(toUInt(byte_order) * integer::safe<uint64_t>(1'000'000'000), Time::NanosecondTag());
+    }
 
     /**
      * Matchs the data against a regular expression.

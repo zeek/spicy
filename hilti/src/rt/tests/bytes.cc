@@ -351,7 +351,7 @@ TEST_CASE("toUInt") {
     SUBCASE("with base") {
         CHECK_EQ("100"_b.toUInt(), 100u);
         CHECK_EQ("100"_b.toUInt(2), 4u);
-        CHECK_EQ("-100"_b.toUInt(2), static_cast<uint64_t>(-4)); // Wrap-around.
+        CHECK_THROWS_WITH_AS("-100"_b.toUInt(2), "integer overflow", const RuntimeError&);
 
         CHECK_THROWS_WITH_AS("12a"_b.toUInt(), "cannot parse bytes as unsigned integer", const RuntimeError&);
     }
@@ -371,14 +371,19 @@ TEST_CASE("toUInt") {
 }
 
 TEST_CASE("toTime") {
-    CHECK_EQ("10"_b.toTime(), Time(10.0));
-    CHECK_EQ("10"_b.toTime(2), Time(2.0));
+    CHECK_EQ("10"_b.toTime(), Time(10, Time::SecondTag()));
+    CHECK_EQ("10"_b.toTime(2), Time(2, Time::SecondTag()));
 
     CHECK_EQ(""_b.toTime(), Time());
     CHECK_THROWS_WITH_AS("abc"_b.toTime(), "cannot parse bytes as unsigned integer", const RuntimeError&);
 
-    CHECK_EQ("\x00\x01"_b.toTime(ByteOrder::Big), Time(1.0));
-    CHECK_EQ("\x01\x00"_b.toTime(ByteOrder::Little), Time(1.0));
+    CHECK_EQ("\x00\x01"_b.toTime(ByteOrder::Big), Time(1, Time::SecondTag()));
+    CHECK_EQ("\x01\x00"_b.toTime(ByteOrder::Little), Time(1, Time::SecondTag()));
+
+    CHECK_EQ("\x04\x4B\x80\x00\x00"_b.toTime(ByteOrder::Big),
+             Time(18446548992, Time::SecondTag())); // Value near end of `Time` range.
+    CHECK_THROWS_WITH_AS("\x04\x4B\x90\x00\x00"_b.toTime(ByteOrder::Big), "integer overflow",
+                         const RuntimeError&); // Value beyond end of `Time` range.
 }
 
 TEST_CASE("upper") {

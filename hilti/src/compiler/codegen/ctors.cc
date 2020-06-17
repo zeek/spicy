@@ -45,7 +45,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const ctor::Interval& n) {
-        return fmt("hilti::rt::Interval(static_cast<int64_t>(%" PRId64 "))", n.value().nanoseconds());
+        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
+                   "), hilti::rt::Interval::NanosecondTag())",
+                   n.value().nanoseconds());
     }
 
     result_t operator()(const ctor::List& n) {
@@ -165,7 +167,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
                               ", "));
     }
 
-    result_t operator()(const ctor::Time& n) { return fmt("hilti::rt::Time(%f)", n.value().seconds()); }
+    result_t operator()(const ctor::Time& n) {
+        return fmt("hilti::rt::Time(%f, hilti::rt::Time::SecondTag())", n.value().seconds());
+    }
 
     result_t operator()(const ctor::Enum& n) {
         auto id = cg->compile(n.type(), codegen::TypeUsage::Storage);

@@ -2,11 +2,11 @@
 
 #include <doctest/doctest.h>
 
+#include <cstdint>
 #include <cstdlib>
 #include <ctime>
 #include <locale>
 
-#include <hilti/base/util.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/util.h>
 
@@ -14,15 +14,22 @@ using namespace hilti::rt;
 
 namespace std {
 ostream& operator<<(ostream& stream, const vector<string_view>& xs) {
-    return stream << '[' << util::join(xs, ", ") << ']';
+    stream << '[';
+
+    for ( size_t i = 0; i < xs.size(); ++i ) {
+        stream << xs[i];
+
+        if ( i != xs.size() - 1 )
+            stream << ", ";
+    }
+
+    return stream << ']';
 }
 } // namespace std
 
 TEST_SUITE_BEGIN("util");
 
 TEST_CASE("strftime") {
-    auto t = hilti::rt::Time();
-
     REQUIRE_EQ(::setenv("TZ", "UTC", 1), 0);
     std::locale::global(std::locale::classic());
 

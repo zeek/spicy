@@ -147,10 +147,11 @@ TEST_CASE("Stream") {
 
 TEST_CASE("Time") {
     CHECK_EQ(to_string(Time()), "<not set>");
-    CHECK_EQ(to_string(Time(uint64_t(0))), "<not set>");
-    CHECK_EQ(to_string(Time(double(0))), "<not set>");
+    CHECK_EQ(to_string(Time(0, Time::NanosecondTag())), "<not set>");
+    CHECK_EQ(to_string(Time(0, Time::SecondTag())), "<not set>");
 
-    CHECK_EQ(to_string(Time(uint64_t(1))), "1970-01-01T00:00:00.000000001Z");
+    CHECK_EQ(to_string(Time(integer::safe<uint64_t>(1), Time::NanosecondTag())), "1970-01-01T00:00:00.000000001Z");
+    CHECK_EQ(to_string(Time(1, Time::SecondTag())), "1970-01-01T00:00:01.000000000Z");
 }
 
 TEST_CASE("View") {

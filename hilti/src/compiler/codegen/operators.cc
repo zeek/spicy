@@ -334,8 +334,12 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     /// Real
 
-    result_t operator()(const operator_::real::CastToInterval& n) { return fmt("hilti::rt::Interval(%f)", op0(n)); }
-    result_t operator()(const operator_::real::CastToTime& n) { return fmt("hilti::rt::Time(%f)", op0(n)); }
+    result_t operator()(const operator_::real::CastToInterval& n) {
+        return fmt("hilti::rt::Interval(%f, hilti::rt::Interval::NanosecondTag())", op0(n));
+    }
+    result_t operator()(const operator_::real::CastToTime& n) {
+        return fmt("hilti::rt::Time(%f, hilti::rt::Time::SecondTag())", op0(n));
+    }
     result_t operator()(const operator_::real::Difference& n) { return binary(n, "-"); }
     result_t operator()(const operator_::real::DifferenceAssign& n) { return binary(n, "-="); }
     result_t operator()(const operator_::real::Division& n) { return binary(n, "/"); }
@@ -739,7 +743,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     // Signed integer
 
     result_t operator()(const operator_::signed_integer::CastToInterval& n) {
-        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64 ") * 1000000000)", op0(n));
+        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
+                   ") * 1000000000, hilti::rt::Interval::NanosecondTag())",
+                   op0(n));
     }
     result_t operator()(const operator_::signed_integer::DecrPostfix& n) { return fmt("%s--", op0(n)); }
     result_t operator()(const operator_::signed_integer::DecrPrefix& n) { return fmt("--%s", op0(n)); }
@@ -823,10 +829,14 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("static_cast<%s>(%s.Ref())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
     result_t operator()(const operator_::unsigned_integer::CastToInterval& n) {
-        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<uint64_t>(%" PRIu64 ") * 1000000000)", op0(n));
+        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<uint64_t>(%" PRIu64
+                   ") * 1000000000, hilti::rt::Interval::NanosecondTag())",
+                   op0(n));
     }
     result_t operator()(const operator_::unsigned_integer::CastToTime& n) {
-        return fmt("hilti::rt::Time(hilti::rt::integer::safe<uint64_t>(%" PRIu64 ") * 1000000000)", op0(n));
+        return fmt("hilti::rt::Time(hilti::rt::integer::safe<uint64_t>(%" PRIu64
+                   ") * 1'000'000'000, hilti::rt::Time::NanosecondTag())",
+                   op0(n));
     }
     result_t operator()(const operator_::unsigned_integer::DecrPostfix& n) { return fmt("%s--", op0(n)); }
     result_t operator()(const operator_::unsigned_integer::DecrPrefix& n) { return fmt("--%s", op0(n)); }

@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 
+#include <limits>
 #include <variant>
 
 #include <hilti/rt/extension-points.h>
@@ -18,26 +19,33 @@ namespace hilti::rt {
  */
 class Time {
 public:
-    /**
-     * Constructs a time from a nanoseconds value.
-     *
-     * @param nsecs nanonseconds since the UNIX epoch.
-     */
-    explicit Time(uint64_t nsecs = 0) : _nsecs(nsecs) {}
+    struct SecondTag {};
+    struct NanosecondTag {};
+
+    Time() = default;
 
     /**
      * Constructs an interval from an unsigned integer value.
      *
      * @param nsecs interval in nanoseconds.
      */
-    explicit Time(hilti::rt::integer::safe<uint64_t> nsecs) : _nsecs(nsecs) {}
+    explicit Time(hilti::rt::integer::safe<uint64_t> nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
 
     /**
      * Constructs a time from a double value.
      *
      * @param secs seconds since the UNIX epoch.
      */
-    explicit Time(double secs) : _nsecs(static_cast<uint64_t>(secs * 1e9)) {}
+    explicit Time(double secs, SecondTag /*unused*/)
+        : _nsecs([&]() {
+              auto x = secs * 1'000'000'000;
+
+              auto limits = std::numeric_limits<uint64_t>();
+              if ( x < static_cast<double>(limits.min()) || static_cast<double>(limits.max()) < x )
+                  throw RuntimeError(fmt("Seconds %d cannot be represented as Time", secs));
+
+              return integer::safe<uint64_t>(x);
+          }()) {}
 
     /** Constructs an unset time. */
     Time(const Time&) = default;
@@ -48,7 +56,7 @@ public:
     Time& operator=(Time&&) noexcept = default;
 
     /** Returns a UNIX timestmap. */
-    double seconds() const { return _nsecs / 1e9; }
+    double seconds() const { return _nsecs.Ref() / 1e9; }
 
     /** Returns nanosecs since epoch. */
     uint64_t nanoseconds() const { return _nsecs; }
@@ -61,31 +69,32 @@ public:
     bool operator>=(const Time& other) const { return _nsecs >= other._nsecs; }
 
     Time operator+(const Interval& other) const {
-        if ( other.nanoseconds() < 0 && (static_cast<int64_t>(_nsecs) < (-other.nanoseconds())) )
-            throw RuntimeError("operation yielded negative time");
+        if ( other.nanoseconds() < 0 && (integer::safe<int64_t>(_nsecs) < (-other.nanoseconds())) )
+            throw RuntimeError(fmt("operation yielded negative time %n %n", _nsecs, other.nanoseconds()));
 
-        return Time(static_cast<uint64_t>(_nsecs + other.nanoseconds()));
+        return Time(_nsecs + other.nanoseconds(), NanosecondTag{});
     }
 
     Time operator-(const Interval& other) const {
-        if ( static_cast<int64_t>(_nsecs) < other.nanoseconds() )
+        if ( _nsecs < other.nanoseconds() )
             throw RuntimeError("operation yielded negative time");
 
-        return Time(static_cast<uint64_t>(_nsecs - other.nanoseconds()));
+        return Time(_nsecs - other.nanoseconds(), NanosecondTag());
     }
 
     Interval operator-(const Time& other) const {
-        return Interval(static_cast<int64_t>(_nsecs) - static_cast<int64_t>(other.nanoseconds()));
+        return Interval(integer::safe<int64_t>(_nsecs) - integer::safe<int64_t>(other._nsecs),
+                        Interval::NanosecondTag());
     }
 
     /** Returns true if the time is non-zero (i.e., not unset) */
-    operator bool() const { return _nsecs == 0.0; }
+    operator bool() const { return _nsecs.Ref() == 0.0; }
 
     /** Returns a human-readable representation of the tiem. */
     operator std::string() const;
 
 private:
-    uint64_t _nsecs = 0; // Nanoseconds since epoch};
+    hilti::rt::integer::safe<uint64_t> _nsecs = 0; ///< Nanoseconds since epoch.
 };
 
 namespace time {

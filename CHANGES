@@ -1,4 +1,14 @@
 
+0.4.0-490 | 2020-06-17 10:36:36 +0200
+
+  * GH-228: Prevent more overflows when working with hilti::rt Time and Interval (Benjamin Bannier,
+    Corelight)
+    - Change `hilti::rt::Interval` to use safe integers.
+    - Change `hilti::rt::Time` to use safe integers.
+    - Fix some typos in `hilti/base/util.h`.
+    - Remove hilti-rt-tests dependency on hilti library.
+    - Reorganize test cases for `hilti::util`.
+
 0.4.0-484 | 2020-06-16 07:15:25 +0000
 
   * Add new tutorial chapter. (Robin Sommer, Corelight)
