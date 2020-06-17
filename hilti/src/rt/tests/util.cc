@@ -200,6 +200,99 @@ TEST_CASE("escapeBytes") {
     }
 }
 
+TEST_CASE("escapeUTF8") {
+    SUBCASE("plain") {
+        CHECK_EQ(escapeUTF8(""), "");
+        CHECK_EQ(escapeUTF8("abc\u1234123"), "abcሴ123");
+        CHECK_EQ(escapeUTF8("abc\U00001234123"), "abcሴ123");
+    }
+
+    SUBCASE("escape_quotes") {
+        CHECK_EQ(escapeUTF8("\"", false), "\"");
+        CHECK_EQ(escapeUTF8("\"", true), "\\\"");
+        CHECK_EQ(escapeUTF8("\"\"", false), "\"\"");
+        CHECK_EQ(escapeUTF8("\"\"", true), "\\\"\\\"");
+    }
+
+    SUBCASE("escape_control") {
+        CHECK_EQ(escapeUTF8(std::string(1u, '\0'), false, false), std::string(1u, '\0'));
+        CHECK_EQ(escapeUTF8(std::string(1u, '\0'), false, true), "\\0");
+
+        CHECK_EQ(escapeUTF8("\a", false, false), "\a");
+        CHECK_EQ(escapeUTF8("\a", false, true), "\\a");
+
+        CHECK_EQ(escapeUTF8("\b", false, false), "\b");
+        CHECK_EQ(escapeUTF8("\b", false, true), "\\b");
+
+        CHECK_EQ(escapeUTF8("\e", false, false), "\e");
+        CHECK_EQ(escapeUTF8("\e", false, true), "\\e");
+
+        CHECK_EQ(escapeUTF8("\f", false, false), "\f");
+        CHECK_EQ(escapeUTF8("\f", false, true), "\\f");
+
+        CHECK_EQ(escapeUTF8("\n", false, false), "\n");
+        CHECK_EQ(escapeUTF8("\n", false, true), "\\n");
+
+        CHECK_EQ(escapeUTF8("\r", false, false), "\r");
+        CHECK_EQ(escapeUTF8("\r", false, true), "\\r");
+
+        CHECK_EQ(escapeUTF8("\t", false, false), "\t");
+        CHECK_EQ(escapeUTF8("\t", false, true), "\\t");
+
+        CHECK_EQ(escapeUTF8("\v", false, false), "\v");
+        CHECK_EQ(escapeUTF8("\v", false, true), "\\v");
+    }
+
+    SUBCASE("keep_hex") {
+        CHECK_EQ(escapeUTF8("\x12", false, false, false), "");
+        CHECK_EQ(escapeUTF8("\x12", false, false, true), "");
+        CHECK_EQ(escapeUTF8("\\x12", false, false, false), "\\\\x12");
+        CHECK_EQ(escapeUTF8("\\x12", false, false, true), "\\x12");
+    }
+}
+
+TEST_CASE("expandEscapes") {
+    CHECK_EQ(expandEscapes(""), "");
+    CHECK_EQ(expandEscapes("ab\n12"), "ab\n12");
+    CHECK_EQ(expandEscapes("ab\\n12"), "ab\n12");
+    CHECK_THROWS_WITH_AS(expandEscapes("ab\\\n12"), "unknown escape sequence", const Exception&);
+    CHECK_EQ(expandEscapes("ab\\\\n12"), "ab\\n12");
+    CHECK_EQ(expandEscapes("ab\\\\\n12"), "ab\\\n12");
+
+    CHECK_THROWS_WITH_AS(expandEscapes("\\"), "broken escape sequence", const Exception&);
+
+    CHECK_EQ(expandEscapes("\\\""), "\"");
+    CHECK_EQ(expandEscapes("\\r"), "\r");
+    CHECK_EQ(expandEscapes("\\n"), "\n");
+    CHECK_EQ(expandEscapes("\\t"), "\t");
+    CHECK_EQ(expandEscapes("\\0"), std::string(1u, '\0'));
+    CHECK_EQ(expandEscapes("\\a"), "\a");
+    CHECK_EQ(expandEscapes("\\b"), "\b");
+    CHECK_EQ(expandEscapes("\\v"), "\v");
+    CHECK_EQ(expandEscapes("\\f"), "\f");
+    CHECK_EQ(expandEscapes("\\e"), "\e");
+
+    CHECK_THROWS_WITH_AS(expandEscapes("\\uFOO"), "incomplete unicode \\u", const Exception&);
+    CHECK_THROWS_WITH_AS(expandEscapes("\\uFOOL"), "cannot decode character", const Exception&);
+    CHECK_EQ(expandEscapes("\\u2614"), "☔");
+    // We assume a max value of \uFFFF so the following is expanded as `\u1F60` and `E`, not `😎`.
+    CHECK_EQ(expandEscapes("\\u1F60E"), "ὠE");
+
+    CHECK_THROWS_WITH_AS(expandEscapes("\\UFOO"), "incomplete unicode \\U", const Exception&);
+    CHECK_THROWS_WITH_AS(expandEscapes("\\UFOOBAR"), "incomplete unicode \\U", const Exception&);
+    CHECK_THROWS_WITH_AS(expandEscapes("\\UFOOBARBAZ"), "cannot decode character", const Exception&);
+    CHECK_EQ(expandEscapes("\\U00002614"), "☔");
+    CHECK_EQ(expandEscapes("\\U0001F60E"), "😎");
+
+    CHECK_THROWS_WITH_AS(expandEscapes("\\x"), "\\x used with no following hex digits", const Exception&);
+    CHECK_THROWS_WITH_AS(expandEscapes("\\xZ"), "cannot decode character", const Exception&);
+    CHECK_EQ(expandEscapes("\\xA"), "\xA");
+    CHECK_EQ(expandEscapes("\\xAB"), "\xAB");
+    CHECK_THROWS_WITH_AS(expandEscapes("\\xAZ"), "cannot decode character", const Exception&);
+    CHECK_EQ(expandEscapes("\\xABC"), std::string("\xAB") + "C");
+    CHECK_EQ(expandEscapes("\\x01"), "\x01");
+}
+
 TEST_CASE("isDebugVersion") {
 #if HILTI_RT_BUILD_TYPE_DEBUG
     CHECK(isDebugVersion());
@@ -224,6 +317,7 @@ TEST_CASE("join") {
 TEST_CASE("join_tuple") {
     CHECK_EQ(join_tuple(std::make_tuple()), "");
     CHECK_EQ(join_tuple(std::make_tuple(integer::safe<uint8_t>(1), std::string("a"))), "1, \"a\"");
+    CHECK_EQ(join_tuple(std::make_tuple(integer::safe<uint8_t>(1), std::string(1u, '\0'))), "1, \"\\0\"");
 }
 
 TEST_CASE("join_tuple_for_print") {

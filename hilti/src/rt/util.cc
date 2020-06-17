@@ -188,11 +188,23 @@ std::string hilti::rt::expandEscapes(std::string s) {
 
             case '"': *d++ = '"'; break;
 
+            case '0': *d++ = '\0'; break;
+
+            case 'a': *d++ = '\a'; break;
+
+            case 'b': *d++ = '\b'; break;
+
+            case 'e': *d++ = '\e'; break;
+
+            case 'f': *d++ = '\f'; break;
+
             case 'n': *d++ = '\n'; break;
 
             case 'r': *d++ = '\r'; break;
 
             case 't': *d++ = '\t'; break;
+
+            case 'v': *d++ = '\v'; break;
 
             case 'u': {
                 auto end = c + 4;
@@ -286,6 +298,21 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
         else if ( cp == '"' && escape_quotes )
             esc += "\\\"";
 
+        else if ( *p == '\0' )
+            esc += escapeControl(*p, "\\0");
+
+        else if ( *p == '\a' )
+            esc += escapeControl(*p, "\\a");
+
+        else if ( *p == '\b' )
+            esc += escapeControl(*p, "\\b");
+
+        else if ( *p == '\e' )
+            esc += escapeControl(*p, "\\e");
+
+        else if ( *p == '\f' )
+            esc += escapeControl(*p, "\\f");
+
         else if ( *p == '\n' )
             esc += escapeControl(*p, "\\n");
 
@@ -294,6 +321,9 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
 
         else if ( *p == '\t' )
             esc += escapeControl(*p, "\\t");
+
+        else if ( *p == '\v' )
+            esc += escapeControl(*p, "\\v");
 
         else {
             for ( ssize_t i = 0; i < n; i++ )
