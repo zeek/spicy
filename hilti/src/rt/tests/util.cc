@@ -117,11 +117,11 @@ TEST_CASE("escapeBytes") {
     }
 
     SUBCASE("use_octal") {
-        CHECK_EQ(escapeBytes("", false, true, true), "");
-        CHECK_EQ(escapeBytes("ab\n12", false, true, true), "ab\\01212");
-        CHECK_EQ(escapeBytes("ab\\n12", false, true, true), "ab\\\\n12");
-        CHECK_EQ(escapeBytes("ab\\\n12", false, true, true), "ab\\\\\\01212");
-        CHECK_EQ(escapeBytes("ab\t12", false, true, true), "ab\\01112");
+        CHECK_EQ(escapeBytes("", false, true), "");
+        CHECK_EQ(escapeBytes("ab\n12", false, true), "ab\\01212");
+        CHECK_EQ(escapeBytes("ab\\n12", false, true), "ab\\\\n12");
+        CHECK_EQ(escapeBytes("ab\\\n12", false, true), "ab\\\\\\01212");
+        CHECK_EQ(escapeBytes("ab\t12", false, true), "ab\\01112");
     }
 }
 
