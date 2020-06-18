@@ -106,14 +106,17 @@ static std::filesystem::path extract_path(const std::string& chunk, size_t* i) {
 }
 
 static int extract_int(const std::string& chunk, size_t* i) {
-    std::string sint;
-
     eat_spaces(chunk, i);
 
     size_t j = *i;
 
-    if ( j < chunk.size() && (chunk[j] == '-' || chunk[j] == '+') )
-        ++j;
+    if ( j < chunk.size() ) {
+        if ( chunk[j] == '-' ) {
+            ++j;
+        }
+        if ( chunk[j] == '+' )
+            ++j;
+    }
 
     while ( j < chunk.size() && isdigit(chunk[j]) )
         ++j;
@@ -124,8 +127,8 @@ static int extract_int(const std::string& chunk, size_t* i) {
     auto x = chunk.substr(*i, j - *i);
     *i = j;
 
-    int integer;
-    hilti::util::atoi_n(sint.begin(), sint.end(), 10, &integer);
+    int integer = 0;
+    hilti::util::atoi_n(x.begin(), x.end(), 10, &integer);
     return integer;
 }
 
