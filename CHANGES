@@ -1,4 +1,13 @@
 
+0.4.0-496 | 2020-06-18 15:46:44 +0000
+
+  * GH-381: Have the code generator fully declare enum types directly
+    as part of the forward-declarations block. (Robin Sommer, Corelight)
+
+  * GH-380: Corrections to tutorial. (Duffy Ocraven)
+
+  * Adding short "Next Steps" section to tutorial. (Robin Sommer, Corelight)
+
 0.4.0-492 | 2020-06-17 10:41:13 +0200
 
   * Move hilti's `util` namespace into the `hilti` namespace. (Benjamin Bannier, Corelight)

@@ -223,8 +223,8 @@ additional ``&eod`` attribute to lift this restrictions; we discuss
 that in the corresponding type's section where applicable.
 
 After a field with a ``&size=EXPR`` attribute, parsing will always
-move ahead the full amount of bytes, even if the field permitted to
-not consume them all.
+move ahead the full amount of bytes, even if the field did not consume
+them all.
 
 .. todo::
 
@@ -358,7 +358,7 @@ The most commonly used hooks are:
 In addition, Spicy provides a set of hooks specific to the ``sink``
 type; we discuss these the :ref:`corresponding section <sinks>`.
 
-There are three location where hooks can be implemented:
+There are three locations where hooks can be implemented:
 
 - Inside a unit, ``on <hook name> { ... }`` implements the hook of the
   given name::
@@ -424,7 +424,7 @@ variables to a unit type to store arbitrary state:
     :exec: printf \05 | spicy-driver %INPUT
     :show-with: foo.spicy
 
-Here, we assign a string value to ``a`` once we have parsed ``x`. The
+Here, we assign a string value to ``a`` once we have parsed ``x``. The
 final ``print`` shows the expected value. As you can also see, before
 we assign anything, the variable's value is just empty: Spicy
 initializes instances variables with well-defined defaults. If you
