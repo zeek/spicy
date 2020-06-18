@@ -48,6 +48,81 @@ ostream& operator<<(ostream& stream, const tuple<Ts...>& xs) {
 
 TEST_SUITE_BEGIN("util");
 
+template<typename T>
+T atoi_n_(const std::string_view& input, int base, unsigned num_parsed) {
+    CAPTURE(input);
+    CAPTURE(base);
+
+    auto result = T();
+    std::string_view::iterator it;
+
+    try {
+        it = atoi_n(input.cbegin(), input.cend(), base, &result);
+    } catch ( ... ) {
+        throw;
+    }
+
+    CHECK_EQ(it - input.begin(), num_parsed);
+    return result;
+};
+
+TEST_CASE("atoi_n") {
+    SUBCASE("parse nothing") {
+        int64_t x = -42; // If nothing gets parse, this value should remain unchanged.
+
+        SUBCASE("empty range") {
+            std::string_view s = "";
+            CHECK_THROWS_WITH_AS(atoi_n(s.begin(), s.end(), 10, &x), "cannot decode from empty range",
+                                 const InvalidArgument&);
+        }
+
+        SUBCASE("invalid chars") {
+            std::string_view s = "abc";
+            auto it = atoi_n(s.begin(), s.end(), 10, &x);
+            CHECK_EQ(it, s.begin());
+        }
+
+        CHECK_EQ(x, -42);
+    }
+
+    SUBCASE("parse something") {
+        CHECK_THROWS_WITH_AS(atoi_n_<int>("123456", 1, 0), "base for numerical conversion must be between 2 and 36",
+                             const OutOfRange&);
+
+        CHECK_THROWS_WITH_AS(atoi_n_<int>("123456", 37, 0), "base for numerical conversion must be between 2 and 36",
+                             const OutOfRange&);
+
+        CHECK_EQ(atoi_n_<int>("123", 10, 3), 123);
+        CHECK_EQ(atoi_n_<int>("00123", 10, 5), 123);
+        CHECK_EQ(atoi_n_<int>("00123", 4, 5), 27);
+
+        CHECK_EQ(atoi_n_<int>("-123", 10, 4), -123);
+        CHECK_EQ(atoi_n_<int>("-00123", 10, 6), -123);
+        CHECK_EQ(atoi_n_<int>("-00123", 4, 6), -27);
+        CHECK_EQ(atoi_n_<int>("-00123", 3, 5), -5);
+        CHECK_EQ(atoi_n_<int>("-00123", 2, 4), -1);
+
+        CHECK_EQ(atoi_n_<int>("+123", 10, 4), 123);
+        CHECK_EQ(atoi_n_<int>("+00123", 10, 6), 123);
+        CHECK_EQ(atoi_n_<int>("+00123", 4, 6), 27);
+        CHECK_EQ(atoi_n_<int>("+00123", 3, 5), 5);
+        CHECK_EQ(atoi_n_<int>("+00123", 2, 4), 1);
+
+        CHECK_EQ(atoi_n_<int64_t>("123ABC", 16, 6), 1194684);
+        CHECK_EQ(atoi_n_<int64_t>("00123ABC", 16, 8), 1194684);
+        CHECK_EQ(atoi_n_<int64_t>("-123ABC", 16, 7), -1194684);
+        CHECK_EQ(atoi_n_<int64_t>("-00123ABC", 16, 9), -1194684);
+
+        CHECK_EQ(atoi_n_<int64_t>("123Abc", 16, 6), 1194684);
+        CHECK_EQ(atoi_n_<int64_t>("00123Abc", 16, 8), 1194684);
+        CHECK_EQ(atoi_n_<int64_t>("-123Abc", 16, 7), -1194684);
+        CHECK_EQ(atoi_n_<int64_t>("-00123Abc", 16, 9), -1194684);
+
+        CHECK_EQ(atoi_n_<int>("-00123-123", 10, 6), -123);
+        CHECK_EQ(atoi_n_<int>("-00123Z123", 10, 6), -123);
+    }
+}
+
 TEST_CASE("createTemporaryFile") {
     SUBCASE("success") {
         // This test is value-parameterized over `tmp`.

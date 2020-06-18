@@ -201,7 +201,7 @@ static hilti::rt::Port extract_port(const std::string& chunk, size_t* i) {
         throw ParseError("cannot parse port specification");
 
     hilti::rt::Protocol proto;
-    uint64_t port;
+    uint64_t port = std::numeric_limits<uint64_t>::max();
 
     s = chunk.substr(*i, j - *i);
     hilti::util::atoi_n(s.begin(), s.end(), 10, &port);

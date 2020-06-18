@@ -198,7 +198,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
                 auto end = c + 4;
                 if ( end > s.end() )
                     throw Exception("incomplete unicode \\u");
-                utf8proc_int32_t val;
+                utf8proc_int32_t val = 0;
                 c = atoi_n(c, end, 16, &val);
 
                 if ( c != end )
@@ -218,7 +218,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
                 auto end = c + 8;
                 if ( end > s.end() )
                     throw Exception("incomplete unicode \\U");
-                utf8proc_int32_t val;
+                utf8proc_int32_t val = 0;
                 c = atoi_n(c, end, 16, &val);
 
                 if ( c != end )
@@ -238,7 +238,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
                 auto end = std::min(c + 2, s.end());
                 if ( c == s.end() )
                     throw Exception("\\x used with no following hex digits");
-                char val;
+                char val = 0;
                 c = atoi_n(c, end, 16, &val);
 
                 if ( c != end )

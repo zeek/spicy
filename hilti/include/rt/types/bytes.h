@@ -446,7 +446,8 @@ public:
      * @return converted time value
      */
     Time toTime(uint64_t base = 10) const {
-        return Time(toUInt(base) * integer::safe<uint64_t>(1'000'000'000), Time::NanosecondTag());
+        auto ns = ! isEmpty() ? toUInt(base) * integer::safe<uint64_t>(1'000'000'000) : integer::safe<uint64_t>(0);
+        return Time(ns, Time::NanosecondTag());
     }
 
     /**

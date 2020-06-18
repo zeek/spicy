@@ -6,6 +6,7 @@
 
 #include <list>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <string_view>
@@ -357,51 +358,73 @@ auto transform(const Vector<X, Allocator>& x, F f) {
 class OutOfRange;
 
 /**
- * Parses a numerical value from a character sequence into an integer.
- * `base` must be between 2 and 26.
+ * Parses a numerical value from a character sequence into an
+ * integer. Character sequences can start with `+` or `-` to
+ * denote the sign.
+ *
+ * Users should check the returned iterator to detect how many
+ * characters were extracted. If the returned iterator is
+ * different from `s` the extracted numerical value was stored in
+ * the memory pointed to by `result`; otherwise `result` remains
+ * unchanged.
+ *
+ * @pre The input sequence must not be empty, i.e., we require `s != e`.
+ * @pre Base must be in the inclusive range [2, 36].
+ *
+ * @par s beginning of the input range.
+ * @par e end of the input range.
+ * @par base base of the input range.
+ * @par result address of the memory location to used for storing
+ *     a possible parsed result.
+ * @return iterator to the first character not used in value
+ *     extraction.
  */
 template<class Iter, typename Result>
 inline Iter atoi_n(Iter s, Iter e, int base, Result* result) {
     if ( base < 2 || base > 36 )
         throw OutOfRange("base for numerical conversion must be between 2 and 36");
 
-    Result n = 0;
-    bool neg = false;
+    if ( s == e )
+        throw InvalidArgument("cannot decode from empty range");
 
-    if ( s != e && *s == '-' ) {
+    std::optional<Result> n = std::nullopt;
+    bool neg = false;
+    auto it = s;
+
+    if ( *it == '-' ) {
         neg = true;
-        ++s;
+        ++it;
+    }
+    else if ( *it == '+' ) {
+        neg = false;
+        ++it;
     }
 
-    bool first = true;
+    for ( ; it != e; ++it ) {
+        auto c = *it;
 
-    for ( ; s != e; s++ ) {
-        auto c = *s;
-        unsigned int d = 0;
-
+        Result d;
         if ( c >= '0' && c < '0' + base )
             d = c - '0';
-
         else if ( c >= 'a' && c < 'a' - 10 + base )
             d = c - 'a' + 10;
-
         else if ( c >= 'A' && c < 'A' - 10 + base )
             d = c - 'A' + 10;
-
-        else if ( ! first )
+        else
             break;
 
-        //        else
-        //            throw Exception("cannot decode number");
-
-        n = n * base + d;
-        first = false;
+        n = n.value_or(Result()) * base + d;
     }
 
+    if ( ! n )
+        return s;
+
+    s = it;
+
     if ( neg )
-        *result = -n;
+        *result = -*n;
     else
-        *result = n;
+        *result = *n;
 
     return s;
 }
