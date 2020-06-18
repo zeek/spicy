@@ -470,7 +470,7 @@ auto join_tuple_for_print(T&& tup, std::index_sequence<Is...> /*unused*/) {
 
 /** Generic tuple for-each that runs a callback for each element. */
 template<typename F, std::size_t I = 0, typename... Ts>
-void tuple_for_each(std::tuple<Ts...> tup, F func) {
+void tuple_for_each(const std::tuple<Ts...>& tup, F func) {
     if constexpr ( I == sizeof...(Ts) )
         return;
     else {

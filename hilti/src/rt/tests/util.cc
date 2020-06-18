@@ -605,6 +605,35 @@ TEST_CASE("trim") {
     CHECK_EQ(trim(null + null + "123" + null + "abc" + null, null), "123" + null + "abc");
 }
 
+TEST_CASE("tuple_for_each") {
+    tuple_for_each(std::make_tuple(), []() {});
+    tuple_for_each(std::make_tuple(), [](auto&) {});
+    tuple_for_each(std::make_tuple(), [](const auto&) {});
+    tuple_for_each(std::make_tuple(), [](auto&&) {});
+
+    tuple_for_each(std::make_tuple(1, ""), [](auto&) {});
+    tuple_for_each(std::make_tuple(1, ""), [](const auto&) {});
+    tuple_for_each(std::make_tuple(1, ""), [](auto&&) {});
+
+    tuple_for_each(std::make_tuple(1, ""), [](auto& x) { return x; });
+    tuple_for_each(std::make_tuple(1, ""), [](const auto& x) { return x; });
+    tuple_for_each(std::make_tuple(1, ""), [](auto&& x) { return x; });
+
+    {
+        auto input = std::make_tuple();
+        std::stringstream ss;
+        tuple_for_each(input, [&](auto&& x) { ss << x; });
+        CHECK_EQ(ss.str(), "");
+    }
+
+    {
+        auto input = std::make_tuple(1u, 2L, std::string("a"));
+        std::stringstream ss;
+        tuple_for_each(input, [&](auto&& x) { ss << x; });
+        CHECK_EQ(ss.str(), "12a");
+    }
+}
+
 TEST_CASE("version") {
     CHECK_MESSAGE(version().find("HILTI runtime library") != std::string::npos,
                   fmt("version string '%s' does not contain 'HILTI runtime library'", version()));
