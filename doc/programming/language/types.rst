@@ -444,7 +444,7 @@ Unit
 
 .. spicy:operator:: unit::Unset void unset <sp> t:unit.<field>
 
-    Resets a field back to its original uninitalized state.
+    Resets a field back to its original uninitialized state.
 
 .. _type_vector:
 

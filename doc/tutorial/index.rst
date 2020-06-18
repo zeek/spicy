@@ -1,5 +1,4 @@
 
-
 .. _tutorial:
 
 =========================
@@ -16,6 +15,11 @@ images to devices during initialization. The protocol is sufficiently
 simple that we can walk through it end to end. See its `Wikipedia page
 <https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol>`_ for
 more background.
+
+.. rubric:: Contents
+
+.. contents::
+    :local:
 
 Creating a Spicy Grammar
 ========================
@@ -70,14 +74,18 @@ Let's walk through:
     - ``[1]`` All Spicy source files must start with a ``module`` line
       defining a namespace for their content. By convention, the
       namespace should match what is being parsed, so we call ours
-      ``TFTP``. We declare it as public because we want to use this
-      unit as the starting point for parsing data.
+      ``TFTP``. Naming our module ``TFTP`` also implies saving it
+      under the name ``tftp.spicy``, so that other modules can find it
+      through ``import TFTP;``. See :ref:`modules` for more on all of
+      this.
 
     - ``[2]`` In Spicy, one will typically create a ``unit`` type for
       each of the main data units that a protocol defines. We want to
-      parse a Read Request, so we call our type accordingly. The
-      following lines then lay out the elements of such a request in
-      the same order as the protocol defines them.
+      parse a Read Request, so we call our type accordingly. We
+      declare it as public because we want to use this unit as the
+      starting point for parsing data. The following lines then lay
+      out the elements of such a request in the same order as the
+      protocol defines them.
 
     - ``[3]`` Per the TFTP specification, the first field contains the
       ``opcode`` as an integer value encoded over two bytes. For
@@ -109,7 +117,7 @@ and pipe that into the Spicy tool :ref:`spicy-driver <spicy-driver>`:
 
 .. spicy-output:: rrq.spicy 1
     :exec: printf '\000\001rfc1350.txt\000octet\000' | spicy-driver %INPUT
-    :show-with: rrq.spicy
+    :show-with: tftp.spicy
 
 Here, ``spicy-driver`` compiles our ``ReadRequest`` unit into an
 executable parser and then feeds it with the data it is receiving on
@@ -172,7 +180,7 @@ containing our Read Request. We can pass that into our Spicy parser:
 
 .. spicy-output:: rrq.spicy 2
     :exec: cat tutorial/examples/udp-contents.orig.1367411051.972852.dat | spicy-driver %INPUT
-    :show-as: cat udp-contents.orig.1367411051.972852.dat | spicy-driver rrq.spicy
+    :show-as: cat udp-contents.orig.1367411051.972852.dat | spicy-driver tftp.spicy
 
 That gives us an easy way to test our TFTP parser.
 
@@ -442,7 +450,7 @@ Much better, but there is a catch still: this will not compile because
 of a type mismatch. The switch cases' expressions have type
 ``Opcode``, but ``self.opcode`` remains of type ``uint16``. That is
 because Spicy cannot know on its own that the integers we parse into
-``opcode``` match the numerical values of the ``Opcode`` labels. But
+``opcode`` match the numerical values of the ``Opcode`` labels. But
 we can convert the former into the latter explicitly by adding a
 :ref:`&convert <attribute_convert>` attribute to the ``opcode`` field:
 
@@ -460,7 +468,7 @@ This does two things:
    expression that ``&convert`` specifies. Spicy then stores the
    *result* of that expression, potentially adapting the field's type
    accordingly. Inside the ``&convert`` expression, the parsed value is
-   accessible through the special identifier `$$``.
+   accessible through the special identifier ``$$``.
 
 2. Our ``&convert`` expression passes the parsed integer into the
    constructor for the ``Opcode`` enumerator type, which lets Spicy
@@ -480,7 +488,7 @@ See :ref:`attribute_convert` for more on ``&convert``, and
 
 .. note::
 
-    What happens ``Opcode($$)`` receives an integer that does not
+    What happens when ``Opcode($$)`` receives an integer that does not
     correspond to any of the labels? Spicy permits that and will
     substitute an implicitly defined ``Opcode::Undef`` label. It will
     also retain the actual integer value, which can be recovered by
@@ -494,7 +502,7 @@ that both are using exactly the same fields. That means we do not
 really need two separate types here, and could instead define a
 single ``Request`` unit to cover both cases. Doing so is
 straight-forward, except for one issue: when parsing such a
-``Request``, we would now loose the information whether we are seeing
+``Request``, we would now lose the information whether we are seeing
 read or a write operation. For our Zeek integration later it will be
 useful to retain that distinction, so let us leverage a Spicy
 capability that allows passing state into a sub-unit: :ref:`unit
@@ -601,7 +609,7 @@ the executable analyzer code:
 
 Below, we will prepare an additional interface definition file
 ``tftp.evt`` that describes the analyzer's integration into Zeek. We
-will need to give that to ``spicyz`` as well, and hence our full
+will need to give that to ``spicyz`` as well, and our full
 compilation command hence becomes:
 
 .. spicy-code::
@@ -709,7 +717,7 @@ This shows how each parameter gets specified as a Spicy expression:
 ``self.filename`` retrieves the value of its ``filename`` field.
 ``$is_orig`` is another reserved ID that turns into a boolean that
 will be true if the event has been triggered by originator-side
-traffic. One the Zeek side, our event now has the following signature:
+traffic. On the Zeek side, our event now has the following signature:
 
 .. literalinclude:: examples/tftp-single-request-more-args.zeek
 
@@ -747,7 +755,7 @@ successful in parsing the content. To do that, we can extend our Spicy
 TFTP grammar to call two helper functions that the Spicy plugin makes
 available: ``zeek::confirm_protocol`` once we have successfully parsed
 a request, and ``zeek::reject_protocol`` in case we encounter a
-parsing error. While could put this code right into ``tftp.spicy``, we
+parsing error. While we could put this code right into ``tftp.spicy``, we
 prefer to store it inside separate Spicy file (``zeek_tftp.spicy``)
 because this is Zeek-specific logic:
 
@@ -787,7 +795,7 @@ use:
 .. spicy-code::
 
     # tcpdump -ttnr tftp_rrq.pcap
-    1367411051.972852 IP 192.168.0.253.50618 > 192.168.0.10.69:  20 RRQ "rfc1350.txtoctet" [|tftp]
+    1367411051.972852 IP 192.168.0.253.50618 > 192.168.0.10.69:  20 RRQ "rfc1350.txtoctet" [tftp]
     1367411052.077243 IP 192.168.0.10.3445 > 192.168.0.253.50618: UDP, length 516
     1367411052.081790 IP 192.168.0.253.50618 > 192.168.0.10.3445: UDP, length 4
     1367411052.086300 IP 192.168.0.10.3445 > 192.168.0.253.50618: UDP, length 516
@@ -854,17 +862,39 @@ new ``tftp.log``:
     #fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	wrq	fname	mode	uid_data	size	block_sent	block_acked	error_code	error_msg
     1367411051.972852	CKWH8L3AIekSHYzBU	192.168.0.253	50618	192.168.0.10	69	F	rfc1350.txt	octet	ClAr3P158Ei77Fql8h	24599	49	49	-	-
 
-The TFTP script also labels the service for the 2nd session session as
-"TFTP data", so we are now seeing this in ``conn.log``:
+The TFTP script also labels the second session as TFTP data by
+adding a corresponding entry to the ``service`` field inside the
+Zeek-side connection record. With that, we are now seeing this in
+``conn.log``:
 
 .. spicy-code::
 
     1367411051.972852  ChbSfq3QWKuNirt9Uh  192.168.0.253  50618  192.168.0.10  69  udp  spicy_tftp  -  -  -  S0  -  -0  D  1  48  0  0  -
     1367411052.077243  CowFQj20FHHduhHSYk  192.168.0.10  3445  192.168.0.253  50618  udp  spicy_tftp_data  0.181558  24795  196  SF  --  0  Dd  49  26167  49  1568  -
 
-The TFTP script ends up being a bit more complex than one would expext
+The TFTP script ends up being a bit more complex than one would expect
 for such a simple protocol. That's because it tracks the two related
 connections (initial request and follow-up traffic on a different
 port), and combines them into a single TFTP transaction for logging.
 Since there is nothing Spicy-specific in that Zeek script, we skip
 discussing it here in more detail.
+
+Next Steps
+==========
+
+This tutorial provides an introduction to the Spicy language and
+toolchain. Spicy's capabilities go much further than what we could
+show here. Some pointers for what to look at next:
+
+- :ref:`programming` provides an in-depth discussion of the Spicy
+  language, including in particular all the constructs for
+  :ref:`parsing data <parsing>` and a :ref:`reference of language
+  elements <spicy_language>`. Note that most of Spicy's :ref:`types
+  <types>` come with operators and methods for operating on values.
+  The :ref:`debugging` section helps understanding Spicy's operation
+  if results do not match what you would expect.
+
+- :ref:`examples` summarizes grammars coming with the
+  Spicy distribution.
+
+- :ref:`zeek` discusses Spicy's integration into Zeek.

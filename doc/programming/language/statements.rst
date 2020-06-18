@@ -93,6 +93,18 @@ Examples:
 A classic ``if``-statement branching based on a boolean expression
 ``EXPR``.
 
+.. _statement_import:
+
+``import``
+----------
+
+::
+
+    import MODULE;
+
+Makes the content of another module available, see :ref:`modules` for
+more.
+
 .. _statement_print:
 
 ``print``
