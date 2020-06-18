@@ -261,24 +261,13 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         if ( sid.namespace_() )
             scope = scope.namespace_();
 
+        // We declare the full enum type as part of the forward declarations block, that makes sure it's always fully
+        // available. This is e.g., needed so we can set default values for vectors of enums.
         auto id = cxx::ID(scope, sid);
-
-        // Also add a forward declaration.
-        auto type_forward = cxx::declaration::Type{
-            .id = id,
-            .type = fmt("enum class %s : int64_t", id.local()),
-            .forward_decl = true,
-            .forward_decl_prio = true,
-        };
-
-        cg->unit()->add(type_forward);
-        dependencies.push_back(type_forward);
-
         auto labels = util::transform(n.labels(), [](auto l) { return std::make_pair(cxx::ID(l.id()), l.value()); });
         auto t = cxx::type::Enum{.labels = std::move(labels), .type_name = cxx::ID(id.local())};
-        auto decl = cxx::declaration::Type{.id = id, .type = t};
+        auto decl = cxx::declaration::Type{.id = id, .type = t, .forward_decl = true, .no_using = true};
         dependencies.push_back(decl);
-        cg->unit()->prioritizeType(id);
         return decl;
     }
 
