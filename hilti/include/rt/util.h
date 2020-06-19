@@ -80,7 +80,7 @@ hilti::rt::Result<std::filesystem::path> createTemporaryFile(const std::string& 
 std::filesystem::path normalizePath(const std::filesystem::path& p);
 
 /**
- * Returns a string view with all characters of a given set removed.
+ * Returns a string view with all trailing characters of a given set removed.
  *
  * \note This function is not UTF8-aware.
  */
