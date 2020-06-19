@@ -177,26 +177,26 @@ TEST_CASE("escapeBytes") {
         bool escape_quotes{};
         SUBCASE("true") {
             escape_quotes = true;
-            quote = "\\\"";
+            quote = R"(\")";
         }
         SUBCASE("false") {
             escape_quotes = false;
-            quote = "\"";
+            quote = R"(")";
         }
 
         CHECK_EQ(escapeBytes("", escape_quotes), "");
-        CHECK_EQ(escapeBytes("a\"b\n12", escape_quotes), std::string("a") + quote + "b\\x0a12");
-        CHECK_EQ(escapeBytes("a\"b\\n12", escape_quotes), std::string("a") + quote + "b\\\\n12");
-        CHECK_EQ(escapeBytes("a\"b\\\n12", escape_quotes), std::string("a") + quote + "b\\\\\\x0a12");
-        CHECK_EQ(escapeBytes("a\"b\t12", escape_quotes), std::string("a") + quote + "b\\x0912");
+        CHECK_EQ(escapeBytes("a\"b\n12", escape_quotes), "a" + quote + R"(b\x0a12)");
+        CHECK_EQ(escapeBytes("a\"b\\n12", escape_quotes), "a" + quote + R"(b\\n12)");
+        CHECK_EQ(escapeBytes("a\"b\\\n12", escape_quotes), "a" + quote + R"(b\\\x0a12)");
+        CHECK_EQ(escapeBytes("a\"b\t12", escape_quotes), "a" + quote + R"(b\x0912)");
     }
 
     SUBCASE("use_octal") {
         CHECK_EQ(escapeBytes("", false, true), "");
-        CHECK_EQ(escapeBytes("ab\n12", false, true), "ab\\01212");
-        CHECK_EQ(escapeBytes("ab\\n12", false, true), "ab\\\\n12");
-        CHECK_EQ(escapeBytes("ab\\\n12", false, true), "ab\\\\\\01212");
-        CHECK_EQ(escapeBytes("ab\t12", false, true), "ab\\01112");
+        CHECK_EQ(escapeBytes("ab\n12", false, true), R"(ab\01212)");
+        CHECK_EQ(escapeBytes("ab\\n12", false, true), R"(ab\\n12)");
+        CHECK_EQ(escapeBytes("ab\\\n12", false, true), R"(ab\\\01212)");
+        CHECK_EQ(escapeBytes("ab\t12", false, true), R"(ab\01112)");
     }
 }
 
@@ -208,10 +208,10 @@ TEST_CASE("escapeUTF8") {
     }
 
     SUBCASE("escape_quotes") {
-        CHECK_EQ(escapeUTF8("\"", false), "\"");
-        CHECK_EQ(escapeUTF8("\"", true), "\\\"");
-        CHECK_EQ(escapeUTF8("\"\"", false), "\"\"");
-        CHECK_EQ(escapeUTF8("\"\"", true), "\\\"\\\"");
+        CHECK_EQ(escapeUTF8("\"", false), R"(")");
+        CHECK_EQ(escapeUTF8("\"", true), R"(\")");
+        CHECK_EQ(escapeUTF8("\"\"", false), R"("")");
+        CHECK_EQ(escapeUTF8("\"\"", true), R"(\"\")");
     }
 
     SUBCASE("escape_control") {
@@ -246,8 +246,8 @@ TEST_CASE("escapeUTF8") {
     SUBCASE("keep_hex") {
         CHECK_EQ(escapeUTF8("\x12", false, false, false), "");
         CHECK_EQ(escapeUTF8("\x12", false, false, true), "");
-        CHECK_EQ(escapeUTF8("\\x12", false, false, false), "\\\\x12");
-        CHECK_EQ(escapeUTF8("\\x12", false, false, true), "\\x12");
+        CHECK_EQ(escapeUTF8("\\x12", false, false, false), R"(\\x12)");
+        CHECK_EQ(escapeUTF8("\\x12", false, false, true), R"(\x12)");
     }
 }
 
