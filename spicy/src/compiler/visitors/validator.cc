@@ -328,6 +328,13 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                     error("&parse-at must have an expression of type iterator<stream>", p);
             }
         }
+
+        else if ( a.tag() == "&requires" ) {
+            if ( ! a.hasValue() )
+                error("&requires must provide an expression", p);
+            else if ( auto e = a.valueAs<Expression>(); e && e->type() != type::unknown && e->type() != type::Bool() )
+                error(fmt("&requires expression must be of type bool, but is of type %d ", e->type()), p);
+        }
     }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {

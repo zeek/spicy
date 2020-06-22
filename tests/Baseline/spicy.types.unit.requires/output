@@ -1,0 +1,7 @@
+success, [$x=1, $y=E::X, $z=E::X]
+error, [$x=2, $y=(not set), $z=(not set)]
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: &requires failed ($$ == 2) (/Users/robin/work/spicy/topic2/tests/.tmp/spicy.types.unit.requires-attribute/requires-attribute.spicy:13:14)
+error, [$x=1, $y=E::Y, $z=(not set)]
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: &requires failed ($$ == 2) (/Users/robin/work/spicy/topic2/tests/.tmp/spicy.types.unit.requires-attribute/requires-attribute.spicy:14:29)
+error, [$x=1, $y=E::X, $z=E::Y]
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: &requires failed ($$ == 2) (/Users/robin/work/spicy/topic2/tests/.tmp/spicy.types.unit.requires-attribute/requires-attribute.spicy:15:29)

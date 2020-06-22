@@ -1045,6 +1045,17 @@ void ParserBuilder::newValueForField(const type::unit::item::Field& field, const
         nvalue = builder::member(state().self, field.id());
     }
 
+    if ( auto a = AttributeSet::find(field.attributes(), "&requires") ) {
+        // We evaluate "&requires" here so that the field's value has been
+        // set already, and is hence accessible to the condition through
+        // "self.<x>".
+        auto block = builder()->addBlock();
+        block->addLocal(ID("__dd"), field.parseType(), value);
+        auto cond = block->addTmp("requires", *a->valueAs<Expression>());
+        pushBuilder(block->addIf(builder::not_(cond)),
+                    [&]() { parseError("&required failed ($$ == %s)", {value}, a->value().location()); });
+    }
+
     if ( ! field.parseType().isA<spicy::type::Bitfield>() ) {
         builder()->addDebugMsg("spicy", fmt("%s = %%s", field.id()), {nvalue});
         builder()->addDebugMsg("spicy-verbose", fmt("- setting field '%s' to '%%s'", field.id()), {nvalue});
@@ -1208,6 +1219,10 @@ void ParserBuilder::parseError(const Expression& error_msg, const Meta& location
 
 void ParserBuilder::parseError(const std::string& error_msg, const Meta& location) {
     parseError(builder::string(error_msg), location);
+}
+
+void ParserBuilder::parseError(const std::string& fmt, std::vector<Expression> args, const Meta& location) {
+    parseError(builder::modulo(builder::string(fmt), builder::tuple(std::move(args))), location);
 }
 
 void ParserBuilder::advanceInput(const Expression& i) {

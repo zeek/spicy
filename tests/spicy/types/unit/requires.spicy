@@ -1,0 +1,19 @@
+# @TEST-EXEC: spicyc -j -o test.hlto %INPUT
+# @TEST-EXEC: printf '\001\001\001' | spicy-driver test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\002\001\001' | spicy-driver test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001\002\001' | spicy-driver test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001\001\002' | spicy-driver test.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+type E = enum { X = 1, Y = 2 };
+
+public type Foo = unit {
+    x: uint8 &requires=($$ == 1);
+    y: uint8 &convert=E($$) &requires=($$ == 1);
+    z: uint8 &convert=E($$) &requires=(self.z == E::X);
+
+    on %done { print "success", self; }
+    on %error { print "error", self; }
+};
