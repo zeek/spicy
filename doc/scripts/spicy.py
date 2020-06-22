@@ -9,7 +9,7 @@ from docutils.parsers.rst import directives
 from sphinx.util.nodes import make_refnode, logging
 from sphinx.util.console import bold, purple, darkgreen, red, term_width_line
 from sphinx.roles import XRefRole
-from sphinx.locale import l_, _
+from sphinx.locale import _
 from sphinx.domains import Domain, ObjType
 from sphinx.directives.code import CodeBlock, LiteralInclude
 from sphinx.directives import ObjectDescription
