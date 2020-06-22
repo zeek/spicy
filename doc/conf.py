@@ -63,7 +63,7 @@ html_theme = "sphinx_rtd_theme"
 html_logo = "_static/spicy-logo.png"
 html_favicon = "_static/spicy-favicon.ico"
 html_title = "Spicy v" + version
-html_static_path = ['_static']
+html_static_path = ['_static', 'doxygen-output']
 
 html_theme_options = {
     "style_external_links": True

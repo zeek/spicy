@@ -97,6 +97,7 @@ Documentation
    development/index
 
 Index
+-----
 
 * :ref:`genindex`
 * :ref:`modindex`
