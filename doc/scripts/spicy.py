@@ -3,35 +3,38 @@
     The Spicy domain for Sphinx.
 """
 
+import os.path
+from docutils import nodes
+from docutils.parsers.rst import directives
+from sphinx.util.nodes import make_refnode, logging
+from sphinx.util.console import bold, purple, darkgreen, red, term_width_line
+from sphinx.roles import XRefRole
+from sphinx.locale import l_, _
+from sphinx.domains import Domain, ObjType
+from sphinx.directives.code import CodeBlock, LiteralInclude
+from sphinx.directives import ObjectDescription
+from sphinx import version_info
+from sphinx import addnodes
+import sys
+import subprocess
+
+
 def setup(Sphinx):
     Sphinx.add_domain(SpicyDomain)
 
-import os.path
-import subprocess
-import sys
-
-from sphinx import addnodes
-from sphinx import version_info
-from sphinx.directives import ObjectDescription
-from sphinx.directives.code import CodeBlock, LiteralInclude
-from sphinx.domains import Domain, ObjType
-from sphinx.locale import l_, _
-from sphinx.roles import XRefRole
-from sphinx.util.console import bold, purple, darkgreen, red, term_width_line
-from sphinx.util.nodes import make_refnode, logging
-
-from docutils.parsers.rst import directives
-from docutils import nodes
 
 logger = logging.getLogger(__name__)
 
 # Wrapper for creating a tuple for index nodes, staying backwards
 # compatible to Sphinx < 1.4:
+
+
 def make_index_tuple(indextype, indexentry, targetname, targetname2):
     if version_info >= (1, 4, 0, '', 0):
         return (indextype, indexentry, targetname, targetname2, None)
     else:
         return (indextype, indexentry, targetname, targetname2)
+
 
 class SpicyGeneric(ObjectDescription):
     def add_target_and_index(self, name, sig, signode):
@@ -55,7 +58,7 @@ class SpicyGeneric(ObjectDescription):
         indextext = self.get_index_text(self.objtype, name)
         if indextext:
             self.indexnode['entries'].append(make_index_tuple('single', indextext,
-                                              targetname, targetname))
+                                                              targetname, targetname))
 
     def get_index_text(self, objectname, name):
         return _('%s (%s)') % (name, self.objtype)
@@ -63,6 +66,7 @@ class SpicyGeneric(ObjectDescription):
     def handle_signature(self, sig, signode):
         signode += addnodes.desc_name("", sig)
         return sig
+
 
 class SpicyOperator(SpicyGeneric):
     def handle_signature(self, sig, signode):
@@ -99,8 +103,10 @@ class SpicyOperator(SpicyGeneric):
 
         return name
 
+
 class X(nodes.FixedTextElement):
     pass
+
 
 class SpicyMethod(SpicyGeneric):
     def handle_signature(self, sig, signode):
@@ -120,7 +126,6 @@ class SpicyMethod(SpicyGeneric):
 #        except ValueError:
 #            rnode = nodes.inline("", result)
 
-
         signode += nodes.literal("", "%s(%s)" % (method, args))
 
         if result != "-":
@@ -133,6 +138,7 @@ class SpicyMethod(SpicyGeneric):
 
         return name
 
+
 class SpicyType(SpicyGeneric):
     def handle_signature(self, sig, signode):
         name = sig
@@ -141,6 +147,7 @@ class SpicyType(SpicyGeneric):
             signode += nodes.literal("", name)
 
         return name
+
 
 class SpicyFunction(SpicyGeneric):
     def handle_signature(self, sig, signode):
@@ -151,14 +158,16 @@ class SpicyFunction(SpicyGeneric):
 
         return name
 
+
 class SpicyMethodXRefRole(XRefRole):
     def process_link(self, env, refnode, has_explicit_title, title, target):
         i = title.find("::")
 
-        if i > 0 :
+        if i > 0:
             title = title[i+2:] + "()"
 
         return title, target
+
 
 class SpicyDomain(Domain):
     """Spicy domain."""
@@ -210,13 +219,14 @@ class SpicyDomain(Domain):
         for (typ, name), docname in self.data['objects'].items():
             yield name, name, typ, docname, typ + '-' + name, 1
 
+
 class SpicyCode(CodeBlock):
     required_arguments = 0
     optional_arguments = 1
 
     option_spec = {
         'exec': directives.unchanged
-        }
+    }
 
     def __init__(self, *args, **kwargs):
         if len(args[1]) > 0:
@@ -256,7 +266,7 @@ class SpicyCode(CodeBlock):
 
         if os.path.exists(self.file[1]):
             in_ = open(self.file[1])
-            in_.readline() # Skip header
+            in_.readline()  # Skip header
             old = str(in_.read())
         else:
             old = ""
@@ -264,10 +274,10 @@ class SpicyCode(CodeBlock):
         if text != old:
             self.message("updating %s" % darkgreen(self.file[0]))
             f = open(self.file[1], "w")
-            f.write("# Automatically generated; edit in Sphinx source code, not here.\n")
+            f.write(
+                "# Automatically generated; edit in Sphinx source code, not here.\n")
             f.write(text)
             f.close()
-
 
         ntext = ""
         include = 1
@@ -288,6 +298,7 @@ class SpicyCode(CodeBlock):
 
         return literal
 
+
 class SpicyOutput(LiteralInclude):
     required_arguments = 1
     optional_arguments = 1
@@ -298,7 +309,7 @@ class SpicyOutput(LiteralInclude):
         'show-as': directives.unchanged,
         'show-with': directives.unchanged,
         'expect-failure': bool
-        }
+    }
 
     def __init__(self, *args, **kwargs):
         options = args[2]
@@ -318,7 +329,8 @@ class SpicyOutput(LiteralInclude):
             if not "prefix" in options:
                 self.prefix = None
 
-        self.content_hash = ("# Automatically generated; do not edit. -- <HASH> %s/%s/%s" % (self.exec_,  self.show_as, self.expect_failure))
+        self.content_hash = ("# Automatically generated; do not edit. -- <HASH> %s/%s/%s" %
+                             (self.exec_,  self.show_as, self.expect_failure))
 
         file = "_" + args[1][0]
         index = ("_%s" % args[1][1] if len(args[1]) > 1 else "")
@@ -358,7 +370,8 @@ class SpicyOutput(LiteralInclude):
         # When running from CI, all recorded output should be up to date.
         # Abort if that's not the case.
         if "CI" in os.environ:
-            self.error("error during CI: {} is not up to date in repository".format(destination))
+            self.error(
+                "error during CI: {} is not up to date in repository".format(destination))
             return
 
         all_good = True
@@ -371,13 +384,15 @@ class SpicyOutput(LiteralInclude):
             self.message("executing %s" % darkgreen(one_cmd))
 
             try:
-                output = subprocess.check_output(one_cmd, shell=True, stderr=subprocess.STDOUT)
+                output = subprocess.check_output(
+                    one_cmd, shell=True, stderr=subprocess.STDOUT)
 
                 if not output:
                     output = b"\n"
 
                 if self.expect_failure:
-                    self.error("execution of '%s' expected to fail, but succeeded")
+                    self.error(
+                        "execution of '%s' expected to fail, but succeeded")
                     all_good = False
 
             except subprocess.CalledProcessError as e:
@@ -399,7 +414,8 @@ class SpicyOutput(LiteralInclude):
                 if self.show_as:
                     one_cmd = "# %s\n" % self.show_as
                     one_cmd = one_cmd.replace("%INPUT", self.show_with)
-                    output = output.replace(source.encode(), self.show_with.encode())
+                    output = output.replace(
+                        source.encode(), self.show_with.encode())
                     out.write(one_cmd.encode())
                 out.write(output)
                 out.close()
@@ -413,6 +429,7 @@ class SpicyOutput(LiteralInclude):
 
     def message(self, msg):
         logger.info(msg)
+
 
 directives.register_directive('spicy-code', SpicyCode)
 directives.register_directive('spicy-output', SpicyOutput)
