@@ -100,7 +100,12 @@ std::vector<std::string_view> hilti::rt::split(std::string_view s, std::string_v
     if ( delim.empty() )
         return {s};
 
+    if ( s.size() < delim.size() )
+        return {s};
+
     std::vector<std::string_view> l;
+
+    const bool ends_in_delim = (s.substr(s.size() - delim.size()) == delim);
 
     do {
         size_t p = s.find(delim);
@@ -110,6 +115,9 @@ std::vector<std::string_view> hilti::rt::split(std::string_view s, std::string_v
 
         s.remove_prefix(p + delim.size());
     } while ( ! s.empty() );
+
+    if ( ends_in_delim )
+        l.push_back("");
 
     return l;
 }
@@ -180,17 +188,29 @@ std::string hilti::rt::expandEscapes(std::string s) {
 
             case '"': *d++ = '"'; break;
 
+            case '0': *d++ = '\0'; break;
+
+            case 'a': *d++ = '\a'; break;
+
+            case 'b': *d++ = '\b'; break;
+
+            case 'e': *d++ = '\e'; break;
+
+            case 'f': *d++ = '\f'; break;
+
             case 'n': *d++ = '\n'; break;
 
             case 'r': *d++ = '\r'; break;
 
             case 't': *d++ = '\t'; break;
 
+            case 'v': *d++ = '\v'; break;
+
             case 'u': {
                 auto end = c + 4;
                 if ( end > s.end() )
                     throw Exception("incomplete unicode \\u");
-                utf8proc_int32_t val;
+                utf8proc_int32_t val = 0;
                 c = atoi_n(c, end, 16, &val);
 
                 if ( c != end )
@@ -210,7 +230,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
                 auto end = c + 8;
                 if ( end > s.end() )
                     throw Exception("incomplete unicode \\U");
-                utf8proc_int32_t val;
+                utf8proc_int32_t val = 0;
                 c = atoi_n(c, end, 16, &val);
 
                 if ( c != end )
@@ -230,7 +250,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
                 auto end = std::min(c + 2, s.end());
                 if ( c == s.end() )
                     throw Exception("\\x used with no following hex digits");
-                char val;
+                char val = 0;
                 c = atoi_n(c, end, 16, &val);
 
                 if ( c != end )
@@ -278,6 +298,21 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
         else if ( cp == '"' && escape_quotes )
             esc += "\\\"";
 
+        else if ( *p == '\0' )
+            esc += escapeControl(*p, "\\0");
+
+        else if ( *p == '\a' )
+            esc += escapeControl(*p, "\\a");
+
+        else if ( *p == '\b' )
+            esc += escapeControl(*p, "\\b");
+
+        else if ( *p == '\e' )
+            esc += escapeControl(*p, "\\e");
+
+        else if ( *p == '\f' )
+            esc += escapeControl(*p, "\\f");
+
         else if ( *p == '\n' )
             esc += escapeControl(*p, "\\n");
 
@@ -286,6 +321,9 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
 
         else if ( *p == '\t' )
             esc += escapeControl(*p, "\\t");
+
+        else if ( *p == '\v' )
+            esc += escapeControl(*p, "\\v");
 
         else {
             for ( ssize_t i = 0; i < n; i++ )
@@ -298,7 +336,7 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
     return esc;
 }
 
-std::string hilti::rt::escapeBytes(std::string_view s, bool escape_quotes, bool escape_control, bool use_octal) {
+std::string hilti::rt::escapeBytes(std::string_view s, bool escape_quotes, bool use_octal) {
     auto p = s.data();
     auto e = p + s.size();
 

@@ -8,7 +8,7 @@ import hilti;
 assert(b"-123".to_int() == -123);
 assert(b"123".to_uint() == 123);
 assert(b"a0".to_int(16) == 160);
-assert(b"".to_int(16) == 0);
+assert-exception(b"".to_int(16));
 assert-exception(b"XXX".to_int());
 assert-exception(b"0".to_int(255));
 assert-exception(b"0".to_int(1));

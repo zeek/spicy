@@ -6,6 +6,7 @@
 
 #include <list>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <string_view>
@@ -57,7 +58,7 @@ extern void cannot_be_reached() __attribute__((noreturn));
 
 /** Statistics about the current state of memory allocations. */
 struct MemoryStatistics {
-    // Note when changing this, update `memory_statistucs()`.
+    // Note when changing this, update `memory_statistics()`.
     uint64_t memory_heap;   //< current size of heap in bytes
     uint64_t num_fibers;    //< number of fibers currently in use
     uint64_t max_fibers;    //< high-water mark for number of fibers in use
@@ -79,7 +80,7 @@ hilti::rt::Result<std::filesystem::path> createTemporaryFile(const std::string& 
 std::filesystem::path normalizePath(const std::filesystem::path& p);
 
 /**
- * Returns a string view with all characters of a given set removed.
+ * Returns a string view with all trailing characters of a given set removed.
  *
  * \note This function is not UTF8-aware.
  */
@@ -135,7 +136,7 @@ inline std::string_view ltrim(std::string_view s) noexcept { return ltrim(s, det
 inline std::string_view trim(std::string_view s) noexcept { return trim(s, detail::whitespace_chars); }
 
 /**
- * Splits a string at all occurrences of a delimiter. Successive occurences
+ * Splits a string at all occurrences of a delimiter. Successive occurrences
  * of the delimiter will be split into multiple pieces.
  *
  * \note This function is not UTF8-aware.
@@ -150,7 +151,7 @@ std::vector<std::string_view> split(std::string_view s, std::string_view delim);
 std::vector<std::string_view> split(std::string_view s);
 
 /**
- * Splits a string once at the 1st occurece of succesive whitespace. Leaves
+ * Splits a string once at the 1st occurrence of successive whitespace. Leaves
  * the 2nd element of the result pair unset if whitespace does not occur.
  *
  * \note This function is not UTF8-aware.
@@ -158,7 +159,7 @@ std::vector<std::string_view> split(std::string_view s);
 extern std::pair<std::string, std::string> split1(std::string s);
 
 /**
- * Splits a string once at the last occurece of succesive whitespace. Leaves
+ * Splits a string once at the last occurrence of successive whitespace. Leaves
  * the 2nd element of the result pair unset if whitespace does not occur.
 
  * \note This function is not UTF8-aware.
@@ -166,7 +167,7 @@ extern std::pair<std::string, std::string> split1(std::string s);
 extern std::pair<std::string, std::string> rsplit1(std::string s);
 
 /**
- * Splits a string once at the 1st occurece of a delimiter. Leaves the 2nd
+ * Splits a string once at the 1st occurrence of a delimiter. Leaves the 2nd
  * element of the result pair unset if the delimiter does not occur.
  *
  * \note This function is not UTF8-aware.
@@ -174,7 +175,7 @@ extern std::pair<std::string, std::string> rsplit1(std::string s);
 extern std::pair<std::string, std::string> split1(std::string s, const std::string& delim);
 
 /**
- * Splits a string once at the last occurece of a delimiter. Leaves the 1st
+ * Splits a string once at the last occurrence of a delimiter. Leaves the 1st
  * element of the result pair unset if the delimiter does not occur.
  *
  * \note This function is not UTF8-aware.
@@ -196,7 +197,7 @@ std::string replace(std::string s, std::string_view o, std::string_view n);
 inline bool startsWith(const std::string& s, const std::string& prefix) { return s.find(prefix) == 0; }
 
 /**
- * Python-style enumerate() that teturns an iterable yielding pairs `(index,
+ * Python-style enumerate() that returns an iterable yielding pairs `(index,
  * val)`. From http://reedbeta.com/blog/python-like-enumerate-in-cpp17/.
  */
 template<typename T, typename TIter = decltype(std::begin(std::declval<T>())),
@@ -247,14 +248,12 @@ std::string expandEscapes(std::string s);
  *
  * @param str string to escape
  * @param escape_quotes if true, also escapes quotes characters
- * @param escape_control if false, do not escape control characters
  * @param use_octal use `\NNN` instead of `\XX` (needed for C++)
  * @return escaped string
  *
  * \todo This is getting messy; should use enums instead of booleans.
  */
-std::string escapeBytes(std::string_view s, bool escape_quotes = false, bool escape_control = true,
-                        bool use_octal = false);
+std::string escapeBytes(std::string_view s, bool escape_quotes = false, bool use_octal = false);
 
 /*
  * Escapes non-printable and control characters in an UTF8 string. This
@@ -359,51 +358,73 @@ auto transform(const Vector<X, Allocator>& x, F f) {
 class OutOfRange;
 
 /**
- * Parses a numerical value from a character sequence into an integer.
- * `base` must be between 2 and 26.
+ * Parses a numerical value from a character sequence into an
+ * integer. Character sequences can start with `+` or `-` to
+ * denote the sign.
+ *
+ * Users should check the returned iterator to detect how many
+ * characters were extracted. If the returned iterator is
+ * different from `s` the extracted numerical value was stored in
+ * the memory pointed to by `result`; otherwise `result` remains
+ * unchanged.
+ *
+ * @pre The input sequence must not be empty, i.e., we require `s != e`.
+ * @pre Base must be in the inclusive range [2, 36].
+ *
+ * @par s beginning of the input range.
+ * @par e end of the input range.
+ * @par base base of the input range.
+ * @par result address of the memory location to used for storing
+ *     a possible parsed result.
+ * @return iterator to the first character not used in value
+ *     extraction.
  */
 template<class Iter, typename Result>
 inline Iter atoi_n(Iter s, Iter e, int base, Result* result) {
     if ( base < 2 || base > 36 )
         throw OutOfRange("base for numerical conversion must be between 2 and 36");
 
-    Result n = 0;
-    bool neg = false;
+    if ( s == e )
+        throw InvalidArgument("cannot decode from empty range");
 
-    if ( s != e && *s == '-' ) {
+    std::optional<Result> n = std::nullopt;
+    bool neg = false;
+    auto it = s;
+
+    if ( *it == '-' ) {
         neg = true;
-        ++s;
+        ++it;
+    }
+    else if ( *it == '+' ) {
+        neg = false;
+        ++it;
     }
 
-    bool first = true;
+    for ( ; it != e; ++it ) {
+        auto c = *it;
 
-    for ( ; s != e; s++ ) {
-        auto c = *s;
-        unsigned int d = 0;
-
+        Result d;
         if ( c >= '0' && c < '0' + base )
             d = c - '0';
-
         else if ( c >= 'a' && c < 'a' - 10 + base )
             d = c - 'a' + 10;
-
         else if ( c >= 'A' && c < 'A' - 10 + base )
             d = c - 'A' + 10;
-
-        else if ( ! first )
+        else
             break;
 
-        //        else
-        //            throw Exception("cannot decode number");
-
-        n = n * base + d;
-        first = false;
+        n = n.value_or(Result()) * base + d;
     }
 
+    if ( ! n )
+        return s;
+
+    s = it;
+
     if ( neg )
-        *result = -n;
+        *result = -*n;
     else
-        *result = n;
+        *result = *n;
 
     return s;
 }
@@ -449,7 +470,7 @@ auto join_tuple_for_print(T&& tup, std::index_sequence<Is...> /*unused*/) {
 
 /** Generic tuple for-each that runs a callback for each element. */
 template<typename F, std::size_t I = 0, typename... Ts>
-void tuple_for_each(std::tuple<Ts...> tup, F func) {
+void tuple_for_each(const std::tuple<Ts...>& tup, F func) {
     if constexpr ( I == sizeof...(Ts) )
         return;
     else {

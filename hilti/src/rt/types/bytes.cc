@@ -109,7 +109,7 @@ Bytes Bytes::strip(bytes::Side side) const {
 }
 
 integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
-    int64_t x;
+    int64_t x = 0;
     if ( hilti::rt::atoi_n(begin(), end(), base, &x) == end() )
         return x;
 
@@ -117,7 +117,7 @@ integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
 }
 
 integer::safe<uint64_t> Bytes::toUInt(uint64_t base) const {
-    int64_t x;
+    int64_t x = 0;
     if ( hilti::rt::atoi_n(begin(), end(), base, &x) == end() )
         return x;
 

@@ -47,7 +47,7 @@ inline void print(const std::string& stream, const char* msg) {
 /** Print a string to a specific debug stream with proper escaping. */
 inline void print(const std::string& stream, const std::string_view& s) {
     if ( ::hilti::rt::detail::globalState()->debug_logger )
-        ::hilti::rt::detail::globalState()->debug_logger->print(stream, hilti::rt::escapeBytes(s, false, true));
+        ::hilti::rt::detail::globalState()->debug_logger->print(stream, hilti::rt::escapeBytes(s, false));
 }
 
 template<typename T, typename std::enable_if_t<not std::is_convertible<T, std::string_view>::value>* = nullptr>

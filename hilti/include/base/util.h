@@ -417,7 +417,7 @@ using hilti::rt::expandEscapes;
  * @return escaped std::string
  *
  */
-inline std::string escapeBytesForCxx(std::string_view s) { return escapeBytes(std::move(s), true, true, true); }
+inline std::string escapeBytesForCxx(std::string_view s) { return escapeBytes(std::move(s), true, true); }
 
 /**
  * Turns an arbitrary string into something that can be used as C-level

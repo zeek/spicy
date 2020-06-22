@@ -1,4 +1,20 @@
 
+0.4.0-508 | 2020-06-22 06:03:34 +0000
+
+  * Series of improvements for utility infrastructure (Benjamin Bannier, Corelight)
+      - Add tests for `util::escapeBytes`.
+      - Add tests for some functions in `hilti::rt::util`.
+      - Extend list of supported escape characters in hilti::rt escaping functions.
+      - Fix `rt::split` for trailing delimiters.
+      - Fix edge cases rt::atoi_n.
+      - Fix typos in `hilti/rt/util.h`.
+      - Make `rt::util::tuple_for_each` also work on rvalues.
+      - Make documentation for `hilti::rt::rtrim` more specific.
+      - Remove unused `escape_control` argument to `util::escapeBytes`.
+      - Use raw character literals in some `hilti::rt::utils` tests.
+
+  * Fix extraction of event priority in EVT files. (Benjamin Bannier, Corelight)
+
 0.4.0-496 | 2020-06-18 15:46:44 +0000
 
   * GH-381: Have the code generator fully declare enum types directly
