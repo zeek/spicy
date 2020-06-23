@@ -1,4 +1,8 @@
 
+0.4.0-510 | 2020-06-23 16:16:43 +0200
+
+  * GH-386: Add codegen for Spicy time difference. (Benjamin Bannier, Corelight)
+
 0.4.0-508 | 2020-06-22 06:03:34 +0000
 
   * Series of improvements for utility infrastructure (Benjamin Bannier, Corelight)

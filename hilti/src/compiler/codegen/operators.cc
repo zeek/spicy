@@ -791,6 +791,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     // Time
 
     result_t operator()(const operator_::time::DifferenceInterval& n) { return binary(n, "-"); }
+    result_t operator()(const operator_::time::DifferenceTime& n) { return binary(n, "-"); }
     result_t operator()(const operator_::time::Equal& n) { return binary(n, "=="); }
     result_t operator()(const operator_::time::Greater& n) { return binary(n, ">"); }
     result_t operator()(const operator_::time::GreaterEqual& n) { return binary(n, ">="); }
