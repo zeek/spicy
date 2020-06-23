@@ -14,3 +14,5 @@ global i2 = interval(-110.5);
 print t1;
 assert t1.seconds() == 1295415110.5;
 assert t1.nanoseconds() == 1295415110.5 * 1e9;
+
+assert (t1 - t1).seconds() == 0;
