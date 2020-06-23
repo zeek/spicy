@@ -18,6 +18,7 @@
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
+#include <hilti/rt/types/list_fwd.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/util.h>
 
@@ -122,8 +123,7 @@ public:
     Set() = default;
     Set(const Set&) = default;
     Set(Set&&) noexcept = default;
-    Set(const rt::List<T>& l) : std::set<T>(l.begin(), l.end()) {}
-    Set(rt::List<T>&& l) : std::set<T>(std::move_iterator(l.begin()), std::move_iterator(l.end())) {}
+    Set(const List<T>& l) : std::set<T>(l.begin(), l.end()) {}
     Set(std::initializer_list<T> l) : std::set<T>(std::move(l)) {}
     ~Set() = default;
 

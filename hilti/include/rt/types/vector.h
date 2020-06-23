@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <functional>
 #include <initializer_list>
+#include <iterator>
 #include <memory>
 #include <new>
 #include <optional>
@@ -84,11 +85,17 @@ class Iterator {
     typename V::size_type _index = 0;
 
 public:
+    using difference_type = typename V::V::iterator::difference_type;
+    using value_type = typename V::V::iterator::value_type;
+    using pointer = typename V::V::iterator::pointer;
+    using reference = typename V::V::iterator::reference;
+    using iterator_category = typename V::V::iterator::iterator_category;
+
     Iterator() = default;
     Iterator(typename V::size_type&& index, const typename V::C& control)
         : _control(control), _index(std::move(index)) {}
 
-    typename V::reference operator*();
+    reference operator*();
 
     Iterator& operator++() {
         ++_index;
@@ -151,11 +158,18 @@ class ConstIterator {
     typename V::size_type _index = 0;
 
 public:
+    using difference_type = typename V::V::const_iterator::difference_type;
+    using value_type = typename V::V::const_iterator::value_type;
+    using pointer = typename V::V::const_iterator::pointer;
+    using reference = typename V::V::const_iterator::reference;
+    using const_reference = typename V::V::iterator::reference;
+    using iterator_category = typename V::V::const_iterator::iterator_category;
+
     ConstIterator() = default;
     ConstIterator(typename V::size_type&& index, const typename V::C& control)
         : _control(control), _index(std::move(index)) {}
 
-    typename V::const_reference operator*();
+    const_reference operator*();
 
     ConstIterator& operator++() {
         ++_index;
@@ -249,8 +263,6 @@ public:
 
     Vector(std::initializer_list<T> init, const Allocator& alloc = Allocator()) : V(std::move(init), alloc) {}
 
-    Vector(const rt::List<T>& l) : V(l.begin(), l.end()) {}
-    Vector(rt::List<T>&& l) : V(std::move_iterator(l.begin()), std::move_iterator(l.end())) {}
     ~Vector() = default;
 
     /** Returns the last element of the `vector`.
@@ -405,7 +417,12 @@ public:
 
 namespace vector {
 /** Place-holder type for an empty vector that doesn't have a known element type. */
-class Empty : public Vector<bool> {};
+struct Empty {
+    auto begin() const& { return this; }
+    auto end() const& { return this; }
+    auto empty() const { return true; }
+    auto size() const { return 0u; }
+};
 
 template<typename T, typename Allocator>
 inline bool operator==(const Vector<T, Allocator>& v, const Empty& /*unused*/) {
@@ -462,7 +479,7 @@ bool operator!=(const Vector<T, Allocator>& a, const Vector<T, Allocator>& b) {
 }
 
 template<typename T, typename Allocator>
-typename Vector<T, Allocator>::reference vector::Iterator<T, Allocator>::operator*() {
+typename vector::Iterator<T, Allocator>::reference vector::Iterator<T, Allocator>::operator*() {
     if ( auto&& c = _container() ) {
         auto&& data = c->get();
 
@@ -500,7 +517,7 @@ std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::Iterator<T, 
 }
 
 template<typename T, typename Allocator>
-typename Vector<T, Allocator>::const_reference vector::ConstIterator<T, Allocator>::operator*() {
+typename vector::ConstIterator<T, Allocator>::const_reference vector::ConstIterator<T, Allocator>::operator*() {
     if ( auto&& c = _container() ) {
         auto&& data = c->get();
 

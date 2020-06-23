@@ -30,10 +30,10 @@ TEST_CASE("iterator") {
         List<int> l1({1, 2, 3});
         List<int> l2({1, 2, 3});
 
-        CHECK_THROWS_WITH_AS(operator==(l1.begin(), l2.begin()), "cannot compare iterators into different lists",
+        CHECK_THROWS_WITH_AS(operator==(l1.begin(), l2.begin()), "cannot compare iterators into different vectors",
                              const InvalidArgument&);
 
-        CHECK_THROWS_WITH_AS(operator==(l1.cbegin(), l2.cbegin()), "cannot compare iterators into different lists",
+        CHECK_THROWS_WITH_AS(operator==(l1.cbegin(), l2.cbegin()), "cannot compare iterators into different vectors",
                              const InvalidArgument&);
 
         CHECK_EQ(l1.begin(), l1.begin());
@@ -45,11 +45,11 @@ TEST_CASE("iterator") {
 
     SUBCASE("deref") {
         {
-            auto it = List({1}).begin();
+            auto it = List<int>({1}).begin();
             CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
         }
         {
-            auto it = List({1}).cbegin();
+            auto it = List<int>({1}).cbegin();
             CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
         }
 
@@ -60,7 +60,7 @@ TEST_CASE("iterator") {
             REQUIRE_EQ(*it, 1);
 
             l = List<int>({11, 22, 33});
-            CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+            CHECK_EQ(*it, 11);
         }
         {
             List<int> l({1, 2, 3});
@@ -69,13 +69,13 @@ TEST_CASE("iterator") {
             REQUIRE_EQ(*it, 1);
 
             l = List<int>({11, 22, 33});
-            CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+            CHECK_EQ(*it, 11);
         }
 
         {
             List<int> l({1});
-            CHECK_THROWS_WITH_AS(*l.end(), "iterator is invalid", const IndexError&);
-            CHECK_THROWS_WITH_AS(*l.cend(), "iterator is invalid", const IndexError&);
+            CHECK_THROWS_WITH_AS(*l.end(), "index 1 out of bounds", const InvalidIterator&);
+            CHECK_THROWS_WITH_AS(*l.cend(), "index 1 out of bounds", const InvalidIterator&);
         }
     }
 
@@ -87,7 +87,7 @@ TEST_CASE("iterator") {
 
         REQUIRE_NE(it1, it2);
 
-        CHECK_EQ(++list::Iterator<int>(it1), it2);
+        CHECK_EQ(++List<int>::iterator(it1), it2);
         CHECK_NE(it1++, it2);
         CHECK_EQ(it1, it2);
 
@@ -95,25 +95,25 @@ TEST_CASE("iterator") {
 
         l = List<int>();
 
-        CHECK_THROWS_WITH_AS(++it1, "bound object has expired", const InvalidIterator&);
-        CHECK_THROWS_WITH_AS(++cit, "bound object has expired", const InvalidIterator&);
+        CHECK_NOTHROW(++it1);
+        CHECK_NOTHROW(++cit);
     }
 
     SUBCASE("increment end") {
         List<int> l;
 
-        CHECK_THROWS_WITH_AS(++l.end(), "cannot advance iterator beyond the end of container", const InvalidArgument&);
-        CHECK_THROWS_WITH_AS(++l.cend(), "cannot advance iterator beyond the end of container", const InvalidArgument&);
-        CHECK_THROWS_WITH_AS(l.end()++, "cannot advance iterator beyond the end of container", const InvalidArgument&);
-        CHECK_THROWS_WITH_AS(l.cend()++, "cannot advance iterator beyond the end of container", const InvalidArgument&);
+        CHECK_NOTHROW(++l.end());
+        CHECK_NOTHROW(++l.cend());
+        CHECK_NOTHROW(l.end()++);
+        CHECK_NOTHROW(l.cend()++);
     }
 
     SUBCASE("stringification") {
-        CHECK_EQ(to_string(List<int>().begin()), "<list iterator>");
-        CHECK_EQ(to_string(List<int>().cbegin()), "<const list iterator>");
+        CHECK_EQ(to_string(List<int>().begin()), "<vector iterator>");
+        CHECK_EQ(to_string(List<int>().cbegin()), "<const vector iterator>");
 
-        CHECK_EQ(fmt("%s", List<int>().begin()), "<list iterator>");
-        CHECK_EQ(fmt("%s", List<int>().cbegin()), "<const list iterator>");
+        CHECK_EQ(fmt("%s", List<int>().begin()), "<vector iterator>");
+        CHECK_EQ(fmt("%s", List<int>().cbegin()), "<const vector iterator>");
     }
 }
 

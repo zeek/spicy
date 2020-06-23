@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include <hilti/rt/types/vector_fwd.h>
+
 namespace hilti::rt {
 template<typename T>
-class List;
+using List = Vector<T>;
 } // namespace hilti::rt

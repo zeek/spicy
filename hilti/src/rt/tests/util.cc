@@ -581,7 +581,7 @@ TEST_CASE("transform") {
 
     SUBCASE("List") {
         CHECK_EQ(transform(List<int>(), [](auto&& x) { return x + x; }), List<int>());
-        CHECK_EQ(transform(List({1, 2, 3}), [](auto&& x) { return x + x; }), List({2, 4, 6}));
+        CHECK_EQ(transform(List<int>({1, 2, 3}), [](auto&& x) { return x + x; }), List<int>({2, 4, 6}));
     }
 
     SUBCASE("Set") {
