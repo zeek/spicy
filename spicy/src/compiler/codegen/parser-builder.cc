@@ -1053,7 +1053,7 @@ void ParserBuilder::newValueForField(const type::unit::item::Field& field, const
         block->addLocal(ID("__dd"), field.parseType(), value);
         auto cond = block->addTmp("requires", *a->valueAs<Expression>());
         pushBuilder(block->addIf(builder::not_(cond)),
-                    [&]() { parseError("&required failed ($$ == %s)", {value}, a->value().location()); });
+                    [&]() { parseError("&requires failed ($$ == %s)", {value}, a->value().location()); });
     }
 
     if ( ! field.parseType().isA<spicy::type::Bitfield>() ) {
@@ -1164,6 +1164,16 @@ void ParserBuilder::initializeUnit(const Location& l) {
 
 void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     const auto& unit = state().unit.get();
+
+    if ( success ) {
+        // We evaluate any "%requires" before running the final "%done" hook
+        // so that (1) that one can rely on the condition, and (2) we keep
+        // running either "%done" or "%error".
+        for ( auto cond : unit.propertyItems("%requires") ) {
+            pushBuilder(builder()->addIf(builder::not_(*cond.expression())),
+                        [&]() { parseError("%requires failed", cond.meta()); });
+        }
+    }
 
     if ( success ) {
         beforeHook();
