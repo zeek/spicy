@@ -305,6 +305,74 @@ representation as a ``uint64``:
     :exec: printf 12345 | spicy-driver %INPUT
     :show-with: foo.spicy
 
+.. _attribute_requires:
+
+.. rubric:: Enforcing Parsing Constraints
+
+Fields may use an attribute ``&requires=EXPR`` to enforce additional
+constraints on their values. ``EXPR`` must a be boolean expression
+that will be evaluated after the parsing for the field has finished,
+but before any hooks execute. If ``EXPR`` returns ``False``, the
+parsing process will abort with an error, just as if the field had
+been unparseable in the first place (incl. executing any :ref:`%error
+<on_error>` hooks). ``EXPR`` has access to the parsed value through
+:ref:`$$ <id_dollardollar>`. It may also retrieve the field's final
+value through ``self.<field>``, which can be helpful when
+:ref:`&convert <attribute_convert>` is present.
+
+Example:
+
+.. spicy-code:: parse-requires.spicy
+
+    module Test;
+
+    import spicy;
+
+    public type Foo = unit {
+        x: int8 &requires=($$ < 5);
+        on %done { print self; }
+    };
+
+.. spicy-output:: parse-requires.spicy 1
+    :exec: printf '\001' | spicy-driver %INPUT
+    :show-with: foo.spicy
+
+.. spicy-output:: parse-requires.spicy 2
+    :exec: printf '\010' | spicy-driver %INPUT
+    :show-with: foo.spicy
+    :expect-failure:
+
+One can also enforce conditions globally at the unit level through a
+property ``%requires = EXPR``. ``EXPR`` works similar as with the
+attribute: It will be evaluated once the unit has been full parsed,
+but before any ``%done`` hook executes. If ``EXPR`` returns ``False``,
+the unit's parsing process will abort with an error. As usual,
+``EXPR`` has access to the parsed instance through ``self``. More than
+one ``%requires`` property may be specified.
+
+Example:
+
+.. spicy-code:: parse-requires-property.spicy
+
+    module Test;
+
+    import spicy;
+
+    public type Foo = unit {
+        %requires = self.x < 5;
+
+        x: int8;
+        on %done { print self; }
+    };
+
+.. spicy-output:: parse-requires-property.spicy 1
+    :exec: printf '\001' | spicy-driver %INPUT
+    :show-with: foo.spicy
+
+.. spicy-output:: parse-requires-property.spicy 2
+    :exec: printf '\010' | spicy-driver %INPUT
+    :show-with: foo.spicy
+    :expect-failure:
 
 .. _unit_hooks:
 

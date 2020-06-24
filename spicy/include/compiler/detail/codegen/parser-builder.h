@@ -335,11 +335,14 @@ public:
      */
     void consumeLookAhead(std::optional<Expression> dst = {});
 
-    /** Generates code that triggers a parse error exeception. */
+    /** Generates code that triggers a parse error exception. */
     void parseError(const std::string& error_msg, const Meta& location);
 
-    /** Generates code that triggers a parse error exeception. */
+    /** Generates code that triggers a parse error exception. */
     void parseError(const Expression& error_msg, const Meta& location);
+
+    /** Generates code that triggers a parse error exception. */
+    void parseError(const std::string& fmt, std::vector<Expression> args, const Meta& location);
 
     /** Called when a field has been updated. */
     void newValueForField(const type::unit::item::Field& field, const Expression& value);

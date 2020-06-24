@@ -219,6 +219,13 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 error("%port requires a port as its argument", p);
         }
 
+        else if ( i.id().str() == "%requires" ) {
+            if ( auto e = i.expression(); ! e )
+                error("%requires requires an expression", p);
+            else if ( e->type() != type::unknown && e->type() != type::Bool() )
+                error(fmt("%requires expression must be of type bool, but is of type %d ", e->type()), p);
+        }
+
         else
             error(fmt("unknown property '%s'", i.id().str()), p);
     }
@@ -327,6 +334,13 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                           e && e->type() != type::unknown && e->type() != type::stream::Iterator() )
                     error("&parse-at must have an expression of type iterator<stream>", p);
             }
+        }
+
+        else if ( a.tag() == "&requires" ) {
+            if ( ! a.hasValue() )
+                error("&requires must provide an expression", p);
+            else if ( auto e = a.valueAs<Expression>(); e && e->type() != type::unknown && e->type() != type::Bool() )
+                error(fmt("&requires expression must be of type bool, but is of type %d ", e->type()), p);
         }
     }
 

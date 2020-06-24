@@ -1,4 +1,30 @@
 
+0.4.0-518 | 2020-06-24 06:50:48 +0000
+
+  * GH-140: Add "&requires"/"%requires" unit attribute/property.
+    (Robin Sommer, Corelight)
+
+    Fields may now use an attribute ``&requires=EXPR`` to enforce
+    additional constraints on their values. ``EXPR`` must a be boolean
+    expression that will be evaluated after the parsing for the field
+    has finished, but before any hooks execute. If ``EXPR`` returns
+    ``False``, the parsing process will abort with an error, just as
+    if the field had been unparseable in the first place.
+
+    One can similarly enforce conditions globally at the unit level
+    through a property ``%requires = EXPR``, which will be evaluated
+    once the unit has been full parsed, but before any ``%done`` hook
+    executes. If ``EXPR`` returns ``False``, the unit's parsing
+    process will abort with an error.
+
+  * Add Doxygen output to Sphinx documentation. It's integrated into
+    the "Read the Docs build". Locally, "make doxygen" will run it.
+    (Benjamin Bannier, Corelight)
+
+  * Clean up Sphinx custom extension. (Benjamin Bannier, Corelight)
+    - Remove use of `sphinx.locale.l_`
+    - Format with autopep8.
+
 0.4.0-510 | 2020-06-23 16:16:43 +0200
 
   * GH-386: Add codegen for Spicy time difference. (Benjamin Bannier, Corelight)

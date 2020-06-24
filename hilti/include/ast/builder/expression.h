@@ -287,6 +287,10 @@ inline Expression self(NodeRef d, Meta m = Meta()) {
     return expression::Keyword(hilti::expression::keyword::Kind::Self, std::move(d), std::move(m));
 }
 
+inline Expression dollardollar(Meta m = Meta()) {
+    return expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, std::move(m));
+}
+
 inline Expression dollardollar(Type t, Meta m = Meta()) {
     return expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, std::move(t), std::move(m));
 }
