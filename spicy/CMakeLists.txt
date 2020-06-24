@@ -188,12 +188,6 @@ add_custom_command(TARGET spicy-build
                    POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/bin/spicy-build
                                                                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-if ( HILTI_USE_JIT )
-    add_executable(spicy-driver bin/spicy-driver.cc)
-    target_link_libraries(spicy-driver PRIVATE spicy)
-endif ()
-
-
 ## Tests
 add_executable(spicy-tests
                tests/main.cc
