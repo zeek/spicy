@@ -1,4 +1,8 @@
 
+0.4.0-522 | 2020-06-24 22:24:34 +0200
+
+  * Fix `hilti::rt::is_optional` so it applies to const and ref of optionals also. (Benjamin Bannier, Corelight)
+
 0.4.0-520 | 2020-06-24 06:59:04 +0000
 
   * GH-398: Remove duplicate spicy-driver CMake target. (Benjamin

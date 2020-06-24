@@ -520,9 +520,15 @@ struct is_tuple<std::tuple<T...>> : std::true_type {};
 template<typename>
 struct is_optional : std::false_type {};
 
-/** Checks if a type is a optional. */
+/** Checks if a type is an optional. */
 template<typename... T>
 struct is_optional<std::optional<T...>> : std::true_type {};
+
+template<typename... T>
+struct is_optional<const std::optional<T...>> : std::true_type {};
+
+template<typename... T>
+struct is_optional<const std::optional<T...>&> : std::true_type {};
 
 /** Available byte orders. */
 enum class ByteOrder { Little, Big, Network, Host, Undef = -1 };
