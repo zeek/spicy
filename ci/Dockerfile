@@ -18,7 +18,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends git ninja-build ccache bison flex libfl-dev python3 python3-pip docker zlib1g-dev jq locales-all python3-setuptools python3-wheel make \
  && pip3 install btest pre-commit \
  # Spicy doc dependencies.
- && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme \
+ && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme doxygen \
  # GCC-9.
  && apt-get install -y --no-install-recommends g++ gcc \
  # Clang-9.

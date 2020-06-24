@@ -21,7 +21,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends git ninja-build ccache g++ llvm-9-dev clang-9 libclang-9-dev bison flex libfl-dev python3 python3-pip zlib1g-dev jq locales-all python3-setuptools python3-wheel \
  && pip3 install btest pre-commit \
  # Spicy doc dependencies.
- && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme \
+ && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme doxygen \
  # Cleanup.
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*

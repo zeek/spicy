@@ -63,7 +63,7 @@ html_theme = "sphinx_rtd_theme"
 html_logo = "_static/spicy-logo.png"
 html_favicon = "_static/spicy-favicon.ico"
 html_title = "Spicy v" + version
-html_static_path = ['_static']
+html_static_path = ['_static', 'doxygen-output']
 
 html_theme_options = {
     "style_external_links": True
@@ -71,3 +71,9 @@ html_theme_options = {
 
 linkcheck_ignore = [
     r'https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/.*']
+
+# Generate Doxygen output if we are building in readthedocs. Outside of
+# readthedocs this is done by `docs/Makefile`.
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+if read_the_docs_build:
+    subprocess.call('doxygen', shell=True)

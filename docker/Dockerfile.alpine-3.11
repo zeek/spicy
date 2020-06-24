@@ -13,7 +13,7 @@ RUN apk update
 RUN apk add ccache cmake curl g++ gcc gdb git make ninja python3 vim
 
 # Install Spicy dependencies.
-RUN apk add bash bison clang clang-dev clang-libs clang-static flex flex-dev flex-libs libucontext-dev llvm9-dev llvm9-static py3-sphinx py3-sphinx_rtd_theme
+RUN apk add bash bison clang clang-dev clang-libs clang-static flex flex-dev flex-libs libucontext-dev llvm9-dev llvm9-static py3-sphinx py3-sphinx_rtd_theme doxygen
 RUN pip3 install btest
 
 # Install Zeek dependencies.

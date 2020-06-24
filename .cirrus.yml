@@ -211,7 +211,7 @@ macos_release_task:
     - git submodule update --recursive --init
 
   install_dependencies_script:
-    - brew install llvm bison flex cmake ninja python@3.8 sphinx-doc ccache zeek
+    - brew install llvm bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache zeek
     - pip3 install btest sphinx_rtd_theme
 
   configure_script:

@@ -12,3 +12,4 @@ Developer's Manual
    testing
    debugging
    coding-style
+   doxygen
