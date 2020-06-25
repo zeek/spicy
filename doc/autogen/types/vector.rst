@@ -1,5 +1,11 @@
 .. rubric:: Methods
 
+.. spicy:method:: vector::assign vector assign False void (i: uint<64>, x: <any>)
+
+    Assigns *x* to the *i*th element of the vector. If the vector contains
+    less than *i* elements a sufficient number of default-initialized
+    elements is added to carry out the assignment.
+
 .. spicy:method:: vector::back vector back False <type~of~element> ()
 
     Returns the last element of the vector. It throws an exception if the

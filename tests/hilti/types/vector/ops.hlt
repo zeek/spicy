@@ -13,7 +13,7 @@ assert |v| == 3;
 assert v[1] == "b";
 assert v[1] != "X";
 
-v[5] = "e";
+v.assign(5, "e");
 assert v[5] == "e";
 assert v[4] == "";
 
@@ -42,8 +42,8 @@ p([1,2,3]);
 
 local vector<real> b;
 
-b[1] = 0;
-b[2] = 42;
+b.assign(1, 0);
+b.assign(2, 42);
 b.push_back(0);
 b.push_back(1);
 

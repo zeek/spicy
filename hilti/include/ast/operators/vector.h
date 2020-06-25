@@ -45,6 +45,20 @@ STANDARD_OPERATOR_2(vector, Sum, operator_::sameTypeAs(0, "vector<*>"), type::Ve
 STANDARD_OPERATOR_2(vector, SumAssign, operator_::sameTypeAs(0, "vector<*>"), type::Vector(type::Wildcard()),
                     operator_::sameTypeAs(0, "vector<*>"), "Concatenates another vector to the vector.")
 
+BEGIN_METHOD(vector, Assign)
+    auto signature() const {
+        return Signature{.self = type::Vector(type::Wildcard()),
+                         .result = type::Void(),
+                         .id = "assign",
+                         .args = {{.id = "i", .type = type::UnsignedInteger(64)}, {.id = "x", .type = type::Any()}},
+                         .doc = R"(
+Assigns *x* to the *i*th element of the vector. If the vector contains less
+than *i* elements a sufficient number of default-initialized elements is added
+to carry out the assignment.
+)"};
+    }
+END_METHOD
+
 BEGIN_METHOD(vector, PushBack)
     auto signature() const {
         return Signature{.self = type::Vector(type::Wildcard()),
