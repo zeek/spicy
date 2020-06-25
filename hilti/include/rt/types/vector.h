@@ -315,17 +315,30 @@ public:
 
     /** Accesses specified element.
      *
-     * This overload will attempt to resize the `Vector` so that a valid
-     * element can be returned regardless of the current size of the `Vector`.
-     *
      * @param i position of the element to return
      * @return a reference to the element
+     * @throw `IndexError` if the position is out of bounds.
      */
     T& operator[](uint64_t i) & {
         if ( i >= V::size() )
-            V::resize(i + 1);
+            throw IndexError(fmt("vector index %" PRIu64 " out of range", i));
 
         return V::data()[i];
+    }
+
+    /* Assigns a value to an element.
+     *
+     * If the element is not present in the vector, it is resized to contain
+     * at i + 1 values. The other added values are default-initialized.
+     *
+     * @param i position of the element to assign
+     * @param x value to assign
+     */
+    void assign(uint64_t i, T x) {
+        if ( i >= V::size() )
+            V::resize(i + 1);
+
+        V::data()[i] = std::move(x);
     }
 
     /** Concatenates this `Vector` and another `Vector`.
