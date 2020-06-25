@@ -8,7 +8,7 @@
 #if ZEEK_DEBUG_BUILD
 #define DEBUG
 #endif
-#include <Event.h>
+#include <EventHandler.h>
 #include <Val.h>
 #include <file_analysis/File.h>
 #include <file_analysis/Manager.h>
