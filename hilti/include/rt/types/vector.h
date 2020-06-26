@@ -133,6 +133,12 @@ public:
         return a._index >= b._index;
     }
 
+    friend difference_type operator-(const Iterator& a, const Iterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot perform arithmetic with iterators into different vectors");
+        return a._index - b._index;
+    }
+
 private:
     std::optional<std::reference_wrapper<V>> _container();
 };
@@ -194,6 +200,12 @@ public:
         return a._index >= b._index;
     }
 
+    friend difference_type operator-(const ConstIterator& a, const ConstIterator& b) {
+        if ( a._control.lock() != b._control.lock() )
+            throw InvalidArgument("cannot perform arithmetic with iterators into different vectors");
+        return a._index - b._index;
+    }
+
 private:
     std::optional<std::reference_wrapper<V>> _container();
 };
@@ -229,6 +241,10 @@ public:
 
     // Constructing from other `Vector` updates the data, but keeps the control block alive.
     Vector(const Vector& other) : V(other) {}
+
+    template<typename Allocator2>
+    Vector(const Vector<T, Allocator2>& other) : V(other.begin(), other.end()) {}
+
     Vector(Vector&& other) noexcept : V(std::move(other)) {}
 
     Vector(std::initializer_list<T> init, const Allocator& alloc = Allocator()) : V(std::move(init), alloc) {}

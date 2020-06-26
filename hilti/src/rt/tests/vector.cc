@@ -85,6 +85,22 @@ TEST_CASE("assignment") {
         xs = ys;
         CHECK_EQ(xs, Vector<int>({1, 2, 3}));
     }
+
+    SUBCASE("allocator change") {
+        auto xs = Vector<int, vector::Allocator<int, 5>>();
+        xs.assign(2, 5);
+        REQUIRE_EQ(to_string(xs), "[5, 5, 5]");
+
+        auto ys = Vector<int, vector::Allocator<int, 3>>();
+        ys.assign(2, 3);
+        REQUIRE_EQ(to_string(ys), "[3, 3, 3]");
+
+        ys = xs;
+        CHECK_EQ(to_string(ys), "[5, 5, 5]");
+
+        ys.assign(6, 6);
+        CHECK_EQ(to_string(ys), "[5, 5, 5, 3, 3, 3, 6]");
+    }
 }
 
 TEST_CASE("Iterator") {
