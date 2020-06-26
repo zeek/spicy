@@ -43,8 +43,8 @@ TEST_CASE("subscript") {
 
     Vector<int> xs;
     REQUIRE_EQ(xs.size(), 0u);
-    CHECK_EQ(xs[3], int());
-    CHECK_EQ(xs.size(), 4u);
+    CHECK_THROWS_WITH_AS(Vector<int>()[47], "vector index 47 out of range", const IndexError&);
+    CHECK_EQ(xs.size(), 0u);
 
     const auto ys = xs;
     CHECK_THROWS_WITH_AS(ys[47], "vector index 47 out of range", const IndexError&);
@@ -56,6 +56,23 @@ TEST_CASE("subscript") {
 }
 
 TEST_CASE("assign") {
+    Vector<int> xs({1});
+    REQUIRE_EQ(xs.size(), 1u);
+
+    SUBCASE("") {
+        xs.assign(0, 42);
+        CHECK_EQ(xs.size(), 1u);
+        CHECK_EQ(xs[0], 42);
+    }
+
+    SUBCASE("w/ resize") {
+        xs.assign(3, 42);
+        CHECK_EQ(xs.size(), 4);
+        CHECK_EQ(xs, Vector({1, 0, 0, 42}));
+    }
+}
+
+TEST_CASE("assignment") {
     SUBCASE("lvalue") {
         Vector<int> xs;
         xs = Vector<int>({1, 2, 3});

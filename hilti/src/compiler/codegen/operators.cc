@@ -911,6 +911,11 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("%s.front()", self);
     }
 
+    result_t operator()(const operator_::vector::Assign& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.assign(%s, %s)", self, args[0], args[1]);
+    }
+
     result_t operator()(const operator_::vector::PushBack& n) {
         auto [self, args] = methodArguments(n);
         return fmt("%s.emplace_back(%s)", self, args[0]);

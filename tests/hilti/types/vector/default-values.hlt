@@ -15,7 +15,7 @@ type X = enum {
 global vector<X> v;
 global X x;
 
-v[1] = X::A1;
+v.assign(1, X::A1);
 
 # TODO: Activate once we have enum comparision operators.
 #assert v[0] == X::Undef;

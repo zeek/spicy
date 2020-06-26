@@ -1,3 +1,6 @@
+0.4.0-525 | 2020-06-26 14:55:08 +0200
+
+  * Add dedicated method to resize and assign a vector. (Benjamin Bannier, Corelight)
 
 0.4.0-522 | 2020-06-24 22:24:34 +0200
 
