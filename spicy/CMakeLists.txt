@@ -193,6 +193,23 @@ if ( HILTI_USE_JIT )
     target_link_libraries(spicy-driver PRIVATE spicy)
 endif ()
 
+set(SPICY_EXEUTABLES "spicyc" "spicy-config" "spicy-driver" "spicy-doc")
+
+# The Compiler would not include static variable located at plugin.cc in executable
+# if we do not tell the compiler. We can't choose which symbol to inlcude so we have to
+# include them all.
+
+if ( (NOT DEFINED BUILD_SHARED_LIBS) OR (NOT BUILD_SHARED_LIBS) )
+    if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+        foreach (EXE ${SPICY_EXEUTABLES})
+            target_link_options(${EXE} PRIVATE "-all_load")
+        endforeach ()
+    elseif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+        foreach (EXE ${SPICY_EXEUTABLES})
+            target_link_options(${EXE} PRIVATE "--whole-archive")
+        endforeach ()
+    endif ()
+endif ()
 
 ## Tests
 add_executable(spicy-tests
