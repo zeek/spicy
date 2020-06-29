@@ -46,3 +46,13 @@ The DNS parser is a good example of using :ref:`random access
     - :repo:`Spicy grammar <spicy/lib/protocols/dns.spicy>`
     - :repo:`Spicy code for Zeek integration <zeek/plugin/lib/protocols/zeek_dns.spicy>`
     - :repo:`Zeek analyzer definition (EVT)  <zeek/plugin/lib/protocols/dns.evt>`
+
+.. rubric:: DHCP
+
+A nearly complete DHCP parser. This parser extracts most DHCP option
+messages understood by Zeek. The Zeek integration is almost direct and
+most of the work is in formulating the parser itself.
+
+    - :repo:`Spicy grammar <spicy/lib/protocols/dhcp.spicy>`
+    - :repo:`Spicy code for Zeek integration <zeek/plugin/lib/protocols/zeek_dhcp.spicy>`
+    - :repo:`Zeek analyzer definition (EVT)  <zeek/plugin/lib/protocols/dhcp.evt>`

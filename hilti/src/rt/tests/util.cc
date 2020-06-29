@@ -301,19 +301,6 @@ TEST_CASE("isDebugVersion") {
 #endif
 }
 
-TEST_CASE("is_optional") {
-    static_assert(! is_optional<int>::value);
-    static_assert(! is_optional<const int>::value);
-    static_assert(! is_optional<const int&>::value);
-
-    static_assert(is_optional<std::optional<int>>::value);
-    static_assert(is_optional<std::optional<const int>>::value);
-    static_assert(is_optional<std::optional<const int&>>::value);
-
-    static_assert(is_optional<const std::optional<int>>::value);
-    static_assert(is_optional<const std::optional<int>&>::value);
-}
-
 TEST_CASE("join") {
     using str_list = std::initializer_list<std::string>;
 

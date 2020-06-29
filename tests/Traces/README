@@ -6,6 +6,7 @@ Our PCAPs:
 Sources for external PCAPs:
 
     - https://wiki.wireshark.org/SampleCaptures
+        * dhcp.pcap
         * tftp_rrq.pcap
         * tftp_wrq.pcap
 

@@ -257,7 +257,10 @@ inline Val* to_val(uint8_t i, BroType* target, std::string_view location);
  */
 template<typename T>
 inline Val* to_val(const std::optional<T>& t, BroType* target, std::string_view location) {
-    return to_val(hilti::rt::optional::value(t, location.data()), target, location);
+    if ( t.has_value() )
+        return to_val(hilti::rt::optional::value(t, location.data()), target, location);
+
+    return nullptr;
 }
 
 /**
@@ -614,20 +617,8 @@ inline Val* to_val(const T& t, BroType* target, std::string_view location) {
         if constexpr ( std::is_same<decltype(x), const hilti::rt::Null&>::value ) {
             // "Null" turns into an unset optional record field.
         }
-#if 0
-        // TODO: Not sure if we should allow optional directly, probably
-        // not because that's what ".?" is for (but only with structs).
-        else if constexpr ( hilti::rt::is_optional<decltype(x)>::value ) {
-            if ( x.has_value() )
-                v = to_val(*x, rtype->FieldType(idx), location);
-            else {
-                // Unset struct element turns into an unset optional record field.
-            }
-        }
-#endif
         else
-            // This may return a nullptr in cases where the field is to
-            // left be unset.
+            // This may return a nullptr in cases where the field is to be left unset.
             v = to_val(x, rtype->FieldType(idx), location);
 
         if ( v )
