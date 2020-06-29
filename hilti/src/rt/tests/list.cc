@@ -2,8 +2,12 @@
 
 #include <doctest/doctest.h>
 
+#include <functional>
+#include <vector>
+
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/list.h>
+#include <hilti/rt/types/vector.h>
 
 using namespace hilti::rt;
 
@@ -110,6 +114,21 @@ TEST_CASE("iterator") {
 
         CHECK_EQ(fmt("%s", List<int>().begin()), "<list iterator>");
         CHECK_EQ(fmt("%s", List<int>().cbegin()), "<const list iterator>");
+    }
+}
+
+TEST_CASE("make") {
+    const auto fn = std::function<int(int)>([](auto&& x) { return x * 2; });
+    const auto pred = std::function<bool(int)>([](auto&& x) { return x % 3 == 0; });
+
+    SUBCASE("w/o predicate") {
+        CHECK_EQ(list::make(std::vector<int>(), fn), Vector<int>());
+        CHECK_EQ(list::make(std::vector({1, 2, 3}), fn), Vector({2, 4, 6}));
+    }
+
+    SUBCASE("w/ predicate") {
+        CHECK_EQ(list::make(std::vector<int>(), fn, pred), Vector<int>());
+        CHECK_EQ(list::make(std::vector({1, 2, 3}), fn, pred), Vector({6}));
     }
 }
 
