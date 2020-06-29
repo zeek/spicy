@@ -440,6 +440,26 @@ template<typename T, typename Allocator>
 inline bool operator!=(const Empty& /*unused*/, const Vector<T, Allocator>& v) {
     return ! v.empty();
 }
+
+template<typename I, typename O, typename C>
+Vector<O> make(const C& input, std::function<O(I)> func) {
+    Vector<O> output;
+    for ( auto&& i : input )
+        output.emplace_back(func(i));
+
+    return output;
+}
+
+template<typename I, typename O, typename C>
+Vector<O> make(const C& input, std::function<O(I)> func, std::function<bool(I)> pred) {
+    Vector<O> output;
+    for ( auto&& i : input )
+        if ( pred(i) )
+            output.emplace_back(func(i));
+
+    return output;
+}
+
 } // namespace vector
 
 namespace detail::adl {

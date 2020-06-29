@@ -79,7 +79,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         if ( auto c = n.condition() )
             pred = fmt(", [](auto&& %s) -> bool { return %s; }", id, cg->compile(*c));
 
-        return fmt("hilti::rt::list::make<%s, %s>(%s, [](auto&& %s) -> %s { return %s; }%s)", itype, otype, input, id,
+        return fmt("hilti::rt::vector::make<%s, %s>(%s, [](auto&& %s) -> %s { return %s; }%s)", itype, otype, input, id,
                    otype, output, pred);
     }
 

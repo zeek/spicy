@@ -3,8 +3,8 @@
 #include <doctest/doctest.h>
 
 #include <hilti/rt/types/integer.h>
-#include <hilti/rt/types/list.h>
 #include <hilti/rt/types/set.h>
+#include <hilti/rt/types/vector.h>
 
 using namespace hilti::rt;
 
@@ -14,9 +14,9 @@ TEST_CASE("construct") {
     CHECK_EQ(to_string(Set<int>()), "{}");
     CHECK_EQ(to_string(Set<int>({1, 2, 3})), "{1, 2, 3}");
 
-    auto xs = List<int>({1, 2, 3});
+    auto xs = Vector<int>({1, 2, 3});
     CHECK_EQ(to_string(Set<int>(xs)), "{1, 2, 3}");
-    CHECK_EQ(to_string(Set<int>(List<int>({1, 2, 3}))), "{1, 2, 3}");
+    CHECK_EQ(to_string(Set<int>(Vector<int>({1, 2, 3}))), "{1, 2, 3}");
 }
 
 TEST_CASE("contains") {
