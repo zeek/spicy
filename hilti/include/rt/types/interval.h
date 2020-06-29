@@ -76,7 +76,7 @@ public:
     Interval operator*(double i) const { return Interval(integer::safe<int64_t>(_nsecs.Ref() * i), NanosecondTag()); }
 
     /** Returns true if the interval is non-zero. */
-    operator bool() const { return _nsecs.Ref() == 0; }
+    explicit operator bool() const { return _nsecs.Ref() != 0; }
 
     /** Returns a humand-readable representation of the interval. */
     operator std::string() const {
