@@ -9,6 +9,7 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/error.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/interval.h>
 #include <hilti/rt/types/list.h>
 #include <hilti/rt/types/map.h>
 #include <hilti/rt/types/port.h>
@@ -78,6 +79,11 @@ TEST_CASE("optional") {
     CHECK_EQ(to_string(std::optional<int8_t>(2)), "2");
     CHECK_EQ(to_string(std::optional<std::optional<int8_t>>()), "(not set)");
     CHECK_EQ(to_string(std::optional<std::optional<int8_t>>(2)), "2");
+}
+
+TEST_CASE("Interval") {
+    CHECK_EQ(to_string(Interval(integer::safe<uint64_t>(123), Interval::SecondTag())), "123.000000s");
+    CHECK_EQ(fmt("%s", Interval(integer::safe<uint64_t>(123), Interval::SecondTag())), "123.000000s");
 }
 
 TEST_CASE("Map") {
