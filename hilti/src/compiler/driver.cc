@@ -51,6 +51,11 @@ Driver::Driver(std::string name, const std::string_view& argv0) : _name(std::mov
 }
 
 Driver::~Driver() {
+    if ( _driver_options.report_times ) {
+        util::timing::summary(std::cerr);
+        util::type_erasure::summary(std::cerr);
+    }
+
     if ( ! _driver_options.keep_tmps ) {
         for ( const auto& t : _tmp_files )
             unlink(t.c_str());
@@ -589,18 +594,6 @@ Result<Nothing> Driver::compileUnits() {
 }
 
 Result<Nothing> Driver::run() {
-    // Helper to print timing summary on exit from this function.
-    struct AtExit { //NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-        AtExit(std::function<void()> f) : func(std::move(f)) {}
-        ~AtExit() { func(); }
-        std::function<void()> func;
-    } _([&]() {
-        if ( _driver_options.report_times ) {
-            util::timing::summary(std::cerr);
-            util::type_erasure::summary(std::cerr);
-        }
-    });
-
     initialize();
 
     for ( const auto& i : _driver_options.inputs ) {
