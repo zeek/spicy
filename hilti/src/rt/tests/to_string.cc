@@ -7,6 +7,7 @@
 #include <hilti/rt/libhilti.h>
 #include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/error.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/list.h>
 #include <hilti/rt/types/map.h>
@@ -52,6 +53,12 @@ TEST_CASE("Bytes") {
 
     CHECK_EQ(to_string("ABC"_b.begin()), "<bytes iterator>");
     CHECK_EQ(fmt("%s", "ABC"_b.begin()), "<bytes iterator>");
+}
+
+TEST_CASE("Error") {
+    CHECK_EQ(to_string(result::Error()), "<error: <no description>>");
+    CHECK_EQ(to_string(result::Error("")), "<error>");
+    CHECK_EQ(to_string(result::Error("could not foo the bar")), "<error: could not foo the bar>");
 }
 
 TEST_CASE("Vector") {
