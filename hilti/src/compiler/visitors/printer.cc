@@ -783,6 +783,13 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         }
     }
 
+    void operator()(const type::map::Iterator& n) {
+        if ( n.isWildcard() )
+            out << const_(n) << "iterator<map<*>>";
+        else
+            out << const_(n) << fmt("iterator<map<%s>>", n.dereferencedType());
+    }
+
     void operator()(const type::Map& n) {
         if ( n.isWildcard() )
             out << const_(n) << "map<*>";
@@ -801,6 +808,13 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         else {
             out << const_(n) << "result<" << n.dereferencedType() << ">";
         }
+    }
+
+    void operator()(const type::set::Iterator& n) {
+        if ( n.isWildcard() )
+            out << const_(n) << "iterator<set<*>>";
+        else
+            out << const_(n) << fmt("iterator<set<%s>>", n.dereferencedType());
     }
 
     void operator()(const type::Set& n) {
