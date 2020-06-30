@@ -4,6 +4,7 @@
 #include <hilti/ast/module.h>
 #include <hilti/ast/types/all.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
 #include <hilti/compiler/unit.h>
@@ -693,6 +694,211 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     }
 };
 
+// Visitor returning the ID of static, predefined type information instances for types that provide it.
+struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder<cxx::Expression, VisitorTypeInfoPredefined> {
+    VisitorTypeInfoPredefined(CodeGen* cg) : cg(cg) {}
+
+    CodeGen* cg;
+
+    result_t operator()(const type::Address& n) { return "hilti::rt::type_info::address"; }
+    result_t operator()(const type::Any& n) { return "hilti::rt::type_info::any"; }
+    result_t operator()(const type::Bool& n) { return "hilti::rt::type_info::bool_"; }
+    result_t operator()(const type::Bytes& n) { return "hilti::rt::type_info::bytes"; }
+    result_t operator()(const type::bytes::Iterator& n) { return "hilti::rt::type_info::bytes_iterator"; }
+    result_t operator()(const type::Error& n) { return "hilti::rt::type_info::error"; }
+    result_t operator()(const type::Interval& n) { return "hilti::rt::type_info::interval"; }
+    result_t operator()(const type::Network& n) { return "hilti::rt::type_info::network"; }
+    result_t operator()(const type::Port& n) { return "hilti::rt::type_info::port"; }
+    result_t operator()(const type::Real& n) { return "hilti::rt::type_info::real"; }
+    result_t operator()(const type::RegExp& n) { return "hilti::rt::type_info::regexp"; }
+    result_t operator()(const type::SignedInteger& n) { return fmt("hilti::rt::type_info::int%d", n.width()); }
+    result_t operator()(const type::Stream& n) { return "hilti::rt::type_info::stream"; }
+    result_t operator()(const type::stream::Iterator& n) { return "hilti::rt::type_info::stream_iterator"; }
+    result_t operator()(const type::stream::View& n) { return "hilti::rt::type_info::stream_view"; }
+    result_t operator()(const type::String& n) { return "hilti::rt::type_info::string"; }
+    result_t operator()(const type::Time& n) { return "hilti::rt::type_info::time"; }
+    result_t operator()(const type::UnsignedInteger& n) { return fmt("hilti::rt::type_info::uint%d", n.width()); }
+    result_t operator()(const type::Void& n) { return "hilti::rt::type_info::void_"; }
+
+    result_t operator()(const type::ResolvedID& n) {
+        if ( auto x = dispatch(n.type()) )
+            return *x;
+        else
+            return {};
+    }
+
+    result_t operator()(const type::UnresolvedID& n) {
+        logger().internalError(fmt("codgen: unresolved type ID %s", n.id()), n);
+    }
+
+    result_t operator()(const type::Computed& n) {
+        if ( auto x = dispatch(n.type()) )
+            return *x;
+        else
+            return {};
+    }
+};
+
+// Visitor creaating dynamic type information instances for types that do not provide predefined static ones.
+struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, VisitorTypeInfoDynamic> {
+    VisitorTypeInfoDynamic(CodeGen* cg) : cg(cg) {}
+    CodeGen* cg;
+
+    result_t operator()(const type::Enum& n) {
+        std::vector<std::string> labels;
+
+        for ( const auto& l : n.labels() )
+            labels.push_back(fmt("hilti::rt::type_info::enum_::Label{ \"%s\", %d }", cxx::ID(l.id()), l.value()));
+
+        return fmt("hilti::rt::type_info::Enum(std::vector<hilti::rt::type_info::enum_::Label>({%s}))",
+                   util::join(labels, ", "));
+    }
+
+    result_t operator()(const type::Exception& n) { return "hilti::rt::type_info::Exception()"; }
+
+    result_t operator()(const type::Function& n) { return "hilti::rt::type_info::Function()"; }
+
+    result_t operator()(const type::Library& n) { return "hilti::rt::type_info::Library()"; }
+
+    result_t operator()(const type::Map& n) {
+        auto ktype = cg->compile(n.keyType(), codegen::TypeUsage::Storage);
+        auto vtype = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
+        auto deref_type = type::Tuple({n.keyType(), n.elementType()});
+        return fmt("hilti::rt::type_info::Map(%s, hilti::rt::type_info::Map::accessor<%s, %s>())",
+                   cg->typeInfo(deref_type), ktype, vtype);
+    }
+
+    result_t operator()(const type::map::Iterator& n) {
+        return fmt("hilti::rt::type_info::MapIterator(%s, hilti::rt::type_info::MapIterator::accessor<%s>())",
+                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+    }
+
+    result_t operator()(const type::Optional& n) {
+        return fmt("hilti::rt::type_info::Optional(%s, hilti::rt::type_info::Optional::accessor<%s>())",
+                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+    }
+
+    result_t operator()(const type::Result& n) {
+        return fmt("hilti::rt::type_info::Result(%s, hilti::rt::type_info::Result::accessor<%s>())",
+                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+    }
+
+    result_t operator()(const type::Set& n) {
+        return fmt("hilti::rt::type_info::Set(%s, hilti::rt::type_info::Set::accessor<%s>())",
+                   cg->typeInfo(n.elementType()), cg->compile(n.elementType(), codegen::TypeUsage::Storage));
+    }
+
+    result_t operator()(const type::set::Iterator& n) {
+        return fmt("hilti::rt::type_info::SetIterator(%s, hilti::rt::type_info::SetIterator::accessor<%s>())",
+                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+    }
+
+    result_t operator()(const type::Struct& n) {
+        std::vector<std::string> fields;
+
+        for ( const auto& f : n.fields() ) {
+            if ( auto ft = f.type().tryAs<type::Function>() )
+                continue;
+
+            if ( f.isInternal() || f.isStatic() || f.isNoEmit() )
+                continue;
+
+            std::string accessor;
+
+            if ( f.isOptional() )
+                accessor = fmt(", hilti::rt::type_info::struct_::Field::accessor_optional<%s>()",
+                               cg->compile(f.type(), codegen::TypeUsage::Storage));
+
+            fields.push_back(fmt("hilti::rt::type_info::struct_::Field{ \"%s\", %s, offsetof(%s, %s)%s }",
+                                 cxx::ID(f.id()), cg->typeInfo(f.type()), cxx::ID(*n.typeID()), cxx::ID(f.id()),
+                                 accessor));
+        }
+
+        return fmt("hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>({%s}))",
+                   util::join(fields, ", "));
+    }
+
+    result_t operator()(const type::Tuple& n) {
+        std::vector<std::string> elems;
+        auto ttype = cg->compile(n, codegen::TypeUsage::Storage);
+
+        for ( const auto& [i, e] : util::enumerate(n.elements()) )
+            elems.push_back(
+                fmt("hilti::rt::type_info::tuple::Element{ \"%s\", %s, hilti::rt::tuple::elementOffset<%s, %d>() }",
+                    e.first, cg->typeInfo(e.second), ttype, i));
+
+        return fmt("hilti::rt::type_info::Tuple(std::vector<hilti::rt::type_info::tuple::Element>({%s}))",
+                   util::join(elems, ", "));
+    }
+
+    result_t operator()(const type::Union& n) {
+        std::vector<std::string> fields;
+
+        for ( const auto& f : n.fields() )
+            fields.push_back(
+                fmt("hilti::rt::type_info::union_::Field{ \"%s\", %s }", cxx::ID(f.id()), cg->typeInfo(f.type())));
+
+        return fmt(
+            "hilti::rt::type_info::Union(std::vector<hilti::rt::type_info::union_::Field>({%s}), "
+            "hilti::rt::type_info::Union::accessor<%s>())",
+            util::join(fields, ", "), cg->compile(n, codegen::TypeUsage::Storage));
+    }
+    result_t operator()(const type::StrongReference& n) {
+        return fmt("hilti::rt::type_info::StrongReference(%s, hilti::rt::type_info::StrongReference::accessor<%s>())",
+                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+    }
+
+    result_t operator()(const type::ValueReference& n) {
+        return fmt("hilti::rt::type_info::ValueReference(%s, hilti::rt::type_info::ValueReference::accessor<%s>())",
+                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+    }
+
+    result_t operator()(const type::WeakReference& n) {
+        return fmt("hilti::rt::type_info::WeakReference(%s, hilti::rt::type_info::WeakReference::accessor<%s>())",
+                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+    }
+
+    result_t operator()(const type::Vector& n) {
+        auto x = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
+
+        std::string allocator;
+        if ( auto def = cg->typeDefaultValue(n.elementType()) )
+            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+
+        return fmt("hilti::rt::type_info::Vector(%s, hilti::rt::type_info::Vector::accessor<%s%s>())",
+                   cg->typeInfo(n.elementType()), x, allocator);
+    }
+
+    result_t operator()(const type::vector::Iterator& n) {
+        auto x = cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage);
+
+        std::string allocator;
+        if ( auto def = cg->typeDefaultValue(n.dereferencedType()) )
+            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+
+        return fmt("hilti::rt::type_info::VectorIterator(%s, hilti::rt::type_info::VectorIterator::accessor<%s%s>())",
+                   cg->typeInfo(n.dereferencedType()), x, allocator);
+    }
+
+    result_t operator()(const type::Computed& n) {
+        if ( auto x = dispatch(n.type()) )
+            return *x;
+        else
+            return {};
+    }
+
+    result_t operator()(const type::ResolvedID& n) {
+        if ( auto x = dispatch(n.type()) )
+            return *x;
+        else
+            return {};
+    }
+
+    result_t operator()(const type::UnresolvedID& n) {
+        logger().internalError(fmt("codegen: unresolved type ID %s", n.id()), n);
+    }
+};
+
 } // anonymous namespace
 
 cxx::Type CodeGen::compile(const hilti::Type& t, codegen::TypeUsage usage) {
@@ -787,12 +993,74 @@ std::optional<cxx::Expression> CodeGen::typeDefaultValue(const hilti::Type& t) {
     return std::move(x->default_);
 };
 
-std::optional<cxx::declaration::Type> CodeGen::typeDeclaration(const hilti::Type& t) {
-    return VisitorDeclaration(this, &_cache_types_declarations).dispatch(t);
-};
-
 std::list<cxx::declaration::Type> CodeGen::typeDependencies(const hilti::Type& t) {
     VisitorDeclaration v(this, &_cache_types_declarations);
     v.dispatch(type::effectiveType(t));
     return v.dependencies;
 };
+
+std::optional<cxx::declaration::Type> CodeGen::typeDeclaration(const hilti::Type& t) {
+    return VisitorDeclaration(this, &_cache_types_declarations).dispatch(t);
+};
+
+const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(const hilti::Type& t) {
+    std::stringstream display;
+
+    if ( t.typeID() )
+        // Prefer the bare type name as the display value.
+        display << *t.typeID();
+    else
+        hilti::print(display, t);
+
+    if ( display.str().empty() )
+        logger().internalError(fmt("codegen: type %s does not have a display rendering for type information",
+                                   t.typename_()),
+                               t);
+
+    // Each module contains all the type information it needs. We put the
+    // declarations into an anonymous namespace so that they won't be
+    // externally visible.
+    cxx::ID tid(options().cxx_namespace_intern, "type_info", "", fmt("__ti_%s", util::toIdentifier(display.str())));
+
+    return _cache_type_info.getOrCreate(
+        tid,
+        [&]() {
+            if ( auto x = VisitorTypeInfoPredefined(this).dispatch(t); x && *x )
+                return CxxTypeInfo{.predefined = true, .reference = fmt("&%s", *x)};
+
+            auto forward = cxx::declaration::Constant{.id = tid,
+                                                      .type = "hilti::rt::TypeInfo",
+                                                      .linkage = "extern",
+                                                      .forward_decl = true};
+            unit()->add(forward);
+            return CxxTypeInfo{.predefined = false,
+                               .reference = fmt("&%s", std::string(ID("type_info", tid.local()))),
+                               .forward = forward};
+        },
+        [&](auto& ti) {
+            if ( ti.predefined )
+                return ti;
+
+            auto x = VisitorTypeInfoDynamic(this).dispatch(t);
+
+            if ( ! x )
+                logger().internalError(fmt("codegen: type %s does not have a dynamic type info visitor", t), t);
+
+            auto id_init = (t.typeID() ? fmt("\"%s\"", *t.typeID()) : std::string("{}"));
+            auto init = fmt("{ %s, \"%s\", %s }", id_init, display.str(), *x);
+
+            ti.declaration =
+                cxx::declaration::Constant{.id = tid, .type = "hilti::rt::TypeInfo", .init = init, .linkage = ""};
+
+            unit()->add(*ti.declaration);
+
+            return ti;
+        });
+}
+
+cxx::Expression CodeGen::typeInfo(const hilti::Type& t) {
+    auto ti = _getOrCreateTypeInfo(t);
+    return ti.reference;
+};
+
+void CodeGen::addTypeInfoDefinition(const hilti::Type& t) { _getOrCreateTypeInfo(t); }

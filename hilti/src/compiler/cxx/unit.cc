@@ -47,15 +47,21 @@ void Unit::add(const declaration::Global& g, const Meta& m) {
 }
 
 void Unit::add(const declaration::Constant& c, const Meta& m) {
-    if ( auto i = _constants.find(c.id); i != _constants.end() ) {
-        if ( i->second == c )
-            return;
+    if ( c.forward_decl )
+        _constants_forward.insert_or_assign(c.id, c);
 
-        logger().internalError(fmt("constant '%s' already exists differnently in C++ translation unitn", c.id),
-                               m.location());
+    else {
+        if ( auto i = _constants.find(c.id); i != _constants.end() ) {
+            if ( i->second == c )
+                return;
+
+            logger().internalError(fmt("constant '%s' already exists differently in C++ translation unit", c.id),
+                                   m.location());
+        }
+
+        _constants.emplace(c.id, c);
     }
 
-    _constants.emplace(c.id, c);
     _ids.insert(c.id);
 
     if ( c.id.namespace_() )
@@ -218,6 +224,13 @@ hilti::Result<hilti::Nothing> Unit::finalize() {
     }
 
     for ( const auto& ns : _namespaces ) {
+        for ( const auto& i : _constants_forward ) {
+            if ( i.second.id.namespace_() == ns )
+                f << i.second;
+        }
+    }
+
+    for ( const auto& ns : _namespaces ) {
         std::unordered_set<std::string> done;
 
         // Write out those types first that we have in _types_in_order.
@@ -362,6 +375,9 @@ hilti::Result<hilti::Nothing> Unit::createPrototypes(std::ostream& out) {
 
 void Unit::importDeclarations(const Unit& other) {
     const auto m = Meta(Location("<import>"));
+
+    for ( const auto& i : other._constants_forward )
+        add(i.second, m);
 
     for ( const auto& i : other._constants )
         add(i.second, m);

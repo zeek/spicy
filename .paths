@@ -6,6 +6,8 @@ hilti/include/compiler/detail/visitors.h    hilti/src/compiler/visitors/
 hilti/include/compiler                      hilti/src/compiler/
 hilti/include/compiler/detail               hilti/src/compiler/
 hilti/bin
+hilti/include/compiler/detail/codegen/codegen.h hilti/src/compiler/codegen
+
 spicy/include                               spicy/src
 spicy/include/ast/                          spicy/src/ast/
 spicy/include/rt/                           spicy/src/rt/

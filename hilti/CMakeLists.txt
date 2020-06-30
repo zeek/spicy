@@ -146,6 +146,7 @@ set(SOURCES_RUNTIME
     src/rt/library.cc
     src/rt/logging.cc
     src/rt/main.cc
+    src/rt/type-info.cc
     src/rt/types/address.cc
     src/rt/types/bytes.cc
     src/rt/types/integer.cc

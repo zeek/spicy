@@ -129,6 +129,7 @@ private:
     std::map<ID, declaration::Type> _types_forward;
     std::map<ID, declaration::Global> _globals;
     std::map<ID, declaration::Constant> _constants;
+    std::map<ID, declaration::Constant> _constants_forward;
     std::multimap<ID, declaration::Function> _function_declarations;
     std::multimap<ID, Function> _function_implementations;
     std::vector<std::string> _statements;
