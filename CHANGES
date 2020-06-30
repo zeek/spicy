@@ -1,9 +1,12 @@
 
 0.4.0-532 | 2020-06-30 08:03:40 +0000
 
+  * Add a DHCP analyzer. (Benjamin Bannier, Corelight)
+
   * Fix filename in getting started docs. (Dirk Loss)
 
-  * Add a DHCP analyzer. (Benjamin Bannier, Corelight)
+  * Move reporting logic for --report-times so that it always executes
+    when the HILTI-side driver destructs. (Robin Sommer, Corelight)
 
   * Fix header inclusion in Spicy plugin. (Benjamin Bannier, Corelight)
 
