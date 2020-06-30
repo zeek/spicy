@@ -214,6 +214,9 @@ private:
 template<typename T, typename Allocator>
 class Vector : protected std::vector<T, Allocator> {
 public:
+    // We do not allow `Vector<bool>` since `std::vector::bool` is not a proper container but a proxy.
+    static_assert(! std::is_same_v<T, bool>, "'Vector' cannot be used with naked booleans, use 'Bool'");
+
     using V = std::vector<T, Allocator>;
 
     using size_type = typename V::size_type;
@@ -389,7 +392,7 @@ public:
 
 namespace vector {
 /** Place-holder type for an empty vector that doesn't have a known element type. */
-class Empty : public Vector<bool> {};
+class Empty : public Vector<Nothing> {};
 
 template<typename T, typename Allocator>
 inline bool operator==(const Vector<T, Allocator>& v, const Empty& /*unused*/) {
