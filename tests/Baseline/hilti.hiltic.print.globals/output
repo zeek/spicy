@@ -1,5 +1,5 @@
-// Begin of Foo (from "/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.globals/globals.hlt")
-// Compiled by HILTI version 0.4.0-branch
+// Begin of Foo (from "/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.globals/globals.hlt")
+// Compiled by HILTI version 0.4.0-538.dirty
 
 #include <hilti/rt/compiler-setup.h>
 
@@ -26,24 +26,24 @@ extern void __hlt::Foo::__init_globals(hilti::rt::Context* ctx) {
 }
 
 extern void __hlt::Foo::__init_module() {
-      __location__("/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.globals/globals.hlt:11:1");
-    ::hilti::rt::print(Foo::__globals()->X, true);
+      __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.globals/globals.hlt:11:1");
+    ::hilti::rt::print(Foo::__globals()->X, hilti::rt::Bool(true));
 }
 
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, &__init_globals, &__globals_index}); }
 
 /* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.globals/globals.hlt","version":1}
+{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.globals/globals.hlt","version":1}
 */
 
 // Begin of __linker__
-// Compiled by HILTI version 0.4.0-branch
+// Compiled by HILTI version 0.4.0-538.dirty
 
 #include <hilti/rt/compiler-setup.h>
 
 // 
 // Linker code generated for modules:
-//   - Foo (/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.globals/globals.hlt)
+//   - Foo (/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.globals/globals.hlt)
 
 #include <hilti/rt/libhilti.h>
 

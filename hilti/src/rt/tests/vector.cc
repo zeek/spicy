@@ -2,6 +2,7 @@
 
 #include <doctest/doctest.h>
 
+#include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/vector.h>
 #include <memory>
@@ -230,6 +231,32 @@ TEST_CASE("ConstIterator") {
             CHECK_THROWS_WITH_AS(operator>=(Vector<int>().cbegin(), Vector<int>().cbegin()),
                                  "cannot compare iterators into different vectors", const InvalidArgument&);
         }
+    }
+}
+
+TEST_CASE("vector of bool") {
+    SUBCASE("default allocator") {
+        const auto xs = Vector<Bool>({true, false});
+        REQUIRE_EQ(xs.size(), 2u);
+
+        CHECK_EQ(xs.front(), Bool(true));
+        CHECK_EQ(xs.back(), Bool(false));
+
+        CHECK_EQ(xs[0], Bool(true));
+        CHECK_EQ(xs[1], Bool(false));
+    }
+
+    SUBCASE("w/ rt::vector::Allocator") {
+        // TODO(bbannier): The following code does not compile in C++17 since
+        // the non-type template argument `Bool(true)` is not a literal type.
+        // auto xs = Vector<Bool, vector::Allocator<Bool, Bool(true)>>();
+        // REQUIRE_EQ(xs.size(), 0u);
+
+        // xs.assign(2, false);
+        // CHECK_EQ(xs.size(), 3u);
+        // CHECK_EQ(xs[0], true);
+        // CHECK_EQ(xs[1], true);
+        // CHECK_EQ(xs[2], false);
     }
 }
 

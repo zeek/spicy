@@ -20,7 +20,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const ctor::Address& n) { return fmt("hilti::rt::Address(\"%s\")", n.value()); }
 
-    result_t operator()(const ctor::Bool& n) { return n.value() ? "true" : "false"; }
+    result_t operator()(const ctor::Bool& n) { return fmt("hilti::rt::Bool(%s)", n.value() ? "true" : "false"); }
 
     result_t operator()(const ctor::Bytes& n) { return fmt("\"%s\"_b", util::escapeBytesForCxx(n.value())); }
 

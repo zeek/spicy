@@ -18,6 +18,7 @@ global vector<int<32>> l2 = [];
 global vector<int<32>> l3 = [1];
 global vector<string> l4 = ["s1", "s2"];
 global vector<vector<uint<16>>> l5 = [[1,2], [3,4], [4,5]];
+global vector<bool> l6 = [True, False, True, False];
 
 hilti::print(x1);
 hilti::print(x2);
@@ -31,6 +32,7 @@ hilti::print(l2);
 hilti::print(l3);
 hilti::print(l4);
 hilti::print(l5);
+hilti::print(l6);
 
 local value_ref<string> x = "foo"; # type that coerces to string
 assert vector("foo", "bar") == vector<string>(x, "bar");
