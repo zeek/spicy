@@ -248,7 +248,9 @@ public:
      */
     ValueReference& operator=(ValueReference&& other) noexcept {
         if ( &other != this ) {
-            *_safeGet() = std::move(*other._safeGet());
+            // We can't move the actual value as other referencez may be
+            // refering to it.
+            *_safeGet() = *other._safeGet();
             other._ptr = nullptr;
         }
 
