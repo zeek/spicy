@@ -36,6 +36,8 @@ HILTI_EXCEPTION(MatchStateReuse, RuntimeError)
 
 struct Flags {
     bool no_sub : 1; /**< Compile without support for capturing sub-expressions. */
+
+    bool operator==(const Flags& other) const { return no_sub == other.no_sub; }
 };
 
 /**
@@ -178,6 +180,8 @@ public:
      * `&nosub` attribute.
      */
     regexp::MatchState tokenMatcher() const;
+
+    bool operator==(const RegExp& other) const { return _flags == other._flags && _patterns == other._patterns; }
 
 private:
     friend class regexp::MatchState;
