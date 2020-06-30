@@ -13,6 +13,7 @@
 #include <hilti/rt/logging.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/type-info.h>
 #include <hilti/rt/types/all.h>
 #include <hilti/rt/util.h>
 
