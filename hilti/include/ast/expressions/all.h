@@ -20,5 +20,6 @@
 #include <hilti/ast/expressions/ternary.h>
 #include <hilti/ast/expressions/type-wrapped.h>
 #include <hilti/ast/expressions/type.h>
+#include <hilti/ast/expressions/typeinfo.h>
 #include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/expressions/void.h>

@@ -29,7 +29,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 102
-%expect-rr 178
+%expect-rr 180
 
 %union {}
 %{
@@ -187,6 +187,7 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
 %token TRYATTR ".?"
 %token TUPLE "tuple"
 %token TYPE "type"
+%token TYPEINFO "typeinfo"
 %token UINT "uint"
 %token UNION "union"
 %token UNPACK "unpack"
@@ -710,6 +711,7 @@ expr_e        : BEGIN_ '(' expr ')'              { $$ = hilti::expression::Unres
               | NEW expr                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {std::move($2), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
               | NEW type                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Type_(std::move($2)), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
               | NEW type '(' opt_exprs ')'       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Type_(std::move($2)), hilti::expression::Ctor(hilti::ctor::Tuple(std::move($4), __loc__))}, __loc__); }
+              | TYPEINFO '(' type ')'            { $$ = hilti::expression::TypeInfo(std::move($3), __loc__); }
               | expr_f                           { $$ = std::move($1); }
 
 expr_f        : ctor                             { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
