@@ -372,12 +372,12 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
     result_t operator()(const type::Exception& n, const position_t p) {
         if ( auto cxx = n.cxxID() )
-            return CxxTypes{.base_type = cxx::Type(*cxx), .default_ = cxx::Expression(cxx::ID(*cxx, "Undef"))};
+            return CxxTypes{.base_type = cxx::Type(*cxx)};
 
         cg->addDeclarationFor(n);
 
         auto sid = cxx::ID{(n.typeID() ? std::string(*n.typeID()) : fmt("exception_%p", &n))};
-        return CxxTypes{.base_type = std::string(sid), .default_ = cxx::Expression(cxx::ID(sid, "Undef"))};
+        return CxxTypes{.base_type = std::string(sid), .storage = "hilti::rt::Exception"};
     }
 
     result_t operator()(const type::Function& n) { return CxxTypes{}; }
