@@ -15,5 +15,6 @@ spicy/include/compiler/detail/visitors.h    spicy/src/compiler/visitors/
 spicy/include/compiler                      spicy/src/compiler/
 spicy/include/compiler/detail               spicy/src/compiler/
 spicy/bin
+spicy/bin/spicy-dump                        spicy/bin/spicy-dump
 zeek                                        zeek
 zeek/plugin/include                         zeek/plugin/src

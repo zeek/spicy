@@ -51,3 +51,16 @@ parsing from standard input.
 
 .. spicy-output:: usage-spicy-driver
     :exec: spicy-driver -h
+
+.. _spicy-dump:
+
+``spicy-dump``
+==============
+
+``spicy-dumpc`` is a standalone Spicy host application that compiles &
+executes Spicy parsers on the fly, feeds them data for proessing, and
+then prints the parsed information out in either a readable, custom
+ASCII format, or as JSON.
+
+.. spicy-output:: usage-spicy-dump
+    :exec: spicy-dump -h

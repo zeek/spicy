@@ -25,7 +25,7 @@ public type Requests = unit {
     :  Request[];
 };
 
-type Request = unit {
+public type Request = unit {
     request: RequestLine;
     message: Message(False, True);
 };
@@ -34,7 +34,7 @@ public type Replies = unit {
     :  Reply[];
 };
 
-type Reply = unit {
+public type Reply = unit {
     reply: ReplyLine;
     message: Message(reply_code_needs_body(self.reply.status), False);
 };

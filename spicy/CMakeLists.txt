@@ -187,6 +187,8 @@ add_executable(spicy-doc bin/spicy-doc.cc)
 target_compile_options(spicy-doc PRIVATE "-Wall")
 target_link_libraries(spicy-doc PRIVATE spicy)
 
+add_subdirectory(bin/spicy-dump)
+
 add_custom_target(spicy-build ALL)
 add_custom_command(TARGET spicy-build
                    POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/bin/spicy-build
