@@ -1,4 +1,14 @@
 
+0.4.0-538 | 2020-06-30 08:08:16 +0000
+
+  * Fixed semantics of `hilti::rt::Interval`-bool conversions. They
+    now return true for non-zero intervals. (Benjamin Bannier,
+    Corelight)
+
+  * Add tests of `rt::Interval` stringification. (Benjamin Bannier, Corelight)
+
+  * Add tests of `result::Error` stringification. (Benjamin Bannier, Corelight)
+
 0.4.0-532 | 2020-06-30 08:03:40 +0000
 
   * Add a DHCP analyzer. (Benjamin Bannier, Corelight)
