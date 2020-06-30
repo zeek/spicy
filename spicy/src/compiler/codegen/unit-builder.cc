@@ -222,13 +222,19 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         auto ports = hilti::util::transform(unit.propertyItems("%port"), [](auto p) { return *p.expression(); });
 
         Expression parse1 = builder::null();
-        if ( unit.parameters().empty() )
+        Expression parse3 = builder::null();
+
+        if ( unit.parameters().empty() ) {
             parse1 = _pb.parseMethodExternalOverload1(unit);
+            parse3 = _pb.parseMethodExternalOverload3(unit);
+        }
 
         auto parser =
             builder::struct_({{ID("name"), builder::string(*unit.typeID())},
                               {ID("parse1"), parse1},
                               {ID("parse2"), _pb.parseMethodExternalOverload2(unit)},
+                              {ID("parse3"), parse3},
+                              {ID("type_info"), builder::typeinfo(unit)},
                               {ID("description"), (description ? *description->expression() : builder::string(""))},
                               {ID("mime_types"),
                                builder::vector(builder::typeByID("spicy_rt::MIMEType"), std::move(mime_types))},

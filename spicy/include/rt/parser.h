@@ -8,6 +8,7 @@
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/result.h>
+#include <hilti/rt/type-info.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/null.h>
 #include <hilti/rt/types/port.h>
@@ -29,18 +30,23 @@ namespace spicy::rt {
  * as well.
  */
 struct Parser {
-    Parser(std::string name, Parse1Function parse1, std::any parse2, std::string description,
-           hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<hilti::rt::Port> ports)
+    Parser(std::string name, Parse1Function parse1, std::any parse2, Parse3Function parse3,
+           const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
+           hilti::rt::Vector<hilti::rt::Port> ports)
         : name(std::move(name)),
           parse1(parse1),
           parse2(std::move(parse2)),
+          parse3(parse3),
+          type(type),
           description(std::move(description)),
           mime_types(std::move(mime_types)),
           ports(std::move(ports)) {}
 
-    Parser(std::string name, hilti::rt::Null /* null */, std::any parse2, std::string description,
-           hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<hilti::rt::Port> ports)
-        : Parser(std::move(name), nullptr, parse2, std::move(description), std::move(mime_types), std::move(ports)) {}
+    Parser(std::string name, hilti::rt::Null /* null */, std::any parse2, hilti::rt::Null /* null */,
+           const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
+           hilti::rt::Vector<hilti::rt::Port> ports)
+        : Parser(std::move(name), nullptr, parse2, nullptr, type, std::move(description), std::move(mime_types),
+                 std::move(ports)) {}
 
     Parser(const Parser&) = default;
 
@@ -61,6 +67,11 @@ struct Parser {
      * The actual type of this member is Parse2Function<T>.
      */
     std::any parse2;
+
+    /** Function performing parsing of given input into a ParsedUnited that will be returned. */
+    Parse3Function parse3{};
+
+    const hilti::rt::TypeInfo* type;
 
     /**
      * Human-readable description associated with this parser.

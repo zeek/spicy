@@ -162,7 +162,7 @@ public:
     ParserState state() const { return _states.back(); }
 
     /**
-     * Returns an expression referencing the 1st version of publically
+     * Returns an expression referencing the 1st version of a publically
      * visible method that implements a unit's parsing logic, to be called
      * from a host application. This version returns just the data remaining
      * after parsing the unit.
@@ -170,12 +170,21 @@ public:
     Expression parseMethodExternalOverload1(const type::Unit& t);
 
     /**
-     * Returns an expression referencing the 2nd version of publically
+     * Returns an expression referencing the 2nd version of a publically
      * visible method that implements a unit's parsing logic, to be called
-     * from a host application. This version returns just the parsed object
+     * from a host application. This version returns the parsed object
      * plus the data remaining after parsing the unit.
      */
     Expression parseMethodExternalOverload2(const type::Unit& t);
+
+    /**
+     * Returns an expression referencing the 3rd version of a publically
+     * visible method that implements a unit's parsing logic, to be called
+     * from a host application. This version returns a *generic* parse
+     * object of type `spicy::rt::ParsedUnit`, plus the data remaining after
+     * parsing the unit.
+     */
+    Expression parseMethodExternalOverload3(const type::Unit& t);
 
     /**
      * Adds a unit's external parsing methods to the HILTI struct

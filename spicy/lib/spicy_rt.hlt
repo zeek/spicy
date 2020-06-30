@@ -6,6 +6,9 @@ public type UnitAlreadyConnected = exception &cxxname="::spicy::rt::UnitAlreadyC
 # State stored inside a unit to allow connecting it to a sink.
 public type SinkState = __library_type("::spicy::rt::sink::detail::State*");
 
+public type ParsedUnit = __library_type("::spicy::rt::ParsedUnit");
+public type TypeInfo = __library_type("const ::hilti::rt::TypeInfo*");
+
 # Type for a Sink instance. When adding methods here, extend the C++-side spicy::rt::Sink type as well.
 public type Sink = struct {
     method void close();
@@ -41,6 +44,8 @@ public type Parser = struct {
     string name;
     any parse1;
     any parse2;
+    any parse3;
+    TypeInfo type_info;
     string description;
     any mime_types;
     vector<port> ports;
@@ -63,5 +68,7 @@ declare public bool haveEod(inout value_ref<stream> data, view<stream> cur) &cxx
 public type BitOrder = enum { LSB0, MSB0 } &cxxname="hilti::rt::integer::BitOrder";
   # TODO: Should accept BitOrder instead of enum<*> here.
 declare public uint<*> extractBits(uint<*> v, uint<64> lower, uint<64> upper, enum<*> order) &cxxname="::hilti::rt::integer::bits";
+
+declare public void initializeParsedUnit(inout ParsedUnit punit, any unit, TypeInfo ti) &cxxname="::spicy::rt::ParsedUnit::initialize";
 
 }
