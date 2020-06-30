@@ -5,6 +5,9 @@
 
 #pragma once
 
+// Our type info infrastructure needs this, and it seems to work for our cases.
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+
 #if __clang__
 // Clang-specific options.
 #pragma clang diagnostic ignored "-Wunused-comparison"
