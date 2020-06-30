@@ -75,12 +75,20 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         auto otype = cg->compile(n.output().type(), codegen::TypeUsage::Storage);
         auto output = cg->compile(n.output());
         auto pred = std::string();
+        auto allocator = std::string();
+
+        if ( auto def = cg->typeDefaultValue(n.output().type()) ) {
+            allocator = fmt("hilti::rt::vector::Allocator<%s, %s>", otype, *def);
+        }
+        else {
+            allocator = fmt("std::allocator<%s>", otype);
+        }
 
         if ( auto c = n.condition() )
             pred = fmt(", [](auto&& %s) -> bool { return %s; }", id, cg->compile(*c));
 
-        return fmt("hilti::rt::vector::make<%s, %s>(%s, [](auto&& %s) -> %s { return %s; }%s)", itype, otype, input, id,
-                   otype, output, pred);
+        return fmt("hilti::rt::vector::make<%s, %s, %s>(%s, [](auto&& %s) -> %s { return %s; }%s)", allocator, itype,
+                   otype, input, id, otype, output, pred);
     }
 
     result_t operator()(const expression::Member& n) {

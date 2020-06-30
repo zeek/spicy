@@ -255,10 +255,6 @@ public:
 
     // Constructing from other `Vector` updates the data, but keeps the control block alive.
     Vector(const Vector& other) : V(other) {}
-
-    template<typename Allocator2>
-    Vector(const Vector<T, Allocator2>& other) : V(other.begin(), other.end()) {}
-
     Vector(Vector&& other) noexcept : V(std::move(other)) {}
 
     Vector(std::initializer_list<T> init, const Allocator& alloc = Allocator()) : V(std::move(init), alloc) {}
@@ -441,18 +437,18 @@ inline bool operator!=(const Empty& /*unused*/, const Vector<T, Allocator>& v) {
     return ! v.empty();
 }
 
-template<typename I, typename O, typename C>
-Vector<O> make(const C& input, std::function<O(I)> func) {
-    Vector<O> output;
+template<typename Allocator, typename I, typename O, typename C>
+Vector<O, Allocator> make(const C& input, std::function<O(I)> func) {
+    Vector<O, Allocator> output;
     for ( auto&& i : input )
         output.emplace_back(func(i));
 
     return output;
 }
 
-template<typename I, typename O, typename C>
-Vector<O> make(const C& input, std::function<O(I)> func, std::function<bool(I)> pred) {
-    Vector<O> output;
+template<typename Allocator, typename I, typename O, typename C>
+Vector<O, Allocator> make(const C& input, std::function<O(I)> func, std::function<bool(I)> pred) {
+    Vector<O, Allocator> output;
     for ( auto&& i : input )
         if ( pred(i) )
             output.emplace_back(func(i));
