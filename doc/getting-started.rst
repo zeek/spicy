@@ -156,7 +156,7 @@ separates its arguments with commas).  If we pass something into the
 driver that's malformed according to our grammar, the parser will
 complain::
 
-    # echo "GET XXX/1.0" | spicy-driver request.spicy
+    # echo "GET XXX/1.0" | spicy-driver my-http.spicy
     [fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (my-http.spicy:7)
 
 Using ``spicy-driver`` in this way relies on Spicy's support for
