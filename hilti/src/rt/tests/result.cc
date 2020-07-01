@@ -26,4 +26,15 @@ TEST_CASE_TEMPLATE("conversion to bool", T, Nothing, bool, std::string) {
     CHECK(r);
 }
 
+TEST_CASE("equal") {
+    CHECK_EQ(Result(42), Result(42));
+    CHECK_EQ(Result(0), Result(0));
+    CHECK_EQ(Result<int>(result::Error("foo")), Result<int>(result::Error("foo")));
+}
+
+TEST_CASE("not equal") {
+    CHECK_NE(Result(42), Result(0));
+    CHECK_NE(Result(42), Result<int>(result::Error("foo")));
+}
+
 TEST_SUITE_END();

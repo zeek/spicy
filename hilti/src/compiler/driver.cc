@@ -584,7 +584,7 @@ Result<Nothing> Driver::compileUnits() {
             if ( ! unit.isCompiledHILTI() )
                 continue;
 
-            HILTI_DEBUG(logging::debug::Driver, util::fmt("saving HILTI code for module %s to %s", unit.id(), output));
+            HILTI_DEBUG(logging::debug::Driver, util::fmt("saving HILTI code for module %s", unit.id()));
             if ( ! unit.print(*output) )
                 return error(fmt("error print HILTI code for module %s", unit.id()));
         }

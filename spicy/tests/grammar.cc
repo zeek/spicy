@@ -90,9 +90,9 @@ TEST_CASE("example1") {
     auto ABA = sequence("ABA", {A, B, A});
     auto S = lookAhead("S", ABA, cC);
 
-    CHECK(finalize(&g, S) ==
-          hilti::Result<hilti::Nothing>(hilti::result::Error(
-              "grammar example1, production A is ambiguous for look-ahead symbol(s) { b\"a\" (bytes) }")));
+    CHECK_EQ(finalize(&g, S),
+             hilti::Result<hilti::Nothing>(hilti::result::Error(
+                 "grammar example1, production A is ambiguous for look-ahead symbol(s) { b\"a\" (bytes) }\n")));
 }
 
 TEST_CASE("example2") {

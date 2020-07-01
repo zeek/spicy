@@ -590,7 +590,7 @@ Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
     std::error_code error;
     llvm::raw_fd_ostream file(object_path->native(), error);
     if ( error )
-        return result::Error(util::fmt("could not open object file %s: %s", object_path, error.message()));
+        return result::Error(util::fmt("could not open object file %s: %s", *object_path, error.message()));
 
 #if LLVM_VERSION_MAJOR < 10
 #define CGFT_OBJECTFILE llvm::TargetMachine::CGFT_ObjectFile
@@ -601,7 +601,7 @@ Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
         return result::Error("adding passes failed");
 
     if ( ! manager.run(module) )
-        return result::Error(util::fmt("object file %s could not be created", object_path));
+        return result::Error(util::fmt("object file %s could not be created", *object_path));
 
     file.close();
 
