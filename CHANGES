@@ -1,4 +1,8 @@
 
+0.4.0-547 | 2020-07-01 11:41:06 +0200
+
+  * GH-392: Fix handling of vector of bools. (Benjamin Bannier, Corelight)
+
 0.4.0-544 | 2020-07-01 09:35:52 +0200
 
   * Remove `hilti::rt::List` in favor of `hilti::rt::Vector`. (Benjamin Bannier, Corelight)

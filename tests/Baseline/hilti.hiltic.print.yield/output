@@ -1,5 +1,5 @@
 // Begin of Foo (from "/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt")
-// Compiled by HILTI version 0.4.0-branch
+// Compiled by HILTI version 0.4.0-538.dirty
 
 #include <hilti/rt/compiler-setup.h>
 
@@ -20,21 +20,21 @@ extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule(
 
 extern auto __hlt::Foo::test(const std::string& x) -> std::string {
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:12:5");
-    ::hilti::rt::print(std::string("HILTI - 1 - argument: "), false);
+    ::hilti::rt::print(std::string("HILTI - 1 - argument: "), hilti::rt::Bool(false));
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:13:5");
-    ::hilti::rt::print(x, true);
+    ::hilti::rt::print(x, hilti::rt::Bool(true));
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:15:5");
     hilti::rt::detail::yield();
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:16:5");
-    ::hilti::rt::print(std::string("HILTI - 2"), true);
+    ::hilti::rt::print(std::string("HILTI - 2"), hilti::rt::Bool(true));
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:17:5");
     hilti::rt::detail::yield();
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:18:5");
-    ::hilti::rt::print(std::string("HILTI - 3"), true);
+    ::hilti::rt::print(std::string("HILTI - 3"), hilti::rt::Bool(true));
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:19:5");
     hilti::rt::detail::yield();
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:20:5");
-    ::hilti::rt::print(std::string("HILTI - Done"), true);
+    ::hilti::rt::print(std::string("HILTI - Done"), hilti::rt::Bool(true));
       __location__("/Users/bbannier/src/spicy/tests/.tmp/hilti.hiltic.print.yield/yield.hlt:22:5");
     return std::string("test-result");
 }

@@ -43,6 +43,11 @@ TEST_CASE("safe-int") {
 
 TEST_CASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }
 
+TEST_CASE("Bool") {
+    CHECK_EQ(to_string(Bool(true)), "True");
+    CHECK_EQ(to_string(Bool(false)), "False");
+}
+
 TEST_CASE("Bytes") {
     CHECK_EQ(to_string("ABC"_b), "b\"ABC\"");
     CHECK_EQ(to_string("\0\2\3\0\6\7A\01"_b), "b\"\\x00\\x02\\x03\\x00\\x06\\x07A\\x01\"");
