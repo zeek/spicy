@@ -213,4 +213,9 @@ inline std::string to_string(const regexp::MatchState& /*unused*/, adl::tag /*un
 
 } // namespace detail::adl
 
+inline std::ostream& operator<<(std::ostream& out, const RegExp& x) {
+    out << to_string(x);
+    return out;
+}
+
 } // namespace hilti::rt
