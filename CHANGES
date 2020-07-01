@@ -1,4 +1,8 @@
 
+0.4.0-549 | 2020-07-01 15:03:27 +0200
+
+  * Remove unintended conversion of `rt::Result` to `bool`.
+
 0.4.0-547 | 2020-07-01 11:41:06 +0200
 
   * GH-392: Fix handling of vector of bools. (Benjamin Bannier, Corelight)

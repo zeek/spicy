@@ -54,9 +54,12 @@ public:
 
 struct Nothing {};
 
+inline bool operator==(const Nothing&, const Nothing&) { return true; }
+inline bool operator!=(const Nothing&, const Nothing&) { return false; }
+
 /**
  * Represents either a successful result from function if it returned one, or
- * reflects an error if the function was unsuccesful.
+ * reflects an error if the function was unsuccessful.
  */
 template<typename T>
 class Result {
@@ -139,7 +142,7 @@ public:
         return error();
     }
 
-    /** Returns true if the result represents a succesful return value. */
+    /** Returns true if the result represents a successful return value. */
     bool hasValue() const { return std::holds_alternative<T>(_value); }
 
     /** Returns the result's value, assuming it indicates success. */
@@ -151,14 +154,26 @@ public:
     /** Returns the result's value, assuming it indicates success. */
     T* operator->() { return std::get_if<T>(&_value); }
 
-    /** Returns true if the result represents a succesful return value. */
-    operator bool() const { return hasValue(); }
+    /** Returns true if the result represents a successful return value. */
+    explicit operator bool() const { return hasValue(); }
 
-    /** Converts the result to an optional that's set if it represents a succesful return value. */
+    /** Converts the result to an optional that's set if it represents a successful return value. */
     operator std::optional<T>() const { return hasValue() ? std::make_optional(value()) : std::nullopt; }
 
     Result& operator=(const Result& other) = default;
     Result& operator=(Result&& other) = default; // NOLINT (hicpp-noexcept-move)
+
+    friend bool operator==(const Result& a, const Result& b) {
+        if ( a.hasValue() != b.hasValue() )
+            return false;
+
+        if ( a.hasValue() )
+            return a.value() == b.value();
+        else
+            return a.error() == b.error();
+    }
+
+    friend bool operator!=(const Result& a, const Result& b) { return ! (a == b); }
 
 private:
     std::variant<T, result::Error> _value;

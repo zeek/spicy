@@ -55,7 +55,7 @@ enum class CoercionStyle {
 
     /**
      * If the source expression's AST node has an original type associated
-     * with it, use that's type for coersion.
+     * with it, use that's type for coercion.
      */
     PreferOriginalType = (1U << 6U),
 
@@ -105,7 +105,7 @@ enum class CoercionStyle {
 };
 
 /**
- * Returns a readable represenation of a coercion style setting for debugging
+ * Returns a readable representation of a coercion style setting for debugging
  * purposes.
  */
 extern std::string to_string(bitmask<CoercionStyle> style);
@@ -119,17 +119,17 @@ namespace hilti {
 /** Return type for the functions doing expression coercion. */
 struct CoercedExpression {
     /** Returns true if coercion was successful. */
-    operator bool() const { return coerced; }
+    operator bool() const { return coerced.hasValue(); }
 
     /**
-     * Coerced expression if succesful, an error if not. This will be set
+     * Coerced expression if successful, an error if not. This will be set
      * even if the coerced expression ends up being identical to the source
      * expression.
      */
     Result<Expression> coerced = {};
 
     /**
-     * Coerced expression if succesful and the coerced expression is not
+     * Coerced expression if successful and the coerced expression is not
      * identical to original one; unset otherwise.
      */
     std::optional<Expression> nexpr = {};

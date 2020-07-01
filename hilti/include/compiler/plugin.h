@@ -31,19 +31,19 @@ class Stream;
  * Compiler plugin that can hook into the compilation process that's driven
  * by `Unit`.
  *
- * A plugin gets access the the AST at all major stages. In particular it can
+ * A plugin gets access to the AST at all major stages. In particular it can
  * add support implement support for new language using HILTI as its code
  * generation backend by providing a parse method building its AST, along
  * with a transformation method converting any non-standard nodes HILTI
  * equivalents.
  *
  * A plugin implements a set of hook methods that get called by the
- * compilation process at the appropiate times. All hooks should be
- * stateless, apart from changing the AST where appropiate.
+ * compilation process at the appropriate times. All hooks should be
+ * stateless, apart from changing the AST where appropriate.
  *
  * @note HILTI compilation itself is also implemented through a default
  * plugin that's always available. `Unit` cycles through all available
- * plugins during the compilation processm, including that default plugin.
+ * plugins during the compilation process, including that default plugin.
  */
 struct Plugin {
     /** Helper template to define the type of hook methods. */
@@ -108,7 +108,7 @@ struct Plugin {
      * @param arg2 type that needs coercion
      * @param arg3 target type for coercion
      * @param arg4 coercion style to use
-     * @return new type if plugin can handnle this coercion
+     * @return new type if plugin can handle this coercion
      */
     Hook<std::optional<Type>, Type, const Type&, bitmask<CoercionStyle>> coerce_type;
 
@@ -225,7 +225,7 @@ class PluginRegistry {
 public:
     PluginRegistry();
 
-    /** Returns a vector of all currentlh registered plugins. */
+    /** Returns a vector of all currently registered plugins. */
     const std::vector<Plugin>& plugins() const { return _plugins; }
 
     /**
@@ -241,7 +241,7 @@ public:
      * Checks if at least one plugin implements a given hook.
      *
      * \tparam PluginMember the hook
-     * \return true if there's an implemention for the hook
+     * \return true if there's an implementation for the hook
      */
     template<typename PluginMember>
     bool hasHookFor(PluginMember hook) {
@@ -259,9 +259,9 @@ public:
      * @param ext extension, including the leading `.`
      * \return true if there's a plugin for this extension
      */
-    bool supportsExtension(std::filesystem::path ext) const { return pluginForExtension(std::move(ext)); }
+    bool supportsExtension(std::filesystem::path ext) const { return pluginForExtension(std::move(ext)).hasValue(); }
 
-    /** Returns a vector of all exensions that registered set of plugins handles. */
+    /** Returns a vector of all extensions that registered set of plugins handles. */
     auto supportedExtensions() const {
         return util::transform(_plugins, [](auto& p) { return p.extension; });
     }
@@ -269,7 +269,7 @@ public:
     /**
      * Registers a plugin with the registry.
      *
-     * @note This method should nornally not be called directly, use
+     * @note This method should normally not be called directly, use
      * `plugin::Register()` instead.
      *
      * @param p plugin to register
