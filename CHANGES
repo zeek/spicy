@@ -1,4 +1,8 @@
 
+0.4.0-544 | 2020-07-01 09:35:52 +0200
+
+  * Remove `hilti::rt::List` in favor of `hilti::rt::Vector`. (Benjamin Bannier, Corelight)
+
 0.4.0-538 | 2020-06-30 08:08:16 +0000
 
   * Fixed semantics of `hilti::rt::Interval`-bool conversions. They

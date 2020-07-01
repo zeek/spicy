@@ -225,8 +225,6 @@ Val* to_val(const hilti::rt::Set<T>& s, BroType* target, std::string_view locati
 template<typename T>
 Val* to_val(const hilti::rt::Vector<T>& v, BroType* target, std::string_view location);
 template<typename T>
-Val* to_val(const hilti::rt::List<T>& v, BroType* target, std::string_view location);
-template<typename T>
 Val* to_val(const std::optional<T>& t, BroType* target, std::string_view location);
 template<typename T>
 Val* to_val(const hilti::rt::DeferredExpression<T>& t, BroType* target, std::string_view location);
@@ -505,25 +503,8 @@ inline Val* to_val(uint64_t i, BroType* target, std::string_view location) {
  */
 template<typename T>
 inline Val* to_val(const hilti::rt::Vector<T>& v, BroType* target, std::string_view location) {
-    if ( target->Tag() != ::TYPE_VECTOR )
-        throw TypeMismatch("vector", target, location);
-
-    auto vt = target->AsVectorType();
-    auto zv = std::make_unique<VectorVal>(vt);
-    for ( auto i : v )
-        zv->Assign(zv->Size(), to_val(i, vt->YieldType(), location));
-
-    return zv.release();
-}
-
-/**
- * Converts a Spicy-side vector to a Zeek value. The result is returned with
- * ref count +1.
- */
-template<typename T>
-inline Val* to_val(const hilti::rt::List<T>& v, BroType* target, std::string_view location) {
-    if ( target->Tag() != ::TYPE_VECTOR )
-        throw TypeMismatch("list", target, location);
+    if ( target->Tag() != ::TYPE_VECTOR && target->Tag() != ::TYPE_LIST )
+        throw TypeMismatch("expected vector or list", target, location);
 
     auto vt = target->AsVectorType();
     auto zv = std::make_unique<VectorVal>(vt);

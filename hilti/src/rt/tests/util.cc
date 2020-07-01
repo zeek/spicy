@@ -11,7 +11,6 @@
 
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/types/integer.h>
-#include <hilti/rt/types/list.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
@@ -577,11 +576,6 @@ TEST_CASE("transform") {
     SUBCASE("set") {
         CHECK_EQ(transform(std::set<int>(), [](auto&& x) { return x + x; }), std::set<int>());
         CHECK_EQ(transform(std::set({1, 2, 3}), [](auto&& x) { return x + x; }), std::set({2, 4, 6}));
-    }
-
-    SUBCASE("List") {
-        CHECK_EQ(transform(List<int>(), [](auto&& x) { return x + x; }), List<int>());
-        CHECK_EQ(transform(List({1, 2, 3}), [](auto&& x) { return x + x; }), List({2, 4, 6}));
     }
 
     SUBCASE("Set") {

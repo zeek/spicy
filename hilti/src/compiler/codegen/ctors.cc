@@ -53,9 +53,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const ctor::List& n) {
         if ( n.elementType() == type::unknown )
             // Can only be the empty list.
-            return "hilti::rt::list::Empty()";
+            return "hilti::rt::vector::Empty()";
 
-        return fmt("hilti::rt::List<%s>({%s})", cg->compile(n.elementType(), codegen::TypeUsage::Storage),
+        return fmt("hilti::rt::Vector<%s>({%s})", cg->compile(n.elementType(), codegen::TypeUsage::Storage),
                    util::join(util::transform(n.value(), [this](auto e) { return cg->compile(e); }), ", "));
     }
 

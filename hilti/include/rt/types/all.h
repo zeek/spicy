@@ -9,7 +9,6 @@
 #include <hilti/rt/types/function.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/interval.h>
-#include <hilti/rt/types/list.h>
 #include <hilti/rt/types/map.h>
 #include <hilti/rt/types/network.h>
 #include <hilti/rt/types/null.h>

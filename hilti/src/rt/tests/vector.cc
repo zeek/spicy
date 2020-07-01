@@ -87,6 +87,21 @@ TEST_CASE("assignment") {
     }
 }
 
+TEST_CASE("make") {
+    const auto fn = std::function<int(int)>([](auto&& x) { return x * 2; });
+    const auto pred = std::function<bool(int)>([](auto&& x) { return x % 2 == 0; });
+
+    SUBCASE("w/o predicate") {
+        CHECK_EQ(vector::make<std::allocator<int>>(std::vector<int>(), fn), Vector<int>());
+        CHECK_EQ(vector::make<std::allocator<int>>(std::vector({1, 2, 3}), fn), Vector({2, 4, 6}));
+    }
+
+    SUBCASE("w/ predicate") {
+        CHECK_EQ(vector::make<std::allocator<int>>(std::vector<int>(), fn, pred), Vector<int>());
+        CHECK_EQ(vector::make<std::allocator<int>>(std::vector({1, 2, 3}), fn, pred), Vector({4}));
+    }
+}
+
 TEST_CASE("Iterator") {
     Vector<int> xs;
     auto it = xs.begin();

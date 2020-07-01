@@ -391,7 +391,8 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     }
 
     result_t operator()(const type::list::Iterator& n) {
-        auto t = fmt("hilti::rt::List<%s>::iterator_t", cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+        auto t =
+            fmt("hilti::rt::Vector<%s>::iterator_t", cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
         return CxxTypes{.base_type = fmt("%s", t)};
     }
 
@@ -432,9 +433,9 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
         if ( n.elementType() == type::unknown )
             // Can only be the empty list.
-            t = "hilti::rt::list::Empty";
+            t = "hilti::rt::vector::Empty";
         else
-            t = fmt("hilti::rt::List<%s>", cg->compile(n.elementType(), codegen::TypeUsage::Storage));
+            t = fmt("hilti::rt::Vector<%s>", cg->compile(n.elementType(), codegen::TypeUsage::Storage));
 
         return CxxTypes{.base_type = fmt("%s", t)};
     }

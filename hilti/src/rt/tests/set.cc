@@ -4,10 +4,20 @@
 
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/set.h>
+#include <hilti/rt/types/vector.h>
 
 using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("Set");
+
+TEST_CASE("construct") {
+    CHECK_EQ(to_string(Set<int>()), "{}");
+    CHECK_EQ(to_string(Set<int>({1, 2, 3})), "{1, 2, 3}");
+
+    auto xs = Vector<int>({1, 2, 3});
+    CHECK_EQ(to_string(Set<int>(xs)), "{1, 2, 3}");
+    CHECK_EQ(to_string(Set<int>(Vector<int>({1, 2, 3}))), "{1, 2, 3}");
+}
 
 TEST_CASE("contains") {
     Set<int> s{1, 2, 3};
