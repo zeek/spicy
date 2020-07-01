@@ -167,10 +167,13 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     if ( unit.usesRandomAccess() ) {
-        auto f1 = hilti::type::struct_::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()));
-        auto f2 = hilti::type::struct_::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()));
-        auto f3 = hilti::type::struct_::Field(ID("__position_update"),
-                                              hilti::type::Optional(hilti::type::stream::Iterator()));
+        auto f1 = hilti::type::struct_::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                              AttributeSet({Attribute("&internal")}));
+        auto f2 = hilti::type::struct_::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                              AttributeSet({Attribute("&internal")}));
+        auto f3 =
+            hilti::type::struct_::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                        AttributeSet({Attribute("&internal")}));
         v.addField(std::move(f1));
         v.addField(std::move(f2));
         v.addField(std::move(f3));
