@@ -42,6 +42,7 @@ autogen_operators(SOURCES_OPERATORS
 )
 
 autogen_dispatchers(SOURCES_TYPE_ERASED ${AUTOGEN_H}/__dispatchers.h
+                                        "hilti/ast/all.h"
                                         ${CMAKE_CURRENT_SOURCE_DIR}/include/hilti/ast/nodes.decl
                                         ${AUTOGEN_H}/operators.decl)
 
