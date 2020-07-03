@@ -1,4 +1,8 @@
 
+0.4.0-552 | 2020-07-03 15:47:06 +0200
+
+  * Switch `real::unpack` error reporting to use `rt::Result`. (Benjamin Bannier, Corelight)
+
 0.4.0-549 | 2020-07-01 15:03:27 +0200
 
   * Remove unintended conversion of `rt::Result` to `bool`.

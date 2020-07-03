@@ -270,6 +270,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/fiber.cc
                src/rt/tests/interval.cc
                src/rt/tests/map.cc
+               src/rt/tests/real.cc
                src/rt/tests/reference.cc
                src/rt/tests/regexp.cc
                src/rt/tests/result.cc

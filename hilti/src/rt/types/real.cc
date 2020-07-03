@@ -22,6 +22,9 @@ Result<std::tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrder 
         }
 
         case real::Type::IEEE754_Double: {
+            if ( data.size() < 8 )
+                return result::Error("insufficient data to unpack double precision real");
+
             if ( auto x = integer::unpack<uint64_t>(data, fmt) ) {
                 auto d = reinterpret_cast<double*>(&std::get<0>(*x));
                 return std::make_tuple(*d, std::get<1>(*x));
@@ -30,7 +33,7 @@ Result<std::tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrder 
                 return x.error();
         }
 
-        case real::Type::Undef: throw RuntimeError("undefined real type for unpacking");
+        case real::Type::Undef: return result::Error("undefined real type for unpacking");
     }
 
     cannot_be_reached();
