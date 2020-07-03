@@ -1,2 +1,0 @@
-# @TEST-EXEC:  cat %DIR/reply-chunked.dat | spicy-driver %DIR/common.spicy -p HTTP::Replies >>output
-# @TEST-EXEC:  btest-diff output
