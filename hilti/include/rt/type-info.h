@@ -19,12 +19,58 @@ struct TypeInfo;
 
 namespace type_info {
 
+/** Exception flagging incorrect use of type-info values. */
+HILTI_EXCEPTION(InvalidValue, RuntimeError);
+
+class Value;
+
+namespace value {
+
+/**
+ * Helper class to provide safe traversal of HILTI values through the
+ * type-info API. To initiate traversal, an instance of `Parent` is needed
+ * that has its life-time tied to a strong reference encapsulating the value.
+ * The instance will keep the value alive during its own lifetime, and the
+ * traversal will catch if that ends prematurely.
+ */
+class Parent {
+public:
+    /** Constructor that ties existing HILTI value to instance. */
+    template<typename T>
+    Parent(const StrongReference<T>& value) : _handle(std::make_shared<bool>()), _value(value) {}
+
+    /** Constructor that leaves instance initially untied. */
+    Parent() : _handle(std::make_shared<bool>()) {}
+
+    /** Tie instances to an existing HILTI value. */
+    void tie(hilti::rt::StrongReferenceGeneric value) { _value = std::move(value); }
+
+private:
+    friend class type_info::Value;
+
+    std::weak_ptr<bool> handle() const {
+        if ( ! _value )
+            throw InvalidValue("type-info traversal not tied to value");
+
+        return _handle;
+    }
+
+    std::shared_ptr<bool> _handle;
+    std::optional<hilti::rt::StrongReferenceGeneric> _value;
+};
+
+} // namespace value
+
 /**
  * Class representing a HILTI value generically through a pair of (1) a raw
  * pointer refering the value's storage, and (2) type information describing
  * how to interpret the raw pointer. An instance may be in an invalid state
  * if there's no underlying value available (e.g., when dereferencing an
  * unset `optional`).
+ *
+ * Value instances are tied to a `Parent` instance. The value's data will
+ * remain accessible only as long as the parent stays around. If that goes
+ * away, deferencing will throw an error.
  */
 class Value {
 public:
@@ -33,19 +79,41 @@ public:
      *
      * @param ptr raw pointer to storage of the value
      * @param ti type information describing how to interpret the pointer
+     * @param parent parent controlling life time of the value
      */
-    Value(const void* ptr, const TypeInfo* ti) : _ptr(ptr), _ti(ti) {}
+    Value(const void* ptr, const TypeInfo* ti, const value::Parent& parent)
+        : _ptr(ptr), _ti(ti), _parent_handle(parent.handle()) {
+        check();
+    }
+
+    /**
+     * Constructor
+     *
+     * @param ptr raw pointer to storage of the value
+     * @param ti type information describing how to interpret the pointer
+     * @param parent parent value controlling life time of this value
+     */
+    Value(const void* ptr, const TypeInfo* ti, const Value& parent)
+        : _ptr(ptr), _ti(ti), _parent_handle(parent._parent_handle) {
+        check();
+    }
+
+    /**
+     * Default constructor creating a value in invalid state.
+     */
+    Value() = default;
 
     /**
      * Returns a raw pointer to the value's storage.
      *
-     * @throw `InvalidArgument` if the instance is not referring to a valid
+     * @throw `InvalidValue` if the instance is not referring to a valid
      * value.
      */
     const void* pointer() const {
         if ( ! _ptr )
-            throw hilti::rt::InvalidArgument("value not set");
+            throw InvalidValue("value not set");
 
+        check();
         return _ptr;
     }
 
@@ -56,8 +124,15 @@ public:
     operator bool() const { return _ptr != nullptr; }
 
 private:
+    // Throws if parent has expired.
+    void check() const {
+        if ( _parent_handle.expired() )
+            throw InvalidValue("type info value expired");
+    }
+
     const void* _ptr;
     const TypeInfo* _ti;
+    std::weak_ptr<bool> _parent_handle;
 };
 
 namespace detail {
@@ -96,7 +171,7 @@ public:
     /**
      * Returns the contained value.
      */
-    Value value(const Value& v) const { return Value(_accessor(v), _vtype); }
+    Value value(const Value& v) const { return Value(_accessor(v), _vtype, v); }
 
     /**
      * Returns the type of elements, as passed into the constructor.
@@ -121,7 +196,7 @@ public:
      * @param type type information for the value being iterated over
      * @param v the iterator's current value
      */
-    Iterator(const IterableType* type, const Value& v);
+    Iterator(const IterableType* type, Value v);
 
     /**
      * Default constructor creating a iterator that matches the ``end()``
@@ -162,6 +237,7 @@ public:
 
 private:
     const IterableType* _type = nullptr;
+    Value _value;
     std::optional<std::any> _cur;
 };
 
@@ -248,8 +324,9 @@ private:
 
 namespace iterable_type {
 
-inline Iterator::Iterator(const IterableType* type, const Value& v) : _type(type) {
-    _cur = std::get<0>(_type->_accessor)(v); // begin()
+inline Iterator::Iterator(const IterableType* type, Value v) : _type(type) {
+    _value = std::move(v);
+    _cur = std::get<0>(_type->_accessor)(_value); // begin()
 }
 
 inline Iterator& Iterator::operator++() {
@@ -270,9 +347,9 @@ inline Iterator Iterator::operator++(int) {
 
 inline Value Iterator::operator*() const {
     if ( ! _cur.has_value() )
-        throw InvalidIterator("type info iterator invalid");
+        throw InvalidValue("type info iterator invalid");
 
-    return Value(std::get<2>(_type->_accessor)(*_cur), _type->_etype); // deref()
+    return Value(std::get<2>(_type->_accessor)(*_cur), _type->_etype, _value); // deref()
 }
 
 } // namespace iterable_type
@@ -599,7 +676,7 @@ private:
     friend class type_info::Struct;
 
     // Internal wrapper around accessor that's used from ``Struct``.
-    Value value(const Value& v) const { return Value(accessor(v), type); }
+    Value value(const Value& v) const { return Value(accessor(v), type, v); }
 
     const std::ptrdiff_t offset;
     const Accessor accessor;
@@ -632,7 +709,7 @@ public:
         std::vector<std::pair<const struct_::Field&, Value>> values;
 
         for ( const auto& f : _fields ) {
-            auto x = Value(static_cast<const char*>(v.pointer()) + f.offset, f.type);
+            auto x = Value(static_cast<const char*>(v.pointer()) + f.offset, f.type, v);
             values.emplace_back(f, f.value(x));
         }
 
@@ -698,7 +775,7 @@ public:
         std::vector<std::pair<const tuple::Element&, Value>> values;
 
         for ( const auto& f : _elements )
-            values.emplace_back(f, Value(static_cast<const char*>(v.pointer()) + f.offset, f.type));
+            values.emplace_back(f, Value(static_cast<const char*>(v.pointer()) + f.offset, f.type, v));
 
         return values;
     }
@@ -752,9 +829,9 @@ public:
      */
     Value value(const Value& v) const {
         if ( auto idx = _accessor(v); idx > 0 )
-            return Value(v.pointer(), _fields[idx - 1].type);
+            return Value(v.pointer(), _fields[idx - 1].type, v);
         else
-            return Value(nullptr, nullptr);
+            return Value();
     }
 
     template<typename T>
@@ -946,15 +1023,15 @@ namespace value {
  * @param  v value to retrieve information from
  * @return a reference to the auxiliary type information
  * @tparam the expected class for the auxiliary type information
- * @throws ``InvalidArgument`` if the auxiliary type information does not have the expected type
+ * @throws ``InvalidValue`` if the auxiliary type information does not have the expected type
  */
 template<typename T>
 const T& auxType(const type_info::Value& v) {
     if ( auto x = std::get_if<T>(&v.type().aux_type_info) )
         return *x;
     else
-        throw InvalidArgument(fmt("unexpected variant state: have %s, but want %s\n",
-                                  type_info::detail::var_type(v.type().aux_type_info).name(), typeid(T).name()));
+        throw InvalidValue(fmt("unexpected variant state: have %s, but want %s\n",
+                               type_info::detail::var_type(v.type().aux_type_info).name(), typeid(T).name()));
 }
 } // namespace value
 

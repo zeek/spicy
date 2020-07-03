@@ -14,7 +14,7 @@ namespace spicy::rt {
  * instance. `init()` then binds it to an instance and have
  * `ParsedUnit` hold a strong reference to it.
  */
-class ParsedUnit {
+class ParsedUnit : public hilti::rt::type_info::value::Parent {
 public:
     /** Returns typed access to the contained instance. */
     template<typename T>
@@ -29,7 +29,7 @@ public:
      * Returns the instance and its type in a value representation suitable
      * to use with the `type-info` API for iteration over the fields.
      */
-    hilti::rt::type_info::Value value() const { return {_ptr, _ti}; }
+    hilti::rt::type_info::Value value() const { return {_ptr, _ti, *this}; }
 
     /** Releases any contained instance. */
     void reset() {
@@ -52,6 +52,7 @@ public:
         u._unit = hilti::rt::StrongReference(t);
         u._ptr = t.get();
         u._ti = ti;
+        u.tie(u._unit);
     }
 
 private:

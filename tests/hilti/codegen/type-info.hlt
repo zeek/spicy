@@ -488,7 +488,8 @@ int main(int argc, char** argv) {
     CHECK_EQ(ti_types->display, "Test::TestTypes");
 
     VisitorTypesInit visitor_init;
-    auto v_init = type_info::Value(x_init.get(), ti_types);
+    type_info::value::Parent p_init(x_init);
+    auto v_init = type_info::Value(x_init.get(), ti_types, p_init);
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_init).iterate(v_init) )
         visitor_init.visit(f.second);
 
@@ -496,7 +497,8 @@ int main(int argc, char** argv) {
 
     // Test instance of TestTypes that has been initialized with default values.
     VisitorTypesDefault visitor_default;
-    auto v_default = type_info::Value(x_default.get(), ti_types);
+    type_info::value::Parent p_default(x_default);
+    auto v_default = type_info::Value(x_default.get(), ti_types, p_default);
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_default).iterate(v_default) )
         visitor_default.visit(f.second);
 
@@ -504,7 +506,8 @@ int main(int argc, char** argv) {
 
     // Test instances of TestOptions in which one optional has been set.
     VisitorOptionals visitor2;
-    auto v_optionals = type_info::Value(x_optionals.get(), ti_optionals);
+    type_info::value::Parent p_optionals(x_default);
+    auto v_optionals = type_info::Value(x_optionals.get(), ti_optionals, p_optionals);
     int idx = 0;
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_optionals).iterate(v_optionals) ) {
         if ( idx == 0 ) {
