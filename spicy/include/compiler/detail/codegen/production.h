@@ -24,6 +24,7 @@ class isLiteral : public isTerminal {};
 } // namespace spicy
 
 #include <hilti/base/type_erase.h>
+
 #include <spicy/ast/types/unit-items/field.h>
 
 namespace spicy::detail::codegen {

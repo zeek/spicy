@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <dlfcn.h>
+
 #include <exception>
 
 #include <hilti/rt/autogen/version.h>
@@ -8,6 +9,7 @@
 #include <hilti/rt/init.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/types/vector.h>
+
 #include <spicy/rt/init.h>
 #include <spicy/rt/parser.h>
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/base/util.h>
+
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
 

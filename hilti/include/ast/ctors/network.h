@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <hilti/rt/types/network.h>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/network.h>
-#include <hilti/rt/types/network.h>
 
 namespace hilti {
 namespace ctor {

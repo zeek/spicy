@@ -8,6 +8,7 @@
 #include <hilti/ast/types/any.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/unknown.h>
+
 #include <spicy/ast/types/bitfield.h>
 
 namespace spicy {

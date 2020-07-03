@@ -3,15 +3,14 @@
 #include <fstream>
 #include <utility>
 
-#include <hilti/compiler/detail/codegen/codegen.h>
-#include <hilti/compiler/detail/visitors.h>
-#include <hilti/compiler/plugin.h>
-#include <hilti/compiler/unit.h>
-
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/base/visitor.h>
+#include <hilti/compiler/detail/codegen/codegen.h>
+#include <hilti/compiler/detail/visitors.h>
+#include <hilti/compiler/plugin.h>
+#include <hilti/compiler/unit.h>
 
 using namespace hilti;
 using namespace hilti::context;

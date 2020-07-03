@@ -2,10 +2,9 @@
 
 #pragma once
 
-#include <optional>
-
 #include <fstream>
 #include <map>
+#include <optional>
 #include <string>
 
 #include <hilti/rt/util.h>

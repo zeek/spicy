@@ -8,17 +8,15 @@
 #include <cerrno>
 #include <cstring>
 
-#include <hilti/3rdparty/utf8proc/utf8proc.h>
-
-#include <hilti/rt/autogen/version.h>
-
 #include <hilti/rt/autogen/config.h>
-
+#include <hilti/rt/autogen/version.h>
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/util.h>
+
+#include <hilti/3rdparty/utf8proc/utf8proc.h>
 
 std::string hilti::rt::version() {
     constexpr char hilti_version[] = PROJECT_VERSION_STRING_LONG;

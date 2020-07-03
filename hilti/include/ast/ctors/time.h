@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <hilti/rt/types/time.h>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/time.h>
-#include <hilti/rt/types/time.h>
 
 namespace hilti {
 namespace ctor {

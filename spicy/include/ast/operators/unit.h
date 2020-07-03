@@ -7,6 +7,7 @@
 #include <hilti/ast/types/bytes.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/stream.h>
+
 #include <spicy/ast/types/unit.h>
 
 namespace spicy::operator_ {

@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include <hilti/3rdparty/SafeInt/SafeInt.hpp>
-
 #include <hilti/rt/exception.h>
+
+#include <hilti/3rdparty/SafeInt/SafeInt.hpp>
 
 namespace hilti::rt {
 

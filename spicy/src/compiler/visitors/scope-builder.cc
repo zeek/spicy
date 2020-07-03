@@ -2,6 +2,7 @@
 
 #include <hilti/ast/builder/all.h>
 #include <hilti/base/logger.h>
+
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/visitors.h>

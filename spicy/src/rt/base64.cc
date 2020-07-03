@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/rt/types/bytes.h>
+
 #include <spicy/rt/base64.h>
 
 extern "C" {

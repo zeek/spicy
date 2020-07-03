@@ -1,9 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <hilti/hilti.h>
-#include <spicy/spicy.h>
-
 #include <spicy/rt/libspicy.h>
+
+#include <hilti/hilti.h>
+
+#include <spicy/spicy.h>
 
 class Spicyc : public hilti::Driver {
 public:

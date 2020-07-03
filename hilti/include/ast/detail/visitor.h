@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include <hilti/ast/all.h>
 #include <hilti/autogen/__dispatchers.h>
+
+#include <hilti/ast/all.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/visitor.h>

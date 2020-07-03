@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <spicy/rt/autogen/config.h>
 #include <spicy/rt/base64.h>
 #include <spicy/rt/debug.h>
 #include <spicy/rt/driver.h>
@@ -15,5 +16,3 @@
 #include <spicy/rt/typedefs.h>
 #include <spicy/rt/util.h>
 #include <spicy/rt/zlib.h>
-
-#include <spicy/rt/autogen/config.h>

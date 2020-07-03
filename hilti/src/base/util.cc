@@ -3,20 +3,19 @@
 #include "hilti/base/util.h"
 
 #include <errno.h>
-#include <unistd.h>
-
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
 
+#include <hilti/rt/backtrace.h>
+
 #include <hilti/3rdparty/pathfind/PathFind.hpp>
 #include <hilti/3rdparty/utf8proc/utf8proc.h>
-
 #include <hilti/base/logger.h>
-#include <hilti/rt/backtrace.h>
 
 using namespace hilti;
 using namespace hilti::util;

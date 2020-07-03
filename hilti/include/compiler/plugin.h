@@ -8,7 +8,6 @@
 #include <utility>
 
 #include <hilti/3rdparty/enum-class/EnumClass.h>
-
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/type.h>

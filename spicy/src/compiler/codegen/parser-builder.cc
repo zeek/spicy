@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <utility>
+
 #include <hilti/ast/builder/all.h>
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expressions/ctor.h>
@@ -12,6 +14,7 @@
 #include <hilti/base/cache.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/context.h>
+
 #include <spicy/ast/types/bitfield.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit-items/sink.h>
@@ -19,14 +22,12 @@
 #include <spicy/compiler/detail/codegen/grammar.h>
 #include <spicy/compiler/detail/codegen/parser-builder.h>
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/all.h>
 
 // Enable visitor usage for Production. Order of includes is important here.
 #include <spicy/autogen/__dispatchers-productions.h>
 
 #include <hilti/base/visitor.h>
-#include <spicy/compiler/detail/codegen/productions/all.h>
-
-#include <utility>
 
 using namespace spicy;
 using namespace spicy::detail;

@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <spicy/rt/mime.h>
+
 #include <hilti/ast/ctors/string.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/ctor.h>
@@ -7,11 +9,11 @@
 #include <hilti/ast/statements/switch.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
+
 #include <spicy/ast/all.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/hook.h>
 #include <spicy/compiler/detail/visitors.h>
-#include <spicy/rt/mime.h>
 
 using namespace spicy;
 using hilti::util::fmt;

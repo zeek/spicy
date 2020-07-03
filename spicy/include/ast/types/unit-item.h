@@ -6,6 +6,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/type.h>
+
 #include <spicy/ast/hook.h>
 
 namespace spicy {

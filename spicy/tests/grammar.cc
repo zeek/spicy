@@ -2,13 +2,14 @@
 
 #include <doctest/doctest.h>
 
+#include <utility>
+
 #include <hilti/ast/ctors/bytes.h>
 #include <hilti/ast/expressions/ctor.h>
+
 #include <spicy/compiler/detail/codegen/grammar.h>
 #include <spicy/compiler/detail/codegen/productions/all.h>
 #include <spicy/spicy.h>
-
-#include <utility>
 
 static auto literal(const std::string& symbol, std::string value) {
     auto c = hilti::ctor::Bytes(std::move(value));

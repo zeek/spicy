@@ -6,7 +6,6 @@
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/operator.h>
-
 #include <hilti/ast/types/struct.h>
 
 namespace hilti {

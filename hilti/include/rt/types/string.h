@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include <string_view>
-
 #include <string>
+#include <string_view>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/util.h>

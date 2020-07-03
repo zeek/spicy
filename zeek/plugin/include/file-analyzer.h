@@ -5,12 +5,12 @@
 #include <optional>
 
 // Zeek headers
+#include "cookie.h"
 #include <file_analysis/Manager.h>
 
 #include <hilti/rt/types/stream.h>
-#include <spicy/rt/parser.h>
 
-#include "cookie.h"
+#include <spicy/rt/parser.h>
 
 namespace spicy::zeek::rt {
 

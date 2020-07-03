@@ -2,15 +2,14 @@
 
 #pragma once
 
-#include <hilti/3rdparty/enum-class/EnumClass.h>
+#include <utility>
 
+#include <hilti/3rdparty/enum-class/EnumClass.h>
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/operator.h>
 #include <hilti/ast/type.h>
 #include <hilti/base/util.h>
-
-#include <utility>
 
 namespace hilti {
 

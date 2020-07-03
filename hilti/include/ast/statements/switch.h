@@ -2,13 +2,13 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/expressions/id.h>
 #include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/statement.h>
-
-#include <utility>
 
 namespace hilti {
 namespace statement {

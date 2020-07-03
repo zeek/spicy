@@ -3,10 +3,11 @@
 #include <fstream>
 #include <utility>
 
+#include <hilti/rt/init.h>
+
 #include <hilti/base/timing.h>
 #include <hilti/compiler/detail/cxx/unit.h>
 #include <hilti/compiler/jit.h>
-#include <hilti/rt/init.h>
 
 using namespace hilti;
 

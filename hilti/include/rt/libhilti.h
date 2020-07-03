@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <hilti/rt/autogen/config.h>
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
 #include <hilti/rt/deferred-expression.h>
@@ -14,7 +15,5 @@
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/all.h>
 #include <hilti/rt/util.h>
-
-#include <hilti/rt/autogen/config.h>
 
 using namespace hilti::rt::bytes::literals; // NOLINT (google-global-names-in-headers)

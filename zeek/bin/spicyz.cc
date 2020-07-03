@@ -1,11 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <compiler/debug.h>
+#include <compiler/driver.h>
 #include <getopt.h>
 
 #include <hilti/base/result.h>
-
-#include <compiler/debug.h>
-#include <compiler/driver.h>
 
 #include <zeek-spicy/autogen/config.h>
 

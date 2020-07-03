@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <hilti/base/logger.h>
+
 #include <spicy/compiler/detail/parser/driver.h>
 #include <spicy/compiler/detail/parser/scanner.h>
 #include <spicy/global.h>

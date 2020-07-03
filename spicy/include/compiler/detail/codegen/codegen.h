@@ -9,6 +9,7 @@
 #include <hilti/ast/declarations/property.h>
 #include <hilti/ast/node.h>
 #include <hilti/compiler/unit.h>
+
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/grammar-builder.h>

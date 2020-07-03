@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/builder/all.h>
 #include <hilti/ast/statements/all.h>
-
-#include <utility>
 
 namespace hilti {
 class Context;

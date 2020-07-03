@@ -1,7 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <ctime>
 #include <sys/time.h>
+
+#include <ctime>
 
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/util.h>
