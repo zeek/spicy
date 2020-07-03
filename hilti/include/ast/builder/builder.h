@@ -4,7 +4,9 @@
 
 #include <utility>
 
-#include <hilti/ast/builder/all.h>
+#include <hilti/ast/builder/declaration.h>
+#include <hilti/ast/builder/expression.h>
+#include <hilti/ast/ctor.h>
 #include <hilti/ast/statements/all.h>
 
 namespace hilti {
