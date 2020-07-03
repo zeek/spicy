@@ -439,7 +439,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
             out << n.typeValue();
     }
 
-    result_t operator()(const expression::TypeInfo& n) { out << "typeinfo(" << n.infoType() << ")"; }
+    result_t operator()(const expression::TypeInfo& n) { out << "typeinfo(" << n.expression() << ")"; }
 
     result_t operator()(const expression::TypeWrapped& n) { out << n.expression(); }
 

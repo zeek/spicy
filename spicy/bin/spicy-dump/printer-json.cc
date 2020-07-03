@@ -116,12 +116,6 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                                    [&](const hilti::rt::type_info::WeakReference& x) {
                                        auto y = x.value(v);
                                        j = y ? convert(y) : json();
-                                   },
-                                   [&](const auto& x) {
-                                       std::cerr << hilti::rt::fmt("internal error: type %s not handled by JSON writer",
-                                                                   v.type().display)
-                                                 << std::endl;
-                                       exit(1);
                                    }},
                v.type().aux_type_info);
 

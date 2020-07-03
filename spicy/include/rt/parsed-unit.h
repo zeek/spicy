@@ -29,7 +29,13 @@ public:
      * Returns the instance and its type in a value representation suitable
      * to use with the `type-info` API for iteration over the fields.
      */
-    hilti::rt::type_info::Value value() const { return {_ptr, _ti, *this}; }
+    hilti::rt::type_info::Value value() const {
+        if ( ! _ptr )
+            throw hilti::rt::NullReference("parsed unit not set");
+
+        assert(_ti);
+        return {_ptr, _ti, *this};
+    }
 
     /** Releases any contained instance. */
     void reset() {
@@ -57,8 +63,8 @@ public:
 
 private:
     hilti::rt::StrongReferenceGeneric _unit;
-    const hilti::rt::TypeInfo* _ti;
-    const void* _ptr;
+    const hilti::rt::TypeInfo* _ti = nullptr;
+    const void* _ptr = nullptr;
 };
 
 } // namespace spicy::rt

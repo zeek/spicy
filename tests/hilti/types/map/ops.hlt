@@ -46,6 +46,7 @@ global bytes b2;
 global iterator<map<int<64>, bytes>> y;
 
 y = begin(m1);
+hilti::print(y);
 while ( y != end(m1) ) {
     i2 += (*y)[0];
     b2 += (*y)[1];

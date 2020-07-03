@@ -41,6 +41,7 @@ global int<64> x2;
 global iterator<set<int<64>>> i;
 
 i = begin(s1);
+hilti::print(i);
 while ( i != end(s1) )
     x2 += *i++;
 

@@ -283,6 +283,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/stream.cc
                src/rt/tests/string.cc
                src/rt/tests/to_string.cc
+               src/rt/tests/tuple.cc
                src/rt/tests/util.cc
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")

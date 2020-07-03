@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include <hilti/rt/fiber.h>
 #include <hilti/rt/types/stream.h>
 
 #include <spicy/rt/parsed-unit.h>

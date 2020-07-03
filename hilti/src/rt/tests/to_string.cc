@@ -23,6 +23,8 @@ using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("to_string");
 
+TEST_CASE("any") { CHECK_EQ(to_string(std::any()), "<any value>"); }
+
 TEST_CASE("primitive") {
     CHECK_EQ(to_string(true), "True");
     CHECK_EQ(to_string(false), "False");
@@ -65,6 +67,8 @@ TEST_CASE("Error") {
     CHECK_EQ(to_string(result::Error("")), "<error>");
     CHECK_EQ(to_string(result::Error("could not foo the bar")), "<error: could not foo the bar>");
 }
+
+TEST_CASE("Exception") { CHECK_EQ(to_string(Exception("my error")), "<exception: my error>"); }
 
 TEST_CASE("Vector") {
     CHECK_EQ(to_string(vector::Empty()), "[]");
@@ -122,6 +126,10 @@ TEST_CASE("RegExp") {
     CHECK_EQ(to_string(RegExp("/", regexp::Flags())), "///");
 
     CHECK_EQ(to_string(RegExp("", regexp::Flags()).tokenMatcher()), "<regexp-match-state>");
+
+    std::stringstream x;
+    x << RegExp("X");
+    CHECK_EQ(x.str(), "/X/");
 }
 
 TEST_CASE("Set") {

@@ -991,9 +991,10 @@ class Union {
 public:
     /**
      * Type of a function that, given a union value, returns the index of the
-     * currently set field, with -1 indicating no field being set.
+     * currently set field, with `npos` indicating no field being set.
      */
     using Accessor = std::function<std::size_t(const Value& v)>;
+    const size_t npos = std::variant_npos;
 
     /**
      * Constructor

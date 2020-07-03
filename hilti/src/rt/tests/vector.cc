@@ -123,6 +123,10 @@ TEST_CASE("Iterator") {
     CHECK_EQ(*it, 25);
     CHECK_EQ(*++it, 35);
 
+    // Check const version of iterator dereference.
+    const Vector<int>::iterator cit = it;
+    CHECK_EQ(*cit, 35);
+
     CHECK_EQ(fmt("%s", it), "<vector iterator>");
 
     SUBCASE("comparison") {

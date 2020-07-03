@@ -74,6 +74,12 @@ global Set = set("aaa", "bbb", "ccc");
 global Bytes = b"bytes";
 global Stream = stream(b"stream");
 
+public function tuple<TypeInfo, TypeInfo, TypeInfo> getThreeTypeInfos() {
+    # Test different expressions for retrieving type information.
+    local Struct s;
+    return (typeinfo(bytes), typeinfo(Struct), typeinfo(s));
+}
+
 public function tuple<strong_ref<TestTypes>, strong_ref<TestTypes>, TypeInfo> makeTestTypes() {
     local S = new Struct;
     S.s = "string";
@@ -164,6 +170,10 @@ extern auto makeTestTypes()
 
 extern auto makeTestOptionals()
     -> std::tuple<hilti::rt::StrongReference<__hlt::Test::TestOptionals>, const ::hilti::rt::TypeInfo*>;
+
+extern auto getThreeTypeInfos()
+    -> std::tuple<const ::hilti::rt::TypeInfo*, const ::hilti::rt::TypeInfo*, const ::hilti::rt::TypeInfo*>;
+
 } // namespace __hlt::Test
 
 // Global counters for errors. Test will fail if this is non-zero at termination.
@@ -476,6 +486,12 @@ struct VisitorOptionals {
 
 int main(int argc, char** argv) {
     hilti::rt::init();
+
+    // Check that retrieving typeinfo works.
+    auto ti = __hlt::Test::getThreeTypeInfos();
+    CHECK_EQ(std::get<0>(ti)->display, "bytes");
+    CHECK_EQ(std::get<1>(ti)->display, "Test::Struct");
+    CHECK_EQ(std::get<2>(ti)->display, "Test::Struct");
 
     // Call HILTI code to create & initialize struct instances.
     auto [x_init, x_default, ti_types] = __hlt::Test::makeTestTypes();

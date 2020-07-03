@@ -711,7 +711,8 @@ expr_e        : BEGIN_ '(' expr ')'              { $$ = hilti::expression::Unres
               | NEW expr                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {std::move($2), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
               | NEW type                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Type_(std::move($2)), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
               | NEW type '(' opt_exprs ')'       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Type_(std::move($2)), hilti::expression::Ctor(hilti::ctor::Tuple(std::move($4), __loc__))}, __loc__); }
-              | TYPEINFO '(' type ')'            { $$ = hilti::expression::TypeInfo(std::move($3), __loc__); }
+              | TYPEINFO '(' expr ')'            { $$ = hilti::expression::TypeInfo(std::move($3), __loc__); }
+              | TYPEINFO '(' base_type ')'       { $$ = hilti::expression::TypeInfo(expression::Type_(std::move($3)), __loc__); }
               | expr_f                           { $$ = std::move($1); }
 
 expr_f        : ctor                             { $$ = hilti::expression::Ctor(std::move($1), __loc__); }

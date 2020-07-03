@@ -182,13 +182,8 @@ void TextPrinter::print(const type_info::Value& v) {
                                            print(x.value(v));
                                        else
                                            out() << "Null";
-                                   },
+                                   }
 
-                                   [&](const auto& x) {
-                                       std::cerr << hilti::rt::fmt("internal error: type %s not handled by text writer",
-                                                                   v.type().display)
-                                                 << std::endl;
-                                       exit(1);
-                                   }},
+               },
                v.type().aux_type_info);
 }

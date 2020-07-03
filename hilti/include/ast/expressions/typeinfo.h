@@ -11,11 +11,11 @@ namespace expression {
 /** AST node for a "move" expression. */
 class TypeInfo : public NodeBase, public trait::isExpression {
 public:
-    TypeInfo(Type t, Meta m = Meta()) : NodeBase({std::move(t)}, std::move(m)) {}
+    TypeInfo(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
 
-    auto infoType() const { return type::effectiveType(child<Type>(0)); }
+    auto expression() const { return child<Expression>(0); }
 
-    bool operator==(const TypeInfo& other) const { return infoType() == other.infoType(); }
+    bool operator==(const TypeInfo& other) const { return expression() == other.expression(); }
 
     /** Implements `Expression` interface. */
     bool isLhs() const { return false; }

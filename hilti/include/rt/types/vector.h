@@ -91,7 +91,7 @@ public:
     using value_type = typename V::V::iterator::value_type;
     using pointer = typename V::V::iterator::pointer;
     using reference = typename V::V::iterator::reference;
-    using const_reference = const typename V::V::iterator::reference;
+    using const_reference = typename V::V::const_reference;
     using iterator_category = typename V::V::iterator::iterator_category;
 
     Iterator() = default;
@@ -151,6 +151,8 @@ public:
     }
 
 private:
+    // NOTE: This function returns a mutable reference so calling functions need
+    // to ensure to produce correct `const` semantics in the API exposed to users.
     std::optional<std::reference_wrapper<V>> _container() const;
 };
 
@@ -225,6 +227,8 @@ public:
     }
 
 private:
+    // NOTE: This function returns a mutable reference so calling functions need
+    // to ensure to produce correct `const` semantics in the API exposed to users.
     std::optional<std::reference_wrapper<V>> _container() const;
 };
 
