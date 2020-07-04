@@ -20,22 +20,18 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                                    [&](const hilti::rt::type_info::BytesIterator& x) { j = to_string(x.get(v)); },
                                    [&](const hilti::rt::type_info::Enum& x) { j = x.get(v).name; },
                                    [&](const hilti::rt::type_info::Error& x) { j = to_string(x.get(v)); },
-                                   [&](const hilti::rt::type_info::Exception& x) {
-                                       j = std::string("<exception: ") + x.get(v).description() + ">";
-                                   },
+                                   [&](const hilti::rt::type_info::Exception& x) { j = to_string(x.get(v)); },
                                    [&](const hilti::rt::type_info::Function& x) { j = "<function>"; },
                                    [&](const hilti::rt::type_info::Interval& x) { j = x.get(v).seconds(); },
                                    [&](const hilti::rt::type_info::Library& x) { j = "<library value>"; },
                                    [&](const hilti::rt::type_info::Map& x) {
                                        j = json::array();
 
-                                       for ( auto i : x.iterate(v) ) {
-                                           auto [key, value] = type_info::Map::getKeyValue(i);
+                                       for ( auto [key, value] : x.iterate(v) )
                                            j.push_back({convert(key), convert(value)});
-                                       }
                                    },
                                    [&](const hilti::rt::type_info::MapIterator& x) {
-                                       auto [key, value] = type_info::Map::getKeyValue(x.value(v));
+                                       auto [key, value] = x.value(v);
                                        j = json::array({convert(key), convert(value)});
                                    },
                                    [&](const hilti::rt::type_info::Network& x) {

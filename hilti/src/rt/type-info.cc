@@ -6,15 +6,6 @@
 
 using namespace hilti::rt;
 
-std::pair<type_info::Value, type_info::Value> type_info::Map::getKeyValue(const Value& v) {
-    auto t = type_info::value::auxType<type_info::Tuple>(v);
-    auto s = t.iterate(v);
-    auto x = s.begin();
-    auto key = *x++;
-    auto value = *x;
-    return std::make_pair(std::move(key.second), std::move(value.second));
-}
-
 TypeInfo type_info::address = {std::nullopt, "address", type_info::Address()};
 TypeInfo type_info::any = {std::nullopt, "any", type_info::Any()};
 TypeInfo type_info::bool_ = {std::nullopt, "bool", type_info::Bool()};

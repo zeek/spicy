@@ -764,13 +764,18 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
         auto ktype = cg->compile(n.keyType(), codegen::TypeUsage::Storage);
         auto vtype = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
         auto deref_type = type::Tuple({n.keyType(), n.elementType()});
-        return fmt("hilti::rt::type_info::Map(%s, hilti::rt::type_info::Map::accessor<%s, %s>())",
-                   cg->typeInfo(deref_type), ktype, vtype);
+        return fmt("hilti::rt::type_info::Map(%s, %s, hilti::rt::type_info::Map::accessor<%s, %s>())",
+                   cg->typeInfo(n.keyType()), cg->typeInfo(n.elementType()),
+                   cg->compile(n.keyType(), codegen::TypeUsage::Storage),
+                   cg->compile(n.elementType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::map::Iterator& n) {
-        return fmt("hilti::rt::type_info::MapIterator(%s, hilti::rt::type_info::MapIterator::accessor<%s>())",
-                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+        const auto& m = n.containerType().as<type::Map>();
+        return fmt("hilti::rt::type_info::MapIterator(%s, %s, hilti::rt::type_info::MapIterator::accessor<%s, %s>())",
+                   cg->typeInfo(m.keyType()), cg->typeInfo(m.elementType()),
+                   cg->compile(m.keyType(), codegen::TypeUsage::Storage),
+                   cg->compile(m.elementType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::Optional& n) {
@@ -1058,9 +1063,6 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(const hilti::Type& t) {
         });
 }
 
-cxx::Expression CodeGen::typeInfo(const hilti::Type& t) {
-    auto ti = _getOrCreateTypeInfo(t);
-    return ti.reference;
-};
+cxx::Expression CodeGen::typeInfo(const hilti::Type& t) { return _getOrCreateTypeInfo(t).reference; };
 
 void CodeGen::addTypeInfoDefinition(const hilti::Type& t) { _getOrCreateTypeInfo(t); }

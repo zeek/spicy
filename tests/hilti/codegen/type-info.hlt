@@ -252,20 +252,19 @@ struct VisitorTypesInit {
                            SEEN();
                            auto s = x.iterate(v);
                            auto i = s.begin();
-                           auto [k1, v1] = hilti::rt::type_info::Map::getKeyValue(*i++);
+                           auto [k1, v1] = *i++;
                            CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k1).get(k1), 1);
                            CHECK_EQ(type_info::value::auxType<type_info::String>(v1).get(v1), "foo-1");
-                           auto [k2, v2] = hilti::rt::type_info::Map::getKeyValue(*i++);
+                           auto [k2, v2] = *i++;
                            CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k2).get(k2), 2);
                            CHECK_EQ(type_info::value::auxType<type_info::String>(v2).get(v2), "foo-2");
                            CHECK(++i == s.end());
                        },
                        [&](const hilti::rt::type_info::MapIterator& x) {
                            SEEN();
-                           auto [k1, v1] = hilti::rt::type_info::Map::getKeyValue(x.value(v));
-                           CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k1).get(k1), 1);
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(v1).get(v1), "foo-1");
-                       },
+                           auto [key, value] = x.value(v);
+                           CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(key).get(key), 1);
+                           CHECK_EQ(type_info::value::auxType<type_info::String>(value).get(value), "foo-1");                       },
                        [&](const hilti::rt::type_info::Network& x) {
                            SEEN();
                            CHECK_EQ(x.get(v), Network("1.2.3.4", 16));

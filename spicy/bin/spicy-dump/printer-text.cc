@@ -25,13 +25,12 @@ void TextPrinter::print(const type_info::Value& v) {
 
                                        out() << '{';
 
-                                       for ( auto i : x.iterate(v) ) {
+                                       for ( auto [key, value] : x.iterate(v) ) {
                                            if ( ! first )
                                                out() << ", ";
                                            else
                                                first = false;
 
-                                           auto [key, value] = type_info::Map::getKeyValue(i);
                                            print(key);
                                            out() << ": ";
                                            print(value);
@@ -40,7 +39,7 @@ void TextPrinter::print(const type_info::Value& v) {
                                        out() << '}';
                                    },
                                    [&](const hilti::rt::type_info::MapIterator& x) {
-                                       auto [key, value] = type_info::Map::getKeyValue(x.value(v));
+                                       auto [key, value] = x.value(v);
                                        print(key);
                                        out() << ": ";
                                        print(value);

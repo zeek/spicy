@@ -453,17 +453,124 @@ class Interval : public detail::AtomicType<hilti::rt::Interval> {};
 /** Auxiliary type information for type ``__library_type`. */
 class Library : public detail::ValueLessType {};
 
-/** Auxiliary type information for type ``map`. */
-class Map : public detail::IterableType {
+class Map;
+
+namespace map {
+
+/** Iterator to traverse over a map's value. */
+class Iterator {
 public:
-    using detail::IterableType::IterableType;
+    /**
+     * Constructor.
+     *
+     * @param type type information for the value being iterated over
+     * @param v the iterator's current value
+     */
+    Iterator(const Map* type, Value v);
 
     /**
-     * Helper function that returns a key/value pair extracted from an
-     * iterator encountered during `iterate()`. (The iterator itself points
-     * to a 2-tuple, this function takes that 2-tuple apart.)
+     * Default constructor creating an iterator that matches the ``end()``
+     * position.
      */
-    static std::pair<Value, Value> getKeyValue(const Value& i);
+    Iterator() {}
+
+    /** Advances the iterator forward. */
+    Iterator& operator++();
+
+    /** Advances the iterator forward. */
+    Iterator operator++(int);
+
+    /**
+     * Dereferences the iterator, returning the contained value.
+     *
+     * @throws `InvalidIterator` if the iterator is not pointing to a value
+     * (i.e., if it's the end position).
+     */
+    std::pair<Value, Value> operator*() const;
+
+    /**
+     * Returns whether the iterator matches the end position..
+     *
+     * Note: The method does not support generic iterator comparisons, it
+     * only works for matching against the end position as returned by the
+     * default constructor.
+     *
+     * @param other iterator to compare against
+     */
+    bool operator==(const Iterator& other) const {
+        // This is good enough just for comparing against end().
+        return _cur.has_value() == other._cur.has_value();
+    }
+
+    /** Opposite of `operator==`, with the same restrictions. */
+    bool operator!=(const Iterator& other) const { return ! (*this == other); }
+
+private:
+    const Map* _type = nullptr;
+    Value _value;
+    std::optional<std::any> _cur;
+};
+
+/**
+ * Helper class that provides a standard ``begin()``/``end`` range interface
+ * to iterate over the elements of an iterable type.
+ */
+class Sequence {
+public:
+    /**
+     * Constructor.
+     *
+     * @param type type information for the value to be iterated over
+     * @param v the value to be iterated over
+     */
+    Sequence(const Map* type, Value v) : _begin(type, std::move(v)) {}
+
+    /** Returns an iterator referring to the beginning of the iterable range. */
+    Iterator begin() const { return _begin; }
+
+    /** Returns an iterator referring to the end of iterable range. */
+    Iterator end() const { return Iterator(); }
+
+private:
+    Iterator _begin;
+};
+} // namespace map
+
+/** Auxiliary type information for type ``map`. */
+class Map {
+public:
+    /**
+     * Similar semantics as with `IterableType`, but with different type for
+     * dereferenced value.
+     */
+    using Accessor = std::tuple<std::function<std::optional<std::any>(const Value&)>,                 // begin()
+                                std::function<std::optional<std::any>(const std::any&)>,              // next()
+                                std::function<std::pair<const void*, const void*>(const std::any&)>>; // deref()
+
+    /**
+     * Constructor.
+     *
+     * @param ktype type of the keys of the contained elements
+     * @param vtype type of the values of the contained elements
+     * @param accessor set of functions retrieving and manipulating an iterator to traverse the sequence of contained
+     * elements
+     */
+    Map(const TypeInfo* ktype, const TypeInfo* vtype, Accessor accessor)
+        : _ktype(ktype), _vtype(vtype), _accessor(std::move(accessor)) {}
+
+    /** Returns a `Sequence` that can be iterated over to visit all the contained elements. */
+    map::Sequence iterate(const Value& value) const { return map::Sequence(this, std::move(value)); }
+
+    /**
+     * Returns the type of the key of the elements, as passed into the
+     * constructor.
+     */
+    const TypeInfo* keyType() const { return _ktype; }
+
+    /**
+     * Returns the type of the valye of the elements, as passed into the constructor.
+     */
+    const TypeInfo* valueType() const { return _vtype; }
 
     template<typename K, typename V>
     using iterator_pair =
@@ -487,27 +594,104 @@ public:
                 else
                     return std::nullopt;
             },
-            [](std::any i_) -> const void* { // deref()
+            [](std::any i_) -> std::pair<const void*, const void*> { // deref()
                 auto i = std::any_cast<iterator_pair<K, V>>(i_);
-                return &*i.first;
+                return std::make_pair(&(*i.first).first, &(*i.first).second);
             });
     }
 
-}; // namespace type_info
+private:
+    friend class map::Iterator;
+
+    const TypeInfo* _ktype;
+    const TypeInfo* _vtype;
+    const Accessor _accessor;
+};
+
+namespace map {
+
+inline Iterator::Iterator(const Map* type, Value v) : _type(type) {
+    _value = std::move(v);
+    _cur = std::get<0>(_type->_accessor)(_value); // begin()
+}
+
+inline Iterator& Iterator::operator++() {
+    if ( _cur.has_value() )
+        _cur = std::get<1>(_type->_accessor)(*_cur); // next()
+
+    return *this;
+}
+
+inline Iterator Iterator::operator++(int) {
+    auto x = *this;
+
+    if ( _cur.has_value() )
+        _cur = std::get<1>(_type->_accessor)(*_cur); // next()
+
+    return x;
+}
+
+inline std::pair<Value, Value> Iterator::operator*() const {
+    if ( ! _cur.has_value() )
+        throw InvalidValue("type info iterator invalid");
+
+    auto x = std::get<2>(_type->_accessor)(*_cur);
+    return std::make_pair(Value(x.first, _type->_ktype, _value), Value(x.second, _type->_vtype, _value));
+}
+
+} // namespace map
 
 /** Auxiliary type information for type ``iterator<map>`. */
-class MapIterator : public detail::DereferencableType {
+class MapIterator {
 public:
-    using detail::DereferencableType::DereferencableType;
+    /**
+     * Type of a function that, given the outer value, returns a pointer to
+     * the contained element.
+     */
+    using Accessor = std::function<std::pair<const void*, const void*>(const Value& v)>;
 
-    template<typename T>
-    static auto accessor() {
-        return [](const Value& v) -> const void* { // deref()
-            return &**static_cast<const hilti::rt::map::Iterator<typename std::tuple_element<0, T>::type,
-                                                                 typename std::tuple_element<1, T>::type>*>(
-                v.pointer());
+    /**
+     * Constructor.
+     *
+     * @param ktype type of the keys of the contained elements
+     * @param vtype type of the values of the contained elements
+     * @param accessor function retrieving a pointer to the contained element
+     */
+    MapIterator(const TypeInfo* ktype, const TypeInfo* vtype, Accessor accessor)
+        : _ktype(ktype), _vtype(vtype), _accessor(accessor) {}
+
+    /**
+     * Returns the contained value as (key, value) pair.
+     */
+    std::pair<Value, Value> value(const Value& v) const {
+        auto x = _accessor(v);
+        return std::make_pair(Value(x.first, _ktype, v), Value(x.second, _vtype, v));
+    }
+
+    /**
+     * Returns the type of the key of the elements, as passed into the
+     * constructor.
+     */
+    const TypeInfo* keyType() const { return _ktype; }
+
+    /**
+     * Returns the type of the valye of the elements, as passed into the constructor.
+     */
+    const TypeInfo* valueType() const { return _vtype; }
+
+    template<typename K, typename V>
+    static auto accessor() { // deref()
+        return [](const Value& v) -> std::pair<const void*, const void*> {
+            using iterator_type = const hilti::rt::map::Iterator<K, V>;
+            const auto& x = **static_cast<iterator_type*>(v.pointer());
+            return std::make_pair(&x.first, &x.second);
         };
     }
+
+private:
+    const TypeInfo* _ktype;
+    const TypeInfo* _vtype;
+    const Accessor _accessor;
 };
 
 /** Auxiliary type information for type ``net`. */
