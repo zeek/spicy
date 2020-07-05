@@ -25,6 +25,8 @@ parser.add_argument("--header", dest="headers", action="append", default=[],
 args = parser.parse_args()
 out = open(args.output, "w")
 
+print('#pragma once\n', file=out)
+
 for header in args.headers:
     print("#include <{}>\n".format(header), file=out)
 
