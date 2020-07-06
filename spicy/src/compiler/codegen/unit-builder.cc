@@ -133,7 +133,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
         addHookImplementation(h.hook(), AttributeSet::find(h.hook().attributes(), "foreach"));
     }
-}; // namespace
+};
 
 } // anonymous namespace
 
