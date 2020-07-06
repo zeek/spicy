@@ -110,9 +110,9 @@ TEST_CASE("Port") {
 }
 
 TEST_CASE("Protocol") {
-    CHECK_EQ(to_string(Protocol::TCP), "Protocol::TCP");
-    CHECK_EQ(to_string(Protocol::UDP), "Protocol::UDP");
-    CHECK_EQ(to_string(Protocol::ICMP), "Protocol::ICMP");
+    CHECK_EQ(to_string(Protocol::TCP), "TCP");
+    CHECK_EQ(to_string(Protocol::UDP), "UDP");
+    CHECK_EQ(to_string(Protocol::ICMP), "ICMP");
     CHECK_EQ(to_string(Protocol::Undef), "<unknown protocol>");
 }
 

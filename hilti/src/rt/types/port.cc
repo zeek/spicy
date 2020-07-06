@@ -61,9 +61,9 @@ Port::operator std::string() const {
 
 std::string hilti::rt::detail::adl::to_string(const Protocol& x, adl::tag /*unused*/) {
     switch ( x ) {
-        case Protocol::ICMP: return "Protocol::ICMP";
-        case Protocol::TCP: return "Protocol::TCP";
-        case Protocol::UDP: return "Protocol::UDP";
+        case Protocol::ICMP: return "ICMP";
+        case Protocol::TCP: return "TCP";
+        case Protocol::UDP: return "UDP";
         case Protocol::Undef: return "<unknown protocol>";
     }
 
