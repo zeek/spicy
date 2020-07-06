@@ -117,7 +117,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
     void operator()(const spicy::type::unit::item::Sink& s) {
         auto type = builder::typeByID("spicy_rt::Sink", s.meta());
-        AttributeSet attrs({Attribute("&default", builder::new_(std::move(type)))});
+        AttributeSet attrs({Attribute("&default", builder::new_(std::move(type))), Attribute("&internal")});
 
         auto nf = hilti::type::struct_::Field(s.id(), type::Sink(), std::move(attrs), s.meta());
         addField(std::move(nf));
@@ -133,7 +133,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
         addHookImplementation(h.hook(), AttributeSet::find(h.hook().attributes(), "foreach"));
     }
-};
+}; // namespace
 
 } // anonymous namespace
 
