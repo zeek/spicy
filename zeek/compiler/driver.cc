@@ -1,18 +1,18 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "driver.h"
+
+#include "debug.h"
+#include "glue-compiler.h"
 #include <getopt.h>
 
 #include <utility>
 
-#include <spicy/autogen/config.h>
-
 #include <hilti/ast/declarations/type.h>
+
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/types/unit.h>
-
-#include "debug.h"
-#include "driver.h"
-#include "glue-compiler.h"
+#include <spicy/autogen/config.h>
 
 // Must come after Bro includes to avoid namespace conflicts.
 #include <spicy/rt/libspicy.h>

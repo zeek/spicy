@@ -4,6 +4,7 @@
 #include <hilti/base/logger.h>
 #include <hilti/compiler/unit.h>
 #include <hilti/global.h>
+
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/compiler/detail/visitors.h>
 

@@ -5,6 +5,7 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/stream.h>
+
 #include <spicy/rt/debug.h>
 #include <spicy/rt/typedefs.h>
 

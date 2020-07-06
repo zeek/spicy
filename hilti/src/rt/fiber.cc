@@ -6,7 +6,6 @@
 #endif
 
 #include <hilti/rt/autogen/config.h>
-
 #include <hilti/rt/context.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>

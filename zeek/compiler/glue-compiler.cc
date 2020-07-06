@@ -1,15 +1,17 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "glue-compiler.h"
+
+#include "debug.h"
+
 #include <stdexcept>
 
 #include <hilti/ast/all.h>
 #include <hilti/ast/builder/all.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/unit.h>
-#include <spicy/global.h>
 
-#include "debug.h"
-#include "glue-compiler.h"
+#include <spicy/global.h>
 
 using namespace spicy::zeek;
 
@@ -798,6 +800,7 @@ bool GlueCompiler::PopulateEvents() {
 }
 
 #include <hilti/ast/operators/struct.h>
+
 #include <spicy/ast/detail/visitor.h>
 
 // Helper visitor to wrap expressions using the the TryMember operator into a

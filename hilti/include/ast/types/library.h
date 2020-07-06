@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include <hilti/ast/type.h>
-
 #include <utility>
+
+#include <hilti/ast/type.h>
 
 namespace hilti {
 namespace type {

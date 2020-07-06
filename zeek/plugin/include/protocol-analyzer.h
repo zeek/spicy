@@ -5,13 +5,13 @@
 #include <optional>
 
 // Zeek headers
+#include "cookie.h"
 #include <analyzer/protocol/tcp/TCP.h>
 #include <analyzer/protocol/udp/UDP.h>
 
 #include <hilti/rt/types/stream.h>
-#include <spicy/rt/parser.h>
 
-#include "cookie.h"
+#include <spicy/rt/parser.h>
 
 namespace spicy::zeek::rt {
 

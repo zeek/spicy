@@ -2,8 +2,9 @@
 
 #include "hilti/rt/types/string.h"
 
-#include <hilti/3rdparty/utf8proc/utf8proc.h>
 #include <hilti/rt/exception.h>
+
+#include <hilti/3rdparty/utf8proc/utf8proc.h>
 
 using namespace hilti::rt;
 

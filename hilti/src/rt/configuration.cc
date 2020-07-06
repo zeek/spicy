@@ -4,7 +4,6 @@
 #include <utility>
 
 #include <hilti/rt/autogen/config.h>
-
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/init.h>

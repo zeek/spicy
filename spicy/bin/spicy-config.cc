@@ -7,10 +7,10 @@
 #include <sstream>
 #include <string>
 
+#include <hilti/autogen/config.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/jit.h>
 
-#include <hilti/autogen/config.h>
 #include <spicy/autogen/config.h>
 
 using namespace std;

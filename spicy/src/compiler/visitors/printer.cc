@@ -2,6 +2,7 @@
 
 #include <hilti/base/logger.h>
 #include <hilti/compiler/printer.h>
+
 #include <spicy/ast/all.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/hook.h>

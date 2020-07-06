@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <utility>
+
 #include <hilti/ast/builder/all.h>
 #include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/ctors/tuple.h>
@@ -13,13 +15,12 @@
 #include <hilti/ast/types/reference.h>
 #include <hilti/base/logger.h>
 #include <hilti/global.h>
+
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/operators/all.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/grammar-builder.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
-
-#include <utility>
 
 using namespace spicy;
 using namespace spicy::detail;

@@ -33,17 +33,7 @@
 #include <sanitizer/lsan_interface.h>
 #endif
 
-#include <clang/Basic/Version.h>
-#include <clang/CodeGen/CodeGenAction.h>
-#include <clang/Driver/Compilation.h>
-#include <clang/Driver/Driver.h>
-#include <clang/Driver/Job.h>
-#include <clang/Driver/Options.h>
-#include <clang/Driver/Tool.h>
-#include <clang/Frontend/CompilerInstance.h>
-#include <clang/Frontend/CompilerInvocation.h>
-#include <clang/Frontend/FrontendOptions.h>
-#include <clang/Lex/PreprocessorOptions.h>
+#include <hilti/rt/util.h>
 
 #include <hilti/base/id-base.h>
 #include <hilti/base/logger.h>
@@ -52,7 +42,6 @@
 #include <hilti/base/util.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/jit.h>
-#include <hilti/rt/util.h>
 
 #include <llvm/ADT/None.h>
 #include <llvm/ADT/STLExtras.h>
@@ -93,6 +82,18 @@
 #include <llvm/Transforms/InstCombine/InstCombine.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
+
+#include <clang/Basic/Version.h>
+#include <clang/CodeGen/CodeGenAction.h>
+#include <clang/Driver/Compilation.h>
+#include <clang/Driver/Driver.h>
+#include <clang/Driver/Job.h>
+#include <clang/Driver/Options.h>
+#include <clang/Driver/Tool.h>
+#include <clang/Frontend/CompilerInstance.h>
+#include <clang/Frontend/CompilerInvocation.h>
+#include <clang/Frontend/FrontendOptions.h>
+#include <clang/Lex/PreprocessorOptions.h>
 
 namespace hilti::logging::debug {
 inline const DebugStream Driver("driver");

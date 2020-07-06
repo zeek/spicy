@@ -4,10 +4,9 @@
 
 #include <optional>
 #include <ostream>
+#include <string>
 #include <utility>
 #include <variant>
-
-#include <string>
 
 #include <hilti/rt/exception.h>
 

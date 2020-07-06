@@ -26,10 +26,10 @@ macro(autogen_type_erased outputs api is_constant)
 endmacro()
 
 ### Merge nodes.decl files into dispatcher code.
-macro(autogen_dispatchers outputs dst)
+macro(autogen_dispatchers outputs dst all_hdr)
     set(_output "${dst}")
     add_custom_command(
-        COMMAND ${CMAKE_SOURCE_DIR}/scripts/autogen-dispatchers --output ${_output} ${ARGN}
+        COMMAND ${CMAKE_SOURCE_DIR}/scripts/autogen-dispatchers --header=${all_hdr} --output=${_output} ${ARGN}
         DEPENDS ${CMAKE_SOURCE_DIR}/scripts/autogen-dispatchers ${ARGN}
         OUTPUT ${_output}
         )

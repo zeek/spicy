@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <hilti/rt/types/interval.h>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/interval.h>
-#include <hilti/rt/types/interval.h>
 
 namespace hilti {
 namespace ctor {

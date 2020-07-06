@@ -3,7 +3,6 @@
 #pragma once
 
 #include <cxxabi.h>
-#include <optional>
 
 #include <algorithm>
 #include <climits>
@@ -13,6 +12,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -20,10 +20,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include <hilti/autogen/config.h>
-#include <hilti/base/result.h>
 #include <hilti/rt/unpack.h>
 #include <hilti/rt/util.h>
+
+#include <hilti/autogen/config.h>
+#include <hilti/base/result.h>
 
 namespace hilti::util::detail {
 /** Helper that forwards to `Logger`. */

@@ -6,6 +6,7 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/stream.h>
+
 #include <spicy/rt/debug.h>
 #include <spicy/rt/parser.h>
 

@@ -5,6 +5,7 @@
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
+#include <hilti/base/logger.h>
 
 namespace hilti {
 namespace statement {

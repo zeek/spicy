@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/ast/builder/all.h>
+
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/types/unit-items/switch.h>
 

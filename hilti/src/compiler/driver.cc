@@ -8,8 +8,9 @@
 #include <iostream>
 #include <utility>
 
-#include <hilti/hilti.h>
 #include <hilti/rt/libhilti.h>
+
+#include <hilti/hilti.h>
 
 using namespace hilti;
 using util::fmt;

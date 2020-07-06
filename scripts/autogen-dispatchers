@@ -6,18 +6,29 @@ import sys
 import os
 import re
 
-### Main
+# Main
+
 
 def error(msg):
     print("error: {}".format(msg), file=sys.stderr)
     sys.exit(1)
 
+
 parser = argparse.ArgumentParser()
-parser.add_argument("nodes", nargs="*", metavar="nodes", action="store", help="nodes.decl file")
-parser.add_argument("--output", dest="output", action="store", default=None, required=True, help="Output file")
+parser.add_argument("nodes", nargs="*", metavar="nodes",
+                    action="store", help="nodes.decl file")
+parser.add_argument("--output", dest="output", action="store",
+                    default=None, required=True, help="Output file")
+parser.add_argument("--header", dest="headers", action="append", default=[],
+                    required=False, help="Header to include in generated file")
 
 args = parser.parse_args()
 out = open(args.output, "w")
+
+print('#pragma once\n', file=out)
+
+for header in args.headers:
+    print("#include <{}>\n".format(header), file=out)
 
 print("#define VISITOR_DISPATCHERS \\", file=out)
 
@@ -47,7 +58,8 @@ for (cls, trait) in nodes:
         sys.exit(1)
 
 for (btrait, bcls) in traits.items():
-    print("  if constexpr ( std::is_base_of<{}, Erased>::value ) {{ \\".format(bcls), file=out)
+    print("  if constexpr ( std::is_base_of<{}, Erased>::value ) {{ \\".format(
+        bcls), file=out)
 
     for (cls, trait) in nodes:
         if trait != btrait:
@@ -56,9 +68,10 @@ for (btrait, bcls) in traits.items():
         def output(msg):
             print(msg.format(cls=cls, trait=trait) + " \\", file=out)
 
-        output("    if ( auto r = do_dispatch_one<Result, {cls}, Erased, Dispatcher, Iterator>(n, tn, d, i, no_match_so_far) ) return r;")
+        output(
+            "    if ( auto r = do_dispatch_one<Result, {cls}, Erased, Dispatcher, Iterator>(n, tn, d, i, no_match_so_far) ) return r;")
 
     print("  } \\", file=out)
-    output("");
+    output("")
 
 print("", file=out)

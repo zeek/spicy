@@ -5,10 +5,11 @@
 #include <iostream>
 #include <utility>
 
+#include <hilti/rt/library.h>
+
 #include <hilti/base/util.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/cxx/unit.h>
-#include <hilti/rt/library.h>
 
 namespace hilti {
 

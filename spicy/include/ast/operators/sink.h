@@ -10,6 +10,7 @@
 #include <hilti/ast/types/library.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/void.h>
+
 #include <spicy/ast/types/sink.h>
 #include <spicy/ast/types/unit.h>
 

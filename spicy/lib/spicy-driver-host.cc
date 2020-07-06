@@ -7,11 +7,13 @@
  * parsers to yield an final executable.
  */
 
-#include <fstream>
 #include <getopt.h>
+
+#include <fstream>
 #include <iostream>
 
 #include <hilti/rt/libhilti.h>
+
 #include <spicy/rt/libspicy.h>
 
 using spicy::rt::fmt;

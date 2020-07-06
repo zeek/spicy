@@ -3,6 +3,7 @@
 #include <zlib.h>
 
 #include <hilti/rt/types/bytes.h>
+
 #include <spicy/rt/zlib.h>
 
 using namespace spicy::rt;

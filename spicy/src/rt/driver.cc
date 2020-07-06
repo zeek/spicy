@@ -1,7 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <fstream>
 #include <getopt.h>
+
+#include <fstream>
 #include <iostream>
 
 #include <hilti/rt/fmt.h>

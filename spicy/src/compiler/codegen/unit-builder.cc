@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <utility>
+
 #include <hilti/ast/builder/all.h>
 #include <hilti/ast/types/bytes.h>
 #include <hilti/ast/types/function.h>
@@ -8,11 +10,10 @@
 #include <hilti/ast/types/struct.h>
 #include <hilti/ast/types/void.h>
 #include <hilti/base/logger.h>
+
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/types/sink.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
-
-#include <utility>
 
 using namespace spicy;
 using namespace spicy::detail;

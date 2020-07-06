@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <hilti/rt/types/address.h>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/address.h>
-#include <hilti/rt/types/address.h>
 
 namespace hilti {
 namespace ctor {

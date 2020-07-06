@@ -1,11 +1,12 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/util.h>
+
 #include <hilti/ast/ctors/all.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
-#include <hilti/rt/util.h>
 
 using namespace hilti;
 using namespace hilti::detail;

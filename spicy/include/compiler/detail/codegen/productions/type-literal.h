@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/ast/expressions/type.h>
+
 #include <spicy/compiler/detail/codegen/production.h>
 
 namespace spicy::detail::codegen::production {

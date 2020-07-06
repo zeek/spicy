@@ -59,12 +59,26 @@ ForEachMacros:
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH
-IncludeBlocks:   Preserve
+IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
-    Priority:        2
-  - Regex:           '^(<|"(gtest|isl|json)/)'
+  - Regex:           '^<spicy/autogen/__dispatchers'
+    Priority:        4
+  - Regex:           '^<hilti/autogen/__dispatchers'
+  - Regex:           'spicy/rt.*\.(h|hpp)>'
+    Priority:        6
+  - Regex:           'hilti/rt.*\.(h|hpp)>'
+    Priority:        5
     Priority:        3
+  - Regex:           'clang.*\.h>'
+    Priority:        10
+  - Regex:           'llvm.*\.h>'
+    Priority:        9
+  - Regex:           'spicy.*\.(h|hpp)>'
+    Priority:        8
+  - Regex:           'hilti.*\.(h|hpp)>'
+    Priority:        7
+  - Regex:           '^<([[:alnum:]]|_)+>'
+    Priority:        2
   - Regex:           '.*'
     Priority:        1
 IncludeIsMainRegex: '$'

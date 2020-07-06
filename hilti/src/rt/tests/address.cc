@@ -1,12 +1,11 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <arpa/inet.h>
+#include <doctest/doctest.h>
 
 #include <string>
 
 #include <hilti/rt/types/address.h>
-
-#include <doctest/doctest.h>
 
 using namespace hilti::rt;
 

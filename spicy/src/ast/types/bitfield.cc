@@ -2,6 +2,7 @@
 
 #include <hilti/ast/types/computed.h>
 #include <hilti/ast/types/tuple.h>
+
 #include <spicy/ast/types/bitfield.h>
 
 using namespace spicy;

@@ -20,12 +20,12 @@
 #include <Var.h>
 #undef DEBUG
 
+#include "cookie.h"
+
 #include <hilti/rt/deferred-expression.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/types/all.h>
-
-#include "cookie.h"
 
 namespace spicy::zeek::rt {
 

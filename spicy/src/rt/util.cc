@@ -3,7 +3,6 @@
 #include <cstdlib>
 
 #include <hilti/rt/autogen/version.h>
-
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/util.h>
 

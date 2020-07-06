@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <hilti/rt/types/port.h>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/port.h>
-#include <hilti/rt/types/port.h>
 
 namespace hilti {
 namespace ctor {

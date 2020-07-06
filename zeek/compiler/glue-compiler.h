@@ -2,7 +2,13 @@
 
 #pragma once
 
+#include "driver.h"
+
 #include <map>
+
+#include <hilti/rt/types/port.h>
+
+#include <spicy/rt/mime.h>
 
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/expression.h>
@@ -10,11 +16,8 @@
 #include <hilti/ast/type.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/driver.h>
-#include <hilti/rt/types/port.h>
-#include <spicy/ast/declarations/unit-hook.h>
-#include <spicy/rt/mime.h>
 
-#include "driver.h"
+#include <spicy/ast/declarations/unit-hook.h>
 
 namespace spicy::rt {
 struct Parser;

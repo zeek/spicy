@@ -4,6 +4,7 @@
 
 // Zeek plugin headers
 #include <compiler/driver.h>
+
 #include <zeek-spicy/plugin.h>
 
 namespace plugin::Zeek_Spicy {

@@ -5,6 +5,7 @@
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/struct.h>
+
 #include <spicy/ast/types/unit-items/unit-hook.h>
 
 namespace spicy {

@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/integer.h>
-
-#include <utility>
 
 namespace hilti {
 namespace ctor {

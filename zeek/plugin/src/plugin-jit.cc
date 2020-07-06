@@ -16,6 +16,7 @@
 
 #include <compiler/debug.h>
 #include <compiler/driver.h>
+
 #include <zeek-spicy/plugin-jit.h>
 #include <zeek-spicy/zeek-reporter.h>
 

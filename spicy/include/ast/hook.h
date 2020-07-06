@@ -6,6 +6,7 @@
 
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/function.h>
+
 #include <spicy/ast/aliases.h>
 #include <spicy/ast/engine.h>
 

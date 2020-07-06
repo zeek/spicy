@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
-
-#include <utility>
 
 namespace hilti {
 namespace statement {

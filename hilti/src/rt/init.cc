@@ -1,7 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <clocale>
 #include <unistd.h>
+
+#include <clocale>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>

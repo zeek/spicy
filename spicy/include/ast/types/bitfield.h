@@ -12,6 +12,7 @@
 #include <hilti/ast/types/function.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/unknown.h>
+
 #include <spicy/ast/aliases.h>
 
 namespace spicy {

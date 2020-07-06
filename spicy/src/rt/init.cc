@@ -3,6 +3,7 @@
 #include <clocale>
 
 #include <hilti/rt/init.h>
+
 #include <spicy/rt/global-state.h>
 #include <spicy/rt/hilti-fwd.h>
 #include <spicy/rt/init.h>

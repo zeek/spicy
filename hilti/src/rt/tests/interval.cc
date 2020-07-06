@@ -1,9 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/interval.h>
-
-#include <doctest/doctest.h>
 
 using namespace hilti::rt;
 

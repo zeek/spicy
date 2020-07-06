@@ -14,6 +14,7 @@
 #include <string>
 
 #include <hilti/ast/all.h>
+
 #include <spicy/ast/all.h>
 
 #undef YY_DECL

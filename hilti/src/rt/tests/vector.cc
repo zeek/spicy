@@ -2,10 +2,11 @@
 
 #include <doctest/doctest.h>
 
+#include <memory>
+
 #include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/vector.h>
-#include <memory>
 
 using namespace hilti::rt;
 

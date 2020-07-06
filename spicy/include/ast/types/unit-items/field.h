@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/types/vector.h>
 #include <hilti/base/uniquer.h>
 
@@ -9,8 +11,6 @@
 #include <spicy/ast/engine.h>
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit.h>
-
-#include <utility>
 
 namespace spicy::type::unit::item {
 

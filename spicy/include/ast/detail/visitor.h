@@ -7,7 +7,5 @@
 #include <spicy/autogen/__dispatchers.h>
 
 #include <hilti/ast/all.h>
-#include <spicy/ast/all.h>
-
 #include <hilti/base/timing.h>
 #include <hilti/base/visitor.h>

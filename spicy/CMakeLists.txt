@@ -33,12 +33,14 @@ autogen_operators(SOURCES_OPERATORS
 )
 
 autogen_dispatchers(SOURCES_TYPE_ERASED ${AUTOGEN_H}/__dispatchers.h
+                                        "spicy/ast/all.h"
                                         ${CMAKE_CURRENT_SOURCE_DIR}/../hilti/include/hilti/ast/nodes.decl
                                         ${CMAKE_CURRENT_SOURCE_DIR}/include/spicy/ast/nodes.decl
                                         ${AUTOGEN_H_HILTI}/operators.decl
                                         ${AUTOGEN_H}/operators.decl)
 
 autogen_dispatchers(PRODUCTIONS_TYPE_ERASED ${AUTOGEN_H}/__dispatchers-productions.h
+                                            "spicy/ast/all.h"
                                             ${CMAKE_CURRENT_SOURCE_DIR}/include/compiler/detail/codegen/productions.decl)
 
 set(SOURCES_COMPILER

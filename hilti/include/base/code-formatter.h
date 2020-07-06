@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include <optional>
-
 #include <functional>
+#include <optional>
 #include <utility>
 
 #include <hilti/base/util.h>
