@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/stream.h>

@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/builder/type.h>
 #include <hilti/ast/ctor.h>

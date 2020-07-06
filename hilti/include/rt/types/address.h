@@ -4,6 +4,9 @@
 
 #include <arpa/inet.h>
 
+#include <string>
+#include <tuple>
+
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/bytes.h>

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <string>
 #include <utility>
 
 #include <hilti/rt/fmt.h>

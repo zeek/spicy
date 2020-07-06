@@ -5,6 +5,11 @@
 #include "driver.h"
 
 #include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <hilti/rt/types/port.h>
 

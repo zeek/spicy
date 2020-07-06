@@ -1,9 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "hilti/ast/types/tuple.h"
+
 #include <algorithm>
 #include <exception>
-
-#include <hilti/ast/types/tuple.h>
 
 using namespace hilti;
 

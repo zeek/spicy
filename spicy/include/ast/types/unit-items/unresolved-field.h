@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <utility>
+#include <vector>
+
 #include <hilti/ast/types/unknown.h>
 
 #include <spicy/ast/aliases.h>

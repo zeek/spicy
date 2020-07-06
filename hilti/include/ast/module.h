@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <utility>
+#include <vector>
+
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/property.h>
 #include <hilti/ast/id.h>

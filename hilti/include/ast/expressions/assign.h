@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/expression.h>
 
 namespace hilti {

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include <hilti/rt/context.h>
 #include <hilti/rt/debug-logger.h>

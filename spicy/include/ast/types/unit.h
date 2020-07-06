@@ -2,6 +2,11 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit-items/property.h>

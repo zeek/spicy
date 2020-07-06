@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/types/enum.h>

@@ -3,6 +3,8 @@
 #pragma once
 
 #include <functional>
+#include <map>
+#include <string>
 
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/grammar.h>

@@ -6,7 +6,10 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
+#include <string>
+#include <tuple>
 
 #include <zeek-spicy/autogen/config.h>
 

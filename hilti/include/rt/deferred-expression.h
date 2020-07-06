@@ -3,6 +3,8 @@
 #pragma once
 
 #include <functional>
+#include <string>
+#include <utility>
 
 namespace hilti::rt {
 

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <utility>
 #include <vector>
 
 #include <hilti/ast/expression.h>

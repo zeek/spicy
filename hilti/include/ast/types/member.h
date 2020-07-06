@@ -3,6 +3,7 @@
 #pragma once
 
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/id.h>
 #include <hilti/ast/node_ref.h>

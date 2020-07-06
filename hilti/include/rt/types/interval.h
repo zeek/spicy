@@ -4,6 +4,8 @@
 
 #include <arpa/inet.h>
 
+#include <memory>
+#include <string>
 #include <variant>
 
 #include <hilti/rt/extension-points.h>

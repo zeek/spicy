@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <any>
 #include <array>
 #include <cassert>
@@ -10,6 +11,8 @@
 #include <cstring>
 #include <memory>
 #include <optional>
+#include <string>
+#include <tuple>
 #include <utility>
 #include <variant>
 #include <vector>

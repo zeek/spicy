@@ -4,9 +4,12 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include <set>
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>

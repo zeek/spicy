@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/rt/types/time.h>
 
 #include <hilti/ast/ctor.h>

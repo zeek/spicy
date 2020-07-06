@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <memory>
+#include <utility>
+
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>

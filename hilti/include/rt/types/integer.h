@@ -4,7 +4,9 @@
 
 #include <cinttypes>
 #include <limits>
+#include <string>
 #include <tuple>
+#include <utility>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/result.h>

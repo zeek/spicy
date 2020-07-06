@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <map>
+#include <utility>
+#include <vector>
+
 #include <hilti/ast/expression.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/expressions/unresolved-operator.h>

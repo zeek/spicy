@@ -7,6 +7,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/ctors/string.h>
 #include <hilti/ast/expression.h>

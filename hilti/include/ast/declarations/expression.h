@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/expression.h>

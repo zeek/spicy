@@ -6,6 +6,9 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <hilti/base/result.h>
 #include <hilti/compiler/detail/codegen/codegen.h>

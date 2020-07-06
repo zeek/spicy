@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <utility>
+#include <vector>
+
 #include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/operator.h>
 #include <hilti/ast/type.h>

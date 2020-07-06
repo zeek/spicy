@@ -3,6 +3,9 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <hilti/ast/location.h>
 #include <hilti/base/result.h>

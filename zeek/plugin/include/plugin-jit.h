@@ -2,8 +2,11 @@
 
 #pragma once
 
-// Zeek plugin headers
 #include <compiler/driver.h>
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <zeek-spicy/plugin.h>
 

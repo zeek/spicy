@@ -3,6 +3,7 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 
 #include <hilti/rt/result.h>
 

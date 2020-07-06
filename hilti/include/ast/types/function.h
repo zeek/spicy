@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/expressions/void.h>
 #include <hilti/ast/id.h>

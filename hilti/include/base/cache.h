@@ -6,6 +6,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <utility>
 
 namespace hilti::util {
 

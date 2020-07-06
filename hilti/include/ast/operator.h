@@ -3,7 +3,10 @@
 #pragma once
 
 #include <functional>
+#include <string>
+#include <utility>
 #include <variant>
+#include <vector>
 
 #include <hilti/ast/expression.h>
 #include <hilti/ast/operator.h>

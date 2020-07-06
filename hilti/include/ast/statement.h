@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/node.h>
 #include <hilti/base/type_erase.h>
 

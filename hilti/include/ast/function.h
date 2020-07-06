@@ -3,6 +3,7 @@
 #pragma once
 
 #include <set>
+#include <utility>
 
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/node.h>

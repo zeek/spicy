@@ -3,6 +3,7 @@
 #pragma once
 
 #include <type_traits>
+#include <vector>
 
 #include <hilti/base/logger.h>
 #include <hilti/base/visitor-types.h>

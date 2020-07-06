@@ -6,6 +6,7 @@
 #include <iosfwd>
 #include <memory>
 #include <optional>
+#include <string>
 
 #include <hilti/base/result.h>
 #include <hilti/compiler/jit.h>

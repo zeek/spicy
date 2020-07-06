@@ -3,7 +3,10 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/rt/library.h>
 

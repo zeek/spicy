@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <memory>
+#include <utility>
+
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/computed.h>
 #include <hilti/ast/types/vector.h>

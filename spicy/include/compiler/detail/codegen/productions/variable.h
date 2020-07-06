@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include <spicy/compiler/detail/codegen/production.h>
 
 namespace spicy::detail::codegen::production {

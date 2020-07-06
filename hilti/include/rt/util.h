@@ -4,12 +4,14 @@
 
 #include <cxxabi.h>
 
+#include <algorithm>
 #include <list>
 #include <memory>
 #include <optional>
 #include <set>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 

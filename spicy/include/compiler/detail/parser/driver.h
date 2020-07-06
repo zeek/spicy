@@ -12,6 +12,8 @@
 
 #include <iostream>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <hilti/ast/all.h>
 

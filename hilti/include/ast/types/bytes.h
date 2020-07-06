@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/integer.h>
 

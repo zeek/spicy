@@ -2,10 +2,13 @@
 
 #pragma once
 
+#include <algorithm>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/3rdparty/enum-class/EnumClass.h>
 #include <hilti/ast/ctor.h>

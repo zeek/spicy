@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include <hilti/ast/expression.h>
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/resolved-operator.h>
