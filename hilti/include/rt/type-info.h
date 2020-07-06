@@ -419,14 +419,14 @@ public:
      * returned.
      */
     enum_::Label get(const Value& v) const {
-        auto n = *static_cast<const uint64_t*>(v.pointer());
+        auto n = *static_cast<const int64_t*>(v.pointer());
 
         for ( const auto& l : _labels ) {
             if ( n == l.value )
                 return l;
         }
 
-        return enum_::Label(fmt("<unknown-%" PRIu64 ">", n), n);
+        return enum_::Label(fmt("<unknown-%" PRId64 ">", n), n);
     }
 
 private:
