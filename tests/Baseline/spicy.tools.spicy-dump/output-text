@@ -1,0 +1,41 @@
+Test::TestTypes {
+  ad: 1.2.3.4
+  an: <any>
+  bo: True
+  by: 123
+  bi: <bytes iterator>
+  en: B
+  in_: 42.000000s
+  ma: {1: A, 2: B}
+  mai: 1: A
+  op1: (not set)
+  op2: optional
+  po: 42/tcp
+  re: 3.14
+  rx: /abc/
+  se: {A, B, C}
+  sei: A
+  i8: -8
+  i16: -16
+  i32: -32
+  i64: -64
+  st: ABC
+  sti: <offset=0 data=b"ABC">
+  stv: ABC
+  str: string
+  u: Test::Unit {
+    b: 100
+  }
+  ti: 1970-01-01T00:00:01.000000000Z
+  tu: (a: 1, 2, c: True)
+  ui8: 8
+  ui16: 16
+  ui32: 32
+  ui64: 64
+  ve: [
+    a
+    b
+    c
+  ]
+  vei: a
+}
