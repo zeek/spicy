@@ -133,9 +133,9 @@ TEST_CASE("multiple") {
 }
 
 TEST_CASE("bool") {
-    CHECK_EQ(bool(Interval(1, Interval::SecondTag())), true);
-    CHECK_EQ(bool(Interval(0, Interval::SecondTag())), false);
-    CHECK_EQ(bool(Interval()), false);
+    CHECK_EQ(static_cast<bool>(Interval(1, Interval::SecondTag())), true);
+    CHECK_EQ(static_cast<bool>(Interval(0, Interval::SecondTag())), false);
+    CHECK_EQ(static_cast<bool>(Interval()), false);
 }
 
 TEST_CASE("string") {

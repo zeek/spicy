@@ -80,7 +80,7 @@ public:
         return Iterator{_index + n, _control};
     }
 
-    explicit operator bool() const { return bool(_control.lock()); }
+    explicit operator bool() const { return static_cast<bool>(_control.lock()); }
 
     auto& operator++() {
         ++_index;

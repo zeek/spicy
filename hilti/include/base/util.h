@@ -654,7 +654,7 @@ constexpr auto to_string(Enum value, const Value<Enum> (&values)[Size]) {
         if ( v.value == value )
             return v.name;
 
-    throw std::out_of_range(std::to_string(int(value)));
+    throw std::out_of_range(std::to_string(static_cast<int>(value)));
 };
 
 } // namespace enum_

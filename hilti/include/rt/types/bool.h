@@ -21,7 +21,7 @@ private:
 
 namespace detail::adl {
 inline std::string to_string(bool x, adl::tag /*unused*/) { return (x ? "True" : "False"); }
-inline std::string to_string(Bool x, adl::tag /*unused*/) { return hilti::rt::to_string(bool(x)); }
+inline std::string to_string(Bool x, adl::tag /*unused*/) { return hilti::rt::to_string(static_cast<bool>(x)); }
 
 } // namespace detail::adl
 
