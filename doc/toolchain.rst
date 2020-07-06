@@ -46,7 +46,7 @@ executing it directly through JIT.
 ================
 
 ``spicy-driver`` is a standalone Spicy host application that compiles
-& executes Spicy parsers on the fly, and then feeds them data for
+and executes Spicy parsers on the fly, and then feeds them data for
 parsing from standard input.
 
 .. spicy-output:: usage-spicy-driver
@@ -57,10 +57,12 @@ parsing from standard input.
 ``spicy-dump``
 ==============
 
-``spicy-dumpc`` is a standalone Spicy host application that compiles &
-executes Spicy parsers on the fly, feeds them data for proessing, and
-then prints the parsed information out in either a readable, custom
-ASCII format, or as JSON.
+``spicy-dump`` is a standalone Spicy host application that compiles
+and executes Spicy parsers on the fly, feeds them data for proessing,
+and then at the end prints out the parsed information in either a
+readable, custom ASCII format, or as JSON (``--json`` or ``-J``). By
+default, ``spicy-dump`` disables showing the output of Spicy ``print``
+statements, ``--enable-print`` or ``-P`` reenables that.
 
 .. spicy-output:: usage-spicy-dump
     :exec: spicy-dump -h
