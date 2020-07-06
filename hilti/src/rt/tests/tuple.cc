@@ -17,11 +17,9 @@ static const Dst& get_element_ref(const Tuple& t) {
 
 TEST_CASE("elementOffset") {
     auto t1 = std::tuple{1};
-    CHECK(tuple::elementOffset<decltype(t1), 0>() == 0);
     CHECK(get_element_ref<0, int>(t1) == 1);
 
     auto t2 = std::tuple{true, std::string("abc"), 3.14};
-    CHECK(tuple::elementOffset<decltype(t2), 0>() == 0);
     CHECK(get_element_ref<0, bool>(t2) == true);
     CHECK(get_element_ref<1, std::string>(t2) == std::string("abc"));
     CHECK(get_element_ref<2, double>(t2) == 3.14);
