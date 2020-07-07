@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <hilti/ast/expressions/type.h>
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/bytes.h>

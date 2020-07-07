@@ -3,6 +3,8 @@
 #pragma once
 
 #include <iostream>
+#include <utility>
+#include <vector>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/node.h>

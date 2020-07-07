@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <tuple>
+#include <vector>
 // Zeek headers.
 #include <analyzer/Analyzer.h>
 #include <file_analysis/Analyzer.h>

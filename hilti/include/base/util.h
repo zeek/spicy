@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
+#include <functional>
 #include <initializer_list>
 #include <iostream>
 #include <list>
@@ -18,6 +19,7 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <hilti/rt/unpack.h>
@@ -652,7 +654,7 @@ constexpr auto to_string(Enum value, const Value<Enum> (&values)[Size]) {
         if ( v.value == value )
             return v.name;
 
-    throw std::out_of_range(std::to_string(int(value)));
+    throw std::out_of_range(std::to_string(static_cast<int>(value)));
 };
 
 } // namespace enum_

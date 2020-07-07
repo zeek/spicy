@@ -23,7 +23,9 @@
 #include <new>
 #include <optional>
 #include <ostream>
+#include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <hilti/rt/extension-points.h>

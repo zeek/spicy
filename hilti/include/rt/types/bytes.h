@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include <hilti/rt/extension-points.h>
@@ -79,7 +80,7 @@ public:
         return Iterator{_index + n, _control};
     }
 
-    explicit operator bool() const { return bool(_control.lock()); }
+    explicit operator bool() const { return static_cast<bool>(_control.lock()); }
 
     auto& operator++() {
         ++_index;

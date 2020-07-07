@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/struct.h>

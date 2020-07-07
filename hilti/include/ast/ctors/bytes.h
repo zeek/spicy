@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/bytes.h>
 

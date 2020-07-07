@@ -2,8 +2,11 @@
 
 #pragma once
 
+#include <map>
+#include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <spicy/compiler/detail/codegen/production.h>
 

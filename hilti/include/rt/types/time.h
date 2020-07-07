@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 
 #include <limits>
+#include <string>
 #include <variant>
 
 #include <hilti/rt/extension-points.h>

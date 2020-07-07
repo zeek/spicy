@@ -3,6 +3,9 @@
 #pragma once
 
 #include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/visitors.h>

@@ -2,8 +2,10 @@
 
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/ctors/all.h>
 #include <hilti/ast/expressions/all.h>

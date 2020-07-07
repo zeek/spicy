@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/util.h>

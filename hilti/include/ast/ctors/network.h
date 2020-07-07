@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/rt/types/network.h>
 
 #include <hilti/ast/ctor.h>

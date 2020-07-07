@@ -4,6 +4,8 @@
 
 #include "debug.h"
 
+#include <algorithm>
+#include <limits>
 #include <stdexcept>
 
 #include <hilti/ast/all.h>

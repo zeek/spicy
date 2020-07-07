@@ -2,7 +2,11 @@
 
 #pragma once
 
+#include <map>
+#include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/builder/declaration.h>
 #include <hilti/ast/builder/expression.h>

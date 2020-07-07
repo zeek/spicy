@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
 

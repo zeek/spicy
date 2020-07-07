@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include <hilti/ast/function.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/statement.h>

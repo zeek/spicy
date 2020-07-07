@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <optional>
+#include <string>
 #include <utility>
 
 #include <hilti/base/util.h>

@@ -165,7 +165,7 @@ void util::abort_with_backtrace() {
 double util::currentTime() {
     struct timeval tv {};
     gettimeofday(&tv, nullptr);
-    return double(tv.tv_sec) + double(tv.tv_usec) / 1e6;
+    return static_cast<double>(tv.tv_sec) + static_cast<double>(tv.tv_usec) / 1e6;
 }
 
 std::string util::toIdentifier(const std::string& s, bool ensure_non_keyword) {

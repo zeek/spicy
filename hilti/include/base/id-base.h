@@ -4,6 +4,7 @@
 
 #include <initializer_list>
 #include <string>
+#include <utility>
 
 #include <hilti/base/util.h>
 

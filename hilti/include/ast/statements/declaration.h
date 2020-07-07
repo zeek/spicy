@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/statement.h>
 

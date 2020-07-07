@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
 

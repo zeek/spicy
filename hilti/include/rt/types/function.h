@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <string>
+
 #include <hilti/rt/extension-points.h>
 
 namespace hilti::rt {

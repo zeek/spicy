@@ -32,4 +32,11 @@ repos:
   - id: check-yaml
   - id: check-added-large-files
 
+- repo: https://gitlab.com/daverona/pre-commit-cpp
+  rev: 0.6.0
+  hooks:
+  - id: cpplint
+    exclude: '3rdparty/'
+
+
 exclude: /3rdparty/|doc/.*examples/|/Baseline/|(\.svg$)|(\.dat$)

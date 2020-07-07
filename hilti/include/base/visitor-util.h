@@ -3,6 +3,8 @@
 #pragma once
 
 #include <optional>
+#include <utility>
+#include <vector>
 
 #include <hilti/ast/node.h>
 #include <hilti/base/logger.h>

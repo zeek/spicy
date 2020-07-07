@@ -2,8 +2,10 @@
 
 #pragma once
 
+#include <memory>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/property.h>

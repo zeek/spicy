@@ -120,24 +120,24 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( auto t = dst.tryAs<type::SignedInteger>() ) {
             double d = c.value();
 
-            if ( double(int64_t(d)) == d ) {
+            if ( static_cast<double>(static_cast<int64_t>(d)) == d ) {
                 switch ( t->isWildcard() ? 64 : t->width() ) {
                     case 8:
-                        if ( double(int8_t(d)) == d )
+                        if ( static_cast<double>(int8_t(d)) == d )
                             return ctor::SignedInteger(int64_t(d), 8, c.meta());
                         break;
 
                     case 16:
-                        if ( double(int16_t(d)) == d )
-                            return ctor::SignedInteger(int64_t(d), 16, c.meta());
+                        if ( static_cast<double>(static_cast<int16_t>(d)) == d )
+                            return ctor::SignedInteger(static_cast<int64_t>(d), 16, c.meta());
                         break;
 
                     case 32:
-                        if ( double(int32_t(d)) == d )
-                            return ctor::SignedInteger(int64_t(d), 32, c.meta());
+                        if ( static_cast<double>(static_cast<int32_t>(d)) == d )
+                            return ctor::SignedInteger(static_cast<int64_t>(d), 32, c.meta());
                         break;
 
-                    case 64: return ctor::SignedInteger(int64_t(d), 64, c.meta()); break;
+                    case 64: return ctor::SignedInteger(static_cast<int64_t>(d), 64, c.meta()); break;
                 }
             }
         }
@@ -145,24 +145,24 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( auto t = dst.tryAs<type::UnsignedInteger>() ) {
             double d = c.value();
 
-            if ( double(uint64_t(d)) == d ) {
+            if ( static_cast<double>(static_cast<uint64_t>(d)) == d ) {
                 switch ( t->isWildcard() ? 64 : t->width() ) {
                     case 8:
-                        if ( double(uint8_t(d)) == d )
-                            return ctor::UnsignedInteger(uint64_t(d), 8, c.meta());
+                        if ( static_cast<double>(static_cast<uint8_t>(d)) == d )
+                            return ctor::UnsignedInteger(static_cast<uint64_t>(d), 8, c.meta());
                         break;
 
                     case 16:
-                        if ( double(uint16_t(d)) == d )
+                        if ( static_cast<double>(static_cast<uint16_t>(d)) == d )
                             return ctor::UnsignedInteger(uint64_t(d), 16, c.meta());
                         break;
 
                     case 32:
-                        if ( double(uint32_t(d)) == d )
-                            return ctor::UnsignedInteger(uint64_t(d), 32, c.meta());
+                        if ( static_cast<double>(static_cast<uint32_t>(d)) == d )
+                            return ctor::UnsignedInteger(static_cast<uint64_t>(d), 32, c.meta());
                         break;
 
-                    case 64: return ctor::UnsignedInteger(uint64_t(d), 64, c.meta()); break;
+                    case 64: return ctor::UnsignedInteger(static_cast<uint64_t>(d), 64, c.meta()); break;
                 }
             }
         }
@@ -210,8 +210,8 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         }
 
         if ( auto t = dst.tryAs<type::Real>() ) {
-            if ( int64_t(double(c.value())) == c.value() )
-                return ctor::Real(double(c.value()));
+            if ( static_cast<int64_t>(static_cast<double>(c.value())) == c.value() )
+                return ctor::Real(static_cast<double>(c.value()));
         }
 
         if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
@@ -263,8 +263,8 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
             return ctor::Bool(c.value() != 0, c.meta());
 
         if ( auto t = dst.tryAs<type::Real>() ) {
-            if ( uint64_t(double(c.value())) == c.value() )
-                return ctor::Real(double(c.value()));
+            if ( static_cast<uint64_t>(static_cast<double>(c.value())) == c.value() )
+                return ctor::Real(static_cast<double>(c.value()));
         }
 
         return {};

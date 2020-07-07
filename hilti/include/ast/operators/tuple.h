@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/tuple.h>
 

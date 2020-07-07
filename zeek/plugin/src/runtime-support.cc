@@ -207,7 +207,7 @@ void rt::reject_protocol(const std::string& reason) {
 }
 
 static string _file_id(const rt::cookie::ProtocolAnalyzer& c) {
-    auto id = hilti::rt::fmt("%" PRIu64 ".%" PRIu64 ".%d", c.analyzer_id, c.file_id, (int)c.is_orig);
+    auto id = hilti::rt::fmt("%" PRIu64 ".%" PRIu64 ".%d", c.analyzer_id, c.file_id, static_cast<int>(c.is_orig));
     return ::file_mgr->HashHandle(id);
 }
 

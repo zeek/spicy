@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <optional>
+#include <string>
 
 #include <hilti/rt/util.h>
 

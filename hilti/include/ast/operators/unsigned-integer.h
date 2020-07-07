@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <algorithm>
+#include <vector>
+
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/integer.h>

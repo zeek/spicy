@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <string>
+
 #include <hilti/3rdparty/tinyformat/tinyformat.h>
 
 namespace hilti::rt {

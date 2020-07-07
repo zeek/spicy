@@ -2,6 +2,11 @@
 
 #pragma once
 
+#include <list>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/reference.h>

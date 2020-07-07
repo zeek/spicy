@@ -2,8 +2,12 @@
 
 #pragma once
 
+#include <map>
+#include <memory>
 #include <optional>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include <hilti/ast/node_ref.h>
 

@@ -14,7 +14,7 @@ Time time::current_time() {
     if ( gettimeofday(&tv, nullptr) < 0 )
         throw RuntimeError("gettimeofday failed in current_time()");
 
-    double t = double(tv.tv_sec) + double(tv.tv_usec) / 1e6;
+    double t = static_cast<double>(tv.tv_sec) + static_cast<double>(tv.tv_usec) / 1e6;
     return Time(t, Time::SecondTag());
 }
 

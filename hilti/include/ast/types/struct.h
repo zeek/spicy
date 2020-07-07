@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/expression.h>

@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include <hilti/ast/expressions/ctor.h>
 
 #include <spicy/compiler/detail/codegen/production.h>

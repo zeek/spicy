@@ -3,6 +3,10 @@
 #pragma once
 
 #include <iostream>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>

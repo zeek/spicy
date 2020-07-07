@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include <hilti/base/code-formatter.h>
 #include <hilti/compiler/detail/cxx/elements.h>
 

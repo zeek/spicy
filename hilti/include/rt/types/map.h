@@ -16,7 +16,9 @@
 #include <initializer_list>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>

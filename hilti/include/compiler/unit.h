@@ -5,7 +5,9 @@
 #include <functional>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/id.h>
 #include <hilti/ast/module.h>

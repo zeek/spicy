@@ -2,8 +2,13 @@
 
 #pragma once
 
+#include <list>
+#include <map>
+#include <memory>
 #include <optional>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/function.h>
 #include <hilti/base/cache.h>

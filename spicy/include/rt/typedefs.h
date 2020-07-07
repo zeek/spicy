@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include <hilti/rt/types/stream.h>
 
 namespace spicy::rt {

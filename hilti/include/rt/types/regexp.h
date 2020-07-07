@@ -2,7 +2,12 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>

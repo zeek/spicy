@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/string.h>
