@@ -192,21 +192,21 @@ extern uint32_t ntoh32(uint32_t v);
 extern uint16_t ntoh16(uint16_t v);
 
 /**
- * Revers the bytes of a 16-bit value.
+ * Reverses the bytes of a 16-bit value.
  *
  * v: The value to convert.
  */
 extern uint16_t flip16(uint16_t v);
 
 /**
- * Revers the bytes of a 32-bit value.
+ * Reverses the bytes of a 32-bit value.
  *
  * v: The value to convert.
  */
 extern uint32_t flip32(uint32_t v);
 
 /**
- * Revers the bytes of a 64-bit value.
+ * Reverses the bytes of a 64-bit value.
  *
  * v: The value to convert.
  */
