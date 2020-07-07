@@ -103,6 +103,12 @@ TEST_CASE("Port") {
     CHECK_EQ(to_string(Port(1234, Protocol::UDP)), "1234/udp");
     CHECK_EQ(to_string(Port(1234, Protocol::ICMP)), "1234/icmp");
     CHECK_EQ(to_string(Port(1234, Protocol::Undef)), "1234/<unknown>");
+
+    CHECK_EQ(fmt("%s", Port()), "0/<unknown>");
+    CHECK_EQ(fmt("%s", Port(1234, Protocol::TCP)), "1234/tcp");
+    CHECK_EQ(fmt("%s", Port(1234, Protocol::UDP)), "1234/udp");
+    CHECK_EQ(fmt("%s", Port(1234, Protocol::ICMP)), "1234/icmp");
+    CHECK_EQ(fmt("%s", Port(1234, Protocol::Undef)), "1234/<unknown>");
 }
 
 TEST_CASE("Protocol") {
