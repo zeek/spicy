@@ -489,9 +489,9 @@ int main(int argc, char** argv) {
 
     // Check that retrieving typeinfo works.
     auto ti = __hlt::Test::getThreeTypeInfos();
-    CHECK_EQ(std::get<0>(ti)->display, "bytes");
-    CHECK_EQ(std::get<1>(ti)->display, "Test::Struct");
-    CHECK_EQ(std::get<2>(ti)->display, "Test::Struct");
+    CHECK_EQ(std::string(std::get<0>(ti)->display), std::string("bytes"));
+    CHECK_EQ(std::string(std::get<1>(ti)->display), std::string("Test::Struct"));
+    CHECK_EQ(std::string(std::get<2>(ti)->display), std::string("Test::Struct"));
 
     // Call HILTI code to create & initialize struct instances.
     auto [x_init, x_default, ti_types] = __hlt::Test::makeTestTypes();
@@ -499,8 +499,8 @@ int main(int argc, char** argv) {
 
     // Test instance of TestTypes that has been initialized with known values.
     CHECK(ti_types->id);
-    CHECK_EQ(*ti_types->id, "Test::TestTypes");
-    CHECK_EQ(ti_types->display, "Test::TestTypes");
+    CHECK_EQ(std::string(*ti_types->id), std::string("Test::TestTypes"));
+    CHECK_EQ(std::string(ti_types->display), std::string("Test::TestTypes"));
 
     VisitorTypesInit visitor_init;
     type_info::value::Parent p_init(x_init);

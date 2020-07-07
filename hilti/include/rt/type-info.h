@@ -1117,8 +1117,8 @@ public:
  * type-specific auxiliary information.
  */
 struct TypeInfo {
-    std::optional<std::string> id; /**< Spicy-side ID associated with the type, if any. */
-    std::string display;           /**< String rendering of the type. */
+    std::optional<const char*> id; /**< Spicy-side ID associated with the type, if any. */
+    const char* display;           /**< String rendering of the type. */
 
     // clang-format off
     /**
