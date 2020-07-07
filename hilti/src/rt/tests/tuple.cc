@@ -1,8 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <hilti/rt/types/tuple.h>
-
 #include <doctest/doctest.h>
+
+#include <hilti/rt/types/tuple.h>
 
 using namespace hilti::rt;
 

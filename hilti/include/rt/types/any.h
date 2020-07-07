@@ -3,6 +3,7 @@
 #pragma once
 
 #include <any>
+#include <string>
 
 #include <hilti/rt/extension-points.h>
 

@@ -1,8 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <hilti/rt/libhilti.h>
-
 #include "printer-json.h"
+
+#include <hilti/rt/libhilti.h>
 
 using namespace hilti::rt;
 

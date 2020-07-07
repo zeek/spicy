@@ -1,18 +1,20 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <fstream>
-#include <getopt.h>
-#include <iostream>
-
-#include <hilti/hilti.h>
-#include <spicy/spicy.h>
-
-#include <hilti/rt/libhilti.h>
-#include <spicy/rt/libspicy.h>
-
 #include "options.h"
 #include "printer-json.h"
 #include "printer-text.h"
+#include <getopt.h>
+
+#include <fstream>
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+
+#include <spicy/rt/libspicy.h>
+
+#include <hilti/hilti.h>
+
+#include <spicy/spicy.h>
 
 using spicy::rt::fmt;
 

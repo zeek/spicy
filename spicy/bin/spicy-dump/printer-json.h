@@ -2,14 +2,15 @@
 
 #pragma once
 
+#include "options.h"
+
 #include <ostream>
 #include <string>
-
-#include <hilti/json.h>
+#include <utility>
 
 #include <hilti/rt/type-info.h>
 
-#include "options.h"
+#include <hilti/json.h>
 
 /** Render parsed unit into JSON representation. */
 class JSONPrinter {
