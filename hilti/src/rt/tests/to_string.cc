@@ -116,6 +116,11 @@ TEST_CASE("Protocol") {
     CHECK_EQ(to_string(Protocol::UDP), "Protocol::UDP");
     CHECK_EQ(to_string(Protocol::ICMP), "Protocol::ICMP");
     CHECK_EQ(to_string(Protocol::Undef), "<unknown protocol>");
+
+    CHECK_EQ(fmt("%s", Protocol::TCP), "Protocol::TCP");
+    CHECK_EQ(fmt("%s", Protocol::UDP), "Protocol::UDP");
+    CHECK_EQ(fmt("%s", Protocol::ICMP), "Protocol::ICMP");
+    CHECK_EQ(fmt("%s", Protocol::Undef), "<unknown protocol>");
 }
 
 TEST_CASE("RegExp") {
