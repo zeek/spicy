@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <hilti/rt/types/port.h>
+#include "hilti/rt/types/port.h"
+
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt;
@@ -27,11 +28,19 @@ void Port::_parse(const std::string& port) {
     else
         _protocol = Protocol::Undef;
 
+    int port_ = -1;
+
     try {
-        _port = std::stoi(s);
-    } catch ( ... ) {
+        port_ = std::stoi(s);
+    } catch ( const std::out_of_range& ) {
         throw RuntimeError("cannot parse port specification");
     }
+
+    if ( port_ > std::numeric_limits<uint16_t>::max() ) {
+        throw RuntimeError("cannot parse port specification");
+    }
+
+    _port = port_;
 }
 
 Port::operator std::string() const {
