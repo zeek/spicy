@@ -37,6 +37,6 @@ repos:
   hooks:
   - id: cpplint
     exclude: '3rdparty/'
-
+    args: ["--quiet"]
 
 exclude: /3rdparty/|doc/.*examples/|/Baseline/|(\.svg$)|(\.dat$)
