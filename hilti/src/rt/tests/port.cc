@@ -9,6 +9,16 @@ using namespace hilti::rt;
 TEST_SUITE_BEGIN("Port");
 
 TEST_CASE("construct") {
+    SUBCASE("default") {
+        CHECK_EQ(Port().port(), 0u);
+        CHECK_EQ(Port().protocol(), Protocol::Undef);
+    }
+
+    SUBCASE("from port and protocol") {
+        CHECK_EQ(Port(65535, Protocol::TCP).port(), 65535);
+        CHECK_EQ(Port(65535, Protocol::TCP).protocol(), Protocol::TCP);
+    }
+
     SUBCASE("from string") {
         CHECK_EQ(Port("22/tcp"), Port(22, Protocol::TCP));
         CHECK_EQ(Port("22/udp"), Port(22, Protocol::UDP));
