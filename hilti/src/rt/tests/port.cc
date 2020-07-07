@@ -45,4 +45,14 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE("comparison") {
+    const auto p0 = Port();
+    const auto p1 = Port(22, Protocol::TCP);
+
+    CHECK_EQ(p0, p0);
+    CHECK_EQ(p1, p1);
+    CHECK_NE(p0, p1);
+    CHECK_NE(p1, p0);
+}
+
 TEST_SUITE_END();
