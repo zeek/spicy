@@ -26,7 +26,7 @@ void Port::_parse(const std::string& port) {
         _protocol = Protocol::ICMP;
 
     else
-        _protocol = Protocol::Undef;
+        throw RuntimeError("cannot parse port specification");
 
     int port_ = -1;
 

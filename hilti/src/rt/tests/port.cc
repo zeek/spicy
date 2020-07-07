@@ -17,12 +17,21 @@ TEST_CASE("construct") {
         CHECK_EQ(Port("0/tcp"), Port(0, Protocol::TCP));
         CHECK_EQ(Port("65535/tcp"), Port(65535, Protocol::TCP));
 
+        // Missing value & protocol.
         CHECK_THROWS_WITH_AS(Port(""), "cannot parse port specification", const RuntimeError&);
+
+        // Port value out of range.
         CHECK_THROWS_WITH_AS(Port("65536/tcp"), "cannot parse port specification", const RuntimeError&);
         CHECK_THROWS_WITH_AS(Port("6553600000000/tcp"), "cannot parse port specification", const RuntimeError&);
         CHECK_THROWS_WITH_AS(Port("-1/tcp"), "cannot parse port specification", const RuntimeError&);
+
+        // One of value or protocol missing.
         CHECK_THROWS_WITH_AS(Port("22/"), "cannot parse port specification", const RuntimeError&);
         CHECK_THROWS_WITH_AS(Port("/tcp"), "cannot parse port specification", const RuntimeError&);
+
+        // Invalid protocols.
+        CHECK_THROWS_WITH_AS(Port("22/tcpX"), "cannot parse port specification", const RuntimeError&);
+        CHECK_THROWS_WITH_AS(Port("22/xyz"), "cannot parse port specification", const RuntimeError&);
     }
 }
 
