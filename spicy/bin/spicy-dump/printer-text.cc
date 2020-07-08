@@ -140,7 +140,7 @@ void TextPrinter::print(const type_info::Value& v) {
                                    },
                                    [&](const hilti::rt::type_info::Union& x) {
                                        if ( auto y = x.value(v) )
-                                           print(x.value(v));
+                                           print(y);
                                        else
                                            out() << "(not set)";
                                    },
