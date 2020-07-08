@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 
+#include <ostream>
 #include <string>
 #include <variant>
 
@@ -20,9 +21,6 @@ namespace detail::adl {
 inline std::string to_string(const Null& x, adl::tag /*unused*/) { return "Null"; }
 } // namespace detail::adl
 
-inline std::ostream& operator<<(std::ostream& out, const Null& x) {
-    out << "Null";
-    return out;
-}
+inline std::ostream& operator<<(std::ostream& out, const Null& x) { return out << "Null"; }
 
 } // namespace hilti::rt

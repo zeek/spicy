@@ -13,6 +13,7 @@
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/interval.h>
 #include <hilti/rt/types/map.h>
+#include <hilti/rt/types/null.h>
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/set.h>
@@ -129,6 +130,11 @@ TEST_CASE("Map") {
     CHECK_EQ(to_string(Map<int, int>()), "{}");
     CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}})), "{1: b\"abc\"}");
     CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}, {2, "def"_b}})), "{1: b\"abc\", 2: b\"def\"}");
+}
+
+TEST_CASE("null") {
+    CHECK_EQ(to_string(Null()), "Null");
+    CHECK_EQ(fmt("%s", Null()), "Null");
 }
 
 TEST_CASE("Port") {
