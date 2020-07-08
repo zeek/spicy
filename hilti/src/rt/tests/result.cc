@@ -73,4 +73,9 @@ TEST_CASE("to_string_for_print") {
     CHECK_EQ(to_string_for_print(Result<std::string>()), "<error: <result not initialized>>");
 }
 
+TEST_SUITE("Error") {
+    TEST_CASE("string") { CHECK_EQ(result::Error("foo").operator std::string(), "foo"); }
+    TEST_CASE("string_view") { CHECK_EQ(result::Error("foo").operator std::string_view(), "foo"); }
+}
+
 TEST_SUITE_END();
