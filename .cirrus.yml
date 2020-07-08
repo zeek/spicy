@@ -98,7 +98,7 @@ clang10_zeek31_ubuntu_release_task:
       type: text/xml
       format: junit
 
-clang9_zeek30_ubuntu_release_task:
+clang9_zeek30_ubuntu_release_static_task:
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
@@ -124,7 +124,7 @@ clang9_zeek30_ubuntu_release_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-9 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10`
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-9 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10` --build-static-libs
   build_script:          ./ci/run-ci -b build build
   install_script:        ./ci/run-ci -b build install
   cleanup_script:        ./ci/run-ci -b build cleanup

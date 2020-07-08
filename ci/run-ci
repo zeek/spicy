@@ -162,6 +162,11 @@ function run_configure {
                 shift 1;
                 ;;
 
+            --build-static-libs)
+                configure="${configure} --build-static-libs"
+                shift 1;
+                ;;
+
             *)  usage;;
         esac
     done

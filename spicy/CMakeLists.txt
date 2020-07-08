@@ -76,19 +76,25 @@ set(SOURCES_COMPILER
     ${FLEX_scanner_spicy_OUTPUTS}
     )
 
-add_library(spicy ${SOURCES_COMPILER})
-target_compile_options(spicy PRIVATE "-Wall")
-target_compile_options(spicy PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_libraries(spicy  PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
-target_link_libraries(spicy  PUBLIC hilti)
-target_link_libraries(spicy  PRIVATE std::filesystem)
-target_link_options(spicy    PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_include_directories(spicy BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_include_directories(spicy BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+add_library(spicy-objects OBJECT ${SOURCES_COMPILER})
+set_property(TARGET spicy-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_compile_options(spicy-objects PRIVATE "-Wall")
+target_compile_options(spicy-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_link_libraries(spicy-objects PUBLIC $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
+target_link_hilti(spicy-objects PUBLIC)
+target_link_libraries(spicy-objects  PRIVATE std::filesystem  ${CMAKE_DL_LIBS})
+target_link_options(spicy-objects    PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_include_directories(spicy-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(spicy-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 # Unclear why we need this: Without it, the generated Bison/Flex get a broken
 # include path on some systems. (Seen on Ubuntu 19.10).
-set_target_properties(spicy PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
+set_target_properties(spicy-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
+
+add_library(spicy)
+target_link_libraries(spicy PUBLIC spicy-objects)
+target_link_hilti(spicy PUBLIC) # doesn't seem to transfer from spicy-objects
+target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>) # doesn't transfer from hilti-objects
 
 ##### Runtime library.
 
@@ -173,19 +179,19 @@ configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
 
 add_executable(spicyc bin/spicyc.cc)
 target_compile_options(spicyc PRIVATE "-Wall")
-target_link_libraries(spicyc PRIVATE spicy)
+target_link_spicy(spicyc PRIVATE)
 
 add_executable(spicy-config bin/spicy-config.cc)
 target_compile_options(spicy-config PRIVATE "-Wall")
-target_link_libraries(spicy-config PRIVATE spicy)
+target_link_spicy(spicy-config PRIVATE)
 
 add_executable(spicy-driver bin/spicy-driver.cc)
 target_compile_options(spicy-driver PRIVATE "-Wall")
-target_link_libraries(spicy-driver PRIVATE spicy)
+target_link_spicy(spicy-driver PRIVATE)
 
 add_executable(spicy-doc bin/spicy-doc.cc)
 target_compile_options(spicy-doc PRIVATE "-Wall")
-target_link_libraries(spicy-doc PRIVATE spicy)
+target_link_spicy(spicy-doc PRIVATE)
 
 add_subdirectory(bin/spicy-dump)
 
@@ -198,7 +204,8 @@ add_custom_command(TARGET spicy-build
 add_executable(spicy-tests
                tests/main.cc
                tests/grammar.cc)
-target_link_libraries(spicy-tests PRIVATE spicy doctest)
+target_link_spicy(spicy-tests PRIVATE)
+target_link_libraries(spicy-tests PRIVATE doctest)
 target_compile_options(spicy-tests PRIVATE "-Wall")
 add_test(NAME spicy-tests COMMAND ${CMAKE_BINARY_DIR}/bin/spicy-tests)
 
