@@ -3,6 +3,7 @@
 #include <doctest/doctest.h>
 
 #include <cstdint>
+#include <tuple>
 
 #include <hilti/rt/libhilti.h>
 #include <hilti/rt/types/address.h>
@@ -17,6 +18,7 @@
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/time.h>
+#include <hilti/rt/types/tuple.h>
 #include <hilti/rt/types/vector.h>
 #include <hilti/rt/util.h>
 
@@ -208,6 +210,11 @@ TEST_CASE("Time") {
 
     CHECK_EQ(to_string(Time(integer::safe<uint64_t>(1), Time::NanosecondTag())), "1970-01-01T00:00:00.000000001Z");
     CHECK_EQ(to_string(Time(1, Time::SecondTag())), "1970-01-01T00:00:01.000000000Z");
+}
+
+TEST_CASE("tuple") {
+    CHECK_EQ(to_string(std::make_tuple(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
+    CHECK_EQ(fmt("%s", std::make_tuple(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
 }
 
 TEST_CASE("View") {
