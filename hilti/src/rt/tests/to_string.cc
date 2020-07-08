@@ -46,6 +46,16 @@ TEST_CASE("safe-int") {
 
 TEST_CASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }
 
+TEST_CASE("Address") {
+    CHECK_EQ(to_string(Address()), "0.0.0.0");
+    CHECK_EQ(to_string(Address("127.0.0.1")), "127.0.0.1");
+    CHECK_EQ(to_string(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348")), "2001:db8:85a3:8d3:1319:8a2e:370:7348");
+
+    CHECK_EQ(fmt("%s", Address()), "0.0.0.0");
+    CHECK_EQ(fmt("%s", Address("127.0.0.1")), "127.0.0.1");
+    CHECK_EQ(fmt("%s", Address("2001:db8:85a3:8d3:1319:8a2e:370:7348")), "2001:db8:85a3:8d3:1319:8a2e:370:7348");
+}
+
 TEST_CASE("AddressFamily") {
     CHECK_EQ(to_string(AddressFamily::IPv4), "AddressFamily::IPv4");
     CHECK_EQ(to_string(AddressFamily::IPv6), "AddressFamily::IPv6");
