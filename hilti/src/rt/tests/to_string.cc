@@ -90,6 +90,8 @@ TEST_CASE("Error") {
     CHECK_EQ(to_string(result::Error()), "<error: <no description>>");
     CHECK_EQ(to_string(result::Error("")), "<error>");
     CHECK_EQ(to_string(result::Error("could not foo the bar")), "<error: could not foo the bar>");
+
+    CHECK_EQ(fmt("%s", result::Error("could not foo the bar")), "could not foo the bar");
 }
 
 TEST_CASE("Exception") { CHECK_EQ(to_string(Exception("my error")), "<exception: my error>"); }
