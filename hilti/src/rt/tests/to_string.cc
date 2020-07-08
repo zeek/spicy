@@ -108,6 +108,13 @@ TEST_CASE("optional") {
     CHECK_EQ(to_string(std::optional<int8_t>(2)), "2");
     CHECK_EQ(to_string(std::optional<std::optional<int8_t>>()), "(not set)");
     CHECK_EQ(to_string(std::optional<std::optional<int8_t>>(2)), "2");
+    CHECK_EQ(to_string(std::optional<std::string>("abc")), "\"abc\"");
+
+    CHECK_EQ(to_string_for_print(std::optional<int8_t>(2)), "2");
+    CHECK_EQ(to_string_for_print(std::optional<std::string>("abc")), "abc");
+    CHECK_EQ(to_string_for_print(std::optional<std::string>()), "(not set)");
+    CHECK_EQ(to_string_for_print(std::optional<std::string_view>("abc")), "abc");
+    CHECK_EQ(to_string_for_print(std::optional<std::string_view>()), "(not set)");
 }
 
 TEST_CASE("Interval") {
