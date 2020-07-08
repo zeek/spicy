@@ -248,7 +248,9 @@ public:
      */
     ValueReference& operator=(ValueReference&& other) noexcept {
         if ( &other != this ) {
-            *_safeGet() = std::move(*other._safeGet());
+            // We can't move the actual value as other referencez may be
+            // refering to it.
+            *_safeGet() = *other._safeGet();
             other._ptr = nullptr;
         }
 
@@ -630,18 +632,29 @@ private:
 
 /**
  * Type for a generic, non-templated strong reference binding to a StrongReference.
- * This generic version can keep a StrongReference alive, but does not provide
- * access to the instance itself.
+ * This generic version can keep a StrongReference alive, but provides
+ * access to the instance itself only if the type is known.
  */
 class StrongReferenceGeneric {
 public:
+    /** Leaves the reference unbound. */
+    StrongReferenceGeneric() {}
+
+    /** Binds to the same instance as an existing strong reference.  */
     template<typename T>
     StrongReferenceGeneric(StrongReference<T> x) : _ptr(std::move(x)) {}
 
+    /** Returns a pointer to the bound instance, or null if unbound. */
     template<typename T>
     T* as() const {
+        if ( ! _ptr.has_value() )
+            return nullptr;
+
         return std::any_cast<StrongReference<T>>(&_ptr)->get();
     }
+
+    /** Releases the bound reference. */
+    void reset() { _ptr.reset(); }
 
 private:
     std::any _ptr;

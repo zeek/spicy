@@ -91,6 +91,7 @@ public:
     using value_type = typename V::V::iterator::value_type;
     using pointer = typename V::V::iterator::pointer;
     using reference = typename V::V::iterator::reference;
+    using const_reference = typename V::V::const_reference;
     using iterator_category = typename V::V::iterator::iterator_category;
 
     Iterator() = default;
@@ -98,6 +99,7 @@ public:
         : _control(control), _index(std::move(index)) {}
 
     reference operator*();
+    const_reference operator*() const;
 
     Iterator& operator++() {
         ++_index;
@@ -149,7 +151,9 @@ public:
     }
 
 private:
-    std::optional<std::reference_wrapper<V>> _container();
+    // NOTE: This function returns a mutable reference so calling functions need
+    // to ensure to produce correct `const` semantics in the API exposed to users.
+    std::optional<std::reference_wrapper<V>> _container() const;
 };
 
 template<typename T, typename Allocator>
@@ -171,7 +175,7 @@ public:
     ConstIterator(typename V::size_type&& index, const typename V::C& control)
         : _control(control), _index(std::move(index)) {}
 
-    const_reference operator*();
+    const_reference operator*() const;
 
     ConstIterator& operator++() {
         ++_index;
@@ -223,7 +227,9 @@ public:
     }
 
 private:
-    std::optional<std::reference_wrapper<V>> _container();
+    // NOTE: This function returns a mutable reference so calling functions need
+    // to ensure to produce correct `const` semantics in the API exposed to users.
+    std::optional<std::reference_wrapper<V>> _container() const;
 };
 
 } // namespace vector
@@ -514,6 +520,21 @@ typename vector::Iterator<T, Allocator>::reference vector::Iterator<T, Allocator
     throw InvalidIterator("bound object has expired");
 }
 
+template<typename T, typename Allocator>
+typename vector::Iterator<T, Allocator>::const_reference vector::Iterator<T, Allocator>::operator*() const {
+    if ( auto&& c = _container() ) {
+        auto&& data = c->get();
+
+        if ( _index >= data.size() ) {
+            throw InvalidIterator(fmt("index %s out of bounds", _index));
+        }
+
+        return data[_index];
+    }
+
+    throw InvalidIterator("bound object has expired");
+}
+
 namespace vector {
 
 template<typename T, typename Allocator>
@@ -529,7 +550,7 @@ inline std::ostream& operator<<(std::ostream& out, const vector::ConstIterator<T
 } // namespace vector
 
 template<typename T, typename Allocator>
-std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::Iterator<T, Allocator>::_container() {
+std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::Iterator<T, Allocator>::_container() const {
     if ( auto l = _control.lock() ) {
         return {std::ref(**l)};
     }
@@ -538,7 +559,7 @@ std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::Iterator<T, 
 }
 
 template<typename T, typename Allocator>
-typename vector::ConstIterator<T, Allocator>::const_reference vector::ConstIterator<T, Allocator>::operator*() {
+typename vector::ConstIterator<T, Allocator>::const_reference vector::ConstIterator<T, Allocator>::operator*() const {
     if ( auto&& c = _container() ) {
         auto&& data = c->get();
 
@@ -553,7 +574,7 @@ typename vector::ConstIterator<T, Allocator>::const_reference vector::ConstItera
 }
 
 template<typename T, typename Allocator>
-std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::ConstIterator<T, Allocator>::_container() {
+std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::ConstIterator<T, Allocator>::_container() const {
     if ( auto l = _control.lock() ) {
         return {std::ref(**l)};
     }

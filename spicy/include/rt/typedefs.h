@@ -5,7 +5,10 @@
 #include <string>
 #include <utility>
 
+#include <hilti/rt/fiber.h>
 #include <hilti/rt/types/stream.h>
+
+#include <spicy/rt/parsed-unit.h>
 
 namespace spicy::rt {
 
@@ -22,6 +25,9 @@ using Parse1Function = hilti::rt::Resumable (*)(hilti::rt::ValueReference<hilti:
 /** Defines the type of the generic version of units' public parsing functions. */
 template<typename T>
 using Parse2Function = hilti::rt::Resumable (*)(UnitType<T>&, hilti::rt::ValueReference<hilti::rt::Stream>&,
+                                                const std::optional<hilti::rt::stream::View>&);
+
+using Parse3Function = hilti::rt::Resumable (*)(ParsedUnit&, hilti::rt::ValueReference<hilti::rt::Stream>&,
                                                 const std::optional<hilti::rt::stream::View>&);
 
 /**

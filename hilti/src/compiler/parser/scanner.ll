@@ -142,6 +142,7 @@ time                  return token::TIME;
 try                   return token::TRY;
 tuple                 return token::TUPLE;
 type                  return token::TYPE;
+typeinfo              return token::TYPEINFO;
 uint                  return token::UINT;
 union                 return token::UNION;
 unpack                return token::UNPACK;

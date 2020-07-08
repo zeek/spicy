@@ -1,4 +1,68 @@
 
+0.4.0-612 | 2020-07-08 15:21:20 +0000
+
+  * GH-39: Add `spicy-dump`, a new standalone command line application
+    that compiles and executes Spicy parsers on the fly and prints out
+    the parsed information at the end in either a readable, custom
+    ASCII format, or as JSON. (Robin Sommer, Corelight)
+
+        # echo "GET /index.html HTTP/1.0" | spicy-dump my-http.hlto
+        MyHTTP::RequestLine {
+            method: GET
+            uri: /index.html
+            version: MyHTTP::Version {
+                number: 1.0
+            }
+        }
+
+        # echo "GET /index.html HTTP/1.0" | spicy-dump -J my-http.hlto
+        {"method":"GET","uri":"/index.html","version":{"number":"1.0"}}
+
+  * GH-56: Add reflection API to libhilti for dynamic, runtime
+    inspection of parsed units. This includes:
+
+      * A "typeinfo(X)" expression for HILTI that, at runtime, wwill
+        yield a pointer to a new `hilti::rt::TypeInfo`` struct
+        describing the type of `X`, which can be a type or an
+        expression.
+
+      * `include/rt/type-info.h` builds out a comprehensive set of
+        classes to describe HILTI types, and to access their values
+        generically, at runtime.
+
+      * A 3rd kind of host application-side parse function for public
+        units. Spicy's driver's processInput() now uses that.
+
+  * Change string rendering of ports to skip "Protocol::" prefix.
+    (Robin Sommer, Corelight)
+
+  * Fix bug in move assignment operator of ValueReference. (Robin
+    Sommer, Corelight)
+
+  * Add stringification for exception type. (Robin Sommer, Corelight)
+
+  * Add stringification for "any" type. (Robin Sommer, Corelight)
+
+  * Add missing &internal attributes to some codegenerated struct
+    fields. This hides them from user visible output. (Robin Sommer,
+    Corelight)
+
+  * Add equality operator to regexp type. (Robin Sommer, Corelight)
+
+  * Add operator<< for regexp. (Robin Sommer, Corelight)
+
+  * Support anonymous namespaces in C++ output. (Robin Sommer,
+    Corelight)
+
+  * Add missing printer code for iterator<set> and iterator<map>.
+    (Robin Sommer, Corelight)
+
+  * Add const version of vector iterator's dereference operator.
+    (Robin Sommer, Corelight)
+
+  * Add -O0 to libhilti/libspicy for debug builds.  (Robin Sommer,
+    Corelight)
+
 0.4.0-572 | 2020-07-08 11:36:53 +0200
 
   * Fix parsing of `rt::Port` for out-of-range port values. (Benjamin Bannier, Corelight)

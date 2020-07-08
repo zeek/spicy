@@ -155,6 +155,15 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("(%s ? %s : %s)", cg->compile(n.condition()), cg->compile(n.true_()), cg->compile(n.false_()));
     }
 
+    result_t operator()(const expression::TypeInfo& n) {
+        Type t = n.expression().type();
+
+        if ( auto tv = t.tryAs<type::Type_>() )
+            t = tv->typeValue();
+
+        return cg->typeInfo(t);
+    }
+
     result_t operator()(const expression::TypeWrapped& n) { return cg->compile(n.expression(), lhs); }
 
     result_t operator()(const expression::UnresolvedID& n, position_t p) {

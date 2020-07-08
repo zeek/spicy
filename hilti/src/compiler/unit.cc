@@ -320,7 +320,7 @@ Result<Nothing> Unit::codegen() {
     logging::DebugPushIndent _(logging::debug::Compiler);
 
     // Compile to C++.
-    auto c = detail::CodeGen(_context).compileModule(module, this);
+    auto c = detail::CodeGen(_context).compileModule(module, this, true);
 
     if ( logger().errors() )
         return result::Error("errors encountered during code generation");
@@ -339,7 +339,7 @@ Result<Nothing> Unit::codegen() {
             continue;
 
         HILTI_DEBUG(logging::debug::Compiler, fmt("importing declarations from module %s", id));
-        auto other = detail::CodeGen(_context).compileModule(*module, this);
+        auto other = detail::CodeGen(_context).compileModule(*module, this, false);
         c->importDeclarations(*other);
     }
 

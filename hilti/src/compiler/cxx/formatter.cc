@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <algorithm>
+#include <cassert>
 
 #include <hilti/compiler/detail/cxx/formatter.h>
 
@@ -11,11 +12,16 @@ void Formatter::pushNamespace(const std::string& relative_ns) {
     auto& f = *this;
     f.separator();
 
-    if ( ! relative_ns.empty() ) {
-        f << "namespace " << relative_ns << " {";
-        f.indent();
-        f.eol();
+    if ( util::endsWith(relative_ns, "::") ) {
+        assert(relative_ns != "::");
+        // Add an nonymous namespace.
+        f << "namespace " << relative_ns.substr(0, relative_ns.size() - 2) << " { namespace { ";
     }
+    else
+        f << "namespace " << relative_ns << " {";
+
+    f.indent();
+    f.eol();
 
     _namespaces.push_back(relative_ns);
 }
@@ -49,15 +55,18 @@ void Formatter::popNamespace() {
     assert(_namespaces.size());
 
     auto& f = *this;
+    const auto& ns = _namespaces.back();
 
-    if ( ! _namespaces.back().empty() ) {
-        f.dedent();
+    f.dedent();
+
+    if ( util::endsWith(ns, "::") )
+        f << "} }";
+    else
         f << '}';
-        // f << "} // namespace " << _namespaces.back();
-        f.eol();
-    }
 
+    f.eol();
     f.separator();
+
     _namespaces.pop_back();
 }
 

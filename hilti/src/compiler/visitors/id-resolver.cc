@@ -3,6 +3,7 @@
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/id.h>
 #include <hilti/ast/expressions/type.h>
+#include <hilti/ast/expressions/typeinfo.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/types/id.h>
 #include <hilti/compiler/detail/visitors.h>
@@ -83,6 +84,9 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
                 if ( pe->as<expression::UnresolvedOperator>().kind() == operator_::Kind::Deref )
                     replace = false;
             }
+
+            if ( pe && pe->isA<expression::TypeInfo>() )
+                replace = false;
 
             if ( replace )
                 t = type::ValueReference(t, Location("<on-heap-replacement>"));

@@ -11,6 +11,17 @@
 
 namespace hilti::rt {
 
+namespace tuple {
+
+template<typename Tuple, size_t Idx>
+ptrdiff_t elementOffset() {
+    // This is pretty certainly not well-defined, but seems to work for us ...
+    Tuple t; // requires all elements to be default constructable, which should be the case for us
+    return reinterpret_cast<const char*>(&std::get<Idx>(t)) - reinterpret_cast<const char*>(&t);
+}
+
+} // namespace tuple
+
 namespace detail::adl {
 template<typename... Ts>
 inline std::string to_string(const std::tuple<Ts...>& x, adl::tag /*unused*/) {

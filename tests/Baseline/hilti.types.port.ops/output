@@ -1,4 +1,4 @@
 80/tcp
 123/udp
-Protocol::TCP
-Protocol::UDP
+TCP
+UDP

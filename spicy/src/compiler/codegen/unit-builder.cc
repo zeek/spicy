@@ -117,7 +117,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
     void operator()(const spicy::type::unit::item::Sink& s) {
         auto type = builder::typeByID("spicy_rt::Sink", s.meta());
-        AttributeSet attrs({Attribute("&default", builder::new_(std::move(type)))});
+        AttributeSet attrs({Attribute("&default", builder::new_(std::move(type))), Attribute("&internal")});
 
         auto nf = hilti::type::struct_::Field(s.id(), type::Sink(), std::move(attrs), s.meta());
         addField(std::move(nf));
@@ -167,10 +167,13 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     if ( unit.usesRandomAccess() ) {
-        auto f1 = hilti::type::struct_::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()));
-        auto f2 = hilti::type::struct_::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()));
-        auto f3 = hilti::type::struct_::Field(ID("__position_update"),
-                                              hilti::type::Optional(hilti::type::stream::Iterator()));
+        auto f1 = hilti::type::struct_::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                              AttributeSet({Attribute("&internal")}));
+        auto f2 = hilti::type::struct_::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                              AttributeSet({Attribute("&internal")}));
+        auto f3 =
+            hilti::type::struct_::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                        AttributeSet({Attribute("&internal")}));
         v.addField(std::move(f1));
         v.addField(std::move(f2));
         v.addField(std::move(f3));
@@ -219,13 +222,19 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         auto ports = hilti::util::transform(unit.propertyItems("%port"), [](auto p) { return *p.expression(); });
 
         Expression parse1 = builder::null();
-        if ( unit.parameters().empty() )
+        Expression parse3 = builder::null();
+
+        if ( unit.parameters().empty() ) {
             parse1 = _pb.parseMethodExternalOverload1(unit);
+            parse3 = _pb.parseMethodExternalOverload3(unit);
+        }
 
         auto parser =
             builder::struct_({{ID("name"), builder::string(*unit.typeID())},
                               {ID("parse1"), parse1},
                               {ID("parse2"), _pb.parseMethodExternalOverload2(unit)},
+                              {ID("parse3"), parse3},
+                              {ID("type_info"), builder::typeinfo(unit)},
                               {ID("description"), (description ? *description->expression() : builder::string(""))},
                               {ID("mime_types"),
                                builder::vector(builder::typeByID("spicy_rt::MIMEType"), std::move(mime_types))},

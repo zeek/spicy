@@ -85,6 +85,7 @@ hilti::expression::ResolvedID : isExpression
 hilti::expression::ResolvedOperator : isExpression
 hilti::expression::Ternary : isExpression
 hilti::expression::Type_ : isExpression
+hilti::expression::TypeInfo : isExpression
 hilti::expression::TypeWrapped : isExpression
 hilti::expression::UnresolvedID : isExpression
 hilti::expression::UnresolvedOperator : isExpression

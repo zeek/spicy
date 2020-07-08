@@ -129,8 +129,9 @@ struct Constant {
     cxx::Type type = Type();
     std::optional<cxx::Expression> init;
     Linkage linkage;
-    bool operator<(const Constant& s) const { return id < s.id; }
+    bool forward_decl = false;
 
+    bool operator<(const Constant& s) const { return id < s.id; }
     bool operator==(const Constant& other) const {
         return id == other.id && type == other.type && init == other.init && linkage == other.linkage;
     }

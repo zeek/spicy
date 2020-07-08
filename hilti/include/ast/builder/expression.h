@@ -285,6 +285,12 @@ inline Expression expression(const Meta& m) { return expression::Ctor(ctor::Stri
 
 inline Expression move(Expression e, Meta m = Meta()) { return expression::Move(std::move(e), std::move(m)); }
 
+inline Expression typeinfo(Type t, Meta m = Meta()) {
+    return expression::TypeInfo(expression::Type_(std::move(t), m), m);
+}
+
+inline Expression typeinfo(Expression e, Meta m = Meta()) { return expression::TypeInfo(std::move(e), std::move(m)); }
+
 inline Expression self(NodeRef d, Meta m = Meta()) {
     return expression::Keyword(hilti::expression::keyword::Kind::Self, std::move(d), std::move(m));
 }

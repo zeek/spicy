@@ -871,7 +871,8 @@ struct ProductionVisitor
 
 static auto parseMethodIDs(const type::Unit& t) {
     assert(t.typeID());
-    return std::make_tuple(ID(fmt("%s::parse1", *t.typeID())), ID(fmt("%s::parse2", *t.typeID())));
+    return std::make_tuple(ID(fmt("%s::parse1", *t.typeID())), ID(fmt("%s::parse2", *t.typeID())),
+                           ID(fmt("%s::parse3", *t.typeID())));
 }
 
 hilti::type::Function ParserBuilder::parseMethodFunctionType(std::optional<type::function::Parameter> addl_param,
@@ -903,7 +904,7 @@ std::shared_ptr<hilti::builder::Builder> ParserBuilder::pushBuilder() {
 }
 
 hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only) {
-    auto [id_ext_overload1, id_ext_overload2] = parseMethodIDs(t);
+    auto [id_ext_overload1, id_ext_overload2, id_ext_overload3] = parseMethodIDs(t);
 
     std::vector<type::function::Parameter> params = {builder::parameter("data", type::ValueReference(type::Stream()),
                                                                         declaration::parameter::Kind::InOut),
@@ -932,8 +933,20 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
                           type::function::Flavor::Method, declaration::Linkage::Struct,
                           function::CallingConvention::Extern, AttributeSet({Attribute("&static")}), t.meta());
 
+    auto f_ext_overload3_result = type::stream::View();
+    auto f_ext_overload3 =
+        builder::function(id_ext_overload3, f_ext_overload3_result,
+                          {builder::parameter("gunit", builder::typeByID("spicy_rt::ParsedUnit"),
+                                              declaration::parameter::Kind::InOut),
+                           builder::parameter("data", type::ValueReference(type::Stream()),
+                                              declaration::parameter::Kind::InOut),
+                           builder::parameter("cur", type::Optional(type::stream::View()),
+                                              builder::optional(type::stream::View()))},
+                          type::function::Flavor::Method, declaration::Linkage::Struct,
+                          function::CallingConvention::Extern, AttributeSet({Attribute("&static")}), t.meta());
+
     // We only actually add the functions we just build if the unit is
-    // publically exposed. We still build their code in either case below
+    // publicly exposed. We still build their code in either case below
     // because doing so triggers generation of the whole parser, including
     // the internal parsing functions.
     auto sf_ext_overload1 =
@@ -943,8 +956,13 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
         type::struct_::Field(f_ext_overload2.id().local(), function::CallingConvention::Extern,
                              f_ext_overload2.function().type(), f_ext_overload2.function().attributes());
 
+    auto sf_ext_overload3 =
+        type::struct_::Field(f_ext_overload3.id().local(), function::CallingConvention::Extern,
+                             f_ext_overload3.function().type(), f_ext_overload3.function().attributes());
+
     s = hilti::type::Struct::addField(s, sf_ext_overload1);
     s = hilti::type::Struct::addField(s, sf_ext_overload2);
+    s = hilti::type::Struct::addField(s, sf_ext_overload3);
 
     if ( ! declare_only ) {
         auto grammar = cg()->grammarBuilder()->grammar(t);
@@ -981,6 +999,41 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             auto body_ext_overload1 = popBuilder();
             auto d_ext_overload1 = hilti::declaration::Function::setBody(f_ext_overload1, body_ext_overload1->block());
             cg()->addDeclaration(d_ext_overload1);
+
+            // Create parse3() body.
+            pushBuilder();
+            builder()->addLocal("unit", builder::value_reference(
+                                            builder::default_(builder::typeByID(*t.typeID()),
+                                                              hilti::util::transform(t.parameters(), [](auto p) {
+                                                                  return builder::id(p.id());
+                                                              }))));
+
+            builder()->addCall(ID("spicy_rt::initializeParsedUnit"),
+                               {builder::id("gunit"), builder::id("unit"), builder::typeinfo(t)});
+            builder()->addLocal("ncur", type::stream::View(),
+                                builder::ternary(builder::id("cur"), builder::deref(builder::id("cur")),
+                                                 builder::cast(builder::deref(builder::id("data")),
+                                                               type::stream::View())));
+            builder()->addLocal("lahead", look_ahead::Type, look_ahead::None);
+            builder()->addLocal("lahead_end", type::stream::Iterator());
+
+            pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
+            pstate.self = builder::id("unit");
+            pstate.cur = builder::id("ncur");
+            pstate.trim = builder::bool_(true);
+            pstate.lahead = builder::id("lahead");
+            pstate.lahead_end = builder::id("lahead_end");
+            pushState(pstate);
+            visitor.pushDestination(builder::id("unit"));
+            visitor.parseProduction(*grammar.root());
+            visitor.popDestination();
+            builder()->addReturn(state().cur);
+
+            popState();
+
+            auto body_ext_overload3 = popBuilder();
+            auto d_ext_overload3 = hilti::declaration::Function::setBody(f_ext_overload3, body_ext_overload3->block());
+            cg()->addDeclaration(d_ext_overload3);
         }
 
         // Create parse2() body.
@@ -1023,6 +1076,11 @@ Expression ParserBuilder::parseMethodExternalOverload1(const type::Unit& t) {
 
 Expression ParserBuilder::parseMethodExternalOverload2(const type::Unit& t) {
     auto id = std::get<1>(parseMethodIDs(t));
+    return hilti::expression::UnresolvedID(std::move(id));
+}
+
+Expression ParserBuilder::parseMethodExternalOverload3(const type::Unit& t) {
+    auto id = std::get<2>(parseMethodIDs(t));
     return hilti::expression::UnresolvedID(std::move(id));
 }
 

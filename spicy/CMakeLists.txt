@@ -78,9 +78,11 @@ set(SOURCES_COMPILER
 
 add_library(spicy ${SOURCES_COMPILER})
 target_compile_options(spicy PRIVATE "-Wall")
+target_compile_options(spicy PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(spicy  PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
 target_link_libraries(spicy  PUBLIC hilti)
 target_link_libraries(spicy  PRIVATE std::filesystem)
+target_link_options(spicy    PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(spicy BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(spicy BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
@@ -184,6 +186,8 @@ target_link_libraries(spicy-driver PRIVATE spicy)
 add_executable(spicy-doc bin/spicy-doc.cc)
 target_compile_options(spicy-doc PRIVATE "-Wall")
 target_link_libraries(spicy-doc PRIVATE spicy)
+
+add_subdirectory(bin/spicy-dump)
 
 add_custom_target(spicy-build ALL)
 add_custom_command(TARGET spicy-build

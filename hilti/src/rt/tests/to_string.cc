@@ -23,6 +23,8 @@ using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("to_string");
 
+TEST_CASE("any") { CHECK_EQ(to_string(std::any()), "<any value>"); }
+
 TEST_CASE("primitive") {
     CHECK_EQ(to_string(true), "True");
     CHECK_EQ(to_string(false), "False");
@@ -65,6 +67,8 @@ TEST_CASE("Error") {
     CHECK_EQ(to_string(result::Error("")), "<error>");
     CHECK_EQ(to_string(result::Error("could not foo the bar")), "<error: could not foo the bar>");
 }
+
+TEST_CASE("Exception") { CHECK_EQ(to_string(Exception("my error")), "<exception: my error>"); }
 
 TEST_CASE("Vector") {
     CHECK_EQ(to_string(vector::Empty()), "[]");
@@ -112,9 +116,9 @@ TEST_CASE("Port") {
 }
 
 TEST_CASE("Protocol") {
-    CHECK_EQ(to_string(Protocol::TCP), "Protocol::TCP");
-    CHECK_EQ(to_string(Protocol::UDP), "Protocol::UDP");
-    CHECK_EQ(to_string(Protocol::ICMP), "Protocol::ICMP");
+    CHECK_EQ(to_string(Protocol::TCP), "TCP");
+    CHECK_EQ(to_string(Protocol::UDP), "UDP");
+    CHECK_EQ(to_string(Protocol::ICMP), "ICMP");
     CHECK_EQ(to_string(Protocol::Undef), "<unknown protocol>");
 
     CHECK_EQ(fmt("%s", Protocol::TCP), "Protocol::TCP");
@@ -133,6 +137,10 @@ TEST_CASE("RegExp") {
     CHECK_EQ(to_string(RegExp("/", regexp::Flags())), "///");
 
     CHECK_EQ(to_string(RegExp("", regexp::Flags()).tokenMatcher()), "<regexp-match-state>");
+
+    std::stringstream x;
+    x << RegExp("X");
+    CHECK_EQ(x.str(), "/X/");
 }
 
 TEST_CASE("Set") {

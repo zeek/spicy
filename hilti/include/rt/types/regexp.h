@@ -36,6 +36,9 @@ HILTI_EXCEPTION(MatchStateReuse, RuntimeError)
 
 struct Flags {
     bool no_sub : 1; /**< Compile without support for capturing sub-expressions. */
+
+    friend bool operator==(const Flags& a, const Flags& b) { return a.no_sub == b.no_sub; }
+    friend bool operator!=(const Flags& a, const Flags& b) { return ! (a == b); }
 };
 
 /**
@@ -179,6 +182,13 @@ public:
      */
     regexp::MatchState tokenMatcher() const;
 
+    friend bool operator==(const RegExp& a, const RegExp& b) {
+        // NOTE: `_jrx_shared` is deliberately not included in the comparison.
+        return a._flags == b._flags && a._patterns == b._patterns;
+    }
+
+    friend bool operator!=(const RegExp& a, const RegExp& b) { return ! (a == b); }
+
 private:
     friend class regexp::MatchState;
 
@@ -212,5 +222,10 @@ inline std::string to_string(const regexp::MatchState& /*unused*/, adl::tag /*un
 }
 
 } // namespace detail::adl
+
+inline std::ostream& operator<<(std::ostream& out, const RegExp& x) {
+    out << to_string(x);
+    return out;
+}
 
 } // namespace hilti::rt

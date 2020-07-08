@@ -120,9 +120,11 @@ set_source_files_properties(src/compiler/clang.cc PROPERTIES COMPILE_DEFINITIONS
 add_library(hilti ${SOURCES_COMPILER})
 add_dependencies(hilti version)
 target_compile_options(hilti PRIVATE "-Wall")
+target_compile_options(hilti PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti PRIVATE $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
-target_link_libraries(hilti PRIVATE std::filesystem)
+target_link_libraries(hilti PRIVATE std::filesystem ${CMAKE_DL_LIBS})
+target_link_options(hilti   PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
@@ -144,6 +146,7 @@ set(SOURCES_RUNTIME
     src/rt/library.cc
     src/rt/logging.cc
     src/rt/main.cc
+    src/rt/type-info.cc
     src/rt/types/address.cc
     src/rt/types/bytes.cc
     src/rt/types/integer.cc
@@ -270,6 +273,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/bytes.cc
                src/rt/tests/fiber.cc
                src/rt/tests/interval.cc
+               src/rt/tests/type-info.cc
                src/rt/tests/map.cc
                src/rt/tests/port.cc
                src/rt/tests/real.cc
@@ -280,6 +284,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/stream.cc
                src/rt/tests/string.cc
                src/rt/tests/to_string.cc
+               src/rt/tests/tuple.cc
                src/rt/tests/util.cc
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")

@@ -176,6 +176,22 @@ then load, or use ``spicy-build`` to give us an actual executable::
     # echo "GET /index.html HTTP/1.0" | ./a.out
     GET, /index.html, 1.0
 
+Spicy also comes with another tool :ref:`spicy-dump <spicy-dump>` that
+works similar to ``spicy-driver``, but prints out the parsed fields at
+the end, either in a custom ASCII representation or as JSON::
+
+    # echo "GET /index.html HTTP/1.0" | spicy-dump my-http.hlto
+    MyHTTP::RequestLine {
+        method: GET
+        uri: /index.html
+        version: MyHTTP::Version {
+            number: 1.0
+        }
+    }
+
+    # echo "GET /index.html HTTP/1.0" | spicy-dump -J my-http.hlto
+    {"method":"GET","uri":"/index.html","version":{"number":"1.0"}}
+
 If you want to see the actual parsing code that Spicy generates, use
 ``spicyc`` again: ``spicyc -c my-http.spicy`` will show the C++ code,
 and ``spicyc -p my-http.spicy`` will show the intermediary HILTI code.
@@ -309,7 +325,7 @@ tool here, though: ``spicyz`` is a small standalone application for
 precompiling analyzers for the Spicy plugin to later load. We give
 ``spicyz`` (1) the ``*.spicy`` and ``*.evt`` inputs that we handed to
 Zeek above; and (2) an output ``*.hlto`` file to write the compiled
-analyzer into:
+analyzer into::
 
     # spicyz -o my-http-analyzer.hlto my-http.spicy my-http.evt
     # zeek -Cr request-line.pcap my-http-analyzer.hlto my-http.zeek

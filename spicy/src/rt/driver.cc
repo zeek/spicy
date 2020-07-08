@@ -118,15 +118,17 @@ Result<const spicy::rt::Parser*> Driver::lookupParser(const std::string& parser_
     }
 }
 
-Result<Nothing> Driver::processInput(const spicy::rt::Parser& parser, std::istream& in, int increment) {
+Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& parser, std::istream& in, int increment) {
     if ( ! hilti::rt::isInitialized() )
-        return Error("runtime not intialized");
+        return Error("runtime not initialized");
 
     char buffer[4096];
     hilti::rt::ValueReference<hilti::rt::Stream> data;
     std::optional<hilti::rt::Resumable> r;
 
     _debug_stats(data);
+
+    spicy::rt::ParsedUnit unit;
 
     while ( in.good() && ! in.eof() ) {
         auto len = (increment > 0 ? increment : sizeof(buffer));
@@ -141,7 +143,7 @@ Result<Nothing> Driver::processInput(const spicy::rt::Parser& parser, std::istre
 
         if ( ! r ) {
             _debug(fmt("beginning parsing input (eod=%s)", data->isFrozen()));
-            r = parser.parse1(data, {});
+            r = parser.parse3(unit, data, {});
         }
         else {
             _debug(fmt("resuming parsing input (eod=%s)", data->isFrozen()));
@@ -159,5 +161,5 @@ Result<Nothing> Driver::processInput(const spicy::rt::Parser& parser, std::istre
         }
     }
 
-    return Nothing();
+    return std::move(unit);
 }

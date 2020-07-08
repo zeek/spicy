@@ -1,0 +1,54 @@
+# @TEST-EXEC: spicyc -j -o test.hlto %INPUT
+# @TEST-EXEC: cat /dev/null | spicy-dump test.hlto >output-text
+# @TEST-EXEC: btest-diff output-text
+# @TEST-EXEC: cat /dev/null | spicy-dump -J test.hlto >output-json
+# @TEST-EXEC: btest-diff output-json
+
+module Test;
+
+type Enum = enum { A = 1, B = 2, C = 4 };
+
+type Unit = unit { var b: int32 = 100; };
+
+global b: bytes = b"abc";
+global m: map<uint64, string> = map(1: "A", 2: "B");
+global s: set<string> = set("A", "B", "C");
+global st: stream = b"ABC";
+global u: Unit;
+global v: vector<string> = vector("a", "b", "c");
+
+public type TestTypes = unit {
+    var ad: addr = 1.2.3.4;
+    var an: any;
+    var bo: bool = True;
+    var by: bytes = b"123";
+    var bi: iterator<bytes> = begin(b);
+    var en: Enum = Enum::B;
+    var in_: interval = interval(42.0);
+    var ma: map<uint64, string> = map(1: "A", 2: "B");
+    var mai: iterator<map<uint64, string>> = begin(m);
+    var op1: optional<string>;
+    var op2: optional<string> = "optional";
+    var po: port = 42/tcp;
+    var re: real = 3.14;
+    var rx: regexp = /abc/;
+    var se: set<string> = set("A", "B", "C");
+    var sei: iterator<set<string>> = begin(s);
+    var i8: int8 = -8;
+    var i16: int16 = -16;
+    var i32: int32 = -32;
+    var i64: int64 = -64;
+    var st: stream = b"ABC";
+    var sti: iterator<stream> = begin(st);
+    var stv: view<stream> = st;
+    var str: string = "string";
+    var u: Unit = u;
+    var ti: time = time(1);
+    var tu: tuple<a: int32, string, c: bool> = (1, "2", True);
+    var ui8: uint8 = 8;
+    var ui16: uint16 = 16;
+    var ui32: uint32 = 32;
+    var ui64: uint64 = 64;
+    var ve: vector<string> = vector("a", "b", "c");
+    var vei: iterator<vector<string>> = begin(v);
+};

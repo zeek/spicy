@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/rt/types/address.h>
+#include <hilti/rt/types/any.h>
 #include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/error.h>

@@ -1,5 +1,7 @@
-# @TEST-EXEC:  cat %DIR/single.dat | spicy-driver %INPUT -p DNS::Message >>output
-# @TEST-EXEC:  btest-diff output
+# @TEST-EXEC: spicyc -j %INPUT -o dns.hlto
+# @TEST-EXEC: cat %DIR/single.dat | spicy-driver dns.hlto -p DNS::Message >>output
+# @TEST-EXEC: cat %DIR/single.dat | spicy-dump dns.hlto -p DNS::Message >>output
+# @TEST-EXEC: btest-diff output
 
 module Test;
 
