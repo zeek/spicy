@@ -433,7 +433,7 @@ public:
     }
 
 private:
-    std::vector<enum_::Label> _labels;
+    const std::vector<enum_::Label> _labels;
 };
 
 
@@ -904,7 +904,7 @@ public:
     }
 
 private:
-    std::vector<struct_::Field> _fields;
+    const std::vector<struct_::Field> _fields;
 };
 
 /** Auxiliary type information for type ``time`. */
@@ -968,7 +968,7 @@ public:
     }
 
 private:
-    std::vector<tuple::Element> _elements;
+    const std::vector<tuple::Element> _elements;
 };
 
 namespace union_ {
