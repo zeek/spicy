@@ -86,6 +86,8 @@ TEST_SUITE("Error") {
         CHECK_NE(e1, e2);
         CHECK_NE(e2, e1);
     }
+
+    TEST_CASE("NoError") { CHECK_EQ(result::NoError().description(), "<no error>"); }
 }
 
 TEST_SUITE_END();
