@@ -46,4 +46,9 @@ TEST_CASE("valueOrInit") {
     }
 }
 
+TEST_CASE("tryValue") {
+    CHECK_THROWS_WITH_AS(optional::tryValue(std::optional<int8_t>()), "std::exception", const optional::Unset&);
+    CHECK_EQ(optional::tryValue(std::optional<int8_t>(42)), 42);
+}
+
 TEST_SUITE_END();
