@@ -16,9 +16,8 @@ namespace tuple {
 template<typename Tuple, size_t Idx>
 ptrdiff_t elementOffset() {
     // This is pretty certainly not well-defined, but seems to work for us ...
-    const Tuple* p = nullptr;
-    // NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
-    return reinterpret_cast<const char*>(&std::get<Idx>(*p)) - reinterpret_cast<const char*>(p);
+    Tuple t; // requires all elements to be default constructable, which should be the case for us
+    return reinterpret_cast<const char*>(&std::get<Idx>(t)) - reinterpret_cast<const char*>(&t);
 }
 
 } // namespace tuple
