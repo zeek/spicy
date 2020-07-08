@@ -144,9 +144,10 @@ Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily family, Byte
                 return x.error();
         }
 
-        case AddressFamily::Undef: throw RuntimeError("undefined address family for unpacking");
-        default: cannot_be_reached();
+        case AddressFamily::Undef: return result::Error("undefined address family for unpacking");
     }
+
+    cannot_be_reached();
 }
 
 Result<std::tuple<Address, Bytes>> address::unpack(const Bytes& data, AddressFamily family, ByteOrder fmt) {
