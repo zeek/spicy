@@ -1,4 +1,8 @@
 
+0.4.0-572 | 2020-07-08 11:36:53 +0200
+
+  * Fix parsing of `rt::Port` for out-of-range port values. (Benjamin Bannier, Corelight)
+
 0.4.0-552 | 2020-07-03 15:47:06 +0200
 
   * Switch `real::unpack` error reporting to use `rt::Result`. (Benjamin Bannier, Corelight)
