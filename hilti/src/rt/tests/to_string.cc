@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/types/address.h>
 #include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/error.h>
@@ -44,6 +45,16 @@ TEST_CASE("safe-int") {
 }
 
 TEST_CASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }
+
+TEST_CASE("AddressFamily") {
+    CHECK_EQ(to_string(AddressFamily::IPv4), "AddressFamily::IPv4");
+    CHECK_EQ(to_string(AddressFamily::IPv6), "AddressFamily::IPv6");
+    CHECK_EQ(to_string(AddressFamily::Undef), "AddressFamily::Undef");
+
+    CHECK_EQ(fmt("%s", AddressFamily::IPv4), "AddressFamily::IPv4");
+    CHECK_EQ(fmt("%s", AddressFamily::IPv6), "AddressFamily::IPv6");
+    CHECK_EQ(fmt("%s", AddressFamily::Undef), "AddressFamily::Undef");
+}
 
 TEST_CASE("Bool") {
     CHECK_EQ(to_string(Bool(true)), "True");
