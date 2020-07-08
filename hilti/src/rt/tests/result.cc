@@ -90,4 +90,11 @@ TEST_SUITE("Error") {
     TEST_CASE("NoError") { CHECK_EQ(result::NoError().description(), "<no error>"); }
 }
 
+TEST_SUITE("Nothing") {
+    TEST_CASE("comparison") {
+        CHECK_EQ(Nothing(), Nothing());
+        CHECK_FALSE(Nothing() != Nothing());
+    }
+}
+
 TEST_SUITE_END();
