@@ -76,6 +76,16 @@ TEST_CASE("to_string_for_print") {
 TEST_SUITE("Error") {
     TEST_CASE("string") { CHECK_EQ(result::Error("foo").operator std::string(), "foo"); }
     TEST_CASE("string_view") { CHECK_EQ(result::Error("foo").operator std::string_view(), "foo"); }
+
+    TEST_CASE("comparison") {
+        auto e1 = result::Error();
+        auto e2 = result::Error("bar");
+
+        CHECK_EQ(e1, e1);
+        CHECK_EQ(e2, e2);
+        CHECK_NE(e1, e2);
+        CHECK_NE(e2, e1);
+    }
 }
 
 TEST_SUITE_END();
