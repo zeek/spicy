@@ -170,4 +170,15 @@ TEST_CASE("unpack") {
     }
 }
 
+TEST_CASE("comparison") {
+    const auto a1 = Address();
+    const auto a2 = Address("127.0.0.1");
+
+    CHECK_EQ(a1, a1);
+    CHECK_EQ(a2, a2);
+
+    CHECK_NE(a1, a2);
+    CHECK_NE(a2, a1);
+}
+
 TEST_SUITE_END();
