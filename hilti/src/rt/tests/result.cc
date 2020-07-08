@@ -1,8 +1,11 @@
 #include <doctest/doctest.h>
 
 #include <string>
+#include <string_view>
 
-#include <hilti/rt/result.h>
+#include <hilti/rt/extension-points.h>
+#include <hilti/rt/types/result.h>
+#include <hilti/rt/types/string.h>
 
 using namespace hilti::rt;
 
@@ -35,6 +38,14 @@ TEST_CASE("equal") {
 TEST_CASE("not equal") {
     CHECK_NE(Result(42), Result(0));
     CHECK_NE(Result(42), Result<int>(result::Error("foo")));
+}
+
+TEST_CASE("to_string_for_print") {
+    CHECK_EQ(to_string_for_print(Result<std::string>("abc")), "abc");
+    CHECK_EQ(to_string_for_print(Result<std::string>()), "<error: <result not initialized>>");
+
+    CHECK_EQ(to_string_for_print(Result<std::string_view>("abc")), "abc");
+    CHECK_EQ(to_string_for_print(Result<std::string>()), "<error: <result not initialized>>");
 }
 
 TEST_SUITE_END();
