@@ -275,6 +275,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/interval.cc
                src/rt/tests/type-info.cc
                src/rt/tests/map.cc
+               src/rt/tests/optional.cc
                src/rt/tests/port.cc
                src/rt/tests/real.cc
                src/rt/tests/reference.cc
