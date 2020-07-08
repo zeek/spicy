@@ -29,6 +29,12 @@ TEST_CASE_TEMPLATE("conversion to bool", T, Nothing, bool, std::string) {
     CHECK(r);
 }
 
+TEST_CASE("errorOrThrow") {
+    CHECK_THROWS_WITH_AS(Result<int>(42).errorOrThrow(), "<no error>", const result::NoError&);
+    CHECK_EQ(Result<int>().errorOrThrow(), result::Error("<result not initialized>"));
+    CHECK_EQ(Result<int>(result::Error("foo")).errorOrThrow(), result::Error("foo"));
+}
+
 TEST_CASE("equal") {
     CHECK_EQ(Result(42), Result(42));
     CHECK_EQ(Result(0), Result(0));
