@@ -216,10 +216,12 @@ extern uint64_t flip64(uint64_t v);
  * Flips a signed integer's byte order.
  *
  * @param v integer to flip
- * @param n number of valid bits in *v*
+ * @param n number of valid bytes in *v*
  * @return value with *n* bits of *v* flipped in their byte order
  */
 inline int64_t flip(int64_t v, uint64_t n) {
+    if ( n == 0 )
+        return v;
     auto i = static_cast<uint64_t>(v);
     i = flip64(i) >> (64 - n * 8);
     return static_cast<int64_t>(i);
@@ -229,10 +231,14 @@ inline int64_t flip(int64_t v, uint64_t n) {
  * Flips an unsigned integer's byte order.
  *
  * @param v unsigned integer to flip
- * @param n number of valid bits in *v*
+ * @param n number of valid bytes in *v*
  * @return value with *n* bits of *v* flipped in their byte order
  */
-inline uint64_t flip(uint64_t v, uint64_t n) { return (flip64(v) >> (64 - n * 8)); }
+inline uint64_t flip(uint64_t v, uint64_t n) {
+    if ( n == 0 )
+        return v;
+    return (flip64(v) >> (64 - n * 8));
+}
 
 /** Available bit orders. */
 enum class BitOrder { LSB0, MSB0, Undef };

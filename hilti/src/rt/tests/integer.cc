@@ -61,6 +61,76 @@ TEST_CASE("flip64") {
     CHECK_EQ(integer::flip64(max - 0), 18446744069414584320ULL);
 }
 
+TEST_CASE("flip") {
+    constexpr size_t BITS = 64;
+    constexpr size_t BYTES = BITS / 8;
+
+    SUBCASE("uint64_t") {
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            const auto b2 = std::bitset<BITS>("1111111111111111111111111011111100000000000000000000000011000000");
+            CHECK_EQ(integer::flip(static_cast<uint64_t>(b1.to_ullong()), BYTES), b2.to_ullong());
+        }
+
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            const auto b2 = std::bitset<BITS>("0000000000000000000000000000000011111111111111111111111110111111");
+            CHECK_EQ(integer::flip(static_cast<uint64_t>(b1.to_ullong()), BYTES / 2), b2.to_ullong());
+        }
+
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            const auto b2 = std::bitset<BITS>("0000000000000000000000000000000000000000000000001111111111111111");
+            CHECK_EQ(integer::flip(static_cast<uint64_t>(b1.to_ullong()), BYTES / 4), b2.to_ullong());
+        }
+
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            const auto b2 = std::bitset<BITS>("0000000000000000000000000000000000000000000000000000000011111111");
+            CHECK_EQ(integer::flip(static_cast<uint64_t>(b1.to_ullong()), BYTES / 8), b2.to_ullong());
+        }
+
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            CHECK_EQ(integer::flip(static_cast<uint64_t>(b1.to_ullong()), 0), b1.to_ullong());
+        }
+    }
+
+    SUBCASE("int64_t") {
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            const auto b2 = std::bitset<BITS>("1111111111111111111111111011111100000000000000000000000011000000");
+            CHECK_EQ(integer::flip(static_cast<int64_t>(b1.to_ullong()), BYTES), static_cast<int64_t>(b2.to_ullong()));
+        }
+
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            const auto b2 = std::bitset<BITS>("0000000000000000000000000000000011111111111111111111111110111111");
+            CHECK_EQ(integer::flip(static_cast<int64_t>(b1.to_ullong()), BYTES / 2),
+                     static_cast<int64_t>(b2.to_ullong()));
+        }
+
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            const auto b2 = std::bitset<BITS>("0000000000000000000000000000000000000000000000001111111111111111");
+            CHECK_EQ(integer::flip(static_cast<int64_t>(b1.to_ullong()), BYTES / 4),
+                     static_cast<int64_t>(b2.to_ullong()));
+        }
+
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            const auto b2 = std::bitset<BITS>("0000000000000000000000000000000000000000000000000000000011111111");
+            CHECK_EQ(integer::flip(static_cast<int64_t>(b1.to_ullong()), BYTES / 8),
+                     static_cast<int64_t>(b2.to_ullong()));
+        }
+
+        {
+            const auto b1 = std::bitset<BITS>("1100000000000000000000000000000010111111111111111111111111111111");
+            CHECK_EQ(integer::flip(static_cast<int64_t>(b1.to_ullong()), 0), static_cast<int64_t>(b1.to_ullong()));
+        }
+    }
+}
+
 TEST_CASE("bits") {
     auto uint8 = [](const char* b) -> integer::safe<uint8_t> { return std::bitset<8>(b).to_ulong(); };
 
