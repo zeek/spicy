@@ -60,13 +60,13 @@ TEST_CASE("Address") {
 }
 
 TEST_CASE("AddressFamily") {
-    CHECK_EQ(to_string(AddressFamily::IPv4), "AddressFamily::IPv4");
-    CHECK_EQ(to_string(AddressFamily::IPv6), "AddressFamily::IPv6");
-    CHECK_EQ(to_string(AddressFamily::Undef), "AddressFamily::Undef");
+    CHECK_EQ(to_string(AddressFamily::IPv4), "IPv4");
+    CHECK_EQ(to_string(AddressFamily::IPv6), "IPv6");
+    CHECK_EQ(to_string(AddressFamily::Undef), "Undef");
 
-    CHECK_EQ(fmt("%s", AddressFamily::IPv4), "AddressFamily::IPv4");
-    CHECK_EQ(fmt("%s", AddressFamily::IPv6), "AddressFamily::IPv6");
-    CHECK_EQ(fmt("%s", AddressFamily::Undef), "AddressFamily::Undef");
+    CHECK_EQ(fmt("%s", AddressFamily::IPv4), "IPv4");
+    CHECK_EQ(fmt("%s", AddressFamily::IPv6), "IPv6");
+    CHECK_EQ(fmt("%s", AddressFamily::Undef), "Undef");
 }
 
 TEST_CASE("Bool") {
