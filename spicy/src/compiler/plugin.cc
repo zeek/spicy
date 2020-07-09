@@ -16,6 +16,7 @@ static hilti::Plugin spicy_plugin() {
         .component = "Spicy",
         .extension = ".spicy",
         .cxx_includes = {"spicy/rt/libspicy.h"},
+        .order = 2,
 
         .library_paths =
             [](const std::shared_ptr<hilti::Context>& /* ctx */) { return spicy::configuration().spicy_library_paths; },
