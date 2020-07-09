@@ -41,9 +41,9 @@ uint64_t integer::hton64(uint64_t v) {
 #endif
 }
 
-uint32_t integer::hton32(uint32_t v) { return ntohl(v); } //NOLINT(hicpp-signed-bitwise)
+uint32_t integer::hton32(uint32_t v) { return htonl(v); } //NOLINT(hicpp-signed-bitwise)
 
-uint16_t integer::hton16(uint16_t v) { return ntohs(v); } //NOLINT(hicpp-signed-bitwise)
+uint16_t integer::hton16(uint16_t v) { return htons(v); } //NOLINT(hicpp-signed-bitwise)
 
 uint64_t integer::ntoh64(uint64_t v) {
 #if ! __BIG_ENDIAN__
