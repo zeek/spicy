@@ -13,7 +13,7 @@ struct tag {};
 
 #if __GNUC__
 // TODO(robin): gcc9 doesn't allow to delete these, not sure why. Using
-// externs instead, without implementation.
+// extern instead, without implementation.
 extern std::string to_string();
 #else
 std::string to_string() = delete;
@@ -37,7 +37,7 @@ inline std::string to_string_for_print(const T& x) {
 
 /**
  * Converts a HILTI runtime type into the string representation that
- * `hilti::print()` outputs. This representastion is slightly different from
+ * `hilti::print()` outputs. This representation is slightly different from
  * the standard one (e.g., it doesn't enclose top-level strings in quotation
  * marks).
  */

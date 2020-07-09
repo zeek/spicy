@@ -144,9 +144,10 @@ Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily family, Byte
                 return x.error();
         }
 
-        case AddressFamily::Undef: throw RuntimeError("undefined address family for unpacking");
-        default: cannot_be_reached();
+        case AddressFamily::Undef: return result::Error("undefined address family for unpacking");
     }
+
+    cannot_be_reached();
 }
 
 Result<std::tuple<Address, Bytes>> address::unpack(const Bytes& data, AddressFamily family, ByteOrder fmt) {
@@ -160,9 +161,9 @@ Result<std::tuple<Address, stream::View>> address::unpack(const stream::View& da
 
 std::string detail::adl::to_string(const AddressFamily& x, tag /*unused*/) {
     switch ( x ) {
-        case AddressFamily::IPv4: return "AddressFamily::IPv4";
-        case AddressFamily::IPv6: return "AddressFamily::IPv6";
-        case AddressFamily::Undef: return "AddressFamily::Undef";
+        case AddressFamily::IPv4: return "IPv4";
+        case AddressFamily::IPv6: return "IPv6";
+        case AddressFamily::Undef: return "Undef";
     }
 
     cannot_be_reached();

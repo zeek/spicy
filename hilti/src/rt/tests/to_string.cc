@@ -3,19 +3,23 @@
 #include <doctest/doctest.h>
 
 #include <cstdint>
+#include <tuple>
 
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/types/address.h>
 #include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/error.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/interval.h>
 #include <hilti/rt/types/map.h>
+#include <hilti/rt/types/null.h>
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/time.h>
+#include <hilti/rt/types/tuple.h>
 #include <hilti/rt/types/vector.h>
 #include <hilti/rt/util.h>
 
@@ -45,6 +49,26 @@ TEST_CASE("safe-int") {
 
 TEST_CASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }
 
+TEST_CASE("Address") {
+    CHECK_EQ(to_string(Address()), "0.0.0.0");
+    CHECK_EQ(to_string(Address("127.0.0.1")), "127.0.0.1");
+    CHECK_EQ(to_string(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348")), "2001:db8:85a3:8d3:1319:8a2e:370:7348");
+
+    CHECK_EQ(fmt("%s", Address()), "0.0.0.0");
+    CHECK_EQ(fmt("%s", Address("127.0.0.1")), "127.0.0.1");
+    CHECK_EQ(fmt("%s", Address("2001:db8:85a3:8d3:1319:8a2e:370:7348")), "2001:db8:85a3:8d3:1319:8a2e:370:7348");
+}
+
+TEST_CASE("AddressFamily") {
+    CHECK_EQ(to_string(AddressFamily::IPv4), "IPv4");
+    CHECK_EQ(to_string(AddressFamily::IPv6), "IPv6");
+    CHECK_EQ(to_string(AddressFamily::Undef), "Undef");
+
+    CHECK_EQ(fmt("%s", AddressFamily::IPv4), "IPv4");
+    CHECK_EQ(fmt("%s", AddressFamily::IPv6), "IPv6");
+    CHECK_EQ(fmt("%s", AddressFamily::Undef), "Undef");
+}
+
 TEST_CASE("Bool") {
     CHECK_EQ(to_string(Bool(true)), "True");
     CHECK_EQ(to_string(Bool(false)), "False");
@@ -66,6 +90,8 @@ TEST_CASE("Error") {
     CHECK_EQ(to_string(result::Error()), "<error: <no description>>");
     CHECK_EQ(to_string(result::Error("")), "<error>");
     CHECK_EQ(to_string(result::Error("could not foo the bar")), "<error: could not foo the bar>");
+
+    CHECK_EQ(fmt("%s", result::Error("could not foo the bar")), "could not foo the bar");
 }
 
 TEST_CASE("Exception") { CHECK_EQ(to_string(Exception("my error")), "<exception: my error>"); }
@@ -87,6 +113,13 @@ TEST_CASE("optional") {
     CHECK_EQ(to_string(std::optional<int8_t>(2)), "2");
     CHECK_EQ(to_string(std::optional<std::optional<int8_t>>()), "(not set)");
     CHECK_EQ(to_string(std::optional<std::optional<int8_t>>(2)), "2");
+    CHECK_EQ(to_string(std::optional<std::string>("abc")), "\"abc\"");
+
+    CHECK_EQ(to_string_for_print(std::optional<int8_t>(2)), "2");
+    CHECK_EQ(to_string_for_print(std::optional<std::string>("abc")), "abc");
+    CHECK_EQ(to_string_for_print(std::optional<std::string>()), "(not set)");
+    CHECK_EQ(to_string_for_print(std::optional<std::string_view>("abc")), "abc");
+    CHECK_EQ(to_string_for_print(std::optional<std::string_view>()), "(not set)");
 }
 
 TEST_CASE("Interval") {
@@ -99,6 +132,11 @@ TEST_CASE("Map") {
     CHECK_EQ(to_string(Map<int, int>()), "{}");
     CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}})), "{1: b\"abc\"}");
     CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}, {2, "def"_b}})), "{1: b\"abc\", 2: b\"def\"}");
+}
+
+TEST_CASE("null") {
+    CHECK_EQ(to_string(Null()), "Null");
+    CHECK_EQ(fmt("%s", Null()), "Null");
 }
 
 TEST_CASE("Port") {
@@ -121,9 +159,9 @@ TEST_CASE("Protocol") {
     CHECK_EQ(to_string(Protocol::ICMP), "ICMP");
     CHECK_EQ(to_string(Protocol::Undef), "<unknown protocol>");
 
-    CHECK_EQ(fmt("%s", Protocol::TCP), "Protocol::TCP");
-    CHECK_EQ(fmt("%s", Protocol::UDP), "Protocol::UDP");
-    CHECK_EQ(fmt("%s", Protocol::ICMP), "Protocol::ICMP");
+    CHECK_EQ(fmt("%s", Protocol::TCP), "TCP");
+    CHECK_EQ(fmt("%s", Protocol::UDP), "UDP");
+    CHECK_EQ(fmt("%s", Protocol::ICMP), "ICMP");
     CHECK_EQ(fmt("%s", Protocol::Undef), "<unknown protocol>");
 }
 
@@ -180,6 +218,11 @@ TEST_CASE("Time") {
 
     CHECK_EQ(to_string(Time(integer::safe<uint64_t>(1), Time::NanosecondTag())), "1970-01-01T00:00:00.000000001Z");
     CHECK_EQ(to_string(Time(1, Time::SecondTag())), "1970-01-01T00:00:01.000000000Z");
+}
+
+TEST_CASE("tuple") {
+    CHECK_EQ(to_string(std::make_tuple(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
+    CHECK_EQ(fmt("%s", std::make_tuple(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
 }
 
 TEST_CASE("View") {
