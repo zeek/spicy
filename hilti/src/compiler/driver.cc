@@ -851,10 +851,6 @@ Result<Nothing> Driver::initRuntime() {
 
     try {
         HILTI_DEBUG(logging::debug::Driver, "initializing runtime");
-
-        if ( _requires_jit() )
-            _jit->initRuntime();
-
         rt::init();
         hookInitRuntime();
     } catch ( const hilti::rt::Exception& e ) {
@@ -906,10 +902,8 @@ Result<Nothing> Driver::finishRuntime() {
         _runtime_initialized = false;
     }
 
-    if ( _jit ) {
-        _jit->finishRuntime();
+    if ( _jit )
         _jit.reset();
-    }
 
     return Nothing();
 }

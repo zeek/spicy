@@ -195,23 +195,6 @@ public:
     Result<std::reference_wrapper<const Library>> retrieveLibrary() const;
 
     /**
-     * Initalizes the HILTI runtime system. This is necessary before any of
-     * the compiled code can be used, and must be done only after `jit()` has
-     * succeeded. Initializing the runtime will directly execute any
-     * initialization logic part of the compiled code, such as intialization
-     * HILTI globals and running module-global HILT statements.
-     *
-     * @return true if the runtime has bee succesfully initialized
-     */
-    bool initRuntime();
-
-    /**
-     * Shuts down the runtime system. Calling this is optional, it will run
-     * at JIT destruction time at the latest.
-     */
-    bool finishRuntime();
-
-    /**
      * Returns true if any source files have been added that need to be
      * compiled. If this returns false, its safe to skip calling `compile()`
      * (though still doing so won't hurt).

@@ -139,12 +139,6 @@ struct ClangJIT::Implementation { // NOLINT
     /** See `ClangJit::setDumpCode()`. */
     void setDumpCode() { dump_code = true; }
 
-    /** See `ClangJit::initRuntime()`. */
-    bool initRuntime();
-
-    /** See `ClangJit::finishRuntime()`. */
-    bool finishRuntime();
-
     /** Returns the compiler options in use. */
     auto options() const { return context->options(); }
 
@@ -521,16 +515,6 @@ std::optional<std::reference_wrapper<const Library>> ClangJIT::Implementation::r
     return *shared_library;
 }
 
-bool ClangJIT::Implementation::initRuntime() {
-    util::timing::Collector _("hilti/jit/clang/init-runtime");
-    return true;
-}
-
-bool ClangJIT::Implementation::finishRuntime() {
-    util::timing::Collector _("hilti/jit/clang/finish-runtime");
-    return true;
-}
-
 void ClangJIT::Implementation::saveBitcode(const llvm::Module& module, std::string path) {
     // Logging to driver because that's where all the other "saving to ..." messages go.
     HILTI_DEBUG(logging::debug::Driver,
@@ -749,10 +733,6 @@ bool ClangJIT::compile(const CxxCode& code) { return _impl->compile(util::fmt("%
 bool ClangJIT::compile(const std::filesystem::path& p) { return _impl->compile(p, {}); }
 
 Result<Nothing> ClangJIT::jit() { return _impl->jit(); }
-
-bool ClangJIT::initRuntime() { return _impl->initRuntime(); }
-
-bool ClangJIT::finishRuntime() { return _impl->finishRuntime(); }
 
 std::optional<std::reference_wrapper<const Library>> ClangJIT::retrieveLibrary() const {
     return _impl->retrieveLibrary();
