@@ -31,3 +31,4 @@ Spicy pretty quickly.
     types
     statements
     error-handling
+    appendix

@@ -35,6 +35,13 @@ rm -rf "${AUTOGEN_STAGE}" && mkdir -p "${AUTOGEN_STAGE}"
 SPICY_TYPES=address,bitfield,bool,bytes,enum,exception,integer,list,map,port,real,regexp,set,sink,stream,string,struct,tuple,unit,vector
 ("${SPICYDOC}" | ${SPICYDTR} -t "${SPICY_TYPES}" -d "${AUTOGEN_STAGE}/types") || exit 1
 
+# Create list of reserved keywords.
+cat ${ROOTDIR}/hilti/src/compiler/parser/scanner.ll \
+    | grep "return.*token::" \
+    | grep '^[a-zA-Z_]\{2,\}' \
+    | awk '{print $1}' \
+    | sort >${AUTOGEN_STAGE}/reserved-keywords.txt
+
 # All done, move staged files to final location where changed.
     # "-rlpgo" is "-a" minus "-tD".
 mkdir -p "${AUTOGEN_FINAL}" && \
