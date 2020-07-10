@@ -110,6 +110,7 @@ protected:
     Unit(std::shared_ptr<Context> context, cxx::ID module_id, const std::string& cxx_code);
 
 private:
+    void _generateCode(Formatter& f, bool prototypes_only);
     void _addHeader(Formatter& f);
     void _addModuleInitFunction();
 
