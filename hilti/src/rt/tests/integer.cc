@@ -1,15 +1,28 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "rt/result.h"
 #include <doctest/doctest.h>
 
 #include <bitset>
 #include <cmath>
 #include <limits>
+#include <tuple>
 
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/tuple.h>
 
 using namespace hilti::rt;
+using namespace hilti::rt::bytes::literals;
+
+template<typename T>
+std::ostream& operator<<(std::ostream& stream, const Result<T>& x) {
+    if ( x.hasValue() )
+        return stream << "Ok(" << *x << ')';
+    else
+        return stream << fmt("Error(%s)", x.error());
+}
 
 TEST_SUITE_BEGIN("Integer");
 
@@ -154,6 +167,22 @@ TEST_CASE("bits") {
                          "upper limit needs to be less or equal the input width", const InvalidArgument&);
     CHECK_THROWS_WITH_AS(integer::bits(integer::safe<uint8_t>(0), 0, 3, integer::BitOrder::Undef),
                          "undefined bit order", const RuntimeError&);
+}
+
+TEST_CASE("unpack") {
+    using Result = Result<std::tuple<integer::safe<uint16_t>, Bytes>>;
+
+    CHECK_EQ(integer::unpack<uint16_t>(""_b, ByteOrder::Little),
+             Result(result::Error("insufficient data to unpack integer")));
+    CHECK_EQ(integer::unpack<uint16_t>("\x01"_b, ByteOrder::Little),
+             Result(result::Error("insufficient data to unpack integer")));
+
+    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Little), Result(std::make_tuple(1, ""_b)));
+    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Big), Result(std::make_tuple(256, ""_b)));
+    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Little), Result(std::make_tuple(256, ""_b)));
+    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Big), Result(std::make_tuple(1, ""_b)));
+
+    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Undef), Result(result::Error("undefined byte order")));
 }
 
 TEST_SUITE_END();
