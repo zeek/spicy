@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/integer.h>
 
 using namespace hilti::rt;
@@ -58,6 +59,31 @@ TEST_CASE("flip64") {
     CHECK_EQ(integer::flip64(max - 2), 18302628881338728448ULL);
     CHECK_EQ(integer::flip64(max - 1), 18374686475376656384ULL);
     CHECK_EQ(integer::flip64(max - 0), 18446744069414584320ULL);
+}
+
+TEST_CASE("bits") {
+    auto uint8 = [](const char* b) -> integer::safe<uint8_t> { return std::bitset<8>(b).to_ulong(); };
+
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 0, integer::BitOrder::MSB0), uint8("0"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 1, integer::BitOrder::MSB0), uint8("00"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 2, integer::BitOrder::MSB0), uint8("000"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 3, integer::BitOrder::MSB0), uint8("0000"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 4, integer::BitOrder::MSB0), uint8("00001"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 5, integer::BitOrder::MSB0), uint8("000011"));
+
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 0, integer::BitOrder::LSB0), uint8("1"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 1, integer::BitOrder::LSB0), uint8("11"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 2, integer::BitOrder::LSB0), uint8("111"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 3, integer::BitOrder::LSB0), uint8("1111"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 4, integer::BitOrder::LSB0), uint8("01111"));
+    CHECK_EQ(integer::bits(uint8("00001111"), 0, 5, integer::BitOrder::LSB0), uint8("001111"));
+
+    CHECK_THROWS_WITH_AS(integer::bits(integer::safe<uint8_t>(0), 3, 0, integer::BitOrder::MSB0),
+                         "lower limit needs to be less or equal the upper limit", const InvalidArgument&);
+    CHECK_THROWS_WITH_AS(integer::bits(integer::safe<uint8_t>(0), 1, 8, integer::BitOrder::MSB0),
+                         "upper limit needs to be less or equal the input width", const InvalidArgument&);
+    CHECK_THROWS_WITH_AS(integer::bits(integer::safe<uint8_t>(0), 0, 3, integer::BitOrder::Undef),
+                         "undefined bit order", const RuntimeError&);
 }
 
 TEST_SUITE_END();
