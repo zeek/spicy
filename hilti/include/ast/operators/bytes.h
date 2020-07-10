@@ -54,7 +54,8 @@ STANDARD_OPERATOR_2(
     "to a location before the first. The result is undefined if the iterators do not refer to the same bytes "
     "instance.");
 STANDARD_OPERATOR_2(bytes::iterator, Sum, type::bytes::Iterator(), type::constant(type::bytes::Iterator()),
-                    type::UnsignedInteger(64), "Advances the iterator by the given number of bytes.")
+                    type::UnsignedInteger(64),
+                    "Returns an iterator which is pointing the given number of bytes beyond the one passed in.")
 STANDARD_OPERATOR_2(bytes::iterator, SumAssign, type::bytes::Iterator(), type::bytes::Iterator(),
                     type::UnsignedInteger(64), "Advances the iterator by the given number of bytes.")
 
