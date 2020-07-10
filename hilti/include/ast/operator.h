@@ -264,7 +264,7 @@ enum class Kind {
 };
 
 /** Returns true for operator types that HILTI considers commutative. */
-constexpr auto is_commutative(Kind k) {
+constexpr auto isCommutative(Kind k) {
     switch ( k ) {
         case Kind::BitAnd:
         case Kind::BitOr:

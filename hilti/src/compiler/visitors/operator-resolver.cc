@@ -89,7 +89,7 @@ static std::vector<Node> _resolve(const std::vector<Operator>& candidates, const
                 resolved.emplace_back(std::move(*r));
             else {
                 // Try to swap the operators for commutative operators.
-                if ( operator_::is_commutative(c.kind()) && operands.size() == 2 ) {
+                if ( operator_::isCommutative(c.kind()) && operands.size() == 2 ) {
                     if ( auto r = try_candidate(c, {operands[1], operands[0]}, style,
                                                 "candidate matches with operands swapped") )
                         resolved.emplace_back(std::move(*r));

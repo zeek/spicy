@@ -44,7 +44,7 @@
     Compares the two positions. The result is undefined if they are not
     referring to the same bytes value.
 
-.. spicy:operator:: bytes::iterator::Sum iterator<bytes> t:iterator<bytes> <sp> op:+ <sp> t:uint<64>
+.. spicy:operator:: bytes::iterator::Sum iterator<bytes> t:iterator<bytes> <sp> op:+ <sp> t:uint<64> $commutative$
 
     Returns an iterator which is pointing the given number of bytes beyond
     the one passed in.

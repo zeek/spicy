@@ -14,7 +14,9 @@ all: html
 clean:
 	rm -rf $(DESTDIR)
 
-html: Makefile autogen-docs
+html: Makefile autogen-docs sphinx
+
+sphinx:
 	@rm -f "$(BUILDDIR)/doc-root" && ln -s "../doc" "$(BUILDDIR)/doc-root"
 	@  # Since Sphinx expects the Doxygen output directory, create it here to
 	@  # allow users to build without Doxygen, but still have Sphinx succeed.

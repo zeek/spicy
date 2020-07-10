@@ -124,6 +124,7 @@ int main(int argc, char** argv) {
             operator_["doc"] = o.doc();
             operator_["namespace"] = o.docNamespace();
             operator_["rtype"] = formatType(o.result({}));
+            operator_["commutative"] = hilti::operator_::isCommutative(o.kind());
 
             if ( o.kind() == hilti::operator_::Kind::Call ) {
                 auto operands = o.operands();
