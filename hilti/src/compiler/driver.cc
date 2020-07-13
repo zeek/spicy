@@ -123,11 +123,13 @@ result::Error Driver::augmentError(const result::Error& err, const std::filesyst
     return error(err.description(), p);
 }
 
-Result<std::ofstream> Driver::openOutput(const std::filesystem::path& p, bool binary) {
-    auto mode = std::ios::out | std::ios::trunc;
+Result<std::ofstream> Driver::openOutput(const std::filesystem::path& p, bool binary, bool append) {
+    auto mode = std::ios::out;
 
-    if ( p == "/dev/stdout" || p == "/dev/stderr" )
-        mode = std::ios::out | std::ios::app;
+    if ( append || p == "/dev/stdout" || p == "/dev/stderr" )
+        mode |= std::ios::app;
+    else
+        mode |= std::ios::trunc;
 
     if ( binary )
         mode |= std::ios::binary;
@@ -737,6 +739,7 @@ Result<Nothing> Driver::outputUnits() {
 
     std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
 
+    bool append = false;
     for ( auto& unit : _hlts ) {
         if ( auto cxx = unit.cxxCode() ) {
             if ( _driver_options.output_cxx ) {
@@ -747,7 +750,7 @@ Result<Nothing> Driver::outputUnits() {
                     cxx_path = fmt("%s_%s.cc", _driver_options.output_cxx_prefix, cxx->id());
                 }
 
-                auto output = openOutput(cxx_path, false);
+                auto output = openOutput(cxx_path, false, append);
                 if ( ! output )
                     return output.error();
 
@@ -756,7 +759,7 @@ Result<Nothing> Driver::outputUnits() {
             }
 
             if ( _driver_options.output_prototypes ) {
-                auto output = openOutput(output_path, false);
+                auto output = openOutput(output_path, false, append);
                 if ( ! output )
                     return output.error();
 
@@ -772,6 +775,10 @@ Result<Nothing> Driver::outputUnits() {
             }
 
             _generated_cxxs.push_back(std::move(*cxx));
+
+            // Append further code to same output file if we aren't
+            // individually prefixing names.
+            append = _driver_options.output_cxx_prefix.empty();
         }
         else
             return error(fmt("error retrieving C++ code for module %s", unit.id()));
