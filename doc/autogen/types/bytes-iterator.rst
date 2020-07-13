@@ -46,7 +46,8 @@
 
 .. spicy:operator:: bytes::iterator::Sum iterator<bytes> t:iterator<bytes> <sp> op:+ <sp> t:uint<64>
 
-    Advances the iterator by the given number of bytes.
+    Returns an iterator which is pointing the given number of bytes beyond
+    the one passed in.
 
 .. spicy:operator:: bytes::iterator::SumAssign iterator<bytes> t:iterator<bytes> <sp> op:+= <sp> t:uint<64>
 
