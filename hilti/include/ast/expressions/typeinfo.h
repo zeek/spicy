@@ -24,7 +24,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const { return type::Library("const ::hilti::rt::TypeInfo*"); }
+    auto type() const { return type::Library("const hilti::rt::TypeInfo*"); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return true; }
     /** Implements `Expression` interface. */

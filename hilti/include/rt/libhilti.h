@@ -10,6 +10,7 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/hilti.h>
 #include <hilti/rt/init.h>
+#include <hilti/rt/library.h>
 #include <hilti/rt/logging.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>

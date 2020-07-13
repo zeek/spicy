@@ -48,7 +48,7 @@ static std::string expandEscapes(Driver* driver, std::string s, spicy::detail::p
 address4  ({digits}"."){3}{digits}
 address6  ("["({hexs}:){7}{hexs}"]")|("["0x{hexs}({hexs}|:)*"::"({hexs}|:)*"]")|("["({hexs}|:)*"::"({hexs}|:)*"]")|("["({hexs}|:)*"::"({hexs}|:)*({digits}"."){3}{digits}"]")
 
-attribute \&(bit-order|byte-order|chunked|convert|count|cxxname|default|eod|internal|ipv4|ipv6|length|no-emit|nosub|on-heap|optional|parse-at|parse-from|priority|requires|size|static|synchronize|transient|type|until|until-including|while)
+attribute \&(bit-order|byte-order|chunked|convert|count|cxxname|default|eod|internal|ipv4|ipv6|length|no-emit|nosub|on-heap|optional|parse-at|parse-from|priority|requires|size|static|synchronize|transient|type|until|until-including|while|have_prototype)
 blank     [ \t]
 comment   [ \t]*#[^\n]*\n?
 digit     [0-9]

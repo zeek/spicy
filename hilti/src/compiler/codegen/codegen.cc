@@ -211,7 +211,8 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
     void operator()(const declaration::Function& n, position_t p) {
         // TODO(robin): This method needs a refactoring.
 
-        if ( AttributeSet::find(n.function().attributes(), "&cxxname") )
+        if ( AttributeSet::find(n.function().attributes(), "&cxxname") &&
+             AttributeSet::find(n.function().attributes(), "&have_prototype") )
             return;
 
         auto f = n.function();
@@ -235,6 +236,13 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             cid = cxx::ID(*module);
 
         auto d = cg->compile(id, ft, linkage, f.callingConvention(), f.attributes(), cid);
+
+        if ( auto a = AttributeSet::find(n.function().attributes(), "&cxxname") ) {
+            // Just add the prototype. Make sure to skip any custom namespacing.
+            d.id = cxx::ID(fmt("::%s", *a->valueAs<std::string>()));
+            cg->unit()->add(d);
+            return;
+        }
 
         if ( is_hook && n.linkage() == declaration::Linkage::Struct ) {
             // A struct hook.

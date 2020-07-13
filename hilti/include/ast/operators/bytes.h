@@ -191,7 +191,7 @@ BEGIN_METHOD(bytes, Strip)
                          .result = type::Bytes(),
                          .id = "strip",
                          .args = {{.id = "side",
-                                   .type = type::constant(type::Library("::hilti::rt::bytes::Side")),
+                                   .type = type::constant(type::Library("hilti::rt::bytes::Side")),
                                    .optional = true},
                                   {.id = "set", .type = type::constant(type::Bytes()), .optional = true}},
                          .doc = R"(
