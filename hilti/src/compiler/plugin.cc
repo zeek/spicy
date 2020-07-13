@@ -22,12 +22,18 @@ PluginRegistry& plugin::registry() {
     return singleton;
 }
 
+void PluginRegistry::register_(const Plugin& p) {
+    _plugins.push_back(p);
+    std::sort(_plugins.begin(), _plugins.end(), [](const auto x, const auto& y) { return x.order < y.order; });
+}
+
 // Always-on default plugin with HILTI functionality.
 static Plugin hilti_plugin() {
     return Plugin{
         .component = "HILTI",
         .extension = ".hlt",
         .cxx_includes = {"hilti/rt/libhilti.h"},
+        .order = 1,
 
         .library_paths =
             [](const std::shared_ptr<hilti::Context>& ctx) { return hilti::configuration().hilti_library_paths; },

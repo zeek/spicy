@@ -71,10 +71,7 @@ JIT::JIT(std::shared_ptr<Context> context) : _context(std::move(context)) {
     _jit = std::make_unique<detail::ClangJIT>(_context);
 }
 
-JIT::~JIT() {
-    if ( _jit )
-        finishRuntime();
-}
+JIT::~JIT() {}
 
 bool JIT::compile() {
     util::timing::Collector _("hilti/jit/compile");
@@ -129,22 +126,6 @@ Result<std::reference_wrapper<const Library>> JIT::retrieveLibrary() const {
         return result::Error("no library available");
 
     return *_jit->retrieveLibrary();
-}
-
-bool JIT::initRuntime() {
-    if ( ! _jit )
-        return false;
-
-    return _jit->initRuntime();
-}
-
-bool JIT::finishRuntime() {
-    if ( ! _jit )
-        return false;
-
-    _jit->finishRuntime();
-    _jit.reset();
-    return true;
 }
 
 std::string JIT::compilerVersion() { return detail::ClangJIT::compilerVersion(); }

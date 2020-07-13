@@ -6,10 +6,6 @@
 
 #include <spicy/spicy.h>
 
-// Force linking of the Spicy library. (Note to self: Don't used an inlined
-// function here).
-auto _ = ::spicy::configuration();
-
 using nlohmann::json;
 
 template<typename T>

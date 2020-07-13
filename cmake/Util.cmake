@@ -87,3 +87,29 @@ function(require_version name found have need require)
         endif()
     endif()
 endfunction ()
+
+# Link a target against libhilti. This picks the right version of
+# libhilti (shared or object) based on the build configuration.
+function(target_link_hilti lib)
+    if ( BUILD_SHARED_LIBS )
+        target_link_libraries(${lib} "${ARGN}" hilti)
+    else ()
+        target_link_libraries(${lib} "${ARGN}" hilti-objects)
+        target_link_libraries(${lib} "${ARGN}" $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
+        set_property(TARGET ${lib} PROPERTY ENABLE_EXPORTS true)
+    endif ()
+endfunction ()
+
+# Link a target against libspicy. This picks the right version of
+# libspicy (shared or object) based on the build configuration.
+function(target_link_spicy lib)
+    if ( BUILD_SHARED_LIBS )
+        target_link_libraries(${lib} "${ARGN}" spicy)
+    else ()
+        target_link_libraries(${lib} "${ARGN}" spicy-objects)
+        target_link_libraries(${lib} "${ARGN}" $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>) # doesn't transfer from spicy-objects
+        set_property(TARGET ${lib} PROPERTY ENABLE_EXPORTS true)
+    endif ()
+
+    target_link_hilti(${lib} "${ARGN}")
+endfunction ()

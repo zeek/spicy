@@ -65,6 +65,12 @@ struct Plugin {
     std::vector<std::filesystem::path> cxx_includes;
 
     /**
+     * Callbacks for plugins will be executed in numerical order, with lower
+     * order numbers executing first.
+     */
+    int order = 0;
+
+    /**
      * Hook called to retrieve paths to search when importing modules that
      * this plugin handles.
      *
@@ -227,7 +233,10 @@ class PluginRegistry {
 public:
     PluginRegistry();
 
-    /** Returns a vector of all currently registered plugins. */
+    /**
+     * Returns a vector of all currently registered plugins, sorted by their
+     * order numbers.
+     */
     const std::vector<Plugin>& plugins() const { return _plugins; }
 
     /**
@@ -276,7 +285,7 @@ public:
      *
      * @param p plugin to register
      */
-    void register_(const Plugin& p) { _plugins.push_back(p); }
+    void register_(const Plugin& p);
 
 private:
     std::vector<Plugin> _plugins;

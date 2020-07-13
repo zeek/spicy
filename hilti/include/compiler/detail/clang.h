@@ -86,27 +86,6 @@ public:
      */
     void setDumpCode();
 
-    /**
-     * Prepares the runtime environment for execution. In particular runs
-     * any static constructors.
-     *
-     * This must be called only after ``jit()`` has succeeded.
-     *
-     * @return true if initialization was succesfull
-     */
-    bool initRuntime();
-
-    /**
-     * Cleans up the runtime environment after execution. In particular runs
-     * any static destructors.
-     *
-     * This must be called only after ``initRuntime()`` has succeeded.
-     * Afterwards no more functionality of this class may be used.
-     *
-     * @return true if clean up was succesfull
-     */
-    bool finishRuntime();
-
     /** Returns a string describing the version of Clang compiler in use. */
     static std::string compilerVersion();
 

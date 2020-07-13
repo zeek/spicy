@@ -117,20 +117,25 @@ set(SOURCES_COMPILER
 # (lib64/libhilti.so: undefined reference to `llvm::cfg::Update<llvm::BasicBlock*>::dump() const')
 set_source_files_properties(src/compiler/clang.cc PROPERTIES COMPILE_DEFINITIONS "NDEBUG")
 
-add_library(hilti ${SOURCES_COMPILER})
-add_dependencies(hilti version)
-target_compile_options(hilti PRIVATE "-Wall")
-target_compile_options(hilti PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_libraries(hilti PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
-target_link_libraries(hilti PRIVATE $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
-target_link_libraries(hilti PRIVATE std::filesystem ${CMAKE_DL_LIBS})
-target_link_options(hilti   PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_include_directories(hilti BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_include_directories(hilti BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+add_library(hilti-objects OBJECT ${SOURCES_COMPILER})
+set_property(TARGET hilti-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
+add_dependencies(hilti-objects version)
+target_compile_options(hilti-objects PRIVATE "-Wall")
+target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_link_libraries(hilti-objects PUBLIC $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
+target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+target_link_libraries(hilti-objects PUBLIC std::filesystem ${CMAKE_DL_LIBS})
+target_link_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 # Unclear why we need this: Without it, the generated Bison/Flex get a broken
 # include path on some systems. (Seen on Ubuntu 19.10).
-set_target_properties(hilti PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
+set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
+
+add_library(hilti)
+target_link_libraries(hilti PUBLIC hilti-objects)
+target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
 
 ##### Runtime library.
 
@@ -256,15 +261,15 @@ configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
 
 add_executable(hiltic bin/hiltic.cc)
 target_compile_options(hiltic PRIVATE "-Wall")
-target_link_libraries(hiltic PRIVATE hilti)
+target_link_hilti(hiltic PRIVATE)
 
 add_executable(hilti-config bin/hilti-config.cc)
 target_compile_options(hilti-config PRIVATE "-Wall")
-target_link_libraries(hilti-config PRIVATE hilti)
+target_link_hilti(hilti-config PRIVATE)
 
 add_executable(jit-test bin/jit-test.cc)
 target_compile_options(jit-test PRIVATE "-Wall")
-target_link_libraries(jit-test PRIVATE hilti)
+target_link_hilti(jit-test PRIVATE)
 
 # Tests
 add_executable(hilti-rt-tests
@@ -296,7 +301,8 @@ add_executable(hilti-tests
                tests/main.cc
                tests/visitor.cc
                tests/util.cc)
-target_link_libraries(hilti-tests PRIVATE hilti doctest)
+target_link_hilti(hilti-tests PRIVATE)
+target_link_libraries(hilti-tests PRIVATE doctest)
 target_compile_options(hilti-tests PRIVATE "-Wall")
 add_test(NAME hilti-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-tests)
 
