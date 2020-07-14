@@ -23,7 +23,7 @@ sphinx:
 	@mkdir -p doxygen-output
 	@  # The RTD theme might be producing RemovedInSphinx30Warning
 	@PYTHONWARNINGS="ignore" PATH=$(BUILDDIR)/bin:$$PATH $(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(DESTDIR)" $(SPHINXOPTS) $(O)
-	@echo Built documentation in $(DESTDIR)/html/index.html
+	@echo Built documentation in $(realpath $(DESTDIR)/html/index.html)
 
 autogen-docs:
 	@echo Auto-generating reference documentation ...

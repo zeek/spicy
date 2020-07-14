@@ -93,6 +93,7 @@ Documentation
    programming/index
    toolchain
    zeek
+   host-applications
    release-notes
    development/index
 

@@ -1,0 +1,4 @@
+GET, /index.html, 1.0
+method : GET
+uri    : /index.html
+version: 1.0

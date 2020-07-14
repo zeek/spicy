@@ -1,0 +1,9 @@
+Available parsers:
+
+  MyHTTP::RequestLine 
+
+GET, /index.html, 1.0
+method: GET
+uri: /index.html
+version: number: 1.0
+

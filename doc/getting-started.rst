@@ -359,20 +359,5 @@ specific parser. Here's a small C++ program that parses input with our
     parse error: failed to match regular expression (my-http.spicy:7)
 
 The code in ``my-http.cc`` is indeed the core of what ``spicy-driver``
-does, if we ignore the dynamic JIT compilation.
-
-.. note::
-
-    Some additional pointers for application developers:
-
-    - ``my-http.cc`` is a very stripped down version of a file
-      installed along with Spicy into
-      ``share/spicy/spicy-driver-host.cc``. That code is compiled into
-      the executable by default when executing ``spicy-build``. If you
-      look at ``spicy-driver-host.cc``, among other things you'll also
-      see how to dynamically query the runtime system for the parsers
-      available.
-
-    - The code for the main ``spicy-driver`` tool is quite similar as
-      well, and in addition shows how to dynamically compiled Spicy
-      parsers just-in-time.
+does, if we ignore the dynamic JIT compilation. See
+:ref:`host_applications`  for more.

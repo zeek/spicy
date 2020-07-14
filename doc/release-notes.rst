@@ -118,6 +118,7 @@ Changes:
   ``&count`` instead of ``&length``.
 
 - Zeek plugin:
+
     - ``Bro::dpd_confirm()`` has been renamed to
       ``zeek::confirm_protocol()``. There's also a corresponding
       ``zeek::reject_protocol()``.

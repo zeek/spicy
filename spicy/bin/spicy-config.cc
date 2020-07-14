@@ -206,6 +206,7 @@ int main(int argc, char** argv) {
 #endif
 
 #if __linux__
+                result.push_back("-Wl,--export-dynamic");
                 result.push_back("-Wl,--whole-archive");
 #endif
             }
