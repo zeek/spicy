@@ -183,26 +183,8 @@ void Unit::_addModuleInitFunction() {
     }
 }
 
-hilti::Result<hilti::Nothing> Unit::finalize() {
-    if ( ! _module_id )
-        return result::Error("no module set");
-
-    _addModuleInitFunction();
-
-    auto f = Formatter();
-
-    _addHeader(f);
-
+void Unit::_generateCode(Formatter& f, bool prototypes_only) {
     _namespaces.insert("");
-
-    if ( ! _comments.empty() ) {
-        f << comment("");
-
-        for ( const auto& c : _comments )
-            f << comment(c);
-
-        f << separator();
-    }
 
     for ( const auto& i : _includes )
         f << i;
@@ -224,6 +206,9 @@ hilti::Result<hilti::Nothing> Unit::finalize() {
     }
 
     for ( const auto& ns : _namespaces ) {
+        if ( prototypes_only && util::endsWith(ns, "::") ) // skip anonymous namespace
+            continue;
+
         for ( const auto& i : _constants_forward ) {
             if ( i.second.id.namespace_() == ns )
                 f << i.second;
@@ -253,14 +238,16 @@ hilti::Result<hilti::Nothing> Unit::finalize() {
                 f << t.second;
         }
 
-        for ( const auto& i : _constants ) {
-            if ( i.second.id.namespace_() == ns )
-                f << i.second;
-        }
+        if ( ! prototypes_only || ! util::endsWith(ns, "::") ) { // skip anonymous namespace
+            for ( const auto& i : _constants ) {
+                if ( i.second.id.namespace_() == ns )
+                    f << i.second;
+            }
 
-        for ( const auto& i : _globals ) {
-            if ( i.second.id.namespace_() == ns )
-                f << i.second;
+            for ( const auto& i : _globals ) {
+                if ( i.second.id.namespace_() == ns )
+                    f << i.second;
+            }
         }
 
         for ( const auto& i : _function_declarations ) {
@@ -293,6 +280,9 @@ hilti::Result<hilti::Nothing> Unit::finalize() {
 
     f.leaveNamespace();
 
+    if ( prototypes_only )
+        return;
+
     for ( const auto& s : _statements )
         f.printString(s + "\n");
 
@@ -308,7 +298,28 @@ hilti::Result<hilti::Nothing> Unit::finalize() {
         f << meta->dump(-1) << eol();
         f << "*/" << eol() << separator();
     }
+}
 
+hilti::Result<hilti::Nothing> Unit::finalize() {
+    if ( ! _module_id )
+        return result::Error("no module set");
+
+    _addModuleInitFunction();
+
+    auto f = Formatter();
+
+    _addHeader(f);
+
+    if ( ! _comments.empty() ) {
+        f << comment("");
+
+        for ( const auto& c : _comments )
+            f << comment(c);
+
+        f << separator();
+    }
+
+    _generateCode(f, false);
     _cxx_code = f.str();
     return Nothing();
 }
@@ -333,39 +344,7 @@ hilti::Result<hilti::Nothing> Unit::createPrototypes(std::ostream& out) {
     f << fmt("#ifndef HILTI_PROTOTYPES_%s_H", util::toupper(_module_id)) << eol();
     f << separator();
 
-    for ( const auto& i : _includes )
-        f << i;
-
-    f << separator();
-
-    for ( const auto& ns : _namespaces ) {
-        for ( const auto& i : _types ) {
-            // Print all types, a function prototype might need one.
-            if ( i.second.id.namespace_() == ns )
-                f << i.second;
-        }
-
-        for ( auto i : _function_declarations ) {
-            if ( i.second.id.namespace_() != ns )
-                continue;
-
-            if ( std::string(i.second.linkage).find("extern") == std::string::npos &&
-                 std::string(i.second.linkage).find("inline") == std::string::npos )
-                continue;
-
-            auto seperator = (i.second.inline_body && i.second.inline_body->size() > 1);
-
-            if ( seperator )
-                f << separator();
-
-            f << i.second;
-
-            if ( seperator )
-                f << separator();
-        }
-    }
-
-    f.leaveNamespace();
+    _generateCode(f, true);
 
     f << "#endif" << eol();
 
