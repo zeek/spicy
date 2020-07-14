@@ -387,34 +387,19 @@ Compiling Analyzers
 ====================
 
 Once you have the ``*.spicy`` and ``*.evt`` source files for your new
-analyzer, you have two options to compile them, either just-in-time at
-startup or in advance.
-
-Just In Time Compilation
-------------------------
-
-To compile analyzers on the fly, you just pass your ``*.spicy`` and
-``*.evt`` files to Zeek just like any of its scripts, either on the
-command-line or through ``@load`` statements. The Spicy plugin hooks
-into Zeek's processing of input files and diverts them the right way
-into its compilation pipeline.
-
-This approach can be quite convenient, in particular during
-development of new analyzers as it makes it easy to iterate---just
-restart Zeek to pick up any changes. The disadvantage is that
-compiling Spicy parsers takes a noticeable amount of time, which you'll
-incur every time Zeek starts up.
+analyzer, you have two options to compile them, either in advance, or
+just-in-time at startup.
 
 .. _spicyz:
 
 Ahead Of Time Compilation
 -------------------------
 
-You can also precompile analyzers into ``*.hlto`` object files
-containing their final executable code. To do that, pass the relevant
-``*.spicy`` and ``*.evt`` files to ``spicyz``, then have Zeek load the
-output. To repeat the :ref:`example <example_zeek_my_http>` from the
-*Getting Started* guide::
+You can precompile analyzers into ``*.hlto`` object files containing
+their final executable code. To do that, pass the relevant ``*.spicy``
+and ``*.evt`` files to ``spicyz``, then have Zeek load the output. To
+repeat the :ref:`example <example_zeek_my_http>` from the *Getting
+Started* guide::
 
     # spicyz -o my-http-analyzer.hlto my-http.spicy my-http.evt
     # zeek -Cr request-line.pcap my-http-analyzer.hlto my-http.zeek
@@ -425,6 +410,24 @@ something changes, starting up Zeek now executes quickly.
 
 Run ``spicyz -h`` to see some additional options it provides, which
 are similar to :ref:`spicy-driver`.
+
+Just In Time Compilation
+------------------------
+
+To compile analyzers on the fly when the Spicy plugin for Zeek has
+been built with JIT support, you can pass your ``*.spicy`` and
+``*.evt`` files to Zeek just like any of its scripts, either on the
+command-line or through ``@load`` statements. The Spicy plugin hooks
+into Zeek's processing of input files and diverts them the right way
+into its compilation pipeline.
+
+This approach can be quite convenient, in particular during
+development of new analyzers as it makes it easy to iterate---just
+restart Zeek to pick up any changes. The disadvantage is that
+compiling Spicy parsers takes a noticeable amount of time, which
+you'll incur every time Zeek starts up; and it makes setting compiler
+options more difficult (see below). We generally recommend using
+ahead-of-time compilation when working with the Zeek plugin.
 
 .. _zeek_functions:
 
@@ -490,7 +493,7 @@ processed in time due to intricacies of Zeek's timing. To make it
 easier to change an option from the command-line, the Spicy plugin
 also supports an environment variable ``SPICY_PLUGIN_OPTIONS`` that
 accepts a subset of ``spicy-driver`` command-line options in the form
-of a string. For example, to compile a debug version of all analyzers,
+of a string. For example, to JIT a debug version of all analyzers,
 set ``SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
 
 .. code-block:: text
@@ -516,11 +519,10 @@ Debugging
 =========
 
 If Zeek doesn't seem to be doing the right thing with your Spicy
-analyzer, there are several ways to debug what's going on. To help
-with that, make sure to compile your analyzer with ``spicy::debug=T``
-(or ``spicyz -d``, or ``SPICY_PLUGIN_OPTIONS=-d``); and, if possible,
-use a debug version of Zeek (i.e., build Zeek with ``./configure
---enable-debug``).
+analyzer, there are several ways to debug what's going on. To
+facilitate that, compile your analyzer with ``spicyz -d`` and, if
+possible, use a debug version of Zeek (i.e., build Zeek with
+``./configure --enable-debug``).
 
 If your analyzer doesn't seem to be active at all, first make sure
 Zeek actually knows about it: It should show up in the output of
@@ -538,43 +540,21 @@ trace what the plugin is compiling by running ``spicyz`` with ``-D
 zeek``. For example, reusing the :ref:`HTTP example
 <example_zeek_my_http>` from the *Getting Started* guide::
 
-    # spicyz -D zeek my-http.spicy my-http.evt
-    [debug/zeek] Beginning pre-script initialization
-    [debug/zeek] Done with pre-script initialization
-    [debug/zeek] Beginning post-script initialization
-    [debug/zeek] Initializing driver
-    [debug/zeek] Loading input file "my-http.spicy"
-    [debug/zeek] Loading Spicy file "/home/robin/work/spicy/tests/spicy/doc/my-http.spicy"
-    [debug/zeek] Loading input file "my-http.evt"
-    [debug/zeek] Loading EVT file "/home/robin/work/spicy/doc/examples/my-http.evt"
-    [debug/zeek] Loading events from /home/robin/work/spicy/doc/examples/my-http.evt
+    # spicyz -D zeek my-http.spicy my-http.evt -o my-http.hlt
+    [debug/zeek] Loading Spicy file "/Users/robin/work/spicy/master/tests/spicy/doc/my-http.spicy"
+    [debug/zeek] Loading EVT file "/Users/robin/work/spicy/master/doc/examples/my-http.evt"
+    [debug/zeek] Loading events from /Users/robin/work/spicy/master/doc/examples/my-http.evt
     [debug/zeek]   Got protocol analyzer definition for spicy_MyHTTP
     [debug/zeek]   Got event definition for MyHTTP::request_line
-    [debug/zeek] Compiling input files
-    [debug/zeek]   Running Spicy driver
-    [debug/zeek]     Got unit type 'MyHTTP::Version'
-    [debug/zeek]     Got unit type 'MyHTTP::RequestLine'
-    [debug/zeek]   Adding protocol analyzer 'spicy_MyHTTP'
-    [debug/zeek]   Adding Spicy hook 'MyHTTP::RequestLine::0x25_done' for event MyHTTP::request_line
-    [debug/zeek]   Done with Spicy driver
-    [debug/zeek] Initializing Spicy runtime
-    [debug/zeek] Have Spicy protocol analyzer spicy_MyHTTP
-    [debug/zeek] Registering Protocol::TCP protocol analyzer spicy_MyHTTP with Zeek
-    [debug/zeek]   Scheduling analyzer for port 12345/tcp
-    [debug/zeek] Done with post-script initialization
+    [debug/zeek] Running Spicy driver
+    [debug/zeek]   Got unit type 'MyHTTP::Version'
+    [debug/zeek]   Got unit type 'MyHTTP::RequestLine'
+    [debug/zeek] Adding protocol analyzer 'spicy_MyHTTP'
+    [debug/zeek] Adding Spicy hook 'MyHTTP::RequestLine::0x25_done' for event MyHTTP::request_line
+    [debug/zeek] Done with Spicy driver
 
 You can see the main pieces in there: The files being loaded, unit
-types provided by them, analyzers added to Zeek, and events that get
-defined.
-
-.. note::
-
-    We're using ``spicyz`` in the example to precompile the code. You
-    can get the same debug output from Zeek itself when JITting the
-    inputs, but you'll need to pass the option in through the
-    environment by setting ``SPICY_PLUGIN_OPTIONS="-D zeek"``,
-    otherwise some parts will be missing. See
-    :ref:`zeek_configuration` for more on that.
+types provided by them, analyzers and event being created.
 
 If that all looks as expected, it's time to turn to the Zeek side and
 see what it's doing at runtime. You'll need a debug version of Zeek
@@ -587,7 +567,7 @@ example, we get:
 .. code-block:: text
     :linenos:
 
-    # zeek -B dpd -Cr request-line.pcap my-http.spicy my-http.evt
+    # zeek -B dpd -Cr request-line.pcap my-http.hlto
     # cat debug.log
     [dpd] Registering analyzer SPICY_MYHTTP for port 12345/1
     [...[
@@ -611,10 +591,10 @@ activated for processing the connection in the trace, and that it then
 receives the data that we know indeed constitutes its payload, before
 it eventually gets shutdown.
 
-To see this from the plugin's side at runtime, set the ``zeek`` debug
-stream through the ``HILTI_DEBUG`` environment variable::
+To see this from the plugin's side, set the ``zeek`` debug stream
+through the ``HILTI_DEBUG`` environment variable::
 
-    # HILTI_DEBUG=zeek SPICY_PLUGIN_OPTIONS="-d" zeek -Cr request-line.pcap my-http.spicy my-http.evt
+    # HILTI_DEBUG=zeek zeek -Cr request-line.pcap my-http.hlto
     [zeek] Have Spicy protocol analyzer spicy_MyHTTP
     [zeek] Registering Protocol::TCP protocol analyzer spicy_MyHTTP with Zeek
     [zeek]   Scheduling analyzer for port 12345/tcp
@@ -634,20 +614,12 @@ event being generated for Zeek. The plugin also reports that we didn't
 define a unit for the responder side---which we know in this case, but
 if that appears unexpectedly you probably found a problem.
 
-.. note::
-
-    If you're running Zeek with ``SPICY_PLUGIN_OPTIONS="-D zeek -d"``,
-    you'll actually get the complete output of both what the compiler
-    is doing (per above) and what's happening at runtime. That may be
-    more convenient, but `HILTI_DEBUG` can do more (see below) and
-    might be the better starting point.
-
 So we know now that our analyzer is receiving the anticipated data to
 parse. At this point, we can switch to debugging the Spicy side
 :ref:`through the usual mechanisms <debugging>`. In particular,
 setting ``HILTI_DEBUG=spicy`` tends to be helpful::
 
-    # HILTI_DEBUG=spicy SPICY_PLUGIN_OPTIONS="-d" zeek -Cr request-line.pcap my-http.spicy my-http.evt
+    # HILTI_DEBUG=spicy zeek -Cr request-line.pcap my-http.hlto
     [spicy] MyHTTP::RequestLine
     [spicy]   method = GET
     [spicy]   anon_2 =
@@ -667,7 +639,7 @@ one of your Zeek scripts. You can then load Zeek's
 ``misc/dump-events`` to see them as they are being received, including
 their full Zeek-side values::
 
-    # zeek -Cr request-line.pcap my-http.spicy my-http.evt misc/dump-events
+    # zeek -Cr request-line.pcap my-http.hlto misc/dump-events
     [...]
     1580991211.780489 MyHTTP::request_line
                   [0] c: connection      = [id=[orig_h=127.0.0.1, orig_p=59619/tcp, ...] ...]
