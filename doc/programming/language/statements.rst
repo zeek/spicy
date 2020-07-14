@@ -130,7 +130,7 @@ specified, commas will separate them in the output.
 
         module Test;
 
-        print "Hello, %!" % "World";
+        print "Hello, %s!" % "World";
         print "%s=%d" % ("x", 1);
 
     .. spicy-output:: statement-interpolation.spicy
