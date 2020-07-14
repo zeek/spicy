@@ -467,8 +467,8 @@ There are three locations where hooks can be implemented:
    When a hook executes, it has access to the current unit instance
    through the ``self`` identifier. The state of that instance will
    reflect where parsing is at that time. In particular, any field
-   that hasn't been parsed yet, will remain unset. (You can use the
-   ``?.`` unit operator to test if a field has received a value yet.)
+   that hasn't been parsed yet, will remain unset. You can use the
+   ``?.`` unit operator to test if a field has received a value yet.
 
 Unit Variables
 ==============
@@ -514,6 +514,9 @@ would rather leave a variable unset by default, you can add
 .. spicy-output:: unit-vars-optional.spicy
     :exec: printf \05 | spicy-driver %INPUT
     :show-with: foo.spicy
+
+You can use the ``?.`` unit operator to test if an optional unit
+variable remains unset.
 
 .. _unit_parameters:
 
