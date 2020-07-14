@@ -29,8 +29,8 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 85
-%expect-rr 135
+%expect 87
+%expect-rr 139
 
 %union {}
 %{
@@ -142,6 +142,7 @@ static int _field_width = 0;
 %token         INT64
 %token         INT8
 %token         INTERVAL
+%token         INTERVAL_NS
 %token         ITERATOR
 %token         CONST_ITERATOR
 %token         LEQ
@@ -183,6 +184,7 @@ static int _field_width = 0;
 %token         STRUCT
 %token         SWITCH
 %token         TIME
+%token         TIME_NS
 %token         TIMER
 %token         TIMESASSIGN
 %token         TRY
@@ -887,9 +889,11 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
                                                    $$ = hilti::ctor::SignedInteger(-$2, 64, __loc__); }
               | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
               | INTERVAL '(' const_real ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
-              | INTERVAL '(' const_sint ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value(hilti::rt::integer::safe<int64_t>($3), hilti::rt::Interval::NanosecondTag()), __loc__); }
+              | INTERVAL '(' const_uint ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
+              | INTERVAL_NS '(' const_uint ')'   { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::NanosecondTag()), __loc__); }
               | TIME '(' const_real ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
-              | TIME '(' const_uint ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3 * 1000000000, hilti::rt::Time::NanosecondTag()), __loc__); }
+              | TIME '(' const_uint ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
+              | TIME_NS '(' const_uint ')'       { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::NanosecondTag()), __loc__); }
               | STREAM '(' CBYTES ')'            { $$ = hilti::ctor::Stream(std::move($3), __loc__); }
 
               | UINT8 '(' const_uint ')'         { $$ = hilti::ctor::UnsignedInteger($3, 8, __loc__); }

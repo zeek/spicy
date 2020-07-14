@@ -16,3 +16,6 @@ assert t1.seconds() == 1295415110.5;
 assert t1.nanoseconds() == 1295415110.5 * 1e9;
 
 assert (t1 - t1).seconds() == 0;
+
+global t2 = time_ns(1295415110500000000);
+assert t1 == t2;
