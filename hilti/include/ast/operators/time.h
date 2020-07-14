@@ -16,7 +16,6 @@ namespace operator_ {
 
 STANDARD_OPERATOR_2(time, Equal, type::Bool(), type::Time(), type::Time(), "Compares two time values.")
 STANDARD_OPERATOR_2(time, Unequal, type::Bool(), type::Time(), type::Time(), "Compares two time values.")
-STANDARD_OPERATOR_2x(time, SumTime, Sum, type::Time(), type::Time(), type::Time(), "Returns the sum of the times.");
 STANDARD_OPERATOR_2x(time, SumInterval, Sum, type::Time(), type::Time(), type::Interval(),
                      "Adds the interval to the time.");
 STANDARD_OPERATOR_2x(time, DifferenceTime, Difference, type::Time(), type::Time(), type::Time(),

@@ -800,7 +800,6 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::time::Nanoseconds& n) { return fmt("%s.nanoseconds()", op0(n)); }
     result_t operator()(const operator_::time::Seconds& n) { return fmt("%s.seconds()", op0(n)); }
     result_t operator()(const operator_::time::SumInterval& n) { return binary(n, "+"); }
-    result_t operator()(const operator_::time::SumTime& n) { return binary(n, "+"); }
     result_t operator()(const operator_::time::Unequal& n) { return binary(n, "!="); }
 
     // Tuple
