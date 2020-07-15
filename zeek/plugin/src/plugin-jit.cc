@@ -20,6 +20,9 @@
 #include <zeek-spicy/plugin-jit.h>
 #include <zeek-spicy/zeek-reporter.h>
 
+#include <Var.h>
+#include <Val.h>
+
 namespace spicy::zeek::debug {
 const hilti::logging::DebugStream ZeekPlugin("zeek");
 }

@@ -43,7 +43,7 @@ inline void ProtocolAnalyzer::DebugMsg(const ProtocolAnalyzer::Endpoint& endp, c
 #if ZEEK_DEBUG_BUILD
     if ( data ) { // NOLINT(bugprone-branch-clone) pylint believes the two branches are the same
         zeek::rt::debug(endp.cookie, hilti::rt::fmt("%s: |%s%s| (eod=%s)", msg,
-                                                    fmt_bytes(reinterpret_cast<const char*>(data), min(40, len)),
+                                                    fmt_bytes(reinterpret_cast<const char*>(data), std::min(40, len)),
                                                     len > 40 ? "..." : "", (eod ? "true" : "false")));
     }
 

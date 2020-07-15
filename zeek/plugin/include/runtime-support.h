@@ -21,6 +21,7 @@
 #include <Type.h>
 #include <Val.h>
 #include <Var.h>
+#include <IPAddr.h>
 #undef DEBUG
 
 #include "cookie.h"
