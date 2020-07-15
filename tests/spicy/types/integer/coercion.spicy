@@ -48,3 +48,6 @@ assert i_lo == -0x7FFFFFFFFFFFF800p0;
 
 global inexact: real = cast<real>(0x20000000000001);
 assert inexact == 0x20000000000000;
+
+const i8const: real = 127;
+assert i8const == 127.0;

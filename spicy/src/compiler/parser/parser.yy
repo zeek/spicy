@@ -314,6 +314,9 @@ type_decl     : opt_linkage TYPE scoped_id '=' type opt_attributes ';'
 
 constant_decl : opt_linkage CONST scoped_id '=' expr ';'
                                                  { $$ = hilti::declaration::Constant($3, $5, $1, __loc__); }
+              | opt_linkage CONST scoped_id ':' type '=' expr ';'
+                                                 { $$ = hilti::declaration::Constant($3, $5, $7, $1, __loc__); }
+              ;
 
 local_decl    : LOCAL scoped_id '=' expr ';'     { $$ = hilti::declaration::LocalVariable($2, $4.type(), $4, false, __loc__); }
               | LOCAL scoped_id ':' type ';'     { $$ = hilti::declaration::LocalVariable($2, $4, {}, false, __loc__); }

@@ -9,7 +9,7 @@ using namespace hilti;
 
 Type expression::ResolvedID::type() const {
     struct Visitor : hilti::visitor::PreOrder<Type, Visitor> {
-        result_t operator()(const declaration::Constant& c) { return c.value().type(); }
+        result_t operator()(const declaration::Constant& c) { return c.type(); }
         result_t operator()(const declaration::Expression& e) { return e.expression().type(); }
         result_t operator()(const declaration::Forward& f) { return *dispatch(f.callback()()); }
         result_t operator()(const declaration::Function& f) { return f.function().type(); }

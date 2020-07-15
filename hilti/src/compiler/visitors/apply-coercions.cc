@@ -202,6 +202,15 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         }
     }
 
+    void operator()(const declaration::Constant& n, position_t p) {
+        if ( auto v = n.value(); v.type() != n.type() ) {
+            if ( auto x = coerceTo(&p.node, v, n.type(), false, true) ) {
+                auto new_ = declaration::Constant::setValue(n, std::move(*x));
+                replaceNode(&p, std::move(new_));
+            }
+        }
+    }
+
     void operator()(const declaration::Parameter& n, position_t p) {
         if ( auto def = n.default_(); def && def->type() != n.type() )
             if ( auto x = coerceTo(&p.node, *def, n.type(), false, true) ) {
