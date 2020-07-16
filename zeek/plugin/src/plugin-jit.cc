@@ -4,21 +4,25 @@
 
 #include <spicy/rt/parser.h>
 
+#include <hilti/ast/types/enum.h>
+#include <hilti/base/util.h>
+
 #include <zeek-spicy/autogen/config.h>
+#include <zeek-spicy/plugin-jit.h>
+#include <zeek-spicy/zeek-reporter.h>
+
+// clang-format off
+#include <compiler/debug.h>
+#include <compiler/driver.h>
+// clang-format on
 
 // Zeek includes
 #if ZEEK_DEBUG_BUILD
 #define DEBUG
 #endif
-#include <hilti/ast/types/enum.h>
-#include <hilti/base/util.h>
+#include <Val.h>
+#include <Var.h>
 #undef DEBUG
-
-#include <compiler/debug.h>
-#include <compiler/driver.h>
-
-#include <zeek-spicy/plugin-jit.h>
-#include <zeek-spicy/zeek-reporter.h>
 
 namespace spicy::zeek::debug {
 const hilti::logging::DebugStream ZeekPlugin("zeek");

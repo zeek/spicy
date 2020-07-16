@@ -18,6 +18,7 @@
 #endif
 #include <Desc.h>
 #include <EventHandler.h>
+#include <IPAddr.h>
 #include <Type.h>
 #include <Val.h>
 #include <Var.h>

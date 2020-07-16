@@ -130,7 +130,11 @@ public:
     void EndpointEOF(bool is_orig) override;
     void ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
                           int gen_event) override;
+#if ZEEK_VERSION_NUMBER >= 30200
+    void ConnectionFinished(bool half_finished) override;
+#else
     void ConnectionFinished(int half_finished) override;
+#endif
     void ConnectionReset() override;
     void PacketWithRST() override;
 

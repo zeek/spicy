@@ -43,7 +43,7 @@ inline void ProtocolAnalyzer::DebugMsg(const ProtocolAnalyzer::Endpoint& endp, c
 #if ZEEK_DEBUG_BUILD
     if ( data ) { // NOLINT(bugprone-branch-clone) pylint believes the two branches are the same
         zeek::rt::debug(endp.cookie, hilti::rt::fmt("%s: |%s%s| (eod=%s)", msg,
-                                                    fmt_bytes(reinterpret_cast<const char*>(data), min(40, len)),
+                                                    fmt_bytes(reinterpret_cast<const char*>(data), std::min(40, len)),
                                                     len > 40 ? "..." : "", (eod ? "true" : "false")));
     }
 
@@ -288,7 +288,12 @@ void TCP_Analyzer::ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::a
     ::analyzer::tcp::TCP_ApplicationAnalyzer::ConnectionClosed(endpoint, peer, gen_event);
 }
 
-void TCP_Analyzer::ConnectionFinished(int half_finished) {
+#if ZEEK_VERSION_NUMBER >= 30200
+void TCP_Analyzer::ConnectionFinished(bool half_finished)
+#else
+void TCP_Analyzer::ConnectionFinished(int half_finished)
+#endif
+{
     ::analyzer::tcp::TCP_ApplicationAnalyzer::ConnectionFinished(half_finished);
 }
 

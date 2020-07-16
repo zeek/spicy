@@ -3,26 +3,24 @@
 #include <hilti/rt/util.h>
 
 #include <zeek-spicy/autogen/config.h>
+#include <zeek-spicy/plugin.h>
+#include <zeek-spicy/runtime-support.h>
+#include <zeek-spicy/zeek-reporter.h>
 
 // Zeek includes
 #if ZEEK_DEBUG_BUILD
 #define DEBUG
 #endif
-
+#include <Conn.h>
+#include <Event.h>
 #include <EventHandler.h>
 #include <Val.h>
 #include <file_analysis/File.h>
 #include <file_analysis/Manager.h>
-
 #if ZEEK_VERSION_NUMBER >= 30100
 #include <module_util.h>
 #endif
-
 #undef DEBUG
-
-#include <zeek-spicy/plugin.h>
-#include <zeek-spicy/runtime-support.h>
-#include <zeek-spicy/zeek-reporter.h>
 
 using namespace spicy::zeek;
 using namespace plugin::Zeek_Spicy;
@@ -206,7 +204,7 @@ void rt::reject_protocol(const std::string& reason) {
         throw ValueUnavailable("no current connection available");
 }
 
-static string _file_id(const rt::cookie::ProtocolAnalyzer& c) {
+static std::string _file_id(const rt::cookie::ProtocolAnalyzer& c) {
     auto id = hilti::rt::fmt("%" PRIu64 ".%" PRIu64 ".%d", c.analyzer_id, c.file_id, static_cast<int>(c.is_orig));
     return ::file_mgr->HashHandle(id);
 }

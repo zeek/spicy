@@ -14,6 +14,10 @@
 #include <spicy/rt/parser.h>
 
 #include <zeek-spicy/autogen/config.h>
+#include <zeek-spicy/file-analyzer.h>
+#include <zeek-spicy/plugin.h>
+#include <zeek-spicy/protocol-analyzer.h>
+#include <zeek-spicy/zeek-reporter.h>
 
 // Zeek includes
 #if ZEEK_DEBUG_BUILD
@@ -25,11 +29,6 @@
 #include <analyzer/protocol/udp/UDP.h>
 #include <file_analysis/Manager.h>
 #undef DEBUG
-
-#include <zeek-spicy/file-analyzer.h>
-#include <zeek-spicy/plugin.h>
-#include <zeek-spicy/protocol-analyzer.h>
-#include <zeek-spicy/zeek-reporter.h>
 
 #ifndef ZEEK_HAVE_JIT
 plugin::Zeek_Spicy::Plugin SpicyPlugin;
@@ -113,7 +112,7 @@ void plugin::Zeek_Spicy::Plugin::registerEnumType(
     ::zeekygen_mgr->Script("<Spicy>");
     ::set_location(::Location("<Spicy>", 0, 0, 0, 0));
 
-    ::ID* zeek_id = install_ID(id.c_str(), ns.c_str(), true, true);
+    auto zeek_id = install_ID(id.c_str(), ns.c_str(), true, true);
     zeek_id->SetType(etype);
     zeek_id->MakeType();
 }
