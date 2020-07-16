@@ -7,10 +7,10 @@ Debugging
 
 It can be challenging to track down the specifics of what a parser is
 doing (or not doing) because often there's no directly observable
-effect. However, Spicy comes with debugging support that helps during
-parser development.
+effect. To make that easier, Spicy comes with debugging support that
+helps during parser development.
 
-Generally, getting debugging support requires running ``spicyc`` or
+Generally, debugging support requires running ``spicyc`` or
 ``spicy-driver`` with option ``-d``; that enables generating debug
 versions of the generated C++ code. In addition, the option ``-X
 <tag>`` may enable additional, more expensive debug instrumentation,
@@ -51,12 +51,12 @@ with debugging enabled (``-d``):
 Debug Streams
 =============
 
-A second form of debugging support uses runtime *debug streams*
-instrumenting the generated parsers to log activity as they are
-parsing their input. If you run ``spicy-driver`` with ``-d``, you can
-set the environment variable ``HILTI_DEBUG`` to one or more debug
-stream names to select the desired information (see below for the
-list). Execution will then print debug information to standard error::
+A second form of debugging support uses runtime *debug streams* that
+instrument the generated parsers to log activity as they are parsing
+their input. If you run ``spicy-driver`` with ``-d``, you can set the
+environment variable ``HILTI_DEBUG`` to a set of debug stream names to
+select the desired information (see below for the list). Execution
+will then print debug information to standard error::
 
     > echo "GET /index.html HTTP/1.0" | HILTI_DEBUG=spicy spicy-driver -d http-request.spicy
     [spicy] Request::RequestLine
@@ -85,23 +85,23 @@ The available debug streams include:
     tokens.
 
     This stream is primarily intended for debugging the Spicy compiler
-    itself, but it can be helpful for understanding in particular that
-    data waiting to be parsed.
+    itself, but it can be helpful also in particular for understanding
+    the data that remains to be parsed.
 
 .. _hilti-trace:
 
 ``hilti-trace``
     This is a HILTI-level debug stream that records every HILTI
-    instruction being executed. To use this, run ``spicy-driver`` with
-    ``-X trace``.
+    instruction being executed. To use this, you need to run
+    ``spicy-driver`` with ``-X trace``.
 
     This stream is primarily intended for debugging the Spicy
     compiler itself.
 
 ``hilti-flow``
     This is a HILTI-level debug level recording flow information like
-    function calls. To use this, run ``spicy-driver`` with ``-X
-    flow``.
+    function calls. To use this, you need to run ``spicy-driver`` with
+    ``-X flow``.
 
     This stream is primarily intended for debugging the Spicy compiler
     itself, although it may also be helpful to understand the internal
@@ -131,7 +131,7 @@ Inspecting Generated Code
 Using ``spicyc`` you can inspect the code that's being generated for a
 given Spicy grammar:
 
-- ``spicyc -p`` output the intermediary HILTI code. The code tends to
+- ``spicyc -p`` outputs the intermediary HILTI code. The code tends to
   be pretty intuitively readable. Even if you don't know all the
   specifics of HILTI, much of the code is rather close to Spicy
   itself. (Per :ref:`above <hilti-trace>`, you can trace the generated

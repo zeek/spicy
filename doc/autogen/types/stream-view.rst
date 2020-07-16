@@ -62,7 +62,7 @@
 
 .. rubric:: View Operators
 
-.. spicy:operator:: stream::view::Equal bool t:view<stream> <sp> op:== <sp> t:bytes
+.. spicy:operator:: stream::view::Equal bool t:view<stream> <sp> op:== <sp> t:bytes $commutative$
 
     Compares a stream view and a bytes intances lexicographically.
 
@@ -84,7 +84,7 @@
 
     Returns the number of stream the view contains.
 
-.. spicy:operator:: stream::view::Unequal bool t:view<stream> <sp> op:!= <sp> t:bytes
+.. spicy:operator:: stream::view::Unequal bool t:view<stream> <sp> op:!= <sp> t:bytes $commutative$
 
     Compares a stream view and a bytes instance lexicographically.
 

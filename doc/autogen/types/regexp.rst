@@ -28,7 +28,7 @@
     ``find``; and (2) if a match has been found, the data that matches the
     regular expression.
 
-.. spicy:method:: regexp::token_matcher regexp token_matcher False ::hilti::rt::regexp::MatchState ()
+.. spicy:method:: regexp::token_matcher regexp token_matcher False spicy::MatchState ()
 
     Initializes state for matching regular expression incrementally
     against chunks of future input. The regular expression will be

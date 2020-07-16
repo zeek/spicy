@@ -174,7 +174,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         std::optional<ID> cxx_id;
 
         if ( auto a = AttributeSet::find(d.attributes(), "&cxxname") )
-            cxx_id = ID(*a->valueAs<std::string>());
+            cxx_id = *a->valueAs<std::string>();
 
         if ( d.type().typeID() != type_id ) {
             auto nt = type::setTypeID(d.type(), std::move(type_id));

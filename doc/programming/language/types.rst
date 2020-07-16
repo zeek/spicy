@@ -133,6 +133,26 @@ requires specifying the bitwidth of a type.
 
 .. include:: /autogen/types/integer.rst
 
+Interval
+--------
+
+Am interval value represents a period of time. Intervals are stored
+with nanosecond resolution, which is retained across all calculations.
+
+.. rubric:: Type
+
+- ``interval``
+
+.. rubric:: Constants
+
+- ``interval(SECS)`` creates an interval from a signed integer or real
+  value ``SECS`` specifying the period in seconds.
+
+- ``interval_ns(NSECS)`` creates an interval from a signed integer
+  value ``NSECS`` specifying the period in nanoseconds.
+
+.. include:: /autogen/types/time.rst
+
 .. _type_list:
 
 List
@@ -192,6 +212,33 @@ iterators to traverse their content, with no particular ordering.
 
 .. include:: /autogen/types/map.rst
 .. include:: /autogen/types/map-iterator.rst
+
+.. _type_optional:
+
+Optional
+--------
+
+An optional value may hold a value of another type, or can
+alternatively remain unset. A common use case for optional is the
+return value of a function that may fail.
+
+- ``optional<TYPE>``
+
+.. rubric:: Constants
+
+- ``optional(EXPR)`` creates an ``optional<T>``, where ``T` is the
+  type of the expression ``EXPR`` and initializes it with the value of
+  ``EXPR``.
+
+More commonly, however, optional values are initialized through
+assigment:
+
+- Assigning an instance of ``TYPE`` to an ``optional<TYPE>`` sets it
+  to the instance's value.
+
+- Assigning ``Null`` to an ``optional<TYPE>`` unsets it.
+
+.. include:: /autogen/types/optional.rst
 
 .. _type_port:
 
@@ -378,6 +425,30 @@ set. Internally, Spicy stores them as UTF-8.
 - When specifying string constants, Spicy assumes them to be in UTF-8.
 
 .. include:: /autogen/types/string.rst
+
+.. _type_time:
+
+Time
+----
+
+A time value refers to a specific, absolute point of time, specified
+as the interval from January 1, 1970 UT ( i.e., the Unix epoch). Times
+are stored with nanosecond resolution, which is retained across all
+calculations.
+
+.. rubric:: Type
+
+- ``time``
+
+.. rubric:: Constants
+
+- ``time(SECS)`` creates a time from an uninteger or real value
+  ``SECS`` specifying seconds since the epoch.
+
+- ``time_ns(NSECS)`` creates a time from an unsigned integer value
+  ``NSECS`` specifying nanoseconds since the epoch.
+
+.. include:: /autogen/types/time.rst
 
 .. _type_tuple:
 

@@ -26,18 +26,11 @@ public:
     Interval() = default;
 
     /**
-     * Constructs an interval from an unsigned integer value.
+     * Constructs an interval from an signed integer value.
      *
      * @param nsecs interval in nanoseconds.
      */
     explicit Interval(hilti::rt::integer::safe<int64_t> nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
-
-    /**
-     * Constructs an interval from an unsigned integer value.
-     *
-     * @param nsecs interval in nanoseconds.
-     */
-    explicit Interval(hilti::rt::integer::safe<uint64_t> nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
 
     /**
      * Constructs an interval from a double value.

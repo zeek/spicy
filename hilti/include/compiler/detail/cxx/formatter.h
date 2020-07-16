@@ -23,7 +23,7 @@ public:
      * @param relative_ns the namespace, which will be used as is for a new
      * `namespace` directive.
      */
-    void pushNamespace(const std::string& relative_ns);
+    void pushNamespace(std::string relative_ns);
 
     /** Removes the most recently opened namespace from the stack. */
     void popNamespace();

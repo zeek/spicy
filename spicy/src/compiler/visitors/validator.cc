@@ -73,7 +73,7 @@ hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::
 
         if ( type ) {
             if ( auto t = type->valueAs<Expression>()->type().tryAs<type::Enum>();
-                 ! (t && t->cxxID() && *t->cxxID() == ID("::hilti::rt::real::Type")) )
+                 ! (t && t->cxxID() && *t->cxxID() == ID("hilti::rt::real::Type")) )
                 return hilti::result::Error("&type attribute must be a spicy::RealType");
         }
         else

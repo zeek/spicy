@@ -43,12 +43,16 @@ def unary(prefix, postfix=""):
 
 def binary(token):
     def _(op):
-        return "{} <sp> op:{} <sp> {}".format(
-            op.operands[0].rst(in_operator=True),
-            token,
-            op.operands[1].rst(in_operator=True))
-    return _
+        op1 = op.operands[0].rst(in_operator=True)
+        op2 = op.operands[1].rst(in_operator=True)
 
+        commutative = ""
+        if op.commutative and op1 != op2:
+            commutative = " $commutative$"
+
+        return "{} <sp> op:{} <sp> {}{}".format(op1, token, op2, commutative)
+
+    return _
 
 Operators = {
     "Add": lambda op: "add <sp> {}[{}]".format(
@@ -204,6 +208,7 @@ class Operator:
         self.operands = [Operand(i) for i in m.get("operands")]
         self.operator = m.get("operator")
         self.rtype = m.get("rtype")
+        self.commutative = m.get("commutative")
 
     def rst(self):
         try:

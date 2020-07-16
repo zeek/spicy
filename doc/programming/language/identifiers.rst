@@ -11,8 +11,8 @@ Declarations
     Identifiers used in declarations of variables, types, functions,
     etc., must start with a letter or underscore, and otherwise
     contain only alphanumerical characters and underscores. They must
-    not start with two underscores, and cannot match any of Spicy's
-    built-in keywords.
+    not start with two underscores, and cannot match any of
+    :ref:`Spicy's built-in keywords <reserved_keywords>`.
 
 Attributes
     Identifiers augmenting other language elements with additional

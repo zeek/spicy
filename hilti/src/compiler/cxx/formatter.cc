@@ -8,20 +8,25 @@
 using namespace hilti::detail::cxx;
 using namespace hilti::detail::cxx::formatter;
 
-void Formatter::pushNamespace(const std::string& relative_ns) {
+void Formatter::pushNamespace(std::string relative_ns) {
     auto& f = *this;
     f.separator();
+
+    if ( util::startsWith(relative_ns, "::") )
+        relative_ns = relative_ns.substr(3);
 
     if ( util::endsWith(relative_ns, "::") ) {
         assert(relative_ns != "::");
         // Add an nonymous namespace.
         f << "namespace " << relative_ns.substr(0, relative_ns.size() - 2) << " { namespace { ";
+        f.indent();
+        f.eol();
     }
-    else
+    else if ( relative_ns.size() ) {
         f << "namespace " << relative_ns << " {";
-
-    f.indent();
-    f.eol();
+        f.indent();
+        f.eol();
+    }
 
     _namespaces.push_back(relative_ns);
 }
@@ -57,16 +62,18 @@ void Formatter::popNamespace() {
     auto& f = *this;
     const auto& ns = _namespaces.back();
 
-    f.dedent();
+    if ( ns.size() ) {
+        f.dedent();
 
-    if ( util::endsWith(ns, "::") )
-        f << "} }";
-    else
-        f << '}';
+        if ( util::endsWith(ns, "::") )
+            f << "} }";
+        else
+            f << '}';
 
-    f.eol();
+        f.eol();
+    }
+
     f.separator();
-
     _namespaces.pop_back();
 }
 

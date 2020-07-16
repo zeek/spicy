@@ -14,14 +14,16 @@ all: html
 clean:
 	rm -rf $(DESTDIR)
 
-html: Makefile autogen-docs
+html: Makefile autogen-docs sphinx
+
+sphinx:
 	@rm -f "$(BUILDDIR)/doc-root" && ln -s "../doc" "$(BUILDDIR)/doc-root"
 	@  # Since Sphinx expects the Doxygen output directory, create it here to
 	@  # allow users to build without Doxygen, but still have Sphinx succeed.
 	@mkdir -p doxygen-output
 	@  # The RTD theme might be producing RemovedInSphinx30Warning
 	@PYTHONWARNINGS="ignore" PATH=$(BUILDDIR)/bin:$$PATH $(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(DESTDIR)" $(SPHINXOPTS) $(O)
-	@echo Built documentation in $(DESTDIR)/html/index.html
+	@echo Built documentation in $(realpath $(DESTDIR)/html/index.html)
 
 autogen-docs:
 	@echo Auto-generating reference documentation ...

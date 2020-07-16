@@ -27,6 +27,7 @@ Available options:
     --cxxflags              Print C++ flags when compiling code using the HILTI runtime library
     --debug                 Output flags for working with debugging versions.
     --distbase              Print path of the HILTI source distribution.
+    --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
     --help                  Print this usage summary
     --hiltic                Print the full path to the hiltic binary.
     --jit-compiler          Prints the version of the JIT compiler if compiled with corresponding support.
@@ -48,6 +49,7 @@ void join(std::vector<U>& a, const std::vector<V>& b) {
 
 int main(int argc, char** argv) {
     bool want_debug = false;
+    bool want_dynamic_linking = false;
 
     std::list<string> cxxflags;
     std::list<string> ldflags;
@@ -66,6 +68,11 @@ int main(int argc, char** argv) {
 
         if ( opt == "--debug" ) {
             want_debug = true;
+            continue;
+        }
+
+        if ( opt == "--dynamic-loading" ) {
+            want_dynamic_linking = true;
             continue;
         }
 
@@ -134,10 +141,31 @@ int main(int argc, char** argv) {
         }
 
         if ( opt == "--ldflags" ) {
+            if ( want_dynamic_linking ) {
+#if __APPLE__
+                result.push_back("-Wl,-all_load");
+#endif
+
+#if __linux__
+                result.push_back("-Wl,--export-dynamic");
+                result.push_back("-Wl,--whole-archive");
+#endif
+            }
+
             if ( want_debug )
                 join(result, hilti::configuration().runtime_ld_flags_debug);
             else
                 join(result, hilti::configuration().runtime_ld_flags_release);
+
+            if ( want_dynamic_linking ) {
+#if __APPLE__
+                result.push_back("-Wl,-noall_load");
+#endif
+
+#if __linux__
+                result.push_back("-Wl,--no-whole-archive");
+#endif
+            }
 
             continue;
         }

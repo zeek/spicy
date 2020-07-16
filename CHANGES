@@ -1,4 +1,39 @@
 
+0.4.0-659 | 2020-07-16 06:34:30 +0000
+
+  * GH-352: Add chapter on custom host applications to manual. (Robin
+    Sommer, Corelight)
+
+  * Series of smaller documentation updates. (Robin Sommer, Corelight)
+
+    * Add documentation for types time/interval/optional.
+    * Add list of reservered keywords.
+    * Update debugging sections.
+    * Add note about commutativity to operator documentation where applicable.
+    * Add note about checking if optional unit variables remains unset still.
+    * Fix typo in documentation for 'print'.
+    * Fix an operator's description.
+
+  * GH-408: Remove "time + time" operator. (Robin Sommer, Corelight)
+
+  * GH-404: Add `time_ns(X)` and `interval_ns(X)` expressions to
+    instantiate values with nanosecond resolution. (Robin Sommer,
+    Corelight)
+
+  * Extend `{hilti,spicy}-config` with a `--dynamic-loading` option.
+    This adapts `--ldflags` for applications that want to dynamically
+    load precompiled parsers. (Robin Sommer, Corelight)
+
+  * Make `&cxxname` usable for user code: The code generator now
+    automatically adds prototypes for the corresponding C++ functions.
+    To optionally disable that, a new attribute `&have_prototype` has
+    been added. We also no longer require explicit global scoping for
+    `&cxxname` IDs. (Robin Sommer, Corelight)
+
+  * Fix joint usage of options `spicyc` options `-cKo`. This would end
+    up saving only the linker code, not the combined parsing + linker
+    code, in the specific output file. (Robin Sommer, Corelight)
+
 0.4.0-645 | 2020-07-16 06:33:23 +0000
 
   * GH-423: Update configure's usage message. (Robin Sommer,

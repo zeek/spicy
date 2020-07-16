@@ -773,13 +773,15 @@ void cxx::declaration::from_json(const json& j, cxx::declaration::Type& t) {
 }
 
 void cxx::declaration::to_json(json& j, const cxx::declaration::Function& f) {
-    j = json{{"result", f.result}, {"id", f.id}, {"args", f.args}, {"linkage", f.linkage}, {"attribute", f.attribute}};
+    j = json{{"result", f.result}, {"id", f.id},           {"args", f.args},
+             {"const", f.const_},  {"linkage", f.linkage}, {"attribute", f.attribute}};
 }
 
 void cxx::declaration::from_json(const json& j, cxx::declaration::Function& f) {
     f.result = j.at("result").get<std::string>();
     f.id = j.at("id").get<cxx::ID>();
     f.args = j.at("args").get<std::vector<Argument>>();
+    f.const_ = j.at("const").get<bool>();
     f.linkage = j.at("linkage").get<std::string>();
     f.attribute = j.at("attribute").get<std::string>();
 }

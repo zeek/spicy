@@ -75,6 +75,7 @@ class SpicyOperator(SpicyGeneric):
         result = m[1].replace("~", " ")
         args = m[2:] if len(m) > 1 else []
         op = ""
+        postfix = ""
 
         for a in args:
             if a.startswith("t:"):
@@ -92,6 +93,9 @@ class SpicyOperator(SpicyGeneric):
             elif a == "<sp>":
                 op += " "
 
+            elif a == "$commutative$":
+                postfix += " (commutative)"
+
             else:
                 op += a.replace("~", " ")
 
@@ -100,6 +104,9 @@ class SpicyOperator(SpicyGeneric):
         if result != "-":
             signode += nodes.inline("", " → ")
             signode += nodes.literal("", result)
+
+        if postfix:
+            signode += nodes.superscript("", postfix)
 
         return name
 

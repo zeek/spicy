@@ -1,13 +1,13 @@
 module spicy_rt {
 
-public type ParseError = exception &cxxname="::spicy::rt::ParseError";
-public type UnitAlreadyConnected = exception &cxxname="::spicy::rt::UnitAlreadyConnected";
+public type ParseError = exception &cxxname="spicy::rt::ParseError";
+public type UnitAlreadyConnected = exception &cxxname="spicy::rt::UnitAlreadyConnected";
 
 # State stored inside a unit to allow connecting it to a sink.
-public type SinkState = __library_type("::spicy::rt::sink::detail::State*");
+public type SinkState = __library_type("spicy::rt::sink::detail::State*");
 
-public type ParsedUnit = __library_type("::spicy::rt::ParsedUnit");
-public type TypeInfo = __library_type("const ::hilti::rt::TypeInfo*");
+public type ParsedUnit = __library_type("spicy::rt::ParsedUnit");
+public type TypeInfo = __library_type("const hilti::rt::TypeInfo*");
 
 # Type for a Sink instance. When adding methods here, extend the C++-side spicy::rt::Sink type as well.
 public type Sink = struct {
@@ -25,18 +25,18 @@ public type Sink = struct {
     method void skip(uint<64> seq);
     method void trim(uint<64> seq);
     method void write(bytes data, optional<uint<64>> seq = Null, optional<uint<64>> len = Null);
-} &cxxname="::spicy::rt::Sink";
+} &cxxname="spicy::rt::Sink";
 
-public type HiltiResumable = __library_type("::hilti::rt::Resumable");
+public type HiltiResumable = __library_type("hilti::rt::Resumable");
 
-public type Filters = __library_type("::spicy::rt::filter::detail::Filters");
-public type Forward = __library_type("::spicy::rt::filter::detail::Forward");
+public type Filters = __library_type("spicy::rt::filter::detail::Filters");
+public type Forward = __library_type("spicy::rt::filter::detail::Forward");
 
-declare public strong_ref<stream> filter_init(inout any unit, inout value_ref<stream> data, view<stream> cur) &cxxname="::spicy::rt::filter::init";
-declare public void filter_connect(inout any unit, strong_ref<*> filter) &cxxname="::spicy::rt::filter::connect";
-declare public void filter_disconnect(inout any unit) &cxxname="::spicy::rt::filter::disconnect";
-declare public void filter_forward(inout any filter, bytes b) &cxxname="::spicy::rt::filter::forward";
-declare public void filter_forward_eod(inout any filter) &cxxname="::spicy::rt::filter::forward_eod";
+declare public strong_ref<stream> filter_init(inout any unit, inout value_ref<stream> data, view<stream> cur) &cxxname="spicy::rt::filter::init" &have_prototype;
+declare public void filter_connect(inout any unit, strong_ref<*> filter) &cxxname="spicy::rt::filter::connect" &have_prototype;
+declare public void filter_disconnect(inout any unit) &cxxname="spicy::rt::filter::disconnect" &have_prototype;
+declare public void filter_forward(inout any filter, bytes b) &cxxname="spicy::rt::filter::forward" &have_prototype;
+declare public void filter_forward_eod(inout any filter) &cxxname="spicy::rt::filter::forward_eod" &have_prototype;
 
 # Type for a parser definition. When making changes, adapt the C++-side
 # spicy::rt::Parser as well.
@@ -49,26 +49,26 @@ public type Parser = struct {
     string description;
     any mime_types;
     vector<port> ports;
-} &cxxname="::spicy::rt::Parser";
+} &cxxname="spicy::rt::Parser";
 
-public type MIMEType = __library_type("::spicy::rt::MIMEType");
+public type MIMEType = __library_type("spicy::rt::MIMEType");
 
-declare public void registerParser(inout Parser parse_func, any instance) &cxxname="::spicy::rt::detail::registerParser";
-declare public void printParserState(string unit_id, value_ref<stream> data, view<stream> cur, int<64> lahead, iterator<stream> lahead_end, string literal_mode, bool trim) &cxxname="::spicy::rt::detail::printParserState";
+declare public void registerParser(inout Parser parse_func, any instance) &cxxname="spicy::rt::detail::registerParser" &have_prototype;
+declare public void printParserState(string unit_id, value_ref<stream> data, view<stream> cur, int<64> lahead, iterator<stream> lahead_end, string literal_mode, bool trim) &cxxname="spicy::rt::detail::printParserState" &have_prototype;
 
-declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="::spicy::rt::detail::waitForInputOrEod";
-declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream> cur, uint<64> n, inout strong_ref<Filters> filters) &cxxname="::spicy::rt::detail::waitForInputOrEod";
-declare public void waitForInput(inout value_ref<stream> data, view<stream> cur, string error_msg, string location, inout strong_ref<Filters> filters) &cxxname="::spicy::rt::detail::waitForInput";
-declare public void waitForInput(inout value_ref<stream> data, view<stream> cur, uint<64> n, string error_msg, string location, strong_ref<Filters> filters) &cxxname="::spicy::rt::detail::waitForInput";
-declare public bool waitForEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="::spicy::rt::detail::waitForEod";
+declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForInputOrEod" &have_prototype;
+declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream> cur, uint<64> n, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForInputOrEod" &have_prototype;
+declare public void waitForInput(inout value_ref<stream> data, view<stream> cur, string error_msg, string location, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForInput" &have_prototype;
+declare public void waitForInput(inout value_ref<stream> data, view<stream> cur, uint<64> n, string error_msg, string location, strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForInput" &have_prototype;
+declare public bool waitForEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForEod" &have_prototype;
 
-declare public bool atEod(inout value_ref<stream> data, view<stream> cur) &cxxname="::spicy::rt::detail::atEod";
-declare public bool haveEod(inout value_ref<stream> data, view<stream> cur) &cxxname="::spicy::rt::detail::haveEod";
+declare public bool atEod(inout value_ref<stream> data, view<stream> cur) &cxxname="spicy::rt::detail::atEod" &have_prototype;
+declare public bool haveEod(inout value_ref<stream> data, view<stream> cur) &cxxname="spicy::rt::detail::haveEod" &have_prototype;
 
 public type BitOrder = enum { LSB0, MSB0 } &cxxname="hilti::rt::integer::BitOrder";
   # TODO: Should accept BitOrder instead of enum<*> here.
-declare public uint<*> extractBits(uint<*> v, uint<64> lower, uint<64> upper, enum<*> order) &cxxname="::hilti::rt::integer::bits";
+declare public uint<*> extractBits(uint<*> v, uint<64> lower, uint<64> upper, enum<*> order) &cxxname="hilti::rt::integer::bits" &have_prototype;
 
-declare public void initializeParsedUnit(inout ParsedUnit punit, any unit, TypeInfo ti) &cxxname="::spicy::rt::ParsedUnit::initialize";
+declare public void initializeParsedUnit(inout ParsedUnit punit, any unit, TypeInfo ti) &cxxname="spicy::rt::ParsedUnit::initialize" &have_prototype;
 
 }

@@ -56,7 +56,7 @@
     Compares the two positions. The result is undefined if they are not
     referring to the same stream value.
 
-.. spicy:operator:: stream::iterator::Sum iterator<stream> t:iterator<stream> <sp> op:+ <sp> t:uint<64>
+.. spicy:operator:: stream::iterator::Sum iterator<stream> t:iterator<stream> <sp> op:+ <sp> t:uint<64> $commutative$
 
     Advances the iterator by the given number of stream.
 

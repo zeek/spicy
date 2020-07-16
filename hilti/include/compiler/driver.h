@@ -288,9 +288,10 @@ protected:
      *
      * @param p output file
      * @param binary true to open in binary mode
+     * @param append true to append to existing file
      * @return set if succesful, or an appropiate error result
      */
-    Result<std::ofstream> openOutput(const std::filesystem::path& p, bool binary = false);
+    Result<std::ofstream> openOutput(const std::filesystem::path& p, bool binary = false, bool append = false);
 
     /**
      * Helper function to open a file for reading.
