@@ -63,6 +63,9 @@ std::string Node::render(bool include_location) const {
 
         if ( auto cppid = t->cxxID() )
             s += util::fmt(" (cxx-id: %s)", *cppid);
+
+        if ( t->isWildcard() )
+            s += " (wildcard)";
     }
 
     else if ( auto e = this->tryAs<Expression>() )
