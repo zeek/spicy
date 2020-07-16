@@ -132,7 +132,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
 
     void operator()(const declaration::Constant& n) {
         auto x = cxx::declaration::Global{.id = {cg->unit()->cxxNamespace(), n.id()},
-                                          .type = "auto",
+                                          .type = cg->compile(n.type(), codegen::TypeUsage::Storage),
                                           .init = cg->compile(n.value()),
                                           .linkage = "const"};
 

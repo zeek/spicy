@@ -59,4 +59,7 @@ assert i_1p53 == -0x20000000000000p0;
 global real inexact = cast<real>(0x20000000000001);
 assert inexact == 0x20000000000000;
 
+const real i8const = 31;
+assert i8const == 31;
+
 }

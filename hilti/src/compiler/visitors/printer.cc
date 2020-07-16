@@ -291,7 +291,12 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const declaration::Constant& n) {
         out.beginLine();
-        out << linkage(n.linkage()) << "const " << n.id() << " = " << n.value() << ';';
+        out << linkage(n.linkage()) << "const ";
+
+        if ( ! n.hasAutomaticType() )
+            out << n.type();
+
+        out << ' ' << n.id() << " = " << n.value() << ';';
         out.endLine();
     }
 
