@@ -9,6 +9,7 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/tuple.h>
+#include <hilti/ast/types/unknown.h>
 
 namespace hilti {
 namespace ctor {
@@ -23,11 +24,21 @@ public:
     bool operator==(const Tuple& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const {
+    Type type() const {
         auto v1 = value();
         auto v2 = std::vector<Type>{};
-        std::transform(v1.begin(), v1.end(), std::back_inserter(v2), [](const Expression& e) { return e.type(); });
-        return type::Tuple(v2, meta());
+        bool is_unknown = false;
+        std::transform(v1.begin(), v1.end(), std::back_inserter(v2), [&is_unknown](const Expression& e) {
+            if ( e.type() == type::unknown )
+                is_unknown = true;
+
+            return e.type();
+        });
+
+        if ( is_unknown )
+            return type::unknown;
+        else
+            return type::Tuple(v2, meta());
     }
 
     /** Implements `Ctor` interface. */
