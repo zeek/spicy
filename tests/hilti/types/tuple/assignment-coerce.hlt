@@ -14,4 +14,11 @@ hilti::print(a);
 a = b;
 hilti::print(b);
 
+type Y = struct {
+    uint<8> x1;
+    uint<8> x2;
+};
+
+hilti::print([(i.x1, i.x2) for i in vector<Y>([$x1=1, $x2=1], [$x1=2, $x2=2])]);
+
 }
