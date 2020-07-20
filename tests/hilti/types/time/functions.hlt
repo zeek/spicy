@@ -6,5 +6,5 @@ module Test {
 import hilti;
 
 global t = hilti::current_time();
-assert t > time(1564617600) && t < time(1609372800);
+assert t > time(1564617600) && t < time(1893456000);
 }
