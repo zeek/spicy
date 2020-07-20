@@ -237,7 +237,7 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
 %type <strings>                     re_patterns
 %type <str>                         re_pattern_constant
 %type <switch_case>                 switch_case
-%type <switch_cases>                switch_cases
+%type <switch_cases>                switch_cases opt_switch_cases
 %type <try_catch>                   try_catch
 %type <try_catches>                 try_catches
 %type <type_flags>                  opt_type_flags /* type_flag */
@@ -434,9 +434,9 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
                                                  { $$ = hilti::statement::While(std::move($3), {}, std::move($5), std::move($6), __loc__); }
               | FOR '(' local_id IN expr ')' block
                                                  { $$ = hilti::statement::For(std::move($3), std::move($5), std::move($7), __loc__); }
-              | SWITCH '(' expr ')' '{' switch_cases '}'
+              | SWITCH '(' expr ')' '{' opt_switch_cases '}'
                                                  { $$ = hilti::statement::Switch(std::move($3), std::move($6), __loc__); }
-              | SWITCH '(' local_init_decl ')' '{' switch_cases '}'
+              | SWITCH '(' local_init_decl ')' '{' opt_switch_cases '}'
                                                  { $$ = hilti::statement::Switch($3, expression::UnresolvedID($3.as<declaration::LocalVariable>().id()), std::move($6), __loc__); }
               | TRY block try_catches
                                                  { $$ = hilti::statement::Try(std::move($2), std::move($3), __loc__); }
@@ -473,6 +473,10 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
 
 opt_else_block
               : ELSE block                       { $$ = std::move($2); }
+              | /* empty */                      { $$ = {}; }
+
+opt_switch_cases
+              : switch_cases                     { $$ = std::move($1); }
               | /* empty */                      { $$ = {}; }
 
 switch_cases  : switch_cases switch_case         { $$ = std::move($1); $$.push_back(std::move($2)); }
