@@ -27,6 +27,16 @@ function void f2(int<64> i) {
     }
 }
 
+function void f3() {
+    switch ( 1 ) {
+        default: hilti::print("3*");
+    }
+}
+
+function void f4() {
+    switch ( 1 ) {} # will throw
+}
+
 f1(1);
 f1(2);
 f1(3);
@@ -39,6 +49,9 @@ f2(3);
 f2(5);
 f2(10);
 
+f3();
+assert-exception f4();
+
 # Test coercion
 global x = 3.0;
 switch ( x ) {
@@ -48,10 +61,10 @@ switch ( x ) {
 
 local i = 1;
 
-# TODO: Don't have integer increment operator yet.
-#switch ( ++i ) {
-#    case 2: hilti::print("A");
-#    case 3: hilti::print("B");
-#    case 4: hilti::print("C");
-#}
+switch ( ++i ) {
+    case 2: hilti::print("A");
+    case 3: hilti::print("B");
+    case 4: hilti::print("C");
+}
+
 }

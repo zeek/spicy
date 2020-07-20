@@ -269,10 +269,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         }
     }
 
-    void operator()(const statement::Switch& n, position_t p) {
-        if ( n.cases().empty() )
-            error("switch statement has no cases", p);
-    }
+    void operator()(const statement::Switch& n, position_t p) {}
 
     void operator()(const statement::Throw& n, position_t p) {
         if ( auto e = n.expression() ) {

@@ -248,14 +248,19 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                 block->addElseIf(cond, body);
         }
 
+        cxx::Block default_;
+
         if ( auto d = n.default_() )
-            block->addElse(cg->compile(d->body()));
-        else {
-            cxx::Block throw_;
-            throw_.addStatement(fmt("throw hilti::rt::UnhandledSwitchCase(hilti::rt::to_string_for_print(%s), \"%s\")",
-                                    cxx_id, n.meta().location()));
-            block->addElse(std::move(throw_));
-        }
+            default_ = cg->compile(d->body());
+        else
+            default_.addStatement(
+                fmt("throw hilti::rt::UnhandledSwitchCase(hilti::rt::to_string_for_print(%s), \"%s\")",
+                    (first ? cxx_init : cxx_id), n.meta().location()));
+
+        if ( first )
+            block->addBlock(std::move(default_));
+        else
+            block->addElse(std::move(default_));
     }
 
     void operator()(const statement::Throw& n, position_t p) {
