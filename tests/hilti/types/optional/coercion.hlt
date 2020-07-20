@@ -1,0 +1,17 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+# Test coercion of inside optionals.
+
+module Foo {
+
+import hilti;
+
+function tuple<optional<tuple<y: string>>> bar() {
+        local tuple<optional<tuple<string>>> x;
+        return x;
+}
+
+hilti::print(bar());
+
+}

@@ -41,6 +41,61 @@ Result<Ctor> hilti::coerceCtor(Ctor c, const Type& dst, bitmask<CoercionStyle> s
     return result::Error("could not coeerce type for constructor");
 }
 
+static Result<Type> _coerceParameterizedType(const Type& src_, const Type& dst_, bitmask<CoercionStyle> style) {
+    auto src = type::effectiveType(src_);
+    Type dst = type::effectiveType(dst_);
+
+    if ( src == dst )
+        return dst;
+
+    if ( src.typename_() != dst.typename_() )
+        return {};
+
+    if ( dst.isWildcard() )
+        return src;
+
+    auto params1 = src.typeParameters();
+    auto params2 = dst.typeParameters();
+
+    if ( params1.size() != params2.size() )
+        return {};
+
+    bool have_wildcard = false;
+    for ( auto&& [p1, p2] : util::zip2(params1, params2) ) {
+        auto t1 = p1.tryAs<Type>();
+        auto t2 = p2.tryAs<Type>();
+
+        if ( ! (t1 && t2) )
+            // Don't have a generic node comparison for the individual
+            // parameters, so just stop here and decline. (Note that the case
+            // of src == dst has been handled already, that usually does it.)
+            return {};
+
+        t1 = type::effectiveType(*t1);
+        t2 = type::effectiveType(*t2);
+
+        if ( t2->isWildcard() )
+            have_wildcard = true;
+
+        if ( const auto& orig = t1->originalNode(); (style & CoercionStyle::PreferOriginalType) && orig )
+            t1 = orig->as<Type>();
+
+        if ( const auto& orig = t2->originalNode(); (style & CoercionStyle::PreferOriginalType) && orig )
+            t2 = orig->as<Type>();
+
+        if ( ! coerceType(*t1, *t2, style) )
+            return {};
+    }
+
+    // If one of the parameter types is a wildcard, we return the original type
+    // instead of the coerced destination type. That's a heuristic that isn't
+    // perfect, but will generally do the job. What we'd actually need is a
+    // generic way to retype the type parameters, so that we could coerce them
+    // individually. But we don't have that capability because all the types
+    // compute them dynamically.
+    return have_wildcard ? src : dst;
+}
+
 static Result<Type> _coerceType(const Type& src_, const Type& dst_, bitmask<CoercionStyle> style) {
     auto src = type::effectiveType(src_);
     Type dst = type::effectiveType(dst_);
@@ -51,13 +106,7 @@ static Result<Type> _coerceType(const Type& src_, const Type& dst_, bitmask<Coer
     // likely need more work.
 
     if ( src == dst )
-        return dst;
-
-    if ( ! type::isConstCompatible(src, dst) && ! (style & CoercionStyle::Assignment) )
-        return result::Error("types' constness is incompatible");
-
-    if ( type::isParameterized(dst) && dst.isWildcard() && dst.typename_() == src.typename_() )
-        return type::nonConstant(src_);
+        return src;
 
     if ( style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall) ) {
         if ( auto opt = dst.tryAs<type::Optional>() ) {
@@ -85,6 +134,11 @@ static Result<Type> _coerceType(const Type& src_, const Type& dst_, bitmask<Coer
         }
     }
 
+    if ( type::isParameterized(src) && type::isParameterized(dst) ) {
+        if ( auto x = _coerceParameterizedType(src, dst, style) )
+            return *x;
+    }
+
     for ( auto p : plugin::registry().plugins() ) {
         if ( ! (p.coerce_type) )
             continue;
@@ -93,7 +147,7 @@ static Result<Type> _coerceType(const Type& src_, const Type& dst_, bitmask<Coer
             return type::nonConstant(*nt);
     }
 
-    return result::Error("cannot coeerce types");
+    return result::Error("cannot coerce types");
 }
 
 // Public version going through all plugins.
@@ -234,50 +288,9 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src_
                 RETURN(no_change);
         }
 
-        if ( src.typename_() == dst.typename_() && e.isConstant() == type::isConstant(dst) ) {
-            if ( dst.isWildcard() )
-                RETURN(no_change);
-
-            if ( type::isParameterized(src) && type::isParameterized(dst) ) {
-                auto params1 = type::effectiveType(src).typeParameters();
-                auto params2 = type::effectiveType(dst).typeParameters();
-
-                if ( params1.size() == params2.size() ) {
-                    bool match = true;
-                    for ( auto&& [p1, p2] : util::zip2(params1, params2) ) {
-                        auto t1 = p1.tryAs<Type>();
-                        auto t2 = p2.tryAs<Type>();
-
-                        if ( ! (t1 && t2) ) {
-                            // Don't have a generic node comparision for the
-                            // individual parameters, so just compare the
-                            // whole types directly.
-                            match = (src == dst);
-                            break;
-                        }
-
-                        t1 = type::effectiveType(*t1);
-                        t2 = type::effectiveType(*t2);
-
-                        if ( const auto& orig = t1->originalNode();
-                             (style & CoercionStyle::PreferOriginalType) && orig )
-                            t1 = orig->as<Type>();
-
-                        if ( const auto& orig = t2->originalNode();
-                             (style & CoercionStyle::PreferOriginalType) && orig )
-                            t2 = orig->as<Type>();
-
-                        if ( ! coerceType(*t1, *t2, CoercionStyle::TryExactMatch) ) {
-                            match = false;
-                            break;
-                        }
-                    }
-
-                    if ( match )
-                        RETURN(no_change);
-                }
-            }
-        }
+        if ( e.isConstant() == type::isConstant(dst) && type::isParameterized(src) && type::isParameterized(dst) &&
+             _coerceParameterizedType(src, dst, CoercionStyle::TryExactMatch) )
+            RETURN(no_change); // can say no_change because we're in the ExactMatch case
     }
 
     if ( style & CoercionStyle::TryConstPromotion ) {

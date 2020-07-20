@@ -1,4 +1,17 @@
 
+0.4.0-670 | 2020-07-20 15:25:04 +0000
+
+  * GH-415: Add missing type coercion for parameterized types. (Robin
+    Sommer, Corelight)
+
+  * GH-395: Fix tuple constructor expressions to not return a type
+    until all elements are fully resolved. (Robin Sommer, Corelight)
+
+  * GH-402: Allow switch statements without any "case". (Robin Sommer,
+    Corelight)
+
+  * GH-387: Extend a test's life time. (Robin Sommer, Corelight)
+
 0.4.0-661 | 2020-07-16 07:06:14 +0000
 
   * Fix build failures from building against Zeek 3.2 dev versions.
