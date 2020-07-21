@@ -1,0 +1,60 @@
+FROM centos:7
+
+ARG SKIP_BUILD=
+
+WORKDIR /root
+
+ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
+ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy/"
+
+RUN yum install -y epel-release yum-utils
+RUN yum update -y
+
+# Install and activate devtoolsset-9.
+RUN yum install -y centos-release-scl && yum-config-manager --enable rhel-server-rhscl-7-rpms && yum install -y devtoolset-9
+SHELL [ "/usr/bin/scl", "enable", "devtoolset-9"]
+
+# Install development tools.
+RUN yum install -y ccache git make ninja-build python3 python3-pip vim doxygen diffutils m4
+
+# Need a more recent CMake than available.
+RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - && ln -s /usr/local/cmake-3.16.4-Linux-x86_64/bin/cmake /usr/local/bin
+
+# Need to compile Clang, there don't seem to be packages out there for v9.
+RUN mkdir -p /opt/clang9/src && \
+    cd /opt/clang9/src && \
+    git clone --branch llvmorg-9.0.1 --single-branch --recursive https://github.com/llvm/llvm-project.git && \
+    cd llvm-project && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DLLVM_TARGETS_TO_BUILD=host -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON -G Ninja ../llvm && \
+    ninja install && \
+    cd ../../.. && \
+    rm -rf /opt/clang9
+
+# This is a bit of a hack but clang++ won't find the devtools' libstc++ if run from /usr/local.
+RUN ln -s /usr/local/bin/clang++ /opt/rh/devtoolset-9/root/usr/bin
+
+# Install Spicy dependencies.
+RUN yum install -y python3-sphinx
+RUN pip3 install btest sphinx-rtd-theme
+
+# Need a more recent Bison than available.
+RUN cd /opt && curl -L http://ftp.gnu.org/gnu/bison/bison-3.5.tar.gz | tar xzvf - && cd /opt/bison-3.5 && ./configure && make install
+
+# Need a more recent flex than available.
+RUN cd /opt && curl -L https://github.com/westes/flex/files/981163/flex-2.6.4.tar.gz | tar xzvf - && cd /opt/flex-2.6.4  && ./configure && make install
+
+# Install Zeek dependencies.
+RUN yum install -y libpcap-devel openssl-devel python3-devel swig zlib-devel
+
+# Install Zeek.
+RUN mkdir -p /opt/zeek/src
+RUN cd /opt/zeek && git clone -b v3.0.3 --recursive https://github.com/zeek/zeek src
+RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd ../.. && rm -rf zeek
+
+WORKDIR /root
+
+# Install Spicy.
+ADD . /opt/spicy/src
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && CXXFLAGS="-isystem /opt/rh/devtoolset-9/root/usr/include/c++/9" ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=/opt/rh/devtoolset-9/root/usr/bin/clang++ && ninja -C build install && rm -rf build)
