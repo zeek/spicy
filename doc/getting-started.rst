@@ -352,12 +352,15 @@ specific parser. Here's a small C++ program that parses input with our
 
 .. code::
 
-    # spicy-build -o a.out my-http.cc my-http.spicy
+    # spicy-build -S -o a.out my-http.cc my-http.spicy
     # echo "GET /index.html HTTP/1.0" | ./a.out
     GET, /index.html, 1.0
     # echo 'Hello, World!' | ./a.out
     parse error: failed to match regular expression (my-http.spicy:7)
 
-The code in ``my-http.cc`` is indeed the core of what ``spicy-driver``
-does, if we ignore the dynamic JIT compilation. See
-:ref:`host_applications`  for more.
+We are using ``-S`` with ``spicy-build`` because we're providing our
+own ``main`` function.
+
+The code in ``my-http.cc`` is the core of what ``spicy-driver`` does
+if we ignore the dynamic JIT compilation. See :ref:`host_applications`
+for more.
