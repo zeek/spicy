@@ -417,6 +417,15 @@ TEST_CASE("append") {
         CHECK_EQ(to_string(b), "b\"123456\"");
         CHECK_EQ(*it, '1');
     }
+
+    SUBCASE("Byte") {
+        b.append('4');
+        b.append('5');
+        b.append('6');
+
+        CHECK_EQ(to_string(b), "b\"123456\"");
+        CHECK_EQ(*it, '1');
+    }
 }
 
 TEST_CASE("assign") {

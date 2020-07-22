@@ -102,6 +102,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::bytes::Sum& n) { return fmt("%s + %s", op0(n), op1(n)); }
     result_t operator()(const operator_::bytes::SumAssignBytes& n) { return fmt("%s.append(%s)", op0(n), op1(n)); }
     result_t operator()(const operator_::bytes::SumAssignStreamView& n) { return fmt("%s.append(%s)", op0(n), op1(n)); }
+    result_t operator()(const operator_::bytes::SumAssignUInt8& n) { return fmt("%s.append(%s)", op0(n), op1(n)); }
     result_t operator()(const operator_::bytes::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
     result_t operator()(const operator_::bytes::In& n) { return fmt("std::get<0>(%s.find(%s))", op1(n), op0(n)); }

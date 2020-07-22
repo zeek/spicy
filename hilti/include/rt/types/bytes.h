@@ -204,6 +204,9 @@ public:
     /** Appends the contents of a stream view to the data. */
     void append(const stream::View& view) { Base::append(view.data()); }
 
+    /** Appends a single byte the data. */
+    void append(const uint8_t x) { Base::append(1, x); }
+
     /** Returns the bytes' data as a string instance. */
     const std::string& str() const& { return *this; }
 

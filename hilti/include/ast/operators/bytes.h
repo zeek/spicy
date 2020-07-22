@@ -83,6 +83,8 @@ STANDARD_OPERATOR_2x(bytes, SumAssignBytes, SumAssign, type::Bytes(), type::Byte
                      "Appends one bytes value to another.");
 STANDARD_OPERATOR_2x(bytes, SumAssignStreamView, SumAssign, type::Bytes(), type::Bytes(),
                      type::constant(type::stream::View()), "Appends a view of stream data to a bytes instance.");
+STANDARD_OPERATOR_2x(bytes, SumAssignUInt8, SumAssign, type::Bytes(), type::Bytes(), type::UnsignedInteger(8),
+                     "Appends a single byte to the data.");
 
 BEGIN_METHOD(bytes, Find)
     auto signature() const {
