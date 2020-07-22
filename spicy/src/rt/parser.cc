@@ -30,7 +30,7 @@ void detail::printParserState(const std::string& unit_id, const hilti::rt::Value
 
     auto [input_data, input_dots] = str(cur.begin(), cur.end());
 
-    if ( lahead ) {
+    if ( lahead && ! cur.begin().isEnd() ) {
         std::tie(lah_data, lah_dots) = str(cur.begin(), lahead_end);
         lah_str = hilti::rt::fmt("%" PRId32, lahead);
     }
