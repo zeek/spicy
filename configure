@@ -13,8 +13,6 @@ cmake_build_type="RelWithDebInfo"
 cmake_clang_root=""
 cmake_c_compiler=""
 cmake_cxx_compiler=""
-cmake_c_system_include_dirs=""
-cmake_cxx_system_include_dirs=""
 cmake_clang_resource_dir=""
 cmake_flex_root=""
 cmake_generator=""
@@ -71,8 +69,6 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --with-c-compiler=<path>           Set C compiler to use
     --with-cxx-compiler=<path>         Set C++ compiler to use
     --with-flex=<prefix>               Set prefix of Flex installation
-    --with-c-system-include-dirs=<path>   Set additional include directories for C library headers during JIT (separate with colons)
-    --with-cxx-system-include-dirs=<path> Set additional include directories for C++ library headers during JIT (separate with colons)
     --with-clang-resource-dir=<path>   Set resource directory to use with clang during JIT
     --with-llvm-root=<prefix>          Set prefix of LLVM installation
     --with-zeek=PATH                   Path to Zeek installation [default: ${cmake_zeek_root_dir}]
@@ -136,8 +132,6 @@ while [ $# -ne 0 ]; do
             fi
             ;;
 
-        --with-c-system-include-dirs=*)    cmake_c_system_include_dirs="${optarg}";;
-        --with-cxx-system-include-dirs=*)  cmake_cxx_system_include_dirs="${optarg}";;
         --with-clang-resource-dir=*)       cmake_clang_resource_dir="${optarg}";;
         --with-flex=*)                     cmake_flex_root="${optarg}";;
         --with-bison=*)                    cmake_bison_root="${optarg}";;
@@ -165,8 +159,6 @@ append_cache_entry CMAKE_BUILD_TYPE             STRING "${cmake_build_type}"
 append_cache_entry CMAKE_C_COMPILER             PATH   "${cmake_c_compiler}"
 append_cache_entry CMAKE_CXX_COMPILER           PATH   "${cmake_cxx_compiler}"
 append_cache_entry CLANG_RESOURCE_DIR           PATH   "${cmake_clang_resource_dir}"
-append_cache_entry C_SYSTEM_INCLUDE_DIRS        PATH   "${cmake_c_system_include_dirs}"
-append_cache_entry CXX_SYSTEM_INCLUDE_DIRS      PATH   "${cmake_cxx_system_include_dirs}"
 append_cache_entry CMAKE_INSTALL_PREFIX         PATH   "${cmake_install_prefix}"
 append_cache_entry FLEX_ROOT                    PATH   "${cmake_flex_root}"
 append_cache_entry HILTI_HAVE_JIT               BOOL   "${cmake_hilti_have_jit}"

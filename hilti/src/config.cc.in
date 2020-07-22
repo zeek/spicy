@@ -56,8 +56,6 @@ void Configuration::init(bool use_build_directory) {
 
     jit_clang_executable = "${CLANG_EXECUTABLE}";
     jit_clang_resource_dir = "${CLANG_RESOURCE_DIR}";
-    jit_c_system_include_dirs = "${C_SYSTEM_INCLUDE_DIRS}";
-    jit_cxx_system_include_dirs = "${CXX_SYSTEM_INCLUDE_DIRS}";
 
     std::vector<std::string> library_paths;
 
