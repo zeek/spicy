@@ -1,4 +1,24 @@
 
+0.4.0-681 | 2020-07-23 14:55:25 +0000
+
+  * Fix potential invalid iterator deref in debug output. (Robin Sommer, Corelight)
+
+  * Add operator "bytes += uint8" for adding a single byte. (Robin Sommer, Corelight)
+
+  * Fix missing filter end-of-input signal. (Robin Sommer, Corelight)
+
+  * GH-423: Remove C{,XX}_SYSTEM_INCLUDE_DIRS cmake flags. (Robin
+    Sommer, Corelight)
+
+    If this functionality is needed, set CXX_FLAGS instead during
+    configure, e.g.:
+
+        CXXFLAGS="-isystem /opt/rh/devtoolset-9/root/usr/include/c++/9" ./configure ...
+
+  * GH-441: Fix generation of lists of reserved words. (Robin Sommer, Corelight)
+
+  * GH-449: Fix documentation example. (Robin Sommer, Corelight)
+
 0.4.0-670 | 2020-07-20 15:25:04 +0000
 
   * GH-415: Add missing type coercion for parameterized types. (Robin

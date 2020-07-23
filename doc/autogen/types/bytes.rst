@@ -159,6 +159,10 @@
 
     Appends one bytes value to another.
 
+.. spicy:operator:: bytes::SumAssign bytes t:bytes <sp> op:+= <sp> t:uint<8>
+
+    Appends a single byte to the data.
+
 .. spicy:operator:: bytes::SumAssign bytes t:bytes <sp> op:+= <sp> t:view<stream>
 
     Appends a view of stream data to a bytes instance.
