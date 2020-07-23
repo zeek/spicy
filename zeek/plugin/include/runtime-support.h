@@ -384,11 +384,11 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Port& p, ::zeek::TypePtr target, s
         throw TypeMismatch("port", target, location);
 
     switch ( p.protocol() ) {
-        case hilti::rt::Protocol::TCP: return zeek::compat::val_mgr_Port(p.port(), TransportProto::TRANSPORT_TCP);
+        case hilti::rt::Protocol::TCP: return zeek::compat::val_mgr_Port(p.port(), ::TransportProto::TRANSPORT_TCP);
 
-        case hilti::rt::Protocol::UDP: return zeek::compat::val_mgr_Port(p.port(), TransportProto::TRANSPORT_UDP);
+        case hilti::rt::Protocol::UDP: return zeek::compat::val_mgr_Port(p.port(), ::TransportProto::TRANSPORT_UDP);
 
-        case hilti::rt::Protocol::ICMP: return zeek::compat::val_mgr_Port(p.port(), TransportProto::TRANSPORT_ICMP);
+        case hilti::rt::Protocol::ICMP: return zeek::compat::val_mgr_Port(p.port(), ::TransportProto::TRANSPORT_ICMP);
 
         default: throw InvalidValue("port value with undefined protocol", location);
     }

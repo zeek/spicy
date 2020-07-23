@@ -5,6 +5,7 @@
 #include <zeek-spicy/autogen/config.h>
 #include <zeek-spicy/plugin.h>
 #include <zeek-spicy/runtime-support.h>
+#include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
 
 // Zeek includes
@@ -76,10 +77,10 @@ void rt::raise_event(EventHandlerPtr handler, const hilti::rt::Vector<::zeek::Va
                                zeek::compat::TypeList_GetTypesSize(zeek_args), args.size()),
                            location);
 
-    ::zeek::Args vl(args.size());
+    ::zeek::Args vl = zeek::compat::ZeekArgs_New();
     for ( auto v : args ) {
         if ( v )
-            vl.push_back(v);
+            zeek::compat::ZeekArgs_Append(vl, v);
         else
             // Shouldn't happen here, but we have to_vals() that
             // (legitimately) return null in certain contexts.

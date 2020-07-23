@@ -12,6 +12,8 @@
 
 #include <spicy/rt/parser.h>
 
+#include <zeek-spicy/zeek-compat.h>
+
 namespace spicy::zeek::rt {
 
 /** A Spicy fil analyzer. */

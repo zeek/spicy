@@ -307,7 +307,8 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
 
             // MIME types are registered in scriptland, so we'll raise an
             // event that will do it for us through a predefined handler.
-            zeek::Args vals;
+            zeek::Args vals = ::spicy::zeek::compat::ZeekArgs_New();
+            ;
             ::spicy::zeek::compat::ZeekArgs_Append(vals, ::spicy::zeek::compat::FileAnalysisComponentTag_AsVal(tag));
             ::spicy::zeek::compat::ZeekArgs_Append(vals, ::spicy::zeek::compat::StringVal_New(mt));
             EventHandlerPtr handler = ::spicy::zeek::compat::event_register_Register("spicy_analyzer_for_mime_type");

@@ -14,6 +14,8 @@
 // Spicy headers
 #include <hilti/rt/types/port.h>
 
+#include <zeek-spicy/zeek-compat.h>
+
 namespace spicy::rt {
 struct Parser;
 }

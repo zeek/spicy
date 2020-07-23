@@ -12,9 +12,19 @@ public function create_http_message_stats(msg: HTTP::Message) : tuple<time, bool
     return (cast<time>(0), False, b"", (msg.has_body ? msg.body_len : 0), 0 , 0);
 }
 
-# Create an map of all headers as http_all_headers() expects it.
-public function convert_all_headers(headers: vector<HTTP::Header>) : map<uint64, tuple<bytes, bytes>> {
+# Create an map of all headers as http_all_headers() expects it. Version for Zeek < 3.2)
+public function convert_all_headers_30(headers: vector<HTTP::Header>) : map<uint64, tuple<bytes, bytes>> {
     local hdrs: map<uint64, tuple<bytes, bytes>>;
+
+    for ( i in headers )
+        hdrs[|hdrs|] = (i.name.upper(), i.content);
+
+    return hdrs;
+}
+
+# Create an map of all headers as http_all_headers() expects it. Version for Zeek >= 3.2.
+public function convert_all_headers_32(headers: vector<HTTP::Header>) : map<uint64, tuple<bytes, bytes, bytes>> {
+    local hdrs: map<uint64, tuple<bytes, bytes, bytes>>;
 
     for ( i in headers )
         hdrs[|hdrs|] = (i.name, i.content);
