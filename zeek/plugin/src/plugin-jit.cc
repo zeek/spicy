@@ -61,9 +61,10 @@ void plugin::Zeek_Spicy::Driver::_initialize() {
     // Initialize HILTI compiler options. We dont't use the `BifConst::*`
     // constants here as they may not have been initialized yet.
     hilti::Options hilti_options;
-    hilti_options.debug = internal_const_val("Spicy::debug")->AsBool();
-    hilti_options.skip_validation = internal_const_val("Spicy::skip_validation")->AsBool();
-    hilti_options.optimize = internal_const_val("Spicy::optimize")->AsBool();
+
+    hilti_options.debug = ::zeek::id::find_const("Spicy::debug")->AsBool();
+    hilti_options.skip_validation = ::zeek::id::find_const("Spicy::skip_validation")->AsBool();
+    hilti_options.optimize = ::zeek::id::find_const("Spicy::optimize")->AsBool();
 
     for ( auto i : hilti::util::split(spicy::zeek::configuration::CxxZeekIncludeDirectories, ":") )
         hilti_options.cxx_include_paths.emplace_back(i);
@@ -94,17 +95,19 @@ void plugin::Zeek_Spicy::Driver::_initialize() {
     driver_options.logger = nullptr; // keep using the global logger, which we may have already configured
     driver_options.execute_code = true;
     driver_options.include_linker = true;
-    driver_options.dump_code = internal_const_val("Spicy::dump_code")->AsBool();
-    driver_options.report_times = internal_const_val("Spicy::report_times")->AsBool();
+    driver_options.dump_code = ::zeek::id::find_const("Spicy::dump_code")->AsBool();
+    driver_options.report_times = ::zeek::id::find_const("Spicy::report_times")->AsBool();
 
-    for ( auto s : hilti::util::split(internal_const_val("Spicy::codegen_debug")->AsStringVal()->ToStdString(), ",") ) {
+    for ( auto s :
+          hilti::util::split(::zeek::id::find_const("Spicy::codegen_debug")->AsStringVal()->ToStdString(), ",") ) {
         s = hilti::util::trim(s);
 
         if ( s.size() && ! driver_options.logger->debugEnable(s) )
             reporter::fatalError(hilti::rt::fmt("Unknown Spicy debug stream '%s'", s));
     }
 
-    if ( auto r = hilti_options.parseDebugAddl(internal_const_val("Spicy::debug_addl")->AsStringVal()->ToStdString());
+    if ( auto r =
+             hilti_options.parseDebugAddl(::zeek::id::find_const("Spicy::debug_addl")->AsStringVal()->ToStdString());
          ! r )
         reporter::fatalError(r.error());
 

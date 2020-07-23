@@ -10,7 +10,8 @@ using namespace spicy::zeek;
 using namespace spicy::zeek::rt;
 using namespace plugin::Zeek_Spicy;
 
-FileAnalyzer::FileAnalyzer(RecordVal* args, file_analysis::File* file) : ::file_analysis::Analyzer(args, file) {
+FileAnalyzer::FileAnalyzer(::zeek::RecordValPtr args, file_analysis::File* file)
+    : ::file_analysis::Analyzer(args, file) {
     cookie::FileAnalyzer cookie;
     cookie.analyzer = this;
     _cookie = cookie;
@@ -183,6 +184,6 @@ bool FileAnalyzer::EndOfFile() {
     return false;
 }
 
-::file_analysis::Analyzer* FileAnalyzer::InstantiateAnalyzer(RecordVal* args, file_analysis::File* file) {
+::file_analysis::Analyzer* FileAnalyzer::InstantiateAnalyzer(::zeek::RecordValPtr args, file_analysis::File* file) {
     return new FileAnalyzer(args, file);
 }

@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+
 // Zeek headers.
 #include <analyzer/Analyzer.h>
 #include <file_analysis/Analyzer.h>
@@ -24,7 +25,7 @@ namespace plugin::Zeek_Spicy {
  * For that, we have a separate PluginJIT that derives from this one.
  *
  */
-class Plugin : public ::plugin::Plugin {
+class Plugin : public zeek::plugin::Plugin {
 public:
     Plugin();
     virtual ~Plugin();
@@ -119,7 +120,7 @@ protected:
     virtual void addLibraryPaths(const std::string& dirs);
 
     // Overriding method from Zeek's plugin API.
-    plugin::Configuration Configure() override;
+    zeek::plugin::Configuration Configure() override;
 
     // Overriding method from Zeek's plugin API.
     void InitPreScript() override;
