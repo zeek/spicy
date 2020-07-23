@@ -64,8 +64,11 @@ void plugin::Zeek_Spicy::Driver::_initialize() {
     hilti_options.debug = internal_const_val("Spicy::debug")->AsBool();
     hilti_options.skip_validation = internal_const_val("Spicy::skip_validation")->AsBool();
     hilti_options.optimize = internal_const_val("Spicy::optimize")->AsBool();
-    hilti_options.cxx_include_paths = {spicy::zeek::configuration::CxxZeekIncludeDirectory,
-                                       spicy::zeek::configuration::CxxBrokerIncludeDirectory};
+
+    for ( auto i : hilti::util::split(spicy::zeek::configuration::CxxZeekIncludeDirectories, ":") )
+        hilti_options.cxx_include_paths.emplace_back(i);
+
+    hilti_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxBrokerIncludeDirectory);
 
     if ( hilti::configuration().uses_build_directory ) {
         hilti_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxAutogenIncludeDirectoryBuild);

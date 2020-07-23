@@ -11,7 +11,7 @@
 #  ZEEK_CONFIG       Path to Zeek configuration.
 #  ZEEK_CXX_FLAGS    C++ flags to compile a Zeek plugin.
 #  ZEEK_CMAKE_DIR    Path to Zeek's CMake files.
-#  ZEEK_INCLUDE_DIR  Path to Zeek's plugin directory.
+#  ZEEK_INCLUDE_DIR  Path to Zeek's headers.
 #  ZEEK_PLUGIN_DIR   Path to Zeek's plugin directory.
 #  ZEEK_PREFIX       Path to Zeek's installation prefix.
 #  ZEEK_VERSION      Version of Zeek.
@@ -31,10 +31,12 @@ find_program(ZEEK_CONFIG zeek-config
 if ( ZEEK_CONFIG )
     message(STATUS "Found zeek-config at ${ZEEK_CONFIG}")
     execute_process(COMMAND "${ZEEK_CONFIG}" --include_dir
-                    OUTPUT_VARIABLE ZEEK_INCLUDE_DIR
+                    OUTPUT_VARIABLE ZEEK_INCLUDE_DIRS
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    set(ZEEK_CXX_FLAGS "-I${ZEEK_INCLUDE_DIR}")
+    string(REPLACE ":" ";" ZEEK_CXX_FLAGS "${ZEEK_INCLUDE_DIRS}")
+    list(TRANSFORM "${ZEEK_CXX_FLAGS}" PREPEND "-I" OUTPUT_VARIABLE ZEEK_CXX_FLAGS)
+    string(REPLACE ";" " " ZEEK_CXX_FLAGS "${ZEEK_CXX_FLAGS}")
 
     execute_process(COMMAND "${ZEEK_CONFIG}" --cmake_dir
                     OUTPUT_VARIABLE ZEEK_CMAKE_DIR
