@@ -1,0 +1,12 @@
+# @TEST-EXEC: echo "SGVsbG8sIFNwaWN5IQo=" | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+import filter;
+
+public type Foo = unit {
+    on %init { self.connect_filter(new filter::Base64Decode); }
+    x: bytes &eod { print self.x; }
+    on %done { print self; }
+};

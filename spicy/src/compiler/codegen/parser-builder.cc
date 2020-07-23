@@ -1245,6 +1245,9 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     if ( unit.supportsFilters() )
         builder()->addCall("spicy_rt::filter_disconnect", {state().self});
 
+    if ( unit.isFilter() )
+        builder()->addCall("spicy_rt::filter_forward_eod", {state().self});
+
     for ( const auto& s : unit.items<type::unit::item::Sink>() )
         builder()->addMemberCall(builder::member(state().self, s.id()), "close", {}, l);
 }
