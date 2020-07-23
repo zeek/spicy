@@ -29,6 +29,10 @@ assert b"123" <= b"123";
 assert !(b"123" > b"213");
 assert !(b"123" > b"123");
 
+x += '3';
+x += *begin(x);
+assert x == b"1231";
+
 assert (b"abc" + b"def") == b"abcdef";
 
 local auto y = b"0123456789";
