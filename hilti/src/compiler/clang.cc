@@ -270,16 +270,6 @@ bool ClangJIT::Implementation::compile(const std::string& file, std::optional<st
         args.emplace_back(dir.native());
     }
 
-    for ( auto dir : util::split(hilti::configuration().jit_c_system_include_dirs, ":") ) {
-        args.emplace_back("-isystem");
-        args.emplace_back(dir);
-    }
-
-    for ( auto dir : util::split(hilti::configuration().jit_cxx_system_include_dirs, ":") ) {
-        args.emplace_back("-isystem");
-        args.emplace_back(dir);
-    }
-
     args.push_back(file);
 
     // Reusing the driver across calls gives us trouble. In a perfect world,
