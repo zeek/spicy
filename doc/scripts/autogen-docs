@@ -36,7 +36,7 @@ SPICY_TYPES=address,bitfield,bool,bytes,enum,exception,integer,interval,list,map
 ("${SPICYDOC}" | ${SPICYDTR} -t "${SPICY_TYPES}" -d "${AUTOGEN_STAGE}/types") || exit 1
 
 # Create list of reserved keywords.
-cat ${ROOTDIR}/hilti/src/compiler/parser/scanner.ll \
+cat ${ROOTDIR}/spicy/src/compiler/parser/scanner.ll \
     | grep "return.*token::" \
     | grep '^[a-zA-Z_]\{2,\}' \
     | awk '{print $1}' \
