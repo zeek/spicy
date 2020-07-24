@@ -6,24 +6,13 @@
 
 #pragma once
 
+#include "cookie.h"
+
 #include <memory>
 #include <optional>
 #include <string>
 #include <tuple>
 #include <utility>
-
-#if ZEEK_DEBUG_BUILD
-#define DEBUG
-#endif
-#include <Desc.h>
-#include <EventHandler.h>
-#include <IPAddr.h>
-#include <Type.h>
-#include <Val.h>
-#include <Var.h>
-#undef DEBUG
-
-#include "cookie.h"
 
 #include <hilti/rt/deferred-expression.h>
 #include <hilti/rt/exception.h>
@@ -546,7 +535,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Map<K, V>& m, ::zeek::TypePtr targ
         auto k = to_val(i.first, zeek::compat::TableType_GetIndexTypes(tt)[0], location);
         auto v = to_val(i.second, zeek::compat::TableType_Yield(tt), location);
         zv->Assign(k, v);
-        Unref(k);
+        zeek::compat::Unref(k);
     }
 
     return zeek::compat::ToValPtr(std::move(zv));
@@ -576,7 +565,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Set<T>& s, ::zeek::TypePtr target,
 
             auto idx = to_val(i, zeek::compat::TableType_GetIndexTypes(tt)[0], location);
             zv->Assign(idx, nullptr);
-            Unref(idx);
+            zeek::compat::Unref(idx);
         }
     }
 

@@ -8,21 +8,6 @@
 #include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
 
-// Zeek includes
-#if ZEEK_DEBUG_BUILD
-#define DEBUG
-#endif
-#include <Conn.h>
-#include <Event.h>
-#include <EventHandler.h>
-#include <Val.h>
-#include <file_analysis/File.h>
-#include <file_analysis/Manager.h>
-#if ZEEK_VERSION_NUMBER >= 30100
-#include <module_util.h>
-#endif
-#undef DEBUG
-
 using namespace spicy::zeek;
 using namespace plugin::Zeek_Spicy;
 

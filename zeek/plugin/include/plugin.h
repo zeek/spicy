@@ -6,11 +6,6 @@
 #include <tuple>
 #include <vector>
 
-// Zeek headers.
-#include <analyzer/Analyzer.h>
-#include <file_analysis/Analyzer.h>
-#include <plugin/Plugin.h>
-
 // Spicy headers
 #include <hilti/rt/types/port.h>
 

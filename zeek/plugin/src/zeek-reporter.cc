@@ -2,19 +2,10 @@
 
 #include <string>
 
-// Zeek headers
-#include <file_analysis/Analyzer.h>
-
-#include <zeek-spicy/autogen/config.h>
-
-#if ZEEK_DEBUG_BUILD
-#define DEBUG
-#endif
-#include <Reporter.h>
-#undef DEBUG
-
 #include <hilti/rt/logging.h>
 
+#include <zeek-spicy/autogen/config.h>
+#include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
 
 using namespace spicy::zeek;

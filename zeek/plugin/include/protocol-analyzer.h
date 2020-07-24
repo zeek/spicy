@@ -2,17 +2,16 @@
 
 #pragma once
 
+#include "cookie.h"
+
 #include <optional>
 #include <utility>
-
-// Zeek headers
-#include "cookie.h"
-#include <analyzer/protocol/tcp/TCP.h>
-#include <analyzer/protocol/udp/UDP.h>
 
 #include <hilti/rt/types/stream.h>
 
 #include <spicy/rt/parser.h>
+
+#include <zeek-spicy/zeek-compat.h>
 
 namespace spicy::zeek::rt {
 

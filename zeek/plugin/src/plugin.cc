@@ -20,17 +20,6 @@
 #include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
 
-// Zeek includes
-#if ZEEK_DEBUG_BUILD
-#define DEBUG
-#endif
-#include <Expr.h>
-#include <analyzer/Manager.h>
-#include <analyzer/protocol/tcp/TCP.h>
-#include <analyzer/protocol/udp/UDP.h>
-#include <file_analysis/Manager.h>
-#undef DEBUG
-
 #ifndef ZEEK_HAVE_JIT
 plugin::Zeek_Spicy::Plugin SpicyPlugin;
 plugin::Zeek_Spicy::Plugin* plugin::Zeek_Spicy::OurPlugin = &SpicyPlugin;

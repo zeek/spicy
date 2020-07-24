@@ -2,11 +2,9 @@
 
 #pragma once
 
-#include <optional>
-
-// Zeek headers
 #include "cookie.h"
-#include <file_analysis/Manager.h>
+
+#include <optional>
 
 #include <hilti/rt/types/stream.h>
 

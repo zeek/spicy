@@ -9,15 +9,39 @@
 #include <utility>
 #include <vector>
 
-// Zeek includes
-#include "Conn.h"
-#include "EventRegistry.h"
-#include "Val.h"
-#include "bro-bif.h" // TODO: Include "zeek/Event.h" instead once we can
-#include "file_analysis/File.h"
-#include "plugin/Plugin.h"
+// TODO: Move to <zeek/zeek-config.h> once we don't need to support Zeek < 3.2 anymore.
+#include "zeek-config.h"
+
+#include <zeek-spicy/autogen/config.h>
 
 #if ZEEK_VERSION_NUMBER >= 30200 // Zeek >= 3.2
+
+// We collect all the Zeek includes here that we need anywhere in the plugin.
+#if ZEEK_DEBUG_BUILD
+#define DEBUG
+#endif
+#include <zeek/Conn.h>
+#include <zeek/DebugLogger.h>
+#include <zeek/Desc.h>
+#include <zeek/Event.h>
+#include <zeek/EventHandler.h>
+#include <zeek/EventRegistry.h>
+#include <zeek/Expr.h>
+#include <zeek/IPAddr.h>
+#include <zeek/Reporter.h>
+#include <zeek/Type.h>
+#include <zeek/Val.h>
+#include <zeek/Var.h>
+#include <zeek/analyzer/Analyzer.h>
+#include <zeek/analyzer/Manager.h>
+#include <zeek/analyzer/protocol/tcp/TCP.h>
+#include <zeek/analyzer/protocol/udp/UDP.h>
+#include <zeek/file_analysis/Analyzer.h>
+#include <zeek/file_analysis/File.h>
+#include <zeek/file_analysis/Manager.h>
+#include <zeek/module_util.h>
+#include <zeek/plugin/Plugin.h>
+#undef DEBUG
 
 namespace spicy::zeek::compat {
 
@@ -31,6 +55,11 @@ inline auto EnumType_New(std::string& x) { return ::zeek::make_intrusive<::zeek:
 template<typename T>
 inline auto ToValPtr(std::unique_ptr<T> p) {
     return ::zeek::IntrusivePtr{::zeek::AdoptRef{}, p.release()};
+}
+
+template<typename T>
+inline auto Unref(const ::zeek::IntrusivePtr<T>& o) {
+    // nothing to do
 }
 
 inline auto Attribute_Find(::zeek::IntrusivePtr<::zeek::detail::Attributes> a, ::zeek::detail::AttrTag x) {
@@ -62,6 +91,35 @@ inline auto TypeList_GetTypesSize(const std::vector<::zeek::TypePtr>& t) { retur
 } // namespace spicy::zeek::compat
 
 #else // Zeek < 3.2
+
+// We collect all the Zeek includes here that we need anywhere in the plugin.
+#if ZEEK_DEBUG_BUILD
+#define DEBUG
+#endif
+#include "Conn.h"
+#include "DebugLogger.h"
+#include "Desc.h"
+#include "EventHandler.h"
+#include "EventRegistry.h"
+#include "Expr.h"
+#include "IPAddr.h"
+#include "Reporter.h"
+#include "Type.h"
+#include "Val.h"
+#include "Var.h"
+#include "analyzer/Analyzer.h"
+#include "analyzer/Manager.h"
+#include "analyzer/protocol/tcp/TCP.h"
+#include "analyzer/protocol/udp/UDP.h"
+#include "bro-bif.h" // actually want "Event.h", but that clashes
+#include "file_analysis/Analyzer.h"
+#include "file_analysis/File.h"
+#include "file_analysis/Manager.h"
+#if ZEEK_VERSION_NUMBER >= 30100
+#include "module_util.h"
+#endif
+#include "plugin/Plugin.h"
+#undef DEBUG
 
 namespace zeek {
 
@@ -137,6 +195,8 @@ template<typename T>
 inline auto ToValPtr(std::unique_ptr<T> p) {
     return p.release();
 }
+
+inline auto Unref(::BroObj* o) { ::Unref(o); }
 
 inline auto Attribute_Find(Attributes* a, ::attr_tag x) { return a->FindAttr(x); }
 inline auto Connection_ConnVal(::Connection* c) { return c->BuildConnVal(); }

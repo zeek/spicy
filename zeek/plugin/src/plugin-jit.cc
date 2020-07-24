@@ -9,20 +9,13 @@
 
 #include <zeek-spicy/autogen/config.h>
 #include <zeek-spicy/plugin-jit.h>
+#include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
 
 // clang-format off
 #include <compiler/debug.h>
 #include <compiler/driver.h>
 // clang-format on
-
-// Zeek includes
-#if ZEEK_DEBUG_BUILD
-#define DEBUG
-#endif
-#include <Val.h>
-#include <Var.h>
-#undef DEBUG
 
 namespace spicy::zeek::debug {
 const hilti::logging::DebugStream ZeekPlugin("zeek");
