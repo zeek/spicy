@@ -602,6 +602,10 @@ Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
                                      *object_path,
                                      "-o",
                                      *library_path};
+    if ( options().debug )
+        args = util::concat(args, hilti::configuration().runtime_ld_flags_debug);
+    else
+        args = util::concat(args, hilti::configuration().runtime_ld_flags_release);
 
     auto driver = std::make_unique<clang::driver::Driver>(args[0], llvm::sys::getDefaultTargetTriple(), diagnostics);
 
