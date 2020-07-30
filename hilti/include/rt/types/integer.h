@@ -192,21 +192,21 @@ extern uint32_t ntoh32(uint32_t v);
 extern uint16_t ntoh16(uint16_t v);
 
 /**
- * Revers the bytes of a 16-bit value.
+ * Reverses the bytes of a 16-bit value.
  *
  * v: The value to convert.
  */
 extern uint16_t flip16(uint16_t v);
 
 /**
- * Revers the bytes of a 32-bit value.
+ * Reverses the bytes of a 32-bit value.
  *
  * v: The value to convert.
  */
 extern uint32_t flip32(uint32_t v);
 
 /**
- * Revers the bytes of a 64-bit value.
+ * Reverses the bytes of a 64-bit value.
  *
  * v: The value to convert.
  */
@@ -216,10 +216,12 @@ extern uint64_t flip64(uint64_t v);
  * Flips a signed integer's byte order.
  *
  * @param v integer to flip
- * @param n number of valid bits in *v*
+ * @param n number of valid bytes in *v*
  * @return value with *n* bits of *v* flipped in their byte order
  */
 inline int64_t flip(int64_t v, uint64_t n) {
+    if ( n == 0 )
+        return v;
     auto i = static_cast<uint64_t>(v);
     i = flip64(i) >> (64 - n * 8);
     return static_cast<int64_t>(i);
@@ -229,19 +231,30 @@ inline int64_t flip(int64_t v, uint64_t n) {
  * Flips an unsigned integer's byte order.
  *
  * @param v unsigned integer to flip
- * @param n number of valid bits in *v*
+ * @param n number of valid bytes in *v*
  * @return value with *n* bits of *v* flipped in their byte order
  */
-inline uint64_t flip(uint64_t v, uint64_t n) { return (flip64(v) >> (64 - n * 8)); }
+inline uint64_t flip(uint64_t v, uint64_t n) {
+    if ( n == 0 )
+        return v;
+    return (flip64(v) >> (64 - n * 8));
+}
 
 /** Available bit orders. */
 enum class BitOrder { LSB0, MSB0, Undef };
 
-/** Extracts a range of bits from an intege value, shifting them to the very left before returning. */
+/** Extracts a range of bits from an integer value, shifting them to the very left before returning. */
 template<typename UINT>
 inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v, uint64_t lower, uint64_t upper,
                                            BitOrder bo) {
     const auto width = std::numeric_limits<UINT>::digits;
+
+    if ( lower > upper )
+        throw InvalidArgument("lower limit needs to be less or equal the upper limit");
+
+    if ( upper >= width )
+        throw InvalidArgument("upper limit needs to be less or equal the input width");
+
     switch ( bo ) {
         case BitOrder::LSB0: break;
 

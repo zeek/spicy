@@ -38,13 +38,30 @@ TEST_CASE("primitive") {
     CHECK_EQ(to_string(2), "2");
     CHECK_EQ(to_string(1.5), "1.5");
     CHECK_EQ(to_string(1.5), "1.5");
+
+    CHECK_EQ(to_string(static_cast<int8_t>(-42)), "-42");
+    CHECK_EQ(to_string(static_cast<uint8_t>(42)), "42");
+    CHECK_EQ(to_string(static_cast<int16_t>(-42)), "-42");
+    CHECK_EQ(to_string(static_cast<uint16_t>(42)), "42");
+    CHECK_EQ(to_string(static_cast<int32_t>(-42)), "-42");
+    CHECK_EQ(to_string(static_cast<uint32_t>(42)), "42");
+    CHECK_EQ(to_string(static_cast<int64_t>(-42)), "-42");
+    CHECK_EQ(to_string(static_cast<uint64_t>(42)), "42");
+
     CHECK_EQ(to_string("abc"), "\"abc\"");
 }
 
 TEST_CASE("safe-int") {
     using integer::safe;
-    CHECK_EQ(to_string(safe<int8_t>(-1)), "-1");
-    CHECK_EQ(to_string(safe<char>(-1)), "-1");
+    CHECK_EQ(to_string(safe<int8_t>(-42)), "-42");
+    CHECK_EQ(to_string(safe<char>(-42)), "-42");
+
+    CHECK_EQ(to_string(safe<uint16_t>(42)), "42");
+    CHECK_EQ(to_string(safe<int16_t>(-42)), "-42");
+    CHECK_EQ(to_string(safe<uint32_t>(42)), "42");
+    CHECK_EQ(to_string(safe<int32_t>(-42)), "-42");
+    CHECK_EQ(to_string(safe<uint64_t>(42)), "42");
+    CHECK_EQ(to_string(safe<int64_t>(-42)), "-42");
 }
 
 TEST_CASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }

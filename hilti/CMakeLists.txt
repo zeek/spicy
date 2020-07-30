@@ -277,6 +277,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/address.cc
                src/rt/tests/bytes.cc
                src/rt/tests/fiber.cc
+               src/rt/tests/integer.cc
                src/rt/tests/interval.cc
                src/rt/tests/type-info.cc
                src/rt/tests/map.cc
