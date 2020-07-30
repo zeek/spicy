@@ -18,7 +18,8 @@ SHELL [ "/usr/bin/scl", "enable", "devtoolset-9"]
 RUN yum install -y ccache git make ninja-build python3 python3-pip vim doxygen diffutils m4
 
 # Need a more recent CMake than available.
-RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
+WORKDIR /usr/local/cmake
+RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
 ENV PATH="/usr/local/cmake/bin:${PATH}"
 
 # Need to compile Clang, there don't seem to be packages out there for v10.
