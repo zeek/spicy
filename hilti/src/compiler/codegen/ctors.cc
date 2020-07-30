@@ -68,7 +68,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         auto k = cg->compile(n.keyType(), codegen::TypeUsage::Storage);
         auto v = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
 
-        return fmt("hilti::rt::Map<%s, %s>{{%s}}", k, v,
+        return fmt("hilti::rt::Map<%s, %s>{std::initializer_list<std::pair<const %s, %s>>{%s}}", k, v, k, v,
                    util::join(util::transform(n.value(),
                                               [this](auto e) {
                                                   return fmt("{%s, %s}", cg->compile(e.first), cg->compile(e.second));
@@ -128,7 +128,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             // Can only be the empty list.
             return "hilti::rt::set::Empty()";
 
-        return fmt("hilti::rt::Set<%s>{{%s}}", cg->compile(n.elementType(), codegen::TypeUsage::Storage),
+        const auto k = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
+
+        return fmt("hilti::rt::Set<%s>{std::initializer_list<%s>{%s}}", k, k,
                    util::join(util::transform(n.value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));
     }
 
