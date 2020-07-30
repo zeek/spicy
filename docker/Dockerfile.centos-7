@@ -18,22 +18,20 @@ SHELL [ "/usr/bin/scl", "enable", "devtoolset-9"]
 RUN yum install -y ccache git make ninja-build python3 python3-pip vim doxygen diffutils m4
 
 # Need a more recent CMake than available.
-RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - && ln -s /usr/local/cmake-3.16.4-Linux-x86_64/bin/cmake /usr/local/bin
+RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
+ENV PATH="/usr/local/cmake/bin:${PATH}"
 
-# Need to compile Clang, there don't seem to be packages out there for v9.
-RUN mkdir -p /opt/clang9/src && \
-    cd /opt/clang9/src && \
-    git clone --branch llvmorg-9.0.1 --single-branch --recursive https://github.com/llvm/llvm-project.git && \
+# Need to compile Clang, there don't seem to be packages out there for v10.
+RUN mkdir -p /opt/clang10/src && \
+    cd /opt/clang10/src && \
+    git clone --branch llvmorg-10.0.1 --single-branch --recursive --depth=1 https://github.com/llvm/llvm-project.git && \
     cd llvm-project && \
     mkdir build && \
     cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DLLVM_TARGETS_TO_BUILD=host -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON -G Ninja ../llvm && \
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/rh/devtoolset-9/root/usr -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DLLVM_TARGETS_TO_BUILD=host -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON -G Ninja ../llvm && \
     ninja install && \
     cd ../../.. && \
-    rm -rf /opt/clang9
-
-# This is a bit of a hack but clang++ won't find the devtools' libstc++ if run from /usr/local.
-RUN ln -s /usr/local/bin/clang++ /opt/rh/devtoolset-9/root/usr/bin
+    rm -rf /opt/clang10
 
 # Install Spicy dependencies.
 RUN yum install -y python3-sphinx
@@ -57,4 +55,4 @@ WORKDIR /root
 
 # Install Spicy.
 ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && CXXFLAGS="-isystem /opt/rh/devtoolset-9/root/usr/include/c++/9" ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=/opt/rh/devtoolset-9/root/usr/bin/clang++ && ninja -C build install && rm -rf build)
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && CXXFLAGS="-isystem /opt/rh/devtoolset-9/root/usr/include/c++/9" LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=/opt/rh/devtoolset-9/root/usr/bin/clang++ && ninja -C build install && rm -rf build)
