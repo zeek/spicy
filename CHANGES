@@ -1,4 +1,14 @@
 
+0.4.0-691 | 2020-07-31 15:19:57 +0200
+
+  * Emitted fully typed initializer lists in codegen.
+
+  * Correctly handle flipping with zero valid bytes in `rt::integer::flip`. (Benjamin Bannier, Corelight)
+
+  * Add additional precondition checks to `rt::integer::bits`. (Benjamin Bannier, Corelight)
+
+  * Consistently use `ntohX` type functions for `rt::integer::ntohX`. (Benjamin Bannier, Corelight)
+
 0.4.0-681 | 2020-07-23 14:55:25 +0000
 
   * Fix potential invalid iterator deref in debug output. (Robin Sommer, Corelight)
