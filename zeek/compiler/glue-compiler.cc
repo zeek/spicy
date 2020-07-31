@@ -438,6 +438,9 @@ bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
             if ( chunk->empty() )
                 break; // end of input
 
+            _locations.pop_back();
+            _locations.emplace_back(path, lineno);
+
             if ( looking_at(*chunk, 0, "protocol") ) {
                 auto a = parseProtocolAnalyzer(*chunk);
                 _protocol_analyzers.push_back(a);
