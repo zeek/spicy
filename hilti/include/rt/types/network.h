@@ -7,6 +7,7 @@
 #include <string>
 #include <variant>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/address.h>
 #include <hilti/rt/util.h>
@@ -21,20 +22,38 @@ public:
     /**
      * Constructs a network from prefix address and length.
      *
-     * @param prefix address, which's *length* lower bits will be masked out.
-     * @param prefix length, which must be in the range from 0-32 for IPv4
-     * addresses; and 0-128 for IPv6 addresses.
+     * @param prefix prefix address, which's *length* lower bits will be masked out.
+     * @param length prefix length, which must be in the range from 0-32 for IPv4
+     *        addresses; and 0-128 for IPv6 addresses.
+     *
+     * @throws InvalidArgument for invalid length values.
      */
-    Network(const Address& prefix, int length) : _prefix(prefix), _length(length) { _mask(); }
+    Network(const Address& prefix, int length) : _prefix(prefix), _length(length) {
+        switch ( _prefix.family() ) {
+            case AddressFamily::IPv4:
+                if ( _length < 0 || _length > 32 )
+                    throw InvalidArgument(fmt("prefix length %s is invalid for IPv4 networks", _length));
+                break;
+            case AddressFamily::IPv6:
+                if ( _length < 0 || _length > 128 )
+                    throw InvalidArgument(fmt("prefix length %s is invalid for IPv6 networks", _length));
+                break;
+            case AddressFamily::Undef:
+                throw InvalidArgument(
+                    fmt("Network can only be constructed from either IPv4 or IPv6 addresses, not %s", prefix));
+        }
+
+        _mask();
+    }
 
     /** Constructs a network from prefix address and length.
      *
-     * @param prefix string representation of an address, which's *length*
-     * lower bits will be masked out.
-     * @param prefix length, which must be in the range from 0-32 for IPv4
-     * addresses; and 0-128 for IPv6 addresses.
+     * @param prefix prefix address, which's *length* lower bits will be masked out.
+     * @param length prefix length, which must be in the range from 0-32 for IPv4
+     *        addresses; and 0-128 for IPv6 addresses.
      *
      * @throws RuntimeError if it cannot parse the prefix into a valid IPv4 or IPv6 address.
+     * @throws InvalidArgument for invalid length values.
      */
     Network(const std::string& prefix, int length) : _prefix(prefix), _length(length) { _mask(); }
     Network(const Network&) = default;
