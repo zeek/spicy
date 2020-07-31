@@ -44,6 +44,7 @@ zeek_plugin_dist_files(spicy/zeek_rt.hlt)
 # have a "no install, please" switch, so we change its destination
 # to some scratch space.
 set(BRO_PLUGIN_BRO_PLUGIN_INSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/zeek-install-scratch")
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/zeek-install-scratch") # suppress warning by Zeek
 
 zeek_plugin_end()
 
