@@ -70,6 +70,33 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE("contains") {
+    CHECK(Network("255.255.255.255", 32).contains(Address("255.255.255.255")));
+    CHECK_FALSE(Network("255.255.255.255", 32).contains(Address("255.255.255.254")));
+
+    CHECK(Network("255.255.255.255", 31).contains(Address("255.255.255.254")));
+    CHECK_FALSE(Network("255.255.255.255", 31).contains(Address("255.255.255.253")));
+
+    CHECK(Network("255.255.255.255", 16).contains(Address("255.255.0.0")));
+    CHECK_FALSE(Network("255.255.255.255", 16).contains(Address("255.0.0.0")));
+
+    CHECK(Network("255.255.255.255", 8).contains(Address("255.0.0.0")));
+    CHECK_FALSE(Network("255.255.255.255", 8).contains(Address("128.0.0.0")));
+
+    CHECK(Network("255.255.255.255", 4).contains(Address("240.0.0.0")));
+    CHECK_FALSE(Network("255.255.255.255", 4).contains(Address("239.0.0.0")));
+
+    CHECK(Network("255.255.255.255", 2).contains(Address("239.0.0.0")));
+    CHECK_FALSE(Network("255.255.255.255", 2).contains(Address("190.0.0.0")));
+
+    CHECK(Network("255.255.255.255", 1).contains(Address("190.0.0.0")));
+    CHECK_FALSE(Network("255.255.255.255", 1).contains(Address("127.0.0.0")));
+
+    CHECK(Network("255.255.255.255", 0).contains(Address("127.0.0.0")));
+    CHECK(Network("255.255.255.255", 0).contains(Address("64.0.0.0")));
+    CHECK(Network("255.255.255.255", 0).contains(Address("0.0.0.0")));
+}
+
 TEST_CASE("family") {
     CHECK_EQ(Network(Address("1.2.3.4"), 32).family(), AddressFamily::IPv4);
     CHECK_EQ(Network(Address("2001:0db8:0000:0000:0000:8a2e:0370:7334"), 32).family(), AddressFamily::IPv6);
