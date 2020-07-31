@@ -161,7 +161,7 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
 }
 
 int main(int argc, char** argv) {
-    spicy::zeek::Driver driver;
+    spicy::zeek::Driver driver("", spicy::zeek::configuration::ZeekVersionNumber);
 
     hilti::Options compiler_options;
     hilti::driver::Options driver_options;

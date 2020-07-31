@@ -74,12 +74,12 @@ struct VisitorPostCompilation : public hilti::visitor::PreOrder<void, VisitorPos
     std::vector<UnitInfo> units;
 };
 
-Driver::Driver(const std::string& argv0) : hilti::Driver("<Spicy Plugin for Zeek>") {
+Driver::Driver(const std::string& argv0, int zeek_version) : hilti::Driver("<Spicy Plugin for Zeek>") {
     if ( argv0.size() )
         hilti::configuration().initLocation(argv0);
 
     spicy::Configuration::extendHiltiConfiguration();
-    _glue = std::make_unique<GlueCompiler>(this);
+    _glue = std::make_unique<GlueCompiler>(this, zeek_version);
 }
 
 Driver::~Driver() {}

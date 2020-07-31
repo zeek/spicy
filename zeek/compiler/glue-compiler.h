@@ -116,7 +116,7 @@ struct Event {
 class GlueCompiler {
 public:
     /** Constructor. */
-    GlueCompiler(Driver* driver);
+    GlueCompiler(Driver* driver, int zeek_version);
 
     /** Destructor. */
     ~GlueCompiler();
@@ -140,6 +140,11 @@ public:
     bool compile();
 
 private:
+    /**
+     * Filters input EVT file by applying preprocessor directives.
+     */
+    void preprocessEvtFile(std::filesystem::path& path, std::istream& in, std::ostream& out);
+
     /**
      * Extracts the next semicolon-terminated block from an input stream,
      * accounting for special EVT constructs like strings and comments.
@@ -172,6 +177,7 @@ private:
     hilti::Expression location(const glue::ExpressionAccessor& e);
 
     Driver* _driver;
+    int _zeek_version;
     std::map<hilti::ID, std::shared_ptr<glue::SpicyModule>> _spicy_modules;
 
     std::vector<std::pair<ID, std::optional<ID>>> _imports;  /**< imports from EVT file, with ID and optional scope */

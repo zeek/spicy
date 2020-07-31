@@ -243,7 +243,7 @@ message(
     "\nWarnings are errors:   ${USE_WERROR}"
     "\n"
     "\nZeek found:            ${ZEEK_FOUND}"
-    "\nZeek version:          ${ZEEK_VERSION}"
+    "\nZeek version:          ${ZEEK_VERSION} (${ZEEK_VERSION_NUMBER})"
     "\nZeek debug build:      ${ZEEK_DEBUG_BUILD}"
     "\nZeek root dir:         ${ZEEK_PREFIX}"
     "\n"

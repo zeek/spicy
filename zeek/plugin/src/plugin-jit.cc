@@ -136,11 +136,18 @@ void plugin::Zeek_Spicy::Driver::hookNewEnumType(const EnumInfo& e) {
 }
 
 plugin::Zeek_Spicy::PluginJIT::PluginJIT() {
+#ifdef ZEEK_VERSION_NUMBER // Not available in Zeek 3.0 yet.
+    if ( spicy::zeek::configuration::ZeekVersionNumber != ZEEK_VERSION_NUMBER )
+        reporter::fatalError(
+            hilti::util::fmt("Zeek version mismatch: running with Zeek %d, but plugin compiled for Zeek %s",
+                             ZEEK_VERSION_NUMBER, spicy::zeek::configuration::ZeekVersionNumber));
+#endif
+
     Dl_info info;
     if ( ! dladdr(&SpicyPlugin, &info) )
         reporter::fatalError("Spicy plugin cannot determine its file system path");
 
-    _driver = std::make_unique<Driver>(info.dli_fname);
+    _driver = std::make_unique<Driver>(info.dli_fname, spicy::zeek::configuration::ZeekVersionNumber);
 }
 
 plugin::Zeek_Spicy::PluginJIT::~PluginJIT() {}

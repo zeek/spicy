@@ -14,7 +14,8 @@
 #  ZEEK_INCLUDE_DIR  Path to Zeek's headers.
 #  ZEEK_PLUGIN_DIR   Path to Zeek's plugin directory.
 #  ZEEK_PREFIX       Path to Zeek's installation prefix.
-#  ZEEK_VERSION      Version of Zeek.
+#  ZEEK_VERSION      Version string of Zeek.
+#  ZEEK_VERSION_NUMBER Numerical version of Zeek.
 #  ZEEK_DEBUG_BUILD  True if Zeek was build in debug mode
 #  ZEEK_EXE          Path to zeek executale
 #  BifCl_EXE         Path to bifcl
@@ -63,6 +64,16 @@ if ( ZEEK_CONFIG )
     else ()
         set(ZEEK_DEBUG_BUILD no)
     endif ()
+
+    # Copied from Zeek to generate numeric version number.
+    string(REGEX REPLACE "[.-]" " " version_numbers ${ZEEK_VERSION})
+    separate_arguments(version_numbers)
+    list(GET version_numbers 0 VERSION_MAJOR)
+    list(GET version_numbers 1 VERSION_MINOR)
+    list(GET version_numbers 2 VERSION_PATCH)
+    set(VERSION_MAJ_MIN "${VERSION_MAJOR}.${VERSION_MINOR}")
+    math(EXPR ZEEK_VERSION_NUMBER
+     "${VERSION_MAJOR} * 10000 + ${VERSION_MINOR} * 100 + ${VERSION_PATCH}")
 
     find_program(BifCl_EXE bifcl HINTS ${ZEEK_PREFIX}/bin NO_DEFAULT_PATH)
     find_program(ZEEK_EXE zeek HINTS ${ZEEK_PREFIX}/bin NO_DEFAULT_PATH)
