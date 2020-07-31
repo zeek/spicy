@@ -10,5 +10,8 @@
 
 event http_all_headers(c: connection, is_orig: bool, hlist: mime_header_list)
     {
-    print "all headers", c$id, hlist;
+    print c$id;
+
+    for ( i in hlist )
+	    print hlist[i]$name, hlist[i]$value;
     }

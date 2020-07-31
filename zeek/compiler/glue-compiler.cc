@@ -417,7 +417,7 @@ bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
         return false;
     }
 
-    ZEEK_DEBUG(hilti::util::fmt("Loading events from %s", path.c_str()));
+    ZEEK_DEBUG(hilti::util::fmt("Loading events from %s", path));
 
     std::vector<glue::Event> new_events;
 

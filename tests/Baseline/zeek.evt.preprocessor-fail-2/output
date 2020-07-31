@@ -1,4 +1,4 @@
 [debug/zeek] Loading EVT file "/Users/robin/work/spicy/topic/tests/.tmp/zeek.evt.preprocessor-fail-2/preprocessor-fail.evt"
-[debug/zeek] Loading events from /Users/robin/work/spicy/topic/tests/.tmp/zeek.evt.preprocessor-fail-2/preprocessor-fail.evt
+[debug/zeek] Loading events from "/Users/robin/work/spicy/topic/tests/.tmp/zeek.evt.preprocessor-fail-2/preprocessor-fail.evt"
 [error] /Users/robin/work/spicy/topic/tests/.tmp/zeek.evt.preprocessor-fail-2/preprocessor-fail.evt:5: unterminated @if
 [error] error loading EVT file "/Users/robin/work/spicy/topic/tests/.tmp/zeek.evt.preprocessor-fail-2/preprocessor-fail.evt"
