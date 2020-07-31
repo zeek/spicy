@@ -2,14 +2,13 @@
 
 #pragma once
 
-#include "cookie.h"
-
 #include <optional>
 
 #include <hilti/rt/types/stream.h>
 
 #include <spicy/rt/parser.h>
 
+#include <zeek-spicy/cookie.h>
 #include <zeek-spicy/zeek-compat.h>
 
 namespace spicy::zeek::rt {

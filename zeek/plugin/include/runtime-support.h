@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include "cookie.h"
-
 #include <memory>
 #include <optional>
 #include <string>
@@ -20,6 +18,7 @@
 #include <hilti/rt/types/all.h>
 
 #include <zeek-spicy/autogen/config.h>
+#include <zeek-spicy/cookie.h>
 #include <zeek-spicy/zeek-compat.h>
 
 namespace spicy::zeek::rt {
