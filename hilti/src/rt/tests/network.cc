@@ -53,6 +53,11 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE("family") {
+    CHECK_EQ(Network(Address("1.2.3.4"), 32).family(), AddressFamily::IPv4);
+    CHECK_EQ(Network(Address("2001:0db8:0000:0000:0000:8a2e:0370:7334"), 32).family(), AddressFamily::IPv6);
+}
+
 TEST_CASE("length") {
     SUBCASE("ipv4") {
         const auto addr = Address("1.2.3.4");

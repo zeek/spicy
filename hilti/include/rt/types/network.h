@@ -67,7 +67,7 @@ public:
     /** Returns the network prefix, with the lower bits masked out. */
     const auto& prefix() const { return _prefix; }
 
-    /** Returns the protocol family of the networ, which can be IPv4 or IPv6. */
+    /** Returns the protocol family of the network, which can be IPv4 or IPv6. */
     auto family() const { return _prefix.family(); }
 
     /**
