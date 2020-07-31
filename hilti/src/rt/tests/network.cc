@@ -9,6 +9,23 @@ using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("Network");
 
+TEST_CASE("comparison") {
+    const Address addr1("255.255.255.255");
+    const Address addr2("0.0.0.0");
+    const Address addr3("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
+    const Address addr4("0:0:0:0:0:0:0:0");
+
+    CHECK_EQ(Network(addr1, 0), Network(addr1, 0));
+    CHECK_EQ(Network(addr1, 12), Network(addr1, 12));
+    CHECK_EQ(Network(addr1, 32), Network(addr1, 32));
+
+    CHECK_NE(Network(addr1, 32), Network(addr1, 0));
+    CHECK_NE(Network(addr1, 32), Network(addr2, 32));
+    CHECK_NE(Network(addr1, 0), Network(addr3, 0));
+    // TODO(bbannier): `Address` cannot distinguish the different families of these addresses.
+    // CHECK_NE(Network(addr2, 0), Network(addr4, 0));
+}
+
 TEST_CASE("construct") {
     SUBCASE("ipv4") {
         const auto addr = Address("1.2.3.4");
