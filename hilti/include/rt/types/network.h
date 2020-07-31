@@ -83,7 +83,7 @@ public:
     bool operator!=(const Network& other) const { return ! (*this == other); }
 
     /**
-     * Returns a humand-readable represenation of the network, using the same
+     * Returns a human-readable representation of the network, using the same
      * format that the corresponding constructor parses.
      */
     operator std::string() const { return fmt("%s/%u", _prefix, length()); }
