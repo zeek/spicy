@@ -53,4 +53,29 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE("length") {
+    SUBCASE("ipv4") {
+        const auto addr = Address("1.2.3.4");
+
+        for ( int length = 0; length < 33; ++length ) {
+            CAPTURE(length);
+            CHECK_EQ(Network(addr, length).length(), length);
+        }
+    }
+
+    SUBCASE("ipv6") {
+        const auto addr = Address("2001:0db8:0000:0000:0000:8a2e:0370:7334");
+
+        for ( int length = 0; length < 128; ++length ) {
+            // TODO(bbannier): These tests fail since a fully masked
+            // IPv4 address is silently converted to an IPv6 address.
+            if ( length < 3 )
+                continue;
+
+            CAPTURE(length);
+            CHECK_EQ(Network(addr, length).length(), length);
+        }
+    }
+}
+
 TEST_SUITE_END();
