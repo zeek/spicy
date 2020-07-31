@@ -64,7 +64,7 @@ public:
     Network& operator=(const Network&) = default;
     Network& operator=(Network&&) noexcept = default;
 
-    /** Returns the network prefix, with the lower bitsmasked out. */
+    /** Returns the network prefix, with the lower bits masked out. */
     const auto& prefix() const { return _prefix; }
 
     /** Returns the protocol family of the networ, which can be IPv4 or IPv6. */
