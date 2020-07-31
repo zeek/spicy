@@ -24,7 +24,7 @@ We discuss both approaches in the following.
     called HILTI. It is the HILTI runtime library that implements most
     of the functionality we'll look at in this section, so you'll see
     quite a bit of HILTI-side functionality. Spicy comes with a small
-    addittional runtime library of its own that adds anythings that's
+    additional runtime library of its own that adds anythings that's
     specific to the parsers it generates.
 
 .. note::
