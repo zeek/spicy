@@ -13,7 +13,7 @@ public function create_http_message_stats(msg: HTTP::Message) : tuple<time, bool
 }
 
 # Create an map of all headers as http_all_headers() expects it. Version for Zeek < 3.2)
-public function convert_all_headers_30(headers: vector<HTTP::Header>) : map<uint64, tuple<bytes, bytes>> {
+public function convert_all_headers_v30(headers: vector<HTTP::Header>) : map<uint64, tuple<bytes, bytes>> {
     local hdrs: map<uint64, tuple<bytes, bytes>>;
 
     for ( i in headers )
@@ -23,11 +23,11 @@ public function convert_all_headers_30(headers: vector<HTTP::Header>) : map<uint
 }
 
 # Create an map of all headers as http_all_headers() expects it. Version for Zeek >= 3.2.
-public function convert_all_headers_32(headers: vector<HTTP::Header>) : map<uint64, tuple<bytes, bytes, bytes>> {
+public function convert_all_headers_v32(headers: vector<HTTP::Header>) : map<uint64, tuple<bytes, bytes, bytes>> {
     local hdrs: map<uint64, tuple<bytes, bytes, bytes>>;
 
     for ( i in headers )
-        hdrs[|hdrs|] = (i.name, i.content);
+        hdrs[|hdrs|] = (i.name, i.name.upper(), i.content);
 
     return hdrs;
 }

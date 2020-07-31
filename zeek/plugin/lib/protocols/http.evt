@@ -22,9 +22,9 @@ on HTTP::ReplyLine             -> event http_reply($conn, self.version.number, s
 on HTTP::RequestLine           -> event http_request($conn, self.method, self.uri, self.uri, self.version.number);
 
 @if ZEEK_VERSION < 30200
-    on HTTP::Header                -> event http_header($conn, $is_orig, self.name, self.name.upper(), self.content);
-    on HTTP::Message::end_of_hdr   -> event http_all_headers_v30($conn, $is_orig, Zeek_HTTP::convert_all_headers(self.headers));
-@else
     on HTTP::Header                -> event http_header($conn, $is_orig, self.name.upper(), self.content);
-    on HTTP::Message::end_of_hdr   -> event http_all_headers_v32($conn, $is_orig, Zeek_HTTP::convert_all_headers(self.headers));
+    on HTTP::Message::end_of_hdr   -> event http_all_headers($conn, $is_orig, Zeek_HTTP::convert_all_headers_v30(self.headers));
+@else
+    on HTTP::Header                -> event http_header($conn, $is_orig, self.name, self.name.upper(), self.content);
+    on HTTP::Message::end_of_hdr   -> event http_all_headers($conn, $is_orig, Zeek_HTTP::convert_all_headers_v32(self.headers));
 @endif

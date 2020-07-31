@@ -108,26 +108,28 @@ const HeaderName  = /[^:\r\n]+/;
 const HeaderValue = /[^\r\n]*/;
 
 type Header = unit(inout msg: Message) {
-    name:    HeaderName &convert=$$.upper();
+    name:    HeaderName;
     :        /:[\t ]*/;
     content: HeaderValue;
     :        NewLine;
 
     on content {
-        if ( self.name == b"CONTENT-LENGTH" ) {
+        local name = self.name.upper();
+
+        if ( name == b"CONTENT-LENGTH" ) {
             msg.content_length = self.content.to_uint();
             msg.has_body = True;
             }
 
-        if ( self.name == b"TRANSFER-ENCODING" ) {
+        if ( name == b"TRANSFER-ENCODING" ) {
             msg.transfer_encoding = self.content;
             msg.has_body = True;
             }
 
-        if ( self.name == b"CONTENT-ENCODING" )
+        if ( name == b"CONTENT-ENCODING" )
             msg.content_encoding = self.content;
 
-        if ( self.name == b"CONTENT-TYPE" ) {
+        if ( name == b"CONTENT-TYPE" ) {
             local ct: tuple<bytes,bytes> = self.content.split1(b";");
             local ty: tuple<bytes,bytes> = ct[0].split1(b"/");
             msg.content_type = (ty[0].strip().upper(), ty[1].strip().upper());
