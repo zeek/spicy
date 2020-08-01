@@ -103,7 +103,7 @@ private:
     uint64_t _a1 = 0; // The 8 more significant bytes.
     uint64_t _a2 = 0; // The 8 less significant bytes.
 
-    AddressFamily _family = AddressFamily::IPv4;
+    AddressFamily _family = AddressFamily::Undef;
 };
 
 namespace address {
