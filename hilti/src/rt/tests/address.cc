@@ -82,7 +82,7 @@ TEST_CASE("constructs from binary represenation of an IPv6 address") {
 }
 
 TEST_CASE("family") {
-    CHECK_EQ(Address().family(), AddressFamily::IPv4); // Default address of 0.0.0.0 is IPv4.
+    CHECK_EQ(Address().family(), AddressFamily::Undef);
     CHECK_EQ(Address("1.2.3.4").family(), AddressFamily::IPv4);
     CHECK_EQ(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348").family(), AddressFamily::IPv6);
     CHECK_EQ(Address("::ffff:1.2.3.4").family(), AddressFamily::IPv6);
