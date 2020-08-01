@@ -18,12 +18,11 @@ TEST_CASE("comparison") {
     CHECK_EQ(Network(addr1, 0), Network(addr1, 0));
     CHECK_EQ(Network(addr1, 12), Network(addr1, 12));
     CHECK_EQ(Network(addr1, 32), Network(addr1, 32));
+    CHECK_EQ(Network(addr2, 0), Network(addr4, 0));
 
     CHECK_NE(Network(addr1, 32), Network(addr1, 0));
     CHECK_NE(Network(addr1, 32), Network(addr2, 32));
     CHECK_NE(Network(addr1, 0), Network(addr3, 0));
-    // TODO(bbannier): `Address` cannot distinguish the different families of these addresses.
-    // CHECK_NE(Network(addr2, 0), Network(addr4, 0));
 }
 
 TEST_CASE("construct") {
@@ -31,6 +30,7 @@ TEST_CASE("construct") {
         const auto addr = Address("1.2.3.4");
         REQUIRE_EQ(addr.family(), AddressFamily::IPv4);
 
+        REQUIRE_EQ(Network(addr, 0).family(), AddressFamily::IPv4);
         CHECK_EQ(to_string(Network(addr, 0)), "0.0.0.0/0");
         CHECK_EQ(to_string(Network(addr, 2)), "0.0.0.0/2");
         CHECK_EQ(to_string(Network(addr, 4)), "0.0.0.0/4");
@@ -50,10 +50,8 @@ TEST_CASE("construct") {
         const auto addr = Address("2001:0db8:0000:0000:0000:8a2e:0370:7334");
         REQUIRE_EQ(addr.family(), AddressFamily::IPv6);
 
-        // TODO(bbannier): These tests fail since a fully masked
-        // IPv4 address is silently converted to an IPv6 address.
-        // CHECK_EQ(to_string(Network(addr, 0)), "0.0.0.0/0");
-        // CHECK_EQ(to_string(Network(addr, 2)), "0.0.0.0/2");
+        CHECK_EQ(to_string(Network(addr, 0)), "::/0");
+        CHECK_EQ(to_string(Network(addr, 2)), "::/2");
         CHECK_EQ(to_string(Network(addr, 4)), "2000::/4");
         CHECK_EQ(to_string(Network(addr, 8)), "2000::/8");
         CHECK_EQ(to_string(Network(addr, 16)), "2001::/16");
@@ -68,6 +66,14 @@ TEST_CASE("construct") {
         CHECK_THROWS_WITH_AS(to_string(Network(addr, 129)), "prefix length 129 is invalid for IPv6 networks",
                              const InvalidArgument&);
     }
+
+    SUBCASE("string") {
+        CHECK_EQ(to_string(Network("1.2.3.4", 24)), "1.2.3.0/24");
+        CHECK_EQ(to_string(Network("2001:0db8:0000:0000:0000:8a2e:0370:7334", 24)), "2001:d00::/24");
+        CHECK_EQ(to_string(Network("::192.168.1.0", 24)), "192.168.1.0/24");
+    }
+
+    SUBCASE("default") { CHECK_EQ(to_string(Network()), "0.0.0.0/-96"); }
 }
 
 TEST_CASE("contains") {
@@ -118,11 +124,6 @@ TEST_CASE("length") {
         const auto addr = Address("2001:0db8:0000:0000:0000:8a2e:0370:7334");
 
         for ( int length = 0; length < 128; ++length ) {
-            // TODO(bbannier): These tests fail since a fully masked
-            // IPv4 address is silently converted to an IPv6 address.
-            if ( length < 3 )
-                continue;
-
             CAPTURE(length);
             CHECK_EQ(Network(addr, length).length(), length);
         }

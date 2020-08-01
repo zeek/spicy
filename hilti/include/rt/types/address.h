@@ -44,7 +44,7 @@ public:
      *
      * @param addr4 IPv4 address in host byte order
      */
-    explicit Address(uint32_t addr4) : Address(0, addr4) {} // addr4 in host byte order
+    explicit Address(uint32_t addr4) : Address(0, addr4, AddressFamily::IPv4) {} // addr4 in host byte order
 
     /**
      * Constructs an address from binary representation of an IPv6 address.
@@ -52,7 +52,8 @@ public:
      * @param addr6a upper bits of IPv6 address in host byte order
      * @param addr6a lower bits of IPv6 address in host byte order
      */
-    explicit Address(uint64_t addr6a, uint64_t addr6b) : _a1(addr6a), _a2(addr6b){};
+    explicit Address(uint64_t addr6a, uint64_t addr6b, AddressFamily family = AddressFamily::IPv6)
+        : _a1(addr6a), _a2(addr6b), _family(family) {}
 
     Address() noexcept = default;
     Address(const Address&) = default;
@@ -101,6 +102,8 @@ private:
 
     uint64_t _a1 = 0; // The 8 more significant bytes.
     uint64_t _a2 = 0; // The 8 less significant bytes.
+
+    AddressFamily _family = AddressFamily::IPv4;
 };
 
 namespace address {

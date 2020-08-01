@@ -86,7 +86,12 @@ public:
      * Returns a human-readable representation of the network, using the same
      * format that the corresponding constructor parses.
      */
-    operator std::string() const { return fmt("%s/%u", _prefix, length()); }
+    operator std::string() const {
+        if ( _prefix.family() == AddressFamily::Undef )
+            return "<bad network>";
+
+        return fmt("%s/%u", _prefix, length());
+    }
 
 private:
     void _mask() {
