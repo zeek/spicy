@@ -3,8 +3,8 @@ module zeek_rt {
 
 %cxx-include = "zeek-spicy/runtime-support.h";
 
-public type Val = __library_type("::Val *");
-public type BroType = __library_type("::BroType *");
+public type Val = __library_type("::zeek::ValPtr");
+public type BroType = __library_type("::zeek::TypePtr");
 public type EventHandlerPtr = __library_type("::EventHandlerPtr");
 
 declare public void register_protocol_analyzer(string name, hilti::Protocol protocol, vector<port> ports, string parser_orig, string parser_resp, string replaces) &cxxname="spicy::zeek::rt::register_protocol_analyzer";

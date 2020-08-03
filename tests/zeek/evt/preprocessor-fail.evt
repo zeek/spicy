@@ -1,0 +1,28 @@
+# @TEST-REQUIRES: have-zeek-plugin
+#
+# @TEST-EXEC-FAIL: spicyz -D zeek -o x.hlto %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+
+@if ZEEK_VERSION < 90000
+
+# @TEST-START-NEXT
+
+@if ZEEK_VERSION >= 30000
+@else
+
+# @TEST-START-NEXT
+
+@else
+@endif
+
+# @TEST-START-NEXT
+
+@endif
+
+# @TEST-START-NEXT
+
+@if ZEEK_VERSION < 90000
+@if ZEEK_VERSION < 90000
+@if ZEEK_VERSION < 90000
+@else
+@endif

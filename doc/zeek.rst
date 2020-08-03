@@ -381,6 +381,26 @@ insert ``import`` statements into the ``*.evt`` file that work
         ``NAME.spicy``) inside a sub-directory ``X/Y/Z`` along the
         search path, and then imports it.
 
+
+Conditional Compilation
+-----------------------
+
+``*.evt`` files offer a basic form of conditional compilation through
+``@if COND``/``@else``/``@endif`` blocks, similar to a C preprocessor. For
+now, this supports only a single type of condition that allows
+comparing against the Zeek version the plugin is being used with,
+available inside ``COND`` as ``ZEEK_VERSION``. For example::
+
+    @if ZEEK_VERSION < 30200
+        <EVT code for Zeek versions older than 3.2>
+    @else
+        <EVT code for Zeek version 3.2 or newer>
+    @endif
+
+Supported comparisons in ``COND`` are ``==``, ``!=``, ``<``, ``<=``,
+``>``, ``>=``. Note that ``COND`` does not support more complex
+expressions (e.g., no nested expressions or parentheses).
+
 .. _zeek_compiling:
 
 Compiling Analyzers

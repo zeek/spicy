@@ -5,14 +5,12 @@
 #include <optional>
 #include <utility>
 
-// Zeek headers
-#include "cookie.h"
-#include <analyzer/protocol/tcp/TCP.h>
-#include <analyzer/protocol/udp/UDP.h>
-
 #include <hilti/rt/types/stream.h>
 
 #include <spicy/rt/parser.h>
+
+#include <zeek-spicy/cookie.h>
+#include <zeek-spicy/zeek-compat.h>
 
 namespace spicy::zeek::rt {
 
@@ -128,11 +126,13 @@ public:
 
     // Overriden from Zeek's TCP_ApplicationAnalyzer.
     void EndpointEOF(bool is_orig) override;
-    void ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
-                          int gen_event) override;
 #if ZEEK_VERSION_NUMBER >= 30200
+    void ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
+                          bool gen_event) override;
     void ConnectionFinished(bool half_finished) override;
 #else
+    void ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
+                          int gen_event) override;
     void ConnectionFinished(int half_finished) override;
 #endif
     void ConnectionReset() override;

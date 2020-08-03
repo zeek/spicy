@@ -2,19 +2,10 @@
 
 #include <string>
 
-// Zeek headers
-#include <file_analysis/Analyzer.h>
-
-#include <zeek-spicy/autogen/config.h>
-
-#if ZEEK_DEBUG_BUILD
-#define DEBUG
-#endif
-#include <Reporter.h>
-#undef DEBUG
-
 #include <hilti/rt/logging.h>
 
+#include <zeek-spicy/autogen/config.h>
+#include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
 
 using namespace spicy::zeek;
@@ -43,10 +34,10 @@ void reporter::weird(file_analysis::File* f, const std::string& msg) {
 
 void reporter::weird(const std::string& msg) { ::reporter->Weird(msg.c_str()); }
 
-static std::unique_ptr<::Location> _makeLocation(const std::string& location) {
+static std::unique_ptr<::zeek::detail::Location> _makeLocation(const std::string& location) {
     static std::set<std::string> filenames; // see comment below in parse_location
 
-    auto parse_location = [](const auto& s) -> std::unique_ptr<::Location> {
+    auto parse_location = [](const auto& s) -> std::unique_ptr<::zeek::detail::Location> {
         // This is not so great; In the HILTI runtome we pass locations
         // around as string. To pass them to Zeek, we need to unsplit the
         // strings into file name and line number. Zeek also won't clean up
@@ -55,7 +46,7 @@ static std::unique_ptr<::Location> _makeLocation(const std::string& location) {
         if ( x[0].empty() )
             return nullptr;
 
-        auto loc = std::make_unique<::Location>();
+        auto loc = std::make_unique<::zeek::detail::Location>();
         loc->filename = filenames.insert(std::string(x[0])).first->c_str(); // we retain ownership
 
         if ( x.size() >= 2 ) {

@@ -241,7 +241,7 @@ static hilti::rt::Port extract_port(const std::string& chunk, size_t* i) {
     return {static_cast<uint16_t>(port), proto};
 }
 
-GlueCompiler::GlueCompiler(Driver* driver) : _driver(driver) {}
+GlueCompiler::GlueCompiler(Driver* driver, int zeek_version) : _driver(driver), _zeek_version(zeek_version) {}
 
 GlueCompiler::~GlueCompiler() {}
 
@@ -312,6 +312,103 @@ hilti::Result<std::string> GlueCompiler::getNextEvtBlock(std::istream& in, int* 
     }
 }
 
+void GlueCompiler::preprocessEvtFile(std::filesystem::path& path, std::istream& in, std::ostream& out) {
+    std::vector<bool> including = {true};
+    int lineno = 0;
+
+    while ( true ) {
+        lineno++;
+
+        std::string line;
+        std::getline(in, line);
+
+        if ( in.eof() )
+            break;
+
+        auto trimmed = hilti::util::trim(line);
+        _locations.emplace_back(path, lineno);
+
+        if ( hilti::util::startsWith(trimmed, "@") ) {
+            // Output empty line to keep line numbers the same
+            out << '\n';
+
+            auto m = hilti::util::split(trimmed);
+
+            if ( m[0] == "@if" ) {
+                if ( m.size() != 4 )
+                    throw ParseError("syntax error in @if directive");
+
+                if ( m[1] == "ZEEK_VERSION" ) {
+                    bool result;
+                    int want_version = 0;
+                    hilti::util::atoi_n(m[3].begin(), m[3].end(), 10, &want_version);
+
+                    if ( m[2] == "==" )
+                        result = (_zeek_version == want_version);
+                    else if ( m[2] == "!=" )
+                        result = (_zeek_version != want_version);
+                    else if ( m[2] == "<" )
+                        result = (_zeek_version < want_version);
+                    else if ( m[2] == "<=" )
+                        result = (_zeek_version <= want_version);
+                    else if ( m[2] == ">" )
+                        result = (_zeek_version > want_version);
+                    else if ( m[2] == ">=" )
+                        result = (_zeek_version >= want_version);
+                    else
+                        throw ParseError("unknown operator in preprocessor expression");
+
+                    including.push_back(result);
+                }
+                else
+                    throw ParseError("unknown preprocessor variable in @if condition");
+            }
+
+            else if ( m[0] == "@else" ) {
+                if ( m.size() != 1 )
+                    throw ParseError("syntax error in @else directive");
+
+                if ( including.size() == 1 )
+                    throw ParseError("@else without @if");
+
+                auto x = including.back();
+                including.pop_back();
+                including.push_back(! x);
+            }
+
+            else if ( m[0] == "@endif" ) {
+                if ( m.size() != 1 )
+                    throw ParseError("syntax error in @endif directive");
+
+                if ( including.size() == 1 )
+                    throw ParseError("@endif without @if");
+
+
+                including.pop_back();
+            }
+
+            else
+                throw ParseError("unknown preprocessor directive");
+        }
+
+        else {
+            // Not a preprocessor directive
+            if ( including.back() )
+                out << line << '\n';
+            else
+                // Output empty line to keep line numbers the same
+                out << '\n';
+        }
+
+        _locations.pop_back();
+    }
+
+    if ( including.size() > 1 ) {
+        _locations.emplace_back(path, lineno);
+        throw ParseError("unterminated @if");
+    }
+}
+
 bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
     std::ifstream in(path);
 
@@ -320,22 +417,29 @@ bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
         return false;
     }
 
-    ZEEK_DEBUG(hilti::util::fmt("Loading events from %s", path.c_str()));
-    _locations.emplace_back(path);
+    ZEEK_DEBUG(hilti::util::fmt("Loading events from %s", path));
 
     std::vector<glue::Event> new_events;
-    int lineno = 1;
 
     try {
+        std::stringstream preprocessed;
+        preprocessEvtFile(path, in, preprocessed);
+        preprocessed.clear();
+        preprocessed.seekg(0);
+
+        int lineno = 1;
+
         while ( true ) {
             _locations.emplace_back(path, lineno);
-
-            auto chunk = getNextEvtBlock(in, &lineno);
+            auto chunk = getNextEvtBlock(preprocessed, &lineno);
             if ( ! chunk )
                 throw ParseError(chunk.error());
 
             if ( chunk->empty() )
                 break; // end of input
+
+            _locations.pop_back();
+            _locations.emplace_back(path, lineno);
 
             if ( looking_at(*chunk, 0, "protocol") ) {
                 auto a = parseProtocolAnalyzer(*chunk);

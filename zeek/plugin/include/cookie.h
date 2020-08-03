@@ -10,9 +10,7 @@
 #include <optional>
 #include <variant>
 
-// Zeek headers
-#include <analyzer/Analyzer.h>
-#include <file_analysis/Analyzer.h>
+#include <zeek-spicy/zeek-compat.h>
 
 namespace spicy::zeek::rt {
 

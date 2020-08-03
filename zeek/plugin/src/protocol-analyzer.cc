@@ -283,8 +283,14 @@ void TCP_Analyzer::EndpointEOF(bool is_orig) {
     FeedChunk(is_orig, 0, reinterpret_cast<const u_char*>(""), true);
 }
 
+#if ZEEK_VERSION_NUMBER >= 30200
 void TCP_Analyzer::ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
-                                    int gen_event) {
+                                    bool gen_event)
+#else
+void TCP_Analyzer::ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
+                                    int gen_event)
+#endif
+{
     ::analyzer::tcp::TCP_ApplicationAnalyzer::ConnectionClosed(endpoint, peer, gen_event);
 }
 

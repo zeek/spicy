@@ -161,7 +161,7 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
 }
 
 int main(int argc, char** argv) {
-    spicy::zeek::Driver driver;
+    spicy::zeek::Driver driver("", spicy::zeek::configuration::ZeekVersionNumber);
 
     hilti::Options compiler_options;
     hilti::driver::Options driver_options;
@@ -169,8 +169,10 @@ int main(int argc, char** argv) {
     driver_options.execute_code = true;
     driver_options.include_linker = true;
 
-    compiler_options.cxx_include_paths = {spicy::zeek::configuration::CxxZeekIncludeDirectory,
-                                          spicy::zeek::configuration::CxxBrokerIncludeDirectory};
+    for ( auto i : hilti::util::split(spicy::zeek::configuration::CxxZeekIncludeDirectories, ":") )
+        compiler_options.cxx_include_paths.emplace_back(i);
+
+    compiler_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxBrokerIncludeDirectory);
 
     if ( hilti::configuration().uses_build_directory ) {
         compiler_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxRuntimeIncludeDirectoryBuild);

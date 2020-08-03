@@ -17,18 +17,8 @@
 #include <zeek-spicy/file-analyzer.h>
 #include <zeek-spicy/plugin.h>
 #include <zeek-spicy/protocol-analyzer.h>
+#include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
-
-// Zeek includes
-#if ZEEK_DEBUG_BUILD
-#define DEBUG
-#endif
-#include <Expr.h>
-#include <analyzer/Manager.h>
-#include <analyzer/protocol/tcp/TCP.h>
-#include <analyzer/protocol/udp/UDP.h>
-#include <file_analysis/Manager.h>
-#undef DEBUG
 
 #ifndef ZEEK_HAVE_JIT
 plugin::Zeek_Spicy::Plugin SpicyPlugin;
@@ -92,7 +82,7 @@ void plugin::Zeek_Spicy::Plugin::registerFileAnalyzer(const std::string& name,
 void plugin::Zeek_Spicy::Plugin::registerEnumType(
     const std::string& ns, const std::string& id,
     const hilti::rt::Vector<std::tuple<std::string, hilti::rt::integer::safe<int64_t>>>& labels) {
-    if ( ::lookup_ID(id.c_str(), ns.c_str()) )
+    if ( ::zeek::detail::lookup_ID(id.c_str(), ns.c_str()) )
         // Already exists, which means it's either done by the Spicy plugin
         // already, or provided manually. We leave it alone then.
         return;
@@ -100,7 +90,7 @@ void plugin::Zeek_Spicy::Plugin::registerEnumType(
     auto fqid = hilti::rt::fmt("%s::%s", ns, id);
     ZEEK_DEBUG(hilti::rt::fmt("Adding Zeek enum type %s", fqid));
 
-    auto etype = new EnumType(fqid);
+    auto etype = spicy::zeek::compat::EnumType_New(fqid);
 
     for ( const auto& [lid, lval] : labels ) {
         auto name = ::hilti::rt::fmt("%s_%s", id, lid);
@@ -110,9 +100,9 @@ void plugin::Zeek_Spicy::Plugin::registerEnumType(
     // Hack to prevent Zeekygen fromp reporting the ID as not having a
     // location during the following initialization step.
     ::zeekygen_mgr->Script("<Spicy>");
-    ::set_location(::Location("<Spicy>", 0, 0, 0, 0));
+    ::zeek::detail::set_location(::zeek::detail::Location("<Spicy>", 0, 0, 0, 0));
 
-    auto zeek_id = install_ID(id.c_str(), ns.c_str(), true, true);
+    auto zeek_id = ::zeek::detail::install_ID(id.c_str(), ns.c_str(), true, true);
     zeek_id->SetType(etype);
     zeek_id->MakeType();
 }
@@ -141,8 +131,8 @@ const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForFileAnalyzer(const
     return tag;
 }
 
-plugin::Configuration plugin::Zeek_Spicy::Plugin::Configure() {
-    plugin::Configuration config;
+::zeek::plugin::Configuration plugin::Zeek_Spicy::Plugin::Configure() {
+    ::zeek::plugin::Configuration config;
     config.name = "Zeek::Spicy";
 #ifdef ZEEK_HAVE_JIT
     config.description = "Support for Spicy parsers (*.spicy, *.evt, *.hlto)";
@@ -153,7 +143,7 @@ plugin::Configuration plugin::Zeek_Spicy::Plugin::Configure() {
     config.version.minor = PROJECT_VERSION_MINOR;
     config.version.patch = PROJECT_VERSION_PATCH;
 
-    EnableHook(plugin::HOOK_LOAD_FILE);
+    EnableHook(::zeek::plugin::HOOK_LOAD_FILE);
 
     return config;
 }
@@ -190,13 +180,13 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
 
     auto config = hilti::rt::configuration::get();
 
-    if ( internal_const_val("Spicy::enable_print")->AsBool() )
+    if ( ::zeek::id::find_const("Spicy::enable_print")->AsBool() )
         config.cout = std::cout;
     else
         config.cout.reset();
 
-    config.abort_on_exceptions = internal_const_val("Spicy::abort_on_exceptions")->AsBool();
-    config.show_backtraces = internal_const_val("Spicy::show_backtraces")->AsBool();
+    config.abort_on_exceptions = ::zeek::id::find_const("Spicy::abort_on_exceptions")->AsBool();
+    config.show_backtraces = ::zeek::id::find_const("Spicy::show_backtraces")->AsBool();
 
     hilti::rt::configuration::set(config);
 
@@ -261,7 +251,7 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         // Hack to prevent Zeekygen fromp reporting the ID as not having a
         // location during the following initialization step.
         ::zeekygen_mgr->Script("<Spicy>");
-        ::set_location(::Location("<Spicy>", 0, 0, 0, 0));
+        ::zeek::detail::set_location(::zeek::detail::Location("<Spicy>", 0, 0, 0, 0));
 
         // TODO(robin): Should Bro do this? It has run component intiialization at
         // this point already, so ours won't get initialized anymore.
@@ -290,7 +280,7 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         // Hack to prevent Zeekygen from reporting the ID as not having a
         // location during the following initialization step.
         ::zeekygen_mgr->Script("<Spicy>");
-        ::set_location(::Location("<Spicy>", 0, 0, 0, 0));
+        ::zeek::detail::set_location(::zeek::detail::Location("<Spicy>", 0, 0, 0, 0));
 
         // TODO: Should Bro do this? It has run component intiialization at
         // this point already, so ours won't get initialized anymore.
@@ -306,11 +296,12 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
 
             // MIME types are registered in scriptland, so we'll raise an
             // event that will do it for us through a predefined handler.
-            val_list* vals = new val_list;
-            vals->append(tag.AsEnumVal());
-            vals->append(new ::StringVal(mt));
-            EventHandlerPtr handler = internal_handler("spicy_analyzer_for_mime_type");
-            ::mgr.QueueEvent(handler, vals);
+            zeek::Args vals = ::spicy::zeek::compat::ZeekArgs_New();
+            ;
+            ::spicy::zeek::compat::ZeekArgs_Append(vals, ::spicy::zeek::compat::FileAnalysisComponentTag_AsVal(tag));
+            ::spicy::zeek::compat::ZeekArgs_Append(vals, ::spicy::zeek::compat::StringVal_New(mt));
+            EventHandlerPtr handler = ::spicy::zeek::compat::event_register_Register("spicy_analyzer_for_mime_type");
+            ::spicy::zeek::compat::event_mgr_Enqueue(handler, vals);
         }
     }
 

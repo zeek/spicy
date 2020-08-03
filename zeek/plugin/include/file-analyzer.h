@@ -4,23 +4,22 @@
 
 #include <optional>
 
-// Zeek headers
-#include "cookie.h"
-#include <file_analysis/Manager.h>
-
 #include <hilti/rt/types/stream.h>
 
 #include <spicy/rt/parser.h>
+
+#include <zeek-spicy/cookie.h>
+#include <zeek-spicy/zeek-compat.h>
 
 namespace spicy::zeek::rt {
 
 /** A Spicy fil analyzer. */
 class FileAnalyzer : public ::file_analysis::Analyzer {
 public:
-    FileAnalyzer(RecordVal* arg_args, file_analysis::File* arg_file);
+    FileAnalyzer(::zeek::RecordValPtr arg_args, file_analysis::File* arg_file);
     virtual ~FileAnalyzer();
 
-    static file_analysis::Analyzer* InstantiateAnalyzer(RecordVal* args, file_analysis::File* file);
+    static file_analysis::Analyzer* InstantiateAnalyzer(::zeek::RecordValPtr args, file_analysis::File* file);
 
 protected:
     // Overriden from Zeek's file analyzer.
@@ -54,7 +53,7 @@ private:
     std::optional<hilti::rt::ValueReference<hilti::rt::Stream>> _data;
     std::optional<hilti::rt::Resumable> _resumable;
 
-    RecordVal* _args; // ???
+    ::zeek::RecordVal* _args; // ???
 };
 
 } // namespace spicy::zeek::rt

@@ -10,7 +10,9 @@ namespace spicy::zeek::configuration {
 // can catch when this header wasn't included.
 #cmakedefine01 ZEEK_DEBUG_BUILD
 
-inline const auto CxxZeekIncludeDirectory = "${ZEEK_INCLUDE_DIR}";
+inline const int ZeekVersionNumber = ${ZEEK_VERSION_NUMBER};
+
+inline const auto CxxZeekIncludeDirectories = "${ZEEK_INCLUDE_DIRS}";
 
 inline const auto CxxRuntimeIncludeDirectoryBuild = "${CMAKE_CURRENT_SOURCE_DIR}/include";
 inline const auto CxxRuntimeIncludeDirectoryInstallation = "${PLUGIN_INSTALL_DIR}/include";

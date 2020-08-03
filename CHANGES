@@ -1,4 +1,26 @@
 
+0.4.0-703 | 2020-08-03 07:41:51 +0000
+
+  * GH-444: Port Zeek plugin to Zeek 3.2. (Robin Sommer, Corelight)
+
+  * GH-323: Suppress bogus warning by Zeek when installing our plugin.
+    (Robin Sommer, Corelight)
+
+  * Extend EVT file syntax with @if/@else/@endif preprocessor directives.
+
+    For now, we support one type of expression for "@if": a Zeek version check. Example:
+
+        @if ZEEK_VERSION < 30200
+        ....
+        @else
+        ....
+        @endif (Robin Sommer, Corelight)
+
+    Also collecting all the Zeek includes into zeek-compat.h. (Robin Sommer, Corelight)
+
+  * Fix frequent off-by-one errors in EVT error message locations.
+    (Robin Sommer, Corelight)
+
 0.4.0-691 | 2020-07-31 15:19:57 +0200
 
   * Emitted fully typed initializer lists in codegen.

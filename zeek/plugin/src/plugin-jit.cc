@@ -9,20 +9,13 @@
 
 #include <zeek-spicy/autogen/config.h>
 #include <zeek-spicy/plugin-jit.h>
+#include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
 
 // clang-format off
 #include <compiler/debug.h>
 #include <compiler/driver.h>
 // clang-format on
-
-// Zeek includes
-#if ZEEK_DEBUG_BUILD
-#define DEBUG
-#endif
-#include <Val.h>
-#include <Var.h>
-#undef DEBUG
 
 namespace spicy::zeek::debug {
 const hilti::logging::DebugStream ZeekPlugin("zeek");
@@ -61,11 +54,15 @@ void plugin::Zeek_Spicy::Driver::_initialize() {
     // Initialize HILTI compiler options. We dont't use the `BifConst::*`
     // constants here as they may not have been initialized yet.
     hilti::Options hilti_options;
-    hilti_options.debug = internal_const_val("Spicy::debug")->AsBool();
-    hilti_options.skip_validation = internal_const_val("Spicy::skip_validation")->AsBool();
-    hilti_options.optimize = internal_const_val("Spicy::optimize")->AsBool();
-    hilti_options.cxx_include_paths = {spicy::zeek::configuration::CxxZeekIncludeDirectory,
-                                       spicy::zeek::configuration::CxxBrokerIncludeDirectory};
+
+    hilti_options.debug = ::zeek::id::find_const("Spicy::debug")->AsBool();
+    hilti_options.skip_validation = ::zeek::id::find_const("Spicy::skip_validation")->AsBool();
+    hilti_options.optimize = ::zeek::id::find_const("Spicy::optimize")->AsBool();
+
+    for ( auto i : hilti::util::split(spicy::zeek::configuration::CxxZeekIncludeDirectories, ":") )
+        hilti_options.cxx_include_paths.emplace_back(i);
+
+    hilti_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxBrokerIncludeDirectory);
 
     if ( hilti::configuration().uses_build_directory ) {
         hilti_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxAutogenIncludeDirectoryBuild);
@@ -91,17 +88,19 @@ void plugin::Zeek_Spicy::Driver::_initialize() {
     driver_options.logger = nullptr; // keep using the global logger, which we may have already configured
     driver_options.execute_code = true;
     driver_options.include_linker = true;
-    driver_options.dump_code = internal_const_val("Spicy::dump_code")->AsBool();
-    driver_options.report_times = internal_const_val("Spicy::report_times")->AsBool();
+    driver_options.dump_code = ::zeek::id::find_const("Spicy::dump_code")->AsBool();
+    driver_options.report_times = ::zeek::id::find_const("Spicy::report_times")->AsBool();
 
-    for ( auto s : hilti::util::split(internal_const_val("Spicy::codegen_debug")->AsStringVal()->ToStdString(), ",") ) {
+    for ( auto s :
+          hilti::util::split(::zeek::id::find_const("Spicy::codegen_debug")->AsStringVal()->ToStdString(), ",") ) {
         s = hilti::util::trim(s);
 
         if ( s.size() && ! driver_options.logger->debugEnable(s) )
             reporter::fatalError(hilti::rt::fmt("Unknown Spicy debug stream '%s'", s));
     }
 
-    if ( auto r = hilti_options.parseDebugAddl(internal_const_val("Spicy::debug_addl")->AsStringVal()->ToStdString());
+    if ( auto r =
+             hilti_options.parseDebugAddl(::zeek::id::find_const("Spicy::debug_addl")->AsStringVal()->ToStdString());
          ! r )
         reporter::fatalError(r.error());
 
@@ -137,11 +136,18 @@ void plugin::Zeek_Spicy::Driver::hookNewEnumType(const EnumInfo& e) {
 }
 
 plugin::Zeek_Spicy::PluginJIT::PluginJIT() {
+#ifdef ZEEK_VERSION_NUMBER // Not available in Zeek 3.0 yet.
+    if ( spicy::zeek::configuration::ZeekVersionNumber != ZEEK_VERSION_NUMBER )
+        reporter::fatalError(
+            hilti::util::fmt("Zeek version mismatch: running with Zeek %d, but plugin compiled for Zeek %s",
+                             ZEEK_VERSION_NUMBER, spicy::zeek::configuration::ZeekVersionNumber));
+#endif
+
     Dl_info info;
     if ( ! dladdr(&SpicyPlugin, &info) )
         reporter::fatalError("Spicy plugin cannot determine its file system path");
 
-    _driver = std::make_unique<Driver>(info.dli_fname);
+    _driver = std::make_unique<Driver>(info.dli_fname, spicy::zeek::configuration::ZeekVersionNumber);
 }
 
 plugin::Zeek_Spicy::PluginJIT::~PluginJIT() {}

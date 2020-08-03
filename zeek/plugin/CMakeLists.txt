@@ -5,7 +5,7 @@ set(BRO_PLUGIN_BASE "${CMAKE_CURRENT_SOURCE_DIR}")
 set(BRO_CONFIG_CMAKE_DIR "${ZEEK_CMAKE_DIR}")
 set(BRO_CONFIG_PLUGIN_DIR "${ZEEK_PLUGIN_DIR}")
 set(BRO_CONFIG_PREFIX "${ZEEK_PREFIX}")
-set(BRO_CONFIG_INCLUDE_DIR "${ZEEK_INCLUDE_DIR}")
+set(BRO_CONFIG_INCLUDE_DIR "${ZEEK_INCLUDE_DIRS}")
 set(BROKER_ROOT_DIR "${ZEEK_PREFIX}")
 set(BinPAC_ROOT_DIR "${ZEEK_PREFIX}")
 set(CAF_ROOT_DIR "${ZEEK_PREFIX}")
@@ -44,6 +44,7 @@ zeek_plugin_dist_files(spicy/zeek_rt.hlt)
 # have a "no install, please" switch, so we change its destination
 # to some scratch space.
 set(BRO_PLUGIN_BRO_PLUGIN_INSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/zeek-install-scratch")
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/zeek-install-scratch") # suppress warning by Zeek
 
 zeek_plugin_end()
 
@@ -89,7 +90,7 @@ set_target_properties(${_plugin_lib} PROPERTIES BUILD_RPATH "${rpath_build}")
 make_install_rpath(rpath_install ${PLUGIN_INSTALL_DIR}/lib ${CMAKE_INSTALL_FULL_LIBDIR})
 set_target_properties(${_plugin_lib} PROPERTIES INSTALL_RPATH "${rpath_install}")
 
-install_headers(include zeek-spicy runtime-support.h cookie.h)
+install_headers(include zeek-spicy runtime-support.h cookie.h zeek-compat.h)
 install_headers(${CMAKE_CURRENT_BINARY_DIR}/zeek-spicy/autogen zeek-spicy/autogen config.h)
 
 # This may need additional permissions, but we just leave it fail in that case.

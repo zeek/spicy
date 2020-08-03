@@ -5,22 +5,8 @@
 #include <zeek-spicy/autogen/config.h>
 #include <zeek-spicy/plugin.h>
 #include <zeek-spicy/runtime-support.h>
+#include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
-
-// Zeek includes
-#if ZEEK_DEBUG_BUILD
-#define DEBUG
-#endif
-#include <Conn.h>
-#include <Event.h>
-#include <EventHandler.h>
-#include <Val.h>
-#include <file_analysis/File.h>
-#include <file_analysis/Manager.h>
-#if ZEEK_VERSION_NUMBER >= 30100
-#include <module_util.h>
-#endif
-#undef DEBUG
 
 using namespace spicy::zeek;
 using namespace plugin::Zeek_Spicy;
@@ -45,7 +31,7 @@ void rt::register_enum_type(
 ::EventHandlerPtr rt::internal_handler(const std::string& name) {
     // This always succeeds to return a handler. If there's no such event
     // yet, an empty handler instance is created.
-    auto ev = ::internal_handler(name.c_str());
+    auto ev = zeek::compat::event_register_Register(name);
 
     // To support scoped event names, export their IDs implicitly. For the
     // lookup we pretend to be in the right module so that Bro doesn't tell
@@ -58,60 +44,66 @@ void rt::register_enum_type(
     else
         mod = GLOBAL_MODULE_NAME;
 
-    if ( auto id = lookup_ID(name.c_str(), mod.c_str()) )
+    if ( auto id = ::zeek::detail::lookup_ID(name.c_str(), mod.c_str()) )
         id->SetExport();
 
     return ev;
 }
 
-void rt::raise_event(EventHandlerPtr handler, const hilti::rt::Vector<Val*>& args, std::string_view location) {
+void rt::raise_event(EventHandlerPtr handler, const hilti::rt::Vector<::zeek::ValPtr>& args,
+                     std::string_view location) {
     // Caller must have checked already that there's a handler availale.
     assert(handler);
 
-    auto zeek_args = handler->FType()->ArgTypes()->Types();
-    if ( args.size() != zeek_args->length() )
-        throw TypeMismatch(fmt("expected %u parameters, but got %zu", zeek_args->length(), args.size()), location);
+    auto zeek_args =
+        zeek::compat::TypeList_GetTypes(zeek::compat::FuncType_ArgTypes(zeek::compat::EventHandler_GetType(handler)));
+    if ( args.size() != zeek::compat::TypeList_GetTypesSize(zeek_args) )
+        throw TypeMismatch(fmt("expected %" PRIu64 " parameters, but got %zu",
+                               zeek::compat::TypeList_GetTypesSize(zeek_args), args.size()),
+                           location);
 
-    ::val_list vl(args.size());
+    ::zeek::Args vl = zeek::compat::ZeekArgs_New();
     for ( auto v : args ) {
         if ( v )
-            vl.push_back(v);
+            zeek::compat::ZeekArgs_Append(vl, v);
         else
             // Shouldn't happen here, but we have to_vals() that
             // (legitimately) return null in certain contexts.
             throw InvalidValue("null value encountered after conversion", location);
     }
 
-    ::mgr.QueueEventFast(handler, vl);
+    zeek::compat::event_mgr_Enqueue(handler, vl);
 }
 
-BroType* rt::event_arg_type(EventHandlerPtr handler, uint64_t idx, std::string_view location) {
+::zeek::TypePtr rt::event_arg_type(EventHandlerPtr handler, uint64_t idx, std::string_view location) {
     assert(handler);
 
-    auto zeek_args = handler->FType()->ArgTypes()->Types();
-    if ( idx >= static_cast<uint64_t>(zeek_args->length()) )
-        throw TypeMismatch(fmt("more parameters given than the %d that the Zeek event expects", zeek_args->length()),
+    auto zeek_args =
+        zeek::compat::TypeList_GetTypes(zeek::compat::FuncType_ArgTypes(zeek::compat::EventHandler_GetType(handler)));
+    if ( idx >= static_cast<uint64_t>(zeek::compat::TypeList_GetTypesSize(zeek_args)) )
+        throw TypeMismatch(fmt("more parameters given than the %" PRIu64 " that the Zeek event expects",
+                               zeek::compat::TypeList_GetTypesSize(zeek_args)),
                            location);
 
-    return (*zeek_args)[idx];
+    return zeek::compat::ZeekArgs_Get(zeek_args, idx);
 }
 
-Val* rt::current_conn(std::string_view location) {
+::zeek::ValPtr rt::current_conn(std::string_view location) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
     if ( auto x = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
-        return x->analyzer->Conn()->BuildConnVal();
+        return zeek::compat::Connection_ConnVal(x->analyzer->Conn());
     else
         throw ValueUnavailable("$conn not available", location);
 }
 
-Val* rt::current_is_orig(std::string_view location) {
+::zeek::ValPtr rt::current_is_orig(std::string_view location) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
     if ( auto x = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
-        return ::val_mgr->GetBool(x->is_orig);
+        return zeek::compat::val_mgr_Bool(x->is_orig);
     else
         throw ValueUnavailable("$is_orig not available", location);
 }
@@ -139,12 +131,12 @@ void rt::debug(const Cookie& cookie, const std::string_view& msg) {
         throw ValueUnavailable("neither $conn nor $file available for debug logging");
 }
 
-Val* rt::current_file(std::string_view location) {
+::zeek::ValPtr rt::current_file(std::string_view location) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
     if ( auto x = std::get_if<cookie::FileAnalyzer>(cookie) )
-        return x->analyzer->GetFile()->GetVal()->Ref();
+        return zeek::compat::File_ToVal(x->analyzer->GetFile());
     else
         throw ValueUnavailable("$file not available", location);
 }
