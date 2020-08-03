@@ -1,0 +1,35 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: HILTI_DEBUG=spicy-driver:libspicy spicy-driver -F test.dat test.hlto >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: test "$BUILD" = "release" || TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff .stderr
+
+module Test;
+
+public type X = unit {
+    %port = 80/tcp;
+    %mime-type = "application/foo";
+
+    data: bytes &eod;
+
+    on %done { print self; }
+};
+
+@TEST-START-FILE test.dat
+!spicy-batch v1
+@begin id1 stream 80/tcp
+@begin id2 block application/foo
+@data id1 2
+ab
+@data id2 2
+12
+@data id1 2
+cd
+@data id2 2
+34
+@data id1 2
+ef
+@data id2 2
+56
+@end id1
+@end id2
+@TEST-END-FILE

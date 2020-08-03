@@ -73,6 +73,9 @@ public:
         return _sub;
     };
 
+    /** Returns true if either type or subtype is a wildcard. */
+    bool isWildcard() const { return _main == "*" || _sub == "*"; }
+
     ~MIMEType() = default;
     MIMEType(const MIMEType&) = default;
     MIMEType(MIMEType&&) noexcept = default;

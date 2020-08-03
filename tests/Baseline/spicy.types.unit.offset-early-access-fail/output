@@ -1,1 +1,1 @@
-[fatal error] terminating with uncaught exception of type hilti::rt::UnsetOptional: unset optional value (/Users/bbannier/src/spicy/tests/.tmp/spicy.types.unit.offset-early-access-fail/offset-early-access-fail.spicy:16:24)
+[error] spicy-driver: terminating with uncaught exception of type hilti::rt::UnsetOptional: unset optional value (/Users/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.offset-early-access-fail/offset-early-access-fail.spicy:16:24)

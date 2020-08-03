@@ -20,6 +20,7 @@ using spicy::rt::fmt;
 
 static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
                                               {"file", required_argument, nullptr, 'f'},
+                                              {"batch-file", required_argument, nullptr, 'F'},
                                               {"help", no_argument, nullptr, 'h'},
                                               {"increment", required_argument, nullptr, 'i'},
                                               {"list-parsers", no_argument, nullptr, 'l'},
@@ -29,7 +30,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {nullptr, 0, nullptr, 0}};
 
 static void fatalError(const std::string& msg) {
-    fprintf(stderr, "spicy-driver: %s\n", msg.c_str());
+    fprintf(stderr, "[error] spicy-driver: %s\n", msg.c_str());
     exit(1);
 }
 
@@ -44,6 +45,7 @@ public:
     bool opt_list_parsers = false;
     bool opt_show_backtraces = false;
     int opt_increment = 0;
+    bool opt_input_is_batch = false;
     std::string opt_file = "/dev/stdin";
     std::string opt_parser;
 };
@@ -63,12 +65,13 @@ void SpicyDriver::usage() {
            "  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI "
            "exceptions.\n"
            "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
+           "  -F | ---batch-file <path>       Read Spicy batch input from <path>; see docs for description of format.\n"
            "\n";
 }
 
 void SpicyDriver::parseOptions(int argc, char** argv) {
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABhdf:lp:i:v", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABFhdf:lp:i:v", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -76,6 +79,11 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
         switch ( c ) {
             case 'A': opt_abort_on_exceptions = true; break;
             case 'B': opt_show_backtraces = true; break;
+            case 'F': {
+                opt_file = optarg;
+                opt_input_is_batch = true;
+                break;
+            }
             case 'f': {
                 opt_file = optarg;
                 break;
@@ -115,25 +123,29 @@ int main(int argc, char** argv) {
             driver.listParsers(std::cout);
 
         else {
-            auto parser = driver.lookupParser(driver.opt_parser);
-            if ( ! parser )
-                fatalError(parser.error());
-
             std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
 
             if ( ! in.is_open() )
-                fatalError("cannot open stdin for reading");
+                fatalError("cannot open input for reading");
 
-            driver.processInput(**parser, in, driver.opt_increment);
+            if ( driver.opt_input_is_batch ) {
+                if ( auto x = driver.processPreBatchedInput(in); ! x )
+                    fatalError(x.error());
+            }
+            else {
+                auto parser = driver.lookupParser(driver.opt_parser);
+                if ( ! parser )
+                    fatalError(parser.error());
+
+                driver.processInput(**parser, in, driver.opt_increment);
+            }
         }
 
         hilti::rt::done();
         spicy::rt::done();
 
     } catch ( const std::exception& e ) {
-        std::cerr << fmt("[fatal error] terminating with uncaught exception of type %s: %s",
-                         hilti::rt::demangle(typeid(e).name()), e.what())
-                  << std::endl;
-        exit(1);
+        fatalError(hilti::rt::fmt("terminating with uncaught exception of type %s: %s",
+                                  hilti::rt::demangle(typeid(e).name()), e.what()));
     }
 }

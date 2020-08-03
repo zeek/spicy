@@ -1,0 +1,21 @@
+[libspicy] initializing runtime
+[libspicy] registered parsers (w/ aliases):
+[libspicy]   80/tcp -> Test::X
+[libspicy]   Test::X -> Test::X
+[libspicy]   application/foo -> Test::X
+[spicy-driver] [id1] first data chunk: |ab|
+[spicy-driver] [id2] block: |12|
+[spicy-driver] [id1] next data chunk: |cd|
+[spicy-driver] [id2] block: |34|
+[spicy-driver] [id1] next data chunk: |ef|
+[spicy-driver] [id2] block: |56|
+[spicy-driver] [id1] end of data
+[spicy-driver] [id1] parsing finished
+[spicy-driver] sessions: current=1 total=2
+[spicy-driver] memory  : heap=19G fibers-cur=2 fibers-cached=2 fibers-max=2
+[spicy-driver] sessions: current=0 total=2
+[spicy-driver] memory  : heap=19G fibers-cur=2 fibers-cached=2 fibers-max=2
+[spicy-driver] sessions: current=0 total=2
+[spicy-driver] memory  : heap=19G fibers-cur=2 fibers-cached=2 fibers-max=2
+[libspicy] shutting down runtime
+[libspicy] destroying global state

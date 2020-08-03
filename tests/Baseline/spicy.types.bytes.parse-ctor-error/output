@@ -1,2 +1,2 @@
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: expecting 'def' (/Users/bbannier/src/spicy/tests/.tmp/spicy.types.bytes.parse-ctor-error/parse-ctor-error.spicy:10:10)
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: expecting 'def' (/Users/bbannier/src/spicy/tests/.tmp/spicy.types.bytes.parse-ctor-error/parse-ctor-error.spicy:10:10)
+[error] spicy-driver: terminating with uncaught exception of type spicy::rt::ParseError: parse error: expecting 'def' (/Users/robin/work/spicy/topic/tests/.tmp/spicy.types.bytes.parse-ctor-error/parse-ctor-error.spicy:10:10)
+[error] spicy-driver: terminating with uncaught exception of type spicy::rt::ParseError: parse error: expecting 'def' (/Users/robin/work/spicy/topic/tests/.tmp/spicy.types.bytes.parse-ctor-error/parse-ctor-error.spicy:10:10)

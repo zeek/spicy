@@ -1,0 +1,1 @@
+../../zeek/scripts/record-spicy-batch.zeek
