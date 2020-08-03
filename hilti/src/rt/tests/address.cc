@@ -57,6 +57,7 @@ TEST_SUITE_BEGIN("Address");
 
 TEST_CASE("conversions to and from `std::string`") {
     CHECK_EQ(std::string(Address("1.2.3.4")), "1.2.3.4");
+    CHECK_EQ(std::string(Address("::192.168.1.0")), "192.168.1.0");
     CHECK_EQ(std::string(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348")), "2001:db8:85a3:8d3:1319:8a2e:370:7348");
 
     CHECK_THROWS(Address("example.com"));
@@ -71,18 +72,21 @@ TEST_CASE("constructs from an `::in6_addr`") {
 }
 
 TEST_CASE("constructs from binary represenation of an IPv4 address") {
+    CHECK_EQ(Address(1234567890).family(), AddressFamily::IPv4);
     CHECK_EQ(std::string(Address(1234567890)), "73.150.2.210");
 }
 
 TEST_CASE("constructs from binary represenation of an IPv6 address") {
+    CHECK_EQ(Address(1234567890, 1234567890).family(), AddressFamily::IPv6);
     CHECK_EQ(std::string(Address(1234567890, 1234567890)), "::4996:2d2:0:0:4996:2d2");
 }
 
 TEST_CASE("family") {
-    CHECK_EQ(Address().family(), AddressFamily::IPv4); // Default address of 0.0.0.0 is IPv4.
+    CHECK_EQ(Address().family(), AddressFamily::Undef);
     CHECK_EQ(Address("1.2.3.4").family(), AddressFamily::IPv4);
     CHECK_EQ(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348").family(), AddressFamily::IPv6);
     CHECK_EQ(Address("::ffff:1.2.3.4").family(), AddressFamily::IPv6);
+    CHECK_EQ(Address("::1.2.3.4").family(), AddressFamily::IPv4);
 }
 
 TEST_CASE("mask") {
@@ -95,8 +99,7 @@ TEST_CASE("mask") {
     CHECK_EQ(Address("9.9.9.9").mask(120), Address("9.9.9.0"));
     CHECK_EQ(Address("9.9.9.9").mask(128), Address("9.9.9.9"));
 
-    // TODO(bbannier): An IPv6 address with a zero mask should still be an IPv6 address.
-    CHECK_EQ(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348").mask(0), Address("0.0.0.0"));
+    CHECK_EQ(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348").mask(0), Address("::"));
     CHECK_EQ(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348").mask(16), Address("2001::"));
     CHECK_EQ(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348").mask(32), Address("2001:db8::"));
     CHECK_EQ(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348").mask(48), Address("2001:db8:85a3::"));

@@ -1,4 +1,19 @@
 
+0.4.0-716 | 2020-08-03 22:24:56 +0200
+
+  * Make default-constructed `rt::Address` instances invalid. (Benjamin Bannier, Corelight)
+
+  * Make `rt::Address` remember its address family.
+
+    This class was previously unable to distinguish IPv4 and IPv6 addresses
+    with all bits sets to zero from each other. By explicitly storing its
+    address family we are able to distinguish them, and can also preserve
+    the address family across operations like masking. (Benjamin Bannier, Corelight)
+
+  * Bump doctest to 2.4.0. (Benjamin Bannier, Corelight)
+
+  * Validate prefix length inputs when constructing `rt::Network` values. (Benjamin Bannier, Corelight)
+
 0.4.0-703 | 2020-08-03 07:41:51 +0000
 
   * GH-444: Port Zeek plugin to Zeek 3.2. (Robin Sommer, Corelight)

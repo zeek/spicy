@@ -25,11 +25,17 @@ void Address::_parse(const std::string& addr) {
         else
             throw RuntimeError(fmt("cannot parse IPv6 address '%s'", addr));
     }
+
+    // Allow IPv6 addresses to decay to IPv4 addresses to allow specifying
+    // IPv4 addresses in a format like `::ffff:192.0.2.128`.
+    if ( _family == AddressFamily::IPv6 )
+        _family = (_a1 == 0 && (_a2 & 0xffffffff00000000) == 0) ? AddressFamily::IPv4 : AddressFamily::IPv6;
 }
 
 void Address::_init(struct in_addr addr) {
     _a1 = 0;
     _a2 = integer::ntoh32(addr.s_addr);
+    _family = AddressFamily::IPv4;
 }
 
 void Address::_init(struct in6_addr addr) {
@@ -38,15 +44,15 @@ void Address::_init(struct in6_addr addr) {
 
     memcpy(&_a2, (reinterpret_cast<char*>(&addr)) + 8, 8);
     _a2 = integer::ntoh64(_a2);
+
+    _family = AddressFamily::IPv6;
 }
 
-AddressFamily Address::family() const {
-    return (_a1 == 0 && (_a2 & 0xffffffff00000000) == 0) ? AddressFamily::IPv4 : AddressFamily::IPv6;
-}
+AddressFamily Address::family() const { return _family; }
 
 Address Address::mask(unsigned int width) const {
     if ( width == 0 )
-        return Address{0, 0};
+        return Address{0, 0, _family};
 
     uint64_t a1;
     uint64_t a2;
@@ -61,11 +67,11 @@ Address Address::mask(unsigned int width) const {
     else
         a2 = 0;
 
-    return Address{a1, a2};
+    return Address{a1, a2, _family};
 }
 
 std::variant<struct in_addr, struct in6_addr> Address::asInAddr() const {
-    switch ( family() ) {
+    switch ( _family ) {
         case AddressFamily::IPv4: return in_addr{integer::hton32(_a2)};
 
         case AddressFamily::IPv6: {
@@ -87,11 +93,17 @@ std::variant<struct in_addr, struct in6_addr> Address::asInAddr() const {
     cannot_be_reached();
 }
 
-bool Address::operator==(const Address& other) const { return _a1 == other._a1 && _a2 == other._a2; }
+bool Address::operator==(const Address& other) const {
+    // NOTE: `_family` is not checked here as IPv4 and IPv6 addresses can be equivalent.
+    return _a1 == other._a1 && _a2 == other._a2;
+}
 
 Address::operator std::string() const {
     auto in_addr = asInAddr();
     char buffer[INET6_ADDRSTRLEN];
+
+    if ( _family == AddressFamily::Undef )
+        return "<bad address>";
 
     if ( auto v4 = std::get_if<struct in_addr>(&in_addr) ) {
         if ( inet_ntop(AF_INET, v4, buffer, INET_ADDRSTRLEN) )
