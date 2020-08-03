@@ -14,10 +14,6 @@
 
 namespace hilti::rt {
 
-namespace trait {
-struct isStruct;
-} // namespace trait
-
 /** Exception indicating access to an unset (null) reference. **/
 HILTI_EXCEPTION(NullReference, RuntimeError)
 
