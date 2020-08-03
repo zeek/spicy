@@ -82,8 +82,8 @@ TEST_CASE("value-reference-struct-self") {
     CHECK_EQ(self->x, 42);
     CHECK_EQ(x1.x, 42);
 
-    CHECK_THROWS(StrongReference<T>{self});
-    CHECK_THROWS(WeakReference<T>{self});
+    CHECK_THROWS_WITH_AS(StrongReference<T>{self}, "reference to non-heap instance", const IllegalReference&);
+    CHECK_THROWS_WITH_AS(WeakReference<T>{self}, "reference to non-heap instance", const IllegalReference&);
 }
 
 
