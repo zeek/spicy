@@ -3,6 +3,7 @@
 #include <doctest/doctest.h>
 
 #include <cstdint>
+#include <string_view>
 #include <tuple>
 
 #include <hilti/rt/libhilti.h>
@@ -64,7 +65,15 @@ TEST_CASE("safe-int") {
     CHECK_EQ(to_string(safe<int64_t>(-42)), "-42");
 }
 
-TEST_CASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }
+TEST_CASE("string") {
+    CHECK_EQ(to_string(std::string("abc")), "\"abc\"");
+    CHECK_EQ(to_string_for_print(std::string("abc")), "abc");
+}
+
+TEST_CASE("string_view") {
+    CHECK_EQ(to_string(std::string_view("abc")), "\"abc\"");
+    CHECK_EQ(to_string_for_print(std::string_view("abc")), "abc");
+}
 
 TEST_CASE("Address") {
     CHECK_EQ(to_string(Address()), "<bad address>");
