@@ -291,6 +291,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/set.cc
                src/rt/tests/stream.cc
                src/rt/tests/string.cc
+               src/rt/tests/struct.cc
                src/rt/tests/to_string.cc
                src/rt/tests/tuple.cc
                src/rt/tests/util.cc
