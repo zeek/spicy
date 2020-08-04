@@ -84,7 +84,7 @@ public:
     }
 
     template<typename F>
-    Union& operator=(const F&& t) {
+    Union& operator=(F&& t) {
         value = std::move(t);
         return *this;
     }
