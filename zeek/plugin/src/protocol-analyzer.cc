@@ -10,178 +10,100 @@ using namespace spicy::zeek;
 using namespace spicy::zeek::rt;
 using namespace plugin::Zeek_Spicy;
 
-ProtocolAnalyzer::ProtocolAnalyzer(::analyzer::Analyzer* analyzer) {
-    static uint64_t analyzer_counter = 0;
+static uint64_t analyzer_counter = 1;
 
-    cookie::ProtocolAnalyzer orig_cookie;
-    orig_cookie.analyzer = analyzer;
-    orig_cookie.is_orig = true;
-    orig_cookie.analyzer_id = ++analyzer_counter;
-    originator.cookie = orig_cookie;
+void EndpointState::_debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
 
-    cookie::ProtocolAnalyzer resp_cookie;
-    resp_cookie.analyzer = analyzer;
-    resp_cookie.is_orig = false;
-    resp_cookie.analyzer_id = analyzer_counter;
-    responder.cookie = resp_cookie;
+static auto create_endpoint(bool is_orig, ::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type) {
+    cookie::ProtocolAnalyzer cookie;
+    cookie.analyzer = analyzer;
+    cookie.is_orig = is_orig;
+    cookie.analyzer_id = analyzer_counter;
+
+    // Cannot get parser here yet, analyzer may not have been fully set up.
+    return EndpointState(cookie, type);
+}
+
+ProtocolAnalyzer::ProtocolAnalyzer(::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type)
+    : _originator(create_endpoint(true, analyzer, type)), _responder(create_endpoint(false, analyzer, type)) {
+    ++analyzer_counter;
 }
 
 ProtocolAnalyzer::~ProtocolAnalyzer() {}
 
 void ProtocolAnalyzer::Init() {}
 
-void ProtocolAnalyzer::Done() {
-    originator.data.reset();
-    originator.resumable.reset();
+void ProtocolAnalyzer::Done() {}
 
-    responder.data.reset();
-    responder.resumable.reset();
-}
+void ProtocolAnalyzer::Process(bool is_orig, int len, const u_char* data) {
+    auto* endp = is_orig ? &_originator : &_responder;
 
-inline void ProtocolAnalyzer::DebugMsg(const ProtocolAnalyzer::Endpoint& endp, const std::string_view& msg, int len,
-                                       const u_char* data, bool eod) {
-#if ZEEK_DEBUG_BUILD
-    if ( data ) { // NOLINT(bugprone-branch-clone) pylint believes the two branches are the same
-        zeek::rt::debug(endp.cookie, hilti::rt::fmt("%s: |%s%s| (eod=%s)", msg,
-                                                    fmt_bytes(reinterpret_cast<const char*>(data), std::min(40, len)),
-                                                    len > 40 ? "..." : "", (eod ? "true" : "false")));
-    }
+    if ( endp->cookie().analyzer->Skipping() )
+        return;
 
-    else
-        zeek::rt::debug(endp.cookie, msg);
-#endif
-}
-
-void ProtocolAnalyzer::DebugMsg(bool is_orig, const std::string_view& msg, int len, const u_char* data, bool eod) {
-    Endpoint* endp = is_orig ? &originator : &responder;
-    return DebugMsg(*endp, msg, len, data, eod);
-}
-
-int ProtocolAnalyzer::FeedChunk(bool is_orig, int len, const u_char* data, bool eod) {
-    Endpoint* endp = is_orig ? &originator : &responder;
-
-    // If a previous parsing process has fully finished, we ignore all
-    // further input.
-    if ( endp->done ) {
-        if ( len )
-            DebugMsg(*endp, "further data ignored", len, data, eod);
-
-        return 0;
-    }
-
-    if ( ! endp->parser ) {
-        const auto& cookie = std::get<cookie::ProtocolAnalyzer>(endp->cookie);
-        endp->parser = OurPlugin->parserForProtocolAnalyzer(cookie.analyzer->GetAnalyzerTag(), is_orig);
-
-        if ( ! endp->parser ) {
-            DebugMsg(*endp, "no unit specificed for parsing");
-            // Nothing to do at all.
-            return 1;
+    if ( ! endp->hasParser() && ! endp->isSkipping() ) {
+        auto parser = OurPlugin->parserForProtocolAnalyzer(endp->cookie().analyzer->GetAnalyzerTag(), is_orig);
+        if ( parser )
+            endp->setParser(parser);
+        else {
+            DebugMsg(is_orig, "no unit specified for parsing");
+            endp->skipRemaining();
+            return;
         }
     }
-
-    int result = -1;
-    bool done = false;
-    bool error = false;
-
-    hilti::rt::context::saveCookie(&endp->cookie);
 
     try {
-        if ( ! endp->data ) {
-            // First chunk.
-            DebugMsg(*endp, "initial chunk", len, data, eod);
-            endp->data = hilti::rt::ValueReference<hilti::rt::Stream>({reinterpret_cast<const char*>(data), len});
-
-            if ( eod )
-                (*endp->data)->freeze();
-
-            endp->resumable = endp->parser->parse1(*endp->data, {});
-        }
-
-        else {
-            // Resume parsing.
-            DebugMsg(*endp, "resuming with chunk", len, data, eod);
-            assert(endp->data && endp->resumable);
-
-            if ( len )
-                (*endp->data)->append(reinterpret_cast<const char*>(data), len);
-
-            if ( eod )
-                (*endp->data)->freeze();
-
-            endp->resumable->resume();
-        }
-
-        if ( *endp->resumable ) {
-            // Done parsing.
-            done = true;
-            result = 1;
-        }
-    }
-
-    catch ( const spicy::rt::ParseError& e ) {
-        const auto& cookie = std::get<cookie::ProtocolAnalyzer>(endp->cookie);
-
-        error = true;
-        result = 0;
-
-        std::string s = "Spicy parse error: " + e.description();
-
-        if ( e.location().size() )
-            s += hilti::rt::fmt("%s (%s)", s, e.location());
-
-        DebugMsg(*endp, s.c_str());
-        reporter::weird(cookie.analyzer->Conn(), s);
-    }
-
-    catch ( const hilti::rt::Exception& e ) {
-        const auto& cookie = std::get<cookie::ProtocolAnalyzer>(endp->cookie);
-
-        error = true;
-        result = 0;
-
-        std::string msg_zeek = e.description();
-
-        std::string msg_dbg = msg_zeek;
-        if ( e.location().size() )
-            msg_dbg += hilti::rt::fmt("%s (%s)", msg_dbg, e.location());
-
-        DebugMsg(*endp, msg_dbg);
-        reporter::analyzerError(cookie.analyzer, msg_zeek,
+        hilti::rt::context::CookieSetter _(&endp->cookie());
+        endp->process(len, reinterpret_cast<const char*>(data));
+    } catch ( const spicy::rt::ParseError& e ) {
+        reporter::weird(endp->cookie().analyzer->Conn(), e.what());
+        originator().skipRemaining();
+        responder().skipRemaining();
+        endp->cookie().analyzer->SetSkip(true);
+    } catch ( const hilti::rt::Exception& e ) {
+        reporter::analyzerError(endp->cookie().analyzer, e.description(),
                                 e.location()); // this sets Zeek to skip sending any further input
     }
-
-    hilti::rt::context::clearCookie();
-
-    // TODO(robin): For now we just stop on error, later we might attempt to restart
-    // parsing.
-    if ( eod || done || error ) {
-        DebugMsg(*endp, "done with parsing");
-        endp->done = true; // Marker that we're done parsing.
-    }
-
-    return result;
 }
 
-void ProtocolAnalyzer::ResetEndpoint(bool is_orig) {
-    if ( is_orig )
-        originator.reset();
-    else
-        responder.reset();
+void ProtocolAnalyzer::Finish(bool is_orig) {
+    auto* endp = is_orig ? &_originator : &_responder;
+
+    if ( endp->cookie().analyzer->Skipping() )
+        return;
+
+    try {
+        hilti::rt::context::CookieSetter _(&endp->cookie());
+        endp->finish();
+    } catch ( const spicy::rt::ParseError& e ) {
+        reporter::weird(endp->cookie().analyzer->Conn(), e.what());
+        endp->skipRemaining();
+    } catch ( const hilti::rt::Exception& e ) {
+        reporter::analyzerError(endp->cookie().analyzer, e.description(),
+                                e.location()); // this sets Zeek to skip sending any further input
+    }
 }
 
 cookie::ProtocolAnalyzer& ProtocolAnalyzer::cookie(bool is_orig) {
     if ( is_orig )
-        return std::get<cookie::ProtocolAnalyzer>(originator.cookie);
+        return _originator.cookie();
     else
-        return std::get<cookie::ProtocolAnalyzer>(responder.cookie);
+        return _responder.cookie();
 }
 
-void ProtocolAnalyzer::FlipRoles() { Endpoint::flipRoles(&originator, &responder); }
+void ProtocolAnalyzer::DebugMsg(bool is_orig, const std::string_view& msg) {
+    if ( is_orig )
+        _originator.DebugMsg(msg);
+    else
+        _responder.DebugMsg(msg);
+}
+
+void ProtocolAnalyzer::FlipRoles() { std::swap(_originator, _responder); }
 
 ::analyzer::Analyzer* TCP_Analyzer::InstantiateAnalyzer(::Connection* conn) { return new TCP_Analyzer(conn); }
 
-TCP_Analyzer::TCP_Analyzer(Connection* conn) : ProtocolAnalyzer(this), ::analyzer::tcp::TCP_ApplicationAnalyzer(conn) {}
+TCP_Analyzer::TCP_Analyzer(Connection* conn)
+    : ProtocolAnalyzer(this, spicy::rt::driver::ParsingType::Stream), ::analyzer::tcp::TCP_ApplicationAnalyzer(conn) {}
 
 TCP_Analyzer::~TCP_Analyzer() {}
 
@@ -201,39 +123,23 @@ void TCP_Analyzer::Done() {
 void TCP_Analyzer::DeliverStream(int len, const u_char* data, bool is_orig) {
     ::analyzer::tcp::TCP_ApplicationAnalyzer::DeliverStream(len, data, is_orig);
 
-    if ( is_orig && skip_orig ) {
-        DebugMsg(is_orig, "skipping further originator-side traffic");
-        return;
-    }
-
-    if ( (! is_orig) && skip_resp ) {
-        DebugMsg(is_orig, "skipping further responder-side traffic");
-        return;
-    }
-
     if ( TCP() && TCP()->IsPartial() ) {
         DebugMsg(is_orig, "skipping further data on partial TCP connection");
         return;
     }
 
-    int rc = FeedChunk(is_orig, len, data, false);
+    Process(is_orig, len, data);
 
-    if ( rc >= 0 ) {
-        if ( is_orig ) {
-            DebugMsg(is_orig, ::hilti::rt::fmt("parsing %s, skipping further originator payload",
-                                               (rc > 0 ? "finished" : "failed")));
-            skip_orig = true;
-        }
-        else {
-            DebugMsg(is_orig, ::hilti::rt::fmt("parsing %s, skipping further responder payload",
-                                               (rc > 0 ? "finished" : "failed")));
-            skip_resp = true;
-        }
+    if ( originator().isFinished() && responder().isFinished() &&
+         (! originator().isSkipping() || ! responder().isSkipping()) ) {
+        DebugMsg(is_orig, "both endpoints finished, skipping all further TCP processing");
+        originator().skipRemaining();
+        responder().skipRemaining();
 
-        if ( skip_orig && skip_resp ) {
-            DebugMsg(is_orig, "both endpoints finished, skipping all further TCP processing");
-            SetSkip(true);
-        }
+        if ( is_orig ) // doesn't really matter which endpoint here.
+            originator().cookie().analyzer->SetSkip(true);
+        else
+            responder().cookie().analyzer->SetSkip(true);
     }
 }
 
@@ -242,35 +148,25 @@ void TCP_Analyzer::Undelivered(uint64_t seq, int len, bool is_orig) {
 
     // This mimics the (modified) Zeek HTTP analyzer. Otherwise stop parsing
     // the connection
-    if ( is_orig ) {
+    if ( is_orig && ! originator().isSkipping() ) {
         DebugMsg(is_orig, "undelivered data, skipping further originator payload");
-        skip_orig = true;
+        originator().skipRemaining();
     }
-    else {
+    else if ( ! responder().isSkipping() ) {
         DebugMsg(is_orig, "undelivered data, skipping further responder payload");
-        skip_resp = true;
+        responder().skipRemaining();
     }
 }
 
 void TCP_Analyzer::EndOfData(bool is_orig) {
     ::analyzer::tcp::TCP_ApplicationAnalyzer::EndOfData(is_orig);
 
-    if ( is_orig && skip_orig ) {
-        DebugMsg(is_orig, "skipping end-of-data delivery");
-        return;
-    }
-
-    if ( (! is_orig) && skip_resp ) {
-        DebugMsg(is_orig, "skipping end-of-data delivery");
-        return;
-    }
-
     if ( TCP() && TCP()->IsPartial() ) {
         DebugMsg(is_orig, "skipping end-of-data delivery on partial TCP connection");
         return;
     }
 
-    FeedChunk(is_orig, 0, reinterpret_cast<const u_char*>(""), true);
+    Finish(is_orig);
 }
 
 void TCP_Analyzer::FlipRoles() {
@@ -280,7 +176,7 @@ void TCP_Analyzer::FlipRoles() {
 
 void TCP_Analyzer::EndpointEOF(bool is_orig) {
     ::analyzer::tcp::TCP_ApplicationAnalyzer::EndpointEOF(is_orig);
-    FeedChunk(is_orig, 0, reinterpret_cast<const u_char*>(""), true);
+    Finish(is_orig);
 }
 
 #if ZEEK_VERSION_NUMBER >= 30200
@@ -309,7 +205,8 @@ void TCP_Analyzer::PacketWithRST() { ::analyzer::tcp::TCP_ApplicationAnalyzer::P
 
 ::analyzer::Analyzer* UDP_Analyzer::InstantiateAnalyzer(Connection* conn) { return new UDP_Analyzer(conn); }
 
-UDP_Analyzer::UDP_Analyzer(Connection* conn) : ProtocolAnalyzer(this), ::analyzer::Analyzer(conn) {}
+UDP_Analyzer::UDP_Analyzer(Connection* conn)
+    : ProtocolAnalyzer(this, spicy::rt::driver::ParsingType::Block), ::analyzer::Analyzer(conn) {}
 
 UDP_Analyzer::~UDP_Analyzer() {}
 
@@ -328,15 +225,17 @@ void UDP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig, uint
     ::analyzer::Analyzer::DeliverPacket(len, data, is_orig, seq, ip, caplen);
 
     ++cookie(is_orig).num_packets;
-    FeedChunk(is_orig, len, data, true);
-    ResetEndpoint(is_orig);
+    Process(is_orig, len, data);
 }
 
 void UDP_Analyzer::Undelivered(uint64_t seq, int len, bool is_orig) {
     ::analyzer::Analyzer::Undelivered(seq, len, is_orig);
 }
 
-void UDP_Analyzer::EndOfData(bool is_orig) { ::analyzer::Analyzer::EndOfData(is_orig); }
+void UDP_Analyzer::EndOfData(bool is_orig) {
+    ::analyzer::Analyzer::EndOfData(is_orig);
+    Finish(is_orig);
+}
 
 void UDP_Analyzer::FlipRoles() {
     ::analyzer::Analyzer::FlipRoles();
