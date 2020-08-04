@@ -244,6 +244,8 @@ TEST_CASE("Time") {
 
     CHECK_EQ(to_string(Time(integer::safe<uint64_t>(1), Time::NanosecondTag())), "1970-01-01T00:00:00.000000001Z");
     CHECK_EQ(to_string(Time(1, Time::SecondTag())), "1970-01-01T00:00:01.000000000Z");
+
+    CHECK_EQ(fmt("%s", Time(1, Time::SecondTag())), "1970-01-01T00:00:01.000000000Z");
 }
 
 TEST_CASE("tuple") {
