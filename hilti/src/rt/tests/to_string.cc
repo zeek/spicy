@@ -3,6 +3,7 @@
 #include <doctest/doctest.h>
 
 #include <cstdint>
+#include <string_view>
 #include <tuple>
 
 #include <hilti/rt/libhilti.h>
@@ -64,7 +65,15 @@ TEST_CASE("safe-int") {
     CHECK_EQ(to_string(safe<int64_t>(-42)), "-42");
 }
 
-TEST_CASE("string") { CHECK_EQ(to_string(std::string("abc")), "\"abc\""); }
+TEST_CASE("string") {
+    CHECK_EQ(to_string(std::string("abc")), "\"abc\"");
+    CHECK_EQ(to_string_for_print(std::string("abc")), "abc");
+}
+
+TEST_CASE("string_view") {
+    CHECK_EQ(to_string(std::string_view("abc")), "\"abc\"");
+    CHECK_EQ(to_string_for_print(std::string_view("abc")), "abc");
+}
 
 TEST_CASE("Address") {
     CHECK_EQ(to_string(Address()), "<bad address>");
@@ -235,6 +244,8 @@ TEST_CASE("Time") {
 
     CHECK_EQ(to_string(Time(integer::safe<uint64_t>(1), Time::NanosecondTag())), "1970-01-01T00:00:00.000000001Z");
     CHECK_EQ(to_string(Time(1, Time::SecondTag())), "1970-01-01T00:00:01.000000000Z");
+
+    CHECK_EQ(fmt("%s", Time(1, Time::SecondTag())), "1970-01-01T00:00:01.000000000Z");
 }
 
 TEST_CASE("tuple") {

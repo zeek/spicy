@@ -1,4 +1,12 @@
 
+0.4.0-725 | 2020-08-05 12:44:26 +0200
+
+  * Remove conversion of `rt::Time` to `bool`. (Benjamin Bannier, Corelight)
+
+  * Fix assignment operator for `rt::Union` of non-copyable types. (Benjamin Bannier, Corelight)
+
+  * Fix format string error possibly triggered when adding Times and Intervals. (Benjamin Bannier, Corelight)
+
 0.4.0-716 | 2020-08-03 22:24:56 +0200
 
   * Make default-constructed `rt::Address` instances invalid. (Benjamin Bannier, Corelight)

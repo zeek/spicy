@@ -15,14 +15,14 @@ namespace hilti::rt {
 
 /**
  * Represents HILTI's time type. Intervals are stored as nanoseconds
- * resolution as intervals since the UNIX epoch. A value of zero represents
- * an unset time.
+ * resolution as intervals since the UNIX epoch.
  */
 class Time {
 public:
     struct SecondTag {};
     struct NanosecondTag {};
 
+    /** Constructs null `Time` value. */
     Time() = default;
 
     /**
@@ -48,7 +48,6 @@ public:
               return integer::safe<uint64_t>(x);
           }()) {}
 
-    /** Constructs an unset time. */
     Time(const Time&) = default;
     Time(Time&&) noexcept = default;
     ~Time() = default;
@@ -59,7 +58,7 @@ public:
     /** Returns a UNIX timestmap. */
     double seconds() const { return _nsecs.Ref() / 1e9; }
 
-    /** Returns nanosecs since epoch. */
+    /** Returns nanoseconds since epoch. */
     uint64_t nanoseconds() const { return _nsecs; }
 
     bool operator==(const Time& other) const { return _nsecs == other._nsecs; }
@@ -71,7 +70,7 @@ public:
 
     Time operator+(const Interval& other) const {
         if ( other.nanoseconds() < 0 && (integer::safe<int64_t>(_nsecs) < (-other.nanoseconds())) )
-            throw RuntimeError(fmt("operation yielded negative time %n %n", _nsecs, other.nanoseconds()));
+            throw RuntimeError(fmt("operation yielded negative time %d %d", _nsecs, other.nanoseconds()));
 
         return Time(_nsecs + other.nanoseconds(), NanosecondTag{});
     }
@@ -88,10 +87,7 @@ public:
                         Interval::NanosecondTag());
     }
 
-    /** Returns true if the time is non-zero (i.e., not unset) */
-    operator bool() const { return _nsecs.Ref() == 0.0; }
-
-    /** Returns a human-readable representation of the tiem. */
+    /** Returns a human-readable representation of the time. */
     operator std::string() const;
 
 private:
