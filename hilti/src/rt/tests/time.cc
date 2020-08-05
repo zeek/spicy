@@ -27,11 +27,6 @@ TEST_CASE("current_time") {
 
 TEST_SUITE_BEGIN("Time");
 
-TEST_CASE("bool") {
-    CHECK(Time());
-    CHECK(Time(0, Time::SecondTag{}));
-}
-
 TEST_CASE("comparisions") {
     const auto t0 = Time(0, Time::NanosecondTag{});
     const auto t1 = Time(1, Time::NanosecondTag{});

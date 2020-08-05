@@ -15,8 +15,7 @@ namespace hilti::rt {
 
 /**
  * Represents HILTI's time type. Intervals are stored as nanoseconds
- * resolution as intervals since the UNIX epoch. A value of zero represents
- * an unset time.
+ * resolution as intervals since the UNIX epoch.
  */
 class Time {
 public:
@@ -87,9 +86,6 @@ public:
         return Interval(integer::safe<int64_t>(_nsecs) - integer::safe<int64_t>(other._nsecs),
                         Interval::NanosecondTag());
     }
-
-    /** Returns true if the time is non-zero */
-    operator bool() const { return _nsecs.Ref() == 0.0; }
 
     /** Returns a human-readable representation of the time. */
     operator std::string() const;
