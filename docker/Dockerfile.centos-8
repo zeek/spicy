@@ -1,6 +1,7 @@
 FROM centos:8
 
 ARG SKIP_BUILD=
+ARG zeek_packages="zeek-lts-3.0.8-* zeek-lts-devel-3.0.8-*"
 
 WORKDIR /root
 
@@ -41,7 +42,7 @@ RUN yum install -y libpcap-devel openssl-devel python3-devel swig zlib-devel
 # Install Zeek.
 RUN cd /etc/yum.repos.d \
  && curl -L 'https://download.opensuse.org/repositories/security:zeek/CentOS_8/security:zeek.repo' > zeek.repo \
- && yum install -y zeek-lts zeek-lts-devel
+ && yum install -y $zeek_packages
 
 WORKDIR /root
 

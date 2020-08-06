@@ -133,7 +133,9 @@ function run_configure {
 
             --with-zeek)
                 test $# -gt 0 || usage
-                zeek_root="$2"
+                # Allow the Zeek root to have a postfix as long as it's non-ambigious (e.g., "-rc").
+                zeek_root=$(echo $2*)
+                test -d "${zeek_root}" || error "cannot determine Zeek root (\"${zeek_root}\")"
                 test -x ${zeek_root}/bin/zeek || error "Zeek not found in $2/bin"
                 configure="${configure} --with-zeek=${zeek_root}"
                 shift 2;
