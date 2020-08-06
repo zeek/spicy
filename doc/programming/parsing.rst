@@ -626,11 +626,12 @@ properties:
     available parsers that it prints with the ``--list-parsers``
     option.
 
-``%port = PORT_VALUE``
-    A :ref:`type_port` to associate this unit with. This property has
-    no built-in effect, but host applications may make use of the
-    information to decide which unit type to use for parsing a
-    connection's payload.
+``%port = PORT_VALUE [&originator|&responder]``
+    A :ref:`type_port` to associate this unit with, optionally
+    including a direction to limit its use to the corresponding side.
+    This property has no built-in effect, but host applications may
+    make use of the information to decide which unit type to use for
+    parsing a connection's payload.
 
 Units support some further properties for other purposes, which we
 introduce in the corresponding sections.

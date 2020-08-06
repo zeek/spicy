@@ -85,7 +85,7 @@ struct VisitorPassInit : public hilti::visitor::PreOrder<void, VisitorPassInit> 
         std::vector<type::unit::Item> ni;
         for ( auto& p : cg->moduleProperties() ) {
             if ( ! u->propertyItem(p.id()) )
-                ni.emplace_back(type::unit::item::Property(p.id(), *p.expression(), true, p.meta()));
+                ni.emplace_back(type::unit::item::Property(p.id(), *p.expression(), {}, true, p.meta()));
         }
 
         if ( ni.size() )

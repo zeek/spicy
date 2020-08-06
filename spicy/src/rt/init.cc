@@ -29,8 +29,23 @@ void spicy::rt::init() {
     for ( const auto& p : parsers ) {
         globalState()->parsers_by_name[p->name].emplace_back(p);
 
-        for ( const auto& x : p->ports )
-            globalState()->parsers_by_name[x].emplace_back(p);
+        for ( const auto& x : p->ports ) {
+            auto idx = std::string(x.port);
+
+            switch ( x.direction ) {
+                case Direction::Originator: globalState()->parsers_by_name[idx + "%orig"].emplace_back(p); break;
+
+                case Direction::Responder: globalState()->parsers_by_name[idx + "%resp"].emplace_back(p); break;
+
+                case Direction::Both:
+                    globalState()->parsers_by_name[idx].emplace_back(p);
+                    globalState()->parsers_by_name[idx + "%orig"].emplace_back(p);
+                    globalState()->parsers_by_name[idx + "%resp"].emplace_back(p);
+                    break;
+
+                case Direction::Undef: break;
+            }
+        }
 
         for ( const auto& x : p->mime_types ) {
             if ( ! x.isWildcard() )

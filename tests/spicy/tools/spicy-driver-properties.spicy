@@ -1,5 +1,7 @@
 # @TEST-EXEC: spicyc -j -o x.hlto %INPUT
 # @TEST-EXEC: printf abc | spicy-driver -p 80/tcp x.hlto >>output
+# @TEST-EXEC: printf abc | spicy-driver -p 100/tcp%orig x.hlto >>output
+# @TEST-EXEC: printf abc | spicy-driver -p 100/tcp%resp x.hlto >>output
 # @TEST-EXEC: printf abc | spicy-driver -p application/http x.hlto >>output
 # @TEST-EXEC: btest-diff output
 #
@@ -12,6 +14,20 @@ public type FooPort = unit {
 
     x: bytes &eod;
     on %done { print "Port", self; }
+};
+
+public type FooPortOrig = unit {
+    %port = 100/tcp &originator;
+
+    x: bytes &eod;
+    on %done { print "Port (orig)", self; }
+};
+
+public type FooPortResp = unit {
+    %port = 100/tcp &responder;
+
+    x: bytes &eod;
+    on %done { print "Port (resp)", self; }
 };
 
 public type FooMIME = unit {

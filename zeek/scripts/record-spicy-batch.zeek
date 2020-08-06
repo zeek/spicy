@@ -36,8 +36,8 @@ function begin(c: connection, type_: string)
 	++num_conns;
 	print fmt("tracking %s", c$id);
 
-	print output, fmt("@begin %s-orig %s %s\n", id(c), type_, c$id$resp_p);
-	print output, fmt("@begin %s-resp %s %s\n", id(c), type_, c$id$resp_p);
+	print output, fmt("@begin %s-orig %s %s%%orig\n", id(c), type_, c$id$resp_p);
+	print output, fmt("@begin %s-resp %s %s%%resp\n", id(c), type_, c$id$resp_p);
 	}
 
 event zeek_init()

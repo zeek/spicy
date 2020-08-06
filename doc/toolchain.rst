@@ -64,11 +64,15 @@ the parsers that are available, use ``--list-parsers`` (or ``-l``).
 In addition to the names shown by ``--list-parsers``, you can also
 specify a parser through a port or MIME type if the corresponding unit
 :ref:`defines them through properties <unit_meta_data>`. For example,
-if a unit defines ``%port = 80/tcp``, you can use ``spicy-drver -p
-80/tcp`` to select it. If it defines ``%mime-type =
+if a unit defines ``%port = 80/tcp``, you can use ``spicy-driver -p
+80/tcp`` to select it. To specify a direction, add either ``%orig`` or
+``%resp`` (e.g., ``-p 80/tcp%resp``); then only units with a port
+tagged with an ``&originator`` or ``&responder`` attribute,
+respectively, will be considered. If a unit defines ``%mime-type =
 application/test``, you can select it through ``spicy-driver -p
-application/test``. Note that there must be exactly one unit with a
-matching property for this to work.
+application/test``. (Note that there must be exactly one unit with a
+matching property for this all to work, otherwise you'll get an error
+message.)
 
 Batch input
 -----------
