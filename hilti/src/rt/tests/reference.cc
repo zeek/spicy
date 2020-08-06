@@ -11,76 +11,61 @@
 using namespace hilti::rt;
 
 struct T : public hilti::rt::trait::isStruct, hilti::rt::Controllable<T> {
-    int x;
+    /*implicit*/ T(int x = 0) : _x(x) {}
+    int _x;
 
     void foo(int y) {
         // Ensure we can reconstruct a value ref from "this".
         auto self = ValueReference<T>::self(this);
-        CHECK_EQ(x, y);
-        CHECK_EQ(self->x, y);
+        CHECK_EQ(_x, y);
+        CHECK_EQ(self->_x, y);
     }
+
+    friend bool operator==(const T& a, const T& b) { return a._x == b._x; }
 };
 
 namespace hilti::rt::detail::adl {
 
 inline std::string to_string(int x, tag /*unused*/) { return hilti::rt::fmt("%d", x); }
 
-inline std::string to_string(const T& x, tag /*unused*/) { return hilti::rt::fmt("x=%d", x.x); }
+inline std::string to_string(const T& x, tag /*unused*/) { return hilti::rt::fmt("x=%d", x._x); }
 
 } // namespace hilti::rt::detail::adl
 
 TEST_SUITE_BEGIN("reference");
 
-TEST_CASE("value-reference-int") {
-    using T = int;
-
-    ValueReference<T> x1;
+TEST_CASE_TEMPLATE("value-reference", U, int, T) {
+    ValueReference<U> x1;
     CHECK_EQ(*x1, 0);
 
-    ValueReference<T> x2(42);
+    ValueReference<U> x2(42);
     CHECK_EQ(*x2, 42);
 
-    ValueReference<T> x3(x2);
+    ValueReference<U> x3(x2);
     CHECK_EQ(*x3, 42);
 
     x3 = 21;
     CHECK_EQ(*x3, 21);
     CHECK_EQ(*x2, 42);
 
-    ValueReference<T> x4(std::move(x3));
+    ValueReference<U> x4(std::move(x3));
     CHECK(x3.isNull());
     CHECK_EQ(*x4, 21);
 
-    ValueReference<T> x5;
+    ValueReference<U> x5;
     x5 = std::move(x4);
     CHECK(x4.isNull());
     CHECK_EQ(*x5, 21);
 }
 
-TEST_CASE("value-reference-struct") {
-    ValueReference<T> x1;
-    CHECK_EQ(x1->x, 0);
-
-    T t;
-    t.x = 42;
-    ValueReference<T> x2(t);
-    CHECK_EQ(x2->x, 42);
-
-    x2->x = 21;
-    x2->foo(21);
-
-    x2->x = 42;
-    x2->foo(42);
-}
-
 TEST_CASE("value-reference-struct-self") {
-    T x1;
+    T x1(0);
 
     auto self = ValueReference<T>::self(&x1);
 
-    self->x = 42;
-    CHECK_EQ(self->x, 42);
-    CHECK_EQ(x1.x, 42);
+    self->_x = 42;
+    CHECK_EQ(self->_x, 42);
+    CHECK_EQ(x1._x, 42);
 
     CHECK_THROWS_WITH_AS(StrongReference<T>{self}, "reference to non-heap instance", const IllegalReference&);
     CHECK_THROWS_WITH_AS(WeakReference<T>{self}, "reference to non-heap instance", const IllegalReference&);
