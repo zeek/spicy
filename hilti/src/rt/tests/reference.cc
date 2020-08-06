@@ -36,6 +36,29 @@ inline std::string to_string(const T& x, tag /*unused*/) { return hilti::rt::fmt
 
 TEST_SUITE_BEGIN("ValueReference");
 
+TEST_CASE("asSharedPtr") {
+    SUBCASE("owning") {
+        T x(42);
+
+        REQUIRE(ValueReference<T>(x).asSharedPtr());
+        CHECK_EQ(*ValueReference<T>(x).asSharedPtr(), x);
+    }
+
+    SUBCASE("non-owning") {
+        auto ptr = std::make_shared<T>(42);
+
+        REQUIRE(ValueReference<T>::self(ptr.get()).asSharedPtr());
+        CHECK_EQ(*ValueReference<T>::self(ptr.get()).asSharedPtr(), *ptr);
+
+        CHECK_THROWS_WITH_AS(ValueReference<T>::self(nullptr).asSharedPtr(), "unexpected state of value reference",
+                             const IllegalReference&);
+
+        T x(42);
+        CHECK_THROWS_WITH_AS(ValueReference<T>::self(&x).asSharedPtr(), "reference to non-heap instance",
+                             const IllegalReference&);
+    }
+}
+
 TEST_CASE_TEMPLATE("construct", U, int, T) {
     SUBCASE("default") {
         const ValueReference<U> ref;
