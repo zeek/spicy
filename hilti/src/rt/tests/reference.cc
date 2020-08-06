@@ -32,9 +32,9 @@ inline std::string to_string(const T& x, tag /*unused*/) { return hilti::rt::fmt
 
 } // namespace hilti::rt::detail::adl
 
-TEST_SUITE_BEGIN("reference");
+TEST_SUITE_BEGIN("ValueReference");
 
-TEST_CASE_TEMPLATE("value-reference", U, int, T) {
+TEST_CASE_TEMPLATE("construct", U, int, T) {
     ValueReference<U> x1;
     CHECK_EQ(*x1, 0);
 
@@ -58,7 +58,7 @@ TEST_CASE_TEMPLATE("value-reference", U, int, T) {
     CHECK_EQ(*x5, 21);
 }
 
-TEST_CASE("value-reference-struct-self") {
+TEST_CASE("self") {
     T x1(0);
 
     auto self = ValueReference<T>::self(&x1);
@@ -69,38 +69,6 @@ TEST_CASE("value-reference-struct-self") {
 
     CHECK_THROWS_WITH_AS(StrongReference<T>{self}, "reference to non-heap instance", const IllegalReference&);
     CHECK_THROWS_WITH_AS(WeakReference<T>{self}, "reference to non-heap instance", const IllegalReference&);
-}
-
-
-TEST_CASE("strong-reference") {
-    using T = int;
-
-    StrongReference<T> x0;
-    CHECK_FALSE(x0);
-
-    StrongReference<T> x1(42);
-    REQUIRE(x1);
-    CHECK_EQ(*x1, 42);
-
-    StrongReference<T> x2(x1);
-    REQUIRE(x2);
-    CHECK_EQ(*x2, 42);
-
-    *x1 = 21;
-    CHECK_EQ(*x1, 21);
-    CHECK_EQ(*x2, 21);
-
-    ValueReference<T> v1{1};
-    ValueReference<T> v2{2};
-
-    x1 = v1;
-    x2 = x1;
-    v1 = v2;
-
-    CHECK_EQ(*x1, 2);
-    CHECK_EQ(*v1, 2);
-    CHECK_EQ(*x2, 2);
-    CHECK_EQ(*v2, 2);
 }
 
 struct Foo;
@@ -120,6 +88,39 @@ TEST_CASE("cyclic") {
 
     __foo->t = __test;
     test->f = (*__foo);
+}
+
+TEST_SUITE_END();
+
+TEST_SUITE_BEGIN("StrongReference");
+
+TEST_CASE_TEMPLATE("construct", U, int, T) {
+    StrongReference<U> x0;
+    CHECK_FALSE(x0);
+
+    StrongReference<U> x1(42);
+    REQUIRE(x1);
+    CHECK_EQ(*x1, 42);
+
+    StrongReference<U> x2(x1);
+    REQUIRE(x2);
+    CHECK_EQ(*x2, 42);
+
+    *x1 = 21;
+    CHECK_EQ(*x1, 21);
+    CHECK_EQ(*x2, 21);
+
+    ValueReference<U> v1{1};
+    ValueReference<U> v2{2};
+
+    x1 = v1;
+    x2 = x1;
+    v1 = v2;
+
+    CHECK_EQ(*x1, 2);
+    CHECK_EQ(*v1, 2);
+    CHECK_EQ(*x2, 2);
+    CHECK_EQ(*v2, 2);
 }
 
 TEST_SUITE_END();
