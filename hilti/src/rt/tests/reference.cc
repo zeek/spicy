@@ -85,6 +85,22 @@ TEST_CASE_TEMPLATE("construct", U, int, T) {
     }
 }
 
+TEST_CASE("get") {
+    T x(42);
+
+    SUBCASE("valid value") {
+        CHECK_NE(ValueReference<T>().get(), nullptr);
+
+        REQUIRE(ValueReference<T>(x).get());
+        CHECK_EQ(*ValueReference<T>(x).get(), x);
+        CHECK_NE(ValueReference<T>(x).get(), nullptr);
+
+        CHECK_EQ(ValueReference<T>::self(&x).get(), &x);
+    }
+
+    SUBCASE("invalid value") { CHECK_EQ(ValueReference<T>::self(nullptr).get(), nullptr); }
+}
+
 TEST_CASE("self") {
     T x1(0);
 
