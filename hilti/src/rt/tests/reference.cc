@@ -3,7 +3,9 @@
 #include <doctest/doctest.h>
 
 #include <exception>
+#include <memory>
 #include <sstream>
+#include <type_traits>
 
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/struct.h>
@@ -35,27 +37,52 @@ inline std::string to_string(const T& x, tag /*unused*/) { return hilti::rt::fmt
 TEST_SUITE_BEGIN("ValueReference");
 
 TEST_CASE_TEMPLATE("construct", U, int, T) {
-    ValueReference<U> x1;
-    CHECK_EQ(*x1, 0);
+    SUBCASE("default") {
+        const ValueReference<U> ref;
+        CHECK_EQ(*ref, U());
+    }
 
-    ValueReference<U> x2(42);
-    CHECK_EQ(*x2, 42);
+    const U x(42);
 
-    ValueReference<U> x3(x2);
-    CHECK_EQ(*x3, 42);
+    SUBCASE("from value") {
+        ValueReference<U> ref(x);
+        CHECK_EQ(*ref, x);
+    }
 
-    x3 = 21;
-    CHECK_EQ(*x3, 21);
-    CHECK_EQ(*x2, 42);
+    SUBCASE("from ptr") {
+        const auto ptr = std::make_shared<U>(x);
+        ValueReference<U> ref(ptr);
+        CHECK_EQ(*ref, x);
+    }
 
-    ValueReference<U> x4(std::move(x3));
-    CHECK(x3.isNull());
-    CHECK_EQ(*x4, 21);
+    SUBCASE("copy") {
+        SUBCASE("other initialized") {
+            const ValueReference<U> ref1(x);
+            const ValueReference<U> ref2(ref1);
+            CHECK_EQ(*ref1, *ref2);
+            CHECK_NE(ref1.get(), ref2.get());
+        }
 
-    ValueReference<U> x5;
-    x5 = std::move(x4);
-    CHECK(x4.isNull());
-    CHECK_EQ(*x5, 21);
+        SUBCASE("other uninitialized") {
+            // This test only makes sense if `U` is a `Controllable`, i.e., for `T` for our instantiations.
+            if constexpr ( std::is_same_v<U, T> ) {
+                const auto ref1 = ValueReference<U>::self(nullptr);
+                REQUIRE_EQ(ref1.get(), nullptr);
+
+                const ValueReference<U> ref2(ref1);
+                CHECK_EQ(ref2.get(), nullptr);
+            }
+        }
+    }
+
+    SUBCASE("move") {
+        ValueReference<U> ref1{x};
+        REQUIRE_NE(ref1.asSharedPtr(), nullptr);
+
+        const ValueReference<U> ref2(std::move(ref1));
+        CHECK_EQ(*ref2, x);
+        CHECK_EQ(ref1.asSharedPtr(), nullptr);
+    }
 }
 
 TEST_CASE("self") {
