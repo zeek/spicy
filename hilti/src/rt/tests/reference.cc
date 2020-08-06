@@ -101,6 +101,15 @@ TEST_CASE("get") {
     SUBCASE("invalid value") { CHECK_EQ(ValueReference<T>::self(nullptr).get(), nullptr); }
 }
 
+TEST_CASE("isNull") {
+    T x(42);
+
+    CHECK_FALSE(ValueReference<T>().isNull());
+    CHECK_FALSE(ValueReference<T>(x).isNull());
+    CHECK_FALSE(ValueReference<T>::self(&x).isNull());
+    CHECK(ValueReference<T>::self(nullptr).isNull());
+}
+
 TEST_CASE("self") {
     T x1(0);
 
