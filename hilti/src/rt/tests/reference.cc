@@ -133,6 +133,21 @@ TEST_CASE("isNull") {
     CHECK(ValueReference<T>::self(nullptr).isNull());
 }
 
+TEST_CASE("reset") {
+    T x(42);
+
+    ValueReference<T> ref;
+
+    SUBCASE("owning") { ref = ValueReference<T>(x); }
+    SUBCASE("non-owning") { ref = ValueReference<T>::self(&x); }
+
+    REQUIRE(! ref.isNull());
+
+    ref.reset();
+
+    CHECK(ref.isNull());
+}
+
 TEST_CASE("self") {
     T x1(0);
 
