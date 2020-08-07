@@ -257,6 +257,50 @@ TEST_CASE("arrow") {
     }
 }
 
+TEST_CASE("assign") {
+    SUBCASE("from lvalue StrongReference") {
+        const auto ref1 = ValueReference<int>(42);
+        auto ref2 = StrongReference<int>();
+        auto ref3 = StrongReference<int>(ref1);
+        REQUIRE(ref2.isNull());
+        REQUIRE_EQ(ref3.get(), ref1.get());
+
+        ref2 = ref3;
+        CHECK_EQ(ref2, ref3);
+        CHECK_EQ(ref2.get(), ref1.get());
+    }
+
+    SUBCASE("from rvalue StrongReference") {
+        const auto ref1 = ValueReference<int>(42);
+        auto ref2 = StrongReference<int>();
+        auto ref3 = StrongReference<int>(ref1);
+        REQUIRE(ref2.isNull());
+        REQUIRE_EQ(ref3.get(), ref1.get());
+
+        ref2 = std::move(ref3);
+        CHECK_EQ(ref2.get(), ref1.get());
+    }
+
+    SUBCASE("from ValueReference") {
+        const auto ref1 = ValueReference<int>(42);
+        auto ref2 = StrongReference<int>();
+        REQUIRE(ref2.isNull());
+
+        ref2 = ref1;
+        CHECK_EQ(ref2.derefAsValue(), ref1);
+        CHECK_EQ(ref2.get(), ref1.get());
+    }
+
+    SUBCASE("from T") {
+        const int x = 42;
+        auto ref = StrongReference<int>();
+        REQUIRE(ref.isNull());
+
+        ref = x;
+        CHECK_EQ(*ref, x);
+    }
+}
+
 TEST_CASE("bool") {
     CHECK(StrongReference<int>(42));
     CHECK_FALSE(StrongReference<int>());
