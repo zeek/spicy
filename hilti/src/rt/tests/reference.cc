@@ -286,4 +286,17 @@ TEST_CASE("isNull") {
     CHECK_FALSE(StrongReference<int>(ValueReference<int>(std::make_shared<int>(42))).isNull());
 }
 
+TEST_CASE("reset") {
+    const auto ref1 = ValueReference<int>(42);
+    REQUIRE_FALSE(ref1.isNull());
+
+    auto ref2 = StrongReference<int>(ref1);
+    REQUIRE_FALSE(ref2.isNull());
+    REQUIRE_EQ(ref1.get(), ref2.get());
+
+    ref2.reset();
+    CHECK_FALSE(ref1.isNull());
+    CHECK(ref2.isNull());
+}
+
 TEST_SUITE_END();
