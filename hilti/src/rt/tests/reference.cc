@@ -269,6 +269,21 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE("deref") {
+    SUBCASE("mutable") {
+        CHECK_EQ(*StrongReference<int>(42), 42);
+        CHECK_THROWS_WITH_AS(*StrongReference<int>(), "attempt to access null reference", const NullReference&);
+    }
+
+    SUBCASE("const") {
+        auto ref1 = StrongReference<int>(42);
+        auto ref2 = StrongReference<int>();
+
+        CHECK_EQ(*ref1, 42);
+        CHECK_THROWS_WITH_AS(*ref2, "attempt to access null reference", const NullReference&);
+    }
+}
+
 TEST_CASE("derefAsValue") {
     SUBCASE("unset") { CHECK_EQ(StrongReference<int>().derefAsValue().asSharedPtr(), nullptr); }
 
