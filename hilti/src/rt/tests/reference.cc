@@ -6,6 +6,7 @@
 #include <memory>
 #include <sstream>
 #include <type_traits>
+#include <utility>
 
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/struct.h>
@@ -236,33 +237,36 @@ TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("StrongReference");
 
-TEST_CASE_TEMPLATE("construct", U, int, T) {
-    StrongReference<U> x0;
-    CHECK_FALSE(x0);
+TEST_CASE("construct") {
+    SUBCASE("default") { CHECK(StrongReference<int>().isNull()); }
 
-    StrongReference<U> x1(42);
-    REQUIRE(x1);
-    CHECK_EQ(*x1, 42);
+    SUBCASE("from T") {
+        REQUIRE_FALSE(StrongReference<int>(42).isNull());
+        CHECK_EQ(*StrongReference<int>(42), 42);
+    }
 
-    StrongReference<U> x2(x1);
-    REQUIRE(x2);
-    CHECK_EQ(*x2, 42);
+    SUBCASE("from ValueReference") {
+        const auto ref = ValueReference<int>(42);
+        REQUIRE_EQ(*ref, 42);
+        CHECK_EQ(StrongReference<int>(ref).get(), ref.get());
+    }
 
-    *x1 = 21;
-    CHECK_EQ(*x1, 21);
-    CHECK_EQ(*x2, 21);
+    SUBCASE("copy") {
+        const auto ref1 = StrongReference<int>(42);
+        const auto ref2 = StrongReference<int>(ref1);
+        CHECK_EQ(ref1, ref2);
+        CHECK_EQ(ref1.get(), ref2.get());
+    }
 
-    ValueReference<U> v1{1};
-    ValueReference<U> v2{2};
+    SUBCASE("move") {
+        const int x = 42;
+        auto ref1 = StrongReference<int>(x);
+        const auto ptr = ref1.get();
 
-    x1 = v1;
-    x2 = x1;
-    v1 = v2;
-
-    CHECK_EQ(*x1, 2);
-    CHECK_EQ(*v1, 2);
-    CHECK_EQ(*x2, 2);
-    CHECK_EQ(*v2, 2);
+        const auto ref2 = StrongReference<int>(std::move(ref1));
+        CHECK_EQ(*ref2, 42);
+        CHECK_EQ(ref2.get(), ptr);
+    }
 }
 
 TEST_SUITE_END();
