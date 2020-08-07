@@ -307,13 +307,10 @@ private:
         if ( auto ptr = _get() )
             return ptr;
 
-        throw NullReference("attempt to access null value reference");
+        throw NullReference("attempt to access null reference");
     }
 
     T* _safeGet() {
-        if ( _ptr.valueless_by_exception() )
-            throw NullReference("no valid value");
-
         if ( _ptr.index() == std::variant_npos )
             throw NullReference("no valid value");
 

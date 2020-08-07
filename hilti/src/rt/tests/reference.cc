@@ -108,6 +108,27 @@ TEST_CASE_TEMPLATE("construct", U, int, T) {
     }
 }
 
+TEST_CASE("deref") {
+    T x(42);
+    SUBCASE("mutable") {
+        CHECK_EQ(*ValueReference<T>(x), x);
+        CHECK_THROWS_WITH_AS(*ValueReference<T>::self(nullptr), "attempt to access null reference",
+                             const NullReference&);
+    }
+
+    SUBCASE("const") {
+        {
+            const auto ref = ValueReference<T>(x);
+            CHECK_EQ(*ref, x);
+        }
+
+        {
+            const auto ref = ValueReference<T>::self(nullptr);
+            CHECK_THROWS_WITH_AS(*ref, "attempt to access null reference", const NullReference&);
+        }
+    }
+}
+
 TEST_CASE("get") {
     T x(42);
 
