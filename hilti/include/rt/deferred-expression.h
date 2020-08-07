@@ -6,6 +6,9 @@
 #include <string>
 #include <utility>
 
+#include <hilti/rt/extension-points.h>
+#include <hilti/rt/types/result.h>
+
 namespace hilti::rt {
 
 /**
