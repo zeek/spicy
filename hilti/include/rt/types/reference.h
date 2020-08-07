@@ -414,7 +414,7 @@ public:
     }
 
     /** Returns true if the reference is not null. */
-    operator bool() const { return ! isNull(); }
+    explicit operator bool() const { return ! isNull(); }
 
     /**
      * Reinitializes the reference with a newly allocated value, releasing

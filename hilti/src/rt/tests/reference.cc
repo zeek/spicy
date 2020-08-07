@@ -257,6 +257,11 @@ TEST_CASE("arrow") {
     }
 }
 
+TEST_CASE("bool") {
+    CHECK(StrongReference<int>(42));
+    CHECK_FALSE(StrongReference<int>());
+}
+
 TEST_CASE("construct") {
     SUBCASE("default") { CHECK(StrongReference<int>().isNull()); }
 
