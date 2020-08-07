@@ -43,6 +43,30 @@ TEST_CASE("arrow") {
                          const NullReference&);
 }
 
+TEST_CASE("assign") {
+    SUBCASE("from T") {
+        ValueReference<int> ref;
+        int x = 42;
+
+        REQUIRE_NE(ref, x);
+
+        ref = x;
+
+        CHECK_EQ(ref, x);
+    }
+
+    SUBCASE("from ValueReference") {
+        ValueReference<int> ref1;
+        ValueReference<int> ref2(42);
+
+        REQUIRE_NE(ref1, ref2);
+
+        ref1 = ref2;
+
+        CHECK_EQ(ref1, ref2);
+    }
+}
+
 TEST_CASE("asSharedPtr") {
     SUBCASE("owning") {
         T x(42);
