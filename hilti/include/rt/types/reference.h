@@ -48,7 +48,7 @@ using Controllable = std::enable_shared_from_this<T>;
  * into a shared_ptr right there. On the downside, that would mean a
  * `shared_from_this()` call even if the resulting instance is never used --
  * which with the current code generator could happen frequently (at least
- * once we optimizde to use `this` instead of the `self` wrapper when
+ * once we optimized to use `this` instead of the `self` wrapper when
  * possible). So leaving it alone for now.
  */
 template<typename T>
@@ -74,7 +74,7 @@ public:
      * the new reference will keep a pointer to the same value.
      *
      * This constructor is mostly for internal purposes to create a new value
-     * reference that's associatged with an existing `StrongReference`.
+     * reference that's associated with an existing `StrongReference`.
      *
      * @param t shared pointer to link to
      */
@@ -213,7 +213,7 @@ public:
     bool operator!=(const T& other) const { return *_safeGet() != other; }
 
     /**
-     * Assigns to the contained value. Assgining does not invalidate other
+     * Assigns to the contained value. Assigning does not invalidate other
      * references associated with the same value; they'll see the change.
      *
      * @throws NullReference if the instance does not currently refer to a valid value
@@ -224,7 +224,7 @@ public:
     }
 
     /**
-     * Assigns to the contained value. Assgining does not invalidate other
+     * Assigns to the contained value. Assigning does not invalidate other
      * references associated with the same value; they'll see the change.
      *
      * @throws NullReference if the instance does not currently refer to a valid value
@@ -237,15 +237,15 @@ public:
     }
 
     /**
-     * Assigns to the contained value. Assgining does not invalidate other
+     * Assigns to the contained value. Assigning does not invalidate other
      * references associated with the same value; they'll see the change.
      *
      * @throws NullReference if the instance does not currently refer to a valid value
      */
     ValueReference& operator=(ValueReference&& other) noexcept {
         if ( &other != this ) {
-            // We can't move the actual value as other referencez may be
-            // refering to it.
+            // We can't move the actual value as other references may be
+            // referring to it.
             *_safeGet() = *other._safeGet();
             other._ptr = nullptr;
         }
@@ -254,7 +254,7 @@ public:
     }
 
     /**
-     * Shortcut to create a new instance refering to an existing value of
+     * Shortcut to create a new instance referring to an existing value of
      * type `T`. `T` must be derived from `Controllable<T>`.
      *
      * This is for internal use by the code generator to wrap `this` inside
@@ -320,7 +320,7 @@ private:
 
 /**
  * A strong reference to a shared value. This is essentially a `shared_ptr`
- * that can bind to the values of `ValueReference` or `WeakReferecne.`
+ * that can bind to the values of `ValueReference` or `WeakReference.`
  *
  * Note that different from `ValueReference`, a strong reference can
  * explicitly be null.
@@ -341,7 +341,7 @@ public:
     explicit StrongReference(T t) : Base(std::make_shared<T>(std::move(t))) {}
 
     /**
-     * Instantiates a reference pointing to the value refered to be an
+     * Instantiates a reference pointing to the value referred to be an
      * existing `ValueReference`. This does not copy the value, it will be
      * shared (and managed jointly) afterwards.
      */
@@ -362,8 +362,8 @@ public:
     bool isNull() const { return this->get() == nullptr; }
 
     /**
-     * Returns a value reference that is linked to the refered value. If the
-     * strong reference is null, the returns referecne will be so, too.
+     * Returns a value reference that is linked to the referred value. If the
+     * strong reference is null, the returned reference will be so, too.
      */
     ValueReference<T> derefAsValue() const { return ValueReference<T>(*this); }
 
@@ -428,7 +428,7 @@ public:
     }
 
     /**
-     * Reinitiqalized the reference to now point to to the value refered to
+     * Reinitialized the reference to now point to to the value referred to
      * be an existing `ValueReference`. This does not copy that value, it
      * will be shared (and managed jointly) afterwards.
      */
@@ -474,14 +474,14 @@ public:
     WeakReference() : Base() {}
 
     /**
-     * Instantiates a reference pointing to the value refered to be an
+     * Instantiates a reference pointing to the value referred to be an
      * existing `ValueReference`. This does not copy the value, it will be
      * shared afterwards.
      */
     explicit WeakReference(const ValueReference<T>& t) : Base(t.asSharedPtr()) {}
 
     /**
-     * Instantiates a reference pointing to the value refered to be an
+     * Instantiates a reference pointing to the value referred to be an
      * existing `StrongReference`. This does not copy the value, it will be
      * shared afterwards.
      */
@@ -512,13 +512,13 @@ public:
     }
 
     /**
-     * Returns a pointer to the value being refered to. This will be null if
+     * Returns a pointer to the value being referred to. This will be null if
      * the weak point is null or expired.
      */
     const T* get() const { return this->lock().get(); }
 
     /**
-     * Returns a value reference that is linked to the refered value. If the
+     * Returns a value reference that is linked to the referred value. If the
      * weak reference is null or expired, the returned reference will be null.
      */
     ValueReference<T> derefAsValue() const { return ValueReference<T>(this->lock()); }
@@ -574,7 +574,7 @@ public:
     operator bool() const { return ! isNull(); }
 
     /**
-     * Reinitiqalized the reference to now point to to the value refered to
+     * Reinitialize the reference to now point to to the value referred to
      * be an existing `ValueReference`. This does not copy that value, it
      * will be shared afterwards.
      */
@@ -584,7 +584,7 @@ public:
     }
 
     /**
-     * Reinitiqalized the reference to now point to to the value refered to
+     * Reinitialize the reference to now point to to the value referred to
      * be an existing `StrongReference`. This does not copy that value, it
      * will be shared afterwards.
      */
