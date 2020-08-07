@@ -237,6 +237,26 @@ TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("StrongReference");
 
+TEST_CASE("arrow") {
+    SUBCASE("mutable") {
+        auto ref = ValueReference<int>(42);
+        CHECK_EQ(StrongReference<int>(ref).operator->(), ref.get());
+
+        CHECK_THROWS_WITH_AS(StrongReference<int>().operator->(), "attempt to access null reference",
+                             const NullReference&);
+    }
+
+    SUBCASE("const") {
+        const auto ref1 = ValueReference<int>(42);
+        const auto ref2 = StrongReference<int>(ref1);
+        const auto ref3 = StrongReference<int>();
+
+        CHECK_EQ(ref2.operator->(), ref1.get());
+
+        CHECK_THROWS_WITH_AS(ref3.operator->(), "attempt to access null reference", const NullReference&);
+    }
+}
+
 TEST_CASE("construct") {
     SUBCASE("default") { CHECK(StrongReference<int>().isNull()); }
 
