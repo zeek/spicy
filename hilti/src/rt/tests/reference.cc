@@ -269,6 +269,15 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE("derefAsValue") {
+    SUBCASE("unset") { CHECK_EQ(StrongReference<int>().derefAsValue().asSharedPtr(), nullptr); }
+
+    SUBCASE("set") {
+        const auto ref = ValueReference<int>();
+        CHECK_EQ(StrongReference<int>(ref).derefAsValue().get(), ref.get());
+    }
+}
+
 TEST_CASE("isNull") {
     CHECK(StrongReference<int>().isNull());
     CHECK_FALSE(StrongReference<int>(42).isNull());
