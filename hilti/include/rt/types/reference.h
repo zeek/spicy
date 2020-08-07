@@ -298,11 +298,7 @@ private:
     }
 
     const T* _safeGet() const {
-        if ( _ptr.valueless_by_exception() )
-            throw NullReference("no valid value");
-
-        if ( _ptr.index() == std::variant_npos )
-            throw NullReference("no valid value");
+        assert(_ptr.index() != std::variant_npos);
 
         if ( auto ptr = _get() )
             return ptr;
@@ -311,8 +307,7 @@ private:
     }
 
     T* _safeGet() {
-        if ( _ptr.index() == std::variant_npos )
-            throw NullReference("no valid value");
+        assert(_ptr.index() != std::variant_npos);
 
         if ( auto ptr = _get() )
             return ptr;
