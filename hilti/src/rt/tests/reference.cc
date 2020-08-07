@@ -36,6 +36,13 @@ inline std::string to_string(const T& x, tag /*unused*/) { return hilti::rt::fmt
 
 TEST_SUITE_BEGIN("ValueReference");
 
+TEST_CASE("arrow") {
+    CHECK_EQ(ValueReference<T>(42)->_x, 42);
+
+    CHECK_THROWS_WITH_AS((void)ValueReference<T>::self(nullptr)->_x, "attempt to access null reference",
+                         const NullReference&);
+}
+
 TEST_CASE("asSharedPtr") {
     SUBCASE("owning") {
         T x(42);
