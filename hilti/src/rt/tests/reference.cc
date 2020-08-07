@@ -269,4 +269,12 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE("isNull") {
+    CHECK(StrongReference<int>().isNull());
+    CHECK_FALSE(StrongReference<int>(42).isNull());
+
+    CHECK(StrongReference<int>(ValueReference<int>(std::shared_ptr<int>())).isNull());
+    CHECK_FALSE(StrongReference<int>(ValueReference<int>(std::make_shared<int>(42))).isNull());
+}
+
 TEST_SUITE_END();
