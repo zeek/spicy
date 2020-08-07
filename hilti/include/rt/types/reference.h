@@ -284,7 +284,7 @@ private:
         if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr) )
             return (*ptr).get();
 
-        throw IllegalReference("unexpted variant type in val_ref");
+        cannot_be_reached();
     }
 
     T* _get() {
@@ -294,7 +294,7 @@ private:
         if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr) )
             return (*ptr).get();
 
-        throw IllegalReference("unexpted variant type in val_ref");
+        cannot_be_reached();
     }
 
     const T* _safeGet() const {
