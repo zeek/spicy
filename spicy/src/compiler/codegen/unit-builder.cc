@@ -229,7 +229,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                 if ( orig && ! resp )
                     dir = builder::id("spicy_rt::Direction::Originator");
 
-                if ( resp && ! orig )
+                else if ( resp && ! orig )
                     dir = builder::id("spicy_rt::Direction::Responder");
             }
 

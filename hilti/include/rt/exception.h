@@ -76,8 +76,7 @@ private:
         virtual ~name(); /* required to create vtable, see hilti::rt::Exception */                                     \
     };
 
-#define HILTI_EXCEPTION_IMPL(name)                                                                                     \
-    name::name::~name() {}
+#define HILTI_EXCEPTION_IMPL(name) name::name::~name() = default;
 
 /** Base class for exceptions thrown by the runtime system. */
 HILTI_EXCEPTION(RuntimeError, Exception)
@@ -85,49 +84,8 @@ HILTI_EXCEPTION(RuntimeError, Exception)
 /** Base class for exceptions created by HILTI programs. */
 HILTI_EXCEPTION(UserException, Exception)
 
-/** Thrown for trouble encountered while managing the runtime environment. */
-HILTI_EXCEPTION(EnvironmentError, Exception)
-
 /** Thrown when an `assert` statement fails. */
 HILTI_EXCEPTION(AssertionFailure, RuntimeError)
-
-/** Thrown when an invalid container index is accessed. */
-HILTI_EXCEPTION(IndexError, RuntimeError)
-
-/** * Thrown when a default-less `switch` statement hits case that's no covered. */
-HILTI_EXCEPTION(UnhandledSwitchCase, RuntimeError)
-
-/** Thrown when a value is found to be outside of its permissible range. */
-HILTI_EXCEPTION(OutOfRange, RuntimeError)
-
-/** Exception flagging invalid arguments passed to a function. */
-HILTI_EXCEPTION(InvalidArgument, RuntimeError);
-
-/** Exception flagging access to an iterator that not, or no longer, valid. */
-HILTI_EXCEPTION(InvalidIterator, RuntimeError)
-
-/**
- * Exception triggered when a numerical operation causes an overflow.
- */
-HILTI_EXCEPTION(Overflow, RuntimeError)
-
-/**
- * Exception triggered when a division by zero is attempted.
- */
-HILTI_EXCEPTION(DivisionByZero, RuntimeError)
-
-/** Exception flagging incorrect use of type-info values. */
-HILTI_EXCEPTION(InvalidValue, RuntimeError);
-
-/**
- * Exception reflecting an attempt to modify a stream object that's been frozen.
- */
-HILTI_EXCEPTION(Frozen, RuntimeError)
-
-/**
- * Exception reflecting an access to an unset optional value.
- */
-HILTI_EXCEPTION(UnsetOptional, RuntimeError)
 
 /*
  * Exception triggered y the ".?" operator to signal to host applications that
@@ -135,31 +93,72 @@ HILTI_EXCEPTION(UnsetOptional, RuntimeError)
  */
 HILTI_EXCEPTION(AttributeNotSet, Exception)
 
-/** Exception indicating access to an unset (null) reference. **/
-HILTI_EXCEPTION(NullReference, RuntimeError)
+/**
+ * Exception triggered when a division by zero is attempted.
+ */
+HILTI_EXCEPTION(DivisionByZero, RuntimeError)
+
+/** Thrown for trouble encountered while managing the runtime environment. */
+HILTI_EXCEPTION(EnvironmentError, Exception)
 
 /** Exception indicating access to an already expired weak reference. **/
 HILTI_EXCEPTION(ExpiredReference, RuntimeError)
 
+/**
+ * Exception reflecting an attempt to modify a stream object that's been frozen.
+ */
+HILTI_EXCEPTION(Frozen, RuntimeError)
+
 /** Exception indicating an undefined use of a reference type. */
 HILTI_EXCEPTION(IllegalReference, RuntimeError)
 
-/** Exception indicating trouble when compiling a regular expression. */
-HILTI_EXCEPTION(PatternError, RuntimeError)
+/** Thrown when an invalid container index is accessed. */
+HILTI_EXCEPTION(IndexError, RuntimeError)
+
+/** Exception flagging invalid arguments passed to a function. */
+HILTI_EXCEPTION(InvalidArgument, RuntimeError);
+
+/** Exception flagging access to an iterator that not, or no longer, valid. */
+HILTI_EXCEPTION(InvalidIterator, RuntimeError)
+
+/** Exception flagging incorrect use of type-info values. */
+HILTI_EXCEPTION(InvalidValue, RuntimeError);
+
+/** Exception indicating illegal reuse of MatchState. **/
+HILTI_EXCEPTION(MatchStateReuse, RuntimeError)
 
 /** Exception indicating use of unsupport matching capabilities. */
 HILTI_EXCEPTION(NotSupported, RuntimeError)
 
-/** Exception indicating illegal reuse of MatchState. **/
-HILTI_EXCEPTION(MatchStateReuse, RuntimeError)
+/** Exception indicating access to an unset (null) reference. **/
+HILTI_EXCEPTION(NullReference, RuntimeError)
+
+/** Thrown when a value is found to be outside of its permissible range. */
+HILTI_EXCEPTION(OutOfRange, RuntimeError)
+
+/**
+ * Exception triggered when a numerical operation causes an overflow.
+ */
+HILTI_EXCEPTION(Overflow, RuntimeError)
+
+/** Exception indicating trouble when compiling a regular expression. */
+HILTI_EXCEPTION(PatternError, RuntimeError)
+
+/** * Thrown when a default-less `switch` statement hits case that's no covered. */
+HILTI_EXCEPTION(UnhandledSwitchCase, RuntimeError)
+
+/** Exception indicating problems with UTF-8 encodings. **/
+HILTI_EXCEPTION(UnicodeError, RuntimeError)
+
+/**
+ * Exception reflecting an access to an unset optional value.
+ */
+HILTI_EXCEPTION(UnsetOptional, RuntimeError)
 
 /**
  * Exception triggered by member access to fields that don't hold the value.
  */
 HILTI_EXCEPTION(UnsetUnionMember, RuntimeError)
-
-/** Exception indicating problems with UTF-8 encodings. **/
-HILTI_EXCEPTION(UnicodeError, RuntimeError)
 
 /** Thrown when fmt() reports a problem. */
 class FormattingError : public RuntimeError {

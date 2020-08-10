@@ -71,7 +71,7 @@ void SpicyDriver::usage() {
 
 void SpicyDriver::parseOptions(int argc, char** argv) {
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABFhdf:lp:i:v", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABF:hdf:lp:i:v", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;

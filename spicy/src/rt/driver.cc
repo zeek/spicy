@@ -21,7 +21,7 @@ using hilti::rt::fmt;
 
 using namespace spicy::rt;
 
-inline static auto _pretty_print(uint64_t n) {
+inline static auto pretty_print_number(uint64_t n) {
     if ( n > 1024 * 1024 * 1024 )
         return fmt("%" PRIu64 "G", n / 1024 / 1024 / 1024);
     if ( n > 1024 * 1024 )
@@ -44,18 +44,18 @@ void Driver::_debug_stats(const hilti::rt::ValueReference<hilti::rt::Stream>& da
 
     auto data_begin = data->begin().offset();
     auto data_end = data_begin + data->size();
-    auto data_chunks = _pretty_print(data->numberChunks());
-    auto data_size_cur = _pretty_print(data->size());
-    auto data_size_total = _pretty_print(data_end);
+    auto data_chunks = pretty_print_number(data->numberChunks());
+    auto data_size_cur = pretty_print_number(data->size());
+    auto data_size_total = pretty_print_number(data_end);
 
     debug(fmt("input : size-current=%s size-total=%s chunks-cur=%s offset-head=%" PRIu64 " offset-tail=%" PRIu64,
               data_size_cur, data_size_total, data_chunks, data_begin, data_end));
 
     auto stats = hilti::rt::memory_statistics();
-    auto memory_heap = _pretty_print(stats.memory_heap);
-    auto num_stacks = _pretty_print(stats.num_fibers);
-    auto max_stacks = _pretty_print(stats.max_fibers);
-    auto cached_stacks = _pretty_print(stats.cached_fibers);
+    auto memory_heap = pretty_print_number(stats.memory_heap);
+    auto num_stacks = pretty_print_number(stats.num_fibers);
+    auto max_stacks = pretty_print_number(stats.max_fibers);
+    auto cached_stacks = pretty_print_number(stats.cached_fibers);
 
     debug(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s", memory_heap, num_stacks, cached_stacks,
               max_stacks));
@@ -65,16 +65,16 @@ void Driver::_debug_stats(size_t current_sessions) {
     if ( ! _enable_debug )
         return;
 
-    auto num_sessions = _pretty_print(current_sessions);
-    auto total_sessions = _pretty_print(_total_sessions);
+    auto num_sessions = pretty_print_number(current_sessions);
+    auto total_sessions = pretty_print_number(_total_sessions);
 
     debug(fmt("sessions: current=%s total=%s", num_sessions, total_sessions));
 
     auto stats = hilti::rt::memory_statistics();
-    auto memory_heap = _pretty_print(stats.memory_heap);
-    auto num_stacks = _pretty_print(stats.num_fibers);
-    auto max_stacks = _pretty_print(stats.max_fibers);
-    auto cached_stacks = _pretty_print(stats.cached_fibers);
+    auto memory_heap = pretty_print_number(stats.memory_heap);
+    auto num_stacks = pretty_print_number(stats.num_fibers);
+    auto max_stacks = pretty_print_number(stats.max_fibers);
+    auto cached_stacks = pretty_print_number(stats.cached_fibers);
 
     debug(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s", memory_heap, num_stacks, cached_stacks,
               max_stacks));
@@ -130,7 +130,7 @@ Result<const spicy::rt::Parser*> Driver::lookupParser(const std::string& name) {
     const auto& parsers_by_name = detail::globalState()->parsers_by_name;
 
     if ( auto p = parsers_by_name.find(name); p != parsers_by_name.end() ) {
-        assert(p->second.size() > 0);
+        assert(! p->second.empty());
 
         if ( p->second.size() > 1 )
             return Error("multiple matching parsers found");

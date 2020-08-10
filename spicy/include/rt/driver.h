@@ -3,8 +3,8 @@
 #pragma once
 
 #include <iostream>
+#include <optional>
 #include <string>
-#include <utility>
 
 #include <hilti/rt/result.h>
 
@@ -37,7 +37,7 @@ public:
 
     /**
      * Returns false if a parser has neither been passed into the constructor
-     * nor explicitly set through `setParser()`..
+     * nor explicitly set through `setParser()`.
      */
     bool hasParser() const { return _parser != nullptr; }
 

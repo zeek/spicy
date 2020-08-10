@@ -109,7 +109,6 @@ public:
 
     ~ResumableSetter() { get()->resumable = old; }
 
-    ResumableSetter() = delete;
     ResumableSetter(const ResumableSetter&) = delete;
     ResumableSetter(ResumableSetter&&) = delete;
     ResumableSetter& operator=(const ResumableSetter&) = delete;

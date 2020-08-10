@@ -27,18 +27,10 @@ namespace spicy::rt {
 /** Defines the direction a `ParserPort` applies to. */
 enum class Direction { Originator, Responder, Both, Undef };
 
-/** Defines port & direction a parser can handle.  */
-struct ParserPort {
-    hilti::rt::Port port;
-    Direction direction;
-
-    // Constructor used by code generator.
-    ParserPort(std::tuple<hilti::rt::Port, Direction> args) : port(std::get<0>(args)), direction(std::get<1>(args)) {}
-};
-
 } // namespace spicy::rt
 
 namespace hilti::rt::detail::adl {
+
 inline std::string to_string(const ::spicy::rt::Direction& x, adl::tag /*unused*/) {
     switch ( x ) {
         case spicy::rt::Direction::Originator: return "originator";
@@ -50,12 +42,33 @@ inline std::string to_string(const ::spicy::rt::Direction& x, adl::tag /*unused*
     cannot_be_reached();
 };
 
+} // namespace hilti::rt::detail::adl
+
+namespace spicy::rt {
+
+inline std::ostream& operator<<(std::ostream& out, const Direction& d) { return out << hilti::rt::to_string(d); }
+
+/** Defines port & direction a parser can handle.  */
+struct ParserPort {
+    hilti::rt::Port port;
+    Direction direction;
+
+    // Constructor used by code generator.
+    ParserPort(std::tuple<hilti::rt::Port, Direction> args) : port(std::get<0>(args)), direction(std::get<1>(args)) {}
+};
+
+inline std::ostream& operator<<(std::ostream& out, const ParserPort& p) { return out << hilti::rt::to_string(p); }
+
+} // namespace spicy::rt
+
+namespace hilti::rt::detail::adl {
+
 inline std::string to_string(const spicy::rt::ParserPort& x, adl::tag /*unused*/) {
     // TODO: Not sure why we need to explicit to_string() here.
     if ( x.direction == spicy::rt::Direction::Both )
         return x.port;
     else
-        return fmt("%s (%s direction)", x.port, hilti::rt::to_string(x.direction));
+        return fmt("%s (%s direction)", x.port, x.direction);
 }
 
 } // namespace hilti::rt::detail::adl
