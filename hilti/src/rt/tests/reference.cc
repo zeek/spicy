@@ -666,4 +666,12 @@ TEST_CASE("as") {
                          const IllegalReference&);
 }
 
+TEST_CASE("reset") {
+    auto ref = StrongReferenceGeneric(StrongReference<int>(42));
+    REQUIRE_EQ(*ref.as<int>(), 42);
+
+    ref.reset();
+    CHECK_EQ(ref.as<int>(), nullptr);
+}
+
 TEST_SUITE_END();
