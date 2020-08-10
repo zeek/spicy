@@ -7,7 +7,7 @@
 #pragma clang diagnostic ignored "-Wtautological-overlap-compare"
 #endif
 
-#include <hilti/3rdparty/nlohmann-json/json.hpp>
+#include <nlohmann/json.hpp>
 
 #ifdef __clang__
 #pragma clang diagnostic pop
