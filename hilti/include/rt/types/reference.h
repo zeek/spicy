@@ -707,8 +707,7 @@ inline std::string detail::to_string_for_print<StrongReference<std::string>>(con
 }
 
 template<>
-inline std::string detail::to_string_for_print<WeakReference<std::string_view>>(
-    const WeakReference<std::string_view>& x) {
+inline std::string detail::to_string_for_print<WeakReference<std::string>>(const WeakReference<std::string>& x) {
     if ( x.isExpired() )
         return "<expired ref>";
 

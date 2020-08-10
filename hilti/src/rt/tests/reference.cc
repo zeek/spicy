@@ -5,14 +5,18 @@
 #include <exception>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <type_traits>
 #include <utility>
 
+#include <hilti/rt/extension-points.h>
+#include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/struct.h>
 
 using namespace hilti::rt;
+using namespace bytes::literals;
 
 struct T : public hilti::rt::trait::isStruct, hilti::rt::Controllable<T> {
     /*implicit*/ T(int x = 0) : _x(x) {}
@@ -226,6 +230,28 @@ TEST_CASE("cyclic") {
     test->f = (*__foo);
 }
 
+TEST_CASE("fmt") {
+    CHECK_EQ(fmt("%s", ValueReference<int>()), "0");
+    CHECK_EQ(fmt("%s", ValueReference<int>(42)), "42");
+}
+
+TEST_CASE("to_string") {
+    CHECK_EQ(to_string(ValueReference<int>()), "0");
+    CHECK_EQ(to_string(ValueReference<int>(42)), "42");
+}
+
+TEST_CASE("to_string_for_print") {
+    SUBCASE("std::string") {
+        CHECK_EQ(to_string_for_print(ValueReference<std::string>()), "");
+        CHECK_EQ(to_string_for_print(ValueReference<std::string>("🤷\r\n")), "🤷\r\n");
+    }
+
+    SUBCASE("Bytes") {
+        CHECK_EQ(to_string_for_print(ValueReference<Bytes>()), "");
+        CHECK_EQ(to_string_for_print(ValueReference<Bytes>("\0\1\2\3"_b)), "\\x00\\x01\\x02\\x03");
+    }
+}
+
 TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("StrongReference");
@@ -374,6 +400,28 @@ TEST_CASE("reset") {
     ref2.reset();
     CHECK_FALSE(ref1.isNull());
     CHECK(ref2.isNull());
+}
+
+TEST_CASE("fmt") {
+    CHECK_EQ(fmt("%s", StrongReference<int>()), "Null");
+    CHECK_EQ(fmt("%s", StrongReference<int>(42)), "42");
+}
+
+TEST_CASE("to_string") {
+    CHECK_EQ(to_string(StrongReference<int>()), "Null");
+    CHECK_EQ(to_string(StrongReference<int>(42)), "42");
+}
+
+TEST_CASE("to_string_for_print") {
+    SUBCASE("std::string") {
+        CHECK_EQ(to_string_for_print(StrongReference<std::string>()), "Null");
+        CHECK_EQ(to_string_for_print(StrongReference<std::string>("🤷\r\n")), "🤷\r\n");
+    }
+
+    SUBCASE("Bytes") {
+        CHECK_EQ(to_string_for_print(StrongReference<Bytes>()), "Null");
+        CHECK_EQ(to_string_for_print(StrongReference<Bytes>("\0\1\2\3"_b)), "\\x00\\x01\\x02\\x03");
+    }
 }
 
 TEST_SUITE_END();
@@ -651,6 +699,53 @@ TEST_CASE("reset") {
 
         wref.reset();
         CHECK(wref.isNull());
+    }
+}
+
+TEST_CASE("fmt") {
+    CHECK_EQ(fmt("%s", WeakReference<int>()), "Null");
+    CHECK_EQ(fmt("%s", WeakReference<int>(StrongReference<int>())), "Null");
+    CHECK_EQ(fmt("%s", WeakReference<int>(StrongReference<int>(42))), "42");
+
+    auto wref = WeakReference<int>();
+    { wref = StrongReference<int>(42); }
+    REQUIRE(wref.isExpired());
+    CHECK_EQ(fmt("%s", wref), "<expired ref>");
+}
+
+TEST_CASE("to_string") {
+    CHECK_EQ(to_string(WeakReference<int>()), "Null");
+    CHECK_EQ(to_string(WeakReference<int>(StrongReference<int>())), "Null");
+    CHECK_EQ(to_string(WeakReference<int>(StrongReference<int>(42))), "42");
+
+    auto wref = WeakReference<int>();
+    { wref = StrongReference<int>(42); }
+    REQUIRE(wref.isExpired());
+    CHECK_EQ(to_string(wref), "<expired ref>");
+}
+
+TEST_CASE("to_string_for_print") {
+    SUBCASE("std::string") {
+        CHECK_EQ(to_string_for_print(WeakReference<std::string>()), "Null");
+        CHECK_EQ(to_string_for_print(WeakReference<std::string>(StrongReference<std::string>())), "Null");
+        CHECK_EQ(to_string_for_print(WeakReference<std::string>(StrongReference<std::string>("🤷\r\n"))), "🤷\r\n");
+
+        auto wref = WeakReference<std::string>();
+        { wref = StrongReference<std::string>("abc"); }
+        REQUIRE(wref.isExpired());
+        CHECK_EQ(to_string_for_print(wref), "<expired ref>");
+    }
+
+    SUBCASE("Bytes") {
+        CHECK_EQ(to_string_for_print(WeakReference<Bytes>()), "Null");
+        CHECK_EQ(to_string_for_print(WeakReference<Bytes>(StrongReference<Bytes>())), "Null");
+        CHECK_EQ(to_string_for_print(WeakReference<Bytes>(StrongReference<Bytes>("\0\1\2\3"_b))),
+                 "\\x00\\x01\\x02\\x03");
+
+        auto wref = WeakReference<Bytes>();
+        { wref = StrongReference<Bytes>("abc"_b); }
+        REQUIRE(wref.isExpired());
+        CHECK_EQ(to_string_for_print(wref), "<expired ref>");
     }
 }
 
