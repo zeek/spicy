@@ -623,7 +623,7 @@ private:
 class StrongReferenceGeneric {
 public:
     /** Leaves the reference unbound. */
-    StrongReferenceGeneric() {}
+    StrongReferenceGeneric() = default;
 
     /** Binds to the same instance as an existing strong reference.  */
     template<typename T>
@@ -635,7 +635,7 @@ public:
         if ( ! _ptr.has_value() )
             return nullptr;
 
-        return std::any_cast<StrongReference<T>>(&_ptr)->get();
+        return std::any_cast<StrongReference<T>>(_ptr).get();
     }
 
     /** Releases the bound reference. */

@@ -2,6 +2,7 @@
 
 #include <doctest/doctest.h>
 
+#include <any>
 #include <exception>
 #include <memory>
 #include <sstream>
@@ -652,6 +653,18 @@ TEST_CASE("reset") {
         wref.reset();
         CHECK(wref.isNull());
     }
+}
+
+TEST_SUITE_END();
+
+TEST_SUITE_BEGIN("StrongReferenceGeneric");
+
+TEST_CASE("as") {
+    CHECK_EQ(StrongReferenceGeneric().as<int>(), nullptr);
+    CHECK_EQ(StrongReferenceGeneric(StrongReference<int>()).as<int>(), nullptr);
+    CHECK_EQ(*StrongReferenceGeneric(StrongReference<int>(42)).as<int>(), 42);
+    CHECK_THROWS_WITH_AS(StrongReferenceGeneric(StrongReference<int>(42)).as<double>(), "bad any cast",
+                         const std::bad_any_cast&);
 }
 
 TEST_SUITE_END();
