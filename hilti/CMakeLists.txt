@@ -275,6 +275,7 @@ target_link_hilti(jit-test PRIVATE)
 add_executable(hilti-rt-tests
                src/rt/tests/main.cc
                src/rt/tests/address.cc
+               src/rt/tests/backtrace.cc
                src/rt/tests/bytes.cc
                src/rt/tests/fiber.cc
                src/rt/tests/integer.cc
