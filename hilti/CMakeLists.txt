@@ -204,7 +204,7 @@ endforeach ()
 # Build hilti-rt with release flags.
 string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
 target_compile_options(hilti-rt-objects     PRIVATE ${cxx_flags_release})
-target_compile_options(hilti-rt-objects     PRIVATE "-DNDEBUG;-O3;-g0;-Wall")
+target_compile_options(hilti-rt-objects     PRIVATE "-g;-O3;-DNDEBUG;-Wall")
 target_compile_definitions(hilti-rt-objects PRIVATE "HILTI_RT_BUILD_TYPE_RELEASE")
 
 # Build hilti-rt-debug with debug flags.
@@ -230,7 +230,7 @@ if ( APPLE )
 endif ()
 
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "-std=c++17 -g ${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "-std=c++17 -O3 -DNDEBUG ${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "-std=c++17 -g -O3 -DNDEBUG ${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # Libraries
 

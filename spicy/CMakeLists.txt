@@ -129,7 +129,7 @@ endforeach ()
 # Build spicy-rt with release flags.
 string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
 target_compile_options(spicy-rt-debug-objects     PRIVATE ${cxx_flags_release})
-target_compile_options(spicy-rt-objects           PRIVATE "-DNDEBUG;-O3;-g0;-Wall")
+target_compile_options(spicy-rt-objects           PRIVATE "-g;-O3;-DNDEBUG;-Wall")
 target_compile_definitions(spicy-rt-objects       PRIVATE "HILTI_RT_BUILD_TYPE_RELEASE")
 target_link_libraries(spicy-rt-objects            PUBLIC hilti-rt-objects)
 
