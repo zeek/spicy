@@ -471,7 +471,7 @@ public:
     using Base = std::weak_ptr<T>;
 
     /** Default constructor creating a null reference. */
-    WeakReference() : Base() {}
+    WeakReference() = default;
 
     /**
      * Instantiates a reference pointing to the value referred to be an
@@ -491,13 +491,13 @@ public:
      * Copy constructor. This copies the reference, not the value, which will
      * be shared afterwards.
      */
-    WeakReference(const WeakReference& other) : Base(other) {}
+    WeakReference(const WeakReference& other) = default;
 
     /** Move constructor. */
-    WeakReference(WeakReference&& other) noexcept : Base(std::move(other)) {}
+    WeakReference(WeakReference&& other) noexcept = default;
 
     /** Destructor. */
-    ~WeakReference() {}
+    ~WeakReference() = default;
 
     /** Returns true if the reference is either null or expired. */
     bool isNull() const { return this->lock() == nullptr; }

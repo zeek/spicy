@@ -377,3 +377,40 @@ TEST_CASE("reset") {
 }
 
 TEST_SUITE_END();
+
+TEST_SUITE_BEGIN("WeakReference");
+
+TEST_CASE("construct") {
+    const auto ref = ValueReference<int>(42);
+
+    SUBCASE("copy") {
+        const auto wref1 = WeakReference<int>(ref);
+        const auto wref2(wref1);
+
+        CHECK_EQ(*wref2, *wref1);
+    }
+
+    SUBCASE("default") {
+        const auto wref = WeakReference<int>();
+        CHECK(wref.isNull());
+        CHECK_FALSE(wref.isExpired());
+    }
+
+    SUBCASE("from ValueReference") { CHECK_EQ(WeakReference(ref).derefAsValue(), ref); }
+
+    SUBCASE("from StrongReference") {
+        const auto sref = StrongReference<int>(42);
+        CHECK_EQ(*WeakReference(sref), *sref);
+    }
+
+    SUBCASE("move") {
+        auto wref1 = WeakReference<int>(ref);
+        REQUIRE_EQ(wref1.derefAsValue(), ref);
+
+        const auto wref2(std::move(wref1));
+
+        CHECK_EQ(wref2.derefAsValue(), ref);
+    }
+}
+
+TEST_SUITE_END();
