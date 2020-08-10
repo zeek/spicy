@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <utility>
 
+#include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/struct.h>
 
@@ -26,14 +27,6 @@ struct T : public hilti::rt::trait::isStruct, hilti::rt::Controllable<T> {
 
     friend bool operator==(const T& a, const T& b) { return a._x == b._x; }
 };
-
-namespace hilti::rt::detail::adl {
-
-inline std::string to_string(int x, tag /*unused*/) { return hilti::rt::fmt("%d", x); }
-
-inline std::string to_string(const T& x, tag /*unused*/) { return hilti::rt::fmt("x=%d", x._x); }
-
-} // namespace hilti::rt::detail::adl
 
 TEST_SUITE_BEGIN("ValueReference");
 
