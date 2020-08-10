@@ -18,6 +18,12 @@ template<typename T>
 class Range {
 public:
     Range(const T& t) : _t(t) {}
+
+    Range(const Range&) = delete;
+    Range(Range&&) = delete;
+    Range& operator=(const Range&) = delete;
+    Range& operator=(Range&&) = delete;
+
     auto begin() const { return std::begin(_t); }
     auto end() const { return std::end(_t); }
 
