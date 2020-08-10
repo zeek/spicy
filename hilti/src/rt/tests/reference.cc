@@ -413,6 +413,33 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE("isExpired") {
+    SUBCASE("non-null") {
+        const auto wref = WeakReference<int>();
+
+        {
+            const auto ref = StrongReference<int>(42);
+            CHECK_FALSE(WeakReference<int>(ref).isExpired());
+        }
+
+        CHECK_FALSE(wref.isExpired());
+    }
+
+    SUBCASE("null") {
+        // FIXME(bbannier): Shouldn't these CHECKs be true?
+
+        SUBCASE("default value") { CHECK_FALSE(WeakReference<int>().isExpired()); }
+
+        SUBCASE("from null StrongReference") {
+            const auto wref = WeakReference<int>();
+
+            const auto ref = StrongReference<int>();
+            REQUIRE(ref.isNull());
+            CHECK_FALSE(WeakReference<int>(ref).isExpired());
+        }
+    }
+}
+
 TEST_CASE("isNull") {
     SUBCASE("null") {
         const auto ref1 = StrongReference<int>();
