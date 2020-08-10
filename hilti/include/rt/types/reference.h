@@ -571,7 +571,7 @@ public:
     }
 
     /** Returns true if the reference is not null or expired. */
-    operator bool() const { return ! isNull(); }
+    explicit operator bool() const { return ! isNull(); }
 
     /**
      * Reinitialize the reference to now point to to the value referred to

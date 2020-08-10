@@ -407,6 +407,23 @@ TEST_CASE_TEMPLATE("arrow", WeakReference_t, WeakReference<int>, const WeakRefer
     }
 }
 
+TEST_CASE("bool") {
+    const auto sref1 = StrongReference<int>(42);
+    const auto sref2 = StrongReference<int>();
+
+    CHECK_FALSE(WeakReference<int>());
+
+    const auto wref1 = WeakReference<int>(sref1);
+    REQUIRE_FALSE(wref1.isNull());
+    REQUIRE_FALSE(wref1.isExpired());
+    CHECK(wref1);
+
+    const auto wref2 = WeakReference<int>(sref2);
+    REQUIRE(wref2.isNull());
+    REQUIRE_FALSE(wref2.isExpired());
+    CHECK_FALSE(wref2);
+}
+
 TEST_CASE("construct") {
     const auto ref = ValueReference<int>(42);
 
