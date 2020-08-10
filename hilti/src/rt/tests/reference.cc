@@ -519,4 +519,23 @@ TEST_CASE("isNull") {
     }
 }
 
+TEST_CASE("reset") {
+    SUBCASE("reset not null") {
+        const auto sref = StrongReference<int>(42);
+        auto wref = WeakReference<int>(sref);
+        REQUIRE_FALSE(wref.isNull());
+
+        wref.reset();
+        CHECK(wref.isNull());
+    }
+
+    SUBCASE("reset null") {
+        auto wref = WeakReference<int>();
+        REQUIRE(wref.isNull());
+
+        wref.reset();
+        CHECK(wref.isNull());
+    }
+}
+
 TEST_SUITE_END();
