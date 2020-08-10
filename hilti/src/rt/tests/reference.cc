@@ -380,6 +380,54 @@ TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("WeakReference");
 
+TEST_CASE("assign") {
+    SUBCASE("from ValueReference") {
+        auto wref = WeakReference<int>();
+        REQUIRE(wref.isNull());
+
+        const auto vref = ValueReference<int>(42);
+        wref = vref;
+        CHECK_EQ(*wref, *vref);
+    }
+
+    SUBCASE("from StrongReference") {
+        auto wref = WeakReference<int>();
+        REQUIRE(wref.isNull());
+
+        const auto sref = StrongReference<int>(42);
+        REQUIRE_EQ(*sref, 42);
+        wref = sref;
+        CHECK_EQ(*wref, *sref);
+    }
+
+    SUBCASE("from lvalue WeakReference") {
+        const auto sref = StrongReference<int>(47);
+        const auto wref1 = WeakReference<int>(sref);
+        auto wref2 = WeakReference<int>();
+        REQUIRE_EQ(*wref1, *sref);
+        REQUIRE(wref2.isNull());
+
+        wref2 = wref1;
+        CHECK_EQ(*wref2, *wref1);
+
+        *wref2 = 11;
+        CHECK_EQ(*wref1, 11);
+        CHECK_EQ(*sref, 11);
+    }
+
+    SUBCASE("from rvalue WeakReference") {
+        const auto sref = StrongReference<int>(47);
+        auto wref = WeakReference<int>();
+        REQUIRE(wref.isNull());
+
+        wref = WeakReference<int>(sref);
+        CHECK_EQ(*wref, *sref);
+
+        *wref = 11;
+        CHECK_EQ(*sref, 11);
+    }
+}
+
 TEST_CASE_TEMPLATE("arrow", WeakReference_t, WeakReference<int>, const WeakReference<int>) {
     SUBCASE("expired") {
         WeakReference_t wref = WeakReference<int>(StrongReference<int>(42));
