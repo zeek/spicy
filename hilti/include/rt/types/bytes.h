@@ -147,7 +147,7 @@ inline std::ostream& operator<<(std::ostream& out, const Iterator& /* x */) {
  * If not otherwise specified, member functions have the semantics of
  * `std::string` member functions.
  */
-class Bytes : protected std::string, public hilti::rt::detail::iterator::Controllee {
+class Bytes : protected std::string {
 public:
     using Base = std::string;
     using const_iterator = bytes::Iterator;

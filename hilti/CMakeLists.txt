@@ -280,7 +280,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/fiber.cc
                src/rt/tests/integer.cc
                src/rt/tests/interval.cc
-               src/rt/tests/type-info.cc
+               src/rt/tests/iterator.cc
                src/rt/tests/map.cc
                src/rt/tests/network.cc
                src/rt/tests/optional.cc
@@ -293,9 +293,10 @@ add_executable(hilti-rt-tests
                src/rt/tests/stream.cc
                src/rt/tests/string.cc
                src/rt/tests/struct.cc
+               src/rt/tests/time.cc
                src/rt/tests/to_string.cc
                src/rt/tests/tuple.cc
-               src/rt/tests/time.cc
+               src/rt/tests/type-info.cc
                src/rt/tests/union.cc
                src/rt/tests/util.cc
                src/rt/tests/vector.cc)
