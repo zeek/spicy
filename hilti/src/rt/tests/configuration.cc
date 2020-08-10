@@ -14,7 +14,7 @@ TEST_SUITE_BEGIN("configuration");
 TEST_CASE("get/set") {
     // This test needs to be run in a separate executable as updating the configuration
     // after the runtime library is initialized is not supported.
-    REQUIRE_FALSE(isInitialized());
+    REQUIRE_FALSE(isInitialized()); // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
 
     auto conf = configuration::get();
 
