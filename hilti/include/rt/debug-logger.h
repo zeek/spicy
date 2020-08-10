@@ -7,6 +7,7 @@
 #include <optional>
 #include <string>
 
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt::detail {
@@ -27,14 +28,18 @@ public:
     }
 
     void dedent(const std::string& stream) {
-        if ( isEnabled(stream) )
-            _streams[stream] -= 1;
+        if ( isEnabled(stream) ) {
+            auto& indent = _streams[stream];
+
+            if ( indent > 0 )
+                indent -= 1;
+        }
     }
 
 private:
     std::filesystem::path _path;
     std::optional<std::ofstream> _output;
-    std::map<std::string, int> _streams;
+    std::map<std::string, integer::safe<uint64_t>> _streams;
 };
 
 } // namespace hilti::rt::detail
