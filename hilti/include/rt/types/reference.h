@@ -629,13 +629,20 @@ public:
     template<typename T>
     StrongReferenceGeneric(StrongReference<T> x) : _ptr(std::move(x)) {}
 
-    /** Returns a pointer to the bound instance, or null if unbound. */
+    /** Obtains a pointer to the stored value.
+     * @returns a pointer to the bound instance, or null if unbound.
+     * @throws IllegalReference if the target type does not match the stored reference type.
+     * */
     template<typename T>
     T* as() const {
         if ( ! _ptr.has_value() )
             return nullptr;
 
-        return std::any_cast<StrongReference<T>>(_ptr).get();
+        try {
+            return std::any_cast<StrongReference<T>>(_ptr).get();
+        } catch ( const std::bad_any_cast& ) {
+            throw IllegalReference("invalid target type");
+        }
     }
 
     /** Releases the bound reference. */
