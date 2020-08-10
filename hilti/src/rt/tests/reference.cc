@@ -413,6 +413,30 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE_TEMPLATE("deref", WeakReference_t, WeakReference<int>, const WeakReference<int>) {
+    SUBCASE("valid") {
+        const auto sref = StrongReference<int>(42);
+
+        WeakReference_t wref = WeakReference<int>(sref);
+        REQUIRE_FALSE(wref.isExpired());
+        REQUIRE_FALSE(wref.isNull());
+
+        CHECK_EQ(*wref, *sref);
+    }
+
+    SUBCASE("null") {
+        WeakReference_t wref = WeakReference<int>();
+        REQUIRE(wref.isNull());
+        CHECK_THROWS_WITH_AS(*wref, "attempt to access null reference", const NullReference&);
+    }
+
+    SUBCASE("expired") {
+        WeakReference_t wref = WeakReference<int>(StrongReference<int>(42));
+        REQUIRE(wref.isExpired());
+        CHECK_THROWS_WITH_AS(*wref, "attempt to access expired reference", const ExpiredReference&);
+    }
+}
+
 TEST_CASE("derefAsValue") {
     SUBCASE("expired") {
         auto sref = StrongReference<int>(42);
