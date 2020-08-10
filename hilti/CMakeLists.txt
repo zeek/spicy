@@ -305,6 +305,11 @@ target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_link_libraries(hilti-rt-tests PRIVATE hilti-rt-objects doctest)
 add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)
 
+add_executable(hilti-rt-configuration-tests src/rt/tests/configuration.cc)
+target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")
+target_link_libraries(hilti-rt-configuration-tests PRIVATE hilti-rt-objects doctest)
+add_test(NAME hilti-rt-configuration-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-configuration-tests)
+
 add_executable(hilti-tests
                tests/main.cc
                tests/visitor.cc
