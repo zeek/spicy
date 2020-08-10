@@ -18,15 +18,6 @@ namespace trait {
 struct isStruct;
 } // namespace trait
 
-/** Exception indicating access to an unset (null) reference. **/
-HILTI_EXCEPTION(NullReference, RuntimeError)
-
-/** Exception indicating access to an already expired weak reference. **/
-HILTI_EXCEPTION(ExpiredReference, RuntimeError)
-
-/** Exception indicating an undefined use of a reference type. */
-HILTI_EXCEPTION(IllegalReference, RuntimeError)
-
 /** Base for classes that `ValueReference::self` can receive.  */
 template<typename T>
 using Controllable = std::enable_shared_from_this<T>;

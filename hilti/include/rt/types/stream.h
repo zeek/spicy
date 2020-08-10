@@ -51,11 +51,6 @@ using Offset = integer::safe<uint64_t>;
 /** Size of a stream instance in number of elements stores. */
 using Size = integer::safe<uint64_t>;
 
-/**
- * Exception reflecting an attempt to modify a stream object that's been frozen.
- */
-HILTI_EXCEPTION(Frozen, RuntimeError)
-
 namespace detail {
 
 class UnsafeConstIterator;

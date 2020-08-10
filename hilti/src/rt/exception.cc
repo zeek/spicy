@@ -9,6 +9,30 @@
 
 using namespace hilti::rt;
 
+HILTI_EXCEPTION_IMPL(RuntimeError)
+HILTI_EXCEPTION_IMPL(UserException)
+HILTI_EXCEPTION_IMPL(EnvironmentError)
+HILTI_EXCEPTION_IMPL(AssertionFailure)
+HILTI_EXCEPTION_IMPL(IndexError)
+HILTI_EXCEPTION_IMPL(UnhandledSwitchCase)
+HILTI_EXCEPTION_IMPL(OutOfRange)
+HILTI_EXCEPTION_IMPL(InvalidArgument)
+HILTI_EXCEPTION_IMPL(InvalidIterator)
+HILTI_EXCEPTION_IMPL(Overflow)
+HILTI_EXCEPTION_IMPL(DivisionByZero)
+HILTI_EXCEPTION_IMPL(InvalidValue)
+HILTI_EXCEPTION_IMPL(Frozen)
+HILTI_EXCEPTION_IMPL(UnsetOptional)
+HILTI_EXCEPTION_IMPL(AttributeNotSet)
+HILTI_EXCEPTION_IMPL(NullReference)
+HILTI_EXCEPTION_IMPL(ExpiredReference)
+HILTI_EXCEPTION_IMPL(IllegalReference)
+HILTI_EXCEPTION_IMPL(PatternError)
+HILTI_EXCEPTION_IMPL(NotSupported)
+HILTI_EXCEPTION_IMPL(MatchStateReuse)
+HILTI_EXCEPTION_IMPL(UnsetUnionMember)
+HILTI_EXCEPTION_IMPL(UnicodeError)
+
 static void printException(const std::string& msg, const Exception& e, std::ostream& out) {
     out << "[libhilti] " << msg << " " << demangle(typeid(e).name()) << ": " << e.what() << std::endl;
 
@@ -39,7 +63,7 @@ Exception::Exception(const std::string& desc)
 Exception::Exception(std::string_view desc, std::string_view location)
     : Exception(fmt("%s (%s)", desc, location), desc, location) {}
 
-Exception::~Exception() = default;
+Exception::~Exception() {}
 
 WouldBlock::WouldBlock(const std::string& desc, const std::string& location)
     : WouldBlock(fmt("%s (%s)", desc, location)) {}

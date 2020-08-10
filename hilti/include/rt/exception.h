@@ -16,7 +16,7 @@ namespace hilti::rt {
 
 /**
  * HILTI's base exception type. All HILTI-side runtime exceptions are derived
- * from this.
+ * from this. Instantiate specialized derived classes, not the base class.
  */
 class Exception : public std::runtime_error {
 public:
@@ -37,10 +37,10 @@ public:
     Exception& operator=(const Exception&) = default;
     Exception& operator=(Exception&&) noexcept = default;
 
-    // Empty, but necessary to make exception handling work between library
-    // and host application. Presumably this:
+    // Empty, but required to make exception handling work between library
+    // and host application. See:
     // http://www.toptip.ca/2012/06/c-exceptions-thrown-from-shared-library.html
-    ~Exception() override;
+    virtual ~Exception();
 
     /** Returns the message associated with the exception. */
     auto description() const { return _description; }
@@ -63,16 +63,21 @@ private:
 };
 
 #define HILTI_EXCEPTION(name, base)                                                                                    \
-    class name : public base {                                                                                         \
+    class name : public ::hilti::rt::base {                                                                            \
     public:                                                                                                            \
-        using base::base;                                                                                              \
+        using ::hilti::rt::base::base;                                                                                 \
+        virtual ~name(); /* required to create vtable, see hilti::rt::Exception */                                     \
     };
 
 #define HILTI_EXCEPTION_NS(name, ns, base)                                                                             \
     class name : public ns::base {                                                                                     \
     public:                                                                                                            \
         using ns::base::base;                                                                                          \
+        virtual ~name(); /* required to create vtable, see hilti::rt::Exception */                                     \
     };
+
+#define HILTI_EXCEPTION_IMPL(name)                                                                                     \
+    name::name::~name() {}
 
 /** Base class for exceptions thrown by the runtime system. */
 HILTI_EXCEPTION(RuntimeError, Exception)
@@ -97,6 +102,64 @@ HILTI_EXCEPTION(OutOfRange, RuntimeError)
 
 /** Exception flagging invalid arguments passed to a function. */
 HILTI_EXCEPTION(InvalidArgument, RuntimeError);
+
+/** Exception flagging access to an iterator that not, or no longer, valid. */
+HILTI_EXCEPTION(InvalidIterator, RuntimeError)
+
+/**
+ * Exception triggered when a numerical operation causes an overflow.
+ */
+HILTI_EXCEPTION(Overflow, RuntimeError)
+
+/**
+ * Exception triggered when a division by zero is attempted.
+ */
+HILTI_EXCEPTION(DivisionByZero, RuntimeError)
+
+/** Exception flagging incorrect use of type-info values. */
+HILTI_EXCEPTION(InvalidValue, RuntimeError);
+
+/**
+ * Exception reflecting an attempt to modify a stream object that's been frozen.
+ */
+HILTI_EXCEPTION(Frozen, RuntimeError)
+
+/**
+ * Exception reflecting an access to an unset optional value.
+ */
+HILTI_EXCEPTION(UnsetOptional, RuntimeError)
+
+/*
+ * Exception triggered y the ".?" operator to signal to host applications that
+ * a struct attribbute isn't set.
+ */
+HILTI_EXCEPTION(AttributeNotSet, Exception)
+
+/** Exception indicating access to an unset (null) reference. **/
+HILTI_EXCEPTION(NullReference, RuntimeError)
+
+/** Exception indicating access to an already expired weak reference. **/
+HILTI_EXCEPTION(ExpiredReference, RuntimeError)
+
+/** Exception indicating an undefined use of a reference type. */
+HILTI_EXCEPTION(IllegalReference, RuntimeError)
+
+/** Exception indicating trouble when compiling a regular expression. */
+HILTI_EXCEPTION(PatternError, RuntimeError)
+
+/** Exception indicating use of unsupport matching capabilities. */
+HILTI_EXCEPTION(NotSupported, RuntimeError)
+
+/** Exception indicating illegal reuse of MatchState. **/
+HILTI_EXCEPTION(MatchStateReuse, RuntimeError)
+
+/**
+ * Exception triggered by member access to fields that don't hold the value.
+ */
+HILTI_EXCEPTION(UnsetUnionMember, RuntimeError)
+
+/** Exception indicating problems with UTF-8 encodings. **/
+HILTI_EXCEPTION(UnicodeError, RuntimeError)
 
 /** Thrown when fmt() reports a problem. */
 class FormattingError : public RuntimeError {

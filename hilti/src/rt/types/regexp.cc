@@ -38,7 +38,7 @@ public:
 
 regexp::MatchState::MatchState(const RegExp& re) {
     if ( re.patterns().empty() )
-        throw regexp::PatternError("trying to match empty pattern set");
+        throw PatternError("trying to match empty pattern set");
 
     _pimpl = std::make_unique<Pimpl>(re._jrxShared());
 }
@@ -193,7 +193,7 @@ RegExp::RegExp(std::string pattern, regexp::Flags flags) : _flags(flags) {
 
 RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) : _flags(flags) {
     if ( patterns.empty() )
-        throw regexp::PatternError("trying to compile empty pattern set");
+        throw PatternError("trying to compile empty pattern set");
 
     _flags.no_sub = true;
     _newJrx();
@@ -225,7 +225,7 @@ void RegExp::_compileOne(std::string pattern, int idx) {
     if ( auto rc = jrx_regset_add(_jrx(), pattern.c_str(), pattern.size()); rc != REG_OK ) {
         static char err[256];
         jrx_regerror(rc, _jrx(), err, sizeof(err));
-        throw regexp::PatternError(fmt("error compiling pattern '%s': %s", pattern, err));
+        throw PatternError(fmt("error compiling pattern '%s': %s", pattern, err));
     }
 
     _patterns.push_back(std::move(pattern));
@@ -264,7 +264,7 @@ Vector<Bytes> RegExp::findGroups(const Bytes& data) const {
     assert(_jrx() && "regexp not compiled");
 
     if ( _patterns.size() > 1 )
-        throw regexp::NotSupported("cannot capture groups during set matching");
+        throw NotSupported("cannot capture groups during set matching");
 
     jrx_offset so = -1;
     jrx_offset eo = -1;

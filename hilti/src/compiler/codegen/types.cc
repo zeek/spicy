@@ -292,6 +292,10 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         return cxx::declaration::Type{.id = id,
                                       .type = fmt("HILTI_EXCEPTION_NS(%s, %s, %s)", id.local(), base_ns, base_cls),
                                       .no_using = true};
+
+        // Note: Exception instances all need an implementation of a virtual
+        // function. We do that in VisitorTypeInfo so that we ensure it's
+        // geneated only once.
     }
 };
 
@@ -754,7 +758,34 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
                    util::join(labels, ", "));
     }
 
-    result_t operator()(const type::Exception& n) { return "hilti::rt::type_info::Exception()"; }
+    result_t operator()(const type::Exception& n) {
+        if ( n.typeID() ) {
+            // We use this opportunity to create an empty virtual destructor
+            // that will trigger inclusion of vtable for the exception's
+            // type; see rt/exception.h. We do this only if we have a type ID
+            // as otherwise it could lead to ambiguities with naming and it
+            // can't be referred to for catching anyways then.
+
+            // ID logic follows code in VisitorDeclaration.
+            auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+            auto sid = cxx::ID(*n.typeID());
+
+            if ( sid.namespace_() )
+                scope = scope.namespace_();
+
+            auto id = cxx::ID(scope, sid);
+            auto decl = cxx::declaration::Function{.result = "",
+                                                   .id = cxx::ID{fmt("%s::~%s", id, id.local())},
+                                                   .args = {},
+                                                   .linkage = ""};
+            auto func = cxx::Function{.declaration = std::move(decl), .body = cxx::Block()};
+            cg->unit()->add(std::move(func));
+        }
+
+        // Done with virtual method.
+
+        return "hilti::rt::type_info::Exception()";
+    }
 
     result_t operator()(const type::Function& n) { return "hilti::rt::type_info::Function()"; }
 

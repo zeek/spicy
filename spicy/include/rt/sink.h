@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/reference.h>
@@ -17,18 +18,15 @@
 
 namespace spicy::rt {
 
-namespace sink {
-enum class ReassemblerPolicy { First };
-
 /**
  * Exception thrown when sink operations fail due to usage errors.
  */
-class Error : public hilti::rt::UserException {
-public:
-    using hilti::rt::UserException::UserException;
-};
+HILTI_EXCEPTION(SinkError, UserException)
 
+namespace sink {
+enum class ReassemblerPolicy { First };
 } // namespace sink
+
 namespace sink::detail {
 
 /** Checks whether a given struct type corresponds to a unit that can be connected to a sink. */
@@ -138,12 +136,12 @@ public:
      * chained.
      *
      * @param filter filter unit to connect to the sink.
-     * @throws ``sink::Error`` if the type cannot be parsed
+     * @throws ``SinkError`` if the type cannot be parsed
      */
     template<typename T>
     void connect_filter(spicy::rt::UnitRef<T> unit) {
         if ( _size )
-            throw sink::Error("cannot connect filter after data has been forwarded already");
+            throw SinkError("cannot connect filter after data has been forwarded already");
 
         SPICY_RT_DEBUG_VERBOSE(
             hilti::rt::fmt("connecting filter unit %s [%p] to sink %p", T::__parser.name, &*unit, this));
@@ -212,7 +210,7 @@ public:
     void set_initial_sequence_number(uint64_t seq) {
         if ( _haveInput() ) {
             _close(false);
-            throw sink::Error("sink cannot update initial sequence number after activity has already been seen");
+            throw SinkError("sink cannot update initial sequence number after activity has already been seen");
         }
 
         _initial_seq = seq;

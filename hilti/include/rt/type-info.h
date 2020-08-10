@@ -22,9 +22,6 @@ struct TypeInfo;
 
 namespace type_info {
 
-/** Exception flagging incorrect use of type-info values. */
-HILTI_EXCEPTION(InvalidValue, RuntimeError);
-
 class Value;
 
 namespace value {

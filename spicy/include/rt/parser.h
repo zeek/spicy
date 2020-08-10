@@ -152,6 +152,19 @@ struct Parser {
 /** Returns all available parsers. */
 inline const auto& parsers() { return detail::globalState()->parsers; }
 
+/**
+ * Exception thrown by generated parser code when an parsing failed.
+ */
+class ParseError : public hilti::rt::UserException {
+public:
+    ParseError(const std::string& msg, const std::string& location = "")
+        : UserException(hilti::rt::fmt("parse error: %s", msg), location) {}
+
+    ParseError(const hilti::rt::result::Error& e) : UserException(hilti::rt::fmt("parse error: %s", e.description())) {}
+
+    virtual ~ParseError(); /* required to create vtable, see hilti::rt::Exception */
+};
+
 namespace detail {
 
 /**

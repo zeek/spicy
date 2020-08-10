@@ -7,6 +7,8 @@ using namespace spicy::rt::detail;
 
 using hilti::rt::fmt;
 
+HILTI_EXCEPTION_IMPL(SinkError)
+
 void Sink::_init() {
     assert(_states.empty() && _units.empty()); // must have been release already
 

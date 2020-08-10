@@ -17,11 +17,6 @@ inline std::string to_string(std::optional<T> x, adl::tag /*unused*/) {
 
 } // namespace detail::adl
 
-/**
- * Exception reflecting an access to an unset optional value.
- */
-HILTI_EXCEPTION(UnsetOptional, RuntimeError)
-
 namespace optional {
 
 struct Unset : public std::exception {}; // Internal exception to signal access to optional that may expectedly by unset

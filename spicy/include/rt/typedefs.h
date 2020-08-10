@@ -30,19 +30,6 @@ using Parse2Function = hilti::rt::Resumable (*)(UnitType<T>&, hilti::rt::ValueRe
 using Parse3Function = hilti::rt::Resumable (*)(ParsedUnit&, hilti::rt::ValueReference<hilti::rt::Stream>&,
                                                 const std::optional<hilti::rt::stream::View>&);
 
-/**
- * Exception thrown by generated parser code when an parsing failed.
- */
-class ParseError : public hilti::rt::UserException {
-public:
-    ParseError(const std::string& msg) : UserException(hilti::rt::fmt("parse error: %s", msg)) {}
-
-    ParseError(const std::string& msg, const std::string& location)
-        : UserException(hilti::rt::fmt("parse error: %s", msg), location) {}
-
-    ParseError(const hilti::rt::result::Error& e) : UserException(hilti::rt::fmt("parse error: %s", e.description())) {}
-};
-
 namespace sink::detail {
 struct State;
 } // namespace sink::detail

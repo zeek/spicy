@@ -15,12 +15,6 @@ struct isStruct {};
 struct hasParameters {};
 } // namespace trait
 
-/**
- * Exception triggered y the ".?" operator to signal to host applications that
- * a struct attribbute isn't set.
- */
-HILTI_EXCEPTION(AttributeNotSet, Exception)
-
 namespace struct_ {
 
 template<class T>

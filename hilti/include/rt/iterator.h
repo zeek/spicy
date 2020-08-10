@@ -10,9 +10,6 @@
 
 namespace hilti::rt {
 
-/** Exception flagging access to an interator that not, or no longer, valid. */
-HILTI_EXCEPTION(InvalidIterator, RuntimeError)
-
 namespace detail::iterator {
 
 struct ControlBlock {};
