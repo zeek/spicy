@@ -413,6 +413,37 @@ TEST_CASE("construct") {
     }
 }
 
+TEST_CASE("get") {
+    SUBCASE("null") {
+        const auto sref = StrongReference<int>();
+        const auto ref = WeakReference<int>(sref);
+        REQUIRE(ref.isNull());
+
+        CHECK_EQ(ref.get(), nullptr);
+    }
+
+    SUBCASE("expired") {
+        auto ref = WeakReference<int>();
+        {
+            const auto sref = StrongReference<int>(42);
+            ref = sref;
+        }
+        REQUIRE(ref.isExpired());
+
+        CHECK_EQ(ref.get(), nullptr);
+    }
+
+    SUBCASE("valid data") {
+        const auto sref = StrongReference<int>(42);
+        const auto wref = WeakReference<int>(sref);
+
+        REQUIRE_FALSE(wref.isExpired());
+        REQUIRE_FALSE(wref.isNull());
+
+        CHECK_EQ(wref.get(), sref.get());
+    }
+}
+
 TEST_CASE("isExpired") {
     SUBCASE("non-null") {
         const auto wref = WeakReference<int>();
