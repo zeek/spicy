@@ -380,6 +380,33 @@ TEST_SUITE_END();
 
 TEST_SUITE_BEGIN("WeakReference");
 
+TEST_CASE_TEMPLATE("arrow", WeakReference_t, WeakReference<int>, const WeakReference<int>) {
+    SUBCASE("expired") {
+        WeakReference_t wref = WeakReference<int>(StrongReference<int>(42));
+        REQUIRE(wref.isExpired());
+        CHECK_THROWS_WITH_AS(wref.operator->(), "attempt to access expired reference", const ExpiredReference&);
+    }
+
+    SUBCASE("null") {
+        WeakReference_t wref1 = WeakReference<int>();
+        REQUIRE(wref1.isNull());
+        CHECK_THROWS_WITH_AS(wref1.operator->(), "attempt to access null reference", const NullReference&);
+
+        const auto sref = StrongReference<int>();
+        WeakReference_t wref2 = WeakReference<int>(sref);
+        REQUIRE(wref2.isNull());
+        CHECK_THROWS_WITH_AS(wref2.operator->(), "attempt to access null reference", const NullReference&);
+    }
+
+    SUBCASE("valid value") {
+        const auto sref = StrongReference<int>(42);
+        WeakReference_t wref = WeakReference<int>(sref);
+        REQUIRE_FALSE(wref.isNull());
+        REQUIRE_FALSE(wref.isExpired());
+        CHECK_EQ(wref.operator->(), sref.get());
+    }
+}
+
 TEST_CASE("construct") {
     const auto ref = ValueReference<int>(42);
 
