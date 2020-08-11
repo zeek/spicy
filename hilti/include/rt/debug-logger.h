@@ -4,10 +4,10 @@
 
 #include <fstream>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 
-#include <hilti/rt/safe-int.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt::detail {
@@ -38,7 +38,8 @@ public:
 
 private:
     std::filesystem::path _path;
-    std::optional<std::ofstream> _output;
+    std::ostream* _output = nullptr;
+    std::unique_ptr<std::ofstream> _output_file;
     std::map<std::string, integer::safe<uint64_t>> _streams;
 };
 
