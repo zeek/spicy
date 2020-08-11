@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cinttypes>
 #include <memory>
 #include <string>
 
