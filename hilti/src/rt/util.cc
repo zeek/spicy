@@ -14,6 +14,7 @@
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/fmt.h>
+#include <hilti/rt/global-state.h>
 #include <hilti/rt/util.h>
 
 #include <hilti/3rdparty/utf8proc/utf8proc.h>
@@ -50,13 +51,21 @@ void hilti::rt::abort_with_backtrace() {
 
 void hilti::rt::cannot_be_reached() { hilti::rt::internalError("code is executing that should not be reachable"); }
 
-hilti::rt::MemoryStatistics hilti::rt::memory_statistics() {
-    MemoryStatistics stats;
+hilti::rt::ResourceUsage hilti::rt::resource_usage() {
+    ResourceUsage stats;
 
     struct rusage r;
-    getrusage(RUSAGE_SELF, &r);
+    if ( getrusage(RUSAGE_SELF, &r) < 0 )
+        throw EnvironmentError("cannot collect initial resource usage: %s", strerror(errno));
+
     auto fibers = detail::Fiber::statistics();
 
+    const auto to_seconds = [](const timeval& t) {
+        return static_cast<double>(t.tv_sec) + static_cast<double>(t.tv_usec) / 1e6;
+    };
+
+    stats.user_time = to_seconds(r.ru_utime) - detail::globalState()->resource_usage_init.user_time;
+    stats.system_time = to_seconds(r.ru_stime) - detail::globalState()->resource_usage_init.system_time;
     stats.memory_heap = r.ru_maxrss * 1024;
     stats.num_fibers = fibers.current;
     stats.max_fibers = fibers.max;

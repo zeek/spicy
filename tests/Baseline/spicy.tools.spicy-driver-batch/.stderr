@@ -21,3 +21,4 @@
 [spicy-driver] memory  : heap=19G fibers-cur=2 fibers-cached=2 fibers-max=2
 [libspicy] shutting down runtime
 [libspicy] destroying global state
+# user_time=0.002892 sys_time=0.000905 memory=21093154816

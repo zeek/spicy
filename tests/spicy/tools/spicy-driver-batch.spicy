@@ -1,6 +1,7 @@
 # @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
-# @TEST-EXEC: HILTI_DEBUG=spicy-driver:libspicy spicy-driver -F test.dat test.hlto >output
+# @TEST-EXEC: HILTI_DEBUG=spicy-driver:libspicy spicy-driver -F test.dat -U test.hlto >output
 # @TEST-EXEC: btest-diff output
+# @TEST-EXEC: grep -q "^# user_time" .stderr
 # @TEST-EXEC: test "$BUILD" = "release" || TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff .stderr
 
 module Test;

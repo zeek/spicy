@@ -51,11 +51,11 @@ void Driver::_debug_stats(const hilti::rt::ValueReference<hilti::rt::Stream>& da
     debug(fmt("input : size-current=%s size-total=%s chunks-cur=%s offset-head=%" PRIu64 " offset-tail=%" PRIu64,
               data_size_cur, data_size_total, data_chunks, data_begin, data_end));
 
-    auto stats = hilti::rt::memory_statistics();
-    auto memory_heap = pretty_print_number(stats.memory_heap);
-    auto num_stacks = pretty_print_number(stats.num_fibers);
-    auto max_stacks = pretty_print_number(stats.max_fibers);
-    auto cached_stacks = pretty_print_number(stats.cached_fibers);
+    auto ru = hilti::rt::resource_usage();
+    auto memory_heap = pretty_print_number(ru.memory_heap);
+    auto num_stacks = pretty_print_number(ru.num_fibers);
+    auto max_stacks = pretty_print_number(ru.max_fibers);
+    auto cached_stacks = pretty_print_number(ru.cached_fibers);
 
     debug(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s", memory_heap, num_stacks, cached_stacks,
               max_stacks));
@@ -70,7 +70,7 @@ void Driver::_debug_stats(size_t current_sessions) {
 
     debug(fmt("sessions: current=%s total=%s", num_sessions, total_sessions));
 
-    auto stats = hilti::rt::memory_statistics();
+    auto stats = hilti::rt::resource_usage();
     auto memory_heap = pretty_print_number(stats.memory_heap);
     auto num_stacks = pretty_print_number(stats.num_fibers);
     auto max_stacks = pretty_print_number(stats.max_fibers);

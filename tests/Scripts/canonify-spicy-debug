@@ -5,4 +5,5 @@
 cat \
   | sed 's/stream=0x[0-9a-z]\{2,\} /stream=0xXXXXXXXX /g' \
   | sed 's/for stream 0x[0-9a-z]\{2,\}/for stream 0xXXXXXXXX/g' \
-  | sed 's/\(memory *: \).*/\1XXX/g'
+  | sed 's/\(memory *: \).*/\1XXX/g' \
+  | sed 's/^\(# *user_time=\).*/\1XXX .../g'

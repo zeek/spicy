@@ -29,6 +29,9 @@ struct Configuration {
     /** abort() instead of throwing HILTI exceptions. */
     bool abort_on_exceptions = false;
 
+    /**< Print summary of runtime resource usage at termination */
+    bool report_resource_usage = false;
+
     /** Colon-separated list of debug streams to enable. Default comes from HILTI_DEBUG. */
     std::string debug_streams;
 
