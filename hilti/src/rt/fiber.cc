@@ -270,7 +270,7 @@ void detail::yield() {
     auto r = context::detail::get()->resumable;
 
     if ( ! r )
-        throw Exception("'yield' in non-suspendable context");
+        throw RuntimeError("'yield' in non-suspendable context");
 
     r->yield();
     context::detail::get()->resumable = r;

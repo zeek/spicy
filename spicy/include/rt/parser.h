@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include <hilti/rt/exception.h>
@@ -23,6 +24,57 @@
 
 namespace spicy::rt {
 
+/** Defines the direction a `ParserPort` applies to. */
+enum class Direction { Originator, Responder, Both, Undef };
+
+} // namespace spicy::rt
+
+namespace hilti::rt::detail::adl {
+
+inline std::string to_string(const ::spicy::rt::Direction& x, adl::tag /*unused*/) {
+    switch ( x ) {
+        case spicy::rt::Direction::Originator: return "originator";
+        case spicy::rt::Direction::Responder: return "responder";
+        case spicy::rt::Direction::Both: return "both";
+        case spicy::rt::Direction::Undef: return "undefined";
+    }
+
+    cannot_be_reached();
+};
+
+} // namespace hilti::rt::detail::adl
+
+namespace spicy::rt {
+
+inline std::ostream& operator<<(std::ostream& out, const Direction& d) { return out << hilti::rt::to_string(d); }
+
+/** Defines port & direction a parser can handle.  */
+struct ParserPort {
+    hilti::rt::Port port;
+    Direction direction;
+
+    // Constructor used by code generator.
+    ParserPort(std::tuple<hilti::rt::Port, Direction> args) : port(std::get<0>(args)), direction(std::get<1>(args)) {}
+};
+
+inline std::ostream& operator<<(std::ostream& out, const ParserPort& p) { return out << hilti::rt::to_string(p); }
+
+} // namespace spicy::rt
+
+namespace hilti::rt::detail::adl {
+
+inline std::string to_string(const spicy::rt::ParserPort& x, adl::tag /*unused*/) {
+    // TODO: Not sure why we need to explicit to_string() here.
+    if ( x.direction == spicy::rt::Direction::Both )
+        return x.port;
+    else
+        return fmt("%s (%s direction)", x.port, x.direction);
+}
+
+} // namespace hilti::rt::detail::adl
+
+namespace spicy::rt {
+
 /**
  * Runtime information about an available parser.
  *
@@ -32,7 +84,7 @@ namespace spicy::rt {
 struct Parser {
     Parser(std::string name, Parse1Function parse1, std::any parse2, Parse3Function parse3,
            const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
-           hilti::rt::Vector<hilti::rt::Port> ports)
+           hilti::rt::Vector<ParserPort> ports)
         : name(std::move(name)),
           parse1(parse1),
           parse2(std::move(parse2)),
@@ -44,7 +96,7 @@ struct Parser {
 
     Parser(std::string name, hilti::rt::Null /* null */, std::any parse2, hilti::rt::Null /* null */,
            const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
-           hilti::rt::Vector<hilti::rt::Port> ports)
+           hilti::rt::Vector<ParserPort> ports)
         : Parser(std::move(name), nullptr, parse2, nullptr, type, std::move(description), std::move(mime_types),
                  std::move(ports)) {}
 
@@ -86,7 +138,7 @@ struct Parser {
     /**
      * Well-known ports associated with this parser.
      */
-    hilti::rt::Vector<hilti::rt::Port> ports;
+    hilti::rt::Vector<ParserPort> ports;
 
     /**
      * For internal use only. Set by `registerParser()` for units that's don't
@@ -112,6 +164,19 @@ struct Parser {
 
 /** Returns all available parsers. */
 inline const auto& parsers() { return detail::globalState()->parsers; }
+
+/**
+ * Exception thrown by generated parser code when an parsing failed.
+ */
+class ParseError : public hilti::rt::UserException {
+public:
+    ParseError(const std::string& msg, const std::string& location = "")
+        : UserException(hilti::rt::fmt("parse error: %s", msg), location) {}
+
+    ParseError(const hilti::rt::result::Error& e) : UserException(hilti::rt::fmt("parse error: %s", e.description())) {}
+
+    virtual ~ParseError(); /* required to create vtable, see hilti::rt::Exception */
+};
 
 namespace detail {
 

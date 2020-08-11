@@ -656,8 +656,9 @@ unit_variable : VAR local_id ':' type opt_init_expression opt_attributes ';'
 
 unit_sink     : SINK local_id opt_attributes ';' { $$ = spicy::type::unit::item::Sink(std::move($2), std::move($3), __loc__); }
 
-unit_property : PROPERTY ';'                     { $$ = type::unit::item::Property(ID(std::move($1)), false, __loc__); };
-              | PROPERTY '=' expr ';'            { $$ = type::unit::item::Property(ID(std::move($1)), std::move($3), false, __loc__); };
+unit_property : PROPERTY opt_attributes ';'      { $$ = type::unit::item::Property(ID(std::move($1)), std::move($2), false, __loc__); };
+              | PROPERTY '=' expr opt_attributes';'
+                                                 { $$ = type::unit::item::Property(ID(std::move($1)), std::move($3), std::move($4), false, __loc__); };
 
 unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  {   if ( $3.isA<type::Vector>() )

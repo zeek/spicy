@@ -115,7 +115,7 @@ TEST_CASE("life-time") {
     p = type_info::value::Parent();
 
     // Now invalid.
-    CHECK_THROWS_WITH_AS(v.pointer(), "type info value expired", const type_info::InvalidValue&);
+    CHECK_THROWS_WITH_AS(v.pointer(), "type info value expired", const InvalidValue&);
 }
 
 TEST_SUITE_END();

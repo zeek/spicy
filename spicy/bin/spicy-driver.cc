@@ -21,6 +21,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"debug-addl", required_argument, nullptr, 'X'},
                                               {"disable-jit", no_argument, nullptr, 'J'},
                                               {"file", required_argument, nullptr, 'f'},
+                                              {"batch-file", required_argument, nullptr, 'F'},
                                               {"help", no_argument, nullptr, 'h'},
                                               {"increment", required_argument, nullptr, 'i'},
                                               {"library-path", required_argument, nullptr, 'L'},
@@ -49,6 +50,7 @@ public:
 
     bool opt_list_parsers = false;
     int opt_increment = 0;
+    bool opt_input_is_batch = false;
     std::string opt_file = "/dev/stdin";
     std::string opt_parser;
 
@@ -77,6 +79,8 @@ void SpicyDriver::usage() {
            "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
            "  -D | --compiler-debug <streams> Activate compile-time debugging output for given debug streams "
            "(comma-separated; 'help' for list).\n"
+           "  -F | ---batch-file <path>              Read Spicy batch input from <path>; see docs for description of "
+           "format.\n"
            "  -L | --library-path <path>      Add path to list of directories to search when importing modules.\n"
            "  -O | --optimize                 Build optimized release version of generated code.\n"
            "  -R | --report-times             Report a break-down of compiler's execution time.\n"
@@ -106,7 +110,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABD:f:hdJX:OVlp:i:SRL:", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABD:f:F:hdJX:OVlp:i:SRL:", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -123,6 +127,12 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
 
             case 'f': {
                 opt_file = optarg;
+                break;
+            }
+
+            case 'F': {
+                opt_file = optarg;
+                opt_input_is_batch = true;
                 break;
             }
 
@@ -227,24 +237,29 @@ int main(int argc, char** argv) {
             driver.listParsers(std::cout);
 
         else {
-            auto parser = driver.lookupParser(driver.opt_parser);
-            if ( ! parser )
-                fatalError(parser.error());
-
             std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
 
             if ( ! in.is_open() )
-                fatalError("cannot open stdin for reading");
+                fatalError("cannot open input for reading");
 
-            driver.processInput(**parser, in, driver.opt_increment);
-            driver.finishRuntime();
+            if ( driver.opt_input_is_batch ) {
+                if ( auto x = driver.processPreBatchedInput(in); ! x )
+                    fatalError(x.error());
+            }
+            else {
+                auto parser = driver.lookupParser(driver.opt_parser);
+                if ( ! parser )
+                    fatalError(parser.error());
+
+                driver.processInput(**parser, in, driver.opt_increment);
+            }
         }
 
+        driver.finishRuntime();
+
     } catch ( const std::exception& e ) {
-        std::cerr << hilti::util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
-                                      hilti::util::demangle(typeid(e).name()), e.what())
-                  << std::endl;
-        exit(1);
+        fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
+                                    hilti::util::demangle(typeid(e).name()), e.what()));
     }
 
     if ( driver.driverOptions().report_times )

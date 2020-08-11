@@ -22,6 +22,8 @@ function reply_code_needs_body(status: uint64) : bool {
 }
 
 public type Requests = unit {
+    %port = 80/tcp &originator;
+
     :  Request[];
 };
 
@@ -31,6 +33,8 @@ public type Request = unit {
 };
 
 public type Replies = unit {
+    %port = 80/tcp &responder;
+
     :  Reply[];
 };
 

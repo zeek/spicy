@@ -7,17 +7,6 @@
 #include <hilti/3rdparty/SafeInt/SafeInt.hpp>
 
 namespace hilti::rt {
-
-/**
- * Exception triggered when a numerical operation causes an overflow.
- */
-HILTI_EXCEPTION(Overflow, RuntimeError)
-
-/**
- * Exception triggered when a division by zero is attempted.
- */
-HILTI_EXCEPTION(DivisionByZero, RuntimeError)
-
 namespace integer {
 
 namespace detail {

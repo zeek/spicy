@@ -21,8 +21,43 @@ void spicy::rt::init() {
 
     HILTI_RT_DEBUG("libspicy", "initializing runtime");
 
-    for ( const auto& p : globalState()->parsers )
-        HILTI_RT_DEBUG("libspicy", fmt("registered parser %s", p->name));
+    auto& parsers = globalState()->parsers;
+
+    if ( parsers.size() == 1 )
+        globalState()->default_parser = parsers.front();
+
+    for ( const auto& p : parsers ) {
+        globalState()->parsers_by_name[p->name].emplace_back(p);
+
+        for ( const auto& x : p->ports ) {
+            auto idx = std::string(x.port);
+
+            switch ( x.direction ) {
+                case Direction::Originator: globalState()->parsers_by_name[idx + "%orig"].emplace_back(p); break;
+
+                case Direction::Responder: globalState()->parsers_by_name[idx + "%resp"].emplace_back(p); break;
+
+                case Direction::Both:
+                    globalState()->parsers_by_name[idx].emplace_back(p);
+                    globalState()->parsers_by_name[idx + "%orig"].emplace_back(p);
+                    globalState()->parsers_by_name[idx + "%resp"].emplace_back(p);
+                    break;
+
+                case Direction::Undef: break;
+            }
+        }
+
+        for ( const auto& x : p->mime_types ) {
+            if ( ! x.isWildcard() )
+                globalState()->parsers_by_name[x].emplace_back(p);
+        }
+    }
+
+    HILTI_RT_DEBUG("libspicy", "registered parsers (w/ aliases):");
+    for ( const auto& i : globalState()->parsers_by_name ) {
+        auto names = hilti::rt::transform(i.second, [](const auto& p) { return p->name; });
+        HILTI_RT_DEBUG("libspicy", hilti::rt::fmt("  %s -> %s", i.first, hilti::rt::join(names, ", ")));
+    }
 
     globalState()->runtime_is_initialized = true;
 }

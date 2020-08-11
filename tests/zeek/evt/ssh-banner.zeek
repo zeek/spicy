@@ -6,6 +6,7 @@
 # @TEST-EXEC: echo === violation >>output
 # @TEST-EXEC: ${ZEEK} -b -r ${TRACES}/http-post.trace -s ./ssh.sig Zeek::Spicy ssh.hlto %INPUT >>output
 # @TEST-EXEC: btest-diff output
+# @TEST-EXEC: test '!' -s .stderr
 #
 ## @TEST-GROUP: spicy-core
 

@@ -15,11 +15,6 @@ namespace trait {
 struct isUnion {};
 } // namespace trait
 
-/**
- * Exception triggered by member access to fields that don't hold the value.
- */
-HILTI_EXCEPTION(UnsetUnionMember, RuntimeError)
-
 namespace union_ {
 namespace detail {
 

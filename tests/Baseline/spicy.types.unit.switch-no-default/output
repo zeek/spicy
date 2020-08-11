@@ -2,4 +2,4 @@ b1, 2345
 b2, <not set>
 b1, <not set>
 b2, 2345
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: no matching case in switch statement (/Users/bbannier/src/spicy/tests/.tmp/spicy.types.unit.switch-no-default/switch-no-default.spicy:13:8-16:14)
+[error] spicy-driver: terminating with uncaught exception of type spicy::rt::ParseError: parse error: no matching case in switch statement (/Users/robin/work/spicy/topic/tests/.tmp/spicy.types.unit.switch-no-default/switch-no-default.spicy:13:8-16:14)

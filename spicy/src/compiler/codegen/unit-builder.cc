@@ -219,7 +219,22 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         auto mime_types = hilti::util::transform(unit.propertyItems("%mime-type"), [](auto p) {
             return builder::library_type_value(*p.expression(), "spicy_rt::MIMEType");
         });
-        auto ports = hilti::util::transform(unit.propertyItems("%port"), [](auto p) { return *p.expression(); });
+        auto ports = hilti::util::transform(unit.propertyItems("%port"), [](auto p) {
+            auto dir = builder::id("spicy_rt::Direction::Both");
+
+            if ( const auto& attrs = p.attributes() ) {
+                auto orig = attrs->find("&originator");
+                auto resp = attrs->find("&responder");
+
+                if ( orig && ! resp )
+                    dir = builder::id("spicy_rt::Direction::Originator");
+
+                else if ( resp && ! orig )
+                    dir = builder::id("spicy_rt::Direction::Responder");
+            }
+
+            return builder::library_type_value(builder::tuple({*p.expression(), dir}), "spicy_rt::ParserPort");
+        });
 
         Expression parse1 = builder::null();
         Expression parse3 = builder::null();
@@ -238,7 +253,8 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                               {ID("description"), (description ? *description->expression() : builder::string(""))},
                               {ID("mime_types"),
                                builder::vector(builder::typeByID("spicy_rt::MIMEType"), std::move(mime_types))},
-                              {ID("ports"), builder::vector(ports)}},
+                              {ID("ports"),
+                               builder::vector(builder::typeByID("spicy_rt::ParserPort"), std::move(ports))}},
                              unit.meta());
 
         builder.addAssign(builder::id(ID(*unit.typeID(), "__parser")), parser);

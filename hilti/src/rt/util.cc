@@ -179,7 +179,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
         ++c;
 
         if ( c == s.end() )
-            throw Exception("broken escape sequence");
+            throw RuntimeError("broken escape sequence");
 
         switch ( *c++ ) {
             case '\\': *d++ = '\\'; break;
@@ -207,18 +207,18 @@ std::string hilti::rt::expandEscapes(std::string s) {
             case 'u': {
                 auto end = c + 4;
                 if ( end > s.end() )
-                    throw Exception("incomplete unicode \\u");
+                    throw UnicodeError("incomplete unicode \\u");
                 utf8proc_int32_t val = 0;
                 c = atoi_n(c, end, 16, &val);
 
                 if ( c != end )
-                    throw Exception("cannot decode character");
+                    throw UnicodeError("cannot decode character");
 
                 uint8_t tmp[4];
                 int len = utf8proc_encode_char(val, tmp);
 
                 if ( ! len )
-                    throw Exception("cannot encode unicode code point");
+                    throw UnicodeError("cannot encode unicode code point");
 
                 d = std::copy(tmp, tmp + len, d);
                 break;
@@ -227,18 +227,18 @@ std::string hilti::rt::expandEscapes(std::string s) {
             case 'U': {
                 auto end = c + 8;
                 if ( end > s.end() )
-                    throw Exception("incomplete unicode \\U");
+                    throw UnicodeError("incomplete unicode \\U");
                 utf8proc_int32_t val = 0;
                 c = atoi_n(c, end, 16, &val);
 
                 if ( c != end )
-                    throw Exception("cannot decode character");
+                    throw UnicodeError("cannot decode character");
 
                 uint8_t tmp[4];
                 int len = utf8proc_encode_char(val, tmp);
 
                 if ( ! len )
-                    throw Exception("cannot encode unicode code point");
+                    throw UnicodeError("cannot encode unicode code point");
 
                 d = std::copy(tmp, tmp + len, d);
                 break;
@@ -247,18 +247,18 @@ std::string hilti::rt::expandEscapes(std::string s) {
             case 'x': {
                 auto end = std::min(c + 2, s.end());
                 if ( c == s.end() )
-                    throw Exception("\\x used with no following hex digits");
+                    throw FormattingError("\\x used with no following hex digits");
                 char val = 0;
                 c = atoi_n(c, end, 16, &val);
 
                 if ( c != end )
-                    throw Exception("cannot decode character");
+                    throw FormattingError("cannot decode character");
 
                 *d++ = val;
                 break;
             }
 
-            default: throw Exception("unknown escape sequence");
+            default: throw FormattingError("unknown escape sequence");
         }
     }
 

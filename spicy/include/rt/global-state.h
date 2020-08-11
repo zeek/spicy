@@ -38,6 +38,15 @@ struct GlobalState {
      */
     std::vector<const Parser*> parsers;
 
+    /** Default parser to use, if it can be determined. */
+    std::optional<const Parser*> default_parser;
+
+    /**
+     * Map of parsers by all their possible names. This includes port and
+     * MIME type specifications as supported by `spicy-driver -p <name>``.
+     */
+    std::map<std::string, std::vector<const Parser*>> parsers_by_name;
+
     /** Map of parsers by the MIME types they handle. */
     std::map<std::string, std::vector<const Parser*>> parsers_by_mime_type;
 };

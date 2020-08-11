@@ -11,6 +11,8 @@
 using namespace spicy::rt;
 using namespace spicy::rt::detail;
 
+HILTI_EXCEPTION_IMPL(ParseError)
+
 void detail::printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                               const hilti::rt::stream::View& cur, int64_t lahead,
                               const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,

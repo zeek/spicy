@@ -109,7 +109,6 @@ public:
 
     ~ResumableSetter() { get()->resumable = old; }
 
-    ResumableSetter() = delete;
     ResumableSetter(const ResumableSetter&) = delete;
     ResumableSetter(ResumableSetter&&) = delete;
     ResumableSetter& operator=(const ResumableSetter&) = delete;
@@ -126,8 +125,30 @@ inline void saveCookie(void* cookie) { detail::get()->cookie = cookie; }
 /** Returns the user-defined cookie currently set in the current context.  */
 inline void* cookie() { return detail::get()->cookie; }
 
-/** Cleares the user-defined cookie in the current context. */
+/** Clears the user-defined cookie in the current context. */
 inline void clearCookie() { detail::get()->cookie = nullptr; }
+
+/**
+ * Utility class that sets the current context's `cookie` field during its life-time.
+ */
+class CookieSetter {
+public:
+    explicit CookieSetter(void* cookie) {
+        _old = detail::get()->cookie;
+        detail::get()->cookie = cookie;
+    }
+
+    ~CookieSetter() { detail::get()->cookie = _old; }
+
+    CookieSetter() = delete;
+    CookieSetter(const CookieSetter&) = delete;
+    CookieSetter(CookieSetter&&) = delete;
+    CookieSetter& operator=(const CookieSetter&) = delete;
+    CookieSetter& operator=(CookieSetter&&) = delete;
+
+private:
+    void* _old;
+};
 
 /**
  * Executes a function inside the current context's fiber.

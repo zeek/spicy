@@ -3,23 +3,25 @@ Usage: cat <data> | spicy-driver [options] <inputs> ...
 
 Options:
 
+  -d | --debug                    Include debug instrumentation into generated code.
+  -i | --increment <i>            Feed data incrementenally in chunks of size n.
+  -f | --file <path>              Read input from <path> instead of stdin.
+  -l | --list-parsers             List available parsers and exit.
+  -p | --parser <name>            Use parser <name> to process input. Only neeeded if more than one parser is available.
+  -v | --version                  Print version information.
   -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI exceptions.
   -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.
   -D | --compiler-debug <streams> Activate compile-time debugging output for given debug streams (comma-separated; 'help' for list).
+  -F | ---batch-file <path>              Read Spicy batch input from <path>; see docs for description of format.
   -L | --library-path <path>      Add path to list of directories to search when importing modules.
   -O | --optimize                 Build optimized release version of generated code.
-  -d | --debug                    Include debug instrumentation into generated code.
-  -i | --increment <i>            Feed data incrementenally in chunks of size n.
-  -l | --list-parsers             List available parsers and exit.
-  -p | --parser <name>            Use parser <name> to process input. Only neeeded if more than one parser is available.
   -R | --report-times             Report a break-down of compiler's execution time.
   -S | --skip-dependencies        Do not automatically compile dependencies during JIT.
-  -v | --version                  Print version information.
   -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation (comma-separated; see 'help' for list).
 
 Environment variables:
 
-  SPICY_PATH                      Colon-separated list of directories to search for modules. In contrast to --library-paths this flag overwrites builtin paths.
+  SPICY_PATH                      Colon-separated list of directories to search for modules. In contrast to --library-paths using this flag overwrites builtin paths.
 
-Inputs can be .hlt, .spicy, .cc/.cxx, *.o.
+Inputs can be .hlt, .spicy, .cc/.cxx, *.o, *.hlto.
 

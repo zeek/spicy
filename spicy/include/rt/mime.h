@@ -5,23 +5,22 @@
 #include <string>
 #include <string_view>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/result.h>
 #include <hilti/rt/util.h>
 
 namespace spicy::rt {
 
+/**
+ * Exception thrown by MIMEType if it cannot parse a type specification.
+ */
+HILTI_EXCEPTION(InvalidMIMEType, UserException)
+
 namespace mime {
 
 constexpr char INVALID_NAME[] = "";
 
-/**
- * Exception thrown by MIMEType if it cannot parse a type specification.
- */
-class InvalidType : public hilti::rt::UserException {
-public:
-    using hilti::rt::UserException::UserException;
-};
 } // namespace mime
 
 /**
@@ -43,7 +42,7 @@ public:
      *
      * @param mt string `main/sub`
      *
-     * @throws `mime::InvalidType` if it cannot parse the type
+     * @throws `InvalidMIMEType` if it cannot parse the type
      */
     MIMEType(const std::string& type) {
         if ( type == "*" ) {
@@ -56,7 +55,7 @@ public:
         _sub = hilti::rt::trim(x.second);
 
         if ( _main.empty() || _sub.empty() )
-            throw mime::InvalidType(hilti::rt::fmt("cannot parse MIME type %s", type));
+            throw InvalidMIMEType(hilti::rt::fmt("cannot parse MIME type %s", type));
     }
 
     MIMEType() = default;
@@ -72,6 +71,9 @@ public:
         ensureValid();
         return _sub;
     };
+
+    /** Returns true if either type or subtype is a wildcard. */
+    bool isWildcard() const { return _main == "*" || _sub == "*"; }
 
     ~MIMEType() = default;
     MIMEType(const MIMEType&) = default;
@@ -109,7 +111,7 @@ public:
     static hilti::rt::Result<MIMEType> parse(const std::string& s) {
         try {
             return MIMEType(s);
-        } catch ( const mime::InvalidType& e ) {
+        } catch ( const InvalidMIMEType& e ) {
             return hilti::rt::result::Error(e.description());
         }
     }
@@ -126,7 +128,7 @@ private:
      */
     void ensureValid() const {
         if ( _main == mime::INVALID_NAME || _sub == mime::INVALID_NAME )
-            throw mime::InvalidType("MIME type is uninitialized");
+            throw InvalidMIMEType("MIME type is uninitialized");
     }
 
     std::string _main = mime::INVALID_NAME; /**< Main type. */

@@ -120,7 +120,7 @@ TEST_CASE("Error") {
     CHECK_EQ(fmt("%s", result::Error("could not foo the bar")), "could not foo the bar");
 }
 
-TEST_CASE("Exception") { CHECK_EQ(to_string(Exception("my error")), "<exception: my error>"); }
+TEST_CASE("Exception") { CHECK_EQ(to_string(UserException("my error")), "<exception: my error>"); }
 
 TEST_CASE("Vector") {
     CHECK_EQ(to_string(vector::Empty()), "[]");

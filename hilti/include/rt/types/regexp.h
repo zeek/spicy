@@ -25,15 +25,6 @@ class RegExp;
 
 namespace regexp {
 
-/** Exception indicating trouble when compiling a regular expression. */
-HILTI_EXCEPTION(PatternError, RuntimeError)
-
-/** Exception indicating use of unsupport matching capabilities. */
-HILTI_EXCEPTION(NotSupported, RuntimeError)
-
-/** Exception indicating illegal reuse of MatchState. **/
-HILTI_EXCEPTION(MatchStateReuse, RuntimeError)
-
 struct Flags {
     bool no_sub : 1; /**< Compile without support for capturing sub-expressions. */
 

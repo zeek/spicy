@@ -103,6 +103,7 @@ set(SOURCES_RUNTIME
     src/rt/driver.cc
     src/rt/global-state.cc
     src/rt/init.cc
+    src/rt/mime.cc
     src/rt/parser.cc
     src/rt/sink.cc
     src/rt/util.cc

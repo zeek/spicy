@@ -1,4 +1,34 @@
 
+0.4.0-737 | 2020-08-11 07:39:31 +0000
+
+  * Fix exception handling across library boundaries. (Robin Sommer,
+    Corelight)
+
+  * Allow limiting the "%port" of a unit to a specific direction.
+    (Robin Sommer, Corelight)
+
+    We now allow to add attributes `&originator`/`&responder` to a `%port`
+    unit property to limit it to the corresponding direction of a session.
+    When selecting a parser through `--parser <port>` in spicy-driver, one
+    can now add `%orig` or `%resp` to the port to indicate the desired
+    directionality. If one leaves that off, only parsers are selected that
+    have no directionlity defined (i.e., just like it used to be).
+
+  * Add batch input mode to spicy-dump. spicy-dump gains an option -F
+    to process multiple interleaved input streams pre-recorded in a
+    batch input file. The format of that file is described in the
+    manual, and there's a Zeek script generating batch files from PCAP
+    input traces.  (Robin Sommer, Corelight)
+
+  * When naming a parser to use through "spicy-driver -p XXX", one can
+    now also specifiy a port ("80/tcp") or a MIME type
+    ("application/text") if the desired Spicy unit defines a
+    corresponding property. See the documentation of spicy-driver for
+    more. (Robin Sommer, Corelight)
+
+  * Port Zeek plugin to new driver stateful matching API. (Robin
+    Sommer, Corelight)
+
 0.4.0-730 | 2020-08-11 07:38:44 +0000
 
   * Switch to Zeek 3.2.0 release packages for CI. (Robin Sommer,
