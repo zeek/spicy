@@ -1,0 +1,18 @@
+# @TEST-REQUIRES: test "$BUILD" = "debug"
+# @TEST-EXEC: hiltic -O -j -o a.hlto a.hlt
+# @TEST-EXEC: hiltic -O -j -o b.hlto b.hlt
+# @TEST-EXEC: hiltic -j -o c.hlto c.hlt
+# @TEST-EXEC: hiltic -j a.hlto b.hlto c.hlto 2>output
+# @TEST-EXEC: btest-diff output
+
+@TEST-START-FILE a.hlt
+module A {}
+@TEST-END-FILE
+
+@TEST-START-FILE b.hlt
+module B {}
+@TEST-END-FILE
+
+@TEST-START-FILE c.hlt
+module C {}
+@TEST-END-FILE

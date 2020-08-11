@@ -359,7 +359,7 @@ std::pair<std::unique_ptr<llvm::Module>, std::string> ClangJIT::Implementation::
     // unique because (1) they must remain externally visible, and (2) we
     // may see them in more than one object file.
     std::set<std::string> symbols_to_uniquify = {"__linker__"};
-    std::set<std::string> symbols_to_expose = {"hilti_main"};
+    std::set<std::string> symbols_to_expose = {"hilti_main", "__hlto_library_version"};
 
     std::string one_ctor; // remembers one arbitrarty ctor for below
 

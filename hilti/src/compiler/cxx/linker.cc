@@ -1,5 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/json.h>
+#include <hilti/rt/library.h>
+
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/cxx/linker.h>
@@ -36,18 +39,23 @@ void cxx::Linker::add(const linker::MetaData& md) {
 }
 
 void cxx::Linker::finalize() {
-    if ( _modules.empty() ) {
-        _linker_unit = cxx::Unit(_codegen->context(), "__linker__", "");
-        return;
-    }
-
     cxx::Unit unit(_codegen->context(), "__linker__");
     unit.addComment("Linker code generated for modules:");
 
     for ( const auto& m : _modules )
         unit.addComment(fmt("  - %s (%s)", m.first, m.second));
 
-    unit.add(cxx::declaration::IncludeFile{"hilti/rt/libhilti.h"});
+    // Create the HLTO version information.
+    auto version = rt::library::Version{.magic = "v1",
+                                        .hilti_version = configuration().version_number,
+                                        .created = rt::time::current_time().seconds(),
+                                        .debug = _codegen->context()->options().debug,
+                                        .optimize = _codegen->context()->options().optimize};
+
+    unit.add(fmt("const char* __hlto_library_version __attribute__((weak)) = R\"(%s)\";", version.toJSON()));
+
+    if ( ! _modules.empty() )
+        unit.add(cxx::declaration::IncludeFile{"hilti/rt/libhilti.h"});
 
     std::string init_modules = "nullptr";
     std::string init_globals = "nullptr";

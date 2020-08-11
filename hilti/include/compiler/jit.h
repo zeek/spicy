@@ -149,8 +149,9 @@ public:
      * `jit()`.
      *
      * @param library precompiled shared library
+     * @return version information extracted from loaded library
      */
-    Result<Nothing> add(Library library) { return library.open(); }
+    Result<hilti::rt::library::Version> add(Library library) { return library.open(); }
 
     /**
      * Activates saving any emitted code to disk for debugging purposes.
