@@ -1,6 +1,6 @@
 environment:
     CCACHE_BASEDIR: $CIRRUS_WORKING_DIR
-    ZEEK_PACKAGES_CURRENT: zeek-rc=3.2.0-* zeek-rc-core-dev=3.2.0-*
+    ZEEK_PACKAGES_CURRENT: zeek=3.2.0-* zeek-core-dev=3.2.0-*
     ZEEK_PACKAGES_LTS:     zeek-lts=3.0.8-* zeek-lts-core-dev=3.0.8-*
 
 clang9_zeek_ubuntu_debug_task:
