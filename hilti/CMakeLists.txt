@@ -275,11 +275,13 @@ target_link_hilti(jit-test PRIVATE)
 add_executable(hilti-rt-tests
                src/rt/tests/main.cc
                src/rt/tests/address.cc
+               src/rt/tests/backtrace.cc
                src/rt/tests/bytes.cc
+               src/rt/tests/debug-logger.cc
                src/rt/tests/fiber.cc
                src/rt/tests/integer.cc
                src/rt/tests/interval.cc
-               src/rt/tests/type-info.cc
+               src/rt/tests/iterator.cc
                src/rt/tests/map.cc
                src/rt/tests/network.cc
                src/rt/tests/optional.cc
@@ -288,19 +290,26 @@ add_executable(hilti-rt-tests
                src/rt/tests/reference.cc
                src/rt/tests/regexp.cc
                src/rt/tests/result.cc
+               src/rt/tests/safe-int.cc
                src/rt/tests/set.cc
                src/rt/tests/stream.cc
                src/rt/tests/string.cc
                src/rt/tests/struct.cc
+               src/rt/tests/time.cc
                src/rt/tests/to_string.cc
                src/rt/tests/tuple.cc
-               src/rt/tests/time.cc
+               src/rt/tests/type-info.cc
                src/rt/tests/union.cc
                src/rt/tests/util.cc
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_link_libraries(hilti-rt-tests PRIVATE hilti-rt-objects doctest)
 add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)
+
+add_executable(hilti-rt-configuration-tests src/rt/tests/configuration.cc)
+target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")
+target_link_libraries(hilti-rt-configuration-tests PRIVATE hilti-rt-objects doctest)
+add_test(NAME hilti-rt-configuration-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-configuration-tests)
 
 add_executable(hilti-tests
                tests/main.cc

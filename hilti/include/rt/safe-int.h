@@ -14,7 +14,7 @@ class SafeIntException {
 public:
     static void SafeIntOnOverflow() __attribute__((noreturn)) { throw Overflow("integer overflow"); }
 
-    static void SafeIntOnDivZero() __attribute__((noreturn)) { throw DivisionByZero("integer devision by zero"); }
+    static void SafeIntOnDivZero() __attribute__((noreturn)) { throw DivisionByZero("integer division by zero"); }
 };
 } // namespace detail
 

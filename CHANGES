@@ -1,4 +1,10 @@
 
+0.4.0-789 | 2020-08-11 07:47:30 +0000
+
+  * Lots of new test coverage for HILTI runtime library: references,
+    debug logger, configuration, safe-int, iterator, backtrace; along
+    with releated fixed and cleanup. (Benjamin Bannier, Corelight)
+
 0.4.0-737 | 2020-08-11 07:39:31 +0000
 
   * Fix exception handling across library boundaries. (Robin Sommer,

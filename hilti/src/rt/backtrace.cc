@@ -1,9 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "rt/backtrace.h"
+
 #include <cstring>
 
 #include <hilti/rt/autogen/config.h>
-#include <hilti/rt/backtrace.h>
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt;
