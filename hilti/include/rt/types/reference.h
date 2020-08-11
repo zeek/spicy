@@ -14,10 +14,6 @@
 
 namespace hilti::rt {
 
-namespace trait {
-struct isStruct;
-} // namespace trait
-
 /** Base for classes that `ValueReference::self` can receive.  */
 template<typename T>
 using Controllable = std::enable_shared_from_this<T>;
@@ -43,7 +39,7 @@ using Controllable = std::enable_shared_from_this<T>;
  * into a shared_ptr right there. On the downside, that would mean a
  * `shared_from_this()` call even if the resulting instance is never used --
  * which with the current code generator could happen frequently (at least
- * once we optimizde to use `this` instead of the `self` wrapper when
+ * once we optimized to use `this` instead of the `self` wrapper when
  * possible). So leaving it alone for now.
  */
 template<typename T>
@@ -69,7 +65,7 @@ public:
      * the new reference will keep a pointer to the same value.
      *
      * This constructor is mostly for internal purposes to create a new value
-     * reference that's associatged with an existing `StrongReference`.
+     * reference that's associated with an existing `StrongReference`.
      *
      * @param t shared pointer to link to
      */
@@ -208,7 +204,7 @@ public:
     bool operator!=(const T& other) const { return *_safeGet() != other; }
 
     /**
-     * Assigns to the contained value. Assgining does not invalidate other
+     * Assigns to the contained value. Assigning does not invalidate other
      * references associated with the same value; they'll see the change.
      *
      * @throws NullReference if the instance does not currently refer to a valid value
@@ -219,7 +215,7 @@ public:
     }
 
     /**
-     * Assigns to the contained value. Assgining does not invalidate other
+     * Assigns to the contained value. Assigning does not invalidate other
      * references associated with the same value; they'll see the change.
      *
      * @throws NullReference if the instance does not currently refer to a valid value
@@ -232,15 +228,15 @@ public:
     }
 
     /**
-     * Assigns to the contained value. Assgining does not invalidate other
+     * Assigns to the contained value. Assigning does not invalidate other
      * references associated with the same value; they'll see the change.
      *
      * @throws NullReference if the instance does not currently refer to a valid value
      */
     ValueReference& operator=(ValueReference&& other) noexcept {
         if ( &other != this ) {
-            // We can't move the actual value as other referencez may be
-            // refering to it.
+            // We can't move the actual value as other references may be
+            // referring to it.
             *_safeGet() = *other._safeGet();
             other._ptr = nullptr;
         }
@@ -249,7 +245,7 @@ public:
     }
 
     /**
-     * Shortcut to create a new instance refering to an existing value of
+     * Shortcut to create a new instance referring to an existing value of
      * type `T`. `T` must be derived from `Controllable<T>`.
      *
      * This is for internal use by the code generator to wrap `this` inside
@@ -279,7 +275,7 @@ private:
         if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr) )
             return (*ptr).get();
 
-        throw IllegalReference("unexpted variant type in val_ref");
+        cannot_be_reached();
     }
 
     T* _get() {
@@ -289,28 +285,20 @@ private:
         if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr) )
             return (*ptr).get();
 
-        throw IllegalReference("unexpted variant type in val_ref");
+        cannot_be_reached();
     }
 
     const T* _safeGet() const {
-        if ( _ptr.valueless_by_exception() )
-            throw NullReference("no valid value");
-
-        if ( _ptr.index() == std::variant_npos )
-            throw NullReference("no valid value");
+        assert(_ptr.index() != std::variant_npos);
 
         if ( auto ptr = _get() )
             return ptr;
 
-        throw NullReference("attempt to access null value reference");
+        throw NullReference("attempt to access null reference");
     }
 
     T* _safeGet() {
-        if ( _ptr.valueless_by_exception() )
-            throw NullReference("no valid value");
-
-        if ( _ptr.index() == std::variant_npos )
-            throw NullReference("no valid value");
+        assert(_ptr.index() != std::variant_npos);
 
         if ( auto ptr = _get() )
             return ptr;
@@ -323,7 +311,7 @@ private:
 
 /**
  * A strong reference to a shared value. This is essentially a `shared_ptr`
- * that can bind to the values of `ValueReference` or `WeakReferecne.`
+ * that can bind to the values of `ValueReference` or `WeakReference.`
  *
  * Note that different from `ValueReference`, a strong reference can
  * explicitly be null.
@@ -344,7 +332,7 @@ public:
     explicit StrongReference(T t) : Base(std::make_shared<T>(std::move(t))) {}
 
     /**
-     * Instantiates a reference pointing to the value refered to be an
+     * Instantiates a reference pointing to the value referred to be an
      * existing `ValueReference`. This does not copy the value, it will be
      * shared (and managed jointly) afterwards.
      */
@@ -359,17 +347,14 @@ public:
     /** Move constructor. */
     StrongReference(StrongReference&& other) noexcept : Base(std::move(other)) {}
 
-    /** Destructor. */
-    ~StrongReference() {}
-
     /**
      * Returns true if the reference does not refer any value.
      */
     bool isNull() const { return this->get() == nullptr; }
 
     /**
-     * Returns a value reference that is linked to the refered value. If the
-     * strong reference is null, the returns referecne will be so, too.
+     * Returns a value reference that is linked to the referred value. If the
+     * strong reference is null, the returned reference will be so, too.
      */
     ValueReference<T> derefAsValue() const { return ValueReference<T>(*this); }
 
@@ -420,7 +405,7 @@ public:
     }
 
     /** Returns true if the reference is not null. */
-    operator bool() const { return ! isNull(); }
+    explicit operator bool() const { return ! isNull(); }
 
     /**
      * Reinitializes the reference with a newly allocated value, releasing
@@ -434,7 +419,7 @@ public:
     }
 
     /**
-     * Reinitiqalized the reference to now point to to the value refered to
+     * Reinitialized the reference to now point to to the value referred to
      * be an existing `ValueReference`. This does not copy that value, it
      * will be shared (and managed jointly) afterwards.
      */
@@ -477,17 +462,17 @@ public:
     using Base = std::weak_ptr<T>;
 
     /** Default constructor creating a null reference. */
-    WeakReference() : Base() {}
+    WeakReference() = default;
 
     /**
-     * Instantiates a reference pointing to the value refered to be an
+     * Instantiates a reference pointing to the value referred to be an
      * existing `ValueReference`. This does not copy the value, it will be
      * shared afterwards.
      */
     explicit WeakReference(const ValueReference<T>& t) : Base(t.asSharedPtr()) {}
 
     /**
-     * Instantiates a reference pointing to the value refered to be an
+     * Instantiates a reference pointing to the value referred to be an
      * existing `StrongReference`. This does not copy the value, it will be
      * shared afterwards.
      */
@@ -497,13 +482,13 @@ public:
      * Copy constructor. This copies the reference, not the value, which will
      * be shared afterwards.
      */
-    WeakReference(const WeakReference& other) : Base(other) {}
+    WeakReference(const WeakReference& other) = default;
 
     /** Move constructor. */
-    WeakReference(WeakReference&& other) noexcept : Base(std::move(other)) {}
+    WeakReference(WeakReference&& other) noexcept = default;
 
     /** Destructor. */
-    ~WeakReference() {}
+    ~WeakReference() = default;
 
     /** Returns true if the reference is either null or expired. */
     bool isNull() const { return this->lock() == nullptr; }
@@ -518,13 +503,13 @@ public:
     }
 
     /**
-     * Returns a pointer to the value being refered to. This will be null if
+     * Returns a pointer to the value being referred to. This will be null if
      * the weak point is null or expired.
      */
     const T* get() const { return this->lock().get(); }
 
     /**
-     * Returns a value reference that is linked to the refered value. If the
+     * Returns a value reference that is linked to the referred value. If the
      * weak reference is null or expired, the returned reference will be null.
      */
     ValueReference<T> derefAsValue() const { return ValueReference<T>(this->lock()); }
@@ -577,10 +562,10 @@ public:
     }
 
     /** Returns true if the reference is not null or expired. */
-    operator bool() const { return ! isNull(); }
+    explicit operator bool() const { return ! isNull(); }
 
     /**
-     * Reinitiqalized the reference to now point to to the value refered to
+     * Reinitialize the reference to now point to to the value referred to
      * be an existing `ValueReference`. This does not copy that value, it
      * will be shared afterwards.
      */
@@ -590,7 +575,7 @@ public:
     }
 
     /**
-     * Reinitiqalized the reference to now point to to the value refered to
+     * Reinitialize the reference to now point to to the value referred to
      * be an existing `StrongReference`. This does not copy that value, it
      * will be shared afterwards.
      */
@@ -629,19 +614,26 @@ private:
 class StrongReferenceGeneric {
 public:
     /** Leaves the reference unbound. */
-    StrongReferenceGeneric() {}
+    StrongReferenceGeneric() = default;
 
     /** Binds to the same instance as an existing strong reference.  */
     template<typename T>
     StrongReferenceGeneric(StrongReference<T> x) : _ptr(std::move(x)) {}
 
-    /** Returns a pointer to the bound instance, or null if unbound. */
+    /** Obtains a pointer to the stored value.
+     * @returns a pointer to the bound instance, or null if unbound.
+     * @throws IllegalReference if the target type does not match the stored reference type.
+     * */
     template<typename T>
     T* as() const {
         if ( ! _ptr.has_value() )
             return nullptr;
 
-        return std::any_cast<StrongReference<T>>(&_ptr)->get();
+        try {
+            return std::any_cast<StrongReference<T>>(_ptr).get();
+        } catch ( const std::bad_any_cast& ) {
+            throw IllegalReference("invalid target type");
+        }
     }
 
     /** Releases the bound reference. */
@@ -706,8 +698,7 @@ inline std::string detail::to_string_for_print<StrongReference<std::string>>(con
 }
 
 template<>
-inline std::string detail::to_string_for_print<WeakReference<std::string_view>>(
-    const WeakReference<std::string_view>& x) {
+inline std::string detail::to_string_for_print<WeakReference<std::string>>(const WeakReference<std::string>& x) {
     if ( x.isExpired() )
         return "<expired ref>";
 
