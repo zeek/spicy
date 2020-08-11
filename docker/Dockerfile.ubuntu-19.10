@@ -1,6 +1,7 @@
 FROM ubuntu:eoan
 
 ARG SKIP_BUILD=
+ARG zeek_packages="zeek-lts=3.0.8-* zeek-lts-core-dev=3.0.8-*"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -16,7 +17,7 @@ RUN apt-get update \
  && echo 'deb http://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/ /' > /etc/apt/sources.list.d/security:zeek.list \
  && curl https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/Release.key | apt-key add - \
  && apt-get update \
- && apt-get install -y --no-install-recommends zeek-lts zeek-lts-core-dev \
+ && apt-get install -y --no-install-recommends $zeek_packages \
  # Spicy build and test dependencies.
  && apt-get install -y --no-install-recommends git ninja-build ccache g++ llvm-9-dev clang-9 libclang-9-dev bison flex libfl-dev python3 python3-pip zlib1g-dev jq locales-all python3-setuptools python3-wheel \
  && pip3 install btest pre-commit \
