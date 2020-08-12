@@ -281,6 +281,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/bytes.cc
                src/rt/tests/debug-logger.cc
                src/rt/tests/deferred-expression.cc
+               src/rt/tests/exception.cc
                src/rt/tests/fiber.cc
                src/rt/tests/integer.cc
                src/rt/tests/interval.cc

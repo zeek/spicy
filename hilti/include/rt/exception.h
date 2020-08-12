@@ -216,6 +216,7 @@ void printUncaught(const Exception& e, std::ostream& out);
 
 namespace detail::adl {
 inline std::string to_string(const Exception& e, adl::tag /*unused*/) { return fmt("<exception: %s>", e.what()); }
+inline std::string to_string(const WouldBlock& e, adl::tag /*unused*/) { return fmt("<exception: %s>", e.what()); }
 } // namespace detail::adl
 
 } // namespace hilti::rt
