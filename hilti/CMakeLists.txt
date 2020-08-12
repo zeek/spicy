@@ -279,6 +279,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/address.cc
                src/rt/tests/backtrace.cc
                src/rt/tests/bytes.cc
+               src/rt/tests/context.cc
                src/rt/tests/debug-logger.cc
                src/rt/tests/deferred-expression.cc
                src/rt/tests/exception.cc
