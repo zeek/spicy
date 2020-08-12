@@ -20,6 +20,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/exception.h>
+
 extern "C" {
 #include <hilti/3rdparty/libtask/taskimpl.h>
 
@@ -192,7 +194,11 @@ public:
         if constexpr ( std::is_same<Result, void>::value )
             return;
 
-        return std::any_cast<Result>(*_result);
+        try {
+            return std::any_cast<Result>(*_result);
+        } catch ( const std::bad_any_cast& ) {
+            throw InvalidArgument("mismatch in result type");
+        }
     }
 
     /**
