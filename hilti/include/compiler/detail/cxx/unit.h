@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/json.h>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/module.h>
@@ -23,7 +25,6 @@
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/cxx/elements.h>
 #include <hilti/compiler/detail/cxx/formatter.h>
-#include <hilti/json.h>
 
 namespace hilti {
 namespace detail {

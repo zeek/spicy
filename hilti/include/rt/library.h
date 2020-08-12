@@ -27,14 +27,14 @@ struct Version {
     std::string toJSON() const;
 
     /**
-     * Parsed a JSON representation of an instance.
+     * Parses a JSON representation of an instance.
      *
      * @return error if parsing of JSON failed
      */
     hilti::rt::Result<Nothing> fromJSON(const std::string& json);
 
     /**
-     * Checks the version for compatiblity with the current runtime system.
+     * Checks the version for compatibility with the current runtime system.
      * Prints out warnings on mismatches, but doesn't abort.
      */
     void checkCompatibility() const;

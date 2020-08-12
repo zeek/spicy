@@ -1,10 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <dlfcn.h>
-#include <nlohmann/json.hpp>
 
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/json.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/logging.h>
 
@@ -90,7 +90,7 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
 
     version.path = _orig_path;
     version.checkCompatibility();
-    return version;
+    return std::move(version);
 }
 
 hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const std::filesystem::path& path) const {

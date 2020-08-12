@@ -9,10 +9,11 @@
 #include <variant>
 #include <vector>
 
+#include <hilti/rt/json.h>
+
 #include <hilti/ast/id.h>
 #include <hilti/base/id-base.h>
 #include <hilti/base/util.h>
-#include <hilti/json.h>
 
 namespace hilti::detail::cxx {
 

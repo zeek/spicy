@@ -17,7 +17,7 @@
 #include <hilti/rt/libhilti.h>
 #include <spicy/rt/libspicy.h>
 
-// Just dummuy data.
+// Just dummy data.
 const char* __hlto_library_version = R"({"created":1597144800.98031,"debug":false,"hilti_version":400,"magic":"v1","optimize":false})";
 
 extern "C" int hilti_main() { // Point of entry for JIT

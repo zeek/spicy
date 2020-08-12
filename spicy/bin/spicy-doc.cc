@@ -1,8 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/json.h>
+
 #include <hilti/ast/detail/operator-registry.h>
 #include <hilti/hilti.h>
-#include <hilti/json.h>
 
 #include <spicy/spicy.h>
 
