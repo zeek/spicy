@@ -68,7 +68,7 @@ hilti::rt::Library::~Library() {
     std::filesystem::remove(_path, ec);
 
     if ( ec )
-        hilti::rt::warning(fmt("could not remove library %s from store: %s", ec.message()));
+        hilti::rt::warning(fmt("could not remove library %s from store: %s", _path, ec.message()));
 }
 
 hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const {

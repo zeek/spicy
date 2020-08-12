@@ -256,8 +256,9 @@ set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE "${EXTRA_LD_FLAGS} ${CMAKE_
 # Generate configurations
 
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
-configure_file(include/rt/config.h.in ${AUTOGEN_RT_H}/config.h)
 configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
+configure_file(include/rt/config.h.in ${AUTOGEN_RT_H}/config.h)
+configure_file(src/rt/tests/config.h.in ${AUTOGEN_RT_H}/tests/config.h)
 
 ##### Binaries
 
@@ -274,6 +275,8 @@ target_compile_options(jit-test PRIVATE "-Wall")
 target_link_hilti(jit-test PRIVATE)
 
 # Tests
+add_library(hilti-rt-tests-library-dummy SHARED src/rt/tests/library-dummy.cc)
+
 add_executable(hilti-rt-tests
                src/rt/tests/main.cc
                src/rt/tests/address.cc
@@ -287,6 +290,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/integer.cc
                src/rt/tests/interval.cc
                src/rt/tests/iterator.cc
+               src/rt/tests/library.cc
                src/rt/tests/map.cc
                src/rt/tests/network.cc
                src/rt/tests/optional.cc
@@ -309,6 +313,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_link_libraries(hilti-rt-tests PRIVATE hilti-rt-objects doctest)
+add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy)
 add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)
 
 add_executable(hilti-rt-configuration-tests src/rt/tests/configuration.cc)

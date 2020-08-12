@@ -51,8 +51,6 @@ namespace hilti::rt {
  * construction and subsequently does not depend on it anymore.
  */
 class Library {
-    using Nothing = hilti::rt::Nothing;
-
 public:
     /**
      * Makes a library available for opening.
