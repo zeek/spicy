@@ -16,6 +16,9 @@ public:
 
     const auto& backtrace() const { return _backtrace; }
 
+    friend bool operator==(const Backtrace& a, const Backtrace& b) { return a._backtrace == b._backtrace; }
+    friend bool operator!=(const Backtrace& a, const Backtrace& b) { return ! (a == b); }
+
 private:
     std::vector<std::string> _backtrace;
 };
