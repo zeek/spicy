@@ -199,7 +199,7 @@ public:
      * Returns true if the function has completed. If so, `get()` can be
      * called to retrieve its result.
      */
-    operator bool() const { return static_cast<bool>(_result); }
+    explicit operator bool() const { return static_cast<bool>(_result); }
 
 private:
     void yielded();
