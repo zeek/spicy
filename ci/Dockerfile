@@ -38,3 +38,6 @@ RUN apt-get update \
 WORKDIR /usr/local/cmake
 RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.15.0-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
 ENV PATH="/usr/local/cmake/bin:${PATH}"
+
+RUN groupadd -r test && useradd --no-log-init -m -g test test
+USER test
