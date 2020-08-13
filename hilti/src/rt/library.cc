@@ -1,11 +1,13 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "hilti/rt/library.h"
+
 #include <dlfcn.h>
 
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/fmt.h>
 #include <hilti/rt/json.h>
-#include <hilti/rt/library.h>
 #include <hilti/rt/logging.h>
 
 using namespace hilti::rt;
@@ -98,7 +100,7 @@ hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const std::filesy
     std::filesystem::copy(_path, path, std::filesystem::copy_options::overwrite_existing, ec);
 
     if ( ec )
-        return result::Error(ec.message());
+        return result::Error(fmt("could not save library to %s: %s", path, ec.message()));
 
     return hilti::rt::Nothing();
 }
