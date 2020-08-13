@@ -85,7 +85,7 @@ hilti::rt::Result<std::filesystem::path> hilti::rt::createTemporaryFile(const st
 
     auto handle = ::mkstemp(template_.data());
     if ( handle == -1 )
-        return hilti::rt::result::Error(fmt("could not create temporary file in '%s': %s", tmp_dir, strerror(errno)));
+        return hilti::rt::result::Error(fmt("could not create temporary file in %s: %s", tmp_dir, strerror(errno)));
 
     ::close(handle);
 
