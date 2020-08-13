@@ -13,11 +13,11 @@ clang9_zeek_ubuntu_debug_task:
 
   always:
     ccache_cache:
-      folder: /var/spool/ccache
+      folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
 
   env:
-    CCACHE_DIR: /var/spool/ccache
+    CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
     LD_LIBRARY_PATH: /usr/lib/llvm-9/lib/clang/9.0.0/lib/linux/
 
@@ -63,11 +63,11 @@ clang10_zeek_lts_ubuntu_release_task:
 
   always:
     ccache_cache:
-      folder: /var/spool/ccache
+      folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
 
   env:
-    CCACHE_DIR: /var/spool/ccache
+    CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
@@ -110,11 +110,11 @@ clang9_zeek_lts_ubuntu_release_static_task:
 
   always:
     ccache_cache:
-      folder: /var/spool/ccache
+      folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
 
   env:
-    CCACHE_DIR: /var/spool/ccache
+    CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
@@ -156,11 +156,11 @@ gcc9_ubuntu_release_no_jit_task:
 
   always:
     ccache_cache:
-      folder: /var/spool/ccache
+      folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
 
   env:
-    CCACHE_DIR: /var/spool/ccache
+    CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
@@ -239,11 +239,11 @@ docker_ubuntu_19_10_task:
 
   always:
     ccache_cache:
-      folder: /var/spool/ccache
+      folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
 
   env:
-    CCACHE_DIR: /var/spool/ccache
+    CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
@@ -278,11 +278,11 @@ docker_alpine_3_11_task:
 
   always:
     ccache_cache:
-      folder: /var/spool/ccache
+      folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
 
   env:
-    CCACHE_DIR: /var/spool/ccache
+    CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
@@ -317,11 +317,11 @@ docker_centos_8_task:
 
   always:
     ccache_cache:
-      folder: /var/spool/ccache
+      folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
 
   env:
-    CCACHE_DIR: /var/spool/ccache
+    CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
