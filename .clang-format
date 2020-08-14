@@ -79,8 +79,10 @@ IncludeCategories:
     Priority:        7
   - Regex:           '^<([[:alnum:]]|_)+>'
     Priority:        2
-  - Regex:           '.*'
+  - Regex:           '^<.*\.h>'
     Priority:        1
+  - Regex:           '.*'
+    Priority:        11
 IncludeIsMainRegex: '$'
 IndentCaseLabels: true
 IndentPPDirectives: None

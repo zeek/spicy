@@ -2,8 +2,6 @@
 
 #include "glue-compiler.h"
 
-#include "debug.h"
-
 #include <algorithm>
 #include <limits>
 #include <stdexcept>
@@ -14,6 +12,8 @@
 #include <hilti/compiler/unit.h>
 
 #include <spicy/global.h>
+
+#include "debug.h"
 
 using namespace spicy::zeek;
 

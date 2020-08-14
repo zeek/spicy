@@ -7,11 +7,12 @@
 
 #pragma once
 
-#include "plugin.h"
 #include <compiler/debug.h>
 #include <stdlib.h>
 
 #include <string>
+
+#include "plugin.h"
 
 class Connection; // From Zeek.
 namespace file_analysis {
