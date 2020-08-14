@@ -8,23 +8,12 @@
 #include <hilti/rt/init.h>
 #include <hilti/rt/threading.h>
 
+#include "test_utils.h"
+
 using namespace hilti::rt;
+using namespace hilti::rt::test;
 
 TEST_SUITE_BEGIN("Context");
-
-// RAII helper to maintain a controlled context in tests.
-class TestContext {
-public:
-    TestContext(Context* current) {
-        _prev = context::detail::current();
-        context::detail::current() = current;
-    }
-
-    ~TestContext() { context::detail::current() = _prev; }
-
-private:
-    Context* _prev = nullptr;
-};
 
 TEST_CASE("cookie") {
     Context context(42);
