@@ -1,4 +1,10 @@
 
+0.4.0-798 | 2020-08-14 07:25:00 +0000
+
+  * CI: Move Zeek package specs back into tasks to work around Cirrus
+    issue, per https://github.com/cirruslabs/cirrus-ci-docs/issues/692.
+    (Robin Sommer, Corelight)
+
 0.4.0-796 | 2020-08-14 07:20:31 +0000
 
   * Embed version information into HLTO files that encodes information
