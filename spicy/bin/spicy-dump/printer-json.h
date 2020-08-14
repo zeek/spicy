@@ -8,9 +8,8 @@
 #include <string>
 #include <utility>
 
+#include <hilti/rt/json.h>
 #include <hilti/rt/type-info.h>
-
-#include <hilti/json.h>
 
 /** Render parsed unit into JSON representation. */
 class JSONPrinter {

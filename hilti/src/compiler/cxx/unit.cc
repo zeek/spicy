@@ -3,12 +3,13 @@
 #include <unordered_set>
 #include <utility>
 
+#include <hilti/rt/json.h>
+
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
 #include <hilti/hilti.h>
-#include <hilti/json.h>
 
 using namespace hilti::detail::cxx;
 using namespace hilti::detail::cxx::formatter;

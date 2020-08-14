@@ -1,4 +1,4 @@
-// Begin of Foo (from "/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.globals/globals.hlt")
+// Begin of Foo (from "/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.globals/globals.hlt")
 // Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
@@ -26,14 +26,14 @@ extern void __hlt::Foo::__init_globals(hilti::rt::Context* ctx) {
 }
 
 extern void __hlt::Foo::__init_module() {
-      __location__("/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.globals/globals.hlt:11:1");
+      __location__("/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.globals/globals.hlt:11:1");
     hilti::rt::print(Foo::__globals()->X, hilti::rt::Bool(true));
 }
 
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, &__init_globals, &__globals_index}); }
 
 /* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.globals/globals.hlt","version":1}
+{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.globals/globals.hlt","version":1}
 */
 
 // Begin of __linker__
@@ -43,7 +43,9 @@ extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule(
 
 // 
 // Linker code generated for modules:
-//   - Foo (/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.globals/globals.hlt)
+//   - Foo (/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.globals/globals.hlt)
 
 #include <hilti/rt/libhilti.h>
+
+const char* __hlto_library_version __attribute__((weak)) = R"({"created":1597153672.4983387,"debug":false,"hilti_version":400,"magic":"v1","optimize":false})";
 

@@ -2,13 +2,18 @@
 
 #pragma once
 
-#ifdef __clang__
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wtautological-overlap-compare"
+#elif defined(__GNUC__)
+// Note that clang #defines __GNUC__ as well.
+#pragma GCC diagnostic push
 #endif
 
-#include <hilti/3rdparty/nlohmann-json/json.hpp>
+#include <nlohmann/json.hpp>
 
-#ifdef __clang__
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
 #endif

@@ -50,7 +50,7 @@ extern void __hlt::Foo::__init_module() {
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, &__init_globals, &__globals_index}); }
 
 /* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.import/foo.hlt","version":1}
+{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.import/foo.hlt","version":1}
 */
 
 // Begin of Bar (from "bar.hlt")
@@ -105,7 +105,7 @@ extern void __hlt::Bar::__init_module() {
 extern void __hlt::Bar::__register_module() { hilti::rt::detail::registerModule({ "Bar", &__init_module, &__init_globals, &__globals_index}); }
 
 /* __HILTI_LINKER_V1__
-{"module":"Bar","namespace":"__hlt::Bar","path":"/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.import/bar.hlt","version":1}
+{"module":"Bar","namespace":"__hlt::Bar","path":"/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.import/bar.hlt","version":1}
 */
 
 // Begin of __linker__
@@ -115,8 +115,10 @@ extern void __hlt::Bar::__register_module() { hilti::rt::detail::registerModule(
 
 // 
 // Linker code generated for modules:
-//   - Bar (/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.import/bar.hlt)
-//   - Foo (/Users/robin/work/spicy/docs/tests/.tmp/hilti.hiltic.print.import/foo.hlt)
+//   - Bar (/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.import/bar.hlt)
+//   - Foo (/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.import/foo.hlt)
 
 #include <hilti/rt/libhilti.h>
+
+const char* __hlto_library_version __attribute__((weak)) = R"({"created":1597153677.673231,"debug":false,"hilti_version":400,"magic":"v1","optimize":false})";
 

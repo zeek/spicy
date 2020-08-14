@@ -701,6 +701,9 @@ Result<Nothing> Driver::linkUnits() {
             _mds.push_back(*md.second);
     }
 
+    if ( _mds.empty() && _external_cxxs.empty() )
+        return Nothing();
+
     HILTI_DEBUG(logging::debug::Driver, "linking modules");
     for ( const auto& md : _mds ) {
         auto id = md.at("module").template get<std::string>();

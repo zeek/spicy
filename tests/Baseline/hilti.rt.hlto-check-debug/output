@@ -1,0 +1,2 @@
+[libhilti] Warning: module "a.hlto" was compiled with optimizations, but running with HILTI debug version; performance will be affected
+[libhilti] Warning: module "b.hlto" was compiled with optimizations, but running with HILTI debug version; performance will be affected
