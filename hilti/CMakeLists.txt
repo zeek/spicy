@@ -291,6 +291,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/deferred-expression.cc
                src/rt/tests/exception.cc
                src/rt/tests/fiber.cc
+               src/rt/tests/global-state.cc
                src/rt/tests/hilti.cc
                src/rt/tests/init.cc
                src/rt/tests/integer.cc
