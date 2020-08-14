@@ -8,15 +8,13 @@ struct Context;
 
 /**
  * Initializes the HILTI run-time library. This must be called once at
- * startup before any other libhilti functionality can be used. The one
- * exception to that rule `hlt_set_config()`, which can (and must) be called
- * before hlt_init().
+ * startup before any other libhilti functionality can be used.
  */
 extern void init();
 
 /**
  * Shuts down the run-time library, freeing all resources. Once executed, no
- * libhilti functioality can be used anymore.
+ * libhilti functionality can be used anymore.
  */
 extern void done();
 
@@ -32,7 +30,7 @@ struct HiltiModule {
     void (*init_module)(); /**< callback for executing any top-level module code when the runtime library is being
                               initialized */
     void (*init_globals)(
-        hilti::rt::Context* ctx); /**< callback to initialize the module's globals in a freshly allocatec context */
+        hilti::rt::Context* ctx); /**< callback to initialize the module's globals in a freshly allocated context */
     unsigned int*
         globals_idx; /**< pointer to an integer storing the modules' index in the context-wide globals array */
 };

@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "hilti/rt/init.h"
+
 #include <sys/resource.h>
 #include <unistd.h>
 
@@ -8,7 +10,6 @@
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
 #include <hilti/rt/global-state.h>
-#include <hilti/rt/init.h>
 #include <hilti/rt/logging.h>
 
 using namespace hilti::rt;
@@ -68,6 +69,7 @@ void hilti::rt::done() {
 
     delete __global_state; // NOLINT (cppcoreguidelines-owning-memory)
     __global_state = nullptr;
+    context::detail::set(nullptr);
 }
 
 bool hilti::rt::isInitialized() { return globalState()->runtime_is_initialized; }
