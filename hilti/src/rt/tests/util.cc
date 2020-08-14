@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <doctest/doctest.h>
+#include <unistd.h>
 
 #include <cstdint>
 #include <cstdlib>
@@ -361,20 +362,22 @@ TEST_CASE("map_tuple") {
     CHECK_EQ(input, std::make_tuple(2u, 2L, std::string("aa")));
 }
 
-TEST_CASE("memory_statistics") {
-    auto ms = memory_statistics();
+TEST_CASE("resource_usage") {
+    auto ru = resource_usage();
 
-    CHECK_GT(ms.memory_heap, 0);
+    usleep(10000);
+    CHECK_GT(ru.system_time + ru.user_time, 0);
+    CHECK_GT(ru.memory_heap, 0);
 
     // Fiber statistics are only available if some fibers were executed.
     // TODO(bbannier): Execute a fiber in this test so below branch is always taken.
-    if ( ms.max_fibers > 0 ) {
-        CHECK_GT(ms.num_fibers, 0);
-        CHECK_LE(ms.num_fibers, ms.max_fibers);
+    if ( ru.max_fibers > 0 ) {
+        CHECK_GT(ru.num_fibers, 0);
+        CHECK_LE(ru.num_fibers, ru.max_fibers);
 
-        CHECK_GT(ms.cached_fibers, 0);
-        CHECK_LE(ms.cached_fibers, ms.max_fibers);
-        CHECK_GE(ms.cached_fibers, ms.num_fibers);
+        CHECK_GT(ru.cached_fibers, 0);
+        CHECK_LE(ru.cached_fibers, ru.max_fibers);
+        CHECK_GE(ru.cached_fibers, ru.num_fibers);
     }
 }
 

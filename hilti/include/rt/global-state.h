@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <sys/resource.h>
+
 #include <memory>
 #include <vector>
 
@@ -43,6 +45,9 @@ struct GlobalState {
 
     /** If not zero, `Configuration::abort_on_exception` is disabled. */
     int disable_abort_on_exceptions = 0;
+
+    /** Resource usage at library initialization time. */
+    ResourceUsage resource_usage_init;
 
     /** The runtime's configuration. */
     std::unique_ptr<hilti::rt::Configuration> configuration;

@@ -1,4 +1,29 @@
 
+0.4.0-796 | 2020-08-14 07:20:31 +0000
+
+  * Embed version information into HLTO files that encodes information
+    about the HILTI version/config they were built with.  (Robin
+    Sommer, Corelight)
+
+    We use this for detecting (1) mismatches in the HITLI version used
+    for building vs running, and (2) running an optimized HLTO file
+    with a debug runtime. In both cases, the runtime will print a
+    warning to stderr, but still proceed processing the library.
+
+    Note that this is breaking change that will prevent HLTOs built
+    with earlier versions from loading now.
+
+  * Add option -U to tools that summarizes runtime resource
+    consumption at termination. The measurement excludes time spent
+    for startup/termination. (Robin Sommer, Corelight)
+
+  * Use cout/cerr in debug logger instead of reopening them
+    separately. Output can get mixed up otherwise if other places
+    write to cout/cerr directly. (Robin Sommer, Corelight)
+
+  * Update nlohmann-json and move to top-level 3rdparty directory.
+    (Robin Sommer, Corelight)
+
 0.4.0-789 | 2020-08-11 07:47:30 +0000
 
   * Lots of new test coverage for HILTI runtime library: references,

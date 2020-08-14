@@ -26,24 +26,21 @@ void detail::DebugLogger::print(const std::string& stream, const std::string& ms
         return;
 
     auto i = _streams.find(stream);
-
     if ( i == _streams.end() )
         return;
 
     if ( ! _output ) {
-        auto mode = std::ios::out;
+        if ( _path == "/dev/stdout" )
+            _output = &std::cout;
+        else if ( _path == "/dev/stderr" )
+            _output = &std::cerr;
+        else {
+            _output_file = std::make_unique<std::ofstream>(_path, std::ios::out | std::ios::trunc);
+            if ( ! _output_file->is_open() )
+                fatalError(fmt("libhilti: cannot open file '%s' for debug output", _path));
 
-        if ( _path == "/dev/stdout" || _path == "/dev/stderr" )
-            mode |= std::ios::app;
-        else
-            mode |= std::ios::trunc;
-
-        std::ofstream out(_path, mode);
-
-        if ( ! out.is_open() )
-            fatalError(fmt("libhilti: cannot open file '%s' for debug output", _path));
-
-        _output = std::move(out);
+            _output = _output_file.get();
+        }
     }
 
     auto indent = std::string(i->second * 2, ' ');

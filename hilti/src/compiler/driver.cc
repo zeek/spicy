@@ -222,7 +222,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     opterr = 0; // don't print errors
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABlKL:OcCpPvjJhvVdX:o:D:TEeSR", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABlKL:OcCpPvjJhvVdX:o:D:TUEeSR", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -336,6 +336,8 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
             case 'S': _driver_options.skip_dependencies = true; break;
 
             case 'T': _driver_options.keep_tmps = true; break;
+
+            case 'U': _driver_options.report_resource_usage = true; break;
 
             case 'v':
                 std::cerr << _name << " v" << hilti::configuration().version_string_long << std::endl;
@@ -857,6 +859,7 @@ Result<Nothing> Driver::initRuntime() {
     auto config = hilti::rt::configuration::get();
     config.abort_on_exceptions = _driver_options.abort_on_exceptions;
     config.show_backtraces = _driver_options.show_backtraces;
+    config.report_resource_usage = _driver_options.report_resource_usage;
     hilti::rt::configuration::set(config);
 
     try {

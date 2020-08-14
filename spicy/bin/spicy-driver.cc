@@ -31,6 +31,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"report-times", required_argument, nullptr, 'R'},
                                               {"show-backtraces", required_argument, nullptr, 'B'},
                                               {"skip-dependencies", no_argument, nullptr, 'S'},
+                                              {"report-resource-usage", no_argument, nullptr, 'U'},
                                               {"version", no_argument, nullptr, 'v'},
                                               {nullptr, 0, nullptr, 0}};
 
@@ -85,6 +86,7 @@ void SpicyDriver::usage() {
            "  -O | --optimize                 Build optimized release version of generated code.\n"
            "  -R | --report-times             Report a break-down of compiler's execution time.\n"
            "  -S | --skip-dependencies        Do not automatically compile dependencies during JIT.\n"
+           "  -U | --report-resource-usage    Print summary of runtime resource usage.\n"
            "  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation "
            "(comma-separated; see 'help' for list).\n"
            "\n"
@@ -110,7 +112,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABD:f:F:hdJX:OVlp:i:SRL:", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABD:f:F:hdJX:OVlp:i:SRL:U", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -195,6 +197,8 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'R': driver_options.report_times = true; break;
 
             case 'S': driver_options.skip_dependencies = true; break;
+
+            case 'U': driver_options.report_resource_usage = true; break;
 
             case 'v': std::cerr << "spicy-driver v" << hilti::configuration().version_string_long << std::endl; exit(0);
 

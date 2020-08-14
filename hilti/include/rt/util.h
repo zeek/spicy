@@ -58,17 +58,19 @@ extern void abort_with_backtrace() __attribute__((noreturn));
 /** Aborts with an internal error saying we should not be where we are. */
 extern void cannot_be_reached() __attribute__((noreturn));
 
-/** Statistics about the current state of memory allocations. */
-struct MemoryStatistics {
-    // Note when changing this, update `memory_statistics()`.
+/** Statistics about resource usage. */
+struct ResourceUsage {
+    // Note when changing this, update `resource_usage()`.
+    double user_time;       //< user time since runtime initialization
+    double system_time;     //< system time since runtime initialization
     uint64_t memory_heap;   //< current size of heap in bytes
     uint64_t num_fibers;    //< number of fibers currently in use
     uint64_t max_fibers;    //< high-water mark for number of fibers in use
     uint64_t cached_fibers; //< number of fibers currently cached for reuse
 };
 
-/** Returns statistics about the current state of memory allocations. */
-MemoryStatistics memory_statistics();
+/** Returns statistics about the current resource uage. */
+ResourceUsage resource_usage();
 
 /**
  * Creates a temporary file in the system temporary directory.

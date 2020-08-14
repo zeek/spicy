@@ -26,6 +26,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"list-parsers", no_argument, nullptr, 'l'},
                                               {"parser", required_argument, nullptr, 'p'},
                                               {"show-backtraces", required_argument, nullptr, 'B'},
+                                              {"report-resource-usage", no_argument, nullptr, 'U'},
                                               {"version", no_argument, nullptr, 'v'},
                                               {nullptr, 0, nullptr, 0}};
 
@@ -42,10 +43,11 @@ public:
     void usage();
 
     bool opt_abort_on_exceptions = false;
+    bool opt_input_is_batch = false;
     bool opt_list_parsers = false;
+    bool opt_report_resource_usage = false;
     bool opt_show_backtraces = false;
     int opt_increment = 0;
-    bool opt_input_is_batch = false;
     std::string opt_file = "/dev/stdin";
     std::string opt_parser;
 };
@@ -65,13 +67,14 @@ void SpicyDriver::usage() {
            "  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI "
            "exceptions.\n"
            "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
-           "  -F | ---batch-file <path>       Read Spicy batch input from <path>; see docs for description of format.\n"
+           "  -F | --batch-file <path>       Read Spicy batch input from <path>; see docs for description of format.\n"
+           "  -U | --report-resource-usage    Print summary of runtime resource usage.\n"
            "\n";
 }
 
 void SpicyDriver::parseOptions(int argc, char** argv) {
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABF:hdf:lp:i:v", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABF:hdf:lp:i:vU", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -94,6 +97,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'l': opt_list_parsers = true; break;
             case 'p': opt_parser = optarg; break;
             case 'v': std::cerr << "spicy-driver v" << hilti::rt::version() << std::endl; exit(0);
+            case 'U': opt_report_resource_usage = true; break;
 
             case 'h': usage(); exit(0);
             case '?': usage(); exit(1); // getopt reports error
@@ -113,6 +117,7 @@ int main(int argc, char** argv) {
     auto config = hilti::rt::configuration::get();
     config.abort_on_exceptions = driver.opt_abort_on_exceptions;
     config.show_backtraces = driver.opt_show_backtraces;
+    config.report_resource_usage = driver.opt_report_resource_usage;
     hilti::rt::configuration::set(config);
 
     try {
