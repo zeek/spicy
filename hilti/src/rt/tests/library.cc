@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -21,8 +22,11 @@
 
 using namespace hilti::rt;
 
-const std::filesystem::path dummy =
-    config::lib_directory / ("libhilti-rt-tests-library-dummy" + config::shared_library_suffix);
+const std::filesystem::path dummy1 =
+    config::lib_directory / ("libhilti-rt-tests-library-dummy1" + config::shared_library_suffix);
+
+const std::filesystem::path dummy2 =
+    config::lib_directory / ("libhilti-rt-tests-library-dummy2" + config::shared_library_suffix);
 
 // Helper function check whether a symbol could be resolved in the current process image.
 bool has_symbol(const char* sym) { return ::dlsym(RTLD_DEFAULT, "foo"); };
@@ -98,18 +102,18 @@ private:
 TEST_SUITE_BEGIN("Library");
 
 TEST_CASE("construct") {
-    Library _(dummy); // Does not throw
+    Library _(dummy1); // Does not throw
     CHECK_THROWS_WITH_AS(Library("/does/not/exist"), "no such library: \"/does/not/exist\"", const EnvironmentError&);
 
     SUBCASE("TMPDIR does not exist") {
         Env _("TMPDIR", "/does/not/exist");
         try {
-            Library _(dummy);
+            Library _(dummy1);
             FAIL("expected exception not thrown");
         } catch ( const EnvironmentError& e ) {
             CAPTURE(e.description());
             CHECK(startsWith(e.description(),
-                             fmt("could not add library \"%s\": could not create temporary file: ", dummy.c_str())));
+                             fmt("could not add library \"%s\": could not create temporary file: ", dummy1.c_str())));
         } catch ( ... ) {
             FAIL("unexpected exception thrown");
         }
@@ -123,12 +127,12 @@ TEST_CASE("construct") {
         Env _("TMPDIR", tmpdir.path().c_str());
 
         try {
-            Library _(dummy);
+            Library _(dummy1);
             FAIL("expected exception not thrown");
         } catch ( const EnvironmentError& e ) {
             CAPTURE(e.description());
             CHECK(startsWith(e.description(),
-                             fmt("could not add library \"%s\": could not create temporary file in ", dummy.c_str())));
+                             fmt("could not add library \"%s\": could not create temporary file in ", dummy1.c_str())));
         } catch ( ... ) {
             FAIL("unexpected exception thrown");
         }
@@ -139,7 +143,7 @@ TEST_CASE("destruct") {
     TemporaryDirectory tmp;
     Env _("TMPDIR", tmp.path().c_str());
 
-    auto library = std::unique_ptr<Library>(new Library(dummy));
+    auto library = std::unique_ptr<Library>(new Library(dummy1));
 
     // Recursively change the permissions of the directory
     // so the temporary library cannot be removed anymore.
@@ -162,7 +166,7 @@ TEST_CASE("open") {
 
         {
             // Creating `Library` instance does not load it automatically.
-            Library library(dummy);
+            Library library(dummy1);
             CHECK_FALSE(has_symbol("foo"));
 
             // Explicitly opening the `Library` loads it so the symbol can be found.
@@ -185,7 +189,7 @@ TEST_CASE("open") {
 }
 
 TEST_CASE("save") {
-    Library library(dummy);
+    Library library(dummy1);
 
     SUBCASE("success") {
         TemporaryDirectory tmp;
@@ -207,6 +211,37 @@ TEST_CASE("save") {
         // Cannot check exact error text as it depends on e.g., the system locale.
         CHECK_FALSE(save.error().description().empty());
     }
+}
+
+TEST_CASE("symbol") {
+    auto call = [](void* sym) {
+        using foo_t = int();
+        return (*reinterpret_cast<foo_t*>(sym))();
+    };
+
+    const Library library1(dummy1);
+    {
+        auto sym = library1.symbol("foo");
+        REQUIRE_FALSE(sym);
+        CHECK_MESSAGE(sym.error().description().rfind("has not been opened") != std::string::npos, sym.error());
+    }
+
+    REQUIRE(library1.open());
+
+    CHECK_EQ(library1.symbol("bar"), result::Error("symbol 'bar' not found"));
+
+    const auto foo1 = library1.symbol("foo");
+    REQUIRE(foo1);
+    CHECK_EQ(call(*foo1), 1);
+
+    // We can load a similarly named symbol from another library.
+    const Library library2(dummy2);
+    REQUIRE(library2.open());
+
+    const auto foo2 = library2.symbol("foo");
+    REQUIRE_NE(foo1, foo2);
+    REQUIRE(foo2);
+    CHECK_EQ(call(*foo2), 2);
 }
 
 TEST_SUITE_END();

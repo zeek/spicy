@@ -74,11 +74,16 @@ hilti::rt::Library::~Library() {
 hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const {
     constexpr auto mode = RTLD_LAZY | RTLD_GLOBAL;
 
-    void* hlto = ::dlopen(_path.c_str(), mode);
-    if ( ! hlto )
-        return result::Error(fmt("failed to load library %s: %s", _path, dlerror()));
+    if ( ! _handle ) {
+        void* handle = ::dlopen(_path.c_str(), mode);
 
-    auto version_string = reinterpret_cast<const char**>(::dlsym(hlto, "__hlto_library_version"));
+        if ( ! ::dlopen(_path.c_str(), mode) )
+            return result::Error(fmt("failed to load library %s: %s", _path, dlerror()));
+
+        _handle = handle;
+    }
+
+    auto version_string = reinterpret_cast<const char**>(::dlsym(_handle, "__hlto_library_version"));
     if ( ! version_string )
         return result::Error("no version information");
 
@@ -92,7 +97,21 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
 
     version.path = _orig_path;
     version.checkCompatibility();
+
     return std::move(version);
+}
+
+hilti::rt::Result<void*> hilti::rt::Library::symbol(std::string_view name) const {
+    if ( ! _handle )
+        return result::Error(fmt("library %s has not been opened", _path));
+
+    auto* symbol = ::dlsym(_handle, name.data());
+    // auto* symbol = ::dlsym(RTLD_SELF, name.data());
+
+    if ( symbol == nullptr )
+        return result::Error(fmt("symbol '%s' not found", name));
+
+    return symbol;
 }
 
 hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const std::filesystem::path& path) const {

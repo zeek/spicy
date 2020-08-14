@@ -275,7 +275,11 @@ target_compile_options(jit-test PRIVATE "-Wall")
 target_link_hilti(jit-test PRIVATE)
 
 # Tests
-add_library(hilti-rt-tests-library-dummy SHARED src/rt/tests/library-dummy.cc)
+add_library(hilti-rt-tests-library-dummy1 SHARED src/rt/tests/library-dummy.cc)
+target_compile_definitions(hilti-rt-tests-library-dummy1 PUBLIC RETURN_VALUE=1)
+
+add_library(hilti-rt-tests-library-dummy2 SHARED src/rt/tests/library-dummy.cc)
+target_compile_definitions(hilti-rt-tests-library-dummy2 PUBLIC RETURN_VALUE=2)
 
 add_executable(hilti-rt-tests
                src/rt/tests/main.cc
@@ -313,7 +317,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_link_libraries(hilti-rt-tests PRIVATE hilti-rt-objects doctest)
-add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy)
+add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-library-dummy2)
 add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)
 
 add_executable(hilti-rt-configuration-tests src/rt/tests/configuration.cc)
