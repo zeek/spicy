@@ -244,4 +244,15 @@ TEST_CASE("symbol") {
     CHECK_EQ(call(*foo2), 2);
 }
 
+TEST_CASE("json") {
+    const Library library(dummy1);
+    const auto open = library.open();
+    REQUIRE(open);
+
+    const auto& version = open.value();
+    library::Version version2;
+    CHECK_EQ(version2.fromJSON(version.toJSON()), Nothing());
+    CHECK_EQ(version, version2);
+}
+
 TEST_SUITE_END();
