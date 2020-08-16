@@ -30,9 +30,9 @@ struct Version {
     /**
      * Parses a JSON representation of an instance.
      *
-     * @return error if parsing of JSON failed
+     * @return a Version or an error if parsing of JSON failed
      */
-    hilti::rt::Result<Nothing> fromJSON(const std::string& json);
+    static hilti::rt::Result<Version> fromJSON(const std::string& json);
 
     /**
      * Checks the version for compatibility with the current runtime system.

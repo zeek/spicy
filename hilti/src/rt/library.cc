@@ -4,6 +4,8 @@
 
 #include <dlfcn.h>
 
+#include <utility>
+
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
@@ -21,18 +23,21 @@ std::string hilti::rt::library::Version::toJSON() const {
         .dump();
 }
 
-hilti::rt::Result<Nothing> hilti::rt::library::Version::fromJSON(const std::string& json) {
+hilti::rt::Result<hilti::rt::library::Version> hilti::rt::library::Version::fromJSON(const std::string& json) {
+    Version version;
+
     try {
         auto j = nlohmann::json::parse(json);
-        j.at("magic").get_to(magic);
-        j.at("hilti_version").get_to(hilti_version);
-        j.at("created").get_to(created);
-        j.at("debug").get_to(debug);
-        j.at("optimize").get_to(optimize);
-        return Nothing();
+        j.at("magic").get_to(version.magic);
+        j.at("hilti_version").get_to(version.hilti_version);
+        j.at("created").get_to(version.created);
+        j.at("debug").get_to(version.debug);
+        j.at("optimize").get_to(version.optimize);
     } catch ( const nlohmann::json::exception& e ) {
         return result::Error(e.what());
     }
+
+    return std::move(version);
 }
 
 void hilti::rt::library::Version::checkCompatibility() const {
@@ -87,18 +92,18 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
     if ( ! version_string )
         return result::Error("no version information");
 
-    library::Version version;
-    if ( auto rc = version.fromJSON(*version_string); ! rc )
-        return result::Error(fmt("broken version information (%s)", rc.error()));
+    auto version = library::Version::fromJSON(*version_string);
+    if ( ! version )
+        return result::Error(fmt("broken version information (%s)", version.error()));
 
     // Check version. We only warn for now, don't abort.
-    if ( version.magic != "v1" )
-        result::Error(fmt("unknown HLTO version '%s'", version.magic));
+    if ( version->magic != "v1" )
+        result::Error(fmt("unknown HLTO version '%s'", version->magic));
 
-    version.path = _orig_path;
-    version.checkCompatibility();
+    version->path = _orig_path;
+    version->checkCompatibility();
 
-    return std::move(version);
+    return version;
 }
 
 hilti::rt::Result<void*> hilti::rt::Library::symbol(std::string_view name) const {

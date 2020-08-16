@@ -249,10 +249,10 @@ TEST_CASE("json") {
     const auto open = library.open();
     REQUIRE(open);
 
-    const auto& version = open.value();
-    library::Version version2;
-    CHECK_EQ(version2.fromJSON(version.toJSON()), Nothing());
-    CHECK_EQ(version, version2);
+    const auto& version1 = open.value();
+    auto version2 = library::Version::fromJSON(version1.toJSON());
+    REQUIRE(version2);
+    CHECK_EQ(version1, version2);
 }
 
 TEST_SUITE_END();
