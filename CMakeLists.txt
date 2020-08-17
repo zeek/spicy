@@ -188,7 +188,7 @@ add_subdirectory(3rdparty)
 
 # Global test target
 add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS tests)
-add_custom_target(tests DEPENDS hilti-rt-tests hilti-tests spicy-tests)
+add_custom_target(tests DEPENDS hilti-rt-tests hilti-tests spicy-tests spicy-rt-tests)
 
 ## Print build summary
 string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)

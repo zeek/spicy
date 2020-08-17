@@ -202,6 +202,12 @@ add_custom_command(TARGET spicy-build
                                                                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 ## Tests
+add_executable(spicy-rt-tests
+               src/rt/tests/main.cc)
+target_link_libraries(spicy-rt-tests PRIVATE doctest spicy-rt)
+target_compile_options(spicy-rt-tests PRIVATE "-Wall")
+add_test(NAME spicy-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/spicy-rt-tests)
+
 add_executable(spicy-tests
                tests/main.cc
                tests/grammar.cc)
