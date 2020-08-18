@@ -1,0 +1,12 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <filesystem>
+
+namespace config {
+
+const std::filesystem::path lib_directory = "${PROJECT_BINARY_DIR}/lib";
+const std::string shared_library_suffix = "${CMAKE_SHARED_LIBRARY_SUFFIX}";
+
+} // namespace config

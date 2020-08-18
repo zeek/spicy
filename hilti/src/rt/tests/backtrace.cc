@@ -25,6 +25,20 @@ TEST_CASE("backtrace") {
 #endif
 }
 
+// Helper function to create a backtrace with one more frame as the caller.
+auto __attribute__((noinline)) make_backtrace() { return Backtrace(); }
+
+TEST_CASE("comparison") {
+    const auto bt1 = Backtrace();      // Backtrace to this call site.
+    const auto bt2 = make_backtrace(); // One additional frame on top of `bt1`.
+    REQUIRE_EQ(bt1.backtrace().size() + 1, bt2.backtrace().size());
+
+    CHECK_EQ(bt1, bt1);
+    CHECK_EQ(bt2, bt2);
+    CHECK_NE(bt1, bt2);
+    CHECK_NE(bt2, bt1);
+}
+
 TEST_CASE("demangle") {
     CHECK_EQ(demangle("i"), "int");
 

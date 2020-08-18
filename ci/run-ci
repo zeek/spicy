@@ -381,7 +381,7 @@ if [ -z "${build}" ]; then
     build=${root}/build-ci
 fi
 
-install=/opt/ci-install-$(basename ${build})
+install=/tmp/ci-install-$(basename ${build})
 root=$(realpath ${root})
 build=$(realpath ${build})
 artifacts=${build}/ci

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 #include <hilti/rt/result.h>
 #include <hilti/rt/util.h>
@@ -29,15 +30,22 @@ struct Version {
     /**
      * Parses a JSON representation of an instance.
      *
-     * @return error if parsing of JSON failed
+     * @return a Version or an error if parsing of JSON failed
      */
-    hilti::rt::Result<Nothing> fromJSON(const std::string& json);
+    static hilti::rt::Result<Version> fromJSON(const std::string& json);
 
     /**
      * Checks the version for compatibility with the current runtime system.
      * Prints out warnings on mismatches, but doesn't abort.
      */
     void checkCompatibility() const;
+
+    friend bool operator==(const Version& a, const Version& b) {
+        return a.magic == b.magic && a.hilti_version == b.hilti_version && a.created == b.created &&
+               a.debug == b.debug && a.optimize == b.optimize;
+    }
+
+    friend bool operator!=(const Version& a, const Version& b) { return ! (a == b); }
 };
 
 } // namespace hilti::rt::library
@@ -51,8 +59,6 @@ namespace hilti::rt {
  * construction and subsequently does not depend on it anymore.
  */
 class Library {
-    using Nothing = hilti::rt::Nothing;
-
 public:
     /**
      * Makes a library available for opening.
@@ -85,9 +91,17 @@ public:
      */
     hilti::rt::Result<Nothing> save(const std::filesystem::path& path) const;
 
+    // Gets a symbol from the library.
+    //
+    // @param name name of the symbol
+    // @return a valid pointer to the symbol or an error
+    hilti::rt::Result<void*> symbol(std::string_view name) const;
+
+
 private:
     std::filesystem::path _path;      // Absolute path to the physical file wrapped by this instance.
     std::filesystem::path _orig_path; // Original path as passed into the constructor.
+    mutable void* _handle = nullptr;  // Handle to the library.
 };
 
 } // namespace hilti::rt

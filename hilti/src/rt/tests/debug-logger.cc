@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <string>
 
@@ -18,16 +19,12 @@ ostream& operator<<(ostream& stream, const std::vector<std::string>& xs) {
 }
 } // namespace std
 
-class Tmpfile {
+// RAII helper to maintain a temporary file
+class TemporaryFile {
 public:
-    explicit Tmpfile() {
-        std::filesystem::path tmpdir = std::getenv("TMPDIR") ? std::getenv("TMPDIR") : "/tmp";
-        if ( tmpdir.empty() )
-            tmpdir = "/tmp";
-
-        std::string path = tmpdir / "debug-logger-tests-XXXXXX";
-
-        auto fd = mkstemp(path.data());
+    explicit TemporaryFile() {
+        std::string path = std::filesystem::temp_directory_path() / "debug-logger-tests-XXXXXX";
+        auto fd = ::mkstemp(path.data());
         REQUIRE_NE(fd, -1);
         ::close(fd);
 
@@ -45,7 +42,10 @@ public:
         return lines;
     }
 
-    ~Tmpfile() { REQUIRE_EQ(::unlink(_path.c_str()), 0); }
+    ~TemporaryFile() {
+        if ( std::filesystem::exists(_path) )
+            std::filesystem::remove_all(_path);
+    }
 
     std::filesystem::path _path;
 };
@@ -53,7 +53,7 @@ public:
 TEST_SUITE_BEGIN("DebugLogger");
 
 TEST_CASE("enable") {
-    auto output = Tmpfile();
+    auto output = TemporaryFile();
     auto logger = detail::DebugLogger(output._path);
 
     CHECK_FALSE(logger.isEnabled("FOO"));
@@ -64,7 +64,7 @@ TEST_CASE("enable") {
 }
 
 TEST_CASE("indent") {
-    auto output = Tmpfile();
+    auto output = TemporaryFile();
     auto logger = detail::DebugLogger(output._path);
 
     std::vector<std::string> lines;
@@ -87,7 +87,7 @@ TEST_CASE("indent") {
 }
 
 TEST_CASE("dedent") {
-    auto output = Tmpfile();
+    auto output = TemporaryFile();
     auto logger = detail::DebugLogger(output._path);
 
     std::vector<std::string> lines;
@@ -115,7 +115,7 @@ TEST_CASE("dedent") {
 }
 
 TEST_CASE("print") {
-    auto output = Tmpfile();
+    auto output = TemporaryFile();
     auto logger = detail::DebugLogger(output._path);
     logger.enable("FOO");
 

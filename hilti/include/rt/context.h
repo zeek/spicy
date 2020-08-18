@@ -52,7 +52,7 @@ struct Context {
      */
     std::vector<std::shared_ptr<void>> hilti_globals;
 
-    /** A user-defined cookie value that's carried aroudn with the context. */
+    /** A user-defined cookie value that's carried around with the context. */
     void* cookie = nullptr;
 
     /** Current indent level for debug messages. */
@@ -89,7 +89,7 @@ inline auto get() {
 
 /**
  * Sets the current context. This will be visible to code inside the current
- * hardware thhread.
+ * hardware thread.
  */
 inline auto set(Context* ctx) {
     auto old = current();

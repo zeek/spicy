@@ -1,4 +1,52 @@
 
+0.4.0-817 | 2020-08-18 11:24:52 +0200
+
+  * Add `hilti::rt::Library::symbol`.
+
+    This patch adds a new member function `Library::symbol` which can be
+    used to obtained a symbol from a specific library.
+
+    While currently `Library` users just call `::dlsym` globally to obtain a
+    symbol, this becomes ambigous if multiple libraries in the process image
+    provide similarly named symbols. Instead they could hold handles to
+    all interesting libraries and obtain symbols with the added function.
+    With that we could also `::dclose` libraries in the `Library`
+    destructor; we'll leave that change for a later point. (Benjamin Bannier, Corelight)
+
+  * Fix warning potentially emitted from `rt::Library` destructor. (Benjamin Bannier, Corelight)
+
+  * Fix format string in `rt::createTemporaryFile`. (Benjamin Bannier, Corelight)
+
+  * Extend error message when `rt::Library::save` fails. (Benjamin Bannier, Corelight)
+
+  * Change CI job to use non-priviledged user.
+
+    At least on ubuntu `root` seems to be able to modify even read-only
+    directories which makes it hard to write tests checking handling of
+    permission errors.
+
+    Change the image used in CI to use a non-priviledged user instead. (Benjamin Bannier, Corelight)
+
+  * Change directory used for ccache store in CI.
+
+    We were originally using `/var/spool/ccache` which could require
+    extended privileges to create. Switch over to use `/tmp/ccache` which
+    should be easier to create even for unprivileged users. (Benjamin Bannier, Corelight)
+
+  * Prevent `rt::Resumable::get` from leaking non-HILTI exceptions. (Benjamin Bannier, Corelight)
+
+  * Make `hilti::rt::Resumable`'s operator bool explicit. (Benjamin Bannier, Corelight)
+
+  * Consistently provide stringification for all exceptions. (Benjamin Bannier, Corelight)
+
+  * Add comparision operators to `rt::Backtrace`. (Benjamin Bannier, Corelight)
+
+  * Fix `to_string_for_print` for `DeferredExpression`.
+
+    Since `DeferredExpression` is a template itself we cannot specialize the
+    master template of the `detail` namespace; instead we need to provide an
+    overload. (Benjamin Bannier, Corelight)
+
 0.4.0-798 | 2020-08-14 07:25:00 +0000
 
   * CI: Move Zeek package specs back into tasks to work around Cirrus
