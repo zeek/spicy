@@ -7,6 +7,35 @@ Style
 .. todo:: This is very preliminary. We'll extend it over time. It's
    also not consistently applied everywhere yet. Working on that.
 
+.. _tooling:
+
+Tooling
+-------
+
+Spicy ships with a set of linter configurations to enforce some of the style
+guidelines documented below. We use `pre-commit <https://pre-commit.com/>`__ to
+run linters on each commit.
+
+After cloning the repository, one can install the commit hooks by running the
+following command from the root of the checkout::
+
+    $ pre-commit install && pre-commit install --hook-type commit-msg
+    pre-commit installed at .git/hooks/pre-commit
+    pre-commit installed at .git/hooks/commit-msg
+
+With installed hooks the configured linters check the code after each
+commit. To run linters standalone one can use the following::
+
+    $ pre-commit run -a
+
+See the `pre-commit CLI documentation <https://pre-commit.com/#cli>`__ for more
+information on how pre-commit can be used.
+
+.. note::
+
+    Some linters might require that a full build was performed or additional
+    external tooling, see e.g., :ref:`clang_format`.
+
 Commit Messages
 ---------------
 
@@ -48,8 +77,8 @@ abort if there's anything not formatted as expected.
 
 .. _clang_tidy:
 
-Linting
--------
+Static analysis
+---------------
 
 Spicy also comes with a ``clang-tidy`` configuration, as well as
 ``Makefile`` targets similar to the ones for formatting: ``make tidy``
