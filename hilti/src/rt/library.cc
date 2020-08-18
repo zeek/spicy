@@ -82,7 +82,7 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
     if ( ! _handle ) {
         void* handle = ::dlopen(_path.c_str(), mode);
 
-        if ( ! ::dlopen(_path.c_str(), mode) )
+        if ( ! handle )
             return result::Error(fmt("failed to load library %s: %s", _path, dlerror()));
 
         _handle = handle;
