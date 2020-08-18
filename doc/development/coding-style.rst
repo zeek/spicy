@@ -51,10 +51,6 @@ Commit Messages
 - Aim to make commits self-containing chunks of functionality. Rebase
   and squash before pushing upstream.
 
-- Avoid rebases once pushed upstream (including in your own branches).
-  Just create a new commit if you need to fix something, we can squash
-  on merge if helpful.
-
 .. _clang_format:
 
 Formatting
