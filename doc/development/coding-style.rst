@@ -51,6 +51,12 @@ Commit Messages
 - Aim to make commits self-containing chunks of functionality. Rebase
   and squash before pushing upstream.
 
+- Formatting aspects of commit messages are linted with `gitlint
+  <https://jorisroovers.com/gitlint/>`__ via pre-commit hooks, see
+  :ref:`tooling`. In particular we enforce that summary lines start with a
+  captial letter and end in a period, and length limits for both summary and
+  body lines.
+
 .. _clang_format:
 
 Formatting
