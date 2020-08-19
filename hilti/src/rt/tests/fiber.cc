@@ -234,4 +234,19 @@ TEST_CASE("stats") {
     REQUIRE(stats.initialized == 2);
 }
 
+TEST_CASE("prime-cache") {
+    hilti::rt::init();
+    hilti::rt::detail::Fiber::reset(); // reset cache and counters
+
+    auto stats = hilti::rt::detail::Fiber::statistics();
+    REQUIRE(stats.current == 0);
+    REQUIRE(stats.cached == 0);
+
+    hilti::rt::detail::Fiber::primeCache();
+
+    stats = hilti::rt::detail::Fiber::statistics();
+    REQUIRE(stats.current == hilti::rt::detail::Fiber::CacheSize);
+    REQUIRE(stats.cached == hilti::rt::detail::Fiber::CacheSize);
+}
+
 TEST_SUITE_END();

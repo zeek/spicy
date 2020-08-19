@@ -20,9 +20,6 @@
 using namespace hilti::rt;
 using namespace hilti::rt::detail;
 
-static const unsigned int StackSize = 327680;
-static const unsigned int CacheSize = 100;
-
 const void* _main_thread_bottom = nullptr;
 std::size_t _main_thread_size = 0;
 
@@ -183,8 +180,20 @@ void Fiber::destroy(std::unique_ptr<Fiber> f) {
         return;
     }
 
-    HILTI_RT_DEBUG("fibers", fmt("cache size exceeded, deleting finished fiber %p", f.get()));
-    f.reset();
+    HILTI_RT_DEBUG("fibers", fmt("[%p] cache size exceeded, deleting finished fiber", f.get()));
+}
+
+void Fiber::primeCache() {
+    std::vector<std::unique_ptr<Fiber>> fibers;
+    fibers.reserve(CacheSize);
+
+    for ( unsigned int i = 0; i < CacheSize; i++ )
+        fibers.emplace_back(Fiber::create());
+
+    while ( fibers.size() ) {
+        Fiber::destroy(std::move(fibers.back()));
+        fibers.pop_back();
+    }
 }
 
 void Fiber::reset() {

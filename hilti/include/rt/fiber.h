@@ -75,6 +75,7 @@ public:
 
     static std::unique_ptr<Fiber> create();
     static void destroy(std::unique_ptr<Fiber> f);
+    static void primeCache();
     static void reset();
 
     struct Statistics {
@@ -86,6 +87,12 @@ public:
     };
 
     static Statistics statistics();
+
+    // Size of stack for each fiber.
+    static constexpr unsigned int StackSize = 327680;
+
+    // Max. number of fibers cached for reuse.
+    static constexpr unsigned int CacheSize = 100;
 
 private:
     friend void ::_Trampoline(unsigned int y, unsigned int x);
