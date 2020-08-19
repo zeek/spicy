@@ -21,6 +21,8 @@ TEST_SUITE_BEGIN("fiber");
 TEST_CASE("init") { hilti::rt::init(); }
 
 TEST_CASE("execute-void") {
+    hilti::rt::init();
+
     std::string x;
     std::string c;
 
@@ -57,6 +59,8 @@ TEST_CASE("reuse-from-cache") {
 }
 
 TEST_CASE("execute-result") {
+    hilti::rt::init();
+
     std::string x;
     std::string c;
 
@@ -74,6 +78,8 @@ TEST_CASE("execute-result") {
 }
 
 TEST_CASE("resume-void") {
+    hilti::rt::init();
+
     std::string x;
     std::string c;
 
@@ -108,6 +114,8 @@ TEST_CASE("resume-void") {
 }
 
 TEST_CASE("resume-result") {
+    hilti::rt::init();
+
     std::string c;
 
     auto f = [&](hilti::rt::resumable::Handle* r) {
@@ -139,6 +147,8 @@ TEST_CASE("resume-result") {
 }
 
 TEST_CASE("exception") {
+    hilti::rt::init();
+
     std::string x;
     std::string c1;
     std::string c2;
@@ -179,6 +189,8 @@ TEST_CASE("exception") {
 }
 
 TEST_CASE("abort") {
+    hilti::rt::init();
+
     std::string x;
     std::string c;
 
