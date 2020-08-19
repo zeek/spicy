@@ -204,7 +204,8 @@ add_custom_command(TARGET spicy-build
 ## Tests
 add_executable(spicy-rt-tests
                src/rt/tests/main.cc
-               src/rt/tests/base64.cc)
+               src/rt/tests/base64.cc
+               src/rt/tests/debug.cc)
 target_link_libraries(spicy-rt-tests PRIVATE doctest spicy-rt hilti-rt)
 target_compile_options(spicy-rt-tests PRIVATE "-Wall")
 add_test(NAME spicy-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/spicy-rt-tests)
