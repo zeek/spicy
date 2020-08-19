@@ -60,7 +60,6 @@ public:
     Fiber& operator=(Fiber&&) = delete;
 
     void init(std::function<std::any(resumable::Handle*)> f) {
-        _state = State::Init;
         _result = {};
         _exception = nullptr;
         _function = std::move(f);
@@ -116,6 +115,8 @@ private:
     } _asan;
 #endif
 
+    // TODO: Usage of these isn't thread-safe. Should become "atomic" and
+    // move into global state.
     inline static uint64_t _total_fibers;
     inline static uint64_t _current_fibers;
     inline static uint64_t _max_fibers;

@@ -35,6 +35,27 @@ TEST_CASE("execute-void") {
     CHECK(c == "ctordtor");
 }
 
+TEST_CASE("reuse-from-cache") {
+    hilti::rt::init();
+
+    int x = 0;
+
+    auto f1 = [&](hilti::rt::resumable::Handle* r) { x += 1; };
+    auto r1 = hilti::rt::fiber::execute(f1);
+    REQUIRE(r1);
+    CHECK(x == 1);
+
+    auto f2 = [&](hilti::rt::resumable::Handle* r) { x += 1; };
+    auto r2 = hilti::rt::fiber::execute(f2);
+    REQUIRE(r2);
+    CHECK(x == 2);
+
+    auto stats = hilti::rt::detail::Fiber::statistics();
+    REQUIRE(stats.total == 1);
+    REQUIRE(stats.current == 1);
+    REQUIRE(stats.initialized == 1);
+}
+
 TEST_CASE("execute-result") {
     std::string x;
     std::string c;
