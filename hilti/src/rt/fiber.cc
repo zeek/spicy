@@ -36,6 +36,7 @@ void _Trampoline(unsigned int y, unsigned int x) {
     z |= y;
     auto fiber = (Fiber*)z; // NOLINT
 
+    HILTI_RT_DEBUG("fibers", fmt("[%p] entering trampoline loop", fiber));
     fiber->_finishSwitchFiber("trampoline-init");
 
     // Via recycling a fiber can run an arbitrary number of user jobs. So
@@ -43,6 +44,8 @@ void _Trampoline(unsigned int y, unsigned int x) {
     // function, and expects a new run function once it's resumed.
 
     while ( true ) {
+        HILTI_RT_DEBUG("fibers", fmt("[%p] new iteration of trampoline loop", fiber));
+
         assert(fiber->_state == Fiber::State::Running);
 
         if ( ! _setjmp(fiber->_trampoline) ) {
@@ -60,16 +63,18 @@ void _Trampoline(unsigned int y, unsigned int x) {
         if ( ! _setjmp(fiber->_fiber) ) {
             fiber->_function = {};
             fiber->_state = Fiber::State::Idle;
-            fiber->_startSwitchFiber("trampoline");
+            fiber->_startSwitchFiber("trampoline-loop");
             _longjmp(fiber->_parent, 1);
         }
 
         fiber->_finishSwitchFiber("trampoline-loop");
     }
+
+    HILTI_RT_DEBUG("fibers", fmt("[%p] finished trampoline loop", fiber));
 }
 
 Fiber::Fiber() {
-    HILTI_RT_DEBUG("fibers", fmt("allocating new fiber %p", this));
+    HILTI_RT_DEBUG("fibers", fmt("[%p] allocated new fiber", this));
 
     if ( getcontext(&_uctx) < 0 )
         internalError("fiber: getcontext failed");
@@ -99,7 +104,7 @@ Fiber::Fiber() {
 class AbortException : public std::exception {};
 
 Fiber::~Fiber() {
-    HILTI_RT_DEBUG("fibers", fmt("deleting fiber %p", this));
+    HILTI_RT_DEBUG("fibers", fmt("[%p] deleting fiber", this));
 
     delete[] static_cast<char*>(_uctx.uc_stack.ss_sp);
     --_current_fibers;
@@ -163,7 +168,7 @@ std::unique_ptr<Fiber> Fiber::create() {
     if ( ! globalState()->fiber_cache.empty() ) {
         auto f = std::move(globalState()->fiber_cache.back());
         globalState()->fiber_cache.pop_back();
-        HILTI_RT_DEBUG("fibers", fmt("reusing fiber %p form cache", f.get()));
+        HILTI_RT_DEBUG("fibers", fmt("[%p] reusing fiber from cache", f.get()));
         return f;
     }
 
@@ -172,7 +177,7 @@ std::unique_ptr<Fiber> Fiber::create() {
 
 void Fiber::destroy(std::unique_ptr<Fiber> f) {
     if ( globalState()->fiber_cache.size() < CacheSize ) {
-        HILTI_RT_DEBUG("fibers", fmt("putting fiber %p back into cache", f.get()));
+        HILTI_RT_DEBUG("fibers", fmt("[%p] putting fiber back into cache", f.get()));
         globalState()->fiber_cache.push_back(std::move(f));
         return;
     }
@@ -199,7 +204,7 @@ void Fiber::_startSwitchFiber(const char* tag, const void* stack_bottom, size_t 
                                  stack_size, &_asan.fake_stack));
     __sanitizer_start_switch_fiber(&_asan.fake_stack, stack_bottom, stack_size);
 #else
-    HILTI_RT_DEBUG("fibers", fmt("[%p/%s] finish_switch_fiber", this, tag));
+    HILTI_RT_DEBUG("fibers", fmt("[%p] start_switch_fiber in %s", this, tag));
 #endif
 }
 
@@ -209,7 +214,7 @@ void Fiber::_finishSwitchFiber(const char* tag) {
     HILTI_RT_DEBUG("fibers", fmt("[%p/%s/asan] finish_switch_fiber %p/%p (fake_stack=%p)", this, tag, _asan.prev_bottom,
                                  _asan.prev_size, _asan.fake_stack));
 #else
-    HILTI_RT_DEBUG("fibers", fmt("[%p/%s] finish_switch_fiber", this, tag));
+    HILTI_RT_DEBUG("fibers", fmt("[%p] finish_switch_fiber in %s", this, tag));
 #endif
 }
 
@@ -249,7 +254,7 @@ void Resumable::abort() {
 
 void Resumable::yielded() {
     if ( auto e = _fiber->exception() ) {
-        HILTI_RT_DEBUG("fibers", fmt("rethrowing exception after fiber %p yielded", _fiber.get()));
+        HILTI_RT_DEBUG("fibers", fmt("[%p] rethrowing exception after fiber yielded", _fiber.get()));
 
         _result = false; // just make sure optional is set.
         detail::Fiber::destroy(std::move(_fiber));
