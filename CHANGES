@@ -1,4 +1,17 @@
 
+0.4.0-819 | 2020-08-19 11:05:55 +0200
+
+  * Explicitly set locale in centos Docker container.
+
+    `hilti::rt::init` needs to be able to set the locale on the host system
+    and will abort with a fatal error if it cannot do so. This patch makes
+    sure this is possible in the centos-8 Docker container provided by us.
+
+    Note: This already worked in BTests since its config file enforces the
+    needed environment variables. This patch fixes it also for standalone
+    usage of Spicy (and now e.g., the `locale` command emits no more
+    errors). (Benjamin Bannier, Corelight)
+
 0.4.0-817 | 2020-08-18 11:24:52 +0200
 
   * Add `hilti::rt::Library::symbol`.
