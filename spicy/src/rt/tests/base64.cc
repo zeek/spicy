@@ -13,6 +13,70 @@ using namespace spicy::rt;
 
 TEST_SUITE_BEGIN("Base64");
 
+TEST_CASE("decode") {
+    base64::Stream stream;
+
+    SUBCASE("Bytes") {
+        SUBCASE("empty") { CHECK_EQ(base64::decode(stream, ""), ""_b); }
+
+        SUBCASE("block w/o padding") { CHECK_EQ(base64::decode(stream, "Zm9v"_b), "foo"_b); }
+
+        SUBCASE("block w/ padding") {
+            CHECK_EQ(base64::decode(stream, "TW9yZSB0aGFuIDYgYnl0ZXM="_b), "More than 6 bytes"_b);
+        }
+
+        SUBCASE("multiple calls") {
+            SUBCASE("block w/o padding") {
+                CHECK_EQ(base64::decode(stream, "Zm9v"_b), "foo"_b);
+                CHECK_EQ(base64::decode(stream, "Zm9v"_b), "foo"_b);
+            }
+
+            SUBCASE("block w/ padding") {
+                CHECK_EQ(base64::decode(stream, "TW9yZSB0aGFu"_b), "More than"_b);
+                CHECK_EQ(base64::decode(stream, "IDYgYnl0ZXM="_b), " 6 bytes"_b);
+            }
+        }
+    }
+
+    SUBCASE("View") {
+        SUBCASE("empty") {
+            Stream data("");
+            CHECK_EQ(base64::decode(stream, data.view()), ""_b);
+        }
+
+        SUBCASE("block w/o padding") {
+            Stream data("Zm9v");
+            CHECK_EQ(base64::decode(stream, data.view()), "foo"_b);
+        }
+
+        SUBCASE("block w/ padding") {
+            Stream data("TW9yZSB0aGFuIDYgYnl0ZXM=");
+            CHECK_EQ(base64::decode(stream, data.view()), "More than 6 bytes"_b);
+        }
+
+        SUBCASE("missing padding") {
+            Stream data("TW9yZSB0aGFuIDYgYnl0ZXM");
+            CHECK_EQ(base64::decode(stream, data.view()), "More than 6 bytes"_b);
+        }
+
+        SUBCASE("multiple calls") {
+            SUBCASE("block w/o padding") {
+                Stream data("Zm9v");
+                CHECK_EQ(base64::decode(stream, data.view()), "foo"_b);
+                data.append("Zm9v");
+                CHECK_EQ(base64::decode(stream, data.view()), "foofoo"_b);
+            }
+
+            SUBCASE("block w/ padding") {
+                Stream data("TW9yZSB0aGFu");
+                CHECK_EQ(base64::decode(stream, data.view()), "More than"_b);
+                data.append("IDYgYnl0ZXM");
+                CHECK_EQ(base64::decode(stream, data.view()), "More than 6 bytes"_b);
+            }
+        }
+    }
+}
+
 TEST_CASE("encode") {
     base64::Stream stream;
 
