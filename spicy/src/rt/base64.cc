@@ -84,6 +84,9 @@ hilti::rt::Bytes Stream::decode(const hilti::rt::stream::View& data) {
 }
 
 hilti::rt::Bytes Stream::finish() {
+    if ( ! _state )
+        throw Base64Error("stream already finished");
+
     // This can be safely called for both encoding and decoding, but won't do
     // anything for the latter.
     hilti::rt::Bytes b;
