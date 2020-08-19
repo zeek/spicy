@@ -1,8 +1,5 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include "options.h"
-#include "printer-json.h"
-#include "printer-text.h"
 #include <getopt.h>
 
 #include <fstream>
@@ -15,6 +12,10 @@
 #include <hilti/hilti.h>
 
 #include <spicy/spicy.h>
+
+#include "options.h"
+#include "printer-json.h"
+#include "printer-text.h"
 
 using spicy::rt::fmt;
 

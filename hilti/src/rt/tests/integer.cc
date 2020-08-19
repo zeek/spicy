@@ -1,6 +1,5 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include "rt/result.h"
 #include <doctest/doctest.h>
 
 #include <bitset>
@@ -8,6 +7,7 @@
 #include <limits>
 #include <tuple>
 
+#include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>

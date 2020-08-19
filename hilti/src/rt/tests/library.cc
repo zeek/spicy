@@ -17,10 +17,13 @@
 #include <hilti/rt/library.h>
 #include <hilti/rt/util.h>
 
+#include "test_utils.h"
+
 // // Since this file is ATM generated at configure time we do not need to add a dependency on `hilti`.
 // #include <hilti/autogen/config.h>
 
 using namespace hilti::rt;
+using namespace hilti::rt::test;
 
 const std::filesystem::path dummy1 =
     config::lib_directory / ("libhilti-rt-tests-library-dummy1" + config::shared_library_suffix);
@@ -83,20 +86,6 @@ public:
 
 private:
     std::filesystem::path _path;
-};
-
-// RAII helper to redirect output.
-class CaptureIO {
-public:
-    CaptureIO(std::ostream& stream) : _old(stream.rdbuf(_buffer.rdbuf())), _stream(&stream) {}
-    ~CaptureIO() { _stream->rdbuf(_old); }
-
-    auto str() const { return _buffer.str(); }
-
-private:
-    std::stringstream _buffer = std::stringstream{};
-    std::streambuf* _old = nullptr;
-    std::ostream* _stream = nullptr;
 };
 
 TEST_SUITE_BEGIN("Library");

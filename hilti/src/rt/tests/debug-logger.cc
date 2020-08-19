@@ -11,7 +11,10 @@
 #include <hilti/rt/debug-logger.h>
 #include <hilti/rt/util.h>
 
+#include "test_utils.h"
+
 using namespace hilti::rt;
+using namespace hilti::rt::test;
 
 namespace std {
 ostream& operator<<(ostream& stream, const std::vector<std::string>& xs) {
@@ -19,42 +22,11 @@ ostream& operator<<(ostream& stream, const std::vector<std::string>& xs) {
 }
 } // namespace std
 
-// RAII helper to maintain a temporary file
-class TemporaryFile {
-public:
-    explicit TemporaryFile() {
-        std::string path = std::filesystem::temp_directory_path() / "debug-logger-tests-XXXXXX";
-        auto fd = ::mkstemp(path.data());
-        REQUIRE_NE(fd, -1);
-        ::close(fd);
-
-        _path = path;
-    }
-
-    std::vector<std::string> lines() const {
-        auto file = std::ifstream(_path);
-
-        std::string line;
-        std::vector<std::string> lines;
-        while ( std::getline(file, line) )
-            lines.push_back(line);
-
-        return lines;
-    }
-
-    ~TemporaryFile() {
-        if ( std::filesystem::exists(_path) )
-            std::filesystem::remove_all(_path);
-    }
-
-    std::filesystem::path _path;
-};
-
 TEST_SUITE_BEGIN("DebugLogger");
 
 TEST_CASE("enable") {
     auto output = TemporaryFile();
-    auto logger = detail::DebugLogger(output._path);
+    auto logger = detail::DebugLogger(output.path());
 
     CHECK_FALSE(logger.isEnabled("FOO"));
 
@@ -65,7 +37,7 @@ TEST_CASE("enable") {
 
 TEST_CASE("indent") {
     auto output = TemporaryFile();
-    auto logger = detail::DebugLogger(output._path);
+    auto logger = detail::DebugLogger(output.path());
 
     std::vector<std::string> lines;
 
@@ -88,7 +60,7 @@ TEST_CASE("indent") {
 
 TEST_CASE("dedent") {
     auto output = TemporaryFile();
-    auto logger = detail::DebugLogger(output._path);
+    auto logger = detail::DebugLogger(output.path());
 
     std::vector<std::string> lines;
 
@@ -116,7 +88,7 @@ TEST_CASE("dedent") {
 
 TEST_CASE("print") {
     auto output = TemporaryFile();
-    auto logger = detail::DebugLogger(output._path);
+    auto logger = detail::DebugLogger(output.path());
     logger.enable("FOO");
 
     REQUIRE(output.lines().empty());

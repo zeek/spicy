@@ -17,6 +17,6 @@ std::string fmt(const char* fmt, const Args&... args) {
 /** sprintf-style string formatting. */
 template<typename... Args>
 std::string fmt(const std::string& s, const Args&... args) {
-    return tfm::format(s.c_str(), args...);
+    return fmt(s.c_str(), args...);
 }
 } // namespace hilti::rt

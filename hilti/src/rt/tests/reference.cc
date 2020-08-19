@@ -646,7 +646,7 @@ TEST_CASE("isExpired") {
     }
 
     SUBCASE("null") {
-        // FIXME(bbannier): Shouldn't these CHECKs be true?
+        // TODO(bbannier): Shouldn't these CHECKs be true?
 
         SUBCASE("default value") { CHECK_FALSE(WeakReference<int>().isExpired()); }
 

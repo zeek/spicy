@@ -2,8 +2,6 @@
 
 #include "driver.h"
 
-#include "debug.h"
-#include "glue-compiler.h"
 #include <getopt.h>
 
 #include <algorithm>
@@ -17,6 +15,9 @@
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/autogen/config.h>
+
+#include "debug.h"
+#include "glue-compiler.h"
 
 // Must come after Bro includes to avoid namespace conflicts.
 #include <spicy/rt/libspicy.h>

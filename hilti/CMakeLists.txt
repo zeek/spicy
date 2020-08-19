@@ -291,10 +291,15 @@ add_executable(hilti-rt-tests
                src/rt/tests/deferred-expression.cc
                src/rt/tests/exception.cc
                src/rt/tests/fiber.cc
+               src/rt/tests/fmt.cc
+               src/rt/tests/global-state.cc
+               src/rt/tests/hilti.cc
+               src/rt/tests/init.cc
                src/rt/tests/integer.cc
                src/rt/tests/interval.cc
                src/rt/tests/iterator.cc
                src/rt/tests/library.cc
+               src/rt/tests/logging.cc
                src/rt/tests/map.cc
                src/rt/tests/network.cc
                src/rt/tests/optional.cc

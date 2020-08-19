@@ -1,4 +1,25 @@
 
+0.4.0-833 | 2020-08-19 11:06:44 +0200
+
+  * Add assertion catching out-of-bounds HILTI module access. (Benjamin Bannier, Corelight)
+
+  * Add check to prevent nullptr dereference in `hilti::rt::done`. (Benjamin Bannier, Corelight)
+
+  * Add missing context cleanup in `hilti::rt::done`.
+
+    We configure a `Context` owned by `GlobalState` in `hilti::rt::init`.
+    Since we destruct that context in `hilti::rt::done` we also need to
+    reset the context as we would otherwise leave a dangling refernence
+    behind. (Benjamin Bannier, Corelight)
+
+  * Call out gitlint in commit message style guidelines. (Benjamin Bannier, Corelight)
+
+  * Remove guidance on not rebasing development branches. (Benjamin Bannier, Corelight)
+
+  * Add developer manual section on pre-commit linters. (Benjamin Bannier, Corelight)
+
+  * Add pre-commit linter for commit messages. (Benjamin Bannier, Corelight)
+
 0.4.0-819 | 2020-08-19 11:05:55 +0200
 
   * Explicitly set locale in centos Docker container.

@@ -1,7 +1,5 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include "base/util.h"
-#include "rt/util.h"
 #include <doctest/doctest.h>
 
 #include <hilti/rt/backtrace.h>

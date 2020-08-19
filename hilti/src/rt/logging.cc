@@ -1,7 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "hilti/rt/logging.h"
+
 #include <hilti/rt/debug-logger.h>
-#include <hilti/rt/logging.h>
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt;

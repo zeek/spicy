@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "options.h"
-
 #include <ostream>
 #include <string>
 #include <utility>
 
 #include <hilti/rt/type-info.h>
+
+#include "options.h"
 
 /** Render parsed unit into readable text representation. */
 class TextPrinter {

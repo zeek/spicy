@@ -39,4 +39,9 @@ repos:
     exclude: '3rdparty/'
     args: ["--quiet"]
 
+- repo: https://github.com/jorisroovers/gitlint
+  rev:  v0.13.1
+  hooks:
+  - id: gitlint
+
 exclude: /3rdparty/|doc/.*examples/|/Baseline/|(\.svg$)|(\.dat$)

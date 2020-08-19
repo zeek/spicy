@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "driver.h"
-
 #include <map>
 #include <memory>
 #include <set>
@@ -23,6 +21,8 @@
 #include <hilti/compiler/driver.h>
 
 #include <spicy/ast/declarations/unit-hook.h>
+
+#include "driver.h"
 
 namespace spicy::rt {
 struct Parser;

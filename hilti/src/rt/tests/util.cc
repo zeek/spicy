@@ -11,6 +11,8 @@
 #include <vector>
 
 #include <hilti/rt/autogen/version.h>
+#include <hilti/rt/fiber.h>
+#include <hilti/rt/init.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/time.h>
@@ -362,23 +364,43 @@ TEST_CASE("map_tuple") {
     CHECK_EQ(input, std::make_tuple(2u, 2L, std::string("aa")));
 }
 
-TEST_CASE("resource_usage") {
-    auto ru = resource_usage();
+TEST_CASE("memory_statistics") {
+    // Reset runtime and fiber state.
+    detail::Fiber::reset();
+    done();
+    init();
 
+    // Sleep here to make sure we have consumed some minimal amount of time (which is not rounded to zero).
     usleep(10000);
-    CHECK_GT(ru.system_time + ru.user_time, 0);
-    CHECK_GT(ru.memory_heap, 0);
 
-    // Fiber statistics are only available if some fibers were executed.
-    // TODO(bbannier): Execute a fiber in this test so below branch is always taken.
-    if ( ru.max_fibers > 0 ) {
-        CHECK_GT(ru.num_fibers, 0);
-        CHECK_LE(ru.num_fibers, ru.max_fibers);
+    const auto ru0 = resource_usage();
+    REQUIRE_GE(ru0.system_time, 0);
+    REQUIRE_GT(ru0.user_time, 0);
+    REQUIRE_GT(ru0.memory_heap, 0u);
+    REQUIRE_EQ(ru0.num_fibers, 0u);
+    REQUIRE_EQ(ru0.max_fibers, 0u);
+    REQUIRE_EQ(ru0.cached_fibers, 0u);
 
-        CHECK_GT(ru.cached_fibers, 0);
-        CHECK_LE(ru.cached_fibers, ru.max_fibers);
-        CHECK_GE(ru.cached_fibers, ru.num_fibers);
-    }
+    // Execute a single fiber.
+    hilti::rt::fiber::execute([](auto* p) { return; });
+
+    // Sleep again to give timing measurements a chance to differ. They might still
+    // end up being indistinguishable from the previous measurements, though.
+    usleep(10000);
+
+    const auto ru1 = resource_usage();
+
+    CHECK_GE(ru1.system_time, ru0.system_time);
+    CHECK_GE(ru1.user_time, ru0.user_time);
+
+    CHECK_GT(ru1.memory_heap, 0u);
+
+    CHECK_EQ(ru1.num_fibers, 1);
+    CHECK_GE(ru1.max_fibers, ru1.num_fibers);
+
+    CHECK_GT(ru1.cached_fibers, 0);
+    CHECK_LE(ru1.cached_fibers, ru1.max_fibers);
+    CHECK_GE(ru1.cached_fibers, ru1.num_fibers);
 }
 
 TEST_CASE("pow") {

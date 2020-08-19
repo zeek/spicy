@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
+#include <zeek-spicy/autogen/config.h>
+
 // TODO: Move to <zeek/zeek-config.h> once we don't need to support Zeek < 3.2 anymore.
 #include "zeek-config.h"
-
-#include <zeek-spicy/autogen/config.h>
 
 #if ZEEK_VERSION_NUMBER >= 30200 // Zeek >= 3.2
 

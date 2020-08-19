@@ -8,9 +8,11 @@
 #pragma once
 
 #include <iostream>
+#include <type_traits>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/extension-points.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {

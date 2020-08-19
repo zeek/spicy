@@ -105,7 +105,11 @@ inline auto hiltiGlobals() {
  */
 template<typename T>
 inline auto moduleGlobals(int idx) {
-    return std::static_pointer_cast<T>(hiltiGlobals()[idx]);
+    const auto& globals = hiltiGlobals();
+
+    assert(idx < globals.size());
+
+    return std::static_pointer_cast<T>(globals[idx]);
 }
 
 /**

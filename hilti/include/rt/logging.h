@@ -59,7 +59,7 @@ inline void print(const std::string& stream, const T& t) {
 }
 } // namespace detail
 
-/** Returns true if debug loggin is enabled for a given stream. */
+/** Returns true if debug logging is enabled for a given stream. */
 inline bool isEnabled(const std::string& stream) {
     return ::hilti::rt::detail::globalState()->debug_logger &&
            ::hilti::rt::detail::globalState()->debug_logger->isEnabled(stream);
@@ -86,7 +86,7 @@ inline const char* location() {
 }
 
 /**
- * Sets the current source code location; or unsets if no argumet.
+ * Sets the current source code location or unsets it if no argument.
  * *loc* must point to a static string that won't go out of scope.
  */
 inline void setLocation(const char* l = nullptr) {
