@@ -83,6 +83,7 @@ public:
         uint64_t current;
         uint64_t cached;
         uint64_t max;
+        uint64_t initialized;
     };
 
     static Statistics statistics();
@@ -118,6 +119,7 @@ private:
     inline static uint64_t _total_fibers;
     inline static uint64_t _current_fibers;
     inline static uint64_t _max_fibers;
+    inline static uint64_t _initialized; // number of trampolines run
 };
 
 extern void yield();

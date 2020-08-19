@@ -42,6 +42,7 @@ void _Trampoline(unsigned int y, unsigned int x) {
     // Via recycling a fiber can run an arbitrary number of user jobs. So
     // this trampoline is really a loop that yields after it has finished its
     // function, and expects a new run function once it's resumed.
+    ++Fiber::_initialized;
 
     while ( true ) {
         HILTI_RT_DEBUG("fibers", fmt("[%p] new iteration of trampoline loop", fiber));
@@ -191,6 +192,7 @@ void Fiber::reset() {
     _total_fibers = 0;
     _current_fibers = 0;
     _max_fibers = 0;
+    _initialized = 0;
 }
 
 void Fiber::_startSwitchFiber(const char* tag, const void* stack_bottom, size_t stack_size) {
@@ -282,10 +284,13 @@ void detail::yield() {
 }
 
 Fiber::Statistics Fiber::statistics() {
-    Statistics stats{.total = _total_fibers,
-                     .current = _current_fibers,
-                     .cached = globalState()->fiber_cache.size(),
-                     .max = _max_fibers};
+    Statistics stats{
+        .total = _total_fibers,
+        .current = _current_fibers,
+        .cached = globalState()->fiber_cache.size(),
+        .max = _max_fibers,
+        .initialized = _initialized,
+    };
 
     return stats;
 }

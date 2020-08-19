@@ -180,6 +180,7 @@ TEST_CASE("abort") {
 }
 
 TEST_CASE("stats") {
+    hilti::rt::init();
     hilti::rt::detail::Fiber::reset(); // reset cache and counters
 
     auto f = [&](hilti::rt::resumable::Handle* r) { r->yield(); };
@@ -199,6 +200,7 @@ TEST_CASE("stats") {
     REQUIRE(stats.current == 2);
     REQUIRE(stats.cached == 1);
     REQUIRE(stats.max == 2);
+    REQUIRE(stats.initialized == 2);
 
     r3.resume();
     REQUIRE(r3);
@@ -208,6 +210,7 @@ TEST_CASE("stats") {
     REQUIRE(stats.current == 2);
     REQUIRE(stats.cached == 2);
     REQUIRE(stats.max == 2);
+    REQUIRE(stats.initialized == 2);
 }
 
 TEST_SUITE_END();
