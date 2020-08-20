@@ -55,7 +55,7 @@ public:
         _sub = hilti::rt::trim(x.second);
 
         if ( _main.empty() || _sub.empty() )
-            throw InvalidMIMEType(hilti::rt::fmt("cannot parse MIME type %s", type));
+            throw InvalidMIMEType(hilti::rt::fmt("cannot parse MIME type '%s'", type));
     }
 
     MIMEType() = default;
@@ -115,6 +115,9 @@ public:
             return hilti::rt::result::Error(e.description());
         }
     }
+
+    friend bool operator==(const MIMEType& a, const MIMEType& b) { return a._main == b._main && a._sub == b._sub; }
+    friend bool operator!=(const MIMEType& a, const MIMEType& b) { return ! (a == b); }
 
 private:
     /** Ensure that the MIME type is valid.
