@@ -12,7 +12,7 @@ extern void init();
 
 /**
  * Shuts down the runtime library, freeing all resources. Once executed, no
- * libspicy functioality can be used anymore.
+ * libspicy functionality can be used anymore.
  */
 extern void done();
 

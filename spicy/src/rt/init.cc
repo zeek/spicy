@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <clocale>
+#include <optional>
 
 #include <hilti/rt/init.h>
 
@@ -25,6 +26,8 @@ void spicy::rt::init() {
 
     if ( parsers.size() == 1 )
         globalState()->default_parser = parsers.front();
+    else
+        globalState()->default_parser = std::nullopt;
 
     for ( const auto& p : parsers ) {
         globalState()->parsers_by_name[p->name].emplace_back(p);
