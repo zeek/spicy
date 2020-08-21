@@ -6,7 +6,6 @@
 #include <unistd.h>
 
 #include <cstdlib>
-#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <streambuf>
@@ -14,6 +13,7 @@
 #include <vector>
 
 #include <hilti/rt/context.h>
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt::test {

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <filesystem>
+#include <hilti/rt/filesystem.h>
 
 namespace config {
 
