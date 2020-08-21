@@ -66,7 +66,7 @@ void spicy::rt::init() {
 }
 
 void spicy::rt::done() {
-    if ( ! globalState() )
+    if ( ! __global_state )
         return;
 
     HILTI_RT_DEBUG("libspicy", "shutting down runtime");
@@ -75,4 +75,4 @@ void spicy::rt::done() {
     __global_state = nullptr;
 }
 
-bool spicy::rt::isInitialized() { return globalState()->runtime_is_initialized; }
+bool spicy::rt::isInitialized() { return detail::__global_state && detail::__global_state->runtime_is_initialized; }

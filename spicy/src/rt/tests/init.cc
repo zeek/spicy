@@ -99,4 +99,16 @@ TEST_CASE("isInitialized") {
     CHECK(isInitialized());
 }
 
+TEST_CASE("done") {
+    hilti::rt::init();
+    init();
+    REQUIRE_NE(detail::__global_state, nullptr);
+
+    done();
+    CHECK_EQ(detail::__global_state, nullptr);
+
+    done();
+    CHECK_EQ(detail::__global_state, nullptr);
+}
+
 TEST_SUITE_END();
