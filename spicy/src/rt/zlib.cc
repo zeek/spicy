@@ -1,10 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "spicy/rt/zlib.h"
+
 #include <zlib.h>
 
 #include <hilti/rt/types/bytes.h>
-
-#include <spicy/rt/zlib.h>
 
 using namespace spicy::rt;
 using namespace spicy::rt::zlib;
@@ -20,7 +20,7 @@ Stream::Stream() {
     });
 
     // "15" here means maximum compression.  "32" is a gross overload hack
-    // that means "check it for whether it's a gzip file". Sheesh.
+    // that means "check it for whether it's a gzip file. Sheesh.
     if ( inflateInit2(&_state->stream, 15 + 32) != Z_OK ) {
         _state = nullptr;
         throw ZlibError("inflateInit2 failed");
@@ -34,11 +34,7 @@ hilti::rt::Bytes Stream::finish() { return hilti::rt::Bytes(); }
 
 hilti::rt::Bytes Stream::decompress(const hilti::rt::stream::View& data) {
     if ( ! _state )
-        // Not sure if this should throw an exception instead. However, an
-        // old comment indicated that this may be expected behaviour at least
-        // with the HTTP analyzer, so leaving it as returning just empty dasa
-        // for now.
-        return hilti::rt::Bytes();
+        throw ZlibError("error'ed zlib stream cannot be reused");
 
     hilti::rt::Bytes decoded;
 
@@ -72,11 +68,7 @@ hilti::rt::Bytes Stream::decompress(const hilti::rt::stream::View& data) {
 
 hilti::rt::Bytes Stream::decompress(const hilti::rt::Bytes& data) {
     if ( ! _state )
-        // Not sure if this should throw an exception instead. However, an
-        // old comment indicated that this may be expected behaviour at least
-        // with the HTTP analyzer, so leaving it as returning just empty dasa
-        // for now.
-        return hilti::rt::Bytes();
+        throw ZlibError("error'ed zlib stream cannot be reused");
 
     hilti::rt::Bytes decoded;
 
