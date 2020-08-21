@@ -208,6 +208,7 @@ add_executable(spicy-rt-tests
                src/rt/tests/debug.cc
                src/rt/tests/global-state.cc
                src/rt/tests/mime.cc
+               src/rt/tests/parsed-unit.cc
                src/rt/tests/util.cc)
 target_link_libraries(spicy-rt-tests PRIVATE doctest spicy-rt hilti-rt)
 target_compile_options(spicy-rt-tests PRIVATE "-Wall")
