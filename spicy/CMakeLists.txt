@@ -210,6 +210,7 @@ add_executable(spicy-rt-tests
                src/rt/tests/init.cc
                src/rt/tests/mime.cc
                src/rt/tests/parsed-unit.cc
+               src/rt/tests/parser.cc
                src/rt/tests/util.cc
                src/rt/tests/zlib.cc)
 target_link_libraries(spicy-rt-tests PRIVATE doctest spicy-rt hilti-rt)
