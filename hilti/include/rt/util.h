@@ -17,19 +17,11 @@
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector_fwd.h>
-
-#ifdef CXX_FILESYSTEM_IS_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace std {
-using namespace experimental;
-} // namespace std
-#else
-#include <filesystem>
-#endif
 
 namespace hilti::rt {
 

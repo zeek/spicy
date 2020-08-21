@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include <cstdlib>
-#include <filesystem>
 #include <memory>
 #include <ostream>
 #include <sstream>
@@ -14,6 +13,7 @@
 #include <utility>
 
 #include <hilti/rt/autogen/tests/config.h>
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/util.h>
 

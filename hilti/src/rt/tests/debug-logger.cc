@@ -4,11 +4,11 @@
 #include <unistd.h>
 
 #include <cstdlib>
-#include <filesystem>
 #include <fstream>
 #include <string>
 
 #include <hilti/rt/debug-logger.h>
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/util.h>
 
 #include "test_utils.h"
