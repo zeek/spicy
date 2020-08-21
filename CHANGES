@@ -1,3 +1,6 @@
+0.4.0-840 | 2020-08-21 10:04:02 +0200
+
+  * Prevent use after free in `rt::base64::finish`. (Benjamin Bannier, Corelight)
 
 0.4.0-833 | 2020-08-19 11:06:44 +0200
 

@@ -1,8 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <hilti/rt/types/bytes.h>
+#include "spicy/rt/base64.h"
 
-#include <spicy/rt/base64.h>
+#include <hilti/rt/types/bytes.h>
 
 extern "C" {
 #include <spicy/3rdparty/libb64/b64/cdecode.h>
@@ -36,8 +36,7 @@ hilti::rt::Bytes Stream::encode(const hilti::rt::Bytes& data) {
         throw Base64Error("encoding already finished");
 
     char buf[static_cast<uint64_t>(data.size() * 2)];
-    int len = base64_encode_block(reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size()), buf,
-                                  &_state->estate);
+    int len = base64_encode_block(data.data(), static_cast<int>(data.size()), buf, &_state->estate);
     return hilti::rt::Bytes(buf, len);
 }
 
@@ -85,6 +84,9 @@ hilti::rt::Bytes Stream::decode(const hilti::rt::stream::View& data) {
 }
 
 hilti::rt::Bytes Stream::finish() {
+    if ( ! _state )
+        throw Base64Error("stream already finished");
+
     // This can be safely called for both encoding and decoding, but won't do
     // anything for the latter.
     hilti::rt::Bytes b;

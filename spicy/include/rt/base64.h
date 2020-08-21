@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
 
@@ -14,7 +15,7 @@ namespace detail {
 struct State;
 } // namespace detail
 
-/** Thrown when something goes wrong with uncompressiong. */
+/** Thrown when something goes wrong with uncompressing. */
 class Base64Error : public hilti::rt::RuntimeError {
     using hilti::rt::RuntimeError::RuntimeError;
 };
