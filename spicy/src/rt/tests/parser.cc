@@ -4,14 +4,23 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
+#include <utility>
 #include <vector>
 
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/fiber.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/global-state.h>
+#include <hilti/rt/init.h>
+#include <hilti/rt/types/reference.h>
+#include <hilti/rt/types/stream.h>
+#include <hilti/rt/types/vector.h>
 
+#include <spicy/rt/filter.h>
 #include <spicy/rt/init.h>
 #include <spicy/rt/parser.h>
+#include <spicy/rt/typedefs.h>
 
 #include "../../hilti/src/rt/tests/test_utils.h"
 
@@ -20,6 +29,8 @@ using hilti::rt::fmt;
 using hilti::rt::Port;
 using hilti::rt::Protocol;
 using hilti::rt::to_string;
+using hilti::rt::Vector;
+using namespace hilti::rt::bytes::literals;
 using namespace spicy::rt;
 
 TEST_SUITE_BEGIN("Parser");
@@ -111,6 +122,100 @@ TEST_CASE("registerParser") {
         CHECK(parser.__hook_gap);
         CHECK(parser.__hook_skipped);
         CHECK(parser.__hook_undelivered);
+    }
+}
+
+TEST_CASE("waitForInputOrEod with min") {
+    hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.
+
+    // Reinitialize the runtime to make sure we do not carry over state between test cases.
+    //
+    // TODO(robin): If we comment out this `done` the "enough data" test cases fails. This seems weird.
+    hilti::rt::done();
+    hilti::rt::init();
+
+    auto data = hilti::rt::ValueReference<hilti::rt::Stream>();
+    auto view = data->view();
+
+    auto filters = hilti::rt::StrongReference<filter::detail::Filters>();
+
+    auto _waitForInputOrEod = [&](hilti::rt::resumable::Handle*) {
+        return detail::waitForInputOrEod(data, view, 3, filters);
+    };
+
+    auto waitForInputOrEod = [&]() { return hilti::rt::fiber::execute(_waitForInputOrEod); };
+
+    SUBCASE("wait for nothing") {
+        // We can always successfully get "no data".
+        CHECK(detail::waitForInputOrEod(data, data->view(), 0, filters));
+    }
+
+    SUBCASE("not enough data") {
+        // `waitForInputOrEod` yields if not enough data is available. We
+        // can only wait from inside a `Resumable`.
+        CHECK_FALSE(waitForInputOrEod());
+        CHECK_THROWS_WITH_AS(_waitForInputOrEod(nullptr), "'yield' in non-suspendable context",
+                             const hilti::rt::RuntimeError&);
+    }
+
+    SUBCASE("enough data") {
+        // With enough data available we can get a result.
+        data->append("\x01\x02"_b);
+        REQUIRE_EQ(data->size(), 2);
+        CHECK_FALSE(waitForInputOrEod()); // Still need one more byte.
+
+        data->append("\x03");
+        REQUIRE_EQ(data->size(), 3);
+        const auto res = waitForInputOrEod();
+        REQUIRE(res);
+        CHECK(res.get<bool>());
+    }
+
+    SUBCASE("eod") {
+        data->freeze();
+        const auto res = waitForInputOrEod();
+        REQUIRE(res);
+        CHECK_FALSE(res.get<bool>());
+    }
+
+    SUBCASE("with filters") {
+        SUBCASE("empty filter list") {
+            filters = Vector<filter::detail::OneFilter>();
+
+            // Append enough data so this call would succeed if no filter was present.
+            data->append("\x01\x02\x03"_b);
+            REQUIRE_EQ(data->size(), 3);
+
+            // No filter present so we can get the available data directly.
+            const auto res = waitForInputOrEod();
+            REQUIRE(res);
+            CHECK(res.get<bool>());
+        }
+
+        SUBCASE("multiple filters") {
+            filters = Vector<filter::detail::OneFilter>();
+
+            bool called1 = false;
+            bool called2 = false;
+
+            filters->push_back(
+                filter::detail::OneFilter({.resumable = [&](hilti::rt::resumable::Handle*) { called1 = true; }}));
+            filters->push_back(
+                filter::detail::OneFilter({.resumable = [&](hilti::rt::resumable::Handle*) { called2 = true; }}));
+
+            REQUIRE_FALSE(called1);
+
+            // We trigger waiting for input with not enough data available and
+            // resume later as `waitForInputOrEod` would short-circuit were
+            // enough data available initally.
+            auto res = waitForInputOrEod();
+            data->append("\x01\x02\x03"_b);
+            res.resume();
+
+            CHECK(res);
+            CHECK(called1);
+            CHECK(called2);
+        }
     }
 }
 
