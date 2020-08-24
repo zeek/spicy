@@ -1,4 +1,4 @@
-FROM alpine:3.11
+FROM alpine:3.12
 
 ARG SKIP_BUILD=
 ARG zeek_version=v3.0.3
@@ -14,11 +14,11 @@ RUN apk update
 RUN apk add ccache cmake curl g++ gcc gdb git make ninja python3 vim
 
 # Install Spicy dependencies.
-RUN apk add bash bison clang clang-dev clang-libs clang-static flex flex-dev flex-libs libucontext-dev llvm9-dev llvm9-static py3-sphinx py3-sphinx_rtd_theme doxygen
+RUN apk add bash bison clang clang-dev clang-libs clang-static flex flex-dev flex-libs libucontext-dev llvm10-dev llvm10-static py3-pip py3-sphinx py3-sphinx_rtd_theme doxygen
 RUN pip3 install btest
 
 # Install Zeek dependencies.
-RUN apk add fts-dev libpcap-dev linux-headers openssl-dev python-dev swig zlib-dev
+RUN apk add fts-dev libpcap-dev linux-headers openssl-dev python3-dev swig zlib-dev
 
 # Install Zeek.
 RUN mkdir -p /opt/zeek/src

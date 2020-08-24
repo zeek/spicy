@@ -1,4 +1,18 @@
 
+0.4.0-854 | 2020-08-24 08:41:23 +0000
+
+  * Switch Dockerfile for Alpine from 3.11 to 3.12.
+
+  * Compile code with debug information also when in release mode.
+    (Robin Sommer, Corelight)
+
+  * Compile the toolchain with -O3 instead of -O2. (Robin Sommer,
+    Corelight)
+
+  * Always link against thread library. The performance of some of our
+    runtime code depends on whether the executable is linked against
+    pthread or not. (Robin Sommer, Corelight)
+
 0.4.0-849 | 2020-08-24 08:39:14 +0000
 
   * Fiber runtime library updates. (Robin Sommer, Corelight)
