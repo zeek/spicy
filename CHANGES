@@ -1,3 +1,15 @@
+0.4.0-861 | 2020-08-24 13:04:33 +0200
+
+  * Diagnose invalid `zlib::Stream`s.
+
+    When a `zlib::Stream` enters a failed state it cannot be reused
+    anymore. Previously we would return empty data whenever such a stream
+    was used again nevertheless. Since empty data is a valid result of
+    decompressing non-empty input this leaves users with no good way to
+    catch such scenarios after the fact.
+
+    This patch modifies `zlib::Stream::decompress` to now throw an exception
+    instead of returning valid but empty data. (Benjamin Bannier, Corelight)
 
 0.4.0-855 | 2020-08-24 10:56:17 +0000
 

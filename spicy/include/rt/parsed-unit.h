@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <cassert>
+
 #include <hilti/rt/type-info.h>
 #include <hilti/rt/types/reference.h>
 
@@ -11,7 +13,7 @@ namespace spicy::rt {
  * Type-erased wrapper around parsed unit instances.
  *
  * Initially, this will be unbound, i.e., not refer to any particular
- * instance. `init()` then binds it to an instance and have
+ * instance. `initialize()` then binds it to an instance and have
  * `ParsedUnit` hold a strong reference to it.
  */
 class ParsedUnit : public hilti::rt::type_info::value::Parent {
@@ -51,10 +53,12 @@ public:
      *
      * @param u type-erased wrapper to initialize
      * @param t reference to instance to initialize `u` with
-     * @param ti type information for `T`
+     * @param ti pointer to valid type information for `T`
      */
     template<typename T>
     static void initialize(ParsedUnit& u, const hilti::rt::ValueReference<T>& t, const hilti::rt::TypeInfo* ti) {
+        assert(ti);
+
         u._unit = hilti::rt::StrongReference(t);
         u._ptr = t.get();
         u._ti = ti;
