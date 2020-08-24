@@ -1,4 +1,8 @@
 
+0.4.0-855 | 2020-08-24 10:56:17 +0000
+
+  * Fix Cirrus CI file for Alpine 3.12. (Robin Sommer, Corelight)
+
 0.4.0-854 | 2020-08-24 08:41:23 +0000
 
   * Switch Dockerfile for Alpine from 3.11 to 3.12.

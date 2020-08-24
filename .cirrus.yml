@@ -266,9 +266,9 @@ docker_ubuntu_19_10_task:
     path: build/spicy-*.tar.gz
     type: application/gzip
 
-docker_alpine_3_11_task:
+docker_alpine_3_12_task:
   container:
-    dockerfile: docker/Dockerfile.alpine-3.11
+    dockerfile: docker/Dockerfile.alpine-3.12
     cpu: 4
     memory: 12G
     docker_arguments:
