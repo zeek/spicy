@@ -1,3 +1,20 @@
+
+0.4.0-849 | 2020-08-24 08:39:14 +0000
+
+  * Fiber runtime library updates. (Robin Sommer, Corelight)
+
+    - Fix state tracking in fibers. When taking a fiber from the
+      cache, we would reset its state ot INIT, which then led to
+      restarting it from scratch instead of reusing the already
+      running loop.
+
+    - Add a function to fill the fiber cache with preinitialized
+      instances.
+
+    - Track number of fiber initialization in statistics.
+
+    - Unify fiber debug logging.
+
 0.4.0-843 | 2020-08-21 13:10:42 +0200
 
   * Consistently deal with `std::filesystem` still being experimental in hilti-rt. (Benjamin Bannier, Corelight)

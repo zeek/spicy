@@ -21,6 +21,8 @@ TEST_SUITE_BEGIN("fiber");
 TEST_CASE("init") { hilti::rt::init(); }
 
 TEST_CASE("execute-void") {
+    hilti::rt::init();
+
     std::string x;
     std::string c;
 
@@ -35,7 +37,30 @@ TEST_CASE("execute-void") {
     CHECK(c == "ctordtor");
 }
 
+TEST_CASE("reuse-from-cache") {
+    hilti::rt::init();
+
+    int x = 0;
+
+    auto f1 = [&](hilti::rt::resumable::Handle* r) { x += 1; };
+    auto r1 = hilti::rt::fiber::execute(f1);
+    REQUIRE(r1);
+    CHECK(x == 1);
+
+    auto f2 = [&](hilti::rt::resumable::Handle* r) { x += 1; };
+    auto r2 = hilti::rt::fiber::execute(f2);
+    REQUIRE(r2);
+    CHECK(x == 2);
+
+    auto stats = hilti::rt::detail::Fiber::statistics();
+    REQUIRE(stats.total == 1);
+    REQUIRE(stats.current == 1);
+    REQUIRE(stats.initialized == 1);
+}
+
 TEST_CASE("execute-result") {
+    hilti::rt::init();
+
     std::string x;
     std::string c;
 
@@ -53,6 +78,8 @@ TEST_CASE("execute-result") {
 }
 
 TEST_CASE("resume-void") {
+    hilti::rt::init();
+
     std::string x;
     std::string c;
 
@@ -87,6 +114,8 @@ TEST_CASE("resume-void") {
 }
 
 TEST_CASE("resume-result") {
+    hilti::rt::init();
+
     std::string c;
 
     auto f = [&](hilti::rt::resumable::Handle* r) {
@@ -118,6 +147,8 @@ TEST_CASE("resume-result") {
 }
 
 TEST_CASE("exception") {
+    hilti::rt::init();
+
     std::string x;
     std::string c1;
     std::string c2;
@@ -158,6 +189,8 @@ TEST_CASE("exception") {
 }
 
 TEST_CASE("abort") {
+    hilti::rt::init();
+
     std::string x;
     std::string c;
 
@@ -180,6 +213,7 @@ TEST_CASE("abort") {
 }
 
 TEST_CASE("stats") {
+    hilti::rt::init();
     hilti::rt::detail::Fiber::reset(); // reset cache and counters
 
     auto f = [&](hilti::rt::resumable::Handle* r) { r->yield(); };
@@ -199,6 +233,7 @@ TEST_CASE("stats") {
     REQUIRE(stats.current == 2);
     REQUIRE(stats.cached == 1);
     REQUIRE(stats.max == 2);
+    REQUIRE(stats.initialized == 2);
 
     r3.resume();
     REQUIRE(r3);
@@ -208,6 +243,22 @@ TEST_CASE("stats") {
     REQUIRE(stats.current == 2);
     REQUIRE(stats.cached == 2);
     REQUIRE(stats.max == 2);
+    REQUIRE(stats.initialized == 2);
+}
+
+TEST_CASE("prime-cache") {
+    hilti::rt::init();
+    hilti::rt::detail::Fiber::reset(); // reset cache and counters
+
+    auto stats = hilti::rt::detail::Fiber::statistics();
+    REQUIRE(stats.current == 0);
+    REQUIRE(stats.cached == 0);
+
+    hilti::rt::detail::Fiber::primeCache();
+
+    stats = hilti::rt::detail::Fiber::statistics();
+    REQUIRE(stats.current == hilti::rt::detail::Fiber::CacheSize);
+    REQUIRE(stats.cached == hilti::rt::detail::Fiber::CacheSize);
 }
 
 TEST_SUITE_END();

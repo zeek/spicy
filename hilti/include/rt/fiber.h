@@ -60,7 +60,6 @@ public:
     Fiber& operator=(Fiber&&) = delete;
 
     void init(std::function<std::any(resumable::Handle*)> f) {
-        _state = State::Init;
         _result = {};
         _exception = nullptr;
         _function = std::move(f);
@@ -76,6 +75,7 @@ public:
 
     static std::unique_ptr<Fiber> create();
     static void destroy(std::unique_ptr<Fiber> f);
+    static void primeCache();
     static void reset();
 
     struct Statistics {
@@ -83,9 +83,16 @@ public:
         uint64_t current;
         uint64_t cached;
         uint64_t max;
+        uint64_t initialized;
     };
 
     static Statistics statistics();
+
+    // Size of stack for each fiber.
+    static constexpr unsigned int StackSize = 327680;
+
+    // Max. number of fibers cached for reuse.
+    static constexpr unsigned int CacheSize = 100;
 
 private:
     friend void ::_Trampoline(unsigned int y, unsigned int x);
@@ -115,9 +122,12 @@ private:
     } _asan;
 #endif
 
+    // TODO: Usage of these isn't thread-safe. Should become "atomic" and
+    // move into global state.
     inline static uint64_t _total_fibers;
     inline static uint64_t _current_fibers;
     inline static uint64_t _max_fibers;
+    inline static uint64_t _initialized; // number of trampolines run
 };
 
 extern void yield();
