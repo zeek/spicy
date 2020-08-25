@@ -125,6 +125,44 @@ TEST_CASE("registerParser") {
     }
 }
 
+TEST_CASE("waitForInput") {
+    hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.
+
+    hilti::rt::init(); // Noop if already initialized.
+
+    auto data = hilti::rt::ValueReference<hilti::rt::Stream>();
+    auto view = data->view();
+
+    auto filters = hilti::rt::StrongReference<filter::detail::Filters>();
+
+    auto _waitForInput = [&](hilti::rt::resumable::Handle*) {
+        return detail::waitForInput(data, view, "error message", "location", filters);
+    };
+
+    auto waitForInput = [&]() { return hilti::rt::fiber::execute(_waitForInput); };
+
+    SUBCASE("not enough data") {
+        // `waitForInput` yields if not enough data available. We
+        // can only wait from inside a `Resumable`.
+        CHECK_FALSE(waitForInput());
+        CHECK_THROWS_WITH_AS(_waitForInput(nullptr), "'yield' in non-suspendable context",
+                             const hilti::rt::RuntimeError&);
+    }
+
+    SUBCASE("enough data") {
+        auto res = waitForInput();
+        CHECK_FALSE(res);
+        data->append("\x01\x02\x03"_b);
+        res.resume();
+        CHECK(res);
+    }
+
+    SUBCASE("eod") {
+        data->freeze();
+        CHECK_THROWS_WITH_AS(waitForInput(), "parse error: error message (location)", const ParseError&);
+    }
+}
+
 TEST_CASE("waitForInputOrEod with min") {
     hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.
 
