@@ -198,7 +198,7 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
                            UnitRef /* not used, just for template instantiation */) {
     // Note: This may may be called before spicy::rt::init(), and during
     // hilti::rt::init(). Cannot rely on any library functionality being
-    // intialized yet.
+    // initialized yet.
     globalState()->parsers.emplace_back(&p);
 
     using unit_type = typename UnitRef::element_type;
@@ -239,7 +239,7 @@ void printParserState(const std::string& unit_id, const hilti::rt::ValueReferenc
  * @param cur view of *data* that's being parsed
  * @param min desired number of bytes
  * @param filter filter state associated with current unit instance (which may be null)
- * @return true if mininum number of bytes are available; false if end-of-data
+ * @return true if minimum number of bytes are available; false if end-of-data
  * has been reached
  */
 extern bool waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
@@ -284,7 +284,7 @@ extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // 
  * @param data current input data
  * @param cur view of *data* that's being parsed
  * @param filter filter state associated with current unit instance (which may be null)
- * @return true if mininum number of bytes are available; false if end-of-data
+ * @return true if minimum number of bytes are available; false if end-of-data
  * has been reached
  */
 extern bool waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
@@ -301,7 +301,7 @@ extern bool waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data
  * @param error_msg message to report with parse error if end-of-data is been reached
  * @param location location associated with the situation
  * @param filter filter state associated with current unit instance (which may be null)
- * @return true if mininum number of bytes are available; false if end-of-data
+ * @return true if minimum number of bytes are available; false if end-of-data
  * has been reached
  */
 extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)

@@ -119,7 +119,7 @@ void disconnect(UnitType<U>& unit) {
 
 /**
  * Connects a filter unit to a unit for transforming parsing. This won't have
- * an observable effect unit `filter::init()` is exectued (and must be called
+ * an observable effect until `filter::init()` is executed (and must be called
  * before that).
  *
  * @tparam S type compatible with the attribute's defined by the `State`
