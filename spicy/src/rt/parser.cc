@@ -1,12 +1,13 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "rt/parser.h"
+
 #include <limits>
 #include <utility>
 
 #include <hilti/rt/types/bytes.h>
 
 #include <spicy/rt/debug.h>
-#include <spicy/rt/parser.h>
 
 using namespace spicy::rt;
 using namespace spicy::rt::detail;
@@ -124,7 +125,6 @@ bool detail::atEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, con
 }
 
 bool detail::haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur) {
-    return data->isFrozen() || cur.unsafeEnd().offset() < data->unsafeEnd().offset();
     // We've the reached end-of-data if either (1) the bytes object is frozen
     // (then the input won't change anymore), or (2) our view is limited to
     // something before the current end (then even appending more data to the

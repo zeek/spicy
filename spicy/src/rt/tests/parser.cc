@@ -55,6 +55,55 @@ TEST_CASE("ParserPort") {
     CHECK_EQ(fmt("%s", ParserPort({Port(80, Protocol::TCP), Direction::Both})), "80/tcp");
 }
 
+TEST_CASE("atEod") {
+    auto stream = hilti::rt::ValueReference<hilti::rt::Stream>();
+
+    SUBCASE("empty") {
+        bool expanding = false;
+        SUBCASE("expanding view") { expanding = true; }
+        SUBCASE("not expanding view") { expanding = false; }
+
+        CHECK_EQ(detail::atEod(stream, stream->view(expanding)), ! expanding);
+
+        stream->freeze();
+        CHECK(detail::atEod(stream, stream->view(expanding)));
+    }
+
+    SUBCASE("not empty") {
+        SUBCASE("expanding view") {
+            // View can be advanced beyond the end of the stream without us hitting EOD.
+            stream->append("\x01\x02\x03");
+            auto view = stream->view();
+
+            for ( size_t i = 0; i < stream->size() + 5; ++i ) {
+                view.advance(i);
+                CAPTURE(i);
+                CHECK_FALSE(detail::atEod(stream, view));
+            }
+
+            stream->freeze();
+            CHECK_FALSE(detail::atEod(stream, view));
+            CHECK_FALSE(detail::atEod(stream, stream->view()));
+        }
+
+        SUBCASE("trimmed view") {
+            // View can be advanced beyond the end of the stream without us hitting EOD.
+            stream->append("\x01\x02\x03");
+            auto view = stream->view(false);
+            stream->freeze();
+
+            for ( size_t i = 0; i < stream->size() + 5; ++i ) {
+                CAPTURE(i);
+                view = view.trim(view.begin() + i);
+                if ( i < 2 )
+                    CHECK_FALSE(detail::atEod(stream, view));
+                else
+                    CHECK(detail::atEod(stream, view));
+            }
+        }
+    }
+}
+
 struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
     static Parser __parser;
     sink::detail::State* __sink = nullptr;
