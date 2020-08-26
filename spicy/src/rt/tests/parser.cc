@@ -212,6 +212,49 @@ TEST_CASE("waitForInput") {
     }
 }
 
+TEST_CASE("waitForInput with min") {
+    hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.
+
+    hilti::rt::init(); // Noop if already initialized.
+
+    auto data = hilti::rt::ValueReference<hilti::rt::Stream>();
+    auto view = data->view();
+
+    auto filters = hilti::rt::StrongReference<filter::detail::Filters>();
+
+    auto _waitForInput = [&](hilti::rt::resumable::Handle*) {
+        return detail::waitForInput(data, view, 3, "error message", "location", filters);
+    };
+
+    auto waitForInput = [&]() { return hilti::rt::fiber::execute(_waitForInput); };
+
+    SUBCASE("not enough data") {
+        // `waitForInput` yields if not enough data available. We
+        // can only wait from `Resumable`.
+        CHECK_FALSE(waitForInput());
+        CHECK_THROWS_WITH_AS(_waitForInput(nullptr), "'yield' in non-suspendable context",
+                             const hilti::rt::RuntimeError&);
+    }
+
+    SUBCASE("enough data") {
+        // With enough data available we can get a result.
+        data->append("\x01\x02"_b);
+        REQUIRE_EQ(data->size(), 2);
+        CHECK_FALSE(waitForInput()); // Still need one more byte.
+
+        data->append("\x03");
+        REQUIRE_EQ(data->size(), 3);
+        const auto res = waitForInput();
+        REQUIRE(res);
+        CHECK(res.get<bool>());
+    }
+
+    SUBCASE("eod") {
+        data->freeze();
+        CHECK_THROWS_WITH_AS(waitForInput(), "parse error: error message (location)", const ParseError&);
+    }
+}
+
 TEST_CASE("waitForInputOrEod with min") {
     hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.
 
