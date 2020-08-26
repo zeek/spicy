@@ -94,9 +94,6 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
                                               data.get(), cur.size()));
         hilti::rt::detail::yield();
 
-        auto x = cur.end();
-        x += 0;
-
         if ( filters ) {
             SPICY_RT_DEBUG_VERBOSE("resuming filter execution");
             spicy::rt::filter::flush(filters);
