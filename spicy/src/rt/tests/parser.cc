@@ -138,9 +138,6 @@ TEST_CASE("registerParser") {
 
         REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
-        CHECK(detail::globalState()->parsers_by_name.empty()); // Never updated.
-        CHECK_EQ(detail::globalState()->parsers_by_mime_type,
-                 std::map<std::string, std::vector<const Parser*>>({{"foo/bar", {&parser}}, {"foo", {&parser}}}));
 
         CHECK_FALSE(parser.__parse_sink);
         CHECK_FALSE(parser.__hook_gap);
@@ -163,9 +160,6 @@ TEST_CASE("registerParser") {
 
         REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
-        CHECK(detail::globalState()->parsers_by_name.empty()); // Never updated.
-        CHECK_EQ(detail::globalState()->parsers_by_mime_type,
-                 std::map<std::string, std::vector<const Parser*>>({{"foo/bar", {&parser}}, {"foo", {&parser}}}));
 
         CHECK(parser.__parse_sink);
         CHECK(parser.__hook_gap);

@@ -50,14 +50,22 @@ void spicy::rt::init() {
             }
         }
 
-        for ( const auto& x : p->mime_types ) {
-            if ( ! x.isWildcard() )
-                globalState()->parsers_by_name[x].emplace_back(p);
+        for ( const auto& mt : p->mime_types ) {
+            if ( ! mt.isWildcard() )
+                globalState()->parsers_by_name[mt].push_back(p);
+
+            globalState()->parsers_by_mime_type[mt.asKey()].push_back(p);
         }
     }
 
     HILTI_RT_DEBUG("libspicy", "registered parsers (w/ aliases):");
     for ( const auto& i : globalState()->parsers_by_name ) {
+        auto names = hilti::rt::transform(i.second, [](const auto& p) { return p->name; });
+        HILTI_RT_DEBUG("libspicy", hilti::rt::fmt("  %s -> %s", i.first, hilti::rt::join(names, ", ")));
+    }
+
+    HILTI_RT_DEBUG("libspicy", "registered parsers for MIME types:");
+    for ( const auto& i : globalState()->parsers_by_mime_type ) {
         auto names = hilti::rt::transform(i.second, [](const auto& p) { return p->name; });
         HILTI_RT_DEBUG("libspicy", hilti::rt::fmt("  %s -> %s", i.first, hilti::rt::join(names, ", ")));
     }

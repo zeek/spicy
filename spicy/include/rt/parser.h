@@ -214,12 +214,6 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
         p.__hook_undelivered = sink::detail::hookFunction<unit_type, &unit_type::__on_0x25_undelivered, uint64_t,
                                                           const hilti::rt::Bytes&>();
     }
-
-    for ( const auto& mt : p.mime_types ) {
-        SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("registering parser %s for MIME type %s", p.name, std::string(mt)));
-        auto& parsers = globalState()->parsers_by_mime_type[mt.asKey()];
-        parsers.push_back(&p);
-    }
 }
 
 /**

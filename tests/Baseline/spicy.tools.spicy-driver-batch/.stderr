@@ -5,6 +5,8 @@
 [libspicy]   80/tcp%resp -> Test::X
 [libspicy]   Test::X -> Test::X
 [libspicy]   application/foo -> Test::X
+[libspicy] registered parsers for MIME types:
+[libspicy]   application/foo -> Test::X
 [spicy-driver] [id1] first data chunk: |ab|
 [spicy-driver] [id2] block: |12|
 [spicy-driver] [id1] next data chunk: |cd|

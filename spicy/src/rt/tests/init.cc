@@ -59,7 +59,8 @@ TEST_CASE("init") {
                                                                     {"4040/tcp%orig", {&parser}},
                                                                     {"4040/tcp%resp", {&parser}},
                                                                     {parser.mime_types.at(0), {&parser}}}));
-        CHECK(gs->parsers_by_mime_type.empty()); // Never updated.
+        CHECK_EQ(gs->parsers_by_mime_type,
+                 std::map<std::string, std::vector<const Parser*>>({{parser.mime_types.at(0), {&parser}}}));
     }
 
     SUBCASE("multiple parsers") {
@@ -86,7 +87,9 @@ TEST_CASE("init") {
                                                                     {parser1.mime_types.at(0), {&parser1}},
                                                                     {parser2.name, {&parser2}},
                                                                     {"4040/tcp%resp", {&parser2}}}));
-        CHECK(gs->parsers_by_mime_type.empty()); // Never updated.
+        CHECK_EQ(gs->parsers_by_mime_type,
+                 std::map<std::string, std::vector<const Parser*>>(
+                     {{parser1.mime_types.at(0), {&parser1}}, {parser2.mime_types.at(0).mainType(), {&parser2}}}));
     }
 }
 
