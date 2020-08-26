@@ -174,6 +174,26 @@ TEST_CASE("registerParser") {
     }
 }
 
+TEST_CASE("waitForEod") {
+    hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.
+
+    hilti::rt::init(); // Noop if already initialized.
+
+    auto data = hilti::rt::ValueReference<hilti::rt::Stream>();
+    auto view = data->view();
+    auto filters = hilti::rt::StrongReference<filter::detail::Filters>();
+
+    auto _waitForEod = [&](hilti::rt::resumable::Handle*) { return detail::waitForEod(data, view, filters); };
+    auto waitForEod = [&]() { return hilti::rt::fiber::execute(_waitForEod); };
+
+    SUBCASE("open ended") { view = data->view(true); }
+    SUBCASE("closed view") { view = {data->begin(), data->begin() + 1}; }
+
+    CHECK_FALSE(waitForEod());
+    data->freeze();
+    CHECK(waitForEod());
+}
+
 TEST_CASE("waitForInput") {
     hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.
 
