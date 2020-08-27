@@ -1,3 +1,19 @@
+
+0.4.0-874 | 2020-08-27 14:21:57 +0200
+
+  * Update parser lookup tables exclusively from `spicy::rt::init`.
+
+    We previously were updating `globalState()->parsers_by_mime_type` from
+    `registerParser` while `globalState()->parsers_by_name` was updated by
+    `init`. This patch makes `init` the only function updating the parser
+    lookup tables `parsers_by_name` and `parsers_by_mime_type`. (Benjamin Bannier, Corelight)
+
+  * Remove unintentional `return` in `rt::haveEod`. (Benjamin Bannier, Corelight)
+
+  * Avoid creating vain global state in `spicy::rt::{done,isInitialized}`. (Benjamin Bannier, Corelight)
+
+  * Reinitialize default parser when reinitializing spicy::rt library. (Benjamin Bannier, Corelight)
+
 0.4.0-861 | 2020-08-24 13:04:33 +0200
 
   * Diagnose invalid `zlib::Stream`s.

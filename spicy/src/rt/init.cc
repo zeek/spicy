@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <clocale>
+#include <optional>
 
 #include <hilti/rt/init.h>
 
@@ -25,6 +26,8 @@ void spicy::rt::init() {
 
     if ( parsers.size() == 1 )
         globalState()->default_parser = parsers.front();
+    else
+        globalState()->default_parser = std::nullopt;
 
     for ( const auto& p : parsers ) {
         globalState()->parsers_by_name[p->name].emplace_back(p);
@@ -47,9 +50,11 @@ void spicy::rt::init() {
             }
         }
 
-        for ( const auto& x : p->mime_types ) {
-            if ( ! x.isWildcard() )
-                globalState()->parsers_by_name[x].emplace_back(p);
+        for ( const auto& mt : p->mime_types ) {
+            if ( ! mt.isWildcard() )
+                globalState()->parsers_by_name[mt].push_back(p);
+
+            globalState()->parsers_by_mime_type[mt.asKey()].push_back(p);
         }
     }
 
@@ -59,11 +64,17 @@ void spicy::rt::init() {
         HILTI_RT_DEBUG("libspicy", hilti::rt::fmt("  %s -> %s", i.first, hilti::rt::join(names, ", ")));
     }
 
+    HILTI_RT_DEBUG("libspicy", "registered parsers for MIME types:");
+    for ( const auto& i : globalState()->parsers_by_mime_type ) {
+        auto names = hilti::rt::transform(i.second, [](const auto& p) { return p->name; });
+        HILTI_RT_DEBUG("libspicy", hilti::rt::fmt("  %s -> %s", i.first, hilti::rt::join(names, ", ")));
+    }
+
     globalState()->runtime_is_initialized = true;
 }
 
 void spicy::rt::done() {
-    if ( ! globalState() )
+    if ( ! __global_state )
         return;
 
     HILTI_RT_DEBUG("libspicy", "shutting down runtime");
@@ -72,4 +83,4 @@ void spicy::rt::done() {
     __global_state = nullptr;
 }
 
-bool spicy::rt::isInitialized() { return globalState()->runtime_is_initialized; }
+bool spicy::rt::isInitialized() { return detail::__global_state && detail::__global_state->runtime_is_initialized; }
