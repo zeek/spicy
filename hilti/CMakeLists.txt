@@ -322,13 +322,18 @@ add_executable(hilti-rt-tests
                src/rt/tests/util.cc
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
-target_link_libraries(hilti-rt-tests PRIVATE hilti-rt-objects doctest)
+target_compile_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+# TODO: add the following two lines tpo Spicy RT testt
+target_link_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects> doctest)
 add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-library-dummy2)
 add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)
 
 add_executable(hilti-rt-configuration-tests src/rt/tests/configuration.cc)
 target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")
-target_link_libraries(hilti-rt-configuration-tests PRIVATE hilti-rt-objects doctest)
+target_compile_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_link_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_link_libraries(hilti-rt-configuration-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects> doctest)
 add_test(NAME hilti-rt-configuration-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-configuration-tests)
 
 add_executable(hilti-tests
