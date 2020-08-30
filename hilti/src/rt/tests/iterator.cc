@@ -1,9 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <type_traits>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/iterator.h>
 
 using namespace hilti::rt;

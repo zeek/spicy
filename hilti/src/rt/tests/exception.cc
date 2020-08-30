@@ -1,11 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <cstddef>
 #include <string>
 #include <utility>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/global-state.h>

@@ -1,9 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <optional>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/types/optional.h>
 
 using namespace hilti::rt;

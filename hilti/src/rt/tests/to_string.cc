@@ -1,11 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <cstdint>
 #include <string_view>
 #include <tuple>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/libhilti.h>
 #include <hilti/rt/types/address.h>
 #include <hilti/rt/types/bool.h>

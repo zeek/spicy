@@ -1,10 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <exception>
 #include <sstream>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
@@ -128,7 +127,7 @@ TEST_CASE("assign") {
 
         y = x;
         CHECK_EQ(y, x);
-        CHECK_THROWS_WITH_AS(*it, "deleted stream object", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*it, "stream object no longer available", const InvalidIterator&);
     }
 
     SUBCASE("multiple chunks") {
@@ -517,8 +516,8 @@ TEST_CASE("iteration") {
     }
 
     SUBCASE("dereference") {
-        CHECK_THROWS_WITH_AS(*stream::SafeConstIterator(), "not initialized", const InvalidIterator&);
-        CHECK_THROWS_WITH_AS(*Stream().begin(), "offset outside of valid range (1)", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*stream::SafeConstIterator(), "unbound stream iterator", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*Stream().begin(), "stream iterator outside of valid range", const InvalidIterator&);
 
         auto s = Stream("123");
         REQUIRE_FALSE(s.isEmpty());
@@ -526,12 +525,12 @@ TEST_CASE("iteration") {
         const auto begin = s.begin();
         const auto end = s.end();
         CHECK_EQ(*begin, '1');
-        CHECK_THROWS_WITH_AS(*end, "offset outside of valid range (1)", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*end, "stream iterator outside of valid range", const InvalidIterator&);
 
         s.trim(end);
         REQUIRE(s.isEmpty());
         CHECK_THROWS_WITH_AS(*begin, "invalidated iterator", const InvalidIterator&);
-        CHECK_THROWS_WITH_AS(*end, "offset outside of valid range (1)", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*end, "stream iterator outside of valid range", const InvalidIterator&);
     }
 }
 

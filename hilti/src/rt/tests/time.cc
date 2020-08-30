@@ -1,10 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <ctime>
 #include <limits>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/types/interval.h>
 #include <hilti/rt/types/time.h>
 
