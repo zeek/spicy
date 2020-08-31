@@ -44,7 +44,7 @@ void Driver::_debug_stats(const hilti::rt::ValueReference<hilti::rt::Stream>& da
 
     auto data_begin = data->begin().offset();
     auto data_end = data_begin + data->size();
-    auto data_chunks = pretty_print_number(data->numberChunks());
+    auto data_chunks = pretty_print_number(data->numberOfChunks());
     auto data_size_cur = pretty_print_number(data->size());
     auto data_size_total = pretty_print_number(data_end);
 

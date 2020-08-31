@@ -181,7 +181,7 @@ TEST_CASE("waitForEod") {
     auto waitForEod = [&]() { return hilti::rt::fiber::execute(_waitForEod); };
 
     SUBCASE("open ended") { view = data->view(true); }
-    SUBCASE("closed view") { view = {data->begin(), data->begin() + 1}; }
+    SUBCASE("closed view") { view = hilti::rt::stream::View{data->begin(), data->begin() + 1}; }
 
     CHECK_FALSE(waitForEod());
     data->freeze();

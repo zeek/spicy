@@ -299,6 +299,7 @@ add_executable(hilti-rt-tests
                src/rt/tests/integer.cc
                src/rt/tests/interval.cc
                src/rt/tests/iterator.cc
+               src/rt/tests/intrusive-ptr.cc
                src/rt/tests/library.cc
                src/rt/tests/logging.cc
                src/rt/tests/map.cc

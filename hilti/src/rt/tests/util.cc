@@ -296,7 +296,7 @@ TEST_CASE("expandEscapes") {
 }
 
 TEST_CASE("isDebugVersion") {
-#if HILTI_RT_BUILD_TYPE_DEBUG
+#ifndef NDEBUG
     CHECK(isDebugVersion());
 #else
     CHECK_FALSE(isDebugVersion());
