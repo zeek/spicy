@@ -339,26 +339,44 @@ TEST_CASE("waitForInputOrEod with min") {
         SUBCASE("multiple filters") {
             filters = Vector<filter::detail::OneFilter>();
 
-            bool called1 = false;
-            bool called2 = false;
+            int called1 = 0;
+            int called2 = 0;
 
-            filters->push_back(
-                filter::detail::OneFilter({.resumable = [&](hilti::rt::resumable::Handle*) { called1 = true; }}));
-            filters->push_back(
-                filter::detail::OneFilter({.resumable = [&](hilti::rt::resumable::Handle*) { called2 = true; }}));
+            // We add two filters. We need to run them once for them to
+            // yield, so that we can resume them later when
+            // waitForInputOrEod() flushes all filters.
 
-            REQUIRE_FALSE(called1);
+            filters->push_back(filter::detail::OneFilter({.resumable = [&](hilti::rt::resumable::Handle* h) {
+                if ( ++called1 == 1 )
+                    h->yield();
+                ++called1;
+            }}));
+
+            filters->push_back(filter::detail::OneFilter({.resumable = [&](hilti::rt::resumable::Handle* h) {
+                if ( ++called2 == 1 )
+                    h->yield();
+                ++called2;
+            }}));
+
+            REQUIRE_EQ(called1, 0);
+            REQUIRE_EQ(called2, 0);
+
+            (*filters)[0].resumable.run();
+            (*filters)[1].resumable.run();
+
+            CHECK_EQ(called1, 1);
+            CHECK_EQ(called2, 1);
 
             // We trigger waiting for input with not enough data available and
             // resume later as `waitForInputOrEod` would short-circuit were
             // enough data available initally.
             auto res = waitForInputOrEod();
             data->append("\x01\x02\x03"_b);
-            res.resume();
+            res.resume(); // XX
 
             CHECK(res);
-            CHECK(called1);
-            CHECK(called2);
+            CHECK_EQ(called1, 2);
+            CHECK_EQ(called2, 2);
         }
     }
 }
