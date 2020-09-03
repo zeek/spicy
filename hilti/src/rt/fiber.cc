@@ -174,6 +174,9 @@ std::unique_ptr<Fiber> Fiber::create() {
 }
 
 void Fiber::destroy(std::unique_ptr<Fiber> f) {
+    if ( f->_state == State::Running || f->_state == State::Yielded )
+        f->abort();
+
     if ( globalState()->fiber_cache.size() < CacheSize ) {
         HILTI_RT_DEBUG("fibers", fmt("[%p] putting fiber back into cache", f.get()));
         globalState()->fiber_cache.push_back(std::move(f));

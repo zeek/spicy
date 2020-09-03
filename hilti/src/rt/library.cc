@@ -77,7 +77,7 @@ hilti::rt::Library::~Library() {
 }
 
 hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const {
-    constexpr auto mode = RTLD_LAZY | RTLD_GLOBAL;
+    constexpr auto mode = RTLD_NOW | RTLD_GLOBAL;
 
     if ( ! _handle ) {
         void* handle = ::dlopen(_path.c_str(), mode);
