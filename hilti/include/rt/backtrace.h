@@ -14,14 +14,17 @@ class Backtrace {
 public:
     Backtrace();
 
-    const auto& backtrace() const { return _backtrace; }
+    std::vector<std::string> backtrace() const;
 
-    friend bool operator==(const Backtrace& a, const Backtrace& b) { return a._backtrace == b._backtrace; }
+    friend bool operator==(const Backtrace& a, const Backtrace& b);
     friend bool operator!=(const Backtrace& a, const Backtrace& b) { return ! (a == b); }
 
 private:
-    std::vector<std::string> _backtrace;
+    int _frames = -1;
+    void* _callstack[64];
 };
+
+bool operator==(const Backtrace& a, const Backtrace& b);
 
 /** Wrapper around the ABI's C++ demangle function. */
 inline std::string demangle(const std::string& symbol) {

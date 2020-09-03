@@ -37,12 +37,16 @@ HILTI_EXCEPTION_IMPL(UnsetUnionMember)
 static void printException(const std::string& msg, const Exception& e, std::ostream& out) {
     out << "[libhilti] " << msg << " " << demangle(typeid(e).name()) << ": " << e.what() << std::endl;
 
-    if ( e.backtrace().empty() || ! configuration::get().show_backtraces )
+    if ( ! configuration::get().show_backtraces )
+        return;
+
+    auto bt = e.backtrace();
+    if ( bt.empty() )
         return;
 
     out << "[libhilti] backtrace:\n";
 
-    for ( const auto& s : e.backtrace() )
+    for ( const auto& s : bt )
         out << "[libhilti]    " << s << "\n";
 }
 
