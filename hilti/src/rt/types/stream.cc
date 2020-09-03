@@ -385,12 +385,8 @@ std::string stream::View::data() const {
     std::string s;
     s.reserve(size());
 
-    auto begin = unsafeBegin();
-    if ( ! begin.chunk() )
-        return "";
-
-    for ( auto i = unsafeBegin(); i != unsafeEnd(); ++i )
-        s += static_cast<char>(*i);
+    for ( auto block = firstBlock(); block; block = nextBlock(block) )
+        s += std::string(reinterpret_cast<const char*>(block->start), block->size);
 
     return s;
 }
