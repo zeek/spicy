@@ -274,17 +274,28 @@ std::optional<View::Block> View::firstBlock() const {
     if ( unsafeBegin() == unsafeEnd() || ! unsafeBegin().chunk() )
         return {};
 
-    auto chunk_begin = unsafeBegin().chunk();
-    auto chunk_end = unsafeEnd().chunk();
-    bool is_last = (chunk_begin->isLast() || (chunk_end && chunk_begin == chunk_end));
+    auto chunk = _begin.chain()->findChunk(_begin.offset(), _begin.chunk());
+    if ( ! chunk )
+        throw InvalidIterator("stream iterator outside of valid range");
 
-    Size size = (chunk_begin->endData() - chunk_begin->data(_begin.offset()));
-    return View::Block{.start = chunk_begin->data(_begin.offset()),
+    auto start = chunk->data() + (_begin.offset() - chunk->offset()).Ref();
+    bool is_last = (chunk->isLast() || (_end && _end->offset() <= chunk->endOffset()));
+
+    Size size;
+
+    if ( _end && is_last ) {
+        auto offset_end = std::min(_end->offset(), _begin.chain()->endOffset());
+        size = (offset_end - _begin.offset());
+    }
+    else
+        size = chunk->endData() - start;
+
+    return View::Block{.start = start,
                        .size = size,
                        .offset = _begin.offset(),
                        .is_first = true,
                        .is_last = is_last,
-                       ._block = (is_last ? nullptr : chunk_begin)};
+                       ._block = is_last ? nullptr : chunk->next()};
 }
 
 std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
@@ -293,33 +304,26 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
     if ( ! (current && current->_block) )
         return {};
 
-    auto end_offset = unsafeEnd().offset();
-    const Chunk* chunk = current->_block->next();
-    bool is_last = (chunk->isLast() || chunk->inRange(end_offset));
+    auto chunk = current->_block;
 
-    if ( is_last ) {
-        uint64_t size;
+    auto start = chunk->data();
+    bool is_last = (chunk->isLast() || (_end && _end->offset() <= chunk->endOffset()));
 
-        if ( end_offset < chunk->endOffset() )
-            size = (end_offset - chunk->offset());
-        else
-            size = chunk->size();
+    Size size;
 
-        return View::Block{.start = chunk->data(),
-                           .size = size,
-                           .offset = chunk->offset(),
-                           .is_first = false,
-                           .is_last = true,
-                           ._block = nullptr};
+    if ( _end && is_last ) {
+        auto offset_end = std::min(_end->offset(), _begin.chain()->endOffset());
+        size = offset_end - chunk->offset();
     }
-    else {
-        return View::Block{.start = chunk->data(),
-                           .size = chunk->size(),
-                           .offset = chunk->offset(),
-                           .is_first = false,
-                           .is_last = false,
-                           ._block = chunk};
-    }
+    else
+        size = chunk->size();
+
+    return View::Block{.start = start,
+                       .size = size,
+                       .offset = chunk->offset(),
+                       .is_first = false,
+                       .is_last = is_last,
+                       ._block = is_last ? nullptr : chunk->next()};
 }
 
 Stream::Stream(const Bytes& d) : Stream(Chunk(0, d.str())) {}
@@ -375,15 +379,7 @@ Size View::size() const {
         return _end->offset() > _begin.offset() ? (_end->offset() - _begin.offset()).Ref() : 0;
 }
 
-std::string Stream::data() const {
-    std::string s;
-    s.reserve(size());
-
-    for ( auto i = unsafeBegin(); i != unsafeEnd(); ++i )
-        s += static_cast<char>(*i);
-
-    return s;
-}
+std::string Stream::data() const { return view().data(); }
 
 std::string stream::View::data() const {
     std::string s;
