@@ -122,7 +122,7 @@ void Chain::append(Chain&& other) {
 
     _tail->setNext(std::move(other._head));
     _tail = other._tail;
-    other._tail = nullptr;
+    other.reset();
 }
 
 void Chain::trim(Offset offset) {
@@ -332,9 +332,6 @@ void Stream::append(Bytes&& data) {
     if ( data.isEmpty() )
         return;
 
-    if ( isFrozen() )
-        throw Frozen("stream object is frozen");
-
     _chain->append(std::make_unique<Chunk>(0, data.str()));
 }
 
@@ -342,18 +339,12 @@ void Stream::append(const Bytes& data) {
     if ( data.isEmpty() )
         return;
 
-    if ( isFrozen() )
-        throw Frozen("stream object is frozen");
-
     _chain->append(std::make_unique<Chunk>(0, data.str()));
 }
 
 void Stream::append(const char* data, size_t len) {
     if ( ! len )
         return;
-
-    if ( isFrozen() )
-        throw Frozen("stream object is frozen");
 
     _chain->append(std::make_unique<Chunk>(0, std::string(data, len)));
 }

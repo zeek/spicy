@@ -324,7 +324,6 @@ add_executable(hilti-rt-tests
                src/rt/tests/vector.cc)
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_compile_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
-# TODO: add the following two lines tpo Spicy RT testt
 target_link_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects> doctest)
 add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-library-dummy2)

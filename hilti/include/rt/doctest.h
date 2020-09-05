@@ -6,8 +6,10 @@
 
 #ifdef __APPLE__
 #ifndef __MAC_OS_X_VERSION_MIN_REQUIRED
-// doctests uses this for platform detection, but it's not always defined.
-// Just set it to some dummy value.
+// doctest uses this macro for platform detection, but it's not always defined
+// for me. If doctest doesn't recognize the platform, break-into-debugger
+// won't be supported. We just set it to some dummy value, that'll doctest
+// believe we are on macOS.
 #define __MAC_OS_X_VERSION_MIN_REQUIRED 1000
 #endif
 #endif

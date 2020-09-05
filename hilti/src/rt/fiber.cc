@@ -174,7 +174,7 @@ std::unique_ptr<Fiber> Fiber::create() {
 }
 
 void Fiber::destroy(std::unique_ptr<Fiber> f) {
-    if ( f->_state == State::Running || f->_state == State::Yielded )
+    if ( f->_state == State::Yielded )
         f->abort();
 
     if ( globalState()->fiber_cache.size() < CacheSize ) {

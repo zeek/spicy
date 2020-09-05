@@ -81,7 +81,8 @@ public:
     using Array = std::pair<Size, std::array<Byte, SmallBufferSize>>;
     using Vector = std::vector<Byte>;
 
-    Chunk(Offset o, std::array<Byte, SmallBufferSize>&& d, Size n) : _offset(o), _data(std::make_pair(n, d)) {}
+    Chunk(Offset o, std::array<Byte, SmallBufferSize>&& d, Size n)
+        : _offset(o), _data(std::make_pair(n, std::move(d))) {}
     Chunk(Offset o, Vector&& d) : _offset(o), _data(std::move(d)) {}
     Chunk(Offset o, const View& d);
     Chunk(Offset o, const std::string& s);
@@ -209,17 +210,6 @@ protected:
     void clearNext() { _next = nullptr; }
 
 private:
-    Chunk() : _data(Array()) {}
-
-    template<int N>
-    Chunk _fromArray(Offset o, std::array<Byte, N> d) {
-        if constexpr ( N <= Chunk::SmallBufferSize )
-            return Chunk(o, std::move(d));
-
-        return Chunk(o, Chunk::Vector(d.begin(), d.end()));
-    }
-
-
     inline Chunk _fromArray(Offset o, const char* d, Size n) {
         auto ud = reinterpret_cast<const Byte*>(d);
 
@@ -256,23 +246,10 @@ public:
     /** Moves a chunk and all its successors into a new chain. */
     Chain(std::unique_ptr<Chunk> head) : _head(std::move(head)), _tail(_head->last()) { _head->setChain(this); }
 
-    Chain(Chain&& other)
-        : _state(other._state), _head(std::move(other._head)), _head_offset(other._head_offset), _tail(other._tail) {
-        _head->setChain(this);
-        other.invalidate();
-    }
-
+    Chain(Chain&& other) = delete;
     Chain(const Chain& other) = delete;
     Chain& operator=(const Chain& other) = delete;
-    Chain& operator=(Chain&& other) {
-        _state = other._state;
-        _head = std::move(other._head);
-        _head_offset = other._head_offset;
-        _tail = other._tail;
-        _head->setChain(this);
-        other.invalidate();
-        return *this;
-    }
+    Chain& operator=(const Chain&& other) = delete;
 
     const Chunk* head() const { return _head.get(); }
     const Chunk* tail() const { return _tail; }
@@ -316,10 +293,18 @@ public:
     // Turns the chain into invalidated state, whill releases all chunks and
     // will let attempts to dereference any still existing iterators fail.
     void invalidate() {
+        _state = State::Invalid;
         _head.reset();
         _head_offset = 0;
         _tail = nullptr;
-        _state = State::Invalid;
+    }
+
+    // Turns the chain into a freshly initialized state.
+    void reset() {
+        _state = State::Mutable;
+        _head.reset();
+        _head_offset = 0;
+        _tail = nullptr;
     }
 
     void freeze() {
@@ -342,7 +327,7 @@ private:
 
     void _ensureMutable() const {
         if ( isFrozen() )
-            throw InvalidIterator("stream object can no longer be modified");
+            throw Frozen("stream object can no longer be modified");
     }
 
     enum class State {

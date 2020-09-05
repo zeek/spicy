@@ -232,7 +232,7 @@ TEST_CASE("append") {
 
         s.freeze();
         CHECK_NOTHROW(s.append(empty));
-        CHECK_THROWS_WITH_AS(s.append(xs), "stream object is frozen", const Frozen&);
+        CHECK_THROWS_WITH_AS(s.append(xs), "stream object can no longer be modified", const Frozen&);
     }
 
     SUBCASE("rvalue Bytes") {
@@ -248,7 +248,7 @@ TEST_CASE("append") {
 
         s.freeze();
         CHECK_NOTHROW(s.append(""_b));
-        CHECK_THROWS_WITH_AS(s.append("456"_b), "stream object is frozen", const Frozen&);
+        CHECK_THROWS_WITH_AS(s.append("456"_b), "stream object can no longer be modified", const Frozen&);
     }
 
     SUBCASE("raw memory") {
@@ -266,7 +266,7 @@ TEST_CASE("append") {
 
         s.freeze();
         CHECK_NOTHROW(s.append(data, 0));
-        CHECK_THROWS_WITH_AS(s.append(data, strlen(data)), "stream object is frozen", const Frozen&);
+        CHECK_THROWS_WITH_AS(s.append(data, strlen(data)), "stream object can no longer be modified", const Frozen&);
     }
 }
 
@@ -516,9 +516,8 @@ TEST_CASE("iteration") {
     }
 
     SUBCASE("dereference") {
-        auto empty = Stream();
         CHECK_THROWS_WITH_AS(*stream::SafeConstIterator(), "unbound stream iterator", const InvalidIterator&);
-        CHECK_THROWS_WITH_AS(*empty.begin(), "stream iterator outside of valid range", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*Stream().begin(), "stream iterator outside of valid range", const InvalidIterator&);
 
         auto s = Stream("123");
         REQUIRE_FALSE(s.isEmpty());
@@ -530,6 +529,7 @@ TEST_CASE("iteration") {
 
         s.trim(end);
         REQUIRE(s.isEmpty());
+        CHECK_THROWS_WITH_AS(*begin, "stream iterator outside of valid range", const InvalidIterator&);
         CHECK_THROWS_WITH_AS(*end, "stream iterator outside of valid range", const InvalidIterator&);
     }
 }
@@ -663,15 +663,12 @@ TEST_CASE("Trim with existing iterator and append") {
 
 TEST_CASE("Trim with existing beyond-end iterator and append") {
     auto x = Stream("01"_b);
-    auto i = x.begin();
-    auto j = x.begin();
+    const auto i = x.begin() + 10;
+    const auto j = x.begin() + 2;
 
-    i += 10;
-    j += 2;
     x.trim(j);
-    x.append("2345678901"_b);
-
-    CHECK_EQ(*i, '0');
+    x.append("23456789ab"_b);
+    CHECK_EQ(*i, 'a');
 }
 
 TEST_CASE("Trim to beyond end") {
@@ -912,29 +909,35 @@ TEST_CASE("View") {
     }
 
     SUBCASE("trimmed non-expanding view beyond end") {
-        auto input = "12"_b;
+        auto input = "012"_b;
         auto stream = Stream(input);
+
         auto view = stream.view(false);
         REQUIRE_EQ(view.size(), input.size());
 
-        auto i = view.begin();
-        i += 5;
+        const auto i = view.begin() + 5;
+
         view = view.trim(i);
         CHECK_EQ(view, ""_b);
-        CHECK_EQ(stream, "12"_b);
+        CHECK_EQ(stream, "012"_b);
+
+        stream.append("3456789"_b);
+        CHECK_EQ(view, ""_b);
     }
 
     SUBCASE("trimmed expanding view beyond end") {
         auto input = "012"_b;
         auto stream = Stream(input);
+
         auto view = stream.view(true);
         REQUIRE_EQ(view.size(), input.size());
 
-        auto i = view.begin();
-        i += 5;
+        const auto i = view.begin() + 5;
+
         view = view.trim(i);
         CHECK_EQ(view, ""_b);
         CHECK_EQ(stream, "012"_b);
+
         stream.append("3456789"_b);
         CHECK_EQ(view, "56789"_b);
     }

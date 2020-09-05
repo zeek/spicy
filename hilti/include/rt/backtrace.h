@@ -20,8 +20,8 @@ public:
     friend bool operator!=(const Backtrace& a, const Backtrace& b) { return ! (a == b); }
 
 private:
-    int _frames = -1;
     void* _callstack[64];
+    int _frames = -1;
 };
 
 bool operator==(const Backtrace& a, const Backtrace& b);
