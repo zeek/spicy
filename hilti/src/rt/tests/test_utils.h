@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <doctest/doctest.h>
 #include <unistd.h>
 
 #include <cstdlib>
@@ -13,6 +12,7 @@
 #include <vector>
 
 #include <hilti/rt/context.h>
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/util.h>
 

@@ -1,11 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <cstddef>
 #include <type_traits>
 
 #include <hilti/rt/deferred-expression.h>
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/types/integer.h>
 
 using namespace hilti::rt;

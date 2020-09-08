@@ -16,9 +16,9 @@ assert v != b"XXX";
 assert v2 == b"56";
 
 assert begin(v) == x.at(1);
-assert v.find(b"1") == (True, x.at(1));
-assert v.find(b"234") == (True, x.at(2));
-assert v.find(b"890") == (False, x.at(8));
+assert v.find(b"1") == (True, v.at(1));
+assert v.find(b"234") == (True, v.at(2));
+assert v.find(b"890") == (False, v.at(8));
 assert (b"456" in v);
 assert ! (b"xyz" in v);
 assert v.starts_with(b"12");

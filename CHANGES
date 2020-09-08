@@ -1,4 +1,23 @@
 
+0.4.0-884 | 2020-09-08 07:39:00 +0000
+
+  * Reimplement HILTI's stream type to substantially improve
+    performance. (Robin Sommer, Corelight)
+
+  * Move resolving of exceptions' backtrace symbols to point-of-use
+    for improving performance. (Robin Sommer, Corelight)
+
+  * Fix problem with fiber reuse. (Robin Sommer, Corelight)
+
+  * Fix a unit test that's using multiple filters. (Robin Sommer,
+    Corelight)
+
+  * Add macOS work-around for problem with doctests' platform
+    detection. (Robin Sommer, Corelight)
+
+  * When configured for debug mode, build tests without -O and link
+    them against {hilti,spicy}-rt-debug. (Robin Sommer, Corelight)
+
 0.4.0-874 | 2020-08-27 14:21:57 +0200
 
   * Update parser lookup tables exclusively from `spicy::rt::init`.

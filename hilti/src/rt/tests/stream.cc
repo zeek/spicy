@@ -1,10 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <exception>
 #include <sstream>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
@@ -42,14 +41,14 @@ TEST_CASE("construct") {
         CHECK_EQ(to_string(x), R"(b"xyz")");
         CHECK_FALSE(x.isEmpty());
         CHECK_EQ(x.size().Ref(), 3);
-        CHECK_EQ(x.numberChunks(), 1);
+        CHECK_EQ(x.numberOfChunks(), 1);
     }
 
     SUBCASE("big") {
         auto y = Stream("123456789012345678901234567890123"_b); // Exceeds small buffer size.
         CHECK_FALSE(y.isEmpty());
         CHECK_EQ(y.size().Ref(), 33);
-        CHECK_EQ(y.numberChunks(), 1);
+        CHECK_EQ(y.numberOfChunks(), 1);
         CHECK_EQ(to_string(y), R"(b"123456789012345678901234567890123")");
     }
 
@@ -128,7 +127,7 @@ TEST_CASE("assign") {
 
         y = x;
         CHECK_EQ(y, x);
-        CHECK_THROWS_WITH_AS(*it, "deleted stream object", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*it, "stream object no longer available", const InvalidIterator&);
     }
 
     SUBCASE("multiple chunks") {
@@ -218,38 +217,38 @@ TEST_CASE("append") {
     const auto xs = "456"_b;
 
     REQUIRE_EQ(s.size(), 3);
-    REQUIRE_EQ(s.numberChunks(), 1);
+    REQUIRE_EQ(s.numberOfChunks(), 1);
 
     SUBCASE("lvalue Bytes") {
         s.append(empty);
         CHECK_EQ(s, "123"_b);
         CHECK_EQ(s.size(), 3);
-        CHECK_EQ(s.numberChunks(), 1);
+        CHECK_EQ(s.numberOfChunks(), 1);
 
         s.append(xs);
         CHECK_EQ(s, "123456"_b);
         CHECK_EQ(s.size(), 6);
-        CHECK_EQ(s.numberChunks(), 2);
+        CHECK_EQ(s.numberOfChunks(), 2);
 
         s.freeze();
         CHECK_NOTHROW(s.append(empty));
-        CHECK_THROWS_WITH_AS(s.append(xs), "stream object is frozen", const Frozen&);
+        CHECK_THROWS_WITH_AS(s.append(xs), "stream object can no longer be modified", const Frozen&);
     }
 
     SUBCASE("rvalue Bytes") {
         s.append(std::move(empty));
         CHECK_EQ(s, "123"_b);
         CHECK_EQ(s.size(), 3);
-        CHECK_EQ(s.numberChunks(), 1);
+        CHECK_EQ(s.numberOfChunks(), 1);
 
         s.append(std::move(xs));
         CHECK_EQ(s, "123456"_b);
         CHECK_EQ(s.size(), 6);
-        CHECK_EQ(s.numberChunks(), 2);
+        CHECK_EQ(s.numberOfChunks(), 2);
 
         s.freeze();
         CHECK_NOTHROW(s.append(""_b));
-        CHECK_THROWS_WITH_AS(s.append("456"_b), "stream object is frozen", const Frozen&);
+        CHECK_THROWS_WITH_AS(s.append("456"_b), "stream object can no longer be modified", const Frozen&);
     }
 
     SUBCASE("raw memory") {
@@ -258,16 +257,16 @@ TEST_CASE("append") {
         s.append(data, 0);
         CHECK_EQ(s, "123"_b);
         CHECK_EQ(s.size(), 3);
-        CHECK_EQ(s.numberChunks(), 1);
+        CHECK_EQ(s.numberOfChunks(), 1);
 
         s.append(data, strlen(data));
         CHECK_EQ(s, "123456"_b);
         CHECK_EQ(s.size(), 6);
-        CHECK_EQ(s.numberChunks(), 2);
+        CHECK_EQ(s.numberOfChunks(), 2);
 
         s.freeze();
         CHECK_NOTHROW(s.append(data, 0));
-        CHECK_THROWS_WITH_AS(s.append(data, strlen(data)), "stream object is frozen", const Frozen&);
+        CHECK_THROWS_WITH_AS(s.append(data, strlen(data)), "stream object can no longer be modified", const Frozen&);
     }
 }
 
@@ -517,8 +516,8 @@ TEST_CASE("iteration") {
     }
 
     SUBCASE("dereference") {
-        CHECK_THROWS_WITH_AS(*stream::SafeConstIterator(), "not initialized", const InvalidIterator&);
-        CHECK_THROWS_WITH_AS(*Stream().begin(), "offset outside of valid range (1)", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*stream::SafeConstIterator(), "unbound stream iterator", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*Stream().begin(), "stream iterator outside of valid range", const InvalidIterator&);
 
         auto s = Stream("123");
         REQUIRE_FALSE(s.isEmpty());
@@ -526,12 +525,12 @@ TEST_CASE("iteration") {
         const auto begin = s.begin();
         const auto end = s.end();
         CHECK_EQ(*begin, '1');
-        CHECK_THROWS_WITH_AS(*end, "offset outside of valid range (1)", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*end, "stream iterator outside of valid range", const InvalidIterator&);
 
         s.trim(end);
         REQUIRE(s.isEmpty());
-        CHECK_THROWS_WITH_AS(*begin, "invalidated iterator", const InvalidIterator&);
-        CHECK_THROWS_WITH_AS(*end, "offset outside of valid range (1)", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*begin, "stream iterator outside of valid range", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*end, "stream iterator outside of valid range", const InvalidIterator&);
     }
 }
 
@@ -613,7 +612,7 @@ TEST_CASE("Trim") {
     auto y = x;
 
     CHECK_EQ(x.size().Ref(), 72);
-    CHECK_EQ(x.numberChunks(), 5);
+    CHECK_EQ(x.numberOfChunks(), 5);
 
     x.trim(x.at(10));
     CHECK_EQ(x.size().Ref(), 62);
@@ -622,19 +621,19 @@ TEST_CASE("Trim") {
     CHECK_EQ(x.size().Ref(), 52);
     x.trim(x.at(32));
     CHECK_EQ(x.size().Ref(), 40);
-    CHECK_EQ(x.numberChunks(), 4);
+    CHECK_EQ(x.numberOfChunks(), 4);
     x.trim(x.at(50));
     CHECK_EQ(x.size().Ref(), 22);
-    CHECK_EQ(x.numberChunks(), 3);
+    CHECK_EQ(x.numberOfChunks(), 3);
     x.trim(x.at(65));
     CHECK_EQ(x.begin().offset().Ref(), 65);
     CHECK_EQ(x.size().Ref(), 7);
     CHECK_EQ(x, "4567890"_b);
-    CHECK_EQ(x.numberChunks(), 1);
+    CHECK_EQ(x.numberOfChunks(), 1);
     x.trim(x.at(72));
     CHECK_EQ(x.size().Ref(), 0);
     CHECK_EQ(x, ""_b);
-    CHECK_EQ(x.numberChunks(), 1); // will stay the same
+    CHECK_EQ(x.numberOfChunks(), 0);
     CHECK_EQ(x.begin().offset().Ref(), 72);
 
     y.trim(y.at(100));
@@ -659,8 +658,30 @@ TEST_CASE("Trim with existing iterator and append") {
     x.append("2345"_b);
     j += 2;
     x.trim(j);
-
     CHECK_EQ(*i, '3');
+}
+
+TEST_CASE("Trim with existing beyond-end iterator and append") {
+    auto x = Stream("01"_b);
+    const auto i = x.begin() + 10;
+    const auto j = x.begin() + 2;
+
+    x.trim(j);
+    x.append("23456789ab"_b);
+    CHECK_EQ(*i, 'a');
+}
+
+TEST_CASE("Trim to beyond end") {
+    auto x = Stream("01"_b);
+    auto i = x.begin();
+    i += 5;
+    x.trim(i);
+    CHECK_EQ(x.numberOfChunks(), 0);
+    CHECK_EQ(x, ""_b);
+    x.append("56789");
+    CHECK_EQ(*i, '5');
+    CHECK_EQ(x.view().begin().offset(), 5);
+    CHECK_EQ(x.view().end().offset(), 10);
 }
 
 TEST_CASE("Block iteration") {
@@ -885,6 +906,194 @@ TEST_CASE("View") {
         auto trimmed = limited.trim(limited.begin() + trim);
 
         CHECK_EQ(trimmed.size(), limit - trim);
+    }
+
+    SUBCASE("trimmed non-expanding view beyond end") {
+        auto input = "012"_b;
+        auto stream = Stream(input);
+
+        auto view = stream.view(false);
+        REQUIRE_EQ(view.size(), input.size());
+
+        const auto i = view.begin() + 5;
+
+        view = view.trim(i);
+        CHECK_EQ(view, ""_b);
+        CHECK_EQ(stream, "012"_b);
+
+        stream.append("3456789"_b);
+        CHECK_EQ(view, ""_b);
+    }
+
+    SUBCASE("trimmed expanding view beyond end") {
+        auto input = "012"_b;
+        auto stream = Stream(input);
+
+        auto view = stream.view(true);
+        REQUIRE_EQ(view.size(), input.size());
+
+        const auto i = view.begin() + 5;
+
+        view = view.trim(i);
+        CHECK_EQ(view, ""_b);
+        CHECK_EQ(stream, "012"_b);
+
+        stream.append("3456789"_b);
+        CHECK_EQ(view, "56789"_b);
+    }
+
+    SUBCASE("find - SafeIterator") {
+        hilti::rt::Stream s = hilti::rt::Stream("012345678901234567890"_b);
+        hilti::rt::stream::View v = s.view().sub(s.at(1), s.at(20));
+
+        hilti::rt::Stream s2 = hilti::rt::Stream("01234567890X"_b);
+        hilti::rt::stream::View v2a = s2.view().sub(s2.at(1), s2.at(4));
+        hilti::rt::stream::View v2b = s2.view().sub(s2.at(11), s2.at(12));
+        hilti::rt::stream::View v2c = s2.view().sub(s2.at(8), s2.end());
+
+        SUBCASE("byte") {
+            CHECK_EQ(v.find(Byte('9')), s.at(9));
+            CHECK_EQ(v.find(Byte('X')), v.end());
+        }
+
+        SUBCASE("byte with start") {
+            CHECK_EQ(v.find(Byte('9'), s.at(10)), s.at(19));
+            CHECK_EQ(v.find(Byte('X'), s.at(10)), v.end());
+        }
+
+        SUBCASE("bytes") {
+            auto x = v.find("1"_b);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(1));
+
+            x = v.find("X"_b);
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), v.at(20));
+
+            x = v.find("890X"_b);
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), v.at(18));
+        }
+
+        SUBCASE("bytes with start") {
+            auto x = v.find("1"_b, s.at(5));
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(11));
+
+            x = v.find("X"_b, s.at(5));
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), v.at(20));
+
+            x = v.find("890X"_b, s.at(5));
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), v.at(18));
+        }
+
+        SUBCASE("view") {
+            auto x = v.find(v2a);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(1));
+
+            x = v.find(v2b);
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), v.at(20));
+
+            x = v.find(v2c);
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), v.at(18));
+        }
+
+        SUBCASE("view with start") {
+            auto x = v.find(v2a, s.at(5));
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(11));
+
+            x = v.find(v2b, s.at(5));
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), v.at(20));
+
+            x = v.find(v2c, s.at(5));
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), v.at(18));
+        }
+    }
+
+    SUBCASE("find - UnsafeIterator") {
+        hilti::rt::Stream s = hilti::rt::Stream("012345678901234567890"_b);
+        hilti::rt::stream::View v = s.view().sub(s.at(1), s.at(20));
+
+        hilti::rt::Stream s2 = hilti::rt::Stream("01234567890X"_b);
+        hilti::rt::stream::View v2a = s2.view().sub(s2.at(1), s2.at(4));
+        hilti::rt::stream::View v2b = s2.view().sub(s2.at(11), s2.at(12));
+        hilti::rt::stream::View v2c = s2.view().sub(s2.at(8), s2.end());
+
+        SUBCASE("byte") {
+            CHECK_EQ(v.find(Byte('9'), hilti::rt::stream::detail::UnsafeConstIterator()),
+                     hilti::rt::stream::detail::UnsafeConstIterator(s.at(9)));
+            CHECK_EQ(v.find(Byte('X'), hilti::rt::stream::detail::UnsafeConstIterator()), v.unsafeEnd());
+        }
+
+        SUBCASE("byte with start") {
+            CHECK_EQ(v.find(Byte('9'), hilti::rt::stream::detail::UnsafeConstIterator(s.at(10))),
+                     hilti::rt::stream::detail::UnsafeConstIterator(s.at(19)));
+            CHECK_EQ(v.find(Byte('X'), hilti::rt::stream::detail::UnsafeConstIterator(s.at(10))), v.unsafeEnd());
+        }
+
+        SUBCASE("bytes") {
+            auto x = v.find("1"_b, hilti::rt::stream::detail::UnsafeConstIterator());
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(1)));
+
+            x = v.find("X"_b, hilti::rt::stream::detail::UnsafeConstIterator());
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
+
+            x = v.find("890X"_b, hilti::rt::stream::detail::UnsafeConstIterator());
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
+        }
+
+        SUBCASE("bytes with start") {
+            auto x = v.find("1"_b, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(11)));
+
+            x = v.find("X"_b, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
+
+            x = v.find("890X"_b, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
+        }
+
+        SUBCASE("view") {
+            auto x = v.find(v2a, hilti::rt::stream::detail::UnsafeConstIterator());
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(1)));
+
+            x = v.find(v2b, hilti::rt::stream::detail::UnsafeConstIterator());
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
+
+            x = v.find(v2c, hilti::rt::stream::detail::UnsafeConstIterator());
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
+        }
+
+        SUBCASE("view with start") {
+            auto x = v.find(v2a, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(11)));
+
+            x = v.find(v2b, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
+
+            x = v.find(v2c, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
+            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
+        }
     }
 }
 

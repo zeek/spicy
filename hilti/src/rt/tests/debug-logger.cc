@@ -1,6 +1,5 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
 #include <unistd.h>
 
 #include <cstdlib>
@@ -8,6 +7,7 @@
 #include <string>
 
 #include <hilti/rt/debug-logger.h>
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/util.h>
 

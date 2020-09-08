@@ -213,8 +213,12 @@ add_executable(spicy-rt-tests
                src/rt/tests/parser.cc
                src/rt/tests/util.cc
                src/rt/tests/zlib.cc)
-target_link_libraries(spicy-rt-tests PRIVATE doctest spicy-rt hilti-rt)
+
 target_compile_options(spicy-rt-tests PRIVATE "-Wall")
+target_compile_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_link_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>)
+target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects> doctest)
 add_test(NAME spicy-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/spicy-rt-tests)
 
 add_executable(spicy-tests

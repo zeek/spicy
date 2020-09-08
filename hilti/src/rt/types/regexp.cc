@@ -82,7 +82,7 @@ std::tuple<int32_t, stream::View> regexp::MatchState::advance(const stream::View
 
     if ( rc >= 0 ) {
         _pimpl->_jrx = nullptr;
-        return std::make_tuple(rc, data.trim(data.begin() + offset));
+        return std::make_tuple(rc, data.trim(data.at(offset)));
     }
 
     return std::make_tuple(rc, data.trim(data.begin() + data.size()));
@@ -121,42 +121,25 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
         return std::make_pair(is_final ? _pimpl->_acc : -1, 0);
     }
 
-    stream::detail::UnsafeConstIterator cur(data.begin());
-    cur += 0; // this will normalize the internal chunk
     jrx_accept_id rc = 0;
 
-    unsigned consumed = 0; // Counter for the size of the consumed data.
-
-    // We iterate over raw arrays of continous memory underlying the
-    // stream data, using the internal API.
-    for ( auto chunk = cur.chunk(); chunk; chunk = chunk->next().get() ) {
-        if ( is_final && chunk->isLast() )
+    for ( auto block = data.firstBlock(); block; block = data.nextBlock(block) ) {
+        if ( is_final && block->is_last )
             last |= (JRX_ASSERTION_EOL | JRX_ASSERTION_EOD);
-
-        auto block_start = (chunk == cur.chunk() ? chunk->data(data.begin().offset()) : chunk->begin());
-        auto block_len = (chunk->end() - block_start);
-
-        // Since chunks are raw pointers with no knowledge of the size of the
-        // passed data, make sure we do not consume more data than is in the
-        // input after creating the chunk.
-        consumed += block_len;
-        if ( consumed > data.size() ) {
-            is_final = true;
-            block_len -= consumed - data.size();
-        }
 
 #ifdef _DEBUG_MATCHING
         std::cerr << fmt("feeding |%s| data.offset=%lu\n",
-                         escapeBytes(std::string_view((const char*)block_start, block_len)), data.safeBegin().offset());
+                         escapeBytes(std::string_view((const char*)block->start, block_len)),
+                         data.safeBegin().offset());
 #endif
 
-        rc = jrx_regexec_partial(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block_start), block_len, first, last,
-                                 &_pimpl->_ms, is_final);
+        rc = jrx_regexec_partial(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size, first,
+                                 last, &_pimpl->_ms, is_final);
 
         // FIXME: The jrx match_state intializes the offset with 1. Not sure
         // why right now but changing that would probably break other things
         // we adjust that here for the calculation.
-        uint64_t view_offset = chunk->offset() + _pimpl->_ms.offset - 1 - cur.chunk()->offset();
+        uint64_t view_offset = block->offset + _pimpl->_ms.offset - 1;
 
 #ifdef _DEBUG_MATCHING
         std::cerr << fmt("-> state=%p rc=%d ms->offset=%d\n", this, rc, _pimpl->_ms.offset);
@@ -175,7 +158,7 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
             _pimpl->_acc = rc;
             return std::make_pair(_pimpl->_acc, view_offset);
         }
-    };
+    }
 
     if ( rc < 0 && _pimpl->_acc == 0 )
         // At least one could match with more data.

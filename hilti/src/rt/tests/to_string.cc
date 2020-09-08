@@ -1,11 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <cstdint>
 #include <string_view>
 #include <tuple>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/libhilti.h>
 #include <hilti/rt/types/address.h>
 #include <hilti/rt/types/bool.h>
@@ -224,7 +223,7 @@ TEST_CASE("Stream") {
     CHECK_EQ(fmt("%s", Stream()), "");
     CHECK_EQ(fmt("%s", Stream("Gänsefüßchen\x00\x01\x02"_b)), "G\\xc3\\xa4nsef\\xc3\\xbc\\xc3\\x9fchen\\x00\\x01\\x02");
 
-    SUBCASE("iterator") {
+    SUBCASE("safe-iterator") {
         CHECK_EQ(to_string(Stream("0123456789"_b).begin()), "<offset=0 data=b\"0123456789\">");
         CHECK_EQ(to_string(Stream("01234567890123456789"_b).begin()), "<offset=0 data=b\"0123456789\"...>");
         CHECK_EQ(to_string(Stream("01234567890123456789"_b).end()), "<offset=20 data=b\"\">");
@@ -234,6 +233,12 @@ TEST_CASE("Stream") {
                      return s.begin();
                  }()),
                  "<expired>");
+    }
+
+    SUBCASE("unsafe-iterator") {
+        CHECK_EQ(to_string(Stream("0123456789"_b).unsafeBegin()), "<offset=0 data=b\"0123456789\">");
+        CHECK_EQ(to_string(Stream("01234567890123456789"_b).unsafeBegin()), "<offset=0 data=b\"0123456789\"...>");
+        CHECK_EQ(to_string(Stream("01234567890123456789"_b).unsafeEnd()), "<offset=20 data=b\"\">");
     }
 }
 

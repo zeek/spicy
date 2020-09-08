@@ -1,9 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <memory>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/vector.h>

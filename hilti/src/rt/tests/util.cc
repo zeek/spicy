@@ -1,6 +1,5 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
 #include <unistd.h>
 
 #include <cstdint>
@@ -11,6 +10,7 @@
 #include <vector>
 
 #include <hilti/rt/autogen/version.h>
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/types/integer.h>
@@ -296,7 +296,7 @@ TEST_CASE("expandEscapes") {
 }
 
 TEST_CASE("isDebugVersion") {
-#if HILTI_RT_BUILD_TYPE_DEBUG
+#ifndef NDEBUG
     CHECK(isDebugVersion());
 #else
     CHECK_FALSE(isDebugVersion());

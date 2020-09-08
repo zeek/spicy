@@ -1,9 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <tuple>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
@@ -135,8 +134,8 @@ TEST_CASE("advance on limited view") {
         // Match a regexp ending in a wildcard so it could match the entire input.
         auto&& [rc, unconsumed] = RegExp("123.*").tokenMatcher().advance(limited);
 
-        CHECK_EQ(rc, 1);             // Match found, cannot consume more data.
-        CHECK(unconsumed.isEmpty()); // Should have consumed entire input.
+        CHECK_EQ(rc, -1);           // Could consume more data.
+        CHECK_EQ(unconsumed, ""_b); // Should have consumed entire input.
         CHECK_EQ(unconsumed.offset(), limit);
     }
 

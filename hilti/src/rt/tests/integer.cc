@@ -1,12 +1,11 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
 #include <bitset>
 #include <cmath>
 #include <limits>
 #include <tuple>
 
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/bytes.h>

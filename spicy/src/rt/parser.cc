@@ -41,7 +41,7 @@ void detail::printParserState(const std::string& unit_id, const hilti::rt::Value
     auto msg = hilti::rt::fmt("- state: type=%s input=\"%s%s\" stream=%p offsets=%" PRId64 "/%" PRId64 "/%" PRId64
                               " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64 " lah_token=\"%s%s\"",
                               unit_id, input_data, input_dots, data.get(), data->begin().offset(), cur.begin().offset(),
-                              data->end().offset(), data->numberChunks(), (data->isFrozen() ? "yes" : "no"),
+                              data->end().offset(), data->numberOfChunks(), (data->isFrozen() ? "yes" : "no"),
                               literal_mode, (trim ? "yes" : "no"), lah_str, lah_data, lah_dots);
 
     SPICY_RT_DEBUG_VERBOSE(msg);

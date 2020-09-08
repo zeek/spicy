@@ -1,7 +1,6 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <doctest/doctest.h>
-
+#include <hilti/rt/doctest.h>
 #include <hilti/rt/fmt.h>
 
 using namespace hilti::rt;
