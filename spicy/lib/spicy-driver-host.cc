@@ -67,7 +67,7 @@ void SpicyDriver::usage() {
            "  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI "
            "exceptions.\n"
            "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
-           "  -F | --batch-file <path>       Read Spicy batch input from <path>; see docs for description of format.\n"
+           "  -F | --batch-file <path>        Read Spicy batch input from <path>; see docs for description of format.\n"
            "  -U | --report-resource-usage    Print summary of runtime resource usage.\n"
            "\n";
 }

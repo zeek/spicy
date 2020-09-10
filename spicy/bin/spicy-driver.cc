@@ -80,7 +80,7 @@ void SpicyDriver::usage() {
            "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
            "  -D | --compiler-debug <streams> Activate compile-time debugging output for given debug streams "
            "(comma-separated; 'help' for list).\n"
-           "  -F | ---batch-file <path>              Read Spicy batch input from <path>; see docs for description of "
+           "  -F | ---batch-file <path>       Read Spicy batch input from <path>; see docs for description of "
            "format.\n"
            "  -L | --library-path <path>      Add path to list of directories to search when importing modules.\n"
            "  -O | --optimize                 Build optimized release version of generated code.\n"
