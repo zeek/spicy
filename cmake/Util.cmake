@@ -30,6 +30,7 @@ function(install_headers src dst)
                           FILES_MATCHING PATTERN "*.h"
                                          PATTERN "*.hpp"
                                          PATTERN "*.hh"
+                                         PATTERN "3rdparty*" EXCLUDE
                           )
     endif ()
 endfunction ()

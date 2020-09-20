@@ -1,7 +1,7 @@
+# Note that most of the subdirectories here don't need to be known
+# to CMake because we directly pick out the pieces where we need
+# them.
+
+option(DOCTEST_NO_INSTALL  "Skip the installation process" ON)
 add_subdirectory(doctest)
-
-# The JSON tests generate warnings with GCC
-set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
-add_subdirectory(json)
-
 add_subdirectory(justrx)

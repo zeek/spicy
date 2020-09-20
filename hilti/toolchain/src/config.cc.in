@@ -1,0 +1,103 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#include <hilti/rt/autogen/version.h>
+
+#include <hilti/autogen/config.h>
+#include <hilti/base/util.h>
+
+using namespace hilti;
+
+const auto flatten = util::flattenParts;
+const auto prefix = util::prefixParts;
+
+hilti::Configuration::Configuration() {
+    initLocation(util::currentExecutable().native());
+}
+
+void hilti::Configuration::initLocation(bool use_build_directory) {
+    init(use_build_directory);
+}
+
+void hilti::Configuration::initLocation(const char* argv0) {
+    initLocation(std::string(argv0));
+}
+
+void hilti::Configuration::initLocation(const std::string_view& argv0) {
+//    auto exec = std::filesystem::absolute(std::filesystem::canonical(argv0)).native();
+//    auto prefix = std::filesystem::absolute(std::filesystem::canonical("${CMAKE_BINARY_DIR}")).native();
+    auto exec = std::filesystem::absolute(argv0).native();
+    auto prefix = std::filesystem::absolute("${CMAKE_BINARY_DIR}").native();
+    init(util::startsWith(exec, prefix));
+}
+
+void Configuration::init(bool use_build_directory) {
+    uses_build_directory = use_build_directory;
+    std::string installation_tag = (use_build_directory ? "BUILD" : "INSTALL");
+
+    cxx = "${CMAKE_CXX_COMPILER}";
+    distbase = "${CMAKE_SOURCE_DIR}";
+    install_prefix = "${CMAKE_INSTALL_PREFIX}";
+    build_directory = "${CMAKE_BINARY_DIR}";
+    lib_directory = (uses_build_directory ? "${PROJECT_BINARY_DIR}/lib" : "${CMAKE_INSTALL_FULL_LIBDIR}");
+    hiltic = (uses_build_directory ? "${PROJECT_BINARY_DIR}/bin/hiltic" : "${CMAKE_INSTALL_PREFIX}/bin/hiltic");
+    version_number = PROJECT_VERSION_NUMBER;
+    version_major = PROJECT_VERSION_MAJOR;
+    version_minor = PROJECT_VERSION_MINOR;
+    version_patch = PROJECT_VERSION_PATCH;
+    version_prerelease = PROJECT_VERSION_PRERELEASE;
+    version_string = PROJECT_VERSION_STRING_SHORT;
+    version_string_long = PROJECT_VERSION_STRING_LONG;
+
+#ifdef HILTI_HAVE_JIT
+    jit_enabled = true;
+#else
+    jit_enabled = false;
+#endif
+
+    jit_clang_executable = "${CLANG_EXECUTABLE}";
+    jit_clang_resource_dir = "${CLANG_RESOURCE_DIR}";
+
+    std::vector<std::string> library_paths;
+
+    if ( auto hilti_library_paths = std::getenv("HILTI_PATH") ) {
+        library_paths =
+            util::transform(hilti::rt::split(hilti_library_paths, ":"), [](auto s) { return std::string(s); });
+    }
+    else {
+        library_paths = flatten({".", prefix("${HILTI_CONFIG_LIBRARY_DIRS}", "", installation_tag)});
+    }
+
+    hilti_library_paths = util::transform(library_paths, [](auto s) { return std::filesystem::path(s); });
+    hilti_include_paths = util::transform(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "", installation_tag)), [](auto s) { return std::filesystem::path(s); });
+
+    runtime_cxx_flags_debug = flatten({
+        prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)
+    });
+
+    runtime_cxx_flags_release = flatten({
+        prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)
+    });
+
+    runtime_ld_flags_debug = flatten({
+        prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-L", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-Wl,-rpath,", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "-l", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
+        prefix(CMAKE_DL_LIBS, "-l", installation_tag)
+    });
+
+    runtime_ld_flags_release = flatten({
+        prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-L", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-Wl,-rpath,", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
+        prefix(CMAKE_DL_LIBS, "-l", installation_tag)
+    });
+};
+
+Configuration& hilti::configuration() {
+    static Configuration singleton;
+    return singleton;
+}

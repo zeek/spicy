@@ -44,4 +44,4 @@ repos:
   hooks:
   - id: gitlint
 
-exclude: /3rdparty/|doc/.*examples/|/Baseline/|(\.svg$)|(\.dat$)
+exclude: 3rdparty/|doc/.*examples/|/Baseline/|(\.svg$)|(\.dat$)

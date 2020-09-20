@@ -9,21 +9,23 @@
 cmake_bison_root=""
 cmake_build_directory="build"
 cmake_build_shared_libs="yes"
+cmake_build_toolchain="yes"
 cmake_build_type="RelWithDebInfo"
-cmake_clang_root=""
+cmake_build_zeek_plugin="yes"
 cmake_c_compiler=""
-cmake_cxx_compiler=""
 cmake_clang_resource_dir=""
+cmake_clang_root=""
+cmake_cxx_compiler=""
 cmake_flex_root=""
 cmake_generator=""
 cmake_hilti_have_jit="yes"
-cmake_zeek_have_jit="yes"
 cmake_install_prefix="/usr/local"
 cmake_llvm_root=""
 cmake_use_ccache="no"
 cmake_use_gold="yes"
 cmake_use_sanitizers=""
 cmake_use_werror="false"
+cmake_zeek_have_jit="yes"
 cmake_zeek_root_dir="/usr/local/zeek"
 
 display_cmake=0
@@ -52,9 +54,11 @@ usage="\
 Usage: $0 [OPTION]... [VAR=VALUE]...
 
   Build Options:
-    --build-static-libs                Build static libraries instead [default: shared]
     --build-dir=DIR                    Place build files in directory [default: ${cmake_build_directory}]
+    --build-static-libs                Build static libraries instead [default: shared]
+    --build-toolchain={yes,no}         Build the Spicy compiler toolchain [default: ${cmake_build_toolchain}]
     --build-type=TYPE                  Set build type (Debug,Release,RelWithDebInfo) [default: ${cmake_build_type}]
+    --build-zeek-plugin={yes,no}       Build the the Spicy plugin for Zeek [default: ${cmake_build_zeek_plugin}]
     --disable-jit                      Do not compile in support for JIT compilation
     --disable-jit-for-zeek             Do not compile support for JIT compilation into Zeek plugin
     --disable-gold                     On Linux, do not try to use the gold linker
@@ -108,12 +112,14 @@ while [ $# -ne 0 ]; do
     esac
 
     case "$1" in
-        --build-static-libs)               cmake_build_shared_libs="false";;
         --build-dir=*|--builddir=*)        cmake_build_directory="${optarg}";;
+        --build-static-libs)               cmake_build_shared_libs="false";;
+        --build-toolchain=*)               cmake_build_toolchain="${optarg}";;
         --build-type=*)                    cmake_build_type="${optarg}";;
+        --build-zeek-plugin=*)             cmake_build_zeek_plugin="${optarg}";;
+        --disable-gold)                    cmake_use_gold="no";;
         --disable-jit)                     cmake_hilti_have_jit="no";;
         --disable-jit-for-zeek)            cmake_zeek_have_jit="no";;
-        --disable-gold)                    cmake_use_gold="no";;
         --enable-ccache)                   cmake_use_ccache="yes";;
         --enable-debug)                    cmake_build_type="Debug";;
         --enable-sanitizer)                cmake_use_sanitizers="address";;
@@ -154,6 +160,8 @@ done
 # Set CMake cache options.
 append_cache_entry BISON_ROOT                   PATH   "${cmake_bison_root}"
 append_cache_entry BUILD_SHARED_LIBS            BOOL   "${cmake_build_shared_libs}"
+append_cache_entry BUILD_TOOLCHAIN              BOOL   "${cmake_build_toolchain}"
+append_cache_entry BUILD_ZEEK_PLUGIN            BOOL   "${cmake_build_zeek_plugin}"
 append_cache_entry CLANG_ROOT                   PATH   "${cmake_clang_root}"
 append_cache_entry CMAKE_BUILD_TYPE             STRING "${cmake_build_type}"
 append_cache_entry CMAKE_C_COMPILER             PATH   "${cmake_c_compiler}"

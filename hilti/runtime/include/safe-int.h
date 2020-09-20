@@ -1,0 +1,38 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <hilti/rt/3rdparty/SafeInt/SafeInt.hpp>
+#include <hilti/rt/exception.h>
+
+namespace hilti::rt {
+namespace integer {
+
+namespace detail {
+class SafeIntException {
+public:
+    static void SafeIntOnOverflow() __attribute__((noreturn)) { throw Overflow("integer overflow"); }
+
+    static void SafeIntOnDivZero() __attribute__((noreturn)) { throw DivisionByZero("integer division by zero"); }
+};
+} // namespace detail
+
+template<typename T>
+using safe = SafeInt<T, detail::SafeIntException>;
+
+} // namespace integer
+} // namespace hilti::rt
+
+// Needs to be a top level.
+template<typename O, typename T>
+inline auto operator<<(O& out, const hilti::rt::integer::safe<T>& x)
+    -> std::enable_if_t<std::is_base_of_v<std::ostream, O>, O>& {
+    if ( std::is_same<T, int8_t>() )
+        out << static_cast<int16_t>(x);
+    else if ( std::is_same<T, uint8_t>() )
+        out << static_cast<uint16_t>(x);
+    else
+        out << x.Ref();
+
+    return out;
+}

@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 3.15.0)
 
-execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake
+execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR}
     OUTPUT_VARIABLE SPICY_VERSION
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -173,27 +173,43 @@ endif ()
 
 if ( NOT HILTI_HAVE_JIT )
     set(ZEEK_HAVE_JIT no)
+    set(HILTI_HAVE_JIT no)
 endif ()
 
 if ( ZEEK_FOUND )
     set(HAVE_ZEEK yes)
-    add_subdirectory(zeek)
 else ()
     set(HAVE_ZEEK no)
+    set(BUILD_ZEEK_PLUGIN no)
     set(ZEEK_HAVE_JIT no)
+endif ()
+
+if ( BUILD_TOOLCHAIN )
+    set(HAVE_TOOLCHAIN yes)
+else ()
+    set(HAVE_TOOLCHAIN no)
+    set(ZEEK_HAVE_JIT no)
+endif ()
+
+if ( BUILD_ZEEK_PLUGIN )
+    set(HAVE_ZEEK_PLUGIN yes)
+else ()
+    set(HAVE_ZEEK_PLUGIN no)
 endif ()
 
 # Set up testing infrastructure.
 enable_testing()
 
-## Process subdirectories
+# Add subdirectories.
+
 add_subdirectory(hilti)
 add_subdirectory(spicy)
-add_subdirectory(3rdparty)
 
-# Global test target
-add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS tests)
-add_custom_target(tests DEPENDS hilti-rt-tests hilti-tests spicy-tests spicy-rt-tests)
+if ( HAVE_ZEEK_PLUGIN )
+    add_subdirectory(zeek)
+endif ()
+
+add_subdirectory(3rdparty)
 
 ## Print build summary
 string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)
@@ -201,7 +217,9 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)
 string(STRIP "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${BuildType}}" cflags)
 string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BuildType}}" cxxflags)
 
-get_target_property(cxx_flags_hilti_rt hilti-rt COMPILE_FLAGS)
+# Global test target
+add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS tests)
+add_custom_target(tests DEPENDS hilti-tests spicy-tests)
 
 if ( NOT CLANG_RESOURCE_DIR )
     # Just for display.
@@ -226,8 +244,10 @@ message(
     "\nC compiler:            ${CMAKE_C_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})"
     "\nC++ compiler:          ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})"
     "\n"
+    "\nBuilding toolchain:    ${HAVE_TOOLCHAIN}"
+    "\nBuilding Zeek plugin:  ${HAVE_ZEEK_PLUGIN}"
+    "\n"
     "\nJIT enabled:           ${HILTI_HAVE_JIT}"
-    "\nZeek plugin enabled:   ${HAVE_ZEEK}"
     "\nZeek JIT enabled:      ${ZEEK_HAVE_JIT}"
     "\n"
     "\nUse ccache:            ${USE_CCACHE}"
@@ -247,7 +267,7 @@ message(
     "\nClang gcc tolchain:    ${CLANG_GCC_INSTALLATION}"
     "\nWarnings are errors:   ${USE_WERROR}"
     "\n"
-    "\nZeek found:            ${ZEEK_FOUND}"
+    "\nZeek found:            ${HAVE_ZEEK}"
     "\nZeek version:          ${ZEEK_VERSION} (${ZEEK_VERSION_NUMBER})"
     "\nZeek debug build:      ${ZEEK_DEBUG_BUILD}"
     "\nZeek root dir:         ${ZEEK_PREFIX}"

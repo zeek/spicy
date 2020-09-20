@@ -62,8 +62,15 @@ target_include_directories(${_plugin_lib} BEFORE PRIVATE ${CMAKE_CURRENT_SOURCE_
 
 # For JIT support.
 target_link_libraries(${_plugin_lib} $<$<BOOL:${ZEEK_HAVE_JIT}>:zeek-compiler>)
-target_link_hilti(${_plugin_lib})
-target_link_spicy(${_plugin_lib})
+
+if ( HAVE_TOOLCHAIN )
+    target_link_hilti(${_plugin_lib})
+    target_link_spicy(${_plugin_lib})
+else ()
+    # Just need the runtimes.
+    target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+    target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
+endif ()
 
 # Create an alias for the plugin target.
 add_custom_target(zeek-plugin DEPENDS ${_plugin_lib})

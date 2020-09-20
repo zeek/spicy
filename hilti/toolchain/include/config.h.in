@@ -1,0 +1,112 @@
+// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <string>
+#include <vector>
+
+#include <hilti/base/util.h>
+
+#cmakedefine CXX_FILESYSTEM_IS_EXPERIMENTAL
+#define CXX_FILESYSTEM_HEADER "@CXX_FILESYSTEM_HEADER@"
+
+#cmakedefine HAVE_TOOLCHAIN
+#cmakedefine HILTI_HAVE_JIT
+#cmakedefine HILTI_HAVE_SANITIZER
+
+#define CMAKE_DL_LIBS (std::string("@CMAKE_DL_LIBS@").size() ? "@CMAKE_DL_LIBS@" : "")
+
+#ifdef CXX_FILESYSTEM_IS_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace std { namespace filesystem = experimental::filesystem; } // NOLINT
+#else
+#include <filesystem>
+#endif
+
+namespace hilti {
+
+/**
+ * Stores compile-time configuration information.
+ */
+struct Configuration {
+    /**
+     * Default constructor that initializes all settings relative to the
+     * currently executing binary. To change that, call `initLocation()`.
+     */
+    Configuration();
+
+    /**
+     * Reconfigures the configuration object to adapt all paths to
+     * potentially running out of the build directory.
+     *
+     * @param use_build_directory true to adapt paths to build directory, false for installation directory
+     */
+    void initLocation(bool use_build_directory);
+
+    /**
+     * Reconfigures the configuration object to adapt all paths to
+     * potentially running out of the build directory. This version bases the
+     * decision on the path of the current executable: if it's inside the
+     * source directory, we're assuming we're running out of build directory.
+     *
+     * @param argv0 path to current execuable
+     */
+    void initLocation(const std::string_view& argv0);
+
+    /**
+     * Reconfigures the configuration object to adapt all paths to
+     * potentially running out of the build directory. This version bases the
+     * decision on the path of the current executable: if it's inside the
+     * source directory, we're assuming we're running out of build directory.
+     *
+     * \note We need this overload as otherwise the boolean version
+     * would be picked for C strings.
+     *
+     * @param argv0 path to current execuable
+     */
+    void initLocation(const char* argv0);
+
+    bool uses_build_directory;               /**< True if all information pertains to running outside of the build directory. */
+
+    std::filesystem::path cxx;               /**< Full path to C++ compiler */
+    std::filesystem::path distbase;          /**< base directory of HILTI source distribution */
+    std::filesystem::path hiltic;            /**< Full path to `hiltic` binary */
+    std::filesystem::path install_prefix;    /**< HILTI install prefix */
+    std::filesystem::path lib_directory;     /**< Full path to directory where HILTI libraries are stored  */
+    std::filesystem::path build_directory;   /**< Full path to directory where HILTI was built */
+    std::vector<std::filesystem::path>
+        hilti_library_paths; /**< Default search path for HILTI modules, separated by `:` */
+    std::vector<std::filesystem::path>
+        hilti_include_paths; /**< C++ include directories for HILTI runtime headers */
+
+    int version_number; /**< Single version number encoding major/minor/patch levels */
+    int version_major; /**< Major number of the HILTI version */
+    int version_minor; /**< Minor number of the HILTI version */
+    int version_patch; /**< Patch number of the HILTI version */
+    std::string version_prerelease; /**< Prelease number of the HILTI version */
+    std::string version_string; /* Readable version string, without git information */
+    std::string version_string_long; /* Readable version string, including git information */
+
+    bool jit_enabled; /** True if JIT support has been compiled in. */
+    std::filesystem::path jit_clang_executable;   /**< Path to clang++ JITing */
+    std::filesystem::path jit_clang_resource_dir; /**< Clang's resource directory for JITing */
+
+    std::vector<std::string> runtime_cxx_flags_debug;  /**< C++ compiler flags when compiling custom code in debug mode
+                                                          that uses the HILTI runtime library */
+    std::vector<std::string> runtime_ld_flags_debug;   /**< Linker flags when compiling custom code in debug mode that
+                                                          uses the HILTI runtime library */
+    std::vector<std::string> runtime_cxx_flags_release;  /**< C++ compiler flags when compiling custom code in release
+                                                            mode that uses the HILTI runtime library */
+    std::vector<std::string> runtime_ld_flags_release; /**< Linker flags when compiling custom code in release mode that
+                                                          uses the HILTI runtime library */
+private:
+    void init(bool use_build_location);
+};
+
+/**
+ * Returns a reference to the global configuration information. This is the
+ * same information that `hilti-config` reports as well.
+ */
+extern Configuration& configuration();
+
+} // namespace hilti
