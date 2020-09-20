@@ -20,7 +20,7 @@ include(BroPlugin)
 set(CMAKE_C_FLAGS ${save_c_flags})
 set(CMAKE_CXX_FLAGS ${save_cxx_flags})
 
-zeek_plugin_begin(Zeek Spicy)
+zeek_plugin_begin(_Zeek Spicy)
 
 zeek_plugin_cc(src/file-analyzer.cc)
 zeek_plugin_cc(src/plugin.cc)
@@ -99,6 +99,9 @@ set_target_properties(${_plugin_lib} PROPERTIES INSTALL_RPATH "${rpath_install}"
 
 install_headers(include zeek-spicy runtime-support.h cookie.h zeek-compat.h)
 install_headers(${CMAKE_CURRENT_BINARY_DIR}/zeek-spicy/autogen zeek-spicy/autogen config.h)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/cmake DESTINATION ${CMAKE_INSTALL_DATADIR}/spicy
+        FILES_MATCHING PATTERN "FindZeekSpicy.cmake")
 
 # This may need additional permissions, but we just leave it fail in that case.
 install_symlink("${PLUGIN_INSTALL_DIR}" "${ZEEK_PLUGIN_DIR}/Zeek_Spicy")

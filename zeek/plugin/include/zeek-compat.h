@@ -18,7 +18,9 @@
 
 // We collect all the Zeek includes here that we need anywhere in the plugin.
 #if ZEEK_DEBUG_BUILD
+#ifndef DEBUG
 #define DEBUG
+#endif
 #endif
 #include <zeek/Conn.h>
 #include <zeek/DebugLogger.h>

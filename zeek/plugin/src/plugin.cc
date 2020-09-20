@@ -133,7 +133,7 @@ const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForFileAnalyzer(const
 
 ::zeek::plugin::Configuration plugin::Zeek_Spicy::Plugin::Configure() {
     ::zeek::plugin::Configuration config;
-    config.name = "Zeek::Spicy";
+    config.name = "_Zeek::Spicy"; // Prefix with underscore to make sure it gets loaded first
 #ifdef ZEEK_HAVE_JIT
     config.description = "Support for Spicy parsers (*.spicy, *.evt, *.hlto)";
 #else

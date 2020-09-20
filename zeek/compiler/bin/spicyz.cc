@@ -69,6 +69,7 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
 
             case 'c':
                 driver_options->output_cxx = true;
+                driver_options->output_cxx_prefix = optarg;
                 driver_options->execute_code = false;
                 break;
 
@@ -151,7 +152,7 @@ static hilti::Result<Nothing> parseOptions(int argc, char** argv, hilti::driver:
     if ( driver_options->inputs.empty() )
         return hilti::result::Error("no input file given");
 
-    if ( driver_options->output_path.empty() )
+    if ( driver_options->output_path.empty() && ! driver_options->output_cxx )
         return hilti::result::Error("no output file for object code given, use -o <file>.hlto");
 
     return Nothing();

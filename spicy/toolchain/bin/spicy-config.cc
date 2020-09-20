@@ -23,6 +23,7 @@ Available options:
 
     --build                 Prints "debug" or "release", depending on the build configuration.
     --bindir                Prints the path to the directory where binaries are installed.
+    --cmake-path            Prints the path to Spicy-provided CMake modules
     --cxx                   Print the path to the C++ compiler used to build Spicy
     --cxxflags              Print flags for C++ compiler. (These are addition to any that HILTI needs.)
     --debug                 Output flags for working with debugging versions.
@@ -150,6 +151,15 @@ int main(int argc, char** argv) {
 
         if ( opt == "--spicy-build" ) {
             result.emplace_back((spicy::configuration().spicyc.parent_path() / "spicy-build"));
+            continue;
+        }
+
+        if ( opt == "--cmake-path" ) {
+            if ( hilti::configuration().uses_build_directory )
+                result.emplace_back(hilti::configuration().distbase / "cmake");
+            else
+                result.emplace_back(hilti::configuration().install_prefix / "share/spicy/cmake");
+
             continue;
         }
 
