@@ -2,6 +2,7 @@
 
 #pragma once
 
+#define SAFEINT_DISABLE_ADDRESS_OPERATOR
 #include <hilti/rt/3rdparty/SafeInt/SafeInt.hpp>
 #include <hilti/rt/exception.h>
 

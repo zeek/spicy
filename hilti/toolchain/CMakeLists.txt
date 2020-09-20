@@ -97,7 +97,6 @@ set(SOURCES
 
     # Already included in hilti-rt, which we pull in.
     # src/3rdparty/utf8proc/utf8proc.c
-    ${CMAKE_SOURCE_DIR}/3rdparty/pathfind/src/PathFind.cpp
 
     ${SOURCES_TYPE_ERASED}
     ${SOURCES_OPERATORS}

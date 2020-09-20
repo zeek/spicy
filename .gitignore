@@ -2,3 +2,5 @@
 tmp
 *.pyc
 .##*
+compile_commands.json
+.clangd

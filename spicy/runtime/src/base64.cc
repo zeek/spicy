@@ -92,9 +92,8 @@ hilti::rt::Bytes Stream::finish() {
     hilti::rt::Bytes b;
     char buf[4];
 
-    // blockend always adds a trailing newline that we don't want.
     int len = base64_encode_blockend(buf, &_state->estate);
-    b.append(hilti::rt::Bytes(buf, len - 1));
+    b.append(hilti::rt::Bytes(buf, len));
 
     _state = nullptr;
     return b;

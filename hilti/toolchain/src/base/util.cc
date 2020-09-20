@@ -16,7 +16,16 @@
 
 #include <hilti/base/logger.h>
 
-#include <pathfind/src/PathFind.hpp>
+// There's a bizarr "printf" inside the PathFind code. So we include the
+// source file here to be able to #define that away.
+#define __ignore__(x,y)
+#define printf __ignore__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#include <pathfind/src/PathFind.cpp>
+#pragma GCC diagnostic pop
+#undef printf
+#undef __ignore__
 
 using namespace hilti;
 using namespace hilti::util;

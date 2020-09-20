@@ -23,9 +23,14 @@
 #include <hilti/rt/exception.h>
 
 extern "C" {
+// libtask introduces "Context" into the global scope, which leads
+// to ambiguities. As we don't need it, we just hide it.
+#define Context __libtask__Context
 #include <hilti/rt/3rdparty/libtask/taskimpl.h>
-
+#undef Context
+// Undef macros that libtask defines.
 #undef print
+#undef nil
 
 void _Trampoline(unsigned int y, unsigned int x);
 }

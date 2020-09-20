@@ -4,3 +4,30 @@
 [submodule "3rdparty/json"]
 	path = 3rdparty/json
 	url = https://github.com/nlohmann/json.git
+[submodule "3rdparty/SafeInt"]
+	path = 3rdparty/SafeInt
+	url = https://github.com/rsmmr/SafeInt
+[submodule "3rdparty/ArticleEnumClass-v2"]
+	path = 3rdparty/ArticleEnumClass-v2
+	url = https://github.com/Dalzhim/ArticleEnumClass-v2
+[submodule "3rdparty/libb64"]
+	path = 3rdparty/libb64
+	url = https://github.com/libb64/libb64
+[submodule "3rdparty/libtask"]
+	path = 3rdparty/libtask
+	url = https://github.com/majek/libtask
+[submodule "3rdparty/pathfind"]
+	path = 3rdparty/pathfind
+	url = https://github.com/bkloppenborg/pathfind
+[submodule "3rdparty/tinyformat"]
+	path = 3rdparty/tinyformat
+	url = https://github.com/c42f/tinyformat
+[submodule "3rdparty/utf8proc"]
+	path = 3rdparty/utf8proc
+	url = https://github.com/JuliaStrings/utf8proc
+[submodule "3rdparty/justrx"]
+	path = 3rdparty/justrx
+	url = https://github.com/rsmmr/justrx.git
+[submodule "3rdparty/run-clang-format"]
+	path = 3rdparty/run-clang-format
+	url = https://github.com/Sarcasm/run-clang-format

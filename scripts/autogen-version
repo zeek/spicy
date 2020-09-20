@@ -10,7 +10,7 @@ usage() {
 
 output=long
 
-while [ $# -gt 1 ]; do
+while [ $# -ge 1 ]; do
     if [ "$1" = "--short" ]; then
         output=short
         shift

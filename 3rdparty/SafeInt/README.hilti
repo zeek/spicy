@@ -1,5 +1,0 @@
-A class library for C++ that manages integer overflows. From
-https://github.com/dcleblanc/SafeInt.
-
-Changes:
-    - We remove the artificial operator& overload, as we need the actual one.

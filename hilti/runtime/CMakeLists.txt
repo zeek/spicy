@@ -43,6 +43,8 @@ set(SOURCES
     ${CMAKE_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c
 )
 
+set_source_files_properties(${CMAKE_SOURCE_DIR}/3rdparty/libtask/context.c PROPERTIES COMPILE_OPTIONS "-Wno-null-dereference")
+
 foreach ( lib hilti-rt hilti-rt-debug )
     add_library(${lib}-objects OBJECT ${SOURCES})
     add_dependencies(${lib}-objects version)

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <enum-class/EnumClass.h>
+#include <ArticleEnumClass-v2/EnumClass.h>
 
 #include <algorithm>
 #include <iostream>

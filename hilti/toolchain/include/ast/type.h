@@ -49,7 +49,7 @@ enum class Flag {
 /**
  * Stores a set of flags associated with a type.
  *
- * TODO: Replace with 3rd-party/enum-class/EnumClass.h
+ * TODO: Replace with 3rd-party/ArticleEnumClass-v2/EnumClass.h
  */
 class Flags {
 public:

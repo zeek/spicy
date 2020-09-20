@@ -1,14 +1,12 @@
 ================================================================================
-Spicy subcomponents:
-
-The Spicy project contains subcomponents with separate copyright
-notices and license terms. Your use of the source code for the these
-subcomponents is subject to the terms and conditions of the following
-licenses.
+The Spicy project uses subcomponents with separate copyright notices and
+license terms. Your use of the source code for the these subcomponents is
+subject to the terms and conditions of the following licenses.
+================================================================================
 
 
 ================================================================================
-For SafeInt (hilti/include/3rdparty/SafeInt):
+SafeInt
 ================================================================================
 
 MIT License
@@ -35,7 +33,7 @@ SOFTWARE.
 
 
 ================================================================================
-For doctest (3rdparty/doctest):
+doctest
 ================================================================================
 
 The MIT License (MIT)
@@ -62,7 +60,7 @@ SOFTWARE.
 
 
 ================================================================================
-For EnumClass (hilti/include/3rdparty/enum-class):
+ArticleEnumClass-v2
 ================================================================================
 
 BSD 2-Clause License
@@ -93,8 +91,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ================================================================================
-For libtask (hilti/include/3rdparty/libtask):
+libtask
 ================================================================================
+
 
 This software was developed as part of a project at MIT.
 
@@ -140,12 +139,12 @@ Contains parts of an earlier library that has:
 
 
 ================================================================================
-For nlohmann-json (hilti/include/3rdparty/nlohmann-json):
+json
 ================================================================================
 
 MIT License
 
-Copyright (c) 2013-2018 Niels Lohmann
+Copyright (c) 2013-2020 Niels Lohmann
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -165,12 +164,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-
 ================================================================================
-For tinyformat (hilti/include/3rdparty/tinyformat):
+tinyformat
 ================================================================================
 
-Boost Software License - Version 1.0 - August 17th, 2003
+Copyright (C) 2011, Chris Foster [chris42f (at) gmail (d0t) com]
+
+Boost Software License - Version 1.0
 
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
@@ -194,12 +194,11 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
-
 ================================================================================
-For justrx (hilti/src/3rdparty/justrx):
+justrx
 ================================================================================
 
-Copyright (c) 2014-2016, International Computer Science Institute. All rights reserved.
+Copyright (c) 2014-2020, International Computer Science Institute. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -230,54 +229,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 ================================================================================
-For libtask (hilti/src/3rdparty/libtask):
-================================================================================
-
-This software was developed as part of a project at MIT.
-
-Copyright (c) 2005-2007 Russ Cox,
-                   Massachusetts Institute of Technology
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-===
-
-Contains parts of an earlier library that has:
-
-/*
- * The authors of this software are Rob Pike, Sape Mullender, and Russ Cox
- *		Copyright (c) 2003 by Lucent Technologies.
- * Permission to use, copy, modify, and distribute this software for any
- * purpose without fee is hereby granted, provided that this entire notice
- * is included in all copies of any software which is or includes a copy
- * or modification of this software and in all copies of the supporting
- * documentation for such software.
- * THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
- * WARRANTY.  IN PARTICULAR, NEITHER THE AUTHORS NOR LUCENT TECHNOLOGIES MAKE ANY
- * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
- * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
-*/
-
-
-================================================================================
-For pathfind (hilti/src/3rdparty/pathfind):
+pathfind
 ================================================================================
 
                    GNU LESSER GENERAL PUBLIC LICENSE
@@ -448,7 +400,7 @@ Library.
 
 
 ================================================================================
-For utf8proc (hilti/src/3rdparty/utf8proc):
+utf8proc
 ================================================================================
 
 ## utf8proc license ##
@@ -504,7 +456,7 @@ DEALINGS IN THE SOFTWARE.
 
 ## Unicode data license ##
 
-This software distribution contains derived data from a modified version of
+This software contains data (`utf8proc_data.c`) derived from processing
 the Unicode data files. The following license applies to that data:
 
 **COPYRIGHT AND PERMISSION NOTICE**
@@ -545,9 +497,41 @@ Unicode and the Unicode logo are trademarks of Unicode, Inc., and may be
 registered in some jurisdictions. All other trademarks and registered
 trademarks mentioned herein are the property of their respective owners.
 
+================================================================================
+libb64
+================================================================================
+
+Copyright-Only Dedication (based on United States law) or Public Domain Certification
+
+The person or persons who have associated work with this document (the
+"Dedicator" or "Certifier") hereby either (a) certifies that, to the best of
+his knowledge, the work of authorship identified is in the public domain of
+the country from which the work is published, or (b) hereby dedicates whatever
+copyright the dedicators holds in the work of authorship identified below (the
+"Work") to the public domain. A certifier, moreover, dedicates any copyright
+interest he may have in the associated work, and for these purposes, is
+described as a "dedicator" below.
+
+A certifier has taken reasonable steps to verify the copyright status of this
+work. Certifier recognizes that his good faith efforts may not shield him from
+liability if in fact the work certified is not in the public domain.
+
+Dedicator makes this dedication for the benefit of the public at large and to
+the detriment of the Dedicator's heirs and successors. Dedicator intends this
+dedication to be an overt act of relinquishment in perpetuity of all present
+and future rights under copyright law, whether vested or contingent, in the
+Work. Dedicator understands that such relinquishment of all rights includes
+the relinquishment of all rights to enforce (by lawsuit or otherwise) those
+copyrights in the Work.
+
+Dedicator recognizes that, once placed in the public domain, the Work may be
+freely reproduced, distributed, transmitted, used, modified, built upon, or
+otherwise exploited by anyone for any purpose, commercial or non-commercial,
+and in any way, including by methods that have not yet been invented or
+conceived.
 
 ================================================================================
-For run-clang-format scripts/3rdparty/run-clang-format):
+run-clang-format
 ================================================================================
 
 MIT License
@@ -571,38 +555,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-
-================================================================================
-For libb64 (spicy/src/3rdparty/libb64):
-================================================================================
-
-Copyright-Only Dedication (based on United States law)
-or Public Domain Certification
-
-The person or persons who have associated work with this document (the
-"Dedicator" or "Certifier") hereby either (a) certifies that, to the best of
-his knowledge, the work of authorship identified is in the public domain of the
-country from which the work is published, or (b) hereby dedicates whatever
-copyright the dedicators holds in the work of authorship identified below (the
-"Work") to the public domain. A certifier, moreover, dedicates any copyright
-interest he may have in the associated work, and for these purposes, is
-described as a "dedicator" below.
-
-A certifier has taken reasonable steps to verify the copyright status of this
-work. Certifier recognizes that his good faith efforts may not shield him from
-liability if in fact the work certified is not in the public domain.
-
-Dedicator makes this dedication for the benefit of the public at large and to
-the detriment of the Dedicator's heirs and successors. Dedicator intends this
-dedication to be an overt act of relinquishment in perpetuity of all present
-and future rights under copyright law, whether vested or contingent, in the
-Work. Dedicator understands that such relinquishment of all rights includes
-the relinquishment of all rights to enforce (by lawsuit or otherwise) those
-copyrights in the Work.
-
-Dedicator recognizes that, once placed in the public domain, the Work may be
-freely reproduced, distributed, transmitted, used, modified, built upon, or
-otherwise exploited by anyone for any purpose, commercial or non-commercial,
-and in any way, including by methods that have not yet been invented or
-conceived.

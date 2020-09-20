@@ -276,7 +276,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
 
 std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool escape_control, bool keep_hex) {
     auto escapeControl = [escape_control](unsigned char c, const char* s) {
-        return escape_control ? fmt(s) : std::string(1, c);
+        return escape_control ? s : std::string(1, c);
     };
 
     auto p = reinterpret_cast<const unsigned char*>(s.data());
