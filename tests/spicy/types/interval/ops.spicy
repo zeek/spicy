@@ -10,6 +10,7 @@ import spicy;
 global i1 = interval(2.5);
 global i2 = interval(1.5);
 global i3 = interval_ns(2500000000);
+global i4 = interval_ns(-2500000000);
 
 print i1;
 print i2;
@@ -17,3 +18,4 @@ print i2;
 assert i1.seconds() == 2.5;
 assert i1.nanoseconds() == 2500000000;
 assert i1 == i3;
+assert i3 + i4 == interval(0);

@@ -8,7 +8,7 @@
 # used in here for clarity.
 #
 [general]
-ignore=title-trailing-punctuation,body-is-missing
+ignore=title-trailing-punctuation,body-is-missing,body-min-length
 
 # verbosity should be a value between 1 and 3, the commandline -v flags take precedence over this
 # verbosity = 2
