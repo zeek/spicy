@@ -104,7 +104,7 @@ inline auto hiltiGlobals() {
  * this is determined by the HILTI linker
  */
 template<typename T>
-inline auto moduleGlobals(int idx) {
+inline auto moduleGlobals(unsigned int idx) {
     const auto& globals = hiltiGlobals();
 
     assert(idx < globals.size());
