@@ -251,7 +251,7 @@ message(
     "\nZeek JIT enabled:      ${ZEEK_HAVE_JIT}"
     "\n"
     "\nUse ccache:            ${USE_CCACHE}"
-    "\nUse gold linker:       ${USE_GOLD}"
+    "\nUse gold linker:       ${GOLD_FOUND}"
     "\nUse sanitizers:        ${HILTI_HAVE_SANITIZER}"
     "\nUse backtrace:         ${HILTI_HAVE_BACKTRACE}"
     "\n"

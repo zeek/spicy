@@ -1,7 +1,9 @@
 
 ## Enable Gold linker if available.
 
-set(GOLD_FOULD "no")
+OPTION(USE_GOLD "Use Gold linker" ON)
+
+set(GOLD_FOUND "no")
 
 if ( USE_GOLD )
     if ( UNIX AND NOT APPLE AND NOT LLD_PATH )
