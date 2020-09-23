@@ -37,7 +37,7 @@ command="$0 $*"
 cmake_exe="<no cmake>"
 for i in cmake cmake3; do
     if command -v $i >/dev/null; then
-        $i --version | grep -q "cmake.*version 3" && cmake_exe=$(which $i)
+        $i --version | grep -q "cmake.*version 3" && cmake_exe=$(command -v $i)
         break
     fi
 done
