@@ -171,7 +171,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const ctor::Time& n) {
-        return fmt("hilti::rt::Time(%f, hilti::rt::Time::SecondTag())", n.value().seconds());
+        return fmt("hilti::rt::Time(%" PRId64 ", hilti::rt::Time::NanosecondTag())", n.value().nanoseconds());
     }
 
     result_t operator()(const ctor::Enum& n) {
