@@ -8,7 +8,7 @@
 # If only the Spicy runtime is available, set SPICY_RUNTIME_DIR to its
 # installation root. Spicy source files can't be recompiled then.
 
-find_program(spicy_config spicy-config ${SPICY_ROOT_DIR}/bin/spicy-config ${SPICY_ROOT_DIR}/build/bin/spicy-config)
+find_program(spicy_config spicy-config HINTS ${SPICY_ROOT_DIR}/bin ${SPICY_ROOT_DIR}/build/bin)
 
 if ( spicy_config )
     # Full Spicy toolchain available, use it.
