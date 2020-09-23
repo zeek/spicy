@@ -89,7 +89,9 @@ private:
 
 TEST_SUITE_BEGIN("Library");
 
-TEST_CASE("construct") {
+// NOTE: The 2nd subcase likely does not work if run as `root` as `root`
+// can probably create files even in read-only directories.
+TEST_CASE("construct" * doctest::skip(geteuid() == 0)) {
     Library _(dummy1); // Does not throw
     CHECK_THROWS_WITH_AS(Library("/does/not/exist"), "no such library: \"/does/not/exist\"", const EnvironmentError&);
 
@@ -108,8 +110,6 @@ TEST_CASE("construct") {
     }
 
     SUBCASE("cannot write TMPDIR") {
-        // NOTE: This test likely does not work if run as `root` as `root`
-        // can probably create files even in read-only directories.
         TemporaryDirectory tmpdir;
         std::filesystem::permissions(tmpdir.path(), std::filesystem::perms::none);
         Env _("TMPDIR", tmpdir.path().c_str());
@@ -127,7 +127,9 @@ TEST_CASE("construct") {
     }
 }
 
-TEST_CASE("destruct") {
+// NOTE: This test likely does not work if run as `root` as `root`
+// can probably create files even in read-only directories.
+TEST_CASE("destruct" * doctest::skip(geteuid() == 0)) {
     TemporaryDirectory tmp;
     Env _("TMPDIR", tmp.path().c_str());
 
@@ -135,9 +137,6 @@ TEST_CASE("destruct") {
 
     // Recursively change the permissions of the directory
     // so the temporary library cannot be removed anymore.
-    //
-    // NOTE: This test likely does not work if run as `root` as `root`
-    // can probably create files even in read-only directories.
     for ( const auto& entry : std::filesystem::recursive_directory_iterator(tmp.path()) )
         std::filesystem::permissions(entry, std::filesystem::perms::none);
     std::filesystem::permissions(tmp.path(), std::filesystem::perms::none);
@@ -176,7 +175,9 @@ TEST_CASE("open") {
     }
 }
 
-TEST_CASE("save") {
+// NOTE: The 2nd subcase likely does not work if run as `root` as `root`
+// can probably create files even in read-only directories.
+TEST_CASE("save" * doctest::skip(geteuid() == 0)) {
     Library library(dummy1);
 
     SUBCASE("success") {
@@ -188,8 +189,6 @@ TEST_CASE("save") {
     }
 
     SUBCASE("target not writable") {
-        // NOTE: This test likely does not work if run as `root` as `root`
-        // can probably create files even in read-only directories.
         TemporaryDirectory tmp;
         Env _("TMPDIR", tmp.path().c_str());
         std::filesystem::permissions(tmp.path(), std::filesystem::perms::none);
