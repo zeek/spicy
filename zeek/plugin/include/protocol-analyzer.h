@@ -50,7 +50,7 @@ private:
 /** Base clase for Spicy protocol analyzers. */
 class ProtocolAnalyzer {
 public:
-    ProtocolAnalyzer(::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type);
+    ProtocolAnalyzer(::zeek::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type);
     virtual ~ProtocolAnalyzer();
 
     /** Returns the originator-side parsing state. */
@@ -113,9 +113,9 @@ private:
  * Spicy analyzer for TCP application-layer protocols. Implements the
  * standard Zeek API.
  */
-class TCP_Analyzer : public ProtocolAnalyzer, public ::analyzer::tcp::TCP_ApplicationAnalyzer {
+class TCP_Analyzer : public ProtocolAnalyzer, public ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer {
 public:
-    TCP_Analyzer(::Connection* conn);
+    TCP_Analyzer(::zeek::Connection* conn);
     virtual ~TCP_Analyzer();
 
     // Overridden from Spicy's Analyzer.
@@ -129,38 +129,39 @@ public:
     // Overridden from Zeek's TCP_ApplicationAnalyzer.
     void EndpointEOF(bool is_orig) override;
 #if ZEEK_VERSION_NUMBER >= 30200
-    void ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
+    void ConnectionClosed(::zeek::analyzer::tcp::TCP_Endpoint* endpoint, ::zeek::analyzer::tcp::TCP_Endpoint* peer,
                           bool gen_event) override;
     void ConnectionFinished(bool half_finished) override;
 #else
-    void ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
+    void ConnectionClosed(::zeek::analyzer::tcp::TCP_Endpoint* endpoint, ::zeek::analyzer::tcp::TCP_Endpoint* peer,
                           int gen_event) override;
     void ConnectionFinished(int half_finished) override;
 #endif
     void ConnectionReset() override;
     void PacketWithRST() override;
 
-    static ::analyzer::Analyzer* InstantiateAnalyzer(Connection* conn);
+    static ::zeek::analyzer::Analyzer* InstantiateAnalyzer(::zeek::Connection* conn);
 };
 
 /**
  * Spicy analyzer for UDP application-layer protocols. Implements the
  * standard Zeek API.
  */
-class UDP_Analyzer : public ProtocolAnalyzer, public analyzer::Analyzer {
+class UDP_Analyzer : public ProtocolAnalyzer, public ::zeek::analyzer::Analyzer {
 public:
-    UDP_Analyzer(::Connection* conn);
+    UDP_Analyzer(::zeek::Connection* conn);
     virtual ~UDP_Analyzer();
 
     // Overridden from Spicy's Analyzer.
     void Init() override;
     void Done() override;
-    void DeliverPacket(int len, const u_char* data, bool orig, uint64_t seq, const IP_Hdr* ip, int caplen) override;
+    void DeliverPacket(int len, const u_char* data, bool orig, uint64_t seq, const ::zeek::IP_Hdr* ip,
+                       int caplen) override;
     void Undelivered(uint64_t seq, int len, bool orig) override;
     void EndOfData(bool is_orig) override;
     void FlipRoles() override;
 
-    static ::analyzer::Analyzer* InstantiateAnalyzer(Connection* conn);
+    static ::zeek::analyzer::Analyzer* InstantiateAnalyzer(::zeek::Connection* conn);
 };
 
 } // namespace spicy::zeek::rt

@@ -14,7 +14,7 @@ static uint64_t analyzer_counter = 1;
 
 void EndpointState::_debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
 
-static auto create_endpoint(bool is_orig, ::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type) {
+static auto create_endpoint(bool is_orig, ::zeek::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type) {
     cookie::ProtocolAnalyzer cookie;
     cookie.analyzer = analyzer;
     cookie.is_orig = is_orig;
@@ -24,7 +24,7 @@ static auto create_endpoint(bool is_orig, ::analyzer::Analyzer* analyzer, spicy:
     return EndpointState(cookie, type);
 }
 
-ProtocolAnalyzer::ProtocolAnalyzer(::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type)
+ProtocolAnalyzer::ProtocolAnalyzer(::zeek::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type)
     : _originator(create_endpoint(true, analyzer, type)), _responder(create_endpoint(false, analyzer, type)) {
     ++analyzer_counter;
 }
@@ -100,20 +100,23 @@ void ProtocolAnalyzer::DebugMsg(bool is_orig, const std::string_view& msg) {
 
 void ProtocolAnalyzer::FlipRoles() { std::swap(_originator, _responder); }
 
-::analyzer::Analyzer* TCP_Analyzer::InstantiateAnalyzer(::Connection* conn) { return new TCP_Analyzer(conn); }
+::zeek::analyzer::Analyzer* TCP_Analyzer::InstantiateAnalyzer(::zeek::Connection* conn) {
+    return new TCP_Analyzer(conn);
+}
 
-TCP_Analyzer::TCP_Analyzer(Connection* conn)
-    : ProtocolAnalyzer(this, spicy::rt::driver::ParsingType::Stream), ::analyzer::tcp::TCP_ApplicationAnalyzer(conn) {}
+TCP_Analyzer::TCP_Analyzer(::zeek::Connection* conn)
+    : ProtocolAnalyzer(this, spicy::rt::driver::ParsingType::Stream),
+      ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer(conn) {}
 
 TCP_Analyzer::~TCP_Analyzer() {}
 
 void TCP_Analyzer::Init() {
-    ::analyzer::tcp::TCP_ApplicationAnalyzer::Init();
+    ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::Init();
     ProtocolAnalyzer::Init();
 }
 
 void TCP_Analyzer::Done() {
-    ::analyzer::tcp::TCP_ApplicationAnalyzer::Done();
+    ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::Done();
     ProtocolAnalyzer::Done();
 
     EndOfData(true);
@@ -121,7 +124,7 @@ void TCP_Analyzer::Done() {
 }
 
 void TCP_Analyzer::DeliverStream(int len, const u_char* data, bool is_orig) {
-    ::analyzer::tcp::TCP_ApplicationAnalyzer::DeliverStream(len, data, is_orig);
+    ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::DeliverStream(len, data, is_orig);
 
     if ( TCP() && TCP()->IsPartial() ) {
         DebugMsg(is_orig, "skipping further data on partial TCP connection");
@@ -144,7 +147,7 @@ void TCP_Analyzer::DeliverStream(int len, const u_char* data, bool is_orig) {
 }
 
 void TCP_Analyzer::Undelivered(uint64_t seq, int len, bool is_orig) {
-    ::analyzer::tcp::TCP_ApplicationAnalyzer::Undelivered(seq, len, is_orig);
+    ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::Undelivered(seq, len, is_orig);
 
     // This mimics the (modified) Zeek HTTP analyzer. Otherwise stop parsing
     // the connection
@@ -159,7 +162,7 @@ void TCP_Analyzer::Undelivered(uint64_t seq, int len, bool is_orig) {
 }
 
 void TCP_Analyzer::EndOfData(bool is_orig) {
-    ::analyzer::tcp::TCP_ApplicationAnalyzer::EndOfData(is_orig);
+    ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::EndOfData(is_orig);
 
     if ( TCP() && TCP()->IsPartial() ) {
         DebugMsg(is_orig, "skipping end-of-data delivery on partial TCP connection");
@@ -170,24 +173,24 @@ void TCP_Analyzer::EndOfData(bool is_orig) {
 }
 
 void TCP_Analyzer::FlipRoles() {
-    ::analyzer::tcp::TCP_ApplicationAnalyzer::FlipRoles();
+    ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::FlipRoles();
     ProtocolAnalyzer::FlipRoles();
 }
 
 void TCP_Analyzer::EndpointEOF(bool is_orig) {
-    ::analyzer::tcp::TCP_ApplicationAnalyzer::EndpointEOF(is_orig);
+    ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::EndpointEOF(is_orig);
     Finish(is_orig);
 }
 
 #if ZEEK_VERSION_NUMBER >= 30200
-void TCP_Analyzer::ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
-                                    bool gen_event)
+void TCP_Analyzer::ConnectionClosed(::zeek::analyzer::tcp::TCP_Endpoint* endpoint,
+                                    ::zeek::analyzer::tcp::TCP_Endpoint* peer, bool gen_event)
 #else
-void TCP_Analyzer::ConnectionClosed(::analyzer::tcp::TCP_Endpoint* endpoint, ::analyzer::tcp::TCP_Endpoint* peer,
-                                    int gen_event)
+void TCP_Analyzer::ConnectionClosed(::zeek::analyzer::tcp::TCP_Endpoint* endpoint,
+                                    ::zeek::analyzer::tcp::TCP_Endpoint* peer, int gen_event)
 #endif
 {
-    ::analyzer::tcp::TCP_ApplicationAnalyzer::ConnectionClosed(endpoint, peer, gen_event);
+    ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::ConnectionClosed(endpoint, peer, gen_event);
 }
 
 #if ZEEK_VERSION_NUMBER >= 30200
@@ -196,48 +199,50 @@ void TCP_Analyzer::ConnectionFinished(bool half_finished)
 void TCP_Analyzer::ConnectionFinished(int half_finished)
 #endif
 {
-    ::analyzer::tcp::TCP_ApplicationAnalyzer::ConnectionFinished(half_finished);
+    ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::ConnectionFinished(half_finished);
 }
 
-void TCP_Analyzer::ConnectionReset() { ::analyzer::tcp::TCP_ApplicationAnalyzer::ConnectionReset(); }
+void TCP_Analyzer::ConnectionReset() { ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::ConnectionReset(); }
 
-void TCP_Analyzer::PacketWithRST() { ::analyzer::tcp::TCP_ApplicationAnalyzer::PacketWithRST(); }
+void TCP_Analyzer::PacketWithRST() { ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::PacketWithRST(); }
 
-::analyzer::Analyzer* UDP_Analyzer::InstantiateAnalyzer(Connection* conn) { return new UDP_Analyzer(conn); }
+::zeek::analyzer::Analyzer* UDP_Analyzer::InstantiateAnalyzer(::zeek::Connection* conn) {
+    return new UDP_Analyzer(conn);
+}
 
-UDP_Analyzer::UDP_Analyzer(Connection* conn)
-    : ProtocolAnalyzer(this, spicy::rt::driver::ParsingType::Block), ::analyzer::Analyzer(conn) {}
+UDP_Analyzer::UDP_Analyzer(::zeek::Connection* conn)
+    : ProtocolAnalyzer(this, spicy::rt::driver::ParsingType::Block), ::zeek::analyzer::Analyzer(conn) {}
 
 UDP_Analyzer::~UDP_Analyzer() {}
 
 void UDP_Analyzer::Init() {
-    ::analyzer::Analyzer::Init();
+    ::zeek::analyzer::Analyzer::Init();
     ProtocolAnalyzer::Init();
 }
 
 void UDP_Analyzer::Done() {
-    ::analyzer::Analyzer::Done();
+    ::zeek::analyzer::Analyzer::Done();
     ProtocolAnalyzer::Done();
 }
 
-void UDP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig, uint64_t seq, const IP_Hdr* ip,
+void UDP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig, uint64_t seq, const ::zeek::IP_Hdr* ip,
                                  int caplen) {
-    ::analyzer::Analyzer::DeliverPacket(len, data, is_orig, seq, ip, caplen);
+    ::zeek::analyzer::Analyzer::DeliverPacket(len, data, is_orig, seq, ip, caplen);
 
     ++cookie(is_orig).num_packets;
     Process(is_orig, len, data);
 }
 
 void UDP_Analyzer::Undelivered(uint64_t seq, int len, bool is_orig) {
-    ::analyzer::Analyzer::Undelivered(seq, len, is_orig);
+    ::zeek::analyzer::Analyzer::Undelivered(seq, len, is_orig);
 }
 
 void UDP_Analyzer::EndOfData(bool is_orig) {
-    ::analyzer::Analyzer::EndOfData(is_orig);
+    ::zeek::analyzer::Analyzer::EndOfData(is_orig);
     Finish(is_orig);
 }
 
 void UDP_Analyzer::FlipRoles() {
-    ::analyzer::Analyzer::FlipRoles();
+    ::zeek::analyzer::Analyzer::FlipRoles();
     ProtocolAnalyzer::FlipRoles();
 }

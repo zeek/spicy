@@ -12,14 +12,14 @@ using namespace plugin::Zeek_Spicy;
 
 void FileState::_debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
 
-static auto create_file_state(::FileAnalyzer* analyzer) {
+static auto create_file_state(FileAnalyzer* analyzer) {
     cookie::FileAnalyzer cookie;
     cookie.analyzer = analyzer;
     return FileState(cookie);
 }
 
-FileAnalyzer::FileAnalyzer(::zeek::RecordValPtr args, file_analysis::File* file)
-    : ::file_analysis::Analyzer(args, file), _state(create_file_state(this)) {}
+FileAnalyzer::FileAnalyzer(::zeek::RecordValPtr args, ::zeek::file_analysis::File* file)
+    : ::zeek::file_analysis::Analyzer(args, file), _state(create_file_state(this)) {}
 
 FileAnalyzer::~FileAnalyzer() {}
 
@@ -28,13 +28,13 @@ void FileAnalyzer::Init() {}
 void FileAnalyzer::Done() {}
 
 bool FileAnalyzer::DeliverStream(const u_char* data, uint64_t len) {
-    ::file_analysis::Analyzer::DeliverStream(data, len);
+    ::zeek::file_analysis::Analyzer::DeliverStream(data, len);
 
     return Process(len, data);
 }
 
 bool FileAnalyzer::Undelivered(uint64_t offset, uint64_t len) {
-    ::file_analysis::Analyzer::Undelivered(offset, len);
+    ::zeek::file_analysis::Analyzer::Undelivered(offset, len);
 
     DebugMsg("undelivered data, skipping further originator payload");
     _state.skipRemaining();
@@ -42,7 +42,7 @@ bool FileAnalyzer::Undelivered(uint64_t offset, uint64_t len) {
 }
 
 bool FileAnalyzer::EndOfFile() {
-    ::file_analysis::Analyzer::EndOfFile();
+    ::zeek::file_analysis::Analyzer::EndOfFile();
     Finish();
     return false;
 }
@@ -87,6 +87,7 @@ void FileAnalyzer::Finish() {
     }
 }
 
-::file_analysis::Analyzer* FileAnalyzer::InstantiateAnalyzer(::zeek::RecordValPtr args, file_analysis::File* file) {
+::zeek::file_analysis::Analyzer* FileAnalyzer::InstantiateAnalyzer(::zeek::RecordValPtr args,
+                                                                   ::zeek::file_analysis::File* file) {
     return new FileAnalyzer(args, file);
 }

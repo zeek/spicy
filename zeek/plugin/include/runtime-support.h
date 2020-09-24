@@ -54,7 +54,7 @@ public:
 
 private:
     std::string _fmt(const std::string_view& have, ::zeek::TypePtr want) {
-        ::ODesc d;
+        ::zeek::ODesc d;
         want->Describe(&d);
         return hilti::rt::fmt("cannot convert Spicy value of type '%s' to Zeek value of type '%s'", have,
                               d.Description());
@@ -81,22 +81,23 @@ void register_enum_type(const std::string& ns, const std::string& id,
                         const hilti::rt::Vector<std::tuple<std::string, hilti::rt::integer::safe<int64_t>>>& labels);
 
 /** Returns true if an event has at least one handler defined. */
-inline bool have_handler(EventHandlerPtr handler) { return static_cast<bool>(handler); }
+inline bool have_handler(::zeek::EventHandlerPtr handler) { return static_cast<bool>(handler); }
 
 /**
  * Looks up an event handler by name. This will always return a handler; if
  * none exist yet under that name, it'll be created.
  */
-::EventHandlerPtr internal_handler(const std::string& name);
+::zeek::EventHandlerPtr internal_handler(const std::string& name);
 
 /** Raises a Zeek event, given the handler and arguments. */
-void raise_event(EventHandlerPtr handler, const hilti::rt::Vector<::zeek::ValPtr>& args, std::string_view location);
+void raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::zeek::ValPtr>& args,
+                 std::string_view location);
 
 /**
  * Returns the Zeek type of an event's i'th argument. The result's ref count
  * is not increased.
  */
-::zeek::TypePtr event_arg_type(EventHandlerPtr handler, uint64_t idx, std::string_view location);
+::zeek::TypePtr event_arg_type(::zeek::EventHandlerPtr handler, uint64_t idx, std::string_view location);
 
 /**
  * Retrieves the connection ID for the currently processed Zeek connection.
@@ -356,10 +357,10 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Address& d, ::zeek::TypePtr target
 
     auto in_addr = d.asInAddr();
     if ( auto v4 = std::get_if<struct in_addr>(&in_addr) )
-        return zeek::compat::AddrVal_New(IPAddr(*v4));
+        return zeek::compat::AddrVal_New(::zeek::IPAddr(*v4));
     else {
         auto v6 = std::get<struct in6_addr>(in_addr);
-        return zeek::compat::AddrVal_New(IPAddr(v6));
+        return zeek::compat::AddrVal_New(::zeek::IPAddr(v6));
     }
 }
 

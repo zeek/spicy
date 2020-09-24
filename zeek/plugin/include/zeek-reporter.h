@@ -14,11 +14,6 @@
 
 #include "plugin.h"
 
-class Connection; // From Zeek.
-namespace file_analysis {
-class File;
-} // namespace file_analysis
-
 namespace spicy::zeek::reporter {
 
 namespace detail {
@@ -40,19 +35,19 @@ extern void warning(const std::string& msg);
 extern void internalError(const std::string& msg);
 
 /** Reports a connection-associated "weird" through the Zeek reporter. */
-extern void weird(Connection* conn, const std::string& msg);
+extern void weird(::zeek::Connection* conn, const std::string& msg);
 
 /** Reports a file-associated "weird" through the Zeek reporter. */
-extern void weird(::file_analysis::File* f, const std::string& msg);
+extern void weird(::zeek::file_analysis::File* f, const std::string& msg);
 
 /** Reports a generic "weird" through the Zeek reporter. */
 extern void weird(const std::string& msg);
 
 /** Report an error and disable a protocol analyzer's input processing */
-void analyzerError(::analyzer::Analyzer* a, const std::string& msg, const std::string& location);
+void analyzerError(::zeek::analyzer::Analyzer* a, const std::string& msg, const std::string& location);
 
 /** Report an error and disable a file analyzer's input processing */
-void analyzerError(::file_analysis::Analyzer* a, const std::string& msg, const std::string& location);
+void analyzerError(::zeek::file_analysis::Analyzer* a, const std::string& msg, const std::string& location);
 
 /** Returns the number of errors recorded by the Zeek reporter. */
 extern int numberErrors();

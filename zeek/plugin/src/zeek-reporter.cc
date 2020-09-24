@@ -10,29 +10,29 @@
 
 using namespace spicy::zeek;
 
-void reporter::error(const std::string& msg) { ::reporter->Error("%s", msg.c_str()); }
+void reporter::error(const std::string& msg) { ::zeek::reporter->Error("%s", msg.c_str()); }
 
-void reporter::fatalError(const std::string& msg) { ::reporter->FatalError("%s", msg.c_str()); }
+void reporter::fatalError(const std::string& msg) { ::zeek::reporter->FatalError("%s", msg.c_str()); }
 
-void reporter::warning(const std::string& msg) { ::reporter->Warning("%s", msg.c_str()); }
+void reporter::warning(const std::string& msg) { ::zeek::reporter->Warning("%s", msg.c_str()); }
 
-void reporter::internalError(const std::string& msg) { ::reporter->InternalError("%s", msg.c_str()); }
+void reporter::internalError(const std::string& msg) { ::zeek::reporter->InternalError("%s", msg.c_str()); }
 
-void reporter::weird(Connection* conn, const std::string& msg) {
+void reporter::weird(::zeek::Connection* conn, const std::string& msg) {
     if ( conn )
-        ::reporter->Weird(conn, msg.c_str());
+        ::zeek::reporter->Weird(conn, msg.c_str());
     else
-        ::reporter->Weird(msg.c_str());
+        ::zeek::reporter->Weird(msg.c_str());
 }
 
-void reporter::weird(file_analysis::File* f, const std::string& msg) {
+void reporter::weird(::zeek::file_analysis::File* f, const std::string& msg) {
     if ( f )
-        ::reporter->Weird(f, msg.c_str());
+        ::zeek::reporter->Weird(f, msg.c_str());
     else
-        ::reporter->Weird(msg.c_str());
+        ::zeek::reporter->Weird(msg.c_str());
 }
 
-void reporter::weird(const std::string& msg) { ::reporter->Weird(msg.c_str()); }
+void reporter::weird(const std::string& msg) { ::zeek::reporter->Weird(msg.c_str()); }
 
 static std::unique_ptr<::zeek::detail::Location> _makeLocation(const std::string& location) {
     static std::set<std::string> filenames; // see comment below in parse_location
@@ -70,30 +70,30 @@ static std::unique_ptr<::zeek::detail::Location> _makeLocation(const std::string
         return nullptr;
 }
 
-void reporter::analyzerError(::analyzer::Analyzer* a, const std::string& msg, const std::string& location) {
+void reporter::analyzerError(::zeek::analyzer::Analyzer* a, const std::string& msg, const std::string& location) {
     // Zeek's AnalyzerError() prints a location, so set that.
     auto zeek_location = _makeLocation(location);
-    ::reporter->PushLocation(zeek_location.get());
-    ::reporter->AnalyzerError(a, "%s", msg.c_str());
-    ::reporter->PopLocation();
+    ::zeek::reporter->PushLocation(zeek_location.get());
+    ::zeek::reporter->AnalyzerError(a, "%s", msg.c_str());
+    ::zeek::reporter->PopLocation();
 }
 
-void reporter::analyzerError(::file_analysis::Analyzer* a, const std::string& msg, const std::string& location) {
+void reporter::analyzerError(::zeek::file_analysis::Analyzer* a, const std::string& msg, const std::string& location) {
     // Zeek's AnalyzerError() prints a location, so set that.
     auto zeek_location = _makeLocation(location);
-    ::reporter->PushLocation(zeek_location.get());
+    ::zeek::reporter->PushLocation(zeek_location.get());
 
     // Zeek doesn't have an reporter error for file analyzers, so we log this
     // as a weird instead.
     if ( a && a->GetFile() )
-        ::reporter->Weird(a->GetFile(), "file_error", msg.c_str());
+        ::zeek::reporter->Weird(a->GetFile(), "file_error", msg.c_str());
     else
-        ::reporter->Weird("file_error", msg.c_str());
+        ::zeek::reporter->Weird("file_error", msg.c_str());
 
-    ::reporter->PopLocation();
+    ::zeek::reporter->PopLocation();
 
     if ( a )
         a->SetSkip(1); // Imitate what AnalyzerError() does for protocol analyzers.
 }
 
-int reporter::numberErrors() { return ::reporter->Errors(); }
+int reporter::numberErrors() { return ::zeek::reporter->Errors(); }
