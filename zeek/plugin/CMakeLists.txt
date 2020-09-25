@@ -11,7 +11,8 @@ set(BinPAC_ROOT_DIR "${ZEEK_PREFIX}")
 set(CAF_ROOT_DIR "${ZEEK_PREFIX}")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${ZEEK_CMAKE_DIR}")
 
-# We install the plugin into the Spicy installation.
+# We install the plugin into the Spicy installation if requested.
+OPTION(ZEEK_INSTALL_PLUGIN "Install Zeek plugin into Zeek installation" ON)
 set(PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/spicy/Zeek_Spicy")
 
 set(save_c_flags ${CMAKE_C_FLAGS})
@@ -103,5 +104,7 @@ install_headers(${CMAKE_CURRENT_BINARY_DIR}/zeek-spicy/autogen zeek-spicy/autoge
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/cmake DESTINATION ${CMAKE_INSTALL_DATADIR}/spicy
         FILES_MATCHING PATTERN "FindZeekSpicy.cmake")
 
-# This may need additional permissions, but we just leave it fail in that case.
-install_symlink("${PLUGIN_INSTALL_DIR}" "${ZEEK_PLUGIN_DIR}/Zeek_Spicy")
+if ( ZEEK_INSTALL_PLUGIN )
+    # This may need additional permissions, but we just leave it fail in that case.
+    install_symlink("${PLUGIN_INSTALL_DIR}" "${ZEEK_PLUGIN_DIR}/Zeek_Spicy")
+endif ()

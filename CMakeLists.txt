@@ -249,6 +249,7 @@ message(
     "\n"
     "\nJIT enabled:           ${HILTI_HAVE_JIT}"
     "\nZeek JIT enabled:      ${ZEEK_HAVE_JIT}"
+    "\nZeek plugin install:   ${ZEEK_INSTALL_PLUGIN}"
     "\n"
     "\nUse ccache:            ${USE_CCACHE}"
     "\nUse gold linker:       ${GOLD_FOUND}"

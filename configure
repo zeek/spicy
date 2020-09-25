@@ -27,6 +27,7 @@ cmake_use_sanitizers=""
 cmake_use_werror="false"
 cmake_zeek_have_jit="yes"
 cmake_zeek_root_dir="/usr/local/zeek"
+cmake_zeek_install_plugin="yes"
 
 display_cmake=0
 cache_entries=""
@@ -62,6 +63,7 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --disable-jit                      Do not compile in support for JIT compilation
     --disable-jit-for-zeek             Do not compile support for JIT compilation into Zeek plugin
     --disable-gold                     On Linux, do not try to use the gold linker
+    --disable-zeek-plugin-install      Do not copy Zeek plugin into Zeek plugin path on install
     --enable-ccache                    Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
     --enable-debug                     Compile debug version (same as --build-type=Debug) [default: off]
     --enable-sanitizer[=<names>]       Enable sanitizer(s), default if not further specified is \"address\"
@@ -120,6 +122,7 @@ while [ $# -ne 0 ]; do
         --disable-gold)                    cmake_use_gold="no";;
         --disable-jit)                     cmake_hilti_have_jit="no";;
         --disable-jit-for-zeek)            cmake_zeek_have_jit="no";;
+        --disable-zeek-plugin-install)     cmake_zeek_install_plugin="no";;
         --enable-ccache)                   cmake_use_ccache="yes";;
         --enable-debug)                    cmake_build_type="Debug";;
         --enable-sanitizer)                cmake_use_sanitizers="address";;
@@ -171,6 +174,7 @@ append_cache_entry CMAKE_INSTALL_PREFIX         PATH   "${cmake_install_prefix}"
 append_cache_entry FLEX_ROOT                    PATH   "${cmake_flex_root}"
 append_cache_entry HILTI_HAVE_JIT               BOOL   "${cmake_hilti_have_jit}"
 append_cache_entry ZEEK_HAVE_JIT                BOOL   "${cmake_zeek_have_jit}"
+append_cache_entry ZEEK_INSTALL_PLUGIN          BOOL   "${cmake_zeek_install_plugin}"
 append_cache_entry LLVM_ROOT                    PATH   "${cmake_llvm_root}"
 append_cache_entry USE_CCACHE                   BOOL   "${cmake_use_ccache}"
 append_cache_entry USE_GOLD                     BOOL   "${cmake_use_gold}"
