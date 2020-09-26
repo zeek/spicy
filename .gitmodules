@@ -6,7 +6,7 @@
 	url = https://github.com/nlohmann/json.git
 [submodule "3rdparty/SafeInt"]
 	path = 3rdparty/SafeInt
-	url = https://github.com/rsmmr/SafeInt
+	url = https://github.com/dcleblanc/SafeInt
 [submodule "3rdparty/ArticleEnumClass-v2"]
 	path = 3rdparty/ArticleEnumClass-v2
 	url = https://github.com/Dalzhim/ArticleEnumClass-v2
