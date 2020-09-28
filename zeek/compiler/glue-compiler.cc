@@ -709,13 +709,13 @@ glue::Event GlueCompiler::parseEvent(const std::string& chunk) {
 }
 
 bool GlueCompiler::compile() {
-    auto init_module = hilti::Module(hilti::ID("SpicyInit"));
+    auto init_module = hilti::Module(hilti::ID("spicy_init"));
 
     auto import_ = hilti::declaration::ImportedModule(ID("zeek_rt"), std::string(".hlt"));
     init_module.add(std::move(import_));
 
     for ( auto&& [id, m] : _spicy_modules )
-        m->spicy_module = hilti::Module(hilti::ID(hilti::util::fmt("SpicyHooks_%s", id)));
+        m->spicy_module = hilti::Module(hilti::ID(hilti::util::fmt("spicy_hooks_%s", id)));
 
     if ( ! PopulateEvents() )
         return false;
@@ -819,9 +819,6 @@ bool GlueCompiler::compile() {
     _driver->addInput(std::move(init_module));
 
     for ( auto&& [id, m] : _spicy_modules ) {
-        if ( m->spicy_module->isEmpty() )
-            continue;
-
         // Import runtime module.
         auto import_ = hilti::declaration::ImportedModule(ID("zeek_rt"), std::string(".hlt"));
         m->spicy_module->add(std::move(import_));

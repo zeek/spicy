@@ -1,7 +1,9 @@
 
 ## Enable Gold linker if available.
 
-set(GOLD_FOULD "no")
+OPTION(USE_GOLD "Use Gold linker" ON)
+
+set(GOLD_FOUND "no")
 
 if ( USE_GOLD )
     if ( UNIX AND NOT APPLE AND NOT LLD_PATH )
@@ -11,6 +13,7 @@ if ( USE_GOLD )
             set(GOLD_FOUND "yes")
             set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
             set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=gold")
+            set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -fuse-ld=gold")
         else ()
             message(STATUS "Gold linker not available")
         endif ()

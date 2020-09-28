@@ -228,7 +228,7 @@ directory. You can confirm that with ``zeek -N``::
 
     # zeek -N
     <...>
-    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt) (dynamic, version 0.3.0)
+    _Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt) (dynamic, version 0.3.0)
 
 As you can see, Zeek now reports the Spicy plugin as available among
 all the other plugins that it has already built-in.

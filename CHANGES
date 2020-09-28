@@ -1,4 +1,39 @@
 
+0.4.0-903 | 2020-09-28 18:42:38 +0000
+
+  * Reorganize source code to allow for building the runtime library
+    standalone. This adds a corresponding configure option:
+    --build-toolchain=yes/no (default: yes)
+
+  * Add configure option --disable-zeek-plugin-install to disable
+    installing the Zeek plugin into Zeek's plugin path. (Robin Sommer,
+    Corelight)
+
+  * Add CMake module that enables Zeek plugins to build Spicy parsers.
+
+  * Rename Zeek plugin to "_Zeek::Spicy" to work-around a loading
+    order issue in Zeek. (Robin Sommer, Corelight)
+
+  * Turn all 3rdparty code into proper git submodules. (Robin Sommer,
+    Corelight)
+
+  * Make using Gold linker default in CMake config. This is no change
+    from when using "configure", but it changes the default when
+    running "cmake" directly. (Robin Sommer, Corelight)
+
+  * Fix configuration of Gold linker to apply to cmake modules as
+    well. (Robin Sommer, Corelight)
+
+  * Extend hilti-config and spicy-config with options to print the
+    runtime's C++ include directories. (Robin Sommer, Corelight)
+
+  * Avoid needing "which" in configure. (Robin Sommer, Corelight)
+
+  * Disable a couple unit tests when running as root. (Robin Sommer,
+    Corelight)
+
+  * Fix compiler warning. (Robin Sommer, Corelight)
+
 0.4.0-890 | 2020-09-28 18:41:08 +0000
 
   * Port Zeek plugin to current Zeek master. (Robin Sommer, Corelight)

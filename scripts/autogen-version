@@ -5,28 +5,31 @@
 # various constants defined accordingly.
 
 usage() {
-    echo "usage $(basename $0) [--short|--header <file>|--cmake] [<commit>]"
+    echo "usage $(basename $0) [--short|--header <file>|--cmake] [--git-root <dir>] [<commit>]"
 }
 
 output=long
 
-if [ "$1" = "--short" ]; then
-    output=short
-    shift
-fi
-
-if [ "$1" = "--header" ]; then
-    test $# -lt 2 && usage && exit 1
-    output=header
-    dst=$2
-    shift
-    shift
-fi
-
-if [ "$1" = "--cmake" ]; then
-    output=cmake
-    shift
-fi
+while [ $# -ge 1 ]; do
+    if [ "$1" = "--short" ]; then
+        output=short
+        shift
+    elif [ "$1" = "--header" ]; then
+        test $# -lt 2 && usage && exit 1
+        output=header
+        dst=$2
+        shift
+        shift
+    elif [ "$1" = "--cmake" ]; then
+        output=cmake
+        shift
+    elif [ "$1" = "--git-root" ]; then
+        test $# -lt 2 && usage && exit 1
+        cd $2
+        shift
+        shift
+    fi
+done
 
 if [ $# != 0 -a $# != 1 ]; then
     usage

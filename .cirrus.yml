@@ -227,6 +227,39 @@ macos_release_task:
     path: build/spicy-*.tar.gz
     type: application/gzip
 
+zeek_packages_task:
+  container:
+    dockerfile: ci/Dockerfile.packages
+    cpu: 4
+    memory: 12G
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  install_runtime_script:  spicy_version=$CIRRUS_BRANCH zkg install --force spicy-runtime
+    # TODO: Remove "spicy_version" from install_tftp_script once zkg no longer rebuilds installed dependencies.
+  install_tftp_script:     spicy_version=$CIRRUS_BRANCH zkg install --force spicy-tftp
+  validate_script:         test $(zeek -N | egrep '::(Spicy|TFTP)' | wc -l | awk '{print $1}') = '2'
+
+  zkg_artifacts:
+    path: /root/.zkg
+    type: application/gzip
+
 docker_ubuntu_19_10_task:
   container:
     dockerfile: docker/Dockerfile.ubuntu-19.10

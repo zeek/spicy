@@ -40,8 +40,8 @@ the plugin right into Zeek's system-wide plugin directory so that it
 becomes directly available. You can check the output of ``zeek -N`` to
 confirm::
 
-    # zeek -N Zeek::Spicy
-    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version 0.3.0)
+    # zeek -N _Zeek::Spicy
+    _Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version 0.3.0)
 
 If the symlink didn't get installed (e.g., because you're lacking
 permission to write into Zeek's plugin's directory), you can
@@ -50,8 +50,8 @@ directory where the installation placed the plugin. ``spicy-config
 --zeek-plugin-path`` knows where that is::
 
     # export ZEEK_PLUGIN_PATH=$(spicy-config --zeek-plugin-path)
-    # zeek -N Zeek::Spicy
-    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version 0.3.0)
+    # zeek -N _Zeek::Spicy
+    _Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version 0.3.0)
 
 If you want to move the plugin to other systems, you can find a binary
 distribution inside your build directory at
@@ -129,7 +129,7 @@ write ``enable "spicy::BitTorrent"`` into the signature.
 .. note::
 
     Once you have made your analyzers available to Zeek (which we will
-    discuss below), running ``zeek -NN Zeek::Spicy`` will show you a
+    discuss below), running ``zeek -NN _Zeek::Spicy`` will show you a
     summary of what's now available, including their Zeek-side names
     and tags.
 
@@ -546,7 +546,7 @@ possible, use a debug version of Zeek (i.e., build Zeek with
 
 If your analyzer doesn't seem to be active at all, first make sure
 Zeek actually knows about it: It should show up in the output of
-``zeek -NN Zeek::Spicy``. If it doesn't, you might not being loading
+``zeek -NN _Zeek::Spicy``. If it doesn't, you might not being loading
 the right ``*.spicy`` or ``*.evt`` files. Also check your ``*.evt`` if
 it defines your analyzer correctly.
 

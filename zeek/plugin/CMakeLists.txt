@@ -11,7 +11,8 @@ set(BinPAC_ROOT_DIR "${ZEEK_PREFIX}")
 set(CAF_ROOT_DIR "${ZEEK_PREFIX}")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${ZEEK_CMAKE_DIR}")
 
-# We install the plugin into the Spicy installation.
+# We install the plugin into the Spicy installation if requested.
+OPTION(ZEEK_INSTALL_PLUGIN "Install Zeek plugin into Zeek installation" ON)
 set(PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/spicy/Zeek_Spicy")
 
 set(save_c_flags ${CMAKE_C_FLAGS})
@@ -20,7 +21,7 @@ include(BroPlugin)
 set(CMAKE_C_FLAGS ${save_c_flags})
 set(CMAKE_CXX_FLAGS ${save_cxx_flags})
 
-zeek_plugin_begin(Zeek Spicy)
+zeek_plugin_begin(_Zeek Spicy)
 
 zeek_plugin_cc(src/file-analyzer.cc)
 zeek_plugin_cc(src/plugin.cc)
@@ -62,8 +63,15 @@ target_include_directories(${_plugin_lib} BEFORE PRIVATE ${CMAKE_CURRENT_SOURCE_
 
 # For JIT support.
 target_link_libraries(${_plugin_lib} $<$<BOOL:${ZEEK_HAVE_JIT}>:zeek-compiler>)
-target_link_hilti(${_plugin_lib})
-target_link_spicy(${_plugin_lib})
+
+if ( HAVE_TOOLCHAIN )
+    target_link_hilti(${_plugin_lib})
+    target_link_spicy(${_plugin_lib})
+else ()
+    # Just need the runtimes.
+    target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+    target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
+endif ()
 
 # Create an alias for the plugin target.
 add_custom_target(zeek-plugin DEPENDS ${_plugin_lib})
@@ -93,5 +101,10 @@ set_target_properties(${_plugin_lib} PROPERTIES INSTALL_RPATH "${rpath_install}"
 install_headers(include zeek-spicy runtime-support.h cookie.h zeek-compat.h)
 install_headers(${CMAKE_CURRENT_BINARY_DIR}/zeek-spicy/autogen zeek-spicy/autogen config.h)
 
-# This may need additional permissions, but we just leave it fail in that case.
-install_symlink("${PLUGIN_INSTALL_DIR}" "${ZEEK_PLUGIN_DIR}/Zeek_Spicy")
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/cmake DESTINATION ${CMAKE_INSTALL_DATADIR}/spicy
+        FILES_MATCHING PATTERN "FindZeekSpicy.cmake")
+
+if ( ZEEK_INSTALL_PLUGIN )
+    # This may need additional permissions, but we just leave it fail in that case.
+    install_symlink("${PLUGIN_INSTALL_DIR}" "${ZEEK_PLUGIN_DIR}/Zeek_Spicy")
+endif ()
