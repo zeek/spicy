@@ -28,7 +28,7 @@ void rt::register_enum_type(
     OurPlugin->registerEnumType(ns, id, labels);
 }
 
-::EventHandlerPtr rt::internal_handler(const std::string& name) {
+::zeek::EventHandlerPtr rt::internal_handler(const std::string& name) {
     // This always succeeds to return a handler. If there's no such event
     // yet, an empty handler instance is created.
     auto ev = zeek::compat::event_register_Register(name);
@@ -42,7 +42,7 @@ void rt::register_enum_type(
     if ( n.size() > 1 )
         mod = n.front();
     else
-        mod = GLOBAL_MODULE_NAME;
+        mod = ::zeek::detail::GLOBAL_MODULE_NAME;
 
     if ( auto id = ::zeek::detail::lookup_ID(name.c_str(), mod.c_str()) )
         id->SetExport();
@@ -50,16 +50,16 @@ void rt::register_enum_type(
     return ev;
 }
 
-void rt::raise_event(EventHandlerPtr handler, const hilti::rt::Vector<::zeek::ValPtr>& args,
+void rt::raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::zeek::ValPtr>& args,
                      std::string_view location) {
     // Caller must have checked already that there's a handler availale.
     assert(handler);
 
     auto zeek_args =
-        zeek::compat::TypeList_GetTypes(zeek::compat::FuncType_ArgTypes(zeek::compat::EventHandler_GetType(handler)));
+        zeek::compat::TypeList_GetTypes(zeek::compat::FuncType_ArgTypes(compat::EventHandler_GetType(handler)));
     if ( args.size() != zeek::compat::TypeList_GetTypesSize(zeek_args) )
-        throw TypeMismatch(fmt("expected %" PRIu64 " parameters, but got %zu",
-                               zeek::compat::TypeList_GetTypesSize(zeek_args), args.size()),
+        throw TypeMismatch(hilti::rt::fmt("expected %" PRIu64 " parameters, but got %zu",
+                                          zeek::compat::TypeList_GetTypesSize(zeek_args), args.size()),
                            location);
 
     ::zeek::Args vl = zeek::compat::ZeekArgs_New();
@@ -75,14 +75,14 @@ void rt::raise_event(EventHandlerPtr handler, const hilti::rt::Vector<::zeek::Va
     zeek::compat::event_mgr_Enqueue(handler, vl);
 }
 
-::zeek::TypePtr rt::event_arg_type(EventHandlerPtr handler, uint64_t idx, std::string_view location) {
+::zeek::TypePtr rt::event_arg_type(::zeek::EventHandlerPtr handler, uint64_t idx, std::string_view location) {
     assert(handler);
 
     auto zeek_args =
-        zeek::compat::TypeList_GetTypes(zeek::compat::FuncType_ArgTypes(zeek::compat::EventHandler_GetType(handler)));
+        zeek::compat::TypeList_GetTypes(zeek::compat::FuncType_ArgTypes(compat::EventHandler_GetType(handler)));
     if ( idx >= static_cast<uint64_t>(zeek::compat::TypeList_GetTypesSize(zeek_args)) )
-        throw TypeMismatch(fmt("more parameters given than the %" PRIu64 " that the Zeek event expects",
-                               zeek::compat::TypeList_GetTypesSize(zeek_args)),
+        throw TypeMismatch(hilti::rt::fmt("more parameters given than the %" PRIu64 " that the Zeek event expects",
+                                          zeek::compat::TypeList_GetTypesSize(zeek_args)),
                            location);
 
     return zeek::compat::ZeekArgs_Get(zeek_args, idx);
@@ -124,7 +124,7 @@ void rt::debug(const Cookie& cookie, const std::string_view& msg) {
             hilti::rt::fmt("[%s/%" PRIu32 "/%s] %s", name, p->analyzer->GetID(), (p->is_orig ? "orig" : "resp"), msg));
     }
     else if ( const auto f = std::get_if<cookie::FileAnalyzer>(&cookie) ) {
-        auto name = ::file_mgr->GetComponentName(f->analyzer->Tag());
+        auto name = ::zeek::file_mgr->GetComponentName(f->analyzer->Tag());
         ZEEK_DEBUG(hilti::rt::fmt("[%s/%" PRIu32 "] %s", name, f->analyzer->GetID(), msg));
     }
     else
@@ -198,7 +198,7 @@ void rt::reject_protocol(const std::string& reason) {
 
 static std::string _file_id(const rt::cookie::ProtocolAnalyzer& c) {
     auto id = hilti::rt::fmt("%" PRIu64 ".%" PRIu64 ".%d", c.analyzer_id, c.file_id, static_cast<int>(c.is_orig));
-    return ::file_mgr->HashHandle(id);
+    return ::zeek::file_mgr->HashHandle(id);
 }
 
 void rt::file_begin() {
@@ -210,8 +210,8 @@ void rt::file_set_size(uint64_t size) {
     assert(cookie);
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
-        ::file_mgr->SetSize(size, OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
-                            c->is_orig, _file_id(*c));
+        ::zeek::file_mgr->SetSize(size, OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()),
+                                  c->analyzer->Conn(), c->is_orig, _file_id(*c));
     else
         throw ValueUnavailable("no current connection available");
 }
@@ -221,9 +221,9 @@ void rt::file_data_in(const hilti::rt::Bytes& data) {
     assert(cookie);
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
-        ::file_mgr->DataIn(reinterpret_cast<const unsigned char*>(data.data()), data.size(),
-                           OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
-                           c->is_orig, _file_id(*c));
+        ::zeek::file_mgr->DataIn(reinterpret_cast<const unsigned char*>(data.data()), data.size(),
+                                 OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
+                                 c->is_orig, _file_id(*c));
     else
         throw ValueUnavailable("no current connection available");
 }
@@ -233,9 +233,9 @@ void rt::file_data_in_at_offset(const hilti::rt::Bytes& data, uint64_t offset) {
     assert(cookie);
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
-        ::file_mgr->DataIn(reinterpret_cast<const unsigned char*>(data.data()), data.size(), offset,
-                           OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
-                           c->is_orig, _file_id(*c));
+        ::zeek::file_mgr->DataIn(reinterpret_cast<const unsigned char*>(data.data()), data.size(), offset,
+                                 OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
+                                 c->is_orig, _file_id(*c));
     else
         throw ValueUnavailable("no current connection available");
 }
@@ -245,8 +245,8 @@ void rt::file_gap(uint64_t offset, uint64_t len) {
     assert(cookie);
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
-        ::file_mgr->Gap(offset, len, OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()),
-                        c->analyzer->Conn(), c->is_orig, _file_id(*c));
+        ::zeek::file_mgr->Gap(offset, len, OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()),
+                              c->analyzer->Conn(), c->is_orig, _file_id(*c));
     else
         throw ValueUnavailable("no current connection available");
 }
@@ -256,7 +256,7 @@ void rt::file_end() {
     assert(cookie);
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) ) {
-        ::file_mgr->EndOfFile(_file_id(*c));
+        ::zeek::file_mgr->EndOfFile(_file_id(*c));
         c->file_id += 1;
     }
     else

@@ -18,16 +18,16 @@ namespace cookie {
 
 /** State on the current protocol analyzer. */
 struct ProtocolAnalyzer {
-    ::analyzer::Analyzer* analyzer = nullptr; /**< current analyzer */
-    bool is_orig = false;                     /**< direction of the connection */
-    uint64_t num_packets = 0;                 /**< number of packets seen so far */
-    uint64_t analyzer_id = 0;                 /**< unique analyzer ID */
-    uint64_t file_id = 0;                     /**< counter for file IDs */
+    ::zeek::analyzer::Analyzer* analyzer = nullptr; /**< current analyzer */
+    bool is_orig = false;                           /**< direction of the connection */
+    uint64_t num_packets = 0;                       /**< number of packets seen so far */
+    uint64_t analyzer_id = 0;                       /**< unique analyzer ID */
+    uint64_t file_id = 0;                           /**< counter for file IDs */
 };
 
 /** State on the current file analyzer. */
 struct FileAnalyzer {
-    ::file_analysis::Analyzer* analyzer = nullptr; /**< current analyzer */
+    ::zeek::file_analysis::Analyzer* analyzer = nullptr; /**< current analyzer */
 };
 
 } // namespace cookie

@@ -1,4 +1,20 @@
 
+0.4.0-890 | 2020-09-28 18:41:08 +0000
+
+  * Port Zeek plugin to current Zeek master. (Robin Sommer, Corelight)
+
+  * GH-508: Prevent loss of precision when codgening Time
+    constructors. (Benjamin Bannier, Corelight)
+
+  * GH-503: Fix constructor `interval_ns` to accept unsigneds like
+    documented. (Benjamin Bannier, Corelight)
+
+  * Include `netinet/in.h` for `in[6]_addr` in `rt/address.h`.
+    (Benjamin Bannier, Corelight)
+
+  * Fix whitespace in spicy-driver batch usage string. (Benjamin
+    Bannier, Corelight)
+
 0.4.0-884 | 2020-09-08 07:39:00 +0000
 
   * Reimplement HILTI's stream type to substantially improve

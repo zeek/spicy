@@ -44,12 +44,13 @@ private:
 };
 
 /** A Spicy file analyzer. */
-class FileAnalyzer : public ::file_analysis::Analyzer {
+class FileAnalyzer : public ::zeek::file_analysis::Analyzer {
 public:
-    FileAnalyzer(::zeek::RecordValPtr arg_args, file_analysis::File* arg_file);
+    FileAnalyzer(::zeek::RecordValPtr arg_args, ::zeek::file_analysis::File* arg_file);
     virtual ~FileAnalyzer();
 
-    static file_analysis::Analyzer* InstantiateAnalyzer(::zeek::RecordValPtr args, file_analysis::File* file);
+    static ::zeek::file_analysis::Analyzer* InstantiateAnalyzer(::zeek::RecordValPtr args,
+                                                                ::zeek::file_analysis::File* file);
 
 protected:
     // Overridden from Zeek's file analyzer.

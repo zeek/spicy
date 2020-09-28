@@ -72,7 +72,7 @@ public:
      * @return parser, or null if we don't have one for this tag. The pointer will remain valid for the life-time of the
      * process.
      */
-    const spicy::rt::Parser* parserForProtocolAnalyzer(const ::analyzer::Tag& tag, bool is_orig);
+    const spicy::rt::Parser* parserForProtocolAnalyzer(const ::zeek::analyzer::Tag& tag, bool is_orig);
 
     /**
      * Runtime method to retrieve the Spicy parser for a given Zeek file analyzer tag.
@@ -81,7 +81,7 @@ public:
      * @return parser, or null if we don't have one for this tag. The pointer will remain valid for the life-time of the
      * process.
      */
-    const spicy::rt::Parser* parserForFileAnalyzer(const ::file_analysis::Tag& tag);
+    const spicy::rt::Parser* parserForFileAnalyzer(const ::zeek::file_analysis::Tag& tag);
 
     /**
      * Runtime method to retrieve the analyzer tag that should be passed to
@@ -92,7 +92,7 @@ public:
      * @param tag original tag we query for how to pass it to script-land.
      * @return desired tag for passing to script-land.
      */
-    ::analyzer::Tag tagForProtocolAnalyzer(const ::analyzer::Tag& tag);
+    ::zeek::analyzer::Tag tagForProtocolAnalyzer(const ::zeek::analyzer::Tag& tag);
 
     /**
      * Runtime method to retrieve the analyzer tag that should be passed to
@@ -103,7 +103,7 @@ public:
      * @param tag original tag we query for how to pass it to script-land.
      * @return desired tag for passing to script-land.
      */
-    ::analyzer::Tag tagForFileAnalyzer(const ::analyzer::Tag& tag);
+    ::zeek::analyzer::Tag tagForFileAnalyzer(const ::zeek::analyzer::Tag& tag);
 
 protected:
     /**
@@ -141,12 +141,12 @@ private:
         std::string name_replaces;
         hilti::rt::Protocol protocol = hilti::rt::Protocol::Undef;
         hilti::rt::Vector<hilti::rt::Port> ports;
-        ::analyzer::Tag::subtype_t subtype;
+        ::zeek::analyzer::Tag::subtype_t subtype;
 
         // Filled in during InitPostScript().
         const spicy::rt::Parser* parser_orig;
         const spicy::rt::Parser* parser_resp;
-        ::analyzer::Tag replaces;
+        ::zeek::analyzer::Tag replaces;
     };
 
     /** Captures a registered file analyzer. */
@@ -155,7 +155,7 @@ private:
         std::string name_analyzer;
         std::string name_parser;
         hilti::rt::Vector<std::string> mime_types;
-        ::analyzer::Tag::subtype_t subtype;
+        ::zeek::analyzer::Tag::subtype_t subtype;
 
         // Filled in during InitPostScript().
         const spicy::rt::Parser* parser;

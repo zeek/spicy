@@ -37,7 +37,7 @@ plugin::Zeek_Spicy::Plugin::~Plugin() {}
 
 void plugin::Zeek_Spicy::Plugin::addLibraryPaths(const std::string& dirs) {
     for ( const auto& dir : hilti::rt::split(dirs, ":") )
-        ::add_to_bro_path(std::string(dir)); // Add to Zeek's search path.
+        ::zeek::util::detail::add_to_zeek_path(std::string(dir)); // Add to Zeek's search path.
 }
 
 void plugin::Zeek_Spicy::Plugin::registerProtocolAnalyzer(const std::string& name, hilti::rt::Protocol proto,
@@ -57,9 +57,9 @@ void plugin::Zeek_Spicy::Plugin::registerProtocolAnalyzer(const std::string& nam
     _protocol_analyzers_by_subtype.push_back(std::move(info));
 
     if ( replaces.size() ) {
-        if ( analyzer::Tag tag = analyzer_mgr->GetAnalyzerTag(replaces.c_str()) ) {
+        if ( zeek::analyzer::Tag tag = ::zeek::analyzer_mgr->GetAnalyzerTag(replaces.c_str()) ) {
             ZEEK_DEBUG(hilti::rt::fmt("Disabling %s for %s", replaces, name));
-            ::analyzer_mgr->DisableAnalyzer(tag);
+            ::zeek::analyzer_mgr->DisableAnalyzer(tag);
         }
         else
             ZEEK_DEBUG(hilti::rt::fmt("%s i supposed to replace %s, but that does not exist", name, replaces, name));
@@ -90,7 +90,7 @@ void plugin::Zeek_Spicy::Plugin::registerEnumType(
     auto fqid = hilti::rt::fmt("%s::%s", ns, id);
     ZEEK_DEBUG(hilti::rt::fmt("Adding Zeek enum type %s", fqid));
 
-    auto etype = spicy::zeek::compat::EnumType_New(fqid);
+    auto etype = ::spicy::zeek::compat::EnumType_New(fqid);
 
     for ( const auto& [lid, lval] : labels ) {
         auto name = ::hilti::rt::fmt("%s_%s", id, lid);
@@ -99,7 +99,7 @@ void plugin::Zeek_Spicy::Plugin::registerEnumType(
 
     // Hack to prevent Zeekygen fromp reporting the ID as not having a
     // location during the following initialization step.
-    ::zeekygen_mgr->Script("<Spicy>");
+    ::zeek::detail::zeekygen_mgr->Script("<Spicy>");
     ::zeek::detail::set_location(::zeek::detail::Location("<Spicy>", 0, 0, 0, 0));
 
     auto zeek_id = ::zeek::detail::install_ID(id.c_str(), ns.c_str(), true, true);
@@ -107,7 +107,7 @@ void plugin::Zeek_Spicy::Plugin::registerEnumType(
     zeek_id->MakeType();
 }
 
-const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForProtocolAnalyzer(const ::analyzer::Tag& tag,
+const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForProtocolAnalyzer(const ::zeek::analyzer::Tag& tag,
                                                                                bool is_orig) {
     if ( is_orig )
         return _protocol_analyzers_by_subtype[tag.Subtype()].parser_orig;
@@ -115,18 +115,18 @@ const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForProtocolAnalyzer(c
         return _protocol_analyzers_by_subtype[tag.Subtype()].parser_resp;
 }
 
-const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForFileAnalyzer(const ::file_analysis::Tag& tag) {
+const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForFileAnalyzer(const ::zeek::file_analysis::Tag& tag) {
     return _file_analyzers_by_subtype[tag.Subtype()].parser;
 }
 
-::analyzer::Tag plugin::Zeek_Spicy::Plugin::tagForProtocolAnalyzer(const ::analyzer::Tag& tag) {
+::zeek::analyzer::Tag plugin::Zeek_Spicy::Plugin::tagForProtocolAnalyzer(const ::zeek::analyzer::Tag& tag) {
     if ( auto r = _protocol_analyzers_by_subtype[tag.Subtype()].replaces )
         return r;
     else
         return tag;
 }
 
-::analyzer::Tag plugin::Zeek_Spicy::Plugin::tagForFileAnalyzer(const ::analyzer::Tag& tag) {
+::zeek::analyzer::Tag plugin::Zeek_Spicy::Plugin::tagForFileAnalyzer(const ::zeek::analyzer::Tag& tag) {
     // Don't have a replacement mechanism currently.
     return tag;
 }
@@ -228,14 +228,14 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
 
         if ( p.name_replaces.size() ) {
             ZEEK_DEBUG(hilti::rt::fmt("  Replaces existing protocol analyzer %s", p.name_replaces));
-            p.replaces = ::analyzer_mgr->GetAnalyzerTag(p.name_replaces.c_str());
+            p.replaces = ::zeek::analyzer_mgr->GetAnalyzerTag(p.name_replaces.c_str());
 
             if ( ! p.replaces )
                 reporter::error(hilti::rt::fmt("Parser '%s' is to replace '%s', but that one does not exist",
                                                p.name_analyzer, p.name_replaces));
         }
 
-        analyzer::Component::factory_callback factory = nullptr;
+        ::zeek::analyzer::Component::factory_callback factory = nullptr;
 
         switch ( p.protocol ) {
             case hilti::rt::Protocol::TCP: factory = spicy::zeek::rt::TCP_Analyzer::InstantiateAnalyzer; break;
@@ -245,12 +245,12 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
             default: reporter::error("unsupported protocol in analyzer"); return;
         }
 
-        auto c = new ::analyzer::Component(p.name_analyzer, factory, p.subtype);
+        auto c = new ::zeek::analyzer::Component(p.name_analyzer, factory, p.subtype);
         AddComponent(c);
 
         // Hack to prevent Zeekygen fromp reporting the ID as not having a
         // location during the following initialization step.
-        ::zeekygen_mgr->Script("<Spicy>");
+        ::zeek::detail::zeekygen_mgr->Script("<Spicy>");
         ::zeek::detail::set_location(::zeek::detail::Location("<Spicy>", 0, 0, 0, 0));
 
         // TODO(robin): Should Bro do this? It has run component intiialization at
@@ -258,13 +258,13 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         c->Initialize();
 
         // Register analyzer for its well-known ports.
-        auto tag = ::analyzer_mgr->GetAnalyzerTag(p.name_analyzer.c_str());
+        auto tag = ::zeek::analyzer_mgr->GetAnalyzerTag(p.name_analyzer.c_str());
         if ( ! tag )
             reporter::internalError(hilti::rt::fmt("cannot get analyzer tag for '%s'", p.name_analyzer));
 
         for ( auto port : p.ports ) {
             ZEEK_DEBUG(hilti::rt::fmt("  Scheduling analyzer for port %s", port));
-            ::analyzer_mgr->RegisterAnalyzerForPort(tag, transport_protocol(port), port.port());
+            ::zeek::analyzer_mgr->RegisterAnalyzerForPort(tag, transport_protocol(port), port.port());
         }
     }
 
@@ -273,13 +273,13 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
 
         p.parser = find_parser(p.name_analyzer, p.name_parser);
 
-        auto c = new ::file_analysis::Component(p.name_analyzer, spicy::zeek::rt::FileAnalyzer::InstantiateAnalyzer,
-                                                p.subtype);
+        auto c = new ::zeek::file_analysis::Component(p.name_analyzer,
+                                                      ::spicy::zeek::rt::FileAnalyzer::InstantiateAnalyzer, p.subtype);
         AddComponent(c);
 
         // Hack to prevent Zeekygen from reporting the ID as not having a
         // location during the following initialization step.
-        ::zeekygen_mgr->Script("<Spicy>");
+        ::zeek::detail::zeekygen_mgr->Script("<Spicy>");
         ::zeek::detail::set_location(::zeek::detail::Location("<Spicy>", 0, 0, 0, 0));
 
         // TODO: Should Bro do this? It has run component intiialization at
@@ -287,7 +287,7 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         c->Initialize();
 
         // Register analyzer for its MIME types.
-        auto tag = ::file_mgr->GetComponentTag(p.name_analyzer.c_str());
+        auto tag = ::zeek::file_mgr->GetComponentTag(p.name_analyzer.c_str());
         if ( ! tag )
             reporter::internalError(hilti::rt::fmt("cannot get analyzer tag for '%s'", p.name_analyzer));
 
@@ -300,7 +300,8 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
             ::spicy::zeek::compat::ZeekArgs_Append(vals, ::spicy::zeek::compat::FileAnalysisComponentTag_AsVal(tag));
             ::spicy::zeek::compat::ZeekArgs_Append(vals, ::spicy::zeek::compat::StringVal_New(
                                                              mt)); //NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
-            EventHandlerPtr handler = ::spicy::zeek::compat::event_register_Register("spicy_analyzer_for_mime_type");
+            ::zeek::EventHandlerPtr handler =
+                ::spicy::zeek::compat::event_register_Register("spicy_analyzer_for_mime_type");
             ::spicy::zeek::compat::event_mgr_Enqueue(handler, vals);
         }
     }
