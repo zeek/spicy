@@ -493,11 +493,33 @@ struct ProductionVisitor
                 pushState(std::move(pstate));
             }
         }
+
+        auto __offsets = builder::member(state().self, "__offsets");
+        auto cur_offset = builder::memberCall(state().cur, "offset", {});
+
+        // TODO(bbannier): Ideally at this point, all indices should be set.
+        if ( field->index() ) {
+            // Since the offset list is created empty make sure the element for the currrent field is present.
+            auto index = builder()->addTmp("index", builder::integer(*field->index()));
+            auto resize = builder()->addWhile(builder::lowerEqual(builder::size(__offsets), index));
+            resize->addMemberCall(__offsets, "push_back", {builder::null()});
+
+            builder()->addAssign(builder::index(__offsets, *field->index()),
+                                 builder::tuple({cur_offset, builder::optional(hilti::type::UnsignedInteger(64))}));
+        }
     }
 
     void postParseField(const Production& /* i */, const production::Meta& meta, bool is_field_owner) {
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
+
+        // TODO(bbannier): Ideally at this point, all indices should be set.
+        if ( field->index() ) {
+            auto __offsets = builder::member(state().self, "__offsets");
+            auto cur_offset = builder::memberCall(state().cur, "offset", {});
+            auto offsets = builder::index(__offsets, *field->index());
+            builder()->addAssign(offsets, builder::tuple({builder::index(builder::deref(offsets), 0), cur_offset}));
+        }
 
         if ( ! is_field_owner ) {
             // Just need to move position ahead.
