@@ -1,13 +1,15 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "spicy/rt/util.h"
+
 #include <cstdlib>
 
 #include <hilti/rt/autogen/version.h>
+#include <hilti/rt/type-info.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/util.h>
 
 #include <spicy/rt/autogen/config.h>
-#include <spicy/rt/util.h>
 
 std::string spicy::rt::version() {
     constexpr char spicy_version[] = PROJECT_VERSION_STRING_LONG;
@@ -35,4 +37,15 @@ std::optional<std::string> spicy::rt::getenv(const std::string& name) {
         return {x};
     else
         return {};
+}
+
+const hilti::rt::Vector<
+    std::optional<std::tuple<hilti::rt::integer::safe<uint64_t>, std::optional<hilti::rt::integer::safe<uint64_t>>>>>*
+spicy::rt::get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::rt::type_info::Value& value) {
+    for ( const auto& [f, v] : struct_.iterate(value, /*include_internals=*/true) ) {
+        if ( f.name == "__offsets" )
+            return static_cast<decltype(get_offsets_for_unit(struct_, value))>(v.pointer());
+    }
+
+    return nullptr;
 }

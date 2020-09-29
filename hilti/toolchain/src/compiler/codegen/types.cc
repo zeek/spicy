@@ -836,7 +836,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
             if ( auto ft = f.type().tryAs<type::Function>() )
                 continue;
 
-            if ( f.isInternal() || f.isStatic() || f.isNoEmit() )
+            if ( f.isStatic() || f.isNoEmit() )
                 continue;
 
             std::string accessor;
