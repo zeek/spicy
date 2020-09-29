@@ -35,7 +35,7 @@ extern const hilti::rt::TypeInfo __ti_Test_Y;
 namespace Test {
 
 // Reduced declaration of the struct types, trusting that ours will match the
-// layoput coming out of HILTI ...
+// layout coming out of HILTI ...
 struct Y {
     hilti::rt::Bool b;
     double r;
@@ -54,21 +54,21 @@ namespace {
 const hilti::rt::TypeInfo __ti_Test_X =
     {"Test::X", "Test::X",
      hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>(
-         {hilti::rt::type_info::struct_::Field{"i", &hilti::rt::type_info::int32, offsetof(Test::X, i)},
-          hilti::rt::type_info::struct_::Field{"s", &hilti::rt::type_info::string, offsetof(Test::X, s)},
-          hilti::rt::type_info::struct_::Field{"y", &type_info::__ti_Test_Y, offsetof(Test::X, y)}}))};
+         {hilti::rt::type_info::struct_::Field{"i", &hilti::rt::type_info::int32, offsetof(Test::X, i), false},
+          hilti::rt::type_info::struct_::Field{"s", &hilti::rt::type_info::string, offsetof(Test::X, s), false},
+          hilti::rt::type_info::struct_::Field{"y", &type_info::__ti_Test_Y, offsetof(Test::X, y), false}}))};
 const hilti::rt::TypeInfo __ti_Test_Y =
     {"Test::Y", "Test::Y",
      hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>(
-         {hilti::rt::type_info::struct_::Field{"b", &hilti::rt::type_info::bool_, offsetof(Test::Y, b)},
-          hilti::rt::type_info::struct_::Field{"r", &hilti::rt::type_info::real, offsetof(Test::Y, r)}}))};
+         {hilti::rt::type_info::struct_::Field{"b", &hilti::rt::type_info::bool_, offsetof(Test::Y, b), false},
+          hilti::rt::type_info::struct_::Field{"r", &hilti::rt::type_info::real, offsetof(Test::Y, r), false}}))};
 } // namespace
 } // namespace __hlt::type_info
 
 TEST_CASE("traverse structs") {
     // Check that we can traverse the structs and get exepcted values.
 
-    auto sx = StrongReference<Test::X>(Test::X{42, "foo", Test::Y{true, 3.14}});
+    auto sx = StrongReference<Test::X>({42, "foo", Test::Y{true, 3.14}});
     auto p = type_info::value::Parent(sx);
     auto v = type_info::Value(&*sx, &__hlt::type_info::__ti_Test_X, p);
 
@@ -104,7 +104,7 @@ TEST_CASE("life-time") {
     // associated parent going away.
     Test::Y y{true, 3.14};
 
-    auto x = StrongReference<Test::X>(Test::X{42, "foo", y});
+    auto x = StrongReference<Test::X>({42, "foo", y});
     auto p = type_info::value::Parent(x);
     auto v = type_info::Value(&*x, &__hlt::type_info::__ti_Test_X, p);
 
@@ -115,6 +115,34 @@ TEST_CASE("life-time") {
 
     // Now invalid.
     CHECK_THROWS_WITH_AS(v.pointer(), "type info value expired", const InvalidValue&);
+}
+
+TEST_CASE("internal fields") {
+    struct A {
+        integer::safe<int32_t> f1;
+        std::string f2;
+        bool __internal;
+    };
+
+    const TypeInfo ti = {"A", "A",
+                         type_info::Struct({type_info::struct_::Field{"f1", &type_info::int32, offsetof(A, f1), false},
+                                            type_info::struct_::Field{"f2", &type_info::string, offsetof(A, f2), false},
+                                            type_info::struct_::Field{"__internal", &type_info::bool_,
+                                                                      offsetof(A, __internal), true}})};
+
+    auto sx = StrongReference<A>({42, "foo", true});
+    auto p = type_info::value::Parent(sx);
+    auto v = type_info::Value(&*sx, &ti, p);
+
+    const auto s = type_info::value::auxType<type_info::Struct>(v);
+
+    CHECK_EQ(s.fields().size(), 2u);
+    CHECK_EQ(s.fields(false).size(), 2u);
+    CHECK_EQ(s.fields(true).size(), 3u);
+
+    CHECK_EQ(s.iterate(v).size(), 2u);
+    CHECK_EQ(s.iterate(v, false).size(), 2u);
+    CHECK_EQ(s.iterate(v, true).size(), 3u);
 }
 
 TEST_SUITE_END();

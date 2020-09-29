@@ -833,8 +833,9 @@ struct Field {
      * @param offset offset of the field in number bytes inside the struct
      * @param accessor function returning a pointer to a fields value
      */
-    Field(const char* name, const TypeInfo* type, std::ptrdiff_t offset, Accessor accessor = accessor_default)
-        : name(name), type(type), offset(offset), accessor(std::move(accessor)) {}
+    Field(const char* name, const TypeInfo* type, std::ptrdiff_t offset, bool internal,
+          Accessor accessor = accessor_default)
+        : name(name), type(type), offset(offset), accessor(std::move(accessor)), internal(internal) {}
 
     /** Default accessor function suitable for non-optional fields. */
     static const void* accessor_default(const Value& v) { return v.pointer(); }
@@ -853,6 +854,8 @@ struct Field {
         };
     }
 
+    bool isInternal() const { return internal; }
+
     const std::string name; /**< ID of the field */
     const TypeInfo* type /**< type of the field */;
 
@@ -864,6 +867,7 @@ private:
 
     const std::ptrdiff_t offset;
     const Accessor accessor;
+    const bool internal;
 };
 
 }; // namespace struct_
@@ -878,23 +882,34 @@ public:
      */
     Struct(std::vector<struct_::Field> fields) : _fields(std::move(fields)) {}
 
-    /** Returns the struct's field. */
-    const auto& fields() const { return _fields; }
+    /**
+     * Returns the struct's field.
+     *
+     * @param includeInternal include internal fields
+     * */
+
+    auto fields(bool include_internal = false) const {
+        std::vector<std::reference_wrapper<const struct_::Field>> fields;
+        std::copy_if(_fields.begin(), _fields.end(), std::back_inserter(fields),
+                     [=](const struct_::Field& f) { return include_internal || ! f.isInternal(); });
+        return fields;
+    }
 
     /**
      * Returns a vector that can be iterated over to visit all the fields.
      *
      * @param v the value referring to the struct to iterate over
+     * @param includeInternal include internal fields
      *
      * @return a vector of pairs ``(field, value)`` where *field* is the
      * current ``struct_::Field` and *value* is the field's value.
      */
-    auto iterate(const Value& v) const {
+    auto iterate(const Value& v, bool include_internal = false) const {
         std::vector<std::pair<const struct_::Field&, Value>> values;
 
-        for ( const auto& f : _fields ) {
-            auto x = Value(static_cast<const char*>(v.pointer()) + f.offset, f.type, v);
-            values.emplace_back(f, f.value(x));
+        for ( const auto& f : fields(include_internal) ) {
+            auto x = Value(static_cast<const char*>(v.pointer()) + f.get().offset, f.get().type, v);
+            values.emplace_back(f.get(), f.get().value(x));
         }
 
         return values;
