@@ -86,7 +86,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         if ( auto e = n.value() )
             return fmt("std::make_optional(%s)", cg->compile(*e));
 
-        return "{}";
+        return fmt("std::optional<%s>()", cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor));
     }
 
     result_t operator()(const ctor::Port& n) { return fmt("hilti::rt::Port(\"%s\")", n.value()); }
