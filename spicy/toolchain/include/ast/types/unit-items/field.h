@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -11,7 +12,6 @@
 #include <spicy/ast/aliases.h>
 #include <spicy/ast/engine.h>
 #include <spicy/ast/types/unit-item.h>
-#include <spicy/ast/types/unit.h>
 
 namespace spicy::type::unit::item {
 
@@ -72,6 +72,7 @@ public:
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
 
     auto id() const { return childs()[0].as<ID>(); }
+    auto index() const { return _index; }
     auto ctor() const { return childs()[2].tryAs<Ctor>(); }
     auto vectorItem() const { return childs()[2].tryAs<Item>(); }
     auto repeatCount() const { return childs()[3].tryAs<Expression>(); }
@@ -84,6 +85,7 @@ public:
 
     bool isContainer() const { return repeatCount().has_value(); }
     auto isTransient() const { return _is_anonynmous; }
+
 
     Type parseType() const;
 
@@ -119,9 +121,23 @@ public:
     // units, where the auxiliary type is the parse type of the field).
     static Type vectorElementTypeThroughSelf(ID id);
 
+    /**
+     * Copies an existing field but changes it unit index.
+     *
+     * @param unit original field
+     * @param index the new index of the field
+     * @return new Field with unit index set as requested
+     */
+    static Field setIndex(const Field& f, uint64_t index) {
+        auto x = Item(f)._clone().as<Field>();
+        x._index = index;
+        return x;
+    }
+
 private:
     Type _originalType() const { return child<Type>(1); }
 
+    std::optional<uint64_t> _index;
     bool _is_anonynmous;
     Engine _engine;
     const int _args_start;

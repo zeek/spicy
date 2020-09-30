@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -10,7 +11,6 @@
 #include <spicy/ast/aliases.h>
 #include <spicy/ast/engine.h>
 #include <spicy/ast/types/unit-item.h>
-#include <spicy/ast/types/unit.h>
 
 namespace spicy::type::unit::item {
 
@@ -38,7 +38,6 @@ public:
                     std::optional<Expression> repeat, const std::vector<Expression>& sinks,
                     std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
                     std::vector<Hook> hooks = {}, Meta m = Meta())
-
         : NodeBase(nodes(std::move(ctor), id, std::move(repeat), std::move(attrs), std::move(cond), args, sinks,
                          std::move(hooks)),
                    std::move(m)),
@@ -52,7 +51,6 @@ public:
                     std::optional<Expression> repeat, const std::vector<Expression>& sinks,
                     std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
                     std::vector<Hook> hooks = {}, Meta m = Meta())
-
         : NodeBase(nodes(std::move(item), id, std::move(repeat), std::move(attrs), std::move(cond), args, sinks,
                          std::move(hooks)),
                    std::move(m)),
@@ -76,6 +74,8 @@ public:
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
 
     auto fieldID() const { return childs()[1].tryAs<ID>(); }
+
+    const auto& index() const { return _index; }
 
     // Only one of these will have return value.
     auto unresolvedID() const { return childs()[0].tryAs<ID>(); }
@@ -104,8 +104,22 @@ public:
     // Node interface.
     auto properties() const { return node::Properties{{"engine", to_string(_engine)}}; }
 
+    /**
+     * Copies an existing field but changes it unit index.
+     *
+     * @param unit original field
+     * @param index the new index of the field
+     * @return new Field with unit index set as requested
+     */
+    static UnresolvedField setIndex(const UnresolvedField& f, uint64_t index) {
+        auto x = Item(f)._clone().as<UnresolvedField>();
+        x._index = index;
+        return x;
+    }
+
 private:
     Engine _engine;
+    std::optional<uint64_t> _index;
     const int _args_start;
     const int _args_end;
     const int _sinks_start;

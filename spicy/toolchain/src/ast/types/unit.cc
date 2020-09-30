@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <spicy/ast/types/unit.h>
+#include "spicy/ast/types/unit.h"
+
 #include <spicy/compiler/detail/codegen/grammar.h>
 
 using namespace spicy;

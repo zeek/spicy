@@ -24,9 +24,15 @@ using namespace spicy;
 namespace {
 
 template<typename T>
-auto resolveField(const type::unit::item::UnresolvedField& u, const T& t) { // TODO(google-runtime-references)
-    return type::unit::item::Field(u.fieldID(), std::move(t), u.engine(), u.arguments(), u.repeatCount(), u.sinks(),
-                                   u.attributes(), u.condition(), u.hooks(), u.meta());
+auto resolveField(const type::unit::item::UnresolvedField& u, const T& t) {
+    auto field = type::unit::item::Field(u.fieldID(), std::move(t), u.engine(), u.arguments(), u.repeatCount(),
+                                         u.sinks(), u.attributes(), u.condition(), u.hooks(), u.meta());
+
+    // TODO(bbannier): Ideally at this point, all indices should be set.
+    if ( auto index = u.index() )
+        return type::unit::item::Field::setIndex(std::move(field), *u.index());
+    else
+        return field;
 }
 
 struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
