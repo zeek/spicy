@@ -899,8 +899,11 @@ public:
     using Size = stream::Size;
     using UnsafeConstIterator = stream::detail::UnsafeConstIterator;
 
-    /** Contstructor. */
+    /** Constructor. */
     View() = default;
+
+    /** Destructor. Virtual to force creation of vtable for consistent RTTI. */
+    virtual ~View();
 
     /** Constructor for static view bracketed through two iterators. */
     explicit View(SafeConstIterator begin, SafeConstIterator end) : _begin(std::move(begin)), _end(std::move(end)) {

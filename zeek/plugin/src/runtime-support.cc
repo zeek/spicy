@@ -22,6 +22,11 @@ void rt::register_file_analyzer(const std::string& name, const hilti::rt::Vector
     OurPlugin->registerFileAnalyzer(name, mime_types, parser);
 }
 
+void rt::register_packet_analyzer(const std::string& name,
+                                const std::string& parser) {
+    OurPlugin->registerPacketAnalyzer(name, parser);
+}
+
 void rt::register_enum_type(
     const std::string& ns, const std::string& id,
     const hilti::rt::Vector<std::tuple<std::string, hilti::rt::integer::safe<int64_t>>>& labels) {
@@ -127,8 +132,12 @@ void rt::debug(const Cookie& cookie, const std::string_view& msg) {
         auto name = ::zeek::file_mgr->GetComponentName(f->analyzer->Tag());
         ZEEK_DEBUG(hilti::rt::fmt("[%s/%" PRIu32 "] %s", name, f->analyzer->GetID(), msg));
     }
+    else if ( const auto f = std::get_if<cookie::PacketAnalyzer>(&cookie) ) {
+        auto name = ::zeek::packet_mgr->GetComponentName(f->analyzer->GetAnalyzerTag());
+        ZEEK_DEBUG(hilti::rt::fmt("[%s] %s", name, msg));
+    }
     else
-        throw ValueUnavailable("neither $conn nor $file available for debug logging");
+        throw ValueUnavailable("neither $conn nor $file nor packet analyzer available for debug logging");
 }
 
 ::zeek::ValPtr rt::current_file(std::string_view location) {
@@ -261,4 +270,14 @@ void rt::file_end() {
     }
     else
         throw ValueUnavailable("no current connection available");
+}
+
+void rt::forward_packet(uint32_t identifier) {
+    auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
+    assert(cookie);
+
+    if ( auto c = std::get_if<cookie::PacketAnalyzer>(cookie) )
+        c->next_analyzer = identifier;
+    else
+        throw ValueUnavailable("no current packet analyzer available");
 }

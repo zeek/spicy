@@ -374,6 +374,8 @@ Size View::size() const {
 
 Bytes Stream::data() const { return view().data(); }
 
+stream::View::~View() = default;
+
 Bytes stream::View::data() const {
     Bytes s;
 

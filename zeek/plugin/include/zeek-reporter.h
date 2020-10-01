@@ -49,6 +49,9 @@ void analyzerError(::zeek::analyzer::Analyzer* a, const std::string& msg, const 
 /** Report an error and disable a file analyzer's input processing */
 void analyzerError(::zeek::file_analysis::Analyzer* a, const std::string& msg, const std::string& location);
 
+/** Report an error and disable a packet analyzer's input processing. */
+void analyzerError(::zeek::packet_analysis::Analyzer* a, const std::string& msg, const std::string& location);
+
 /** Returns the number of errors recorded by the Zeek reporter. */
 extern int numberErrors();
 

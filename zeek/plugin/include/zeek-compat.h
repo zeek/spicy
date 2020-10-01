@@ -19,6 +19,10 @@
 #if ZEEK_DEBUG_BUILD
 #define DEBUG
 #endif
+#if ZEEK_VERSION_NUMBER >= 30300 // Zeek >= 3.3 (aka 4.0)
+#include <zeek/packet_analysis/Analyzer.h>
+#endif
+
 #if ZEEK_VERSION_NUMBER >= 30200 // Zeek >= 3.2
 #include <zeek/Conn.h>
 #include <zeek/DebugLogger.h>

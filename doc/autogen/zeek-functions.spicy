@@ -64,3 +64,10 @@ Signals a gap in a file to Zeek's file analysis.
 
 Signals the end of a file to Zeek's file analysis.
 
+.. _spicy_forward_packet:
+
+.. rubric:: ``function zeek::forward_packet(identifier: uint32)``
+
+Inside a packet analyzer, forwards what data remains after parsing the top-level unit
+on to another analyzer. The index specifies the target, per the current dispatcher table.
+
