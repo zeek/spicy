@@ -23,68 +23,6 @@ class Grammar;
 
 namespace type {
 
-namespace detail {
-inline std::pair<std::vector<unit::Item>, uint64_t> assignIndices(std::vector<unit::Item> items, uint64_t index);
-
-/**
- * Helper function to recursively number all fields in the passed switch in sequential order.
- *
- * @param switch_ the switch statement to number
- * @param index start index to use
- * @return a pair of mutated items and the next index
- */
-inline auto assignIndices(unit::item::Switch switch_, uint64_t index) {
-    std::vector<unit::item::switch_::Case> cases;
-    cases.reserve(switch_.cases().size());
-
-    for ( auto&& case_ : switch_.cases() ) {
-        auto [new_items, new_index] = assignIndices(case_.items(), index);
-        index = new_index;
-
-        if ( case_.isDefault() )
-            cases.emplace_back(case_.items(), case_.meta());
-        else if ( case_.isLookAhead() ) {
-            assert(case_.items().size() == 1u);
-            cases.emplace_back(case_.items().at(0), case_.meta());
-        }
-        else
-            cases.emplace_back(case_.expressions(), std::move(new_items), case_.meta());
-    }
-
-    return std::make_pair(unit::item::Switch(switch_.expression(), std::move(cases), switch_.engine(),
-                                             switch_.condition(), switch_.hooks(), switch_.meta()),
-                          index);
-}
-
-/**
- * Helper function to recursively number all fields in the passed list in sequential order
- *
- * @param items the items to number
- * @param index start index to use
- * @return a pair of mutated items and the next index
- */
-inline std::pair<std::vector<unit::Item>, uint64_t> assignIndices(std::vector<unit::Item> items, uint64_t index) {
-    std::vector<unit::Item> new_items;
-    new_items.reserve(items.size());
-
-    for ( auto item : items ) {
-        if ( auto&& field = item.tryAs<unit::item::UnresolvedField>() )
-            new_items.push_back(unit::item::UnresolvedField::setIndex(std::move(*field), index++));
-        else if ( auto&& field = item.tryAs<unit::item::Field>() )
-            new_items.push_back(unit::item::Field::setIndex(std::move(*field), index++));
-        else if ( auto&& switch_ = item.tryAs<unit::item::Switch>() ) {
-            auto [new_switch, new_index] = assignIndices(std::move(*switch_), index);
-            index = new_index;
-            new_items.push_back(std::move(new_switch));
-        }
-        else
-            new_items.push_back(std::move(item));
-    }
-
-    return std::make_pair(new_items, index);
-}
-} // namespace detail
-
 /** AST node for a Spicy unit. */
 class Unit : public hilti::TypeBase,
              hilti::type::trait::isAllocable,
@@ -93,7 +31,7 @@ class Unit : public hilti::TypeBase,
 public:
     Unit(std::vector<type::function::Parameter> p, std::vector<unit::Item> i,
          const std::optional<AttributeSet>& /* attrs */ = {}, Meta m = Meta())
-        : TypeBase(nodes(std::move(p), detail::assignIndices(std::move(i), 0).first), std::move(m)) {
+        : TypeBase(hilti::nodes(std::move(p), assignIndices(std::move(i))), std::move(m)) {
         _state().flags += type::Flag::NoInheritScope;
     }
 
@@ -249,19 +187,11 @@ public:
      * @return new unit type that includes the additional items
      */
     static Unit addItems(const Unit& unit, std::vector<unit::Item> items) {
-        auto childs = unit.childs();
-        childs.reserve(childs.size() + items.size());
-
-        uint64_t index = 0;
-        for ( auto item : items ) {
-            auto [new_items, new_index] = detail::assignIndices({item}, index);
-            childs.insert(childs.end(), std::move_iterator(new_items.begin()), std::move_iterator(new_items.end()));
-            index = new_index;
-        }
-        childs.insert(childs.end(), items.begin(), items.end());
-
         auto x = Type(unit)._clone().as<Unit>();
-        x.childs() = std::move(childs);
+        auto new_items = x.assignIndices(items);
+
+        for ( auto i : new_items )
+            x.childs().emplace_back(std::move(i));
 
         return x;
     }
@@ -280,8 +210,17 @@ public:
     }
 
 private:
+    /**
+     * Helper function to recursively number all fields in the passed list in sequential order
+     *
+     * @param items the items to number
+     * @return a pair of mutated items and the next index
+     */
+    std::vector<unit::Item> assignIndices(std::vector<unit::Item> items);
+
     bool _public = false;
     bool _wildcard = false;
+    uint64_t _next_index = 0;
     std::shared_ptr<spicy::detail::codegen::Grammar> _grammar;
 };
 

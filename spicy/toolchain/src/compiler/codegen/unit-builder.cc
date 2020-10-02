@@ -152,11 +152,13 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         }
     };
 
-    v.addField(hilti::type::struct_::Field(ID("__offsets"),
-                                           hilti::type::Vector(hilti::type::Optional(
-                                               hilti::type::Tuple({type::UnsignedInteger(64),
-                                                                   hilti::type::Optional(type::UnsignedInteger(64))}))),
-                                           AttributeSet({Attribute("&internal")})));
+    if ( options().getAuxOption<bool>("spicy.track_offsets", false) ) {
+        v.addField(hilti::type::struct_::Field(ID("__offsets"),
+                                               hilti::type::Vector(hilti::type::Optional(hilti::type::Tuple(
+                                                   {type::UnsignedInteger(64),
+                                                    hilti::type::Optional(type::UnsignedInteger(64))}))),
+                                               AttributeSet({Attribute("&internal")})));
+    }
 
     add_hook("0x25_init", {});
     add_hook("0x25_done", {});

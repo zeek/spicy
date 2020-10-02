@@ -52,7 +52,7 @@ struct Options {
      * @tparam type of the key's value, which must match the type used when
      * the option is being set
      *
-     * @returns either the recorded value for *key*, or *default* none
+     * @return either the recorded value for *key*, or *default* none
      */
     template<typename T>
     T getAuxOption(const std::string& key, T default_) const {
@@ -64,7 +64,7 @@ struct Options {
     }
 
     /**
-     * Sets the value for auxiliary option.
+     * Sets the value for an auxiliary option.
      *
      * @param key unique key, which should use a namespaced `x.y` structure.
      * @param value value to record for the option

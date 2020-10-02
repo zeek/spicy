@@ -86,7 +86,6 @@ public:
     bool isContainer() const { return repeatCount().has_value(); }
     auto isTransient() const { return _is_anonynmous; }
 
-
     Type parseType() const;
 
     Node& ctorNode() { return childs()[2]; }
@@ -122,7 +121,7 @@ public:
     static Type vectorElementTypeThroughSelf(ID id);
 
     /**
-     * Copies an existing field but changes it unit index.
+     * Copies an existing field but changes its unit index.
      *
      * @param unit original field
      * @param index the new index of the field

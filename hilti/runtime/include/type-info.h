@@ -885,7 +885,7 @@ public:
     /**
      * Returns the struct's field.
      *
-     * @param includeInternal include internal fields
+     * @param include_internal include internal fields
      * */
 
     auto fields(bool include_internal = false) const {
@@ -899,7 +899,7 @@ public:
      * Returns a vector that can be iterated over to visit all the fields.
      *
      * @param v the value referring to the struct to iterate over
-     * @param includeInternal include internal fields
+     * @param include_internal include internal fields
      *
      * @return a vector of pairs ``(field, value)`` where *field* is the
      * current ``struct_::Field` and *value* is the field's value.

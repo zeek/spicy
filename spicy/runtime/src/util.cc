@@ -1,6 +1,6 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include "spicy/rt/util.h"
+#include <spicy/rt/util.h>
 
 #include <cstdlib>
 
