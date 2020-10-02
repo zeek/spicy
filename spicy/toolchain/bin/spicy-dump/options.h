@@ -4,7 +4,7 @@
 
 /**
  * Formatting options for output.
- *
- * Currently empty, but may add options in the future.
  */
-struct OutputOptions {};
+struct OutputOptions {
+    bool include_offsets = false;
+};

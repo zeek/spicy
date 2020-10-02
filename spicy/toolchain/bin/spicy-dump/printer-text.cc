@@ -4,6 +4,8 @@
 
 #include <hilti/rt/libhilti.h>
 
+#include <spicy/rt/util.h>
+
 using namespace hilti::rt;
 
 void TextPrinter::print(const type_info::Value& v) {
@@ -96,18 +98,39 @@ void TextPrinter::print(const type_info::Value& v) {
                                    [&](const hilti::rt::type_info::Struct& x) {
                                        out() << v.type().display << " {";
 
+                                       const auto& offsets = spicy::rt::get_offsets_for_unit(x, v);
+
                                        bool empty = true;
+                                       uint64_t index = 0;
                                        indent([&]() {
                                            for ( const auto& [f, y] : x.iterate(v) ) {
-                                               if ( ! y )
-                                                   // Field not set.
-                                                   continue;
+                                               if ( y ) {
+                                                   out() << '\n';
+                                                   outputIndent();
+                                                   out() << f.name << ": ";
+                                                   print(y);
 
-                                               out() << '\n';
-                                               outputIndent();
-                                               out() << f.name << ": ";
-                                               print(y);
-                                               empty = false;
+                                                   const auto& offset = offsets && offsets->size() > index ?
+                                                                            offsets->at(index) :
+                                                                            std::nullopt;
+
+                                                   if ( _options.include_offsets && offset ) {
+                                                       const auto& start = std::get<0>(*offset);
+                                                       const auto& end = std::get<1>(*offset);
+
+                                                       out() << " [" << start << ", ";
+
+                                                       if ( end )
+                                                           out() << *end;
+                                                       else
+                                                           out() << "-";
+                                                       out() << "]";
+                                                   }
+
+                                                   empty = false;
+                                               }
+
+                                               ++index;
                                            }
                                        });
 

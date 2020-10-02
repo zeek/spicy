@@ -74,6 +74,7 @@ void SpicyDump::usage() {
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
            "  -f | --file <path>              Read input from <path> instead of stdin.\n"
            "  -l | --list-parsers             List available parsers and exit.\n"
+           "  -o | --include-offsets          Include stream offsets of parsed data in output.\n"
            "  -p | --parser <name>            Use parser <name> to process input. Only neeeded if more than one parser "
            "is available.\n"
            "  -v | --version                  Print version information.\n"
@@ -112,7 +113,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABD:f:hdX:OVlp:PSRL:J", long_options, nullptr);
+        int c = getopt_long(argc, argv, "ABD:f:hdX:OVlop:PSRL:J", long_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -176,6 +177,8 @@ void SpicyDump::parseOptions(int argc, char** argv) {
             case 'J': opt_json = true; break;
 
             case 'l': opt_list_parsers = true; break;
+
+            case 'o': output_options.include_offsets = true; break;
 
             case 'p': opt_parser = optarg; break;
 

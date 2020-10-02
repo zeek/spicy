@@ -4,6 +4,8 @@
 
 #include <hilti/rt/libhilti.h>
 
+#include <spicy/rt/util.h>
+
 using namespace hilti::rt;
 
 using json = nlohmann::json;
@@ -84,6 +86,23 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                                                continue;
 
                                            j[f.name] = convert(y);
+                                       }
+
+                                       auto offsets = json::array();
+                                       const auto& __offsets = spicy::rt::get_offsets_for_unit(x, v);
+                                       if ( _options.include_offsets && __offsets ) {
+                                           for ( auto&& [index, offset] : enumerate(*__offsets) ) {
+                                               auto o = json::object();
+
+                                               if ( offset ) {
+                                                   o["start"] = std::get<0>(*offset).Ref();
+                                                   if ( auto& end = std::get<1>(*offset) )
+                                                       o["end"] = end->Ref();
+                                               }
+
+                                               offsets.push_back(std::move(o));
+                                           }
+                                           j["__offsets"] = offsets;
                                        }
                                    },
                                    [&](const hilti::rt::type_info::Time& x) { j = x.get(v).seconds(); },
