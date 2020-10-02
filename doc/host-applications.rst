@@ -80,7 +80,7 @@ signatures:
 ``parse1``
     The simplest form of parsing function receives a stream of input
     data, along with an optional view into the stream to limit the
-    region to parse if desired. ``parse``` will internally instantiate
+    region to parse if desired. ``parse1`` will internally instantiate
     an instance of the unit's ``struct``, and then feed the unit's
     parser with the data stream. However, it won't provide access to
     what's being parsed as it doesn't pass back the ``struct``.
