@@ -342,6 +342,20 @@ protected:
     void printHiltiException(const hilti::rt::Exception& e);
 
     /**
+     * Hook for derived classes to add more options to the getopt() option
+     * string.
+     */
+    virtual std::string hookAddCommandLineOptions() { return ""; }
+
+    /** Hook for derived classes for parsing additional options. **/
+    virtual bool hookProcessCommandLineOption(char opt, const char* optarg) { return false; }
+
+    /**
+     * Hook for derived classes for adding content to the driver's usage message (`--help`).
+     */
+    virtual std::string hookAugmentUsage() { return ""; }
+
+    /**
      * Hook for derived classes to execute custom code when a new source path
      * is being added as an input file.
      */

@@ -57,6 +57,7 @@ set(SOURCES_COMPILER
     src/compiler/codegen/productions/look-ahead.cc
     src/compiler/codegen/productions/switch.cc
     src/compiler/codegen/unit-builder.cc
+    src/compiler/driver.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc
     src/compiler/visitors/apply-coercions.cc

@@ -66,6 +66,10 @@ Driver::~Driver() {
 void Driver::usage() {
     auto exts = util::join(plugin::registry().supportedExtensions(), ", ");
 
+    std::string addl_usage = hookAugmentUsage();
+    if ( addl_usage.size() )
+        addl_usage = std::string("\n") + addl_usage + "\n";
+
     std::cerr
         << "Usage: " << _name
         << " [options] <inputs>\n"
@@ -103,7 +107,8 @@ void Driver::usage() {
            "  -V | --skip-validation          Don't validate ASTs (for debugging only).\n"
            "  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation "
            "(comma-separated; see 'help' for list).\n"
-           "\n"
+        << addl_usage
+        << "\n"
            "Inputs can be "
         << exts
         << ", .cc/.cxx, *.hlto.\n"
@@ -220,9 +225,10 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     int num_output_types = 0;
 
     opterr = 0; // don't print errors
+    std::string option_string = "ABlKL:OcCpPvjJhvVdX:o:D:TUEeSR" + hookAddCommandLineOptions();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABlKL:OcCpPvjJhvVdX:o:D:TUEeSR", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, option_string.c_str(), long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -346,8 +352,15 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
             case 'V': _compiler_options.skip_validation = true; break;
 
             case 'h': usage(); return Nothing();
+
             case '?': usage(); return error("unknown option");
-            default: usage(); return error(fmt("option %c not implemented", c));
+
+            default:
+                if ( hookProcessCommandLineOption(c, optarg) )
+                    break;
+
+                usage();
+                return error(fmt("option %c not implemented", c));
         }
     }
 

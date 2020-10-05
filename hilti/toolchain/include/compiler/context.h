@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <any>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -19,7 +21,12 @@ namespace hilti {
 
 class PluginRegistry;
 
-/** Options controlling the compiler's code generation */
+/**
+ * Options controlling the compiler's code generation.
+ *
+ * In addition to HILTI's built-in options, external components can store
+ * further options through auxiliary value/key mappings.
+ */
 struct Options {
     bool debug = false; /**< if true, generate non-optimized debug code */
     bool debug_trace =
@@ -38,6 +45,38 @@ struct Options {
         cxx_include_paths; /**< additional C++ directories to search for #include files. */
 
     /**
+     * Retrieves the value for an auxiliary option.
+     *
+     * @param key unique key, which should use a namespaced `x.y` structure.
+     * @param default value to return if key has not been explicitly set
+     * @tparam type of the key's value, which must match the type used when
+     * the option is being set
+     *
+     * @returns either the recorded value for *key*, or *default* none
+     */
+    template<typename T>
+    T getAuxOption(const std::string& key, T default_) const {
+        auto i = _aux_options.find(key);
+        if ( i != _aux_options.end() )
+            return std::any_cast<T>(i->second);
+        else
+            return default_;
+    }
+
+    /**
+     * Sets the value for auxiliary option.
+     *
+     * @param key unique key, which should use a namespaced `x.y` structure.
+     * @param value value to record for the option
+     * @tparam type of the key's value, which must match the type used when
+     * the option is being retrieved
+     */
+    template<typename T>
+    void setAuxOption(const std::string& key, T value) {
+        _aux_options[key] = value;
+    }
+
+    /**
      * Parses a comma-separated list of tokens indicating which additional
      * debug instrumentation to activate, and sets the instance's
      * corresponding options.
@@ -45,6 +84,9 @@ struct Options {
      * @return An error if a flag isn't known.
      */
     Result<Nothing> parseDebugAddl(const std::string& flags);
+
+private:
+    std::map<std::string, std::any> _aux_options;
 };
 
 namespace context {
@@ -137,7 +179,7 @@ public:
     std::optional<context::CachedModule> lookupModule(const std::filesystem::path& path);
 
     /**
-     * Returns all (direct) dependencies that a modulee imports. This
+     * Returns all (direct) dependencies that a module imports. This
      * information may be correct yet, if `final` isn't set in the module
      * meta data.
      *

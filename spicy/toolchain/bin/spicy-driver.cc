@@ -40,9 +40,9 @@ static void fatalError(const std::string& msg) {
     exit(1);
 }
 
-class SpicyDriver : public hilti::Driver, public spicy::rt::Driver {
+class SpicyDriver : public spicy::Driver, public spicy::rt::Driver {
 public:
-    SpicyDriver(const std::string_view& argv0 = "") : hilti::Driver("spicy-driver", argv0) {
+    SpicyDriver(const std::string_view& argv0 = "") : spicy::Driver("spicy-driver", argv0) {
         spicy::Configuration::extendHiltiConfiguration();
     }
 

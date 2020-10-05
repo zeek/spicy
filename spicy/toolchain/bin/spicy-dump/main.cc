@@ -42,9 +42,9 @@ static void fatalError(const std::string& msg) {
     exit(1);
 }
 
-class SpicyDump : public hilti::Driver, public spicy::rt::Driver {
+class SpicyDump : public spicy::Driver, public spicy::rt::Driver {
 public:
-    SpicyDump(const std::string_view& argv0 = "") : hilti::Driver("spicy-dump", argv0) {
+    SpicyDump(const std::string_view& argv0 = "") : spicy::Driver("spicy-dump", argv0) {
         spicy::Configuration::extendHiltiConfiguration();
     }
 
@@ -74,7 +74,6 @@ void SpicyDump::usage() {
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
            "  -f | --file <path>              Read input from <path> instead of stdin.\n"
            "  -l | --list-parsers             List available parsers and exit.\n"
-           "  -o | --include-offsets          Include stream offsets of parsed data in output.\n"
            "  -p | --parser <name>            Use parser <name> to process input. Only neeeded if more than one parser "
            "is available.\n"
            "  -v | --version                  Print version information.\n"
@@ -83,6 +82,7 @@ void SpicyDump::usage() {
            "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
            "  -D | --compiler-debug <streams> Activate compile-time debugging output for given debug streams "
            "(comma-separated; 'help' for list).\n"
+           "  -Q | --include-offsets          Include stream offsets of parsed data in output.\n"
            "  -L | --library-path <path>      Add path to list of directories to search when importing modules.\n"
            "  -J | --json                     Print JSON output.\n"
            "  -O | --optimize                 Build optimized release version of generated code.\n"
@@ -106,14 +106,15 @@ void SpicyDump::usage() {
 /** TODO: Can we factor out common option handling to the Spicy driver? */
 void SpicyDump::parseOptions(int argc, char** argv) {
     hilti::driver::Options driver_options;
-    hilti::Options compiler_options;
+    hilti::Options hilti_compiler_options;
+    spicy::Options spicy_compiler_options;
 
     driver_options.execute_code = true;
     driver_options.include_linker = true;
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABD:f:hdX:OVlop:PSRL:J", long_options, nullptr);
+        int c = getopt_long(argc, argv, "ABD:f:hdX:OQVlp:PSRL:J", long_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -124,7 +125,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
             case 'B': driver_options.show_backtraces = true; break;
 
             case 'd': {
-                compiler_options.debug = true;
+                hilti_compiler_options.debug = true;
                 break;
             }
 
@@ -145,9 +146,9 @@ void SpicyDump::parseOptions(int argc, char** argv) {
                     exit(0);
                 }
 
-                compiler_options.debug = true;
+                hilti_compiler_options.debug = true;
 
-                if ( auto r = compiler_options.parseDebugAddl(arg); ! r )
+                if ( auto r = hilti_compiler_options.parseDebugAddl(arg); ! r )
                     fatalError(r.error());
 
                 break;
@@ -176,15 +177,18 @@ void SpicyDump::parseOptions(int argc, char** argv) {
 
             case 'J': opt_json = true; break;
 
-            case 'l': opt_list_parsers = true; break;
+            case 'Q':
+                spicy_compiler_options.track_offsets = true;
+                output_options.include_offsets = true;
+                break;
 
-            case 'o': output_options.include_offsets = true; break;
+            case 'l': opt_list_parsers = true; break;
 
             case 'p': opt_parser = optarg; break;
 
             case 'P': opt_enable_print = true; break;
 
-            case 'O': compiler_options.optimize = true; break;
+            case 'O': hilti_compiler_options.optimize = true; break;
 
             case 'R': driver_options.report_times = true; break;
 
@@ -194,13 +198,14 @@ void SpicyDump::parseOptions(int argc, char** argv) {
 
             case 'h': usage(); exit(0);
 
-            case 'L': compiler_options.library_paths.emplace_back(optarg); break;
+            case 'L': hilti_compiler_options.library_paths.emplace_back(optarg); break;
 
             default: usage(); fatalError(fmt("option %c not supported", c));
         }
     }
 
-    setCompilerOptions(compiler_options);
+    setCompilerOptions(hilti_compiler_options);
+    setSpicyCompilerOptions(spicy_compiler_options);
     setDriverOptions(std::move(driver_options));
 
     initialize();
