@@ -369,14 +369,13 @@ Size View::size() const {
         return _end->offset() > _begin.offset() ? (_end->offset() - _begin.offset()).Ref() : 0;
 }
 
-std::string Stream::data() const { return view().data(); }
+std::string Stream::data() const { return view().data().str(); }
 
-std::string stream::View::data() const {
-    std::string s;
-    s.reserve(size());
+Bytes stream::View::data() const {
+    Bytes s;
 
     for ( auto block = firstBlock(); block; block = nextBlock(block) )
-        s += std::string(reinterpret_cast<const char*>(block->start), block->size);
+        s.append(std::string(reinterpret_cast<const char*>(block->start), block->size));
 
     return s;
 }

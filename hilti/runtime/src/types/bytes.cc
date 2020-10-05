@@ -169,3 +169,5 @@ Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
 
     return groups.at(group);
 }
+
+void Bytes::append(const stream::View& view) { Base::append(view.data()); }

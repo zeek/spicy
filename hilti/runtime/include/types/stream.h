@@ -21,13 +21,13 @@
 #include <hilti/rt/intrusive-ptr.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
 
-class Bytes;
 class Stream;
 
 namespace stream {
@@ -1159,7 +1159,7 @@ public:
     void copyRaw(Byte* dst) const;
 
     /** Returns a copy of the data the view refers to. */
-    std::string data() const;
+    Bytes data() const;
 
     /** Returns an unsafe iterator pointing to the beginning of the view. */
     detail::UnsafeConstIterator unsafeBegin() const { return detail::UnsafeConstIterator(_begin); }
@@ -1242,7 +1242,7 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const View& x) {
-    out << escapeBytes(x.data());
+    out << escapeBytes(x.data().str());
     return out;
 }
 } // namespace stream
@@ -1474,7 +1474,7 @@ inline std::string detail::to_string_for_print<Stream>(const Stream& x) {
 
 template<>
 inline std::string detail::to_string_for_print<stream::View>(const stream::View& x) {
-    return escapeBytes(x.data(), true);
+    return escapeBytes(x.data().str(), true);
 }
 
 namespace detail::adl {
@@ -1482,7 +1482,7 @@ inline std::string to_string(const Stream& x, adl::tag /*unused*/) {
     return fmt("b\"%s\"", escapeBytes(x.data(), true));
 }
 inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeBytes(x.data(), true));
+    return fmt("b\"%s\"", escapeBytes(x.data().str(), true));
 }
 } // namespace detail::adl
 
