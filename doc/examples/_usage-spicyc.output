@@ -16,8 +16,8 @@ Options controlling code generation:
   -V | --skip-validation          Don't validate ASTs (for debugging only).
   -c | --output-c++               Print out all generated C++ code (including linker glue by default).
   -d | --debug                    Include debug instrumentation into generated code.
-  -j | --jit-code                 Fully compile all code, and then execute it unless --output-to gives a file to store it
   -l | --output-linker            Print out only generated HILTI linker glue code.
+  -j | --jit-code                 Fully compile all code, and then execute it unless --output-to gives a file to store it
   -o | --output-to <path>         Path for saving output.
   -p | --output-hilti             Just output parsed HILTI code again.
   -R | --report-times             Report a break-down of compiler's execution time.

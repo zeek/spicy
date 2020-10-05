@@ -75,13 +75,13 @@ void Driver::usage() {
            "  -c | --output-c++               Print out all generated C++ code (including linker glue by default).\n"
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
            "  -e | --output-all-dependencies  Output list of dependencies for all compiled modules.\n"
-           "  -l | --output-linker            Print out only generated HILTI linker glue code.\n"
 #ifdef HILTI_HAVE_JIT
            // Don't show this if we don't have JIT. We still accept the
            // option, but issue an error an runtime.
            "  -j | --jit-code                 Fully compile all code, and then execute it unless --output-to gives a "
            "file to store it\n"
 #endif
+           "  -l | --output-linker            Print out only generated HILTI linker glue code.\n"
            "  -o | --output-to <path>         Path for saving output.\n"
            "  -p | --output-hilti             Just output parsed HILTI code again.\n"
            "  -v | --version                  Print version information.\n"
