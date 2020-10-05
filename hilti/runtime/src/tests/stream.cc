@@ -10,6 +10,7 @@
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
+using namespace hilti::rt::bytes::literals;
 using namespace hilti::rt::stream;
 using hilti::rt::to_string;
 
@@ -111,10 +112,10 @@ TEST_CASE("construct") {
 
         auto d1 = std::string(1, '\x01');
         REQUIRE_LT(d1.size(), SmallBufferSize);
-        CHECK_EQ(Stream(d1.c_str()).data(), d1);
+        CHECK_EQ(Stream(d1.c_str()).data().str(), d1);
 
         auto d2 = std::string(SmallBufferSize + 10, '\x01');
-        CHECK_EQ(Stream(d2.c_str()).data(), d2);
+        CHECK_EQ(Stream(d2.c_str()).data().str(), d2);
     }
 }
 
@@ -150,10 +151,10 @@ TEST_CASE("assign") {
             y = make_stream({"abcd"_b});
         }
 
-        REQUIRE_EQ(y.data(), "abcd");
+        REQUIRE_EQ(y.data(), "abcd"_b);
 
         y = x;
-        CHECK_EQ(y.data(), "1234");
+        CHECK_EQ(y.data(), "1234"_b);
     }
 
     SUBCASE("self-assign") { // Self-assignment is a no-op.

@@ -1431,7 +1431,7 @@ public:
      * Returns a copy of the data the stream refers to. Depending on size of
      * the stream, this can be an expensive operation.
      */
-    std::string data() const;
+    Bytes data() const;
 
     bool operator==(const Bytes& other) const { return view() == other; }
     bool operator==(const Stream& other) const { return view() == other.view(); }
@@ -1463,13 +1463,13 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Stream& x) {
-    out << escapeBytes(x.data());
+    out << escapeBytes(x.data().str());
     return out;
 }
 
 template<>
 inline std::string detail::to_string_for_print<Stream>(const Stream& x) {
-    return escapeBytes(x.data(), true);
+    return escapeBytes(x.data().str(), true);
 }
 
 template<>
@@ -1479,7 +1479,7 @@ inline std::string detail::to_string_for_print<stream::View>(const stream::View&
 
 namespace detail::adl {
 inline std::string to_string(const Stream& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeBytes(x.data(), true));
+    return fmt("b\"%s\"", escapeBytes(x.data().str(), true));
 }
 inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
     return fmt("b\"%s\"", escapeBytes(x.data().str(), true));

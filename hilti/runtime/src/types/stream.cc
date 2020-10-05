@@ -369,7 +369,7 @@ Size View::size() const {
         return _end->offset() > _begin.offset() ? (_end->offset() - _begin.offset()).Ref() : 0;
 }
 
-std::string Stream::data() const { return view().data().str(); }
+Bytes Stream::data() const { return view().data(); }
 
 Bytes stream::View::data() const {
     Bytes s;
