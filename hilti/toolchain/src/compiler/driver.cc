@@ -358,7 +358,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
         return error("no input file given");
 
     if ( num_output_types > 1 )
-        return error("only one type of output can be specificied");
+        return error("only one type of output can be specified");
 
     if ( num_output_types == 0 )
         return error("no output type given");
@@ -659,7 +659,7 @@ Result<Nothing> Driver::compile() {
         auto library = _jit->retrieveLibrary();
 
         if ( _driver_options.output_path.empty() ) {
-            // Ok if not available.
+            // OK if not available.
             if ( library ) {
                 if ( auto loaded = library->get().open(); ! loaded )
                     return loaded.error();
