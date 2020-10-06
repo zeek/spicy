@@ -193,7 +193,7 @@ public:
      * Returns already JITed code as a shared library that can be cached.
      * This must be called only after `jit()` has been called and succeeded.
      */
-    Result<std::reference_wrapper<const Library>> retrieveLibrary() const;
+    Result<std::shared_ptr<const Library>> retrieveLibrary() const;
 
     /**
      * Returns true if any source files have been added that need to be

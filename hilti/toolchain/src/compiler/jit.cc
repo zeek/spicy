@@ -117,15 +117,16 @@ hilti::Result<Nothing> JIT::jit() {
     return _jit->jit();
 }
 
-Result<std::reference_wrapper<const Library>> JIT::retrieveLibrary() const {
+Result<std::shared_ptr<const Library>> JIT::retrieveLibrary() const {
     if ( ! _jit ) {
         return result::Error("no JIT object code available");
     }
 
-    if ( ! _jit->retrieveLibrary() )
+    auto library = _jit->retrieveLibrary();
+    if ( ! library )
         return result::Error("no library available");
 
-    return *_jit->retrieveLibrary();
+    return std::move(library);
 }
 
 std::string JIT::compilerVersion() { return detail::ClangJIT::compilerVersion(); }
@@ -150,7 +151,7 @@ Result<Nothing> JIT::jit() {
 
 void JIT::setDumpCode() { logger().error("jit: support for just-in-time compilation not available"); }
 
-Result<std::reference_wrapper<const Library>> JIT::retrieveLibrary() const {
+Result<std::shared_ptr<const Library>> JIT::retrieveLibrary() const {
     constexpr char message[] = "jit: support for just-in-time compilation not available";
     logger().error(message);
     return result::Error(message);

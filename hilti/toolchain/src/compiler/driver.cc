@@ -677,7 +677,7 @@ Result<Nothing> Driver::compile() {
         if ( _driver_options.output_path.empty() ) {
             // OK if not available.
             if ( library ) {
-                if ( auto loaded = library->get().open(); ! loaded )
+                if ( auto loaded = library->get()->open(); ! loaded )
                     return loaded.error();
             }
         }
@@ -689,7 +689,7 @@ Result<Nothing> Driver::compile() {
 
             HILTI_DEBUG(logging::debug::Driver, fmt("saving precompiled code to %s", _driver_options.output_path));
 
-            if ( auto success = library->get().save(_driver_options.output_path); ! success )
+            if ( auto success = library->get()->save(_driver_options.output_path); ! success )
                 return result::Error(
                     fmt("error saving object code to %s: %s", _driver_options.output_path, success.error()));
         }

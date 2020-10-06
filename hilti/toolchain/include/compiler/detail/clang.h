@@ -78,7 +78,7 @@ public:
      * ``jit()`` has succeeded and will return the shared library for the
      * final fully-linked module.
      */
-    std::optional<std::reference_wrapper<const Library>> retrieveLibrary() const;
+    std::shared_ptr<const Library> retrieveLibrary() const;
 
     /**
      * Activates saving any emitted code to disk for debugging purposes.
