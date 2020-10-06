@@ -52,21 +52,7 @@ void hilti::rt::library::Version::checkCompatibility() const {
                 path.filename()));
 }
 
-hilti::rt::Library::Library(const std::filesystem::path& path) : _orig_path(path) {
-    if ( ! std::filesystem::exists(path) )
-        throw EnvironmentError(fmt("no such library: %s", path));
-
-    auto path_ = createTemporaryFile(path.filename());
-    if ( ! path_ )
-        throw EnvironmentError(fmt("could not add library %s: %s", path, path_.error()));
-
-    std::error_code ec;
-    std::filesystem::copy(path, *path_, std::filesystem::copy_options::overwrite_existing, ec);
-    if ( ec )
-        throw EnvironmentError(fmt("could not store library %s at %s: %s", path, *path_, ec.message()));
-
-    _path = std::filesystem::absolute(std::move(*path_));
-}
+hilti::rt::Library::Library(const std::filesystem::path& path) : _path(std::filesystem::absolute(path)) {}
 
 hilti::rt::Library::~Library() {
     if ( _handle ) {
@@ -74,12 +60,6 @@ hilti::rt::Library::~Library() {
         if ( error )
             hilti::rt::warning(fmt("failed to unload library %s: %s", _path, dlerror()));
     }
-
-    std::error_code ec;
-    std::filesystem::remove(_path, ec);
-
-    if ( ec )
-        hilti::rt::warning(fmt("could not remove library %s from store: %s", _path, ec.message()));
 }
 
 hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const {
@@ -106,7 +86,7 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
     if ( version->magic != "v1" )
         result::Error(fmt("unknown HLTO version '%s'", version->magic));
 
-    version->path = _orig_path;
+    version->path = std::filesystem::relative(_path, std::filesystem::current_path());
     version->checkCompatibility();
 
     return version;
@@ -123,6 +103,16 @@ hilti::rt::Result<void*> hilti::rt::Library::symbol(std::string_view name) const
         return result::Error(fmt("symbol '%s' not found", name));
 
     return symbol;
+}
+
+hilti::rt::Result<Nothing> hilti::rt::Library::remove() const {
+    std::error_code ec;
+    std::filesystem::remove(_path, ec);
+
+    if ( ec )
+        return result::Error(fmt("could not remove library %s from store: %s", _path, ec.message()));
+
+    return Nothing();
 }
 
 hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const std::filesystem::path& path) const {

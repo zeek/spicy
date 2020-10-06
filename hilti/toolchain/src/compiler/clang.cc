@@ -10,7 +10,8 @@
 // command line arguments. Once the LLVM IR has been generated, we link it
 // together into one Module using LLVM’s `Linker` class. Finally we use Clang
 // to turn the linked module in a shared library on disk using the system
-// linker. This shared library is loaded into the process with `::dlopen`.
+// linker. This shared library is loaded into the process with
+// `Library::open`.
 
 #include "hilti/compiler/detail/clang.h"
 
@@ -33,6 +34,7 @@
 #include <sanitizer/lsan_interface.h>
 #endif
 
+#include <hilti/rt/logging.h>
 #include <hilti/rt/util.h>
 
 #include <hilti/base/id-base.h>
@@ -430,7 +432,13 @@ Result<Nothing> ClangJIT::Implementation::jit() {
             logger().fatalError(util::fmt("could not create library: %s", library.error()));
         }
 
-        shared_library = std::shared_ptr<const Library>(new Library(std::move(*library)));
+        shared_library = std::shared_ptr<const Library>(new Library(std::move(*library)), [](const Library* library) {
+            auto remove = library->remove();
+            if ( ! remove )
+                hilti::rt::warning(hilti::rt::fmt("could not remove JIT library: %s", remove.error()));
+
+            delete library;
+        });
 
         if ( dump_code ) {
             constexpr char id[] = "__LINKED__";
@@ -586,8 +594,6 @@ Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
     auto library_path = util::createTemporaryFile(util::fmt("%s.hlto", module.getName().str()));
     if ( ! library_path )
         return library_path.error();
-
-    auto c2 = cleanup_on_exit(*library_path);
 
     auto& diagnostics = clang_.getDiagnostics();
 

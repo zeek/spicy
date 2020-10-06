@@ -30,9 +30,6 @@ const std::filesystem::path dummy1 =
 const std::filesystem::path dummy2 =
     config::lib_directory / ("libhilti-rt-tests-library-dummy2" + config::shared_library_suffix);
 
-// Helper function check whether a symbol could be resolved in the current process image.
-bool has_symbol(const char* sym) { return ::dlsym(RTLD_DEFAULT, "foo"); };
-
 // RAII helper to set an environment variable.
 class Env {
 public:
@@ -89,85 +86,24 @@ private:
 
 TEST_SUITE_BEGIN("Library");
 
-// NOTE: The 2nd subcase likely does not work if run as `root` as `root`
-// can probably create files even in read-only directories.
 TEST_CASE("construct" * doctest::skip(geteuid() == 0)) {
     Library _(dummy1); // Does not throw
-    CHECK_THROWS_WITH_AS(Library("/does/not/exist"), "no such library: \"/does/not/exist\"", const EnvironmentError&);
-
-    SUBCASE("TMPDIR does not exist") {
-        Env _("TMPDIR", "/does/not/exist");
-        try {
-            Library _(dummy1);
-            FAIL("expected exception not thrown");
-        } catch ( const EnvironmentError& e ) {
-            CAPTURE(e.description());
-            CHECK(startsWith(e.description(),
-                             fmt("could not add library \"%s\": could not create temporary file: ", dummy1.c_str())));
-        } catch ( ... ) {
-            FAIL("unexpected exception thrown");
-        }
-    }
-
-    SUBCASE("cannot write TMPDIR") {
-        TemporaryDirectory tmpdir;
-        std::filesystem::permissions(tmpdir.path(), std::filesystem::perms::none);
-        Env _("TMPDIR", tmpdir.path().c_str());
-
-        try {
-            Library _(dummy1);
-            FAIL("expected exception not thrown");
-        } catch ( const EnvironmentError& e ) {
-            CAPTURE(e.description());
-            CHECK(startsWith(e.description(),
-                             fmt("could not add library \"%s\": could not create temporary file in ", dummy1.c_str())));
-        } catch ( ... ) {
-            FAIL("unexpected exception thrown");
-        }
-    }
-}
-
-// NOTE: This test likely does not work if run as `root` as `root`
-// can probably create files even in read-only directories.
-TEST_CASE("destruct" * doctest::skip(geteuid() == 0)) {
-    TemporaryDirectory tmp;
-    Env _("TMPDIR", tmp.path().c_str());
-
-    auto library = std::unique_ptr<Library>(new Library(dummy1));
-
-    // Recursively change the permissions of the directory
-    // so the temporary library cannot be removed anymore.
-    for ( const auto& entry : std::filesystem::recursive_directory_iterator(tmp.path()) )
-        std::filesystem::permissions(entry, std::filesystem::perms::none);
-    std::filesystem::permissions(tmp.path(), std::filesystem::perms::none);
-
-    CaptureIO cerr(std::cerr);
-
-    CHECK_NOTHROW(library.reset());
-    CHECK_NE(cerr.str().find("could not remove library"), std::string::npos);
+    CHECK_NOTHROW(Library("/does/not/exist"));
 }
 
 TEST_CASE("open") {
-    SUBCASE("success") { // Symbol not loaded, yet.
-        REQUIRE_FALSE(has_symbol("foo"));
-
+    SUBCASE("success") {
         {
             // Creating `Library` instance does not load it automatically.
             Library library(dummy1);
-            CHECK_FALSE(has_symbol("foo"));
+            CHECK_FALSE(library.symbol("foo").hasValue());
 
             // Explicitly opening the `Library` loads it so the symbol can be found.
             REQUIRE(library.open());
-            CHECK(has_symbol("foo"));
+            auto symbol = library.symbol("foo");
+            REQUIRE(symbol.hasValue());
+            CHECK(symbol.value());
         }
-
-        // The library is unloaded when its `Library` goes out of scope.
-        //
-        // NOTE: For some reason libraries are not unloaded by the underlying
-        // `::dlclose` when run under e.g., ASAN. Skip this test there.
-#ifndef HILTI_HAVE_SANITIZER
-        CHECK_FALSE(has_symbol("foo"));
-#endif
     }
 
     SUBCASE("invalid library") {
