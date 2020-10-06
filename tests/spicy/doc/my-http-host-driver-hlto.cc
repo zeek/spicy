@@ -34,7 +34,8 @@ int main(int argc, char** argv) {
 
     // Load pre-compiled parser. This must come before initializing the
     // runtime libraries.
-    auto rc = hilti::rt::Library(argv[1]).open();
+    auto library = hilti::rt::Library(argv[1]);
+    auto rc = library.open();
     assert(rc);
 
     // Initialize runtime libraries.

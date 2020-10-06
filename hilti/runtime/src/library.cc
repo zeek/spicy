@@ -69,6 +69,12 @@ hilti::rt::Library::Library(const std::filesystem::path& path) : _orig_path(path
 }
 
 hilti::rt::Library::~Library() {
+    if ( _handle ) {
+        int error = ::dlclose(_handle);
+        if ( error )
+            hilti::rt::warning(fmt("failed to unload library %s: %s", _path, dlerror()));
+    }
+
     std::error_code ec;
     std::filesystem::remove(_path, ec);
 

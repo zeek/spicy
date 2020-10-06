@@ -493,8 +493,11 @@ Result<Nothing> Driver::addInput(const std::filesystem::path& path) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
 
         try {
-            if ( auto load = Library(path).open(); ! load )
-                return error(util::fmt("could not load library file %s: %s", path, load.error()));
+            if ( ! _libraries.count(path) ) {
+                _libraries.insert({path, Library(path)});
+                if ( auto load = _libraries.at(path).open(); ! load )
+                    return error(util::fmt("could not load library file %s: %s", path, load.error()));
+            }
         } catch ( const hilti::rt::EnvironmentError& e ) {
             hilti::rt::fatalError(e.what());
         }

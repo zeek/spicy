@@ -161,8 +161,13 @@ TEST_CASE("open") {
             CHECK(has_symbol("foo"));
         }
 
-        // The library is not closed when its `Library` goes out of scope.
-        CHECK(has_symbol("foo"));
+        // The library is unloaded when its `Library` goes out of scope.
+        //
+        // NOTE: For some reason libraries are not unloaded by the underlying
+        // `::dlclose` when run under e.g., ASAN. Skip this test there.
+#ifndef HILTI_HAVE_SANITIZER
+        CHECK_FALSE(has_symbol("foo"));
+#endif
     }
 
     SUBCASE("invalid library") {
