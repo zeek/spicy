@@ -273,7 +273,10 @@ std::optional<View::Block> View::firstBlock() const {
     if ( unsafeBegin() == unsafeEnd() || ! unsafeBegin().chunk() )
         return {};
 
-    auto chunk = _begin.chain()->findChunk(_begin.offset(), _begin.chunk());
+    const auto* chain = _begin.chain();
+    assert(chain);
+
+    auto chunk = chain->findChunk(_begin.offset(), _begin.chunk());
     if ( ! chunk )
         throw InvalidIterator("stream iterator outside of valid range");
 

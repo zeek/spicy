@@ -19,6 +19,7 @@
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/intrusive-ptr.h>
+#include <hilti/rt/logging.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/bytes.h>
@@ -734,7 +735,7 @@ public:
      * Returns true if the iterator is bound to a stream object and that's
      * not expired yet.
      */
-    bool isValid() { return ! isUnset() && ! isExpired(); }
+    bool isValid() const { return ! isUnset() && ! isExpired(); }
 
     /** Returns true if the iterator is at or beyond the current end of the underlying stream instance. */
     bool isEnd() const {
@@ -778,7 +779,19 @@ private:
         _chunk = _chain->findChunk(_offset, _chunk);
     }
 
-    Byte _dereference() const { return *_chunk->data(_offset); }
+    Byte _dereference() const {
+        // TODO(bbannier): Ideally we would `assert(_chunk)` here so clang-tidy
+        // knows that `_chunk` is always not null. Unfortunately it looks like
+        // that fails to it pruning that CFG edge so we have to return instead
+        // here. This should be inconsequential to users as this function must
+        // not be called if the data is invalid.
+        if ( ! _chunk )
+            fatalError("dereference of invalid iterator");
+
+        auto* byte = _chunk->data(_offset);
+
+        return *byte;
+    }
 
     // Parent chain if bound, or null if not. This is a raw, non-owning
     // pointer that assumes the parent chain will stick around as long as
