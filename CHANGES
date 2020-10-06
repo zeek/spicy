@@ -1,4 +1,10 @@
 
+0.4.0-906 | 2020-10-06 08:11:53 +0200
+
+  * GH-511: Fix order of flags in spicyc usage message.
+
+  * GH-512: Fix typo in error message.
+
 0.4.0-903 | 2020-09-28 18:42:38 +0000
 
   * Reorganize source code to allow for building the runtime library

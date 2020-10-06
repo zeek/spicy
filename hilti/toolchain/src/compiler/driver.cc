@@ -75,13 +75,13 @@ void Driver::usage() {
            "  -c | --output-c++               Print out all generated C++ code (including linker glue by default).\n"
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
            "  -e | --output-all-dependencies  Output list of dependencies for all compiled modules.\n"
-           "  -l | --output-linker            Print out only generated HILTI linker glue code.\n"
 #ifdef HILTI_HAVE_JIT
            // Don't show this if we don't have JIT. We still accept the
            // option, but issue an error an runtime.
            "  -j | --jit-code                 Fully compile all code, and then execute it unless --output-to gives a "
            "file to store it\n"
 #endif
+           "  -l | --output-linker            Print out only generated HILTI linker glue code.\n"
            "  -o | --output-to <path>         Path for saving output.\n"
            "  -p | --output-hilti             Just output parsed HILTI code again.\n"
            "  -v | --version                  Print version information.\n"
@@ -358,7 +358,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
         return error("no input file given");
 
     if ( num_output_types > 1 )
-        return error("only one type of output can be specificied");
+        return error("only one type of output can be specified");
 
     if ( num_output_types == 0 )
         return error("no output type given");
@@ -659,7 +659,7 @@ Result<Nothing> Driver::compile() {
         auto library = _jit->retrieveLibrary();
 
         if ( _driver_options.output_path.empty() ) {
-            // Ok if not available.
+            // OK if not available.
             if ( library ) {
                 if ( auto loaded = library->get().open(); ! loaded )
                     return loaded.error();
