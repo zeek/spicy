@@ -251,9 +251,9 @@ zeek_packages_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
-  install_runtime_script:  spicy_version=$CIRRUS_BRANCH zkg install --force spicy-runtime
+  install_runtime_script:  spicy_version=$CIRRUS_BRANCH zkg install --force spicy-runtime || (cat /root/.zkg/logs/* && false)
     # TODO: Remove "spicy_version" from install_tftp_script once zkg no longer rebuilds installed dependencies.
-  install_tftp_script:     spicy_version=$CIRRUS_BRANCH zkg install --force spicy-tftp
+  install_tftp_script:     spicy_version=$CIRRUS_BRANCH zkg install --force spicy-tftp || (cat /root/.zkg/logs/* && false)
   validate_script:         test $(zeek -N | egrep '::(Spicy|TFTP)' | wc -l | awk '{print $1}') = '2'
 
   zkg_artifacts:

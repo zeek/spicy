@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -10,6 +11,9 @@
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit-items/property.h>
+#include <spicy/ast/types/unit-items/switch.h>
+#include <spicy/ast/types/unit-items/unresolved-field.h>
+#include <spicy/compiler/detail/codegen/grammar.h>
 
 namespace spicy {
 
@@ -27,7 +31,7 @@ class Unit : public hilti::TypeBase,
 public:
     Unit(std::vector<type::function::Parameter> p, std::vector<unit::Item> i,
          const std::optional<AttributeSet>& /* attrs */ = {}, Meta m = Meta())
-        : TypeBase(nodes(std::move(p), std::move(i)), std::move(m)) {
+        : TypeBase(hilti::nodes(std::move(p), assignIndices(std::move(i))), std::move(m)) {
         _state().flags += type::Flag::NoInheritScope;
     }
 
@@ -60,13 +64,6 @@ public:
      */
     std::optional<unit::Item> field(const ID& id) const;
 
-#if 0
-    /** Returns all items of a given name. */
-    std::vector<unit::Item> items(std::string) const;
-
-    /** Returns all items of a given name. */
-    std::vector<unit::Item> items(ID id) const;
-#endif
     /**
      * Returns all of the unit's items of a particular subtype T.
      **/
@@ -152,7 +149,7 @@ public:
     bool isFilter() const { return propertyItem("%filter").has_value(); }
 
     /** Returns the grammar associated with the type. It must have been set before through `setGrammar()`. */
-    const detail::codegen::Grammar& grammar() const {
+    const spicy::detail::codegen::Grammar& grammar() const {
         assert(_grammar);
         return *_grammar;
     }
@@ -189,9 +186,11 @@ public:
      * @param items additional items to add
      * @return new unit type that includes the additional items
      */
-    static Unit addItems(const Unit& unit, const std::vector<unit::Item>& items) {
+    static Unit addItems(const Unit& unit, std::vector<unit::Item> items) {
         auto x = Type(unit)._clone().as<Unit>();
-        for ( auto i : items )
+        auto new_items = x.assignIndices(items);
+
+        for ( auto i : new_items )
             x.childs().emplace_back(std::move(i));
 
         return x;
@@ -211,9 +210,18 @@ public:
     }
 
 private:
+    /**
+     * Helper function to recursively number all fields in the passed list in sequential order
+     *
+     * @param items the items to number
+     * @return a pair of mutated items and the next index
+     */
+    std::vector<unit::Item> assignIndices(std::vector<unit::Item> items);
+
     bool _public = false;
     bool _wildcard = false;
-    std::shared_ptr<detail::codegen::Grammar> _grammar;
+    uint64_t _next_index = 0;
+    std::shared_ptr<spicy::detail::codegen::Grammar> _grammar;
 };
 
 

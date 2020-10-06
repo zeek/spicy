@@ -492,6 +492,21 @@ struct ProductionVisitor
                 pstate.ncur = {};
                 pushState(std::move(pstate));
             }
+
+            if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
+                auto __offsets = builder::member(state().self, "__offsets");
+                auto cur_offset = builder::memberCall(state().cur, "offset", {});
+
+                // Since the offset list is created empty make sure the
+                // element for the currrent field is present.
+                assert(field->index());
+                auto index = builder()->addTmp("index", builder::integer(*field->index()));
+                auto resize = builder()->addWhile(builder::lowerEqual(builder::size(__offsets), index));
+                resize->addMemberCall(__offsets, "push_back", {builder::null()});
+
+                builder()->addAssign(builder::index(__offsets, *field->index()),
+                                     builder::tuple({cur_offset, builder::optional(hilti::type::UnsignedInteger(64))}));
+            }
         }
     }
 
@@ -507,7 +522,15 @@ struct ProductionVisitor
             }
         }
         else {
-            // We are the field's owner, post-process the various attributes.
+            // We are the field's owner, record offsets and post-process the various attributes.
+            if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
+                assert(field->index());
+                auto __offsets = builder::member(state().self, "__offsets");
+                auto cur_offset = builder::memberCall(state().cur, "offset", {});
+                auto offsets = builder::index(__offsets, *field->index());
+                builder()->addAssign(offsets, builder::tuple({builder::index(builder::deref(offsets), 0), cur_offset}));
+            }
+
             auto ncur = state().ncur;
             state().ncur = {};
 

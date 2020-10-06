@@ -236,7 +236,7 @@ public:
      * @param `k` the key to check for
      * @return `true` if the key is set in the map
      */
-    bool contains(const K& k) { return this->find(k) != static_cast<const M&>(*this).end(); }
+    bool contains(const K& k) const { return this->find(k) != static_cast<const M&>(*this).end(); }
 
     /**
      * Attempts to get the value for a key.

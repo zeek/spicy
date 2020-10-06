@@ -7,4 +7,5 @@
 
 #include <spicy/ast/all.h>
 #include <spicy/autogen/config.h>
+#include <spicy/compiler/driver.h>
 #include <spicy/global.h>

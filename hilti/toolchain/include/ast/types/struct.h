@@ -55,10 +55,10 @@ public:
         return {};
     }
 
-    auto isInternal() const { return AttributeSet::find(attributes(), "&internal"); }
-    auto isOptional() const { return AttributeSet::find(attributes(), "&optional"); }
-    auto isStatic() const { return AttributeSet::find(attributes(), "&static"); }
-    auto isNoEmit() const { return AttributeSet::find(attributes(), "&no-emit"); }
+    auto isInternal() const { return AttributeSet::find(attributes(), "&internal").has_value(); }
+    auto isOptional() const { return AttributeSet::find(attributes(), "&optional").has_value(); }
+    auto isStatic() const { return AttributeSet::find(attributes(), "&static").has_value(); }
+    auto isNoEmit() const { return AttributeSet::find(attributes(), "&no-emit").has_value(); }
 
     /** Internal method for use by builder API only. */
     auto& _typeNode() { return childs()[1]; }

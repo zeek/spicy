@@ -836,7 +836,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
             if ( auto ft = f.type().tryAs<type::Function>() )
                 continue;
 
-            if ( f.isInternal() || f.isStatic() || f.isNoEmit() )
+            if ( f.isStatic() || f.isNoEmit() )
                 continue;
 
             std::string accessor;
@@ -845,9 +845,9 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
                 accessor = fmt(", hilti::rt::type_info::struct_::Field::accessor_optional<%s>()",
                                cg->compile(f.type(), codegen::TypeUsage::Storage));
 
-            fields.push_back(fmt("hilti::rt::type_info::struct_::Field{ \"%s\", %s, offsetof(%s, %s)%s }",
+            fields.push_back(fmt("hilti::rt::type_info::struct_::Field{ \"%s\", %s, offsetof(%s, %s), %s%s }",
                                  cxx::ID(f.id()), cg->typeInfo(f.type()), cxx::ID(*n.typeID()), cxx::ID(f.id()),
-                                 accessor));
+                                 f.isInternal(), accessor));
         }
 
         return fmt("hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>({%s}))",

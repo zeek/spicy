@@ -6,9 +6,9 @@
 
 #include <spicy/spicy.h>
 
-class Spicyc : public hilti::Driver {
+class Spicyc : public spicy::Driver {
 public:
-    Spicyc(const std::string_view& argv0 = "") : hilti::Driver("spicyc", argv0) {
+    Spicyc(const std::string_view& argv0 = "") : spicy::Driver("spicyc", argv0) {
         spicy::Configuration::extendHiltiConfiguration();
     }
 

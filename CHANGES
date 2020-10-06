@@ -1,4 +1,63 @@
 
+0.4.0-918 | 2020-10-06 12:23:08 +0200
+
+  * Introduce the notion of Spicy-specific compiler options.
+
+    So far, we only had codegen options for the HILTI compiler. This
+    change allows Spicy to track options as well that control specifics of
+    how the Spicy-to-HILTI code generations operates. Includes a couple of
+    things:
+
+            - As there's no appropiate global state on the Spicy side
+              where we could story options easily, we extend the
+              HILTI-side options struct with the notion of "auxiliary
+              options", described by key/value pairs. Spicy can then store
+              its options in there.
+
+            - We derived a separate spicy::Driver from hilti::Driver to
+              customize behaviour.
+
+            - We introduce hooks into the hilti::Driver to add support for
+              additional command line options. This remains a bit ad-hoc
+              for now. At some point, we'll clean up of command-line
+              handling generally works across the various tools, we have
+              quite a bit of code duplication there right now.
+
+            - This introduces a Spicy-side `-Q` option to record stream
+              offsets during parsing. Right now, the option isn't having
+              any effect yet, the implementation is going to come in a
+              subsequent commit. spicy-dump's previous `-o` is renamed to
+              `-Q` as well. (Robin Sommer, Corelight)
+
+  * Add an option to emit data offsets from spicy-dump.
+
+    This patch adds an option `-o` to `spicy-dump` which can be used to
+    trigger outputting of the stream offsets where unit fields were parsed
+    from. (Benjamin Bannier, Corelight)
+
+  * Make parser struct `__offset` member accessible from Values. (Benjamin Bannier, Corelight)
+
+  * Store field offsets during parsing. (Benjamin Bannier, Corelight)
+
+  * Make unit fields store their unit-wide field counter.
+
+    Initially the parser will create unit fields as `UnresolvedField`s. This
+    patch adds an `_index` field and accessor for this field which will
+    be used to number all unit fields in the final, fully constructed and
+    resolved unit so offsets can be computed. (Benjamin Bannier, Corelight)
+
+  * Store whether a struct field is internal on type level. (Benjamin Bannier, Corelight)
+
+  * Fix `type::struct_::Field::is*` methods to return booleans.
+
+    These functions were previously returning optional field values which
+    carry no information beyond being set or not. This patch changes these
+    methods to return booleans instead. (Benjamin Bannier, Corelight)
+
+  * Fully type constructions of empty optional values. (Benjamin Bannier, Corelight)
+
+  * Make `rt::Map::contains` `const`. (Benjamin Bannier, Corelight)
+
 0.4.0-906 | 2020-10-06 08:11:53 +0200
 
   * GH-511: Fix order of flags in spicyc usage message.

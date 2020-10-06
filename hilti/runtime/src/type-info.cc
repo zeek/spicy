@@ -1,8 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <cinttypes>
-
 #include <hilti/rt/type-info.h>
+
+#include <cinttypes>
 
 using namespace hilti::rt;
 

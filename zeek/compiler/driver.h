@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include <hilti/compiler/driver.h>
+#include <spicy/compiler/driver.h>
 
 namespace spicy::zeek {
 
@@ -34,7 +34,7 @@ struct EnumInfo {
 };
 
 /** Spicy compilation driver. */
-class Driver : public hilti::Driver {
+class Driver : public spicy::Driver {
 public:
     /** Constructor. */
     Driver(const std::string& argv0, int zeek_version);

@@ -75,7 +75,7 @@ struct VisitorPostCompilation : public hilti::visitor::PreOrder<void, VisitorPos
     std::vector<UnitInfo> units;
 };
 
-Driver::Driver(const std::string& argv0, int zeek_version) : hilti::Driver("<Spicy Plugin for Zeek>") {
+Driver::Driver(const std::string& argv0, int zeek_version) : spicy::Driver("<Spicy Plugin for Zeek>") {
     if ( argv0.size() )
         hilti::configuration().initLocation(argv0);
 
@@ -277,7 +277,7 @@ hilti::Result<hilti::Nothing> Driver::compile() {
 
     ZEEK_DEBUG("Running Spicy driver");
 
-    if ( auto x = hilti::Driver::compile(); ! x )
+    if ( auto x = spicy::Driver::compile(); ! x )
         return x.error();
 
     ZEEK_DEBUG("Done with Spicy driver");

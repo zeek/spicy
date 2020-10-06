@@ -1,8 +1,14 @@
-# @TEST-EXEC: spicyc -j -o test.hlto %INPUT
-# @TEST-EXEC: cat /dev/null | spicy-dump test.hlto >output-text
+# @TEST-EXEC: spicyc -j -Q -o test.hlto %INPUT
+# @TEST-EXEC: cat /dev/null | spicy-dump -Q test.hlto >output-text
 # @TEST-EXEC: btest-diff output-text
-# @TEST-EXEC: cat /dev/null | spicy-dump -J test.hlto >output-json
+# @TEST-EXEC: cat /dev/null | spicy-dump -J -Q test.hlto >output-json
 # @TEST-EXEC: btest-diff output-json
+
+# @TEST-EXEC: spicyc -j -Q -o sub-unit.hlto sub-unit.spicy
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03' | spicy-dump -Q sub-unit.hlto >output-text2
+# @TEST-EXEC: btest-diff output-text2
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03' | spicy-dump -Q -J sub-unit.hlto >output-json2
+# @TEST-EXEC: btest-diff output-json2
 
 module Test;
 
@@ -51,4 +57,21 @@ public type TestTypes = unit {
     var ui64: uint64 = 64;
     var ve: vector<string> = vector("a", "b", "c");
     var vei: iterator<vector<string>> = begin(v);
+};
+
+# @TEST-START-FILE sub-unit.spicy
+
+module Mini;
+
+import spicy;
+
+type Foo = unit {
+    x: uint16;
+    y: uint8;
+};
+
+public type Test = unit {
+    on %init   { print self; }
+    f: Foo;
+    on %done   { print self; }
 };

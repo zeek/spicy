@@ -3,11 +3,11 @@
 #pragma once
 
 #include <ostream>
-#include <string>
 #include <utility>
 
 #include <hilti/rt/json.h>
 #include <hilti/rt/type-info.h>
+#include <hilti/rt/types/integer.h>
 
 #include "options.h"
 
