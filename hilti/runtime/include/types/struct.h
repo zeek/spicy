@@ -27,8 +27,23 @@ inline auto& value_or_exception(const std::optional<T>& t, const char* location)
 } // namespace struct_
 
 namespace detail::adl {
+
+template<typename>
+constexpr std::false_type has__str__helper(long);
+
+template<typename T>
+constexpr auto has__str__helper(int) -> decltype(std::declval<T>().__str__(), std::true_type{});
+
+template<typename T>
+using has__str__ = decltype(has__str__helper<T>(0));
+
 template<typename T, typename std::enable_if_t<std::is_base_of<trait::isStruct, T>::value>* = nullptr>
 inline std::string to_string(const T& x, adl::tag /*unused*/) {
+    if constexpr ( has__str__<T>() ) {
+        if ( auto s = T(x).__str__() ) // copy because we need a non-const T
+            return *s;
+    }
+
     std::string fields;
     bool first = true;
 
