@@ -19,15 +19,16 @@
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/intrusive-ptr.h>
+#include <hilti/rt/logging.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
 
-class Bytes;
 class Stream;
 
 namespace stream {
@@ -734,7 +735,7 @@ public:
      * Returns true if the iterator is bound to a stream object and that's
      * not expired yet.
      */
-    bool isValid() { return ! isUnset() && ! isExpired(); }
+    bool isValid() const { return ! isUnset() && ! isExpired(); }
 
     /** Returns true if the iterator is at or beyond the current end of the underlying stream instance. */
     bool isEnd() const {
@@ -778,7 +779,19 @@ private:
         _chunk = _chain->findChunk(_offset, _chunk);
     }
 
-    Byte _dereference() const { return *_chunk->data(_offset); }
+    Byte _dereference() const {
+        // TODO(bbannier): Ideally we would `assert(_chunk)` here so clang-tidy
+        // knows that `_chunk` is always not null. Unfortunately it looks like
+        // that fails to it pruning that CFG edge so we have to return instead
+        // here. This should be inconsequential to users as this function must
+        // not be called if the data is invalid.
+        if ( ! _chunk )
+            fatalError("dereference of invalid iterator");
+
+        auto* byte = _chunk->data(_offset);
+
+        return *byte;
+    }
 
     // Parent chain if bound, or null if not. This is a raw, non-owning
     // pointer that assumes the parent chain will stick around as long as
@@ -1159,7 +1172,7 @@ public:
     void copyRaw(Byte* dst) const;
 
     /** Returns a copy of the data the view refers to. */
-    std::string data() const;
+    Bytes data() const;
 
     /** Returns an unsafe iterator pointing to the beginning of the view. */
     detail::UnsafeConstIterator unsafeBegin() const { return detail::UnsafeConstIterator(_begin); }
@@ -1242,7 +1255,7 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const View& x) {
-    out << escapeBytes(x.data());
+    out << escapeBytes(x.data().str());
     return out;
 }
 } // namespace stream
@@ -1431,7 +1444,7 @@ public:
      * Returns a copy of the data the stream refers to. Depending on size of
      * the stream, this can be an expensive operation.
      */
-    std::string data() const;
+    Bytes data() const;
 
     bool operator==(const Bytes& other) const { return view() == other; }
     bool operator==(const Stream& other) const { return view() == other.view(); }
@@ -1463,26 +1476,26 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Stream& x) {
-    out << escapeBytes(x.data());
+    out << escapeBytes(x.data().str());
     return out;
 }
 
 template<>
 inline std::string detail::to_string_for_print<Stream>(const Stream& x) {
-    return escapeBytes(x.data(), true);
+    return escapeBytes(x.data().str(), true);
 }
 
 template<>
 inline std::string detail::to_string_for_print<stream::View>(const stream::View& x) {
-    return escapeBytes(x.data(), true);
+    return escapeBytes(x.data().str(), true);
 }
 
 namespace detail::adl {
 inline std::string to_string(const Stream& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeBytes(x.data(), true));
+    return fmt("b\"%s\"", escapeBytes(x.data().str(), true));
 }
 inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeBytes(x.data(), true));
+    return fmt("b\"%s\"", escapeBytes(x.data().str(), true));
 }
 } // namespace detail::adl
 

@@ -273,7 +273,10 @@ std::optional<View::Block> View::firstBlock() const {
     if ( unsafeBegin() == unsafeEnd() || ! unsafeBegin().chunk() )
         return {};
 
-    auto chunk = _begin.chain()->findChunk(_begin.offset(), _begin.chunk());
+    const auto* chain = _begin.chain();
+    assert(chain);
+
+    auto chunk = chain->findChunk(_begin.offset(), _begin.chunk());
     if ( ! chunk )
         throw InvalidIterator("stream iterator outside of valid range");
 
@@ -369,14 +372,13 @@ Size View::size() const {
         return _end->offset() > _begin.offset() ? (_end->offset() - _begin.offset()).Ref() : 0;
 }
 
-std::string Stream::data() const { return view().data(); }
+Bytes Stream::data() const { return view().data(); }
 
-std::string stream::View::data() const {
-    std::string s;
-    s.reserve(size());
+Bytes stream::View::data() const {
+    Bytes s;
 
     for ( auto block = firstBlock(); block; block = nextBlock(block) )
-        s += std::string(reinterpret_cast<const char*>(block->start), block->size);
+        s.append(std::string(reinterpret_cast<const char*>(block->start), block->size));
 
     return s;
 }

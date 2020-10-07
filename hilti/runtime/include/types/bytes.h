@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstring>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -10,8 +11,6 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/result.h>
-#include <hilti/rt/types/regexp.h>
-#include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/string.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
@@ -21,6 +20,10 @@ namespace hilti::rt {
 
 class Bytes;
 class RegExp;
+
+namespace stream {
+class View;
+}
 
 namespace bytes {
 
@@ -202,7 +205,7 @@ public:
     void append(const Bytes& d) { Base::append(d.str()); }
 
     /** Appends the contents of a stream view to the data. */
-    void append(const stream::View& view) { Base::append(view.data()); }
+    void append(const stream::View& view);
 
     /** Appends a single byte the data. */
     void append(const uint8_t x) { Base::append(1, x); }

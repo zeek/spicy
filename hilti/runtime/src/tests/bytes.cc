@@ -7,6 +7,7 @@
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/regexp.h>
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
