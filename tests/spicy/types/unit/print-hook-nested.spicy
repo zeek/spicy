@@ -1,0 +1,50 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\001\002\003\004\005\006' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# Test combinations of nested units with/without %print.
+
+module Mini;
+
+import spicy;
+
+function x(a1: A1) {
+    print "in x", a1;
+}
+
+public type Test = unit {
+    : A1;
+    : A2;
+};
+
+type A1 = unit {
+    a: uint8;
+    b: B;
+    c: C;
+
+    on %print  { return "A1"; }
+    on %done   { print "in A1:", self; x(self); }
+};
+
+type A2 = unit {
+    a: uint8;
+    b: B;
+    c: C;
+
+    on %done   { print "in A2:", self; }
+};
+
+type B = unit {
+    b: uint8;
+
+    on %print  { return "B"; }
+    on %done   { print "in B:", self; }
+};
+
+type C = unit {
+    c: uint8;
+    on %done   { print "in C:", self; }
+};
+
+on A1::%print {
+    return "b: %s c: %s" % (self.b, self.c);
+}

@@ -1,0 +1,52 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x00\x00\x00\x01\x02' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    on %init   { print self; }
+    f1: uint32;
+    f2: uint8;
+    on %done   { print self; }
+
+    on %print  {
+        local f1 = "-";
+        local f2 = "-";
+
+        if ( self?.f1 )
+            f1 = "%s" % self.f1;
+
+        if ( self?.f2 )
+            f2 = "%s" % self.f2;
+
+        return "%s|%s" % (f1, f2);
+        }
+};
+
+@TEST-START-NEXT
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    on %init   { print self; }
+    f1: uint32;
+    f2: uint8;
+    on %done   { print self; }
+};
+
+on Test::%print {
+    local f1 = "-";
+    local f2 = "-";
+
+    if ( self?.f1 )
+        f1 = "%s" % self.f1;
+
+    if ( self?.f2 )
+        f2 = "%s" % self.f2;
+
+    return "%s|%s" % (f1, f2);
+}

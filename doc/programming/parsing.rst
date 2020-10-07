@@ -406,6 +406,13 @@ The most commonly used hooks are:
     Executes when a parse error has been encountered, just before the
     parser either aborts processing.
 
+``on %print  { ... }``
+    Executes when a unit is about to be printed (and more generally:
+    when rendered into a string representation). By default, printing
+    a unit will produce a list of its fields with their current
+    values. Through this hook, a unit can customize its appearance by
+    returning the desired string.
+
 ``on <field name> { ... }`` (field hook)
     Executes just after the given unit field has been parsed. The
     parsed value is accessible through the ``$$`` identifier. It will

@@ -163,6 +163,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_init", {});
     add_hook("0x25_done", {});
     add_hook("0x25_error", {});
+    add_hook("0x25_print", {});
 
     if ( unit.supportsSinks() ) {
         add_hook("0x25_gap", {builder::parameter("seq", type::UnsignedInteger(64)),
