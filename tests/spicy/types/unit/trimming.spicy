@@ -1,10 +1,10 @@
-#
-# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d      %INPUT >>output
-# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 1 %INPUT >>output
-# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 2 %INPUT >>output
-# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 3 %INPUT >>output
-# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 4 %INPUT >>output
-# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -d -i 5 %INPUT >>output
+# @TEST-EXEC:  spicyc -j %INPUT -o trimming.hlto -d
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver      trimming.hlto >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 trimming.hlto >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -i 2 trimming.hlto >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -i 3 trimming.hlto >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -i 4 trimming.hlto >>output
+# @TEST-EXEC:  printf '1234567890abcd' | HILTI_DEBUG=spicy-verbose spicy-driver -i 5 trimming.hlto >>output
 # @TEST-EXEC:  btest-diff output
 # @TEST-EXEC:  test "$BUILD" = "release" || TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff .stderr
 
