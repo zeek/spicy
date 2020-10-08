@@ -37,7 +37,7 @@ public:
     IDBase(const std::initializer_list<std::string>& x) : _id(util::join(x, "::")) {}
 
     /** Returns the ID's full name as a string. */
-    auto str() const { return _id; }
+    const auto& str() const { return _id; }
 
     /** Returns the ID's namespace. That's everything except the local part. */
     Derived namespace_() const { return Derived(util::rsplit1(_id, "::").first); }
