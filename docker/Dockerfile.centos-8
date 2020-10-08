@@ -52,4 +52,4 @@ WORKDIR /root
 
 # Install Spicy.
 ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install)
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build)
