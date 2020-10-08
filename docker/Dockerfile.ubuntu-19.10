@@ -1,7 +1,7 @@
 FROM ubuntu:eoan
 
 ARG SKIP_BUILD=
-ARG zeek_packages="zeek-lts=3.0.8-* zeek-lts-core-dev=3.0.8-*"
+ARG zeek_packages="zeek-lts=3.0.11-* zeek-lts-core-dev=3.0.11-*"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

@@ -1,7 +1,7 @@
 FROM centos:8
 
 ARG SKIP_BUILD=
-ARG zeek_packages="zeek-lts-3.0.10-* zeek-lts-devel-3.0.10-*"
+ARG zeek_packages="zeek-lts-3.0.11-* zeek-lts-devel-3.0.11-*"
 
 WORKDIR /root
 
