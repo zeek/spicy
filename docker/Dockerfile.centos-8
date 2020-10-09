@@ -1,7 +1,7 @@
 FROM centos:8
 
 ARG SKIP_BUILD=
-ARG zeek_packages="zeek-lts-3.0.10-* zeek-lts-devel-3.0.10-*"
+ARG zeek_packages="zeek-lts-3.0.11-* zeek-lts-devel-3.0.11-*"
 
 WORKDIR /root
 
@@ -52,4 +52,4 @@ WORKDIR /root
 
 # Install Spicy.
 ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install)
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build)

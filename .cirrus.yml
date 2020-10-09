@@ -376,3 +376,10 @@ docker_centos_8_task:
   packages_artifacts:
     path: build/spicy-*.tar.gz
     type: application/gzip
+
+validate_homebrew_task:
+  only_if: $CIRRUS_BRANCH == 'master'
+  script:
+  - brew tap zeek/zeek
+  - brew install spicy --HEAD
+  - brew test spicy
