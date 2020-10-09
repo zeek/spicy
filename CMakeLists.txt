@@ -184,6 +184,8 @@ else ()
     set(ZEEK_HAVE_JIT no)
 endif ()
 
+option(BUILD_TOOLCHAIN "Build the spicy compiler toolchain" ON)
+
 if ( BUILD_TOOLCHAIN )
     set(HAVE_TOOLCHAIN yes)
 else ()
