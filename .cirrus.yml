@@ -379,6 +379,10 @@ docker_centos_8_task:
 
 validate_homebrew_task:
   only_if: $CIRRUS_BRANCH == 'master'
+
+  osx_instance:
+    image: catalina-base
+
   script:
   - brew tap zeek/zeek
   - brew install spicy --HEAD
