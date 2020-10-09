@@ -4,7 +4,6 @@
 
 #include <string>
 
-#cmakedefine CXX_FILESYSTEM_IS_EXPERIMENTAL
 #define CXX_FILESYSTEM_HEADER "@CXX_FILESYSTEM_HEADER@"
 
 #cmakedefine HILTI_HAVE_BACKTRACE

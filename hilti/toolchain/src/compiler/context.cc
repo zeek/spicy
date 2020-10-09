@@ -88,7 +88,7 @@ std::optional<CachedModule> Context::lookupModule(const ID& id) {
         return {};
 }
 
-std::optional<CachedModule> Context::lookupModule(const std::filesystem::path& path) {
+std::optional<CachedModule> Context::lookupModule(const hilti::rt::filesystem::path& path) {
     if ( auto x = _module_cache_by_path.find(util::normalizePath(path)); x != _module_cache_by_path.end() )
         return *x->second;
     else

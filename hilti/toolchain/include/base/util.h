@@ -22,6 +22,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/unpack.h>
 #include <hilti/rt/util.h>
 
@@ -437,8 +438,8 @@ extern std::string toIdentifier(const std::string& s, bool ensure_non_keyword = 
 extern double currentTime();
 
 /** Search a file name inside a given set of paths. */
-extern hilti::Result<std::filesystem::path> findInPaths(const std::filesystem::path& file,
-                                                        const std::vector<std::filesystem::path>& paths);
+extern hilti::Result<hilti::rt::filesystem::path> findInPaths(const hilti::rt::filesystem::path& file,
+                                                              const std::vector<hilti::rt::filesystem::path>& paths);
 
 /** Turns a path into an absolute path with all dots removed. */
 using hilti::rt::normalizePath;
@@ -452,7 +453,7 @@ using hilti::rt::normalizePath;
 using hilti::rt::createTemporaryFile;
 
 /** Returns the path of the current executable. */
-std::filesystem::path currentExecutable();
+hilti::rt::filesystem::path currentExecutable();
 
 /** Dumps a backtrace to stderr and then aborts execution. */
 [[noreturn]] extern void abort_with_backtrace();

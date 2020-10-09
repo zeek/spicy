@@ -14,7 +14,7 @@ using namespace hilti::rt::detail;
 
 using namespace hilti::rt;
 
-detail::DebugLogger::DebugLogger(std::filesystem::path output) : _path(std::move(output)) {}
+detail::DebugLogger::DebugLogger(hilti::rt::filesystem::path output) : _path(std::move(output)) {}
 
 void detail::DebugLogger::enable(const std::string& streams) {
     for ( auto s : split(streams, ":") )

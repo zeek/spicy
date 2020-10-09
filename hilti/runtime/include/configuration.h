@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -21,7 +22,7 @@ struct Configuration {
     size_t fiber_max_pool_size = 1000;
 
     /** File where debug output is to be sent. Default is stderr. */
-    std::optional<std::filesystem::path> debug_out;
+    std::optional<hilti::rt::filesystem::path> debug_out;
 
     /** Show backtraces when reporting unhandled exceptions. */
     bool show_backtraces = false;

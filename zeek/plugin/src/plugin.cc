@@ -6,6 +6,7 @@
 
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/configuration.h>
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/types/vector.h>
@@ -318,7 +319,7 @@ void plugin::Zeek_Spicy::Plugin::Done() {
 
 int plugin::Zeek_Spicy::Plugin::HookLoadFile(const LoadType type, const std::string& file,
                                              const std::string& resolved) {
-    auto ext = std::filesystem::path(file).extension();
+    auto ext = hilti::rt::filesystem::path(file).extension();
 
     if ( ext == ".hlto" ) {
         try {

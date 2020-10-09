@@ -161,7 +161,6 @@ require_version("Flex" FLEX_FOUND FLEX_VERSION "${flex_minimum_version}" true)
 require_version("Bison" BISON_FOUND BISON_VERSION "${bison_minimum_version}" true)
 
 find_package(GoldLinker)
-find_package(Filesystem REQUIRED COMPONENTS Experimental Final)
 find_package(Threads)
 
 find_package(ClangJIT)

@@ -32,7 +32,7 @@ public:
      *
      * @param path file to read
      */
-    CxxCode(const std::filesystem::path& path) { load(path); }
+    CxxCode(const hilti::rt::filesystem::path& path) { load(path); }
 
     /**
      * Reads C++ code from an input stream.
@@ -56,7 +56,7 @@ public:
      * @param p file to write to
      * @return true if succesful
      */
-    bool save(const std::filesystem::path& p) const;
+    bool save(const hilti::rt::filesystem::path& p) const;
 
     /**
      * Writes C++ code into an output stream.
@@ -86,7 +86,7 @@ protected:
      * @param path file to read from
      * @return true if succesful
      */
-    bool load(const std::filesystem::path& path);
+    bool load(const hilti::rt::filesystem::path& path);
 
     /**
      * Loads C++ code from an input stream.
@@ -165,7 +165,7 @@ public:
      *
      * @param d file to read C++ code from
      */
-    void add(const std::filesystem::path& p) { _files.push_back(p); }
+    void add(const hilti::rt::filesystem::path& p) { _files.push_back(p); }
 
     /**
      * Compiles all added C++ source files into internal bitcode.
@@ -216,10 +216,10 @@ public:
 
 private:
     std::shared_ptr<Context> _context;
-    std::vector<std::filesystem::path> _files; // all added source files
-    std::vector<CxxCode> _codes;               // all C++ code units to be compiled
-    std::vector<Library> _libraries;           // all precomiled modules we know about
-    std::unique_ptr<detail::ClangJIT> _jit;    // JIT backend
+    std::vector<hilti::rt::filesystem::path> _files; // all added source files
+    std::vector<CxxCode> _codes;                     // all C++ code units to be compiled
+    std::vector<Library> _libraries;                 // all precomiled modules we know about
+    std::unique_ptr<detail::ClangJIT> _jit;          // JIT backend
 };
 
 } // namespace hilti

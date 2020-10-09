@@ -52,7 +52,7 @@ void hilti::rt::library::Version::checkCompatibility() const {
                 path.filename()));
 }
 
-hilti::rt::Library::Library(const std::filesystem::path& path) : _path(std::filesystem::absolute(path)) {}
+hilti::rt::Library::Library(const hilti::rt::filesystem::path& path) : _path(hilti::rt::filesystem::absolute(path)) {}
 
 hilti::rt::Library::~Library() {
     if ( _handle ) {
@@ -86,7 +86,7 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
     if ( version->magic != "v1" )
         result::Error(fmt("unknown HLTO version '%s'", version->magic));
 
-    version->path = std::filesystem::relative(_path, std::filesystem::current_path());
+    version->path = hilti::rt::filesystem::relative(_path, hilti::rt::filesystem::current_path());
     version->checkCompatibility();
 
     return version;
@@ -107,7 +107,7 @@ hilti::rt::Result<void*> hilti::rt::Library::symbol(std::string_view name) const
 
 hilti::rt::Result<Nothing> hilti::rt::Library::remove() const {
     std::error_code ec;
-    std::filesystem::remove(_path, ec);
+    hilti::rt::filesystem::remove(_path, ec);
 
     if ( ec )
         return result::Error(fmt("could not remove library %s from store: %s", _path, ec.message()));
@@ -115,9 +115,9 @@ hilti::rt::Result<Nothing> hilti::rt::Library::remove() const {
     return Nothing();
 }
 
-hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const std::filesystem::path& path) const {
+hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::filesystem::path& path) const {
     std::error_code ec;
-    std::filesystem::copy(_path, path, std::filesystem::copy_options::overwrite_existing, ec);
+    hilti::rt::filesystem::copy(_path, path, hilti::rt::filesystem::copy_options::overwrite_existing, ec);
 
     if ( ec )
         return result::Error(fmt("could not save library to %s: %s", path, ec.message()));

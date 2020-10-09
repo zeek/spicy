@@ -14,7 +14,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     std::set<context::ModuleIndex> imported;
 
     void operator()(const declaration::ImportedModule& m) {
-        std::filesystem::path path;
+        hilti::rt::filesystem::path path;
 
         if ( m.path().empty() ) {
             if ( auto x = unit->import(m.id(), m.extension(), m.scope(), m.searchDirectories()) )

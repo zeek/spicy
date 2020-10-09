@@ -74,9 +74,9 @@ struct ExpressionAccessor {
 /** Representation of a compiled Spicy module. */
 struct SpicyModule {
     // Provided.
-    hilti::ID id;                         /**< Name of the module */
-    std::filesystem::path file;           /**< The path the module was read from. */
-    std::set<std::filesystem::path> evts; /**< EVT files that refer to this module. */
+    hilti::ID id;                               /**< Name of the module */
+    hilti::rt::filesystem::path file;           /**< The path the module was read from. */
+    std::set<hilti::rt::filesystem::path> evts; /**< EVT files that refer to this module. */
 
     // Generated code.
     std::optional<hilti::Module> spicy_module; /**< the ``BroHooks_*.spicy`` module. */
@@ -85,20 +85,20 @@ struct SpicyModule {
 /** Representation of an event parsed from an EVT file. */
 struct Event {
     // Information parsed directly from the *.evt file.
-    std::filesystem::path file;     /**< The path of the *.evt file we parsed this from. */
-    hilti::ID name;                 /**< The name of the event. */
-    hilti::ID path;                 /**< The hook path as specified in the evt file. */
-    std::string condition;          /**< Condition that must be true for the event to trigger. */
-    std::vector<std::string> exprs; /**< The argument expressions. */
-    int priority;                   /**< Event/hook priority. */
-    hilti::Location location;       /**< Location where event is defined. */
+    hilti::rt::filesystem::path file; /**< The path of the *.evt file we parsed this from. */
+    hilti::ID name;                   /**< The name of the event. */
+    hilti::ID path;                   /**< The hook path as specified in the evt file. */
+    std::string condition;            /**< Condition that must be true for the event to trigger. */
+    std::vector<std::string> exprs;   /**< The argument expressions. */
+    int priority;                     /**< Event/hook priority. */
+    hilti::Location location;         /**< Location where event is defined. */
 
     // Computed information.
-    hilti::ID hook;                             /**< The name of the hook triggering the event. */
-    hilti::ID unit;                             /**< The fully qualified name of the unit type. */
-    std::optional<spicy::type::Unit> unit_type; /**< The Spicy type of referenced unit. */
-    hilti::ID unit_module_id;                   /**< The name of the module the referenced unit is defined in. */
-    std::filesystem::path unit_module_path;     /**< The path of the module that the referenced unit is defined in. */
+    hilti::ID hook;                               /**< The name of the hook triggering the event. */
+    hilti::ID unit;                               /**< The fully qualified name of the unit type. */
+    std::optional<spicy::type::Unit> unit_type;   /**< The Spicy type of referenced unit. */
+    hilti::ID unit_module_id;                     /**< The name of the module the referenced unit is defined in. */
+    hilti::rt::filesystem::path unit_module_path; /**< The path of the module that the referenced unit is defined in. */
     std::shared_ptr<glue::SpicyModule>
         spicy_module; /**< State for the Spichy module the referenced unit is defined in. */
 
@@ -122,7 +122,7 @@ public:
     ~GlueCompiler();
 
     /** Parses an `*.evt` file, without generating any code yet. */
-    bool loadEvtFile(std::filesystem::path& path);
+    bool loadEvtFile(hilti::rt::filesystem::path& path);
 
     /**
      * Registers a Spicy file to generate glue code for, without generating
@@ -131,7 +131,7 @@ public:
      * @param id ID of the module
      * @param file path the module is loaded from
      */
-    void addSpicyModule(const hilti::ID& id, const std::filesystem::path& file);
+    void addSpicyModule(const hilti::ID& id, const hilti::rt::filesystem::path& file);
 
     /**
      * Generates all glue code based on previously registered `*.evt` and
@@ -143,7 +143,7 @@ private:
     /**
      * Filters input EVT file by applying preprocessor directives.
      */
-    void preprocessEvtFile(std::filesystem::path& path, std::istream& in, std::ostream& out);
+    void preprocessEvtFile(hilti::rt::filesystem::path& path, std::istream& in, std::ostream& out);
 
     /**
      * Extracts the next semicolon-terminated block from an input stream,

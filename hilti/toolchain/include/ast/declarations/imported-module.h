@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
+
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/id.h>
@@ -25,13 +27,13 @@ public:
         : NodeBase({std::move(id)}, std::move(m)), _extension(search_extension), _scope(std::move(search_scope)) {}
 
     ImportedModule(ID id, const std::string& search_extension, std::optional<ID> search_scope,
-                   std::vector<std::filesystem::path> search_dirs, Meta m = Meta())
+                   std::vector<hilti::rt::filesystem::path> search_dirs, Meta m = Meta())
         : NodeBase({std::move(id)}, std::move(m)),
           _extension(search_extension),
           _scope(std::move(search_scope)),
           _dirs(std::move(search_dirs)) {}
 
-    ImportedModule(ID id, std::filesystem::path path, Meta m = Meta())
+    ImportedModule(ID id, hilti::rt::filesystem::path path, Meta m = Meta())
         : NodeBase({std::move(id)}, std::move(m)), _path(std::move(path)) {}
 
     Result<hilti::Module> module() const {
@@ -81,10 +83,10 @@ public:
 
 private:
     NodeRef _module;
-    std::filesystem::path _extension;
-    std::filesystem::path _path;
+    hilti::rt::filesystem::path _extension;
+    hilti::rt::filesystem::path _path;
     std::optional<ID> _scope;
-    std::vector<std::filesystem::path> _dirs;
+    std::vector<hilti::rt::filesystem::path> _dirs;
 };
 
 } // namespace declaration

@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
+
 #include <hilti/ast/id.h>
 #include <hilti/autogen/config.h>
 #include <hilti/base/result.h>
@@ -37,11 +39,11 @@ struct Options {
     bool skip_validation = false; /**< if true, skip AST validation; for debugging only, things will may downhiull
                                      quickly if an AST is not well-formed  */
     bool optimize = false;        /**< generated optimized code */
-    std::vector<std::filesystem::path> library_paths; /**< additional directories to search for imported files */
+    std::vector<hilti::rt::filesystem::path> library_paths; /**< additional directories to search for imported files */
     std::string cxx_namespace_extern =
         "hlt"; /**< CXX namespace for generated C++ code accessible to the host application */
     std::string cxx_namespace_intern = "__hlt"; /**< CXX namespace for generated internal C++ code */
-    std::vector<std::filesystem::path>
+    std::vector<hilti::rt::filesystem::path>
         cxx_include_paths; /**< additional C++ directories to search for #include files. */
 
     /**
@@ -98,11 +100,11 @@ namespace context {
  * processing.
  */
 struct ModuleIndex {
-    ID id;                      /**< module ID */
-    std::filesystem::path path; /**< path to module's source code on disk; can be left empty if no file exists */
+    ID id;                            /**< module ID */
+    hilti::rt::filesystem::path path; /**< path to module's source code on disk; can be left empty if no file exists */
 
     ModuleIndex() = default;
-    ModuleIndex(ID id, const std::filesystem::path& path) : id(std::move(id)), path(util::normalizePath(path)) {}
+    ModuleIndex(ID id, const hilti::rt::filesystem::path& path) : id(std::move(id)), path(util::normalizePath(path)) {}
     bool operator<(const ModuleIndex& other) const { return id < other.id; }
 };
 
@@ -176,7 +178,7 @@ public:
      * @return the meta data associated with the previously cached module, or not set if no module is associated with
      * that path
      */
-    std::optional<context::CachedModule> lookupModule(const std::filesystem::path& path);
+    std::optional<context::CachedModule> lookupModule(const hilti::rt::filesystem::path& path);
 
     /**
      * Returns all (direct) dependencies that a module imports. This

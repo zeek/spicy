@@ -2,6 +2,8 @@
 
 #include <dlfcn.h>
 
+#include <hilti/rt/filesystem.h>
+
 #include <spicy/rt/parser.h>
 
 #include <hilti/ast/types/enum.h>
@@ -33,13 +35,13 @@ void ::spicy::zeek::debug::do_log(const std::string_view& msg) {
     HILTI_DEBUG(::spicy::zeek::debug::ZeekPlugin, std::string(msg));
 }
 
-void plugin::Zeek_Spicy::Driver::hookAddInput(const std::filesystem::path& path) {
+void plugin::Zeek_Spicy::Driver::hookAddInput(const hilti::rt::filesystem::path& path) {
     // Need to initialized before 1st input gets added, as the options need
     // to be in place.
     _initialize();
 }
 
-void plugin::Zeek_Spicy::Driver::hookAddInput(const hilti::Module& m, const std::filesystem::path& path) {
+void plugin::Zeek_Spicy::Driver::hookAddInput(const hilti::Module& m, const hilti::rt::filesystem::path& path) {
     // Need to initialized before 1st input gets added, as the options need
     // to be in place.
     _initialize();
@@ -203,7 +205,7 @@ void plugin::Zeek_Spicy::PluginJIT::InitPostScript() {
 
 int plugin::Zeek_Spicy::PluginJIT::HookLoadFile(const LoadType type, const std::string& file,
                                                 const std::string& resolved) {
-    auto ext = std::filesystem::path(file).extension();
+    auto ext = hilti::rt::filesystem::path(file).extension();
 
     if ( ext == ".spicy" || ext == ".evt" || ext == ".hlt" || ext == ".hlto" ) {
         ZEEK_DEBUG(hilti::rt::fmt("Loading input file '%s'", file));

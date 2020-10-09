@@ -6,7 +6,7 @@
 
 namespace config {
 
-const std::filesystem::path lib_directory = "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}";
+const hilti::rt::filesystem::path lib_directory = "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}";
 const std::string shared_library_suffix = "${CMAKE_SHARED_LIBRARY_SUFFIX}";
 
 } // namespace config

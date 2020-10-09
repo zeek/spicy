@@ -18,7 +18,7 @@
 
 // There's a bizarr "printf" inside the PathFind code. So we include the
 // source file here to be able to #define that away.
-#define __ignore__(x,y)
+#define __ignore__(x, y)
 #define printf __ignore__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
@@ -144,10 +144,10 @@ bool util::endsWith(const std::string& s, const std::string& suffix) {
     return (i == (s.length() - suffix.size()));
 }
 
-hilti::Result<std::filesystem::path> util::findInPaths(const std::filesystem::path& file,
-                                                       const std::vector<std::filesystem::path>& paths) {
+hilti::Result<hilti::rt::filesystem::path> util::findInPaths(const hilti::rt::filesystem::path& file,
+                                                             const std::vector<hilti::rt::filesystem::path>& paths) {
     if ( file.is_absolute() ) {
-        if ( std::filesystem::exists(file) )
+        if ( hilti::rt::filesystem::exists(file) )
             return file;
 
         return hilti::result::Error(fmt("absolute path %s does not exist", file));
@@ -155,14 +155,14 @@ hilti::Result<std::filesystem::path> util::findInPaths(const std::filesystem::pa
 
     for ( const auto& d : paths ) {
         auto p = d / file;
-        if ( std::filesystem::exists(p) )
+        if ( hilti::rt::filesystem::exists(p) )
             return p;
     }
 
     return hilti::result::Error(fmt("%s not found", file));
 }
 
-std::filesystem::path util::currentExecutable() { return normalizePath(::FindExecutable()); }
+hilti::rt::filesystem::path util::currentExecutable() { return normalizePath(::FindExecutable()); }
 
 void util::abort_with_backtrace() {
     std::cerr << "\n--- Aborting" << std::endl;

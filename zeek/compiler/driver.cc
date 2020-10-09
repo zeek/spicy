@@ -27,7 +27,7 @@ using Driver = spicy::zeek::Driver;
 
 /** Visitor to extract unit information from an HILTI AST before it's compiled. */
 struct VisitorPreCompilation : public hilti::visitor::PreOrder<void, VisitorPreCompilation> {
-    explicit VisitorPreCompilation(Driver* driver, hilti::ID module, std::filesystem::path path)
+    explicit VisitorPreCompilation(Driver* driver, hilti::ID module, hilti::rt::filesystem::path path)
         : driver(driver), module(std::move(module)), path(std::move(path)) {}
 
     void operator()(const hilti::declaration::Type& t) {
@@ -45,13 +45,13 @@ struct VisitorPreCompilation : public hilti::visitor::PreOrder<void, VisitorPreC
 
     Driver* driver;
     hilti::ID module;
-    std::filesystem::path path;
+    hilti::rt::filesystem::path path;
     std::vector<EnumInfo> enums;
 };
 
 /** Visitor to extract unit information from an HILTI AST after it's compiled. */
 struct VisitorPostCompilation : public hilti::visitor::PreOrder<void, VisitorPostCompilation> {
-    explicit VisitorPostCompilation(Driver* driver, hilti::ID module, std::filesystem::path path)
+    explicit VisitorPostCompilation(Driver* driver, hilti::ID module, hilti::rt::filesystem::path path)
         : driver(driver), module(std::move(module)), path(std::move(path)) {}
 
     void operator()(const hilti::declaration::Type& t) {
@@ -71,7 +71,7 @@ struct VisitorPostCompilation : public hilti::visitor::PreOrder<void, VisitorPos
 
     Driver* driver;
     hilti::ID module;
-    std::filesystem::path path;
+    hilti::rt::filesystem::path path;
     std::vector<UnitInfo> units;
 };
 
@@ -220,13 +220,14 @@ hilti::Result<hilti::Nothing> Driver::parseOptionsPostScript(const std::string& 
     return hilti::Nothing();
 }
 
-hilti::Result<hilti::Nothing> Driver::loadFile(std::filesystem::path file, const std::filesystem::path& relative_to) {
+hilti::Result<hilti::Nothing> Driver::loadFile(hilti::rt::filesystem::path file,
+                                               const hilti::rt::filesystem::path& relative_to) {
     if ( ! relative_to.empty() && file.is_relative() ) {
-        if ( auto p = relative_to / file; std::filesystem::exists(p) )
+        if ( auto p = relative_to / file; hilti::rt::filesystem::exists(p) )
             file = p;
     }
 
-    if ( ! std::filesystem::exists(file) ) {
+    if ( ! hilti::rt::filesystem::exists(file) ) {
         if ( auto path = hilti::util::findInPaths(file, hiltiOptions().library_paths) )
             file = *path;
         else
@@ -291,7 +292,7 @@ hilti::Result<UnitInfo> Driver::lookupUnit(const hilti::ID& unit) {
         return hilti::result::Error("unknown unit");
 }
 
-void Driver::hookNewASTPreCompilation(const ID& id, const std::optional<std::filesystem::path>& path,
+void Driver::hookNewASTPreCompilation(const ID& id, const std::optional<hilti::rt::filesystem::path>& path,
                                       const hilti::Node& root) {
     if ( ! path )
         // Ignore modules constructed in memory.
@@ -308,7 +309,7 @@ void Driver::hookNewASTPreCompilation(const ID& id, const std::optional<std::fil
     }
 }
 
-void Driver::hookNewASTPostCompilation(const ID& id, const std::optional<std::filesystem::path>& path,
+void Driver::hookNewASTPostCompilation(const ID& id, const std::optional<hilti::rt::filesystem::path>& path,
                                        const hilti::Node& root) {
     if ( ! path )
         // Ignore modules constructed in memory.

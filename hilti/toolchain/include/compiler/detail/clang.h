@@ -57,7 +57,7 @@ public:
      * @return true if compilation succeeded; the LLVM module will then have
      * been recorded internally for later linking
      */
-    bool compile(const std::filesystem::path& p);
+    bool compile(const hilti::rt::filesystem::path& p);
 
     /*
      * Links all LLVM< bitcode modules compiled far into one LLVM module

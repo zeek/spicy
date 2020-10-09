@@ -531,10 +531,10 @@ Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
 #endif
 
     // A helper function to remove temporary files on scope exit.
-    auto cleanup_on_exit = [](const std::filesystem::path& tempfile) {
+    auto cleanup_on_exit = [](const hilti::rt::filesystem::path& tempfile) {
         return llvm::make_scope_exit([&]() {
             std::error_code ec;
-            std::filesystem::remove(tempfile, ec);
+            hilti::rt::filesystem::remove(tempfile, ec);
 
             if ( ec ) {
                 logger().error(util::fmt("cleanup of file %s failed: %s", tempfile, ec));
@@ -628,7 +628,7 @@ Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
             return result::Error(util::fmt("could not create shared object: %s", error));
     }
 
-    return Library(std::filesystem::absolute(*library_path));
+    return Library(hilti::rt::filesystem::absolute(*library_path));
 }
 
 std::unique_ptr<llvm::Module> ClangJIT::Implementation::cloneToContext(std::unique_ptr<llvm::Module> m,
@@ -722,7 +722,7 @@ std::string ClangJIT::compilerVersion() { return clang::getClangFullVersion(); }
 
 bool ClangJIT::compile(const CxxCode& code) { return _impl->compile(util::fmt("%s.cc", code.id()), code.code()); }
 
-bool ClangJIT::compile(const std::filesystem::path& p) { return _impl->compile(p, {}); }
+bool ClangJIT::compile(const hilti::rt::filesystem::path& p) { return _impl->compile(p, {}); }
 
 Result<Nothing> ClangJIT::jit() { return _impl->jit(); }
 

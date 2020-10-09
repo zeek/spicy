@@ -69,10 +69,10 @@ ResourceUsage resource_usage();
  * @param prefix prefix to use for the file's basename
  * @return a valid path or an error
  * */
-hilti::rt::Result<std::filesystem::path> createTemporaryFile(const std::string& prefix = "");
+hilti::rt::Result<hilti::rt::filesystem::path> createTemporaryFile(const std::string& prefix = "");
 
 /** Turns a path into an absolute path with all dots removed. */
-std::filesystem::path normalizePath(const std::filesystem::path& p);
+hilti::rt::filesystem::path normalizePath(const hilti::rt::filesystem::path& p);
 
 /**
  * Returns a string view with all trailing characters of a given set removed.

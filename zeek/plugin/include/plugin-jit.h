@@ -19,10 +19,10 @@ public:
 
 protected:
     /** Overidden from driver class. */
-    void hookAddInput(const std::filesystem::path& path) override;
+    void hookAddInput(const hilti::rt::filesystem::path& path) override;
 
     /** Overidden from driver class. */
-    void hookAddInput(const hilti::Module& m, const std::filesystem::path& path) override;
+    void hookAddInput(const hilti::Module& m, const hilti::rt::filesystem::path& path) override;
 
     /** Overidden from driver class. */
     void hookNewEnumType(const spicy::zeek::EnumInfo& e) override;
@@ -32,7 +32,7 @@ private:
     void _initialize();
 
     bool _initialized = false;
-    std::vector<std::filesystem::path> _import_paths;
+    std::vector<hilti::rt::filesystem::path> _import_paths;
 };
 
 /** JIT version of the Zeek plugin. */

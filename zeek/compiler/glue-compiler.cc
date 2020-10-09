@@ -93,7 +93,7 @@ static hilti::ID extract_id(const std::string& chunk, size_t* i) {
     return hilti::ID(hilti::util::replace(id, "%", "0x25_"));
 }
 
-static std::filesystem::path extract_path(const std::string& chunk, size_t* i) {
+static hilti::rt::filesystem::path extract_path(const std::string& chunk, size_t* i) {
     eat_spaces(chunk, i);
 
     size_t j = *i;
@@ -312,7 +312,7 @@ hilti::Result<std::string> GlueCompiler::getNextEvtBlock(std::istream& in, int* 
     }
 }
 
-void GlueCompiler::preprocessEvtFile(std::filesystem::path& path, std::istream& in, std::ostream& out) {
+void GlueCompiler::preprocessEvtFile(hilti::rt::filesystem::path& path, std::istream& in, std::ostream& out) {
     std::vector<bool> including = {true};
     int lineno = 0;
 
@@ -409,7 +409,7 @@ void GlueCompiler::preprocessEvtFile(std::filesystem::path& path, std::istream& 
     }
 }
 
-bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
+bool GlueCompiler::loadEvtFile(hilti::rt::filesystem::path& path) {
     std::ifstream in(path);
 
     if ( ! in ) {
@@ -497,7 +497,7 @@ bool GlueCompiler::loadEvtFile(std::filesystem::path& path) {
     return true;
 }
 
-void GlueCompiler::addSpicyModule(const hilti::ID& id, const std::filesystem::path& file) {
+void GlueCompiler::addSpicyModule(const hilti::ID& id, const hilti::rt::filesystem::path& file) {
     glue::SpicyModule module;
     module.id = id;
     module.file = file;
@@ -825,7 +825,7 @@ bool GlueCompiler::compile() {
 
         // Create a vector of unique parent paths from all EVTs files going into this module.
         auto search_dirs = hilti::util::transform(m->evts, [](auto p) { return p.parent_path(); });
-        auto search_dirs_vec = std::vector<std::filesystem::path>(search_dirs.begin(), search_dirs.end());
+        auto search_dirs_vec = std::vector<hilti::rt::filesystem::path>(search_dirs.begin(), search_dirs.end());
 
         // Import any dependencies.
         for ( const auto& [module, scope] : _imports ) {

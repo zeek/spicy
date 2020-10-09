@@ -17,7 +17,7 @@ CxxCode::CxxCode(const detail::cxx::Unit& u) {
     load(u.moduleID(), buffer);
 }
 
-bool CxxCode::load(const std::filesystem::path& path) {
+bool CxxCode::load(const hilti::rt::filesystem::path& path) {
     std::ifstream in;
     in.open(path);
 
@@ -42,7 +42,7 @@ bool CxxCode::load(const std::string& id, std::istream& in) {
     return true;
 }
 
-bool CxxCode::save(const std::filesystem::path& p) const {
+bool CxxCode::save(const hilti::rt::filesystem::path& p) const {
     if ( ! _code )
         return false;
 

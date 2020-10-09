@@ -21,7 +21,7 @@ namespace hilti::rt::test {
 class TemporaryFile {
 public:
     explicit TemporaryFile() {
-        std::string path = std::filesystem::temp_directory_path() / "hilti-rt-tests-XXXXXX";
+        std::string path = hilti::rt::filesystem::temp_directory_path() / "hilti-rt-tests-XXXXXX";
 
         auto fd = ::mkstemp(path.data());
         REQUIRE_NE(fd, -1);
@@ -44,12 +44,12 @@ public:
     const auto& path() const { return _path; }
 
     ~TemporaryFile() {
-        if ( std::filesystem::exists(_path) )
-            std::filesystem::remove_all(_path);
+        if ( hilti::rt::filesystem::exists(_path) )
+            hilti::rt::filesystem::remove_all(_path);
     }
 
 private:
-    std::filesystem::path _path;
+    hilti::rt::filesystem::path _path;
 };
 
 // RAII helper to redirect output.

@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
+
 #include <hilti/ast/id.h>
 #include <hilti/ast/module.h>
 #include <hilti/base/logger.h>
@@ -115,12 +117,13 @@ public:
      * @param  dirs additional directories to search first
      * @return the modules' cache index if successfull,or an appropiate error result if not
      */
-    Result<context::ModuleIndex> import(const ID& id, const std::filesystem::path& ext, std::optional<ID> scope = {},
-                                        std::vector<std::filesystem::path> search_dirs = {});
+    Result<context::ModuleIndex> import(const ID& id, const hilti::rt::filesystem::path& ext,
+                                        std::optional<ID> scope = {},
+                                        std::vector<hilti::rt::filesystem::path> search_dirs = {});
 
     /**
      * Makes an external HILTI module available to the one this unit is
-     * compiling. See `import(const ID, const std::filesystem::path)` for
+     * compiling. See `import(const ID, const hilti::rt::filesystem::path)` for
      * more details on importng.
      *
      * This version of the `import` method imports directly from a given
@@ -129,7 +132,7 @@ public:
      * @param path to the file to import
      * @return the modules' cache index if successfull,or an appropiate error result if not
      */
-    Result<context::ModuleIndex> import(const std::filesystem::path& path);
+    Result<context::ModuleIndex> import(const hilti::rt::filesystem::path& path);
 
     /**
      * Returns the AST for an imported module.
@@ -199,7 +202,7 @@ public:
      * @return instantiated unit, or an appropiate error result if operation failed
      */
     static Result<Unit> fromModule(const std::shared_ptr<Context>& context, hilti::Module&& module,
-                                   const std::filesystem::path& path = "");
+                                   const hilti::rt::filesystem::path& path = "");
 
     /**
      * Factory method that instantiastes a unit from an existing source file that it will parse.
@@ -211,7 +214,7 @@ public:
      * @param path path to parse the module from
      * @return instantiated unit, or an appropiate error result if operation failed
      */
-    static Result<Unit> fromSource(const std::shared_ptr<Context>& context, const std::filesystem::path& path);
+    static Result<Unit> fromSource(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path);
 
     /**
      * Factory method that instantiates a unit from an existing HILTI module
@@ -231,7 +234,7 @@ public:
      * @param path path of the cached module
      * @return instantiated unit, or an appropiate error result if operation failed
      */
-    static Result<Unit> fromCache(const std::shared_ptr<Context>& context, const std::filesystem::path& path);
+    static Result<Unit> fromCache(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path);
 
     /**
      * Factory method that instantiates a unit from existing C++ source code that's to compiled.
@@ -241,7 +244,7 @@ public:
      * @return instantiated unit, or an appropiate error result if operation failed
      */
     static Result<Unit> fromCXX(std::shared_ptr<Context> context, detail::cxx::Unit cxx,
-                                const std::filesystem::path& path = "");
+                                const hilti::rt::filesystem::path& path = "");
 
     /**
      * Entry point for the HILTI linker, The linker combines meta data from
@@ -272,14 +275,14 @@ public:
      * 2nd undefined.
      */
     static std::pair<bool, std::optional<linker::MetaData>> readLinkerMetaData(
-        std::istream& input, const std::filesystem::path& path = "<input stream>");
+        std::istream& input, const hilti::rt::filesystem::path& path = "<input stream>");
 
 private:
     // Private constructor initializing the unit's meta data. Note that the
     // corresponding module must then be imported into the unit as well.
     // Nornmally you'd use the static ``Unit::from*()`` functions to do that
     // while creating a unit.
-    Unit(std::shared_ptr<Context> context, ID id, std::filesystem::path path, bool have_hilti_ast)
+    Unit(std::shared_ptr<Context> context, ID id, hilti::rt::filesystem::path path, bool have_hilti_ast)
         : _context(std::move(context)), _id(std::move(id)), _path(std::move(path)), _have_hilti_ast(have_hilti_ast) {}
 
     // Returns a list of all currently known/imported modules.
@@ -291,7 +294,7 @@ private:
     std::optional<context::CachedModule> _lookupModule(const ID& id) const;
 
     // Backend for the public import() methods.
-    Result<context::ModuleIndex> _import(const std::filesystem::path& path, std::optional<ID> expected_name);
+    Result<context::ModuleIndex> _import(const hilti::rt::filesystem::path& path, std::optional<ID> expected_name);
 
     // Runs a validation pass on a set of modules and reports any errors.
     bool _validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
@@ -317,11 +320,12 @@ private:
     void _saveIterationASTs(const std::string& prefix, int round = 0);
 
     // Parses a source file with the appropiate plugin.
-    static Result<hilti::Module> parse(const std::shared_ptr<Context>& context, const std::filesystem::path& path);
+    static Result<hilti::Module> parse(const std::shared_ptr<Context>& context,
+                                       const hilti::rt::filesystem::path& path);
 
     std::shared_ptr<Context> _context; // global context
     ID _id;                            // ID of top-level module being compiled by this unit
-    std::filesystem::path _path;       // path of top-level module being compiled by this unit
+    hilti::rt::filesystem::path _path; // path of top-level module being compiled by this unit
     bool _have_hilti_ast;  // true if the top-level module comes with a HILTI AST (normally the case, but not for the
                            // linker's C++ code)
     std::set<ID> _modules; // set of all module ASTs this unit has parsed and processed (inc. imported ones)
