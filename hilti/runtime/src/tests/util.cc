@@ -371,7 +371,7 @@ TEST_CASE("memory_statistics") {
     init();
 
     // Sleep here to make sure we have consumed some minimal amount of time (which is not rounded to zero).
-    usleep(10000);
+    usleep(100000);
 
     const auto ru0 = resource_usage();
     REQUIRE_GE(ru0.system_time, 0);
