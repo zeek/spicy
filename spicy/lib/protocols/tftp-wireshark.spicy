@@ -1,0 +1,32 @@
+
+module TFTP_Wireshark;
+
+import TFTP;
+
+on TFTP::Packet::%print {
+    switch ( self.op ) {
+        case TFTP::Opcode::RRQ:   return "%s" % self.rrq;
+        case TFTP::Opcode::WRQ:   return "%s" % self.wrq;
+        case TFTP::Opcode::DATA:  return "%s" % self.data;
+        case TFTP::Opcode::ACK:   return "%s" % self.ack;
+        case TFTP::Opcode::ERROR: return "%s" % self.error;
+        default:                  return "<unknown message>";
+    }
+}
+
+on TFTP::Request::%print {
+    return "%s Request, File: %s, Transfer type: %s"
+        % ((is_read ? "Read" : "Write"), self.filename, self.mode);
+}
+
+on TFTP::Data::%print {
+    return "Data Packet, Block: %u" % self.num;
+}
+
+on TFTP::Acknowledgement::%print {
+    return "Acknowledgement, Block: %u" % self.num;
+}
+
+on TFTP::Error::%print {
+    return "Error, Code: %u" % self.code;
+}
