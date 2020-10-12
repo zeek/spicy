@@ -1,4 +1,22 @@
 
+0.4.0-930 | 2020-10-09 18:10:13 +0200
+
+  * Change `Stream::data` and `stream::View::data` to return a `Bytes`
+    instead of a `string`. (Benjamin Bannier, Corelight)
+
+  * Test & CI updates. (Benjamin Bannier, Corelight)
+
+    - Add a CI master step to validate Homebrew formula works.
+    - Add missing Cirrus CI instance to Homebrew task.
+    - Build compiler toolchain by default when configuring directly from CMake.
+    - Bump default Zeek package in Docker images to more recent version.
+    - Fix removal of build directory in CentOS 8 Docker container.
+    - Increase sleep amount in test to make time measurable in CI.
+    - Speed up test `spicy.types.unit.trimming`.
+
+  * Help clang-tidy understand control flow in a couple of places.
+    (Benjamin Bannier, Corelight)
+
 0.4.0-918 | 2020-10-06 12:23:08 +0200
 
   * Introduce the notion of Spicy-specific compiler options.
