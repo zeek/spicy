@@ -259,9 +259,9 @@ module        : MODULE local_id '{'
 
 local_id      : IDENT                            { std::string name($1);
 
-                                                   if (name.find('-') != std::string::npos)
+                                                   if ( name.find('-') != std::string::npos )
                                                        hilti::logger().error(util::fmt("Invalid ID '%s': cannot contain '-'", name), __loc__.location());
-                                                   if (name.substr(0, 2) == "__")
+                                                   if ( name.substr(0, 2) == "__" && name != "__str__" )
                                                        hilti::logger().error(util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
 
                                                    $$ = hilti::ID(std::move(name), __loc__);

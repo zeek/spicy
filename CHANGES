@@ -1,4 +1,45 @@
 
+0.4.0-935 | 2020-10-12 07:13:46 +0000
+
+  * Add support for new %print hook to Spicy units. (Robin Sommer,
+    Corelight)
+
+    This allows a unit to customize its appearance when printed (or
+    more generally: rendered into a string).
+
+    Example:
+
+        # cat test.spicy
+        public type Test = unit {
+            on %init   { print self; }
+            f1: uint32;
+            f2: uint8;
+            on %done   { print self; }
+
+            on %print  {
+                local f1 = "-";
+                local f2 = "-";
+
+                if ( self?.f1 )
+                    f1 = "%s" % self.f1;
+
+                if ( self?.f2 )
+                    f2 = "%s" % self.f2;
+
+                return "%s|%s" % (f1, f2);
+                }
+        };
+
+        # printf '\x00\x00\x00\x01\x02' | spicy-driver test.spicy
+        -|-
+        1|2
+
+  * Allow customizing the string rendering of HILTI structs. If a
+    struct provide a hook __str__(), that will be used instead of the
+    built-in rendering of all its fields. (Robin Sommer, Corelight)
+
+  * Make ID getter method constant. (Robin Sommer, Corelight)
+
 0.4.0-930 | 2020-10-09 18:10:13 +0200
 
   * Change `Stream::data` and `stream::View::data` to return a `Bytes`

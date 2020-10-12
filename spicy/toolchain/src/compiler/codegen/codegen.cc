@@ -428,12 +428,24 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
     else if ( item_type )
         params.push_back({ID("__dd"), *item_type, hilti::type::function::parameter::Kind::In, {}});
 
-    auto rt = hilti::type::function::Result(hilti::type::Void());
-    auto ft = hilti::type::Function(std::move(rt), params, hilti::type::function::Flavor::Hook, meta);
-    auto hid = fmt("__on_%s%s", id.local(), (foreach ? "_foreach" : ""));
+    std::string hid;
+    Type result;
+
+    if ( id.local().str() == "0x25_print" ) {
+        // Special-case: We simply translate this into HITLI's __str__ hook.
+        result = hilti::type::Optional(hilti::type::String());
+        hid = "__str__";
+    }
+    else {
+        result = hilti::type::Void();
+        hid = fmt("__on_%s%s", id.local(), (foreach ? "_foreach" : ""));
+    }
 
     if ( ! id.namespace_().empty() )
         hid = fmt("%s::%s", id.namespace_(), hid);
+
+    auto rt = hilti::type::function::Result(std::move(result));
+    auto ft = hilti::type::Function(std::move(rt), params, hilti::type::function::Flavor::Hook, meta);
 
     std::optional<AttributeSet> attrs;
 

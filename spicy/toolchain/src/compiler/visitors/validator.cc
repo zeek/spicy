@@ -481,7 +481,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             else if ( hilti::util::startsWith(id, "0x25_") ) {
                 auto id_readable = hilti::util::replace(hook.id().local().str(), "0x25_", "%");
 
-                if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_error" ) {
+                if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_error" || id == "0x25_print" ) {
                     if ( params.size() != 0 )
                         error(fmt("hook '%s' does not take any parameters", id_readable), p, location);
                 }
