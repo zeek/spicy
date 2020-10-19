@@ -98,6 +98,53 @@ clang10_zeek_lts_ubuntu_release_task:
       type: text/xml
       format: junit
 
+clang11_zeek_lts_ubuntu_release_task:
+  container:
+    dockerfile: ci/Dockerfile
+    docker_arguments:
+      - zeek_packages: zeek=3.2.2-* zeek-core-dev=3.2.2-*
+    cpu: 4
+    memory: 8G
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-11 --with-zeek /opt/zeek --clang-format `which clang-format-11` --clang-tidy `which clang-tidy-11`
+  build_script:          ./ci/run-ci -b build build
+  test_build_script:     ./ci/run-ci -b build test-build
+  install_script:        ./ci/run-ci -b build install
+  cleanup_script:        ./ci/run-ci -b build cleanup
+  test_install_script:   ./ci/run-ci -b build test-install
+  packaging_script:
+    - ninja -C build package
+
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
+  on_failure:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
+
 clang9_zeek_lts_ubuntu_release_static_task:
   container:
     dockerfile: ci/Dockerfile
