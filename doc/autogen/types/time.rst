@@ -1,6 +1,6 @@
 .. rubric:: Methods
 
-.. spicy:method:: time::nanoseconds time nanoseconds False real ()
+.. spicy:method:: time::nanoseconds time nanoseconds False uint<64> ()
 
     Returns the time as an integer value representing nanoseconds since
     the UNIX epoch.
