@@ -910,11 +910,19 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(check_int64_range($2, true, __loc__), 64, __loc__); }
               | '-' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(-check_int64_range($2, false, __loc__), 64, __loc__); }
               | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
-              | INTERVAL '(' const_real ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
-              | INTERVAL '(' const_sint ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
+              | INTERVAL '(' const_real ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
+                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
+                                                 }
+              | INTERVAL '(' const_sint ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
+                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
+                                                 }
               | INTERVAL_NS '(' const_sint ')'   { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::NanosecondTag()), __loc__); }
-              | TIME '(' const_real ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
-              | TIME '(' const_uint ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
+              | TIME '(' const_real ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
+                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
+                                                 }
+              | TIME '(' const_uint ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
+                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
+                                                 }
               | TIME_NS '(' const_uint ')'       { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::NanosecondTag()), __loc__); }
               | STREAM '(' CBYTES ')'            { $$ = hilti::ctor::Stream(std::move($3), __loc__); }
 

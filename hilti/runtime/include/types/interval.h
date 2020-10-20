@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <variant>
@@ -36,8 +37,18 @@ public:
      * Constructs an interval from a double value.
      *
      * @param secs interval in seconds.
+     * @throws OutOfRange if *secs* cannot be represented with the internal resolution
      */
-    explicit Interval(double secs, SecondTag /*unused*/) : _nsecs(static_cast<int64_t>(secs * 1e9)) {}
+    explicit Interval(double secs, SecondTag /*unused*/)
+        : _nsecs([&]() {
+              auto x = secs * 1'000'000'000;
+
+              constexpr auto limits = std::numeric_limits<int64_t>();
+              if ( x < static_cast<double>(limits.min()) || static_cast<double>(limits.max()) < x )
+                  throw OutOfRange("value cannot be represented as an interval");
+
+              return integer::safe<int64_t>(x);
+          }()) {}
 
     Interval(const Interval&) = default;
     Interval(Interval&&) noexcept = default;

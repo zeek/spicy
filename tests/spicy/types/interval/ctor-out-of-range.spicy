@@ -1,0 +1,8 @@
+# @TEST-EXEC-FAIL: spicyc -c %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+# These integers are too large for signed values when converted to nanoseconds.
+global a = interval(1584567890000000700);
+global b = interval(1584567890000000800);
