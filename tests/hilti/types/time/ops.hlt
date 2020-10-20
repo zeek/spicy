@@ -21,6 +21,8 @@ assert (t1 + i2) == time(1295415000.0);
 assert (t1 + i) - i == t1;
 
 global t2 = time(1295416110.5);
+assert (t2 - t1) == interval(1000.0);
+
 assert t1 <= t2;
 assert t2 >= t1;
 assert t2 > t1;
