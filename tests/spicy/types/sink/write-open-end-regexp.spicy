@@ -1,0 +1,24 @@
+# @TEST-EXEC:  spicyc -j -o x.hlto %INPUT
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x04ABC\n' | spicy-driver -p Test::A x.hlto | sort >>output
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x04ABCD' | spicy-driver -p Test::A x.hlto | sort >>output
+# @TEST-EXEC:  btest-diff output
+
+module Test;
+
+import spicy;
+
+public type A = unit {
+    on %init { self.b.connect(new B); }
+
+    length: uint8;
+    data: bytes &size=self.length { self.b.write($$); }
+
+    on %done { print "A", self; }
+
+    sink b;
+};
+
+public type B = unit {
+    x: /[^\n]+/;
+    on %done { print "B", self; }
+};

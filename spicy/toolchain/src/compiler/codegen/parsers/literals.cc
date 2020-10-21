@@ -120,8 +120,13 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
                 auto no_match_try_again = switch_.addCase(builder::integer(-1));
                 pushBuilder(no_match_try_again);
-                pb->waitForInput("end of data while matching regular expression", c.meta().location());
-                no_match_try_again->addContinue();
+                auto pstate = pb->state();
+                pstate.self = hilti::expression::UnresolvedID(ID("self"));
+                pstate.cur = builder::id("ncur");
+                pb->pushState(std::move(pstate));
+                builder()->addLocal(ID("more_data"), pb->waitForInputOrEod());
+                pb->popState();
+                builder()->addContinue();
                 popBuilder();
 
                 auto no_match_error = switch_.addCase(builder::integer(0));
