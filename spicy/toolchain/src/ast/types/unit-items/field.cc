@@ -36,13 +36,15 @@ static Type _adaptType(const type::unit::item::Field& field, const Type& t, bool
 }
 
 Type spicy::type::unit::item::Field::parseType() const {
+    auto orig_type = originalType();
+
     if ( isContainer() ) {
-        Type etype = _originalType().as<type::Vector>().elementType();
+        Type etype = orig_type.as<type::Vector>().elementType();
         auto itype = _adaptType(*this, etype, false);
         return type::Vector(itype, itype.meta());
     }
 
-    return _adaptType(*this, _originalType(), false);
+    return _adaptType(*this, std::move(orig_type), false);
 }
 
 Type spicy::type::unit::item::Field::itemType() const {
@@ -62,12 +64,12 @@ Type spicy::type::unit::item::Field::itemType() const {
     }
 
     if ( isContainer() ) {
-        Type etype = _originalType().as<type::Vector>().elementType();
+        Type etype = originalType().as<type::Vector>().elementType();
         auto itype = _adaptType(*this, etype, true);
         return type::Vector(itype, itype.meta());
     }
 
-    return _adaptType(*this, _originalType(), true);
+    return _adaptType(*this, originalType(), true);
 }
 
 Type spicy::type::unit::item::Field::vectorElementTypeThroughSelf(ID id) {
