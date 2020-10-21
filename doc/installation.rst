@@ -34,9 +34,9 @@ ubuntu-19.10
     :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu_19_10/packages/build/spicy-linux.tar.gz>`,
     `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-19.10>`__
 
-alpine-3.11
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_11/packages/build/spicy-linux.tar.gz>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.11>`__
+alpine-3.12
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_12/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.12>`__
 
 centos-8
     :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8/packages/build/spicy-linux.tar.gz>`,
@@ -128,13 +128,13 @@ We provide Docker images with nightly Spicy builds for the following platforms:
 
 * `ubuntu-19.10 <https://hub.docker.com/repository/docker/zeekurity/spicy-ubuntu-19.10>`__
 * `centos-8 <https://hub.docker.com/repository/docker/zeekurity/spicy-centos-8>`__
-* `alpine-3.11 <https://hub.docker.com/repository/docker/zeekurity/spicy-alpine-3.11>`__
+* `alpine-3.12 <https://hub.docker.com/repository/docker/zeekurity/spicy-alpine-3.12>`__
 
 To run the image execute the command for the desired platform::
 
     docker run -it zeekurity/spicy-ubuntu-19.10:latest
     docker run -it zeekurity/spicy-centos-8:latest
-    docker run -it zeekurity/spicy-alpine-3.11:latest
+    docker run -it zeekurity/spicy-alpine-3.12:latest
 
 Spicy is installed in `/opt/spicy`.
 
@@ -152,7 +152,7 @@ see the container platforms available::
 
     Available platforms:
 
-        alpine-3.11
+        alpine-3.12
         centos-8
         ubuntu-19.10
 
@@ -278,9 +278,9 @@ On Ubuntu 19 (Eoan):
 
     - See the :repo:`Ubuntu 19 Docker file <docker/Dockerfile.ubuntu-19.10>`.
 
-On Alpine 3.11:
+On Alpine 3.12:
 
-    - See the :repo:`Alpine 3.11 Docker file <docker/Dockerfile.alpine-3.11>`.
+    - See the :repo:`Alpine 3.11 Docker file <docker/Dockerfile.alpine-3.12>`.
 
 On CentOS 8 / RedHat 8:
 
