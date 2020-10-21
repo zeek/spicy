@@ -322,8 +322,11 @@ int plugin::Zeek_Spicy::Plugin::HookLoadFile(const LoadType type, const std::str
 
     if ( ext == ".hlto" ) {
         try {
-            if ( auto load = hilti::rt::Library(file).open(); ! load )
-                hilti::rt::fatalError(hilti::rt::fmt("could not open library file %s: %s", file, load.error()));
+            if ( ! _libraries.count(file) ) {
+                _libraries.insert({file, hilti::rt::Library(file)});
+                if ( auto load = _libraries.at(file).open(); ! load )
+                    hilti::rt::fatalError(hilti::rt::fmt("could not open library file %s: %s", file, load.error()));
+            }
         } catch ( const hilti::rt::EnvironmentError& e ) {
             hilti::rt::fatalError(e.what());
         }

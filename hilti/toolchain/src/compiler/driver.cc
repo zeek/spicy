@@ -493,8 +493,11 @@ Result<Nothing> Driver::addInput(const std::filesystem::path& path) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
 
         try {
-            if ( auto load = Library(path).open(); ! load )
-                return error(util::fmt("could not load library file %s: %s", path, load.error()));
+            if ( ! _libraries.count(path) ) {
+                _libraries.insert({path, Library(path)});
+                if ( auto load = _libraries.at(path).open(); ! load )
+                    return error(util::fmt("could not load library file %s: %s", path, load.error()));
+            }
         } catch ( const hilti::rt::EnvironmentError& e ) {
             hilti::rt::fatalError(e.what());
         }
@@ -674,7 +677,7 @@ Result<Nothing> Driver::compile() {
         if ( _driver_options.output_path.empty() ) {
             // OK if not available.
             if ( library ) {
-                if ( auto loaded = library->get().open(); ! loaded )
+                if ( auto loaded = library->get()->open(); ! loaded )
                     return loaded.error();
             }
         }
@@ -686,7 +689,7 @@ Result<Nothing> Driver::compile() {
 
             HILTI_DEBUG(logging::debug::Driver, fmt("saving precompiled code to %s", _driver_options.output_path));
 
-            if ( auto success = library->get().save(_driver_options.output_path); ! success )
+            if ( auto success = library->get()->save(_driver_options.output_path); ! success )
                 return result::Error(
                     fmt("error saving object code to %s: %s", _driver_options.output_path, success.error()));
         }

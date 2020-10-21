@@ -10,7 +10,8 @@
 // command line arguments. Once the LLVM IR has been generated, we link it
 // together into one Module using LLVM’s `Linker` class. Finally we use Clang
 // to turn the linked module in a shared library on disk using the system
-// linker. This shared library is loaded into the process with `::dlopen`.
+// linker. This shared library is loaded into the process with
+// `Library::open`.
 
 #include "hilti/compiler/detail/clang.h"
 
@@ -33,6 +34,7 @@
 #include <sanitizer/lsan_interface.h>
 #endif
 
+#include <hilti/rt/logging.h>
 #include <hilti/rt/util.h>
 
 #include <hilti/base/id-base.h>
@@ -134,7 +136,7 @@ struct ClangJIT::Implementation { // NOLINT
     Result<Nothing> jit();
 
     /** See `ClangJit::retrieveLibrary()`. */
-    std::optional<std::reference_wrapper<const Library>> retrieveLibrary() const;
+    std::shared_ptr<const Library> retrieveLibrary() const;
 
     /** See `ClangJit::setDumpCode()`. */
     void setDumpCode() { dump_code = true; }
@@ -218,7 +220,7 @@ private:
 
     bool dump_code = false;
 
-    std::optional<Library> shared_library;
+    std::shared_ptr<const Library> shared_library;
 
     /*
      * Clones a llvm::Module to a new context. This effectively moves
@@ -430,7 +432,13 @@ Result<Nothing> ClangJIT::Implementation::jit() {
             logger().fatalError(util::fmt("could not create library: %s", library.error()));
         }
 
-        shared_library.emplace(std::move(*library));
+        shared_library = std::shared_ptr<const Library>(new Library(std::move(*library)), [](const Library* library) {
+            auto remove = library->remove();
+            if ( ! remove )
+                hilti::rt::warning(hilti::rt::fmt("could not remove JIT library: %s", remove.error()));
+
+            delete library;
+        });
 
         if ( dump_code ) {
             constexpr char id[] = "__LINKED__";
@@ -499,11 +507,7 @@ std::map<std::string, std::string> ClangJIT::Implementation::adaptSymbolVisibili
     return new_symbols;
 }
 
-std::optional<std::reference_wrapper<const Library>> ClangJIT::Implementation::retrieveLibrary() const {
-    if ( ! shared_library )
-        return std::nullopt;
-    return *shared_library;
-}
+std::shared_ptr<const Library> ClangJIT::Implementation::retrieveLibrary() const { return shared_library; }
 
 void ClangJIT::Implementation::saveBitcode(const llvm::Module& module, std::string path) {
     // Logging to driver because that's where all the other "saving to ..." messages go.
@@ -590,8 +594,6 @@ Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
     auto library_path = util::createTemporaryFile(util::fmt("%s.hlto", module.getName().str()));
     if ( ! library_path )
         return library_path.error();
-
-    auto c2 = cleanup_on_exit(*library_path);
 
     auto& diagnostics = clang_.getDiagnostics();
 
@@ -724,8 +726,6 @@ bool ClangJIT::compile(const std::filesystem::path& p) { return _impl->compile(p
 
 Result<Nothing> ClangJIT::jit() { return _impl->jit(); }
 
-std::optional<std::reference_wrapper<const Library>> ClangJIT::retrieveLibrary() const {
-    return _impl->retrieveLibrary();
-}
+std::shared_ptr<const Library> ClangJIT::retrieveLibrary() const { return _impl->retrieveLibrary(); }
 
 void ClangJIT::setDumpCode() { _impl->setDumpCode(); }

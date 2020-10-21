@@ -1,3 +1,6 @@
+0.4.0-939 | 2020-10-21 14:35:30 +0200
+
+  * GH-521: Do not create copies when loading HLTO libraries. (Benjamin Bannier, Corelight)
 
 0.4.0-935 | 2020-10-12 07:13:46 +0000
 

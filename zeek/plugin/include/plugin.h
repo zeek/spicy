@@ -4,9 +4,10 @@
 
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
-// Spicy headers
+#include <hilti/rt/library.h>
 #include <hilti/rt/types/port.h>
 
 #include <zeek-spicy/zeek-compat.h>
@@ -163,6 +164,7 @@ private:
 
     std::vector<ProtocolAnalyzerInfo> _protocol_analyzers_by_subtype;
     std::vector<FileAnalyzerInfo> _file_analyzers_by_subtype;
+    std::unordered_map<std::string, hilti::rt::Library> _libraries;
 };
 
 // Will be initalized to point to whatever type of plugin is instantiated.

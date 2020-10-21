@@ -97,11 +97,16 @@ public:
     // @return a valid pointer to the symbol or an error
     hilti::rt::Result<void*> symbol(std::string_view name) const;
 
+    /*
+     * Remove the file corresponding to this library without unloading it.
+     *
+     * @return nothing or an error
+     */
+    hilti::rt::Result<Nothing> remove() const;
 
 private:
-    std::filesystem::path _path;      // Absolute path to the physical file wrapped by this instance.
-    std::filesystem::path _orig_path; // Original path as passed into the constructor.
-    mutable void* _handle = nullptr;  // Handle to the library.
+    std::filesystem::path _path;     // Absolute path to the physical file wrapped by this instance.
+    mutable void* _handle = nullptr; // Handle to the library.
 };
 
 } // namespace hilti::rt

@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -136,8 +137,8 @@ public:
 
     /** Returns true if at least one input file has been added. */
     bool hasInputs() const {
-        return _pending_units.size() || _processed_units.size() || _processed_paths.size() || _libraries.size() ||
-               _external_cxxs.size();
+        return ! (_pending_units.empty() && _processed_units.empty() && _processed_paths.empty() &&
+                  _libraries.empty() && _external_cxxs.empty());
     }
 
     /** Returns the driver options currently in effect. */
@@ -437,7 +438,7 @@ private:
     std::unique_ptr<hilti::JIT> _jit; // driver's JIT instance
 
     std::vector<CxxCode> _generated_cxxs;
-    std::vector<Library> _libraries;
+    std::unordered_map<std::string, Library> _libraries;
     std::vector<std::filesystem::path> _external_cxxs;
     std::vector<linker::MetaData> _mds;
     std::vector<Unit> _hlts;
