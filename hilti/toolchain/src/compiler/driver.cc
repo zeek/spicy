@@ -27,7 +27,6 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"debug-addl", required_argument, nullptr, 'X'},
                                               {"dump-code", no_argument, nullptr, 'C'},
                                               {"help", no_argument, nullptr, 'h'},
-                                              {"include-linker", no_argument, nullptr, 'K'},
                                               {"keep-tmps", no_argument, nullptr, 'T'},
                                               {"library-path", required_argument, nullptr, 'L'},
                                               {"optimize", no_argument, nullptr, 'O'},
@@ -97,7 +96,6 @@ void Driver::usage() {
            "(comma-separated; 'help' for list).\n"
            "  -E | --output-code-dependencies Output list of dependencies for all compiled modules that require "
            "separate compilation of their own.\n"
-           "  -K | --include-linker           With --output-c++, include HILTI linker glue code.\n"
            "  -L | --library-path <path>      Add path to list of directories to search when importing modules.\n"
            "  -O | --optimize                 Build optimized release version of generated code.\n"
            "  -P | --output-prototypes        Output C++ header with prototypes for public functionality.\n"
@@ -225,7 +223,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     int num_output_types = 0;
 
     opterr = 0; // don't print errors
-    std::string option_string = "ABlKL:OcCpPvjJhvVdX:o:D:TUEeSR" + hookAddCommandLineOptions();
+    std::string option_string = "ABlL:OcCpPvjJhvVdX:o:D:TUEeSR" + hookAddCommandLineOptions();
 
     while ( true ) {
         int c = getopt_long(argc, argv, option_string.c_str(), long_driver_options, nullptr);
@@ -318,8 +316,6 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 _driver_options.include_linker = true;
                 ++num_output_types;
                 break;
-
-            case 'K': _driver_options.include_linker = true; break;
 
             case 'L': _compiler_options.library_paths.emplace_back(std::string(optarg)); break;
 
