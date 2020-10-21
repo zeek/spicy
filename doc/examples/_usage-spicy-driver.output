@@ -17,6 +17,7 @@ Options:
   -O | --optimize                 Build optimized release version of generated code.
   -R | --report-times             Report a break-down of compiler's execution time.
   -S | --skip-dependencies        Do not automatically compile dependencies during JIT.
+  -U | --report-resource-usage    Print summary of runtime resource usage.
   -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation (comma-separated; see 'help' for list).
 
 Environment variables:
