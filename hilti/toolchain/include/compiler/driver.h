@@ -228,6 +228,12 @@ public:
      */
     Result<hilti::JIT*> jit();
 
+    /**
+     * Returns true if any input files have been added that require JIT for
+     * compilation before they can be executed.
+     */
+    bool needJIT() const { return _need_jit; }
+
 protected:
     /**
      * Prints a usage message to stderr. The message summarizes the options
@@ -443,6 +449,7 @@ private:
     std::vector<Unit> _hlts;
 
     bool _runtime_initialized = false; // true once initRuntime() has succeeded
+    bool _need_jit = false; // true once a file has been adeed that needs JIT
     std::set<std::string> _tmp_files;  // all tmp files created, so that we can clean them up.
 };
 
