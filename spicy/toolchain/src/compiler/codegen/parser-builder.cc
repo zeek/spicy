@@ -275,12 +275,26 @@ struct ProductionVisitor
                                                                          {state().self, state().data, state().cur}));
 
                             auto have_filter = builder()->addIf(filtered);
+                            pushBuilder(have_filter);
+
                             auto args2 = args;
-                            have_filter->addLocal("filtered_data", type::ValueReference(type::Stream()),
-                                                  builder::id("filtered"));
+                            builder()->addLocal("filtered_data", type::ValueReference(type::Stream()),
+                                                builder::id("filtered"));
                             args2[0] = builder::id("filtered_data");
                             args2[1] = builder::deref(args2[0]);
-                            have_filter->addReturn(builder::memberCall(state().self, id_stage2, std::move(args2)));
+                            builder()->addExpression(builder::memberCall(state().self, id_stage2, std::move(args2)));
+
+                            // Assume the filter consumed the full input.
+                            pb->advanceInput(builder::size(state().cur));
+
+                            auto result = builder::tuple({
+                                state().cur,
+                                state().lahead,
+                                state().lahead_end,
+                            });
+
+                            builder()->addReturn(result);
+                            popBuilder();
                         }
 
                         builder()->addReturn(builder::memberCall(state().self, id_stage2, std::move(args)));
