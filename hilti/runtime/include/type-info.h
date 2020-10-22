@@ -1133,66 +1133,300 @@ public:
 
 } // namespace type_info
 
+} // namespace hilti::rt
+
+namespace hilti::rt {
+
 /**
- * Top-level type information structure describing one type. There's a
- * generic part applying to all types, plus a variant storing additional,
- * type-specific auxiliary information.
+ * Top-level type information structure describing one type. There's a generic
+ * part applying to all types, plus a tagged union storing additional,
+ * type-specific auxiliary information. To query which union field is set users
+ * should query the `tag` member.
  */
 struct TypeInfo {
     std::optional<const char*> id; /**< Spicy-side ID associated with the type, if any. */
     const char* display;           /**< String rendering of the type. */
 
-    // clang-format off
-    /**
-     * Type-specific auxiliary information. This also acts as a tag defining
-     * which kind of type is being described.
-     */
-    std::variant<
-        type_info::Address,
-        type_info::Any,
-        type_info::Bool,
-        type_info::Bytes,
-        type_info::BytesIterator,
-        type_info::Enum,
-        type_info::Error,
-        type_info::Exception,
-        type_info::Function,
-        type_info::Interval,
-        type_info::Library,
-        type_info::Map,
-        type_info::MapIterator,
-        type_info::Network,
-        type_info::Optional,
-        type_info::Port,
-        type_info::Real,
-        type_info::RegExp,
-        type_info::Result,
-        type_info::Set,
-        type_info::SetIterator,
-        type_info::SignedInteger<int8_t>,
-        type_info::SignedInteger<int16_t>,
-        type_info::SignedInteger<int32_t>,
-        type_info::SignedInteger<int64_t>,
-        type_info::Stream,
-        type_info::StreamIterator,
-        type_info::StreamView,
-        type_info::String,
-        type_info::StrongReference,
-        type_info::Struct,
-        type_info::Time,
-        type_info::Tuple,
-        type_info::Union,
-        type_info::UnsignedInteger<uint8_t>,
-        type_info::UnsignedInteger<uint16_t>,
-        type_info::UnsignedInteger<uint32_t>,
-        type_info::UnsignedInteger<uint64_t>,
-        type_info::ValueReference,
-        type_info::Vector,
-        type_info::VectorIterator,
-        type_info::Void,
-        type_info::WeakReference
-        > aux_type_info;
-    // clang-format on
+    enum Tag {
+        Undefined,
+        Address,
+        Any,
+        Bool,
+        Bytes,
+        BytesIterator,
+        Enum,
+        Error,
+        Exception,
+        Function,
+        Interval,
+        Library,
+        Map,
+        MapIterator,
+        Network,
+        Optional,
+        Port,
+        Real,
+        RegExp,
+        Result,
+        Set,
+        SetIterator,
+        SignedInteger_int8,
+        SignedInteger_int16,
+        SignedInteger_int32,
+        SignedInteger_int64,
+        Stream,
+        StreamIterator,
+        StreamView,
+        String,
+        StrongReference,
+        Struct,
+        Time,
+        Tuple,
+        Union,
+        UnsignedInteger_uint8,
+        UnsignedInteger_uint16,
+        UnsignedInteger_uint32,
+        UnsignedInteger_uint64,
+        ValueReference,
+        Vector,
+        VectorIterator,
+        Void,
+        WeakReference
+    };
+
+    // Actual storage for the held type.
+    std::unique_ptr<char, void (*)(char*)> _storage = {nullptr, [](char*) {}};
+
+    Tag tag = Tag::Undefined; ///< Tag indicating which field of below union is set.
+    union {
+        type_info::Address* address;
+        type_info::Any* any;
+        type_info::Bool* bool_;
+        type_info::Bytes* bytes;
+        type_info::BytesIterator* bytes_iterator;
+        type_info::Enum* enum_;
+        type_info::Error* error;
+        type_info::Exception* exception;
+        type_info::Function* function;
+        type_info::Interval* interval;
+        type_info::Library* library;
+        type_info::Map* map;
+        type_info::MapIterator* map_iterator;
+        type_info::Network* network;
+        type_info::Optional* optional;
+        type_info::Port* port;
+        type_info::Real* real;
+        type_info::RegExp* regexp;
+        type_info::Result* result;
+        type_info::Set* set;
+        type_info::SetIterator* set_iterator;
+        type_info::SignedInteger<int8_t>* signed_integer_int8;
+        type_info::SignedInteger<int16_t>* signed_integer_int16;
+        type_info::SignedInteger<int32_t>* signed_integer_int32;
+        type_info::SignedInteger<int64_t>* signed_integer_int64;
+        type_info::Stream* stream;
+        type_info::StreamIterator* stream_iterator;
+        type_info::StreamView* stream_view;
+        type_info::String* string;
+        type_info::StrongReference* strong_reference;
+        type_info::Struct* struct_;
+        type_info::Time* time;
+        type_info::Tuple* tuple;
+        type_info::Union* union_;
+        type_info::UnsignedInteger<uint8_t>* unsigned_integer_uint8;
+        type_info::UnsignedInteger<uint16_t>* unsigned_integer_uint16;
+        type_info::UnsignedInteger<uint32_t>* unsigned_integer_uint32;
+        type_info::UnsignedInteger<uint64_t>* unsigned_integer_uint64;
+        type_info::ValueReference* value_reference;
+        type_info::Vector* vector;
+        type_info::VectorIterator* vector_iterator;
+        type_info::Void* void_;
+        type_info::WeakReference* weak_reference;
+    };
+
+    TypeInfo() = default;
+
+    template<typename Type>
+    TypeInfo(std::optional<const char*> _id, const char* _display, Type* value)
+        : id(std::move(_id)),
+          display(_display),
+          _storage(reinterpret_cast<char*>(value), [](char* p) { delete reinterpret_cast<Type*>(p); }) {
+        if constexpr ( std::is_same_v<Type, type_info::Address> ) {
+            tag = Address;
+            address = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Any> ) {
+            tag = Any;
+            any = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Bool> ) {
+            tag = Bool;
+            bool_ = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Bytes> ) {
+            tag = Bytes;
+            bytes = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::BytesIterator> ) {
+            tag = BytesIterator;
+            bytes_iterator = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Enum> ) {
+            tag = Enum;
+            enum_ = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Error> ) {
+            tag = Error;
+            error = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Exception> ) {
+            tag = Exception;
+            exception = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Function> ) {
+            tag = Function;
+            function = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Interval> ) {
+            tag = Interval;
+            interval = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Library> ) {
+            tag = Library;
+            library = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Map> ) {
+            tag = Map;
+            map = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::MapIterator> ) {
+            tag = MapIterator;
+            map_iterator = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Network> ) {
+            tag = Network;
+            network = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Optional> ) {
+            tag = Optional;
+            optional = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Port> ) {
+            tag = Port;
+            port = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Real> ) {
+            tag = Real;
+            real = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::RegExp> ) {
+            tag = RegExp;
+            regexp = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Result> ) {
+            tag = Result;
+            result = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Set> ) {
+            tag = Set;
+            set = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::SetIterator> ) {
+            tag = SetIterator;
+            set_iterator = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::SignedInteger<int8_t>> ) {
+            tag = SignedInteger_int8;
+            signed_integer_int8 = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::SignedInteger<int16_t>> ) {
+            tag = SignedInteger_int16;
+            signed_integer_int16 = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::SignedInteger<int32_t>> ) {
+            tag = SignedInteger_int32;
+            signed_integer_int32 = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::SignedInteger<int64_t>> ) {
+            tag = SignedInteger_int64;
+            signed_integer_int64 = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Stream> ) {
+            tag = Stream;
+            stream = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::StreamIterator> ) {
+            tag = StreamIterator;
+            stream_iterator = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::StreamView> ) {
+            tag = StreamView;
+            stream_view = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::String> ) {
+            tag = String;
+            string = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::StrongReference> ) {
+            tag = StrongReference;
+            strong_reference = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Struct> ) {
+            tag = Struct;
+            struct_ = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Time> ) {
+            tag = Time;
+            time = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Tuple> ) {
+            tag = Tuple;
+            tuple = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Union> ) {
+            tag = Union;
+            union_ = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::UnsignedInteger<uint8_t>> ) {
+            tag = UnsignedInteger_uint8;
+            unsigned_integer_uint8 = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::UnsignedInteger<uint16_t>> ) {
+            tag = UnsignedInteger_uint16;
+            unsigned_integer_uint16 = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::UnsignedInteger<uint32_t>> ) {
+            tag = UnsignedInteger_uint32;
+            unsigned_integer_uint32 = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::UnsignedInteger<uint64_t>> ) {
+            tag = UnsignedInteger_uint64;
+            unsigned_integer_uint64 = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::ValueReference> ) {
+            tag = ValueReference;
+            value_reference = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Vector> ) {
+            tag = Vector;
+            vector = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::VectorIterator> ) {
+            tag = VectorIterator;
+            vector_iterator = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Void> ) {
+            tag = Void;
+            void_ = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::WeakReference> ) {
+            tag = WeakReference;
+            weak_reference = value;
+        }
+        else {
+            throw RuntimeError("unhandled type");
+        }
+    }
 };
 
 namespace type_info {
@@ -1209,18 +1443,6 @@ struct overload : Ts... {
 template<class... Ts>
 overload(Ts...) -> overload<Ts...>;
 
-namespace detail {
-
-/**
- * Helper to returns the type of a variant's currently set item. From
- * https://stackoverflow.com/a/53697591.
- */
-template<class V>
-std::type_info const& var_type(V const& v) {
-    return std::visit([](auto&& x) -> decltype(auto) { return typeid(x); }, v);
-}
-} // namespace detail
-
 namespace value {
 
 /**
@@ -1229,16 +1451,188 @@ namespace value {
  *
  * @param  v value to retrieve information from
  * @return a reference to the auxiliary type information
- * @tparam the expected class for the auxiliary type information
+ * @tparam Type the expected class for the auxiliary type information
  * @throws ``InvalidValue`` if the auxiliary type information does not have the expected type
  */
-template<typename T>
-const T& auxType(const type_info::Value& v) {
-    if ( auto x = std::get_if<T>(&v.type().aux_type_info) )
-        return *x;
-    else
-        throw InvalidValue(fmt("unexpected variant state: have %s, but want %s\n",
-                               type_info::detail::var_type(v.type().aux_type_info).name(), typeid(T).name()));
+template<typename Type>
+const Type* auxType(const type_info::Value& v) {
+    const auto& type = v.type();
+
+    if constexpr ( std::is_same_v<Type, type_info::Address> ) {
+        assert(type.tag == TypeInfo::Address);
+        return type.address;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Any> ) {
+        assert(type.tag == TypeInfo::Any);
+        return type.any;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Bool> ) {
+        assert(type.tag == TypeInfo::Bool);
+        return type.bool_;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Bytes> ) {
+        assert(type.tag == TypeInfo::Bytes);
+        return type.bytes;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::BytesIterator> ) {
+        assert(type.tag == TypeInfo::BytesIterator);
+        return type.bytes_iterator;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Enum> ) {
+        assert(type.tag == TypeInfo::Enum);
+        return type.enum_;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Error> ) {
+        assert(type.tag == TypeInfo::Error);
+        return type.error;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Exception> ) {
+        assert(type.tag == TypeInfo::Exception);
+        return type.exception;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Function> ) {
+        assert(type.tag == TypeInfo::Function);
+        return type.function;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Interval> ) {
+        assert(type.tag == TypeInfo::Interval);
+        return type.interval;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Library> ) {
+        assert(type.tag == TypeInfo::Library);
+        return type.library;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Map> ) {
+        assert(type.tag == TypeInfo::Map);
+        return type.map;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::MapIterator> ) {
+        assert(type.tag == TypeInfo::MapIterator);
+        return type.map_iterator;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Network> ) {
+        assert(type.tag == TypeInfo::Network);
+        return type.network;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Optional> ) {
+        assert(type.tag == TypeInfo::Optional);
+        return type.optional;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Port> ) {
+        assert(type.tag == TypeInfo::Port);
+        return type.port;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Real> ) {
+        assert(type.tag == TypeInfo::Real);
+        return type.real;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::RegExp> ) {
+        assert(type.tag == TypeInfo::RegExp);
+        return type.regexp;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Result> ) {
+        assert(type.tag == TypeInfo::Result);
+        return type.result;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Set> ) {
+        assert(type.tag == TypeInfo::Set);
+        return type.set;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::SetIterator> ) {
+        assert(type.tag == TypeInfo::SetIterator);
+        return type.set_iterator;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::SignedInteger<int8_t>> ) {
+        assert(type.tag == TypeInfo::SignedInteger_int8);
+        return type.signed_integer_int8;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::SignedInteger<int16_t>> ) {
+        assert(type.tag == TypeInfo::SignedInteger_int16);
+        return type.signed_integer_int16;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::SignedInteger<int32_t>> ) {
+        assert(type.tag == TypeInfo::SignedInteger_int32);
+        return type.signed_integer_int32;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::SignedInteger<int64_t>> ) {
+        assert(type.tag == TypeInfo::SignedInteger_int64);
+        return type.signed_integer_int64;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Stream> ) {
+        assert(type.tag == TypeInfo::Stream);
+        return type.stream;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::StreamIterator> ) {
+        assert(type.tag == TypeInfo::StreamIterator);
+        return type.stream_iterator;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::StreamView> ) {
+        assert(type.tag == TypeInfo::StreamView);
+        return type.stream_view;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::String> ) {
+        assert(type.tag == TypeInfo::String);
+        return type.string;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::StrongReference> ) {
+        assert(type.tag == TypeInfo::StrongReference);
+        return type.strong_reference;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Struct> ) {
+        assert(type.tag == TypeInfo::Struct);
+        return type.struct_;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Time> ) {
+        assert(type.tag == TypeInfo::Time);
+        return type.time;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Tuple> ) {
+        assert(type.tag == TypeInfo::Tuple);
+        return type.tuple;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Union> ) {
+        assert(type.tag == TypeInfo::Union);
+        return type.union_;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::UnsignedInteger<uint8_t>> ) {
+        assert(type.tag == TypeInfo::UnsignedInteger_uint8);
+        return type.unsigned_integer_uint8;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::UnsignedInteger<uint16_t>> ) {
+        assert(type.tag == TypeInfo::UnsignedInteger_uint16);
+        return type.unsigned_integer_uint16;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::UnsignedInteger<uint32_t>> ) {
+        assert(type.tag == TypeInfo::UnsignedInteger_uint32);
+        return type.unsigned_integer_uint32;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::UnsignedInteger<uint64_t>> ) {
+        assert(type.tag == TypeInfo::UnsignedInteger_uint64);
+        return type.unsigned_integer_uint64;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::ValueReference> ) {
+        assert(type.tag == TypeInfo::ValueReference);
+        return type.value_reference;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Vector> ) {
+        assert(type.tag == TypeInfo::Vector);
+        return type.vector;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::VectorIterator> ) {
+        assert(type.tag == TypeInfo::VectorIterator);
+        return type.vector_iterator;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Void> ) {
+        assert(type.tag == TypeInfo::Void);
+        return type.void_;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::WeakReference> ) {
+        assert(type.tag == TypeInfo::WeakReference);
+        return type.weak_reference;
+    }
+    else {
+        throw RuntimeError("unhandled type");
+    }
 }
 } // namespace value
 

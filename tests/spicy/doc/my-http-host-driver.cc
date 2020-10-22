@@ -14,19 +14,19 @@
 #include <spicy/rt/libspicy.h>
 
 void print(const hilti::rt::type_info::Value& v) {
-    std::visit(hilti::rt::type_info::overload{
-                   [&](const hilti::rt::type_info::Bytes& x) { std::cout << x.get(v); },
-                   [&](const hilti::rt::type_info::ValueReference& x) { print(x.value(v)); },
-                   [&](const hilti::rt::type_info::Struct& x) {
-                       for ( const auto& [f, y] : x.iterate(v) ) {
-                           std::cout << f.name << ": ";
-                           print(y);
-                           std::cout << std::endl;
-                       }
-                   },
-                   [&](const auto& x) { assert(false); },
-               },
-               v.type().aux_type_info);
+    const auto& type = v.type();
+    switch ( type.tag ) {
+        case hilti::rt::TypeInfo::Bytes: std::cout << type.bytes->get(v); break;
+        case hilti::rt::TypeInfo::ValueReference: print(type.value_reference->value(v)); break;
+        case hilti::rt::TypeInfo::Struct:
+            for ( const auto& [f, y] : type.struct_->iterate(v) ) {
+                std::cout << f.name << ": ";
+                print(y);
+                std::cout << std::endl;
+            }
+            break;
+        default: assert(false);
+    }
 }
 
 int main(int argc, char** argv) {

@@ -2,6 +2,8 @@
 
 #include "printer-json.h"
 
+#include <string>
+
 #include <hilti/rt/libhilti.h>
 
 #include <spicy/rt/util.h>
@@ -13,130 +15,139 @@ using json = nlohmann::json;
 void JSONPrinter::print(const type_info::Value& v) { out() << convert(v) << std::endl; }
 
 nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
-    json j;
+    const auto& type = v.type();
 
-    std::visit(type_info::overload{[&](const hilti::rt::type_info::Address& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::Any& x) { j = "<any>"; },
-                                   [&](const hilti::rt::type_info::Bool& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::Bytes& x) { j = to_string_for_print(x.get(v)); },
-                                   [&](const hilti::rt::type_info::BytesIterator& x) { j = to_string(x.get(v)); },
-                                   [&](const hilti::rt::type_info::Enum& x) { j = x.get(v).name; },
-                                   [&](const hilti::rt::type_info::Error& x) { j = to_string(x.get(v)); },
-                                   [&](const hilti::rt::type_info::Exception& x) { j = to_string(x.get(v)); },
-                                   [&](const hilti::rt::type_info::Function& x) { j = "<function>"; },
-                                   [&](const hilti::rt::type_info::Interval& x) { j = x.get(v).seconds(); },
-                                   [&](const hilti::rt::type_info::Library& x) { j = "<library value>"; },
-                                   [&](const hilti::rt::type_info::Map& x) {
-                                       j = json::array();
+    switch ( v.type().tag ) {
+        case TypeInfo::Undefined: throw RuntimeError("unhandled type");
+        case TypeInfo::Address: return type.address->get(v);
+        case TypeInfo::Any: return "<any>";
+        case TypeInfo::Bool: return type.bool_->get(v);
+        case TypeInfo::Bytes: return to_string_for_print(type.bytes->get(v));
+        case TypeInfo::BytesIterator: return to_string(type.bytes_iterator->get(v));
+        case TypeInfo::Enum: return type.enum_->get(v).name;
+        case TypeInfo::Error: return to_string(type.error->get(v));
+        case TypeInfo::Exception: return to_string(type.exception->get(v));
+        case TypeInfo::Function: return "<function>";
+        case TypeInfo::Interval: return type.interval->get(v).seconds();
+        case TypeInfo::Library: return "<library value>";
+        case TypeInfo::Map: {
+            auto j = json::array();
 
-                                       for ( auto [key, value] : x.iterate(v) )
-                                           j.push_back({convert(key), convert(value)});
-                                   },
-                                   [&](const hilti::rt::type_info::MapIterator& x) {
-                                       auto [key, value] = x.value(v);
-                                       j = json::array({convert(key), convert(value)});
-                                   },
-                                   [&](const hilti::rt::type_info::Network& x) {
-                                       Network n = x.get(v);
-                                       j = json::object({{"prefix", n.prefix()}, {"length", n.length()}});
-                                   },
-                                   [&](const hilti::rt::type_info::Optional& x) {
-                                       auto y = x.value(v);
-                                       j = y ? convert(y) : json();
-                                   },
-                                   [&](const hilti::rt::type_info::Port& x) {
-                                       Port p = x.get(v);
-                                       j = json::object({{"port", p.port()}, {"protocol", to_string(p.protocol())}});
-                                   },
-                                   [&](const hilti::rt::type_info::Real& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::RegExp& x) { j = to_string(x.get(v)); },
-                                   [&](const hilti::rt::type_info::Result& x) {
-                                       auto y = x.value(v);
-                                       j = y ? convert(y) : json();
-                                   },
-                                   [&](const hilti::rt::type_info::Set& x) {
-                                       j = json::array();
+            for ( auto [key, value] : type.map->iterate(v) )
+                j.push_back({convert(key), convert(value)});
+            return j;
+        }
+        case TypeInfo::MapIterator: {
+            auto [key, value] = type.map_iterator->value(v);
+            return json::array({convert(key), convert(value)});
+        }
+        case TypeInfo::Network: {
+            Network n = type.network->get(v);
+            return json::object({{"prefix", n.prefix()}, {"length", n.length()}});
+        }
+        case TypeInfo::Optional: {
+            auto y = type.optional->value(v);
+            return y ? convert(y) : json();
+        }
+        case TypeInfo::Port: {
+            Port p = type.port->get(v);
+            return json::object({{"port", p.port()}, {"protocol", to_string(p.protocol())}});
+        }
+        case TypeInfo::Real: return type.real->get(v);
+        case TypeInfo::RegExp: return to_string(type.regexp->get(v));
+        case TypeInfo::Result: {
+            auto y = type.result->value(v);
+            return y ? convert(y) : json();
+        }
+        case TypeInfo::Set: {
+            auto j = json::array();
 
-                                       for ( auto i : x.iterate(v) )
-                                           j.push_back(convert(i));
-                                   },
-                                   [&](const hilti::rt::type_info::SetIterator& x) { j = convert(x.value(v)); },
-                                   [&](const hilti::rt::type_info::SignedInteger<int8_t>& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::SignedInteger<int16_t>& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::SignedInteger<int32_t>& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::SignedInteger<int64_t>& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::Stream& x) { j = to_string_for_print(x.get(v)); },
-                                   [&](const hilti::rt::type_info::StreamIterator& x) {
-                                       j = to_string_for_print(x.get(v));
-                                   },
-                                   [&](const hilti::rt::type_info::StreamView& x) {
-                                       j = to_string_for_print(x.get(v));
-                                   },
-                                   [&](const hilti::rt::type_info::String& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::StrongReference& x) {
-                                       auto y = x.value(v);
-                                       j = y ? convert(y) : json();
-                                   },
-                                   [&](const hilti::rt::type_info::Struct& x) {
-                                       j = json::object();
+            for ( auto i : type.set->iterate(v) )
+                j.push_back(convert(i));
 
-                                       for ( const auto& [f, y] : x.iterate(v) ) {
-                                           if ( ! y )
-                                               // Field not set.
-                                               continue;
+            return j;
+        }
+        case TypeInfo::SetIterator: return convert(type.set_iterator->value(v));
+        case TypeInfo::SignedInteger_int8: return type.signed_integer_int8->get(v);
+        case TypeInfo::SignedInteger_int16: return type.signed_integer_int16->get(v);
+        case TypeInfo::SignedInteger_int32: return type.signed_integer_int32->get(v);
+        case TypeInfo::SignedInteger_int64: return type.signed_integer_int64->get(v);
+        case TypeInfo::Stream: return to_string_for_print(type.stream->get(v));
+        case TypeInfo::StreamIterator: return to_string_for_print(type.stream_iterator->get(v));
+        case TypeInfo::StreamView: return to_string_for_print(type.stream_view->get(v));
+        case TypeInfo::String: return type.string->get(v);
+        case TypeInfo::StrongReference: {
+            auto y = type.strong_reference->value(v);
+            return y ? convert(y) : json();
+        }
+        case TypeInfo::Struct: {
+            auto j = json::object();
 
-                                           j[f.name] = convert(y);
-                                       }
+            const auto* struct_ = type.struct_;
 
-                                       auto offsets = json::array();
-                                       const auto& __offsets = spicy::rt::get_offsets_for_unit(x, v);
-                                       if ( _options.include_offsets && __offsets ) {
-                                           for ( auto&& [index, offset] : enumerate(*__offsets) ) {
-                                               auto o = json::object();
+            for ( const auto& [f, y] : struct_->iterate(v) ) {
+                if ( ! y )
+                    // Field not set.
+                    continue;
 
-                                               if ( offset ) {
-                                                   o["start"] = std::get<0>(*offset).Ref();
-                                                   if ( auto& end = std::get<1>(*offset) )
-                                                       o["end"] = end->Ref();
-                                               }
+                j[f.name] = convert(y);
+            }
 
-                                               offsets.push_back(std::move(o));
-                                           }
-                                           j["__offsets"] = offsets;
-                                       }
-                                   },
-                                   [&](const hilti::rt::type_info::Time& x) { j = x.get(v).seconds(); },
-                                   [&](const hilti::rt::type_info::Tuple& x) {
-                                       j = json::array();
+            auto offsets = json::array();
+            const auto& __offsets = spicy::rt::get_offsets_for_unit(*struct_, v);
+            if ( _options.include_offsets && __offsets ) {
+                for ( auto&& [index, offset] : enumerate(*__offsets) ) {
+                    auto o = json::object();
 
-                                       for ( auto i : x.iterate(v) )
-                                           j.push_back(convert(i.second));
-                                   },
-                                   [&](const hilti::rt::type_info::Union& x) {
-                                       auto y = x.value(v);
-                                       j = y ? convert(y) : json();
-                                   },
-                                   [&](const hilti::rt::type_info::UnsignedInteger<uint8_t>& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::UnsignedInteger<uint16_t>& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::UnsignedInteger<uint32_t>& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::UnsignedInteger<uint64_t>& x) { j = x.get(v); },
-                                   [&](const hilti::rt::type_info::ValueReference& x) {
-                                       auto y = x.value(v);
-                                       j = y ? convert(y) : json();
-                                   },
-                                   [&](const hilti::rt::type_info::Vector& x) {
-                                       j = json::array();
+                    if ( offset ) {
+                        o["start"] = std::get<0>(*offset).Ref();
+                        if ( auto& end = std::get<1>(*offset) )
+                            o["end"] = end->Ref();
+                    }
 
-                                       for ( auto i : x.iterate(v) )
-                                           j.push_back(convert(i));
-                                   },
-                                   [&](const hilti::rt::type_info::VectorIterator& x) { j = convert(x.value(v)); },
-                                   [&](const hilti::rt::type_info::Void& x) { j = "<void>"; },
-                                   [&](const hilti::rt::type_info::WeakReference& x) {
-                                       auto y = x.value(v);
-                                       j = y ? convert(y) : json();
-                                   }},
-               v.type().aux_type_info);
+                    offsets.push_back(std::move(o));
+                }
+                j["__offsets"] = offsets;
+            }
 
-    return j;
+            return j;
+        }
+        case TypeInfo::Time: return type.time->get(v).seconds();
+        case TypeInfo::Tuple: {
+            auto j = json::array();
+
+            for ( auto i : type.tuple->iterate(v) )
+                j.push_back(convert(i.second));
+
+            return j;
+        }
+        case TypeInfo::Union: {
+            auto y = type.union_->value(v);
+            return y ? convert(y) : json();
+        }
+        case TypeInfo::UnsignedInteger_uint8: return type.unsigned_integer_uint8->get(v);
+        case TypeInfo::UnsignedInteger_uint16: return type.unsigned_integer_uint16->get(v);
+        case TypeInfo::UnsignedInteger_uint32: return type.unsigned_integer_uint32->get(v);
+        case TypeInfo::UnsignedInteger_uint64: return type.unsigned_integer_uint64->get(v);
+        case TypeInfo::ValueReference: {
+            auto y = type.value_reference->value(v);
+            return y ? convert(y) : json();
+        }
+        case TypeInfo::Vector: {
+            auto j = json::array();
+
+            for ( auto i : type.vector->iterate(v) )
+                j.push_back(convert(i));
+
+            return j;
+        }
+        case TypeInfo::VectorIterator: return convert(type.vector_iterator->value(v));
+        case TypeInfo::Void: return "<void>";
+        case TypeInfo::WeakReference: {
+            auto y = type.weak_reference->value(v);
+            return y ? convert(y) : json();
+        }
+    }
+
+    throw RuntimeError("unhandled type");
 }

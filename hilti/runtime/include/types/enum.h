@@ -19,11 +19,10 @@ namespace enum_ {
  */
 template<typename T>
 bool has_label(const T& t, const TypeInfo* ti) {
-    auto et = std::get_if<type_info::Enum>(&ti->aux_type_info);
-    if ( ! et )
+    if ( ti->tag != TypeInfo::Enum )
         internalError("unexpected type info in enum_::has_label");
 
-    for ( const auto& l : et->labels() ) {
+    for ( const auto& l : ti->enum_->labels() ) {
         if ( l.value != -1 && static_cast<int64_t>(t) == l.value )
             return true;
     }
