@@ -61,8 +61,11 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const type::Optional& src) {
-        if ( auto t = dst.tryAs<type::Optional>() )
-            return fmt("std::make_optional(*%s)", expr);
+        if ( auto t = dst.tryAs<type::Optional>() ) {
+            // Create tmp to avoid evaluation "expr" twice.
+            auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
+            return fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp);
+        }
 
         if ( auto t = dst.tryAs<type::Bool>() )
             return fmt("%s.has_value()", expr);
