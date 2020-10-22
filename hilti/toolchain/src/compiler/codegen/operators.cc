@@ -247,6 +247,10 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("static_cast<%s>(%s.Ref())", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
+    result_t operator()(const operator_::enum_::HasLabel& n) {
+        return fmt("::hilti::rt::enum_::has_label(%s, %s)", op0(n), cg->typeInfo(n.op0().type()));
+    }
+
     // Exception
     result_t operator()(const operator_::exception::Ctor& n) {
         std::string type;

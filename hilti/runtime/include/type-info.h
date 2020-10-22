@@ -12,9 +12,16 @@
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
-#include <hilti/rt/types/all.h>
+#include <hilti/rt/types/address.h>
+#include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/map.h>
+#include <hilti/rt/types/network.h>
+#include <hilti/rt/types/port.h>
+#include <hilti/rt/types/reference.h>
+#include <hilti/rt/types/set.h>
 #include <hilti/rt/types/stream.h>
+#include <hilti/rt/types/vector.h>
 
 namespace hilti::rt {
 
