@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc -c %INPUT
+# @TEST-EXEC: btest-diff .stderr
+#
+# Just testing that this compiles and does not lead to an infinite recursion.
+
+module SS7Layers;
+
+type X = unit(parent: X) {
+};
+
+type Y = unit(parent: X) {
+  x: X(parent);
+};
