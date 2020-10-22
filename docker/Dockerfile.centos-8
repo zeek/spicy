@@ -8,9 +8,9 @@ WORKDIR /root
 ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
 ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy/"
 
-RUN echo 'LC_CTYPE="C"' >> /etc/default/locale \
- && echo 'LC_ALL="C"' >> /etc/default/locale \
- && echo 'LANG="C"' >> /etc/default/locale
+RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
+ && echo 'LC_ALL="C"' >> /etc/locale.conf \
+ && echo 'LANG="C"' >> /etc/locale.conf
 
 RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled PowerTools
 RUN yum update -y
