@@ -158,7 +158,7 @@ public:
      * Type of a function that, given the outer value, returns a pointer to
      * the contained element.
      */
-    using Accessor = std::function<const void*(const Value& v)>;
+    using Accessor = const void* (*)(const Value& v);
 
     /**
      * Constructor.
@@ -291,9 +291,9 @@ public:
      * refers to.
      *
      */
-    using Accessor = std::tuple<std::function<std::optional<std::any>(const Value&)>,    // begin()
-                                std::function<std::optional<std::any>(const std::any&)>, // next()
-                                std::function<const void*(const std::any&)>>;            // deref()
+    using Accessor = std::tuple<std::optional<std::any> (*)(const Value&),    // begin()
+                                std::optional<std::any> (*)(const std::any&), // next()
+                                const void* (*)(const std::any&)>;            // deref()
 
     /**
      * Constructor.
@@ -543,9 +543,9 @@ public:
      * Similar semantics as with `IterableType`, but with different type for
      * dereferenced value.
      */
-    using Accessor = std::tuple<std::function<std::optional<std::any>(const Value&)>,                 // begin()
-                                std::function<std::optional<std::any>(const std::any&)>,              // next()
-                                std::function<std::pair<const void*, const void*>(const std::any&)>>; // deref()
+    using Accessor = std::tuple<std::optional<std::any> (*)(const Value&),                 // begin()
+                                std::optional<std::any> (*)(const std::any&),              // next()
+                                std::pair<const void*, const void*> (*)(const std::any&)>; // deref()
 
     /**
      * Constructor.
@@ -586,7 +586,7 @@ public:
                 else
                     return std::nullopt;
             },
-            [](std::any i_) -> std::optional<std::any> { // next()
+            [](const std::any& i_) -> std::optional<std::any> { // next()
                 auto i = std::any_cast<iterator_pair<K, V>>(i_);
                 auto n = std::make_pair(++i.first, i.second);
                 if ( n.first != n.second )
@@ -594,7 +594,7 @@ public:
                 else
                     return std::nullopt;
             },
-            [](std::any i_) -> std::pair<const void*, const void*> { // deref()
+            [](const std::any& i_) -> std::pair<const void*, const void*> { // deref()
                 auto i = std::any_cast<iterator_pair<K, V>>(i_);
                 return std::make_pair(&(*i.first).first, &(*i.first).second);
             });
@@ -605,7 +605,7 @@ private:
 
     const TypeInfo* _ktype;
     const TypeInfo* _vtype;
-    const Accessor _accessor;
+    Accessor _accessor;
 };
 
 namespace map {
@@ -648,7 +648,7 @@ public:
      * Type of a function that, given the outer value, returns a pointer to
      * the contained element.
      */
-    using Accessor = std::function<std::pair<const void*, const void*>(const Value& v)>;
+    using Accessor = std::pair<const void*, const void*> (*)(const Value& v);
 
     /**
      * Constructor.
@@ -755,7 +755,7 @@ public:
                 else
                     return std::nullopt;
             },
-            [](std::any i_) -> std::optional<std::any> {
+            [](const std::any& i_) -> std::optional<std::any> {
                 auto i = std::any_cast<iterator_pair<T>>(i_);
                 auto n = std::make_pair(++i.first, i.second);
                 if ( n.first != n.second )
@@ -763,7 +763,7 @@ public:
                 else
                     return std::nullopt;
             },
-            [](std::any i_) -> const void* {
+            [](const std::any& i_) -> const void* {
                 auto i = std::any_cast<iterator_pair<T>>(i_);
                 return &*i.first;
             });
@@ -823,7 +823,7 @@ struct Field {
      * Type of a function that, given a field value, returns a pointer to the
      * contained value.
      */
-    using Accessor = std::function<const void*(const Value& v)>;
+    using Accessor = const void* (*)(const Value& v);
 
     /**
      * Constructor.
@@ -1008,7 +1008,7 @@ public:
      * Type of a function that, given a union value, returns the index of the
      * currently set field, with `npos` indicating no field being set.
      */
-    using Accessor = std::function<std::size_t(const Value& v)>;
+    using Accessor = std::size_t (*)(const Value& v);
     const size_t npos = std::variant_npos;
 
     /**
@@ -1080,7 +1080,7 @@ public:
                 else
                     return std::nullopt;
             },
-            [](std::any i_) -> std::optional<std::any> { // next()
+            [](const std::any& i_) -> std::optional<std::any> { // next()
                 auto i = std::any_cast<iterator_pair<T, Allocator>>(i_);
                 auto n = std::make_pair(++i.first, i.second);
                 if ( n.first != n.second )
@@ -1088,7 +1088,7 @@ public:
                 else
                     return std::nullopt;
             },
-            [](std::any i_) -> const void* { // deref()
+            [](const std::any& i_) -> const void* { // deref()
                 auto i = std::any_cast<iterator_pair<T, Allocator>>(i_);
                 return &*i.first;
             });

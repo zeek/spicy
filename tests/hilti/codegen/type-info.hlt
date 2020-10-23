@@ -149,7 +149,7 @@ public function tuple<strong_ref<TestOptionals>, TypeInfo> makeTestOptionals() {
 
 }
 
-@TEST-START-FILE type-info.cc
+# @TEST-START-FILE type-info.cc
 
 // Standalone test application that exercises the HILTI-side type-info API.
 
@@ -549,4 +549,4 @@ int main(int argc, char** argv) {
     hilti::rt::done();
 }
 
-@TEST-END-FILE
+# @TEST-END-FILE
