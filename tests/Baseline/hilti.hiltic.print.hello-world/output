@@ -1,4 +1,4 @@
-// Begin of Foo (from "/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.hello-world/hello-world.hlt")
+// Begin of Foo (from "/Users/robin/work/spicy/topic2/tests/.tmp/hilti.hiltic.print.hello-world/hello-world.hlt")
 // Compiled by HILTI version 0.4.0-branch
 
 #include <hilti/rt/compiler-setup.h>
@@ -13,14 +13,14 @@ namespace __hlt::Foo {
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
-      __location__("/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.hello-world/hello-world.hlt:9:1");
+      __location__("/Users/robin/work/spicy/topic2/tests/.tmp/hilti.hiltic.print.hello-world/hello-world.hlt:10:1");
     hilti::rt::print(std::string("Hello, world!"), hilti::rt::Bool(true));
 }
 
 extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, nullptr, nullptr}); }
 
 /* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.hello-world/hello-world.hlt","version":1}
+{"module":"Foo","namespace":"__hlt::Foo","path":"/Users/robin/work/spicy/topic2/tests/.tmp/hilti.hiltic.print.hello-world/hello-world.hlt","version":1}
 */
 
 // Begin of __linker__
@@ -30,9 +30,9 @@ extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule(
 
 // 
 // Linker code generated for modules:
-//   - Foo (/Users/robin/work/spicy/topic/tests/.tmp/hilti.hiltic.print.hello-world/hello-world.hlt)
+//   - Foo (/Users/robin/work/spicy/topic2/tests/.tmp/hilti.hiltic.print.hello-world/hello-world.hlt)
 
 #include <hilti/rt/libhilti.h>
 
-const char* __hlto_library_version __attribute__((weak)) = R"({"created":1597153675.217676,"debug":false,"hilti_version":400,"magic":"v1","optimize":false})";
+const char* __hlto_library_version __attribute__((weak)) = R"({"created":1603300890.537543,"debug":false,"hilti_version":400,"magic":"v1","optimize":false})";
 

@@ -49,17 +49,24 @@ C++ application.
 First, we'll use :ref:`spicyc` to generate a C++ parser from the Spicy
 source code::
 
-    # spicyc -cK my-http.spicy -o my-http.cc
+    # spicyc -c my-http.spicy -o my-http.cc
 
 Option ``-c`` (aka ``--output-c++``) tells ``spicyc`` that we want it
 to generate C++ code (rather than compiling everything down into
-executable code), and ``-K`` (aka ``--include-linker``) lets it
-include further "linker" code that implements some internal plumbing
-necessary for cross-module functionality.
+executable code).
 
-Next, ``spicyc`` can generate C++ prototypes for us that declare (1) a
-set of parsing functions for feeding in data, and (2) a ``struct``
-type providing access to the parsed fields::
+We also need `spicyc` to get generate some additional additional
+"linker" code implementing internal plumbing necessary for
+cross-module functionality. That's what ``-l`` (aka
+``--output-linker``) does:
+
+    # spicyc -l my-http.cc -o my-http-linker.cc
+
+We'll compile this linker code along with the ``my-http.cc``.
+
+Next, ``spicyc`` can also generate C++ prototypes for us that declare
+(1) a set of parsing functions for feeding in data, and (2) a
+``struct`` type providing access to the parsed fields::
 
     # spicyc -P my-http.spicy -o my-http.h
 
@@ -112,7 +119,7 @@ We can now use the standard C++ compiler to build all this into an
 executable, leveraging ``spicy-config`` to add the necessary flags
 for finding includes and libraries::
 
-    # clang++ -o my-http my-http-host.cc my-http.cc $(spicy-config --cxxflags --ldflags)
+    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
     # ./my-http $'GET index.html HTTP/1.0\n'
     GET, /index.html, 1.0
 
@@ -164,9 +171,10 @@ Finally, we compile it altogether:
 
 ::
 
-    # spicyc -cK my-http.spicy -o my-http.cc
+    # spicyc -c my-http.spicy -o my-http.cc
+    # spicyc -l my-http.cc -o my-http-linker.cc
     # spicyc -P  my-http.spicy -o my-http.h
-    # clang++ -o my-http my-http.cc my-http-callback.cc my-http-host.cc $(spicy-config --cxxflags --ldflags)
+    # clang++ -o my-http my-http.cc my-http-linker.cc my-http-callback.cc my-http-host.cc $(spicy-config --cxxflags --ldflags)
     # ./my-http $'GET index.html HTTP/1.0\n'
     In C++ land: GET, index.html, 1.0
     GET, index.html, 1.0
@@ -180,11 +188,10 @@ prototype that's included for the callback function in the output of
 A couple more notes on the compilation process for integrating
 Spicy-generated code into custom host applications:
 
-    - Above we used ``spicyc -cK`` to compile and link our Spicy code
-      at the same time. If you have more than one Spicy source file,
-      you'll need to split that up and first compile them all, then
-      link them together. For example, if we had ``A.spicy``,
-      ``B.spicy`` and ``C.spicy``, we'd do::
+    - Above we used ``spicyc -l`` to link our Spicy code from just a
+      single Spicy source file. If you have more than one source file,
+      you need to link them altogether in a single step. For example,
+      if we had ``A.spicy``, ``B.spicy`` and ``C.spicy``, we'd do::
 
         # spicyc -c A.spicy -o A.cc
         # spicyc -c B.spicy -o B.cc
@@ -225,7 +232,7 @@ prints out our one available parser:
 
 ::
 
-    # clang++ -o my-http my-http-host.cc my-http.cc $(spicy-config --cxxflags --ldflags)
+    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
     # ./my-http
     Available parsers:
 
@@ -239,7 +246,7 @@ instantiate it from C++, and then feed it data:
 
 ::
 
-    # clang++ -o my-http my-http-host.cc my-http.cc $(spicy-config --cxxflags --ldflags)
+    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
     # ./my-http $'GET index.html HTTP/1.0\n'
     GET, /index.html, 1.0
 
@@ -260,7 +267,7 @@ then gives us this output:
 
 ::
 
-    # clang++ -o my-http my-http-host.cc my-http.cc $(spicy-config --cxxflags --ldflags)
+    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
     # ./my-http $'GET index.html HTTP/1.0\n'
     GET, /index.html, 1.0
     method: GET

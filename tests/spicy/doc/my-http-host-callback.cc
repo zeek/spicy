@@ -1,6 +1,7 @@
 // @TEST-EXEC: spicyc -P my-http.spicy >my-http.h
-// @TEST-EXEC: spicyc -cK my-http.spicy >my-http.cc
-// @TEST-EXEC: $(spicy-config --cxx) -o my-http my-http.cc my-http-callback.cc %INPUT $(spicy-config --cxxflags --ldflags)
+// @TEST-EXEC: spicyc -c my-http.spicy >my-http.cc
+// @TEST-EXEC: spicyc -l my-http.cc >my-http-linker.cc
+// @TEST-EXEC: $(spicy-config --cxx) -o my-http my-http.cc my-http-linker.cc my-http-callback.cc %INPUT $(spicy-config --cxxflags --ldflags)
 // @TEST-EXEC: ./my-http "$(cat data)" | sort >output
 // @TEST-EXEC: btest-diff output
 //
