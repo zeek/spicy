@@ -113,7 +113,7 @@ void SpicyDriver::parseOptions(const std::string& prog, int argc, char** argv) {
 int main(int argc, char** argv) {
     SpicyDriver driver;
 
-    auto prog = std::filesystem::path(argv[0]).filename().native();
+    auto prog = hilti::rt::filesystem::path(argv[0]).filename().native();
     driver.parseOptions(prog, argc, argv);
 
     auto config = hilti::rt::configuration::get();
@@ -153,6 +153,6 @@ int main(int argc, char** argv) {
 
     } catch ( const std::exception& e ) {
         fatalError(prog, hilti::rt::fmt("terminating with uncaught exception of type %s: %s",
-                                            hilti::rt::demangle(typeid(e).name()), e.what()));
+                                        hilti::rt::demangle(typeid(e).name()), e.what()));
     }
 }
