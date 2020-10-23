@@ -379,7 +379,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
     if ( _driver_options.execute_code and ! _driver_options.output_path.empty() ) {
         if ( ! util::endsWith(_driver_options.output_path, ".hlto") )
-            return error("destination path for object code must have '.hlto' extension");
+            return error("output will be a precompiled object file and must have '.hlto' extension");
     }
 
     return Nothing();

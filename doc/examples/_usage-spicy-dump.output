@@ -15,6 +15,7 @@ Options:
   -J | --json                     Print JSON output.
   -O | --optimize                 Build optimized release version of generated code.
   -P | --enable-print             Show output of Spicy 'print' statements (default: off).
+  -Q | --include-offsets          Include stream offsets of parsed data in output.
   -R | --report-times             Report a break-down of compiler's execution time.
   -S | --skip-dependencies        Do not automatically compile dependencies during JIT.
   -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation (comma-separated; see 'help' for list).

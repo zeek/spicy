@@ -30,8 +30,8 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"version", no_argument, nullptr, 'v'},
                                               {nullptr, 0, nullptr, 0}};
 
-static void fatalError(const std::string& msg) {
-    fprintf(stderr, "[error] spicy-driver: %s\n", msg.c_str());
+static void fatalError(const std::string& prog, const std::string& msg) {
+    fprintf(stderr, "[error] %s: %s\n", prog.c_str(), msg.c_str());
     exit(1);
 }
 
@@ -39,8 +39,8 @@ class SpicyDriver : public spicy::rt::Driver {
 public:
     SpicyDriver() = default;
 
-    void parseOptions(int argc, char** argv);
-    void usage();
+    void parseOptions(const std::string& prog, int argc, char** argv);
+    void usage(const std::string& prog);
 
     bool opt_abort_on_exceptions = false;
     bool opt_input_is_batch = false;
@@ -52,9 +52,10 @@ public:
     std::string opt_parser;
 };
 
-void SpicyDriver::usage() {
+void SpicyDriver::usage(const std::string& prog) {
     std::cerr
-        << "Usage: cat <data> | spicy-driver [options]\n"
+        << "Usage: cat <data> | " << prog
+        << " [options]\n"
            "\n"
            "Options:\n"
            "\n"
@@ -72,7 +73,7 @@ void SpicyDriver::usage() {
            "\n";
 }
 
-void SpicyDriver::parseOptions(int argc, char** argv) {
+void SpicyDriver::parseOptions(const std::string& prog, int argc, char** argv) {
     while ( true ) {
         int c = getopt_long(argc, argv, "ABF:hdf:lp:i:vU", long_driver_options, nullptr);
 
@@ -99,20 +100,21 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'v': std::cerr << "spicy-driver v" << hilti::rt::version() << std::endl; exit(0);
             case 'U': opt_report_resource_usage = true; break;
 
-            case 'h': usage(); exit(0);
-            case '?': usage(); exit(1); // getopt reports error
-            default: usage(); fatalError(fmt("option %c not supported", c));
+            case 'h': usage(prog); exit(0);
+            case '?': usage(prog); exit(1); // getopt reports error
+            default: usage(prog); fatalError(prog, fmt("option %c not supported", c));
         }
     }
 
     if ( optind != argc )
-        usage();
+        usage(prog);
 }
 
 int main(int argc, char** argv) {
     SpicyDriver driver;
 
-    driver.parseOptions(argc, argv);
+    auto prog = std::filesystem::path(argv[0]).filename().native();
+    driver.parseOptions(prog, argc, argv);
 
     auto config = hilti::rt::configuration::get();
     config.abort_on_exceptions = driver.opt_abort_on_exceptions;
@@ -131,16 +133,16 @@ int main(int argc, char** argv) {
             std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
 
             if ( ! in.is_open() )
-                fatalError("cannot open input for reading");
+                fatalError(prog, "cannot open input for reading");
 
             if ( driver.opt_input_is_batch ) {
                 if ( auto x = driver.processPreBatchedInput(in); ! x )
-                    fatalError(x.error());
+                    fatalError(prog, x.error());
             }
             else {
                 auto parser = driver.lookupParser(driver.opt_parser);
                 if ( ! parser )
-                    fatalError(parser.error());
+                    fatalError(prog, parser.error());
 
                 driver.processInput(**parser, in, driver.opt_increment);
             }
@@ -150,7 +152,7 @@ int main(int argc, char** argv) {
         spicy::rt::done();
 
     } catch ( const std::exception& e ) {
-        fatalError(hilti::rt::fmt("terminating with uncaught exception of type %s: %s",
-                                  hilti::rt::demangle(typeid(e).name()), e.what()));
+        fatalError(prog, hilti::rt::fmt("terminating with uncaught exception of type %s: %s",
+                                            hilti::rt::demangle(typeid(e).name()), e.what()));
     }
 }

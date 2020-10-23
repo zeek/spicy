@@ -4,7 +4,7 @@ Usage: cat <data> | spicy-driver [options] <inputs> ...
 Options:
 
   -d | --debug                    Include debug instrumentation into generated code.
-  -i | --increment <i>            Feed data incrementenally in chunks of size n.
+  -i | --increment <i>            Feed data incrementally in chunks of size n.
   -f | --file <path>              Read input from <path> instead of stdin.
   -l | --list-parsers             List available parsers and exit.
   -p | --parser <name>            Use parser <name> to process input. Only neeeded if more than one parser is available.
@@ -12,11 +12,12 @@ Options:
   -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI exceptions.
   -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.
   -D | --compiler-debug <streams> Activate compile-time debugging output for given debug streams (comma-separated; 'help' for list).
-  -F | ---batch-file <path>       Read Spicy batch input from <path>; see docs for description of format.
+  -F | --batch-file <path>        Read Spicy batch input from <path>; see docs for description of format.
   -L | --library-path <path>      Add path to list of directories to search when importing modules.
   -O | --optimize                 Build optimized release version of generated code.
   -R | --report-times             Report a break-down of compiler's execution time.
   -S | --skip-dependencies        Do not automatically compile dependencies during JIT.
+  -U | --report-resource-usage    Print summary of runtime resource usage.
   -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation (comma-separated; see 'help' for list).
 
 Environment variables:

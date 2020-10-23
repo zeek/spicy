@@ -87,13 +87,14 @@ public:
     auto isTransient() const { return _is_anonynmous; }
 
     Type parseType() const;
+    Type originalType() const { return child<Type>(1); }
 
     Node& ctorNode() { return childs()[2]; }
     Node& vectorItemNode() { return childs()[2]; }
     Node& typeNode() { return childs()[1]; }
 
     bool operator==(const Field& other) const {
-        return _engine == other._engine && id() == other.id() && _originalType() == other._originalType() &&
+        return _engine == other._engine && id() == other.id() && originalType() == other.originalType() &&
                attributes() == other.attributes() && arguments() == other.arguments() && sinks() == other.sinks() &&
                condition() == other.condition() && hooks() == other.hooks();
     }
@@ -134,8 +135,6 @@ public:
     }
 
 private:
-    Type _originalType() const { return child<Type>(1); }
-
     std::optional<uint64_t> _index;
     bool _is_anonynmous;
     Engine _engine;

@@ -13,8 +13,8 @@ static struct option long_options[] = {{nullptr, 0, nullptr, 0}};
 
 static void usage(const char* prog) {
     std::cerr << hilti::rt::
-            fmt("%s: This is a default entry point provided by the HILTI runtime library that initializes any "
-                "available modules.\n",
+            fmt("%s: HILTI runtime environment - "
+                "executing only global code; no command-line argument handling or other processing\n",
                 prog);
 }
 

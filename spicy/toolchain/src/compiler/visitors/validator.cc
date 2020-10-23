@@ -371,6 +371,11 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         }
 
         else {
+            if ( f.originalType().isA<type::RegExp>() ) {
+                error("need regexp constant for parsing a field", p);
+                return;
+            }
+
             // Check that parsing type is supported.
             if ( auto rc = isParseableType(f.parseType(), f); ! rc ) {
                 error(rc.error(), p);

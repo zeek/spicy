@@ -6,11 +6,14 @@ Available options:
 
     --build                 Prints "debug" or "release", depending on the build configuration.
     --bindir                Prints the path to the directory where binaries are installed.
+    --cmake-path            Prints the path to Spicy-provided CMake modules
     --cxx                   Print the path to the C++ compiler used to build Spicy
     --cxxflags              Print flags for C++ compiler. (These are addition to any that HILTI needs.)
     --debug                 Output flags for working with debugging versions.
     --distbase              Print path of the Spicy source distribution.
+    --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
     --help                  Print this usage summary
+    --include-dirs          Prints the Spicy runtime's C++ include directories
     --jit-compiler          Prints the version of the JIT compiler if compiled with corresponding support.
     --jit-support           Prints 'yes' if compiled with JIT support, 'no' otherwise.
     --ldflags               Print flags for linker. (These are addition to any that HILTI needs.)
@@ -18,8 +21,11 @@ Available options:
     --prefix                Print path of installation (TODO: same as --distbase currently)
     --spicy-build           Print the path to the spicy-build script.
     --spicyc                Print the path to the spicyc binary.
+/toolchain/bin/spicy-config    --toolchain             Prints 'yes' if the Spicy toolchain was built, 'no' otherwise.
     --zeek                  Print the path to the Zeek executable
+    --zeek-include-dirs     Print the Spicy runtime's C++ include directories
     --zeek-prefix           Print the path to the Zeek installation prefix
     --zeek-plugin-path      Print the path to go into ZEEK_PLUGIN_PATH for enabling the Zeek Spicy plugin
+    --zeek-jit-support      Prints 'yes' if the Zeek plugin was compiled with JIT support, 'no' otherwise.
     --version               Print Spicy version.
 

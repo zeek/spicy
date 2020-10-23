@@ -1,1 +1,1 @@
-./a.out: This is a default entry point provided by the HILTI runtime library that initializes any available modules.
+./a.out: HILTI runtime environment - executing only global code; no command-line argument handling or other processing
