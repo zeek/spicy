@@ -38,6 +38,13 @@ assert X::A1;
 assert !X::Undef;
 assert x && X::A1 ;
 
+# has_label()
+global X no_label = X(42);
+hilti::print(no_label);
+assert x.has_label();
+assert ! y.has_label();
+assert ! no_label.has_label();
+
 # Passing back from function
 function vector<X> x1() {
     return [];

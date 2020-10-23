@@ -35,4 +35,17 @@ Instantiates an enum instance initialized from an integer value. The value does
     }
 END_CTOR
 
+BEGIN_METHOD(enum_, HasLabel)
+    auto signature() const {
+        return Signature{.self = type::constant(type::Enum(type::Wildcard())),
+                         .result = type::Bool(),
+                         .id = "has_label",
+                         .args = {},
+                         .doc = R"(
+Returns *true* if the value of *op1* corresponds to a known enum label (other
+than ``Undef``), as defined by it's type.
+)"};
+    }
+END_METHOD
+
 } // namespace hilti::operator_

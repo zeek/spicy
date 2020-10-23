@@ -1,3 +1,10 @@
+.. rubric:: Methods
+
+.. spicy:method:: enum_::has_label enum has_label False bool ()
+
+    Returns *true* if the value of *op1* corresponds to a known enum label
+    (other than ``Undef``), as defined by it's type.
+
 .. rubric:: Operators
 
 .. spicy:operator:: enum_::Call enum enum-type(uint)
