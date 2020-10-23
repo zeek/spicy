@@ -15,6 +15,8 @@ event ssh::test(x: string, y: string)
 module SSH;
 
 public type Banner = unit {
+    %port = 22/tcp;
+
     magic   : /SSH-/;
     version : /[^-]*/;
     dash    : /-/;
@@ -47,8 +49,7 @@ public function y()  : string {
 
 # @TEST-START-FILE ssh.evt
 protocol analyzer spicy::SSH over TCP:
-    parse with SSH::Banner,
-    port 22/tcp;
+    parse with SSH::Banner;
 
 import X;
 import Y from a.b.c;

@@ -267,6 +267,16 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
             ZEEK_DEBUG(hilti::rt::fmt("  Scheduling analyzer for port %s", port));
             ::zeek::analyzer_mgr->RegisterAnalyzerForPort(tag, transport_protocol(port), port.port());
         }
+
+        if ( p.parser_resp ) {
+            for ( auto port : p.parser_resp->ports ) {
+                if ( port.direction != spicy::rt::Direction::Both && port.direction != spicy::rt::Direction::Responder )
+                    continue;
+
+                ZEEK_DEBUG(hilti::rt::fmt("  Scheduling analyzer for port %s", port.port));
+                ::zeek::analyzer_mgr->RegisterAnalyzerForPort(tag, transport_protocol(port.port), port.port.port());
+            }
+        }
     }
 
     for ( auto& p : _file_analyzers_by_subtype ) {
@@ -292,7 +302,7 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         if ( ! tag )
             reporter::internalError(hilti::rt::fmt("cannot get analyzer tag for '%s'", p.name_analyzer));
 
-        for ( auto mt : p.mime_types ) {
+        auto register_analyzer_for_mime_type = [&](auto tag, const std::string& mt) {
             ZEEK_DEBUG(hilti::rt::fmt("  Scheduling analyzer for MIME type %s", mt));
 
             // MIME types are registered in scriptland, so we'll raise an
@@ -304,6 +314,14 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
             ::zeek::EventHandlerPtr handler =
                 ::spicy::zeek::compat::event_register_Register("spicy_analyzer_for_mime_type");
             ::spicy::zeek::compat::event_mgr_Enqueue(handler, vals);
+        };
+
+        for ( auto mt : p.mime_types )
+            register_analyzer_for_mime_type(tag, mt);
+
+        if ( p.parser ) {
+            for ( auto mt : p.parser->mime_types )
+                register_analyzer_for_mime_type(tag, mt);
         }
     }
 

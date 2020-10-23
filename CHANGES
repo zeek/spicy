@@ -1,3 +1,67 @@
+
+0.4.0-979 | 2020-10-23 14:11:27 +0000
+
+  * GH-95: Zeek plugin: Respect %port and %mime-type properties in
+    units. (Robin Sommer, Corelight)
+
+  * GH-513: Catch if an interval's number of seconds is out of range.
+    (Robin Sommer, Corelight)
+
+  * Clean up parsers' bounds checking of signed integer values. (Robin
+    Sommer, Corelight)
+
+  * GH-515: Change {time,interval}::nanoseconds() to return integers
+    instead of real. (Robin Sommer, Corelight)
+
+  * Fix bashism in test helper script. (Robin Sommer, Corelight)
+
+  * GH-490, GH-507: Provide error message when attempting to have
+    spicy-driver compile inputs when JIT is not available. (Robin
+    Sommer, Corelight)
+
+  * Reject regexp unit fields that aren't constant. (Robin Sommer, Corelight)
+
+  * GH-524: Fix spicy-driver usage message. (Robin Sommer, Corelight)
+
+  * GH-526: Show executable's name in usage/error messages of binaries
+    replying on the spicy-driver host code. (Robin Sommer, Corelight)
+
+  * GH-527: Updating usage output in docs. (Robin Sommer, Corelight)
+
+  * GH-528: Clarify spicyc's error message on needing HLTO filenames
+    with -o. (Robin Sommer, Corelight)
+
+  * GH-529: Clarifying libhilti's usage() fallback message. (Robin
+    Sommer, Corelight)
+
+  * GH-540: Fix bug in regular expression parsing. (Robin Sommer,
+    Corelight)
+
+  * GH-270: Fix for unit filters. (Robin Sommer, Corelight)
+
+  * GH-500: Remove --include-linker option from driver. The better way
+    to do all this is using "-l" to generate *just* the linker code,
+    then compile the two together as two compilation units. (Robin
+    Sommer, Corelight)
+
+  * GH-499: Provide has_label() method for enum values. Returns true
+    if the enum maps to a known type value other than Undef. (Robin
+    Sommer, Corelight)
+
+  * GH-556: Fix coercion of optional. (Robin Sommer, Corelight)
+
+  * GH-481: Correctly set locale in centos8 image. (Benjamin Bannier,
+    Corelight)
+
+  * Use working and stable link in host application documentation.
+    (Benjamin Bannier, Corelight)
+
+  * Fix documentation to reference latest support alpine version.
+    (Benjamin Bannier, Corelight)
+
+  * GH-546: Use plain function pointers for type info accessors.
+    (Benjamin Bannier, Corelight)
+
 0.4.0-946 | 2020-10-23 09:35:04 +0200
 
   * GH-522: Switch filesystem impl over to ghc::filesystem.

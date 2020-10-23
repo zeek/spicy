@@ -161,10 +161,12 @@ properties are supported:
         for port constants <type_port>` (e.g., ``80/tcp``). The ports'
         transport protocol must match that of the analyzer.
 
-        .. todo::
+        .. note::
 
-            The plugin should pick up any ``%port`` :ref:`unit_meta_data`,
-            but it doesn't yet (:issue:`95`).
+            The plugin will also honor any ``%port`` :ref:`meta data
+            property <unit_meta_data>` that the responder-side
+            ``SPICY_UNIT`` may define (as long as the attribute's
+            direction is not ``originator``).
 
     ``replaces ANALYZER_NAME``
         Disables an existing analyzer that Zeek already provides
@@ -217,6 +219,12 @@ File analyzers support the following properties:
         activate your analyzer when it sees a corresponding file on
         the network. The type is a specified in standard
         ``type/subtype`` notion, without quotes (e.g., ``image/gif``).
+
+        .. note::
+
+            The plugin will also honor any ``%mime-type`` :ref:`meta
+            data property <unit_meta_data>` that the ``SPICY_UNIT``
+            may define.
 
         .. note::
 
