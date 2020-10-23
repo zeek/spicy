@@ -66,4 +66,16 @@ TEST_CASE("value") {
         CHECK_EQ(p.value(), type_info::Value(ref.get(), &type_info, p));
     }
 }
+
+TEST_CASE("to_string") {
+    ParsedUnit p;
+
+    CHECK_EQ(to_string(p), "<parsed unit>");
+
+    std::stringstream x;
+    x << p;
+    CHECK_EQ(x.str(), "<parsed unit>");
+
+}
+
 TEST_SUITE_END();

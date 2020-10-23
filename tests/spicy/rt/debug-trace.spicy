@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | HILTI_DEBUG=hilti-trace spicy-driver -X trace -d %INPUT >output
+# @TEST-EXEC: btest-diff .stderr
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    on %init   { print self; }
+    f1: uint32 { print self.f1; }
+    f2: uint8  { print self.f2; }
+    on %done   { print self; }
+};
