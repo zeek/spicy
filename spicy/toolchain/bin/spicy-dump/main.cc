@@ -257,9 +257,9 @@ int main(int argc, char** argv) {
                 JSONPrinter(std::cout, driver.output_options).print(unit->value());
             else
                 TextPrinter(std::cout, driver.output_options).print(unit->value());
-
-            driver.finishRuntime();
         }
+
+        driver.finishRuntime();
 
     } catch ( const std::exception& e ) {
         std::cerr << hilti::util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
