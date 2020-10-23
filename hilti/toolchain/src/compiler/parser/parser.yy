@@ -61,6 +61,26 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
         }
 }
 
+
+/**
+ * Checks if an unsigned integer value can be represented as an int64_t.
+ *
+ * @param x value to check
+ * @param positive if false, check if ``-x`` can be represented instead of ``x`` itself.
+ * @param m location information to associate with error message.
+ * @return *x* on success, or zero on failure as a temporary stand-in; in the
+ * latter cases an error is reported, too
+ */
+static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& m) {
+    uint64_t max = (positive ? std::numeric_limits<int64_t>::max() : std::abs(std::numeric_limits<int64_t>::min()));
+
+    if ( x <= max )
+        return x;
+
+    hilti::logger().error("signed integer value out of tange", m.location());
+    return 0; // Return dummy value
+}
+
 #define __loc__ toMeta(yylhs.location)
 
 %}
@@ -744,18 +764,25 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
               | const_real                       { $$ = hilti::ctor::Real($1, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
-              | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger($2, 64, __loc__); }
-              | '-' CUINTEGER                    { if ( $2 > 0x8000000000000000 ) error(@$, "integer overflow on negation");
-                                                   $$ = hilti::ctor::SignedInteger(-$2, 64, __loc__); }
+              | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(check_int64_range($2, true, __loc__), 64, __loc__); }
+              | '-' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(-check_int64_range($2, false, __loc__), 64, __loc__); }
               | CNULL                            { $$ = hilti::ctor::Null(__loc__); }
 
               | CADDRESS                         { $$ = hilti::ctor::Address(hilti::ctor::Address::Value($1), __loc__); }
               | CADDRESS '/' CUINTEGER           { $$ = hilti::ctor::Network(hilti::ctor::Network::Value($1, $3), __loc__); }
               | CPORT                            { $$ = hilti::ctor::Port(hilti::ctor::Port::Value($1), __loc__); }
-              | INTERVAL '(' const_real ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
-              | INTERVAL '(' const_sint ')'      { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value(hilti::rt::integer::safe<int64_t>($3), hilti::rt::Interval::NanosecondTag()), __loc__); }
-              | TIME '(' const_real ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
-              | TIME '(' const_uint ')'          { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3 * 1000000000, hilti::rt::Time::NanosecondTag()), __loc__); }
+              | INTERVAL '(' const_real ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
+                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
+                                                 }
+              | INTERVAL '(' const_sint ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
+                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
+                                                 }
+              | TIME '(' const_real ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
+                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
+                                                 }
+              | TIME '(' const_uint ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
+                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
+                                                 }
               | STREAM '(' CBYTES ')'            { $$ = hilti::ctor::Stream(std::move($3), __loc__); }
 
               | ERROR '(' CSTRING ')'            { $$ = hilti::ctor::Error(std::move($3), __loc__); }
@@ -766,9 +793,9 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | UINT '<' CUINTEGER '>' '(' CUINTEGER ')'
                                                  { $$ = hilti::ctor::UnsignedInteger($6, $3, __loc__); }
               | INT '<' CUINTEGER '>' '(' CUINTEGER ')'
-                                                 { $$ = hilti::ctor::SignedInteger($6, $3, __loc__); }
+                                                 { $$ = hilti::ctor::SignedInteger(check_int64_range($6, true, __loc__), $3, __loc__); }
               | INT '<' CUINTEGER '>' '(' '-' CUINTEGER ')'
-                                                 { $$ = hilti::ctor::SignedInteger(-$7, $3, __loc__); }
+                                                 { $$ = hilti::ctor::SignedInteger(-check_int64_range($7, false, __loc__), $3, __loc__); }
 
               | list                             { $$ = std::move($1); }
               | map                              { $$ = std::move($1); }
@@ -782,11 +809,9 @@ const_real    : CUREAL                           { $$ = $1; }
               | '+' CUREAL                       { $$ = $2; }
               | '-' CUREAL                       { $$ = -$2; }
 
-const_sint    : CUINTEGER                        { $$ = $1; }
-              | '+' CUINTEGER                    { $$ = $2; }
-              | '-' CUINTEGER                    { if ( $2 > 0x8000000000000000 ) error(@$, "integer overflow on negation");
-                                                   $$ = -$2;
-                                                 }
+const_sint    : CUINTEGER                        { $$ = check_int64_range($1, true, __loc__); }
+              | '+' CUINTEGER                    { $$ = check_int64_range($2, true, __loc__); }
+              | '-' CUINTEGER                    { $$ = -check_int64_range($2, false, __loc__); }
 
 const_uint    : CUINTEGER                        { $$ = $1; }
               | '+' CUINTEGER                    { $$ = $2; }

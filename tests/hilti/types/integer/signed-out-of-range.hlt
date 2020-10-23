@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+### Failing Coercions ####
+
+module Foo {
+
+import hilti;
+
+global int<64> i64_lo  = -0x8000000000000001;
+
+}

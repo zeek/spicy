@@ -36,14 +36,15 @@ public:
      * Constructs a time from a double value.
      *
      * @param secs seconds since the UNIX epoch.
+     * @throws OutOfRange if *secs* cannot be represented with the internal resolution
      */
     explicit Time(double secs, SecondTag /*unused*/)
         : _nsecs([&]() {
               auto x = secs * 1'000'000'000;
 
-              auto limits = std::numeric_limits<uint64_t>();
+              constexpr auto limits = std::numeric_limits<uint64_t>();
               if ( x < static_cast<double>(limits.min()) || static_cast<double>(limits.max()) < x )
-                  throw RuntimeError(fmt("Seconds %d cannot be represented as Time", secs));
+                  throw OutOfRange("value cannot be represented as a time");
 
               return integer::safe<uint64_t>(x);
           }()) {}

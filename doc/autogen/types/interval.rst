@@ -1,6 +1,6 @@
 .. rubric:: Methods
 
-.. spicy:method:: interval::nanoseconds interval nanoseconds False real ()
+.. spicy:method:: interval::nanoseconds interval nanoseconds False int<64> ()
 
     Returns the interval as an integer value representing nanoseconds.
 

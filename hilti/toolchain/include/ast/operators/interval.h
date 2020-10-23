@@ -38,7 +38,7 @@ END_METHOD
 
 BEGIN_METHOD(interval, Nanoseconds)
     auto signature() const {
-        return Signature{.self = type::Interval(), .result = type::Real(), .id = "nanoseconds", .args = {}, .doc = R"(
+        return Signature{.self = type::Interval(), .result = type::SignedInteger(64), .id = "nanoseconds", .args = {}, .doc = R"(
 Returns the interval as an integer value representing nanoseconds.
 )"};
     }

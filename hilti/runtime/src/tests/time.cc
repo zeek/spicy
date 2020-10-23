@@ -89,9 +89,9 @@ TEST_CASE("construct") {
 
     SUBCASE("from seconds") {
         CHECK_EQ(Time(42, Time::SecondTag{}).seconds(), 42);
-        CHECK_THROWS_WITH_AS(Time(-1, Time::SecondTag{}).seconds(), "Seconds -1 cannot be represented as Time",
+        CHECK_THROWS_WITH_AS(Time(-1, Time::SecondTag{}).seconds(), "value cannot be represented as a time",
                              const RuntimeError&);
-        CHECK_THROWS_WITH_AS(Time(1e42, Time::SecondTag{}).seconds(), "Seconds 1e+42 cannot be represented as Time",
+        CHECK_THROWS_WITH_AS(Time(1e42, Time::SecondTag{}).seconds(), "value cannot be represented as a time",
                              const RuntimeError&);
     }
 }

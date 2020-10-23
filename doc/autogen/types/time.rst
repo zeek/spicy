@@ -1,6 +1,6 @@
 .. rubric:: Methods
 
-.. spicy:method:: time::nanoseconds time nanoseconds False real ()
+.. spicy:method:: time::nanoseconds time nanoseconds False uint<64> ()
 
     Returns the time as an integer value representing nanoseconds since
     the UNIX epoch.
@@ -12,13 +12,13 @@
 
 .. rubric:: Operators
 
+.. spicy:operator:: time::Difference interval t:time <sp> op:- <sp> t:time
+
+    Returns the difference of the times.
+
 .. spicy:operator:: time::Difference time t:time <sp> op:- <sp> t:interval
 
     Subtracts the interval from the time.
-
-.. spicy:operator:: time::Difference time t:time <sp> op:- <sp> t:time
-
-    Returns the difference of the times.
 
 .. spicy:operator:: time::Equal bool t:time <sp> op:== <sp> t:time
 
