@@ -1,0 +1,18 @@
+# @TEST-EXEC: printf 'str\n' | spicy-driver -p Test::LottaFoo %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+type Filter = unit {
+    %filter;
+    : bytes &eod &chunked { self.forward($$.upper()); }
+};
+
+public type LottaFoo = unit {
+    : Foo[];
+};
+
+public type Foo = unit {
+    on %init { self.connect_filter(new Filter); }
+    : bytes &size=1 { print $$; }
+};
