@@ -426,6 +426,7 @@ void Driver::_addUnit(Unit unit) {
 
     hookNewASTPreCompilation(unit.id(), unit.path(), unit.module());
     _pending_units.emplace_back(std::move(unit));
+    _need_jit = true;
 }
 
 Result<void*> Driver::_symbol(const std::string& symbol) {
@@ -482,6 +483,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
     else if ( path.extension() == ".cc" || path.extension() == ".cxx" ) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding external C++ file %s", path));
         _external_cxxs.push_back(path);
+        _need_jit = true;
         return Nothing();
     }
 

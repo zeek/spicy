@@ -226,6 +226,11 @@ int main(int argc, char** argv) {
 
     driver.parseOptions(argc, argv);
 
+#ifndef HILTI_HAVE_JIT
+    if ( driver.needJIT() )
+        fatalError("no JIT support available, cannot compile input file");
+#endif
+
     if ( auto x = driver.compile(); ! x )
         // The main error messages have been reported already at this point.
         // The returned error will have some more info about which pass

@@ -2,4 +2,4 @@
 #
 # Returns success if we have Zeek's Spicy plugin (and Zeek itself) available for testing
 
-test $(spicy-config --jit-support) == "yes"
+test $(spicy-config --jit-support) = "yes"
