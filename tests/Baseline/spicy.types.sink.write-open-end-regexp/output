@@ -1,0 +1,4 @@
+A, [$length=4, $data=b"ABC\x0a", $b=<sink>]
+B, [$x=b"ABC"]
+A, [$length=4, $data=b"ABCD", $b=<sink>]
+B, [$x=b"ABCD"]

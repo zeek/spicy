@@ -118,7 +118,7 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
         if ( is_final && _pimpl->_acc <= 0 )
             _pimpl->_acc = jrx_current_accept(&_pimpl->_ms);
 
-        return std::make_pair(is_final ? _pimpl->_acc : -1, 0);
+        return std::make_pair(is_final ? _pimpl->_acc : -1, data.offset());
     }
 
     jrx_accept_id rc = 0;
@@ -164,7 +164,7 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
         // At least one could match with more data.
         _pimpl->_acc = -1;
 
-    return std::make_pair(_pimpl->_acc, 0);
+    return std::make_pair(_pimpl->_acc, data.offset());
 }
 
 RegExp::RegExp(std::string pattern, regexp::Flags flags) : _flags(flags) {
