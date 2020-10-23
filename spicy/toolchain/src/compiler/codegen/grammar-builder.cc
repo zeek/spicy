@@ -3,9 +3,9 @@
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/base/cache.h>
-#include <hilti/base/uniquer.h>
 
 #include <spicy/ast/detail/visitor.h>
+#include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/grammar-builder.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
 #include <spicy/compiler/detail/codegen/productions/all.h>
@@ -19,14 +19,14 @@ using hilti::util::fmt;
 namespace {
 
 struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
-    Visitor(codegen::GrammarBuilder* gb, Grammar* g) : gb(gb), grammar(g) {}
+    Visitor(CodeGen* cg, codegen::GrammarBuilder* gb, Grammar* g) : cg(cg), gb(gb), grammar(g) {}
+    CodeGen* cg;
     codegen::GrammarBuilder* gb;
     Grammar* grammar;
 
     using CurrentField = std::pair<const spicy::type::unit::item::Field&, std::reference_wrapper<hilti::Node>&>;
     std::vector<CurrentField> fields;
     hilti::util::Cache<std::string, Production> cache;
-    hilti::util::Uniquer<std::string> uniquer;
 
     auto currentField() { return fields.back(); }
 
@@ -50,7 +50,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
     }
 
     Production productionForCtor(const Ctor& c, const ID& id) {
-        return production::Ctor(uniquer.get(id), c, c.meta().location());
+        return production::Ctor(cg->uniquer()->get(id), c, c.meta().location());
     }
 
     Production productionForType(const Type& t, const ID& id) {
@@ -58,13 +58,13 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
             return std::move(*prod);
 
         // Fallback: Just a plain type.
-        return production::Variable(uniquer.get(id), t, t.meta().location());
+        return production::Variable(cg->uniquer()->get(id), t, t.meta().location());
     }
 
     Production productionForLoop(Production sub, position_t p) {
         const auto& loc = p.node.location();
         auto& field = currentField().first;
-        auto id = uniquer.get(field.id());
+        auto id = cg->uniquer()->get(field.id());
         auto count = AttributeSet::find(field.attributes(), "&count");
         auto size = AttributeSet::find(field.attributes(), "&size");
         auto parse_at = AttributeSet::find(field.attributes(), "&parse-at");
@@ -157,7 +157,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
             return production::Sequence(label, std::move(prods), c.meta().location());
         };
 
-        auto switch_sym = uniquer.get("switch");
+        auto switch_sym = cg->uniquer()->get("switch");
 
         if ( n.expression() ) {
             // Switch based on value of expression.
@@ -224,7 +224,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         auto prod = cache.getOrCreate(
             *n.typeID(), []() { return production::Unresolved(); },
             [&](auto& unresolved) {
-                auto id = uniquer.get(*n.typeID());
+                auto id = cg->uniquer()->get(*n.typeID());
 
                 std::vector<Production> items;
 
@@ -279,11 +279,11 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
 
 } // anonymous namespace
 
-Result<Nothing> GrammarBuilder::run(const type::Unit& unit, Node* node) {
+Result<Nothing> GrammarBuilder::run(const type::Unit& unit, Node* node, CodeGen* cg) {
     assert(unit.typeID());
     auto id = *unit.typeID();
     Grammar g(id, node->location());
-    auto v = Visitor(this, &g);
+    auto v = Visitor(cg, this, &g);
 
     auto root = v.dispatch(node);
     assert(root);

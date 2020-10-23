@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -10,6 +11,7 @@
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/property.h>
 #include <hilti/ast/node.h>
+#include <hilti/base/uniquer.h>
 #include <hilti/compiler/unit.h>
 
 #include <spicy/ast/types/unit-items/field.h>
@@ -52,6 +54,7 @@ public:
     NodeRef preserveNode(Expression x);
     NodeRef preserveNode(Statement x);
     NodeRef preserveNode(Type x);
+    auto uniquer() { return &_uniquer; }
 
     const auto& moduleProperties() const { return _properties; }
     void recordModuleProperty(hilti::declaration::Property p) { _properties.emplace_back(std::move(p)); }
@@ -75,6 +78,7 @@ private:
     hilti::Node* _root = nullptr;
     std::vector<Declaration> _new_decls;
     std::unordered_set<ID> _decls_added;
+    hilti::util::Uniquer<std::string> _uniquer;
 };
 
 } // namespace spicy::detail

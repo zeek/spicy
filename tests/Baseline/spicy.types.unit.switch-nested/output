@@ -1,0 +1,3 @@
+[$a=(not set), $b=[$val=b"abc"]]
+[$a=[$x=[$val=b"xyz"], $y=(not set)], $b=(not set)]
+[$a=[$x=(not set), $y=[$val=b"XYZ"]], $b=(not set)]

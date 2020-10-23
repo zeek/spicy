@@ -30,7 +30,7 @@ public:
      * Generates the grammar for a unit type. The grammar will afterwards be
      * available through `grammar()`.
      */
-    Result<Nothing> run(const type::Unit& unit, Node* node);
+    Result<Nothing> run(const type::Unit& unit, Node* node, CodeGen* cg);
 
     /**
      * Returns the grammar for a unit type. The type must have been computed
