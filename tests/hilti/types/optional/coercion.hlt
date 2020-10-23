@@ -7,11 +7,17 @@ module Foo {
 
 import hilti;
 
-function tuple<optional<tuple<y: string>>> bar() {
+function tuple<optional<tuple<y: string>>> foo() {
         local tuple<optional<tuple<string>>> x;
         return x;
 }
 
+function tuple<optional<tuple<y: string>>> bar() {
+        local tuple<optional<tuple<string>>> x = (("x", ), );
+        return x;
+}
+
+hilti::print(foo());
 hilti::print(bar());
 
 }
