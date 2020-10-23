@@ -73,9 +73,9 @@ hilti::rt::ResourceUsage hilti::rt::resource_usage() {
     return stats;
 }
 
-hilti::rt::Result<std::filesystem::path> hilti::rt::createTemporaryFile(const std::string& prefix) {
+hilti::rt::Result<hilti::rt::filesystem::path> hilti::rt::createTemporaryFile(const std::string& prefix) {
     std::error_code ec;
-    auto tmp_dir = std::filesystem::temp_directory_path(ec);
+    auto tmp_dir = hilti::rt::filesystem::temp_directory_path(ec);
 
     if ( ec )
         return hilti::rt::result::Error(fmt("could not create temporary file: %s", ec.message()));
@@ -88,18 +88,18 @@ hilti::rt::Result<std::filesystem::path> hilti::rt::createTemporaryFile(const st
 
     ::close(handle);
 
-    return std::filesystem::path(template_);
+    return hilti::rt::filesystem::path(template_);
 }
 
-std::filesystem::path hilti::rt::normalizePath(const std::filesystem::path& p) {
+hilti::rt::filesystem::path hilti::rt::normalizePath(const hilti::rt::filesystem::path& p) {
     if ( p.empty() )
         return "";
 
-    if ( ! std::filesystem::exists(p) )
+    if ( ! hilti::rt::filesystem::exists(p) )
         return p;
 
     char buffer[PATH_MAX];
-    return realpath(std::filesystem::absolute(p).native().c_str(), buffer);
+    return realpath(hilti::rt::filesystem::absolute(p).native().c_str(), buffer);
 }
 
 std::vector<std::string_view> hilti::rt::split(std::string_view s, std::string_view delim) {

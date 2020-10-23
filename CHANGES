@@ -1,3 +1,23 @@
+0.4.0-946 | 2020-10-23 09:35:04 +0200
+
+  * GH-522: Switch filesystem impl over to ghc::filesystem.
+
+    Closes #522. (Benjamin Bannier, Corelight)
+
+  * Fix use of uninitialized value when numbering unit fields.
+
+    When were using a non-const member function to call a delegated base
+    class constructor. Since at the point where the member function was
+    called the derived class was not fully constructed, the members it
+    accessed and mutated were uninitialized, we were reading from an unset
+    variable, attempting to set it, and then overwrote its values when the
+    member initializer was triggered (after the base class was constructed).
+    This lead to unit field indices set to large value which were not usable
+    down the line.
+
+    We now delegate maintaining the field counter to a mixin class which can
+    be constructed before the base class needing its state. (Benjamin Bannier, Corelight)
+
 0.4.0-939 | 2020-10-21 14:35:30 +0200
 
   * GH-521: Do not create copies when loading HLTO libraries. (Benjamin Bannier, Corelight)

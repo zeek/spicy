@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
+
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
 #include <hilti/base/timing.h>
@@ -55,9 +57,9 @@ struct Options {
     bool report_resource_usage = false; /**< print summary of runtime resource usage at termination */
     bool report_times = false;          /**< Report break-down of driver's execution time. */
     bool dump_code = false;             /**< Record all final HILTI and C++ code to disk for debugging.  */
-    std::vector<std::filesystem::path>
+    std::vector<hilti::rt::filesystem::path>
         inputs; /**< files to compile; these will be automatically pulled in by ``Driver::run()`` */
-    std::filesystem::path output_path; /**< file to store output in (default if empty is printing to stdout) */
+    hilti::rt::filesystem::path output_path; /**< file to store output in (default if empty is printing to stdout) */
     std::unique_ptr<Logger>
         logger; /**< `Logger` instances to use for diagnostics; set to a new logger by default by constructor */
 
@@ -119,7 +121,7 @@ public:
      * @param path path associated with the module, if any
      * @return set if succesfull; otherwise the result provides an error message
      */
-    Result<Nothing> addInput(hilti::Module&& m, const std::filesystem::path& path = "");
+    Result<Nothing> addInput(hilti::Module&& m, const hilti::rt::filesystem::path& path = "");
 
     /**
      * Schedules a HILTI source file for compilation. The file will be parsed
@@ -133,7 +135,7 @@ public:
      * @param input source of HILTI module to compile
      * @return set if succesfull; otherwise the result provides an error message
      */
-    Result<Nothing> addInput(const std::filesystem::path& path);
+    Result<Nothing> addInput(const hilti::rt::filesystem::path& path);
 
     /** Returns true if at least one input file has been added. */
     bool hasInputs() const {
@@ -273,7 +275,7 @@ protected:
      * @param p file to associate with the error, emoty for none
      * @return error with an appropiately set message
      */
-    result::Error error(std::string_view msg, const std::filesystem::path& p = "");
+    result::Error error(std::string_view msg, const hilti::rt::filesystem::path& p = "");
 
     /**
      * Helper function to augment an `result::Error` with a message that
@@ -283,7 +285,7 @@ protected:
      * @param p file to associate with the error, emoty for none
      * @return error with an appropiately set message
      */
-    result::Error augmentError(const result::Error& err, const std::filesystem::path& p = "");
+    result::Error augmentError(const result::Error& err, const hilti::rt::filesystem::path& p = "");
 
     /**
      * Helper function to open a file for writing.
@@ -293,7 +295,7 @@ protected:
      * @param append true to append to existing file
      * @return set if succesful, or an appropiate error result
      */
-    Result<std::ofstream> openOutput(const std::filesystem::path& p, bool binary = false, bool append = false);
+    Result<std::ofstream> openOutput(const hilti::rt::filesystem::path& p, bool binary = false, bool append = false);
 
     /**
      * Helper function to open a file for reading.
@@ -302,7 +304,7 @@ protected:
      * @param p input file
      * @return set if succesful, or an appropiate error result
      */
-    Result<Nothing> openInput(std::ifstream& in, const std::filesystem::path& p);
+    Result<Nothing> openInput(std::ifstream& in, const hilti::rt::filesystem::path& p);
 
     /**
      * Helper function to write data into an output file.
@@ -311,7 +313,7 @@ protected:
      * @param p output file
      * @return set if succesful, or an appropiate error result
      */
-    Result<Nothing> writeOutput(std::ifstream& in, const std::filesystem::path& p);
+    Result<Nothing> writeOutput(std::ifstream& in, const hilti::rt::filesystem::path& p);
 
     /**
      * Helper function to read data from an input file.
@@ -319,7 +321,7 @@ protected:
      * @param p input file
      * @return string stream with the file's data, or an appropiate error result
      */
-    Result<std::stringstream> readInput(const std::filesystem::path& p);
+    Result<std::stringstream> readInput(const hilti::rt::filesystem::path& p);
 
     /**
      * Copies an input stream into a temporary file on disk
@@ -329,8 +331,8 @@ protected:
      * @param extension extension for the temporary file's name
      * @return the path to the temporary file, or an appropiate error result
      */
-    Result<std::filesystem::path> writeToTemp(std::ifstream& in, const std::string& name_hint,
-                                              const std::string& extension = "tmp");
+    Result<hilti::rt::filesystem::path> writeToTemp(std::ifstream& in, const std::string& name_hint,
+                                                    const std::string& extension = "tmp");
 
     /** Save a unit's final HILTI and C++ code to disk for debugging. */
     void dumpUnit(const Unit& unit);
@@ -361,20 +363,20 @@ protected:
      * Hook for derived classes to execute custom code when a new source path
      * is being added as an input file.
      */
-    virtual void hookAddInput(const std::filesystem::path& path) {}
+    virtual void hookAddInput(const hilti::rt::filesystem::path& path) {}
 
     /**
      * Hook for derived classes to execute custom code when a new AST module
      * is being added as an input file.
      */
-    virtual void hookAddInput(const hilti::Module& m, const std::filesystem::path& path) {}
+    virtual void hookAddInput(const hilti::Module& m, const hilti::rt::filesystem::path& path) {}
 
     /**
      * Hook for derived classes to execute custom code when an HILTI AST has
      * been loaded. This hook will run before the AST has been compiled (and
      * hence it'll be fully unprocessed).
      */
-    virtual void hookNewASTPreCompilation(const ID& name, const std::optional<std::filesystem::path>& path,
+    virtual void hookNewASTPreCompilation(const ID& name, const std::optional<hilti::rt::filesystem::path>& path,
                                           const Node& root) {}
 
     /**
@@ -382,7 +384,7 @@ protected:
      * been finalized. This hook will run after the AST has been compiled
      * (and hence it'll be fully processed).
      */
-    virtual void hookNewASTPostCompilation(const ID& name, const std::optional<std::filesystem::path>& path,
+    virtual void hookNewASTPostCompilation(const ID& name, const std::optional<hilti::rt::filesystem::path>& path,
                                            const Node& root) {}
 
     /**
@@ -432,14 +434,14 @@ private:
     std::vector<Unit> _pending_units;
 
     std::set<hilti::ID> _processed_units;
-    std::set<std::filesystem::path> _processed_paths;
+    std::set<hilti::rt::filesystem::path> _processed_paths;
 
     std::shared_ptr<Context> _ctx;    // driver's compiler context
     std::unique_ptr<hilti::JIT> _jit; // driver's JIT instance
 
     std::vector<CxxCode> _generated_cxxs;
     std::unordered_map<std::string, Library> _libraries;
-    std::vector<std::filesystem::path> _external_cxxs;
+    std::vector<hilti::rt::filesystem::path> _external_cxxs;
     std::vector<linker::MetaData> _mds;
     std::vector<Unit> _hlts;
 

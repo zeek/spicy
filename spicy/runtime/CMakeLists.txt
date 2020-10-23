@@ -25,7 +25,7 @@ set(SOURCES
 foreach ( lib spicy-rt spicy-rt-debug )
     add_library(${lib}-objects OBJECT ${SOURCES})
     target_compile_options(${lib}-objects PRIVATE "-fPIC")
-    target_link_libraries(${lib}-objects PRIVATE std::filesystem Threads::Threads ${CMAKE_DL_LIBS})
+    target_link_libraries(${lib}-objects PRIVATE Threads::Threads ${CMAKE_DL_LIBS})
     target_link_libraries(${lib}-objects PUBLIC ZLIB::ZLIB)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)

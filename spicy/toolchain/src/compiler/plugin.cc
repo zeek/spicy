@@ -21,7 +21,7 @@ static hilti::Plugin spicy_plugin() {
         .library_paths =
             [](const std::shared_ptr<hilti::Context>& /* ctx */) { return spicy::configuration().spicy_library_paths; },
 
-        .parse = [](std::istream& in, const std::filesystem::path& path) { return parseSource(in, path); },
+        .parse = [](std::istream& in, const hilti::rt::filesystem::path& path) { return parseSource(in, path); },
 
         .coerce_ctor = [](Ctor c, const Type& dst,
                           bitmask<hilti::CoercionStyle> style) { return detail::coerceCtor(std::move(c), dst, style); },
@@ -35,7 +35,7 @@ static hilti::Plugin spicy_plugin() {
         .resolve_ids = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* n,
                           hilti::Unit* u) { return resolveIDs(n, u); },
 
-        .resolve_operators = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* /* n */, hilti::Unit *
+        .resolve_operators = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* /* n */, hilti::Unit*
                                 /* u */) -> bool { return false; },
 
         .apply_coercions = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* n,

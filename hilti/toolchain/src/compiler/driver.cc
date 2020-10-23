@@ -115,7 +115,7 @@ void Driver::usage() {
            "\n";
 }
 
-result::Error Driver::error(std::string_view msg, const std::filesystem::path& p) {
+result::Error Driver::error(std::string_view msg, const hilti::rt::filesystem::path& p) {
     auto x = fmt("%s: %s", _name, msg);
 
     if ( ! p.empty() )
@@ -124,11 +124,11 @@ result::Error Driver::error(std::string_view msg, const std::filesystem::path& p
     return result::Error(std::move(x));
 }
 
-result::Error Driver::augmentError(const result::Error& err, const std::filesystem::path& p) {
+result::Error Driver::augmentError(const result::Error& err, const hilti::rt::filesystem::path& p) {
     return error(err.description(), p);
 }
 
-Result<std::ofstream> Driver::openOutput(const std::filesystem::path& p, bool binary, bool append) {
+Result<std::ofstream> Driver::openOutput(const hilti::rt::filesystem::path& p, bool binary, bool append) {
     auto mode = std::ios::out;
 
     if ( append || p == "/dev/stdout" || p == "/dev/stderr" )
@@ -147,7 +147,7 @@ Result<std::ofstream> Driver::openOutput(const std::filesystem::path& p, bool bi
     return {std::move(out)};
 }
 
-Result<Nothing> Driver::openInput(std::ifstream& in, const std::filesystem::path& p) {
+Result<Nothing> Driver::openInput(std::ifstream& in, const hilti::rt::filesystem::path& p) {
     in.open(p);
 
     if ( ! in.is_open() )
@@ -156,7 +156,7 @@ Result<Nothing> Driver::openInput(std::ifstream& in, const std::filesystem::path
     return Nothing();
 }
 
-Result<std::stringstream> Driver::readInput(const std::filesystem::path& p) {
+Result<std::stringstream> Driver::readInput(const hilti::rt::filesystem::path& p) {
     std::ifstream in;
     if ( auto x = openInput(in, p); ! x )
         return x.error();
@@ -169,7 +169,7 @@ Result<std::stringstream> Driver::readInput(const std::filesystem::path& p) {
     return std::move(out);
 }
 
-Result<Nothing> Driver::writeOutput(std::ifstream& in, const std::filesystem::path& p) {
+Result<Nothing> Driver::writeOutput(std::ifstream& in, const hilti::rt::filesystem::path& p) {
     auto out = openOutput(p);
 
     if ( ! out )
@@ -181,8 +181,8 @@ Result<Nothing> Driver::writeOutput(std::ifstream& in, const std::filesystem::pa
     return Nothing();
 }
 
-Result<std::filesystem::path> Driver::writeToTemp(std::ifstream& in, const std::string& name_hint,
-                                                  const std::string& extension) {
+Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const std::string& name_hint,
+                                                        const std::string& extension) {
     auto template_ = fmt("%s.XXXXXX.%s", name_hint, extension);
     char name[template_.size() + 1];
     strcpy(name, template_.c_str()); // NOLINT
@@ -199,7 +199,7 @@ Result<std::filesystem::path> Driver::writeToTemp(std::ifstream& in, const std::
         return error("Error writing to file", std::string(name));
 
     _tmp_files.insert(name);
-    return std::filesystem::path(name);
+    return hilti::rt::filesystem::path(name);
 }
 
 void Driver::dumpUnit(const Unit& unit) {
@@ -450,7 +450,7 @@ Result<void*> Driver::_symbol(const std::string& symbol) {
     return sym;
 }
 
-Result<Nothing> Driver::addInput(const std::filesystem::path& path) {
+Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
     if ( path.empty() || _processed_paths.find(path) != _processed_paths.end() )
         return Nothing();
 
@@ -508,7 +508,7 @@ Result<Nothing> Driver::addInput(const std::filesystem::path& path) {
     return error("unsupported file type", path);
 }
 
-Result<Nothing> Driver::addInput(hilti::Module&& module, const std::filesystem::path& path) {
+Result<Nothing> Driver::addInput(hilti::Module&& module, const hilti::rt::filesystem::path& path) {
     if ( _processed_units.find(module.id()) != _processed_units.end() )
         return Nothing();
 
@@ -770,7 +770,7 @@ Result<Nothing> Driver::outputUnits() {
                     assert(cxx->id().size());
 
                     if ( util::endsWith(_driver_options.output_cxx_prefix, "/") ) {
-                        std::filesystem::create_directory(_driver_options.output_cxx_prefix);
+                        hilti::rt::filesystem::create_directory(_driver_options.output_cxx_prefix);
                         cxx_path = fmt("%s%s.cc", _driver_options.output_cxx_prefix, cxx->id());
                     }
                     else

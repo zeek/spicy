@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt::detail {
@@ -15,7 +16,7 @@ namespace hilti::rt::detail {
 /** Logger for runtime debug messages. */
 class DebugLogger {
 public:
-    DebugLogger(std::filesystem::path output);
+    DebugLogger(hilti::rt::filesystem::path output);
 
     void print(const std::string& stream, const std::string& msg);
     void enable(const std::string& streams);
@@ -37,7 +38,7 @@ public:
     }
 
 private:
-    std::filesystem::path _path;
+    hilti::rt::filesystem::path _path;
     std::ostream* _output = nullptr;
     std::unique_ptr<std::ofstream> _output_file;
     std::map<std::string, integer::safe<uint64_t>> _streams;

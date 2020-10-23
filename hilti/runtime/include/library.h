@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/util.h>
 
@@ -21,8 +22,8 @@ struct Version {
     bool debug;        /**< true if compiled in debug mode */
     bool optimize;     /**< true if compiled with optimizations enabled */
 
-    std::filesystem::path path; /**< path to file that library was loaded from; not embedded into JSON, but filled in by
-                                   `Library::open()` */
+    hilti::rt::filesystem::path path; /**< path to file that library was loaded from; not embedded into JSON, but filled
+                                   in by `Library::open()` */
 
     /** Converts the instances into a JSON string. */
     std::string toJSON() const;
@@ -66,7 +67,7 @@ public:
      * @param path full path to the library file
      * @throws *std::runtime_error* if library does not exist, or any other I/O operation failed
      */
-    Library(const std::filesystem::path& path);
+    Library(const hilti::rt::filesystem::path& path);
     ~Library();
 
     // Since this library has exclusive ownership of some path it cannot be copied.
@@ -89,7 +90,7 @@ public:
      * @parm path the path where this library should be stored
      * @return nothing or an error
      */
-    hilti::rt::Result<Nothing> save(const std::filesystem::path& path) const;
+    hilti::rt::Result<Nothing> save(const hilti::rt::filesystem::path& path) const;
 
     // Gets a symbol from the library.
     //
@@ -105,8 +106,8 @@ public:
     hilti::rt::Result<Nothing> remove() const;
 
 private:
-    std::filesystem::path _path;     // Absolute path to the physical file wrapped by this instance.
-    mutable void* _handle = nullptr; // Handle to the library.
+    hilti::rt::filesystem::path _path; // Absolute path to the physical file wrapped by this instance.
+    mutable void* _handle = nullptr;   // Handle to the library.
 };
 
 } // namespace hilti::rt

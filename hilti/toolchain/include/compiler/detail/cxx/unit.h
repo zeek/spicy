@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/json.h>
 
 #include <hilti/ast/ctor.h>
@@ -118,7 +119,7 @@ private:
     std::shared_ptr<Context> _context;
 
     cxx::ID _module_id;
-    std::filesystem::path _module_path;
+    hilti::rt::filesystem::path _module_path;
     bool _no_linker_meta_data = false;
     bool _uses_globals = false;
 

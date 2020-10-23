@@ -10,23 +10,15 @@ using namespace hilti;
 const auto flatten = util::flattenParts;
 const auto prefix = util::prefixParts;
 
-hilti::Configuration::Configuration() {
-    initLocation(util::currentExecutable().native());
-}
+hilti::Configuration::Configuration() { initLocation(util::currentExecutable().native()); }
 
-void hilti::Configuration::initLocation(bool use_build_directory) {
-    init(use_build_directory);
-}
+void hilti::Configuration::initLocation(bool use_build_directory) { init(use_build_directory); }
 
-void hilti::Configuration::initLocation(const char* argv0) {
-    initLocation(std::string(argv0));
-}
+void hilti::Configuration::initLocation(const char* argv0) { initLocation(std::string(argv0)); }
 
 void hilti::Configuration::initLocation(const std::string_view& argv0) {
-//    auto exec = std::filesystem::absolute(std::filesystem::canonical(argv0)).native();
-//    auto prefix = std::filesystem::absolute(std::filesystem::canonical("${CMAKE_BINARY_DIR}")).native();
-    auto exec = std::filesystem::absolute(argv0).native();
-    auto prefix = std::filesystem::absolute("${CMAKE_BINARY_DIR}").native();
+    auto exec = hilti::rt::filesystem::absolute(argv0).native();
+    auto prefix = hilti::rt::filesystem::absolute("${CMAKE_BINARY_DIR}").native();
     init(util::startsWith(exec, prefix));
 }
 
@@ -67,34 +59,30 @@ void Configuration::init(bool use_build_directory) {
         library_paths = flatten({".", prefix("${HILTI_CONFIG_LIBRARY_DIRS}", "", installation_tag)});
     }
 
-    hilti_library_paths = util::transform(library_paths, [](auto s) { return std::filesystem::path(s); });
-    hilti_include_paths = util::transform(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "", installation_tag)), [](auto s) { return std::filesystem::path(s); });
+    hilti_library_paths = util::transform(library_paths, [](auto s) { return hilti::rt::filesystem::path(s); });
+    hilti_include_paths =
+        util::transform(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "", installation_tag)),
+                        [](auto s) { return hilti::rt::filesystem::path(s); });
 
-    runtime_cxx_flags_debug = flatten({
-        prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
-        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)
-    });
+    runtime_cxx_flags_debug = flatten({prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+                                       prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
 
-    runtime_cxx_flags_release = flatten({
-        prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
-        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)
-    });
+    runtime_cxx_flags_release = flatten({prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+                                         prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
 
-    runtime_ld_flags_debug = flatten({
-        prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-L", installation_tag),
-        prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-Wl,-rpath,", installation_tag),
-        prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "-l", installation_tag),
-        prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
-        prefix(CMAKE_DL_LIBS, "-l", installation_tag)
-    });
+    runtime_ld_flags_debug =
+        flatten({prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-L", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-Wl,-rpath,", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "-l", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
+                 prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
 
-    runtime_ld_flags_release = flatten({
-        prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-L", installation_tag),
-        prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-Wl,-rpath,", installation_tag),
-        prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
-        prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
-        prefix(CMAKE_DL_LIBS, "-l", installation_tag)
-    });
+    runtime_ld_flags_release =
+        flatten({prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-L", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-Wl,-rpath,", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
+                 prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
 };
 
 Configuration& hilti::configuration() {

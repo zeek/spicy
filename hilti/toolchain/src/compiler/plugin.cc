@@ -9,7 +9,7 @@ using namespace hilti::detail;
 
 PluginRegistry::PluginRegistry() = default; // Neded here to allow PluginRegistry to be forward declared.
 
-Result<Plugin> PluginRegistry::pluginForExtension(std::filesystem::path ext) const {
+Result<Plugin> PluginRegistry::pluginForExtension(hilti::rt::filesystem::path ext) const {
     auto p = std::find_if(_plugins.begin(), _plugins.end(), [&](auto& p) { return p.extension == ext; });
     if ( p != _plugins.end() )
         return *p;
@@ -38,7 +38,7 @@ static Plugin hilti_plugin() {
         .library_paths =
             [](const std::shared_ptr<hilti::Context>& ctx) { return hilti::configuration().hilti_library_paths; },
 
-        .parse = [](std::istream& in, const std::filesystem::path& path) { return parseSource(in, path); },
+        .parse = [](std::istream& in, const hilti::rt::filesystem::path& path) { return parseSource(in, path); },
 
         .coerce_ctor = [](Ctor c, const Type& dst,
                           bitmask<CoercionStyle> style) { return detail::coerceCtor(std::move(c), dst, style); },

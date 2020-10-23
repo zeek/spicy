@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
+
 #include <hilti/base/util.h>
 
 #cmakedefine HAVE_ZEEK
@@ -28,11 +30,11 @@ struct Configuration {
 
     bool uses_build_directory; /**< True if all information pertains to running outside of the build directory. */
 
-    std::filesystem::path spicyc; /**< Full path to `spicyc` binary */
-    std::vector<std::filesystem::path>
-        spicy_library_paths;                           /**< Default search path for Spicy modules, separated by `:` */
-    std::vector<std::filesystem::path>
-        spicy_include_paths; /**< C++ include directories for Spicy runtime headers */
+    hilti::rt::filesystem::path spicyc; /**< Full path to `spicyc` binary */
+    std::vector<hilti::rt::filesystem::path>
+        spicy_library_paths; /**< Default search path for Spicy modules, separated by `:` */
+    std::vector<hilti::rt::filesystem::path>
+        spicy_include_paths;                           /**< C++ include directories for Spicy runtime headers */
     std::vector<std::string> compiler_cxx_flags_debug; /**< C++ compiler flags when compiling custom code in debug mode
                                                           that uses the HILTI compiler */
     std::vector<std::string> compiler_ld_flags_debug;  /**< Linker flags when compiling custom code in debug mode that

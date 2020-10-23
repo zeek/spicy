@@ -31,7 +31,7 @@ struct AssignFieldIndicesVisitor : public hilti::visitor::PreOrder<void, AssignF
     uint64_t next_index;
 };
 
-std::vector<type::unit::Item> type::Unit::assignIndices(std::vector<unit::Item> items) {
+std::vector<type::unit::Item> type::detail::AssignIndices::assignIndices(std::vector<unit::Item> items) {
     std::vector<unit::Item> new_items;
     new_items.reserve(items.size());
 

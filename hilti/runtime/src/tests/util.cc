@@ -12,6 +12,7 @@
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/fiber.h>
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/set.h>
@@ -128,16 +129,16 @@ TEST_CASE("atoi_n") {
 TEST_CASE("createTemporaryFile") {
     SUBCASE("success") {
         // This test is value-parameterized over `tmp`.
-        std::filesystem::path tmp;
+        hilti::rt::filesystem::path tmp;
 
         struct Cleanup {
-            Cleanup(std::filesystem::path& tmp) : _tmp(tmp) {}
+            Cleanup(hilti::rt::filesystem::path& tmp) : _tmp(tmp) {}
             ~Cleanup() {
-                if ( std::filesystem::exists(_tmp) )
-                    std::filesystem::remove(_tmp);
+                if ( hilti::rt::filesystem::exists(_tmp) )
+                    hilti::rt::filesystem::remove(_tmp);
             }
 
-            std::filesystem::path& _tmp;
+            hilti::rt::filesystem::path& _tmp;
         } _(tmp);
 
         SUBCASE("default prefix") { tmp = createTemporaryFile().valueOrThrow(); }
@@ -149,13 +150,13 @@ TEST_CASE("createTemporaryFile") {
         }
 
         CAPTURE(tmp);
-        CHECK(std::filesystem::exists(tmp));
+        CHECK(hilti::rt::filesystem::exists(tmp));
 
-        const auto status = std::filesystem::status(tmp);
-        CHECK_EQ(status.type(), std::filesystem::file_type::regular);
-        CHECK_NE(status.permissions() & std::filesystem::perms::owner_read, std::filesystem::perms::none);
-        CHECK_NE(status.permissions() & std::filesystem::perms::owner_write, std::filesystem::perms::none);
-        CHECK_EQ(status.permissions() & std::filesystem::perms::owner_exec, std::filesystem::perms::none);
+        const auto status = hilti::rt::filesystem::status(tmp);
+        CHECK_EQ(status.type(), hilti::rt::filesystem::file_type::regular);
+        CHECK_NE(status.permissions() & hilti::rt::filesystem::perms::owner_read, hilti::rt::filesystem::perms::none);
+        CHECK_NE(status.permissions() & hilti::rt::filesystem::perms::owner_write, hilti::rt::filesystem::perms::none);
+        CHECK_EQ(status.permissions() & hilti::rt::filesystem::perms::owner_exec, hilti::rt::filesystem::perms::none);
     }
 
     SUBCASE("failure") {
@@ -433,9 +434,9 @@ TEST_CASE("normalizePath") {
     const auto does_not_exist1 = "/does/not/exist";
     const auto does_not_exist2 = "does/not/exist";
     const auto does_not_exist3 = "./does//not///exist";
-    REQUIRE_FALSE(std::filesystem::exists(does_not_exist1));
-    REQUIRE_FALSE(std::filesystem::exists(does_not_exist2));
-    REQUIRE_FALSE(std::filesystem::exists(does_not_exist3));
+    REQUIRE_FALSE(hilti::rt::filesystem::exists(does_not_exist1));
+    REQUIRE_FALSE(hilti::rt::filesystem::exists(does_not_exist2));
+    REQUIRE_FALSE(hilti::rt::filesystem::exists(does_not_exist3));
     CHECK_EQ(normalizePath(does_not_exist1), does_not_exist1);
     CHECK_EQ(normalizePath(does_not_exist2), does_not_exist2);
 
@@ -444,14 +445,14 @@ TEST_CASE("normalizePath") {
     // and similar. This test needs to be updated in that case.
     CHECK_EQ(normalizePath(does_not_exist3), does_not_exist3);
 
-    REQUIRE(std::filesystem::exists("/dev/null"));
+    REQUIRE(hilti::rt::filesystem::exists("/dev/null"));
     CHECK_EQ(normalizePath("/dev/null"), "/dev/null");
     CHECK_EQ(normalizePath("/dev//null"), "/dev/null");
     CHECK_EQ(normalizePath("/dev///null"), "/dev/null");
     CHECK_EQ(normalizePath("/dev/.//null"), "/dev/null");
 
-    const auto cwd = std::filesystem::current_path();
-    REQUIRE(std::filesystem::exists(cwd));
+    const auto cwd = hilti::rt::filesystem::current_path();
+    REQUIRE(hilti::rt::filesystem::exists(cwd));
     CHECK_EQ(normalizePath(cwd / ".."), cwd.parent_path());
     CHECK_EQ(normalizePath(cwd / ".." / ".."), cwd.parent_path().parent_path());
 }

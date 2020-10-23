@@ -23,8 +23,31 @@ class Grammar;
 
 namespace type {
 
+namespace detail {
+/**
+ * Mixin class to number all fields in sequential order.
+ *
+ * This functionality is not implemented in `Unit` since we want to use
+ * `assignIndices` in a call to a base class's constructor before `Unit` is
+ * fully constructed. Putting the counter `_next_index` into `Unit` would lead
+ * to it being initialized after `Unit`'s base class `TypeBase`.
+ */
+struct AssignIndices {
+    /**
+     * Helper function to recursively number all fields in the passed list in sequential order
+     *
+     * @param items the items to number
+     * @return a pair of mutated items and the next index
+     */
+    std::vector<unit::Item> assignIndices(std::vector<unit::Item> items);
+
+    uint64_t _next_index = 0;
+};
+} // namespace detail
+
 /** AST node for a Spicy unit. */
-class Unit : public hilti::TypeBase,
+class Unit : detail::AssignIndices,
+             public hilti::TypeBase,
              hilti::type::trait::isAllocable,
              hilti::type::trait::isParameterized,
              hilti::type::trait::isOnHeap {
@@ -210,17 +233,8 @@ public:
     }
 
 private:
-    /**
-     * Helper function to recursively number all fields in the passed list in sequential order
-     *
-     * @param items the items to number
-     * @return a pair of mutated items and the next index
-     */
-    std::vector<unit::Item> assignIndices(std::vector<unit::Item> items);
-
     bool _public = false;
     bool _wildcard = false;
-    uint64_t _next_index = 0;
     std::shared_ptr<spicy::detail::codegen::Grammar> _grammar;
 };
 

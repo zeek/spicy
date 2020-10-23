@@ -57,13 +57,13 @@ struct Plugin {
     std::string component;
 
     /** Extension for source files that the plugin handles. Must include the leading `.`. */
-    std::filesystem::path extension;
+    hilti::rt::filesystem::path extension;
 
     /**
      * Additional C++ include files that the plugin needs to have added to
      * generated C++ code.
      */
-    std::vector<std::filesystem::path> cxx_includes;
+    std::vector<hilti::rt::filesystem::path> cxx_includes;
 
     /**
      * Callbacks for plugins will be executed in numerical order, with lower
@@ -78,7 +78,7 @@ struct Plugin {
      * @param arg1 compiler context that's in use
      * @return directories to search
      */
-    Hook<std::vector<std::filesystem::path>, std::shared_ptr<hilti::Context>> library_paths;
+    Hook<std::vector<hilti::rt::filesystem::path>, std::shared_ptr<hilti::Context>> library_paths;
 
     /**
      * Hook called to parse input file that this plugin handles.
@@ -88,7 +88,7 @@ struct Plugin {
      * @param arg3 file associated with the input stream
      * @return directories to search
      */
-    Hook<Result<Node>, std::istream&, std::filesystem::path> parse;
+    Hook<Result<Node>, std::istream&, hilti::rt::filesystem::path> parse;
 
     /**
      * Hook called to perform coercion of a `Ctor` into another of a given target type.
@@ -247,7 +247,7 @@ public:
      * @param ext extension, including the leading `.`
      * @return plugin if any has been register for the extension
      */
-    Result<Plugin> pluginForExtension(std::filesystem::path ext) const;
+    Result<Plugin> pluginForExtension(hilti::rt::filesystem::path ext) const;
 
     /**
      * Checks if at least one plugin implements a given hook.
@@ -271,7 +271,9 @@ public:
      * @param ext extension, including the leading `.`
      * \return true if there's a plugin for this extension
      */
-    bool supportsExtension(std::filesystem::path ext) const { return pluginForExtension(std::move(ext)).hasValue(); }
+    bool supportsExtension(hilti::rt::filesystem::path ext) const {
+        return pluginForExtension(std::move(ext)).hasValue();
+    }
 
     /** Returns a vector of all extensions that registered set of plugins handles. */
     auto supportedExtensions() const {

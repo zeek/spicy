@@ -5,6 +5,8 @@
 #include <string>
 #include <utility>
 
+#include <hilti/rt/filesystem.h>
+
 #include <hilti/base/util.h>
 
 namespace hilti {
@@ -24,7 +26,7 @@ public:
      * @param from_character first character number of the described range; -1 if not availabl.
      * @param to_character first character number of the described range; -1 if not availabl.
      */
-    Location(std::filesystem::path file = "", int from_line = -1, int to_line = -1, int from_character = -1,
+    Location(hilti::rt::filesystem::path file = "", int from_line = -1, int to_line = -1, int from_character = -1,
              int to_character = -1)
         : _file(std::move(file)),
           _from_line(from_line),
@@ -64,7 +66,7 @@ public:
     }
 
 private:
-    std::filesystem::path _file;
+    hilti::rt::filesystem::path _file;
     int _from_line = -1;
     int _to_line = -1;
 

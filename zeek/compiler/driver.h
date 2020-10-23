@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
+
 #include <spicy/compiler/driver.h>
 
 namespace spicy::zeek {
@@ -17,20 +19,20 @@ class GlueCompiler;
  * Captures meta information about a Spicy unit type, derived from its AST.
  */
 struct UnitInfo {
-    hilti::ID id;                      /**< fully-qualified name of the unit type */
-    hilti::Type type;                  /**< the unit's type. */
-    hilti::ID module_id;               /**< name of module unit is defined in */
-    std::filesystem::path module_path; /**< path of mpdule that unit is defined in */
+    hilti::ID id;                            /**< fully-qualified name of the unit type */
+    hilti::Type type;                        /**< the unit's type. */
+    hilti::ID module_id;                     /**< name of module unit is defined in */
+    hilti::rt::filesystem::path module_path; /**< path of mpdule that unit is defined in */
 };
 
 /**
  * Captures meta information about an public Spicy enum type, derived from its AST.
  */
 struct EnumInfo {
-    hilti::ID id;                      /**< fully-qualified name of the enum type */
-    hilti::Type type;                  /**< the enum's type. */
-    hilti::ID module_id;               /**< name of module enum is defined in */
-    std::filesystem::path module_path; /**< path of mpdule that enum is defined in */
+    hilti::ID id;                            /**< fully-qualified name of the enum type */
+    hilti::Type type;                        /**< the enum's type. */
+    hilti::ID module_id;                     /**< name of module enum is defined in */
+    hilti::rt::filesystem::path module_path; /**< path of mpdule that enum is defined in */
 };
 
 /** Spicy compilation driver. */
@@ -50,7 +52,8 @@ public:
      * @param file file to load, which will be searched across all current search paths
      * @param relative_to if given, relative paths will be interpreted as relative to this directory
      */
-    hilti::Result<hilti::Nothing> loadFile(std::filesystem::path file, const std::filesystem::path& relative_to = {});
+    hilti::Result<hilti::Nothing> loadFile(hilti::rt::filesystem::path file,
+                                           const hilti::rt::filesystem::path& relative_to = {});
 
     /**
      * After user scripts have been read, compiles and links all resulting
@@ -126,11 +129,11 @@ protected:
     virtual void hookNewEnumType(const EnumInfo& e){};
 
     /** Overidden from HILTI driver. */
-    void hookNewASTPreCompilation(const hilti::ID& id, const std::optional<std::filesystem::path>& path,
+    void hookNewASTPreCompilation(const hilti::ID& id, const std::optional<hilti::rt::filesystem::path>& path,
                                   const hilti::Node& root) override;
 
     /** Overidden from HILTI driver. */
-    void hookNewASTPostCompilation(const hilti::ID& id, const std::optional<std::filesystem::path>& path,
+    void hookNewASTPostCompilation(const hilti::ID& id, const std::optional<hilti::rt::filesystem::path>& path,
                                    const hilti::Node& root) override;
 
     /** Overidden from HILTI driver. */

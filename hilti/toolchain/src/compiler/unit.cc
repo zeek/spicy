@@ -73,14 +73,14 @@ bool runModifyingHooks(bool* modified, PluginMember hook, const std::string& deb
 }
 
 Result<Unit> Unit::fromModule(const std::shared_ptr<Context>& context, hilti::Module&& module,
-                              const std::filesystem::path& path) {
+                              const hilti::rt::filesystem::path& path) {
     auto unit = Unit(context, module.id(), path, true);
     auto cached = context->registerModule({unit.id(), path}, std::move(module), true);
     unit._modules.insert(cached.index.id);
     return unit;
 }
 
-Result<Unit> Unit::fromCache(const std::shared_ptr<Context>& context, const std::filesystem::path& path) {
+Result<Unit> Unit::fromCache(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path) {
     auto cached = context->lookupModule(path);
     if ( ! cached )
         return result::Error(fmt("unknown module %s", path));
@@ -100,7 +100,7 @@ Result<Unit> Unit::fromCache(const std::shared_ptr<Context>& context, const hilt
     return unit;
 }
 
-Result<Unit> Unit::fromSource(const std::shared_ptr<Context>& context, const std::filesystem::path& path) {
+Result<Unit> Unit::fromSource(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path) {
     auto module = Unit::parse(context, path);
     if ( ! module )
         return module.error();
@@ -108,14 +108,15 @@ Result<Unit> Unit::fromSource(const std::shared_ptr<Context>& context, const std
     return fromModule(context, std::move(*module), path);
 }
 
-Result<Unit> Unit::fromCXX(std::shared_ptr<Context> context, detail::cxx::Unit cxx, const std::filesystem::path& path) {
+Result<Unit> Unit::fromCXX(std::shared_ptr<Context> context, detail::cxx::Unit cxx,
+                           const hilti::rt::filesystem::path& path) {
     auto unit = Unit(std::move(context), ID(fmt("<CXX/%s>", path.native())), path, false);
     unit._cxx_unit = std::move(cxx);
     // No entry in _modules.
     return unit;
 }
 
-Result<hilti::Module> Unit::parse(const std::shared_ptr<Context>& context, const std::filesystem::path& path) {
+Result<hilti::Module> Unit::parse(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path) {
     util::timing::Collector _("hilti/compiler/parser");
 
     std::ifstream in;
@@ -397,8 +398,8 @@ Result<CxxCode> Unit::cxxCode() const {
     return CxxCode{_cxx_unit->moduleID(), cxx};
 }
 
-Result<ModuleIndex> Unit::import(const ID& id, const std::filesystem::path& ext, std::optional<ID> scope,
-                                 std::vector<std::filesystem::path> search_dirs) {
+Result<ModuleIndex> Unit::import(const ID& id, const hilti::rt::filesystem::path& ext, std::optional<ID> scope,
+                                 std::vector<hilti::rt::filesystem::path> search_dirs) {
     if ( auto cached = _lookupModule(id) )
         return cached->index;
 
@@ -417,7 +418,7 @@ Result<ModuleIndex> Unit::import(const ID& id, const std::filesystem::path& ext,
     if ( scope )
         name = fmt("%s/%s", util::replace(scope->str(), ".", "/"), name);
 
-    std::vector<std::filesystem::path> library_paths = std::move(search_dirs);
+    std::vector<hilti::rt::filesystem::path> library_paths = std::move(search_dirs);
 
     if ( plugin->library_paths )
         library_paths = util::concat(std::move(library_paths), (*plugin->library_paths)(context()));
@@ -436,7 +437,7 @@ Result<ModuleIndex> Unit::import(const ID& id, const std::filesystem::path& ext,
     return _import(*path, id);
 }
 
-Result<ModuleIndex> Unit::import(const std::filesystem::path& path) {
+Result<ModuleIndex> Unit::import(const hilti::rt::filesystem::path& path) {
     if ( auto cached = _context->lookupModule(path) ) {
         _modules.insert(cached->index.id);
         return cached->index;
@@ -445,7 +446,7 @@ Result<ModuleIndex> Unit::import(const std::filesystem::path& path) {
     return _import(path, {});
 }
 
-Result<ModuleIndex> Unit::_import(const std::filesystem::path& path, std::optional<ID> expected_name) {
+Result<ModuleIndex> Unit::_import(const hilti::rt::filesystem::path& path, std::optional<ID> expected_name) {
     auto module = parse(context(), path);
     if ( ! module )
         return module.error();
@@ -723,7 +724,7 @@ Result<Unit> Unit::link(const std::shared_ptr<Context>& context, const std::vect
 }
 
 std::pair<bool, std::optional<linker::MetaData>> Unit::readLinkerMetaData(std::istream& input,
-                                                                          const std::filesystem::path& path) {
+                                                                          const hilti::rt::filesystem::path& path) {
     HILTI_DEBUG(logging::debug::Compiler, fmt("reading linker data from %s", path));
     return detail::cxx::Unit::readLinkerMetaData(input);
 }

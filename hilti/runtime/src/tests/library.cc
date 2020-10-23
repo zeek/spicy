@@ -24,10 +24,10 @@
 using namespace hilti::rt;
 using namespace hilti::rt::test;
 
-const std::filesystem::path dummy1 =
+const hilti::rt::filesystem::path dummy1 =
     config::lib_directory / ("libhilti-rt-tests-library-dummy1" + config::shared_library_suffix);
 
-const std::filesystem::path dummy2 =
+const hilti::rt::filesystem::path dummy2 =
     config::lib_directory / ("libhilti-rt-tests-library-dummy2" + config::shared_library_suffix);
 
 // RAII helper to set an environment variable.
@@ -59,7 +59,7 @@ private:
 class TemporaryDirectory {
 public:
     TemporaryDirectory() {
-        const auto tmpdir = std::filesystem::temp_directory_path();
+        const auto tmpdir = hilti::rt::filesystem::temp_directory_path();
         auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").native();
         auto path = ::mkdtemp(template_.data());
         REQUIRE_NE(path, nullptr);
@@ -67,21 +67,21 @@ public:
     }
 
     ~TemporaryDirectory() {
-        if ( ! std::filesystem::exists(_path) )
+        if ( ! hilti::rt::filesystem::exists(_path) )
             return;
 
         // Make sure we have permissions to remove the directory.
-        std::filesystem::permissions(_path, std::filesystem::perms::all);
-        for ( const auto& entry : std::filesystem::recursive_directory_iterator(_path) )
-            std::filesystem::permissions(entry, std::filesystem::perms::all);
+        hilti::rt::filesystem::permissions(_path, hilti::rt::filesystem::perms::all);
+        for ( const auto& entry : hilti::rt::filesystem::recursive_directory_iterator(_path) )
+            hilti::rt::filesystem::permissions(entry, hilti::rt::filesystem::perms::all);
 
-        std::filesystem::remove_all(_path);
+        hilti::rt::filesystem::remove_all(_path);
     }
 
     const auto& path() const { return _path; }
 
 private:
-    std::filesystem::path _path;
+    hilti::rt::filesystem::path _path;
 };
 
 TEST_SUITE_BEGIN("Library");
@@ -132,7 +132,7 @@ TEST_CASE("save" * doctest::skip(geteuid() == 0)) {
     SUBCASE("target not writable") {
         TemporaryDirectory tmp;
         Env _("TMPDIR", tmp.path().c_str());
-        std::filesystem::permissions(tmp.path(), std::filesystem::perms::none);
+        hilti::rt::filesystem::permissions(tmp.path(), hilti::rt::filesystem::perms::none);
 
         const auto save = library.save(tmp.path() / ("library" + config::shared_library_suffix));
         REQUIRE_FALSE(save);

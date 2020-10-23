@@ -117,7 +117,7 @@ target_compile_options(hilti-objects PRIVATE "-Wall")
 target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-objects PUBLIC $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
 target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
-target_link_libraries(hilti-objects PUBLIC std::filesystem Threads::Threads ${CMAKE_DL_LIBS})
+target_link_libraries(hilti-objects PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
 target_link_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
@@ -147,15 +147,9 @@ set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "-std=c++17 -g ${addl_cxx_
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "-std=c++17 -g -O3 -DNDEBUG ${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # Libraries
-get_target_property(filesystem_library std::filesystem INTERFACE_LINK_LIBRARIES)
-if ( NOT filesystem_library )
-    set(filesystem_library "")
-endif ()
-
-string(REPLACE "-l" "" fslib "${filesystem_library}")
 string(REPLACE "-l" "" threadslib "${CMAKE_THREAD_LIBS_INIT}")
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug ${fslib} ${threadslib}")
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE    "hilti-rt ${fslib} ${threadslib}")
+set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug ${threadslib}")
+set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE    "hilti-rt ${threadslib}")
 
 # Library directories
 set_config_val(HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG   "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")

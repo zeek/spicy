@@ -2,13 +2,8 @@
 
 #pragma once
 
-#include <hilti/rt/autogen/config.h>
+#include <hilti/rt/3rdparty/ghc/filesystem.hpp>
 
-#ifdef CXX_FILESYSTEM_IS_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace std {
-namespace filesystem = experimental::filesystem;
-} // namespace std
-#else
-#include <filesystem>
-#endif
+namespace hilti::rt {
+namespace filesystem = ::ghc::filesystem;
+} // namespace hilti::rt

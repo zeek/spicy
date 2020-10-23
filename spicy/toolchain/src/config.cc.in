@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/filesystem.h>
+
 #include <hilti/autogen/config.h>
 #include <hilti/base/util.h>
 
@@ -54,8 +56,10 @@ void Configuration::init(bool use_build_directory) {
         library_paths = flatten({".", prefix("${SPICY_CONFIG_LIBRARY_DIRS}", "", installation_tag)});
     }
 
-    spicy_library_paths = hilti::util::transform(library_paths, [](auto s) { return std::filesystem::path(s); });
-    spicy_include_paths = hilti::util::transform(hilti::util::split(prefix("${SPICY_CONFIG_RUNTIME_INCLUDE_DIRS}", "", installation_tag)), [](auto s) { return std::filesystem::path(s); });
+    spicy_library_paths = hilti::util::transform(library_paths, [](auto s) { return hilti::rt::filesystem::path(s); });
+    spicy_include_paths =
+        hilti::util::transform(hilti::util::split(prefix("${SPICY_CONFIG_RUNTIME_INCLUDE_DIRS}", "", installation_tag)),
+                               [](auto s) { return hilti::rt::filesystem::path(s); });
 
     runtime_cxx_flags_debug = flatten({prefix("${SPICY_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
                                        prefix("${SPICY_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});

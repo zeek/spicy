@@ -49,7 +49,7 @@ foreach ( lib hilti-rt hilti-rt-debug )
     add_library(${lib}-objects OBJECT ${SOURCES})
     add_dependencies(${lib}-objects version)
     target_compile_options(${lib}-objects PRIVATE "-fPIC")
-    target_link_libraries(${lib}-objects PRIVATE std::filesystem Threads::Threads ${CMAKE_DL_LIBS})
+    target_link_libraries(${lib}-objects PRIVATE Threads::Threads ${CMAKE_DL_LIBS})
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/3rdparty>)
@@ -114,6 +114,7 @@ install_headers(${CMAKE_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/libtask hilti/rt/3rdparty/libtask)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/single_include/nlohmann hilti/rt/3rdparty/nlohmann)
+install_headers(${CMAKE_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)
 
 ##### Tests
 
