@@ -176,17 +176,6 @@ clang9_zeek_lts_ubuntu_release_static_task:
   install_script:        ./ci/run-ci -b build install
   cleanup_script:        ./ci/run-ci -b build cleanup
   test_install_script:   ./ci/run-ci -b build test-install
-  packaging_script:
-    - ninja -C build package
-    # CPack compresses archives quickly and only by ~50% so that for a static
-    # build the archive can exceed Cirrus CI's 1GB artifact size limit.
-    # Recompress the archive here more aggressively.
-    - gzip -cd build/spicy-linux.tar.gz | gzip -9vv > build/spicy-linux-recompressed.tar.gz
-    - mv build/spicy-linux-recompressed.tar.gz build/spicy-linux.tar.gz
-
-  packages_artifacts:
-    path: build/spicy-*.tar.gz
-    type: application/gzip
 
   on_failure:
     ci_artifacts:
