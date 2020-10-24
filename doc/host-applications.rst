@@ -322,5 +322,5 @@ Our examples always passed the full input at once. You don't need to
 do that, Spicy's parsers can process input incrementally as it comes
 in, and return back to the caller to retrieve more. See the source of
 `spicy::Driver::processInput()
-<https://github.com/zeek/spicy/blob/master/spicy/src/rt/driver.cc>`_
+<https://github.com/zeek/spicy/blob/master/spicy/runtime/src/driver.cc>`_
 for an example of how to implement that.
