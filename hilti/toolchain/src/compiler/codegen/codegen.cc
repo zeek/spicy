@@ -251,7 +251,8 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                 // The struct type takes care of the declaration.
                 return;
 
-            auto id_hook_impl = cxx::ID(unit->cxxNamespace(), fmt("__hook_%s_%s_%p", id_class, id_local, &n));
+            auto id_hook_impl =
+                cxx::ID(unit->cxxNamespace(), cg->uniqueID(fmt("__hook_%s_%s", id_class, id_local), n.function()));
             auto id_hook_stub =
                 cxx::ID(cg->options().cxx_namespace_intern, id_module, fmt("__hook_%s_%s", id_class, id_local));
 
@@ -299,7 +300,8 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                 id_module = *module;
 
             auto id_local = id.sub(-1);
-            auto id_hook_impl = cxx::ID(unit->cxxNamespace(), fmt("__hook_%s_%s_%p", id_module, id_local, &n));
+            auto id_hook_impl =
+                cxx::ID(unit->cxxNamespace(), cg->uniqueID(fmt("__hook_%s_%s", id_class, id_local), n.function()));
             auto id_hook_stub = cxx::ID(cg->options().cxx_namespace_intern, id_module, id_local);
 
             // Adapt the function we generate.
@@ -564,4 +566,16 @@ cxx::Expression CodeGen::addTmp(const std::string& prefix, const cxx::Type& t) {
     cxxBlock()->addTmp(tmp);
     _tmp_counters[prefix] = n;
     return std::string(tmp.id);
+}
+
+cxx::ID CodeGen::uniqueID(const std::string& prefix, const Node& n) {
+    std::string x;
+
+    if ( ! n.location() )
+        // We rely on the location for creating a unique ID. If we ever arrive
+        // here, it shouldn't be too difficult to get location information into
+        // the offending node.
+        logger().internalError("attempt to create unique codegen ID for node without location");
+
+    return {fmt("%s_%x", prefix, util::hash(n.location()) % 0xffff)};
 }

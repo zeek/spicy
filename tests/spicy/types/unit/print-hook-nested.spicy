@@ -21,7 +21,6 @@ type A1 = unit {
     b: B;
     c: C;
 
-    on %print  { return "A1"; }
     on %done   { print "in A1:", self; x(self); }
 };
 
