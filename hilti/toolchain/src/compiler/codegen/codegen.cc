@@ -373,9 +373,15 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             auto args =
                 util::join(util::transform(cxx_func.declaration.args, [](auto& x) { return fmt("%s", x.id); }), ", ");
 
-            cb.addReturn(fmt("%s(%s)", d.id, args));
-            auto rt = (ft.result().type() != type::Void() ? " -> std::any" : "");
-            body.addLambda("cb", fmt("[&](hilti::rt::resumable::Handle* r)%s", rt), std::move(cb));
+            // If the function returns void synthesize a `Nothing` return value here.
+            if ( ft.result().type() != type::Void() )
+                cb.addReturn(fmt("%s(%s)", d.id, args));
+            else {
+                cb.addStatement(fmt("%s(%s)", d.id, args));
+                cb.addReturn("hilti::rt::Nothing()");
+            }
+
+            body.addLambda("cb", "[&](hilti::rt::resumable::Handle* r) -> std::any", std::move(cb));
 
             body.addLocal(
                 cxx::declaration::Local{.id = "r", .type = "hilti::rt::Resumable", .init = "{std::move(cb)}"});

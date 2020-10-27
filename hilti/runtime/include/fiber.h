@@ -153,20 +153,8 @@ public:
      * @param f function to be executed
      */
     template<typename Function, typename = std::enable_if_t<std::is_invocable<Function, resumable::Handle*>::value>>
-    Resumable(Function f) {
-        _fiber = detail::Fiber::create();
-
-        std::function<std::any(resumable::Handle*)> x = [f](resumable::Handle* r) -> std::any {
-            using R = decltype(f(static_cast<resumable::Handle*>(nullptr)));
-            if constexpr ( std::is_same<R, void>::value ) {
-                f(r);
-                return true;
-            }
-            else // NOLINT
-                return f(r);
-        };
-
-        _fiber->init(std::move(x));
+    Resumable(Function f) : _fiber(detail::Fiber::create()) {
+        _fiber->init(std::move(f));
     }
 
     Resumable(Resumable&& r) noexcept : _fiber(std::move(r._fiber)), _result(std::move(r._result)) {}
