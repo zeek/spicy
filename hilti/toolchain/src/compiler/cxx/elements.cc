@@ -5,6 +5,8 @@
 #include <hilti/compiler/detail/cxx/elements.h>
 #include <hilti/compiler/detail/cxx/formatter.h>
 
+#include <hilti/rt/json.h>
+
 using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::cxx::formatter;

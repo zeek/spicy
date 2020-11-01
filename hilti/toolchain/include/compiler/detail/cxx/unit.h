@@ -13,7 +13,8 @@
 #include <vector>
 
 #include <hilti/rt/filesystem.h>
-#include <hilti/rt/json.h>
+#include <hilti/rt/json-fwd.h>
+#include <hilti/rt/types/reference.h>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
@@ -36,7 +37,7 @@ class Linker;
 
 namespace linker {
 
-using MetaData = nlohmann::json;
+using MetaData = hilti::rt::ValueReference<nlohmann::json>;
 
 /**
  * Function joined by the linker.

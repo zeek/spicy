@@ -296,7 +296,7 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
     if ( auto meta = linkerMetaData() ) {
         f << separator();
         f << "/* __HILTI_LINKER_V1__" << eol();
-        f << meta->dump(-1) << eol();
+        f << (*meta)->dump(-1) << eol();
         f << "*/" << eol() << separator();
     }
 }
@@ -412,7 +412,7 @@ hilti::Result<linker::MetaData> Unit::linkerMetaData() const {
     if ( ! joins.empty() )
         j["joins"] = joins;
 
-    return j;
+    return {j};
 }
 
 std::pair<bool, std::optional<linker::MetaData>> Unit::readLinkerMetaData(std::istream& input) {
