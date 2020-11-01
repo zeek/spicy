@@ -14,6 +14,7 @@
 #include <utility>
 
 #include <hilti/base/util.h>
+#include <hilti/base/intrusive-ptr.h>
 
 namespace hilti::util::type_erasure {
 
@@ -53,7 +54,7 @@ inline auto& instance_counters() {
 extern void summary(std::ostream& out);
 
 /** Internal base class defining the type-erased interface. */
-class ConceptBase {
+class ConceptBase : public intrusive_ptr::ManagedObject {
 public:
     virtual const std::type_info& typeid_() const = 0;
     virtual std::string typename_() const = 0;
@@ -148,10 +149,10 @@ public:
 
     template<typename T, IF_DERIVED_FROM(T, Trait)>
     ErasedBase(T t, ConceptArgs&&... args)
-        : _data(std::make_shared<Model<T>>(std::move(t), std::forward<ConceptArgs>(args)...)) {}
+        : _data(make_intrusive<Model<T>>(std::move(t), std::forward<ConceptArgs>(args)...)) {}
 
-    explicit ErasedBase(std::shared_ptr<Concept> data) : _data(std::move(data)) {}
-    ErasedBase& operator=(std::shared_ptr<Concept> data) {
+    explicit ErasedBase(IntrusivePtr<Concept> data) : _data(std::move(data)) {}
+    ErasedBase& operator=(IntrusivePtr<Concept> data) {
         _data = std::move(data);
         ;
         return *this;
@@ -238,7 +239,7 @@ private:
             return static_cast<const T*>(this);
 
         if ( typeid(Model<T>) == typeid(*_data) )
-            return &(std::static_pointer_cast<const Model<T>>(_data))->data();
+            return &(::hilti::cast_intrusive<const Model<T>>(_data))->data();
 
         std::pair<const ConceptBase*, const void*> c = {_data.get(), nullptr};
 
@@ -258,7 +259,7 @@ private:
             return static_cast<T*>(this);
 
         if ( typeid(Model<T>) == typeid(*_data) )
-            return &(std::static_pointer_cast<Model<T>>(_data))->data();
+            return &(hilti::cast_intrusive<Model<T>>(_data))->data();
 
         std::pair<ConceptBase*, void*> c = {_data.get(), nullptr};
 
@@ -273,7 +274,7 @@ private:
     }
 
     // See https://stackoverflow.com/questions/18709647/shared-pointer-to-an-immutable-type-has-value-semantics
-    std::shared_ptr<Concept> _data;
+    IntrusivePtr<Concept> _data;
 };
 
 } // namespace hilti::util::type_erasure

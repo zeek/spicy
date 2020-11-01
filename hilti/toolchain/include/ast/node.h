@@ -111,7 +111,7 @@ public:
 
     Node() = delete;
 
-    explicit Node(std::shared_ptr<hilti::node::detail::Concept> data) : node::detail::Node(std::move(data)) {}
+    explicit Node(IntrusivePtr<hilti::node::detail::Concept> data) : node::detail::Node(std::move(data)) {}
 
     ~Node() final {
         if ( _control_ptr )
@@ -140,9 +140,9 @@ public:
      * scope. However, scopes can be shared across nodes through
      * `setScope()`.
      */
-    std::shared_ptr<Scope> scope() const {
+    IntrusivePtr<Scope> scope() const {
         if ( ! _scope )
-            _scope = std::make_shared<Scope>();
+            _scope = make_intrusive<Scope>();
 
         return _scope;
     }
@@ -150,7 +150,7 @@ public:
     /**
      * Resets the node's scope to point to another one. Nodes
      */
-    void setScope(std::shared_ptr<Scope> new_scope) { _scope = std::move(new_scope); }
+    void setScope(IntrusivePtr<Scope> new_scope) { _scope = std::move(new_scope); }
 
     /** Returns any error messages associated with the node. */
     std::vector<node::Error> errors() const {
@@ -290,15 +290,15 @@ private:
 
     // Returns (and potentially) created the control block for this node that
     // NodeRef uses to maintain links to it.
-    std::shared_ptr<node_ref::detail::Control> _control() {
+    IntrusivePtr<node_ref::detail::Control> _control() {
         if ( ! _control_ptr )
-            _control_ptr = std::make_shared<node_ref::detail::Control>(this);
+            _control_ptr = make_intrusive<node_ref::detail::Control>(this);
 
         return _control_ptr;
     }
 
-    std::shared_ptr<node_ref::detail::Control> _control_ptr = nullptr;
-    mutable std::shared_ptr<Scope> _scope = nullptr;
+    IntrusivePtr<node_ref::detail::Control> _control_ptr = nullptr;
+    mutable IntrusivePtr<Scope> _scope = nullptr;
     std::unique_ptr<std::vector<node::Error>> _errors = nullptr;
 };
 

@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <hilti/base/intrusive-ptr.h>
 #include <hilti/ast/node_ref.h>
 
 namespace hilti {
@@ -20,7 +21,7 @@ class ID;
  * to referneces to AST nodes). An identifier can be mapped to more than one
  * node.
  */
-class Scope {
+class Scope : public intrusive_ptr::ManagedObject {
 public:
     Scope() = default;
     ~Scope() = default;

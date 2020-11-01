@@ -29,7 +29,7 @@ public:
      * Returns the output expressions's scope. Note that the scope is shared
      * among any copies of an instance.
      */
-    std::shared_ptr<Scope> scope() const { return childs()[1].scope(); }
+    IntrusivePtr<Scope> scope() const { return childs()[1].scope(); }
 
     bool operator==(const ListComprehension& other) const {
         return input() == other.input() && output() == other.output() && id() == other.id() &&

@@ -26,7 +26,7 @@ public:
      * Returns the body's scope. Note that the scope is shared among any
      * copies of an instance.
      */
-    std::shared_ptr<Scope> scope() const { return childs()[2].scope(); }
+    IntrusivePtr<Scope> scope() const { return childs()[2].scope(); }
 
     bool operator==(const For& other) const {
         return id() == other.id() && sequence() == other.sequence() && body() == other.body();
