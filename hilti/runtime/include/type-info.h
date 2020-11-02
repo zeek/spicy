@@ -1431,20 +1431,7 @@ struct TypeInfo {
 
 namespace type_info {
 
-/**
- * Helper for variant dispatching, borrowed from
- * https://www.bfilipek.com/2019/02/2lines3featuresoverload.html.
- */
-template<class... Ts>
-struct overload : Ts... {
-    using Ts::operator()...;
-};
-
-template<class... Ts>
-overload(Ts...) -> overload<Ts...>;
-
 namespace value {
-
 /**
  * Retrieves the auxiliary type information for a value, casted it to the
  * expected class.
