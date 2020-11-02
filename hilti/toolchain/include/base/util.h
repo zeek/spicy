@@ -40,6 +40,8 @@ void __internal_error(const std::string& s);
 
 namespace hilti {
 
+struct Configuration;
+
 /**
  * Helper macro to mark variables that are intentionally unused. This
  * silences the compiler warning. From
@@ -659,6 +661,14 @@ constexpr auto to_string(Enum value, const Value<Enum> (&values)[Size]) {
 };
 
 } // namespace enum_
+
+/** Computes path to directory for cached artifacts
+ *
+ * @param configuration the configuration to use
+ * @return a valid path to the directory or nothing
+ * \note While the returned path is valid, it might not exist yet.
+ */
+std::optional<hilti::rt::filesystem::path> cacheDirectory(const hilti::Configuration& configuration);
 
 } // namespace util
 

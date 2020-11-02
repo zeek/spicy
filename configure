@@ -23,6 +23,7 @@ cmake_install_prefix="/usr/local"
 cmake_llvm_root=""
 cmake_use_ccache="no"
 cmake_use_gold="yes"
+cmake_use_precompiled_headers="yes"
 cmake_use_sanitizers=""
 cmake_use_werror="false"
 cmake_zeek_have_jit="yes"
@@ -63,6 +64,7 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --disable-jit                      Do not compile in support for JIT compilation
     --disable-jit-for-zeek             Do not compile support for JIT compilation into Zeek plugin
     --disable-gold                     On Linux, do not try to use the gold linker
+    --disable-precompiled-headers      Disable use of precompiled headers for developer tests
     --disable-zeek-plugin-install      Do not copy Zeek plugin into Zeek plugin path on install
     --enable-ccache                    Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
     --enable-debug                     Compile debug version (same as --build-type=Debug) [default: off]
@@ -122,6 +124,7 @@ while [ $# -ne 0 ]; do
         --disable-gold)                    cmake_use_gold="no";;
         --disable-jit)                     cmake_hilti_have_jit="no";;
         --disable-jit-for-zeek)            cmake_zeek_have_jit="no";;
+        --disable-precompiled-headers)     cmake_use_precompiled_headers="no";;
         --disable-zeek-plugin-install)     cmake_zeek_install_plugin="no";;
         --enable-ccache)                   cmake_use_ccache="yes";;
         --enable-debug)                    cmake_build_type="Debug";;
@@ -179,6 +182,7 @@ append_cache_entry LLVM_ROOT                    PATH   "${cmake_llvm_root}"
 append_cache_entry USE_CCACHE                   BOOL   "${cmake_use_ccache}"
 append_cache_entry USE_GOLD                     BOOL   "${cmake_use_gold}"
 append_cache_entry USE_SANITIZERS               STRING "${cmake_use_sanitizers}"
+append_cache_entry HILTI_DEV_PRECOMPILE_HEADERS BOOL   "${cmake_use_precompiled_headers}"
 append_cache_entry USE_WERROR                   BOOL   "${cmake_use_werror}"
 append_cache_entry ZEEK_ROOT_DIR                PATH   "${cmake_zeek_root_dir}"
 append_cache_entry CPACK_BINARY_STGZ            BOOL   "OFF"

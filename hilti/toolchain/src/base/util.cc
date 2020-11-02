@@ -3,6 +3,7 @@
 #include "hilti/base/util.h"
 
 #include <errno.h>
+#include <pwd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -262,4 +263,29 @@ std::vector<std::string> util::flattenParts(const std::vector<std::string>& in) 
     }
 
     return out;
+}
+
+std::optional<hilti::rt::filesystem::path> util::cacheDirectory(const hilti::Configuration& configuration) {
+    // If we are executing from the build directory, the cache is also located
+    // there; else it lives in a versioned folder in the user's `$HOME/.cache/spicy`.
+    if ( configuration.uses_build_directory )
+        return configuration.build_directory / "cache" / "spicy";
+
+    if ( auto spicy_cache = ::getenv("SPICY_CACHE") )
+        return spicy_cache;
+
+    const char* homedir;
+
+    if ( (homedir = getenv("HOME")) == NULL ) {
+        auto pwuid = getpwuid(getuid());
+        if ( ! pwuid )
+            return {};
+
+        homedir = pwuid->pw_dir;
+    }
+
+    if ( homedir )
+        return rt::filesystem::path(rt::filesystem::path(homedir) / ".cache" / "spicy" / configuration.version_string);
+
+    return {};
 }

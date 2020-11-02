@@ -668,9 +668,6 @@ std::unique_ptr<clang::CompilerInvocation> ClangJIT::Implementation::createInvoc
     // FIXME: Find a cleaner way to force the driver into restricted modes.
     args.emplace_back("-fsyntax-only");
 
-    // Compile position-independent code so we can use the code in a shared library later.
-    args.emplace_back("-fPIC");
-
     std::vector<const char*> cargs = util::transform(args, [](auto& s) -> const char* { return s.c_str(); });
     std::unique_ptr<clang::driver::Compilation> C(driver->BuildCompilation(cargs));
     if ( ! C )
