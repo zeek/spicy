@@ -95,7 +95,7 @@ struct VisitorPassInit : public hilti::visitor::PreOrder<void, VisitorPassInit> 
         replaceNode(&p, nt);
 
         // Build the unit's grammar.
-        if ( auto r = cg->grammarBuilder()->run(nu, &p.node); ! r ) {
+        if ( auto r = cg->grammarBuilder()->run(nu, &p.node, cg); ! r ) {
             hilti::logger().error(r.error().description(), p.node.location());
             return;
         }

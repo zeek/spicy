@@ -1,0 +1,37 @@
+# @TEST-EXEC: spicyc %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: echo abc | spicy-driver %INPUT.hlto >output
+# @TEST-EXEC: echo xyz | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: echo XYZ | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+import spicy;
+
+public type Line = unit {
+  switch {
+     -> a  : A;
+     -> b  : B;
+  };
+
+  on %done { print self; }
+};
+
+type A = unit {
+  switch {
+    -> x : X;
+    -> y : Y;
+  };
+};
+
+type B = unit {
+  val: /abc/;
+};
+
+type X = unit {
+  val: /xyz/;
+};
+
+type Y = unit {
+  val: /XYZ/;
+};
