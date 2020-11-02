@@ -984,6 +984,15 @@ void hilti::detail::printAST(const Node& root, std::ostream& out, bool compact) 
 void hilti::detail::printAST(const Node& root, printer::Stream& stream) {
     util::timing::Collector _("hilti/printer");
 
+    if ( auto t = root.tryAs<Type>() ) {
+        if ( ! stream.isExpandSubsequentType() ) {
+            if ( auto id = t->typeID() ) {
+                stream << *id;
+                return;
+            }
+        }
+    }
+
     for ( auto& p : plugin::registry().plugins() ) {
         if ( ! p.print_ast )
             continue;

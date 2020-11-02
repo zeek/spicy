@@ -474,8 +474,8 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         for ( size_t i = 0; i < want.size(); i++ ) {
             if ( i < have.size() ) {
                 if ( have[i].type() != want[i].type() )
-                    error(fmt("type expects %s for parameter %u, but receives %s", have[i].type(), i + 1,
-                              want[i].type()),
+                    error(fmt("type expects %s for parameter %u, but receives %s", want[i].type(), i + 1,
+                              have[i].type()),
                           p);
             }
             else if ( ! want[i].default_() )
