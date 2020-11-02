@@ -1,4 +1,32 @@
 
+0.4.0-993 | 2020-11-02 16:09:13 +0000
+
+  * GH-159: Add some missing operator<< to runtime library. This now lets
+    "-X trace" work for Spicy parsers. (Robin Sommer, Corelight)
+
+  * GH-531: Make generated grammar symbols globally unique during Spicy
+    codegen. (Robin Sommer, Corelight)
+
+  * GH-176: Avoid infinite recursion when printing ASTs with self-recursive
+    types. (Robin Sommer, Corelight)
+
+  * Fix premature library shutdown in spicy-dump, which could lead to crashes
+    during cleanup of the parsed unit. (Robin Sommer, Corelight)
+
+  * Fix error message in validator. (Robin Sommer, Corelight)
+
+  * Aggressively compress package artifact for static build. (Benjamin Bannier,
+    Corelight)
+
+  * Remove packaging tasks for static CI build. Static builds tend to produce
+    very large binaries which cannot reliably be compressed to be inside Cirrus
+    CI's 1GB artifact size limit. (Benjamin Bannier, Corelight)
+
+  * Fix documentation source link. (Benjamin Bannier, Corelight)
+
+  * Consistently use `hilti::rt::filesystem` instead of `std::filesystem`.
+    (Benjamin Bannier, Corelight)
+
 0.4.0-979 | 2020-10-23 14:11:27 +0000
 
   * GH-95: Zeek plugin: Respect %port and %mime-type properties in

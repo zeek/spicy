@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/extension-points.h>
 #include <hilti/rt/libhilti.h>
 #include <hilti/rt/types/address.h>
 #include <hilti/rt/types/bool.h>
@@ -14,6 +15,7 @@
 #include <hilti/rt/types/interval.h>
 #include <hilti/rt/types/map.h>
 #include <hilti/rt/types/null.h>
+#include <hilti/rt/types/optional.h>
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/set.h>
@@ -145,6 +147,16 @@ TEST_CASE("optional") {
     CHECK_EQ(to_string_for_print(std::optional<std::string>()), "(not set)");
     CHECK_EQ(to_string_for_print(std::optional<std::string_view>("abc")), "abc");
     CHECK_EQ(to_string_for_print(std::optional<std::string_view>()), "(not set)");
+
+    std::optional<Port> port1{"123/tcp"};
+    std::optional<Port> port2{};
+
+    CHECK_EQ(to_string(port1), "123/tcp");
+    CHECK_EQ(to_string(port2), "(not set)");
+
+    std::stringstream x;
+    x << port1 << " " << port2;
+    CHECK_EQ(x.str(), "123/tcp (not set)");
 }
 
 TEST_CASE("Interval") {

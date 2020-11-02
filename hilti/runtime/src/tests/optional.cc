@@ -27,7 +27,7 @@ TEST_CASE("value") {
         CHECK_EQ(v, 0);
 
         v += 42;
-        CHECK_EQ(o, 42);
+        CHECK_EQ(*o, 42);
     }
 }
 
@@ -35,13 +35,13 @@ TEST_CASE("valueOrInit") {
     SUBCASE("explicit default") {
         auto o = std::optional<int8_t>();
         CHECK_EQ(optional::valueOrInit(o, int8_t(47)), 47);
-        CHECK_EQ(o, 47);
+        CHECK_EQ(*o, 47);
     }
 
     SUBCASE("implicit default") {
         auto o = std::optional<int8_t>();
         CHECK_EQ(optional::valueOrInit(o), 0);
-        CHECK_EQ(o, 0);
+        CHECK_EQ(*o, 0);
     }
 }
 

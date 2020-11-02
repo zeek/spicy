@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cassert>
+#include <string>
 
 #include <hilti/rt/type-info.h>
 #include <hilti/rt/types/reference.h>
@@ -71,4 +72,12 @@ private:
     const void* _ptr = nullptr;
 };
 
+} // namespace spicy::rt
+
+namespace hilti::rt::detail::adl {
+inline std::string to_string(const ::spicy::rt::ParsedUnit& u, adl::tag /*unused*/) { return "<parsed unit>"; };
+} // namespace hilti::rt::detail::adl
+
+namespace spicy::rt {
+inline std::ostream& operator<<(std::ostream& out, const ParsedUnit& u) { return out << hilti::rt::to_string(u); }
 } // namespace spicy::rt

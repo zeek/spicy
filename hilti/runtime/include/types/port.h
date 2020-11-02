@@ -78,10 +78,10 @@ inline std::ostream& operator<<(std::ostream& out, const Protocol& x) {
     out << to_string(x);
     return out;
 }
+
 inline std::ostream& operator<<(std::ostream& out, const Port& x) {
     out << to_string(x);
     return out;
 }
-
 
 } // namespace hilti::rt
