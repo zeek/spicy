@@ -16,7 +16,9 @@
 
 #include <zeek-spicy/autogen/config.h>
 #include <zeek-spicy/file-analyzer.h>
+#ifdef HAVE_PACKET_ANALYZERS
 #include <zeek-spicy/packet-analyzer.h>
+#endif
 #include <zeek-spicy/plugin.h>
 #include <zeek-spicy/protocol-analyzer.h>
 #include <zeek-spicy/zeek-compat.h>
@@ -81,6 +83,7 @@ void plugin::Zeek_Spicy::Plugin::registerFileAnalyzer(const std::string& name,
     _file_analyzers_by_subtype.push_back(std::move(info));
 }
 
+#ifdef HAVE_PACKET_ANALYZERS
 void plugin::Zeek_Spicy::Plugin::registerPacketAnalyzer(const std::string& name,
                                     const std::string& parser) {
    ZEEK_DEBUG(hilti::rt::fmt("Have Spicy packet analyzer %s", name));
@@ -91,6 +94,7 @@ void plugin::Zeek_Spicy::Plugin::registerPacketAnalyzer(const std::string& name,
     info.subtype = _packet_analyzers_by_subtype.size();
     _packet_analyzers_by_subtype.push_back(std::move(info));
 }
+#endif
 
 void plugin::Zeek_Spicy::Plugin::registerEnumType(
     const std::string& ns, const std::string& id,
@@ -132,9 +136,11 @@ const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForFileAnalyzer(const
     return _file_analyzers_by_subtype[tag.Subtype()].parser;
 }
 
+#ifdef HAVE_PACKET_ANALYZERS
 const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForPacketAnalyzer(const ::zeek::packet_analysis::Tag& tag) {
     return _packet_analyzers_by_subtype[tag.Subtype()].parser;
 }
+#endif
 
 ::zeek::analyzer::Tag plugin::Zeek_Spicy::Plugin::tagForProtocolAnalyzer(const ::zeek::analyzer::Tag& tag) {
     if ( auto r = _protocol_analyzers_by_subtype[tag.Subtype()].replaces )
@@ -148,10 +154,12 @@ const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForPacketAnalyzer(con
     return tag;
 }
 
+#ifdef HAVE_PACKET_ANALYZERS
 ::zeek::analyzer::Tag plugin::Zeek_Spicy::Plugin::tagForPacketAnalyzer(const ::zeek::analyzer::Tag& tag) {
     // Don't have a replacement mechanism currently.
     return tag;
 }
+#endif
 
 ::zeek::plugin::Configuration plugin::Zeek_Spicy::Plugin::Configure() {
     ::zeek::plugin::Configuration config;
@@ -346,6 +354,7 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         }
     }
 
+#ifdef HAVE_PACKET_ANALYZERS
     for ( auto& p : _packet_analyzers_by_subtype ) {
         ZEEK_DEBUG(hilti::rt::fmt("Registering packet analyzer %s with Zeek", p.name_analyzer.c_str()));
 
@@ -365,8 +374,7 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         // this point already, so ours won't get initialized anymore.
         c->Initialize();
     }
-
-    ::zeek::packet_mgr->DumpDebug();
+#endif
 
     ZEEK_DEBUG("Done with post-script initialization (runtime)");
 }

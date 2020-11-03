@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <zeek-spicy/autogen/config.h>
+
+#ifdef HAVE_PACKET_ANALYZERS
+
 #include <memory>
 #include <optional>
 #include <string>
@@ -70,3 +74,5 @@ private:
 };
 
 } // namespace spicy::zeek::rt
+
+#endif

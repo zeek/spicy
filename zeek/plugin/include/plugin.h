@@ -97,6 +97,7 @@ public:
      */
     const spicy::rt::Parser* parserForFileAnalyzer(const ::zeek::file_analysis::Tag& tag);
 
+#ifdef HAVE_PACKET_ANALYZERS
     /**
      * Runtime method to retrieve the Spicy parser for a given Zeek packet analyzer tag.
      *
@@ -105,6 +106,7 @@ public:
      * valid for the life-time of the process.
      */
     const spicy::rt::Parser* parserForPacketAnalyzer(const ::zeek::packet_analysis::Tag& tag);
+#endif
 
     /**
      * Runtime method to retrieve the analyzer tag that should be passed to
@@ -128,6 +130,7 @@ public:
      */
     ::zeek::analyzer::Tag tagForFileAnalyzer(const ::zeek::analyzer::Tag& tag);
 
+#ifdef HAVE_PACKET_ANALYZERS
     /**
      * Runtime method to retrieve the analyzer tag that should be passed to
      * script-land when talking about a packet analyzer. This is normally the
@@ -138,6 +141,7 @@ public:
      * @return desired tag for passing to script-land.
      */
     ::zeek::analyzer::Tag tagForPacketAnalyzer(const ::zeek::analyzer::Tag& tag);
+#endif
 
 protected:
     /**
@@ -195,6 +199,7 @@ private:
         const spicy::rt::Parser* parser;
     };
 
+#ifdef HAVE_PACKET_ANALYZERS
     /** Captures a registered file analyzer. */
     struct PacketAnalyzerInfo {
         // Filled in when registering the analyzer.
@@ -205,10 +210,13 @@ private:
         // Filled in during InitPostScript().
         const spicy::rt::Parser* parser;
     };
+#endif
 
     std::vector<ProtocolAnalyzerInfo> _protocol_analyzers_by_subtype;
     std::vector<FileAnalyzerInfo> _file_analyzers_by_subtype;
+#ifdef HAVE_PACKET_ANALYZERS
     std::vector<PacketAnalyzerInfo> _packet_analyzers_by_subtype;
+#endif
     std::unordered_map<std::string, hilti::rt::Library> _libraries;
 };
 

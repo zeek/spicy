@@ -1,6 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <zeek-spicy/autogen/config.h>
+
+#ifdef HAVE_PACKET_ANALYZERS
+
 #include <zeek-spicy/packet-analyzer.h>
 #include <zeek-spicy/plugin.h>
 #include <zeek-spicy/runtime-support.h>
@@ -57,3 +60,5 @@ bool PacketAnalyzer::AnalyzePacket(size_t len, const uint8_t* data, ::zeek::Pack
         return false;
     }
 }
+
+#endif

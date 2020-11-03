@@ -42,6 +42,15 @@ public:
 };
 
 /**
+ * Exception thrown by event generation code if functionality is used
+ * that the current build does not support.
+ */
+class Unsupported : public hilti::rt::UserException {
+public:
+    using hilti::rt::UserException::UserException;
+};
+
+/**
  * Exception thrown by event generation code if there's a type mismatch
  * between the Spicy-side value and what the Zeek event expects.
  */
