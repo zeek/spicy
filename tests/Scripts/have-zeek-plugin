@@ -1,5 +1,10 @@
 #! /bin/sh
 #
-# Returns success if we have Zeek's Spicy plugin (and Zeek itself) available for testing
+# Returns success if we have Zeek's Spicy plugin (and Zeek itself) available for testing.
+# Optionally it also requires at least Zeek version $1.
 
-spicy-config --zeek-plugin-path >/dev/null
+min_version=0
+test $# -ge 1 && min_version=$1
+
+spicy-config --zeek-plugin-path >/dev/null && \
+    test "$(spicy-config --zeek-version)" -ge "${min_version}"
