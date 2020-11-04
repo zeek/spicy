@@ -150,7 +150,6 @@ public function tuple<strong_ref<TestOptionals>, TypeInfo> makeTestOptionals() {
 }
 
 # @TEST-START-FILE type-info.cc
-
 // Standalone test application that exercises the HILTI-side type-info API.
 
 #include <tuple>
@@ -176,7 +175,8 @@ extern auto getThreeTypeInfos()
 
 } // namespace __hlt::Test
 
-// Global counters for errors. Test will fail if this is non-zero at termination.
+// Global counters for errors. Test will fail if this is non-zero at
+// termination.
 static int errors = 0;
 
 // Macro ensuring two arguments are equal.
@@ -187,7 +187,7 @@ static int errors = 0;
 
 // Macro recording a type is having been visited. Must only be called from
 // within one of the visitors defined below.
-#define SEEN(type) seen.insert(typeid(x).name());
+#define SEEN() seen.insert(v.type().tag);
 
 // Backend for CHECK macros.
 template<typename T, typename U>
@@ -199,290 +199,375 @@ void __check_eq(const T& x, const U& y, std::string loc) {
     errors++;
 }
 
-// Visitor that checks expected values in fully initialized struct of type "TypesInit".
+// Visitor that checks expected values in fully initialized struct of type
+// "TypesInit".
 struct VisitorTypesInit {
-    std::set<std::string> seen;
+    std::set<TypeInfo::Tag> seen;
     static inline const int ExepectedVisitorsSeen = 41; // all (43) minus void and function
 
     // Helper for checking content of a struct of type "S". All our instances
     // of "S" have the same values.
     void testStruct(const type_info::Value& v) {
-        auto s = type_info::value::auxType<type_info::Struct>(v).iterate(v);
+        auto s = type_info::value::auxType<type_info::Struct>(v)->iterate(v);
         auto i = s.begin();
         auto fv = i->second;
         CHECK_EQ(i->first.name, "s");
         CHECK(fv);
-        CHECK_EQ(type_info::value::auxType<type_info::String>(fv).get(fv), "string");
+        CHECK_EQ(type_info::value::auxType<type_info::String>(fv)->get(fv), "string");
         fv = (++i)->second;
         CHECK_EQ(i->first.name, "i");
-        CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(fv).get(fv), 42);
+        CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(fv)->get(fv), 42);
         CHECK(++i == s.end());
     }
 
     void visit(const hilti::rt::type_info::Value& v) {
-        std::visit(type_info::overload{
-                       [&](const hilti::rt::type_info::Address& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), Address("1.2.3.4"));
-                       },
-                       [&](const hilti::rt::type_info::Any& x) { SEEN(); },
-                       [&](const hilti::rt::type_info::Bool& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), true);
-                       },
-                       [&](const hilti::rt::type_info::Bytes& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), "bytes"_b);
-                       },
-                       [&](const hilti::rt::type_info::BytesIterator& x) {
-                           SEEN();
-                           CHECK_EQ(*x.get(v), 'b');
-                       },
-                       [&](const hilti::rt::type_info::Enum& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v).value, 2);
-                           CHECK_EQ(x.get(v).name, "B");
-                           CHECK_EQ(x.labels().size(), 4);
-                       },
-                       [&](const hilti::rt::type_info::Error& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v).description(), "error");
-                       },
-                       [&](const hilti::rt::type_info::Exception& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v).description(), "");
-                       },
-                       [&](const hilti::rt::type_info::Function& x) { SEEN(); },
-                       [&](const hilti::rt::type_info::Interval& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), Interval(5, Interval::SecondTag()));
-                       },
-                       [&](const hilti::rt::type_info::Library& x) { SEEN(); },
-                       [&](const hilti::rt::type_info::Map& x) {
-                           SEEN();
-                           auto s = x.iterate(v);
-                           auto i = s.begin();
-                           auto [k1, v1] = *i++;
-                           CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k1).get(k1), 1);
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(v1).get(v1), "foo-1");
-                           auto [k2, v2] = *i++;
-                           CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k2).get(k2), 2);
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(v2).get(v2), "foo-2");
-                           CHECK(++i == s.end());
-                       },
-                       [&](const hilti::rt::type_info::MapIterator& x) {
-                           SEEN();
-                           auto [key, value] = x.value(v);
-                           CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(key).get(key), 1);
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(value).get(value), "foo-1");                       },
-                       [&](const hilti::rt::type_info::Network& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), Network("1.2.3.4", 16));
-                       },
-                       [&](const hilti::rt::type_info::Optional& x) {
-                           SEEN();
-                           auto i = x.value(v);
-                           CHECK(i);
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(i).get(i), "optional");
-                       },
-                       [&](const hilti::rt::type_info::Port& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), Port("1234/udp"));
-                       },
-                       [&](const hilti::rt::type_info::Real& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), 3.14);
-                       },
-                       [&](const hilti::rt::type_info::RegExp& x) {
-                           SEEN();
-                           CHECK(x.get(v) == RegExp("foo"));
-                       },
-                       [&](const hilti::rt::type_info::Result& x) {
-                           SEEN();
-                           auto i = x.value(v);
-                           CHECK(i);
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(i).get(i), "result");
-                       },
-                       [&](const hilti::rt::type_info::Set& x) {
-                           SEEN();
-                           auto s = x.iterate(v);
-                           auto i = s.begin();
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(*i).get(*i), "aaa");
-                           ++i;
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(*i).get(*i), "bbb");
-                           ++i;
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(*i).get(*i), "ccc");
-                           ++i;
-                           CHECK(i == s.end());
-                       },
-                       [&](const hilti::rt::type_info::SetIterator& x) {
-                           SEEN();
-                           auto i = x.value(v);
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(i).get(i), "aaa");
-                       },
-                       [&](const hilti::rt::type_info::SignedInteger<int8_t>& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), -8);
-                       },
-                       [&](const hilti::rt::type_info::SignedInteger<int16_t>& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), -16);
-                       },
-                       [&](const hilti::rt::type_info::SignedInteger<int32_t>& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), -32);
-                       },
-                       [&](const hilti::rt::type_info::SignedInteger<int64_t>& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), -64);
-                       },
-                       [&](const hilti::rt::type_info::Stream& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), Stream("stream"));
-                       },
-                       [&](const hilti::rt::type_info::StreamIterator& x) {
-                           SEEN();
-                           CHECK_EQ(*x.get(v), 's');
-                       },
-                       [&](const hilti::rt::type_info::StreamView& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), Stream("stream"));
-                       },
-                       [&](const hilti::rt::type_info::String& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), "string");
-                       },
-                       [&](const hilti::rt::type_info::StrongReference& x) {
-                           SEEN();
-                           CHECK(x.value(v));
-                           testStruct(x.value(v)); // TODO: failure
-                       },
-                       [&](const hilti::rt::type_info::Struct& x) {
-                           SEEN();
-                           testStruct(v);
-                       },
-                       [&](const hilti::rt::type_info::Time& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), Time(1295415110.5, Time::SecondTag()));
-                       },
-                       [&](const hilti::rt::type_info::Tuple& x) {
-                           SEEN();
-                           auto s = x.iterate(v);
-                           auto i = s.begin();
-                           CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int32_t>>(i->second).get(
-                                        i->second),
-                                    123);
-                           CHECK_EQ(i->first.name, "a");
-                           ++i;
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(i->second).get(i->second), "string");
-                           CHECK_EQ(i->first.name, "");
-                           ++i;
-                           CHECK_EQ(type_info::value::auxType<type_info::Bool>(i->second).get(i->second), true);
-                           CHECK_EQ(i->first.name, "c");
-                           ++i;
-                           CHECK(i == s.end());
-                           CHECK_EQ(x.elements().size(), 3);
-                       },
-                       [&](const hilti::rt::type_info::Union& x) {
-                           SEEN();
-                           auto i = x.value(v);
-                           CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(i).get(i), 42);
-                           CHECK_EQ(x.fields().size(), 2);
-                       },
-                       [&](const hilti::rt::type_info::UnsignedInteger<uint8_t>& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), 8);
-                       },
-                       [&](const hilti::rt::type_info::UnsignedInteger<uint16_t>& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), 16);
-                       },
-                       [&](const hilti::rt::type_info::UnsignedInteger<uint32_t>& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), 32);
-                       },
-                       [&](const hilti::rt::type_info::UnsignedInteger<uint64_t>& x) {
-                           SEEN();
-                           CHECK_EQ(x.get(v), 64);
-                       },
-                       [&](const hilti::rt::type_info::ValueReference& x) {
-                           SEEN();
-                           CHECK(x.value(v));
-                           testStruct(x.value(v));
-                       },
-                       [&](const hilti::rt::type_info::Vector& x) {
-                           SEEN();
-                           SEEN();
-                           auto s = x.iterate(v);
-                           auto i = s.begin();
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(*i).get(*i), "11");
-                           ++i;
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(*i).get(*i), "22");
-                           ++i;
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(*i).get(*i), "33");
-                           ++i;
-                           CHECK(i == s.end());
-                       },
-                       [&](const hilti::rt::type_info::VectorIterator& x) {
-                           SEEN();
-                           auto i = x.value(v);
-                           CHECK_EQ(type_info::value::auxType<type_info::String>(i).get(i), "11");
-                       },
-                       [&](const hilti::rt::type_info::Void& x) { SEEN(); },
-                       [&](const hilti::rt::type_info::WeakReference& x) {
-                           SEEN();
-                           CHECK(x.value(v));
-                           testStruct(x.value(v)); // TODO: failure
-                       },
-                       [&](const auto& x) {}},
-                   v.type().aux_type_info);
+        const auto& type = v.type();
+
+        switch ( type.tag ) {
+            case TypeInfo::Undefined:
+                CHECK(false); // Unreachable.
+                break;
+            case TypeInfo::Address: {
+                SEEN();
+                CHECK_EQ(type.address->get(v), Address("1.2.3.4"));
+                break;
+            }
+            case TypeInfo::Any: {
+                SEEN();
+                break;
+            }
+            case TypeInfo::Bool: {
+                SEEN();
+                CHECK_EQ(type.bool_->get(v), true);
+                break;
+            }
+            case TypeInfo::Bytes: {
+                SEEN();
+                CHECK_EQ(type.bytes->get(v), "bytes"_b);
+                break;
+            }
+            case TypeInfo::BytesIterator: {
+                SEEN();
+                CHECK_EQ(*type.bytes_iterator->get(v), 'b');
+                break;
+            }
+            case TypeInfo::Enum: {
+                const auto* x = type.enum_;
+                SEEN();
+                CHECK_EQ(x->get(v).value, 2);
+                CHECK_EQ(x->get(v).name, "B");
+                CHECK_EQ(x->labels().size(), 4);
+                break;
+            }
+            case TypeInfo::Error: {
+                SEEN();
+                CHECK_EQ(type.error->get(v).description(), "error");
+                break;
+            }
+            case TypeInfo::Exception: {
+                SEEN();
+                CHECK_EQ(type.exception->get(v).description(), "");
+                break;
+            }
+            case TypeInfo::Function: {
+                SEEN();
+                break;
+            }
+            case TypeInfo::Interval: {
+                SEEN();
+                CHECK_EQ(type.interval->get(v), Interval(5, Interval::SecondTag()));
+                break;
+            }
+            case TypeInfo::Library: {
+                SEEN();
+                break;
+            }
+            case TypeInfo::Map: {
+                SEEN();
+                auto s = type.map->iterate(v);
+                auto i = s.begin();
+                auto [k1, v1] = *i++;
+                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k1)->get(k1), 1);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(v1)->get(v1), "foo-1");
+                auto [k2, v2] = *i++;
+                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k2)->get(k2), 2);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(v2)->get(v2), "foo-2");
+                CHECK(++i == s.end());
+
+                break;
+            }
+            case TypeInfo::MapIterator: {
+                SEEN();
+                auto [key, value] = type.map_iterator->value(v);
+                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(key)->get(key), 1);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(value)->get(value), "foo-1");
+
+                break;
+            }
+            case TypeInfo::Network: {
+                SEEN();
+                CHECK_EQ(type.network->get(v), Network("1.2.3.4", 16));
+                break;
+            }
+            case TypeInfo::Optional: {
+                SEEN();
+                auto i = type.optional->value(v);
+                CHECK(i);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "optional");
+                break;
+            }
+            case TypeInfo::Port: {
+                SEEN();
+                CHECK_EQ(type.port->get(v), Port("1234/udp"));
+                break;
+            }
+            case TypeInfo::Real: {
+                SEEN();
+                CHECK_EQ(type.real->get(v), 3.14);
+                break;
+            }
+            case TypeInfo::RegExp: {
+                SEEN();
+                CHECK(type.regexp->get(v) == RegExp("foo"));
+                break;
+            }
+            case TypeInfo::Result: {
+                SEEN();
+                auto i = type.result->value(v);
+                CHECK(i);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "result");
+                break;
+            }
+            case TypeInfo::Set: {
+                SEEN();
+                auto s = type.set->iterate(v);
+                auto i = s.begin();
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "aaa");
+                ++i;
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "bbb");
+                ++i;
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "ccc");
+                ++i;
+                CHECK(i == s.end());
+
+                break;
+            }
+            case TypeInfo::SetIterator: {
+                SEEN();
+                auto i = type.set_iterator->value(v);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "aaa");
+                break;
+            }
+            case TypeInfo::SignedInteger_int8: {
+                SEEN();
+                CHECK_EQ(type.signed_integer_int8->get(v), -8);
+                break;
+            }
+            case TypeInfo::SignedInteger_int16: {
+                SEEN();
+                CHECK_EQ(type.signed_integer_int16->get(v), -16);
+                break;
+            }
+            case TypeInfo::SignedInteger_int32: {
+                SEEN();
+                CHECK_EQ(type.signed_integer_int32->get(v), -32);
+                break;
+            }
+            case TypeInfo::SignedInteger_int64: {
+                SEEN();
+                CHECK_EQ(type.signed_integer_int64->get(v), -64);
+                break;
+            }
+            case TypeInfo::Stream: {
+                SEEN();
+                CHECK_EQ(type.stream->get(v), Stream("stream"));
+                break;
+            }
+            case TypeInfo::StreamIterator: {
+                SEEN();
+                CHECK_EQ(*type.stream_iterator->get(v), 's');
+                break;
+            }
+            case TypeInfo::StreamView: {
+                SEEN();
+                CHECK_EQ(type.stream_view->get(v), Stream("stream"));
+                break;
+            }
+            case TypeInfo::String: {
+                SEEN();
+                CHECK_EQ(type.string->get(v), "string");
+                break;
+            }
+            case TypeInfo::StrongReference: {
+                const auto* x = type.strong_reference;
+                SEEN();
+                CHECK(x->value(v));
+                testStruct(x->value(v)); // TODO: failure
+                break;
+            }
+            case TypeInfo::Struct: {
+                SEEN();
+                testStruct(v);
+                break;
+            }
+            case TypeInfo::Time: {
+                SEEN();
+                CHECK_EQ(type.time->get(v), Time(1295415110.5, Time::SecondTag()));
+                break;
+            }
+            case TypeInfo::Tuple: {
+                SEEN();
+                const auto* x = type.tuple;
+                auto s = x->iterate(v);
+                auto i = s.begin();
+                CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int32_t>>(i->second)->get(i->second), 123);
+                CHECK_EQ(i->first.name, "a");
+                ++i;
+                CHECK_EQ(type_info::value::auxType<type_info::String>(i->second)->get(i->second), "string");
+                CHECK_EQ(i->first.name, "");
+                ++i;
+                CHECK_EQ(type_info::value::auxType<type_info::Bool>(i->second)->get(i->second), true);
+                CHECK_EQ(i->first.name, "c");
+                ++i;
+                CHECK(i == s.end());
+                CHECK_EQ(x->elements().size(), 3);
+
+                break;
+            }
+            case TypeInfo::Union: {
+                SEEN();
+                const auto* x = type.union_;
+                auto i = x->value(v);
+                CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(i)->get(i), 42);
+                CHECK_EQ(x->fields().size(), 2);
+                break;
+            }
+            case TypeInfo::UnsignedInteger_uint8: {
+                SEEN();
+                CHECK_EQ(type.unsigned_integer_uint8->get(v), 8);
+                break;
+            }
+            case TypeInfo::UnsignedInteger_uint16: {
+                SEEN();
+                CHECK_EQ(type.unsigned_integer_uint16->get(v), 16);
+                break;
+            }
+            case TypeInfo::UnsignedInteger_uint32: {
+                SEEN();
+                CHECK_EQ(type.unsigned_integer_uint32->get(v), 32);
+                break;
+            }
+            case TypeInfo::UnsignedInteger_uint64: {
+                SEEN();
+                CHECK_EQ(type.unsigned_integer_uint64->get(v), 64);
+                break;
+            }
+            case TypeInfo::ValueReference: {
+                SEEN();
+                const auto* x = type.value_reference;
+                CHECK(x->value(v));
+                testStruct(x->value(v));
+                break;
+            }
+            case TypeInfo::Vector: {
+                SEEN();
+                SEEN();
+                auto s = type.vector->iterate(v);
+                auto i = s.begin();
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "11");
+                ++i;
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "22");
+                ++i;
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "33");
+                ++i;
+                CHECK(i == s.end());
+
+                break;
+            }
+            case TypeInfo::VectorIterator: {
+                SEEN();
+                auto i = type.vector_iterator->value(v);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "11");
+                break;
+            }
+            case TypeInfo::Void: {
+                SEEN();
+                break;
+            }
+            case TypeInfo::WeakReference: {
+                SEEN();
+                const auto* x = type.weak_reference;
+                CHECK(x->value(v));
+                testStruct(x->value(v)); // TODO: failure
+                break;
+            }
+        }
     }
 };
 
-// Visitor that checks expected values in default initialized struct of type "TypesInit".
+// Visitor that checks expected values in default initialized struct of type
+// "TypesInit".
 struct VisitorTypesDefault {
-    std::set<std::string> seen;
+    std::set<TypeInfo::Tag> seen;
     static inline const int ExepectedVisitorsSeen = 5;
 
     void visit(const hilti::rt::type_info::Value& v) {
-        std::visit(type_info::overload{[&](const hilti::rt::type_info::Optional& x) {
-                                           SEEN();
-                                           CHECK(! x.value(v));
-                                       },
-                                       [&](const hilti::rt::type_info::Result& x) {
-                                           SEEN();
-                                           CHECK(! x.value(v));
-                                       },
-                                       [&](const hilti::rt::type_info::StrongReference& x) {
-                                           SEEN();
-                                           CHECK(! x.value(v));
-                                       },
-                                       [&](const hilti::rt::type_info::Union& x) {
-                                           SEEN();
-                                           CHECK(! x.value(v));
-                                       },
-                                       [&](const hilti::rt::type_info::WeakReference& x) {
-                                           SEEN();
-                                           CHECK(! x.value(v));
-                                       },
-                                       [&](const auto& x) {}},
-                   v.type().aux_type_info);
+        const auto& type = v.type();
+
+        switch ( type.tag ) {
+            case TypeInfo::Optional: {
+                SEEN();
+                CHECK(! type.optional->value(v));
+                break;
+            }
+            case TypeInfo::Result: {
+                SEEN();
+                CHECK(! type.result->value(v));
+                break;
+            }
+            case TypeInfo::StrongReference: {
+                SEEN();
+                CHECK(! type.strong_reference->value(v));
+                break;
+            }
+            case TypeInfo::Union: {
+                SEEN();
+                CHECK(! type.union_->value(v));
+                break;
+            }
+            case TypeInfo::WeakReference: {
+                SEEN();
+                CHECK(! type.weak_reference->value(v));
+                break;
+            }
+            default: {
+                // Do nothing for other types.
+                break;
+            }
+        }
     }
 };
 
-// Visitor that checks expected values in partially initialized struct of type "TypesOptionals".
+// Visitor that checks expected values in partially initialized struct of type
+// "TypesOptionals".
 struct VisitorOptionals {
     int num_strings = 0;
     void visit(const hilti::rt::type_info::Value& v) {
-        std::visit(type_info::overload{[&](const hilti::rt::type_info::String& x) {
-                                           num_strings++;
-                                           CHECK_EQ(x.get(v), "yes");
-                                       },
-                                       [&](const auto&) {}},
-                   v.type().aux_type_info);
-    };
-};
+        const auto& type = v.type();
 
+        switch ( type.tag ) {
+            case TypeInfo::String: {
+                ++num_strings;
+                CHECK_EQ(type.string->get(v), "yes");
+                break;
+            }
+            default: {
+                // Do nothing for other types.
+                break;
+            }
+        }
+    }
+};
 
 int main(int argc, char** argv) {
     hilti::rt::init();
@@ -505,7 +590,7 @@ int main(int argc, char** argv) {
     VisitorTypesInit visitor_init;
     type_info::value::Parent p_init(x_init);
     auto v_init = type_info::Value(x_init.get(), ti_types, p_init);
-    for ( auto f : type_info::value::auxType<type_info::Struct>(v_init).iterate(v_init) )
+    for ( auto f : type_info::value::auxType<type_info::Struct>(v_init)->iterate(v_init) )
         visitor_init.visit(f.second);
 
     CHECK_EQ(visitor_init.seen.size(), VisitorTypesInit::ExepectedVisitorsSeen);
@@ -514,7 +599,7 @@ int main(int argc, char** argv) {
     VisitorTypesDefault visitor_default;
     type_info::value::Parent p_default(x_default);
     auto v_default = type_info::Value(x_default.get(), ti_types, p_default);
-    for ( auto f : type_info::value::auxType<type_info::Struct>(v_default).iterate(v_default) )
+    for ( auto f : type_info::value::auxType<type_info::Struct>(v_default)->iterate(v_default) )
         visitor_default.visit(f.second);
 
     CHECK_EQ(visitor_default.seen.size(), VisitorTypesDefault::ExepectedVisitorsSeen);
@@ -524,7 +609,7 @@ int main(int argc, char** argv) {
     type_info::value::Parent p_optionals(x_default);
     auto v_optionals = type_info::Value(x_optionals.get(), ti_optionals, p_optionals);
     int idx = 0;
-    for ( auto f : type_info::value::auxType<type_info::Struct>(v_optionals).iterate(v_optionals) ) {
+    for ( auto f : type_info::value::auxType<type_info::Struct>(v_optionals)->iterate(v_optionals) ) {
         if ( idx == 0 ) {
             CHECK(f.second);
             visitor2.visit(f.second);
@@ -548,5 +633,4 @@ int main(int argc, char** argv) {
     std::cerr << "all good" << std::endl;
     hilti::rt::done();
 }
-
 # @TEST-END-FILE

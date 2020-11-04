@@ -1,14 +1,6 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
-//
-// TODO(robin): This may not be the most efficient solution for implementing fibers
-// yet (due to using std::function, std::any)
-//
-// There are also at least two proposals for upcoming version of C++ that could implement this:
-//      - Coroutunes: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4680.pdf
-//      - Fibers: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0876r0.pdf
 
 #pragma once
-
 #include <any>
 #include <csetjmp>
 #include <functional>
@@ -21,6 +13,7 @@
 #include <vector>
 
 #include <hilti/rt/exception.h>
+#include <hilti/rt/lambda.h>
 
 extern "C" {
 // libtask introduces "Context" into the global scope, which leads
@@ -64,7 +57,7 @@ public:
     Fiber& operator=(const Fiber&) = delete;
     Fiber& operator=(Fiber&&) = delete;
 
-    void init(std::function<std::any(resumable::Handle*)> f) {
+    void init(Lambda<std::any(resumable::Handle*)> f) {
         _result = {};
         _exception = nullptr;
         _function = std::move(f);
@@ -110,7 +103,7 @@ private:
     void _finishSwitchFiber(const char* tag);
 
     State _state{State::Init};
-    std::optional<std::function<std::any(resumable::Handle*)>> _function;
+    std::optional<Lambda<std::any(resumable::Handle*)>> _function;
     std::optional<std::any> _result;
     std::exception_ptr _exception;
 
@@ -153,20 +146,8 @@ public:
      * @param f function to be executed
      */
     template<typename Function, typename = std::enable_if_t<std::is_invocable<Function, resumable::Handle*>::value>>
-    Resumable(Function f) {
-        _fiber = detail::Fiber::create();
-
-        std::function<std::any(resumable::Handle*)> x = [f](resumable::Handle* r) -> std::any {
-            using R = decltype(f(static_cast<resumable::Handle*>(nullptr)));
-            if constexpr ( std::is_same<R, void>::value ) {
-                f(r);
-                return true;
-            }
-            else // NOLINT
-                return f(r);
-        };
-
-        _fiber->init(std::move(x));
+    Resumable(Function f) : _fiber(detail::Fiber::create()) {
+        _fiber->init(std::move(f));
     }
 
     Resumable(Resumable&& r) noexcept : _fiber(std::move(r._fiber)), _result(std::move(r._result)) {}

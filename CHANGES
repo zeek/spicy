@@ -1,4 +1,14 @@
 
+0.4.0-999 | 2020-11-04 15:18:45 +0100
+
+  * Use a lightweight lambda class to callbacks executing on fibers. (Benjamin Bannier, Corelight)
+
+  * Require all callbacks executing on fibers to return something. (Benjamin Bannier, Corelight)
+
+  * Remove unused type_info::overload. (Benjamin Bannier, Corelight)
+
+  * GH-546: Model `TypeInfo` with a union instead of a `std::variant`. (Benjamin Bannier, Corelight)
+
 0.4.0-994 | 2020-11-03 09:22:40 +0000
 
   * Update test baseline. (Robin Sommer, Corelight)

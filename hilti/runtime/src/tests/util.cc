@@ -15,6 +15,7 @@
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/result.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
@@ -383,7 +384,7 @@ TEST_CASE("memory_statistics") {
     REQUIRE_EQ(ru0.cached_fibers, 0u);
 
     // Execute a single fiber.
-    hilti::rt::fiber::execute([](auto* p) { return; });
+    hilti::rt::fiber::execute([](auto* p) { return Nothing(); });
 
     // Sleep again to give timing measurements a chance to differ. They might still
     // end up being indistinguishable from the previous measurements, though.

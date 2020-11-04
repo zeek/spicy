@@ -6,6 +6,7 @@
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/init.h>
+#include <hilti/rt/result.h>
 
 class TestDtor { //NOLINT
 public:
@@ -28,6 +29,7 @@ TEST_CASE("execute-void") {
     auto f = [&](hilti::rt::resumable::Handle* r) {
         TestDtor t(c);
         x = "Hello from fiber!";
+        return hilti::rt::Nothing();
     };
 
     auto r = hilti::rt::fiber::execute(f);
@@ -41,12 +43,18 @@ TEST_CASE("reuse-from-cache") {
 
     int x = 0;
 
-    auto f1 = [&](hilti::rt::resumable::Handle* r) { x += 1; };
+    auto f1 = [&](hilti::rt::resumable::Handle* r) {
+        x += 1;
+        return hilti::rt::Nothing();
+    };
     auto r1 = hilti::rt::fiber::execute(f1);
     REQUIRE(r1);
     CHECK(x == 1);
 
-    auto f2 = [&](hilti::rt::resumable::Handle* r) { x += 1; };
+    auto f2 = [&](hilti::rt::resumable::Handle* r) {
+        x += 1;
+        return hilti::rt::Nothing();
+    };
     auto r2 = hilti::rt::fiber::execute(f2);
     REQUIRE(r2);
     CHECK(x == 2);
@@ -92,6 +100,7 @@ TEST_CASE("resume-void") {
         x += "fiber";
         r->yield();
         x += "!";
+        return hilti::rt::Nothing();
     };
 
     auto r = hilti::rt::fiber::execute(f);
@@ -157,6 +166,7 @@ TEST_CASE("exception") {
         x = "Hello";
         throw std::runtime_error("kaputt");
         x += " from fiber!";
+        return hilti::rt::Nothing();
     };
 
     try {
@@ -176,6 +186,7 @@ TEST_CASE("exception") {
         x += " from";
         throw std::runtime_error("kaputt");
         x += " fiber!";
+        return hilti::rt::Nothing();
     };
 
     auto r2 = hilti::rt::fiber::execute(f2);
@@ -198,6 +209,8 @@ TEST_CASE("abort") {
         x = "Hello";
         r->yield();
         x += " from fiber!";
+
+        return hilti::rt::Nothing();
     };
 
     auto r = hilti::rt::fiber::execute(f);
@@ -215,7 +228,10 @@ TEST_CASE("stats") {
     hilti::rt::init();
     hilti::rt::detail::Fiber::reset(); // reset cache and counters
 
-    auto f = [&](hilti::rt::resumable::Handle* r) { r->yield(); };
+    auto f = [&](hilti::rt::resumable::Handle* r) {
+        r->yield();
+        return hilti::rt::Nothing();
+    };
 
     auto r1 = hilti::rt::fiber::execute(f);
     auto r2 = hilti::rt::fiber::execute(f);

@@ -9,204 +9,217 @@
 using namespace hilti::rt;
 
 void TextPrinter::print(const type_info::Value& v) {
-    std::visit(type_info::overload{[&](const hilti::rt::type_info::Address& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::Any& x) { out() << "<any>"; },
-                                   [&](const hilti::rt::type_info::Bool& x) { out() << (x.get(v) ? "True" : "False"); },
-                                   [&](const hilti::rt::type_info::Bytes& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::BytesIterator& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::Enum& x) { out() << x.get(v).name; },
-                                   [&](const hilti::rt::type_info::Error& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::Exception& x) {
-                                       out() << "<exception: " << x.get(v).description() << ">";
-                                   },
-                                   [&](const hilti::rt::type_info::Function& x) { out() << "<function>"; },
-                                   [&](const hilti::rt::type_info::Interval& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::Library& x) { out() << "<library value>"; },
-                                   [&](const hilti::rt::type_info::Map& x) {
-                                       auto first = true;
+    const auto& type = v.type();
 
-                                       out() << '{';
+    switch ( v.type().tag ) {
+        case TypeInfo::Undefined: throw RuntimeError("unhandled type");
+        case TypeInfo::Address: out() << type.address->get(v); break;
+        case TypeInfo::Any: out() << "<any>"; break;
+        case TypeInfo::Bool: out() << (type.bool_->get(v) ? "True": "False"); break;
+        case TypeInfo::Bytes: out() << to_string_for_print(type.bytes->get(v)); break;
+        case TypeInfo::BytesIterator: out() << to_string(type.bytes_iterator->get(v)); break;
+        case TypeInfo::Enum: out() << type.enum_->get(v).name; break;
+        case TypeInfo::Error: out() << to_string(type.error->get(v)); break;
+        case TypeInfo::Exception: out() << "<exception: " << type.exception->get(v).description() << '>'; break;
+        case TypeInfo::Function: out() << "<function>"; break;
+        case TypeInfo::Interval: out() << type.interval->get(v); break;
+        case TypeInfo::Library: out() << "<library value>"; break;
+        case TypeInfo::Map: {
+            auto first = true;
 
-                                       for ( auto [key, value] : x.iterate(v) ) {
-                                           if ( ! first )
-                                               out() << ", ";
-                                           else
-                                               first = false;
+            out() << '{';
 
-                                           print(key);
-                                           out() << ": ";
-                                           print(value);
-                                       }
+            for ( auto [key, value] : type.map->iterate(v) ) {
+                if ( ! first )
+                    out() << ", ";
+                else
+                    first = false;
 
-                                       out() << '}';
-                                   },
-                                   [&](const hilti::rt::type_info::MapIterator& x) {
-                                       auto [key, value] = x.value(v);
-                                       print(key);
-                                       out() << ": ";
-                                       print(value);
-                                   },
-                                   [&](const hilti::rt::type_info::Network& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::Optional& x) {
-                                       if ( auto y = x.value(v) )
-                                           print(y);
-                                       else
-                                           out() << "(not set)";
-                                   },
-                                   [&](const hilti::rt::type_info::Port& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::Real& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::RegExp& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::Result& x) {
-                                       if ( auto y = x.value(v) )
-                                           print(y);
-                                       else
-                                           out() << "<error>";
-                                   },
-                                   [&](const hilti::rt::type_info::Set& x) {
-                                       auto first = true;
+                print(key);
+                out() << ": ";
+                print(value);
+            }
 
-                                       out() << '{';
+            out() << '}';
+            break;
+        }
+        case TypeInfo::MapIterator: {
+            auto [key, value] = type.map_iterator->value(v);
+            print(key);
+            out() << ": ";
+            print(value);
+            break;
+        }
+        case TypeInfo::Network: out() << type.network->get(v); break;
+        case TypeInfo::Optional: {
+            if ( auto y = type.optional->value(v) )
+                print(y);
+            else
+                out() << "(not set)";
+            break;
+        }
+        case TypeInfo::Port: out() << type.port->get(v); break;
+        case TypeInfo::Real: out() << type.real->get(v); break;
+        case TypeInfo::RegExp: out() << type.regexp->get(v); break;
+        case TypeInfo::Result: {
+            if ( auto y = type.result->value(v) )
+                print(y);
+            else
+                out() << "<error>";
+            break;
+        }
+        case TypeInfo::Set: {
+            auto first = true;
 
-                                       for ( auto i : x.iterate(v) ) {
-                                           if ( ! first )
-                                               out() << ", ";
-                                           else
-                                               first = false;
+            out() << '{';
 
-                                           print(i);
-                                       }
+            for ( auto i : type.set->iterate(v) ) {
+                if ( ! first )
+                    out() << ", ";
+                else
+                    first = false;
 
-                                       out() << '}';
-                                   },
-                                   [&](const hilti::rt::type_info::SetIterator& x) { print(x.value(v)); },
-                                   [&](const hilti::rt::type_info::SignedInteger<int8_t>& x) {
-                                       out() << static_cast<int16_t>(x.get(v));
-                                   },
-                                   [&](const hilti::rt::type_info::SignedInteger<int16_t>& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::SignedInteger<int32_t>& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::SignedInteger<int64_t>& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::Stream& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::StreamIterator& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::StreamView& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::String& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::StrongReference& x) {
-                                       if ( auto y = x.value(v) )
-                                           print(x.value(v));
-                                       else
-                                           out() << "Null";
-                                   },
-                                   [&](const hilti::rt::type_info::Struct& x) {
-                                       out() << v.type().display << " {";
+                print(i);
+            }
 
-                                       const auto& offsets = spicy::rt::get_offsets_for_unit(x, v);
+            out() << '}';
+            break;
+        }
+        case TypeInfo::SetIterator: print(type.set_iterator->value(v)); break;
+        case TypeInfo::SignedInteger_int8: out() << static_cast<int16_t>(type.signed_integer_int8->get(v)); break;
+        case TypeInfo::SignedInteger_int16: out() << type.signed_integer_int16->get(v); break;
+        case TypeInfo::SignedInteger_int32: out() << type.signed_integer_int32->get(v); break;
+        case TypeInfo::SignedInteger_int64: out() << type.signed_integer_int64->get(v); break;
+        case TypeInfo::Stream: out() << type.stream->get(v); break;
+        case TypeInfo::StreamIterator: out() << type.stream_iterator->get(v); break;
+        case TypeInfo::StreamView: out() << type.stream_view->get(v); break;
+        case TypeInfo::String: out() << type.string->get(v); break;
+        case TypeInfo::StrongReference: {
+            const auto* x = type.strong_reference;
+            if ( auto y = x->value(v) )
+                print(x->value(v));
+            else
+                out() << "Null";
+            break;
+        }
+        case TypeInfo::Struct: {
+            out() << v.type().display << " {";
 
-                                       bool empty = true;
-                                       uint64_t index = 0;
-                                       indent([&]() {
-                                           for ( const auto& [f, y] : x.iterate(v) ) {
-                                               if ( y ) {
-                                                   out() << '\n';
-                                                   outputIndent();
-                                                   out() << f.name << ": ";
-                                                   print(y);
+            const auto* x = type.struct_;
 
-                                                   const auto& offset = offsets && offsets->size() > index ?
-                                                                            offsets->at(index) :
-                                                                            std::nullopt;
+            const auto& offsets = spicy::rt::get_offsets_for_unit(*x, v);
 
-                                                   if ( _options.include_offsets && offset ) {
-                                                       const auto& start = std::get<0>(*offset);
-                                                       const auto& end = std::get<1>(*offset);
+            bool empty = true;
+            uint64_t index = 0;
+            indent([&]() {
+                for ( const auto& [f, y] : x->iterate(v) ) {
+                    if ( y ) {
+                        out() << '\n';
+                        outputIndent();
+                        out() << f.name << ": ";
+                        print(y);
 
-                                                       out() << " [" << start << ", ";
+                        const auto& offset = offsets && offsets->size() > index ? offsets->at(index) : std::nullopt;
 
-                                                       if ( end )
-                                                           out() << *end;
-                                                       else
-                                                           out() << "-";
-                                                       out() << "]";
-                                                   }
+                        if ( _options.include_offsets && offset ) {
+                            const auto& start = std::get<0>(*offset);
+                            const auto& end = std::get<1>(*offset);
 
-                                                   empty = false;
-                                               }
+                            out() << " [" << start << ", ";
 
-                                               ++index;
-                                           }
-                                       });
+                            if ( end )
+                                out() << *end;
+                            else
+                                out() << "-";
+                            out() << "]";
+                        }
 
-                                       if ( ! empty ) {
-                                           out() << '\n';
-                                           outputIndent();
-                                       }
+                        empty = false;
+                    }
 
-                                       out() << "}";
-                                   },
-                                   [&](const hilti::rt::type_info::Time& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::Tuple& x) {
-                                       auto first = true;
+                    ++index;
+                }
+            });
 
-                                       out() << '(';
+            if ( ! empty ) {
+                out() << '\n';
+                outputIndent();
+            }
 
-                                       for ( auto i : x.iterate(v) ) {
-                                           if ( ! first )
-                                               out() << ", ";
-                                           else
-                                               first = false;
+            out() << "}";
+            break;
+        }
+        case TypeInfo::Time: out() << type.time->get(v); break;
+        case TypeInfo::Tuple: {
+            auto first = true;
 
-                                           if ( i.first.name.size() )
-                                               out() << i.first.name << ": ";
+            out() << '(';
 
-                                           print(i.second);
-                                       }
+            for ( auto i : type.tuple->iterate(v) ) {
+                if ( ! first )
+                    out() << ", ";
+                else
+                    first = false;
 
-                                       out() << ')';
-                                   },
-                                   [&](const hilti::rt::type_info::Union& x) {
-                                       if ( auto y = x.value(v) )
-                                           print(y);
-                                       else
-                                           out() << "(not set)";
-                                   },
-                                   [&](const hilti::rt::type_info::UnsignedInteger<uint8_t>& x) {
-                                       out() << static_cast<int16_t>(x.get(v));
-                                   },
-                                   [&](const hilti::rt::type_info::UnsignedInteger<uint16_t>& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::UnsignedInteger<uint32_t>& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::UnsignedInteger<uint64_t>& x) { out() << x.get(v); },
-                                   [&](const hilti::rt::type_info::ValueReference& x) {
-                                       if ( auto y = x.value(v) )
-                                           print(x.value(v));
-                                       else
-                                           out() << "Null";
-                                   },
-                                   [&](const hilti::rt::type_info::Vector& x) {
-                                       out() << "[";
+                if ( i.first.name.size() )
+                    out() << i.first.name << ": ";
 
-                                       bool empty = true;
-                                       indent([&]() {
-                                           for ( auto i : x.iterate(v) ) {
-                                               out() << "\n";
-                                               outputIndent();
-                                               print(i);
-                                               empty = false;
-                                           }
-                                       });
+                print(i.second);
+            }
 
-                                       if ( ! empty ) {
-                                           out() << '\n';
-                                           outputIndent();
-                                       }
-                                       out() << "]";
-                                   },
-                                   [&](const hilti::rt::type_info::VectorIterator& x) { print(x.value(v)); },
-                                   [&](const hilti::rt::type_info::Void& x) { out() << "<void>"; },
-                                   [&](const hilti::rt::type_info::WeakReference& x) {
-                                       if ( auto y = x.value(v) )
-                                           print(x.value(v));
-                                       else
-                                           out() << "Null";
-                                   }
+            out() << ')';
+            break;
+        }
+        case TypeInfo::Union: {
+            if ( auto y = type.union_->value(v) )
+                print(y);
+            else
+                out() << "(not set)";
+            break;
+        }
+        case TypeInfo::UnsignedInteger_uint8:
+            out() << static_cast<int16_t>(type.unsigned_integer_uint8->get(v));
+            break;
+        case TypeInfo::UnsignedInteger_uint16: out() << type.unsigned_integer_uint16->get(v); break;
+        case TypeInfo::UnsignedInteger_uint32: out() << type.unsigned_integer_uint32->get(v); break;
+        case TypeInfo::UnsignedInteger_uint64: out() << type.unsigned_integer_uint64->get(v); break;
+        case TypeInfo::ValueReference: {
+            const auto* x = type.value_reference;
+            if ( auto y = x->value(v) )
+                print(x->value(v));
+            else
+                out() << "Null";
+            break;
+        }
+        case TypeInfo::Vector: {
+            out() << "[";
 
-               },
-               v.type().aux_type_info);
+            bool empty = true;
+            indent([&]() {
+                for ( auto i : type.vector->iterate(v) ) {
+                    out() << "\n";
+                    outputIndent();
+                    print(i);
+                    empty = false;
+                }
+            });
+
+            if ( ! empty ) {
+                out() << '\n';
+                outputIndent();
+            }
+            out() << "]";
+            break;
+        }
+        case TypeInfo::VectorIterator: print(type.vector_iterator->value(v)); break;
+        case TypeInfo::Void: out() << "<void>"; break;
+        case TypeInfo::WeakReference: {
+            const auto* x = type.weak_reference;
+            if ( auto y = x->value(v) )
+                print(x->value(v));
+            else
+                out() << "Null";
+            break;
+        }
+    }
 }

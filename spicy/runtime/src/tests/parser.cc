@@ -25,6 +25,7 @@
 
 using hilti::rt::Bytes;
 using hilti::rt::fmt;
+using hilti::rt::Nothing;
 using hilti::rt::Port;
 using hilti::rt::Protocol;
 using hilti::rt::to_string;
@@ -176,7 +177,10 @@ TEST_CASE("waitForEod") {
     auto view = data->view();
     auto filters = hilti::rt::StrongReference<filter::detail::Filters>();
 
-    auto _waitForEod = [&](hilti::rt::resumable::Handle*) { return detail::waitForEod(data, view, filters); };
+    auto _waitForEod = [&](hilti::rt::resumable::Handle*) {
+        detail::waitForEod(data, view, filters);
+        return Nothing();
+    };
     auto waitForEod = [&]() { return hilti::rt::fiber::execute(_waitForEod); };
 
     SUBCASE("open ended") { view = data->view(true); }
@@ -198,7 +202,8 @@ TEST_CASE("waitForInput") {
     auto filters = hilti::rt::StrongReference<filter::detail::Filters>();
 
     auto _waitForInput = [&](hilti::rt::resumable::Handle*) {
-        return detail::waitForInput(data, view, "error message", "location", filters);
+        detail::waitForInput(data, view, "error message", "location", filters);
+        return Nothing();
     };
 
     auto waitForInput = [&]() { return hilti::rt::fiber::execute(_waitForInput); };
@@ -236,7 +241,8 @@ TEST_CASE("waitForInput with min") {
     auto filters = hilti::rt::StrongReference<filter::detail::Filters>();
 
     auto _waitForInput = [&](hilti::rt::resumable::Handle*) {
-        return detail::waitForInput(data, view, 3, "error message", "location", filters);
+        detail::waitForInput(data, view, 3, "error message", "location", filters);
+        return true;
     };
 
     auto waitForInput = [&]() { return hilti::rt::fiber::execute(_waitForInput); };
@@ -349,12 +355,14 @@ TEST_CASE("waitForInputOrEod with min") {
                 if ( ++called1 == 1 )
                     h->yield();
                 ++called1;
+                return Nothing();
             }}));
 
             filters->push_back(filter::detail::OneFilter({.resumable = [&](hilti::rt::resumable::Handle* h) {
                 if ( ++called2 == 1 )
                     h->yield();
                 ++called2;
+                return Nothing();
             }}));
 
             REQUIRE_EQ(called1, 0);
