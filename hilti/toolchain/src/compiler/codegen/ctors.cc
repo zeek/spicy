@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <cstdio>
+
 #include <hilti/rt/util.h>
 
 #include <hilti/ast/ctors/all.h>
@@ -92,8 +94,13 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const ctor::Port& n) { return fmt("hilti::rt::Port(\"%s\")", n.value()); }
 
     result_t operator()(const ctor::Real& n) {
-        // hexfloat format for lossless output, at most 13 fraction hexits
-        return fmt("%a", n.value());
+        // We use hexformat for lossless serialization. Older platforms like
+        // centos7 have inconsistent support for that in iostreams so we use
+        // C99 snprintf instead.
+        constexpr size_t size = 256;
+        char buf[size];
+        std::snprintf(buf, size, "%a", n.value());
+        return buf;
     }
 
     result_t operator()(const ctor::Result& n) {

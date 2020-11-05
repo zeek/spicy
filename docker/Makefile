@@ -28,6 +28,15 @@ test-alpine-3.12: build-alpine-3.12
 run-alpine-3.12:
 	./docker-helper run alpine-3.12
 
+build-centos-7:
+	./docker-helper build centos-7
+
+test-centos-7: build-centos-7
+	./docker-helper test centos-7
+
+run-centos-7:
+	./docker-helper run centos-7
+
 build-centos-8:
 	./docker-helper build centos-8
 

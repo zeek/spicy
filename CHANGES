@@ -1,4 +1,8 @@
 
+0.4.0-1011 | 2020-11-05 17:09:53 +0100
+
+  * GH-451: Support building on centos7 (Benjamin Bannier, Corelight)
+
 0.4.0-1006 | 2020-11-05 12:56:56 +0000
 
   * GH-497: Add support for packet analyzers to Zeek plugin. (Robin Sommer,
