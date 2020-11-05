@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <cstdio>
+
 #include <hilti/ast/all.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/base/logger.h>
@@ -236,7 +238,15 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const ctor::Port& n) { out << n.value(); }
 
-    void operator()(const ctor::Real& n) { out << fmt("%a", n.value()); }
+    void operator()(const ctor::Real& n) {
+        // We use hexformat for lossless serialization. Older platforms like
+        // centos7 have inconsistent support for that in iostreams so we use
+        // C99 snprintf instead.
+        constexpr size_t size = 256;
+        char buf[size];
+        std::snprintf(buf, size, "%a", n.value());
+        out << buf;
+    }
 
     void operator()(const ctor::StrongReference& n) { out << "Null"; }
 
