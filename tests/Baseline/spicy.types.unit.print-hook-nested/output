@@ -1,7 +1,7 @@
 in B:, B
 in C:, [$c=3]
-in A1:, A1
-in x, A1
+in A1:, b: B c: [$c=3]
+in x, b: B c: [$c=3]
 in B:, B
 in C:, [$c=6]
 in A2:, [$a=4, $b=B, $c=[$c=6]]

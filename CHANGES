@@ -1,4 +1,8 @@
 
+0.4.0-1001 | 2020-11-05 08:47:23 +0000
+
+  * Use stable names for hook implementations, plus a text fix.
+
 0.4.0-999 | 2020-11-04 15:18:45 +0100
 
   * Use a lightweight lambda class to callbacks executing on fibers. (Benjamin Bannier, Corelight)
