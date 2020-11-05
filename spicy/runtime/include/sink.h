@@ -112,7 +112,7 @@ public:
     ~Sink() { _close(true); }
 
     Sink(const Sink&) = delete;
-    Sink(Sink&&) noexcept = default;
+    Sink(Sink&&) = default;
     Sink& operator=(const Sink&) = delete;
     Sink& operator=(Sink&&) noexcept = default;
 
