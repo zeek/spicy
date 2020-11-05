@@ -453,6 +453,16 @@ bool GlueCompiler::loadEvtFile(hilti::rt::filesystem::path& path) {
                 ZEEK_DEBUG(hilti::util::fmt("  Got file analyzer definition for %s", a.name));
             }
 
+            else if ( looking_at(*chunk, 0, "packet") ) {
+#ifdef HAVE_PACKET_ANALYZERS
+                auto a = parsePacketAnalyzer(*chunk);
+                _packet_analyzers.push_back(a);
+                ZEEK_DEBUG(hilti::util::fmt("  Got packet analyzer definition for %s", a.name));
+#else
+                throw ParseError("packet analyzers require Zeek >= 4.0");
+#endif
+            }
+
             else if ( looking_at(*chunk, 0, "on") ) {
                 auto ev = parseEvent(*chunk);
                 ev.file = path;
@@ -646,6 +656,42 @@ glue::FileAnalyzer GlueCompiler::parseFileAnalyzer(const std::string& chunk) {
     return a;
 }
 
+#ifdef HAVE_PACKET_ANALYZERS
+glue::PacketAnalyzer GlueCompiler::parsePacketAnalyzer(const std::string& chunk) {
+    glue::PacketAnalyzer a;
+    a.location = _locations.back();
+
+    size_t i = 0;
+
+    eat_token(chunk, &i, "packet");
+    eat_token(chunk, &i, "analyzer");
+
+    // We don't normalize the name here so that the user can address
+    // it with the expected spelling.
+    a.name = extract_id(chunk, &i).str();
+
+    eat_token(chunk, &i, ":");
+
+    while ( true ) {
+        if ( looking_at(chunk, i, "parse") ) {
+            eat_token(chunk, &i, "parse");
+            eat_token(chunk, &i, "with");
+            a.unit_name = extract_id(chunk, &i);
+        }
+
+        else
+            throw ParseError("unexpect token");
+
+        if ( looking_at(chunk, i, ";") )
+            break; // All done.
+
+        eat_token(chunk, &i, ",");
+    }
+
+    return a;
+}
+#endif
+
 glue::Event GlueCompiler::parseEvent(const std::string& chunk) {
     glue::Event ev;
     ev.location = _locations.back();
@@ -783,6 +829,29 @@ bool GlueCompiler::compile() {
 
         init_module.add(std::move(register_));
     }
+
+#ifdef HAVE_PACKET_ANALYZERS
+    for ( auto& a : _packet_analyzers ) {
+        ZEEK_DEBUG(hilti::util::fmt("Adding packet analyzer '%s'", a.name));
+
+        if ( a.unit_name ) {
+            if ( auto ui = _driver->lookupUnit(a.unit_name) )
+                a.unit = *ui;
+            else {
+                hilti::logger().error(
+                    hilti::util::fmt("unknown unit type %s with packet analyzer %s", a.unit_name, a.name));
+                return false;
+            }
+        }
+
+        auto register_ =
+            builder::call("zeek_rt::register_packet_analyzer",
+                          {builder::string(a.name),
+                           builder::string(a.unit_name)});
+
+        init_module.add(std::move(register_));
+    }
+#endif
 
 #if 0
     // Check that our events align with what's defined on the Zeek side.

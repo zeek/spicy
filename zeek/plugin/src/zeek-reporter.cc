@@ -96,4 +96,16 @@ void reporter::analyzerError(::zeek::file_analysis::Analyzer* a, const std::stri
         a->SetSkip(1); // Imitate what AnalyzerError() does for protocol analyzers.
 }
 
+#ifdef HAVE_PACKET_ANALYZERS
+void reporter::analyzerError(::zeek::packet_analysis::Analyzer* a, const std::string& msg, const std::string& location) {
+    // Zeek's AnalyzerError() prints a location, so set that.
+    auto zeek_location = _makeLocation(location);
+    ::zeek::reporter->PushLocation(zeek_location.get());
+    // Zeek doesn't have an reporter error for packet analyzers, so we log
+    // this as a weird instead.
+    ::zeek::reporter->Weird("packet_error", msg.c_str());
+    ::zeek::reporter->PopLocation();
+}
+#endif
+
 int reporter::numberErrors() { return ::zeek::reporter->Errors(); }

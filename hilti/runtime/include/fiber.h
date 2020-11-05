@@ -184,16 +184,17 @@ public:
      * called before completion; check with `operator bool()` first.
      */
     template<typename Result>
-    Result get() const {
+    const Result& get() const {
         assert(static_cast<bool>(_result));
 
         if constexpr ( std::is_same<Result, void>::value )
-            return;
-
-        try {
-            return std::any_cast<Result>(*_result);
-        } catch ( const std::bad_any_cast& ) {
-            throw InvalidArgument("mismatch in result type");
+            return {};
+        else {
+            try {
+                return std::any_cast<const Result&>(*_result);
+            } catch ( const std::bad_any_cast& ) {
+                throw InvalidArgument("mismatch in result type");
+            }
         }
     }
 

@@ -92,7 +92,7 @@ public:
      * @throws any exceptions (including in particular final parse errors)
      * are passed through to caller
      */
-    void finish();
+    std::optional<hilti::rt::stream::Offset> finish();
 
     /**
      * Resets parsing back to its original state as if no input had been sent

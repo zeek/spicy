@@ -10,6 +10,10 @@ target_include_directories(zeek-compiler BEFORE PUBLIC "${CMAKE_CURRENT_SOURCE_D
 target_compile_options(zeek-compiler PRIVATE "-fPIC")
 target_link_libraries(zeek-compiler PRIVATE spicy)
 
+if ( ${ZEEK_VERSION_NUMBER} GREATER_EQUAL 30300 ) # Zeek >= 3.3 (aka 4.0)
+    target_compile_definitions(zeek-compiler PUBLIC "HAVE_PACKET_ANALYZERS")
+endif ()
+
 add_executable(spicyz bin/spicyz.cc)
 target_compile_options(spicyz PRIVATE "-Wall")
 target_link_libraries(spicyz PRIVATE zeek-compiler)

@@ -60,6 +60,19 @@ struct FileAnalyzer {
     std::optional<UnitInfo> unit; /**< The type of the unit to parse the originator side. */
 };
 
+#ifdef HAVE_PACKET_ANALYZERS
+/** Representation of a Spicy packet analyzer, parsed from an EVT file. */
+struct PacketAnalyzer {
+    // Information parsed directly from the *.evt file.
+    hilti::Location location;            /**< Location where the analyzer was defined. */
+    hilti::ID name;                      /**< Name of the analyzer. */
+    hilti::ID unit_name;                 /**< The fully-qualified name of the unit type to parse with. */
+
+    // Computed information.
+    std::optional<UnitInfo> unit;        /**< The type of the unit to parse the originator side. */
+};
+#endif
+
 /**
  * Representation of an expression computing the value of a parameter passed
  * to Spicy-generated events.
@@ -159,6 +172,9 @@ private:
     // Parsers for parts from EVT files.
     glue::ProtocolAnalyzer parseProtocolAnalyzer(const std::string& chunk);
     glue::FileAnalyzer parseFileAnalyzer(const std::string& chunk);
+#ifdef HAVE_PACKET_ANALYZERS
+    glue::PacketAnalyzer parsePacketAnalyzer(const std::string& chunk);
+#endif
     glue::Event parseEvent(const std::string& chunk);
 
     /** Computes the missing pieces for all `Event` instances.  */
@@ -184,7 +200,9 @@ private:
     std::vector<glue::Event> _events;                        /**< events parsed from EVT files */
     std::vector<glue::ProtocolAnalyzer> _protocol_analyzers; /**< protocol analyzers parsed from EVT files */
     std::vector<glue::FileAnalyzer> _file_analyzers;         /**< file analyzers parsed from EVT files */
-
+#ifdef HAVE_PACKET_ANALYZERS
+    std::vector<glue::PacketAnalyzer> _packet_analyzers;     /**< file analyzers parsed from EVT files */
+#endif
     std::vector<hilti::Location> _locations; /**< location stack during parsing EVT files */
 };
 } // namespace spicy::zeek

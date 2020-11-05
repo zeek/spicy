@@ -196,13 +196,18 @@ void driver::ParsingState::_debug(const std::string_view& msg, size_t size, cons
                           size > 40 ? "..." : ""));
 }
 
-void driver::ParsingState::finish() {
+std::optional<hilti::rt::stream::Offset> driver::ParsingState::finish() {
     switch ( _type ) {
         case driver::ParsingType::Block: break;
         case driver::ParsingType::Stream: {
             _process(0, "", true);
         }
     }
+
+    if ( _resumable )
+        return _resumable->get<hilti::rt::stream::View>().offset();
+    else
+        return {};
 }
 
 driver::ParsingState::State driver::ParsingState::_process(size_t size, const char* data, bool eod) {
@@ -230,8 +235,8 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                 auto input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                 input->freeze();
 
-                auto resumable = _parser->parse1(input, {});
-                if ( ! resumable )
+                _resumable = _parser->parse1(input, {});
+                if ( ! _resumable )
                     hilti::rt::internalError("block-based parsing yielded");
 
                 return Done;

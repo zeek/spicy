@@ -42,6 +42,15 @@ public:
 };
 
 /**
+ * Exception thrown by event generation code if functionality is used
+ * that the current build does not support.
+ */
+class Unsupported : public hilti::rt::UserException {
+public:
+    using hilti::rt::UserException::UserException;
+};
+
+/**
  * Exception thrown by event generation code if there's a type mismatch
  * between the Spicy-side value and what the Zeek event expects.
  */
@@ -62,7 +71,7 @@ private:
 };
 
 /**
- * Registers an Spicy protocol analyzer with its EVT meta information the
+ * Registers a Spicy protocol analyzer with its EVT meta information with the
  * plugin's runtime.
  */
 void register_protocol_analyzer(const std::string& name, hilti::rt::Protocol proto,
@@ -70,10 +79,17 @@ void register_protocol_analyzer(const std::string& name, hilti::rt::Protocol pro
                                 const std::string& parser_resp, const std::string& replaces = "");
 
 /**
- * Registers an Spicy file analyzer with its EVT meta information the
+ * Registers a Spicy file analyzer with its EVT meta information with the
  * plugin's runtime.
  */
 void register_file_analyzer(const std::string& name, const hilti::rt::Vector<std::string>& mime_types,
+                            const std::string& parser);
+
+/**
+ * Registers a Spicy packet analyzer with its EVT meta information with the
+ * plugin's runtime.
+ */
+void register_packet_analyzer(const std::string& name,
                             const std::string& parser);
 
 /** Registers a Spicy enum type to make it available inside Zeek. */
@@ -207,6 +223,9 @@ void file_gap(uint64_t offset, uint64_t len);
 
 /** Signals the end of a file to Zeek's file analysis. */
 void file_end();
+
+/** Specifies the next-layer packet analyzer. */
+void forward_packet(uint32_t identifier);
 
 // Forward-declare to_val() functions.
 template<typename T, typename std::enable_if_t<hilti::rt::is_tuple<T>::value>* = nullptr>

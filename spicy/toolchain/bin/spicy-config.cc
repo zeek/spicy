@@ -44,6 +44,7 @@ Available options:
     --zeek-prefix           Print the path to the Zeek installation prefix
     --zeek-plugin-path      Print the path to go into ZEEK_PLUGIN_PATH for enabling the Zeek Spicy plugin
     --zeek-jit-support      Prints 'yes' if the Zeek plugin was compiled with JIT support, 'no' otherwise.
+    --zeek-version          Print the Zeek version.
     --version               Print Spicy version.
 
 )";
@@ -220,6 +221,15 @@ int main(int argc, char** argv) {
 #else
             exit(1);
 #endif
+        }
+
+        if ( opt == "--zeek-version" ) {
+#ifdef HAVE_ZEEK
+            result.emplace_back(ZEEK_VERSION_NUMBER);
+#else
+            result.emplace_back("0");
+#endif
+            continue;
         }
 
         if ( opt == "--libdirs" ) {

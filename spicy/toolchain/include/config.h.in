@@ -16,6 +16,7 @@
 #ifdef HAVE_ZEEK
 #define ZEEK_EXECUTABLE "@ZEEK_EXE@"
 #define ZEEK_PREFIX "@ZEEK_PREFIX@"
+#define ZEEK_VERSION_NUMBER "@ZEEK_VERSION_NUMBER@"
 #endif
 
 namespace spicy {

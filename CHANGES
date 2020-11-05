@@ -1,4 +1,20 @@
 
+0.4.0-1006 | 2020-11-05 12:56:56 +0000
+
+  * GH-497: Add support for packet analyzers to Zeek plugin. (Robin Sommer,
+    Corelight)
+
+    Zeek's master branch received support for adding low-level "packet
+    analyzers" through plugins. This extends the Spicy plugin to support that.
+    The documentation gained a new section explaining how to sue that.
+
+    Note: This feature will not "officially" be supported until Zeek 4.0
+    comes out (because we don't have Zeek master in CI).
+
+  * Add --zeek-version argument to spicy-config. (Robin Sommer, Corelight)
+
+  * Compile fix for GCC on Ubuntu. (Robin Sommer, Corelight)
+
 0.4.0-1001 | 2020-11-05 08:47:23 +0000
 
   * Use stable names for hook implementations, plus a text fix.

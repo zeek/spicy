@@ -30,9 +30,21 @@ struct FileAnalyzer {
     ::zeek::file_analysis::Analyzer* analyzer = nullptr; /**< current analyzer */
 };
 
+#ifdef HAVE_PACKET_ANALYZERS
+/** State on the current file analyzer. */
+struct PacketAnalyzer {
+    ::zeek::packet_analysis::Analyzer* analyzer = nullptr; /**< current analyzer */
+    std::optional<uint32_t> next_analyzer;
+};
+#endif
+
 } // namespace cookie
 
 /** Type of state stored in HILTI's execution context during Spicy processing. */
+#ifdef HAVE_PACKET_ANALYZERS
+using Cookie = std::variant<cookie::ProtocolAnalyzer, cookie::FileAnalyzer, cookie::PacketAnalyzer>;
+#else
 using Cookie = std::variant<cookie::ProtocolAnalyzer, cookie::FileAnalyzer>;
+#endif
 
 } // namespace spicy::zeek::rt

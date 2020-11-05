@@ -25,6 +25,7 @@ zeek_plugin_begin(_Zeek Spicy)
 
 zeek_plugin_cc(src/file-analyzer.cc)
 zeek_plugin_cc(src/plugin.cc)
+zeek_plugin_cc(src/packet-analyzer.cc)
 zeek_plugin_cc(src/protocol-analyzer.cc)
 zeek_plugin_cc(src/runtime-support.cc)
 zeek_plugin_cc(src/zeek-reporter.cc)

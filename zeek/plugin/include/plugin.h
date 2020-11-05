@@ -61,6 +61,19 @@ public:
     void registerFileAnalyzer(const std::string& name, const hilti::rt::Vector<std::string>& mime_types,
                               const std::string& parser);
 
+    /**
+     * Runtime method to register a packet analyzer with its Zeek-side
+     * configuration. This is called at startup by generated Spicy code for
+     * each packet analyzer defined in an EVT file.
+     *
+     * @param name name of the analyzer as defined in its EVT file
+     * @param parser name of the Spicy parser for parsing the packet; must
+     * match the name that Spicy registers the unit's
+     * parser with.
+     */
+    void registerPacketAnalyzer(const std::string& name,
+                                const std::string& parser);
+
     /** TODO */
     void registerEnumType(const std::string& ns, const std::string& id,
                           const hilti::rt::Vector<std::tuple<std::string, hilti::rt::integer::safe<int64_t>>>& labels);
@@ -84,6 +97,17 @@ public:
      */
     const spicy::rt::Parser* parserForFileAnalyzer(const ::zeek::file_analysis::Tag& tag);
 
+#ifdef HAVE_PACKET_ANALYZERS
+    /**
+     * Runtime method to retrieve the Spicy parser for a given Zeek packet analyzer tag.
+     *
+     * @param analyzer requested packet analyzer.
+     * @return parser, or null if we don't have one for this tag. The pointer will remain
+     * valid for the life-time of the process.
+     */
+    const spicy::rt::Parser* parserForPacketAnalyzer(const ::zeek::packet_analysis::Tag& tag);
+#endif
+
     /**
      * Runtime method to retrieve the analyzer tag that should be passed to
      * script-land when talking about a protocol analyzer. This is normally
@@ -105,6 +129,19 @@ public:
      * @return desired tag for passing to script-land.
      */
     ::zeek::analyzer::Tag tagForFileAnalyzer(const ::zeek::analyzer::Tag& tag);
+
+#ifdef HAVE_PACKET_ANALYZERS
+    /**
+     * Runtime method to retrieve the analyzer tag that should be passed to
+     * script-land when talking about a packet analyzer. This is normally the
+     * analyzer's standard tag, but may be replaced with something else if
+     * the analyzer substitutes for an existing one.
+     *
+     * @param tag original tag we query for how to pass it to script-land.
+     * @return desired tag for passing to script-land.
+     */
+    ::zeek::analyzer::Tag tagForPacketAnalyzer(const ::zeek::analyzer::Tag& tag);
+#endif
 
 protected:
     /**
@@ -162,8 +199,24 @@ private:
         const spicy::rt::Parser* parser;
     };
 
+#ifdef HAVE_PACKET_ANALYZERS
+    /** Captures a registered file analyzer. */
+    struct PacketAnalyzerInfo {
+        // Filled in when registering the analyzer.
+        std::string name_analyzer;
+        std::string name_parser;
+        ::zeek::packet_analysis::Tag::subtype_t subtype;
+
+        // Filled in during InitPostScript().
+        const spicy::rt::Parser* parser;
+    };
+#endif
+
     std::vector<ProtocolAnalyzerInfo> _protocol_analyzers_by_subtype;
     std::vector<FileAnalyzerInfo> _file_analyzers_by_subtype;
+#ifdef HAVE_PACKET_ANALYZERS
+    std::vector<PacketAnalyzerInfo> _packet_analyzers_by_subtype;
+#endif
     std::unordered_map<std::string, hilti::rt::Library> _libraries;
 };
 

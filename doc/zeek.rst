@@ -191,6 +191,50 @@ As a full example, here's what a new HTTP analyzer could look like::
         port 80/tcp,
         replaces HTTP;
 
+.. rubric:: Packet Analyzer
+
+Defining packet analyzers works quite similar to protocol analyzers through
+``*.evt`` sections like this::
+
+    packet analyzer ANALYZER_NAME:
+        PROPERTY_1,
+        PROPERTY_2,
+        ...
+        PROPERTY_N;
+
+Here, ``ANALYZER_NAME`` is again a name to identify your analyzer
+inside Zeek.  On the Zeek-side, the name will be added to Zeek's
+``PacketAnalyzer::Tag`` enum.
+
+Packet analyzers support just one property currently:
+
+    ``parse with SPICY_UNIT``
+        Specifies the top-level Spicy unit the analyzer uses for
+        parsing each packet, with ``SPICY_UNIT`` being a fully-qualified
+        Spicy-side type name. The unit type must have been declared as
+        ``public`` in Spicy.
+
+As a full example, here's what a new analyzer could look like:
+
+    packet analyzer spicy::RawLayer:
+        parse with Raw Layer::Packet;
+
+In addition to the Spicy-side configuration, packet analyzers also need to be
+registered with Zeek inside a ``zeek_init`` event handler; see the
+`Zeek documentation <https://docs.zeek.org/en/master/frameworks/packet-analysis.html>`_
+for more. You will need to use the
+`PacketAnalyzer::try_register_packet_analyzer_by_name
+<https://docs.zeek.org/en/master/scripts/base/bif/packet_analysis.bif.zeek.html#PacketAnalyzer::try_register_packet_analyzer_by_name>`_
+for registering Spicy analyzers (not `register_packet_analyzer`), with
+the name of the new Spicy analyzer being ``ANALYZER_NAME``. `zeek -NN`
+shows the names of existing analyzers. For example::
+
+    event zeek_init()
+        {
+        if ( ! PacketAnalyzer::try_register_packet_analyzer_by_name("Ethernet", 0x88b5, "spicy::RawLayer") )
+                Reporter::error("cannot register Spicy analyzer");
+        }
+
 .. rubric:: File Analyzer
 
 Defining file analyzers works quite similar to protocol analyzers,
