@@ -39,12 +39,14 @@ hilti::rt::Bytes Stream::decompress(const hilti::rt::stream::View& data) {
     hilti::rt::Bytes decoded;
 
     for ( auto block = data.firstBlock(); block; block = data.nextBlock(block) ) {
+        _state->stream.next_in = const_cast<Bytef*>(block->start);
+        _state->stream.avail_in = block->size;
+
         do {
             char buf[4096];
-            _state->stream.next_in = const_cast<Bytef*>(block->start);
-            _state->stream.avail_in = block->size;
             _state->stream.next_out = reinterpret_cast<unsigned char*>(buf);
             _state->stream.avail_out = sizeof(buf);
+
             int zip_status = inflate(&_state->stream, Z_SYNC_FLUSH);
 
             if ( zip_status != Z_STREAM_END && zip_status != Z_OK && zip_status != Z_BUF_ERROR ) {
@@ -72,12 +74,14 @@ hilti::rt::Bytes Stream::decompress(const hilti::rt::Bytes& data) {
 
     hilti::rt::Bytes decoded;
 
+    _state->stream.next_in = const_cast<Bytef*>(reinterpret_cast<const Bytef*>(data.data()));
+    _state->stream.avail_in = data.size();
+
     do {
         char buf[4096];
-        _state->stream.next_in = const_cast<Bytef*>(reinterpret_cast<const Bytef*>(data.data()));
-        _state->stream.avail_in = data.size();
         _state->stream.next_out = reinterpret_cast<unsigned char*>(buf);
         _state->stream.avail_out = sizeof(buf);
+
         int zip_status = inflate(&_state->stream, Z_SYNC_FLUSH);
 
         if ( zip_status != Z_STREAM_END && zip_status != Z_OK && zip_status != Z_BUF_ERROR ) {
