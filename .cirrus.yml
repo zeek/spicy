@@ -164,7 +164,7 @@ gcc9_ubuntu_release_no_jit_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler g++-9 --disable-jit
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler g++-9 --disable-jit --disable-precompiled-headers
   build_script:          ./ci/run-ci -b build build
   install_script:        ./ci/run-ci -b build install
   cleanup_script:        ./ci/run-ci -b build cleanup
