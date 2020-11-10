@@ -263,22 +263,25 @@ void Resumable::abort() {
     _fiber->abort();
     context::detail::get()->resumable = old;
 
-    _result = false;
+    _result.reset();
+    _done = true;
 }
 
 void Resumable::yielded() {
     if ( auto e = _fiber->exception() ) {
         HILTI_RT_DEBUG("fibers", fmt("[%p] rethrowing exception after fiber yielded", _fiber.get()));
 
-        _result = false; // just make sure optional is set.
+        _done = true;
+        _result.reset(); // just make sure optional is unset.
         detail::Fiber::destroy(std::move(_fiber));
         _fiber = nullptr;
         std::rethrow_exception(e);
         return;
     }
 
-    if ( auto&& r = _fiber->result() ) {
-        _result = std::move(r);
+    if ( auto&& r = _fiber->isDone() ) {
+        _done = true;
+        _result = _fiber->result(); // might be unset
         detail::Fiber::destroy(std::move(_fiber));
         _fiber = nullptr;
         return;

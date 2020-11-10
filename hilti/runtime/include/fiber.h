@@ -68,6 +68,8 @@ public:
     void resume();
     void abort();
 
+    bool isDone() { return _state != State::Running && _state != State::Yielded; }
+
     auto&& result() { return std::move(_result); }
     std::exception_ptr exception() const { return _exception; }
 
@@ -150,10 +152,11 @@ public:
         _fiber->init(std::move(f));
     }
 
-    Resumable(Resumable&& r) noexcept : _fiber(std::move(r._fiber)), _result(std::move(r._result)) {}
+    Resumable(Resumable&& r) noexcept : _fiber(std::move(r._fiber)), _done(r._done), _result(std::move(r._result)) {}
 
     Resumable& operator=(Resumable&& other) noexcept {
         _fiber = std::move(other._fiber);
+        _done = other._done;
         _result = std::move(other._result);
         return *this;
     }
@@ -180,8 +183,14 @@ public:
     resumable::Handle* handle() { return _fiber.get(); }
 
     /**
+     * Returns true if the function has completed orderly and provided a result.
+     * If so, `get()` can be used to retrieve the result.
+     */
+    bool hasResult() const { return _done && _result.has_value(); }
+
+    /**
      * Returns the function's result once it has completed. Must not be
-     * called before completion; check with `operator bool()` first.
+     * called before completion; check with `hasResult()` first.
      */
     template<typename Result>
     const Result& get() const {
@@ -198,11 +207,8 @@ public:
         }
     }
 
-    /**
-     * Returns true if the function has completed. If so, `get()` can be
-     * called to retrieve its result.
-     */
-    explicit operator bool() const { return static_cast<bool>(_result); }
+    /** Returns true if the function has completed. **/
+    explicit operator bool() const { return _done; }
 
 private:
     void yielded();
@@ -213,6 +219,7 @@ private:
     }
 
     std::unique_ptr<detail::Fiber> _fiber;
+    bool _done = false;
     std::optional<std::any> _result;
 };
 

@@ -204,7 +204,7 @@ std::optional<hilti::rt::stream::Offset> driver::ParsingState::finish() {
         }
     }
 
-    if ( _resumable )
+    if ( _resumable && _resumable->hasResult() )
         return _resumable->get<hilti::rt::stream::View>().offset();
     else
         return {};
@@ -236,7 +236,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                 input->freeze();
 
                 _resumable = _parser->parse1(input, {});
-                if ( ! _resumable )
+                if ( ! *_resumable )
                     hilti::rt::internalError("block-based parsing yielded");
 
                 return Done;
