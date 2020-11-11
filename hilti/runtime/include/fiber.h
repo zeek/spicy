@@ -14,6 +14,7 @@
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/lambda.h>
+#include <hilti/rt/util.h>
 
 extern "C" {
 // libtask introduces "Context" into the global scope, which leads
@@ -68,7 +69,21 @@ public:
     void resume();
     void abort();
 
-    bool isDone() { return _state != State::Running && _state != State::Yielded; }
+    bool isDone() {
+        switch ( _state ) {
+            case State::Running:
+            case State::Yielded: return false;
+
+            case State::Aborting:
+            case State::Finished:
+            case State::Idle:
+            case State::Init:
+                // All these mean we didn't recently run a function that could have
+                // produced a result still pending.
+                return true;
+        }
+        cannot_be_reached(); // For you, GCC.
+    }
 
     auto&& result() { return std::move(_result); }
     std::exception_ptr exception() const { return _exception; }
@@ -152,18 +167,11 @@ public:
         _fiber->init(std::move(f));
     }
 
-    Resumable(Resumable&& r) noexcept : _fiber(std::move(r._fiber)), _done(r._done), _result(std::move(r._result)) {}
-
-    Resumable& operator=(Resumable&& other) noexcept {
-        _fiber = std::move(other._fiber);
-        _done = other._done;
-        _result = std::move(other._result);
-        return *this;
-    }
-
     Resumable() = default;
     Resumable(const Resumable& r) = delete;
+    Resumable(Resumable&& r) noexcept = default;
     Resumable& operator=(const Resumable& other) = delete;
+    Resumable& operator=(Resumable&& other) noexcept = default;
 
     ~Resumable() {
         if ( _fiber )

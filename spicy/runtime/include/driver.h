@@ -109,7 +109,7 @@ public:
 protected:
     /**
      * Virtual method to override by derived classed for recording debug
-     * output. Note that in a release mode compile, the driver code will not
+     * output. Note that in a release mode compile the driver code will not
      * actually call this (nor should user code probably).
      */
     virtual void debug(const std::string_view& msg) = 0;

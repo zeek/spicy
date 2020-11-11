@@ -279,7 +279,7 @@ void Resumable::yielded() {
         return;
     }
 
-    if ( auto&& r = _fiber->isDone() ) {
+    if ( _fiber->isDone() ) {
         _done = true;
         _result = _fiber->result(); // might be unset
         detail::Fiber::destroy(std::move(_fiber));
