@@ -10,9 +10,15 @@ using namespace spicy::zeek;
 using namespace spicy::zeek::rt;
 using namespace plugin::Zeek_Spicy;
 
+#ifndef NDEBUG
+#define STATE_DEBUG_MSG(...) DebugMsg(__VA_ARGS__)
+#else
+#define STATE_DEBUG_MSG(...)
+#endif
+
 static uint64_t analyzer_counter = 1;
 
-void EndpointState::_debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
+void EndpointState::debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
 
 static auto create_endpoint(bool is_orig, ::zeek::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type) {
     cookie::ProtocolAnalyzer cookie;
@@ -46,7 +52,7 @@ void ProtocolAnalyzer::Process(bool is_orig, int len, const u_char* data) {
         if ( parser )
             endp->setParser(parser);
         else {
-            DebugMsg(is_orig, "no unit specified for parsing");
+            STATE_DEBUG_MSG(is_orig, "no unit specified for parsing");
             endp->skipRemaining();
             return;
         }
@@ -127,7 +133,7 @@ void TCP_Analyzer::DeliverStream(int len, const u_char* data, bool is_orig) {
     ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::DeliverStream(len, data, is_orig);
 
     if ( TCP() && TCP()->IsPartial() ) {
-        DebugMsg(is_orig, "skipping further data on partial TCP connection");
+        STATE_DEBUG_MSG(is_orig, "skipping further data on partial TCP connection");
         return;
     }
 
@@ -135,7 +141,7 @@ void TCP_Analyzer::DeliverStream(int len, const u_char* data, bool is_orig) {
 
     if ( originator().isFinished() && responder().isFinished() &&
          (! originator().isSkipping() || ! responder().isSkipping()) ) {
-        DebugMsg(is_orig, "both endpoints finished, skipping all further TCP processing");
+        STATE_DEBUG_MSG(is_orig, "both endpoints finished, skipping all further TCP processing");
         originator().skipRemaining();
         responder().skipRemaining();
 
@@ -152,11 +158,11 @@ void TCP_Analyzer::Undelivered(uint64_t seq, int len, bool is_orig) {
     // This mimics the (modified) Zeek HTTP analyzer. Otherwise stop parsing
     // the connection
     if ( is_orig && ! originator().isSkipping() ) {
-        DebugMsg(is_orig, "undelivered data, skipping further originator payload");
+        STATE_DEBUG_MSG(is_orig, "undelivered data, skipping further originator payload");
         originator().skipRemaining();
     }
     else if ( ! responder().isSkipping() ) {
-        DebugMsg(is_orig, "undelivered data, skipping further responder payload");
+        STATE_DEBUG_MSG(is_orig, "undelivered data, skipping further responder payload");
         responder().skipRemaining();
     }
 }
@@ -165,7 +171,7 @@ void TCP_Analyzer::EndOfData(bool is_orig) {
     ::zeek::analyzer::tcp::TCP_ApplicationAnalyzer::EndOfData(is_orig);
 
     if ( TCP() && TCP()->IsPartial() ) {
-        DebugMsg(is_orig, "skipping end-of-data delivery on partial TCP connection");
+        STATE_DEBUG_MSG(is_orig, "skipping end-of-data delivery on partial TCP connection");
         return;
     }
 

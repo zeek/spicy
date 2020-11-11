@@ -37,11 +37,11 @@ public:
      *
      * @param msg message to record
      */
-    void DebugMsg(const std::string_view& msg) { _debug(msg); }
+    void DebugMsg(const std::string_view& msg) { debug(msg); }
 
 protected:
     // Overridden from driver::ParsingState.
-    void _debug(const std::string_view& msg) override;
+    void debug(const std::string_view& msg) override;
 
 private:
     Cookie _cookie;

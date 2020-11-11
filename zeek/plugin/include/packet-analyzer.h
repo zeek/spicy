@@ -45,7 +45,7 @@ public:
 
 protected:
     // Overridden from driver::ParsingState.
-    void _debug(const std::string_view& msg) override;
+    void debug(const std::string_view& msg) override;
 
 private:
     Cookie _cookie;

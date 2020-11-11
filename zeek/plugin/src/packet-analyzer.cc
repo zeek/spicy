@@ -9,11 +9,17 @@
 #include <zeek-spicy/runtime-support.h>
 #include <zeek-spicy/zeek-reporter.h>
 
+#ifndef NDEBUG
+#define STATE_DEBUG_MSG(...) DebugMsg(__VA_ARGS__)
+#else
+#define STATE_DEBUG_MSG(...)
+#endif
+
 using namespace spicy::zeek;
 using namespace spicy::zeek::rt;
 using namespace plugin::Zeek_Spicy;
 
-void PacketState::_debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
+void PacketState::debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
 
 static auto create_packet_state(PacketAnalyzer* analyzer) {
     cookie::PacketAnalyzer cookie;
@@ -41,9 +47,9 @@ bool PacketAnalyzer::AnalyzePacket(size_t len, const uint8_t* data, ::zeek::Pack
         _state.reset();
         auto num_processed = offset->Ref();
         const auto& next_analyzer = _state.cookie().next_analyzer;
-        DebugMsg(hilti::rt::fmt("processed %" PRIu64 " out of %" PRIu64 " bytes, %s", num_processed, len,
-                                (next_analyzer ? hilti::rt::fmt("next analyzer is 0x%" PRIx32, *next_analyzer) :
-                                                 std::string("no next analyzer"))));
+        STATE_DEBUG_MSG(hilti::rt::fmt("processed %" PRIu64 " out of %" PRIu64 " bytes, %s", num_processed, len,
+                                       (next_analyzer ? hilti::rt::fmt("next analyzer is 0x%" PRIx32, *next_analyzer) :
+                                                        std::string("no next analyzer"))));
         if ( next_analyzer )
             return ForwardPacket(len - num_processed, data + num_processed, packet, *next_analyzer);
         else
@@ -53,7 +59,7 @@ bool PacketAnalyzer::AnalyzePacket(size_t len, const uint8_t* data, ::zeek::Pack
         _state.reset();
         return false;
     } catch ( const hilti::rt::Exception& e ) {
-        DebugMsg(e.what());
+        STATE_DEBUG_MSG(e.what());
         reporter::analyzerError(_state.cookie().analyzer, e.description(),
                                 e.location()); // this sets Zeek to skip sending any further input
         _state.reset();
