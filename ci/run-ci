@@ -45,13 +45,14 @@ Global options:
 
 Configure options:
 
-    --clang-format <path>    Path to clang-format to use (default: found in PATH)
-    --clang-tidy <path>      Path to clang-tidy to use   (default: found in PATH)
-    --cxx-compiler <path>    Path to C++ compiler to use (default: found by cmake)
-    --disable-jit            Do not compile in JIT support
-    --rpath <path>           Additional rpaths to use; will end up in LD_LIBRARY_PATH (default: none)
-    --with-zeek <path>       Path to Zeek installation to use (default: none)
-    --zeek-ld-preload <path> LD_PRELOAD library for Zeek tests (no default; needed for ASAN builds to load runtime)
+    --clang-format <path>          Path to clang-format to use (default: found in PATH)
+    --clang-tidy <path>            Path to clang-tidy to use   (default: found in PATH)
+    --cxx-compiler <path>          Path to C++ compiler to use (default: found by cmake)
+    --disable-jit                  Do not compile in support for JIT compilation
+    --disable-precompiled-headers  Disable use of precompiled headers for developer tests
+    --rpath <path>                 Additional rpaths to use; will end up in LD_LIBRARY_PATH (default: none)
+    --with-zeek <path>             Path to Zeek installation to use (default: none)
+    --zeek-ld-preload <path>       LD_PRELOAD library for Zeek tests (no default; needed for ASAN builds to load runtime)
 
 EOF
 
@@ -156,6 +157,11 @@ function run_configure {
 
             --disable-jit)
                 configure="${configure} --disable-jit"
+                shift 1;
+                ;;
+
+            --disable-precompiled-headers)
+                configure="${configure} --disable-precompiled-headers"
                 shift 1;
                 ;;
 

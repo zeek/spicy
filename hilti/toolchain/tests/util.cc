@@ -8,8 +8,12 @@
 
 #include <doctest/doctest.h>
 
+#include <cstdlib>
 #include <sstream>
 
+#include <hilti/rt/filesystem.h>
+
+#include <hilti/autogen/config.h>
 #include <hilti/base/util.h>
 
 TEST_SUITE_BEGIN("util");
@@ -41,6 +45,43 @@ TEST_CASE("escapeBytesForCxx") {
                                          "\x15"
                                          "\x01"
                                          "\x0A") == "\\002\\0202A\\025\\001\\012");
+}
+
+TEST_CASE("cacheDirectory") {
+    hilti::Configuration configuration;
+    configuration.build_directory = "BUILD";
+    configuration.version_string = "0.1.2";
+    ::setenv("HOME", "HOME", 1);
+
+    SUBCASE("use build") {
+        configuration.uses_build_directory = true;
+
+        // If the build directory is used, neither the home directory nor an
+        // environment-specified `SPICY_CACHE` are taken into account.
+
+        SUBCASE("env override") { ::setenv("SPICY_CACHE", "OVERRIDE", 1); }
+        SUBCASE("no env override") { ::unsetenv("SPICY_CACHE"); }
+
+        CHECK_EQ(hilti::util::cacheDirectory(configuration), hilti::rt::filesystem::path("BUILD") / "cache" / "spicy");
+    }
+
+    SUBCASE("use install") {
+        configuration.uses_build_directory = false;
+
+        // If no build directory is used the cache directory is either in the
+        // HOME directory or taken from the environment variable `SPICY_CACHE`.
+        // The environment variable has higher precedence.
+
+        auto cache = hilti::rt::filesystem::path("HOME") / ".cache" / "spicy" / configuration.version_string;
+
+        SUBCASE("env override") {
+            ::setenv("SPICY_CACHE", "OVERRIDE", 1);
+            cache = hilti::rt::filesystem::path("OVERRIDE");
+        }
+        SUBCASE("no env override") { ::unsetenv("SPICY_CACHE"); }
+
+        CHECK_EQ(hilti::util::cacheDirectory(configuration), cache);
+    }
 }
 
 TEST_SUITE_END();

@@ -82,6 +82,8 @@ if ( USE_SANITIZERS )
    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${sanitizer_ld_flags}")
    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${sanitizer_ld_flags}")
    set(EXTRA_LD_FLAGS "${EXTRA_LD_FLAGS} ${sanitizer_ld_flags}")
+
+   set(HILTI_DEV_PRECOMPILE_HEADERS "no")
 else ()
    set(HILTI_HAVE_SANITIZER "no" CACHE BOOL "Using sanitizer")
 endif()
@@ -205,6 +207,7 @@ enable_testing()
 
 add_subdirectory(hilti)
 add_subdirectory(spicy)
+add_subdirectory(scripts)
 
 if ( HAVE_ZEEK_PLUGIN )
     add_subdirectory(zeek)
@@ -268,6 +271,7 @@ message(
     "\nC++ sys include dirs:  ${CXX_SYSTEM_INCLUDE_DIRS}"
     "\nClang gcc tolchain:    ${CLANG_GCC_INSTALLATION}"
     "\nWarnings are errors:   ${USE_WERROR}"
+    "\nPrecompile headers:    ${HILTI_DEV_PRECOMPILE_HEADERS}"
     "\n"
     "\nZeek found:            ${HAVE_ZEEK}"
     "\nZeek version:          ${ZEEK_VERSION} (${ZEEK_VERSION_NUMBER})"

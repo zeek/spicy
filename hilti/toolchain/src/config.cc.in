@@ -10,6 +10,27 @@ using namespace hilti;
 const auto flatten = util::flattenParts;
 const auto prefix = util::prefixParts;
 
+namespace {
+std::optional<hilti::rt::filesystem::path> precompiled_libhilti(const Configuration& configuration, bool debug) {
+    // We disable use of precompiled headers for sanitizers builds since the
+    // sanitizer flags are not exposed on the config level.
+    //
+    // TODO(bbannier): Allow using of precompiled headers for sanitizer builds.
+#ifdef HILTI_HAVE_SANITIZER
+    return {};
+#endif
+
+    if ( auto&& cache = util::cacheDirectory(configuration) ) {
+        const rt::filesystem::path file_name = rt::fmt("precompiled_libhilti%s.h.pch", (debug ? "_debug" : ""));
+
+        if ( auto pch = (*cache) / file_name; rt::filesystem::exists(pch) )
+            return pch.replace_extension();
+    }
+
+    return {};
+}
+} // namespace
+
 hilti::Configuration::Configuration() { initLocation(util::currentExecutable().native()); }
 
 void hilti::Configuration::initLocation(bool use_build_directory) { init(use_build_directory); }
@@ -67,8 +88,14 @@ void Configuration::init(bool use_build_directory) {
     runtime_cxx_flags_debug = flatten({prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
                                        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
 
+    if ( auto libhilti_pch = precompiled_libhilti(*this, true) )
+        runtime_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
+
     runtime_cxx_flags_release = flatten({prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
                                          prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
+
+    if ( auto libhilti_pch = precompiled_libhilti(*this, false) )
+        runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
 
     runtime_ld_flags_debug =
         flatten({prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-L", installation_tag),
