@@ -14,6 +14,7 @@
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/lambda.h>
+#include <hilti/rt/util.h>
 
 extern "C" {
 // libtask introduces "Context" into the global scope, which leads
@@ -67,6 +68,22 @@ public:
     void yield();
     void resume();
     void abort();
+
+    bool isDone() {
+        switch ( _state ) {
+            case State::Running:
+            case State::Yielded: return false;
+
+            case State::Aborting:
+            case State::Finished:
+            case State::Idle:
+            case State::Init:
+                // All these mean we didn't recently run a function that could have
+                // produced a result still pending.
+                return true;
+        }
+        cannot_be_reached(); // For you, GCC.
+    }
 
     auto&& result() { return std::move(_result); }
     std::exception_ptr exception() const { return _exception; }
@@ -150,17 +167,11 @@ public:
         _fiber->init(std::move(f));
     }
 
-    Resumable(Resumable&& r) noexcept : _fiber(std::move(r._fiber)), _result(std::move(r._result)) {}
-
-    Resumable& operator=(Resumable&& other) noexcept {
-        _fiber = std::move(other._fiber);
-        _result = std::move(other._result);
-        return *this;
-    }
-
     Resumable() = default;
     Resumable(const Resumable& r) = delete;
+    Resumable(Resumable&& r) noexcept = default;
     Resumable& operator=(const Resumable& other) = delete;
+    Resumable& operator=(Resumable&& other) noexcept = default;
 
     ~Resumable() {
         if ( _fiber )
@@ -180,8 +191,14 @@ public:
     resumable::Handle* handle() { return _fiber.get(); }
 
     /**
+     * Returns true if the function has completed orderly and provided a result.
+     * If so, `get()` can be used to retrieve the result.
+     */
+    bool hasResult() const { return _done && _result.has_value(); }
+
+    /**
      * Returns the function's result once it has completed. Must not be
-     * called before completion; check with `operator bool()` first.
+     * called before completion; check with `hasResult()` first.
      */
     template<typename Result>
     const Result& get() const {
@@ -198,11 +215,8 @@ public:
         }
     }
 
-    /**
-     * Returns true if the function has completed. If so, `get()` can be
-     * called to retrieve its result.
-     */
-    explicit operator bool() const { return static_cast<bool>(_result); }
+    /** Returns true if the function has completed. **/
+    explicit operator bool() const { return _done; }
 
 private:
     void yielded();
@@ -213,6 +227,7 @@ private:
     }
 
     std::unique_ptr<detail::Fiber> _fiber;
+    bool _done = false;
     std::optional<std::any> _result;
 };
 

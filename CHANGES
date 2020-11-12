@@ -1,4 +1,19 @@
 
+0.4.0-1020 | 2020-11-12 11:04:57 +0000
+
+  * Fix performance regression by removing wasteful formatting of debug message
+    in release mode in Spicy runtime driver. (Robin Sommer, Corelight)
+
+  * Fix fiber result handling on abort. (Robin Sommer, Corelight)
+
+  * GH-578: Fix glib decompression. Robin Sommer, Corelight)
+
+  * Add helper tool 'spicy-batch-extract' that extracts a single session out
+    of a Spicy batch file. (Robin Sommer, Corelight)
+
+  * Add preliminary benchmark script `scripts/run-benchmarks`. See developer
+    docs for more. (Robin Sommer, Corelight)
+
 0.4.0-1011 | 2020-11-05 17:09:53 +0100
 
   * GH-451: Support building on centos7 (Benjamin Bannier, Corelight)
@@ -1658,7 +1673,7 @@
   * GH-147: Add a configure time check validating that submodules are
     in place.
 
-  * Add more CI configurations, includig for macOS.
+  * Add more CI configurations, including for macOS.
 
 0.4.0 | 2020-04-07 14:50:17 +0000
 

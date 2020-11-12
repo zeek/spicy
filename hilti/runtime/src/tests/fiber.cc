@@ -34,6 +34,8 @@ TEST_CASE("execute-void") {
 
     auto r = hilti::rt::fiber::execute(f);
     REQUIRE(r);
+    CHECK(r.hasResult());
+    CHECK(r.get<hilti::rt::Nothing>() == hilti::rt::Nothing());
     CHECK(x == "Hello from fiber!");
     CHECK(c == "ctordtor");
 }
@@ -79,6 +81,8 @@ TEST_CASE("execute-result") {
 
     auto r = hilti::rt::fiber::execute(f);
     REQUIRE(r);
+    REQUIRE(r.hasResult());
+    REQUIRE(r.get<std::string>() == "Hello from fiber!");
     REQUIRE(x == "Hello from fiber!");
     REQUIRE(r.get<std::string>() == "Hello from fiber!");
     REQUIRE(c == "ctordtor");
@@ -117,6 +121,7 @@ TEST_CASE("resume-void") {
     x += " ";
     r.resume();
     REQUIRE(r);
+    REQUIRE(r.get<hilti::rt::Nothing>() == hilti::rt::Nothing());
     REQUIRE(x == "Hello from fiber !");
     REQUIRE(c == "ctorctordtordtor");
 }
@@ -150,6 +155,7 @@ TEST_CASE("resume-result") {
 
     r.resume();
     REQUIRE(r);
+    REQUIRE(r.hasResult());
     REQUIRE(r.get<std::string>() == "Hello from fiber!");
     REQUIRE(c == "ctordtor");
 }

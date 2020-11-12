@@ -142,6 +142,10 @@ add_executable(spicy-doc bin/spicy-doc.cc)
 target_compile_options(spicy-doc PRIVATE "-Wall")
 target_link_spicy(spicy-doc PRIVATE)
 
+add_executable(spicy-batch-extract bin/spicy-batch-extract.cc)
+target_compile_options(spicy-batch-extract PRIVATE "-Wall")
+target_link_spicy(spicy-batch-extract PRIVATE)
+
 add_subdirectory(bin/spicy-dump)
 
 add_custom_target(spicy-build ALL)

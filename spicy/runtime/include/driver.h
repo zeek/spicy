@@ -109,13 +109,18 @@ public:
 protected:
     /**
      * Virtual method to override by derived classed for recording debug
-     * output.
+     * output. Note that in a release mode compile the driver code will not
+     * actually call this (nor should user code probably).
      */
-    virtual void _debug(const std::string_view& msg) = 0;
+    virtual void debug(const std::string_view& msg) = 0;
+
+    /**
+     * Forwards to `debug(msg)`, also including a hexdump of the given data.
+     */
+    void debug(const std::string_view& msg, size_t size, const char* data);
 
 private:
     State _process(size_t size, const char* data, bool eod = true);
-    void _debug(const std::string_view& msg, size_t size, const char* data);
 
     ParsingType _type;     /**< type of parsing */
     const Parser* _parser; /**< parser to use, or null if not specified */
@@ -150,7 +155,7 @@ public:
     const auto& id() const { return _id; }
 
 protected:
-    void _debug(const std::string_view& msg) override;
+    void debug(const std::string_view& msg) override;
 
 private:
     std::string _id;
@@ -168,7 +173,7 @@ private:
  */
 class Driver {
 public:
-    Driver() : _enable_debug(hilti::rt::isDebugVersion()) {}
+    Driver() {}
     /**
      * Prints a human-readable list of all available parsers, retrieved from
      * the Spicy runtime system.
@@ -218,10 +223,9 @@ public:
     void debug(const std::string_view& msg);
 
 private:
-    void _debug_stats(const hilti::rt::ValueReference<hilti::rt::Stream>& data);
-    void _debug_stats(size_t current_sessions);
+    void _debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& data);
+    void _debugStats(size_t current_sessions);
 
-    bool _enable_debug = false;
     uint64_t _total_sessions = 0;
 };
 

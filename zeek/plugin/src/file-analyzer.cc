@@ -10,7 +10,13 @@ using namespace spicy::zeek;
 using namespace spicy::zeek::rt;
 using namespace plugin::Zeek_Spicy;
 
-void FileState::_debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
+#ifndef NDEBUG
+#define STATE_DEBUG_MSG(...) DebugMsg(__VA_ARGS__)
+#else
+#define STATE_DEBUG_MSG(...)
+#endif
+
+void FileState::debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
 
 static auto create_file_state(FileAnalyzer* analyzer) {
     cookie::FileAnalyzer cookie;
@@ -36,7 +42,7 @@ bool FileAnalyzer::DeliverStream(const u_char* data, uint64_t len) {
 bool FileAnalyzer::Undelivered(uint64_t offset, uint64_t len) {
     ::zeek::file_analysis::Analyzer::Undelivered(offset, len);
 
-    DebugMsg("undelivered data, skipping further originator payload");
+    STATE_DEBUG_MSG("undelivered data, skipping further originator payload");
     _state.skipRemaining();
     return false;
 }
@@ -54,7 +60,7 @@ bool FileAnalyzer::Process(int len, const u_char* data) {
         if ( parser )
             _state.setParser(parser);
         else {
-            DebugMsg("no unit specified for parsing");
+            STATE_DEBUG_MSG("no unit specified for parsing");
             _state.skipRemaining();
             return false;
         }
@@ -67,7 +73,7 @@ bool FileAnalyzer::Process(int len, const u_char* data) {
     } catch ( const spicy::rt::ParseError& e ) {
         reporter::weird(_state.cookie().analyzer->GetFile(), e.what());
     } catch ( const hilti::rt::Exception& e ) {
-        DebugMsg(e.what());
+        STATE_DEBUG_MSG(e.what());
         reporter::analyzerError(_state.cookie().analyzer, e.description(),
                                 e.location()); // this sets Zeek to skip sending any further input
     }

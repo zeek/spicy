@@ -21,6 +21,14 @@ using hilti::rt::fmt;
 
 using namespace spicy::rt;
 
+#ifndef NDEBUG
+#define DRIVER_DEBUG(...) debug(__VA_ARGS__)
+#define DRIVER_DEBUG_STATS(...) _debugStats(__VA_ARGS__)
+#else
+#define DRIVER_DEBUG(...)
+#define DRIVER_DEBUG_STATS(...)
+#endif
+
 inline static auto pretty_print_number(uint64_t n) {
     if ( n > 1024 * 1024 * 1024 )
         return fmt("%" PRIu64 "G", n / 1024 / 1024 / 1024);
@@ -31,25 +39,17 @@ inline static auto pretty_print_number(uint64_t n) {
     return fmt("%" PRIu64, n);
 }
 
-inline void Driver::debug(const std::string_view& msg) {
-    if ( ! _enable_debug )
-        return;
+inline void Driver::debug(const std::string_view& msg) { HILTI_RT_DEBUG("spicy-driver", msg); }
 
-    HILTI_RT_DEBUG("spicy-driver", msg);
-}
-
-void Driver::_debug_stats(const hilti::rt::ValueReference<hilti::rt::Stream>& data) {
-    if ( ! _enable_debug )
-        return;
-
+void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& data) {
     auto data_begin = data->begin().offset();
     auto data_end = data_begin + data->size();
     auto data_chunks = pretty_print_number(data->numberOfChunks());
     auto data_size_cur = pretty_print_number(data->size());
     auto data_size_total = pretty_print_number(data_end);
 
-    debug(fmt("input : size-current=%s size-total=%s chunks-cur=%s offset-head=%" PRIu64 " offset-tail=%" PRIu64,
-              data_size_cur, data_size_total, data_chunks, data_begin, data_end));
+    DRIVER_DEBUG(fmt("input : size-current=%s size-total=%s chunks-cur=%s offset-head=%" PRIu64 " offset-tail=%" PRIu64,
+                     data_size_cur, data_size_total, data_chunks, data_begin, data_end));
 
     auto ru = hilti::rt::resource_usage();
     auto memory_heap = pretty_print_number(ru.memory_heap);
@@ -57,18 +57,15 @@ void Driver::_debug_stats(const hilti::rt::ValueReference<hilti::rt::Stream>& da
     auto max_stacks = pretty_print_number(ru.max_fibers);
     auto cached_stacks = pretty_print_number(ru.cached_fibers);
 
-    debug(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s", memory_heap, num_stacks, cached_stacks,
-              max_stacks));
+    DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s", memory_heap, num_stacks,
+                     cached_stacks, max_stacks));
 }
 
-void Driver::_debug_stats(size_t current_sessions) {
-    if ( ! _enable_debug )
-        return;
-
+void Driver::_debugStats(size_t current_sessions) {
     auto num_sessions = pretty_print_number(current_sessions);
     auto total_sessions = pretty_print_number(_total_sessions);
 
-    debug(fmt("sessions: current=%s total=%s", num_sessions, total_sessions));
+    DRIVER_DEBUG(fmt("sessions: current=%s total=%s", num_sessions, total_sessions));
 
     auto stats = hilti::rt::resource_usage();
     auto memory_heap = pretty_print_number(stats.memory_heap);
@@ -76,8 +73,8 @@ void Driver::_debug_stats(size_t current_sessions) {
     auto max_stacks = pretty_print_number(stats.max_fibers);
     auto cached_stacks = pretty_print_number(stats.cached_fibers);
 
-    debug(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s", memory_heap, num_stacks, cached_stacks,
-              max_stacks));
+    DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s", memory_heap, num_stacks,
+                     cached_stacks, max_stacks));
 }
 
 Result<Nothing> Driver::listParsers(std::ostream& out) {
@@ -149,7 +146,7 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
     hilti::rt::ValueReference<hilti::rt::Stream> data;
     std::optional<hilti::rt::Resumable> r;
 
-    _debug_stats(data);
+    DRIVER_DEBUG_STATS(data);
 
     spicy::rt::ParsedUnit unit;
 
@@ -165,35 +162,35 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
             data->freeze();
 
         if ( ! r ) {
-            debug(fmt("beginning parsing input (eod=%s)", data->isFrozen()));
+            DRIVER_DEBUG(fmt("beginning parsing input (eod=%s)", data->isFrozen()));
             r = parser.parse3(unit, data, {});
         }
         else {
-            debug(fmt("resuming parsing input (eod=%s)", data->isFrozen()));
+            DRIVER_DEBUG(fmt("resuming parsing input (eod=%s)", data->isFrozen()));
             r->resume();
         }
 
         if ( *r ) {
-            debug(fmt("finished parsing input (eod=%s)", data->isFrozen()));
-            _debug_stats(data);
+            DRIVER_DEBUG(fmt("finished parsing input (eod=%s)", data->isFrozen()));
+            DRIVER_DEBUG_STATS(data);
             break;
         }
         else {
-            debug("parsing yielded");
-            _debug_stats(data);
+            DRIVER_DEBUG("parsing yielded");
+            DRIVER_DEBUG_STATS(data);
         }
     }
 
     return std::move(unit);
 }
 
-void driver::ParsingStateForDriver::_debug(const std::string_view& msg) {
+void driver::ParsingStateForDriver::debug(const std::string_view& msg) {
     _driver->debug(hilti::rt::fmt("[%s] %s", _id, msg));
 }
 
-void driver::ParsingState::_debug(const std::string_view& msg, size_t size, const char* data) {
-    _debug(hilti::rt::fmt("%s: |%s%s|", msg, hilti::rt::escapeBytes(std::string_view(data, std::min(size_t(40), size))),
-                          size > 40 ? "..." : ""));
+void driver::ParsingState::debug(const std::string_view& msg, size_t size, const char* data) {
+    debug(hilti::rt::fmt("%s: |%s%s|", msg, hilti::rt::escapeBytes(std::string_view(data, std::min(size_t(40), size))),
+                         size > 40 ? "..." : ""));
 }
 
 std::optional<hilti::rt::stream::Offset> driver::ParsingState::finish() {
@@ -204,7 +201,7 @@ std::optional<hilti::rt::stream::Offset> driver::ParsingState::finish() {
         }
     }
 
-    if ( _resumable )
+    if ( _resumable && _resumable->hasResult() )
         return _resumable->get<hilti::rt::stream::View>().offset();
     else
         return {};
@@ -215,14 +212,14 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
 
     if ( ! _parser ) {
         if ( size )
-            _debug("no parser, further data ignored", size, data);
+            DRIVER_DEBUG("no parser, further data ignored", size, data);
 
         return Done;
     }
 
     if ( _skip ) {
         if ( size )
-            _debug("skipping, further data ignored", size, data);
+            DRIVER_DEBUG("skipping, further data ignored", size, data);
 
         return Done;
     }
@@ -230,13 +227,13 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
     try {
         switch ( _type ) {
             case ParsingType::Block: {
-                _debug("block", size, data);
+                DRIVER_DEBUG("block", size, data);
 
                 auto input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                 input->freeze();
 
                 _resumable = _parser->parse1(input, {});
-                if ( ! _resumable )
+                if ( ! *_resumable )
                     hilti::rt::internalError("block-based parsing yielded");
 
                 return Done;
@@ -247,14 +244,14 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     // Previous parsing has fully finished, we ignore all
                     // further input.
                     if ( size )
-                        _debug("already finished, further data ignored", size, data);
+                        DRIVER_DEBUG("already finished, further data ignored", size, data);
 
                     return Done;
                 }
 
                 if ( ! _input ) {
                     // First chunk.
-                    _debug("first data chunk", size, data);
+                    DRIVER_DEBUG("first data chunk", size, data);
                     _input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                     if ( eod )
                         (*_input)->freeze();
@@ -270,11 +267,11 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                         (*_input)->append(data, size);
 
                     if ( eod ) {
-                        _debug("end of data");
+                        DRIVER_DEBUG("end of data");
                         (*_input)->freeze();
                     }
                     else
-                        _debug("next data chunk", size, data);
+                        DRIVER_DEBUG("next data chunk", size, data);
 
                     _resumable->resume();
                 }
@@ -282,7 +279,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                 if ( *_resumable ) {
                     // Done parsing.
                     _done = true;
-                    _debug("parsing finished");
+                    DRIVER_DEBUG("parsing finished");
                     return Done;
                 }
                 else {
@@ -294,7 +291,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
             }
         }
     } catch ( const hilti::rt::Exception& e ) {
-        _debug(e.what());
+        DRIVER_DEBUG(e.what());
         _done = true;
         throw;
     }
@@ -342,7 +339,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
                 _total_sessions++;
             }
             else
-                debug(hilti::rt::fmt("no parser for ID %s, skipping", id));
+                DRIVER_DEBUG(hilti::rt::fmt("no parser for ID %s, skipping", id));
         }
         else if ( m[0] == "@data" ) {
             // @begin <id> <size>>p
@@ -385,13 +382,15 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
                 }
 
                 states.erase(s);
-                _debug_stats(states.size());
+                DRIVER_DEBUG_STATS(states.size());
             }
         }
         else
             return hilti::rt::result::Error(hilti::rt::fmt("unknown command '%s'", m[0]));
     }
 
-    _debug_stats(states.size());
+
+    DRIVER_DEBUG_STATS(states.size());
+
     return hilti::rt::Nothing();
 }
