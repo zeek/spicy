@@ -126,7 +126,6 @@ private:
 
     ucontext_t _uctx{};
     jmp_buf _fiber{};
-    jmp_buf _trampoline{};
     jmp_buf _parent{};
 
 #ifdef HILTI_HAVE_SANITIZER

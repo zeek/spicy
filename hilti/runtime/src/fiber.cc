@@ -46,17 +46,14 @@ void _Trampoline(unsigned int y, unsigned int x) {
 
         assert(fiber->_state == Fiber::State::Running);
 
-        if ( ! _setjmp(fiber->_trampoline) ) {
-            // In parent.
-            try {
-                fiber->_result = (*fiber->_function)(fiber);
-            } catch ( ... ) {
-                HILTI_RT_DEBUG("fibers", fmt("[%p] got exception, forwarding", fiber));
-                fiber->_exception = std::current_exception();
-            }
-
-            fiber->_state = Fiber::State::Finished;
+        try {
+            fiber->_result = (*fiber->_function)(fiber);
+        } catch ( ... ) {
+            HILTI_RT_DEBUG("fibers", fmt("[%p] got exception, forwarding", fiber));
+            fiber->_exception = std::current_exception();
         }
+
+        fiber->_state = Fiber::State::Finished;
 
         if ( ! _setjmp(fiber->_fiber) ) {
             fiber->_function = {};
