@@ -380,7 +380,7 @@ Documentation will be located in ``build/doc/html``.
 Development setup
 -----------------
 
-In order to speed up just-in-time compilation, users can create a cache of
+In order to speed up precompilation of Spicy parsers, users can create a cache of
 precompiled files. This cache is tied to a specific Spicy version, and needs to
 be recreated each time Spicy is updated.
 
