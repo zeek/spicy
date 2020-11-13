@@ -3,6 +3,7 @@
 #include <unordered_set>
 
 #include <hilti/ast/detail/visitor.h>
+#include <hilti/ast/types/function.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/visitors.h>
 #include <hilti/global.h>
@@ -60,6 +61,18 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             }
         }
     };
+
+    void operator()(const Function& f, position_t p) {
+        if ( auto attrs = f.attributes() ) {
+            if ( auto prio = attrs->find("&priority") ) {
+                if ( f.type().flavor() != type::function::Flavor::Hook )
+                    error("only hooks can have priorities", p);
+
+                else if ( auto x = prio->valueAs<int64_t>(); ! x )
+                    error(x.error(), p);
+            }
+        }
+    }
 
     ////// Declarations
 
