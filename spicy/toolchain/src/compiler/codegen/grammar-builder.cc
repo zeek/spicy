@@ -104,18 +104,8 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
 
         // Nothing specified, use look-ahead to figure out when to stop
         // parsing.
-        //
-        // Left-factored & right-recursive.
-        //
-        // List1 -> Item List2
-        // List2 -> Epsilon | List1
-
-        auto x = production::Unresolved();
-        auto l1 = production::LookAhead(id + "_l1", production::Epsilon(loc), x, loc);
-        auto l2 = production::Sequence(id + "_l2", {sub, l1}, loc);
-        grammar->resolve(&x, std::move(l2));
-
-        auto c = production::Enclosure(id, std::move(l1), loc);
+        auto c = production::While(id, std::move(sub), loc);
+        c.preprocessLookAhead(grammar);
         auto me = c.meta();
         me.setField(NodeRef(currentField().second), false);
         c.setMeta(std::move(me));
