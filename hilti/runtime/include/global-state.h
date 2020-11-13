@@ -1,12 +1,12 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #pragma once
-
 #include <sys/resource.h>
 
 #include <memory>
 #include <vector>
 
+#include <hilti/rt/3rdparty/libaco/aco.h>
 #include <hilti/rt/context.h>
 #include <hilti/rt/debug-logger.h>
 #include <hilti/rt/init.h>
@@ -69,6 +69,9 @@ struct GlobalState {
      * still need this information.
      */
     std::vector<hilti::rt::detail::HiltiModule> hilti_modules;
+
+    /** Pointer to the coroutine controlling fiber execution. */
+    aco_t* main_co = nullptr;
 };
 
 /**

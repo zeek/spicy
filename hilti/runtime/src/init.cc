@@ -51,6 +51,9 @@ void hilti::rt::init() {
         }
     }
 
+    if ( ! globalState()->main_co )
+        globalState()->main_co = aco_create(nullptr, nullptr, 0, nullptr, nullptr);
+
     globalState()->runtime_is_initialized = true;
     globalState()->resource_usage_init = resource_usage();
 }
