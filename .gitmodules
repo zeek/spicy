@@ -13,9 +13,6 @@
 [submodule "3rdparty/libb64"]
 	path = 3rdparty/libb64
 	url = https://github.com/libb64/libb64
-[submodule "3rdparty/libtask"]
-	path = 3rdparty/libtask
-	url = https://github.com/majek/libtask
 [submodule "3rdparty/pathfind"]
 	path = 3rdparty/pathfind
 	url = https://github.com/bkloppenborg/pathfind
@@ -34,3 +31,6 @@
 [submodule "3rdparty/filesystem"]
 	path = 3rdparty/filesystem
 	url = https://github.com/gulrak/filesystem.git
+[submodule "3rdparty/fiber"]
+	path = 3rdparty/fiber
+	url = https://github.com/simonfxr/fiber.git

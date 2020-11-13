@@ -1,10 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #pragma once
-
 #include <sys/resource.h>
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <hilti/rt/context.h>

@@ -5,6 +5,8 @@
 #undef _FORTIFY_SOURCE
 #endif
 
+#include <fiber/fiber.h>
+
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/context.h>
 #include <hilti/rt/exception.h>
@@ -18,20 +20,17 @@
 #endif
 
 using namespace hilti::rt;
-using namespace hilti::rt::detail;
 
 const void* _main_thread_bottom = nullptr;
 std::size_t _main_thread_size = 0;
 
 extern "C" {
 
-void _Trampoline(unsigned int y, unsigned int x) {
-    // Magic from from libtask/task.c to turn the two words back into a pointer.
-    unsigned long z; // NOLINT
-    z = (x << 16U);
-    z <<= 16U;
-    z |= y;
-    auto fiber = (Fiber*)z; // NOLINT
+// A dummy function which will be put on the bottom of each fiber's call stack. This function should never execute.
+[[noreturn]] static void fiber_bottom(Fiber* fiber, void* args) { abort(); }
+
+void detail::_Trampoline(void* argsp) {
+    auto fiber = *reinterpret_cast<detail::Fiber**>(argsp);
 
     HILTI_RT_DEBUG("fibers", fmt("[%p] entering trampoline loop", fiber));
     fiber->_finishSwitchFiber("trampoline-init");
@@ -39,12 +38,12 @@ void _Trampoline(unsigned int y, unsigned int x) {
     // Via recycling a fiber can run an arbitrary number of user jobs. So
     // this trampoline is really a loop that yields after it has finished its
     // function, and expects a new run function once it's resumed.
-    ++Fiber::_initialized;
+    ++detail::Fiber::_initialized;
 
     while ( true ) {
         HILTI_RT_DEBUG("fibers", fmt("[%p] new iteration of trampoline loop", fiber));
 
-        assert(fiber->_state == Fiber::State::Running);
+        assert(fiber->_state == detail::Fiber::State::Running);
 
         try {
             fiber->_result = (*fiber->_function)(fiber);
@@ -54,37 +53,29 @@ void _Trampoline(unsigned int y, unsigned int x) {
         }
 
         fiber->_function = {};
-        fiber->_state = Fiber::State::Idle;
+        fiber->_state = detail::Fiber::State::Idle;
         fiber->_startSwitchFiber("trampoline-loop");
 
-        if ( ! _setjmp(fiber->_fiber) )
-            _longjmp(fiber->_parent, 1);
+        auto* context = context::detail::get();
+        assert(context);
+
+        assert(context->current_fiber == fiber->_fiber.get());
+        context->current_fiber = fiber->_caller;
+        ::fiber_switch(fiber->_fiber.get(), fiber->_caller);
 
         fiber->_finishSwitchFiber("trampoline-loop");
     }
 
     HILTI_RT_DEBUG("fibers", fmt("[%p] finished trampoline loop", fiber));
 }
+}
 
-Fiber::Fiber() {
+detail::Fiber::Fiber() : _fiber(std::make_unique<::Fiber>()), _caller(context::detail::get()->current_fiber) {
     HILTI_RT_DEBUG("fibers", fmt("[%p] allocated new fiber", this));
 
-    if ( getcontext(&_uctx) < 0 )
-        internalError("fiber: getcontext failed");
-
-    _uctx.uc_link = nullptr;
-    _uctx.uc_stack.ss_size = StackSize;
-    _uctx.uc_stack.ss_sp = new char[StackSize];
-    _uctx.uc_stack.ss_flags = 0;
-
-    // Magic from from libtask/task.c to turn the pointer into two words.
-    // TODO(robin): Probably not portable ...
-    unsigned long z = (unsigned long)this; // NOLINT
-    unsigned int y = z;
-    z >>= 16U;
-    unsigned int x = (z >> 16U);
-
-    makecontext(&_uctx, (void (*)())_Trampoline, 2, y, x); // NOLINT (cppcoreguidelines-pro-type-cstyle-cast)
+    auto alloc = ::fiber_alloc(_fiber.get(), StackSize, fiber_bottom, this, FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI);
+    if ( ! alloc )
+        internalError("could not allocate fiber");
 
     ++_total_fibers;
     ++_current_fibers;
@@ -92,33 +83,35 @@ Fiber::Fiber() {
     if ( _current_fibers > _max_fibers )
         _max_fibers = _current_fibers;
 }
-}
 
 class AbortException : public std::exception {};
 
-Fiber::~Fiber() {
+detail::Fiber::~Fiber() {
     HILTI_RT_DEBUG("fibers", fmt("[%p] deleting fiber", this));
 
-    delete[] static_cast<char*>(_uctx.uc_stack.ss_sp);
+    ::fiber_destroy(_fiber.get());
     --_current_fibers;
 }
 
-void Fiber::run() {
+void detail::Fiber::run() {
     auto init = (_state == State::Init);
 
     if ( _state != State::Aborting )
         _state = State::Running;
 
-    _startSwitchFiber("run", _uctx.uc_stack.ss_sp, _uctx.uc_stack.ss_size);
+    _startSwitchFiber("run", _fiber->stack, _fiber->stack_size);
 
-    if ( ! _setjmp(_parent) ) {
-        if ( init )
-            setcontext(&_uctx);
-        else
-            _longjmp(_fiber, 1);
-
-        internalError("fiber: unreachable reached");
+    if ( init ) {
+        detail::Fiber** args;
+        ::fiber_reserve_return(_fiber.get(), _Trampoline, reinterpret_cast<void**>(&args), sizeof *args);
+        *args = this;
     }
+
+    auto* context = context::detail::get();
+    assert(context);
+    _caller = context->current_fiber;
+    context->current_fiber = _fiber.get();
+    ::fiber_switch(_caller, _fiber.get());
 
     _finishSwitchFiber("run");
 
@@ -130,14 +123,17 @@ void Fiber::run() {
     }
 }
 
-void Fiber::yield() {
+void detail::Fiber::yield() {
     assert(_state == State::Running);
 
     _state = State::Yielded;
     _startSwitchFiber("yield");
 
-    if ( ! _setjmp(_fiber) )
-        _longjmp(_parent, 1);
+    auto* context = context::detail::get();
+    assert(context);
+    assert(_fiber.get() == context->current_fiber);
+    context->current_fiber = _caller;
+    ::fiber_switch(_fiber.get(), _caller);
 
     _finishSwitchFiber("yield");
 
@@ -145,18 +141,18 @@ void Fiber::yield() {
         throw AbortException();
 }
 
-void Fiber::resume() {
+void detail::Fiber::resume() {
     assert(_state == State::Yielded);
     return run();
 }
 
-void Fiber::abort() {
+void detail::Fiber::abort() {
     assert(_state == State::Yielded);
     _state = State::Aborting;
     return run();
 }
 
-std::unique_ptr<Fiber> Fiber::create() {
+std::unique_ptr<detail::Fiber> detail::Fiber::create() {
     if ( ! globalState()->fiber_cache.empty() ) {
         auto f = std::move(globalState()->fiber_cache.back());
         globalState()->fiber_cache.pop_back();
@@ -167,7 +163,7 @@ std::unique_ptr<Fiber> Fiber::create() {
     return std::make_unique<Fiber>();
 }
 
-void Fiber::destroy(std::unique_ptr<Fiber> f) {
+void detail::Fiber::destroy(std::unique_ptr<detail::Fiber> f) {
     if ( f->_state == State::Yielded )
         f->abort();
 
@@ -180,7 +176,7 @@ void Fiber::destroy(std::unique_ptr<Fiber> f) {
     HILTI_RT_DEBUG("fibers", fmt("[%p] cache size exceeded, deleting finished fiber", f.get()));
 }
 
-void Fiber::primeCache() {
+void detail::Fiber::primeCache() {
     std::vector<std::unique_ptr<Fiber>> fibers;
     fibers.reserve(CacheSize);
 
@@ -193,7 +189,7 @@ void Fiber::primeCache() {
     }
 }
 
-void Fiber::reset() {
+void detail::Fiber::reset() {
     globalState()->fiber_cache.clear();
     _total_fibers = 0;
     _current_fibers = 0;
@@ -201,7 +197,7 @@ void Fiber::reset() {
     _initialized = 0;
 }
 
-void Fiber::_startSwitchFiber(const char* tag, const void* stack_bottom, size_t stack_size) {
+void detail::Fiber::_startSwitchFiber(const char* tag, const void* stack_bottom, size_t stack_size) {
 #ifdef HILTI_HAVE_SANITIZER
     if ( ! stack_bottom ) {
         stack_bottom = _asan.prev_bottom;
@@ -216,7 +212,7 @@ void Fiber::_startSwitchFiber(const char* tag, const void* stack_bottom, size_t 
 #endif
 }
 
-void Fiber::_finishSwitchFiber(const char* tag) {
+void detail::Fiber::_finishSwitchFiber(const char* tag) {
 #ifdef HILTI_HAVE_SANITIZER
     __sanitizer_finish_switch_fiber(_asan.fake_stack, &_asan.prev_bottom, &_asan.prev_size);
     HILTI_RT_DEBUG("fibers", fmt("[%p/%s/asan] finish_switch_fiber %p/%p (fake_stack=%p)", this, tag, _asan.prev_bottom,
@@ -292,7 +288,7 @@ void detail::yield() {
     context::detail::get()->resumable = r;
 }
 
-Fiber::Statistics Fiber::statistics() {
+detail::Fiber::Statistics detail::Fiber::statistics() {
     Statistics stats{
         .total = _total_fibers,
         .current = _current_fibers,

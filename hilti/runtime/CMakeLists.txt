@@ -7,8 +7,6 @@ file(MAKE_DIRECTORY  "${CMAKE_BINARY_DIR}/bin" "${CMAKE_BINARY_DIR}/lib")
 
 ##### Runtime libraries
 
-include_directories(${CMAKE_SOURCE_DIR}/3rdparty/libtask/include)
-
 add_custom_target(version
                   ALL
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-version --header ${AUTOGEN_H}/version.h --git-root ${CMAKE_CURRENT_SOURCE_DIR}
@@ -38,12 +36,15 @@ set(SOURCES
     src/types/time.cc
     src/util.cc
 
-    ${CMAKE_SOURCE_DIR}/3rdparty/libtask/asm.S
-    ${CMAKE_SOURCE_DIR}/3rdparty/libtask/context.c
+    ${CMAKE_SOURCE_DIR}/3rdparty/fiber/src/fiber.c
     ${CMAKE_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c
 )
 
-set_source_files_properties(${CMAKE_SOURCE_DIR}/3rdparty/libtask/context.c PROPERTIES COMPILE_OPTIONS "-Wno-null-dereference")
+if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+    list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/3rdparty/fiber/src/fiber_asm_amd64_sysv.S)
+else ()
+    message(FATAL_ERROR "Target platform ${CMAKE_HOST_SYSTEM_PROCESSOR} not supported")
+endif ()
 
 foreach ( lib hilti-rt hilti-rt-debug )
     add_library(${lib}-objects OBJECT ${SOURCES})
@@ -53,6 +54,9 @@ foreach ( lib hilti-rt hilti-rt-debug )
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/3rdparty>)
+    target_include_directories(${lib}-objects BEFORE PUBLIC
+        ${CMAKE_SOURCE_DIR}/3rdparty/fiber/include
+        ${CMAKE_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include)
 
     # The following should instead just be:
     #
@@ -111,7 +115,7 @@ install(CODE "file(REMOVE_RECURSE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilt
 
 # Install the 3rdparty headers that we need individually.
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt)
-install_headers(${CMAKE_SOURCE_DIR}/3rdparty/libtask hilti/rt/3rdparty/libtask)
+install_headers(${CMAKE_SOURCE_DIR}/3rdparty/fiber hilti/rt/3rdparty/fiber)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/single_include/nlohmann hilti/rt/3rdparty/nlohmann)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)

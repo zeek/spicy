@@ -45,6 +45,12 @@ struct Context {
      */
     resumable::Handle* resumable = nullptr;
 
+    /** The main fiber. */
+    std::unique_ptr<::Fiber> main_fiber;
+
+    /** The currently executing fiber .*/
+    ::Fiber* current_fiber = nullptr;
+
     /**
      * Pointer to an array of (per thread) global variables allocated by the
      * linker code. Each array entry corresponds to the globals of one HILTI

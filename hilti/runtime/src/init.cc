@@ -5,6 +5,7 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+#include <cinttypes>
 #include <clocale>
 
 #include <hilti/rt/configuration.h>
