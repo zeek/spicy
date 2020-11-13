@@ -57,6 +57,7 @@ foreach ( lib hilti-rt hilti-rt-debug )
     # The following should instead just be:
     #
     #    target_link_libraries(${lib}-objects PRIVATE jrx-objects)
+    #    target_link_libraries(${lib}-objects PRIVATE aco)
     #
     # but does not pull in the object files for some reason. Since at least
     # with cmake-3.16.5 depending on some `TARGET_OBJECTS` does not ensure the
@@ -65,6 +66,9 @@ foreach ( lib hilti-rt hilti-rt-debug )
     add_dependencies(${lib}-objects jrx-objects)
     target_include_directories(${lib}-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/justrx/include)
     target_link_libraries(${lib}-objects      PRIVATE $<TARGET_OBJECTS:jrx-objects>)
+
+    add_dependencies(${lib}-objects aco)
+    target_link_libraries(${lib}-objects PRIVATE $<TARGET_OBJECTS:aco>)
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
@@ -111,6 +115,7 @@ install(CODE "file(REMOVE_RECURSE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilt
 
 # Install the 3rdparty headers that we need individually.
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt)
+install_headers(${CMAKE_SOURCE_DIR}/3rdparty/libaco hilti/rt/3rdparty/libaco)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/libtask hilti/rt/3rdparty/libtask)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/single_include/nlohmann hilti/rt/3rdparty/nlohmann)

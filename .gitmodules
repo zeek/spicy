@@ -34,3 +34,6 @@
 [submodule "3rdparty/filesystem"]
 	path = 3rdparty/filesystem
 	url = https://github.com/gulrak/filesystem.git
+[submodule "3rdparty/libaco"]
+	path = 3rdparty/libaco
+	url = https://github.com/hnes/libaco.git
