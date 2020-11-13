@@ -1,0 +1,14 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT
+# @TEST-EXEC: btest-diff .stderr
+
+module Foo {
+
+import hilti;
+
+declare public hook void f();
+
+function hook void f() &priority="foo" { }
+function hook void f() &priority { }
+function void g() &priority=42 { }
+
+}
