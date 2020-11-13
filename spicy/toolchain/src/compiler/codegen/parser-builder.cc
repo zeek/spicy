@@ -909,6 +909,29 @@ struct ProductionVisitor
     }
 
     void operator()(const production::Variable& p) { pb->parseType(p.type(), p.meta(), destination()); }
+
+    void operator()(const production::While& p) {
+        if ( p.expression() )
+            hilti::logger().internalError("expression-based while loop not implemented in parser builder");
+        else {
+            // Look-ahead based loop.
+            auto body = builder()->addWhile(hilti::builder::bool_(true));
+            pushBuilder(body, [&]() {
+                auto lah_prod = p.lookAheadProduction();
+                auto [builder_alt1, builder_alt2] = parseLookAhead(lah_prod);
+
+                pushBuilder(builder_alt1, [&]() {
+                    // Terminate loop.
+                    builder()->addBreak();
+                });
+
+                pushBuilder(builder_alt2, [&]() {
+                    // Parse body.
+                    parseProduction(p.body());
+                });
+            });
+        };
+    }
 };
 
 } // namespace spicy::detail::codegen
