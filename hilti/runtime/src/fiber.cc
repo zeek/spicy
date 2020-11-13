@@ -53,14 +53,12 @@ void _Trampoline(unsigned int y, unsigned int x) {
             fiber->_exception = std::current_exception();
         }
 
-        fiber->_state = Fiber::State::Finished;
+        fiber->_function = {};
+        fiber->_state = Fiber::State::Idle;
+        fiber->_startSwitchFiber("trampoline-loop");
 
-        if ( ! _setjmp(fiber->_fiber) ) {
-            fiber->_function = {};
-            fiber->_state = Fiber::State::Idle;
-            fiber->_startSwitchFiber("trampoline-loop");
+        if ( ! _setjmp(fiber->_fiber) )
             _longjmp(fiber->_parent, 1);
-        }
 
         fiber->_finishSwitchFiber("trampoline-loop");
     }
@@ -111,14 +109,13 @@ void Fiber::run() {
     if ( _state != State::Aborting )
         _state = State::Running;
 
-    if ( ! _setjmp(_parent) ) {
-        _startSwitchFiber("run", _uctx.uc_stack.ss_sp, _uctx.uc_stack.ss_size);
+    _startSwitchFiber("run", _uctx.uc_stack.ss_sp, _uctx.uc_stack.ss_size);
 
+    if ( ! _setjmp(_parent) ) {
         if ( init )
             setcontext(&_uctx);
-        else {
+        else
             _longjmp(_fiber, 1);
-        }
 
         internalError("fiber: unreachable reached");
     }
@@ -136,11 +133,11 @@ void Fiber::run() {
 void Fiber::yield() {
     assert(_state == State::Running);
 
-    if ( ! _setjmp(_fiber) ) {
-        _state = State::Yielded;
-        _startSwitchFiber("yield");
+    _state = State::Yielded;
+    _startSwitchFiber("yield");
+
+    if ( ! _setjmp(_fiber) )
         _longjmp(_parent, 1);
-    }
 
     _finishSwitchFiber("yield");
 
