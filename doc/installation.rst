@@ -376,3 +376,21 @@ non-standard location, make sure that ``<prefix>/bin`` is in your
 
 To build Spicy's documentation, run ``make`` inside the ``docs/`` directory.
 Documentation will be located in ``build/doc/html``.
+
+Development setup
+-----------------
+
+In order to speed up precompilation of Spicy parsers, users can create a cache of
+precompiled files. This cache is tied to a specific Spicy version, and needs to
+be recreated each time Spicy is updated.
+
+To precompile the files execute the following command::
+
+    # spicy-precompile-headers
+
+.. note::
+
+    By default the cache is located in the folder ``.cache/spicy/<VERSION>`` in
+    the user's home directory. This location can be overriden by setting the
+    environment variable ``SPICY_CACHE`` to a different folder path, both when
+    executing ``spicy-precompile-headers`` and Spicy toolchain commands.
