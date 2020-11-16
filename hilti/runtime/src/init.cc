@@ -5,6 +5,7 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+#include <cinttypes>
 #include <clocale>
 
 #include <hilti/rt/configuration.h>
@@ -51,8 +52,10 @@ void hilti::rt::init() {
         }
     }
 
-    if ( ! globalState()->main_co )
-        globalState()->main_co = aco_create(nullptr, nullptr, 0, nullptr, nullptr);
+    if ( ! globalState()->main_co ) {
+        // Clear any coroutines scheduled in a previous run.
+        Fiber::reset();
+    }
 
     globalState()->runtime_is_initialized = true;
     globalState()->resource_usage_init = resource_usage();

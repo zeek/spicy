@@ -1,6 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #pragma once
+#include <3rdparty/libaco/aco.h>
+
 #include <any>
 #include <csetjmp>
 #include <functional>
@@ -12,21 +14,13 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/3rdparty/libaco/aco.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/lambda.h>
 #include <hilti/rt/util.h>
 
 extern "C" {
-// libtask introduces "Context" into the global scope, which leads
-// to ambiguities. As we don't need it, we just hide it.
-#define Context __libtask__Context
-#include <hilti/rt/3rdparty/libtask/taskimpl.h>
-#undef Context
-// Undef macros that libtask defines.
-#undef print
-#undef nil
-
-void _Trampoline(unsigned int y, unsigned int x);
+void _Trampoline();
 }
 
 namespace hilti::rt {
@@ -110,7 +104,7 @@ public:
     static constexpr unsigned int CacheSize = 100;
 
 private:
-    friend void ::_Trampoline(unsigned int y, unsigned int x);
+    friend void ::_Trampoline();
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 
     /** Code to run just before we switch to a fiber. */
@@ -124,9 +118,8 @@ private:
     std::optional<std::any> _result;
     std::exception_ptr _exception;
 
-    ucontext_t _uctx{};
-    jmp_buf _fiber{};
-    jmp_buf _parent{};
+    std::unique_ptr<aco_share_stack_t, void (*)(aco_share_stack_t*)> private_sstk;
+    std::unique_ptr<aco_t, void (*)(aco_t*)> co;
 
 #ifdef HILTI_HAVE_SANITIZER
     struct {
@@ -142,6 +135,10 @@ private:
     inline static uint64_t _current_fibers;
     inline static uint64_t _max_fibers;
     inline static uint64_t _initialized; // number of trampolines run
+    static std::vector<Fiber*> co_stack;
+
+    static void schedule(Fiber* fiber);
+    static void unschedule(Fiber* fiber = nullptr);
 };
 
 extern void yield();

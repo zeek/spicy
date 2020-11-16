@@ -32,7 +32,7 @@ namespace hilti::rt::detail {
 
 /** Struct capturing all truely global runtime state. */
 struct GlobalState {
-    GlobalState() = default;
+    GlobalState();
     ~GlobalState();
 
     GlobalState(const GlobalState&) = delete;
@@ -71,7 +71,7 @@ struct GlobalState {
     std::vector<hilti::rt::detail::HiltiModule> hilti_modules;
 
     /** Pointer to the coroutine controlling fiber execution. */
-    aco_t* main_co = nullptr;
+    std::unique_ptr<aco_t, void (*)(aco_t*)> main_co;
 };
 
 /**

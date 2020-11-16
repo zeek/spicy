@@ -5,10 +5,13 @@
 #undef _FORTIFY_SOURCE
 #endif
 
+#include "hilti/rt/fiber.h"
+
+#include <cassert>
+
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/context.h>
 #include <hilti/rt/exception.h>
-#include <hilti/rt/fiber.h>
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/logging.h>
 #include <hilti/rt/util.h>
@@ -20,18 +23,18 @@
 using namespace hilti::rt;
 using namespace hilti::rt::detail;
 
-const void* _main_thread_bottom = nullptr;
-std::size_t _main_thread_size = 0;
+bool is_running_on_fiber() {
+    // Before the fiber is first resumed the thread-local coroutine pointer
+    // `aco_gtls_co` is not set up. On subsequent calls it points to the
+    // currently active coroutine.
+    return aco_gtls_co && globalState()->main_co.get() != aco_gtls_co;
+}
 
 extern "C" {
 
-void _Trampoline(unsigned int y, unsigned int x) {
-    // Magic from from libtask/task.c to turn the two words back into a pointer.
-    unsigned long z; // NOLINT
-    z = (x << 16U);
-    z <<= 16U;
-    z |= y;
-    auto fiber = (Fiber*)z; // NOLINT
+void _Trampoline() {
+    auto* fiber = reinterpret_cast<Fiber*>(aco_get_arg());
+    assert(fiber);
 
     HILTI_RT_DEBUG("fibers", fmt("[%p] entering trampoline loop", fiber));
     fiber->_finishSwitchFiber("trampoline-init");
@@ -57,34 +60,44 @@ void _Trampoline(unsigned int y, unsigned int x) {
         fiber->_state = Fiber::State::Idle;
         fiber->_startSwitchFiber("trampoline-loop");
 
-        if ( ! _setjmp(fiber->_fiber) )
-            _longjmp(fiber->_parent, 1);
+        assert(is_running_on_fiber());
+        aco_yield();
 
         fiber->_finishSwitchFiber("trampoline-loop");
     }
 
     HILTI_RT_DEBUG("fibers", fmt("[%p] finished trampoline loop", fiber));
+
+    aco_exit();
+}
 }
 
-Fiber::Fiber() {
+// FIXME(bbannier): move to GlobalState.
+std::vector<Fiber*> Fiber::co_stack;
+
+void Fiber::schedule(Fiber* fiber) { co_stack.push_back(fiber); }
+
+void Fiber::unschedule(Fiber* fiber) {
+    if ( ! fiber ) {
+        co_stack.clear();
+        return;
+    }
+
+    // Unschedule all coroutines dependent on this fiber.
+    if ( auto it = std::find(co_stack.begin(), co_stack.end(), fiber); it != co_stack.end() )
+        co_stack.erase(it, co_stack.end());
+}
+
+Fiber::Fiber()
+    : private_sstk(std::unique_ptr<aco_share_stack_t, void (*)(aco_share_stack_t*)>(aco_share_stack_new(StackSize),
+                                                                                    [](aco_share_stack_t* ss) {
+                                                                                        aco_share_stack_destroy(ss);
+                                                                                    })),
+      co(std::unique_ptr<aco_t, void (*)(aco_t*)>(aco_create(globalState()->main_co.get(), private_sstk.get(),
+                                                             private_sstk->sz, _Trampoline, this),
+                                                  [](aco_t* co) { aco_destroy(co); })) {
     HILTI_RT_DEBUG("fibers", fmt("[%p] allocated new fiber", this));
 
-    if ( getcontext(&_uctx) < 0 )
-        internalError("fiber: getcontext failed");
-
-    _uctx.uc_link = nullptr;
-    _uctx.uc_stack.ss_size = StackSize;
-    _uctx.uc_stack.ss_sp = new char[StackSize];
-    _uctx.uc_stack.ss_flags = 0;
-
-    // Magic from from libtask/task.c to turn the pointer into two words.
-    // TODO(robin): Probably not portable ...
-    unsigned long z = (unsigned long)this; // NOLINT
-    unsigned int y = z;
-    z >>= 16U;
-    unsigned int x = (z >> 16U);
-
-    makecontext(&_uctx, (void (*)())_Trampoline, 2, y, x); // NOLINT (cppcoreguidelines-pro-type-cstyle-cast)
 
     ++_total_fibers;
     ++_current_fibers;
@@ -92,52 +105,46 @@ Fiber::Fiber() {
     if ( _current_fibers > _max_fibers )
         _max_fibers = _current_fibers;
 }
-}
 
 class AbortException : public std::exception {};
 
 Fiber::~Fiber() {
     HILTI_RT_DEBUG("fibers", fmt("[%p] deleting fiber", this));
 
-    delete[] static_cast<char*>(_uctx.uc_stack.ss_sp);
+    unschedule(this);
     --_current_fibers;
 }
 
 void Fiber::run() {
-    auto init = (_state == State::Init);
-
-    if ( _state != State::Aborting )
-        _state = State::Running;
-
-    _startSwitchFiber("run", _uctx.uc_stack.ss_sp, _uctx.uc_stack.ss_size);
-
-    if ( ! _setjmp(_parent) ) {
-        if ( init )
-            setcontext(&_uctx);
-        else
-            _longjmp(_fiber, 1);
-
-        internalError("fiber: unreachable reached");
+    // Run all previously scheduled coroutines.
+    if ( ! co_stack.empty() ) {
+        auto* fiber = *co_stack.rbegin();
+        co_stack.pop_back();
+        fiber->run();
     }
+    co_stack.shrink_to_fit();
 
-    _finishSwitchFiber("run");
+    if ( ! is_running_on_fiber() ) {
+        if ( _state != State::Aborting )
+            _state = State::Running;
 
-    switch ( _state ) {
-        case State::Yielded:
-        case State::Idle: return;
-
-        default: internalError("fiber: unexpected case");
+        _startSwitchFiber("run", co->save_stack.ptr, co->save_stack.sz);
+        aco_resume(co.get());
+        _finishSwitchFiber("run");
+    }
+    else {
+        // Schedule this fiber to be run next.
+        co_stack.push_back(this);
+        yield();
     }
 }
 
 void Fiber::yield() {
-    assert(_state == State::Running);
-
     _state = State::Yielded;
     _startSwitchFiber("yield");
 
-    if ( ! _setjmp(_fiber) )
-        _longjmp(_parent, 1);
+    assert(is_running_on_fiber());
+    aco_yield();
 
     _finishSwitchFiber("yield");
 
@@ -145,14 +152,14 @@ void Fiber::yield() {
         throw AbortException();
 }
 
-void Fiber::resume() {
-    assert(_state == State::Yielded);
-    return run();
-}
+void Fiber::resume() { return run(); }
 
 void Fiber::abort() {
-    assert(_state == State::Yielded);
+    HILTI_RT_DEBUG("fibers", fmt("[%p] aborting fiber", this));
+
     _state = State::Aborting;
+    unschedule(this);
+
     return run();
 }
 
@@ -194,7 +201,9 @@ void Fiber::primeCache() {
 }
 
 void Fiber::reset() {
+    unschedule();
     globalState()->fiber_cache.clear();
+
     _total_fibers = 0;
     _current_fibers = 0;
     _max_fibers = 0;

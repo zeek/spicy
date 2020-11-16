@@ -275,7 +275,7 @@ TEST_CASE("waitForInput with min") {
 }
 
 TEST_CASE("waitForInputOrEod with min") {
-    hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.
+    // hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.
 
     // Reinitialize the runtime to make sure we do not carry over state between test cases.
     //
@@ -379,7 +379,14 @@ TEST_CASE("waitForInputOrEod with min") {
             // enough data available initally.
             auto res = waitForInputOrEod();
             data->append("\x01\x02\x03"_b);
-            res.resume(); // XX
+
+            REQUIRE_FALSE(res);
+
+            // Since the two filters yield back to `waitForInputOrEod` we need
+            // to resume it twice to resume the filters and once more for
+            // `waitForInputOrEod` to pick up the filter results.
+            for ( int i = 0; i < 3; ++i )
+                res.resume();
 
             CHECK(res);
             CHECK_EQ(called1, 2);

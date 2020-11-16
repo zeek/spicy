@@ -12,6 +12,16 @@ using namespace hilti::rt::detail;
 // it.
 GlobalState* detail::__global_state = nullptr;
 
+GlobalState::GlobalState()
+    : main_co([]() {
+          aco_thread_init(nullptr);
+          return std::unique_ptr<aco_t, void (*)(aco_t*)>(aco_create(nullptr, nullptr, 0, nullptr, nullptr),
+                                                          [](aco_t* co) {
+                                                              aco_destroy(co);
+                                                              aco_gtls_co = nullptr;
+                                                          });
+      }()) {}
+
 GlobalState* detail::createGlobalState() {
     __global_state = new GlobalState(); // NOLINT (cppcoreguidelines-owning-memory)
     return __global_state;
