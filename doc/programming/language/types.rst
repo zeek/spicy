@@ -464,6 +464,7 @@ Tuples are heterogeneous containers of a fixed, ordered set of types.
 .. rubric:: Constants
 
 - ``(1, "string", True)``, ``(1, )``, ``()``
+- ``tuple(1, "string", True)``, ``tuple(1)``, ``tuple()``
 
 .. include:: /autogen/types/tuple.rst
 
