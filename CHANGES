@@ -1,4 +1,72 @@
 
+0.4.0-1031 | 2020-11-17 14:05:32 +0100
+
+  * GH-571: Fix padding handling when formatting nan and inf values.
+
+    This patch bumps tinyformat to a version containing the upstream fix for
+    https://github.com/c42f/tinyformat/issues/76 (and the follow up fix
+    https://github.com/c42f/tinyformat/pull/80).
+
+    We also add a regression test.
+
+    Closes #571. (Benjamin Bannier, Corelight)
+
+  * GH-589: Fix "'_debug’ was not declared in this scope" build error (Robin Sommer, Corelight)
+
+  * Mention header precompilation in installation docs. (Benjamin Bannier, Corelight)
+
+  * Disable precompiled headers for gcc CI job.
+
+    While mixing GCC and Clang with precompiled headers is an issue for JIT
+    (JIT always uses Clang to compile modules while precompiled headers are
+    created with the compiler used to compile Spicy itself), we disable
+    precompiled headers for the non-JIT, GCC job since GCC emits a
+    non-suppressible warning, see
+    https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89808,
+
+        build/hilti/runtime/include/hilti/rt/libhilti.h:3:9: error: #pragma once in main file [-Werror]
+            3 | #pragma once
+              |         ^~~~
+        cc1plus: all warnings being treated as errors
+
+    Instead of not treating warnings as errors anymore we disable precompiled
+    headers in this build since it does not use them anyway. (Benjamin Bannier, Corelight)
+
+  * Add missing include. (Benjamin Bannier, Corelight)
+
+  * Optionally precompile libhilti.h.
+
+    This patch adds precompilation of libhilti.h for developer setups. This
+    header is included in all files during JIT, and precompiling it can for
+    individual files reduce JIT time by up to 30%. This behavior can be
+    disabled by setting the CMake option `HILTI_DEV_PRECOMPILE_HEADERS=OFF`.
+
+    Specifically, we add a cmake target which creates debug and release
+    versions of a precompiled libhilti.h. We modify HILTI's built-in
+    CXXFLAGS to check for the presence of the needed precompiled header in
+    the expected location. We expect the header either in a specific
+    location in the build directory, or optionally in a version directory in
+    `$HOME/.cache/spicy`.
+
+    In this patch we enable use of the precompiled header only during JIT,
+    but e.g., not when building Spicy targets. This allows us to profit from
+    faster JIT while still making efficient use of e.g., ccache.
+    Additionally, this approach allows us to punt on fixing a number of
+    issues in header files which get exposed during JIT (JIT artifacts are
+    not affected at the moment).
+
+    The original goal was to precompile lihilti.h before installation which
+    is not reached. In general, it seems that precompiled headers are not
+    intended to be moved after creation. This poses a challenge when the
+    header gets installed: while we could in principle generate the
+    precompiled header at the final location during install time, this seems
+    not reliably possible when generating packages which can be expanded in
+    arbitrary locations.
+
+    Additionally, we also install a script for users to take advantage of
+    precompiled headers once Spicy has been installed. (Benjamin Bannier, Corelight)
+
+
 0.4.0-1020 | 2020-11-12 11:04:57 +0000
 
   * Fix performance regression by removing wasteful formatting of debug message
