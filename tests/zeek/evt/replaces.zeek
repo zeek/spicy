@@ -1,6 +1,6 @@
 # @TEST-REQUIRES: have-zeek-plugin-jit
 #
-# @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace  ssh.spicy ./ssh.evt %INPUT >output
+# @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace  ssh.spicy ./ssh.evt %INPUT | sort >output
 # @TEST-EXEC: btest-diff output
 
 event ssh::banner(c: connection, is_orig: bool, version: string, software: string)
