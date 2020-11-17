@@ -22,5 +22,6 @@ inline const auto CxxBrokerIncludeDirectory = "${BROKER_INCLUDE_DIR}";
 
 inline const auto PluginLibraryDirectoryBuild = "${CMAKE_CURRENT_SOURCE_DIR}/spicy";
 inline const auto PluginLibraryDirectoryInstallation = "${PLUGIN_INSTALL_DIR}/spicy";
+inline const auto PluginModuleDirectory = "${PLUGIN_INSTALL_DIR}/modules";
 
 }

@@ -170,6 +170,12 @@ protected:
     int HookLoadFile(const LoadType type, const std::string& file, const std::string& resolved) override;
 
 private:
+    // Load one *.hlto module.
+    void loadModule(const hilti::rt::filesystem::path& path);
+
+    // Search SPICY_MODULE_PATH for pre-compiled *.hlto modules and load them.
+    void autoDiscoverModules();
+
     /** Captures a registered protocol analyzer. */
     struct ProtocolAnalyzerInfo {
         // Filled in when registering the analyzer.
