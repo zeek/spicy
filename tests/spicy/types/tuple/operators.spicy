@@ -6,8 +6,12 @@ module Test;
 
 global t = (1, 2, 3);
 global t2: tuple<uint64, uint64, uint64> = (1, 2, 3);
+global t3 = tuple(1, 2, 3);
 
 assert t == (1, 2, 3);
 assert t == t2;
+assert t == t3;
 assert (1.0, 2.0, 3.0) == (1, 2, 3);
 assert t[1] == 2;
+assert tuple(1) == (1, );
+assert tuple() == ();
