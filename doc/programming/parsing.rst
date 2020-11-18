@@ -469,6 +469,18 @@ There are three locations where hooks can be implemented:
   type accordingly. They provide a powerful mechanism to extend a
   predefined unit without changing any of its code.
 
+If multiple implementations are provided for the same hook, by default
+it remains undefined in which order they will execute. If a particular
+order is desired, you can specify priorities for your hook
+implementations::
+
+      on Foo::v priority=5 { ... }
+      on Foo::v priority=-5 { ... }
+
+Implementations then execute in order of their priorities: The higher a
+priority value, the earlier it will execute. If not specified, a
+hook's priority is implicitly taken as zero.
+
 .. note::
 
    When a hook executes, it has access to the current unit instance

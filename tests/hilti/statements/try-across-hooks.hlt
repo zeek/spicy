@@ -11,7 +11,7 @@ public type E = exception;
 
 declare public hook void f1();
 
-public function hook void f1() { hilti::print("Foo: f1"); }
+public function hook void f1() &priority=5 { hilti::print("Foo: f1"); }
 
 }
 

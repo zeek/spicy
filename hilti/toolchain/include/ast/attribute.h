@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <hilti/ast/ctors/string.h>
+#include <hilti/ast/ctors/integer.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/node.h>
@@ -72,6 +73,9 @@ public:
     template<typename T>
     Result<T> valueAs() const {
         if constexpr ( std::is_same<T, Expression>::value ) {
+            if ( ! hasValue() )
+                return result::Error(hilti::util::fmt("attribute '%s' requires an expression", _tag));
+
             if ( auto e = value().tryAs<Expression>() )
                 return *e;
 
@@ -79,10 +83,28 @@ public:
         }
 
         if constexpr ( std::is_same<T, std::string>::value ) {
+            if ( ! hasValue() )
+                return result::Error(hilti::util::fmt("attribute '%s' requires a string", _tag));
+
             if ( auto e = value().tryAs<expression::Ctor>() )
                 if ( auto s = e->ctor().tryAs<ctor::String>() )
                     return s->value();
             return result::Error(hilti::util::fmt("value for attribute '%s' must be a string", _tag));
+        }
+
+        if constexpr ( std::is_same<T, int64_t>::value ) {
+            if ( ! hasValue() )
+                return result::Error(hilti::util::fmt("attribute '%s' requires an integer", _tag));
+
+            if ( auto e = value().tryAs<expression::Ctor>() ) {
+                if ( auto s = e->ctor().tryAs<ctor::SignedInteger>() )
+                    return s->value();
+
+                if ( auto s = e->ctor().tryAs<ctor::UnsignedInteger>() )
+                    return static_cast<int64_t>(s->value());
+            }
+
+            return result::Error(hilti::util::fmt("value for attribute '%s' must be an integer", _tag));
         }
 
         logger().internalError(hilti::util::fmt("unsupported attribute value type requested (%s)", typeid(T).name()));

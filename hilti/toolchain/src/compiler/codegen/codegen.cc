@@ -244,6 +244,17 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             return;
         }
 
+        int64_t priority = 0;
+        if ( is_hook && f.attributes() ) {
+            if ( auto x = f.attributes()->find("&priority") ) {
+                if ( auto i = x->valueAs<int64_t>() )
+                    priority = *i;
+                else
+                    // Should have been caught earlier already.
+                    logger().error("cannot parse &priority");
+            }
+        }
+
         if ( is_hook && n.linkage() == declaration::Linkage::Struct ) {
             // A struct hook.
 
@@ -286,7 +297,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                 cg->unit()->add(t); // XXX
 
             // Tell linker about our implementation.
-            auto hook_join = cxx::linker::Join{.id = id_hook_stub, .callee = d, .aux_types = aux_types};
+            auto hook_join = cxx::linker::Join{.id = id_hook_stub, .callee = d, .aux_types = aux_types, .priority = priority };
 
             cg->unit()->add(d);
             cg->unit()->add(hook_join);
@@ -323,6 +334,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             auto hook_join = cxx::linker::Join{.id = id_hook_stub,
                                                .callee = d,
                                                .aux_types = aux_types,
+                                               .priority = priority,
                                                .declare_only = (! f.body().has_value())};
 
             cg->unit()->add(hook_join);

@@ -1,0 +1,36 @@
+# @TEST-EXEC:  echo 12345| spicy-driver -p A::tA %INPUT b.spicy | sort -s -k 1,1 >output
+# @TEST-EXEC:  btest-diff output
+
+module A;
+
+public type tA = unit {
+       a: bytes &size=5 {
+            print "A: prio 0", self.a;
+       }
+
+       on a priority=7 {
+            print "A: prio 7", self.a;
+       }
+};
+
+on tA::a priority=-5 {
+    print "A: prio -5", self.a;
+    }
+
+on tA::a priority=15 {
+    print "A: prio 15", self.a;
+    }
+
+### @TEST-START-FILE b.spicy
+module B;
+
+import A;
+
+on A::tA::a priority=-10 {
+    print "B: prio -10", self.a;
+    }
+
+on A::tA::a priority=10 {
+    print "B: prio 10", self.a;
+    }
+### @TEST-END-FILE test.txt

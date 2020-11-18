@@ -74,8 +74,11 @@ void cxx::Linker::finalize() {
         auto impl = cxx::Function();
         auto body = cxx::Block();
 
+        auto sorted_joins = j.second;
+        std::sort(sorted_joins.begin(), sorted_joins.end(), [](auto x, auto y) { return x.priority > y.priority; });
+
         bool first = true;
-        for ( const auto& c : j.second ) {
+        for ( const auto& c : sorted_joins ) {
             if ( first ) {
                 impl.declaration = c.callee;
                 impl.declaration.id = c.id;

@@ -1,0 +1,41 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT foo.hlt bar.hlt >output
+# @TEST-EXEC: btest-diff output
+
+@TEST-START-FILE foo.hlt
+
+module Foo {
+
+import hilti;
+
+declare public hook void f();
+
+public function hook void f() { hilti::print("f with priority 0"); }
+
+}
+
+@TEST-END-FILE
+
+@TEST-START-FILE bar.hlt
+
+module Bar {
+
+import hilti;
+import Foo;
+
+public function hook void Foo::f() &priority=-5 { hilti::print("f with priority -5"); }
+public function hook void Foo::f() &priority=15 { hilti::print("f with priority 15"); }
+
+}
+
+@TEST-END-FILE
+
+module Test {
+
+import hilti;
+import Foo;
+
+Foo::f();
+
+public function hook void Foo::f() &priority=10 { hilti::print("f with priority 10"); }
+
+}

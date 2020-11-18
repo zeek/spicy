@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${HILTIC} -j %INPUT foo.hlt bar.hlt >output
+# @TEST-EXEC: ${HILTIC} -j %INPUT foo.hlt bar.hlt | sort >output
 # @TEST-EXEC: btest-diff output
 
 @TEST-START-FILE foo.hlt
