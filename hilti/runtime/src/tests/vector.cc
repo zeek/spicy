@@ -88,6 +88,31 @@ TEST_CASE("assignment") {
     }
 }
 
+TEST_CASE("at") {
+        Vector<int> xs;
+        xs = Vector<int>({1, 2, 3, 4, 5});
+        CHECK_EQ(*xs.iteratorAt(1), 2);
+        CHECK_THROWS_WITH_AS(xs.iteratorAt(5), "vector index 5 out of range", const IndexError&);
+}
+
+TEST_CASE("sub") {
+    SUBCASE("range") {
+        auto xs = Vector<int>({1, 2, 3, 4, 5});
+        CHECK_EQ(xs.sub(1, 4), Vector<int>({2, 3, 4}));
+        CHECK_EQ(xs.sub(1, 10), Vector<int>({2, 3, 4, 5}));
+        CHECK_EQ(xs.sub(6, 10), Vector<int>({}));
+        CHECK_EQ(xs.sub(3, 1), Vector<int>({}));
+        CHECK_EQ(xs.sub(3, 3), Vector<int>({}));
+    }
+
+    SUBCASE("end") {
+        auto xs = Vector<int>({1, 2, 3, 4, 5});
+        CHECK_EQ(xs.sub(4), Vector<int>({1, 2, 3, 4}));
+        CHECK_EQ(xs.sub(10), Vector<int>({1, 2, 3, 4, 5}));
+        CHECK_EQ(xs.sub(0), Vector<int>({}));
+    }
+}
+
 TEST_CASE("make") {
     const auto fn = std::function<int(int)>([](auto&& x) { return x * 2; });
     const auto pred = std::function<bool(int)>([](auto&& x) { return x % 2 == 0; });

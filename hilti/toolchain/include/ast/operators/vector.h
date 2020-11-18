@@ -112,6 +112,59 @@ needed.
     }
 END_METHOD
 
+BEGIN_METHOD(vector, Resize)
+    auto signature() const {
+        return Signature{.self = type::Vector(type::Wildcard()),
+                         .result = type::Void(),
+                         .id = "resize",
+                         .args = {{.id = "n", .type = type::constant(type::UnsignedInteger(64))}},
+                         .doc = R"(
+Resizes the vector to hold exactly *n* elements. If *n* is larger than the
+current size, the new slots are filled with default values. If *n* is smaller
+than the current size, the excessive elements are removed.
+)"};
+    }
+END_METHOD
+
+BEGIN_METHOD(vector, At)
+    auto signature() const {
+        return Signature{.self = type::constant(type::Vector(type::Wildcard())),
+                         .result = operator_::iteratorType(0, true),
+                         .id = "at",
+                         .args = {{.id = "i", .type = type::UnsignedInteger(64)}},
+                         .doc = R"(
+Returns an iterator referring to the element at vector index *i*.
+)"};
+    }
+END_METHOD
+
+BEGIN_METHOD(vector, SubRange)
+    auto signature() const {
+        return Signature{.self = type::constant(type::Vector(type::Wildcard())),
+                         .result = operator_::sameTypeAs(0, "vector<*>"),
+                         .id = "sub",
+                         .args = {{.id = "begin", .type = type::UnsignedInteger(64)},
+                                  {.id = "end", .type = type::UnsignedInteger(64)}},
+                         .doc = R"(
+Extracts a subsequence of vector elements spanning from index *begin*
+to (but not including) index *end*.
+)"};
+    }
+END_METHOD
+
+BEGIN_METHOD(vector, SubEnd)
+    auto signature() const {
+        return Signature{.self = type::constant(type::Vector(type::Wildcard())),
+                         .result = operator_::sameTypeAs(0, "vector<*>"),
+                         .id = "sub",
+                         .args = {{.id = "end", .type = type::UnsignedInteger(64)}},
+                         .doc = R"(
+Extracts a subsequence of vector elements spanning from the beginning
+to (but not including) the index *end* as a new vector.
+)"};
+    }
+END_METHOD
+
 } // namespace operator_
 
 } // namespace hilti
