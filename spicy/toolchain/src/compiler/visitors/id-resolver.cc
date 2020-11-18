@@ -112,40 +112,53 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
 
     void operator()(const hilti::expression::Keyword& n, position_t p) {
         if ( n.kind() == hilti::expression::keyword::Kind::DollarDollar && n.type().isA<type::Unknown>() ) {
-            auto f = p.findParent<type::unit::item::Field>();
+            std::optional<Type> dd;
 
-            if ( ! f )
-                return;
-
-            Type dd;
-
-            if ( auto t = p.findParent<spicy::Hook>() ) {
-                // Inside a field's hook.
-                if ( t->get().isForEach() )
-                    dd = type::unit::item::Field::vectorElementTypeThroughSelf(f->get().id());
-                else
-                    dd = f->get().itemType();
-            }
-
-            else if ( auto a = p.findParent<Attribute>() ) {
-                // Inside an attribute expression.
-                if ( a->get().tag() == "&until" || a->get().tag() == "&until-including" || a->get().tag() == "&while" )
-                    dd = type::unit::item::Field::vectorElementTypeThroughSelf(f->get().id());
-                else {
-                    dd = f->get().parseType();
-
-                    if ( auto bf = dd.tryAs<type::Bitfield>() )
-                        dd = type::UnsignedInteger(bf->width(), bf->meta());
+            if ( auto f = p.findParent<hilti::Function>() ) {
+                for ( const auto& p : f->get().type().parameters() ) {
+                    if ( p.id() == ID("__dd") ) {
+                        // Inside a free function that defines a "__dd" parameter; use it.
+                        dd = hilti::type::Computed(hilti::builder::id("__dd"));
+                        break;
+                    }
                 }
             }
 
+            if ( ! dd ) {
+                auto f = p.findParent<type::unit::item::Field>();
+
+                if ( ! f )
+                    return;
+
+                if ( auto t = p.findParent<spicy::Hook>() ) {
+                    // Inside a field's hook.
+                    if ( t->get().isForEach() )
+                        dd = type::unit::item::Field::vectorElementTypeThroughSelf(f->get().id());
+                    else
+                        dd = f->get().itemType();
+                }
+
+                else if ( auto a = p.findParent<Attribute>() ) {
+                    // Inside an attribute expression.
+                    if ( a->get().tag() == "&until" || a->get().tag() == "&until-including" ||
+                         a->get().tag() == "&while" )
+                        dd = type::unit::item::Field::vectorElementTypeThroughSelf(f->get().id());
+                    else {
+                        dd = f->get().parseType();
+
+                        if ( auto bf = dd->tryAs<type::Bitfield>() )
+                            dd = type::UnsignedInteger(bf->width(), bf->meta());
+                    }
+                }
+            }
+
+            if ( dd )
+                replaceNode(&p, hilti::expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, *dd,
+                                                           p.node.meta()));
             else {
                 p.node.addError("$$ not supported here");
                 return;
             }
-
-            replaceNode(&p,
-                        hilti::expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, dd, p.node.meta()));
         }
     }
 

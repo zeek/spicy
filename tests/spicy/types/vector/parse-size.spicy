@@ -9,10 +9,11 @@ const DASHES = b"---\n";
 public type Test = unit {
     on %init { print self; }
 
-    lines: Item[3] foreach { print "item: %s" % $$; }
+    lines: Item[3];
     dashes: DASHES;
     last: LINE;
 
+    on lines foreach { print "item: %s" % $$; }
     on %done { print self; }
     };
 

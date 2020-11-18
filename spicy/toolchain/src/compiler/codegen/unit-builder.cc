@@ -124,14 +124,10 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
     }
 
     void operator()(const spicy::type::unit::item::UnitHook& h, const position_t /* p */) {
-        auto addHookImplementation = [&](const auto& hook, auto /* foreach */) {
-            if ( auto hook_impl =
-                     cg->compileHook(unit, ID(*unit.typeID(), h.id()), {}, false, h.hook().isDebug(),
-                                     h.hook().type().parameters(), hook.body(), hook.priority(), hook.meta()) )
-                cg->addDeclaration(*hook_impl);
-        };
-
-        addHookImplementation(h.hook(), AttributeSet::find(h.hook().attributes(), "foreach"));
+        auto hook = h.hook();
+        if ( auto hook_impl = cg->compileHook(unit, ID(*unit.typeID(), h.id()), {}, hook.isForEach(), hook.isDebug(),
+                                              hook.type().parameters(), hook.body(), hook.priority(), h.meta()) )
+            cg->addDeclaration(*hook_impl);
     }
 };
 
