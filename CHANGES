@@ -1,4 +1,33 @@
 
+0.4.0-1053 | 2020-11-18 08:33:32 +0000
+
+  * GH-568: Change parsing of look-ahead vectors to use a loop instead
+    of recursion. (Robin Sommer, Corelight)
+
+  * GH-583: Fix `foreach` inside a unit hook. The `foreach` attribute
+    wasn't passed on, and the '$$' lookup didn't work inside a
+    non-inline hook. (Robin Sommer, Corelight)
+
+  * GH-574: Implement and document hook priorities. Robin Sommer,
+    Corelight)
+
+  * GH-389: Add additional tuple constructor expression (`tuple(...)`).
+    (Robin Sommer, Corelight)
+
+  * GH-544: Let Zeek plugin search for HLTO files at startup. By
+    default, the plugin now loads all *.hlto files found in
+    `$prefix/lib/spicy/Zeek_Spicy/modules/`. This can be changed by
+    setting the environment variable SPICY_MODULE_PATH to a
+    colon-separated list of directories to search. (Robin Sommer,
+    Corelight)
+
+  * Force upgrade to well-defined BTest version in our Docker
+    containers. (Robin Sommer, Corelight)
+
+  * Forward Zeek plugin's debug messages to Zeek's debug logger. That
+    means that 'zeek -B plugin-_Zeek-Spicy' will send them into Zeek's
+    debug.log. (Robin Sommer, Corelight)
+
 0.4.0-1031 | 2020-11-17 14:05:32 +0100
 
   * GH-571: Fix padding handling when formatting nan and inf values.

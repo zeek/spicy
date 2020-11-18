@@ -828,7 +828,7 @@ struct ProductionVisitor
 
     void operator()(const production::Ctor& p) { pb->parseLiteral(p, destination()); }
 
-    void operator()(const production::LookAhead& p) {
+    auto parseLookAhead(const production::LookAhead& p) {
         assert(state().needs_look_ahead);
 
         // If we don't have a look-ahead symbol pending, get one.
@@ -874,14 +874,7 @@ struct ProductionVisitor
 
         auto switch_ = builder()->addSwitch(state().lahead);
         auto builder_alt1 = switch_.addCase(std::move(exprs_alt1));
-        pushBuilder(builder_alt1);
-        parseProduction(p.alternatives().first);
-        popBuilder();
-
         auto builder_alt2 = switch_.addCase(std::move(exprs_alt2));
-        pushBuilder(builder_alt2);
-        parseProduction(p.alternatives().second);
-        popBuilder();
 
         if ( ! eod_handled ) {
             auto builder_eod = switch_.addCase(look_ahead::Eod);
@@ -894,6 +887,20 @@ struct ProductionVisitor
         pushBuilder(builder_default);
         pb->parseError("no expected look-ahead token found", p.location());
         popBuilder();
+
+        return std::make_pair(builder_alt1, builder_alt2);
+    }
+
+    void operator()(const production::LookAhead& p) {
+        auto [builder_alt1, builder_alt2] = parseLookAhead(p);
+
+        pushBuilder(builder_alt1);
+        parseProduction(p.alternatives().first);
+        popBuilder();
+
+        pushBuilder(builder_alt2);
+        parseProduction(p.alternatives().second);
+        popBuilder();
     }
 
     void operator()(const production::Sequence& p) {
@@ -902,6 +909,29 @@ struct ProductionVisitor
     }
 
     void operator()(const production::Variable& p) { pb->parseType(p.type(), p.meta(), destination()); }
+
+    void operator()(const production::While& p) {
+        if ( p.expression() )
+            hilti::logger().internalError("expression-based while loop not implemented in parser builder");
+        else {
+            // Look-ahead based loop.
+            auto body = builder()->addWhile(hilti::builder::bool_(true));
+            pushBuilder(body, [&]() {
+                auto lah_prod = p.lookAheadProduction();
+                auto [builder_alt1, builder_alt2] = parseLookAhead(lah_prod);
+
+                pushBuilder(builder_alt1, [&]() {
+                    // Terminate loop.
+                    builder()->addBreak();
+                });
+
+                pushBuilder(builder_alt2, [&]() {
+                    // Parse body.
+                    parseProduction(p.body());
+                });
+            });
+        };
+    }
 };
 
 } // namespace spicy::detail::codegen
