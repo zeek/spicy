@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <dlfcn.h>
+#include <glob.h>
 
 #include <exception>
 
@@ -32,7 +33,10 @@ plugin::Zeek_Spicy::Plugin* plugin::Zeek_Spicy::OurPlugin = &SpicyPlugin;
 using namespace spicy::zeek;
 
 #ifndef ZEEK_HAVE_JIT
-void spicy::zeek::debug::do_log(const std::string_view& msg) { HILTI_RT_DEBUG("zeek", msg); }
+void spicy::zeek::debug::do_log(const std::string_view& msg) {
+    PLUGIN_DBG_LOG(plugin::Zeek_Spicy::OurPlugin, "%s", msg);
+    HILTI_RT_DEBUG("zeek", msg);
+}
 #endif
 
 plugin::Zeek_Spicy::Plugin::Plugin() {}
@@ -84,9 +88,8 @@ void plugin::Zeek_Spicy::Plugin::registerFileAnalyzer(const std::string& name,
 }
 
 #ifdef HAVE_PACKET_ANALYZERS
-void plugin::Zeek_Spicy::Plugin::registerPacketAnalyzer(const std::string& name,
-                                    const std::string& parser) {
-   ZEEK_DEBUG(hilti::rt::fmt("Have Spicy packet analyzer %s", name));
+void plugin::Zeek_Spicy::Plugin::registerPacketAnalyzer(const std::string& name, const std::string& parser) {
+    ZEEK_DEBUG(hilti::rt::fmt("Have Spicy packet analyzer %s", name));
 
     PacketAnalyzerInfo info;
     info.name_analyzer = name;
@@ -185,6 +188,7 @@ void plugin::Zeek_Spicy::Plugin::InitPreScript() {
         addLibraryPaths(dir);
 
     addLibraryPaths(hilti::rt::normalizePath(OurPlugin->PluginDirectory()).string() + "/spicy");
+    autoDiscoverModules();
 
     ZEEK_DEBUG("Beginning pre-script initialization (runtime)");
 }
@@ -360,9 +364,10 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
 
         p.parser = find_parser(p.name_analyzer, p.name_parser);
 
-        auto instantiate = [p]() -> ::zeek::packet_analysis::AnalyzerPtr { return ::spicy::zeek::rt::PacketAnalyzer::Instantiate(p.name_analyzer); };
-        auto c = new ::zeek::packet_analysis::Component(p.name_analyzer,
-                                                        instantiate, p.subtype);
+        auto instantiate = [p]() -> ::zeek::packet_analysis::AnalyzerPtr {
+            return ::spicy::zeek::rt::PacketAnalyzer::Instantiate(p.name_analyzer);
+        };
+        auto c = new ::zeek::packet_analysis::Component(p.name_analyzer, instantiate, p.subtype);
         AddComponent(c);
 
         // Hack to prevent Zeekygen from reporting the ID as not having a
@@ -386,21 +391,25 @@ void plugin::Zeek_Spicy::Plugin::Done() {
     hilti::rt::done();
 }
 
+void plugin::Zeek_Spicy::Plugin::loadModule(const hilti::rt::filesystem::path& path) {
+    try {
+        ZEEK_DEBUG(hilti::rt::fmt("Loading %s", path.native()));
+
+        if ( auto [library, inserted] = _libraries.insert({path, hilti::rt::Library(path)}); inserted ) {
+            if ( auto load = library->second.open(); ! load )
+                hilti::rt::fatalError(hilti::rt::fmt("could not open library path %s: %s", path, load.error()));
+        }
+    } catch ( const hilti::rt::EnvironmentError& e ) {
+        hilti::rt::fatalError(e.what());
+    }
+}
+
 int plugin::Zeek_Spicy::Plugin::HookLoadFile(const LoadType type, const std::string& file,
                                              const std::string& resolved) {
     auto ext = hilti::rt::filesystem::path(file).extension();
 
     if ( ext == ".hlto" ) {
-        try {
-            if ( ! _libraries.count(file) ) {
-                _libraries.insert({file, hilti::rt::Library(file)});
-                if ( auto load = _libraries.at(file).open(); ! load )
-                    hilti::rt::fatalError(hilti::rt::fmt("could not open library file %s: %s", file, load.error()));
-            }
-        } catch ( const hilti::rt::EnvironmentError& e ) {
-            hilti::rt::fatalError(e.what());
-        }
-
+        loadModule(file);
         return 1;
     }
 
@@ -408,4 +417,24 @@ int plugin::Zeek_Spicy::Plugin::HookLoadFile(const LoadType type, const std::str
         reporter::fatalError(hilti::rt::fmt("cannot load '%s', Spicy plugin was not compiled with JIT support", file));
 
     return -1;
+}
+
+void plugin::Zeek_Spicy::Plugin::autoDiscoverModules() {
+    const char* search_paths = getenv("SPICY_MODULE_PATH");
+
+    if ( ! search_paths )
+        search_paths = spicy::zeek::configuration::PluginModuleDirectory;
+
+    for ( auto dir : hilti::rt::split(search_paths, ":") ) {
+        std::string pattern = hilti::rt::filesystem::path(hilti::rt::trim(dir)) / "*.hlto";
+        ZEEK_DEBUG(hilti::rt::fmt("Searching for %s", pattern));
+
+        glob_t gl;
+        if ( glob(pattern.c_str(), 0, 0, &gl) == 0 ) {
+            for ( size_t i = 0; i < gl.gl_pathc; i++ )
+                loadModule(gl.gl_pathv[i]);
+
+            globfree(&gl);
+        }
+    }
 }

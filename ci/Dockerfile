@@ -16,7 +16,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends $zeek_packages \
  # Spicy build and test dependencies.
  && apt-get install -y --no-install-recommends git ninja-build ccache bison flex libfl-dev python3 python3-pip docker zlib1g-dev jq locales-all python3-setuptools python3-wheel make \
- && pip3 install btest pre-commit \
+ && pip3 install btest==0.64 pre-commit \
  # Spicy doc dependencies.
  && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme doxygen \
  # GCC-9.

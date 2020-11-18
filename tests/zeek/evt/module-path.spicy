@@ -1,0 +1,11 @@
+# @TEST-REQUIRES: have-zeek-plugin
+#
+# @TEST-EXEC: spicyz -o x.hlto %INPUT
+# @TEST-EXEC: ${ZEEK} -b _Zeek::Spicy x.hlto Spicy::enable_print=T >>output
+# @TEST-EXEC: mkdir -p y && mv x.hlto y
+# @TEST-EXEC: SPICY_MODULE_PATH=FOO:y:BAR ${ZEEK} -b _Zeek::Spicy Spicy::enable_print=T >>output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+print "Got it";
