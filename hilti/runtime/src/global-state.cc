@@ -1,8 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include "hilti/rt/global-state.h"
+
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
-#include <hilti/rt/global-state.h>
 #include <hilti/rt/logging.h>
 
 using namespace hilti::rt;
@@ -13,8 +14,15 @@ using namespace hilti::rt::detail;
 GlobalState* detail::__global_state = nullptr;
 
 GlobalState::GlobalState()
-    : main_co([]() {
+    : share_st([]() {
           aco_thread_init(nullptr);
+
+          return std::unique_ptr<aco_share_stack_t, void (*)(aco_share_stack_t*)>(aco_share_stack_new(Fiber::StackSize),
+                                                                                  [](aco_share_stack_t* ss) {
+                                                                                      aco_share_stack_destroy(ss);
+                                                                                  });
+      }()),
+      main_co([]() {
           return std::unique_ptr<aco_t, void (*)(aco_t*)>(aco_create(nullptr, nullptr, 0, nullptr, nullptr),
                                                           [](aco_t* co) {
                                                               aco_destroy(co);

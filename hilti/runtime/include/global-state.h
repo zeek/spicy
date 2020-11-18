@@ -70,6 +70,9 @@ struct GlobalState {
      */
     std::vector<hilti::rt::detail::HiltiModule> hilti_modules;
 
+    /** Shared stack for fiber execution. */
+    std::unique_ptr<aco_share_stack_t, void (*)(aco_share_stack_t*)> share_st;
+
     /** Pointer to the coroutine controlling fiber execution. */
     std::unique_ptr<aco_t, void (*)(aco_t*)> main_co;
 };

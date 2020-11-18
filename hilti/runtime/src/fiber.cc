@@ -89,15 +89,10 @@ void Fiber::unschedule(Fiber* fiber) {
 }
 
 Fiber::Fiber()
-    : private_sstk(std::unique_ptr<aco_share_stack_t, void (*)(aco_share_stack_t*)>(aco_share_stack_new(StackSize),
-                                                                                    [](aco_share_stack_t* ss) {
-                                                                                        aco_share_stack_destroy(ss);
-                                                                                    })),
-      co(std::unique_ptr<aco_t, void (*)(aco_t*)>(aco_create(globalState()->main_co.get(), private_sstk.get(),
-                                                             private_sstk->sz, _Trampoline, this),
+    : co(std::unique_ptr<aco_t, void (*)(aco_t*)>(aco_create(globalState()->main_co.get(),
+                                                             globalState()->share_st.get(), 0, _Trampoline, this),
                                                   [](aco_t* co) { aco_destroy(co); })) {
     HILTI_RT_DEBUG("fibers", fmt("[%p] allocated new fiber", this));
-
 
     ++_total_fibers;
     ++_current_fibers;

@@ -118,7 +118,6 @@ private:
     std::optional<std::any> _result;
     std::exception_ptr _exception;
 
-    std::unique_ptr<aco_share_stack_t, void (*)(aco_share_stack_t*)> private_sstk;
     std::unique_ptr<aco_t, void (*)(aco_t*)> co;
 
 #ifdef HILTI_HAVE_SANITIZER
