@@ -37,3 +37,6 @@
 [submodule "3rdparty/libaco"]
 	path = 3rdparty/libaco
 	url = https://github.com/hnes/libaco.git
+[submodule "3rdparty/benchmark"]
+	path = 3rdparty/benchmark
+	url = https://github.com/google/benchmark.git
