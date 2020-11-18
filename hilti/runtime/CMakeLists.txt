@@ -117,7 +117,7 @@ install_headers(${CMAKE_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyfo
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)
 
-##### Tests
+##### Tests & benchmarks
 
 add_executable(hilti-rt-tests
                src/tests/main.cc
@@ -172,3 +172,8 @@ target_compile_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O
 target_link_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-rt-configuration-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects> doctest)
 add_test(NAME hilti-rt-configuration-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-configuration-tests)
+
+add_executable(hilti-rt-fiber-benchmark src/benchmarks/fiber.cc)
+target_compile_options(hilti-rt-fiber-benchmark PRIVATE "-Wall")
+target_link_libraries(hilti-rt-fiber-benchmark PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+target_link_libraries(hilti-rt-fiber-benchmark PRIVATE benchmark)
