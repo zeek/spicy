@@ -215,6 +215,8 @@ endif ()
 
 add_subdirectory(3rdparty)
 
+add_subdirectory(bench)
+
 ## Print build summary
 string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)
 
