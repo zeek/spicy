@@ -30,8 +30,14 @@ public:
           Meta m = Meta())
         : NodeBase(nodes(std::move(id), std::move(ft), node::none, std::move(attrs)), std::move(m)), _cc(cc) {}
 
-    auto id() const { return child<ID>(0); }
-    auto type() const { return type::effectiveType(child<Type>(1)); }
+    const auto& id() const { return child<ID>(0); }
+    const auto& type() const {
+        if ( ! _cache.type )
+            _cache.type = type::effectiveType(child<Type>(1));
+
+        return *_cache.type;
+    }
+
     auto callingConvention() const { return _cc; }
     auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
 
@@ -83,8 +89,14 @@ public:
         return x;
     }
 
+    void clearCache() { _cache.type.reset(); }
+
 private:
     ::hilti::function::CallingConvention _cc = ::hilti::function::CallingConvention::Standard;
+
+    mutable struct {
+        std::optional<Type> type;
+    } _cache;
 }; // namespace struct_
 
 inline Node to_node(Field f) { return Node(std::move(f)); }

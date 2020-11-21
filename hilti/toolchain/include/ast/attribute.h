@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include <hilti/ast/ctors/string.h>
 #include <hilti/ast/ctors/integer.h>
+#include <hilti/ast/ctors/string.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/node.h>
@@ -167,7 +167,12 @@ public:
     explicit AttributeSet(std::vector<Attribute> a, Meta m = Meta()) : NodeBase(nodes(std::move(a)), std::move(m)) {}
 
     /** Returns the set's attributes. */
-    std::vector<Attribute> attributes() const { return childs<Attribute>(0, -1); }
+    const auto& attributes() const {
+        if ( _cache.attributes.empty() )
+            _cache.attributes = childs<Attribute>(0, -1);
+
+        return _cache.attributes;
+    }
 
     /**
      * Retrieves an attribute with a given name from the set. If multiple
@@ -286,6 +291,8 @@ public:
             return false;
     }
 
+    void clearCache() { _cache.attributes.clear(); }
+
 private:
     /**
      * Constructs an empty set.
@@ -296,6 +303,10 @@ private:
      * @param m meta data to associate with the node
      */
     AttributeSet(Meta m = Meta()) : NodeBase({}, std::move(m)) {}
+
+    mutable struct {
+        std::vector<Attribute> attributes;
+    } _cache;
 };
 
 /**

@@ -76,14 +76,15 @@ public:
                    std::move(m)),
           _flavor(flavor) {}
 
-    auto result() const { return child<function::Result>(0); }
     auto parameters() const { return childs<function::Parameter>(1, -1); }
+    const auto& result() const { return child<function::Result>(0); }
     auto flavor() const { return _flavor; }
 
-    auto operands() const {
-        // Would be good to precompute this but type resolution wouldn't
-        // carry through unfortunately.
-        return type::OperandList::fromParameters(parameters());
+    const auto& operands() const {
+        if ( ! _cache.operands )
+            _cache.operands = type::OperandList::fromParameters(parameters());
+
+        return *_cache.operands;
     }
 
     bool operator==(const Function& other) const {
@@ -100,9 +101,17 @@ public:
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"flavor", to_string(_flavor)}}; }
 
+    void clearCache() {
+        _cache.operands.reset();
+    }
+
 private:
     bool _wildcard = false;
     function::Flavor _flavor = function::Flavor::Standard;
+
+    mutable struct {
+        std::optional<hilti::type::OperandList> operands;
+    } _cache;
 };
 
 /**

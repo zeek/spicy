@@ -29,7 +29,13 @@ public:
 
     const auto& id() const { return child<ID>(0); }
     const auto& statements() const { return child<statement::Block>(1); }
-    auto declarations() const { return childs<Declaration>(2, -1); }
+    const auto& declarations() const {
+        if ( _cache.declarations.empty() )
+            _cache.declarations = childs<Declaration>(2, -1);
+
+        return _cache.declarations;
+    }
+
     const auto& preserved() const { return _preserved; }
     auto& preserved() { return _preserved; }
 
@@ -103,8 +109,12 @@ public:
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
+    void clearCache() { _cache.declarations.clear(); }
+
 private:
     std::vector<Node> _preserved;
+
+    mutable struct { std::vector<Declaration> declarations; } _cache;
 };
 
 /** Creates an AST node representing a `Module`. */

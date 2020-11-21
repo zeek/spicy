@@ -21,7 +21,12 @@ public:
     auto kind() const { return _kind; }
 
     /** Implements interfave for use with `OverloadRegistry`. */
-    auto operands() const { return childs<Expression>(0, -1); }
+    const auto& operands() const {
+        if ( _cache.operands.empty() )
+            _cache.operands = childs<Expression>(0, -1);
+
+        return _cache.operands;
+    }
 
     bool operator==(const UnresolvedOperator& other) const {
         return kind() == other.kind() && operands() == other.operands();
@@ -43,8 +48,14 @@ public:
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{{"kind", to_string(_kind)}}; }
 
+    void clearCache() { _cache.operands.clear(); }
+
 private:
     operator_::Kind _kind;
+
+    mutable struct {
+        std::vector<Expression> operands;
+    } _cache;
 };
 
 } // namespace expression

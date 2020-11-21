@@ -64,7 +64,7 @@ public:
     auto properties() const { return node::Properties{{"cc", to_string(_cc)}}; }
 
     /**
-     * Returns a new funnction with the body replaced.
+     * Returns a new function with the body replaced.
      *
      * @param d original function
      * @param b new body
