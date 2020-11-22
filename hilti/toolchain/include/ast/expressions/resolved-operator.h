@@ -57,7 +57,7 @@ public:
     ResolvedOperatorBase(const Operator& op, const std::vector<Expression>& operands, Meta meta = Meta())
         : NodeBase(nodes(detail::type_to_store(op.result(operands)), operands), std::move(meta)), _operator(op) {}
 
-    auto& operator_() const { return _operator; }
+    const auto& operator_() const { return _operator; }
     auto kind() const { return _operator.kind(); }
 
     // ResolvedOperator interface with common implementation.
@@ -70,9 +70,9 @@ public:
             return _operator.result(operands());
     }
 
-    auto op0() const { return child<Expression>(1); }
-    auto op1() const { return child<Expression>(2); }
-    auto op2() const { return child<Expression>(3); }
+    const auto& op0() const { return child<Expression>(1); }
+    const auto& op1() const { return child<Expression>(2); }
+    const auto& op2() const { return child<Expression>(3); }
     auto hasOp0() const { return ! childs().empty(); }
     auto hasOp1() const { return childs().size() >= 3; }
     auto hasOp2() const { return childs().size() >= 4; }

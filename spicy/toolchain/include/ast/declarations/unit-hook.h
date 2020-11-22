@@ -39,7 +39,7 @@ public:
         return {};
     }
 
-    auto unitHook() const { return child<type::unit::item::UnitHook>(2); }
+    const auto& unitHook() const { return child<type::unit::item::UnitHook>(2); }
 
     bool operator==(const UnitHook& other) const {
         return unitType() == other.unitType() && unitHook() == other.unitHook();
@@ -48,7 +48,7 @@ public:
     /** Implements `Declaration` interface. */
     bool isConstant() const { return true; }
     /** Implements `Declaration` interface. */
-    auto id() const { return child<ID>(0); }
+    const auto& id() const { return child<ID>(0); }
     /** Implements `Declaration` interface. */
     Linkage linkage() const { return Linkage::Private; }
     /** Implements `Declaration` interface. */

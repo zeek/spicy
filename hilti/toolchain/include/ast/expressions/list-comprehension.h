@@ -20,9 +20,9 @@ public:
         _computeType();
     }
 
-    auto input() const { return child<Expression>(0); }
-    auto output() const { return child<Expression>(1); }
-    auto id() const { return child<ID>(2); }
+    const auto& input() const { return child<Expression>(0); }
+    const auto& output() const { return child<Expression>(1); }
+    const auto& id() const { return child<ID>(2); }
     auto condition() const { return childs()[3].tryAs<Expression>(); }
 
     /**
@@ -41,7 +41,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const { return child<Type>(4); }
+    const auto& type() const { return child<Type>(4); }
 
     /** Implements `Expression` interface. */
     auto isConstant() const { return input().isConstant(); }

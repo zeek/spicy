@@ -15,7 +15,7 @@ class Declaration : public NodeBase, public hilti::trait::isStatement {
 public:
     Declaration(hilti::Declaration d, Meta m = Meta()) : NodeBase({std::move(d)}, std::move(m)) {}
 
-    auto declaration() const { return child<::hilti::Declaration>(0); }
+    const auto& declaration() const { return child<::hilti::Declaration>(0); }
 
     bool operator==(const Declaration& other) const { return declaration() == other.declaration(); }
 

@@ -15,7 +15,7 @@ class Expression : public NodeBase, public hilti::trait::isStatement {
 public:
     Expression(hilti::Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
 
-    auto expression() const { return child<::hilti::Expression>(0); }
+    const auto& expression() const { return child<::hilti::Expression>(0); }
 
     bool operator==(const Expression& other) const { return expression() == other.expression(); }
 

@@ -29,7 +29,7 @@ public:
 
     auto init() const { return childs()[0].tryAs<hilti::Declaration>(); }
     auto condition() const { return childs()[1].tryAs<hilti::Expression>(); }
-    auto body() const { return child<hilti::Statement>(2); }
+    const auto& body() const { return child<hilti::Statement>(2); }
     auto else_() const { return childs()[3].tryAs<Statement>(); }
 
     bool operator==(const While& other) const {

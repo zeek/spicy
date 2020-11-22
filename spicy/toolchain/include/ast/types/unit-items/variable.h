@@ -24,7 +24,7 @@ public:
              Meta m = Meta())
         : NodeBase(nodes(std::move(id), std::move(type), default_, std::move(attrs)), std::move(m)) {}
 
-    auto id() const { return child<ID>(0); }
+    const auto& id() const { return child<ID>(0); }
     auto default_() const { return childs()[2].tryAs<Expression>(); }
     auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
 

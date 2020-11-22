@@ -27,8 +27,8 @@ public:
     Module(ID id, std::vector<Declaration> decls, std::vector<Statement> stmts, const Meta& m = Meta())
         : NodeBase(nodes(std::move(id), statement::Block(std::move(stmts), m), std::move(decls)), m) {}
 
-    auto id() const { return child<ID>(0); }
-    auto statements() const { return child<statement::Block>(1); }
+    const auto& id() const { return child<ID>(0); }
+    const auto& statements() const { return child<statement::Block>(1); }
     auto declarations() const { return childs<Declaration>(2, -1); }
     const auto& preserved() const { return _preserved; }
     auto& preserved() { return _preserved; }

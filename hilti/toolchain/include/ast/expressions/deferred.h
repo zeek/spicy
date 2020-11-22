@@ -21,7 +21,7 @@ public:
     Deferred(Expression e, bool catch_exception, Meta m = Meta())
         : NodeBase({std::move(e)}, std::move(m)), _catch_exception(catch_exception) {}
 
-    auto expression() const { return child<Expression>(0); }
+    const auto& expression() const { return child<Expression>(0); }
     bool catchException() const { return _catch_exception; }
 
     bool operator==(const Deferred& other) const { return expression() == other.expression(); }

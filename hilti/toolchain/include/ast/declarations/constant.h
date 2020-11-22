@@ -23,7 +23,7 @@ public:
     Constant(ID id, hilti::Expression value, Linkage linkage = Linkage::Private, Meta m = Meta())
         : NodeBase({std::move(id), node::none, std::move(value)}, std::move(m)), _linkage(linkage) {}
 
-    auto value() const { return child<hilti::Expression>(2); }
+    const auto& value() const { return child<hilti::Expression>(2); }
 
     ::hilti::Type type() const {
         if ( auto t = childs()[1].tryAs<::hilti::Type>(); t && *t != type::unknown )

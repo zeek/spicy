@@ -21,7 +21,7 @@ public:
         assert(_node && _node->isA<declaration::Type>());
     }
 
-    auto id() const { return child<::hilti::ID>(0); }
+    const auto& id() const { return child<::hilti::ID>(0); }
     auto declaration() const {
         assert(_node);
         return _node->as<Declaration>();
@@ -54,7 +54,7 @@ class UnresolvedID : public TypeBase {
 public:
     UnresolvedID(::hilti::ID id, Meta m = Meta()) : TypeBase({std::move(id)}, std::move(m)) {}
 
-    auto id() const { return child<::hilti::ID>(0); }
+    const auto& id() const { return child<::hilti::ID>(0); }
 
     bool operator==(const UnresolvedID& other) const { return id() == other.id(); }
 

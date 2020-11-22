@@ -16,7 +16,7 @@ class Exception : public NodeBase, public hilti::trait::isCtor {
 public:
     Exception(Type t, Expression msg, Meta m = Meta()) : NodeBase({std::move(t), std::move(msg)}, std::move(m)) {}
 
-    auto value() const { return child<Expression>(1); }
+    const auto& value() const { return child<Expression>(1); }
 
     bool operator==(const Exception& other) const { return type() == other.type() && value() == other.value(); }
 

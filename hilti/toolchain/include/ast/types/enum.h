@@ -20,7 +20,7 @@ public:
     Label(ID id, Meta m = Meta()) : NodeBase({std::move(id)}, std::move(m)) {}
     Label(ID id, int v, Meta m = Meta()) : NodeBase({std::move(id)}, std::move(m)), _value(v) {}
 
-    auto id() const { return child<ID>(0); }
+    const auto& id() const { return child<ID>(0); }
     auto value() const { return _value; }
 
     bool operator==(const Label& other) const { return id() == other.id() && value() == other.value(); }

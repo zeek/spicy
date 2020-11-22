@@ -27,7 +27,7 @@ public:
 
     auto init() const { return childs()[0].tryAs<hilti::Declaration>(); }
     auto condition() const { return childs()[1].tryAs<hilti::Expression>(); }
-    auto true_() const { return child<hilti::Statement>(2); }
+    const auto& true_() const { return child<hilti::Statement>(2); }
     auto false_() const { return childs()[3].tryAs<Statement>(); }
 
     bool operator==(const If& other) const {

@@ -16,8 +16,8 @@ public:
     LogicalAnd(Expression op0, Expression op1, Meta m = Meta())
         : NodeBase({std::move(op0), std::move(op1)}, std::move(m)) {}
 
-    auto op0() const { return child<Expression>(0); }
-    auto op1() const { return child<Expression>(1); }
+    const auto& op0() const { return child<Expression>(0); }
+    const auto& op1() const { return child<Expression>(1); }
 
     bool operator==(const LogicalAnd& other) const { return op0() == other.op0() && op1() == other.op1(); }
 

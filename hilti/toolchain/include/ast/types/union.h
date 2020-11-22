@@ -24,7 +24,7 @@ public:
     Field(ID id, Type t, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
         : NodeBase(nodes(std::move(id), std::move(t), std::move(attrs)), std::move(m)) {}
 
-    auto id() const { return child<ID>(0); }
+    const auto& id() const { return child<ID>(0); }
     auto type() const { return type::effectiveType(child<Type>(1)); }
     auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
 

@@ -31,7 +31,7 @@ public:
           _upper(upper),
           _field_width(field_width) {}
 
-    auto id() const { return child<ID>(0); }
+    const auto& id() const { return child<ID>(0); }
     auto lower() const { return _lower; }
     auto upper() const { return _upper; }
     Type type() const;

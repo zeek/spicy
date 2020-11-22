@@ -53,7 +53,7 @@ public:
     TypeWrapped(Expression e, NodeRef t, ValidateTypeMatch _, Meta m = Meta())
         : NodeBase(nodes(std::move(e)), std::move(m)), _validate_type_match(true), _type_node_ref(std::move(t)) {}
 
-    auto expression() const { return child<Expression>(0); }
+    const auto& expression() const { return child<Expression>(0); }
     bool validateTypeMatch() const { return _validate_type_match; }
 
     bool operator==(const TypeWrapped& other) const {

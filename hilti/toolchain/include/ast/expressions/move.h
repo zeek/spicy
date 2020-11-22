@@ -14,7 +14,7 @@ class Move : public NodeBase, public trait::isExpression {
 public:
     Move(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
 
-    auto expression() const { return child<Expression>(0); }
+    const auto& expression() const { return child<Expression>(0); }
 
     bool operator==(const Move& other) const { return expression() == other.expression(); }
 

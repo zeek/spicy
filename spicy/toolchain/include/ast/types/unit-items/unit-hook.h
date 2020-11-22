@@ -15,8 +15,8 @@ class UnitHook : public hilti::NodeBase, public spicy::trait::isUnitItem {
 public:
     UnitHook(ID id, Hook hook, Meta m = Meta()) : NodeBase(nodes(std::move(id), std::move(hook)), std::move(m)) {}
 
-    auto id() const { return child<ID>(0); }
-    auto hook() const { return child<Hook>(1); }
+    const auto& id() const { return child<ID>(0); }
+    const auto& hook() const { return child<Hook>(1); }
     auto location() const { return childs()[0].location(); }
 
     bool operator==(const UnitHook& other) const { return id() == other.id() && hook() == other.hook(); }

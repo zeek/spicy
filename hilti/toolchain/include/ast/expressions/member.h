@@ -20,7 +20,7 @@ public:
     Member(ID id, Type member_type, Meta m = Meta())
         : NodeBase({id, std::move(member_type), Type(type::Member(std::move(id)))}, std::move(m)) {}
 
-    auto id() const { return child<ID>(0); }
+    const auto& id() const { return child<ID>(0); }
     auto memberType() const { return type::effectiveOptionalType(childs()[1].tryAs<Type>()); }
 
     bool operator==(const Member& other) const { return id() == other.id() && type() == other.type(); }

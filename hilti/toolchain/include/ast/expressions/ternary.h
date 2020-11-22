@@ -15,9 +15,9 @@ public:
     Ternary(Expression cond, Expression true_, Expression false_, Meta m = Meta())
         : NodeBase({std::move(cond), std::move(true_), std::move(false_)}, std::move(m)) {}
 
-    auto condition() const { return child<Expression>(0); }
-    auto true_() const { return child<Expression>(1); }
-    auto false_() const { return child<Expression>(2); }
+    const auto& condition() const { return child<Expression>(0); }
+    const auto& true_() const { return child<Expression>(1); }
+    const auto& false_() const { return child<Expression>(2); }
 
     bool operator==(const Ternary& other) const {
         return condition() == other.condition() && true_() == other.true_() && false_() == other.false_();
