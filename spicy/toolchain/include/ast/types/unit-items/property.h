@@ -22,8 +22,8 @@ public:
         : NodeBase(nodes(std::move(id), std::move(expr), std::move(attrs)), std::move(m)), _inherited(inherited) {}
 
     const auto& id() const { return child<ID>(0); }
-    auto expression() const { return childs()[1].tryAs<Expression>(); }
-    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
+    auto expression() const { return childs()[1].tryReferenceAs<Expression>(); }
+    auto attributes() const { return childs()[2].tryReferenceAs<AttributeSet>(); }
     bool interited() const { return _inherited; }
 
     bool operator==(const Property& other) const {

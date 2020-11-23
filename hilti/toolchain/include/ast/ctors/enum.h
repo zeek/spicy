@@ -19,7 +19,7 @@ public:
     Enum(type::enum_::Label v, NodeRef td, Meta m = Meta())
         : NodeBase({std::move(v), node::none}, std::move(m)), _type_decl(std::move(td)) {}
 
-    auto value() const { return childs()[0].as<type::enum_::Label>(); }
+    const auto& value() const { return childs()[0].as<type::enum_::Label>(); }
 
     bool operator==(const Enum& other) const { return value() == other.value(); }
 

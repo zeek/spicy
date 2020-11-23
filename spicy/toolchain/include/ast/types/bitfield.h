@@ -35,7 +35,7 @@ public:
     auto lower() const { return _lower; }
     auto upper() const { return _upper; }
     Type type() const;
-    auto attributes() const { return childs()[1].tryAs<AttributeSet>(); }
+    auto attributes() const { return childs()[1].tryReferenceAs<AttributeSet>(); }
 
     /** Implements the `Node` interface. */
     auto properties() const {

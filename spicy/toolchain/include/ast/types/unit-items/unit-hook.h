@@ -17,7 +17,7 @@ public:
 
     const auto& id() const { return child<ID>(0); }
     const auto& hook() const { return child<Hook>(1); }
-    auto location() const { return childs()[0].location(); }
+    const auto& location() const { return childs()[0].location(); }
 
     bool operator==(const UnitHook& other) const { return id() == other.id() && hook() == other.hook(); }
 

@@ -50,8 +50,8 @@ public:
 
     const auto& id() const { return child<ID>(0); }
     auto type() const { return type::effectiveType(child<Type>(1)).as<type::Function>(); }
-    auto body() const { return childs()[2].tryAs<Statement>(); }
-    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
+    auto body() const { return childs()[2].tryReferenceAs<Statement>(); }
+    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
     auto callingConvention() const { return _cc; }
     auto isStatic() const { return AttributeSet::find(attributes(), "&static"); }
 

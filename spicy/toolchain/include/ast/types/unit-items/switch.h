@@ -73,7 +73,7 @@ public:
         ;
     }
     Engine engine() const { return _engine; }
-    auto condition() const { return childs()[1].tryAs<Expression>(); }
+    auto condition() const { return childs()[1].tryReferenceAs<Expression>(); }
     auto cases() const { return childs<switch_::Case>(_cases_start, _cases_end); }
     auto cases() { return childs<switch_::Case>(_cases_start, _cases_end); }
     auto casesNodes() { return nodesOfType<switch_::Case>(); }

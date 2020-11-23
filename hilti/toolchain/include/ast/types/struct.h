@@ -39,7 +39,7 @@ public:
     }
 
     auto callingConvention() const { return _cc; }
-    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
+    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
 
     /**
      * Returns the auxiliary type as passed into the corresponding

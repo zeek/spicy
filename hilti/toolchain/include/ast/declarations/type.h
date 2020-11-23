@@ -23,7 +23,7 @@ public:
         : NodeBase(nodes(std::move(id), std::move(type), std::move(attrs)), std::move(m)), _linkage(linkage) {}
 
     auto type() const { return type::effectiveType(child<hilti::Type>(1)); }
-    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
+    auto attributes() const { return childs()[2].tryReferenceAs<AttributeSet>(); }
 
     bool isOnHeap() const {
         if ( type::isOnHeap(type()) )

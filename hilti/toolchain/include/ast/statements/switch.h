@@ -95,8 +95,8 @@ public:
         _preprocessCases(init.id());
     }
 
-    auto init() const { return childs()[0].tryAs<hilti::Declaration>(); }
-    auto expression() const { return childs()[1].as<hilti::Expression>(); }
+    auto init() const { return childs()[0].tryReferenceAs<hilti::Declaration>(); }
+    const auto& expression() const { return childs()[1].as<hilti::Expression>(); }
     auto type() const {
         if ( auto i = init() )
             return i->as<declaration::LocalVariable>().type();

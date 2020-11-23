@@ -23,7 +23,7 @@ public:
     const auto& input() const { return child<Expression>(0); }
     const auto& output() const { return child<Expression>(1); }
     const auto& id() const { return child<ID>(2); }
-    auto condition() const { return childs()[3].tryAs<Expression>(); }
+    auto condition() const { return childs()[3].tryReferenceAs<Expression>(); }
 
     /**
      * Returns the output expressions's scope. Note that the scope is shared

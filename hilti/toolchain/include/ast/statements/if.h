@@ -25,10 +25,10 @@ public:
     If(hilti::Expression cond, Statement true_, std::optional<Statement> false_, Meta m = Meta())
         : NodeBase(nodes(node::none, std::move(cond), std::move(true_), std::move(false_)), std::move(m)) {}
 
-    auto init() const { return childs()[0].tryAs<hilti::Declaration>(); }
-    auto condition() const { return childs()[1].tryAs<hilti::Expression>(); }
+    auto init() const { return childs()[0].tryReferenceAs<hilti::Declaration>(); }
+    auto condition() const { return childs()[1].tryReferenceAs<hilti::Expression>(); }
     const auto& true_() const { return child<hilti::Statement>(2); }
-    auto false_() const { return childs()[3].tryAs<Statement>(); }
+    auto false_() const { return childs()[3].tryReferenceAs<Statement>(); }
 
     bool operator==(const If& other) const {
         return init() == other.init() && condition() == other.condition() && true_() == other.true_() &&

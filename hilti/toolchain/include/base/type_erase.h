@@ -14,6 +14,7 @@
 #include <utility>
 
 #include <hilti/base/util.h>
+#include <hilti/base/optional-ref.h>
 #include <hilti/base/intrusive-ptr.h>
 
 namespace hilti::util::type_erasure {
@@ -217,6 +218,15 @@ public:
     /** Attempts to cast the contained object into a specified type. */
     template<typename T>
     std::optional<T> tryAs() const {
+        if ( auto p = _tryAs<T>() )
+            return *p;
+
+        return {};
+    }
+
+    /** Attempts to cast the contained object into a specified type. */
+    template<typename T>
+    optional_ref<const T> tryReferenceAs() const {
         if ( auto p = _tryAs<T>() )
             return *p;
 
