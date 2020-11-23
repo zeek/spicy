@@ -281,13 +281,6 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
 
 } // anonymous namespace
 
-void hilti::detail::resetNodes(Node* root) {
-    for ( const auto& i : hilti::visitor::PreOrder<>().walk(root) ) {
-        i.node.scope()->clear();
-        i.node.clearErrors();
-    }
-}
-
 void hilti::detail::clearErrors(Node* root) {
     for ( const auto& i : hilti::visitor::PreOrder<>().walk(root) )
         i.node.clearErrors();
