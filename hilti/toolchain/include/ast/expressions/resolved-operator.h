@@ -61,13 +61,24 @@ public:
     auto kind() const { return _operator.kind(); }
 
     // ResolvedOperator interface with common implementation.
-    auto operands() const { return childs<Expression>(1, -1); }
-    auto result() const {
+    const auto& operands() const {
+        if ( _cache.operands.empty() )
+            _cache.operands = childs<Expression>(1, -1);
+
+        return _cache.operands;
+    }
+
+    const auto& result() const {
+        if ( _cache.result )
+            return *_cache.result;
+
         if ( ! childs()[0].isA<type::Unknown>() )
-            return child<Type>(0);
+            _cache.result = child<Type>(0);
         else
             // If the result wasn't stored at instantiation time, try again.
-            return _operator.result(operands());
+            _cache.result = _operator.result(operands());
+
+        return *_cache.result;
     }
 
     const auto& op0() const { return child<Expression>(1); }
@@ -98,9 +109,19 @@ public:
 
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{{"kind", to_string(_operator.kind())}}; }
+    /** Implements `Node` interface. */
+    void clearCache() {
+        _cache.result.reset();
+        _cache.operands.clear();
+    }
 
 private:
     ::hilti::operator_::detail::Operator _operator;
+
+    mutable struct {
+        std::optional<Type> result;
+        std::vector<Expression> operands;
+    } _cache;
 };
 
 namespace resolved_operator {
