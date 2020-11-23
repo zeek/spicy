@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -19,16 +20,21 @@ public:
     /** List of comments. */
     using Comments = std::vector<std::string>;
 
-    Meta(Location location, Comments comments = {}) : _location(std::move(location)), _comments(std::move(comments)) {}
+    Meta(Location location, Comments comments = {}) : _comments(std::move(comments)) {
+        setLocation(std::move(location));
+    }
 
     /** Constructor that leaves location unset. */
     Meta(Comments comments = {}) : _comments(std::move(comments)) {}
 
-    const Location& location() const { return _location; }
     const Comments& comments() const { return _comments; }
+    const Location& location() const {
+        static Location null;
+        return _location ? *_location : null;
+    }
 
-    void setLocation(const Location& l) { _location = l; }
-    void setComments(const Comments& c) { _comments = c; }
+    void setLocation(Location l) { _location = &*_cache()->insert(std::move(l)).first; }
+    void setComments(Comments c) { _comments = std::move(c); }
 
     /**
      * Returns true if the location does not equal a default constructed
@@ -37,7 +43,9 @@ public:
     explicit operator bool() const { return _location || _comments.size(); }
 
 private:
-    Location _location;
+    std::set<Location>* _cache();
+
+    const Location* _location = nullptr;
     Comments _comments;
 };
 
