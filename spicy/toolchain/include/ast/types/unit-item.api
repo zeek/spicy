@@ -27,4 +27,7 @@ class Item(trait::isUnitItem) : hilti::trait::isNode {
 
     /** Implements the `Node` interface. */
     void setOriginalNode(const NodeRef& n);
+
+    /** Implements the `Node` interface. */
+    void clearCache();
 };

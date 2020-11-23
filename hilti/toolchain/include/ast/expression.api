@@ -43,4 +43,7 @@ class Expression(hilti::trait::isExpression) : hilti::trait::isNode {
 
     /** Implements the `Node` interface. */
     void setOriginalNode(const NodeRef& n);
+
+    /** Implements the `Node` interface. */
+    void clearCache();
 };

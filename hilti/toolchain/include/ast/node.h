@@ -445,6 +445,8 @@ public:
     const NodeRef& originalNode() const { return _orig; }
     /** Implements the `Node` interface. */
     void setOriginalNode(const NodeRef& n) { _orig = n; }
+    /** Implements the `Node` interface. */
+    void clearCache() {}
 
 private:
     std::vector<::hilti::Node> _childs;
