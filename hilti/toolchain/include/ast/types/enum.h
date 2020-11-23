@@ -14,7 +14,7 @@ namespace type {
 
 namespace enum_ {
 /** AST node for an enum label. */
-class Label : public NodeBase {
+class Label : public NodeBase, public util::type_erasure::trait::Singleton {
 public:
     Label() : NodeBase({ID("<no id>")}, Meta()) {}
     Label(ID id, Meta m = Meta()) : NodeBase({std::move(id)}, std::move(m)) {}
