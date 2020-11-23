@@ -930,6 +930,26 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("%s.reserve(%s)", self, args[0]);
     }
 
+    result_t operator()(const operator_::vector::Resize& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.resize(%s)", self, args[0]);
+    }
+
+    result_t operator()(const operator_::vector::At& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.iteratorAt(%s)", self, args[0]);
+    }
+
+    result_t operator()(const operator_::vector::SubRange& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.sub(%s, %s)", self, args[0], args[1]);
+    }
+
+    result_t operator()(const operator_::vector::SubEnd& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.sub(%s)", self, args[0]);
+    }
+
     // Weak reference
     result_t operator()(const operator_::weak_reference::Deref& n) { return fmt("(*%s)", op0(n)); }
     result_t operator()(const operator_::weak_reference::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }

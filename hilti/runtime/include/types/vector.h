@@ -296,6 +296,53 @@ public:
         return V::back();
     }
 
+    /**
+     * Returns an iterator referring to a specific element.
+     *
+     * @param i index of element
+     * @throw `IndexError` if the *i* is out of range.
+     */
+    const_iterator iteratorAt(uint64_t i) const {
+        if ( i >= V::size() )
+            throw IndexError(fmt("vector index %" PRIu64 " out of range", i));
+
+        return const_iterator(static_cast<size_type>(i), _control);
+    }
+
+    /**
+     * Extracts a subsequence from the vector.
+     *
+     * @param from start index
+     * @param end end index (not including)
+     * @returns new vector with a copy of the range's elements
+     */
+    Vector<T> sub(uint64_t start, uint64_t end) const {
+        if ( end <= start || start >= V::size() )
+            return {};
+
+        if ( end >= V::size() )
+            end = V::size();
+
+        Vector<T> v;
+        std::copy(V::begin() + start, V::begin() + end, std::back_inserter(v));
+        return v;
+    }
+
+    /**
+     * Extraces a subsequence from the vector.
+     *
+     * @param end end index (not including)
+     * @returns new vector with a copy of the elements from the beginning to *end*
+     */
+    Vector<T> sub(uint64_t end) const {
+        if ( end >= V::size() )
+            end = V::size();
+
+        Vector<T> v;
+        std::copy(V::begin(), V::begin() + end, std::back_inserter(v));
+        return v;
+    }
+
     /** Replaces the contents of this `Vector` with another `Vector`.
      *
      * In contrast to assignments of `std::vector` iterators remain valid and
@@ -415,6 +462,7 @@ public:
     using V::pop_back;
     using V::push_back;
     using V::reserve;
+    using V::resize;
     using V::size;
 
     friend bool operator==(const Vector& a, const Vector& b) {

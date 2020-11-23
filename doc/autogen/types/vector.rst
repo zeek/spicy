@@ -6,6 +6,10 @@
     less than *i* elements a sufficient number of default-initialized
     elements is added to carry out the assignment.
 
+.. spicy:method:: vector::at vector at False <iterator> (i: uint<64>)
+
+    Returns an iterator referring to the element at vector index *i*.
+
 .. spicy:method:: vector::back vector back False <type~of~element> ()
 
     Returns the last element of the vector. It throws an exception if the
@@ -25,6 +29,22 @@
     Reserves space for at least *n* elements. This operation does not
     change the vector in any observable way but provides a hint about the
     size that will be needed.
+
+.. spicy:method:: vector::resize vector resize False void (n: uint<64>)
+
+    Resizes the vector to hold exactly *n* elements. If *n* is larger than
+    the current size, the new slots are filled with default values. If *n*
+    is smaller than the current size, the excessive elements are removed.
+
+.. spicy:method:: vector::sub vector sub False vector (begin: uint<64>, end: uint<64>)
+
+    Extracts a subsequence of vector elements spanning from index *begin*
+    to (but not including) index *end*.
+
+.. spicy:method:: vector::sub vector sub False vector (end: uint<64>)
+
+    Extracts a subsequence of vector elements spanning from the beginning
+    to (but not including) the index *end* as a new vector.
 
 .. rubric:: Operators
 

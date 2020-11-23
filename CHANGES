@@ -1,4 +1,10 @@
 
+0.4.0-1057 | 2020-11-23 08:35:04 +0000
+
+  * GH-584: Add new vector methods resize/sub/at. (Robin Sommer, Corelight)
+
+  * Revert accidental unbumping of tinyformat. (Benjamin Bannier, Corelight)
+
 0.4.0-1053 | 2020-11-18 08:33:32 +0000
 
   * GH-568: Change parsing of look-ahead vectors to use a loop instead

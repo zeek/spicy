@@ -108,6 +108,23 @@ inline auto constantElementType(unsigned int op, const char* doc = "<type of ele
     };
 }
 
+inline auto iteratorType(unsigned int op, bool const_, const char* doc = "<iterator>") {
+    return [=](const std::vector<Expression>& /* orig_ops */,
+               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+        if ( resolved_ops.empty() )
+            return type::DocOnly(doc);
+
+        if ( op >= resolved_ops.size() )
+            logger().internalError(util::fmt("iteratorType(): index %d out of range, only %" PRIu64 " ops available", op,
+                                             resolved_ops.size()));
+
+        if ( type::isIterable(resolved_ops[op].type()) )
+            return resolved_ops[op].type().iteratorType(const_);
+
+        return {};
+    };
+}
+
 inline auto dereferencedType(unsigned int op, const char* doc = "<dereferenced type>", bool infer_const = true) {
     return [=](const std::vector<Expression>& /* orig_ops */,
                const std::vector<Expression>& resolved_ops) -> std::optional<Type> {

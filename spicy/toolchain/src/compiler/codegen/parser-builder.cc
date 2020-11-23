@@ -511,12 +511,11 @@ struct ProductionVisitor
                 auto __offsets = builder::member(state().self, "__offsets");
                 auto cur_offset = builder::memberCall(state().cur, "offset", {});
 
-                // Since the offset list is created empty make sure the
-                // element for the currrent field is present.
+                // Since the offset list is created empty resize the
+                // vector so that we can access the current field's index.
                 assert(field->index());
                 auto index = builder()->addTmp("index", builder::integer(*field->index()));
-                auto resize = builder()->addWhile(builder::lowerEqual(builder::size(__offsets), index));
-                resize->addMemberCall(__offsets, "push_back", {builder::null()});
+                builder()->addMemberCall(__offsets, "resize", {builder::sum(index, builder::integer(1))});
 
                 builder()->addAssign(builder::index(__offsets, *field->index()),
                                      builder::tuple({cur_offset, builder::optional(hilti::type::UnsignedInteger(64))}));
