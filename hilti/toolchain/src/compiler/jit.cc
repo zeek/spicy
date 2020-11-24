@@ -109,7 +109,7 @@ void JIT::setDumpCode() {
 }
 
 hilti::Result<Nothing> JIT::jit() {
-    util::timing::Collector _("hilti/jit/jit");
+    util::timing::Collector _("hilti/jit/codegen");
 
     if ( ! _jit )
         return result::Error("jit not initialized");
