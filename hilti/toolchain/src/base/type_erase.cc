@@ -9,7 +9,7 @@
 using namespace hilti::util;
 
 #ifdef HILTI_TYPE_ERASURE_PROFILE
-namespace util::type_erasure::detail {
+namespace hilti::util::type_erasure::detail {
 inline bool operator<(const Counters& x, const Counters& y) { return x.max >= y.max; }
 } // namespace util::type_erasure::detail
 #endif
