@@ -4,7 +4,7 @@
 #include <sys/resource.h>
 
 #include <memory>
-#include <optional>
+#include <unordered_map>
 #include <vector>
 
 #include <hilti/rt/context.h>
@@ -57,6 +57,11 @@ struct GlobalState {
 
     /** The context for the main thread. */
     std::unique_ptr<hilti::rt::Context> master_context;
+
+    /** Cached stacks of fibers. Stacks always need to outlive fibers in `fiber_cache`. */
+    Stack fiber_shared_stack = Stack(Fiber::StackSize * Fiber::CacheSize);
+    std::unique_ptr<::Fiber> fiber_switch_trampoline;
+    std::unordered_map<::Fiber*, Stack> fiber_stacks;
 
     /** Cache of previously used fibers available for reuse. */
     std::vector<std::unique_ptr<Fiber>> fiber_cache;

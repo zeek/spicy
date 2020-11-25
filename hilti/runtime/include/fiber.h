@@ -27,6 +27,8 @@ void _Trampoline(void* argsp);
 }
 
 class Fiber;
+
+[[noreturn]] void fiber_bottom(::Fiber* fiber, void* args);
 } // namespace detail
 
 namespace resumable {
@@ -35,6 +37,14 @@ using Handle = detail::Fiber;
 } // namespace resumable
 
 namespace detail {
+/** RAII wrapper around a raw memory block .*/
+struct Stack {
+    explicit Stack(size_t size);
+    void resize(size_t size);
+
+    std::unique_ptr<void, void (*)(void*)> _stack;
+    size_t _size;
+};
 
 /**
  * A fiber implements a co-routine that can at any time yield control back to

@@ -2,6 +2,7 @@
 
 #include "hilti/rt/init.h"
 
+#include <fiber/fiber.h>
 #include <sys/resource.h>
 #include <unistd.h>
 
@@ -50,6 +51,16 @@ void hilti::rt::init() {
             HILTI_RT_DEBUG("libhilti", fmt("executing initialization code for module %s", m.name));
             (*m.init_module)();
         }
+    }
+
+    if ( ! globalState()->fiber_switch_trampoline ) {
+        auto& fiber_switch_trampoline = globalState()->fiber_switch_trampoline;
+        assert(! fiber_switch_trampoline);
+        fiber_switch_trampoline = std::make_unique<::Fiber>();
+        auto alloc = ::fiber_alloc(fiber_switch_trampoline.get(), 327'680, fiber_bottom, nullptr,
+                                   FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI);
+        if ( ! alloc )
+            throw RuntimeError("could not allocate fiber");
     }
 
     globalState()->runtime_is_initialized = true;
