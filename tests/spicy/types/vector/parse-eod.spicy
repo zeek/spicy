@@ -8,4 +8,4 @@ public type Foo = unit {
     b: int8[] &eod; # Won't get anything here anymore
 
     on %done { print self; }
-    };
+};

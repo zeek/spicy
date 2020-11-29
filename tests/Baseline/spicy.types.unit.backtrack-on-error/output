@@ -1,0 +1,6 @@
+Foo.a, [$a=1, $b=(not set), $c=(not set)]
+Error, backtracking
+Bar.a, [$a=1, $b=(not set), $c=(not set)]
+Bar.b, [$a=1, $b=2, $c=(not set)]
+Bar.c, [$a=1, $b=2, $c=3]
+[$a=b"1234", $foo=[$a=1, $b=(not set), $c=(not set)], $bar=[$a=1, $b=2, $c=3], $b=b"567890"]

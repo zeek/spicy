@@ -1,0 +1,56 @@
+# @TEST-EXEC: spicyc -j -o a.hlto %INPUT
+# @TEST-EXEC: cat input.dat | spicy-driver a.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type test = unit {
+    : LineWithFallback[] &eod;
+};
+
+type LineWithFallback = unit {
+    : Line &try {
+        print $$;
+        }
+    : bytes &until=b"\n" {
+        if ( |$$| > 0 )
+            print "could not parse: '%s'" % $$;
+        }
+};
+
+type Line = unit {
+    switch {
+        -> a: A;
+        -> b: B;
+        -> c: C;
+    };
+
+    on %error {
+        self.backtrack();
+    }
+};
+
+type A = unit {
+    : /aaa/;
+    : / +/;
+    payload: /[A-Z]+/;
+};
+
+type B = unit {
+    : /bbb/;
+    : / +/;
+    payload: /[A-Z]+/;
+};
+
+type C = unit {
+    : /ccc/;
+    : / +/;
+    payload: /[A-Z]+/;
+};
+
+@TEST-START-FILE input.dat
+aaa AAA
+bbb BBB
+ccc CCC
+ddd DDD
+ @TEST-END-FILE

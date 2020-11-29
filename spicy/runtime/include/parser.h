@@ -178,6 +178,17 @@ public:
     virtual ~ParseError(); /* required to create vtable, see hilti::rt::Exception */
 };
 
+/**
+ * Exception triggering backtracking to the most recent ``&try``. Derived from
+ * ``ParseError`` so that if it's not caught, it turns into a regular parsing
+ * error.
+ */
+class Backtrack : public ParseError {
+public:
+    Backtrack() : ParseError("backtracking outside of &try scope") {}
+    virtual ~Backtrack();
+};
+
 namespace detail {
 
 /**
@@ -320,5 +331,11 @@ extern bool atEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, cons
  * @return true if end-of-data has been seen, but not necessarily reached.
  */
 extern bool haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur);
+
+/**
+ * Manually trigger a backtrack operation, reverting back to the most revent &try.
+ */
+inline void backtrack() { throw Backtrack(); }
+
 } // namespace detail
 } // namespace spicy::rt

@@ -1,0 +1,22 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type test = unit {
+    foo: Foo &try;
+    bar: Bar;
+
+    on %done { print self; }
+};
+
+type Foo = unit {
+    a: int8 {
+        if ( $$ != 1 )
+            self.backtrack();
+       }
+    b: int8;
+};
+
+type Bar = unit {
+    a: int8;
+    b: int8;
+};

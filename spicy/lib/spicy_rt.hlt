@@ -1,6 +1,7 @@
 module spicy_rt {
 
 public type ParseError = exception &cxxname="spicy::rt::ParseError";
+public type Backtrack = exception &cxxname="spicy::rt::Backtrack";
 public type UnitAlreadyConnected = exception &cxxname="spicy::rt::UnitAlreadyConnected";
 
 # State stored inside a unit to allow connecting it to a sink.
@@ -66,6 +67,8 @@ declare public bool waitForEod(inout value_ref<stream> data, view<stream> cur, i
 
 declare public bool atEod(inout value_ref<stream> data, view<stream> cur) &cxxname="spicy::rt::detail::atEod" &have_prototype;
 declare public bool haveEod(inout value_ref<stream> data, view<stream> cur) &cxxname="spicy::rt::detail::haveEod" &have_prototype;
+
+declare public void backtrack() &cxxname="spicy::rt::detail::backtrack" &have_prototype;
 
 public type BitOrder = enum { LSB0, MSB0 } &cxxname="hilti::rt::integer::BitOrder";
   # TODO: Should accept BitOrder instead of enum<*> here.

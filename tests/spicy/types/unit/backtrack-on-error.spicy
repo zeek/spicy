@@ -1,0 +1,30 @@
+# @TEST-EXEC: printf '1234\001\002\003567890' | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type test = unit {
+    a: bytes &size=4;
+    foo: Foo &try;
+    bar: Bar;
+    b: bytes &size=6;
+
+    on %done { print self; }
+};
+
+type Foo = unit {
+    a: int8 { print "Foo.a", self; }
+    b: b"XXX";
+    c: int8 { print "Foo.c", self; }
+
+    on %error {
+        print "Error, backtracking";
+        self.backtrack();
+    }
+};
+
+type Bar = unit {
+    a: int8 { print "Bar.a", self; }
+    b: int8 { print "Bar.b", self; }
+    c: int8 { print "Bar.c", self; }
+};
