@@ -111,6 +111,7 @@ end                   return token::END_;
 enum                  return token::ENUM;
 exception             return token::EXCEPTION;
 export                return token::EXPORT;
+field                 return token::FIELD;
 file                  return token::FILE;
 for                   return token::FOR;
 foreach               return token::FOREACH;

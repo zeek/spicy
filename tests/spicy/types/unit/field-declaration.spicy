@@ -1,0 +1,27 @@
+# @TEST-EXEC:  printf 'abcde999abcdef\001\002\003\377' | spicy-driver %INPUT | sort >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-GROUP: spicy-core
+#
+# @TEST-DOC: Test variants of global field declarations.
+
+module Mini;
+
+type FooImpl = unit {
+    data: bytes &size=3;
+};
+
+field X1 = bytes &size=5;
+field X2 = FooImpl &convert=$$.data.to_int();
+field X3 = /a....f/;
+field X4 = int8[3];
+field X5 = uint8 { print "in decl", $$; }
+
+public type Test = unit {
+    x1: X1;
+    x2: X2;
+    x3: X3;
+    x4: X4;
+    x5: X5 { print "in unit", $$; }
+    on %done   { print self; }
+};

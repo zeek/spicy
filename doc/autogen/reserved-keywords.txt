@@ -30,6 +30,7 @@ end
 enum
 exception
 export
+field
 file
 for
 foreach

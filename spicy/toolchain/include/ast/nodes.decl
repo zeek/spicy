@@ -5,6 +5,7 @@ spicy::Hook : isNode
 spicy::type::unit::Item : isNode
 spicy::type::unit::item::switch_::Case : isNode
 
+spicy::declaration::UnitField : isDeclaration
 spicy::declaration::UnitHook : isDeclaration
 
 spicy::type::Bitfield : isType

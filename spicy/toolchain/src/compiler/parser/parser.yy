@@ -29,8 +29,8 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 88
-%expect-rr 141
+%expect 122
+%expect-rr 143
 
 %union {}
 %{
@@ -141,6 +141,7 @@ static int _field_width = 0;
 %token         EQ
 %token         EXCEPTION
 %token         EXPORT
+%token         FIELD
 %token         FILE
 %token         FOR
 %token         FOREACH
@@ -224,7 +225,7 @@ static int _field_width = 0;
 %token         WHILE
 
 %type <id>                          local_id scoped_id dotted_id unit_hook_id
-%type <declaration>                 local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl
+%type <declaration>                 local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl field_decl
 %type <decls_and_stmts>             global_scope_items
 %type <type>                        base_type_no_attrs base_type type tuple_type struct_type enum_type unit_type bitfield_type
 %type <ctor>                        ctor tuple struct_ regexp list vector map set
@@ -329,6 +330,7 @@ global_scope_decl
               | import_decl                      { $$ = std::move($1); }
               | property_decl                    { $$ = std::move($1); }
               | hook_decl                        { $$ = std::move($1); }
+              | field_decl                       { $$ = std::move($1); }
 
 type_decl     : opt_linkage TYPE scoped_id '=' type opt_attributes ';'
                                                  { $$ = hilti::declaration::Type(std::move($3), std::move($5), std::move($6), std::move($1), __loc__); }
@@ -382,6 +384,16 @@ hook_decl     : ON unit_hook_id unit_hook        { ID unit = $2.namespace_();
                                                    $$ = spicy::declaration::UnitHook($2, hilti::type::UnresolvedID(unit), std::move(hook), __loc__);
                                                  }
               ;
+
+/* field_decl follows a similar set of rules as unit_field itself, see below. */
+field_decl    : opt_linkage FIELD local_id '=' base_type opt_unit_field_repeat opt_attributes opt_unit_item_hooks
+                                                 { $$ = spicy::declaration::UnitField(std::move($3), std::move($5), std::move($6), std::move($7), std::move($8), __loc__); }
+              | opt_linkage FIELD local_id '=' ctor opt_unit_field_repeat opt_attributes opt_unit_item_hooks
+                                                 { $$ = spicy::declaration::UnitField(std::move($3), std::move($5), std::move($6), std::move($7), std::move($8), __loc__); }
+              | opt_linkage FIELD local_id '=' scoped_id opt_unit_field_repeat opt_attributes opt_unit_item_hooks
+                                                 { $$ = spicy::declaration::UnitField(std::move($3), std::move($5), std::move($6), std::move($7), std::move($8), __loc__); }
+              | opt_linkage FIELD local_id '='  '(' unit_field_in_container ')' opt_unit_field_repeat opt_attributes opt_unit_item_hooks
+                                                 { $$ = spicy::declaration::UnitField(std::move($3), std::move($6), std::move($8), std::move($9), std::move($10), __loc__); }
 
 opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Linkage::Public; }
               | PRIVATE                          { $$ = hilti::declaration::Linkage::Private; }

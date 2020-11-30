@@ -28,6 +28,7 @@ Spicy pretty quickly.
     modules
     functions
     variables
+    fields
     types
     statements
     error-handling

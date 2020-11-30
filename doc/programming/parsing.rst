@@ -615,6 +615,12 @@ to be declared as ``inout`` (e.g., ``Bar(inout s: string)``).
     That way, the subunit can for example store state directly in the
     parent.
 
+Field Declarations
+==================
+
+To reuse more complex field types, you can predefine fields through
+global ``field`` declarations. See :ref:`field_declarations` for more.
+
 .. _unit_meta_data:
 
 Meta data

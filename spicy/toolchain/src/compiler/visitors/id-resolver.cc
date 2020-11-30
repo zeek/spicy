@@ -13,20 +13,39 @@
 #include <hilti/ast/types/reference.h>
 #include <hilti/global.h>
 
+#include <spicy/ast/declarations/unit-field.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit-items/unresolved-field.h>
 #include <spicy/compiler/detail/visitors.h>
 
+#include "base/util.h"
+
 using namespace spicy;
 
 namespace {
 
+// Turns an unresolved field into a resolved field.
 template<typename T>
 auto resolveField(const type::unit::item::UnresolvedField& u, const T& t) {
     auto field = type::unit::item::Field(u.fieldID(), std::move(t), u.engine(), u.arguments(), u.repeatCount(),
                                          u.sinks(), u.attributes(), u.condition(), u.hooks(), u.meta());
+
+    assert(u.index());
+    return type::unit::item::Field::setIndex(std::move(field), *u.index());
+}
+
+// Turns an unresolved field into a resolved field for fields that pull from a
+// field declaration. This function merges the pieces from the unresolved field
+// and the declaration into the resolved field as appropriate.
+template<typename T>
+auto resolveField(const type::unit::item::UnresolvedField& u, const T& t, declaration::UnitField declared_field) {
+    // Transfer type and attributes from the field declaration, and merge any
+    // hooks together.
+    auto field = type::unit::item::Field(u.fieldID(), t, u.engine(), u.arguments(), declared_field.repeatCount(),
+                                         u.sinks(), declared_field.attributes(), u.condition(),
+                                         hilti::util::concat(declared_field.hooks(), u.hooks()), u.meta());
 
     assert(u.index());
     return type::unit::item::Field::setIndex(std::move(field), *u.index());
@@ -43,8 +62,17 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
         modified = true;
     }
 
-    void operator()(const type::unit::item::UnresolvedField& u, position_t p) {
-        if ( auto id = u.unresolvedID() ) {
+    void replaceUnresolvedField(const type::unit::item::UnresolvedField& u, position_t p) {
+        if ( auto c = u.ctor() )
+            replaceNode(&p, resolveField(u, *c));
+
+        else if ( auto t = u.type() )
+            replaceNode(&p, resolveField(u, *t));
+
+        else if ( auto i = u.item() )
+            replaceNode(&p, resolveField(u, *i));
+
+        else if ( auto id = u.unresolvedID() ) {
             auto resolved = hilti::scope::lookupID<hilti::Declaration>(*id, p);
 
             if ( ! resolved ) {
@@ -63,34 +91,49 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
                     tt = hilti::type::ValueReference(tt, u.meta());
 
                 replaceNode(&p, resolveField(u, tt));
-                return;
             }
 
-            if ( auto c = resolved->first->tryAs<hilti::declaration::Constant>() ) {
+            else if ( auto c = resolved->first->tryAs<hilti::declaration::Constant>() ) {
                 if ( auto ctor = c->value().tryAs<hilti::expression::Ctor>() )
                     replaceNode(&p, resolveField(u, ctor->ctor()));
                 else
                     p.node.addError("field value must be a constant");
-
-                return;
             }
 
-            p.node.addError(hilti::util::fmt("field value must be a constant or type, but is a %s",
-                                             resolved->first->as<hilti::Declaration>().displayName()));
+            else if ( auto d = resolved->first->tryAs<spicy::declaration::UnitField>() ) {
+                if ( auto x = d->type() )
+                    replaceNode(&p, resolveField(u, *x, *d));
+
+                else if ( auto x = d->ctor() )
+                    replaceNode(&p, resolveField(u, *x, *d));
+
+                else if ( auto x = d->item() )
+                    replaceNode(&p, resolveField(u, *x, *d));
+
+                else if ( auto x = d->unresolvedID() ) {
+                    auto dummy_unresolved =
+                        type::unit::item::UnresolvedField(u.fieldID(), *x, u.engine(), u.arguments(), d->repeatCount(),
+                                                          u.sinks(), d->attributes(), u.condition(), d->hooks(),
+                                                          u.meta());
+
+                    auto u2 = type::unit::item::UnresolvedField::setIndex(std::move(dummy_unresolved), *u.index());
+                    replaceUnresolvedField(std::move(u2), p); // recurse
+                }
+
+                else
+                    hilti::logger().internalError("no known type for unit field declaration", p.node.location());
+            }
+            else
+                p.node.addError(
+                    hilti::util::fmt("field value must be a constant, type, or field declaration (but is a %s)",
+                                     resolved->first->as<hilti::Declaration>().displayName()));
         }
 
-        else if ( auto c = u.ctor() )
-            replaceNode(&p, resolveField(u, *c));
-
-        else if ( auto t = u.type() )
-            replaceNode(&p, resolveField(u, *t));
-
-        else if ( auto i = u.item() )
-            replaceNode(&p, resolveField(u, *i));
-
         else
-            hilti::logger().internalError("no known typw for unresolved field");
+            hilti::logger().internalError("no known type for unresolved field", p.node.location());
     }
+
+    void operator()(const type::unit::item::UnresolvedField& u, position_t p) { replaceUnresolvedField(u, p); }
 
     void operator()(const type::Unit& n, position_t p) {
         if ( auto t = p.parent().tryAs<hilti::declaration::Type>();
