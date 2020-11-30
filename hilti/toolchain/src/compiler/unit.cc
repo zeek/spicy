@@ -189,10 +189,8 @@ Result<Nothing> Unit::compile() {
 
         auto modules = _currentModules();
 
-        for ( auto& [id, module] : modules ) {
-            HILTI_DEBUG(logging::debug::Compiler, fmt("resetting nodes for module %s", id));
-            detail::resetNodes(&*module);
-        }
+        for ( auto& [id, module] : modules )
+            _resetNodes(id, &*module);
 
         if ( ! runHooks(&Plugin::build_scopes, "building scopes for all module modules", context(), modules, this) )
             return result::Error("errors encountered during scope building");
@@ -278,7 +276,7 @@ Result<Nothing> Unit::compile() {
             _validateASTs(module->as<Module>().id(), (*module).as<Module>().preserved(),
                           [&](const ID& id, auto& preserved) {
                               for ( auto& m : preserved )
-                                  detail::resetNodes(&m);
+                                  _resetNodes(id, &m);
 
                               return runHooks(&Plugin::preserved_validate, fmt("validating module %s (preserved)", id),
                                               context(), &preserved, this);
@@ -743,4 +741,14 @@ std::set<context::ModuleIndex> Unit::allImported(bool code_only) const {
     }
 
     return all;
+}
+
+void Unit::_resetNodes(const ID& id, Node* root) {
+    HILTI_DEBUG(logging::debug::Compiler, fmt("resetting nodes for module %s", id));
+
+    for ( const auto& i : hilti::visitor::PreOrder<>().walk(root) ) {
+        i.node.clearCache();
+        i.node.scope()->clear();
+        i.node.clearErrors();
+    }
 }

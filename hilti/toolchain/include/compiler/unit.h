@@ -318,6 +318,8 @@ private:
     void _dumpASTs(std::ostream& stream, const std::string& prefix, int round = 0);
     // Records a debug dump of all modules parsed so far to disk.
     void _saveIterationASTs(const std::string& prefix, int round = 0);
+    // Clear any previously computed AST state before beginning a pass over the AST.
+    void _resetNodes(const ID& id, Node* root);
 
     // Parses a source file with the appropiate plugin.
     static Result<hilti::Module> parse(const std::shared_ptr<Context>& context,

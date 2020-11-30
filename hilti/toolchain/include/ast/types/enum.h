@@ -14,13 +14,13 @@ namespace type {
 
 namespace enum_ {
 /** AST node for an enum label. */
-class Label : public NodeBase {
+class Label : public NodeBase, public util::type_erasure::trait::Singleton {
 public:
     Label() : NodeBase({ID("<no id>")}, Meta()) {}
     Label(ID id, Meta m = Meta()) : NodeBase({std::move(id)}, std::move(m)) {}
     Label(ID id, int v, Meta m = Meta()) : NodeBase({std::move(id)}, std::move(m)), _value(v) {}
 
-    auto id() const { return child<ID>(0); }
+    const auto& id() const { return child<ID>(0); }
     auto value() const { return _value; }
 
     bool operator==(const Label& other) const { return id() == other.id() && value() == other.value(); }

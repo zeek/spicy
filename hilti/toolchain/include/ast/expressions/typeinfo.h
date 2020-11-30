@@ -15,7 +15,7 @@ class TypeInfo : public NodeBase, public trait::isExpression {
 public:
     TypeInfo(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
 
-    auto expression() const { return child<Expression>(0); }
+    const auto& expression() const { return child<Expression>(0); }
 
     bool operator==(const TypeInfo& other) const { return expression() == other.expression(); }
 

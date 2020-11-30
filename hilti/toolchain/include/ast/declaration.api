@@ -42,4 +42,7 @@ class Declaration(trait::isDeclaration) : trait::isNode {
 
     /** Implements the `Node` interface. */
     void setOriginalNode(const NodeRef& n);
+
+    /** Implements the `Node` interface. */
+    void clearCache();
 };

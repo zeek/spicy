@@ -72,4 +72,6 @@ class ResolvedOperator(trait::isResolvedOperator) : trait::isExpression {
     const NodeRef& originalNode() const;
     /** Implements the `Node` interface. */
     void setOriginalNode(const NodeRef& n);
+    /** Implements the `Node` interface. */
+    void clearCache();
 };

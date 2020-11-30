@@ -30,7 +30,7 @@ public:
     LocalVariable(ID id, hilti::Expression init, bool const_ = false, Meta m = Meta())
         : NodeBase(nodes(std::move(id), node::none, std::move(init)), std::move(m)), _const(const_) {}
 
-    auto init() const { return childs()[2].tryAs<hilti::Expression>(); }
+    auto init() const { return childs()[2].tryReferenceAs<hilti::Expression>(); }
     auto typeArguments() const { return childs<hilti::Expression>(3, -1); }
 
     ::hilti::Type type() const {

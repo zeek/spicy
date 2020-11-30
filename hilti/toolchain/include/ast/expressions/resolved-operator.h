@@ -57,22 +57,33 @@ public:
     ResolvedOperatorBase(const Operator& op, const std::vector<Expression>& operands, Meta meta = Meta())
         : NodeBase(nodes(detail::type_to_store(op.result(operands)), operands), std::move(meta)), _operator(op) {}
 
-    auto& operator_() const { return _operator; }
+    const auto& operator_() const { return _operator; }
     auto kind() const { return _operator.kind(); }
 
     // ResolvedOperator interface with common implementation.
-    auto operands() const { return childs<Expression>(1, -1); }
-    auto result() const {
-        if ( ! childs()[0].isA<type::Unknown>() )
-            return child<Type>(0);
-        else
-            // If the result wasn't stored at instantiation time, try again.
-            return _operator.result(operands());
+    const auto& operands() const {
+        if ( _cache.operands.empty() )
+            _cache.operands = childs<Expression>(1, -1);
+
+        return _cache.operands;
     }
 
-    auto op0() const { return child<Expression>(1); }
-    auto op1() const { return child<Expression>(2); }
-    auto op2() const { return child<Expression>(3); }
+    const auto& result() const {
+        if ( _cache.result )
+            return *_cache.result;
+
+        if ( ! childs()[0].isA<type::Unknown>() )
+            _cache.result = child<Type>(0);
+        else
+            // If the result wasn't stored at instantiation time, try again.
+            _cache.result = _operator.result(operands());
+
+        return *_cache.result;
+    }
+
+    const auto& op0() const { return child<Expression>(1); }
+    const auto& op1() const { return child<Expression>(2); }
+    const auto& op2() const { return child<Expression>(3); }
     auto hasOp0() const { return ! childs().empty(); }
     auto hasOp1() const { return childs().size() >= 3; }
     auto hasOp2() const { return childs().size() >= 4; }
@@ -98,9 +109,19 @@ public:
 
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{{"kind", to_string(_operator.kind())}}; }
+    /** Implements `Node` interface. */
+    void clearCache() {
+        _cache.result.reset();
+        _cache.operands.clear();
+    }
 
 private:
     ::hilti::operator_::detail::Operator _operator;
+
+    mutable struct {
+        std::optional<Type> result;
+        std::vector<Expression> operands;
+    } _cache;
 };
 
 namespace resolved_operator {

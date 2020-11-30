@@ -6,6 +6,7 @@
 
 #include <hilti/rt/libhilti.h>
 
+#include <hilti/rt/json.h>
 #include <spicy/rt/util.h>
 
 using namespace hilti::rt;

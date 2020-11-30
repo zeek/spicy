@@ -375,10 +375,11 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const type::struct_::Field& f, position_t p) {
-        if ( auto attrs = f.attributes() ) {
-            if ( auto x = attrs->coerceValueTo("&default", f.type()) ) {
+        if ( auto a = f.attributes() ) {
+            AttributeSet attrs = *a;
+            if ( auto x = attrs.coerceValueTo("&default", f.type()) ) {
                 if ( *x ) {
-                    auto nattrs = type::struct_::Field::setAttributes(f, *attrs);
+                    auto nattrs = type::struct_::Field::setAttributes(f, std::move(attrs));
                     replaceNode(&p, std::move(nattrs));
                 }
 

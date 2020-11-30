@@ -73,19 +73,19 @@ public:
           _sinks_start(_args_end),
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
 
-    auto fieldID() const { return childs()[1].tryAs<ID>(); }
+    auto fieldID() const { return childs()[1].tryReferenceAs<ID>(); }
 
     const auto& index() const { return _index; }
 
     // Only one of these will have return value.
-    auto unresolvedID() const { return childs()[0].tryAs<ID>(); }
-    auto type() const { return childs()[0].tryAs<Type>(); }
-    auto ctor() const { return childs()[0].tryAs<Ctor>(); }
-    auto item() const { return childs()[0].tryAs<Item>(); }
+    auto unresolvedID() const { return childs()[0].tryReferenceAs<ID>(); }
+    auto type() const { return childs()[0].tryReferenceAs<Type>(); }
+    auto ctor() const { return childs()[0].tryReferenceAs<Ctor>(); }
+    auto item() const { return childs()[0].tryReferenceAs<Item>(); }
 
-    auto repeatCount() const { return childs()[2].tryAs<Expression>(); }
-    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
-    auto condition() const { return childs()[4].tryAs<Expression>(); }
+    auto repeatCount() const { return childs()[2].tryReferenceAs<Expression>(); }
+    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
+    auto condition() const { return childs()[4].tryReferenceAs<Expression>(); }
     auto arguments() const { return childs<Expression>(_args_start, _args_end); }
     auto sinks() const { return childs<Expression>(_sinks_start, _sinks_end); }
     auto hooks() const { return childs<Hook>(_sinks_end, -1); }

@@ -18,7 +18,7 @@ public:
     Function(::hilti::Function function, Linkage linkage = Linkage::Private, Meta m = Meta())
         : NodeBase({std::move(function)}, std::move(m)), _linkage(linkage) {}
 
-    auto function() const { return child<::hilti::Function>(0); }
+    const auto& function() const { return child<::hilti::Function>(0); }
 
     bool operator==(const Function& other) const { return id() == other.id() && function() == other.function(); }
 

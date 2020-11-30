@@ -27,10 +27,10 @@ public:
     While(hilti::Expression cond, Statement body, std::optional<Statement> else_, Meta m = Meta())
         : NodeBase(nodes(node::none, std::move(cond), std::move(body), std::move(else_)), std::move(m)) {}
 
-    auto init() const { return childs()[0].tryAs<hilti::Declaration>(); }
-    auto condition() const { return childs()[1].tryAs<hilti::Expression>(); }
-    auto body() const { return child<hilti::Statement>(2); }
-    auto else_() const { return childs()[3].tryAs<Statement>(); }
+    auto init() const { return childs()[0].tryReferenceAs<hilti::Declaration>(); }
+    auto condition() const { return childs()[1].tryReferenceAs<hilti::Expression>(); }
+    const auto& body() const { return child<hilti::Statement>(2); }
+    auto else_() const { return childs()[3].tryReferenceAs<Statement>(); }
 
     bool operator==(const While& other) const {
         return init() == other.init() && condition() == other.condition() && body() == other.body() &&

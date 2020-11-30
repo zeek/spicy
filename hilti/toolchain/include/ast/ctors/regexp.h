@@ -20,7 +20,7 @@ public:
     RegExp(std::vector<std::string> p, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
         : NodeBase(nodes(std::move(attrs)), std::move(m)), _patterns(std::move(p)) {}
 
-    auto attributes() const { return childs()[0].tryAs<AttributeSet>(); }
+    auto attributes() const { return childs()[0].tryReferenceAs<AttributeSet>(); }
     const auto& value() const { return _patterns; }
 
     auto isNoSub() const { return AttributeSet::find(attributes(), "&nosub"); }

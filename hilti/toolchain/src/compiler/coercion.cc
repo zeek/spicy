@@ -205,7 +205,7 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const std
     if ( exprs.size() > operands.size() )
         return result::Error("more expressions than operands");
 
-    for ( auto [i, op] : util::enumerate(operands) ) {
+    for ( const auto& [i, op] : util::enumerate(operands) ) {
         if ( i >= exprs.size() ) {
             // Running out of operands, must have a default or be optional.
             if ( op.default_ ) {
@@ -254,7 +254,7 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const std
             changed = true;
     }
 
-    return std::make_pair(changed, transformed);
+    return std::make_pair(changed, std::move(transformed));
 }
 
 static CoercedExpression _coerceExpression(const Expression& e, const Type& src_, const Type& dst_,

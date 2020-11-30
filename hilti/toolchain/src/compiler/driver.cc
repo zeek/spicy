@@ -9,6 +9,7 @@
 #include <utility>
 
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/json.h>
 
 #include <hilti/hilti.h>
 
@@ -722,7 +723,7 @@ Result<Nothing> Driver::linkUnits() {
 
     HILTI_DEBUG(logging::debug::Driver, "linking modules");
     for ( const auto& md : _mds ) {
-        auto id = md.at("module").template get<std::string>();
+        auto id = md->at("module").template get<std::string>();
         HILTI_DEBUG(logging::debug::Driver, fmt("  - %s", id));
     }
 

@@ -47,6 +47,7 @@ set(SOURCES
     src/ast/expressions
     src/ast/expressions/id.cc
     src/ast/location.cc
+    src/ast/meta.cc
     src/ast/module.cc
     src/ast/node.cc
     src/ast/node_ref.cc

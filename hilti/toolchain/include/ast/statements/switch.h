@@ -43,7 +43,7 @@ public:
 
     auto expressions() const { return childs<hilti::Expression>(1, _end_exprs); }
     auto preprocessedExpressions() const { return childs<hilti::Expression>(_end_exprs, -1); }
-    auto body() const { return child<Statement>(0); }
+    const auto& body() const { return child<Statement>(0); }
 
     bool isDefault() const { return expressions().empty(); }
 
@@ -95,8 +95,8 @@ public:
         _preprocessCases(init.id());
     }
 
-    auto init() const { return childs()[0].tryAs<hilti::Declaration>(); }
-    auto expression() const { return childs()[1].as<hilti::Expression>(); }
+    auto init() const { return childs()[0].tryReferenceAs<hilti::Declaration>(); }
+    const auto& expression() const { return childs()[1].as<hilti::Expression>(); }
     auto type() const {
         if ( auto i = init() )
             return i->as<declaration::LocalVariable>().type();

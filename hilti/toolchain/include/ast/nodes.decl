@@ -23,6 +23,7 @@ hilti::type::union_::Field : isNode
 hilti::type::struct_::Field : isNode
 hilti::statement::switch_::Case : isNode
 hilti::statement::try_::Catch : isNode
+hilti::type::enum_::Label : isNode
 
 hilti::ctor::Address : isCtor
 hilti::ctor::Bool : isCtor
@@ -149,7 +150,6 @@ hilti::type::Void : isType
 hilti::type::WeakReference : isType
 hilti::type::ValueReference : isType
 hilti::type::bytes::Iterator : isType
-hilti::type::enum_::Label : isType
 hilti::type::list::Iterator : isType
 hilti::type::map::Iterator : isType
 hilti::type::set::Iterator : isType

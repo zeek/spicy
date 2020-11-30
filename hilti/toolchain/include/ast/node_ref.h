@@ -7,6 +7,7 @@
 #include <string>
 
 #include <hilti/base/util.h>
+#include <hilti/base/intrusive-ptr.h>
 
 namespace hilti {
 
@@ -16,7 +17,7 @@ namespace node_ref {
 namespace detail {
 
 // Control block for refering to nodes.
-class Control {
+class Control : public hilti::intrusive_ptr::ManagedObject {
 public:
     Control(Node* n) : _node(n), _rid(++_rid_counter) {}
     Node* _node;
@@ -88,7 +89,7 @@ public:
 
 private:
     Node* _node() const;
-    std::shared_ptr<node_ref::detail::Control> _control;
+    IntrusivePtr<node_ref::detail::Control> _control;
 };
 
 } // namespace hilti

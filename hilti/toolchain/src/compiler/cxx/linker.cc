@@ -19,22 +19,22 @@ inline const DebugStream Compiler("compiler");
 } // namespace hilti::logging::debug
 
 void cxx::Linker::add(const linker::MetaData& md) {
-    auto id = md.at("module").get<std::string>();
-    auto path = md.at("path").get<std::string>();
-    auto ns = md.at("namespace").get<std::string>();
+    auto id = md->at("module").get<std::string>();
+    auto path = md->at("path").get<std::string>();
+    auto ns = md->at("namespace").get<std::string>();
     _modules.emplace(id, path);
 
     // Continues logging from CodeGen::linkUnits.
     HILTI_DEBUG(logging::debug::Compiler, fmt("  - module %s (%s)", id, path));
 
-    for ( const auto& j : md.value("joins", json::object_t()) ) {
+    for ( const auto& j : md->value("joins", json::object_t()) ) {
         for ( auto& s : j.second ) {
             auto& joins = _joins[j.first];
             joins.push_back(s.get<cxx::linker::Join>());
         }
     }
 
-    if ( auto idx = md.value("globals-index", cxx::declaration::Constant()); ! idx.id.empty() )
+    if ( auto idx = md->value("globals-index", cxx::declaration::Constant()); ! idx.id.empty() )
         _globals.insert(std::move(idx));
 }
 

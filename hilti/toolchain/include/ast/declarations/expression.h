@@ -22,8 +22,8 @@ public:
                Meta m = Meta())
         : NodeBase(nodes(std::move(id), std::move(e), std::move(attrs)), std::move(m)), _linkage(linkage) {}
 
-    auto expression() const { return child<hilti::Expression>(1); }
-    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
+    const auto& expression() const { return child<hilti::Expression>(1); }
+    auto attributes() const { return childs()[2].tryReferenceAs<AttributeSet>(); }
 
     bool operator==(const Expression& other) const { return id() == other.id() && expression() == other.expression(); }
 

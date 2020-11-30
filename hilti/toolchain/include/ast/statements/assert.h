@@ -46,9 +46,9 @@ public:
         : NodeBase(nodes(std::move(expr), std::move(excpt), std::move(msg)), std::move(m)), _expects_exception(true) {}
 
     bool expectsException() const { return _expects_exception; }
-    auto expression() const { return child<::hilti::Expression>(0); }
+    const auto& expression() const { return child<::hilti::Expression>(0); }
     auto exception() const { return type::effectiveOptionalType(childs()[1].tryAs<Type>()); }
-    auto message() const { return childs()[2].tryAs<::hilti::Expression>(); }
+    auto message() const { return childs()[2].tryReferenceAs<::hilti::Expression>(); }
 
     bool operator==(const Assert& other) const {
         return _expects_exception == other._expects_exception && expression() == other.expression() &&

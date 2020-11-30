@@ -20,8 +20,8 @@ public:
     Sink(ID id, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
         : NodeBase(nodes(std::move(id), std::move(attrs)), std::move(m)) {}
 
-    auto id() const { return child<ID>(0); }
-    auto attributes() const { return childs()[1].tryAs<AttributeSet>(); }
+    const auto& id() const { return child<ID>(0); }
+    auto attributes() const { return childs()[1].tryReferenceAs<AttributeSet>(); }
 
     bool operator==(const Sink& other) const { return id() == other.id() && attributes() == other.attributes(); }
 

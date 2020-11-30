@@ -1,4 +1,20 @@
 
+0.4.0-1071 | 2020-11-30 18:16:35 +0000
+
+  * Series of speed-ups to the Spicy compiler. (Robin Sommer, Corelight)
+
+    - Add caching of derived information to some AST nodes.
+    - Use optional_ref<T> for returning references of AST node attributes instead of copies. (Robin Sommer, Corelight)
+    - Cache location instances.
+    - Returning const references for lots of accessor methods. (Robin Sommer, Corelight)
+    - Mark two AST node classes as singletons.
+    - Switch AST infrastructure from shared_ptr to IntrusivePtr.
+    - Use forward declaration for nlohmann:json where we can.
+
+  * Relabel profiling collector names in JIT code. (Robin Sommer, Corelight)
+
+  * Fix for type erasure profiling. (Robin Sommer, Corelight)
+
 0.4.0-1057 | 2020-11-23 08:35:04 +0000
 
   * GH-584: Add new vector methods resize/sub/at. (Robin Sommer, Corelight)

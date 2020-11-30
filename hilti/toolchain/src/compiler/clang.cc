@@ -248,7 +248,7 @@ ClangJIT::Implementation::Implementation(std::shared_ptr<Context> context)
 ClangJIT::Implementation::~Implementation() { llvm::llvm_shutdown(); }
 
 bool ClangJIT::Implementation::compile(const std::string& file, std::optional<std::string> code) {
-    util::timing::Collector _("hilti/jit/clang/compile");
+    util::timing::Collector _("hilti/jit/compile/clang");
 
     // Build standard clang++ arguments.
     std::vector<std::string> args = {hilti::configuration().jit_clang_executable};
@@ -336,7 +336,7 @@ bool ClangJIT::Implementation::compile(const std::string& file, std::optional<st
 }
 
 std::pair<std::unique_ptr<llvm::Module>, std::string> ClangJIT::Implementation::link() {
-    util::timing::Collector _("hilti/jit/clang/link");
+    util::timing::Collector _("hilti/jit/codegen/clang/link");
 
     // First, link all the modules in the queue together. Not doing this
     // causes illegal LLVM IR to be added to the JIT because we compile every
@@ -406,7 +406,7 @@ std::pair<std::unique_ptr<llvm::Module>, std::string> ClangJIT::Implementation::
 }
 
 Result<Nothing> ClangJIT::Implementation::jit() {
-    util::timing::Collector _("hilti/jit/clang/jit");
+    util::timing::Collector _("hilti/jit/codegen/clang");
 
     if ( module_queue.size() ) {
         // Link all the pending modules together.
@@ -455,6 +455,8 @@ Result<Nothing> ClangJIT::Implementation::jit() {
 }
 
 void ClangJIT::Implementation::optimizeModule(llvm::Module* m) {
+    util::timing::Collector _("hilti/jit/codegen/clang/optimize");
+
     HILTI_DEBUG(logging::debug::Jit, util::fmt("optimizing module %s", m->getModuleIdentifier()));
 
     auto fpm = std::make_unique<llvm::legacy::FunctionPassManager>(m);
@@ -521,7 +523,7 @@ void ClangJIT::Implementation::saveBitcode(const llvm::Module& module, std::stri
 }
 
 Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
-    util::timing::Collector _("hilti/jit/clang/save_library");
+    util::timing::Collector _("hilti/jit/codegen/clang/codegen");
 
 #ifdef HILTI_HAVE_SANITIZER
     // TODO(robin): Something in LLVM is leaking but I can't figure out

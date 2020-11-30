@@ -14,7 +14,7 @@ class Grouping : public NodeBase, public trait::isExpression {
 public:
     Grouping(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
 
-    auto expression() const { return child<Expression>(0); }
+    const auto& expression() const { return child<Expression>(0); }
 
     bool operator==(const Grouping& other) const { return expression() == other.expression(); }
 

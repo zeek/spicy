@@ -5,7 +5,7 @@
 #include <ostream>
 #include <utility>
 
-#include <hilti/rt/json.h>
+#include <hilti/rt/json-fwd.h>
 #include <hilti/rt/type-info.h>
 #include <hilti/rt/types/integer.h>
 

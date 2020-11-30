@@ -71,13 +71,13 @@ public:
           _sinks_start(_args_end),
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
 
-    auto id() const { return childs()[0].as<ID>(); }
+    const auto& id() const { return childs()[0].as<ID>(); }
     auto index() const { return _index; }
-    auto ctor() const { return childs()[2].tryAs<Ctor>(); }
-    auto vectorItem() const { return childs()[2].tryAs<Item>(); }
-    auto repeatCount() const { return childs()[3].tryAs<Expression>(); }
-    auto attributes() const { return childs()[4].tryAs<AttributeSet>(); }
-    auto condition() const { return childs()[5].tryAs<Expression>(); }
+    auto ctor() const { return childs()[2].tryReferenceAs<Ctor>(); }
+    auto vectorItem() const { return childs()[2].tryReferenceAs<Item>(); }
+    auto repeatCount() const { return childs()[3].tryReferenceAs<Expression>(); }
+    auto attributes() const { return childs()[4].tryReferenceAs<AttributeSet>(); }
+    auto condition() const { return childs()[5].tryReferenceAs<Expression>(); }
     auto arguments() const { return childs<Expression>(_args_start, _args_end); }
     auto sinks() const { return childs<Expression>(_sinks_start, _sinks_end); }
     auto hooks() const { return childs<Hook>(_sinks_end, -1); }

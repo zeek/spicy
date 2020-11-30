@@ -9,7 +9,7 @@
 #include <variant>
 #include <vector>
 
-#include <hilti/rt/json.h>
+#include <hilti/rt/json-fwd.h>
 
 #include <hilti/ast/id.h>
 #include <hilti/base/id-base.h>

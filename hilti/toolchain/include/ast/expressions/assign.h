@@ -15,8 +15,8 @@ public:
     Assign(Expression target, Expression src, Meta m = Meta())
         : NodeBase({std::move(target), std::move(src)}, std::move(m)) {}
 
-    auto target() const { return child<Expression>(0); }
-    auto source() const { return child<Expression>(1); }
+    const auto& target() const { return child<Expression>(0); }
+    const auto& source() const { return child<Expression>(1); }
 
     bool operator==(const Assign& other) const { return target() == other.target() && source() == other.source(); }
 

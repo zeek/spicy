@@ -15,8 +15,8 @@ class Coerced : public NodeBase, public hilti::trait::isCtor {
 public:
     Coerced(Ctor orig, Ctor new_, Meta m = Meta()) : NodeBase({std::move(orig), std::move(new_)}, std::move(m)) {}
 
-    auto originalCtor() const { return child<Ctor>(0); }
-    auto coercedCtor() const { return child<Ctor>(1); }
+    const auto& originalCtor() const { return child<Ctor>(0); }
+    const auto& coercedCtor() const { return child<Ctor>(1); }
 
     bool operator==(const Coerced& other) const {
         return originalCtor() == other.originalCtor() && coercedCtor() == other.coercedCtor();

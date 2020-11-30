@@ -18,7 +18,7 @@ public:
     Member(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({ID("<wildcard>")}, std::move(m)), _wildcard(true) {}
     Member(::hilti::ID id, Meta m = Meta()) : TypeBase({std::move(id)}, std::move(m)) {}
 
-    auto id() const { return child<::hilti::ID>(0); }
+    const auto& id() const { return child<::hilti::ID>(0); }
 
     bool operator==(const Member& other) const { return id() == other.id(); }
 

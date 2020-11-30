@@ -14,7 +14,7 @@ class Coerced : public NodeBase, public trait::isExpression {
 public:
     Coerced(Expression e, Type t, Meta m = Meta()) : NodeBase({std::move(e), std::move(t)}, std::move(m)) {}
 
-    auto expression() const { return child<Expression>(0); }
+    const auto& expression() const { return child<Expression>(0); }
 
     bool operator==(const Coerced& other) const { return expression() == other.expression() && type() == other.type(); }
 

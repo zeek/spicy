@@ -15,7 +15,7 @@
 namespace hilti {
 
 /** AST node representing an identifier. */
-class ID : public detail::IDBase<ID>, public NodeBase {
+class ID : public detail::IDBase<ID>, public NodeBase, public util::type_erasure::trait::Singleton {
 public:
     using detail::IDBase<ID>::IDBase;
     ID(std::string name, Meta m) : IDBase(std::move(name)), NodeBase(std::move(m)) {}

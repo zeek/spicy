@@ -48,10 +48,10 @@ public:
 
     Function() : NodeBase(nodes(node::none, node::none, node::none, node::none), Meta()) {}
 
-    auto id() const { return child<ID>(0); }
+    const auto& id() const { return child<ID>(0); }
     auto type() const { return type::effectiveType(child<Type>(1)).as<type::Function>(); }
-    auto body() const { return childs()[2].tryAs<Statement>(); }
-    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
+    auto body() const { return childs()[2].tryReferenceAs<Statement>(); }
+    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
     auto callingConvention() const { return _cc; }
     auto isStatic() const { return AttributeSet::find(attributes(), "&static"); }
 
@@ -64,7 +64,7 @@ public:
     auto properties() const { return node::Properties{{"cc", to_string(_cc)}}; }
 
     /**
-     * Returns a new funnction with the body replaced.
+     * Returns a new function with the body replaced.
      *
      * @param d original function
      * @param b new body

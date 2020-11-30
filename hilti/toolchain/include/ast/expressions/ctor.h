@@ -15,7 +15,7 @@ class Ctor : public NodeBase, public trait::isExpression {
 public:
     Ctor(hilti::Ctor c, Meta m = Meta()) : NodeBase({std::move(c)}, std::move(m)) {}
 
-    auto ctor() const { return child<::hilti::Ctor>(0); }
+    const auto& ctor() const { return child<::hilti::Ctor>(0); }
 
     bool operator==(const Ctor& other) const { return ctor() == other.ctor(); }
 

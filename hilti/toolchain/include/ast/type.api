@@ -117,4 +117,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
 
     /** Implements the `Node` interface. */
     void setOriginalNode(const NodeRef& n);
+
+    /** Implements the `Node` interface. */
+    void clearCache();
 };

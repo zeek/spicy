@@ -58,12 +58,6 @@ void renderNode(const Node& n, std::ostream& out, bool include_scopes = false);
 void renderNode(const Node& n, logging::DebugStream stream, bool include_scopes = false);
 
 /**
- * Resets dynamically built state in an AST. Currently, this clears all the
- * scopes and any errors.
- */
-void resetNodes(Node* root);
-
-/**
  * Clears any errors currentluy set in an AST.
  */
 void clearErrors(Node* root);

@@ -20,16 +20,16 @@ public:
         _computeType();
     }
 
-    auto input() const { return child<Expression>(0); }
-    auto output() const { return child<Expression>(1); }
-    auto id() const { return child<ID>(2); }
-    auto condition() const { return childs()[3].tryAs<Expression>(); }
+    const auto& input() const { return child<Expression>(0); }
+    const auto& output() const { return child<Expression>(1); }
+    const auto& id() const { return child<ID>(2); }
+    auto condition() const { return childs()[3].tryReferenceAs<Expression>(); }
 
     /**
      * Returns the output expressions's scope. Note that the scope is shared
      * among any copies of an instance.
      */
-    std::shared_ptr<Scope> scope() const { return childs()[1].scope(); }
+    IntrusivePtr<Scope> scope() const { return childs()[1].scope(); }
 
     bool operator==(const ListComprehension& other) const {
         return input() == other.input() && output() == other.output() && id() == other.id() &&
@@ -41,7 +41,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const { return child<Type>(4); }
+    const auto& type() const { return child<Type>(4); }
 
     /** Implements `Expression` interface. */
     auto isConstant() const { return input().isConstant(); }

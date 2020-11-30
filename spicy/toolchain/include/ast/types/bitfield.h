@@ -31,11 +31,11 @@ public:
           _upper(upper),
           _field_width(field_width) {}
 
-    auto id() const { return child<ID>(0); }
+    const auto& id() const { return child<ID>(0); }
     auto lower() const { return _lower; }
     auto upper() const { return _upper; }
     Type type() const;
-    auto attributes() const { return childs()[1].tryAs<AttributeSet>(); }
+    auto attributes() const { return childs()[1].tryReferenceAs<AttributeSet>(); }
 
     /** Implements the `Node` interface. */
     auto properties() const {

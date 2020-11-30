@@ -35,7 +35,7 @@ public:
         return {};
     }
 
-    auto body() const { return child<hilti::Statement>(1); }
+    const auto& body() const { return child<hilti::Statement>(1); }
 
     /** Internal method for use by builder API only. */
     auto& _bodyNode() { return childs()[1]; }
@@ -54,7 +54,7 @@ public:
     Try(hilti::Statement body, std::vector<try_::Catch> catches, Meta m = Meta())
         : NodeBase(nodes(std::move(body), std::move(catches)), std::move(m)) {}
 
-    auto body() const { return child<hilti::Statement>(0); }
+    const auto& body() const { return child<hilti::Statement>(0); }
     auto catches() const { return childs<try_::Catch>(1, -1); }
 
     bool operator==(const Try& other) const { return body() == other.body() && catches() == other.catches(); }

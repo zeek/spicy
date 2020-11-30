@@ -56,7 +56,7 @@ public:
 
     auto type() const { return type::effectiveType(child<hilti::Type>(1)); }
 
-    auto default_() const { return childs()[2].tryAs<hilti::Expression>(); }
+    auto default_() const { return childs()[2].tryReferenceAs<hilti::Expression>(); }
     auto kind() const { return _kind; }
     auto isStructParameter() const { return _is_struct_param; }
 

@@ -26,4 +26,7 @@ class Node(trait::isNode) {
     /** Associates an original, pre-transformation node with this node. */
     void setOriginalNode(const NodeRef& n);
 
+    /** Clears any dynamically computed information that the node might have cached for reuse. */
+    void clearCache();
+
 };

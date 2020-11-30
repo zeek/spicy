@@ -37,7 +37,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
     bool haveField() { return ! fields.empty(); }
 
     std::optional<Production> productionForItem(std::reference_wrapper<hilti::Node> node) {
-        auto field = node.get().tryAs<const spicy::type::unit::item::Field>();
+        auto field = node.get().tryAs<spicy::type::unit::item::Field>();
         if ( field )
             pushField({*field, node});
 
