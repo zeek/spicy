@@ -10,10 +10,19 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 \
  # Zeek.
- && echo 'deb http://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/ /' > /etc/apt/sources.list.d/security:zeek.list \
- && curl https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/Release.key | apt-key add - \
- && apt-get update \
- && apt-get install -y --no-install-recommends $zeek_packages \
+ && mkdir -p /tmp/zeek-packages \
+ && cd /tmp/zeek-packages \
+ && curl -L --remote-name-all \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts-core_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeekctl-lts_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts-core-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/libbroker-lts-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
+ && apt-get install -y libpcap0.8 libpcap-dev python libssl-dev zlib1g-dev \
+ && dpkg -i *.deb \
+ && cd - \
+ && rm -rf /tmp/zeek-packages \
  # Spicy build and test dependencies.
  && apt-get install -y --no-install-recommends git ninja-build ccache bison flex libfl-dev python3 python3-pip docker zlib1g-dev jq locales-all python3-setuptools python3-wheel make \
  && pip3 install btest==0.64 pre-commit \
