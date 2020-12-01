@@ -65,6 +65,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         const auto& loc = p.node.location();
         auto& field = currentField().first;
         auto id = cg->uniquer()->get(field.id());
+        auto eod = AttributeSet::find(field.attributes(), "&eod");
         auto count = AttributeSet::find(field.attributes(), "&count");
         auto size = AttributeSet::find(field.attributes(), "&size");
         auto parse_at = AttributeSet::find(field.attributes(), "&parse-at");
@@ -97,9 +98,9 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
             // Custom input, just iterate until EOD.
             return production::ForEach(id, sub, true, loc);
 
-        if ( while_ || until || until_including )
+        if ( while_ || until || until_including || eod )
             // The container parsing will evaluate the corresponding stop
-            // conditon.
+            // condition as necessary.
             return production::ForEach(id, sub, true, loc);
 
         // Nothing specified, use look-ahead to figure out when to stop

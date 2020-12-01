@@ -1,3 +1,3 @@
-[error] /Users/robin/work/spicy/topic2/tests/.tmp/spicy.types.regexp.invalid-field/invalid-field.spicy:7:5: need regexp constant for parsing a field
-[error] /Users/robin/work/spicy/topic2/tests/.tmp/spicy.types.regexp.invalid-field/invalid-field.spicy:8:15: &eod is only valid for bytes fields
+[error] /Users/robin/work/spicy/topic/tests/.tmp/spicy.types.regexp.invalid-field/invalid-field.spicy:7:5: need regexp constant for parsing a field
+[error] /Users/robin/work/spicy/topic/tests/.tmp/spicy.types.regexp.invalid-field/invalid-field.spicy:8:15: &eod is only valid for bytes and vector fields
 [error] spicy-driver: aborting after errors

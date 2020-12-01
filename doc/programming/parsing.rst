@@ -929,6 +929,9 @@ It is possible to skip the ``SIZE`` (e.g., ``x: uint8[]``) and instead
 use another kind of end conditions to terminate a vector's parsing
 loop. To that end, vectors support the following attributes:
 
+``&eod``
+    Parses elements until the end of the input stream is reached.
+
 ``&size=N``
     Parses the vector from the subsequent ``N`` bytes of input data.
     This effectively limits the available input to the corresponding

@@ -275,8 +275,8 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
         else if ( a.tag() == "&eod" ) {
             if ( auto f = getAttrField(p) ) {
-                if ( ! f->parseType().isA<type::Bytes>() || f->ctor() )
-                    error("&eod is only valid for bytes fields", p);
+                if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>()) || f->ctor() )
+                    error("&eod is only valid for bytes and vector fields", p);
             }
         }
 
