@@ -98,6 +98,32 @@ target_compile_definitions(hilti-rt-tests-library-dummy1 PUBLIC RETURN_VALUE=1)
 add_library(hilti-rt-tests-library-dummy2 SHARED src/tests/library-dummy.cc)
 target_compile_definitions(hilti-rt-tests-library-dummy2 PUBLIC RETURN_VALUE=2)
 
+##### Link directories
+
+# Since the fiber library includes its own headers and its dependencies we need
+# to properly add its files to the hilti include directory. We create the links
+# in the build directory so they do not get copied during normal header
+# installation. In installation the files get copied.
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/include/fiber
+    COMMAND
+        ${CMAKE_COMMAND} -E create_symlink
+            ${CMAKE_SOURCE_DIR}/3rdparty/fiber/include/fiber
+            ${CMAKE_BINARY_DIR}/include/fiber)
+
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/include/hu
+    COMMAND
+        ${CMAKE_COMMAND} -E create_symlink
+            ${CMAKE_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include/hu
+            ${CMAKE_BINARY_DIR}/include/hu)
+
+add_custom_target(link_fiber
+    ALL
+    DEPENDS
+        ${CMAKE_BINARY_DIR}/include/fiber
+        ${CMAKE_BINARY_DIR}/include/hu)
+
 ##### Configuration files
 
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
@@ -115,7 +141,8 @@ install(CODE "file(REMOVE_RECURSE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilt
 
 # Install the 3rdparty headers that we need individually.
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt)
-install_headers(${CMAKE_SOURCE_DIR}/3rdparty/fiber hilti/rt/3rdparty/fiber)
+install_headers(${CMAKE_SOURCE_DIR}/3rdparty/fiber/include/fiber fiber)
+install_headers(${CMAKE_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include/hu hu)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/single_include/nlohmann hilti/rt/3rdparty/nlohmann)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)

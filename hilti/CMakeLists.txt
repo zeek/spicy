@@ -24,7 +24,7 @@ if (${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config)
         COMMAND
             ${CMAKE_COMMAND} -E env SPICY_CACHE=${CMAKE_BINARY_DIR}/cache/spicy
                 ${CMAKE_SOURCE_DIR}/scripts/precompile-headers.sh --hilti-config $<TARGET_FILE:hilti-config>
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/runtime/include/libhilti.h hilti-config)
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/runtime/include/libhilti.h hilti-config link_fiber)
     add_custom_target(precompiled-headers
         ALL
         DEPENDS ${CMAKE_BINARY_DIR}/cache/spicy/precompiled_libhilti.h)
