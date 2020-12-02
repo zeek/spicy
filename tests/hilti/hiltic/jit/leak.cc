@@ -1,5 +1,5 @@
 // @TEST-REQUIRES: have-sanitizer
-// @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+// @TEST-EXEC-FAIL: ASAN_OPTIONS=detect_leaks=1 ${HILTIC} -j %INPUT >output 2>&1
 // @TEST-EXEC: grep -q 'detected memory leaks' output
 //
 // If we have compiled with address/leak sanitizer, make sure it's active.
