@@ -271,7 +271,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             d.linkage = "extern";
             d.id = id_hook_impl;
 
-            auto self = scope::lookupID<declaration::Type>(id_struct_type, p);
+            auto self = scope::lookupID<declaration::Type>(id_struct_type, p, "type");
             assert(self);
 
             // TODO(robin): This should compile the struct type, not hardcode

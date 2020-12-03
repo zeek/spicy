@@ -49,7 +49,7 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
 
     void operator()(const type::unit::item::UnresolvedField& u, position_t p) {
         if ( auto id = u.unresolvedID() ) {
-            auto resolved = hilti::scope::lookupID<hilti::Declaration>(*id, p);
+            auto resolved = hilti::scope::lookupID<hilti::Declaration>(*id, p, "field");
 
             if ( ! resolved ) {
                 p.node.addError(resolved.error());

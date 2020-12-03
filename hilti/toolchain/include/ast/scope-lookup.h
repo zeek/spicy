@@ -29,11 +29,11 @@ std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, const Nod
  * @tparam D class implementing the `Declaration` interface that we expecting the ID to resolve to
  * @param id id to look up
  * @param p AST position where to start the lookup; we'll traverse up the AST from there
- * @param n node to use for error reporting if something goes wrong
+ * @param what textual description of what we're looking for (i.e., of *D*); used in error messages
  * @return node if resolved, or an appropiate error if not
  */
 template<typename D>
-Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<Node&>& p) {
+Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<Node&>& p, const std::string_view& what) {
     for ( auto i = p.path.rbegin(); i != p.path.rend(); ++i ) {
         auto [stop, resolved] = detail::lookupID(id, **i);
 
@@ -49,7 +49,7 @@ Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<No
                     return std::move(resolved);
             }
             else
-                return result::Error(util::fmt("ID '%s' does not resolve to a %s (but to %s)", id, typeid(D).name(),
+                return result::Error(util::fmt("ID '%s' does not resolve to a %s (but to a %s)", id, what,
                                                (*resolved).first->as<Declaration>().displayName()));
         }
 

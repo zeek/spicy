@@ -46,7 +46,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     void operator()(const Module& m) { module_id = m.id(); }
 
     void operator()(const type::UnresolvedID& u, position_t p) {
-        auto resolved = scope::lookupID<declaration::Type>(u.id(), p);
+        auto resolved = scope::lookupID<declaration::Type>(u.id(), p, "type");
 
         if ( ! resolved ) {
             p.node.addError(resolved.error());
@@ -177,7 +177,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const expression::UnresolvedID& u, position_t p) {
-        auto resolved = scope::lookupID<Declaration>(u.id(), p);
+        auto resolved = scope::lookupID<Declaration>(u.id(), p, "declaration");
 
         if ( ! resolved ) {
             p.node.addError(resolved.error());
@@ -217,7 +217,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         // TODO(robin): Not quite sure in which cases this happen, ideally it
         // shouldn't be necessary to re-lookup an ID once it has been
         // resolved.
-        auto resolved = scope::lookupID<Declaration>(u.id(), p);
+        auto resolved = scope::lookupID<Declaration>(u.id(), p, "declaration");
 
         if ( ! resolved )
             return;
