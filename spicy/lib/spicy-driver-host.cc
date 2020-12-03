@@ -32,6 +32,8 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
 
 static void fatalError(const std::string& prog, const std::string& msg) {
     fprintf(stderr, "[error] %s: %s\n", prog.c_str(), msg.c_str());
+    spicy::rt::done();
+    hilti::rt::done();
     exit(1);
 }
 

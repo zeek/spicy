@@ -21,13 +21,13 @@ int main(int argc, char** argv) {
 
     if ( auto rc = driver.parseOptions(argc, argv); ! rc ) {
         hilti::logger().error(rc.error().description());
-        exit(1);
+        driver.finishRuntime();
+        return 1;
     }
 
     if ( auto rc = driver.run(); ! rc ) {
         hilti::logger().error(rc.error().description());
-        exit(1);
+        driver.finishRuntime();
+        return 1;
     }
-
-    return 0;
 }
