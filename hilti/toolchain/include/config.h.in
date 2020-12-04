@@ -59,6 +59,7 @@ struct Configuration {
 
     bool uses_build_directory; /**< True if all information pertains to running outside of the build directory. */
 
+    std::string compiler_id;                     /**< Identifier of the compiler */
     hilti::rt::filesystem::path cxx;             /**< Full path to C++ compiler */
     hilti::rt::filesystem::path distbase;        /**< base directory of HILTI source distribution */
     hilti::rt::filesystem::path hiltic;          /**< Full path to `hiltic` binary */
