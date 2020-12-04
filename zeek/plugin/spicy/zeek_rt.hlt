@@ -17,7 +17,7 @@ declare public EventHandlerPtr internal_handler(string event) &cxxname="spicy::z
 
 declare public void raise_event(EventHandlerPtr handler, vector<Val> args, string location) &cxxname="spicy::zeek::rt::raise_event";
 declare public BroType event_arg_type(EventHandlerPtr handler, uint<64> idx, string location) &cxxname="spicy::zeek::rt::event_arg_type";
-declare public Val to_val(any x, BroType target, string location) &cxxname="spicy::zeek::rt::to_val";
+declare public Val to_val(any x, BroType target, string location) &cxxname="spicy::zeek::rt::to_val" &have_prototype;
 
 declare public Val current_conn(string location) &cxxname="spicy::zeek::rt::current_conn";
 declare public Val current_file(string location) &cxxname="spicy::zeek::rt::current_file";

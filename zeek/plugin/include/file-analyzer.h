@@ -3,6 +3,7 @@
 #pragma once
 
 #include <optional>
+#include <string>
 #include <utility>
 
 #include <hilti/rt/types/stream.h>
@@ -33,11 +34,11 @@ public:
      *
      * @param msg message to record
      */
-    void DebugMsg(const std::string_view& msg) { debug(msg); }
+    void DebugMsg(const std::string& msg) { debug(msg); }
 
 protected:
     // Overridden from driver::ParsingState.
-    void debug(const std::string_view& msg) override;
+    void debug(const std::string& msg) override;
 
 private:
     Cookie _cookie;
@@ -77,7 +78,7 @@ protected:
     void Finish();
 
     /** Records a debug message. */
-    void DebugMsg(const std::string_view& msg) { _state.DebugMsg(msg); }
+    void DebugMsg(const std::string& msg) { _state.DebugMsg(msg); }
 
 private:
     FileState _state;

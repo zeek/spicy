@@ -18,7 +18,7 @@ using namespace plugin::Zeek_Spicy;
 
 static uint64_t analyzer_counter = 1;
 
-void EndpointState::debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
+void EndpointState::debug(const std::string& msg) { spicy::zeek::rt::debug(_cookie, msg); }
 
 static auto create_endpoint(bool is_orig, ::zeek::analyzer::Analyzer* analyzer, spicy::rt::driver::ParsingType type) {
     cookie::ProtocolAnalyzer cookie;
@@ -97,7 +97,7 @@ cookie::ProtocolAnalyzer& ProtocolAnalyzer::cookie(bool is_orig) {
         return _responder.cookie();
 }
 
-void ProtocolAnalyzer::DebugMsg(bool is_orig, const std::string_view& msg) {
+void ProtocolAnalyzer::DebugMsg(bool is_orig, const std::string& msg) {
     if ( is_orig )
         _originator.DebugMsg(msg);
     else
