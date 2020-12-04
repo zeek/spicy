@@ -112,12 +112,12 @@ protected:
      * output. Note that in a release mode compile the driver code will not
      * actually call this (nor should user code probably).
      */
-    virtual void debug(const std::string_view& msg) = 0;
+    virtual void debug(const std::string& msg) = 0;
 
     /**
      * Forwards to `debug(msg)`, also including a hexdump of the given data.
      */
-    void debug(const std::string_view& msg, size_t size, const char* data);
+    void debug(const std::string& msg, size_t size, const char* data);
 
 private:
     State _process(size_t size, const char* data, bool eod = true);
@@ -155,7 +155,7 @@ public:
     const auto& id() const { return _id; }
 
 protected:
-    void debug(const std::string_view& msg) override;
+    void debug(const std::string& msg) override;
 
 private:
     std::string _id;
@@ -220,7 +220,7 @@ public:
     hilti::rt::Result<hilti::rt::Nothing> processPreBatchedInput(std::istream& in);
 
     /** Records a debug message to the `spicy-driver` runtime debug stream. */
-    void debug(const std::string_view& msg);
+    void debug(const std::string& msg);
 
 private:
     void _debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& data);
