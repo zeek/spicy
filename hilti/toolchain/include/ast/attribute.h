@@ -166,6 +166,13 @@ public:
      */
     explicit AttributeSet(std::vector<Attribute> a, Meta m = Meta()) : NodeBase(nodes(std::move(a)), std::move(m)) {}
 
+    /**
+     * Constructs an empty set.
+     *
+     * @param m meta data to associate with the node
+     */
+    AttributeSet(Meta m = Meta()) : NodeBase({}, std::move(m)) {}
+
     /** Returns the set's attributes. */
     const auto& attributes() const {
         if ( _cache.attributes.empty() )
@@ -294,16 +301,6 @@ public:
     void clearCache() { _cache.attributes.clear(); }
 
 private:
-    /**
-     * Constructs an empty set.
-     *
-     * @note We make this private so that it's harder to create an empty set.
-     * Usually we pass them around as optionals.
-     *
-     * @param m meta data to associate with the node
-     */
-    AttributeSet(Meta m = Meta()) : NodeBase({}, std::move(m)) {}
-
     mutable struct {
         std::vector<Attribute> attributes;
     } _cache;
