@@ -384,6 +384,10 @@ In order to speed up precompilation of Spicy parsers, users can create a cache o
 precompiled files. This cache is tied to a specific Spicy version, and needs to
 be recreated each time Spicy is updated.
 
+.. note::
+
+    Precompiled headers are supported only when building Spicy with Clang.
+
 To precompile the files execute the following command::
 
     # spicy-precompile-headers

@@ -1,5 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
+#include <cctype>
+
 #include <hilti/rt/autogen/version.h>
 
 #include <hilti/autogen/config.h>
@@ -19,6 +22,16 @@ std::optional<hilti::rt::filesystem::path> precompiled_libhilti(const Configurat
 #ifdef HILTI_HAVE_SANITIZER
     return {};
 #endif
+
+    // Precompiled headers are only supported if we build with Clang.
+    //
+    // JIT always uses Clang to compile, but e.g., `hilti-config --cxx` will
+    // report the compiler used to build Spicy. Since precompiled headers
+    // created by Clang cannot be used by GCC and vice versa, we currently
+    // cannot support precompiled headers for both JIT and AOT compilation
+    // if we build with GCC. Disable them completely in that case.
+    if ( configuration.compiler_id != "clang" )
+        return {};
 
     if ( auto&& cache = util::cacheDirectory(configuration) ) {
         const rt::filesystem::path file_name = rt::fmt("precompiled_libhilti%s.h.pch", (debug ? "_debug" : ""));
@@ -46,6 +59,10 @@ void hilti::Configuration::initLocation(const std::string_view& argv0) {
 void Configuration::init(bool use_build_directory) {
     uses_build_directory = use_build_directory;
     std::string installation_tag = (use_build_directory ? "BUILD" : "INSTALL");
+
+    compiler_id = "${CMAKE_CXX_COMPILER_ID}";
+    std::transform(compiler_id.begin(), compiler_id.end(), compiler_id.begin(),
+                   [](auto& c) { return std::tolower(c); });
 
     cxx = "${CMAKE_CXX_COMPILER}";
     distbase = "${CMAKE_SOURCE_DIR}";
