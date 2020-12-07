@@ -2,7 +2,8 @@ FROM ubuntu:eoan
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG zeek_packages
+ARG ZEEK_LTS
+ARG ZEEK_VERSION
 
 CMD ["sh"]
 ENV DEBIAN_FRONTEND=noninteractive
@@ -12,13 +13,14 @@ RUN apt-get update \
  # Zeek.
  && mkdir -p /tmp/zeek-packages \
  && cd /tmp/zeek-packages \
+ && if [ -n "${ZEEK_LTS}" ]; then ZEEK_LTS="-lts"; fi && export ZEEK_LTS \
  && curl -L --remote-name-all \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts-core_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeekctl-lts_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts-core-dev_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/libbroker-lts-dev_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
  && apt-get install -y libpcap0.8 libpcap-dev python libssl-dev zlib1g-dev \
  && dpkg -i *.deb \
  && cd - \
