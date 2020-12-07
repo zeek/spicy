@@ -206,8 +206,8 @@ TEST_CASE("RegExp") {
     CHECK_EQ(to_string(RegExp()), "<regexp w/o pattern>");
     CHECK_EQ(to_string(RegExp("a", regexp::Flags())), "/a/");
     CHECK_EQ(to_string(RegExp("a", regexp::Flags({.no_sub = 1}))), "/a/ &nosub");
-    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a"}), regexp::Flags())), "/a/ &nosub");
-    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a", "b"}), regexp::Flags())), "/a/ | /b/ &nosub");
+    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a"}), regexp::Flags())), "/a/");
+    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a", "b"}), regexp::Flags())), "/a/ | /b/");
 
     CHECK_EQ(to_string(RegExp("/", regexp::Flags())), "///");
 

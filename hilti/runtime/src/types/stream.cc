@@ -286,7 +286,7 @@ std::optional<View::Block> View::firstBlock() const {
     Size size;
 
     if ( _end && is_last ) {
-        auto offset_end = std::min(_end->offset(), _begin.chain()->endOffset());
+        auto offset_end = std::max(std::min(_end->offset(), _begin.chain()->endOffset()), _begin.offset());
         size = (offset_end - _begin.offset());
     }
     else
@@ -314,7 +314,7 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
     Size size;
 
     if ( _end && is_last ) {
-        auto offset_end = std::min(_end->offset(), _begin.chain()->endOffset());
+        auto offset_end = std::max(std::min(_end->offset(), _begin.chain()->endOffset()), chunk->offset());
         size = offset_end - chunk->offset();
     }
     else
