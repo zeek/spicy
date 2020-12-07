@@ -5,7 +5,7 @@ module Foo {
 
 import hilti;
 
-global auto re = /NixMatch{#43}/ | /1234ABCDEFGH*{#42}/ &nosub;
+global auto re = /NixMatch{#43}/ | /1234ABCDEFGH*{#42}/ &nosub &anchor;
 global hilti::MatchState m = re.token_matcher();
 
 global stream data = b"12";
