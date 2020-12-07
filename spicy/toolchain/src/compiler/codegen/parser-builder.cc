@@ -3,6 +3,7 @@
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
+#include <hilti/ast/ctors/regexp.h>
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/id.h>
@@ -451,6 +452,22 @@ struct ProductionVisitor
                 }
             }
 
+            if ( field->originalType().isA<type::RegExp>() ) {
+                bool needs_captures = true;
+
+                if ( auto ctor_ = field->ctor(); ctor_ && ctor_->as<hilti::ctor::RegExp>().isNoSub() )
+                    needs_captures = false;
+
+                if ( AttributeSet::find(field->attributes(), "&nosub") )
+                    needs_captures = false;
+
+                if ( needs_captures ) {
+                    auto pstate = state();
+                    pstate.captures = builder()->addTmp("captures", builder::typeByID("hilti::Captures"));
+                    pushState(std::move(pstate));
+                }
+            }
+
             if ( auto a = AttributeSet::find(field->attributes(), "&parse-from") ) {
                 // Redirect input to a bytes value.
                 auto pstate = state();
@@ -581,6 +598,9 @@ struct ProductionVisitor
                     pb->newValueForField(*field, *dst);
             }
 
+            if ( state().captures )
+                popState();
+
             if ( field->condition() )
                 popBuilder();
         }
@@ -637,7 +657,7 @@ struct ProductionVisitor
             }
 
             auto re = hilti::ID(fmt("__re_%" PRId64, lp.symbol()));
-            auto d = builder::constant(re, builder::regexp(flattened, AttributeSet({Attribute("&nosub")})));
+            auto d = builder::constant(re, builder::regexp(flattened, AttributeSet({Attribute("&nosub"), Attribute("&anchor")})));
             pb->cg()->addDeclaration(d);
 
             // Create the token matcher state.
@@ -1192,7 +1212,18 @@ void ParserBuilder::newValueForField(const type::unit::item::Field& field, const
     }
 
     beforeHook();
-    builder()->addMemberCall(state().self, ID(fmt("__on_%s", field.id().local())), {nvalue}, field.meta());
+
+    std::vector<Expression> args = {nvalue};
+
+    if ( field.originalType().isA<type::RegExp>() ) {
+        if ( state().captures )
+            args.push_back(*state().captures);
+        else
+            args.push_back(hilti::builder::default_(builder::typeByID("hilti::Captures")));
+    }
+
+    builder()->addMemberCall(state().self, ID(fmt("__on_%s", field.id().local())), std::move(args), field.meta());
+
     afterHook();
 }
 

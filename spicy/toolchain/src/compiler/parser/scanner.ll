@@ -219,6 +219,7 @@ b{string}             yylval->str = expandEscapes(driver, std::string(yytext, 2,
 {id}                   yylval->str = yytext; return token::IDENT;
 {id}(::{id}){1,}(::{property})?       yylval->str = yytext; return token::SCOPED_IDENT;
 {id}(::{property})?    yylval->str = yytext; return token::SCOPED_IDENT;
+\$[1-9][0-9]*          yylval->uint = hilti::util::chars_to_uint64(yytext + 1, 10, range_error_int); return token::DOLLAR_NUMBER;
 \${id}                 yylval->str = yytext + 1; return token::DOLLAR_IDENT;
 
 [][!$?.,=:;<>(){}/|*/&^%!+~-] return (token_type) yytext[0];

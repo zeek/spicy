@@ -151,9 +151,10 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
 
         if ( rc > 0 ) {
             assert(_pimpl->_ms.match_eo >= start_ms_offset);
-            // Match found. However, we need to wait for more data that could
-            // potentially be included into the match before returning it.
-            if ( ! is_final && jrx_can_transition(&_pimpl->_ms) )
+            // Match found. However, we may need to wait for more data that
+            // could potentially be included into the match before returning
+            // it.
+            if ( ! is_final && jrx_can_transition(&_pimpl->_ms) && ! _pimpl->_flags.anchor )
                 return std::make_pair(-1, _pimpl->_ms.offset - start_ms_offset);
 
             _pimpl->_acc = rc;

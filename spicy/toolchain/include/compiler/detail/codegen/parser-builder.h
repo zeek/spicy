@@ -139,6 +139,12 @@ struct ParserState {
 
     /** Mode for parsing literals. */
     LiteralMode literal_mode = LiteralMode::Default;
+
+    /**
+     * Target for storing extracted capture groups; set only when needed &
+     * desired.
+     */
+    std::optional<Expression> captures;
 };
 
 /** Generates the parsing logic for a unit type. */

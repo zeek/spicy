@@ -229,8 +229,16 @@ TEST_CASE("advance") {
     CHECK_EQ(ms_anchor_no_sub_2.advance("de"_b, false), std::make_tuple(-1, 2));
     CHECK_EQ(ms_anchor_no_sub_2.advance("fgX"_b, true), std::make_tuple(1, 2));
     CHECK_EQ(ms_anchor_no_sub_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
-}
 
+    // Check that anchored patterns stop when current match cannot be possible expanded anymore.
+    auto http_re_anchor = RegExp("[ \\t]+", regexp::Flags{.anchor = 1});
+    auto http_ms_anchor = http_re_anchor.tokenMatcher();
+    CHECK_EQ(http_ms_anchor.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
+
+    auto http_re_anchor_sub = RegExp("[ \\t]+", regexp::Flags{.anchor = 1, .no_sub = 1});
+    auto http_ms_anchor_sub = http_re_anchor_sub.tokenMatcher();
+    CHECK_EQ(http_ms_anchor_sub.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
+}
 
 TEST_CASE("advance on set") {
     auto patterns = std::vector<std::string>({"a(b+cx){#10}", "a(b+cy){#20}"});
