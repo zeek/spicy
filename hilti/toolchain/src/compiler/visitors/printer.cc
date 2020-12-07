@@ -419,6 +419,8 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         switch ( n.kind() ) {
             case expression::keyword::Kind::Self: out << "self";
             case expression::keyword::Kind::DollarDollar: out << "$$";
+            case expression::keyword::Kind::Captures:
+                out << "$@"; // this is technically not valid source code; we don't expose this to users
         }
     }
 

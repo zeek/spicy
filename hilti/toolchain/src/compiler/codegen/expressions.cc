@@ -64,6 +64,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         switch ( n.kind() ) {
             case expression::keyword::Kind::Self: return cg->self();
             case expression::keyword::Kind::DollarDollar: return cg->dollardollar();
+            case expression::keyword::Kind::Captures: return "__captures";
             default: util::cannot_be_reached();
         }
     }

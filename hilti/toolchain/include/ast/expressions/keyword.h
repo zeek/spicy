@@ -14,12 +14,15 @@ namespace expression {
 namespace keyword {
 // Type of a reserved keyword
 enum class Kind {
-    Self,        /**< `self` */
-    DollarDollar /**< `$$` */
+    Self,         /**< `self` */
+    DollarDollar, /**< `$$` */
+    Captures      /**< `$@` */
 };
 
 namespace detail {
-constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Self, "self"}, {Kind::DollarDollar, "$$"}};
+constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Self, "self"},
+                                              {Kind::DollarDollar, "$$"},
+                                              {Kind::Captures, "$@"}};
 } // namespace detail
 
 namespace kind {
