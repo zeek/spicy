@@ -21,7 +21,7 @@ RUN apt-get update \
     https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_amd64.deb \
     https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_amd64.deb \
     https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
- && apt-get install -y libpcap0.8 libpcap-dev python libssl-dev zlib1g-dev \
+ && apt-get install -y libpcap0.8 libpcap-dev python libssl-dev zlib1g-dev libmaxminddb0 libmaxminddb-dev \
  && dpkg -i *.deb \
  && cd - \
  && rm -rf /tmp/zeek-packages \
