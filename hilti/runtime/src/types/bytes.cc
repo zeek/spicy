@@ -38,7 +38,7 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_
     }
 }
 
-Bytes::Bytes(std::string s, bytes::Charset cs) {
+Bytes::Bytes(std::string s, bytes::Charset cs) : _control(std::make_shared<Base*>(static_cast<Base*>(this))) {
     switch ( cs ) {
         case bytes::Charset::UTF8:
             // Data is already in UTF-8, just need to copy it over.
