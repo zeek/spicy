@@ -224,7 +224,7 @@ registered with Zeek inside a ``zeek_init`` event handler; see the
 `Zeek documentation <https://docs.zeek.org/en/master/frameworks/packet-analysis.html>`_
 for more. You will need to use the
 `PacketAnalyzer::try_register_packet_analyzer_by_name
-<https://docs.zeek.org/en/master/scripts/base/bif/packet_analysis.bif.zeek.html#PacketAnalyzer::try_register_packet_analyzer_by_name>`_
+<https://docs.zeek.org/en/master/scripts/base/bif/packet_analysis.bif.zeek.html#id-PacketAnalyzer::try_register_packet_analyzer_by_name>`_
 for registering Spicy analyzers (not `register_packet_analyzer`), with
 the name of the new Spicy analyzer being ``ANALYZER_NAME``. `zeek -NN`
 shows the names of existing analyzers. For example::
