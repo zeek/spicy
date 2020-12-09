@@ -23,7 +23,7 @@ standard analyzers. The following summarizes how to use that script.
    for this, and have prepared a prebuilt archive of the processed
    data that you can just download and extract:
    `spicy-benchmark-m57.tar.xz
-   <http://download.zeek.org/data/spicy-benchmark-m57.tar.xz>`_
+   <https://download.zeek.org/data/spicy-benchmark-m57.tar.xz>`_
    (careful, it's large!).
 
    To preprocess some other trace ``trace.pcap``, do the following:
