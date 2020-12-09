@@ -348,7 +348,7 @@ void Sink::_debugReassemblerBuffer(const std::string& msg) const {
             "trim_rseq=%" PRIu64 ")",
             this, msg, _cur_rseq, _last_reassem_rseq, _trim_rseq));
 
-    for ( const auto& [i, c] : hilti::rt::enumerate(_chunks) )
+    for ( const auto&& [i, c] : hilti::rt::enumerate(_chunks) ) // not auto&, always copied anyways
         _debugReassembler(fmt("  * chunk %d:", i), c.data, c.rseq, (c.rupper - c.rseq));
 }
 

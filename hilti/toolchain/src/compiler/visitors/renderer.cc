@@ -15,7 +15,7 @@ static void render(const Node& n, std::ostream* out, std::optional<logging::Debu
 
     int dbg_level = 0;
 
-    for ( const auto& i : visitor::PreOrder<>().walk(n) ) {
+    for ( const auto&& i : visitor::PreOrder<>().walk(n) ) {
         int new_dbg_level = i.path.size();
 
         while ( dbg_level < new_dbg_level ) {

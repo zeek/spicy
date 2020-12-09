@@ -97,7 +97,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
             auto offsets = json::array();
             const auto& __offsets = spicy::rt::get_offsets_for_unit(*struct_, v);
             if ( _options.include_offsets && __offsets ) {
-                for ( auto&& [index, offset] : enumerate(*__offsets) ) {
+                for ( const auto&& [index, offset] : enumerate(*__offsets) ) {
                     auto o = json::object();
 
                     if ( offset ) {

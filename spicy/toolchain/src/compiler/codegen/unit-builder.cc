@@ -82,7 +82,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
         std::set<ID> seen;
 
-        for ( const auto& [n, c] : hilti::util::enumerate(f.cases()) ) {
+        for ( const auto&& [n, c] : hilti::util::enumerate(f.cases()) ) {
             for ( const auto& i : c.items() ) {
                 if ( auto f = i.tryAs<spicy::type::unit::item::Field>() ) {
                     if ( seen.find(f->id()) != seen.end() )

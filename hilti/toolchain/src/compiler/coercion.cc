@@ -205,7 +205,7 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const std
     if ( exprs.size() > operands.size() )
         return result::Error("more expressions than operands");
 
-    for ( const auto& [i, op] : util::enumerate(operands) ) {
+    for ( const auto&& [i, op] : util::enumerate(operands) ) {
         if ( i >= exprs.size() ) {
             // Running out of operands, must have a default or be optional.
             if ( op.default_ ) {
