@@ -1213,7 +1213,7 @@ void ParserBuilder::newValueForField(const type::unit::item::Field& field, const
 
     beforeHook();
 
-    std::vector<Expression> args = {nvalue};
+    std::vector<Expression> args = {std::move(nvalue)};
 
     if ( field.originalType().isA<type::RegExp>() ) {
         if ( state().captures )

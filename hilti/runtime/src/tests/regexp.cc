@@ -149,168 +149,200 @@ TEST_CASE("construct") {
 }
 
 TEST_CASE("advance") {
-    // TODO(bbannier): This should return (1, 3).
-    CHECK_EQ(RegExp("123").tokenMatcher().advance("123"_b, false), std::make_tuple(-1, 3));
-    CHECK_EQ(RegExp("123").tokenMatcher().advance("123"_b, true), std::make_tuple(1, 3));
+    SUBCASE("matching semantics") {
+        // TODO(bbannier): This should return (1, 3).
+        CHECK_EQ(RegExp("123").tokenMatcher().advance("123"_b, false), std::make_tuple(-1, 3));
+        CHECK_EQ(RegExp("123").tokenMatcher().advance("123"_b, true), std::make_tuple(1, 3));
 
-    CHECK_EQ(RegExp(std::vector<std::string>({"abc", "123"})).tokenMatcher().advance("123"_b, true),
-             std::make_tuple(2, 3));
+        CHECK_EQ(RegExp(std::vector<std::string>({"abc", "123"})).tokenMatcher().advance("123"_b, true),
+                 std::make_tuple(2, 3));
 
-    // TODO(bbannier): This should either match immediatetly with (1, 0), or never (0, 0).
-    CHECK_EQ(RegExp("").tokenMatcher().advance("123"_b, false), std::make_tuple(-1, 3));
+        // TODO(bbannier): This should either match immediatetly with (1, 0), or never (0, 0).
+        CHECK_EQ(RegExp("").tokenMatcher().advance("123"_b, false), std::make_tuple(-1, 3));
 
-    auto re = RegExp("123").tokenMatcher();
-    REQUIRE_EQ(re.advance(""_b, true), std::make_tuple(0, 0));
-    CHECK_THROWS_WITH_AS(re.advance("123"_b, true), "matching already complete", const MatchStateReuse&);
+        auto re = RegExp("123").tokenMatcher();
+        REQUIRE_EQ(re.advance(""_b, true), std::make_tuple(0, 0));
+        CHECK_THROWS_WITH_AS(re.advance("123"_b, true), "matching already complete", const MatchStateReuse&);
 
-    CHECK_THROWS_WITH_AS(regexp::MatchState().advance("123"_b, true),
-                         "no regular expression associated with match state", const PatternError&);
-    CHECK_THROWS_WITH_AS(regexp::MatchState().advance(Stream("123"_b).view()),
-                         "no regular expression associated with match state", const PatternError&);
+        CHECK_THROWS_WITH_AS(regexp::MatchState().advance("123"_b, true),
+                             "no regular expression associated with match state", const PatternError&);
+        CHECK_THROWS_WITH_AS(regexp::MatchState().advance(Stream("123"_b).view()),
+                             "no regular expression associated with match state", const PatternError&);
 
-    auto re_default = RegExp("a(b+)c(d.f)g", regexp::Flags{});
-    auto re_anchor = RegExp("a(b+)c(d.f)g", regexp::Flags{.anchor = 1});
-    auto re_no_sub = RegExp("a(b+)c(d.f)g", regexp::Flags{.no_sub = 1});
-    auto re_anchor_no_sub = RegExp("a(b+)c(d.f)g", regexp::Flags{.anchor = 1, .no_sub = 1});
+        const auto re_default = RegExp("a(b+)c(d.f)g", regexp::Flags{});
+        const auto re_anchor = RegExp("a(b+)c(d.f)g", regexp::Flags{.anchor = 1});
+        const auto re_no_sub = RegExp("a(b+)c(d.f)g", regexp::Flags{.no_sub = 1});
+        const auto re_anchor_no_sub = RegExp("a(b+)c(d.f)g", regexp::Flags{.anchor = 1, .no_sub = 1});
 
-    auto ms_default_1 = re_default.tokenMatcher();
-    auto ms_default_2 = re_default.tokenMatcher();
-    auto ms_anchor_1 = re_anchor.tokenMatcher();
-    auto ms_anchor_2 = re_anchor.tokenMatcher();
-    auto ms_no_sub_1 = re_no_sub.tokenMatcher();
-    auto ms_no_sub_2 = re_no_sub.tokenMatcher();
-    auto ms_anchor_no_sub_1 = re_anchor_no_sub.tokenMatcher();
-    auto ms_anchor_no_sub_2 = re_anchor_no_sub.tokenMatcher();
+        {
+            auto ms_default_1 = re_default.tokenMatcher();
+            CHECK_EQ(ms_default_1.advance("Xa"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_default_1.advance("bb"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_default_1.advance("bc"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_default_1.advance("de"_b, true), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_default_1.advance("fgX"_b, true), std::make_tuple(1, 2));
+            CHECK_EQ(ms_default_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>({"abbbcdefg"_b, "bbb"_b, "def"_b}));
+        }
 
-    CHECK_EQ(ms_default_1.advance("Xa"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_default_1.advance("bb"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_default_1.advance("bc"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_default_1.advance("de"_b, true), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_default_1.advance("fgX"_b, true), std::make_tuple(1, 2));
-    CHECK_EQ(ms_default_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>({"abbbcdefg"_b, "bbb"_b, "def"_b}));
+        {
+            auto ms_default_2 = re_default.tokenMatcher();
+            CHECK_EQ(ms_default_2.advance("a"_b, false), std::make_tuple(-1, 1));
+            CHECK_EQ(ms_default_2.advance("bb"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_default_2.advance("bc"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_default_2.advance("de"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_default_2.advance("fgX"_b, true), std::make_tuple(1, 2));
+            CHECK_EQ(ms_default_2.captures(Stream("abbbcdefg"_b)), Vector<Bytes>({"abbbcdefg"_b, "bbb"_b, "def"_b}));
+        }
 
-    CHECK_EQ(ms_default_2.advance("a"_b, false), std::make_tuple(-1, 1));
-    CHECK_EQ(ms_default_2.advance("bb"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_default_2.advance("bc"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_default_2.advance("de"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_default_2.advance("fgX"_b, true), std::make_tuple(1, 2));
-    CHECK_EQ(ms_default_2.captures(Stream("abbbcdefg"_b)), Vector<Bytes>({"abbbcdefg"_b, "bbb"_b, "def"_b}));
+        {
+            auto ms_anchor_1 = re_anchor.tokenMatcher();
+            CHECK_EQ(ms_anchor_1.advance("Xa"_b, false), std::make_tuple(0, 0));
+            CHECK_EQ(ms_anchor_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        }
 
-    CHECK_EQ(ms_anchor_1.advance("Xa"_b, false), std::make_tuple(0, 0));
-    CHECK_EQ(ms_anchor_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        {
+            auto ms_anchor_2 = re_anchor.tokenMatcher();
+            CHECK_EQ(ms_anchor_2.advance("a"_b, false), std::make_tuple(-1, 1));
+            CHECK_EQ(ms_anchor_2.advance("bb"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_anchor_2.advance("bc"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_anchor_2.advance("de"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_anchor_2.advance("fgX"_b, true), std::make_tuple(1, 2));
+            CHECK_EQ(ms_anchor_2.captures(Stream("abbbcdefg"_b)), Vector<Bytes>({"abbbcdefg"_b, "bbb"_b, "def"_b}));
+        }
 
-    CHECK_EQ(ms_anchor_2.advance("a"_b, false), std::make_tuple(-1, 1));
-    CHECK_EQ(ms_anchor_2.advance("bb"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_anchor_2.advance("bc"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_anchor_2.advance("de"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_anchor_2.advance("fgX"_b, true), std::make_tuple(1, 2));
-    CHECK_EQ(ms_anchor_2.captures(Stream("abbbcdefg"_b)), Vector<Bytes>({"abbbcdefg"_b, "bbb"_b, "def"_b}));
+        {
+            auto ms_no_sub_1 = re_no_sub.tokenMatcher();
+            CHECK_EQ(ms_no_sub_1.advance("Xa"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_no_sub_1.advance("bb"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_no_sub_1.advance("bc"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_no_sub_1.advance("de"_b, true), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_no_sub_1.advance("fgX"_b, true), std::make_tuple(1, 2));
+            CHECK_EQ(ms_no_sub_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        }
 
-    CHECK_EQ(ms_no_sub_1.advance("Xa"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_no_sub_1.advance("bb"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_no_sub_1.advance("bc"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_no_sub_1.advance("de"_b, true), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_no_sub_1.advance("fgX"_b, true), std::make_tuple(1, 2));
-    CHECK_EQ(ms_no_sub_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        {
+            auto ms_no_sub_2 = re_no_sub.tokenMatcher();
+            CHECK_EQ(ms_no_sub_2.advance("a"_b, false), std::make_tuple(-1, 1));
+            CHECK_EQ(ms_no_sub_2.advance("bb"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_no_sub_2.advance("bc"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_no_sub_2.advance("de"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_no_sub_2.advance("fgX"_b, true), std::make_tuple(1, 2));
+            CHECK_EQ(ms_no_sub_2.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        }
 
-    CHECK_EQ(ms_no_sub_2.advance("a"_b, false), std::make_tuple(-1, 1));
-    CHECK_EQ(ms_no_sub_2.advance("bb"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_no_sub_2.advance("bc"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_no_sub_2.advance("de"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_no_sub_2.advance("fgX"_b, true), std::make_tuple(1, 2));
-    CHECK_EQ(ms_no_sub_2.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        {
+            auto ms_anchor_no_sub_1 = re_anchor_no_sub.tokenMatcher();
+            CHECK_EQ(ms_anchor_no_sub_1.advance("Xa"_b, false), std::make_tuple(0, 0));
+            CHECK_EQ(ms_anchor_no_sub_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        }
 
-    CHECK_EQ(ms_anchor_no_sub_1.advance("Xa"_b, false), std::make_tuple(0, 0));
-    CHECK_EQ(ms_anchor_no_sub_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        {
+            auto ms_anchor_no_sub_2 = re_anchor_no_sub.tokenMatcher();
+            CHECK_EQ(ms_anchor_no_sub_2.advance("a"_b, false), std::make_tuple(-1, 1));
+            CHECK_EQ(ms_anchor_no_sub_2.advance("bb"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_anchor_no_sub_2.advance("bc"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_anchor_no_sub_2.advance("de"_b, false), std::make_tuple(-1, 2));
+            CHECK_EQ(ms_anchor_no_sub_2.advance("fgX"_b, true), std::make_tuple(1, 2));
+            CHECK_EQ(ms_anchor_no_sub_2.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        }
 
-    CHECK_EQ(ms_anchor_no_sub_2.advance("a"_b, false), std::make_tuple(-1, 1));
-    CHECK_EQ(ms_anchor_no_sub_2.advance("bb"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_anchor_no_sub_2.advance("bc"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_anchor_no_sub_2.advance("de"_b, false), std::make_tuple(-1, 2));
-    CHECK_EQ(ms_anchor_no_sub_2.advance("fgX"_b, true), std::make_tuple(1, 2));
-    CHECK_EQ(ms_anchor_no_sub_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+        // Check that anchored patterns stop when current match cannot be possible expanded anymore.
+        auto http_re_anchor = RegExp("[ \\t]+", regexp::Flags{.anchor = 1});
+        auto http_ms_anchor = http_re_anchor.tokenMatcher();
+        CHECK_EQ(http_ms_anchor.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
 
-    // Check that anchored patterns stop when current match cannot be possible expanded anymore.
-    auto http_re_anchor = RegExp("[ \\t]+", regexp::Flags{.anchor = 1});
-    auto http_ms_anchor = http_re_anchor.tokenMatcher();
-    CHECK_EQ(http_ms_anchor.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
-
-    auto http_re_anchor_sub = RegExp("[ \\t]+", regexp::Flags{.anchor = 1, .no_sub = 1});
-    auto http_ms_anchor_sub = http_re_anchor_sub.tokenMatcher();
-    CHECK_EQ(http_ms_anchor_sub.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
-}
-
-TEST_CASE("advance on set") {
-    auto patterns = std::vector<std::string>({"a(b+cx){#10}", "a(b+cy){#20}"});
-    auto re_default = RegExp(patterns, regexp::Flags{});
-    auto re_anchor = RegExp(patterns, regexp::Flags{.anchor = 1});
-    auto re_no_sub = RegExp(patterns, regexp::Flags{.no_sub = 1});
-    auto re_anchor_no_sub = RegExp(patterns, regexp::Flags{.anchor = 1, .no_sub = 1});
-
-    auto ms_default_1 = re_default.tokenMatcher();
-    auto ms_default_2 = re_default.tokenMatcher();
-    auto ms_anchor_1 = re_anchor.tokenMatcher();
-    auto ms_anchor_2 = re_anchor.tokenMatcher();
-    auto ms_no_sub_1 = re_no_sub.tokenMatcher();
-    auto ms_no_sub_2 = re_no_sub.tokenMatcher();
-    auto ms_anchor_no_sub_1 = re_anchor_no_sub.tokenMatcher();
-    auto ms_anchor_no_sub_2 = re_anchor_no_sub.tokenMatcher();
-
-    CHECK_EQ(ms_default_1.advance("Xabbc"_b, false), std::make_tuple(-1, 5));
-    CHECK_EQ(ms_default_1.advance("yX"_b, true), std::make_tuple(20, 1));
-    CHECK_EQ(ms_default_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({"abbcy"_b, "bbcy"_b}));
-
-    CHECK_EQ(ms_default_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
-    CHECK_EQ(ms_default_2.advance("yX"_b, true), std::make_tuple(20, 1));
-    CHECK_EQ(ms_default_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({"abbcy"_b, "bbcy"_b}));
-
-    CHECK_EQ(ms_anchor_1.advance("Xabbc"_b, false), std::make_tuple(0, 0));
-    CHECK_EQ(ms_anchor_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({}));
-
-    CHECK_EQ(ms_anchor_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
-    CHECK_EQ(ms_anchor_2.advance("yX"_b, true), std::make_tuple(20, 1));
-    CHECK_EQ(ms_anchor_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({"abbcy"_b, "bbcy"_b}));
-
-    CHECK_EQ(ms_no_sub_1.advance("Xabbc"_b, false), std::make_tuple(-1, 5));
-    CHECK_EQ(ms_no_sub_1.advance("yX"_b, true), std::make_tuple(20, 1));
-    CHECK_EQ(ms_no_sub_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({}));
-
-    CHECK_EQ(ms_no_sub_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
-    CHECK_EQ(ms_no_sub_2.advance("yX"_b, true), std::make_tuple(20, 1));
-    CHECK_EQ(ms_no_sub_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({}));
-
-    CHECK_EQ(ms_anchor_no_sub_1.advance("Xabbc"_b, false), std::make_tuple(0, 0));
-    CHECK_EQ(ms_anchor_no_sub_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({}));
-
-    CHECK_EQ(ms_anchor_no_sub_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
-    CHECK_EQ(ms_anchor_no_sub_2.advance("yX"_b, true), std::make_tuple(20, 1));
-    CHECK_EQ(ms_anchor_no_sub_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({}));
-}
-
-TEST_CASE("advance on limited view") {
-    const auto input = "1234567890"_b;
-
-    const auto stream = Stream(input);
-    const auto view = stream.view();
-
-    const auto limit = 5;
-    const auto limited = view.limit(limit);
-    REQUIRE_EQ(limited.size(), limit);
-
-    SUBCASE("match until limit") {
-        // Match a regexp ending in a wildcard so it could match the entire input.
-        auto&& [rc, unconsumed] = RegExp("123.*").tokenMatcher().advance(limited);
-
-        CHECK_EQ(rc, -1);           // Could consume more data.
-        CHECK_EQ(unconsumed, ""_b); // Should have consumed entire input.
-        CHECK_EQ(unconsumed.offset(), limit);
+        auto http_re_anchor_sub = RegExp("[ \\t]+", regexp::Flags{.anchor = 1, .no_sub = 1});
+        auto http_ms_anchor_sub = http_re_anchor_sub.tokenMatcher();
+        CHECK_EQ(http_ms_anchor_sub.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
     }
 
-    SUBCASE("no match in limit") {
-        // Match a regexp matching the input, but not the passed, limited view.
-        auto&& [rc, unconsumed] = RegExp(input.data()).tokenMatcher().advance(limited);
+    SUBCASE("on set") {
+        const auto patterns = std::vector<std::string>({"a(b+cx){#10}", "a(b+cy){#20}"});
+        const auto re_default = RegExp(patterns, regexp::Flags{});
+        const auto re_anchor = RegExp(patterns, regexp::Flags{.anchor = 1});
+        const auto re_no_sub = RegExp(patterns, regexp::Flags{.no_sub = 1});
+        const auto re_anchor_no_sub = RegExp(patterns, regexp::Flags{.anchor = 1, .no_sub = 1});
 
-        CHECK_EQ(rc, -1); // No match found yet in available, limited data.
+        {
+            auto ms_default_1 = re_default.tokenMatcher();
+            CHECK_EQ(ms_default_1.advance("Xabbc"_b, false), std::make_tuple(-1, 5));
+            CHECK_EQ(ms_default_1.advance("yX"_b, true), std::make_tuple(20, 1));
+            CHECK_EQ(ms_default_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({"abbcy"_b, "bbcy"_b}));
+        }
+
+        {
+            auto ms_default_2 = re_default.tokenMatcher();
+            CHECK_EQ(ms_default_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
+            CHECK_EQ(ms_default_2.advance("yX"_b, true), std::make_tuple(20, 1));
+            CHECK_EQ(ms_default_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({"abbcy"_b, "bbcy"_b}));
+        }
+
+        {
+            auto ms_anchor_1 = re_anchor.tokenMatcher();
+            CHECK_EQ(ms_anchor_1.advance("Xabbc"_b, false), std::make_tuple(0, 0));
+            CHECK_EQ(ms_anchor_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({}));
+        }
+
+        {
+            auto ms_anchor_2 = re_anchor.tokenMatcher();
+            CHECK_EQ(ms_anchor_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
+            CHECK_EQ(ms_anchor_2.advance("yX"_b, true), std::make_tuple(20, 1));
+            CHECK_EQ(ms_anchor_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({"abbcy"_b, "bbcy"_b}));
+        }
+
+        {
+            auto ms_no_sub_1 = re_no_sub.tokenMatcher();
+            CHECK_EQ(ms_no_sub_1.advance("Xabbc"_b, false), std::make_tuple(-1, 5));
+            CHECK_EQ(ms_no_sub_1.advance("yX"_b, true), std::make_tuple(20, 1));
+            CHECK_EQ(ms_no_sub_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({}));
+        }
+
+        {
+            auto ms_no_sub_2 = re_no_sub.tokenMatcher();
+            CHECK_EQ(ms_no_sub_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
+            CHECK_EQ(ms_no_sub_2.advance("yX"_b, true), std::make_tuple(20, 1));
+            CHECK_EQ(ms_no_sub_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({}));
+        }
+
+        {
+            auto ms_anchor_no_sub_1 = re_anchor_no_sub.tokenMatcher();
+            CHECK_EQ(ms_anchor_no_sub_1.advance("Xabbc"_b, false), std::make_tuple(0, 0));
+            CHECK_EQ(ms_anchor_no_sub_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({}));
+        }
+
+        {
+            auto ms_anchor_no_sub_2 = re_anchor_no_sub.tokenMatcher();
+            CHECK_EQ(ms_anchor_no_sub_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
+            CHECK_EQ(ms_anchor_no_sub_2.advance("yX"_b, true), std::make_tuple(20, 1));
+            CHECK_EQ(ms_anchor_no_sub_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({}));
+        }
+    }
+
+    SUBCASE("advance on limited view") {
+        const auto input = "1234567890"_b;
+
+        const auto stream = Stream(input);
+        const auto view = stream.view();
+
+        const auto limit = 5;
+        const auto limited = view.limit(limit);
+        REQUIRE_EQ(limited.size(), limit);
+
+        SUBCASE("match until limit") {
+            // Match a regexp ending in a wildcard so it could match the entire input.
+            auto&& [rc, unconsumed] = RegExp("123.*").tokenMatcher().advance(limited);
+
+            CHECK_EQ(rc, -1);           // Could consume more data.
+            CHECK_EQ(unconsumed, ""_b); // Should have consumed entire input.
+            CHECK_EQ(unconsumed.offset(), limit);
+        }
+
+        SUBCASE("no match in limit") {
+            // Match a regexp matching the input, but not the passed, limited view.
+            auto&& [rc, unconsumed] = RegExp(input.data()).tokenMatcher().advance(limited);
+
+            CHECK_EQ(rc, -1); // No match found yet in available, limited data.
+        }
     }
 }
 

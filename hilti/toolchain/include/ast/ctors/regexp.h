@@ -28,7 +28,7 @@ public:
      * groups. That's the case if either the regexp has been explicitly marked as
      * ``&nosub``, or if there are no groups being used.
      */
-    auto isNoSub() const {
+    bool isNoSub() const {
         if ( AttributeSet::find(attributes(), "&nosub") )
             return true;
 
@@ -43,8 +43,8 @@ public:
     /**
      * Returns true if matching of this pattern should be implicitly anchored.
      */
-    auto isAnchor() const {
-        return AttributeSet::find(attributes(), "&anchor");
+    bool isAnchor() const {
+        return AttributeSet::find(attributes(), "&anchor").has_value();
     }
 
     bool operator==(const RegExp& other) const { return value() == other.value(); }
