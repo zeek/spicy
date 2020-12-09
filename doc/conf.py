@@ -70,7 +70,9 @@ html_theme_options = {
 }
 
 linkcheck_ignore = [
-    r'https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/.*']
+    r'https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/.*',
+    r'http://download.zeek.org',
+    r'https://download.zeek.org']
 
 # Generate Doxygen output if we are building in readthedocs. Outside of
 # readthedocs this is done by `docs/Makefile`.
