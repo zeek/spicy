@@ -1,0 +1,99 @@
+FROM debian:buster-slim
+
+ARG SKIP_BUILD=
+ARG ZEEK_VERSION=3.0.11-0
+ARG ZEEK_LTS=1
+
+ENV BISON_VERSION "3.6.2"
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV CCACHE_DIR "/var/spool/ccache"
+ENV CCACHE_COMPRESS 1
+
+ENV CMAKE_DIR "/opt/cmake"
+ENV CMAKE_VERSION "3.17.2"
+
+# using clang instead of gcc because Spicy depends on it
+ENV LLVM_VERSION "11"
+ENV CC "clang-${LLVM_VERSION}"
+ENV CXX "clang++-${LLVM_VERSION}"
+ENV ASM "clang-${LLVM_VERSION}"
+
+ENV PATH "/opt/zeek/bin:${CMAKE_DIR}/bin:${PATH}"
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# configure system for build
+RUN sed -i "s/buster main/buster main contrib non-free/g" /etc/apt/sources.list && \
+      echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list && \
+      apt-get -q update && \
+      apt-get install -q -y --no-install-recommends gnupg2 curl ca-certificates && \
+      bash -c "curl -sSL https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -" && \
+      echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-${LLVM_VERSION} main" >> /etc/apt/sources.list && \
+      echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster-${LLVM_VERSION} main" >> /etc/apt/sources.list && \
+    apt-get -q update && \
+    apt-get install -q -y -t buster-backports --no-install-recommends \
+        binutils \
+        ccache \
+        clang-${LLVM_VERSION} \
+        file \
+        flex \
+        git \
+        google-perftools \
+        jq \
+        libclang-${LLVM_VERSION}-dev \
+        libfl-dev \
+        libgoogle-perftools-dev \
+        libkrb5-dev \
+        libmaxminddb-dev \
+        libpcap0.8-dev \
+        libssl-dev \
+        llvm-${LLVM_VERSION}-dev \
+        locales-all \
+        make \
+        ninja-build \
+        python3 \
+        python3-dev \
+        python3-pip \
+        python3-setuptools \
+        python3-wheel \
+        swig \
+        zlib1g-dev && \
+  pip3 install --no-cache-dir btest pre-commit && \
+  # recent CMake
+  mkdir -p "${CMAKE_DIR}" && \
+    curl -sSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" | tar xzf - -C "${CMAKE_DIR}" --strip-components 1 && \
+  # recent Bison
+  cd /tmp && \
+    curl -sSL "https://ftp.gnu.org/gnu/bison/bison-${BISON_VERSION}.tar.gz" | tar xzf - -C /tmp && \
+    cd "./bison-${BISON_VERSION}" && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd /tmp && \
+    rm -rf /tmp/bison*
+
+# Install Zeek
+RUN mkdir -p /tmp/zeek-packages \
+ && cd /tmp/zeek-packages \
+ && if [ -n "${ZEEK_LTS}" ]; then ZEEK_LTS="-lts"; fi && export ZEEK_LTS \
+ && curl -L --remote-name-all \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-core-dbgsym_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-core-dev-dbgsym_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeekctl${ZEEK_LTS}-dbgsym_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb  \
+ && apt-get install -y libpcap-dev python2 \
+ && dpkg -i *.deb \
+ && cd - \
+ && rm -rf /tmp/zeek-packages
+
+WORKDIR /root
+
+# Install Spicy.
+ADD . /opt/spicy/src
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)
