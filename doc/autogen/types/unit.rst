@@ -1,5 +1,11 @@
 .. rubric:: Methods
 
+.. spicy:method:: unit::backtrack unit backtrack False void ()
+
+    Aborts parsing at the current position and returns back to the most
+    recent ``&try`` attribute. Turns into a parse error if there's no
+    ``&try`` in scope.
+
 .. spicy:method:: unit::connect_filter unit connect_filter False void (filter: strong_ref<unit>)
 
     Connects a separate filter unit to transform the unit's input
