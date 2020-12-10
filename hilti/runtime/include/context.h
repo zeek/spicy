@@ -46,10 +46,12 @@ struct Context {
     resumable::Handle* resumable = nullptr;
 
     /** The main fiber. */
-    std::unique_ptr<::Fiber> main_fiber;
+    std::unique_ptr<detail::Fiber> main_fiber;
 
     /** The currently executing fiber .*/
-    ::Fiber* current_fiber = nullptr;
+    detail::Fiber* current_fiber = nullptr;
+
+    Fiber* shared_stack = nullptr;
 
     /**
      * Pointer to an array of (per thread) global variables allocated by the

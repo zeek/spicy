@@ -44,7 +44,7 @@ namespace detail {
  */
 class Fiber {
 public:
-    Fiber();
+    Fiber(bool main_fiber = false);
     ~Fiber();
 
     Fiber(const Fiber&) = delete;
@@ -62,6 +62,8 @@ public:
     void yield();
     void resume();
     void abort();
+
+    bool isMain() const { return _is_main; }
 
     bool isDone() {
         switch ( _state ) {
@@ -108,11 +110,14 @@ private:
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 
     /** Code to run just before we switch to a fiber. */
-    void _startSwitchFiber(const char* tag, const void* stack_bottom = nullptr, size_t stack_size = 0);
+    static void _startSwitchFiber(const char* tag, const void* stack_bottom = nullptr, size_t stack_size = 0);
 
     /** Code to run just after we have switched to a fiber. */
-    void _finishSwitchFiber(const char* tag);
+    static void _finishSwitchFiber(const char* tag);
 
+    static void _switchTo(detail::Fiber* to);
+
+    bool _is_main;
     State _state{State::Init};
     std::optional<Lambda<std::any(resumable::Handle*)>> _function;
     std::optional<std::any> _result;
@@ -127,7 +132,9 @@ private:
      * This is typically the coroutine of the fiber which invoked `run` on this
      * coroutine.
      */
-    ::Fiber* _caller = nullptr;
+    Fiber* _caller = nullptr;
+
+    // void* saved_stack = nullptr;
 
 #ifdef HILTI_HAVE_SANITIZER
     struct {
