@@ -35,21 +35,6 @@ void fiber_destroy(::Fiber* fbr) {
     return ::fiber_destroy(fbr);
 }
 
-size_t fiber_stack_size(::Fiber* fbr) {
-    assert(fbr);
-    assert(fbr->stack);
-
-    // FIXME(bbannier): this function should only return the actually used
-    // stack size. Confusingly it seem as if `::fiber_stack_size(fbr) -
-    // ::fiber_stack_free_size(fbr)` returns a way to big number. For now we
-    // return the full stack size here which below leads to us copying way to
-    // much data and not saving any memory.
-    return ::fiber_stack_size(fbr);
-    // return ::fiber_stack_free_size(fbr);
-    // return ::fiber_stack_size(fbr);
-    // return ::fiber_stack_size(fbr) - ::fiber_stack_free_size(fbr);
-}
-
 struct PrepareSwitchArgs {
     ::Fiber* fiber_switch_trampoline = nullptr;
     ::Fiber* from = nullptr;
@@ -64,14 +49,14 @@ void fiber_switch_finalize(void* argsp) {
 
     // Swap out `from` stack.
     if ( from->stack ) {
+        auto size = ::fiber_stack_used_size(from);
+
         auto stored_stack = globalState()->fiber_stacks.find(from);
         if ( stored_stack == globalState()->fiber_stacks.end() ) {
-            auto [it, inserted] =
-                globalState()->fiber_stacks.insert_or_assign(from, Stack(detail::fiber_stack_size(from)));
+            auto [it, inserted] = globalState()->fiber_stacks.insert_or_assign(from, Stack(size));
 
-            HILTI_RT_DEBUG("fibers", fmt("added stack for %p, size=%s (%d)", from, detail::fiber_stack_size(from),
-                                         detail::fiber_stack_size(from) /
-                                             static_cast<double>(globalState()->fiber_shared_stack._size)));
+            HILTI_RT_DEBUG("fibers", fmt("added stack for %p, size=%s (%d)", from, size,
+                                         size / static_cast<double>(globalState()->fiber_shared_stack._size)));
 
             assert(inserted);
             stored_stack = it;
@@ -81,9 +66,6 @@ void fiber_switch_finalize(void* argsp) {
         auto& stack = stored_stack->second;
         assert(stack._stack);
         assert(stack._size > 0);
-
-        auto size = detail::fiber_stack_size(from);
-
         if ( stack._size < size ) {
             HILTI_RT_DEBUG("fibers", fmt("resizing fiber stack for %p from %s to %s", from, stack._size, size));
             stack.resize(size);
@@ -101,7 +83,7 @@ void fiber_switch_finalize(void* argsp) {
         HILTI_RT_DEBUG("fibers", fmt("restoring stack for %p", to));
         if ( auto stored_stack = globalState()->fiber_stacks.find(to);
              stored_stack != globalState()->fiber_stacks.end() )
-            std::memcpy(static_cast<char*>(to->stack) - detail::fiber_stack_size(to) + to->stack_size,
+            std::memcpy(static_cast<char*>(to->stack) - ::fiber_stack_used_size(to) + to->stack_size,
                         stored_stack->second._stack.get(), stored_stack->second._size);
         else
             HILTI_RT_DEBUG("fibers", fmt("stack for to=%p not found", to));
