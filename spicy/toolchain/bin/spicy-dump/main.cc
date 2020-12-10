@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 
+#include <hilti/rt/init.h>
 #include <hilti/rt/libhilti.h>
 
 #include <spicy/rt/libspicy.h>
@@ -39,6 +40,8 @@ static struct option long_options[] = {{"abort-on-exceptions", required_argument
 
 static void fatalError(const std::string& msg) {
     hilti::logger().error(fmt("spicy-dump: %s", msg));
+    spicy::rt::done();
+    hilti::rt::done();
     exit(1);
 }
 

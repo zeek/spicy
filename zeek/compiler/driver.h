@@ -148,7 +148,6 @@ protected:
     std::map<hilti::ID, UnitInfo> _units;
     std::vector<EnumInfo> _enums;
 
-    std::shared_ptr<hilti::Context> _context;
     std::unique_ptr<GlueCompiler> _glue;
 
     bool _need_glue = true; // true if glue code has not yet been generated

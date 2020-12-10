@@ -99,11 +99,6 @@ your ``PATH``.
     As we are running one of the CI build with sanitizers, it's ok not
     to run this locally on a regular basis during development.
 
-.. todo::
-
-    The macOS instructions above haven't been tested, nor does
-    ``ZEEK_LD_PRELOAD`` lead to ``DYLD_INSERT_LIBRARIES`` being set.
-
 Code Quality
 ------------
 

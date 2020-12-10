@@ -37,6 +37,8 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
 
 static void fatalError(const std::string& msg) {
     hilti::logger().error(fmt("spicy-driver: %s", msg));
+    spicy::rt::done();
+    hilti::rt::done();
     exit(1);
 }
 
@@ -273,6 +275,8 @@ int main(int argc, char** argv) {
 
     if ( driver.driverOptions().report_times )
         hilti::util::timing::summary(std::cerr);
+
+    hilti::rt::done();
 
     return 0;
 }

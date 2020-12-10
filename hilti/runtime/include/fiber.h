@@ -1,6 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #pragma once
+
 #include <any>
 #include <csetjmp>
 #include <functional>
@@ -16,22 +17,15 @@
 #include <hilti/rt/lambda.h>
 #include <hilti/rt/util.h>
 
-extern "C" {
-// libtask introduces "Context" into the global scope, which leads
-// to ambiguities. As we don't need it, we just hide it.
-#define Context __libtask__Context
-#include <hilti/rt/3rdparty/libtask/taskimpl.h>
-#undef Context
-// Undef macros that libtask defines.
-#undef print
-#undef nil
-
-void _Trampoline(unsigned int y, unsigned int x);
-}
+struct Fiber;
 
 namespace hilti::rt {
 
 namespace detail {
+extern "C" {
+void _Trampoline(void* argsp);
+}
+
 class Fiber;
 } // namespace detail
 
@@ -104,13 +98,13 @@ public:
     static Statistics statistics();
 
     // Size of stack for each fiber.
-    static constexpr unsigned int StackSize = 327680;
+    static constexpr unsigned int StackSize = 327'680;
 
     // Max. number of fibers cached for reuse.
     static constexpr unsigned int CacheSize = 100;
 
 private:
-    friend void ::_Trampoline(unsigned int y, unsigned int x);
+    friend void _Trampoline(void* argsp);
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 
     /** Code to run just before we switch to a fiber. */
@@ -124,10 +118,16 @@ private:
     std::optional<std::any> _result;
     std::exception_ptr _exception;
 
-    ucontext_t _uctx{};
-    jmp_buf _fiber{};
-    jmp_buf _trampoline{};
-    jmp_buf _parent{};
+    /** The underlying coroutine of this fiber. */
+    std::unique_ptr<::Fiber> _fiber;
+
+    /**
+     * The coroutine this fiber yields to.
+     *
+     * This is typically the coroutine of the fiber which invoked `run` on this
+     * coroutine.
+     */
+    ::Fiber* _caller = nullptr;
 
 #ifdef HILTI_HAVE_SANITIZER
     struct {

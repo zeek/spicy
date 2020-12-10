@@ -10,8 +10,8 @@
 #include <hilti/base/util.h>
 
 #include <zeek-spicy/autogen/config.h>
-#include <zeek-spicy/plugin.h>
 #include <zeek-spicy/plugin-jit.h>
+#include <zeek-spicy/plugin.h>
 #include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
 

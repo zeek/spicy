@@ -1,6 +1,9 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <fiber/fiber.h>
+
 #include <cinttypes>
+#include <memory>
 
 #include <hilti/rt/context.h>
 #include <hilti/rt/global-state.h>
@@ -16,7 +19,9 @@ thread_local Context* __current = nullptr;
 Context*& current() { return __current; }
 } // namespace hilti::rt::context::detail
 
-Context::Context(vthread::ID vid) : vid(vid) {
+Context::Context(vthread::ID vid) : vid(vid), main_fiber(std::make_unique<::Fiber>()), current_fiber(main_fiber.get()) {
+    ::fiber_init_toplevel(main_fiber.get());
+
     if ( vid == vthread::Master ) {
         HILTI_RT_DEBUG("libhilti", "creating master context");
         // Globals for the master context are initialized separately as we
