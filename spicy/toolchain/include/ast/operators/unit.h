@@ -116,4 +116,18 @@ this method will not do anything.
     }
 END_METHOD
 
+BEGIN_METHOD(unit, Backtrack)
+    auto signature() const {
+        return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
+                                           .result = hilti::type::Void(),
+                                           .id = "backtrack",
+                                           .args = {},
+                                           .doc = R"(
+Aborts parsing at the current position and returns back to the most recent
+``&try`` attribute. Turns into a parse error if there's no ``&try`` in scope.
+)"};
+    }
+END_METHOD
+
+
 } // namespace spicy::operator_

@@ -68,10 +68,7 @@ public:
           _hooks_start(_cases_end),
           _hooks_end(-1) {}
 
-    auto expression() const {
-        return childs()[0].tryAs<Expression>();
-        ;
-    }
+    auto expression() const { return childs()[0].tryReferenceAs<Expression>(); }
     Engine engine() const { return _engine; }
     auto condition() const { return childs()[1].tryReferenceAs<Expression>(); }
     auto cases() const { return childs<switch_::Case>(_cases_start, _cases_end); }

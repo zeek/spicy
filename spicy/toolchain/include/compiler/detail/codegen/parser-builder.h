@@ -411,6 +411,12 @@ public:
      */
     void finalizeUnit(bool success, const Location& l);
 
+    /** Prepare for backtracking via ``&try``. */
+    void initBacktracking();
+
+    /** Clean up after potential backtracking via ``&try``. */
+    void finishBacktracking();
+
     CodeGen* cg() const { return _cg; }
     const std::shared_ptr<hilti::Context>& context() const;
     const hilti::Options& options() const;

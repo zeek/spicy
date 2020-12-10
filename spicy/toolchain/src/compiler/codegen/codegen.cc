@@ -193,6 +193,11 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
         replaceNode(&p, builder::assign(cur, argument(n.op2(), 0)));
     }
 
+    result_t operator()(const operator_::unit::Backtrack& n, position_t p) {
+        auto x = builder::call("spicy_rt::backtrack", {});
+        replaceNode(&p, std::move(x));
+    }
+
     result_t operator()(const operator_::unit::ConnectFilter& n, position_t p) {
         auto x = builder::call("spicy_rt::filter_connect", {n.op0(), argument(n.op2(), 0)});
         replaceNode(&p, std::move(x));

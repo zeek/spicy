@@ -537,6 +537,9 @@ struct ProductionVisitor
                 builder()->addAssign(builder::index(__offsets, *field->index()),
                                      builder::tuple({cur_offset, builder::optional(hilti::type::UnsignedInteger(64))}));
             }
+
+            if ( auto a = AttributeSet::find(field->attributes(), "&try") )
+                pb->initBacktracking();
         }
     }
 
@@ -552,6 +555,9 @@ struct ProductionVisitor
             }
         }
         else {
+            if ( auto a = AttributeSet::find(field->attributes(), "&try") )
+                pb->finishBacktracking();
+
             // We are the field's owner, record offsets and post-process the various attributes.
             if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
                 assert(field->index());
@@ -1442,4 +1448,22 @@ void ParserBuilder::consumeLookAhead(std::optional<Expression> dst) {
 
     builder()->addAssign(state().lahead, look_ahead::None);
     advanceInput(state().lahead_end);
+}
+
+void ParserBuilder::initBacktracking() {
+    auto try_cur = builder()->addTmp("try_cur", state().cur);
+    auto [body, try_] = builder()->addTry();
+    auto catch_ = try_.addCatch(builder::parameter(ID("e"), builder::typeByID("spicy_rt::Backtrack")));
+    pushBuilder(catch_, [&]() { builder()->addAssign(state().cur, try_cur); });
+
+    auto pstate = state();
+    pstate.trim = builder::bool_(false);
+    pushState(std::move(pstate));
+    pushBuilder(body);
+}
+
+void ParserBuilder::finishBacktracking() {
+    popBuilder();
+    popState();
+    trimInput();
 }

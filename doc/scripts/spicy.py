@@ -384,6 +384,10 @@ class SpicyOutput(LiteralInclude):
         all_good = True
         first = True
 
+        show_as = []
+        if self.show_as:
+            show_as = self.show_as.split(";")
+
         for one_cmd in cmd.split(";"):
             one_cmd = one_cmd.strip()
 
@@ -418,12 +422,14 @@ class SpicyOutput(LiteralInclude):
                     out = open(destination, "ab")
                     out.write(b"\n")
 
-                if self.show_as:
-                    one_cmd = "# %s\n" % self.show_as
+                if show_as:
+                    one_cmd = "# %s\n" % show_as[0].strip()
                     one_cmd = one_cmd.replace("%INPUT", self.show_with)
                     output = output.replace(
                         source.encode(), self.show_with.encode())
                     out.write(one_cmd.encode())
+                    show_as = show_as[1:]
+
                 out.write(output)
                 out.close()
                 first = False

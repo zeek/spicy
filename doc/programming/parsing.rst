@@ -943,6 +943,9 @@ It is possible to skip the ``SIZE`` (e.g., ``x: uint8[]``) and instead
 use another kind of end conditions to terminate a vector's parsing
 loop. To that end, vectors support the following attributes:
 
+``&eod``
+    Parses elements until the end of the input stream is reached.
+
 ``&size=N``
     Parses the vector from the subsequent ``N`` bytes of input data.
     This effectively limits the available input to the corresponding
@@ -1227,6 +1230,63 @@ once you have subunits that are recognizable by how they start:
     :exec: printf 'A ' | spicy-driver %INPUT; printf '\377\377' | spicy-driver %INPUT
     :show-with: foo.spicy
 
+.. _backtracking:
+
+Backtracking
+^^^^^^^^^^^^
+
+Spicy supports a simple form of manual backtracking. If a field is
+marked with ``&try``, a later call to the unit's ``backtrack()``
+method anywhere down in the parse tree originating at that field will
+immediately transfer control over to the field following the ``&try``.
+When doing so, the data position inside the input stream will be reset
+to where it was when the ``&try`` field started its processing. Units
+along the original path will be left in whatever state they were at
+the time ``backtrack()`` executed (i.e., they will probably remain
+just partially initialized). When ``backtrack()`` is called on a path
+that involves multiple ``&try`` fields, control continues after the
+most recent.
+
+Example:
+
+.. spicy-code:: parse-backtrack.spicy
+
+    module Test;
+
+    public type test = unit {
+        foo: Foo &try;
+        bar: Bar;
+
+        on %done { print self; }
+    };
+
+    type Foo = unit {
+        a: int8 {
+            if ( $$ != 1 )
+                self.backtrack();
+           }
+        b: int8;
+    };
+
+    type Bar = unit {
+        a: int8;
+        b: int8;
+    };
+
+
+.. spicy-output:: parse-backtrack.spicy
+    :exec: printf '\001\002\003\004' | spicy-driver %INPUT; printf '\003\004' | spicy-driver %INPUT
+    :show-with: backtrack.spicy
+
+``backtrack()`` can be called from inside :ref:`%error hooks
+<on_error>`, so this provides a simple form of error recovery
+as well.
+
+.. note::
+
+    This mechanism is preliminary and will probably see refinement
+    over time, both in terms of more automated backtracking and by
+    providing better control where to continue after backtracking.
 
 Changing Input
 ==============

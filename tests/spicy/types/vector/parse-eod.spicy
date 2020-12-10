@@ -1,0 +1,11 @@
+# @TEST-EXEC: printf "12345" | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Foo = unit {
+    a: int8[] &eod;
+    b: int8[] &eod; # Won't get anything here anymore
+
+    on %done { print self; }
+};
