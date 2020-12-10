@@ -890,7 +890,7 @@ TEST_CASE("View") {
         // Trimmed view expands when data is added.
         stream.append("123"_b);
         CHECK_EQ(trimmed.size(), input.size() - 3 + 3);
-        CHECK(trimmed.startsWith("4567890123"));
+        CHECK(trimmed.startsWith("4567890123"_b));
     }
 
     SUBCASE("trimmed view inherits limit") {

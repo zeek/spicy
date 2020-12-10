@@ -164,14 +164,14 @@ TEST_CASE("find") {
         }
 
         SUBCASE("start at target") {
-            CHECK_EQ(b.find("23", b.at(1)), std::make_tuple(true, b.at(1)));
-            CHECK_EQ(b.find("ab", b.at(1)), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find("23"_b, b.at(1)), std::make_tuple(true, b.at(1)));
+            CHECK_EQ(b.find("ab"_b, b.at(1)), std::make_tuple(false, b.end()));
         }
 
         SUBCASE("start beyond target") {
-            CHECK_EQ(b.find("23", b.at(2)), std::make_tuple(false, b.end()));
-            CHECK_EQ(b.find("ab", b.at(2)), std::make_tuple(false, b.end()));
-            CHECK_EQ(b.find("ab", b.end()), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find("23"_b, b.at(2)), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find("ab"_b, b.at(2)), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find("ab"_b, b.end()), std::make_tuple(false, b.end()));
         }
     }
 }
@@ -538,6 +538,15 @@ TEST_CASE("Iterator") {
                                  const InvalidArgument&);
         }
     }
+}
+
+TEST_CASE("issue 599") {
+    // This is a regression test for #599.
+    std::optional<Bytes> a;
+    a = "31"_b;
+    REQUIRE(a);
+    CHECK_EQ(*a, "31"_b);
+    CHECK_EQ(a->toInt(), 31);
 }
 
 TEST_SUITE_END();
