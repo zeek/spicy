@@ -7,7 +7,6 @@ add_subdirectory(doctest)
 
 add_subdirectory(justrx)
 
-set(FIBER_SHARED OFF)
 set(FIBER_OBJECT ON)
 add_subdirectory(fiber)
 
