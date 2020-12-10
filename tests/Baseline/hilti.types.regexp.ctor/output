@@ -1,6 +1,6 @@
 /ghi/
 /ghi/
-/abc/ | /ghi/ &nosub
+/abc/ | /ghi/
 /ghi/ &nosub
 /ghi/ &nosub
 <regexp w/o pattern>

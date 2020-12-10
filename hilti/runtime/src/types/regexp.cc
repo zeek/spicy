@@ -5,7 +5,6 @@
 
 #include "hilti/rt/types/regexp.h"
 
-#include <cassert>
 #include <utility>
 
 #include <hilti/rt/util.h>
@@ -23,13 +22,17 @@ class regexp::MatchState::Pimpl {
 public:
     jrx_accept_id _acc = 0;
     jrx_assertion _first = JRX_ASSERTION_BOL | JRX_ASSERTION_BOD;
+    bool _done = false;
 
     jrx_match_state _ms{};
     std::shared_ptr<jrx_regex_t> _jrx;
+    Flags _flags{};
 
     ~Pimpl() { jrx_match_state_done(&_ms); }
 
-    Pimpl(std::shared_ptr<jrx_regex_t> jrx) : _jrx(std::move(jrx)) { jrx_match_state_init(_jrx.get(), 0, &_ms); }
+    Pimpl(std::shared_ptr<jrx_regex_t> jrx, Flags flags) : _jrx(std::move(jrx)), _flags(flags) {
+        jrx_match_state_init(_jrx.get(), 0, &_ms);
+    }
 
     Pimpl(const Pimpl& other) : _acc(other._acc), _first(other._first), _jrx(other._jrx) {
         jrx_match_state_copy(&other._ms, &_ms);
@@ -40,7 +43,7 @@ regexp::MatchState::MatchState(const RegExp& re) {
     if ( re.patterns().empty() )
         throw PatternError("trying to match empty pattern set");
 
-    _pimpl = std::make_unique<Pimpl>(re._jrxShared());
+    _pimpl = std::make_unique<Pimpl>(re._jrxShared(), re._flags);
 }
 
 regexp::MatchState::MatchState(const MatchState& other) {
@@ -75,34 +78,34 @@ std::tuple<int32_t, stream::View> regexp::MatchState::advance(const stream::View
     if ( ! _pimpl )
         throw PatternError("no regular expression associated with match state");
 
-    if ( ! _pimpl->_jrx )
+    if ( _pimpl->_done )
         throw MatchStateReuse("matching already complete");
 
     auto [rc, offset] = _advance(data, data.isFrozen());
 
     if ( rc >= 0 ) {
-        _pimpl->_jrx = nullptr;
-        return std::make_tuple(rc, data.trim(data.at(offset)));
+        _pimpl->_done = true;
+        return std::make_tuple(rc, data.trim(data.begin() + offset));
     }
 
-    return std::make_tuple(rc, data.trim(data.begin() + data.size()));
+    return std::make_tuple(rc, data.trim(data.begin() + offset));
 }
 
 std::tuple<int32_t, uint64_t> regexp::MatchState::advance(const Bytes& data, bool is_final) {
     if ( ! _pimpl )
         throw PatternError("no regular expression associated with match state");
 
-    if ( ! _pimpl->_jrx )
+    if ( _pimpl->_done )
         throw MatchStateReuse("matching already complete");
 
     auto [rc, offset] = _advance(Stream(data).view(), is_final);
 
     if ( rc >= 0 ) {
-        _pimpl->_jrx = nullptr;
+        _pimpl->_done = true;
         return std::make_tuple(rc, offset);
     }
 
-    return std::make_tuple(rc, data.size());
+    return std::make_tuple(rc, offset);
 }
 
 std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& data, bool is_final) {
@@ -112,16 +115,15 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
     if ( data.size() )
         _pimpl->_first = 0;
 
-    _pimpl->_ms.offset = 1; // See below why 1.
-
     if ( data.isEmpty() ) {
         if ( is_final && _pimpl->_acc <= 0 )
             _pimpl->_acc = jrx_current_accept(&_pimpl->_ms);
 
-        return std::make_pair(is_final ? _pimpl->_acc : -1, data.offset());
+        return std::make_pair(is_final ? _pimpl->_acc : -1, 0);
     }
 
     jrx_accept_id rc = 0;
+    auto start_ms_offset = _pimpl->_ms.offset;
 
     for ( auto block = data.firstBlock(); block; block = data.nextBlock(block) ) {
         if ( is_final && block->is_last )
@@ -129,17 +131,15 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
 
 #ifdef _DEBUG_MATCHING
         std::cerr << fmt("feeding |%s| data.offset=%lu\n",
-                         escapeBytes(std::string_view((const char*)block->start, block_len)),
-                         data.safeBegin().offset());
+                         escapeBytes(std::string_view((const char*)block->start, block->size)), data.begin().offset());
 #endif
 
         rc = jrx_regexec_partial(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size, first,
                                  last, &_pimpl->_ms, is_final);
 
-        // FIXME: The jrx match_state intializes the offset with 1. Not sure
-        // why right now but changing that would probably break other things
-        // we adjust that here for the calculation.
-        uint64_t view_offset = block->offset + _pimpl->_ms.offset - 1;
+        // Note: The JRX match_state initializes offsets with 1. Not sure why
+        // right now but changing that would probably break other things, so we
+        // adjust that here for the calculation.
 
 #ifdef _DEBUG_MATCHING
         std::cerr << fmt("-> state=%p rc=%d ms->offset=%d\n", this, rc, _pimpl->_ms.offset);
@@ -147,16 +147,18 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
 
         if ( rc == 0 )
             // No further match possible.
-            return std::make_pair(_pimpl->_acc > 0 ? _pimpl->_acc : 0, view_offset);
+            return std::make_pair(_pimpl->_acc > 0 ? _pimpl->_acc : 0, _pimpl->_ms.offset - start_ms_offset);
 
         if ( rc > 0 ) {
-            // Match found. However, we need to wait for more data that could
-            // potentially be included into the match before returning it.
-            if ( ! is_final && jrx_can_transition(&_pimpl->_ms) )
-                return std::make_pair(-1, 0);
+            assert(_pimpl->_ms.match_eo >= start_ms_offset);
+            // Match found. However, we may need to wait for more data that
+            // could potentially be included into the match before returning
+            // it.
+            if ( ! is_final && jrx_can_transition(&_pimpl->_ms) && ! _pimpl->_flags.anchor )
+                return std::make_pair(-1, _pimpl->_ms.offset - start_ms_offset);
 
             _pimpl->_acc = rc;
-            return std::make_pair(_pimpl->_acc, view_offset);
+            return std::make_pair(_pimpl->_acc, _pimpl->_ms.match_eo - start_ms_offset);
         }
     }
 
@@ -164,7 +166,33 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
         // At least one could match with more data.
         _pimpl->_acc = -1;
 
-    return std::make_pair(_pimpl->_acc, data.offset());
+    if ( rc > 0 ) {
+        assert(_pimpl->_ms.match_eo >= start_ms_offset);
+        return std::make_pair(_pimpl->_acc, _pimpl->_ms.match_eo - start_ms_offset);
+    }
+
+    return std::make_pair(_pimpl->_acc, _pimpl->_ms.offset - start_ms_offset);
+}
+
+regexp::Captures regexp::MatchState::captures(const Stream& data) const {
+    if ( _pimpl->_flags.no_sub || _pimpl->_acc <= 0 || ! _pimpl->_done )
+        return Captures();
+
+    Captures captures = {};
+
+    auto num_groups = jrx_num_groups(_pimpl->_jrx.get());
+    jrx_regmatch_t groups[num_groups];
+    if ( jrx_reggroups(_pimpl->_jrx.get(), &_pimpl->_ms, num_groups, groups) == REG_OK ) {
+        for ( auto i = 0; i < num_groups; i++ ) {
+            // The following condition follows what JRX does
+            // internally as well: if not both are set, just skip (and
+            // don't count) the group.
+            if ( groups[i].rm_so >= 0 || groups[i].rm_eo >= 0 )
+                captures.emplace_back(data.view(false).sub(groups[i].rm_so, groups[i].rm_eo).data());
+        }
+    }
+
+    return captures;
 }
 
 RegExp::RegExp(std::string pattern, regexp::Flags flags) : _flags(flags) {
@@ -173,12 +201,10 @@ RegExp::RegExp(std::string pattern, regexp::Flags flags) : _flags(flags) {
     jrx_regset_finalize(_jrx());
 }
 
-
 RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) : _flags(flags) {
     if ( patterns.empty() )
         throw PatternError("trying to compile empty pattern set");
 
-    _flags.no_sub = true;
     _newJrx();
 
     int idx = 0;
@@ -193,8 +219,11 @@ void RegExp::_newJrx() {
 
     int cflags = (REG_EXTENDED | REG_LAZY); // | REG_DEBUG;
 
+    if ( _flags.anchor )
+        cflags |= REG_ANCHOR;
+
     if ( _flags.no_sub )
-        cflags |= (REG_NOSUB | REG_ANCHOR);
+        cflags |= REG_NOSUB;
 
     _patterns.clear();
     _jrx_shared = std::shared_ptr<jrx_regex_t>(new jrx_regex_t, [=](auto j) {
@@ -218,7 +247,7 @@ int32_t RegExp::find(const Bytes& data) const {
     assert(_jrx() && "regexp not compiled");
 
     jrx_match_state ms;
-    jrx_accept_id acc = _search_pattern(&ms, data, nullptr, nullptr, false, true);
+    jrx_accept_id acc = _search_pattern(&ms, data, nullptr, nullptr, true);
     jrx_match_state_done(&ms);
     return acc;
 }
@@ -230,10 +259,13 @@ static Bytes _subslice(const Bytes& data, jrx_offset so, jrx_offset eo) {
 std::tuple<int32_t, Bytes> RegExp::findSpan(const Bytes& data) const {
     assert(_jrx() && "regexp not compiled");
 
+    if ( _flags.no_sub && ! _flags.anchor )
+        throw NotSupported("cannot extract span when compiled with &nosub, but not &anchor");
+
     jrx_offset so = -1;
     jrx_offset eo = -1;
     jrx_match_state ms;
-    auto rc = _search_pattern(&ms, data, &so, &eo, false, true);
+    auto rc = _search_pattern(&ms, data, &so, &eo, true);
     jrx_match_state_done(&ms);
 
     if ( rc > 0 )
@@ -249,10 +281,13 @@ Vector<Bytes> RegExp::findGroups(const Bytes& data) const {
     if ( _patterns.size() > 1 )
         throw NotSupported("cannot capture groups during set matching");
 
+    if ( _flags.no_sub )
+        throw NotSupported("cannot capture groups when compiled with &nosub");
+
     jrx_offset so = -1;
     jrx_offset eo = -1;
     jrx_match_state ms;
-    auto rc = _search_pattern(&ms, data, &so, &eo, false, true);
+    auto rc = _search_pattern(&ms, data, &so, &eo, true);
 
     Vector<Bytes> groups;
 
@@ -280,8 +315,7 @@ regexp::MatchState RegExp::tokenMatcher() const { return regexp::MatchState(*thi
 // code (see below for original code). Not sure if we still need all of this,
 // or could just call jrx-* functions directly instead of _search_pattern.
 jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const Bytes& data, jrx_offset* so, jrx_offset* eo,
-                                      bool do_anchor, bool find_partial_matches) const {
-    assert((! do_anchor) || _flags.no_sub);
+                                      bool find_partial_matches) const {
     const auto use_stdmatcher = ! _flags.no_sub;
     const jrx_assertion last = JRX_ASSERTION_EOL | JRX_ASSERTION_EOD;
     jrx_assertion first = JRX_ASSERTION_BOL | JRX_ASSERTION_BOD;
@@ -315,9 +349,9 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const Bytes& data, jr
         auto block_len = data.size() - cur;
 
 #ifdef _DEBUG_MATCHING
-        std::cerr << fmt("feeding |%s| use_stdmatcher=%u do_anchor=%u first=%u last=%u\n",
-                         escapeBytes(std::string_view((const char*)block_start, block_len)), use_stdmatcher, do_anchor,
-                         first, last);
+        std::cerr << fmt("feeding |%s| use_stdmatcher=%u first=%u last=%u\n",
+                         escapeBytes(std::string_view((const char*)block_start, block_len)), use_stdmatcher, first,
+                         last);
 #endif
         auto rc = jrx_regexec_partial(_jrx(), reinterpret_cast<const char*>(block_start), block_len, first, last, ms,
                                       find_partial_matches);
@@ -340,12 +374,14 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const Bytes& data, jr
                 if ( so )
                     *so = cur;
 
-                if ( eo )
-                    // FIXME: The match_state intializes the offset with
-                    // 1. Not sure why right now but changing that would
+                if ( eo ) {
+                    // The match_state initializes the offset with 1.
+                    // Not sure why right now but changing that would
                     // probably break other things we adjust that here
                     // for the calculation.
-                    *eo = cur + ms->offset - 1;
+                    assert(ms->match_eo > 0);
+                    *eo = ms->match_eo - 1;
+                }
             }
             else if ( so || eo ) {
                 jrx_regmatch_t pmatch;
@@ -365,7 +401,7 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const Bytes& data, jr
             // At least one could match with more data.
             acc = -1;
 
-        if ( use_stdmatcher || do_anchor )
+        if ( use_stdmatcher || _flags.anchor )
             // We compiled with an implicit ".*", or are asked to anchor.
             break;
 
@@ -373,8 +409,8 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const Bytes& data, jr
     }
 
     if ( ! use_stdmatcher && acc == 0 )
-        // Adding more data may always help.
-        return -1;
+        // Adding more data may always help if we're not anchored.
+        return _flags.anchor ? 0 : -1;
 
     return acc;
 }

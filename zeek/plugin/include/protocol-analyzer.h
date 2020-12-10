@@ -37,11 +37,11 @@ public:
      *
      * @param msg message to record
      */
-    void DebugMsg(const std::string_view& msg) { debug(msg); }
+    void DebugMsg(const std::string& msg) { debug(msg); }
 
 protected:
     // Overridden from driver::ParsingState.
-    void debug(const std::string_view& msg) override;
+    void debug(const std::string& msg) override;
 
 private:
     Cookie _cookie;
@@ -102,7 +102,7 @@ protected:
      * Records a debug message. This forwards to `DebugMsg()` for the
      * corresponding `EndpointState`.
      */
-    void DebugMsg(bool is_orig, const std::string_view& msg);
+    void DebugMsg(bool is_orig, const std::string& msg);
 
 private:
     EndpointState _originator; /**< Originator-side state. */

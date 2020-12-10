@@ -16,7 +16,7 @@ using namespace plugin::Zeek_Spicy;
 #define STATE_DEBUG_MSG(...)
 #endif
 
-void FileState::debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
+void FileState::debug(const std::string& msg) { spicy::zeek::rt::debug(_cookie, msg); }
 
 static auto create_file_state(FileAnalyzer* analyzer) {
     cookie::FileAnalyzer cookie;

@@ -858,7 +858,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
         std::vector<std::string> elems;
         auto ttype = cg->compile(n, codegen::TypeUsage::Storage);
 
-        for ( const auto& [i, e] : util::enumerate(n.elements()) )
+        for ( const auto&& [i, e] : util::enumerate(n.elements()) )
             elems.push_back(
                 fmt("hilti::rt::type_info::tuple::Element{ \"%s\", %s, hilti::rt::tuple::elementOffset<%s, %d>() }",
                     e.first, cg->typeInfo(e.second), ttype, i));

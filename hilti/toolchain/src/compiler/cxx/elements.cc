@@ -490,7 +490,7 @@ std::string cxx::type::Union::str() const {
     std::vector<std::string> types;
     std::vector<std::string> visitor_calls;
 
-    for ( const auto& [idx, member] : util::enumerate(members) ) {
+    for ( const auto&& [idx, member] : util::enumerate(members) ) {
         auto decl = std::get<declaration::Local>(member);
         types.emplace_back(decl.type);
         visitor_calls.emplace_back(fmt("_(\"%s\", std::get_if<%d>(&this->value)); ", decl.id, idx + 1));
@@ -543,7 +543,7 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Block& x) {
         if ( ! x._tmps.empty() )
             f << separator();
 
-        for ( auto [i, y] : util::enumerate(x._stmts) ) {
+        for ( const auto&& [i, y] : util::enumerate(x._stmts) ) {
             auto [s, b, fl] = y;
 
             if ( fl & flags::AddSeparatorBefore && i != 0 )

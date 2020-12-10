@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include <string>
+
 #include <hilti/rt/logging.h>
 
 namespace spicy::zeek::debug {
 // Backend for performing debug logging. Must be implemented by application
 // using the functionality.
-extern void do_log(const std::string_view& msg);
+extern void do_log(const std::string& msg);
 } // namespace spicy::zeek::debug
 
 // Macro helper to report debug messages.

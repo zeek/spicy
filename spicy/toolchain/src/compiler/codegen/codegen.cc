@@ -13,6 +13,7 @@
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/operators/struct.h>
 #include <hilti/ast/types/reference.h>
+#include <hilti/ast/types/regexp.h>
 #include <hilti/base/logger.h>
 #include <hilti/global.h>
 
@@ -388,17 +389,22 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
         return {};
 
     std::optional<Type> item_type;
+    std::optional<Type> original_item_type;
 
     if ( field ) {
-        if ( ! field->get().parseType().isA<type::Void>() )
+        if ( ! field->get().parseType().isA<type::Void>() ) {
             item_type = field->get().itemType();
+            original_item_type = field->get().originalType();
+        }
     }
     else {
         // Try to locate field by ID.
         if ( auto i = unit.field(id.local()) ) {
             auto f = i->as<type::unit::item::Field>();
-            if ( ! f.parseType().isA<type::Void>() )
+            if ( ! f.parseType().isA<type::Void>() ) {
                 item_type = f.itemType();
+                original_item_type = f.originalType();
+            }
         }
     }
 
@@ -425,8 +431,15 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
         params.push_back({ID("__dd"), element_type, hilti::type::function::parameter::Kind::In, {}});
         params.push_back({ID("__stop"), type::Bool(), hilti::type::function::parameter::Kind::InOut, {}});
     }
-    else if ( item_type )
+    else if ( item_type ) {
         params.push_back({ID("__dd"), *item_type, hilti::type::function::parameter::Kind::In, {}});
+
+        if ( original_item_type && original_item_type->isA<type::RegExp>() )
+            params.push_back({ID("__captures"),
+                              builder::typeByID("hilti::Captures"),
+                              hilti::type::function::parameter::Kind::In,
+                              {}});
+    };
 
     std::string hid;
     Type result;

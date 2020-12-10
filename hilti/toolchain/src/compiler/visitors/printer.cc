@@ -419,6 +419,8 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         switch ( n.kind() ) {
             case expression::keyword::Kind::Self: out << "self";
             case expression::keyword::Kind::DollarDollar: out << "$$";
+            case expression::keyword::Kind::Captures:
+                out << "$@"; // this is technically not valid source code; we don't expose this to users
         }
     }
 
@@ -489,7 +491,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         out.incrementIndent();
 
         const auto& stmts = n.statements();
-        for ( auto [i, s] : util::enumerate(stmts) ) {
+        for ( const auto&& [i, s] : util::enumerate(stmts) ) {
             out.setPositionInBlock(i == 0, i == (stmts.size() - 1));
 
             if ( s.isA<statement::Block>() )

@@ -854,11 +854,25 @@ where ``T`` is one of :ref:`spicy_RealType`.
 Regular Expression
 ^^^^^^^^^^^^^^^^^^
 
-When parsing a field through a :ref:`type_regexp` , the expression is
+When parsing a field through a :ref:`type_regexp`, the expression is
 expected to match at the current position of the input stream. The
 field's type becomes ``bytes``, and it will store the matching data.
-Matching is non-greedy(!): the first (shortest) match will satisfy the
-parser.
+
+Inside hooks for fields with regular expressions, you can access
+capture groups through ``$1``, ``$2``, ``$3``, etc. For example::
+
+    x : /(a.c)(de*f)(h.j)/ {
+        print $1, $2, $3;
+        }
+
+This will print out the relevant pieces of the data matching the
+corresponding set of parentheses. (There's no ``$0``, just use ``$$``
+as normal to get the full match.)
+
+Matching an regular expression is more expensive if you need it to
+capture groups. If are using groups inside your expression but don't
+need the actual captures, add ``&nosub`` to the field to remove that
+overhead.
 
 .. _parse_unit:
 

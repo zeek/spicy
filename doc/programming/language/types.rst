@@ -302,6 +302,17 @@ differences and extensions:
 - ``{#<number>}`` associates a numerical ID with a regular expression
   (useful for set matching).
 
+Regular expression constants support two optional attributes:
+
+``&anchor``
+    Implicitly anchor the expression, meaning it must match at the
+    beginning of the data.
+
+``&nosub``
+    Compile without support for capturing subexpressions, which makes
+    matching more efficient.
+
+
 .. include:: /autogen/types/regexp.rst
 
 .. _type_set:

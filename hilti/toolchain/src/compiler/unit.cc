@@ -746,7 +746,7 @@ std::set<context::ModuleIndex> Unit::allImported(bool code_only) const {
 void Unit::_resetNodes(const ID& id, Node* root) {
     HILTI_DEBUG(logging::debug::Compiler, fmt("resetting nodes for module %s", id));
 
-    for ( const auto& i : hilti::visitor::PreOrder<>().walk(root) ) {
+    for ( const auto&& i : hilti::visitor::PreOrder<>().walk(root) ) {
         i.node.clearCache();
         i.node.scope()->clear();
         i.node.clearErrors();

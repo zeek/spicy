@@ -24,7 +24,7 @@ Type type::Bitfield::type() const {
 }
 
 std::optional<int> type::Bitfield::bitsIndex(const ID& id) const {
-    for ( const auto& [i, b] : hilti::util::enumerate(bits()) ) {
+    for ( const auto&& [i, b] : hilti::util::enumerate(bits()) ) {
         if ( id == b.id() )
             return i;
     }

@@ -30,7 +30,7 @@ namespace spicy { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 88
-%expect-rr 141
+%expect-rr 143
 
 %union {}
 %{
@@ -102,6 +102,7 @@ static int _field_width = 0;
 %token <str>       CPORT          "port value"
 %token <real>      CUREAL         "real value"
 %token <uint>      CUINTEGER      "unsigned integer value"
+%token <uint>      DOLLAR_NUMBER  "$<N>"
 %token <bool_>     CBOOL          "bool value"
 %token             CNULL          "null value"
 
@@ -170,6 +171,7 @@ static int _field_width = 0;
 %token         LOCAL
 %token         MAP
 %token         MARK
+%token         CAPTURES
 %token         MINUSASSIGN
 %token         MINUSMINUS
 %token         MOD
@@ -892,6 +894,11 @@ expr_f        : ctor                             { $$ = hilti::expression::Ctor(
 expr_g        : '(' expr ')'                     { $$ = hilti::expression::Grouping(std::move($2)); }
               | scoped_id                        { $$ = hilti::expression::UnresolvedID(std::move($1), __loc__); }
               | DOLLARDOLLAR                     { $$ = hilti::expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, __loc__); }
+              | DOLLAR_NUMBER                    { // $N -> $@[N] (with $@ being available internally only, not exposed to users)
+                                                   auto captures = hilti::expression::Keyword(hilti::expression::keyword::Kind::Captures, hilti::builder::typeByID("hilti::Captures"), __loc__);
+                                                   auto index = hilti::expression::Ctor(hilti::ctor::UnsignedInteger($1, 64, __loc__), __loc__);
+                                                   $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Index, {std::move(captures), std::move(index)}, __loc__);
+                                                 }
 
 member_expr   : local_id                         { $$ = hilti::expression::Member(std::move($1), __loc__); }
 

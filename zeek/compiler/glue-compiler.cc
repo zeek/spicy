@@ -1046,7 +1046,7 @@ bool GlueCompiler::CreateSpicyHook(glue::Event* ev) {
     if ( _driver->hiltiOptions().debug ) {
         std::vector<Expression> fmt_args = {builder::string(ev->name)};
 
-        for ( const auto& [i, e] : hilti::util::enumerate(ev->expression_accessors) ) {
+        for ( const auto&& [i, e] : hilti::util::enumerate(ev->expression_accessors) ) {
             if ( hilti::util::startsWith(e.expression, "$") ) {
                 fmt_args.emplace_back(builder::string(e.expression));
                 continue;

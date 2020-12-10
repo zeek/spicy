@@ -1,0 +1,28 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC-FAIL: printf 'abcdefhij' | spicy-driver -p Test::X %INPUT.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf 'abcdefhij' | spicy-driver -p Test::Y %INPUT.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf 'abcdefhij' | spicy-driver -p Test::Z %INPUT.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that regexps that don't need to capture, fail as expected when trying to use $N.
+
+module Test;
+
+public type X = unit {
+    x: /abc/ {
+        print $1; # out of range
+        }
+};
+
+public type Y = unit {
+    y: /(a.c)(de*f)(h.j)/ &nosub {
+        print $1; # out of range
+        }
+};
+
+# Test the case where we capture, but then access an index out of range.
+public type Z = unit {
+    z: /(a.c)(de*f)(h.j)/ {
+        print $99; # out of range
+        }
+};

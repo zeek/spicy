@@ -26,19 +26,17 @@ class RegExp;
 namespace regexp {
 
 struct Flags {
-    bool no_sub : 1; /**< Compile without support for capturing sub-expressions. */
+    bool anchor : 1; /**< If true, implicitly anchor the expression. */
+    bool no_sub : 1; /**< If true, compile without support for capturing sub-expressions. */
 
     friend bool operator==(const Flags& a, const Flags& b) { return a.no_sub == b.no_sub; }
     friend bool operator!=(const Flags& a, const Flags& b) { return ! (a == b); }
 };
 
-/**
- * Match state for incremental regexp matching. This is tailored for token
- * matching: it's anchored and does not support capture groups.
- *
- * @note We don't make this part of the public API to avoid dependending on
- * the jrx header.
- **/
+/* Type for passing around the content of extracted capture groups. */
+using Captures = Vector<Bytes>;
+
+/** Match state for incremental regexp matching. **/
 class MatchState {
 public:
     /**
@@ -56,7 +54,7 @@ public:
      * Feeds the next chunk of data into the matcher.
      *
      * @param data chunk of data; if the underlying stream is frozen, this
-     * will be assumd to be the last chunk of data, and
+     * will be assumed to be the last chunk of data, and
      * the result of any further calls to `advance()` will then trigger a
      * `MatchStateReuse` exception
      *
@@ -85,10 +83,20 @@ public:
      * no match was found and advancing further to more data is guaranteed to
      * not change that fact. (3) smaller than 0 if no match was found so far
      * but advancing further may change that. In either case, the 2nd element
-     * in the tuple returns the number of bytes that were consumed from
-     * *data* by the matching.
+     * in the tuple returns the number of bytes that were consumed from *data*
+     * by the matching.
      */
     std::tuple<int32_t, uint64_t> advance(const Bytes& data, bool is_final = false);
+
+    /**
+     * Returns extracted capture groups after successful matching.
+     * Element zero will contain the full match. For i>0, index i will
+     * contain the i'th capture group. If capture groups cannot be
+     * extracted (e.g., because the regexp was compiled without
+     * support for that, or when matching has not finished
+     * successfully), the return vector will be empty.
+     */
+    Captures captures(const Stream& data) const;
 
 private:
     std::pair<int32_t, uint64_t> _advance(const stream::View& data, bool is_final);
@@ -193,7 +201,7 @@ private:
      * Searches for the regexp anywhere inside a bytes instance and returns
      * the first match.
      */
-    int16_t _search_pattern(jrx_match_state* ms, const Bytes& data, int32_t* so, int32_t* eo, bool do_anchor,
+    int16_t _search_pattern(jrx_match_state* ms, const Bytes& data, int32_t* so, int32_t* eo,
                             bool find_partial_matches) const;
 
     void _newJrx();

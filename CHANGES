@@ -1,4 +1,39 @@
 
+0.4.0-1106 | 2020-12-10 10:10:16 +0000
+
+  * Make capture groups available inside hooks of regular expression fields.
+    (Robin Sommer, Corelight)
+
+    Example:
+
+         x: /(a.c)(de*f)(h.j)/ {
+            print $1, $2, $3;
+            }
+
+    This will print the pieces corresponding to the three groups inside the
+    expression.
+
+    Couple notes:
+
+        - We don't make $0 available as that would be the same as `$$`.
+
+        - Matching with capture groups is more expensive that without. If
+          you don't use any groups in the regexp, the overhead is
+          automatically removed. If you use groups, but don't need them to
+          capture, add `&nosub` to the field.
+
+  * Make new captures() method available on regexp matching state in
+    HILTI. (Robin Sommer, Corelight)
+
+  * Fix argument mismatches between Spicy generated C++ prototypes and
+    Zeek plugin runtime code. (Robin Sommer, Corelight)
+
+  * Fix compile error on non-JIT version of plugin, and fix unsafe use
+    of string_view. (Robin Sommer, Corelight)
+
+  * Fix warnings reported by Apple's compiler. (Robin Sommer,
+    Corelight)
+
 0.4.0-1093 | 2020-12-10 08:39:26 +0100
 
   * Switch runtime library to use "fiber" library instead of libtask.

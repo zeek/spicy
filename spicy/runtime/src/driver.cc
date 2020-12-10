@@ -39,7 +39,7 @@ inline static auto pretty_print_number(uint64_t n) {
     return fmt("%" PRIu64, n);
 }
 
-inline void Driver::debug(const std::string_view& msg) { HILTI_RT_DEBUG("spicy-driver", msg); }
+inline void Driver::debug(const std::string& msg) { HILTI_RT_DEBUG("spicy-driver", msg); }
 
 void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& data) {
     auto data_begin = data->begin().offset();
@@ -184,12 +184,12 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
     return std::move(unit);
 }
 
-void driver::ParsingStateForDriver::debug(const std::string_view& msg) {
+void driver::ParsingStateForDriver::debug(const std::string& msg) {
     _driver->debug(hilti::rt::fmt("[%s] %s", _id, msg));
 }
 
-void driver::ParsingState::debug(const std::string_view& msg, size_t size, const char* data) {
-    debug(hilti::rt::fmt("%s: |%s%s|", msg, hilti::rt::escapeBytes(std::string_view(data, std::min(size_t(40), size))),
+void driver::ParsingState::debug(const std::string& msg, size_t size, const char* data) {
+    debug(hilti::rt::fmt("%s: |%s%s|", msg, hilti::rt::escapeBytes(std::string(data, std::min(size_t(40), size))),
                          size > 40 ? "..." : ""));
 }
 

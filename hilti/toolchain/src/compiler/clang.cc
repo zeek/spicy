@@ -365,12 +365,12 @@ std::pair<std::unique_ptr<llvm::Module>, std::string> ClangJIT::Implementation::
 
     std::string one_ctor; // remembers one arbitrarty ctor for below
 
-    for ( const auto& x : llvm::orc::getConstructors(*linked_module) ) {
+    for ( const auto&& x : llvm::orc::getConstructors(*linked_module) ) {
         one_ctor = x.Func->getName().str();
         symbols_to_uniquify.insert(x.Func->getName().str());
     }
 
-    for ( const auto& x : llvm::orc::getDestructors(*linked_module) )
+    for ( const auto&& x : llvm::orc::getDestructors(*linked_module) )
         symbols_to_uniquify.insert(x.Func->getName().str());
 
     // Do the renaming. This returns a map mapping old names to the new

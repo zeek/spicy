@@ -33,8 +33,8 @@ plugin::Zeek_Spicy::Plugin* plugin::Zeek_Spicy::OurPlugin = &SpicyPlugin;
 using namespace spicy::zeek;
 
 #ifndef ZEEK_HAVE_JIT
-void spicy::zeek::debug::do_log(const std::string_view& msg) {
-    PLUGIN_DBG_LOG(plugin::Zeek_Spicy::OurPlugin, "%s", msg);
+void spicy::zeek::debug::do_log(const std::string& msg) {
+    PLUGIN_DBG_LOG(*plugin::Zeek_Spicy::OurPlugin, "%s", msg.c_str());
     HILTI_RT_DEBUG("zeek", msg);
 }
 #endif

@@ -88,7 +88,7 @@ public:
     }
 
     unsigned int index(const ID& id) const {
-        for ( auto [i, f] : util::enumerate(fields()) ) {
+        for ( const auto&& [i, f] : util::enumerate(fields()) ) {
             if ( f.id() == id )
                 return i + 1;
         }

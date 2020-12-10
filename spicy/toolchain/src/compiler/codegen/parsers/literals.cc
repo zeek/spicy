@@ -5,6 +5,7 @@
 #include <hilti/ast/builder/all.h>
 #include <hilti/base/logger.h>
 
+#include <spicy/ast/aliases.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
@@ -88,7 +89,12 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         auto re = hilti::ID(fmt("__re_%" PRId64, production.tokenID()));
 
         if ( ! pb->cg()->haveAddedDeclaration(re) ) {
-            auto d = builder::constant(re, builder::regexp(c.value(), AttributeSet({Attribute("&nosub")})));
+            auto attrs = AttributeSet({Attribute("&anchor")});
+
+            if ( ! state().captures )
+                attrs = AttributeSet::add(attrs, Attribute("&nosub"));
+
+            auto d = builder::constant(re, builder::regexp(c.value(), std::move(attrs)));
             pb->cg()->addDeclaration(d);
         }
 
@@ -136,6 +142,11 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
                 auto match = switch_.addDefault();
                 pushBuilder(match);
+
+                if ( state().captures )
+                    builder()->addAssign(*state().captures,
+                                         builder::memberCall(builder::id("ms"), "captures", {state().data}));
+
                 builder()->addAssign(dst,
                                      builder::memberCall(state().cur, "sub", {builder::begin(builder::id("ncur"))}));
                 pb->setInput(builder::id("ncur"));

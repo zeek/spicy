@@ -17,8 +17,11 @@
 //// Collect all the Zeek includes here that we need anywhere in the plugin.
 
 #if ZEEK_DEBUG_BUILD
+#ifndef DEBUG
 #define DEBUG
 #endif
+#endif
+
 #if ZEEK_VERSION_NUMBER >= 30300 // Zeek >= 3.3 (aka 4.0)
 #include <zeek/packet_analysis/Analyzer.h>
 #endif

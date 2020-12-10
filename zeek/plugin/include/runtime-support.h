@@ -97,7 +97,7 @@ void register_enum_type(const std::string& ns, const std::string& id,
                         const hilti::rt::Vector<std::tuple<std::string, hilti::rt::integer::safe<int64_t>>>& labels);
 
 /** Returns true if an event has at least one handler defined. */
-inline bool have_handler(::zeek::EventHandlerPtr handler) { return static_cast<bool>(handler); }
+inline hilti::rt::Bool have_handler(const ::zeek::EventHandlerPtr& handler) { return static_cast<bool>(handler); }
 
 /**
  * Looks up an event handler by name. This will always return a handler; if
@@ -106,14 +106,14 @@ inline bool have_handler(::zeek::EventHandlerPtr handler) { return static_cast<b
 ::zeek::EventHandlerPtr internal_handler(const std::string& name);
 
 /** Raises a Zeek event, given the handler and arguments. */
-void raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::zeek::ValPtr>& args,
-                 std::string_view location);
+void raise_event(const ::zeek::EventHandlerPtr& handler, const hilti::rt::Vector<::zeek::ValPtr>& args,
+                 const std::string& location);
 
 /**
  * Returns the Zeek type of an event's i'th argument. The result's ref count
  * is not increased.
  */
-::zeek::TypePtr event_arg_type(::zeek::EventHandlerPtr handler, uint64_t idx, std::string_view location);
+::zeek::TypePtr event_arg_type(const ::zeek::EventHandlerPtr& handler, const hilti::rt::integer::safe<uint64_t>& idx, const std::string& location);
 
 /**
  * Retrieves the connection ID for the currently processed Zeek connection.
@@ -121,7 +121,7 @@ void raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::zeek
  *
  * @return Zeek value of record type
  */
-::zeek::ValPtr current_conn(std::string_view location);
+::zeek::ValPtr current_conn(const std::string& location);
 
 /**
  * Retrieves the direction of the currently processed Zeek connection.
@@ -129,7 +129,7 @@ void raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::zeek
  *
  * @return Zeek value of boolean type
  */
-::zeek::ValPtr current_is_orig(std::string_view location);
+::zeek::ValPtr current_is_orig(const std::string& location);
 
 /**
  * Logs a string through the Spicy plugin's debug output.
@@ -137,7 +137,7 @@ void raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::zeek
  * @param cookie refers to the connection or file that the message is associated with
  * @param msg message to log
  */
-void debug(const Cookie& cookie, const std::string_view& msg);
+void debug(const Cookie& cookie, const std::string& msg);
 
 /**
  * Logs a string through the Spicy plugin's debug output. This version logs
@@ -145,7 +145,7 @@ void debug(const Cookie& cookie, const std::string_view& msg);
  *
  * @param msg message to log
  */
-void debug(const std::string_view& msg);
+void debug(const std::string& msg);
 
 /**
  * Retrieves the fa_file instance for the currently processed Zeek file.
@@ -153,13 +153,13 @@ void debug(const std::string_view& msg);
  *
  * @return Zeek value of record type
  */
-::zeek::ValPtr current_file(std::string_view location);
+::zeek::ValPtr current_file(const std::string& location);
 
 /**
  * Returns true if we're currently parsing the originator side of a
  * connection.
  */
-bool is_orig();
+hilti::rt::Bool is_orig();
 
 /** Instructs to Zeek to flip the directionality of the current connecction. */
 void flip_roles();
@@ -168,7 +168,7 @@ void flip_roles();
  * Returns the number of packets seen so far on the current side of the
  * current connection.
  */
-uint64_t number_packets();
+hilti::rt::integer::safe<uint64_t> number_packets();
 
 /**
  * Triggers a DPD protocol confirmation for the currently processed
@@ -196,7 +196,7 @@ void file_begin();
  *
  * @param size expected final size of the file
  */
-void file_set_size(uint64_t size);
+void file_set_size(const hilti::rt::integer::safe<uint64_t>& size);
 
 /**
  * Passes file content on to Zeek's file analysis.
@@ -211,7 +211,7 @@ void file_data_in(const hilti::rt::Bytes& data);
  * @param data next chunk of data
  * @param offset file offset of the data geing passed in
  */
-void file_data_in_at_offset(const hilti::rt::Bytes& data, uint64_t offset);
+void file_data_in_at_offset(const hilti::rt::Bytes& data, const hilti::rt::integer::safe<uint64_t>& offset);
 
 /**
  * Signals a gap in a file to Zeek's file analysis.
@@ -219,7 +219,7 @@ void file_data_in_at_offset(const hilti::rt::Bytes& data, uint64_t offset);
  * @param offset of the gap
  * @param length of the gap
  */
-void file_gap(uint64_t offset, uint64_t len);
+void file_gap(const hilti::rt::integer::safe<uint64_t>& offset, const hilti::rt::integer::safe<uint64_t>& len);
 
 /** Signals the end of a file to Zeek's file analysis. */
 void file_end();
@@ -229,38 +229,30 @@ void forward_packet(uint32_t identifier);
 
 // Forward-declare to_val() functions.
 template<typename T, typename std::enable_if_t<hilti::rt::is_tuple<T>::value>* = nullptr>
-::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, std::string_view location);
+::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, const std::string& location);
 template<typename T, typename std::enable_if_t<std::is_enum<T>::value>* = nullptr>
-::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, std::string_view location);
+::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, const std::string& location);
 template<typename K, typename V>
-::zeek::ValPtr to_val(const hilti::rt::Map<K, V>& s, ::zeek::TypePtr target, std::string_view location);
+::zeek::ValPtr to_val(const hilti::rt::Map<K, V>& s, ::zeek::TypePtr target, const std::string& location);
 template<typename T>
-::zeek::ValPtr to_val(const hilti::rt::Set<T>& s, ::zeek::TypePtr target, std::string_view location);
+::zeek::ValPtr to_val(const hilti::rt::Set<T>& s, ::zeek::TypePtr target, const std::string& location);
 template<typename T>
-::zeek::ValPtr to_val(const hilti::rt::Vector<T>& v, ::zeek::TypePtr target, std::string_view location);
+::zeek::ValPtr to_val(const hilti::rt::Vector<T>& v, ::zeek::TypePtr target, const std::string& location);
 template<typename T>
-::zeek::ValPtr to_val(const std::optional<T>& t, ::zeek::TypePtr target, std::string_view location);
+::zeek::ValPtr to_val(const std::optional<T>& t, ::zeek::TypePtr target, const std::string& location);
 template<typename T>
-::zeek::ValPtr to_val(const hilti::rt::DeferredExpression<T>& t, ::zeek::TypePtr target, std::string_view location);
+::zeek::ValPtr to_val(const hilti::rt::DeferredExpression<T>& t, ::zeek::TypePtr target, const std::string& location);
 template<typename T>
-::zeek::ValPtr to_val(hilti::rt::integer::safe<T> i, ::zeek::TypePtr target, std::string_view location);
+::zeek::ValPtr to_val(hilti::rt::integer::safe<T> i, ::zeek::TypePtr target, const std::string& location);
 
-inline ::zeek::ValPtr to_val(bool b, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(const hilti::rt::Address& d, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(const hilti::rt::Bytes& b, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(const hilti::rt::Interval& t, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(const hilti::rt::Port& d, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(const hilti::rt::Time& t, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(const std::string& s, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(double r, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(int16_t i, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(int32_t i, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(int64_t i, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(int8_t i, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(uint16_t i, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(uint32_t i, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(uint64_t i, ::zeek::TypePtr target, std::string_view location);
-inline ::zeek::ValPtr to_val(uint8_t i, ::zeek::TypePtr target, std::string_view location);
+inline ::zeek::ValPtr to_val(const hilti::rt::Bool& b, ::zeek::TypePtr target, const std::string& location);
+inline ::zeek::ValPtr to_val(const hilti::rt::Address& d, ::zeek::TypePtr target, const std::string& location);
+inline ::zeek::ValPtr to_val(const hilti::rt::Bytes& b, ::zeek::TypePtr target, const std::string& location);
+inline ::zeek::ValPtr to_val(const hilti::rt::Interval& t, ::zeek::TypePtr target, const std::string& location);
+inline ::zeek::ValPtr to_val(const hilti::rt::Port& d, ::zeek::TypePtr target, const std::string& location);
+inline ::zeek::ValPtr to_val(const hilti::rt::Time& t, ::zeek::TypePtr target, const std::string& location);
+inline ::zeek::ValPtr to_val(const std::string& s, ::zeek::TypePtr target, const std::string& location);
+inline ::zeek::ValPtr to_val(double r, ::zeek::TypePtr target, const std::string& location);
 
 /**
  * Converts a Spicy-side optional value to a Zeek value. This assumes the
@@ -268,7 +260,7 @@ inline ::zeek::ValPtr to_val(uint8_t i, ::zeek::TypePtr target, std::string_view
  * returned with ref count +1.
  */
 template<typename T>
-inline ::zeek::ValPtr to_val(const std::optional<T>& t, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const std::optional<T>& t, ::zeek::TypePtr target, const std::string& location) {
     if ( t.has_value() )
         return to_val(hilti::rt::optional::value(t, location.data()), target, location);
 
@@ -283,7 +275,7 @@ inline ::zeek::ValPtr to_val(const std::optional<T>& t, ::zeek::TypePtr target, 
  */
 template<typename T>
 inline ::zeek::ValPtr to_val(const hilti::rt::DeferredExpression<T>& t, ::zeek::TypePtr target,
-                             std::string_view location) {
+                             const std::string& location) {
     try {
         return to_val(t(), target, location);
     } catch ( const hilti::rt::AttributeNotSet& ) {
@@ -295,7 +287,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::DeferredExpression<T>& t, ::zeek::
  * Converts a Spicy-side string to a Zeek value. The result is returned with
  * ref count +1.
  */
-inline ::zeek::ValPtr to_val(const std::string& s, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const std::string& s, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_STRING )
         throw TypeMismatch("string", target, location);
 
@@ -306,7 +298,7 @@ inline ::zeek::ValPtr to_val(const std::string& s, ::zeek::TypePtr target, std::
  * Converts a Spicy-side bytes instance to a Zeek value. The result is returned with
  * ref count +1.
  */
-inline ::zeek::ValPtr to_val(const hilti::rt::Bytes& b, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const hilti::rt::Bytes& b, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_STRING )
         throw TypeMismatch("string", target, location);
 
@@ -318,7 +310,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Bytes& b, ::zeek::TypePtr target, 
  * returned with ref count +1.
  */
 template<typename T>
-inline ::zeek::ValPtr to_val(hilti::rt::integer::safe<T> i, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(hilti::rt::integer::safe<T> i, ::zeek::TypePtr target, const std::string& location) {
     ::zeek::ValPtr v = nullptr;
     if constexpr ( std::is_unsigned<T>::value ) {
         if ( target->Tag() == ::zeek::TYPE_COUNT )
@@ -348,7 +340,7 @@ inline ::zeek::ValPtr to_val(hilti::rt::integer::safe<T> i, ::zeek::TypePtr targ
  * Converts a Spicy-side signed bool to a Zeek value. The result is
  * returned with ref count +1.
  */
-inline ::zeek::ValPtr to_val(bool b, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const hilti::rt::Bool& b, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_BOOL )
         throw TypeMismatch("bool", target, location);
 
@@ -359,7 +351,7 @@ inline ::zeek::ValPtr to_val(bool b, ::zeek::TypePtr target, std::string_view lo
  * Converts a Spicy-side real to a Zeek value. The result is returned with
  * ref count +1.
  */
-inline ::zeek::ValPtr to_val(double r, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(double r, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_DOUBLE )
         throw TypeMismatch("double", target, location);
 
@@ -370,7 +362,7 @@ inline ::zeek::ValPtr to_val(double r, ::zeek::TypePtr target, std::string_view 
  * Converts a Spicy-side address to a Zeek value. The result is returned with
  * ref count +1.
  */
-inline ::zeek::ValPtr to_val(const hilti::rt::Address& d, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const hilti::rt::Address& d, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_ADDR )
         throw TypeMismatch("addr", target, location);
 
@@ -387,7 +379,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Address& d, ::zeek::TypePtr target
  * Converts a Spicy-side address to a Zeek value. The result is returned with
  * ref count +1.
  */
-inline ::zeek::ValPtr to_val(const hilti::rt::Port& p, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const hilti::rt::Port& p, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_PORT )
         throw TypeMismatch("port", target, location);
 
@@ -403,54 +395,10 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Port& p, ::zeek::TypePtr target, s
 }
 
 /**
- * Converts a Spicy-side signed integer to a Zeek value. The result is
- * returned with ref count +1.
- */
-inline ::zeek::ValPtr to_val(int8_t i, ::zeek::TypePtr target, std::string_view location) {
-    if ( target->Tag() != ::zeek::TYPE_INT )
-        throw TypeMismatch("int", target, location);
-
-    return zeek::compat::val_mgr_Int(i);
-}
-
-/**
- * Converts a Spicy-side signed integer to a Zeek value. The result is
- * returned with ref count +1.
- */
-inline ::zeek::ValPtr to_val(int16_t i, ::zeek::TypePtr target, std::string_view location) {
-    if ( target->Tag() != ::zeek::TYPE_INT )
-        throw TypeMismatch("int", target, location);
-
-    return zeek::compat::val_mgr_Int(i);
-}
-
-/**
- * Converts a Spicy-side signed integer to a Zeek value. The result is
- * returned with ref count +1.
- */
-inline ::zeek::ValPtr to_val(int32_t i, ::zeek::TypePtr target, std::string_view location) {
-    if ( target->Tag() != ::zeek::TYPE_INT )
-        throw TypeMismatch("int", target, location);
-
-    return zeek::compat::val_mgr_Int(i);
-}
-
-/**
- * Converts a Spicy-side signed integer to a Zeek value. The result is
- * returned with ref count +1.
- */
-inline ::zeek::ValPtr to_val(int64_t i, ::zeek::TypePtr target, std::string_view location) {
-    if ( target->Tag() != ::zeek::TYPE_INT )
-        throw TypeMismatch("int", target, location);
-
-    return zeek::compat::val_mgr_Int(i);
-}
-
-/**
  * Converts a Spicy-side time to a Zeek value. The result is returned with
  * ref count +1.
  */
-inline ::zeek::ValPtr to_val(const hilti::rt::Interval& i, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const hilti::rt::Interval& i, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_INTERVAL )
         throw TypeMismatch("interval", target, location);
 
@@ -461,7 +409,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Interval& i, ::zeek::TypePtr targe
  * Converts a Spicy-side time to a Zeek value. The result is returned with
  * ref count +1.
  */
-inline ::zeek::ValPtr to_val(const hilti::rt::Time& t, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const hilti::rt::Time& t, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_TIME )
         throw TypeMismatch("time", target, location);
 
@@ -469,55 +417,11 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Time& t, ::zeek::TypePtr target, s
 }
 
 /**
- * Converts a Spicy-side signed integer to a Zeek value. The result is
- * returned with ref count +1.
- */
-inline ::zeek::ValPtr to_val(uint8_t i, ::zeek::TypePtr target, std::string_view location) {
-    if ( target->Tag() != ::zeek::TYPE_COUNT )
-        throw TypeMismatch("int", target, location);
-
-    return zeek::compat::val_mgr_Count(i);
-}
-
-/**
- * Converts a Spicy-side signed integer to a Zeek value. The result is
- * returned with ref count +1.
- */
-inline ::zeek::ValPtr to_val(uint16_t i, ::zeek::TypePtr target, std::string_view location) {
-    if ( target->Tag() != ::zeek::TYPE_COUNT )
-        throw TypeMismatch("int", target, location);
-
-    return zeek::compat::val_mgr_Count(i);
-}
-
-/**
- * Converts a Spicy-side signed integer to a Zeek value. The result is
- * returned with ref count +1.
- */
-inline ::zeek::ValPtr to_val(uint32_t i, ::zeek::TypePtr target, std::string_view location) {
-    if ( target->Tag() != ::zeek::TYPE_COUNT )
-        throw TypeMismatch("int", target, location);
-
-    return zeek::compat::val_mgr_Count(i);
-}
-
-/**
- * Converts a Spicy-side signed integer to a Zeek value. The result is
- * returned with ref count +1.
- */
-inline ::zeek::ValPtr to_val(uint64_t i, ::zeek::TypePtr target, std::string_view location) {
-    if ( target->Tag() != ::zeek::TYPE_COUNT )
-        throw TypeMismatch("int", target, location);
-
-    return zeek::compat::val_mgr_Count(i);
-}
-
-/**
  * Converts a Spicy-side vector to a Zeek value. The result is returned with
  * ref count +1.
  */
 template<typename T>
-inline ::zeek::ValPtr to_val(const hilti::rt::Vector<T>& v, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const hilti::rt::Vector<T>& v, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_VECTOR && target->Tag() != ::zeek::TYPE_LIST )
         throw TypeMismatch("expected vector or list", target, location);
 
@@ -534,7 +438,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Vector<T>& v, ::zeek::TypePtr targ
  * ref count +1.
  */
 template<typename K, typename V>
-inline ::zeek::ValPtr to_val(const hilti::rt::Map<K, V>& m, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const hilti::rt::Map<K, V>& m, ::zeek::TypePtr target, const std::string& location) {
     if constexpr ( hilti::rt::is_tuple<K>::value )
         throw TypeMismatch("internal error: sets with tuples not yet supported in to_val()");
 
@@ -565,7 +469,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Map<K, V>& m, ::zeek::TypePtr targ
  * ref count +1.
  */
 template<typename T>
-inline ::zeek::ValPtr to_val(const hilti::rt::Set<T>& s, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const hilti::rt::Set<T>& s, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_TABLE )
         throw TypeMismatch("set", target, location);
 
@@ -596,7 +500,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Set<T>& s, ::zeek::TypePtr target,
  * with ref count +1.
  */
 template<typename T, typename std::enable_if_t<hilti::rt::is_tuple<T>::value>*>
-inline ::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_RECORD )
         throw TypeMismatch("tuple", target, location);
 
@@ -640,7 +544,7 @@ inline ::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, std::string_vie
  * with ref count +1.
  */
 template<typename T, typename std::enable_if_t<std::is_enum<T>::value>*>
-inline ::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, std::string_view location) {
+inline ::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, const std::string& location) {
     if ( target->Tag() != ::zeek::TYPE_ENUM )
         throw TypeMismatch("enum", target, location);
 

@@ -67,7 +67,7 @@ END_METHOD
 BEGIN_METHOD(regexp, TokenMatcher)
     auto signature() const {
         return Signature{.self = type::RegExp(),
-                         .result = type::Library("hilti::rt::regexp::MatchState"),
+                         .result = builder::typeByID("hilti::MatchState"),
                          .id = "token_matcher",
                          .args = {},
                          .doc = R"(

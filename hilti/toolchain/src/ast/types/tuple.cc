@@ -16,7 +16,7 @@ std::vector<ID> type::Tuple::ids() const {
 }
 
 std::optional<std::pair<int, Type>> type::Tuple::elementByID(const ID& id) {
-    for ( const auto& [i, e] : util::enumerate(elements()) ) {
+    for ( const auto&& [i, e] : util::enumerate(elements()) ) {
         if ( e.first == id )
             return std::make_pair(i, e.second);
     }

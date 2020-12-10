@@ -28,7 +28,7 @@ public:
     auto default_() const { return childs()[2].tryReferenceAs<Expression>(); }
     auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
 
-    auto isOptional() const { return AttributeSet::find(attributes(), "&optional"); }
+    bool isOptional() const { return AttributeSet::find(attributes(), "&optional").has_value(); }
 
     bool operator==(const Variable& other) const {
         return id() == other.id() && itemType() == other.itemType() && default_() == other.default_() &&

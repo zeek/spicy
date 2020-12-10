@@ -53,7 +53,7 @@ public:
     auto body() const { return childs()[2].tryReferenceAs<Statement>(); }
     auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
     auto callingConvention() const { return _cc; }
-    auto isStatic() const { return AttributeSet::find(attributes(), "&static"); }
+    bool isStatic() const { return AttributeSet::find(attributes(), "&static").has_value(); }
 
     bool operator==(const Function& other) const {
         return id() == other.id() && type() == other.type() && body() == other.body() &&

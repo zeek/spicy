@@ -119,6 +119,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const ctor::RegExp& n) {
         std::vector<std::string> flags;
 
+        if ( n.isAnchor() )
+            flags.emplace_back(".anchor = 1");
+
         if ( n.isNoSub() )
             flags.emplace_back(".no_sub = 1");
 

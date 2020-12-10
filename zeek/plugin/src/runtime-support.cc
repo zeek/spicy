@@ -22,8 +22,7 @@ void rt::register_file_analyzer(const std::string& name, const hilti::rt::Vector
     OurPlugin->registerFileAnalyzer(name, mime_types, parser);
 }
 
-void rt::register_packet_analyzer(const std::string& name,
-                                const std::string& parser) {
+void rt::register_packet_analyzer(const std::string& name, const std::string& parser) {
 #ifdef HAVE_PACKET_ANALYZERS
     OurPlugin->registerPacketAnalyzer(name, parser);
 #else
@@ -59,8 +58,8 @@ void rt::register_enum_type(
     return ev;
 }
 
-void rt::raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::zeek::ValPtr>& args,
-                     std::string_view location) {
+void rt::raise_event(const ::zeek::EventHandlerPtr& handler, const hilti::rt::Vector<::zeek::ValPtr>& args,
+                     const std::string& location) {
     // Caller must have checked already that there's a handler availale.
     assert(handler);
 
@@ -84,7 +83,7 @@ void rt::raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::
     zeek::compat::event_mgr_Enqueue(handler, vl);
 }
 
-::zeek::TypePtr rt::event_arg_type(::zeek::EventHandlerPtr handler, uint64_t idx, std::string_view location) {
+::zeek::TypePtr rt::event_arg_type(const ::zeek::EventHandlerPtr& handler, const hilti::rt::integer::safe<uint64_t>& idx, const std::string& location) {
     assert(handler);
 
     auto zeek_args =
@@ -97,7 +96,7 @@ void rt::raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::
     return zeek::compat::ZeekArgs_Get(zeek_args, idx);
 }
 
-::zeek::ValPtr rt::current_conn(std::string_view location) {
+::zeek::ValPtr rt::current_conn(const std::string& location) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
@@ -107,7 +106,7 @@ void rt::raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::
         throw ValueUnavailable("$conn not available", location);
 }
 
-::zeek::ValPtr rt::current_is_orig(std::string_view location) {
+::zeek::ValPtr rt::current_is_orig(const std::string& location) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
@@ -117,13 +116,13 @@ void rt::raise_event(::zeek::EventHandlerPtr handler, const hilti::rt::Vector<::
         throw ValueUnavailable("$is_orig not available", location);
 }
 
-void rt::debug(const std::string_view& msg) {
+void rt::debug(const std::string& msg) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
     rt::debug(*cookie, msg);
 }
 
-void rt::debug(const Cookie& cookie, const std::string_view& msg) {
+void rt::debug(const Cookie& cookie, const std::string& msg) {
     std::string name;
     std::string id;
 
@@ -146,7 +145,7 @@ void rt::debug(const Cookie& cookie, const std::string_view& msg) {
         throw ValueUnavailable("neither $conn nor $file nor packet analyzer available for debug logging");
 }
 
-::zeek::ValPtr rt::current_file(std::string_view location) {
+::zeek::ValPtr rt::current_file(const std::string& location) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
@@ -156,7 +155,7 @@ void rt::debug(const Cookie& cookie, const std::string_view& msg) {
         throw ValueUnavailable("$file not available", location);
 }
 
-bool rt::is_orig() {
+hilti::rt::Bool rt::is_orig() {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
@@ -178,7 +177,7 @@ void rt::flip_roles() {
         throw ValueUnavailable("flip_roles() not available in current context");
 }
 
-uint64_t rt::number_packets() {
+hilti::rt::integer::safe<uint64_t> rt::number_packets() {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
@@ -220,7 +219,7 @@ void rt::file_begin() {
     // Nothing todo.
 }
 
-void rt::file_set_size(uint64_t size) {
+void rt::file_set_size(const hilti::rt::integer::safe<uint64_t>& size) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
@@ -243,7 +242,7 @@ void rt::file_data_in(const hilti::rt::Bytes& data) {
         throw ValueUnavailable("no current connection available");
 }
 
-void rt::file_data_in_at_offset(const hilti::rt::Bytes& data, uint64_t offset) {
+void rt::file_data_in_at_offset(const hilti::rt::Bytes& data, const hilti::rt::integer::safe<uint64_t>& offset) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
@@ -255,7 +254,7 @@ void rt::file_data_in_at_offset(const hilti::rt::Bytes& data, uint64_t offset) {
         throw ValueUnavailable("no current connection available");
 }
 
-void rt::file_gap(uint64_t offset, uint64_t len) {
+void rt::file_gap(const hilti::rt::integer::safe<uint64_t>& offset, const hilti::rt::integer::safe<uint64_t>& len) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 

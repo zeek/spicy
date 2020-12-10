@@ -10,7 +10,7 @@
 
 const ::hilti::logging::DebugStream ZeekPlugin("zeek");
 
-void ::spicy::zeek::debug::do_log(const std::string_view& msg) { HILTI_DEBUG(ZeekPlugin, std::string(msg)); }
+void ::spicy::zeek::debug::do_log(const std::string& msg) { HILTI_DEBUG(ZeekPlugin, std::string(msg)); }
 
 static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
                                               {"show-backtraces", required_argument, nullptr, 'B'},
