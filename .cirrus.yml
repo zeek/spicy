@@ -424,3 +424,42 @@ validate_homebrew_task:
   - brew tap zeek/zeek
   - brew install spicy --HEAD
   - brew test spicy
+
+docker_debian10_task:
+  container:
+    dockerfile: docker/Dockerfile.debian-10
+    cpu: 4
+    memory: 8G
+    docker_arguments:
+      - SKIP_BUILD: 1
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+  build_script:
+    - ninja -j5 -C build install
+  test_script:
+    - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+  packaging_script:
+    - ninja -C build package
+
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
