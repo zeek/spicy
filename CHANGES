@@ -1,4 +1,17 @@
 
+0.4.0-1110 | 2020-12-10 10:15:17 +0000
+
+  * GH-25: Add support for manual backtracking to Spicy. If a field is
+    marked with ``&try``, a later call to ``self.backtrack()``
+    anywhere down in the parse tree will return to that position and
+    continue there. See the documentation for more, including an
+    example. (Robin Sommer, Corelight).
+
+  * Support &eod for vector parsing. (Robin Sommer, Corelight)
+
+  * Fix Sphinx helper script that emits command lines. (Robin Sommer,
+    Corelight)
+
 0.4.0-1106 | 2020-12-10 10:10:16 +0000
 
   * Make capture groups available inside hooks of regular expression fields.
