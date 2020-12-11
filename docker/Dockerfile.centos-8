@@ -12,7 +12,7 @@ RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
  && echo 'LC_ALL="C"' >> /etc/locale.conf \
  && echo 'LANG="C"' >> /etc/locale.conf
 
-RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled PowerTools
+RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled powertools
 
 # Install development tools.
 RUN yum install -y ccache gcc gcc-c++ gdb git make ninja-build python3 python3-pip vim doxygen diffutils

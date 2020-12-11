@@ -4,7 +4,7 @@ ARG ZEEK_VERSION=3.0.11-2.2
 
 ENV PATH="/opt/zeek/bin:/opt/rh/gcc-toolset-9/root/bin:${PATH}"
 
-RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled PowerTools
+RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled powertools
 RUN yum install -y gcc-toolset-9-gcc gcc-toolset-9-gcc-c++ git make flex diffutils glibc-langpack-en
 SHELL [ "/usr/bin/scl", "enable", "gcc-toolset-9"]
 
