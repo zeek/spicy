@@ -1,4 +1,8 @@
 
+0.4.0-1118 | 2020-12-11 07:18:52 +0000
+
+  * GH-602: Install Zeek from packages. (Benjamin Bannier, Corelight)
+
 0.4.0-1112 | 2020-12-10 10:33:31 +0000
 
   * GH-25: Add support for manual backtracking to Spicy. If a field is

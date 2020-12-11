@@ -294,9 +294,11 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
         f << separator() << i.second;
 
     if ( auto meta = linkerMetaData() ) {
+        std::stringstream json;
+        json << **meta;
         f << separator();
         f << "/* __HILTI_LINKER_V1__" << eol();
-        f << (*meta)->dump(-1) << eol();
+        f << json.str() << eol();
         f << "*/" << eol() << separator();
     }
 }

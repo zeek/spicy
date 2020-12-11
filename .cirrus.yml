@@ -5,7 +5,8 @@ clang9_zeek_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
-      - zeek_packages: zeek=3.2.2-* zeek-core-dev=3.2.2-*
+      - ZEEK_LTS:
+      - ZEEK_VERSION: 3.2.2-0
     cpu: 4
     memory: 8G
 
@@ -55,7 +56,8 @@ clang10_zeek_lts_ubuntu_release_task:
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
-      - zeek_packages: zeek-lts=3.0.11-* zeek-lts-core-dev=3.0.11-*
+      - ZEEK_LTS: 1
+      - ZEEK_VERSION: 3.0.11-0
     cpu: 4
     memory: 8G
 
@@ -102,7 +104,8 @@ clang9_zeek_lts_ubuntu_release_static_task:
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
-      - zeek_packages: zeek-lts=3.0.11-* zeek-lts-core-dev=3.0.11-*
+      - ZEEK_LTS: 1
+      - ZEEK_VERSION: 3.0.11-0
     cpu: 4
     memory: 8G
 
@@ -142,7 +145,8 @@ gcc9_ubuntu_release_no_jit_task:
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
-      - zeek_packages: zeek-lts=3.0.11-* zeek-lts-core-dev=3.0.11-*
+      - ZEEK_LTS: 1
+      - ZEEK_VERSION: 3.0.11-0
     cpu: 4
     memory: 12G
 

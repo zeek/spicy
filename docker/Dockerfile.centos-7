@@ -1,6 +1,7 @@
 FROM centos:7
 
 ARG SKIP_BUILD=
+ARG ZEEK_VERSION=3.0.11-2.2
 
 WORKDIR /root
 
@@ -45,16 +46,18 @@ RUN cd /opt && curl -L http://ftp.gnu.org/gnu/bison/bison-3.5.tar.gz | tar xzvf 
 # Need a more recent flex than available.
 RUN cd /opt && curl -L https://github.com/westes/flex/files/981163/flex-2.6.4.tar.gz | tar xzvf - && cd /opt/flex-2.6.4  && ./configure && make install
 
-# Install Zeek dependencies.
-RUN yum install -y libpcap-devel openssl-devel python3-devel swig zlib-devel
-
 # Install Zeek.
-RUN mkdir -p /opt/zeek/src
-RUN cd /opt/zeek && git clone -b v3.0.3 --recursive https://github.com/zeek/zeek src
-RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd ../.. && rm -rf zeek
+RUN yum install -y libpcap-devel openssl-devel zlib-devel \
+ && rpm -iv \
+    https://download.opensuse.org/repositories/security:/zeek/CentOS_7/x86_64/zeek-lts-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.opensuse.org/repositories/security:/zeek/CentOS_7/x86_64/zeek-lts-core-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.opensuse.org/repositories/security:/zeek/CentOS_7/x86_64/zeekctl-lts-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.opensuse.org/repositories/security:/zeek/CentOS_7/x86_64/zeek-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.opensuse.org/repositories/security:/zeek/CentOS_7/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.opensuse.org/repositories/security:/zeek/CentOS_7/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm
 
-WORKDIR /root
+# WORKDIR /root
 
-# Install Spicy.
-ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=/opt/rh/devtoolset-9/root/usr/bin/clang++ && ninja -C build install && rm -rf build)
+# # Install Spicy.
+# ADD . /opt/spicy/src
+# RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=/opt/rh/devtoolset-9/root/usr/bin/clang++ && ninja -C build install && rm -rf build)
