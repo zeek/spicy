@@ -1,5 +1,7 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <sys/socket.h>
+
 #include <hilti/rt/exception.h>
 #include <hilti/rt/types/address.h>
 #include <hilti/rt/types/integer.h>
