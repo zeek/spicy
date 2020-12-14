@@ -28,12 +28,17 @@ auto __attribute__((noinline)) make_backtrace() { return Backtrace(); }
 TEST_CASE("comparison") {
     const auto bt1 = Backtrace();      // Backtrace to this call site.
     const auto bt2 = make_backtrace(); // One additional frame on top of `bt1`.
+
+#ifdef HILTI_HAVE_BACKTRACE
     REQUIRE_EQ(bt1.backtrace().size() + 1, bt2.backtrace().size());
+#endif
 
     CHECK_EQ(bt1, bt1);
     CHECK_EQ(bt2, bt2);
+#ifdef HILTI_HAVE_BACKTRACE
     CHECK_NE(bt1, bt2);
     CHECK_NE(bt2, bt1);
+#endif
 }
 
 TEST_CASE("demangle") {

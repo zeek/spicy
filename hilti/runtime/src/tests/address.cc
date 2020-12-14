@@ -1,6 +1,8 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 #include <string>
 

@@ -15,10 +15,6 @@ set(macos_minimum_version "19.0.0") # macOS 10.15.0 (Catalina)
 
 ## Initialize defaults & global options
 
-if ( "${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" )
-    set(LINUX true)
-endif ()
-
 if ( NOT CMAKE_BUILD_TYPE )
     # CMake doesn't set build type by default.
     set(CMAKE_BUILD_TYPE "Debug")
@@ -71,7 +67,7 @@ if ( USE_SANITIZERS )
     set(sanitizer_cxx_flags "-fsanitize=${USE_SANITIZERS} -fno-omit-frame-pointer -fno-optimize-sibling-calls -O1 -shared-libsan")
     set(sanitizer_ld_flags  "-fsanitize=${USE_SANITIZERS} -frtlib-add-rpath -shared-libsan")
 
-    if ( LINUX )
+    if ( NOT APPLE )
         # See hilti/src/asan.cc.
         set(sanitizer_ld_flags "${sanitizer_ld_flags} -Wl,-u_sanitizer_options_link_helper")
     endif ()
@@ -137,9 +133,9 @@ find_package(BISON REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(Backtrace)
 
-if ( Backtrace_FOUND AND LINUX )
-    # On Linux there's a libexecinfo that's not working for us: it seems to break
-    # when compiling without frame pointers. So we disable that.
+if ( Backtrace_FOUND AND NOT APPLE )
+    # On systems other than MacOS there's a libexecinfo that's not working for us:
+    # it seems to break when compiling without frame pointers so we disable it.
     if ( "${Backtrace_LIBRARY}" MATCHES "libexecinfo" )
         message(STATUS "Disabling backtrace because we found libexecinfo")
         set(Backtrace_FOUND "no")
