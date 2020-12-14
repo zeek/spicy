@@ -20,7 +20,7 @@ clang9_zeek_ubuntu_debug_task:
   env:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
-    LD_LIBRARY_PATH: /usr/lib/llvm-9/lib/clang/9.0.0/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-9/lib/clang/9.0.1/lib/linux/
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
   # are needed for `git describe` used in `scripts/autogen-version`. We also
@@ -32,7 +32,7 @@ clang9_zeek_ubuntu_debug_task:
   # We currently run the build with sanitizers against llvm-9 since llvm-10 still triggers some warnings from inside LLVM.
   #
   # TODO(bbannier): Switch this job to llvm-10.
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-9 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10` --rpath /usr/lib/llvm-9/lib/clang/9.0.0/lib/linux/ --zeek-ld-preload /usr/lib/llvm-9/lib/clang/9.0.0/lib/linux/libclang_rt.asan-x86_64.so
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-9 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10` --rpath /usr/lib/llvm-9/lib/clang/9.0.1/lib/linux/ --zeek-ld-preload /usr/lib/llvm-9/lib/clang/9.0.1/lib/linux/libclang_rt.asan-x86_64.so
   build_script:       ./ci/run-ci -b build build
   test_build_script:  ./ci/run-ci -b build test-build
   test_code_script:   ./ci/run-ci -b build test-code
