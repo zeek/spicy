@@ -385,35 +385,12 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             // prepared to suspend. We move also of the functions arguments to
             // the heap, too, because the caller's stack may not be accessible
             // inside the callee due to our fiber runtime swapping stacks out.
-            // (That works only for parameters that can't be modified, with the
-            // exception of a `ValueReference` passed in by reference, which we
-            // special-case.
             auto body = cxx::Block();
             auto cb = cxx::Block();
 
             auto outer_args =
                 util::join(util::transform(cxx_func.declaration.args,
-                                           [](auto& x) {
-                                               std::string type(x.type);
-                                               if ( type.find("hilti::rt::ValueReference") != std::string::npos &&
-                                                    util::endsWith(type, "&") ) {
-                                                   // Special-case: We don't want to (nor need to) deep-copy value
-                                                   // references here. The payload already resides on the heap.
-                                                   // Hardcoding this all here isn't great, but not much of a better
-                                                   // idea right now.
-                                                   auto i = type.find("<");
-                                                   auto j = type.find(">");
-                                                   return fmt("hilti::rt::ValueReference<%s>(%s.asSharedPtr())",
-                                                              type.substr(i + 1, j - i - 1), x.id);
-                                               }
-
-                                               if ( util::endsWith(type, "&") && ! util::startsWith(type, "const") )
-                                                   logger().internalError(
-                                                       "cannot pass values by non-const reference into fiber callback "
-                                                       "unless it's a ValueReference");
-
-                                               return fmt("%s", x.id);
-                                           }),
+                                           [](auto& x) { return fmt("::hilti::rt::resumable::detail::copyArg(%s)", x.id); }),
 
                            ", ");
 

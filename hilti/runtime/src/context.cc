@@ -1,7 +1,5 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#include <fiber/fiber.h>
-
 #include <cinttypes>
 #include <memory>
 
@@ -19,11 +17,7 @@ thread_local Context* __current = nullptr;
 Context*& current() { return __current; }
 } // namespace hilti::rt::context::detail
 
-Context::Context(vthread::ID vid) : vid(vid), main_fiber(std::make_unique<detail::Fiber>(true)), current_fiber(main_fiber.get()) {
-    shared_stack = new ::Fiber;
-    if ( ! ::fiber_alloc(shared_stack, 10 * 1024 * 1024, nullptr, nullptr, FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI) )
-        internalError("could not allocate fiber");
-
+Context::Context(vthread::ID vid) : vid(vid) {
     if ( vid == vthread::Master ) {
         HILTI_RT_DEBUG("libhilti", "creating master context");
         // Globals for the master context are initialized separately as we

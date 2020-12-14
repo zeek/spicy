@@ -3,6 +3,7 @@
 #include <exception>
 #include <sstream>
 
+#include <hilti/rt/configuration.h>
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/init.h>
@@ -278,8 +279,28 @@ TEST_CASE("prime-cache") {
     hilti::rt::detail::Fiber::primeCache();
 
     stats = hilti::rt::detail::Fiber::statistics();
-    REQUIRE(stats.current == hilti::rt::detail::Fiber::CacheSize);
-    REQUIRE(stats.cached == hilti::rt::detail::Fiber::CacheSize);
+    REQUIRE(stats.current == hilti::rt::configuration::get().fiber_cache_size);
+    REQUIRE(stats.cached == hilti::rt::configuration::get().fiber_cache_size);
 }
 
-TEST_SUITE_END();
+TEST_CASE("copy-arg") {
+    hilti::rt::init();
+
+    // This mimics how the HILTI codegen generater moves fiber arguments to the heap.
+    auto s1 = std::string("string1");
+    auto s2 = hilti::rt::ValueReference<std::string>("string2");
+
+    auto args = std::make_tuple(hilti::rt::resumable::detail::copyArg(s1), hilti::rt::resumable::detail::copyArg(s2));
+    auto args_on_heap = std::make_shared<decltype(args)>(std::move(args));
+
+    // Check that the copied values have the expected content.
+    CHECK_EQ(std::get<0>(*args_on_heap), std::string("string1"));
+    CHECK_EQ(std::get<1>(*args_on_heap), std::string("string2"));
+
+    // Check that s1 got actually copied
+    CHECK_NE(std::get<0>(*args_on_heap).data(), s1.data());
+
+    // Check that s2 is referring to the same instance (because we specialize ValueReference&<T> that way)
+    CHECK_EQ(std::get<1>(*args_on_heap)->data(), s2->data());
+}
+

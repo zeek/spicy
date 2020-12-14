@@ -15,11 +15,14 @@ namespace hilti::rt {
 struct Configuration {
     Configuration();
 
-    /** Stack size for fibers. */
-    size_t fiber_stack_size = 100 * 1024 * 1024; // This is generous.
+    /** Stack size for fibers with individual stacks. */
+    size_t fiber_individual_stack_size = 1 * 1024 * 1024;
 
-    /** Maximum size of pool of recycalable fibers. */
-    size_t fiber_max_pool_size = 1000;
+    /** Stack size for shared fiber stack. */
+    size_t fiber_shared_stack_size = 10 * 1024 * 1024;
+
+    /** Max. number of fibers cached for reuse. */
+    unsigned int fiber_cache_size = 100;
 
     /** File where debug output is to be sent. Default is stderr. */
     std::optional<hilti::rt::filesystem::path> debug_out;

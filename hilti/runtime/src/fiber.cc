@@ -1,13 +1,11 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#ifdef _FORTIFY_SOURCE
-// Disable in this file, the longjmps can cause false positives.
-#undef _FORTIFY_SOURCE
-#endif
-
 #include <fiber/fiber.h>
 
+#include <memory>
+
 #include <hilti/rt/autogen/config.h>
+#include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
@@ -21,91 +19,394 @@
 
 using namespace hilti::rt;
 
-const void* _main_thread_bottom = nullptr;
-std::size_t _main_thread_size = 0;
+#ifndef HILTI_HAVE_SANITIZER
+// Defaults for normal operation.
+static const auto DefaultFiberType = detail::Fiber::Type::SharedStack; // share stack by default
+static const auto AlwaysUseStackSwitchTrampoline = false;              // use switch trampoline only with shared stacks
+#else
+// Because the stack copying triggers false positives with ASAN, we use
+// individual stacks when that's active. We still force use of the stack
+// switcher trampoline in that case, so that we get that piece at least.
+//
+// TODO: If we could whitelist the memcpys, that would solve the problem, but I
+// haven't been able to do that using any of the sanitizer attributes; they
+// just seem to be ignored.
+static const auto DefaultFiberType = detail::Fiber::Type::IndividualStack;
+static const auto AlwaysUseStackSwitchTrampoline = true;
+#endif
+
+// Wrapper similar to HILTI_RT_DEBUG that adds the current fiber to the message.
+#define HILTI_RT_FIBER_DEBUG(tag, msg)                                                                                 \
+    {                                                                                                                  \
+        if ( ::hilti::rt::detail::globalState()->debug_logger &&                                                       \
+             ::hilti::rt::detail::globalState()->debug_logger->isEnabled("fibers") )                                   \
+            ::hilti::rt::debug::detail::print("fibers",                                                                \
+                                              fmt("[%s/%s] %s", *context::detail::get()->fiber.current, tag, msg));    \
+    }
+
+#define HILTI_RT_FIBER_DEBUG_NO_CONTEXT(tag, msg)                                                                      \
+    {                                                                                                                  \
+        if ( ::hilti::rt::detail::globalState()->debug_logger &&                                                       \
+             ::hilti::rt::detail::globalState()->debug_logger->isEnabled("fibers") )                                   \
+            ::hilti::rt::debug::detail::print("fibers", fmt("[none/%s] %s", tag, msg));                                \
+    }
 
 extern "C" {
 
-// A dummy function which will be put on the bottom of each fiber's call stack. This function should never execute.
-[[noreturn]] static void fiber_bottom(Fiber* fiber, void* args) { abort(); }
+// A dummy fallback function which will be put on the bottom of all fibers'
+// call stacks. This function should never execute.
+[[noreturn]] static void fiber_bottom_abort(Fiber* fiber, void* args) { abort(); }
 
-void detail::_Trampoline(void* argsp) {
-    auto fiber = *reinterpret_cast<detail::Fiber**>(argsp);
+// Fiber entry point for execution of payload functions.
+void fiber_run_trampoline(void* argsp) {
+    auto* fiber = context::detail::get()->fiber.current;
+    fiber->_finishSwitchFiber("trampoline-run");
 
-    HILTI_RT_DEBUG("fibers", fmt("[%p] entering trampoline loop", fiber));
-    fiber->_finishSwitchFiber("trampoline-init");
-
-    // Via recycling a fiber can run an arbitrary number of user jobs. So
-    // this trampoline is really a loop that yields after it has finished its
+    // We recycle fibers to run an arbitrary number of user jobs. So this
+    // trampoline is actually a loop that yields after it has finished its
     // function, and expects a new run function once it's resumed.
     ++detail::Fiber::_initialized;
 
-    while ( true ) {
-        HILTI_RT_DEBUG("fibers", fmt("[%p] new iteration of trampoline loop", fiber));
+    HILTI_RT_FIBER_DEBUG("trampoline-run", "entering trampoline loop");
 
+    while ( true ) {
+        HILTI_RT_FIBER_DEBUG("trampoline-run", "new iteration of trampoline loop");
+        assert(fiber->_caller);
         assert(fiber->_state == detail::Fiber::State::Running);
 
         try {
             fiber->_result = (*fiber->_function)(fiber);
+            HILTI_RT_FIBER_DEBUG("trampoline-run", "payload function finished");
         } catch ( ... ) {
-            HILTI_RT_DEBUG("fibers", fmt("[%p] got exception, forwarding", fiber));
+            HILTI_RT_FIBER_DEBUG("trampoline-run", "got exception, forwarding");
             fiber->_exception = std::current_exception();
         }
 
         fiber->_function = {};
         fiber->_state = detail::Fiber::State::Idle;
-        detail::Fiber::_switchTo(fiber->_caller);
+        fiber->_yield("trampoline-run");
     }
 
-    HILTI_RT_DEBUG("fibers", fmt("[%p] finished trampoline loop", fiber));
+    HILTI_RT_FIBER_DEBUG("trampoline-run", "finished trampoline loop");
+}
+
+// Captures arguments passed into stack switcher trampoline.
+struct SwitchArgs {
+    detail::Fiber* switcher = nullptr;
+    detail::Fiber* from = nullptr;
+    detail::Fiber* to = nullptr;
+};
+
+// Fiber entry point for stack switcher trampoline.
+//
+// This function will never run to completion; do not store anything on its
+// stack that would need cleanup.
+void fiber_switch_trampoline(void* argsp) {
+    auto* args = reinterpret_cast<SwitchArgs*>(argsp);
+    detail::Fiber::_finishSwitchFiber("stack-switcher");
+
+    auto from = args->from;
+    auto to = args->to;
+    HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("switching from %s to %s", *from, *to));
+
+    if ( from->_type == detail::Fiber::Type::SharedStack )
+        from->_stack_buffer.save();
+
+    if ( to->_type == detail::Fiber::Type::SharedStack )
+        to->_stack_buffer.restore();
+
+    detail::Fiber::_executeSwitch("stack-switcher", args->switcher, to);
+
+    // We won't return here.
+    cannot_be_reached();
 }
 }
 
-detail::Fiber::Fiber(bool is_main_fiber) : _is_main(is_main_fiber), _fiber(std::make_unique<::Fiber>()) {
-    HILTI_RT_DEBUG("fibers", fmt("[%p] allocated new fiber", this));
+detail::FiberContext::FiberContext() {
+    main = std::make_unique<detail::Fiber>(detail::Fiber::Type::Main);
+    current = main.get();
+    switch_trampoline = std::make_unique<detail::Fiber>(detail::Fiber::Type::SwitchTrampoline);
 
-    if ( is_main_fiber ) {
-        ::fiber_init_toplevel(_fiber.get());
-        _caller = nullptr;
+    // Instantiate an unused fiber just to create the shared stack.
+    shared_stack = std::make_unique<::Fiber>();
+    if ( ! ::fiber_alloc(shared_stack.get(), configuration::get().fiber_shared_stack_size, fiber_bottom_abort, this,
+                         FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI) )
+        throw RuntimeError("could not allocate shared stack");
+}
+
+detail::FiberContext::~FiberContext() { ::fiber_destroy(shared_stack.get()); }
+
+detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>()), _stack_buffer(_fiber.get()) {
+#ifndef NDEBUG
+    // We won't have a context yet when the main/stack-switcher fibers are
+    // created.
+    if ( type != Type::Main && type != Type::SwitchTrampoline ) {
+        HILTI_RT_FIBER_DEBUG("ctor", fmt("allocated new fiber %s", *this));
     }
     else {
-        auto alloc = ::fiber_alloc(_fiber.get(), StackSize, fiber_bottom, this, FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI);
-        if ( ! alloc )
-            internalError("could not allocate fiber");
+        HILTI_RT_FIBER_DEBUG_NO_CONTEXT("ctor", fmt("allocated new fiber %s", *this));
+    }
+#endif
 
-        _caller = context::detail::get()->current_fiber;
+    switch ( type ) {
+        case Type::Main: {
+            ::fiber_init_toplevel(_fiber.get());
+            // ASAN stack size will be set dynamically later.
+            break;
+        }
+
+        case Type::SwitchTrampoline:
+            if ( ! ::fiber_alloc(_fiber.get(), configuration::get().fiber_individual_stack_size, fiber_bottom_abort,
+                                 this, FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI) )
+                internalError("could not allocate individual-stack fiber");
+
+#ifdef HILTI_HAVE_SANITIZER
+            _asan.stack = ::fiber_stack(_fiber.get());
+            _asan.stack_size = configuration::get().fiber_individual_stack_size;
+#endif
+            break;
+
+        case Type::SharedStack: {
+            auto shared_stack = context::detail::get()->fiber.shared_stack.get();
+            ::fiber_init(_fiber.get(), shared_stack->stack, shared_stack->stack_size, fiber_bottom_abort, this);
+
+#ifdef HILTI_HAVE_SANITIZER
+            _asan.stack = ::fiber_stack(_fiber.get());
+            _asan.stack_size = configuration::get().fiber_shared_stack_size;
+#endif
+            break;
+        }
+
+        case Type::IndividualStack: {
+            if ( ! ::fiber_alloc(_fiber.get(), configuration::get().fiber_individual_stack_size, fiber_bottom_abort,
+                                 this, FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI) )
+                internalError("could not allocate individual-stack fiber");
+
+#ifdef HILTI_HAVE_SANITIZER
+            _asan.stack = ::fiber_stack(_fiber.get());
+            _asan.stack_size = configuration::get().fiber_individual_stack_size;
+#endif
+            break;
+        }
     }
 
-    ++_total_fibers;
-    ++_current_fibers;
+    switch ( type ) {
+        case Type::SharedStack:
+        case Type::IndividualStack: {
+            // We do bookkeeping only for the "real" fibers with payload.
+            ++_total_fibers;
+            ++_current_fibers;
 
-    if ( _current_fibers > _max_fibers )
-        _max_fibers = _current_fibers;
+            if ( _current_fibers > _max_fibers )
+                _max_fibers = _current_fibers;
+        }
+
+        case Type::SwitchTrampoline:
+        case Type::Main:
+            // Nothing to do for these.
+            break;
+    };
 }
 
 class AbortException : public std::exception {};
 
 detail::Fiber::~Fiber() {
-    HILTI_RT_DEBUG("fibers", fmt("[%p] deleting fiber", this));
+#ifndef NDEBUG
+    // We won't have a context anymore when the main/stack-switcher fibers are
+    // destroyed.
+    if ( _type != Type::Main && _type != Type::SwitchTrampoline ) {
+        HILTI_RT_FIBER_DEBUG("dtor", fmt("deleting fiber %s", *this));
+    }
+    else {
+        HILTI_RT_FIBER_DEBUG_NO_CONTEXT("dtor", fmt("deleting fiber %s", *this));
+    }
+#endif
 
-    // ::fiber_destroy(_fiber.get()); TODO
-    --_current_fibers;
+    if ( _type == Type::Main )
+        return;
+
+    ::fiber_destroy(_fiber.get());
+
+    if ( _type != Type::SwitchTrampoline )
+        --_current_fibers;
 }
 
-void detail::Fiber::_switchTo(detail::Fiber* to) {
-    _startSwitchFiber("run", to->_fiber->stack, to->_fiber->stack_size);
+detail::StackBuffer::~StackBuffer() { free(_buffer); }
 
+std::pair<char*, char*> detail::StackBuffer::activeRegion() const {
+    // The direction in which the stack grows is platform-specific. It's
+    // probably gong to be growing downwards pretty much everywhere, but to be
+    // safe we whitelist platforms that we have confirmed to do so.
+#if __x86_64__
+    auto lower = reinterpret_cast<char*>(_fiber->regs.sp);
+    auto upper = reinterpret_cast<char*>(_fiber->regs.sp) + fiber_stack_used_size(_fiber);
+#else
+#error "unsupported architecture in hilti::rt::detail::StackBuffer::activeRegion"
+#endif
+
+    return std::make_pair(lower, upper);
+}
+
+std::pair<char*, char*> detail::StackBuffer::allocatedRegion() const {
+    auto lower = reinterpret_cast<char*>(::fiber_stack(_fiber));
+    return std::make_pair(lower, lower + ::fiber_stack_size(_fiber));
+}
+
+auto detail::StackBuffer::liveRemainingSize() const {
+    assert(::fiber_is_executing(_fiber)); // must be live
+
+    // Whitelist architectures where we know how to do this.
+#if __x86_64__
+    // See
+    // https://stackoverflow.com/questions/20059673/print-out-value-of-stack-pointer
+    // for discussion of how to get stack pointer.
+    auto sp = reinterpret_cast<char*>(__builtin_frame_address(0));
+    auto lower = reinterpret_cast<char*>(::fiber_stack(_fiber));
+
+    // Double-check we're pointing into the right space.
+    assert(sp >= allocatedRegion().first && sp < allocatedRegion().second);
+
+    return sp - lower;
+
+#else
+#error "unsupported architecture in hilti::rt::detail::StackBuffer::liveRemainingSize()"
+#endif
+}
+
+void detail::StackBuffer::save() {
+    auto [lower, upper] = activeRegion();
+
+    _buffer = ::realloc(_buffer, (upper - lower));
+    if ( ! _buffer )
+        throw RuntimeError("out of memory when saving fiber stack");
+
+    HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("saving stack %s to %p", *this, _buffer));
+    ::memcpy(_buffer, lower, (upper - lower));
+}
+
+void detail::StackBuffer::restore() const {
+    if ( ! _buffer )
+        return;
+
+    HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("restoring stack %s from %p", *this, _buffer));
+
+    auto [lower, upper] = activeRegion();
+    ::memcpy(lower, _buffer, (upper - lower));
+}
+
+void detail::Fiber::_startSwitchFiber(const char* tag, detail::Fiber* to) {
+#ifdef HILTI_HAVE_SANITIZER
+    auto* current = context::detail::get()->fiber.current;
+    __sanitizer_start_switch_fiber(&current->_asan.fake_stack, to->_asan.stack, to->_asan.stack_size);
+
+    assert(to->_asan.stack);
+    HILTI_RT_FIBER_DEBUG(tag, fmt("asan-start: new-stack=%p:%zu fake-stack=%p", to->_asan.stack, to->_asan.stack_size,
+                                  current->_asan.fake_stack));
+#endif
+}
+
+void detail::Fiber::_finishSwitchFiber(const char* tag) {
+#ifdef HILTI_HAVE_SANITIZER
     auto* context = context::detail::get();
-    assert(context->current_fiber != to);
+    auto* current = context->fiber.current;
 
-    auto current_fiber = context->current_fiber;
-    assert(current_fiber != to);
-    context->current_fiber = to;
-    // std::cerr << "used stack: " << ::fiber_stack_used_size(current_fiber->_fiber.get()) << std::endl;
-    ::fiber_switch(current_fiber->_fiber.get(), to->_fiber.get());
+    const void* prev_bottom = nullptr;
+    size_t prev_size = 0;
+    __sanitizer_finish_switch_fiber(current->_asan.fake_stack, &prev_bottom, &prev_size);
 
-    _finishSwitchFiber("run");
+    HILTI_RT_FIBER_DEBUG(tag, fmt("asan-finish: prev-stack=%s/%zu fake-stack=%p", prev_bottom, prev_size,
+                                  current->_asan.fake_stack));
+
+    // By construction, the very first time this method is called, we must just
+    // have finished switching over from the main fiber. Record its stack.
+    if ( ! context->fiber.main->_asan.stack ) {
+        context->fiber.main->_asan.stack = prev_bottom;
+        context->fiber.main->_asan.stack_size = prev_size;
+    }
+#endif
 }
+
+void detail::Fiber::_executeSwitch(const char* tag, detail::Fiber* from, detail::Fiber* to) {
+    HILTI_RT_FIBER_DEBUG(tag, fmt("executing fiber switch from %s to %s", *from, *to));
+
+    detail::Fiber::_startSwitchFiber(tag, to);
+    context::detail::get()->fiber.current = to;
+    ::fiber_switch(from->_fiber.get(), to->_fiber.get());
+    detail::Fiber::_finishSwitchFiber(tag);
+
+    HILTI_RT_FIBER_DEBUG(tag, fmt("resuming after fiber switch returns back to %s", *from));
+}
+
+void detail::Fiber::_activate(const char* tag) {
+    auto* context = context::detail::get();
+    auto* current = context->fiber.current;
+    assert(current && current != this);
+    assert(current->_type != Type::SwitchTrampoline);
+
+    HILTI_RT_FIBER_DEBUG(tag, fmt("activating fiber %s (stack %p)", *this, ::fiber_stack(_fiber.get())));
+
+    _caller = current;
+
+    if ( current->_type == Type::SharedStack || _type == Type::SharedStack || AlwaysUseStackSwitchTrampoline ) {
+        // Need to go through switch trampoline.
+        auto* stack_switcher = context->fiber.switch_trampoline.get();
+
+        SwitchArgs args;
+        args.switcher = stack_switcher;
+        args.from = current;
+        args.to = this;
+        ::fiber_push_return(stack_switcher->_fiber.get(), fiber_switch_trampoline, &args, sizeof(args));
+        _executeSwitch(tag, current, stack_switcher);
+    }
+    else
+        // Can jump directly.
+        _executeSwitch(tag, current, this);
+}
+
+void detail::Fiber::_yield(const char* tag) {
+    auto* context = context::detail::get();
+
+#ifndef NDEBUG
+    auto* current = context->fiber.current;
+    assert(_caller);
+    assert(current && current == this);
+    assert(current != _caller);
+    assert(current->_type != Type::SwitchTrampoline);
+#endif
+
+    HILTI_RT_FIBER_DEBUG(tag, fmt("yielding to caller %s", _caller));
+
+    if ( _type == Type::SharedStack || _caller->_type == Type::SharedStack || AlwaysUseStackSwitchTrampoline ) {
+        // Need to go through switch trampoline.
+        auto* stack_switcher = context->fiber.switch_trampoline.get();
+
+        SwitchArgs args;
+        args.switcher = stack_switcher;
+        args.from = this;
+        args.to = _caller;
+        ::fiber_push_return(stack_switcher->_fiber.get(), fiber_switch_trampoline, &args, sizeof(args));
+        _executeSwitch(tag, this, stack_switcher);
+    }
+    else
+        // Can jump directly.
+        _executeSwitch(tag, this, _caller);
+}
+
+std::string detail::Fiber::tag() const {
+    switch ( _type ) {
+        case Type::Main: return "main";
+        case Type::SwitchTrampoline: return "switcher";
+        case Type::SharedStack: return "shared-stack";
+        case Type::IndividualStack: return "owned-stack";
+    }
+}
+
+namespace hilti::rt::detail {
+std::ostream& operator<<(std::ostream& out, const detail::Fiber& fiber) {
+    out << fmt("%s-%p", fiber.tag(), &fiber);
+    return out;
+}
+} // namespace hilti::rt::detail
 
 void detail::Fiber::run() {
     auto init = (_state == State::Init);
@@ -114,19 +415,19 @@ void detail::Fiber::run() {
         _state = State::Running;
 
     if ( init ) {
-        detail::Fiber** args;
-        ::fiber_reserve_return(_fiber.get(), _Trampoline, reinterpret_cast<void**>(&args), sizeof *args);
-        *args = this;
+        // TODO: It would seem reasonable to move into this the constructor
+        // where we initialize the fiber. However, that leads to crashes; not
+        // sure why?
+        void* dummy_args; // not used, but need a non-null pointer
+        ::fiber_reserve_return(_fiber.get(), fiber_run_trampoline, &dummy_args, 0);
     }
 
-    _caller = context::detail::get()->current_fiber; // TODO: need this?
-    _switchTo(this);
+    _activate("run");
 
     switch ( _state ) {
         case State::Yielded:
         case State::Idle: return;
-
-        default: internalError("fiber: unexpected case");
+        default: internalError(fmt("fiber: unexpected state (%d)", static_cast<int>(_state)));
     }
 }
 
@@ -134,7 +435,7 @@ void detail::Fiber::yield() {
     assert(_state == State::Running);
 
     _state = State::Yielded;
-    _switchTo(_caller);
+    _yield("yield");
 
     if ( _state == State::Aborting )
         throw AbortException();
@@ -152,73 +453,58 @@ void detail::Fiber::abort() {
 }
 
 std::unique_ptr<detail::Fiber> detail::Fiber::create() {
-    if ( ! globalState()->fiber_cache.empty() ) {
-        auto f = std::move(globalState()->fiber_cache.back());
-        globalState()->fiber_cache.pop_back();
-        HILTI_RT_DEBUG("fibers", fmt("[%p] reusing fiber from cache", f.get()));
+    auto* context = context::detail::get();
+    auto& cache = context->fiber.cache;
+    if ( ! cache.empty() ) {
+        auto f = std::move(cache.back());
+        cache.pop_back();
+        --_cached_fibers;
+        HILTI_RT_FIBER_DEBUG("create", fmt("reusing fiber %s from cache", *f.get()));
         return f;
     }
 
-    return std::make_unique<Fiber>();
+    return std::make_unique<Fiber>(DefaultFiberType);
 }
 
 void detail::Fiber::destroy(std::unique_ptr<detail::Fiber> f) {
+    if ( f->isMain() )
+        return;
+
     if ( f->_state == State::Yielded )
         f->abort();
 
-    if ( globalState()->fiber_cache.size() < CacheSize ) {
-        HILTI_RT_DEBUG("fibers", fmt("[%p] putting fiber back into cache", f.get()));
-        globalState()->fiber_cache.push_back(std::move(f));
+    auto* context = context::detail::get();
+    auto& cache = context->fiber.cache;
+    if ( cache.size() < configuration::get().fiber_cache_size ) {
+        HILTI_RT_FIBER_DEBUG("destroy", fmt("putting fiber %s back into cache", *f.get()));
+        cache.push_back(std::move(f));
+        ++_cached_fibers;
         return;
     }
 
-    HILTI_RT_DEBUG("fibers", fmt("[%p] cache size exceeded, deleting finished fiber", f.get()));
+    HILTI_RT_FIBER_DEBUG("destroy", fmt("cache size exceeded, deleting finished fiber %s", *f.get()));
 }
 
 void detail::Fiber::primeCache() {
     std::vector<std::unique_ptr<Fiber>> fibers;
-    fibers.reserve(CacheSize);
+    fibers.reserve(configuration::get().fiber_cache_size);
 
-    for ( unsigned int i = 0; i < CacheSize; i++ )
+    for ( unsigned int i = 0; i < configuration::get().fiber_cache_size; i++ )
         fibers.emplace_back(Fiber::create());
 
     while ( fibers.size() ) {
-        // Fiber::destroy(std::move(fibers.back())); TODO
+        Fiber::destroy(std::move(fibers.back()));
         fibers.pop_back();
     }
 }
 
 void detail::Fiber::reset() {
-    globalState()->fiber_cache.clear();
+    context::detail::get()->fiber.cache.clear();
     _total_fibers = 0;
     _current_fibers = 0;
+    _cached_fibers = 0;
     _max_fibers = 0;
     _initialized = 0;
-}
-
-void detail::Fiber::_startSwitchFiber(const char* tag, const void* stack_bottom, size_t stack_size) {
-#ifdef HILTI_HAVE_SANITIZER
-    if ( ! stack_bottom ) {
-        stack_bottom = _asan.prev_bottom;
-        stack_size = _asan.prev_size;
-    }
-
-    HILTI_RT_DEBUG("fibers", fmt("[%p/%s/asan] start_switch_fiber %p/%p (fake_stack=%p)", context::detail::get()->current_fiber, tag, stack_bottom,
-                                 stack_size, &_asan.fake_stack));
-    __sanitizer_start_switch_fiber(&_asan.fake_stack, stack_bottom, stack_size);
-#else
-    HILTI_RT_DEBUG("fibers", fmt("[%p] start_switch_fiber in %s", context::detail::get()->current_fiber, tag));
-#endif
-}
-
-void detail::Fiber::_finishSwitchFiber(const char* tag) {
-#ifdef HILTI_HAVE_SANITIZER
-    __sanitizer_finish_switch_fiber(_asan.fake_stack, &_asan.prev_bottom, &_asan.prev_size);
-    HILTI_RT_DEBUG("fibers", fmt("[%p/%s/asan] finish_switch_fiber %p/%p (fake_stack=%p)", context::detail::get()->current_fiber, tag, _asan.prev_bottom,
-                                 _asan.prev_size, _asan.fake_stack));
-#else
-    HILTI_RT_DEBUG("fibers", fmt("[%p] finish_switch_fiber in %s", context::detail::get()->current_fiber, tag));
-#endif
 }
 
 void Resumable::run() {
@@ -258,7 +544,7 @@ void Resumable::abort() {
 
 void Resumable::yielded() {
     if ( auto e = _fiber->exception() ) {
-        HILTI_RT_DEBUG("fibers", fmt("[%p] rethrowing exception after fiber yielded", _fiber.get()));
+        HILTI_RT_FIBER_DEBUG("yielded", fmt("rethrowing exception after fiber %s yielded", *_fiber.get()));
 
         _done = true;
         _result.reset(); // just make sure optional is unset.
@@ -291,7 +577,7 @@ detail::Fiber::Statistics detail::Fiber::statistics() {
     Statistics stats{
         .total = _total_fibers,
         .current = _current_fibers,
-        .cached = globalState()->fiber_cache.size(),
+        .cached = _cached_fibers,
         .max = _max_fibers,
         .initialized = _initialized,
     };
