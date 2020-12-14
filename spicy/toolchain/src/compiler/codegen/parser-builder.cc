@@ -1028,7 +1028,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
     auto f_ext_overload3_result = type::stream::View();
     auto f_ext_overload3 =
         builder::function(id_ext_overload3, f_ext_overload3_result,
-                          {builder::parameter("gunit", builder::typeByID("spicy_rt::ParsedUnit"),
+                          {builder::parameter("gunit", type::ValueReference(builder::typeByID("spicy_rt::ParsedUnit")),
                                               declaration::parameter::Kind::InOut),
                            builder::parameter("data", type::ValueReference(type::Stream()),
                                               declaration::parameter::Kind::InOut),

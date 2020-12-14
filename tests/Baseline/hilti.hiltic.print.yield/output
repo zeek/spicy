@@ -40,13 +40,15 @@ extern auto __hlt::Foo::test(const std::string& x) -> std::string {
 }
 
 extern auto hlt::Foo::test(const std::string& x) -> hilti::rt::Resumable {
-    auto cb = [&](hilti::rt::resumable::Handle* r) -> std::any {
-        return __hlt::Foo::test(x);
+    auto args = std::make_tuple(x);
+    auto args_on_heap = std::make_shared<decltype(args)>(std::move(args));
+    auto cb = [args_on_heap](hilti::rt::resumable::Handle* r) -> std::any {
+        return __hlt::Foo::test(std::get<0>(*args_on_heap));
     };
 
-    hilti::rt::Resumable r = {std::move(cb)};
-    r.run();
-    return r;
+    auto r = std::make_unique<hilti::rt::Resumable>(std::move(cb));
+    r->run();
+    return std::move(*r);
 }
 
 /* __HILTI_LINKER_V1__

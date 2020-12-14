@@ -148,7 +148,7 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
 
     DRIVER_DEBUG_STATS(data);
 
-    spicy::rt::ParsedUnit unit;
+    hilti::rt::ValueReference<spicy::rt::ParsedUnit> unit;
 
     while ( in.good() && ! in.eof() ) {
         auto len = (increment > 0 ? increment : sizeof(buffer));
@@ -181,7 +181,7 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
         }
     }
 
-    return std::move(unit);
+    return std::move(*unit);
 }
 
 void driver::ParsingStateForDriver::debug(const std::string& msg) {
