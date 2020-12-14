@@ -1,0 +1,87 @@
+FROM debian:stretch-slim
+
+ARG SKIP_BUILD=
+ARG ZEEK_VERSION=v3.2.2
+
+ENV BISON_VERSION "3.6.2"
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV CCACHE_DIR "/var/spool/ccache"
+ENV CCACHE_COMPRESS 1
+
+ENV CMAKE_DIR "/opt/cmake"
+ENV CMAKE_VERSION "3.17.2"
+
+# using clang instead of gcc because Spicy depends on it
+ENV LLVM_VERSION "11"
+ENV CC "clang-${LLVM_VERSION}"
+ENV CXX "clang++-${LLVM_VERSION}"
+ENV ASM "clang-${LLVM_VERSION}"
+
+ENV PATH "/opt/zeek/bin:${CMAKE_DIR}/bin:${PATH}"
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# configure system for build
+RUN sed -i "s/stretch main/stretch main contrib non-free/g" /etc/apt/sources.list && \
+      echo "deb http://deb.debian.org/debian stretch-backports main" >> /etc/apt/sources.list && \
+      apt-get -q update && \
+      apt-get install -q -y --no-install-recommends gnupg2 curl apt-transport-https ca-certificates && \
+      bash -c "curl -sSL https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -" && \
+      echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-${LLVM_VERSION} main" >> /etc/apt/sources.list && \
+      echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-${LLVM_VERSION} main" >> /etc/apt/sources.list && \
+    apt-get -q update && \
+    apt-get install -q -y -t stretch-backports --no-install-recommends \
+        binutils \
+        ccache \
+        clang-${LLVM_VERSION} \
+        file \
+        flex \
+        git \
+        google-perftools \
+        jq \
+        libclang-${LLVM_VERSION}-dev \
+        libfl-dev \
+        libgoogle-perftools-dev \
+        libkrb5-dev \
+        libmaxminddb-dev \
+        libpcap0.8-dev \
+        libssl-dev \
+        llvm-${LLVM_VERSION}-dev \
+        locales-all \
+        make \
+        ninja-build \
+        python3 \
+        python3-dev \
+        python3-pip \
+        python3-setuptools \
+        python3-wheel \
+        swig \
+        zlib1g-dev && \
+  pip3 install --no-cache-dir btest pre-commit && \
+  # recent CMake
+  mkdir -p "${CMAKE_DIR}" && \
+    curl -sSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" | tar xzf - -C "${CMAKE_DIR}" --strip-components 1 && \
+  # recent Bison
+  cd /tmp && \
+    curl -sSL "https://ftp.gnu.org/gnu/bison/bison-${BISON_VERSION}.tar.gz" | tar xzf - -C /tmp && \
+    cd "./bison-${BISON_VERSION}" && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd /tmp && \
+    rm -rf /tmp/bison* && \
+  echo "deb http://httpredir.debian.org/debian unstable main" >> /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get -y --no-install-recommends install libstdc++-10-dev
+
+# Install Zeek
+RUN mkdir -p /opt/zeek/src \
+ && cd /opt/zeek && git clone -b $ZEEK_VERSION --recursive https://github.com/zeek/zeek src \
+ && cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek --disable-python && cd build && ninja && ninja install && cd ../.. && rm -rf zeek
+
+WORKDIR /root
+
+# Install Spicy.
+ADD . /opt/spicy/src
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)
