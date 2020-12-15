@@ -452,7 +452,7 @@ docker_debian10_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
     - ninja -j5 -C build install
   test_script:
