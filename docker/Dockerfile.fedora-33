@@ -1,0 +1,30 @@
+FROM fedora:33
+
+ARG SKIP_BUILD=
+ARG ZEEK_VERSION=3.0.11-2.1
+
+ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
+ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy/"
+
+RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
+ && echo 'LC_ALL="C"' >> /etc/locale.conf \
+ && echo 'LANG="C"' >> /etc/locale.conf
+
+# Install Zeek.
+RUN yum install -y libpcap-devel openssl-devel zlib-devel \
+ && rpm -iv \
+    https://download.zeek.org/binary-packages/Fedora_33/x86_64/zeek-lts-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/Fedora_33/x86_64/zeek-lts-core-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/Fedora_33/x86_64/zeekctl-lts-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/Fedora_33/x86_64/zeek-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/Fedora_33/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/Fedora_33/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm \
+# Install Spicy build dependencies
+ && yum install -y ccache git ninja-build cmake clang flex bison llvm-devel findutils diffutils python3-pip which \
+ && pip3 install btest
+
+WORKDIR /root
+
+# Install Spicy.
+ADD . /opt/spicy/src
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build)
