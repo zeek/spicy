@@ -4,14 +4,14 @@ ARG SKIP_BUILD=
 ARG ZEEK_VERSION=3.0.11-0
 ARG ZEEK_LTS=1
 
-ENV BISON_VERSION "3.6.2"
+ENV BISON_VERSION "3.7.4"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV CCACHE_DIR "/var/spool/ccache"
 ENV CCACHE_COMPRESS 1
 
 ENV CMAKE_DIR "/opt/cmake"
-ENV CMAKE_VERSION "3.17.2"
+ENV CMAKE_VERSION "3.19.1"
 
 # using clang instead of gcc because Spicy depends on it
 ENV LLVM_VERSION "11"
@@ -24,8 +24,7 @@ ENV PATH "/opt/zeek/bin:${CMAKE_DIR}/bin:${PATH}"
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # configure system for build
-RUN sed -i "s/buster main/buster main contrib non-free/g" /etc/apt/sources.list && \
-      echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list && \
+RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list && \
       apt-get -q update && \
       apt-get install -q -y --no-install-recommends gnupg2 curl ca-certificates && \
       bash -c "curl -sSL https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -" && \
