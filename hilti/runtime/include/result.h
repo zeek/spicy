@@ -63,16 +63,16 @@ inline bool operator!=(const Nothing&, const Nothing&) { return false; }
 template<typename T>
 class Result {
 public:
-    Result() : _value(result::Error("<result not initialized>")) {}
+    Result() : _value(std::in_place_type_t<result::Error>(), result::Error("<result not initialized>")) {}
 
     /** Creates a successful result from a value. */
-    Result(const T& t) : _value(t) {}
+    Result(const T& t) : _value(std::in_place_type_t<T>(), t) {}
     /** Creates a successful result from a value. */
-    Result(T&& t) : _value(std::move(t)) {}
+    Result(T&& t) : _value(std::in_place_type_t<T>(), std::move(t)) {}
     /** Creates an result reflecting an error. */
-    Result(const result::Error& e) : _value(e) {}
+    Result(const result::Error& e) : _value(std::in_place_type_t<result::Error>(), e) {}
     /** Creates an result reflecting an error. */
-    Result(result::Error&& e) : _value(std::move(e)) {}
+    Result(result::Error&& e) : _value(std::in_place_type_t<result::Error>(), std::move(e)) {}
 
     Result(const Result& o) = default;
     Result(Result&& o) = default; // NOLINT (hicpp-noexcept-move)
