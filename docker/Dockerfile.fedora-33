@@ -23,6 +23,10 @@ RUN yum install -y libpcap-devel openssl-devel zlib-devel \
  && yum install -y ccache git ninja-build cmake clang flex bison llvm-devel findutils diffutils python3-pip which \
  && pip3 install btest
 
+ENV CXX clang++
+ENV CC clang
+ENV ASM clang
+
 WORKDIR /root
 
 # Install Spicy.
