@@ -1,9 +1,9 @@
-FROM ubuntu:eoan
+FROM ubuntu:focal
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG ZEEK_LTS
-ARG ZEEK_VERSION
+ARG ZEEK_LTS=1
+ARG ZEEK_VERSION=3.0.11-0
 
 CMD ["sh"]
 ENV DEBIAN_FRONTEND=noninteractive
@@ -15,12 +15,12 @@ RUN apt-get update \
  && cd /tmp/zeek-packages \
  && if [ -n "${ZEEK_LTS}" ]; then ZEEK_LTS="-lts"; fi && export ZEEK_LTS \
  && curl -L --remote-name-all \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
  && apt-get install -y libpcap0.8 libpcap-dev python libssl-dev zlib1g-dev libmaxminddb0 libmaxminddb-dev \
  && dpkg -i *.deb \
  && cd - \
@@ -35,10 +35,10 @@ RUN apt-get update \
  # Clang-9.
  && apt-get install -y --no-install-recommends llvm-9-dev clang-9 libclang-9-dev libc++-dev libc++1 libc++abi-dev libc++abi1 \
  # Clang-10 and clang-11.
- && echo 'deb http://apt.llvm.org/eoan/ llvm-toolchain-eoan-10 main' >> /etc/apt/sources.list.d/llvm10.list \
- && echo 'deb-src http://apt.llvm.org/eoan/ llvm-toolchain-eoan-10 main' >> /etc/apt/sources.list.d/llvm10.list \
- && echo 'deb http://apt.llvm.org/eoan/ llvm-toolchain-eoan-11 main' >> /etc/apt/sources.list.d/llvm11.list \
- && echo 'deb-src http://apt.llvm.org/eoan/ llvm-toolchain-eoan-11 main' >> /etc/apt/sources.list.d/llvm11.list \
+ && echo 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main' >> /etc/apt/sources.list.d/llvm10.list \
+ && echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main' >> /etc/apt/sources.list.d/llvm10.list \
+ && echo 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' >> /etc/apt/sources.list.d/llvm11.list \
+ && echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' >> /etc/apt/sources.list.d/llvm11.list \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
  && apt-get update \
  && apt-get install -y --no-install-recommends llvm-10-dev clang-10 libclang-10-dev clang-format-10 clang-tidy-10 \

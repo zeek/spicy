@@ -4,7 +4,7 @@ ARG ZEEK_VERSION=3.0.11-2.2
 
 ENV PATH="/opt/zeek/bin:/opt/rh/gcc-toolset-9/root/bin:${PATH}"
 
-RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled PowerTools
+RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled powertools
 RUN yum install -y gcc-toolset-9-gcc gcc-toolset-9-gcc-c++ git make flex diffutils glibc-langpack-en
 SHELL [ "/usr/bin/scl", "enable", "gcc-toolset-9"]
 
@@ -22,10 +22,10 @@ RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/
 # Install Zeek and package manager
 RUN yum install -y libpcap-devel openssl-devel zlib-devel python3 \
  && rpm -iv \
-    https://download.opensuse.org/repositories/security:/zeek/CentOS_8/x86_64/zeek-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.opensuse.org/repositories/security:/zeek/CentOS_8/x86_64/zeek-lts-core-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.opensuse.org/repositories/security:/zeek/CentOS_8/x86_64/zeekctl-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.opensuse.org/repositories/security:/zeek/CentOS_8/x86_64/zeek-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.opensuse.org/repositories/security:/zeek/CentOS_8/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.opensuse.org/repositories/security:/zeek/CentOS_8/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm
+    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-core-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeekctl-lts-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/CentOS_8/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
+    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm
 RUN pip3 install zkg && zkg autoconfig
