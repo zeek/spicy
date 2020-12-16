@@ -7,51 +7,23 @@ help:
 	@echo
 	@echo Available platforms:
 	@echo
-	@cat Makefile | awk -F '[-:]' '/^build-/ { printf("    %s-%s\n", $$2, $$3); }' | sort
-	@echo
+	@ls Dockerfile.* | sed 's/Dockerfile\./    /' | sort
 
-build-ubuntu-19.10:
-	./docker-helper build ubuntu-19.10
+build-%:
+	./docker-helper build $*
 
-test-ubuntu-19.10: build-ubuntu-19.10
-	./docker-helper test ubuntu-19.10
+test-%: build-%
+	./docker-helper test $*
 
-run-ubuntu-19.10:
-	./docker-helper run ubuntu-19.10
+run-%:
+	./docker-helper run $*
 
-build-alpine-3.12:
-	./docker-helper build alpine-3.12
-
-test-alpine-3.12: build-alpine-3.12
-	./docker-helper test alpine-3.12
-
-run-alpine-3.12:
-	./docker-helper run alpine-3.12
-
-build-centos-7:
-	./docker-helper build centos-7
-
-test-centos-7: build-centos-7
-	./docker-helper test centos-7
-
-run-centos-7:
-	./docker-helper run centos-7
-
-build-centos-8:
-	./docker-helper build centos-8
-
-test-centos-8: build-centos-8
-	./docker-helper test centos-8
-
-run-centos-8:
-	./docker-helper run centos-8
-
-update_dockerhub: test-alpine-3.12 test-centos-8 test-ubuntu-19.10
+update_dockerhub: test-alpine-3.12 test-centos-8 test-ubuntu-18
 	@: $${DOCKER_USERNAME:?"must be set to the username for login to Docker Hub"}
 	@: $${DOCKER_PASSWORD_FILE:?"must be set to a file containing a password for login to Docker Hub"}
 	@test -f "$$DOCKER_PASSWORD_FILE" || sh -c ">&2 echo 'File $$DOCKER_PASSWORD_FILE does not exist' && exit 1"
 	cat "$$DOCKER_PASSWORD_FILE" | docker login --username="$$DOCKER_USERNAME" --password-stdin; \
-	IMAGES="alpine-3.12 centos-8 ubuntu-19.10"; \
+	IMAGES="alpine-3.12 centos-8 ubuntu-18"; \
 	VERSION=$$(../scripts/autogen-version --short); \
 	for image in $${IMAGES}; do \
 		for version in "$$VERSION" latest; do \

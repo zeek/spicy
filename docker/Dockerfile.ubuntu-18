@@ -1,7 +1,8 @@
-FROM ubuntu:eoan
+FROM ubuntu:bionic
 
 ARG SKIP_BUILD=
 ARG ZEEK_VERSION=3.0.11-0
+ENV BISON_VERSION "3.6.2"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -17,18 +18,25 @@ RUN apt-get update \
  && mkdir -p /tmp/zeek-packages \
  && cd /tmp/zeek-packages \
  && curl -L --remote-name-all \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts-core_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeekctl-lts_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts-core-dev_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/libbroker-lts-dev_${ZEEK_VERSION}_amd64.deb \
-    https://download.opensuse.org/repositories/security:/zeek/xUbuntu_19.10/amd64/zeek-lts-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/zeek-lts_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/zeek-lts-core_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/zeekctl-lts_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/zeek-lts-core-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/libbroker-lts-dev_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/zeek-lts-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
  && apt-get install -y libpcap0.8 libpcap-dev python libssl-dev zlib1g-dev \
  && dpkg -i *.deb \
  && cd - \
  && rm -rf /tmp/zeek-packages \
  # Spicy build and test dependencies.
- && apt-get install -y --no-install-recommends git ninja-build ccache g++ llvm-9-dev clang-9 libclang-9-dev bison flex libfl-dev python3 python3-pip zlib1g-dev jq locales-all python3-setuptools python3-wheel \
+ && apt-get install -y --no-install-recommends git ninja-build ccache g++ llvm-9-dev clang-9 libclang-9-dev flex libfl-dev python3 python3-pip zlib1g-dev jq locales-all python3-setuptools python3-wheel make \
+ && curl -sSL "https://ftp.gnu.org/gnu/bison/bison-${BISON_VERSION}.tar.gz" | tar xzf - -C /tmp \
+ && cd "/tmp/bison-${BISON_VERSION}" \
+ && ./configure --prefix=/usr \
+ && make \
+ && make install \
+ && cd /tmp \
+ && rm -rf /tmp/bison* \
  && pip3 install btest==0.64 pre-commit \
  # Spicy doc dependencies.
  && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme doxygen \
@@ -42,6 +50,9 @@ RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.1
 ENV PATH="/usr/local/cmake/bin:${PATH}"
 
 WORKDIR /root
+
+ENV CXX=clang++-9
+ENV CC=clang-9
 
 # Install Spicy.
 ADD . /opt/spicy/src

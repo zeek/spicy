@@ -30,9 +30,9 @@ location::
 The binaries might require installation of additional dependencies;
 see the ``Dockerfile`` for the respective platform.
 
-ubuntu-19.10
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu_19_10/packages/build/spicy-linux.tar.gz>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-19.10>`__
+ubuntu-18.04
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu_18_04/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18.04>`__
 
 alpine-3.12
     :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_12/packages/build/spicy-linux.tar.gz>`,
