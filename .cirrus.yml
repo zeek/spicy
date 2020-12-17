@@ -665,3 +665,81 @@ docker_fedora33_task:
   packages_artifacts:
     path: build/spicy-*.tar.gz
     type: application/gzip
+
+freebsd11_task:
+  trigger_type: manual
+  freebsd_instance:
+    image_family: freebsd-11-4
+    cpu: 8
+    memory: 8GB
+  prepare_script: ./ci/prepare_freebsd.sh
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --with-llvm-root=/usr/local/llvm11
+  build_script:
+    - ninja -j5 -C build install
+  test_script:
+    - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+  packaging_script:
+    - ninja -C build package
+
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
+freebsd12_task:
+  trigger_type: manual
+  freebsd_instance:
+    image_family: freebsd-12-2
+    cpu: 8
+    memory: 8GB
+  prepare_script: ./ci/prepare_freebsd.sh
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --with-llvm-root=/usr/local/llvm11
+  build_script:
+    - ninja -j5 -C build install
+  test_script:
+    - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+  packaging_script:
+    - ninja -C build package
+
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
