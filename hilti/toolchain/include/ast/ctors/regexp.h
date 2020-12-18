@@ -24,28 +24,9 @@ public:
     const auto& value() const { return _patterns; }
 
     /**
-     * Returns true if matching this pattern does not need to record capture
-     * groups. That's the case if either the regexp has been explicitly marked as
-     * ``&nosub``, or if there are no groups being used.
+     * Returns true if this pattern does not need support for capturing groups.
      */
-    bool isNoSub() const {
-        if ( AttributeSet::find(attributes(), "&nosub") )
-            return true;
-
-        for ( const auto& p : _patterns ) {
-            if ( auto i = p.find('('); i >= 0 && (i == 0 || p[i-1] != '\\') )
-                return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns true if matching of this pattern should be implicitly anchored.
-     */
-    bool isAnchor() const {
-        return AttributeSet::find(attributes(), "&anchor").has_value();
-    }
+    bool isNoSub() const { return AttributeSet::find(attributes(), "&nosub").has_value(); }
 
     bool operator==(const RegExp& other) const { return value() == other.value(); }
 

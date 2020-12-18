@@ -10,13 +10,13 @@ import spicy;
 global r1 = /^Fo+Ba+r/;
 global r2 = /X(..)(..)(..)Y/;
 
-assert r1.find(b"FooBar") > 0;
-assert r1.find(b"FooB") < 0;
-assert r1.find(b"FxxBxxr") == 0;
+assert r1.match(b"FooBar") > 0;
+assert r1.match(b"FooB") < 0;
+assert r1.match(b"FxxBxxr") == 0;
 
-assert r2.find_groups(b"X123456Y") == [b"X123456Y", b"12", b"34", b"56"];
-assert r2.find_groups(b"XXXX") == [];
-assert r2.find_span(b"xxxX123456Yyyy") == (1, b"X123456Y");
+assert r2.match_groups(b"X123456Y") == [b"X123456Y", b"12", b"34", b"56"];
+assert r2.match_groups(b"XXXX") == [];
+assert r2.find(b"xxxX123456Yyyy") == (1, b"X123456Y");
 
 global ms: spicy::MatchState = r2.token_matcher();
 assert ms.advance(stream(b"X12")) == (-1, stream(b""));

@@ -5,10 +5,10 @@ module Foo {
 
 import hilti;
 
-global auto re1 = /A(.*)X(.*)Y(.*)B/;
-hilti::print(re1.find_groups(b"xxA1234X5678Y9012Bxx"));
+global auto re1 = /.*A(.*)X(.*)Y(.*)B/;
+hilti::print(re1.match_groups(b"xxA1234X5678Y9012Bxx"));
 
 # No match.
-hilti::print(re1.find_groups(b"xxA123456789012Bxx"));
+hilti::print(re1.match_groups(b"xxA123456789012Bxx"));
 
 }

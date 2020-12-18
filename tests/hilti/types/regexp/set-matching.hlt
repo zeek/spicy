@@ -5,27 +5,27 @@ module Foo {
 
 import hilti;
 
-global auto re1 = /Fo*o/ | /Ba*r/ | /Hu*rz/;
-global auto re2 = /Fo*o{#41}/ | /Ba*r{#42}/ | /Hu*rz{#43}/;
+global auto re1 = /.*Fo*o/ | /.*Ba*r/ | /.*Hu*rz/;
+global auto re2 = /.*Fo*o{#41}/ | /.*Ba*r{#42}/ | /.*Hu*rz{#43}/;
+
+hilti::print(re1.match(b"XXXFooooYYY"));
+hilti::print(re1.match(b"XXXBaaarrYYY"));
+hilti::print(re1.match(b"XXXHuuurzYYY"));
+hilti::print(re1.match(b"XXXYYY"));
 
 hilti::print(re1.find(b"XXXFooooYYY"));
 hilti::print(re1.find(b"XXXBaaarrYYY"));
 hilti::print(re1.find(b"XXXHuuurzYYY"));
 hilti::print(re1.find(b"XXXYYY"));
 
-hilti::print(re1.find_span(b"XXXFooooYYY"));
-hilti::print(re1.find_span(b"XXXBaaarrYYY"));
-hilti::print(re1.find_span(b"XXXHuuurzYYY"));
-hilti::print(re1.find_span(b"XXXYYY"));
+hilti::print(re2.match(b"XXXFooooYYY"));
+hilti::print(re2.match(b"XXXBaaarrYYY"));
+hilti::print(re2.match(b"XXXHuuurzYYY"));
+hilti::print(re2.match(b"XXXYYY"));
 
 hilti::print(re2.find(b"XXXFooooYYY"));
 hilti::print(re2.find(b"XXXBaaarrYYY"));
 hilti::print(re2.find(b"XXXHuuurzYYY"));
 hilti::print(re2.find(b"XXXYYY"));
-
-hilti::print(re2.find_span(b"XXXFooooYYY"));
-hilti::print(re2.find_span(b"XXXBaaarrYYY"));
-hilti::print(re2.find_span(b"XXXHuuurzYYY"));
-hilti::print(re2.find_span(b"XXXYYY"));
 
 }

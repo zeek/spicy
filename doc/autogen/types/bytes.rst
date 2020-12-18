@@ -36,7 +36,8 @@
 
     Matches the ``bytes`` object against the regular expression *regex*.
     Returns the matching part or, if *group* is given, then the
-    corresponding subgroup.
+    corresponding subgroup. The expression is considered anchored to the
+    beginning of the data.
 
 .. spicy:method:: bytes::split bytes split False vector<bytes> ([ sep: bytes ])
 
