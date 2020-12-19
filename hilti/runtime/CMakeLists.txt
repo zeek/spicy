@@ -111,6 +111,7 @@ install_headers(${CMAKE_BINARY_DIR}/include/hilti/rt hilti/rt)
 install(CODE "file(REMOVE_RECURSE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilti)") # Get rid of symlink
 
 # Install the 3rdparty headers that we need individually.
+install_headers(${CMAKE_SOURCE_DIR}/3rdparty/ArticleEnumClass-v2 hilti/rt/3rdparty/ArticleEnumClass-v2)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
