@@ -113,7 +113,7 @@ install(CODE "file(REMOVE_RECURSE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilt
 # Install the 3rdparty headers that we need individually.
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
-install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/single_include/nlohmann hilti/rt/3rdparty/nlohmann)
+install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)
 
 ##### Tests
