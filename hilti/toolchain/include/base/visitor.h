@@ -252,6 +252,7 @@ public:
     static const Order order_ = order;
 
     Visitor() = default;
+    virtual ~Visitor() = default;
 
     virtual void preDispatch(const Erased& /* n */, int /* level */){};
 
