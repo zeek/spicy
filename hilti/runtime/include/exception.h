@@ -160,6 +160,11 @@ HILTI_EXCEPTION(UnsetOptional, RuntimeError)
  */
 HILTI_EXCEPTION(UnsetUnionMember, RuntimeError)
 
+/**
+ * Exception triggered by the fiber code when running out of stack space.
+ */
+HILTI_EXCEPTION(StackSizeExceeded, RuntimeError)
+
 /** Thrown when fmt() reports a problem. */
 class FormattingError : public RuntimeError {
 public:

@@ -348,6 +348,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
         auto body = cg->compile(*f.body());
 
+        // Add runtime stack size check at beginning of function.
+        body.addStatementAtFront("hilti::rt::detail::checkStack()");
+
         if ( n.linkage() == declaration::Linkage::Struct && ! f.isStatic() ) {
             if ( ! is_hook ) {
                 // Need a LHS value for __self.

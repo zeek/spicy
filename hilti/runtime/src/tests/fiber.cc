@@ -8,6 +8,7 @@
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/result.h>
+#include "exception.h"
 
 class TestDtor { //NOLINT
 public:
@@ -304,3 +305,34 @@ TEST_CASE("copy-arg") {
     CHECK_EQ(std::get<1>(*args_on_heap)->data(), s2->data());
 }
 
+void X() {}
+
+static int fibo(int i) {
+    hilti::rt::detail::checkStack(); // this will eventually throw
+
+    alloca(512); // Make it fail quicker
+
+    if ( i == 0 )
+        return 0;
+
+    if ( i == 1 )
+        return 1;
+
+    auto x = fibo(i - 1) + fibo(i + 2);
+    X(); // prevent compiler from removing tail calls
+    return x;
+}
+
+
+TEST_CASE("stack-size-check") {
+    hilti::rt::init();
+
+    auto f = [&](hilti::rt::resumable::Handle* r) {
+        fibo(1000000000); // stack won't suffice
+        return hilti::rt::Nothing();
+    };
+
+    CHECK_THROWS_AS(hilti::rt::fiber::execute(f), hilti::rt::StackSizeExceeded);
+}
+
+TEST_SUITE_END();

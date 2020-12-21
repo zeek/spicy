@@ -255,6 +255,14 @@ std::ostream& operator<<(std::ostream& out, const Fiber& fiber);
 
 extern void yield();
 
+/**
+ * Checks that the current fiber has sufficient stack space left for
+ * executing a function body.
+ *
+ * \throws StackSizeExceeded if the minimum size is not available
+ */
+extern void checkStack();
+
 } // namespace detail
 
 /**

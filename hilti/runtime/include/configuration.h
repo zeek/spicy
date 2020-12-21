@@ -19,10 +19,19 @@ struct Configuration {
     size_t fiber_individual_stack_size = 1 * 1024 * 1024;
 
     /** Stack size for shared fiber stack. */
-    size_t fiber_shared_stack_size = 10 * 1024 * 1024;
+    size_t fiber_shared_stack_size = 1 * 1024 * 1024;
 
     /** Max. number of fibers cached for reuse. */
     unsigned int fiber_cache_size = 100;
+
+    /**
+     * Minimum stack size that a fiber must have left for use at beginning of a
+     * function's execution. This should leave enough headroom for (1) the
+     * current function to still execute, and (2) safely abort with an
+     * exception if we're getting too low. (It seems that the latter can
+     * require quite a bit of space, hence the large default here.)
+     **/
+    size_t fiber_min_stack_size = 10 * 1024;
 
     /** File where debug output is to be sent. Default is stderr. */
     std::optional<hilti::rt::filesystem::path> debug_out;

@@ -33,6 +33,7 @@ HILTI_EXCEPTION_IMPL(UnhandledSwitchCase)
 HILTI_EXCEPTION_IMPL(UnicodeError)
 HILTI_EXCEPTION_IMPL(UnsetOptional)
 HILTI_EXCEPTION_IMPL(UnsetUnionMember)
+HILTI_EXCEPTION_IMPL(StackSizeExceeded)
 
 static void printException(const std::string& msg, const Exception& e, std::ostream& out) {
     out << "[libhilti] " << msg << " " << demangle(typeid(e).name()) << ": " << e.what() << std::endl;

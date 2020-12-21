@@ -573,6 +573,16 @@ void detail::yield() {
     context::detail::get()->resumable = r;
 }
 
+void detail::checkStack() {
+    auto* fiber = context::detail::get()->fiber.current;
+
+    if ( fiber->type() == Fiber::Type::Main )
+        return;
+
+    if ( fiber->stackBuffer().liveRemainingSize() < configuration::get().fiber_min_stack_size )
+        throw StackSizeExceeded("allowed stack space exceeded");
+}
+
 detail::Fiber::Statistics detail::Fiber::statistics() {
     Statistics stats{
         .total = _total_fibers,
