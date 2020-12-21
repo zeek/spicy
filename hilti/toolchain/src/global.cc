@@ -27,6 +27,6 @@ void hilti::render(logging::DebugStream stream, const Node& node, bool include_s
 // TODO(robin): Doesn't work on Linux to have this in shared library. The weak symbol in static ASAN runtime
 // wins during linking.
 extern "C" {
-const char* __asan_default_options() { return "detect_container_overflow=0:detect_odr_violation=0"; }
+const char* __asan_default_options() { return "detect_container_overflow=0:detect_odr_violation=0:detect_leaks=1"; }
 }
 #endif
