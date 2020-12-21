@@ -37,7 +37,7 @@ void detail::DebugLogger::print(const std::string& stream, const std::string& ms
         else {
             _output_file = std::make_unique<std::ofstream>(_path, std::ios::out | std::ios::trunc);
             if ( ! _output_file->is_open() )
-                fatalError(fmt("libhilti: cannot open file '%s' for debug output", _path));
+                warning(fmt("libhilti: cannot open file '%s' for debug output", _path));
 
             _output = _output_file.get();
         }

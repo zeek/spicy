@@ -21,7 +21,7 @@ void hilti::rt::init() {
         return;
 
     if ( ! setlocale(LC_CTYPE, "") )
-        fatalError("cannot set locale");
+        warning("cannot set locale");
 
     if ( ! globalState()->configuration )
         globalState()->configuration = std::make_unique<hilti::rt::Configuration>();
