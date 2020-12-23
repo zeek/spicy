@@ -439,7 +439,7 @@ There are three locations where hooks can be implemented:
 
     type Foo = unit {
         x: uint32;
-        v: unint8[];
+        v: uint8[];
 
         on %init { ... }
         on x { ... }
@@ -452,7 +452,7 @@ There are three locations where hooks can be implemented:
 
     type Foo = unit {
         x: uint32 { ... }
-        v: unint8[] foreach { ... }
+        v: uint8[] foreach { ... }
     }
 
 - At the global module level, one can add hooks to any available unit

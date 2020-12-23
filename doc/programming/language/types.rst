@@ -453,7 +453,7 @@ calculations.
 
 .. rubric:: Constants
 
-- ``time(SECS)`` creates a time from an uninteger or real value
+- ``time(SECS)`` creates a time from an unsigned integer or real value
   ``SECS`` specifying seconds since the epoch.
 
 - ``time_ns(NSECS)`` creates a time from an unsigned integer value
