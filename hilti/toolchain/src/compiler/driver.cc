@@ -643,7 +643,7 @@ Result<Nothing> Driver::run() {
 
     } catch ( const std::exception& e ) {
         return result::Error(
-            fmt("terminating with uncaught exception of type %s: %s", util::demangle(typeid(e).name()), e.what()));
+            fmt("uncaught exception of type %s: %s", util::demangle(typeid(e).name()), e.what()));
     }
 
     return {};

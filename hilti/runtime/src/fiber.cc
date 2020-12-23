@@ -580,7 +580,7 @@ void detail::checkStack() {
         return;
 
     if ( fiber->stackBuffer().liveRemainingSize() < configuration::get().fiber_min_stack_size )
-        throw StackSizeExceeded("allowed stack space exceeded");
+        throw StackSizeExceeded("not enough stack space remaining");
 }
 
 detail::Fiber::Statistics detail::Fiber::statistics() {
