@@ -9,7 +9,7 @@ CMD ["sh"]
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 \
+ && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 sudo \
  # Zeek.
  && mkdir -p /tmp/zeek-packages \
  && cd /tmp/zeek-packages \
@@ -53,5 +53,9 @@ WORKDIR /usr/local/cmake
 RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.15.0-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
 ENV PATH="/usr/local/cmake/bin:${PATH}"
 
-RUN groupadd -r test && useradd --no-log-init -m -g test test
+# Add a test user to catch unintentional host modifications. This is not a
+# security measure as we still allow the user to run commands as root via
+# explicit `sudo`.
+RUN groupadd -r test \
+ && useradd --no-log-init -m -g test test -G sudo --password ''
 USER test
