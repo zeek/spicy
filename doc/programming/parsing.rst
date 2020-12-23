@@ -916,7 +916,7 @@ elements into the final vector.
 
 Spicy uses a specific syntax to define fields of type vector::
 
-    NAME : ELEM_TYPE[SIZE].
+    NAME : ELEM_TYPE[SIZE]
 
 ``NAME`` is the field name as usual. ``ELEM_TYPE`` is type of the
 vector's elements, i.e., the type that will be repeatedly parsed.
@@ -982,9 +982,9 @@ add the parameters to it (e.g., ``x: (MyUnit("arg1"))[]``).
 
 .. note::
 
-    The ``x: (<T>)[]`` syntax is quite flexbile. In fact, ``<T>`` is
+    The ``x: (<T>)[]`` syntax is quite flexible. In fact, ``<T>`` is
     not limited to subunits, but allows for any standard field
-    specification definining how to parse the vector elements. For
+    specification defining how to parse the vector elements. For
     example, ``x: (bytes &size=5)[];`` parses a vector of 5-character
     ``bytes`` instances.
 
