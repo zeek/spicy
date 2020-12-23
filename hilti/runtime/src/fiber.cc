@@ -58,7 +58,7 @@ extern "C" {
 [[noreturn]] static void fiber_bottom_abort(Fiber* fiber, void* args) { abort(); }
 
 // Fiber entry point for execution of payload functions.
-void fiber_run_trampoline(void* argsp) {
+void __fiber_run_trampoline(void* argsp) {
     auto* fiber = context::detail::get()->fiber.current;
     fiber->_finishSwitchFiber("trampoline-run");
 
@@ -101,7 +101,7 @@ struct SwitchArgs {
 //
 // This function will never run to completion; do not store anything on its
 // stack that would need cleanup.
-void fiber_switch_trampoline(void* argsp) {
+void __fiber_switch_trampoline(void* argsp) {
     auto* args = reinterpret_cast<SwitchArgs*>(argsp);
     detail::Fiber::_finishSwitchFiber("stack-switcher");
 
@@ -355,7 +355,7 @@ void detail::Fiber::_activate(const char* tag) {
         args.switcher = stack_switcher;
         args.from = current;
         args.to = this;
-        ::fiber_push_return(stack_switcher->_fiber.get(), fiber_switch_trampoline, &args, sizeof(args));
+        ::fiber_push_return(stack_switcher->_fiber.get(), __fiber_switch_trampoline, &args, sizeof(args));
         _executeSwitch(tag, current, stack_switcher);
     }
     else
@@ -384,7 +384,7 @@ void detail::Fiber::_yield(const char* tag) {
         args.switcher = stack_switcher;
         args.from = this;
         args.to = _caller;
-        ::fiber_push_return(stack_switcher->_fiber.get(), fiber_switch_trampoline, &args, sizeof(args));
+        ::fiber_push_return(stack_switcher->_fiber.get(), __fiber_switch_trampoline, &args, sizeof(args));
         _executeSwitch(tag, this, stack_switcher);
     }
     else
@@ -419,7 +419,7 @@ void detail::Fiber::run() {
         // where we initialize the fiber. However, that leads to crashes; not
         // sure why?
         void* dummy_args; // not used, but need a non-null pointer
-        ::fiber_reserve_return(_fiber.get(), fiber_run_trampoline, &dummy_args, 0);
+        ::fiber_reserve_return(_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
     }
 
     _activate("run");

@@ -20,6 +20,12 @@
 
 struct Fiber;
 
+// Fiber entry point for execution of fiber payload.
+extern "C" void __fiber_run_trampoline(void* args);
+
+// Fiber entry point for stack switch trampoline.
+extern "C" void __fiber_switch_trampoline(void* args);
+
 namespace hilti::rt {
 
 namespace detail {
@@ -114,11 +120,6 @@ inline std::ostream& operator<<(std::ostream& out, const StackBuffer& s) {
     return out;
 }
 
-// Fiber entry point for execution of fiber payload.
-extern "C" void fiber_run_trampoline(void* args);
-
-// Fiber entry point for stack switch trampoline.
-extern "C" void fiber_switch_trampoline(void* args);
 
 /**
  * A fiber implements a co-routine that can at any time yield control back to
@@ -201,8 +202,8 @@ public:
     static Statistics statistics();
 
 private:
-    friend void fiber_run_trampoline(void* argsp);
-    friend void fiber_switch_trampoline(void* args0);
+    friend void ::__fiber_run_trampoline(void* argsp);
+    friend void ::__fiber_switch_trampoline(void* args0);
 
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 
