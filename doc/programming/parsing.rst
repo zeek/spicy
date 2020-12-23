@@ -228,9 +228,8 @@ them all.
 
 .. todo::
 
-    Parsing a regular expression would make a nice exmaple for
-    ``&size`` as well, but we currently have a bug there
-    (:issue:`286`).
+    Parsing a regular expression would make a nice example for
+    ``&size`` as well.
 
 .. rubric:: Anonymous Fields
 
