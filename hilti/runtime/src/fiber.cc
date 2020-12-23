@@ -252,7 +252,7 @@ std::pair<char*, char*> detail::StackBuffer::allocatedRegion() const {
     return std::make_pair(lower, lower + ::fiber_stack_size(_fiber));
 }
 
-auto detail::StackBuffer::liveRemainingSize() const {
+size_t detail::StackBuffer::liveRemainingSize() const {
     assert(::fiber_is_executing(_fiber)); // must be live
 
     // Whitelist architectures where we know how to do this.
@@ -266,7 +266,7 @@ auto detail::StackBuffer::liveRemainingSize() const {
     // Double-check we're pointing into the right space.
     assert(sp >= allocatedRegion().first && sp < allocatedRegion().second);
 
-    return sp - lower;
+    return static_cast<size_t>(sp - lower);
 
 #else
 #error "unsupported architecture in hilti::rt::detail::StackBuffer::liveRemainingSize()"
@@ -399,6 +399,8 @@ std::string detail::Fiber::tag() const {
         case Type::SharedStack: return "shared-stack";
         case Type::IndividualStack: return "owned-stack";
     }
+
+    cannot_be_reached();
 }
 
 namespace hilti::rt::detail {

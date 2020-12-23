@@ -92,13 +92,13 @@ struct StackBuffer {
      * by the fiber's stack. This value is only well-defined if the fiber is
      * *not* currently executing.
      **/
-    auto activeSize() const { return activeRegion().second - activeRegion().first; }
+    size_t activeSize() const { return static_cast<size_t>(activeRegion().second - activeRegion().first); }
 
     /** Returns the size of the memory region that's allocated for the fiber's stack. */
-    auto allocatedSize() const { return allocatedRegion().second - allocatedRegion().first; }
+    size_t allocatedSize() const { return static_cast<size_t>(allocatedRegion().second - allocatedRegion().first); }
 
     /** Returns an approximate size of stack space left for a currently executing fiber. */
-    auto liveRemainingSize() const;
+    size_t liveRemainingSize() const;
 
     /** Copies the fiber's stack out into an internally allocated buffer. */
     void save();
