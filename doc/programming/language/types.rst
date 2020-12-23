@@ -82,7 +82,7 @@ traverse their content.
 Enum
 ----
 
-Enum types associate labels with a numerical values.
+Enum types associate labels with numerical values.
 
 .. rubric:: Type
 
