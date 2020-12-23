@@ -294,7 +294,7 @@ Regular expressions use the extended POSIX syntax, with a few smaller
 differences and extensions:
 
 - Supported character classes are: ``[:lower:]``, ``[:upper:]``,
-  ``[:digit:]``, ``[:upper:]``, ``[:blank:]``.
+  ``[:digit:]``, ``[:blank:]``.
 - ``\b`` asserts a word-boundary, ``\B`` matches asserts no word
   boundary.
 - ``\xXX`` matches a byte with the binary hex value ``XX`` (e.g.,
