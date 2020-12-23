@@ -522,7 +522,7 @@ Unit
     Retrieves the value of a unit's field. If the field does not yet have
     a value assigned, it returns its ``&default`` expression if that has
     been defined. Otherwise it triggers an exception, unless used in a
-    context that specfically allows for that situation (such as,
+    context that specifically allows for that situation (such as,
     inside the Zeek plugin's `evt` files).
 
 .. spicy:operator:: unit::Unset void unset <sp> t:unit.<field>
