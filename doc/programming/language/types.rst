@@ -36,7 +36,7 @@ parsed inside a unit.
 
 - ``bitfield(N) { RANGE_1; ...; RANGE_N }``
 - Each ``RANGE`` has one of the forms ``LABEL: A`` or ``LABEL: A..B``
-  where ``A`` and ``B`` are a bit numbers.
+  where ``A`` and ``B`` are bit numbers.
 
 .. include:: /autogen/types/bitfield.rst
 
