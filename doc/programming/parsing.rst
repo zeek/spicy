@@ -309,7 +309,7 @@ representation as a ``uint64``:
 .. rubric:: Enforcing Parsing Constraints
 
 Fields may use an attribute ``&requires=EXPR`` to enforce additional
-constraints on their values. ``EXPR`` must a be boolean expression
+constraints on their values. ``EXPR`` must be a boolean expression
 that will be evaluated after the parsing for the field has finished,
 but before any hooks execute. If ``EXPR`` returns ``False``, the
 parsing process will abort with an error, just as if the field had
