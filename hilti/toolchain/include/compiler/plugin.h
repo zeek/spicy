@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <ArticleEnumClass-v2/EnumClass.h>
-
 #include <algorithm>
 #include <iostream>
 #include <memory>
@@ -11,6 +9,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/node.h>
