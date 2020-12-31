@@ -90,9 +90,11 @@ target_compile_options(hilti-rt-debug-objects     PRIVATE "-UNDEBUG;-O0;-Wall")
 target_compile_definitions(hilti-rt-debug-objects PRIVATE "HILTI_RT_BUILD_TYPE_DEBUG")
 
 add_library(hilti-rt-tests-library-dummy1 SHARED src/tests/library-dummy.cc)
+target_include_directories(hilti-rt-tests-library-dummy1 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(hilti-rt-tests-library-dummy1 PUBLIC RETURN_VALUE=1)
 
 add_library(hilti-rt-tests-library-dummy2 SHARED src/tests/library-dummy.cc)
+target_include_directories(hilti-rt-tests-library-dummy2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(hilti-rt-tests-library-dummy2 PUBLIC RETURN_VALUE=2)
 
 ##### Configuration files

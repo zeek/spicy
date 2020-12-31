@@ -102,17 +102,12 @@ void Configuration::init(bool use_build_directory) {
         util::transform(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "", installation_tag)),
                         [](auto s) { return hilti::rt::filesystem::path(s); });
 
-    runtime_cxx_flags_debug = flatten({prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+    runtime_cxx_flags_debug = flatten({"-fvisibility=hidden", prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
                                        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
 
-    if ( auto libhilti_pch = precompiled_libhilti(*this, true) )
-        runtime_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
-
-    runtime_cxx_flags_release = flatten({prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+    runtime_cxx_flags_release = flatten({"-fvisibility=hidden", prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
                                          prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
 
-    if ( auto libhilti_pch = precompiled_libhilti(*this, false) )
-        runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
 
     runtime_ld_flags_debug =
         flatten({prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-L", installation_tag),
@@ -127,6 +122,28 @@ void Configuration::init(bool use_build_directory) {
                  prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
                  prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
                  prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
+
+    jit_cxx_flags_debug = flatten({"-c", "-fvisibility=hidden", prefix("${CLANG_RESOURCE_DIR}", "-resource-dir ", installation_tag),
+                                   prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+                                   prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
+
+    jit_cxx_flags_release = flatten({"-c", "-fvisibility=hidden", prefix("${CLANG_RESOURCE_DIR}", "-resource-dir ", installation_tag),
+                                     prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+                                     prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
+
+    jit_ld_flags_debug = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup", "-nostdlib"});
+
+    jit_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup", "-nostdlib"});
+
+    if ( auto libhilti_pch = precompiled_libhilti(*this, true) ) {
+        runtime_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
+        jit_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
+    }
+
+    if ( auto libhilti_pch = precompiled_libhilti(*this, false) ) {
+        runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
+        jit_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
+    }
 };
 
 Configuration& hilti::configuration() {

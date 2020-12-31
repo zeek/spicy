@@ -79,6 +79,7 @@ set(SOURCES
     src/compiler/cxx/unit.cc
     src/compiler/driver.cc
     src/compiler/jit.cc
+    src/compiler/jit/cxx.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc
     src/compiler/unit.cc
@@ -93,8 +94,6 @@ set(SOURCES
     src/compiler/visitors/scope-builder.cc
     src/compiler/visitors/validator.cc
     src/global.cc
-
-    $<$<BOOL:${HILTI_HAVE_JIT}>:src/compiler/jit/cxx.cc>
 
     # Already included in hilti-rt, which we pull in.
     # src/3rdparty/utf8proc/utf8proc.c
@@ -119,6 +118,7 @@ target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-objects PUBLIC $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
 target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti-objects PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
+target_link_libraries(hilti-objects PRIVATE tiny-process-library::tiny-process-library)
 target_link_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)

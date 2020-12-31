@@ -52,7 +52,7 @@ void cxx::Linker::finalize() {
                                         .debug = _codegen->context()->options().debug,
                                         .optimize = _codegen->context()->options().optimize};
 
-    unit.add(fmt("const char* __hlto_library_version __attribute__((weak)) = R\"(%s)\";", version.toJSON()));
+    unit.add(fmt("const char* HILTI_EXPORT HILTI_WEAK __hlto_library_version = R\"(%s)\";", version.toJSON()));
 
     if ( ! _modules.empty() )
         unit.add(cxx::declaration::IncludeFile{"hilti/rt/libhilti.h"});

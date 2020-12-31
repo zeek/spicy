@@ -91,6 +91,11 @@ struct Configuration {
                                                            mode that uses the HILTI runtime library */
     std::vector<std::string> runtime_ld_flags_release; /**< Linker flags when compiling custom code in release mode that
                                                           uses the HILTI runtime library */
+    std::vector<std::string> jit_cxx_flags_debug;
+    std::vector<std::string> jit_cxx_flags_release;
+    std::vector<std::string> jit_ld_flags_debug;
+    std::vector<std::string> jit_ld_flags_release;
+
 private:
     void init(bool use_build_location);
 };

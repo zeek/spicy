@@ -17,4 +17,4 @@ cat \
   | sed 's#"\(/[^"/\]\{1,\}\)\{1,\}\([^"/\]\{1,\}\)"#"<...>/\1\2"#g' \
   | sed 's#libc++abi.dylib: ##g' \
   | sed 's#\(Compiled by HILTI version\) .*#\1 X.X.X#g' \
-  | sed 's#__hlto_library_version .* = .*#__hlto_library_version = <...>#g'
+  | sed 's#__hlto_library_version = .*#__hlto_library_version = <...>#g'

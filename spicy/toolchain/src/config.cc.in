@@ -37,6 +37,10 @@ void Configuration::extendHiltiConfiguration() {
     hlt.runtime_ld_flags_debug = join(spcy.runtime_ld_flags_debug, hlt.runtime_ld_flags_debug);
     hlt.runtime_cxx_flags_release = join(spcy.runtime_cxx_flags_release, hlt.runtime_cxx_flags_release);
     hlt.runtime_ld_flags_release = join(spcy.runtime_ld_flags_release, hlt.runtime_ld_flags_release);
+    hlt.jit_cxx_flags_debug = join(spcy.jit_cxx_flags_debug, hlt.jit_cxx_flags_debug);
+    hlt.jit_ld_flags_debug = join(spcy.jit_ld_flags_debug, hlt.jit_ld_flags_debug);
+    hlt.jit_cxx_flags_release = join(spcy.jit_cxx_flags_release, hlt.jit_cxx_flags_release);
+    hlt.jit_ld_flags_release = join(spcy.jit_ld_flags_release, hlt.jit_ld_flags_release);
 }
 
 Configuration::Configuration() { init(false); }
@@ -78,6 +82,15 @@ void Configuration::init(bool use_build_directory) {
                  prefix("${SPICY_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-Wl,-rpath,", installation_tag),
                  prefix("${SPICY_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
                  prefix("${SPICY_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag)});
+
+    jit_cxx_flags_debug = flatten({prefix("${SPICY_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+                                       prefix("${SPICY_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
+
+    jit_cxx_flags_release = flatten({prefix("${SPICY_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+                                         prefix("${SPICY_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
+
+    jit_ld_flags_debug = flatten({});
+    jit_ld_flags_release = flatten({});
 };
 
 Configuration& spicy::configuration() {
