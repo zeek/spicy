@@ -20,8 +20,8 @@ namespace logging::debug {
 inline const DebugStream Jit("jit");
 } // namespace logging::debug
 
-namespace detail {
-class ClangJIT;
+namespace detail::jit {
+class Cxx;
 } // namespace detail
 
 /** Container for C++ code compiled from a HILTI source file */
@@ -209,8 +209,8 @@ public:
     auto options() const { return _context->options(); }
 
     /**
-     * Returs a string identifhing the underlying compiler used for JIT
-     * compilation. Currently, that's a always a version of `clang`.
+     * Returns a string identifying the underlying compiler used for JIT
+     * compilation.
      */
     static std::string compilerVersion();
 
@@ -219,7 +219,7 @@ private:
     std::vector<hilti::rt::filesystem::path> _files; // all added source files
     std::vector<CxxCode> _codes;                     // all C++ code units to be compiled
     std::vector<Library> _libraries;                 // all precomiled modules we know about
-    std::unique_ptr<detail::ClangJIT> _jit;          // JIT backend
+    std::unique_ptr<detail::jit::Cxx> _jit;          // JIT backend
 };
 
 } // namespace hilti

@@ -94,7 +94,7 @@ set(SOURCES
     src/compiler/visitors/validator.cc
     src/global.cc
 
-    $<$<BOOL:${HILTI_HAVE_JIT}>:src/compiler/clang.cc>
+    $<$<BOOL:${HILTI_HAVE_JIT}>:src/compiler/jit/cxx.cc>
 
     # Already included in hilti-rt, which we pull in.
     # src/3rdparty/utf8proc/utf8proc.c
