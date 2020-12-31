@@ -8,6 +8,7 @@
 #include <hilti/base/timing.h>
 #include <hilti/compiler/detail/cxx/unit.h>
 #include <hilti/compiler/jit.h>
+#include <hilti/compiler/detail/jit/cxx.h>
 
 using namespace hilti;
 
@@ -64,11 +65,9 @@ bool CxxCode::save(std::ostream& out) const {
     return ! out.fail();
 }
 
-#ifdef HILTI_HAVE_JIT
-#include <hilti/compiler/detail/clang.h>
 
 JIT::JIT(std::shared_ptr<Context> context) : _context(std::move(context)) {
-    _jit = std::make_unique<detail::ClangJIT>(_context);
+    _jit = std::make_unique<detail::jit::Cxx>(_context);
 }
 
 JIT::~JIT() {}
@@ -129,34 +128,4 @@ Result<std::shared_ptr<const Library>> JIT::retrieveLibrary() const {
     return std::move(library);
 }
 
-std::string JIT::compilerVersion() { return detail::ClangJIT::compilerVersion(); }
-
-#else
-
-class detail::ClangJIT {};
-
-JIT::JIT(std::shared_ptr<Context> context) : _context(std::move(context)) {}
-
-JIT::~JIT() {}
-
-bool JIT::compile() {
-    logger().error("jit: support for just-in-time compilation not available");
-    return false;
-}
-
-Result<Nothing> JIT::jit() {
-    logger().error("jit: support for just-in-time compilation not available");
-    return Nothing();
-}
-
-void JIT::setDumpCode() { logger().error("jit: support for just-in-time compilation not available"); }
-
-Result<std::shared_ptr<const Library>> JIT::retrieveLibrary() const {
-    constexpr char message[] = "jit: support for just-in-time compilation not available";
-    logger().error(message);
-    return result::Error(message);
-}
-
-std::string JIT::compilerVersion() { return "<no JIT compiler>"; }
-
-#endif
+std::string JIT::compilerVersion() { return detail::jit::Cxx::compilerVersion(); }
