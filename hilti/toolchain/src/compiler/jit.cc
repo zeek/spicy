@@ -85,7 +85,7 @@ bool JIT::compile() {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("jitting %s", c.id()));
 
         if ( ! _jit->compile(c) ) {
-            logger().error(util::fmt("jit: failed to compile C++ code unit %s to bitcode", c.id()));
+            logger().error(util::fmt("jit: failed to compile C++ code unit %s", c.id()));
             return false;
         }
     }
@@ -94,7 +94,7 @@ bool JIT::compile() {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("jitting %s", c));
 
         if ( ! _jit->compile(c) ) {
-            logger().error(util::fmt("jit: failed to compile C++ file %s to bitcode", c));
+            logger().error(util::fmt("jit: failed to compile C++ file %s", c));
             return false;
         }
     }

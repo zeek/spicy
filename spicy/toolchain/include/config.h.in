@@ -53,6 +53,11 @@ struct Configuration {
     std::vector<std::string> runtime_ld_flags_release; /**< Linker flags when compiling custom code in release mode that
                                                           uses the Spicy runtime library */
 
+    std::vector<std::string> jit_cxx_flags_debug;
+    std::vector<std::string> jit_ld_flags_debug;
+    std::vector<std::string> jit_cxx_flags_release;
+    std::vector<std::string> jit_ld_flags_release;
+
     /**
      * Augments the global HILTI configuration with Spicy's options. For
      * condfiguration options that are offered separately by both HILTI and

@@ -8,7 +8,7 @@ extern "C" {
 
 #include <stdio.h>
 
-int hilti_main() {
+int HILTI_EXPORT hilti_main() {
     printf("in hilti_main\n");
     auto leak = new int;
     printf("%p\n", leak);

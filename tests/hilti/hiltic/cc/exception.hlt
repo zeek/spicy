@@ -29,7 +29,7 @@ function extern void test() {
 
 #include "Foo.h"
 
-extern "C" int hilti_main() { // Point of entry for JIT
+extern "C" int HILTI_EXPORT hilti_main() { // Point of entry for JIT
     try {
         auto r = hlt::Foo::test();
 

@@ -37,3 +37,6 @@
 [submodule "3rdparty/benchmark"]
 	path = 3rdparty/benchmark
 	url = https://github.com/google/benchmark.git
+[submodule "3rdparty/tiny-process-library"]
+	path = 3rdparty/tiny-process-library
+	url = https://gitlab.com/eidheim/tiny-process-library.git

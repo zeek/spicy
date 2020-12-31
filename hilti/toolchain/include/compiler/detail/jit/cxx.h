@@ -4,9 +4,12 @@
 
 #include <functional>
 #include <iosfwd>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
+#include <tiny-process-library/process.hpp>
 
 #include <hilti/base/result.h>
 #include <hilti/compiler/jit.h>
@@ -49,7 +52,7 @@ public:
      * @return true if compilation succeeded; the object code will then have
      * been recorded internally for later linking
      */
-    bool compile(const hilti::rt::filesystem::path& p);
+    bool compile(const hilti::rt::filesystem::path& path);
 
     /*
      * Links all modules compiled so far into a shared library, and then loads
@@ -79,6 +82,8 @@ public:
      */
     void setDumpCode();
 
+    const auto& options() { return _context->options(); }
+
     /**
      * Returns a string describing the compiler in use, including its specific
      * version.
@@ -86,6 +91,30 @@ public:
     static std::string compilerVersion();
 
 private:
+    using JobID = uint64_t;
+
+    Result<JobID> _spawnJob(hilti::rt::filesystem::path cmd, std::vector<std::string> args);
+    Result<Nothing> _waitForJob(JobID id);
+    Result<Nothing> _waitForJobs();
+
+    void _terminateAll();
+    hilti::rt::filesystem::path _makeTmp(std::string base, std::string ext);
+
+    std::shared_ptr<Context> _context;
+    hilti::rt::filesystem::path _workdir;
+
+    struct Job {
+        std::unique_ptr<TinyProcessLib::Process> process;
+        std::string stdout;
+        std::string stderr;
+    };
+
+    std::map<JobID, Job> _jobs;
+    std::vector<hilti::rt::filesystem::path> _objects;
+    std::shared_ptr<const Library> _library;
+
+    JobID _job_counter = 0;
+    std::map<std::string, unsigned int> _tmp_counters;
 };
 
-} // namespace hilti::detail
+} // namespace hilti::detail::jit
