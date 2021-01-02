@@ -603,6 +603,9 @@ Result<Library> ClangJIT::Implementation::compileModule(llvm::Module&& module) {
                                      "-shared",
                                      "-Wl,-undefined",
                                      "-Wl,dynamic_lookup",
+#if __APPLE__
+                                     "-nostdlib",
+#endif
                                      *object_path,
                                      "-o",
                                      *library_path};
