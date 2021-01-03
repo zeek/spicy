@@ -4,6 +4,7 @@
 
 #include <hilti/ast/types/address.h>
 #include <hilti/ast/types/any.h>
+#include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/bytes.h>
 #include <hilti/ast/types/computed.h>

@@ -700,6 +700,8 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const type::Address& n) { out << const_(n) << "addr"; }
 
+    void operator()(const type::Auto& n) { out << const_(n) << "auto"; }
+
     void operator()(const type::Bool& n) { out << const_(n) << "bool"; }
 
     void operator()(const type::Bytes& n) { out << const_(n) << "bytes"; }

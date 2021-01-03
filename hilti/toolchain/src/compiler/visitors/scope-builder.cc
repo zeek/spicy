@@ -260,8 +260,29 @@ struct VisitorPass3 : public visitor::PostOrder<void, VisitorPass3> {
                         return;
                     }
 
-                    if ( areEquivalent(*sft, f.function().type()) )
+                    if ( areEquivalent(*sft, f.function().type()) ) {
+                        // Link any "auto" parameters to the declaration. When
+                        // we update one later, all linked instanced will
+                        // reflect the change. For types that are already
+                        // resolved, we can just update any remaining auto
+                        // directly.
+                        auto field_params = sft->parameters();
+                        auto method_params = f.function().type().parameters();
+
+                        for ( auto&& [pf, pm] : util::zip2(field_params, method_params) ) {
+                            auto af = pf.type().tryAs<type::Auto>();
+                            auto am = pm.type().tryAs<type::Auto>();
+
+                            if ( af && am )
+                                am->linkTo(*af); // both will be resolved together
+                            else if ( af )
+                                af->typeNode() = pm.type(); // the other is already resolved
+                            else if ( am )
+                                am->typeNode() = pf.type(); // the other is already resolved
+                        }
+
                         found = true;
+                    }
                 }
 
                 if ( ! found ) {

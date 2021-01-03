@@ -28,7 +28,7 @@ namespace hilti { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 104
+%expect 109
 %expect-rr 184
 
 %union {}
@@ -417,6 +417,8 @@ func_params : func_params ',' func_param { $$ = std::move($1); $$.push_back($3);
 
 func_param      : opt_func_param_kind type local_id opt_func_default_expr
                                                  { $$ = hilti::type::function::Parameter($3, $2, $1, $4, __loc__); }
+                | opt_func_param_kind AUTO local_id opt_func_default_expr
+                                                 { $$ = hilti::type::function::Parameter($3, type::Auto(__loc__), $1, $4, __loc__); }
 
 func_result   : type                             { $$ = hilti::type::function::Result(std::move($1), __loc__); }
 
@@ -537,6 +539,7 @@ stmt_expr     : expr                             { $$ = hilti::statement::Expres
 base_type_no_attrs
               : ANY                              { $$ = hilti::type::Any(__loc__); }
               | ADDRESS                          { $$ = hilti::type::Address(__loc__); }
+              | AUTO                             { $$ = hilti::type::Auto(__loc__); }
               | BOOL                             { $$ = hilti::type::Bool(__loc__); }
               | BYTES                            { $$ = hilti::type::Bytes(__loc__); }
               | ERROR                            { $$ = hilti::type::Error(__loc__); }

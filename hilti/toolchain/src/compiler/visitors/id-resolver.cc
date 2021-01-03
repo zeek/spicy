@@ -4,8 +4,11 @@
 #include <hilti/ast/expressions/id.h>
 #include <hilti/ast/expressions/type.h>
 #include <hilti/ast/expressions/typeinfo.h>
+#include <hilti/ast/operator.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/types/id.h>
+#include <hilti/ast/types/void.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/visitors.h>
 #include <hilti/compiler/unit.h>
 #include <hilti/global.h>
@@ -107,6 +110,69 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
                 replaceNode(&p, type::UnresolvedID(*id, p.node.meta()), __LINE__);
             else
                 replaceNode(&p, t, __LINE__);
+        }
+    }
+
+    void operator()(const statement::Return& r, position_t p) {
+        if ( ! r.expression() || r.expression()->type().isA<type::Unknown>() )
+            return;
+
+        // Resolve any `auto` return type.
+        const auto& function = p.findParent<Function>();
+        if ( ! function )
+            return;
+
+        if ( auto a = function->get().type().result().type().tryAs<type::Auto>(); a && ! a->isSet() ) {
+            a->typeNode() = r.expression()->type();
+            modified = true;
+        }
+    }
+
+    void operator()(const expression::ResolvedOperator& r, position_t p) {
+        // For calls that have been resolved to user-defined functions and
+        // methods, check if any of the targetis have `auto` parameters thar
+        // aren't resolved yet. If so, replace those automatic types with the
+        // type of the argument that we know now.
+
+        std::vector<type::function::Parameter> params;
+
+        if ( r.operator_().kind() == operator_::Kind::Call && r.op0().type().isA<type::Function>() )
+            // Call to function.
+            params = r.op0().type().as<type::Function>().parameters();
+        else if ( r.operator_().kind() == operator_::Kind::MemberCall && r.op0().type().isA<type::Struct>() &&
+                  r.op1().type().isA<type::Function>() )
+            // Call to struct method.
+            params = r.op1().type().as<type::Function>().parameters();
+        else
+            // Not interested in these.
+            return;
+
+        for ( auto&& [arg_, param] : util::enumerate(params) ) {
+            auto at = param.type().tryAs<type::Auto>();
+            if ( ! at || at->isSet() )
+                continue;
+
+            // Compute new type for 'auto' parameter.
+            auto arg = arg_; // need this so that the lambda can capture it
+            Type type = type::Computed(NodeRef(p.node), [arg](Node& n) {
+                auto r = n.as<expression::ResolvedOperator>();
+                switch ( r.operator_().kind() ) {
+                    case operator_::Kind::Call:
+                        return type::effectiveType(
+                            r.op1().as<expression::Ctor>().ctor().as<ctor::Tuple>().value()[arg].type());
+
+                    case operator_::Kind::MemberCall:
+                        return type::effectiveType(
+                            r.op2().as<expression::Ctor>().ctor().as<ctor::Tuple>().value()[arg].type());
+
+                    default: hilti::util::cannot_be_reached();
+                }
+
+                hilti::util::cannot_be_reached();
+            });
+
+            param.type().as<type::Auto>().typeNode() = type;
+            modified = true;
         }
     }
 

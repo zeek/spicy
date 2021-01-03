@@ -1,0 +1,42 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that 'auto' parameters in struct methods get resolved through corresponding calls.
+
+module Foo {
+
+import hilti;
+
+type T = struct {
+    method void test1(auto v);
+
+    method void test2a(auto v);
+    method void test2b(auto v);
+    method void test2c();
+
+    string s;
+};
+
+method void T::test1(auto v) {
+    hilti::print(v);
+}
+
+method void T::test2a(auto v) {
+    hilti::print(v);
+}
+
+method void T::test2b(auto v) {
+    (*self).test2a(v);
+}
+
+method void T::test2c() {
+    (*self).test2b(self);
+}
+
+global T t;
+t.test1(b"foo");
+
+t.s = "bar";
+t.test2c();
+
+}

@@ -681,6 +681,16 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
     result_t operator()(const type::Void& n) { return CxxTypes{.base_type = "void"}; }
 
+    result_t operator()(const type::Auto& n) {
+        if ( auto x = dispatch(n.type()) )
+            return *x;
+
+        logger()
+            .internalError(fmt("codegen: type wrapper (auto) resolves to type %s, which does not have a visitor",
+                               to_node(n.type()).render()),
+                           n);
+    }
+
     result_t operator()(const type::Computed& n) {
         if ( auto x = dispatch(n.type()) )
             return *x;
@@ -749,6 +759,13 @@ struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder<cxx::Expression, Vis
 
     result_t operator()(const type::UnresolvedID& n) {
         logger().internalError(fmt("codgen: unresolved type ID %s", n.id()), n);
+    }
+
+    result_t operator()(const type::Auto& n) {
+        if ( auto x = dispatch(n.type()) )
+            return *x;
+        else
+            return {};
     }
 
     result_t operator()(const type::Computed& n) {
@@ -930,6 +947,13 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
 
         return fmt("hilti::rt::type_info::VectorIterator(%s, hilti::rt::type_info::VectorIterator::accessor<%s%s>())",
                    cg->typeInfo(n.dereferencedType()), x, allocator);
+    }
+
+    result_t operator()(const type::Auto& n) {
+        if ( auto x = dispatch(n.type()) )
+            return *x;
+        else
+            return {};
     }
 
     result_t operator()(const type::Computed& n) {
