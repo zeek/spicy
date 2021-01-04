@@ -30,9 +30,9 @@ location::
 The binaries might require installation of additional dependencies;
 see the ``Dockerfile`` for the respective platform.
 
-ubuntu-18.04
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu_18_04/packages/build/spicy-linux.tar.gz>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18.04>`__
+ubuntu-18
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu_18/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18>`__
 
 alpine-3.12
     :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_12/packages/build/spicy-linux.tar.gz>`,
@@ -126,13 +126,13 @@ Using Pre-built Docker Images
 
 We provide Docker images with nightly Spicy builds for the following platforms:
 
-* `ubuntu-19.10 <https://hub.docker.com/repository/docker/zeekurity/spicy-ubuntu-19.10>`__
+* `ubuntu-18 <https://hub.docker.com/repository/docker/zeekurity/spicy-ubuntu-18>`__
 * `centos-8 <https://hub.docker.com/repository/docker/zeekurity/spicy-centos-8>`__
 * `alpine-3.12 <https://hub.docker.com/repository/docker/zeekurity/spicy-alpine-3.12>`__
 
 To run the image execute the command for the desired platform::
 
-    docker run -it zeekurity/spicy-ubuntu-19.10:latest
+    docker run -it zeekurity/spicy-ubuntu-18:latest
     docker run -it zeekurity/spicy-centos-8:latest
     docker run -it zeekurity/spicy-alpine-3.12:latest
 
@@ -154,23 +154,23 @@ see the container platforms available::
 
         alpine-3.12
         centos-8
-        ubuntu-19.10
+        ubuntu-18
 
-To build a Spicy container image based on, for example, Ubuntu 19.10, run::
+To build a Spicy container image based on, for example, Ubuntu 18, run::
 
-    # make build-ubuntu-19.10
+    # make build-ubuntu-18
 
 Once the container build has finished, you can double-check that the
 container image is now available in your local Docker registry::
 
     # docker images | grep -e spicy -e REPO
     REPOSITORY                                            TAG                 IMAGE ID            CREATED             SIZE
-    spicy-ubuntu-19.10                                    0.2.0-dev           6f48daf3ade3        2 minutes ago       2.45GB
-    spicy-ubuntu-19.10                                    latest              6f48daf3ade3        2 minutes ago       2.45GB
+    spicy-ubuntu-18                                       0.2.0-dev           6f48daf3ade3        2 minutes ago       2.45GB
+    spicy-ubuntu-18                                       latest              6f48daf3ade3        2 minutes ago       2.45GB
 
 Great, let's fire it up! ::
 
-    # make run-ubuntu-19.10
+    # make run-ubuntu-18
     root@bc93113300bc:~# spicyc --version
     0.2.0-dev
 
@@ -274,9 +274,9 @@ Finally, install Zeek 3.0 from source, `per the instructions
 
 .. rubric:: Linux
 
-On Ubuntu 19 (Eoan):
+On Ubuntu 18 (Bionic):
 
-    - See the :repo:`Ubuntu 19 Docker file <docker/Dockerfile.ubuntu-19.10>`.
+    - See the :repo:`Ubuntu 18 Docker file <docker/Dockerfile.ubuntu-18>`.
 
 On Alpine 3.12:
 
