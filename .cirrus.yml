@@ -665,3 +665,65 @@ docker_fedora33_task:
   packages_artifacts:
     path: build/spicy-*.tar.gz
     type: application/gzip
+
+clang11_zeek_nightly_task:
+  # This task is only executed on master.
+  # Failing this task does not fail the build.
+  only_if: $CIRRUS_BRANCH == 'master'
+  allow_failures: true
+
+  container:
+    dockerfile: ci/Dockerfile
+    docker_arguments:
+      # We specify these only to pin a certain base image;
+      # we install nightly Zeek packages in a CI step below.
+      - ZEEK_LTS:
+      - ZEEK_VERSION: 3.2.2-0
+    cpu: 4
+    memory: 8G
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+    LD_LIBRARY_PATH: /usr/lib/llvm-11/lib/clang/9.0.1/lib/linux/
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  install_zeek_nightly_script:
+    - echo 'deb http://download.opensuse.org/repositories/security:/zeek/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/security:zeek.list
+    - curl -fsSL https://download.opensuse.org/repositories/security:zeek/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/security_zeek.gpg > /dev/null
+    - sudo apt update
+    - sudo DEBIAN_FRONTEND=noninteractive apt install -y zeek-nightly
+
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-11 --with-zeek /opt/zeek-nightly --clang-format `which clang-format-11` --clang-tidy `which clang-tidy-11`
+  build_script:          ./ci/run-ci -b build build
+  test_build_script:     ./ci/run-ci -b build test-build
+  install_script:        ./ci/run-ci -b build install
+  cleanup_script:        ./ci/run-ci -b build cleanup
+  test_install_script:   ./ci/run-ci -b build test-install
+  packaging_script:
+    - ninja -C build package
+
+  packages_artifacts:
+    path: build/spicy-*.tar.gz
+    type: application/gzip
+
+  on_failure:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
