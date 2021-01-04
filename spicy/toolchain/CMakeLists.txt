@@ -95,7 +95,7 @@ set_target_properties(spicy-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 add_library(spicy)
 target_link_libraries(spicy PUBLIC spicy-objects)
 target_link_hilti(spicy PUBLIC) # doesn't seem to transfer from spicy-objects
-target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>) # doesn't transfer from hilti-objects
+target_link_libraries(spicy PUBLIC $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>) # doesn't transfer from hilti-objects
 
 ##### Configuration files
 

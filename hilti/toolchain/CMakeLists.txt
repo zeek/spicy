@@ -129,7 +129,16 @@ set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
 add_library(hilti)
 target_link_libraries(hilti PUBLIC hilti-objects)
-target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
+
+# TODO: The generator expression doesn't work for some reason, even though it
+# does elswhere. Not sure why?
+#
+# target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
+if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_link_libraries(hilti PUBLIC hilti-rt-debug-objects)
+else ()
+    target_link_libraries(hilti PUBLIC hilti-rt-objects)
+endif ()
 
 ##### Configuration files
 
