@@ -29,7 +29,7 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 88
+%expect 85
 %expect-rr 143
 
 %union {}
@@ -480,12 +480,12 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
                                                  { $$ = hilti::statement::Switch(std::move($3), std::move($6), __loc__); }
               | SWITCH '(' local_init_decl ')' '{' switch_cases '}'
                                                  { $$ = hilti::statement::Switch($3, hilti::expression::UnresolvedID($3.as<hilti::declaration::LocalVariable>().id()), std::move($6), __loc__); }
-              | WHILE '(' local_init_decl ';' expr ')' block opt_else_block
-                                                 { $$ = hilti::statement::While(std::move($3), std::move($5), std::move($7), std::move($8), __loc__); }
-              | WHILE '(' expr ')' block opt_else_block
-                                                 { $$ = hilti::statement::While(std::move($3), std::move($5), std::move($6), __loc__); }
-              | WHILE '(' local_init_decl ')' block opt_else_block
-                                                 { $$ = hilti::statement::While(std::move($3), {}, std::move($5), std::move($6), __loc__); }
+              | WHILE '(' local_init_decl ';' expr ')' block
+                                                 { $$ = hilti::statement::While(std::move($3), std::move($5), std::move($7), std::nullopt, __loc__); }
+              | WHILE '(' expr ')' block
+                                                 { $$ = hilti::statement::While(std::move($3), std::move($5), std::nullopt, __loc__); }
+              | WHILE '(' local_init_decl ')' block
+                                                 { $$ = hilti::statement::While(std::move($3), {}, std::move($5), std::nullopt, __loc__); }
 
               | ADD expr ';'                     { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
                                                    if ( ! (op && op->kind() == hilti::operator_::Kind::Index) )

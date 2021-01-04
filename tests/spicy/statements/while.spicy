@@ -28,21 +28,3 @@ while ( local k = 0; k++ < 5 ) {
 }
 
 print "-- D";
-
-while ( local k = 0; k++ < 5 ) {
-    print k;
-}
-else
-    print "else";
-
-print "-- E";
-
-
-while ( local k = 0; k++ < 5 ) {
-    print k;
-
-    if ( k == 3 )
-        break;
-}
-else
-    print "else";

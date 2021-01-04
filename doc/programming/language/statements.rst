@@ -261,17 +261,11 @@ exception.
 
     while ( COND )
         BLOCK
-   [else
-        BLOCK]
 
     while ( local IDENT = EXPR; COND )
         BLOCK
-   [else
-        BLOCK]
 
 ``while`` introduces a loop that executes ``BLOCK`` for as long as the
 boolean ``COND`` evaluates to true. The second form initializes a new
 local variable ``IDENT`` with ``EXPR``, and makes it available inside
-both ``COND`` and ``BLOCK``. If an ``else`` block is specified, it will
-execute one time once ``COND`` evaluates to false at the loop beginning.
-It will not execute if the loop aborts with a :ref:`statement_break`.
+both ``COND`` and ``BLOCK``.
