@@ -4,8 +4,10 @@
 # --short a short one. Or alternatively with --header, a version.h file with
 # various constants defined accordingly.
 
+set -e
+
 usage() {
-    echo "usage $(basename $0) [--short|--header <file>|--cmake] [--git-root <dir>] [<commit>]"
+    echo "usage $(basename "$0") [--short|--header <file>|--cmake] [--git-root <dir>] [<commit>]"
 }
 
 output=long
@@ -25,13 +27,13 @@ while [ $# -ge 1 ]; do
         shift
     elif [ "$1" = "--git-root" ]; then
         test $# -lt 2 && usage && exit 1
-        cd $2
+        cd "$2" || exit
         shift
         shift
     fi
 done
 
-if [ $# != 0 -a $# != 1 ]; then
+if [ $# != 0 ] && [ $# != 1 ]; then
     usage
     exit 1
 fi
@@ -93,7 +95,7 @@ test -z "${major}" && major=0
 test -z "${minor}" && minor=0
 test -z "${patch}" && patch=0
 
-version_number=$((${major} * 10000 + ${minor} * 100 + ${patch}))
+version_number=$((major * 10000 + minor * 100 + patch))
 
 if [ "${output}" = "long" ]; then
     echo "${version}${str_prerelease} (${str_branch}${hash})"
