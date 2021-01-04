@@ -38,12 +38,26 @@ if [ $# != 0 ] && [ $# != 1 ]; then
     exit 1
 fi
 
-ref=HEAD
-describe_arg="--dirty"
+get_version() {
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        ref=HEAD
+        describe_arg="--dirty"
 
-test -n "$1" && test "$1" != "HEAD" && ref="$1" && describe_arg="$1"
+        test -n "$1" && test "$1" != "HEAD" && ref="$1" && describe_arg="$1"
 
-branch=$(git symbolic-ref --short "${ref}" 2>/dev/null)
+        hash=$(git rev-parse --short "${ref}")
+        branch=$(git symbolic-ref --short "${ref}" 2>/dev/null || echo "${hash}")
+        git_version=$(git describe --always --match "v*" "${describe_arg}" | sed 's/^v//g')
+    elif [ -f ./VERSION ]; then
+        # Read information from VERSION file which contains values for `branch`, `hash`, and `git_version`.
+        . ./VERSION
+    else
+        >&2 echo "Cannot extract version information: neither git repository nor VERSION file present"
+        exit 1
+    fi
+}
+
+get_version "$@"
 
 # When running from CI, for geting the branch name we prefer what
 # might be passed in through environment variables as we may not
@@ -51,12 +65,9 @@ branch=$(git symbolic-ref --short "${ref}" 2>/dev/null)
 test -n "${CI_COMMIT_REF_NAME}" && branch=${CI_COMMIT_REF_NAME} # GitLab
 test -n "${CIRRUS_BRANCH}" && branch=${CIRRUS_BRANCH} # Cirrus CI
 
-describe=$(git describe --always --match "v*" "${describe_arg}" | sed 's/^v//g')
-
-version=$(echo "${describe}" | awk -F - '{print $1}' | sed 's/^v//g')
-commit=$(echo "${describe}" | awk -F - '{print $2}')
-hash=$(git rev-parse --short "${ref}")
-dirty=$(echo "${describe}" | awk -F - '{print $4}')
+version=$(echo "${git_version}" | awk -F - '{print $1}' | sed 's/^v//g')
+commit=$(echo "${git_version}" | awk -F - '{print $2}')
+dirty=$(echo "${git_version}" | awk -F - '{print $4}')
 
 test -n "${commit}" -a -n "${dirty}" && commit="${commit}.${dirty}"
 
