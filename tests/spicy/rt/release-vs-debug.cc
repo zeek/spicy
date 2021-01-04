@@ -10,8 +10,8 @@
 //
 // With JIT in hiltic, the library versions will match the distribution's
 // build type (i.e., not the cmd line arguments).
-// @TEST-EXEC: ${SPICYC} -j %INPUT | grep -q `${HILTI_CONFIG} --build`
-// @TEST-EXEC: ${SPICYC} -j -d %INPUT | grep -q `${HILTI_CONFIG} --build`
+// @TEST-EXEC: ${SPICYC} -j %INPUT | awk 'NR==1' | grep -q `${HILTI_CONFIG} --build`
+// @TEST-EXEC: ${SPICYC} -j -d %INPUT | awk 'NR==2' |grep -q `${HILTI_CONFIG} --build`
 
 
 #include <hilti/rt/libhilti.h>
