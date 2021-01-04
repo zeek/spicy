@@ -859,10 +859,10 @@ void Driver::printHiltiException(const hilti::rt::Exception& e) {
     std::cerr << fmt("uncaught exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
 
     if ( _driver_options.show_backtraces ) {
-        if ( auto bt = e.backtrace(); ! bt.empty() ) {
+        if ( auto bt = e.backtrace(); ! bt->empty() ) {
             std::cerr << "backtrace:\n";
 
-            for ( const auto& s : bt )
+            for ( const auto& s : *bt )
                 std::cerr << "  " << s << "\n";
         }
     }

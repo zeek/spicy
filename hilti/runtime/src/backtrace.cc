@@ -10,18 +10,19 @@ using namespace hilti::rt;
 
 Backtrace::Backtrace() {
 #ifdef HILTI_HAVE_BACKTRACE
-    _frames = ::backtrace(_callstack, sizeof(_callstack));
+    _callstack = std::make_shared<Callstack>();// allocate on heap to save stack space
+    _frames = ::backtrace(_callstack->begin(), _callstack->size());
 #endif
 }
 
-std::vector<std::string> Backtrace::backtrace() const {
-    std::vector<std::string> bt;
+std::unique_ptr<std::vector<std::string>> Backtrace::backtrace() const {
+    auto bt = std::make_unique<std::vector<std::string>>();
 
 #ifdef HILTI_HAVE_BACKTRACE
     assert(_frames >= 0);
-    char** strings = backtrace_symbols(_callstack, _frames);
+    char** strings = backtrace_symbols(_callstack->begin(), _frames);
     if ( ! strings ) {
-        bt.push_back("# <trouble resolving backtrace symbols>");
+        bt->push_back("# <trouble resolving backtrace symbols>");
         return bt;
     }
 
@@ -31,15 +32,15 @@ std::vector<std::string> Backtrace::backtrace() const {
         auto p3 = p2 ? strchr(p2, ')') : nullptr;
         if ( p1 && p2 && p3 ) {
             *p2 = '\0';
-            bt.push_back(fmt("# %s %s", p3 + 2, demangle(p1 + 1)));
+            bt->push_back(fmt("# %s %s", p3 + 2, demangle(p1 + 1)));
         }
         else
-            bt.push_back(fmt("# %s", strings[i]));
+            bt->push_back(fmt("# %s", strings[i]));
     }
 
     free(strings); // NOLINT
 #else
-    bt.push_back("# <support for stack backtraces not available>");
+    bt->push_back("# <support for stack backtraces not available>");
 #endif
 
     return bt;
@@ -53,7 +54,7 @@ bool hilti::rt::operator==(const Backtrace& a, const Backtrace& b) {
         return false;
 
     for ( int i = 0; i < a._frames; i++ ) {
-        if ( a._callstack[i] != b._callstack[i] )
+        if ( a._callstack->at(i) != b._callstack->at(i) )
             return false;
     }
 

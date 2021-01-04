@@ -42,12 +42,12 @@ static void printException(const std::string& msg, const Exception& e, std::ostr
         return;
 
     auto bt = e.backtrace();
-    if ( bt.empty() )
+    if ( bt->empty() )
         return;
 
     out << "[libhilti] backtrace:\n";
 
-    for ( const auto& s : bt )
+    for ( const auto& s : *bt )
         out << "[libhilti]    " << s << "\n";
 }
 

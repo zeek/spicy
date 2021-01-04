@@ -42,8 +42,8 @@ bool hilti::rt::isDebugVersion() {
 
 void hilti::rt::abort_with_backtrace() {
     fputs("\n--- Aborting in libhilti\n", stderr);
-    hilti::rt::Backtrace bt;
-    for ( const auto& f : bt.backtrace() )
+    auto bt = hilti::rt::Backtrace().backtrace();
+    for ( const auto& f : *bt )
         std::cerr << f << std::endl;
     abort();
 }

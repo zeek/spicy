@@ -58,7 +58,7 @@ TEST_CASE("backtrace") {
     // - one frame for the current line
     // - three frames frome the test harness to reach and expand `TEST_CASE`.
 #ifdef HILTI_HAVE_BACKTRACE
-    CHECK_GE(Exception("description").backtrace().size(), 7u);
+    CHECK_GE(Exception("description").backtrace()->size(), 7u);
 #endif
 }
 

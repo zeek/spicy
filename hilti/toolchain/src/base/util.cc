@@ -167,8 +167,8 @@ hilti::rt::filesystem::path util::currentExecutable() { return normalizePath(::F
 
 void util::abort_with_backtrace() {
     std::cerr << "\n--- Aborting" << std::endl;
-    hilti::rt::Backtrace bt;
-    for ( const auto& f : bt.backtrace() )
+    auto bt = hilti::rt::Backtrace().backtrace();
+    for ( const auto& f : *bt )
         std::cerr << f << std::endl;
     abort();
 }

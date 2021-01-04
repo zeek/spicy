@@ -318,7 +318,7 @@ static int fibo(int i) {
     if ( i == 1 )
         return 1;
 
-    auto x = fibo(i - 1) + fibo(i + 2);
+    auto x = fibo(i - 1) + fibo(i - 2);
     X(); // prevent compiler from removing tail calls
     return x;
 }

@@ -54,10 +54,10 @@ struct Configuration {
 
 namespace configuration {
 /**
- * Returns a copy of the current global configuration. To change the
+ * Returns the current global configuration. To change the
  * configuration, modify it and then pass it back to `set()`.
  */
-extern Configuration get();
+extern const Configuration& get();
 
 /**
  * Sets new configuration values. Usually one first retrieves the current
