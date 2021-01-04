@@ -194,9 +194,10 @@ TEST_CASE("lower") {
 
 TEST_CASE("match") {
     const auto b = "123"_b;
-    CHECK_EQ(b.match(RegExp("2"), 0), Result("2"_b));
-    CHECK_EQ(b.match(RegExp("a"), 0), Result<Bytes>(result::Error("no matches found")));
-    CHECK_EQ(b.match(RegExp("2"), 1), Result<Bytes>(result::Error("no matches found")));
+    CHECK_EQ(b.match(RegExp(".*2"), 0), Result("12"_b));
+    CHECK_EQ(b.match(RegExp(".*(2)"), 1), Result("2"_b));
+    CHECK_EQ(b.match(RegExp(".*a"), 0), Result<Bytes>(result::Error("no matches found")));
+    CHECK_EQ(b.match(RegExp(".*2"), 1), Result<Bytes>(result::Error("no matches found")));
 }
 
 TEST_CASE("iteration") {

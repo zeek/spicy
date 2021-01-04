@@ -162,7 +162,7 @@ uint64_t Bytes::toUInt(ByteOrder byte_order) const {
 }
 
 Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
-    auto groups = re.findGroups(*this);
+    auto groups = re.matchGroups(*this);
 
     if ( group >= groups.size() )
         return result::Error("no matches found");

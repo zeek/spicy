@@ -424,19 +424,19 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
                    util::join(cg->compileCallArguments(values, f.function().type().parameters()), ", "));
     }
 
+    result_t operator()(const operator_::regexp::Match& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.match(%s)", self, args[0]);
+    }
+
+    result_t operator()(const operator_::regexp::MatchGroups& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.matchGroups(%s)", self, args[0]);
+    }
+
     result_t operator()(const operator_::regexp::Find& n) {
         auto [self, args] = methodArguments(n);
         return fmt("%s.find(%s)", self, args[0]);
-    }
-
-    result_t operator()(const operator_::regexp::FindGroups& n) {
-        auto [self, args] = methodArguments(n);
-        return fmt("%s.findGroups(%s)", self, args[0]);
-    }
-
-    result_t operator()(const operator_::regexp::FindSpan& n) {
-        auto [self, args] = methodArguments(n);
-        return fmt("%s.findSpan(%s)", self, args[0]);
     }
 
     result_t operator()(const operator_::regexp::TokenMatcher& n) {

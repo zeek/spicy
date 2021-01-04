@@ -372,8 +372,9 @@ BEGIN_METHOD(bytes, Match)
                                   {.id = "group", .type = type::UnsignedInteger(64), .optional = true}},
                          .doc =
                              R"(
-Matches the ``bytes`` object against the regular expression *regex*. Returns the matching
-part or, if *group* is given, then the corresponding subgroup.
+Matches the ``bytes`` object against the regular expression *regex*. Returns
+the matching part or, if *group* is given, then the corresponding subgroup. The
+expression is considered anchored to the beginning of the data.
 )"};
     }
 END_METHOD

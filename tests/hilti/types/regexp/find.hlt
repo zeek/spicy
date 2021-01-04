@@ -4,34 +4,34 @@ module Foo {
 
 import hilti;
 
-global auto re1 = /Foo|Bar/;
-global auto re2 = /Foo|Bar/ &nosub;
+global auto re1 = /.*(Foo|Bar)/;
+global auto re2 = /.*(Foo|Bar)/ &nosub;
 
-global auto re3 = /Foo|Bar/ &anchor &nosub;
-global auto re4 = /Foo|Bar/ &anchor;
+global auto re3 = /Foo|Bar/ &nosub;
+global auto re4 = /Foo|Bar/;
 
-assert re1.find(b"Hello Foo!") == 1;
-assert re1.find(b"Hello Bar!") == 1;
-assert re1.find(b"Hello Nobody!") == -1;
+assert re1.match(b"Hello Foo!") == 1;
+assert re1.match(b"Hello Bar!") == 1;
+assert re1.match(b"Hello Nobody!") == -1;
 
-assert re2.find(b"Hello Foo!") == 1;
-assert re2.find(b"Hello Bar!") == 1;
-assert re2.find(b"Hello Nobody!") == -1;
+assert re2.match(b"Hello Foo!") == 1;
+assert re2.match(b"Hello Bar!") == 1;
+assert re2.match(b"Hello Nobody!") == -1;
 
-assert re3.find(b"Foo!") == 1;
-assert re4.find(b"Hello Foo!") == 0;
+assert re3.match(b"Foo!") == 1;
+assert re4.match(b"Hello Foo!") == 0;
 
-assert re4.find(b"Foo!") == 1;
-assert re4.find(b"Hello Foo!") == 0;
+assert re4.match(b"Foo!") == 1;
+assert re4.match(b"Hello Foo!") == 0;
 
 global regexp reX;
 reX = re1;
-assert reX.find(b"Hello Bar!") == 1;
-assert reX.find(b"Hello Nobody!") == -1;
+assert reX.match(b"Hello Bar!") == 1;
+assert reX.match(b"Hello Nobody!") == -1;
 
-global auto reY = /Foo|Bar!!!/;
-assert reY.find(b"Bar") == -1;
-assert reY.find(b"Fo") == -1;
-assert reY.find(b"Bar!!!") == 1;
+global auto reY = /.*(Foo|Bar!!!)/;
+assert reY.match(b"Bar") == -1;
+assert reY.match(b"Fo") == -1;
+assert reY.match(b"Bar!!!") == 1;
 
 }

@@ -26,10 +26,11 @@ class RegExp;
 namespace regexp {
 
 struct Flags {
-    bool anchor : 1; /**< If true, implicitly anchor the expression. */
-    bool no_sub : 1; /**< If true, compile without support for capturing sub-expressions. */
+    bool no_sub = false; /**< if true, compile without support for capturing sub-expressions */
+    bool use_std =
+        false; /**< if true, always use the standard matcher (for testing purposes; ignored if `no_sub` is set) */
 
-    friend bool operator==(const Flags& a, const Flags& b) { return a.no_sub == b.no_sub; }
+    friend bool operator==(const Flags& a, const Flags& b) { return a.no_sub == b.no_sub && a.use_std == b.use_std; }
     friend bool operator!=(const Flags& a, const Flags& b) { return ! (a == b); }
 };
 
@@ -40,7 +41,9 @@ using Captures = Vector<Bytes>;
 class MatchState {
 public:
     /**
-     * Creates a fresh instances ready to match data against a given regular expression.
+     * Creates a fresh instances ready to match data against a given regular
+     * expression. The expression will considered anchored to the beginning of
+     * any data.
      */
     MatchState(const RegExp& re);
     MatchState() noexcept;
@@ -101,9 +104,9 @@ public:
 private:
     std::pair<int32_t, uint64_t> _advance(const stream::View& data, bool is_final);
 
-    // TODO(robin): PIMPLing here means we have to alllocate dynamic memory, which
+    // PIMPLing here means we have to alllocate dynamic memory, which
     // isn't great for this class. However, without PIMPL we get a new dependency on
-    // 'jrx.h', which isn't great either. Better ideas?
+    // 'jrx.h', which isn't great either, so we go with this.
     class Pimpl;
     std::unique_ptr<Pimpl> _pimpl;
 };
@@ -139,7 +142,8 @@ public:
     const auto& flags() const { return _flags; }
 
     /**
-     * Searches a pattern within a bytes view.
+     * Searches a pattern within a bytes view. The expression is considered
+     * anchored to the beginning of the data.
      *
      * @return If the returned integer is larger than zero, the regexp was
      * found; for sets compiled via `compileSet` the integer value then
@@ -149,19 +153,12 @@ public:
      * 0, a partial match was found (i.e., no match yet but adding further
      * data could change that).
      */
-    int32_t find(const Bytes& data) const;
+    int32_t match(const Bytes& data) const;
 
     /**
-     * Searches a pattern within a bytes view and returns the matching part.
-     *
-     * @return A tuple where the 1st element corresponds to the result of
-     * `find()`. If that's larger than zero, the 2nd is the matching data.
-     */
-    std::tuple<int32_t, Bytes> findSpan(const Bytes& data) const;
-
-    /**
-     * Searches a pattern within a bytes view and returns the matching data
-     * for all matching capture groups.
+     * Searches a pattern within a bytes view and returns the matching data for
+     * all matching capture groups. The expression is considered anchored to
+     * the beginning of the data.
      *
      * @return A vector of containing the matching data for all capture
      * groups. The vector's index 0 corresponds to the whole expression,
@@ -171,13 +168,24 @@ public:
      * @todo This function does not yet support sets compiled via
      * `compileSet()`.
      */
-    Vector<Bytes> findGroups(const Bytes& data) const;
+    Vector<Bytes> matchGroups(const Bytes& data) const;
+
+    /**
+     * Searches a pattern within a bytes view and returns the matching part.
+     * The expression is *not* considered anchored to the beginning of the data,
+     * it will be found at any position.
+     *
+     * \note This method is currently quadratic in the size of *data*.
+     *
+     * @return A tuple where the 1st element corresponds to the result of
+     * `find()`. If that's larger than zero, the 2nd is the matching data.
+     */
+    std::tuple<int32_t, Bytes> find(const Bytes& data) const;
 
     /**
      * Returns matching state initializes for incremental token matching. For
      * token matching the regular expression will be considered implicitly
-     * anchored. The regular expression must have been compiled with the
-     * `&nosub` attribute.
+     * anchored.
      */
     regexp::MatchState tokenMatcher() const;
 
@@ -197,12 +205,8 @@ private:
     }
     const auto& _jrxShared() const { return _jrx_shared; }
 
-    /**
-     * Searches for the regexp anywhere inside a bytes instance and returns
-     * the first match.
-     */
-    int16_t _search_pattern(jrx_match_state* ms, const Bytes& data, int32_t* so, int32_t* eo,
-                            bool find_partial_matches) const;
+    // Backend for the the searching and matching methods.
+    int16_t _search_pattern(jrx_match_state* ms, const char* data, size_t len, int32_t* so, int32_t* eo) const;
 
     void _newJrx();
     void _compileOne(std::string pattern, int idx);

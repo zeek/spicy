@@ -1,4 +1,29 @@
 
+0.4.0-1148 | 2021-01-04 08:10:25 +0000
+
+  * Overhauling regexp matching semantics.
+
+    We were inconsistent in how regular expressions (1) handled being anchored
+    vs not, and (2) allowed to retrieve the matching data. We fix this as
+    follows:
+
+    - We rename the regexp methods for more consistency: `match` now means
+      "matching is anchored at the beginning of the data", and `find` means
+      we find matches anywhere in the data. This leads to the following
+      renames:
+
+        * <regexp>.find -> <regexp>.match
+        * <regexp>.find_groups -> <regexp>match_groups
+        * <regexp>.find_span -> <regexp>.find
+
+      `<bytes>.match` adapts to the new semantics as well.
+
+    - We remove the `&anchor` attribute because that's the default now.
+
+    - `&no_sub` remains available to override the default choice of the
+      matcher type: it'll use the minimal matcher and disable capture group
+      support.
+
 0.4.0-1145 | 2021-01-02 20:43:29 +0100
 
   * GH-635: Collection of cleanups from consuming Spicy in external project.
@@ -51,8 +76,8 @@
     Example:
 
          x: /(a.c)(de*f)(h.j)/ {
-            print $1, $2, $3;
-            }
+    print $1, $2, $3;
+}
 
     This will print the pieces corresponding to the three groups inside the
     expression.
@@ -319,7 +344,9 @@
   * Clean up parsers' bounds checking of signed integer values. (Robin
     Sommer, Corelight)
 
-  * GH-515: Change {time,interval}::nanoseconds() to return integers
+  * GH-515: Change {
+        time, interval
+    }::nanoseconds() to return integers
     instead of real. (Robin Sommer, Corelight)
 
   * Fix bashism in test helper script. (Robin Sommer, Corelight)
@@ -404,17 +431,18 @@
     more generally: rendered into a string).
 
     Example:
-
-        # cat test.spicy
+#cat test.spicy
         public type Test = unit {
-            on %init   { print self; }
-            f1: uint32;
-            f2: uint8;
-            on %done   { print self; }
+        on % init { print self; }
+    f1:
+        uint32;
+    f2:
+        uint8;
+        on % done { print self; }
 
-            on %print  {
-                local f1 = "-";
-                local f2 = "-";
+        on % print {
+            local f1 = "-";
+            local f2 = "-";
 
                 if ( self?.f1 )
                     f1 = "%s" % self.f1;
@@ -423,10 +451,10 @@
                     f2 = "%s" % self.f2;
 
                 return "%s|%s" % (f1, f2);
-                }
-        };
+        }
+    };
 
-        # printf '\x00\x00\x00\x01\x02' | spicy-driver test.spicy
+#printf '\x00\x00\x00\x01\x02' | spicy - driver test.spicy
         -|-
         1|2
 
@@ -600,7 +628,9 @@
 
   * Remove unintentional `return` in `rt::haveEod`. (Benjamin Bannier, Corelight)
 
-  * Avoid creating vain global state in `spicy::rt::{done,isInitialized}`. (Benjamin Bannier, Corelight)
+  * Avoid creating vain global state in `spicy::rt::{
+            done, isInitialized
+        }`. (Benjamin Bannier, Corelight)
 
   * Reinitialize default parser when reinitializing spicy::rt library. (Benjamin Bannier, Corelight)
 
@@ -979,17 +1009,16 @@
     that compiles and executes Spicy parsers on the fly and prints out
     the parsed information at the end in either a readable, custom
     ASCII format, or as JSON. (Robin Sommer, Corelight)
-
-        # echo "GET /index.html HTTP/1.0" | spicy-dump my-http.hlto
+#echo "GET /index.html HTTP/1.0" | spicy - dump my - http.hlto
         MyHTTP::RequestLine {
-            method: GET
-            uri: /index.html
-            version: MyHTTP::Version {
-                number: 1.0
+        method:
+            GET uri : / index.html version : MyHTTP::Version {
+            number:
+                1.0
             }
         }
 
-        # echo "GET /index.html HTTP/1.0" | spicy-dump -J my-http.hlto
+#echo "GET /index.html HTTP/1.0" | spicy - dump - J my - http.hlto
         {"method":"GET","uri":"/index.html","version":{"number":"1.0"}}
 
   * GH-56: Add reflection API to libhilti for dynamic, runtime
@@ -1314,10 +1343,10 @@
           with an arrow, e.g.:
 
                switch {
-                   -> a: A;
-                   -> b: B;
-                   -> c: C;
-               };
+            ->a : A;
+            ->b : B;
+            ->c : C;
+        };
 
   * Reduce resources requested from Cirrus. (Robin Sommer, Corelight)
 
@@ -1373,7 +1402,7 @@
     example of transforming Spicy information on the fly to match a
     Zeek-side event signature.
 
-    #335 (Robin Sommer, Corelight)
+# 335(Robin Sommer, Corelight)
 
 0.4.0-346 | 2020-05-27 13:00:28 +0200
 
@@ -1549,11 +1578,12 @@
         ## Returns a bytes value rendered as a hex string.
         public function bytes_to_hexstring(value: bytes) : string;
 
-  * GH-200: Add library function `spicy::getenv()` to retrieve environment
-    variables. (Robin Sommer, Corelight)
+  *GH - 200 : Add library function `spicy::getenv()` to retrieve environment variables.(Robin Sommer, Corelight)
 
-        ## Returns the value of an environment variable, if set.
-        public function getenv(name: string) : optional<string>;
+                  ##Returns the value of an environment variable,
+      if set.public function getenv(name
+                                    : string)
+      : optional<string>;
 
   * GH-200: Add option -f to `spicy-driver` to read input from file.
     (Robin Sommer, Corelight)

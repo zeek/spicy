@@ -7,8 +7,8 @@ import hilti;
 
 # This is a regexp that lets the DFA explode, so it will only work in lazy compilation mode.
 global auto re1 = /\/etc\/(passwd|shadow|netconfig)|IFS[ \t]*=|nph-test-cgi\?|(%0a|\.\.)\/(bin|etc|usr|tmp)|\/Admin_files\/order\.log|\/carbo\.dll|\/cgi-bin\/(phf|php\.cgi|test-cgi)|\/cgi-dos\/args\.bat|\/cgi-win\/uploader\.exe|\/search97\.vts|tk\.tgz|ownz\/|viewtopic\.php.*%.*\(.*\(\/|sshd\.(tar|tgz).*|[aA][dD][oO][rR][eE][bB][sS][dD].*|shv4\.(tar|tgz).*|lrk\.(tar|tgz).*|lyceum\.(tar|tgz).*|maxty\.(tar|tgz).*|rootII\.(tar|tgz).*|invader\.(tar|tgz).*/;
+hilti::print(re1.match(b"/etc/passwd"));
 hilti::print(re1.find(b"/etc/passwd"));
-hilti::print(re1.find_span(b"/etc/passwd"));
-hilti::print(re1.find_groups(b"/etc/passwd"));
+hilti::print(re1.match_groups(b"/etc/passwd"));
 
 }
