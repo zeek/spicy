@@ -7,7 +7,7 @@
 set -e
 
 usage() {
-    echo "usage $(basename "$0") [--short|--header <file>|--cmake] [--git-root <dir>] [<commit>]"
+    echo "usage $(basename "$0") [--short | --header <file> | --cmake | --store] [--git-root <dir>] [<commit>]"
 }
 
 output=long
@@ -24,6 +24,9 @@ while [ $# -ge 1 ]; do
         shift
     elif [ "$1" = "--cmake" ]; then
         output=cmake
+        shift
+    elif [ "$1" = "--store" ]; then
+        output=store
         shift
     elif [ "$1" = "--git-root" ]; then
         test $# -lt 2 && usage && exit 1
@@ -135,4 +138,10 @@ EOF
 elif [ "${output}" = "cmake" ]; then
     echo "${version}"
 
+elif [ "${output}" = "store" ]; then
+    {
+        echo "branch=$branch"
+        echo "hash=$hash"
+        echo "git_version=$git_version"
+    } > VERSION
 fi
