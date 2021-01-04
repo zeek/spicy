@@ -107,8 +107,6 @@ The available debug streams include:
     itself, although it may also be helpful to understand the internal
     control flow when writing a grammar.
 
-    .. todo:: ``-X flow`` is currently broken (:issue:`159`).
-
 Multiple streams can be enabled by separating them with colons.
 
 Exceptions

@@ -164,7 +164,7 @@ iterator. If *needle* was found, the boolean will be true and the iterator will 
 to its first occurance. If *needle* was not found, the boolean will be false and
 the iterator will point to the last position so that everything before that is
 guaranteed to not contain even a partial match of *needle* (in other words: one can
-``trim`` until that position and then restart the search from there if more data
+trim until that position and then restart the search from there if more data
 gets appended to the underlying stream value). Note that for a simple yes/no result,
 you should use the ``in`` operator instead of this method, as it's more efficient.
 )"};

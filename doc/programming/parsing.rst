@@ -8,7 +8,8 @@ Parsing
 Basics
 ======
 
-.. rubric:: Type Declaration
+Type Declaration
+^^^^^^^^^^^^^^^^
 
 Spicy expresses units of data to parse through a type called,
 appropriately, ``unit``. At a high level, a unit is similar to structs
@@ -71,7 +72,8 @@ This will print:
 Note how the field remains unset even with the default now specified,
 while the access returns the expected value.
 
-.. rubric:: Parsing a Field
+Parsing a Field
+^^^^^^^^^^^^^^^
 
 We can turn this minimal unit type into a starting point for parsing
 data---in this case a 32-bit integer from four bytes of raw input.
@@ -138,7 +140,8 @@ attributes that control the specifics of how fields are parsed. We'll
 discuss them in the relevant sections throughout the rest of this
 chapter.
 
-.. rubric:: Non-type Fields
+Non-type Fields
+^^^^^^^^^^^^^^^
 
 Unit fields always have a type. However, in some cases a field's type
 is not explicitly declared, but derived from what's being parsed. The
@@ -191,7 +194,8 @@ that's different than what's being parsed, see the
 
 .. _attribute_size:
 
-.. rubric:: Limiting Input Size
+Limiting Input Size
+^^^^^^^^^^^^^^^^^^^
 
 You can limit the input that a field receives by attaching a
 ``&size=EXPR`` attribute that specifies the number of raw bytes to
@@ -228,11 +232,11 @@ them all.
 
 .. todo::
 
-    Parsing a regular expression would make a nice exmaple for
-    ``&size`` as well, but we currently have a bug there
-    (:issue:`286`).
+    Parsing a regular expression would make a nice example for
+    ``&size`` as well.
 
-.. rubric:: Anonymous Fields
+Anonymous Fields
+^^^^^^^^^^^^^^^^
 
 Field names are optional. If skipped, the field becomes an *anonymous*
 field. These still participate in parsing as any other field, but they
@@ -259,7 +263,8 @@ corresponding field hook (see :ref:`unit_hooks`) using the reserved
 .. _id_dollardollar:
 .. _id_self:
 
-.. rubric:: Reserved Identifiers
+Reserved Identifiers
+^^^^^^^^^^^^^^^^^^^^
 
 Inside units, two reserved identifiers provide access to values
 currently being parsed:
@@ -277,7 +282,8 @@ currently being parsed:
 
 .. _attribute_convert:
 
-.. rubric:: On-the-fly Type Conversion with &convert
+On-the-fly Type Conversion with &convert
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Fields may use an attribute ``&convert=EXPR`` to transform the value
 that was just being parsed before storing it as the field's final
@@ -307,10 +313,11 @@ representation as a ``uint64``:
 
 .. _attribute_requires:
 
-.. rubric:: Enforcing Parsing Constraints
+Enforcing Parsing Constraints
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Fields may use an attribute ``&requires=EXPR`` to enforce additional
-constraints on their values. ``EXPR`` must a be boolean expression
+constraints on their values. ``EXPR`` must be a boolean expression
 that will be evaluated after the parsing for the field has finished,
 but before any hooks execute. If ``EXPR`` returns ``False``, the
 parsing process will abort with an error, just as if the field had
@@ -440,7 +447,7 @@ There are three locations where hooks can be implemented:
 
     type Foo = unit {
         x: uint32;
-        v: unint8[];
+        v: uint8[];
 
         on %init { ... }
         on x { ... }
@@ -453,7 +460,7 @@ There are three locations where hooks can be implemented:
 
     type Foo = unit {
         x: uint32 { ... }
-        v: unint8[] foreach { ... }
+        v: uint8[] foreach { ... }
     }
 
 - At the global module level, one can add hooks to any available unit
@@ -917,7 +924,7 @@ elements into the final vector.
 
 Spicy uses a specific syntax to define fields of type vector::
 
-    NAME : ELEM_TYPE[SIZE].
+    NAME : ELEM_TYPE[SIZE]
 
 ``NAME`` is the field name as usual. ``ELEM_TYPE`` is type of the
 vector's elements, i.e., the type that will be repeatedly parsed.
@@ -983,9 +990,9 @@ add the parameters to it (e.g., ``x: (MyUnit("arg1"))[]``).
 
 .. note::
 
-    The ``x: (<T>)[]`` syntax is quite flexbile. In fact, ``<T>`` is
+    The ``x: (<T>)[]`` syntax is quite flexible. In fact, ``<T>`` is
     not limited to subunits, but allows for any standard field
-    specification definining how to parse the vector elements. For
+    specification defining how to parse the vector elements. For
     example, ``x: (bytes &size=5)[];`` parses a vector of 5-character
     ``bytes`` instances.
 
