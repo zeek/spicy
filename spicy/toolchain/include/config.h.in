@@ -11,7 +11,6 @@
 
 #cmakedefine HAVE_ZEEK
 #cmakedefine HAVE_ZEEK_PLUGIN
-#cmakedefine ZEEK_HAVE_JIT
 
 #ifdef HAVE_ZEEK
 #define ZEEK_EXECUTABLE "@ZEEK_EXE@"
@@ -53,10 +52,10 @@ struct Configuration {
     std::vector<std::string> runtime_ld_flags_release; /**< Linker flags when compiling custom code in release mode that
                                                           uses the Spicy runtime library */
 
-    std::vector<std::string> jit_cxx_flags_debug;
-    std::vector<std::string> jit_ld_flags_debug;
-    std::vector<std::string> jit_cxx_flags_release;
-    std::vector<std::string> jit_ld_flags_release;
+    std::vector<std::string> hlto_cxx_flags_debug;
+    std::vector<std::string> hlto_ld_flags_debug;
+    std::vector<std::string> hlto_cxx_flags_release;
+    std::vector<std::string> hlto_ld_flags_release;
 
     /**
      * Augments the global HILTI configuration with Spicy's options. For

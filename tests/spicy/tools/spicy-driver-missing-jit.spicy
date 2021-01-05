@@ -1,7 +1,0 @@
-# @TEST-REQUIRES: ! have-jit
-# @TEST-EXEC-FAIL: spicy-driver %INPUT >output 2>&1
-# @TEST-EXEC: btest-diff output
-
-module Test;
-
-print "Hello, world!";

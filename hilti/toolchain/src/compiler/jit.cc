@@ -163,9 +163,9 @@ hilti::Result<Nothing> JIT::_compile() {
         std::vector<std::string> args;
 
         if ( options().debug )
-            args = hilti::configuration().jit_cxx_flags_debug;
+            args = hilti::configuration().hlto_cxx_flags_debug;
         else
-            args = hilti::configuration().jit_cxx_flags_release;
+            args = hilti::configuration().hlto_cxx_flags_release;
 
         // For debug output on compilation:
         // args.push_back("-v");
@@ -204,9 +204,9 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     std::vector<std::string> args;
 
     if ( options().debug )
-        args = hilti::configuration().jit_ld_flags_debug;
+        args = hilti::configuration().hlto_ld_flags_debug;
     else
-        args = hilti::configuration().jit_ld_flags_release;
+        args = hilti::configuration().hlto_ld_flags_release;
 
     auto lib = _makeTmp("__library__", "hlto");
     args.push_back("-o");

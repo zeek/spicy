@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: have-zeek-plugin-jit 30300
+# @TEST-REQUIRES: have-zeek-plugin 30300
 #
 # @TEST-EXEC: ${ZEEK} -r ${TRACES}/raw-layer.pcap raw-layer.spicy raw-layer.evt %INPUT >output
 # @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff output

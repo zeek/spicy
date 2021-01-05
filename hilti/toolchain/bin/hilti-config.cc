@@ -12,7 +12,6 @@
 
 #include <hilti/autogen/config.h>
 #include <hilti/base/util.h>
-#include <hilti/compiler/jit.h>
 
 using namespace std;
 
@@ -31,7 +30,6 @@ Available options:
     --help                  Print this usage summary
     --hiltic                Print the full path to the hiltic binary.
     --include-dirs          Prints the HILTI runtime's C++ include directories
-    --jit-support           Prints 'yes' if compiled with JIT support, 'no' otherwise.
     --ldflags               Print linker flags when linking code using the HILTI runtime library
     --libdirs               Print standard HILTI library directories.
     --prefix                Print path of installation.
@@ -104,11 +102,6 @@ int main(int argc, char** argv) {
 #else
             result.emplace_back("release");
 #endif
-            continue;
-        }
-
-        if ( opt == "--jit-support" ) {
-            result.emplace_back((hilti::configuration().jit_enabled ? "yes" : "no"));
             continue;
         }
 

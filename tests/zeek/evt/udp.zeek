@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: have-zeek-plugin-jit
+# @TEST-REQUIRES: have-zeek-plugin
 #
 # @TEST-EXEC: ${ZEEK} -Cr ${TRACES}/udp.trace udp-test.spicy ./udp-test.evt %INPUT >output
 # @TEST-EXEC: btest-diff output

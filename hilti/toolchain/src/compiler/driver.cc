@@ -34,7 +34,6 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"output", required_argument, nullptr, 'o'},
                                               {"output-c++", no_argument, nullptr, 'c'},
                                               {"output-hilti", no_argument, nullptr, 'p'},
-                                              {"disable-jit", no_argument, nullptr, 'J'},
                                               {"execute-code", no_argument, nullptr, 'j'},
                                               {"output-linker", no_argument, nullptr, 'l'},
                                               {"output-prototypes", no_argument, nullptr, 'P'},
@@ -79,12 +78,8 @@ void Driver::usage() {
            "  -c | --output-c++               Print out all generated C++ code (including linker glue by default).\n"
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
            "  -e | --output-all-dependencies  Output list of dependencies for all compiled modules.\n"
-#ifdef HILTI_HAVE_JIT
-           // Don't show this if we don't have JIT. We still accept the
-           // option, but issue an error an runtime.
            "  -j | --jit-code                 Fully compile all code, and then execute it unless --output-to gives a "
            "file to store it\n"
-#endif
            "  -l | --output-linker            Print out only generated HILTI linker glue code.\n"
            "  -o | --output-to <path>         Path for saving output.\n"
            "  -p | --output-hilti             Just output parsed HILTI code again.\n"
@@ -303,11 +298,8 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 ++num_output_types;
                 break;
 
-            case 'J': _driver_options.disable_jit = true; break;
-
             case 'j':
                 _driver_options.execute_code = true;
-                _driver_options.disable_jit = false;
                 _driver_options.include_linker = true;
                 ++num_output_types;
                 break;
@@ -427,7 +419,6 @@ void Driver::_addUnit(Unit unit) {
 
     hookNewASTPreCompilation(unit.id(), unit.path(), unit.module());
     _pending_units.emplace_back(std::move(unit));
-    _need_jit = true;
 }
 
 Result<void*> Driver::_symbol(const std::string& symbol) {
@@ -484,7 +475,6 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
     else if ( path.extension() == ".cc" || path.extension() == ".cxx" ) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding external C++ file %s", path));
         _external_cxxs.push_back(path);
-        _need_jit = true;
         return Nothing();
     }
 
@@ -816,9 +806,6 @@ Result<Nothing> Driver::jitUnits() {
 
     _stage = Stage::JITTED;
 
-    if ( _driver_options.disable_jit )
-        return error("driver not configured for JIT");
-
     static util::timing::Ledger ledger("hilti/jit");
     util::timing::Collector _(&ledger);
 
@@ -865,9 +852,6 @@ Result<Nothing> Driver::initRuntime() {
 
     if ( _runtime_initialized )
         return Nothing();
-
-    if ( _requires_jit() && ! _jit )
-        return result::Error("JIT not initialized");
 
     auto config = hilti::rt::configuration::get();
     config.abort_on_exceptions = _driver_options.abort_on_exceptions;
@@ -934,12 +918,14 @@ Result<Nothing> Driver::finishRuntime() {
     return Nothing();
 }
 
-Result<hilti::JIT*> Driver::jit() {
-    if ( ! _jit )
-        return error("cannot retrieve JIT instance, JIT compilation hasn't been performed");
-
-    if ( ! _runtime_initialized )
-        return error("cannot retrieve JIT instance, runtime hasn't been initialized");
-
-    return _jit.get();
-}
+/*
+ * Result<hilti::JIT*> Driver::jit() {
+ *     if ( ! _jit )
+ *         return error("cannot retrieve JIT instance, JIT compilation hasn't been performed");
+ *
+ *     if ( ! _runtime_initialized )
+ *         return error("cannot retrieve JIT instance, runtime hasn't been initialized");
+ *
+ *     return _jit.get();
+ * }
+ */
