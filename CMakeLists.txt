@@ -161,24 +161,13 @@ require_version("Bison" BISON_FOUND BISON_VERSION "${bison_minimum_version}" tru
 find_package(GoldLinker)
 find_package(Threads)
 
-find_package(ClangJIT)
 find_package(Zeek)
-
-if ( NOT CLANG_JIT_FOUND )
-    set(HILTI_HAVE_JIT no)
-endif ()
-
-if ( NOT HILTI_HAVE_JIT )
-    set(ZEEK_HAVE_JIT no)
-    set(HILTI_HAVE_JIT no)
-endif ()
 
 if ( ZEEK_FOUND )
     set(HAVE_ZEEK yes)
 else ()
     set(HAVE_ZEEK no)
     set(BUILD_ZEEK_PLUGIN no)
-    set(ZEEK_HAVE_JIT no)
 endif ()
 
 option(BUILD_TOOLCHAIN "Build the spicy compiler toolchain" ON)
@@ -187,7 +176,6 @@ if ( BUILD_TOOLCHAIN )
     set(HAVE_TOOLCHAIN yes)
 else ()
     set(HAVE_TOOLCHAIN no)
-    set(ZEEK_HAVE_JIT no)
 endif ()
 
 if ( BUILD_ZEEK_PLUGIN )
@@ -221,11 +209,6 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BuildType}}" cxxflags)
 add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS tests)
 add_custom_target(tests DEPENDS hilti-tests spicy-tests)
 
-if ( NOT CLANG_RESOURCE_DIR )
-    # Just for display.
-    set(CLANG_RESOURCE_DIR "n/a")
-endif ()
-
 execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-version
                 OUTPUT_VARIABLE VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -247,25 +230,11 @@ message(
     "\nBuilding toolchain:    ${HAVE_TOOLCHAIN}"
     "\nBuilding Zeek plugin:  ${HAVE_ZEEK_PLUGIN}"
     "\n"
-    "\nJIT enabled:           ${HILTI_HAVE_JIT}"
-    "\nZeek JIT enabled:      ${ZEEK_HAVE_JIT}"
-    "\nZeek plugin install:   ${ZEEK_INSTALL_PLUGIN}"
-    "\n"
     "\nUse ccache:            ${USE_CCACHE}"
     "\nUse gold linker:       ${GOLD_FOUND}"
     "\nUse sanitizers:        ${HILTI_HAVE_SANITIZER}"
     "\nUse backtrace:         ${HILTI_HAVE_BACKTRACE}"
     "\n"
-    "\nClang/LLVM found:      ${CLANG_JIT_FOUND}"
-    "\nClang version:         ${CLANG_VERSION}"
-    "\nLLVM version:          ${LLVM_VERSION}"
-    "\nLLVM prefix:           ${LLVM_ROOT}"
-    "\nClang prefix:          ${CLANG_ROOT}"
-    "\nClang executable:      ${CLANG_EXECUTABLE}"
-    "\nClang resource dir:    ${CLANG_RESOURCE_DIR}"
-    "\nC sys include dirs:    ${C_SYSTEM_INCLUDE_DIRS}"
-    "\nC++ sys include dirs:  ${CXX_SYSTEM_INCLUDE_DIRS}"
-    "\nClang gcc tolchain:    ${CLANG_GCC_INSTALLATION}"
     "\nWarnings are errors:   ${USE_WERROR}"
     "\nPrecompile headers:    ${HILTI_DEV_PRECOMPILE_HEADERS}"
     "\n"
@@ -273,6 +242,7 @@ message(
     "\nZeek version:          ${ZEEK_VERSION} (${ZEEK_VERSION_NUMBER})"
     "\nZeek debug build:      ${ZEEK_DEBUG_BUILD}"
     "\nZeek root dir:         ${ZEEK_PREFIX}"
+    "\nZeek plugin install:   ${ZEEK_INSTALL_PLUGIN}"
     "\n"
     "\nBison version:         ${BISON_VERSION}"
     "\nCMake version:         ${CMAKE_VERSION}"

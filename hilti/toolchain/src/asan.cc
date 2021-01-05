@@ -10,14 +10,11 @@
 #include <cstdlib>
 
 extern "C" __attribute__((used)) __attribute__((visibility("default"))) const char* __asan_default_options() {
-    // detect_container_overflow=0: Avoid false positives in LLVM, presumably
-    // compiled when without ASAN support.
-    //
     // detect_odr_violation=0: Getting erros for __asan_register_globals
     // otherwise.
     //
     // detect_leaks=1: Enable, doesn't always(?) seem to be on by default.
-    return "detect_container_overflow=0:detect_odr_violation=0:detect_leaks=1";
+    return "detect_odr_violation=0:detect_leaks=1";
 }
 
 // Our CMake confiog explicitly tells the linker that this function is

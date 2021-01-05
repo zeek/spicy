@@ -9,7 +9,6 @@
 
 #include <hilti/autogen/config.h>
 #include <hilti/base/util.h>
-#include <hilti/compiler/jit.h>
 
 #include <spicy/autogen/config.h>
 
@@ -31,7 +30,6 @@ Available options:
     --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
     --help                  Print this usage summary
     --include-dirs          Prints the Spicy runtime's C++ include directories
-    --jit-support           Prints 'yes' if compiled with JIT support, 'no' otherwise.
     --ldflags               Print flags for linker. (These are addition to any that HILTI needs.)
     --libdirs               Print standard Spicy library directories.
     --prefix                Print path of installation (TODO: same as --distbase currently)
@@ -42,7 +40,6 @@ Available options:
     --zeek-include-dirs     Print the Spicy runtime's C++ include directories
     --zeek-prefix           Print the path to the Zeek installation prefix
     --zeek-plugin-path      Print the path to go into ZEEK_PLUGIN_PATH for enabling the Zeek Spicy plugin
-    --zeek-jit-support      Prints 'yes' if the Zeek plugin was compiled with JIT support, 'no' otherwise.
     --zeek-version          Print the Zeek version.
     --version               Print Spicy version.
 
@@ -120,11 +117,6 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        if ( opt == "--jit-support" ) {
-            result.emplace_back(hilti::configuration().jit_enabled ? "yes" : "no");
-            continue;
-        }
-
         if ( opt == "--toolchain" ) {
 #ifdef HAVE_TOOLCHAIN
             result.emplace_back("yes");
@@ -198,19 +190,6 @@ int main(int argc, char** argv) {
             else
                 result.emplace_back(hilti::configuration().install_prefix / "include");
 
-            continue;
-#else
-            exit(1);
-#endif
-        }
-
-        if ( opt == "--zeek-jit-support" ) {
-#ifdef HAVE_ZEEK
-#ifdef ZEEK_HAVE_JIT
-            result.emplace_back("yes");
-#else
-            result.emplace_back("no");
-#endif
             continue;
 #else
             exit(1);

@@ -13,7 +13,6 @@
 // @TEST-EXEC: ! have-jit || ${SPICYC} -j %INPUT | awk 'NR==1' | grep -q `${HILTI_CONFIG} --build`
 // @TEST-EXEC: ! have-jit || ${SPICYC} -j -d %INPUT | awk 'NR==2' |grep -q `${HILTI_CONFIG} --build`
 
-
 #include <hilti/rt/libhilti.h>
 #include <spicy/rt/libspicy.h>
 

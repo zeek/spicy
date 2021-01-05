@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: have-zeek-plugin-jit
+# @TEST-REQUIRES: have-zeek-plugin
 #
 # @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace tupleenum.spicy ./tupleenum.evt %INPUT >output
 # @TEST-EXEC: btest-diff output

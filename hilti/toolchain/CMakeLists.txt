@@ -117,7 +117,6 @@ set_property(TARGET hilti-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_dependencies(hilti-objects version)
 target_compile_options(hilti-objects PRIVATE "-Wall")
 target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_libraries(hilti-objects PUBLIC $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
 target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
@@ -140,7 +139,10 @@ set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
 add_library(hilti)
 target_link_libraries(hilti PUBLIC hilti-objects)
+<<<<<<< HEAD
 target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
+=======
+>>>>>>> 9e3e3a04... Remove the no-JIT build mode as well as anything specific to LLVM/clang.
 
 # TODO: The generator expression doesn't work for some reason, even though it
 # does elswhere. Not sure why?

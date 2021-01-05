@@ -21,12 +21,9 @@ void hilti::render(logging::DebugStream stream, const Node& node, bool include_s
 }
 
 #ifdef HILTI_HAVE_SANITIZER
-// Prevent some errors from showing up, include some (presumably) false positives in LLVM
-// because it wasn't built with sanitizer support.
-//
 // TODO(robin): Doesn't work on Linux to have this in shared library. The weak symbol in static ASAN runtime
 // wins during linking.
 extern "C" {
-const char* __asan_default_options() { return "detect_container_overflow=0:detect_odr_violation=0:detect_leaks=1"; }
+const char* __asan_default_options() { return "detect_odr_violation=0:detect_leaks=1"; }
 }
 #endif

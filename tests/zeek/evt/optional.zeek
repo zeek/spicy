@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: have-zeek-plugin-jit
+# @TEST-REQUIRES: have-zeek-plugin
 #
 # @TEST-EXEC: ${SPICYZ} -d -o foo.hlto foo.spicy foo.evt
 # @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace foo.hlto %INPUT > output 2>&1

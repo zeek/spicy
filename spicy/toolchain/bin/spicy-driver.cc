@@ -19,7 +19,6 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"compiler-debug", required_argument, nullptr, 'D'},
                                               {"debug", no_argument, nullptr, 'd'},
                                               {"debug-addl", required_argument, nullptr, 'X'},
-                                              {"disable-jit", no_argument, nullptr, 'J'},
                                               {"file", required_argument, nullptr, 'f'},
                                               {"batch-file", required_argument, nullptr, 'F'},
                                               {"help", no_argument, nullptr, 'h'},
@@ -118,9 +117,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     hilti::driver::Options driver_options;
     hilti::Options compiler_options;
 
-#ifdef HILTI_HAVE_JIT
     driver_options.execute_code = true;
-#endif
     driver_options.include_linker = true;
     driver_options.logger = std::make_unique<hilti::Logger>();
 
@@ -238,11 +235,6 @@ int main(int argc, char** argv) {
     SpicyDriver driver;
 
     driver.parseOptions(argc, argv);
-
-#ifndef HILTI_HAVE_JIT
-    if ( driver.needJIT() )
-        fatalError("no JIT support available, cannot compile input file");
-#endif
 
     if ( auto x = driver.compile(); ! x ) {
         fatalError(x.error());

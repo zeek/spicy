@@ -10,7 +10,6 @@
 #include <hilti/base/util.h>
 
 #cmakedefine HAVE_TOOLCHAIN
-#cmakedefine HILTI_HAVE_JIT
 #cmakedefine HILTI_HAVE_SANITIZER
 
 #define CMAKE_DL_LIBS (std::string("@CMAKE_DL_LIBS@").size() ? "@CMAKE_DL_LIBS@" : "")
@@ -81,10 +80,6 @@ struct Configuration {
     std::string version_string;      /* Readable version string, without git information */
     std::string version_string_long; /* Readable version string, including git information */
 
-    bool jit_enabled;                                   /** True if JIT support has been compiled in. */
-    hilti::rt::filesystem::path jit_clang_executable;   /**< Path to clang++ JITing */
-    hilti::rt::filesystem::path jit_clang_resource_dir; /**< Clang's resource directory for JITing */
-
     std::vector<std::string> runtime_cxx_flags_debug;   /**< C++ compiler flags when compiling custom code in debug mode
                                                            that uses the HILTI runtime library */
     std::vector<std::string> runtime_ld_flags_debug;    /**< Linker flags when compiling custom code in debug mode that
@@ -93,10 +88,10 @@ struct Configuration {
                                                            mode that uses the HILTI runtime library */
     std::vector<std::string> runtime_ld_flags_release; /**< Linker flags when compiling custom code in release mode that
                                                           uses the HILTI runtime library */
-    std::vector<std::string> jit_cxx_flags_debug;
-    std::vector<std::string> jit_cxx_flags_release;
-    std::vector<std::string> jit_ld_flags_debug;
-    std::vector<std::string> jit_ld_flags_release;
+    std::vector<std::string> hlto_cxx_flags_debug;
+    std::vector<std::string> hlto_cxx_flags_release;
+    std::vector<std::string> hlto_ld_flags_debug;
+    std::vector<std::string> hlto_ld_flags_release;
 
 private:
     void init(bool use_build_location);
