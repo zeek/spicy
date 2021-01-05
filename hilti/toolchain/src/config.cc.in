@@ -101,14 +101,20 @@ void Configuration::init(bool use_build_directory) {
         util::transform(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "", installation_tag)),
                         [](auto s) { return hilti::rt::filesystem::path(s); });
 
-    runtime_cxx_flags_debug =
-        flatten({"-fvisibility=hidden", prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
+    runtime_cxx_flags_debug = flatten({"-fPIC", "-std=c++17", "-g", "-fvisibility=hidden",
+                                       prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+                                       prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
 
-    runtime_cxx_flags_release =
-        flatten({"-fvisibility=hidden", prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
+    runtime_cxx_flags_release = flatten({"-fPIC", "-std=c++17", "-g", "-O3", "-DNDEBUG", "-fvisibility=hidden",
+                                         prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+                                         prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
 
+
+    if ( auto libhilti_pch = precompiled_libhilti(*this, true) )
+        runtime_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
+
+    if ( auto libhilti_pch = precompiled_libhilti(*this, false) )
+        runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
 
     runtime_ld_flags_debug =
         flatten({prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-L", installation_tag),
@@ -126,27 +132,16 @@ void Configuration::init(bool use_build_directory) {
                  prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag),
                  prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
 
-    hlto_cxx_flags_debug =
-        flatten({"-c", "-fvisibility=hidden", prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
+    hlto_cxx_flags_debug = runtime_cxx_flags_debug;
+    hlto_cxx_flags_release = runtime_cxx_flags_release;
 
-    hlto_cxx_flags_release =
-        flatten({"-c", "-fvisibility=hidden", prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
+    hlto_ld_flags_debug = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup"});
+    hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup"});
 
-    hlto_ld_flags_debug = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup", "-nostdlib"});
-
-    hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup", "-nostdlib"});
-
-    if ( auto libhilti_pch = precompiled_libhilti(*this, true) ) {
-        runtime_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
-        hlto_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
-    }
-
-    if ( auto libhilti_pch = precompiled_libhilti(*this, false) ) {
-        runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
-        hlto_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
-    }
+#ifdef __APPLE_
+    hlto_ld_flags_debug.push_back("-nostdlib");
+    hlto_ld_flags_release.push_back("-nostdlib");
+#endif
 };
 
 Configuration& hilti::configuration() {

@@ -88,10 +88,15 @@ struct Configuration {
                                                            mode that uses the HILTI runtime library */
     std::vector<std::string> runtime_ld_flags_release; /**< Linker flags when compiling custom code in release mode that
                                                           uses the HILTI runtime library */
-    std::vector<std::string> hlto_cxx_flags_debug;
-    std::vector<std::string> hlto_cxx_flags_release;
-    std::vector<std::string> hlto_ld_flags_debug;
-    std::vector<std::string> hlto_ld_flags_release;
+
+    std::vector<std::string>
+        hlto_cxx_flags_debug; /**< C++ compiler flags when building a precompiled HLTO library in debug mode. */
+    std::vector<std::string>
+        hlto_ld_flags_debug; /**< Linker flags when when building a precompiled HLTO library in debug mode. */
+    std::vector<std::string> hlto_cxx_flags_release; /**< C++ compiler flags when when building a precompiled HLTO
+                                                        library in release mode. */
+    std::vector<std::string>
+        hlto_ld_flags_release; /**< Linker flags when when building a precompiled HLTO library in release mode. */
 
 private:
     void init(bool use_build_location);

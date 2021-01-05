@@ -167,8 +167,8 @@ if ( APPLE )
     set(addl_cxx_flags "${cxx_flags} -isysroot ${CMAKE_OSX_SYSROOT}")
 endif ()
 
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "-fPIC -std=c++17 -g ${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "-fPIC -std=c++17 -g -O3 -DNDEBUG ${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # Libraries
 set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug")

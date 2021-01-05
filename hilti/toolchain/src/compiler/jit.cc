@@ -160,12 +160,12 @@ hilti::Result<Nothing> JIT::_compile() {
     for ( const auto& path : cc_files ) {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("compiling %s", path.filename().native()));
 
-        std::vector<std::string> args;
+        std::vector<std::string> args = {"-c"};
 
         if ( options().debug )
-            args = hilti::configuration().hlto_cxx_flags_debug;
+            args = hilti::util::concat(args, hilti::configuration().hlto_cxx_flags_debug);
         else
-            args = hilti::configuration().hlto_cxx_flags_release;
+            args = hilti::util::concat(args, hilti::configuration().hlto_cxx_flags_release);
 
         // For debug output on compilation:
         // args.push_back("-v");
