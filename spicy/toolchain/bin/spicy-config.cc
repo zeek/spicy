@@ -24,13 +24,15 @@ Available options:
     --bindir                Prints the path to the directory where binaries are installed.
     --cmake-path            Prints the path to Spicy-provided CMake modules
     --cxx                   Print the path to the C++ compiler used to build Spicy
-    --cxxflags              Print flags for C++ compiler. (These are addition to any that HILTI needs.)
+    --cxxflags              Print flags for C++ compiler
+    --cxxflags-hlto         Print flags for C++ compiler when building precompiled HLTO libraries
     --debug                 Output flags for working with debugging versions.
     --distbase              Print path of the Spicy source distribution.
     --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
     --help                  Print this usage summary
     --include-dirs          Prints the Spicy runtime's C++ include directories
-    --ldflags               Print flags for linker. (These are addition to any that HILTI needs.)
+    --ldflags               Print flags for linker
+    --ldflags-hlto          Print flags for linker linker when building precompiled HLTO libraries
     --libdirs               Print standard Spicy library directories.
     --prefix                Print path of installation (TODO: same as --distbase currently)
     --spicy-build           Print the path to the spicy-build script.
@@ -232,6 +234,15 @@ int main(int argc, char** argv) {
             continue;
         }
 
+        if ( opt == "--cxxflags-hlto" ) {
+            if ( want_debug )
+                join(result, hilti::configuration().hlto_cxx_flags_debug);
+            else
+                join(result, hilti::configuration().hlto_cxx_flags_release);
+
+            continue;
+        }
+
         if ( opt == "--ldflags" ) {
             if ( want_dynamic_linking ) {
 #if __APPLE__
@@ -254,6 +265,15 @@ int main(int argc, char** argv) {
                 result.push_back("-Wl,--no-whole-archive");
 #endif
             }
+
+            continue;
+        }
+
+        if ( opt == "--ldflags-hlto" ) {
+            if ( want_debug )
+                join(result, hilti::configuration().hlto_ld_flags_debug);
+            else
+                join(result, hilti::configuration().hlto_ld_flags_release);
 
             continue;
         }
