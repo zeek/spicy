@@ -668,25 +668,22 @@ Result<Nothing> Driver::compile() {
         if ( auto rc = jitUnits(); ! rc )
             return rc;
 
-        assert(_jit);
-        auto library = _jit->retrieveLibrary();
-
         if ( _driver_options.output_path.empty() ) {
             // OK if not available.
-            if ( library ) {
-                if ( auto loaded = library->get()->open(); ! loaded )
+            if ( _library ) {
+                if ( auto loaded = _library->open(); ! loaded )
                     return loaded.error();
             }
         }
         else {
             // Save code to disk rather than execute.
-            if ( ! library )
+            if ( ! _library )
                 // We don't have any code.
-                return library.error();
+                return result::Error("no library compiled");
 
             HILTI_DEBUG(logging::debug::Driver, fmt("saving precompiled code to %s", _driver_options.output_path));
 
-            if ( auto success = library->get()->save(_driver_options.output_path); ! success )
+            if ( auto success = _library->save(_driver_options.output_path); ! success )
                 return result::Error(
                     fmt("error saving object code to %s: %s", _driver_options.output_path, success.error()));
         }
@@ -825,7 +822,7 @@ Result<Nothing> Driver::jitUnits() {
 
     HILTI_DEBUG(logging::debug::Driver, "JIT modules:");
 
-    auto jit = std::make_unique<hilti::JIT>(_ctx);
+    auto jit = std::make_unique<hilti::JIT>(_ctx, _driver_options.dump_code);
 
     for ( const auto& cxx : _generated_cxxs ) {
         HILTI_DEBUG(logging::debug::Driver, fmt("  - %s", cxx.id()));
@@ -837,21 +834,14 @@ Result<Nothing> Driver::jitUnits() {
         jit->add(cxx);
     }
 
-    if ( jit->needsCompile() ) {
-        HILTI_DEBUG(logging::debug::Driver, "JIT: compiling to bitcode");
-        if ( ! jit->compile() ) {
-            return error("JIT compilation failed");
-        }
-    }
+    if ( ! jit->hasInputs() )
+        return Nothing();
 
-    HILTI_DEBUG(logging::debug::Driver, "JIT: preparing native code");
-    if ( _driver_options.dump_code )
-        jit->setDumpCode();
+    auto lib = jit->build();
+    if ( ! lib)
+        return lib.error();
 
-    if ( auto rc = jit->jit(); ! rc )
-        return rc;
-
-    _jit = std::move(jit);
+    _library = *lib;
     return Nothing();
 }
 

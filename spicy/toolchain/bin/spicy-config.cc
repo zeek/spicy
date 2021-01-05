@@ -31,7 +31,6 @@ Available options:
     --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
     --help                  Print this usage summary
     --include-dirs          Prints the Spicy runtime's C++ include directories
-    --jit-compiler          Prints the version of the JIT compiler if compiled with corresponding support.
     --jit-support           Prints 'yes' if compiled with JIT support, 'no' otherwise.
     --ldflags               Print flags for linker. (These are addition to any that HILTI needs.)
     --libdirs               Print standard Spicy library directories.
@@ -118,11 +117,6 @@ int main(int argc, char** argv) {
 
         if ( opt == "--bindir" ) {
             result.emplace_back(spicy::configuration().spicyc.parent_path());
-            continue;
-        }
-
-        if ( opt == "--jit-compiler" ) {
-            result.emplace_back(hilti::JIT::compilerVersion());
             continue;
         }
 

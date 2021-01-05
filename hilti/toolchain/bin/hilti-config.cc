@@ -31,7 +31,6 @@ Available options:
     --help                  Print this usage summary
     --hiltic                Print the full path to the hiltic binary.
     --include-dirs          Prints the HILTI runtime's C++ include directories
-    --jit-compiler          Prints the version of the JIT compiler if compiled with corresponding support.
     --jit-support           Prints 'yes' if compiled with JIT support, 'no' otherwise.
     --ldflags               Print linker flags when linking code using the HILTI runtime library
     --libdirs               Print standard HILTI library directories.
@@ -105,11 +104,6 @@ int main(int argc, char** argv) {
 #else
             result.emplace_back("release");
 #endif
-            continue;
-        }
-
-        if ( opt == "--jit-compiler" ) {
-            result.emplace_back(hilti::JIT::compilerVersion());
             continue;
         }
 

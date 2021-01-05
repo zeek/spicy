@@ -36,7 +36,18 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {nullptr, 0, nullptr, 0}};
 
 static void fatalError(const std::string& msg) {
-    hilti::logger().error(fmt("spicy-driver: %s", msg));
+    hilti::logger().error(msg);
+    spicy::rt::done();
+    hilti::rt::done();
+    exit(1);
+}
+
+static void fatalError(const hilti::result::Error& error) {
+    hilti::logger().error(error.description());
+
+    if ( error.context().size() )
+        hilti::logger().error(error.context());
+
     spicy::rt::done();
     hilti::rt::done();
     exit(1);
@@ -219,7 +230,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
 
     while ( optind < argc ) {
         if ( auto rc = addInput(argv[optind++]); ! rc )
-            fatalError(rc.error().description());
+            fatalError(rc.error());
     }
 }
 
@@ -233,16 +244,13 @@ int main(int argc, char** argv) {
         fatalError("no JIT support available, cannot compile input file");
 #endif
 
-    if ( auto x = driver.compile(); ! x )
-        // The main error messages have been reported already at this point.
-        // The returned error will have some more info about which pass
-        // failed in its description, however that's less interesting to the
-        // user so we're just reporting a generic message here.
-        fatalError("aborting after errors");
+    if ( auto x = driver.compile(); ! x ) {
+        fatalError(x.error());
+    }
 
     try {
         if ( auto x = driver.initRuntime(); ! x )
-            fatalError(x.error().description());
+            fatalError(x.error());
 
         if ( driver.opt_list_parsers )
             driver.listParsers(std::cout);

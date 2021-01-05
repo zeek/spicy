@@ -79,7 +79,6 @@ set(SOURCES
     src/compiler/cxx/unit.cc
     src/compiler/driver.cc
     src/compiler/jit.cc
-    src/compiler/jit/cxx.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc
     src/compiler/unit.cc
@@ -106,9 +105,12 @@ set(SOURCES
     ${FLEX_scanner_hilti_OUTPUTS}
     )
 
-# Getting a link error without this.
-# (lib64/libhilti.so: undefined reference to `llvm::cfg::Update<llvm::BasicBlock*>::dump() const')
-set_source_files_properties(src/compiler/clang.cc PROPERTIES COMPILE_DEFINITIONS "NDEBUG")
+# tiny-process's CMake config would build a shared library. However, we want to
+# link it statically into libhilti, so we define our own object library here.
+set(TINY_PROCESS_ROOT ${CMAKE_SOURCE_DIR}/3rdparty/tiny-process-library)
+add_library(tiny-process-objects OBJECT ${TINY_PROCESS_ROOT}/process.cpp ${TINY_PROCESS_ROOT}/process_unix.cpp)
+target_include_directories(tiny-process-objects PRIVATE ${TINY_PROCESS_ROOT})
+set_property(TARGET tiny-process-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 add_library(hilti-objects OBJECT ${SOURCES})
 set_property(TARGET hilti-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -118,7 +120,16 @@ target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-objects PUBLIC $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
 target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
-target_link_libraries(hilti-objects PRIVATE tiny-process-library::tiny-process-library)
+
+# The following should instead just be:
+#
+#    target_link_libraries(hilti-objects PRIVATE tiny-process-objects)
+#
+# but requires the same work-around as jrx-objects in hilti-rt (see there).
+add_dependencies(hilti-objects tiny-process-objects)
+target_include_directories(hilti-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/tiny-process-library)
+target_link_libraries(hilti-objects PRIVATE $<TARGET_OBJECTS:tiny-process-objects>)
+
 target_link_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
@@ -129,6 +140,7 @@ set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
 add_library(hilti)
 target_link_libraries(hilti PUBLIC hilti-objects)
+target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
 
 # TODO: The generator expression doesn't work for some reason, even though it
 # does elswhere. Not sure why?
@@ -192,10 +204,6 @@ install_headers(${CMAKE_BINARY_DIR}/include/hilti hilti)
 install(CODE "file(REMOVE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/hilti)") # Get rid of symlink
 
 ##### Tests
-
-add_executable(jit-test bin/jit-test.cc)
-target_compile_options(jit-test PRIVATE "-Wall")
-target_link_hilti(jit-test PRIVATE)
 
 add_executable(hilti-toolchain-tests
                tests/main.cc
