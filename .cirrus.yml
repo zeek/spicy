@@ -734,6 +734,7 @@ freebsd11_task:
     image_family: freebsd-11-4
     cpu: 8
     memory: 8GB
+
   prepare_script: ./ci/prepare_freebsd.sh
 
   timeout_in: 120m
@@ -768,11 +769,11 @@ freebsd11_task:
     type: application/gzip
 
 freebsd12_task:
-  trigger_type: manual
   freebsd_instance:
     image_family: freebsd-12-2
     cpu: 8
     memory: 8GB
+
   prepare_script: ./ci/prepare_freebsd.sh
 
   timeout_in: 120m
