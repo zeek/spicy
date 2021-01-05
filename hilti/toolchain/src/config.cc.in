@@ -66,7 +66,13 @@ void Configuration::init(bool use_build_directory) {
     std::transform(compiler_id.begin(), compiler_id.end(), compiler_id.begin(),
                    [](auto& c) { return std::tolower(c); });
 
-    cxx = "${CMAKE_CXX_COMPILER}";
+    // Allow to set a compiler wrapper through environment.
+    auto hilti_cxx = getenv("HILTI_CXX");
+    if ( hilti_cxx && *hilti_cxx )
+        cxx = hilti_cxx;
+    else
+        cxx = "${CMAKE_CXX_COMPILER}";
+
     distbase = "${CMAKE_SOURCE_DIR}";
     install_prefix = "${CMAKE_INSTALL_PREFIX}";
     build_directory = "${CMAKE_BINARY_DIR}";
