@@ -27,6 +27,10 @@ int main(int argc, char** argv) {
 
     if ( auto rc = driver.run(); ! rc ) {
         hilti::logger().error(rc.error().description());
+
+        if ( rc.error().context().size() )
+            hilti::logger().error(rc.error().context());
+
         driver.finishRuntime();
         return 1;
     }

@@ -444,6 +444,7 @@ private:
 
     std::shared_ptr<Context> _ctx;    // driver's compiler context
     std::unique_ptr<hilti::JIT> _jit; // driver's JIT instance
+    std::shared_ptr<const hilti::rt::Library> _library; // Compiled code
 
     std::vector<CxxCode> _generated_cxxs;
     std::unordered_map<std::string, Library> _libraries;
