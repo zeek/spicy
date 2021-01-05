@@ -30,10 +30,6 @@ zeek_plugin_cc(src/protocol-analyzer.cc)
 zeek_plugin_cc(src/runtime-support.cc)
 zeek_plugin_cc(src/zeek-reporter.cc)
 
-if ( ZEEK_HAVE_JIT )
-zeek_plugin_cc(src/plugin-jit.cc)
-endif ()
-
 zeek_plugin_bif(src/consts.bif)
 zeek_plugin_bif(src/events.bif)
 zeek_plugin_bif(src/functions.bif)
@@ -57,13 +53,7 @@ else ()
 endif ()
 
 target_include_directories(${_plugin_lib} BEFORE PRIVATE include)
-
-# Without JIT support, we won't have the "compiler/" include directory available
-# through the "zeek-compiler" target, so add it no matter what.
-target_include_directories(${_plugin_lib} BEFORE PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
-
-# For JIT support.
-target_link_libraries(${_plugin_lib} $<$<BOOL:${ZEEK_HAVE_JIT}>:zeek-compiler>)
+target_link_libraries(${_plugin_lib} zeek-compiler)
 
 if ( HAVE_TOOLCHAIN )
     target_link_hilti(${_plugin_lib})

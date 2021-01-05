@@ -15,6 +15,8 @@
 #include <spicy/rt/init.h>
 #include <spicy/rt/parser.h>
 
+#include <hilti/ast/types/enum.h>
+
 #include <zeek-spicy/autogen/config.h>
 #include <zeek-spicy/file-analyzer.h>
 #ifdef HAVE_PACKET_ANALYZERS
@@ -25,27 +27,147 @@
 #include <zeek-spicy/zeek-compat.h>
 #include <zeek-spicy/zeek-reporter.h>
 
-#ifndef ZEEK_HAVE_JIT
+namespace spicy::zeek::debug {
+const hilti::logging::DebugStream ZeekPlugin("zeek");
+}
+
 plugin::Zeek_Spicy::Plugin SpicyPlugin;
-plugin::Zeek_Spicy::Plugin* plugin::Zeek_Spicy::OurPlugin = &SpicyPlugin;
-#endif
+plugin::Zeek_Spicy::Plugin* ::plugin::Zeek_Spicy::OurPlugin = &SpicyPlugin;
 
 using namespace spicy::zeek;
 
-#ifndef ZEEK_HAVE_JIT
-void spicy::zeek::debug::do_log(const std::string& msg) {
-    PLUGIN_DBG_LOG(*plugin::Zeek_Spicy::OurPlugin, "%s", msg.c_str());
-    HILTI_RT_DEBUG("zeek", msg);
-}
+plugin::Zeek_Spicy::Plugin::Plugin() {
+#ifdef ZEEK_VERSION_NUMBER // Not available in Zeek 3.0 yet.
+    if ( spicy::zeek::configuration::ZeekVersionNumber != ZEEK_VERSION_NUMBER )
+        reporter::fatalError(
+            hilti::util::fmt("Zeek version mismatch: running with Zeek %d, but plugin compiled for Zeek %s",
+                             ZEEK_VERSION_NUMBER, spicy::zeek::configuration::ZeekVersionNumber));
 #endif
 
-plugin::Zeek_Spicy::Plugin::Plugin() {}
+    Dl_info info;
+    if ( ! dladdr(&SpicyPlugin, &info) )
+        reporter::fatalError("Spicy plugin cannot determine its file system path");
+
+    _driver = std::make_unique<Driver>(info.dli_fname, spicy::zeek::configuration::ZeekVersionNumber);
+}
+
+void ::spicy::zeek::debug::do_log(const std::string& msg) {
+    PLUGIN_DBG_LOG(*plugin::Zeek_Spicy::OurPlugin, "%s", msg.c_str());
+    HILTI_RT_DEBUG("zeek", msg);
+    HILTI_DEBUG(::spicy::zeek::debug::ZeekPlugin, msg);
+}
+
+void plugin::Zeek_Spicy::Driver::hookAddInput(const hilti::rt::filesystem::path& path) {
+    // Need to initialized before 1st input gets added, as the options need
+    // to be in place.
+    _initialize();
+}
+
+void plugin::Zeek_Spicy::Driver::hookAddInput(const hilti::Module& m, const hilti::rt::filesystem::path& path) {
+    // Need to initialized before 1st input gets added, as the options need
+    // to be in place.
+    _initialize();
+}
+
+void plugin::Zeek_Spicy::Driver::_initialize() {
+    if ( _initialized )
+        return;
+
+    ZEEK_DEBUG("Initializing driver");
+
+    // Initialize HILTI compiler options. We dont't use the `BifConst::*`
+    // constants here as they may not have been initialized yet.
+    hilti::Options hilti_options;
+
+    hilti_options.debug = ::zeek::id::find_const("Spicy::debug")->AsBool();
+    hilti_options.skip_validation = ::zeek::id::find_const("Spicy::skip_validation")->AsBool();
+    hilti_options.optimize = ::zeek::id::find_const("Spicy::optimize")->AsBool();
+
+    for ( auto i : hilti::util::split(spicy::zeek::configuration::CxxZeekIncludeDirectories, ":") )
+        hilti_options.cxx_include_paths.emplace_back(i);
+
+    hilti_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxBrokerIncludeDirectory);
+
+    if ( hilti::configuration().uses_build_directory ) {
+        hilti_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxAutogenIncludeDirectoryBuild);
+        hilti_options.cxx_include_paths.emplace_back(spicy::zeek::configuration::CxxRuntimeIncludeDirectoryBuild);
+    }
+    else
+        hilti_options.cxx_include_paths.emplace_back(
+            spicy::zeek::configuration::CxxRuntimeIncludeDirectoryInstallation);
+
+    for ( const auto& dir : _import_paths )
+        hilti_options.library_paths.push_back(dir);
+
+#ifdef DEBUG
+    ZEEK_DEBUG("Search paths:");
+
+    for ( const auto& x : hilti_options.library_paths ) {
+        ZEEK_DEBUG(hilti::rt::fmt("  %s", x.native()));
+    }
+#endif
+
+    // Initialize HILTI driver options.
+    hilti::driver::Options driver_options;
+    driver_options.logger = nullptr; // keep using the global logger, which we may have already configured
+    driver_options.execute_code = true;
+    driver_options.include_linker = true;
+    driver_options.dump_code = ::zeek::id::find_const("Spicy::dump_code")->AsBool();
+    driver_options.report_times = ::zeek::id::find_const("Spicy::report_times")->AsBool();
+
+    for ( auto s :
+          hilti::util::split(::zeek::id::find_const("Spicy::codegen_debug")->AsStringVal()->ToStdString(), ",") ) {
+        s = hilti::util::trim(s);
+
+        if ( s.size() && ! driver_options.logger->debugEnable(s) )
+            reporter::fatalError(hilti::rt::fmt("Unknown Spicy debug stream '%s'", s));
+    }
+
+    if ( auto r =
+             hilti_options.parseDebugAddl(::zeek::id::find_const("Spicy::debug_addl")->AsStringVal()->ToStdString());
+         ! r )
+        reporter::fatalError(r.error());
+
+    // As it can be tricky on the Zeek side to set options from the command
+    // line, we also support passing them in through environment variables.
+    // This takes the same options as spicyc on the command line.
+    if ( auto opts = getenv("SPICY_PLUGIN_OPTIONS") ) {
+        if ( auto rc = parseOptionsPostScript(opts, &driver_options, &hilti_options); ! rc )
+            spicy::zeek::reporter::fatalError(hilti::rt::fmt("error parsing SPICY_PLUGIN_OPTIONS, %s", rc.error()));
+    }
+
+    setCompilerOptions(std::move(hilti_options));
+    setDriverOptions(std::move(driver_options));
+
+    hilti::Driver::initialize();
+    _initialized = true;
+}
+
+void plugin::Zeek_Spicy::Driver::hookNewEnumType(const EnumInfo& e) {
+    // Because we are running live within a Zeek, register the new enum type
+    // immediately so that it'll be available when subsequent scripts are
+    // parsed. (When running offline, the driver adds registration to the
+    // Spicy code's initialization code.)
+    auto labels = hilti::rt::transform(e.type.as<hilti::type::Enum>().labels(), [](const auto& l) {
+        return std::make_tuple(l.id().str(), hilti::rt::integer::safe<int64_t>(l.value()));
+    });
+
+    hilti::rt::Vector<decltype(labels)::value_type> xs;
+    xs.reserve(labels.size());
+    std::copy(std::move_iterator(labels.begin()), std::move_iterator(labels.end()), std::back_inserter(xs));
+
+    ::SpicyPlugin.registerEnumType(e.id.namespace_(), e.id.local(), std::move(xs));
+}
+
 
 plugin::Zeek_Spicy::Plugin::~Plugin() {}
 
 void plugin::Zeek_Spicy::Plugin::addLibraryPaths(const std::string& dirs) {
     for ( const auto& dir : hilti::rt::split(dirs, ":") )
         ::zeek::util::detail::add_to_zeek_path(std::string(dir)); // Add to Zeek's search path.
+
+    for ( const auto& dir : hilti::rt::split(dirs, ":") )
+        _driver->_import_paths.emplace_back(dir);
 }
 
 void plugin::Zeek_Spicy::Plugin::registerProtocolAnalyzer(const std::string& name, hilti::rt::Protocol proto,
@@ -167,11 +289,7 @@ const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForPacketAnalyzer(con
 ::zeek::plugin::Configuration plugin::Zeek_Spicy::Plugin::Configure() {
     ::zeek::plugin::Configuration config;
     config.name = "_Zeek::Spicy"; // Prefix with underscore to make sure it gets loaded first
-#ifdef ZEEK_HAVE_JIT
     config.description = "Support for Spicy parsers (*.spicy, *.evt, *.hlto)";
-#else
-    config.description = "Support for Spicy parsers (*.hlto)";
-#endif
     config.version.major = PROJECT_VERSION_MAJOR;
     config.version.minor = PROJECT_VERSION_MINOR;
     config.version.patch = PROJECT_VERSION_PATCH;
@@ -182,7 +300,14 @@ const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForPacketAnalyzer(con
 }
 
 void plugin::Zeek_Spicy::Plugin::InitPreScript() {
-    ZEEK_DEBUG("Beginning pre-script initialization (runtime)");
+    zeek::plugin::Plugin::InitPreScript();
+
+    ZEEK_DEBUG("Beginning pre-script initialization");
+
+    if ( auto opts = getenv("SPICY_PLUGIN_OPTIONS") ) {
+        if ( auto rc = Driver::parseOptionsPreScript(opts); ! rc )
+            spicy::zeek::reporter::fatalError(hilti::rt::fmt("error parsing SPICY_PLUGIN_OPTIONS, %s", rc.error()));
+    }
 
     if ( auto dir = getenv("ZEEK_SPICY_PATH") )
         addLibraryPaths(dir);
@@ -190,7 +315,7 @@ void plugin::Zeek_Spicy::Plugin::InitPreScript() {
     addLibraryPaths(hilti::rt::normalizePath(OurPlugin->PluginDirectory()).string() + "/spicy");
     autoDiscoverModules();
 
-    ZEEK_DEBUG("Beginning pre-script initialization (runtime)");
+    ZEEK_DEBUG("Beginning pre-script initialization");
 }
 
 // Returns a port's Zeek-side transport protocol.
@@ -207,7 +332,37 @@ static ::TransportProto transport_protocol(const hilti::rt::Port port) {
 }
 
 void plugin::Zeek_Spicy::Plugin::InitPostScript() {
-    ZEEK_DEBUG("Beginning post-script initialization (runtime)");
+    zeek::plugin::Plugin::InitPostScript();
+
+    ZEEK_DEBUG("Beginning post-script initialization");
+
+    for ( auto p : _driver->driverOptions().inputs ) {
+        ZEEK_DEBUG(hilti::rt::fmt("Loading input file %s", p));
+        if ( auto rc = _driver->loadFile(p); ! rc )
+            spicy::zeek::reporter::fatalError(hilti::rt::fmt("error loading %s: %s", p, rc.error().description()));
+    }
+
+    {
+        // Compile all the inputs.
+        ZEEK_DEBUG("Compiling input files");
+        hilti::logging::DebugPushIndent _(debug::ZeekPlugin);
+
+        if ( auto rc = _driver->compile(); ! rc ) {
+            if ( rc.error().context().size() )
+                // Don't have a good way to report multi-line output.
+                std::cerr << rc.error().context() << std::endl;
+
+            spicy::zeek::reporter::fatalError(hilti::rt::fmt("error during compilation: %s", rc.error().description()));
+        }
+
+        if ( ! _driver->driverOptions().output_path.empty() )
+            // If an output path is set, we're in precompilation mode, just exit.
+            exit(0);
+
+        // If there are errors, compile() should have flagged that through its
+        // exit code.
+        assert(hilti::logger().errors() == 0);
+    }
 
     // Init runtime, which will trigger all initialization code to execute.
     ZEEK_DEBUG("Initializing Spicy runtime");
@@ -381,7 +536,7 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
     }
 #endif
 
-    ZEEK_DEBUG("Done with post-script initialization (runtime)");
+    ZEEK_DEBUG("Done with post-script initialization");
 }
 
 
@@ -407,6 +562,16 @@ void plugin::Zeek_Spicy::Plugin::loadModule(const hilti::rt::filesystem::path& p
 int plugin::Zeek_Spicy::Plugin::HookLoadFile(const LoadType type, const std::string& file,
                                              const std::string& resolved) {
     auto ext = hilti::rt::filesystem::path(file).extension();
+
+    if ( ext == ".spicy" || ext == ".evt" || ext == ".hlt" || ext == ".hlto" ) {
+        ZEEK_DEBUG(hilti::rt::fmt("Loading input file '%s'", file));
+        if ( auto rc = _driver->loadFile(file); ! rc ) {
+            spicy::zeek::reporter::fatalError(hilti::rt::fmt("error loading %s: %s", file, rc.error().description()));
+            return 0;
+        }
+
+        return 1;
+    }
 
     if ( ext == ".hlto" ) {
         loadModule(file);
