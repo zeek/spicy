@@ -163,6 +163,9 @@ public:
     auto options() const { return _context->options(); }
 
 private:
+    // Check if we have a working compiler.
+    hilti::Result<Nothing> _checkCompiler();
+
     // Prepare for compilation.
     hilti::Result<Nothing> _initialize();
 
