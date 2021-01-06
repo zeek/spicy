@@ -9,7 +9,13 @@ using namespace hilti;
 
 std::unique_ptr<Logger> Logger::_singleton;
 
+std::map<std::string, logging::DebugStream>& logging::DebugStream::_streams() {
+    static std::map<std::string, logging::DebugStream> streams;
+    return streams;
+}
+
 logging::DebugStream::DebugStream(const std::string& name) : _name(name) {
+    auto& _all = _streams();
     if ( auto i = _all.find(name); i != _all.end() )
         _id = i->second._id;
     else {
@@ -20,6 +26,8 @@ logging::DebugStream::DebugStream(const std::string& name) : _name(name) {
 
 std::vector<std::string> logging::DebugStream::all() {
     std::vector<std::string> keys;
+
+    const auto& _all = _streams();
 
     keys.reserve(_all.size());
     for ( const auto& s : _all )
