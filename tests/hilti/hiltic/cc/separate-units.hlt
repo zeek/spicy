@@ -13,7 +13,7 @@
 # @TEST-EXEC: cxx-compile -c -o linker2.o linker2.cc
 #
 # @TEST-EXEC: cxx-link -o a.out world1.o linker1.o world2.o linker2.o
-# @TEST-EXEC: ./a.out >output
+# @TEST-EXEC: ./a.out | sort > output
 # @TEST-EXEC: btest-diff output
 
 @TEST-START-FILE world1.hlt
