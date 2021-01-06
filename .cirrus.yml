@@ -729,7 +729,6 @@ clang11_zeek_nightly_task:
       format: junit
 
 freebsd11_task:
-  trigger_type: manual
   freebsd_instance:
     image_family: freebsd-11-4
     cpu: 8
