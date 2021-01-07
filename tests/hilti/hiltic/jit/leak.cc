@@ -4,9 +4,10 @@
 //
 // If we have compiled with address/leak sanitizer, make sure it's active.
 
-extern "C" {
-
 #include <stdio.h>
+#include <hilti/rt/libhilti.h>
+
+extern "C" {
 
 int HILTI_EXPORT hilti_main() {
     printf("in hilti_main\n");
