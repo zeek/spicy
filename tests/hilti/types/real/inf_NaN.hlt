@@ -23,10 +23,10 @@ hilti::print(zero);
 hilti::print(minus_zero);
 hilti::print(inf);
 hilti::print(minus_inf);
-hilti::print(nan);
 
 # Note: NaN has a sign, doesn't mean anything
-# (Removed, because on macOS this prints as "nan" and on Linux as "-nan".)
+# (Removed, because depending on OS/compiler this may print as "nan" or "-nan".)
+# hilti::print(nan);
 # hilti::print(-nan);
 
 }

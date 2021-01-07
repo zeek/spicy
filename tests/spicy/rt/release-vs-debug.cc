@@ -17,7 +17,7 @@
 #include <spicy/rt/libspicy.h>
 
 // Just dummy data.
-const char* HILTI_EXPORT __hlto_library_version = R"({"created":1597144800.98031,"debug":false,"hilti_version":400,"magic":"v1","optimize":false})";
+const char HILTI_EXPORT HILTI_WEAK * __hlto_library_version = R"({"created":1597144800.98031,"debug":false,"hilti_version":400,"magic":"v1","optimize":false})";
 
 extern "C" int HILTI_EXPORT hilti_main() { // Point of entry for JIT
     std::cout << hilti::rt::version() << std::endl;

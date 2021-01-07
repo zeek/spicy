@@ -1,7 +1,9 @@
-# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
-# @TEST-EXEC: grep -q "__does_not_exist" output
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT
+# @TEST-EXEC: grep -q "__does_not_exist" .stderr
 #
-# Check that a failure at the system link stage doesn't produce leaks or other unexpected output.
+# Check that a failure at the system link stage doesn't produce leaks or other
+# unexpected output. Because the actual output depends on the underlying
+# compiler, we just check for a keyword being in there.
 
 module Test {
 
