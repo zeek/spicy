@@ -307,8 +307,8 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
 
     Job& job = _jobs[jid];
     job.process = std::make_unique<TinyProcessLib::Process>(
-        cmdline, _tmpdir, [&job](const char* bytes, size_t n) { job.stdout += std::string(bytes, n); },
-        [&job](const char* bytes, size_t n) { job.stderr += std::string(bytes, n); });
+        cmdline, _tmpdir, [&job](const char* bytes, size_t n) { job.stdout_ += std::string(bytes, n); },
+        [&job](const char* bytes, size_t n) { job.stderr_ += std::string(bytes, n); });
 
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] -> pid %u", jid, job.process->get_id()));
 
@@ -329,17 +329,17 @@ Result<Nothing> JIT::_waitForJob(JobID id) {
 
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, ec));
 
-    if ( job.stdout.size() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, job.stdout));
+    if ( job.stdout_.size() )
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, job.stdout_));
 
-    if ( job.stderr.size() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, job.stderr));
+    if ( job.stderr_.size() )
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, job.stderr_));
 
     if ( ec != 0 ) {
-        std::string stderr =
-            job.stderr.size() ? std::string("JIT output: \n") + util::trim(job.stderr) : "(no error output)";
+        std::string stderr_ =
+            job.stderr_.size() ? std::string("JIT output: \n") + util::trim(job.stderr_) : "(no error output)";
         _jobs.erase(id);
-        return result::Error("JIT compilation failed", stderr);
+        return result::Error("JIT compilation failed", stderr_);
     }
 
     _jobs.erase(id);

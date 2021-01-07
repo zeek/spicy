@@ -196,8 +196,8 @@ private:
 
     struct Job {
         std::unique_ptr<TinyProcessLib::Process> process;
-        std::string stdout;
-        std::string stderr;
+        std::string stdout_;
+        std::string stderr_;
     };
 
     JobID _job_counter = 0;
