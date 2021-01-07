@@ -108,10 +108,12 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
     // works with both GCC and clang, but unlikely to be supported by something
     // other than a compiler.
     if ( auto rc = _spawnJob(cxx, {"-dumpversion"}); ! rc )
-        return result::Error(util::fmt("C++ compiler not available or not functioning (looking for %s)", cxx), rc.error().context());
+        return result::Error(util::fmt("C++ compiler not available or not functioning (looking for %s)", cxx),
+                             rc.error().context());
 
     if ( auto rc = _waitForJobs(); ! rc )
-        return result::Error(util::fmt("C++ compiler not available or not functioning (looking for %s)", cxx), rc.error().context());
+        return result::Error(util::fmt("C++ compiler not available or not functioning (looking for %s)", cxx),
+                             rc.error().context());
 
     return Nothing();
 }
@@ -135,8 +137,10 @@ void JIT::_finish() {
     }
 
     // Remove any temporaries.
-    if ( ! _tmpdir.empty() )
-        hilti::rt::filesystem::remove_all(_tmpdir);
+    if ( ! _tmpdir.empty() ) {
+        std::error_code ec;
+        hilti::rt::filesystem::remove_all(_tmpdir, ec); // ignore errors
+    }
 
     _objects.clear();
     _jobs.clear();
@@ -166,9 +170,10 @@ hilti::Result<Nothing> JIT::_compile() {
             // Logging to driver because that's where all the other "saving to ..." messages go.
             auto dbg = util::fmt("dbg.%s", cc.filename().native());
             HILTI_DEBUG(logging::debug::Driver, util::fmt("saving code for %s to %s", id, dbg));
-            hilti::rt::filesystem::copy(cc, dbg,
-                                        hilti::rt::filesystem::copy_options::overwrite_existing); // will go into
-                                                                                                  // current directory
+
+            std::error_code ec;
+            hilti::rt::filesystem::copy(cc, dbg, hilti::rt::filesystem::copy_options::overwrite_existing,
+                                        ec); // will save into current directory
         }
 
         cc_files.push_back(cc);
@@ -235,7 +240,8 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
 
         // Double check that we really got the file.
         if ( ! hilti::rt::filesystem::exists(_tmpdir / path) )
-            return result::Error(util::fmt("missing object file %s, C++ compiler is probably not working", path.native()));
+            return result::Error(
+                util::fmt("missing object file %s, C++ compiler is probably not working", path.native()));
 
         args.push_back(path);
 
@@ -243,9 +249,10 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
             // Logging to driver because that's where all the other "saving to ..." messages go.
             auto dbg = util::fmt("dbg.%s", path.native());
             HILTI_DEBUG(logging::debug::Driver, util::fmt("saving object file to %s", dbg));
-            hilti::rt::filesystem::copy(_tmpdir / path, dbg,
-                                        hilti::rt::filesystem::copy_options::overwrite_existing); // will go into
-                                                                                                  // current directory
+
+            std::error_code ec;
+            hilti::rt::filesystem::copy(_tmpdir / path, dbg, hilti::rt::filesystem::copy_options::overwrite_existing,
+                                        ec); // will save into current directory
         }
     }
 
