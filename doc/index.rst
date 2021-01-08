@@ -23,9 +23,9 @@ Overview
     runtime, parsing proceeds fully incrementally—and potentially
     highly concurrently—on input streams of arbitrary size.
     Compilation of Spicy parsers takes place either just-in-time at
-    startup (through Clang/LLVM), or ahead-of-time either by creating
-    pre-compiled shared libraries or simply by giving you C++ code that
-    you can link into your application.
+    startup (through the system's C++ compiler), or ahead-of-time
+    either by creating pre-compiled shared libraries or simply by
+    giving you C++ code that you can link into your application.
 
     Spicy comes with a `Zeek <https://www.zeek.org>`_ plugin that
     enables adding new protocols to Zeek without having to write any
