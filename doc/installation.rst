@@ -70,9 +70,8 @@ with the command line, e.g.::
     curl -L https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_release/packages/build/spicy-darwin.tar.gz -o spicy-darwin.tar.gz
     tar xf spicy-darwin.tar.gz
 
-These binaries require LLVM, and Zeek if you want to use the Spicy plugin for it::
+These binaries require Zeek if you want to use the Spicy's plugin for that::
 
-    brew install llvm
     brew install zeek  # for Zeek integration
 
 .. _docker:
@@ -197,21 +196,12 @@ To build Spicy, you will need:
 
     - For compiling the toolchain:
 
-        * A C++ compiler that supports C++17 (known to work are Clang 9 and GCC 9)
+        * A C++ compiler that supports C++17 (known to work are Clang >= 9 and GCC >= 9)
         * `CMake <https://cmake.org>`_  >= 3.13
         * `Bison <https://www.gnu.org/software/bison>`_  >= 3.4
         * `Flex <https://www.gnu.org/software/flex>`_  >= 2.6
         * `Python <https://www.python.org/downloads/>`_ >= 3.4
         * `Zlib <https://www.zlib.net>`_ (no particular version)
-
-    - For supporting just-in-time compilation (recommended):
-
-        * `Clang/LLVM 9 <http://releases.llvm.org/download.html>`_,
-          with all the libraries
-
-          .. note:: On macOS, Apple's Clang alone is not sufficient.
-             You can compile Spicy with that, but you won't get JIT as
-             it's missing the development libraries.
 
     - For integration with Zeek:
 
@@ -232,13 +222,6 @@ some popular platforms. Please :issue:`file an issue <>` if you have
 instructions for platforms not yet listed here. Additionally, we provide
 Docker files for building on selected Linux distributions, see :ref:`docker`.
 
-.. note::
-
-    You *can* build Spicy without support for just-in-time
-    compilation, which will avoid the dependency on Clang/LLVM as long
-    as your compiler is otherwise recent enough. However, you will
-    then miss out on functionality and convenience.
-
 .. rubric:: macOS
 
 Make sure you have Xcode installed, including its command tools:
@@ -246,30 +229,15 @@ Make sure you have Xcode installed, including its command tools:
 
 If you are using `MacPorts <https://www.macports.org>`_:
 
-    - ``# port install flex bison clang-9.0 cmake ninja python38 py38-pip py38-sphinx py38-sphinx_rtd_theme``
+    - ``# port install flex bison cmake ninja python38 py38-pip py38-sphinx py38-sphinx_rtd_theme``
     - ``# pip install btest``
-    - When running Spicy's ``configure`` (see below), add two options:
-
-        * ``--with-cxx-compiler=/opt/local/bin/clang++-mp-9.0``
-
-        * ``--with-cxx-system-include-dirs=/Library/Developer/CommandLineTools/usr/include/c++/v1``
-          (the MacPorts' clang doesn't seem to automatically find the system C++ headers)
 
 If you are using `Homebrew <https://brew.sh>`_:
 
-    - ``# brew install llvm bison flex cmake ninja python@3.8 sphinx-doc``
+    - ``# brew install bison flex cmake ninja python@3.8 sphinx-doc``
     - ``# pip3 install btest sphinx_rtd_theme``
-    - When running Spicy's ``configure`` (see below), add
-      ``--with-cxx-compiler=/usr/local/opt/llvm/bin/clang++ --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex``
 
-Instead of using the MacPorts/Homebrew versions of Clang, you can also
-use the prebuilt `Clang/LLVM 9.0 binary package
-<https://github.com/llvm/llvm-project/releases/download/llvmorg-9.0.1/clang+llvm-9.0.1-x86_64-apple-darwin.tar.xz>`_
-from LLVM's `download page <http://releases.llvm.org/download.html>`_
-and untar that into, e.g., ``/opt/clang9/``, then ``configure`` Spicy
-with ``--with-cxx-compiler=/opt/clang9/bin/clang++``
-
-Finally, install Zeek 3.0 from source, `per the instructions
+In either case, install Zeek >= 3.0 from source, `per the instructions
 <https://docs.zeek.org/en/stable/install/install.html#installing-from-source>`_
 
 .. rubric:: Linux
@@ -286,22 +254,6 @@ On CentOS 8 / RedHat 8:
 
     - See the :repo:`CentOS 8 Docker file <docker/Dockerfile.centos-8>`.
 
-.. rubric:: Clang/LLVM Source Installation
-
-If your OS/distribution doesn't come with suitable Clang/LLVM
-packages, it's not too difficult to compile that yourself::
-
-    # mkdir -p /opt/clang9/src
-    # cd /opt/clang9/src
-    # git clone --branch release/9.x --single-branch https://github.com/llvm/llvm-project.git
-    # mkdir llvm-project/build
-    # cd llvm-project/build
-    # cmake -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/clang9 -DLLVM_TARGETS_TO_BUILD=host -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON ../llvm
-    # make && make install
-
-That will give you ``clang++`` in ``/opt/clang9/bin``, so that you can
-``configure`` Spicy with
-``--with-cxx-compiler=/opt/clang9/bin/clang++``.
 
 Installing the Spicy Toolchain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -315,11 +267,10 @@ make && make install``. However, you'll likely need to customize the
 build a bit, so we'll walk through some of the options in the
 following.
 
-Spicy's ``configure`` script has a couple of ways to tell the build
-system about the right compiler. The easiest is to point it to
-the right ``clang++`` version to use::
-
-   # ./configure --with-cxx-compiler=/opt/clang9/bin/clang++
+Normally, Spicy's build system will just pick up the system's standard
+C++ compiler. If you want to point it to a different compiler, the
+``configure`` script provides  an option ``--with-cxx-compiler`` to do
+so.
 
 Spicy by default installs into ``/usr/local``. You can change that by
 giving ``configure`` a ``--prefix``::
@@ -333,17 +284,10 @@ look for it::
    # ./configure --with-zeek=/opt/zeek
 
 The final ``configure`` output will summarize your build's configuration.
-To ensure that both JIT and Zeek support are enabled, verify the presence of
-the following lines::
+To ensure that Zeek support is enabled, verify the presence of
+the following line::
 
-    JIT enabled:           yes
     Zeek plugin enabled:   yes
-
-Normally, the Zeek plugin will then compile with JIT support as well.
-Alternatively, you can build the Zeek plugin without JIT support by
-configuring with ``--disable-jit-for-zeek``. The plugin will then not
-link against any Spicy libraries, meaning it will be portable across
-systems of the same platform, without needing to install Spicy there.
 
 .. note::
 
@@ -352,7 +296,7 @@ systems of the same platform, without needing to install Spicy there.
     useful:
 
         - ``--enable-debug``: compile a non-optimized debug version
-        - ``--enable-sanitizer``: enable Clang's address & leak sanitizers
+        - ``--enable-sanitizer``: enable address & leak sanitizers
         - ``--generator=Ninja``: use the faster ``ninja`` build system instead of ``make``
         - ``--enable-ccache``: use the ``ccache`` compiler cache to speed up compilation
 
@@ -383,10 +327,6 @@ Development setup
 In order to speed up precompilation of Spicy parsers, users can create a cache of
 precompiled files. This cache is tied to a specific Spicy version, and needs to
 be recreated each time Spicy is updated.
-
-.. note::
-
-    Precompiled headers are supported only when building Spicy with Clang.
 
 To precompile the files execute the following command::
 

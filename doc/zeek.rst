@@ -55,9 +55,9 @@ directory where the installation placed the plugin. ``spicy-config
 
 If you want to move the plugin to other systems, you can find a binary
 distribution inside your build directory at
-``zeek/plugin/Zeek_Spicy.tgz``. If you have built the plugin without
-JIT support (``configure --disable-jit-for-zeek ...``), it will not
-require a Spicy installation to operate.
+``zeek/plugin/Zeek_Spicy.tgz``. On the target system, the plugin will
+not require a Spicy installation to operate as long as you are not
+using just-in-time compilation.
 
 .. note::
 
@@ -494,8 +494,7 @@ are similar to :ref:`spicy-driver`.
 Just In Time Compilation
 ------------------------
 
-To compile analyzers on the fly when the Spicy plugin for Zeek has
-been built with JIT support, you can pass your ``*.spicy`` and
+To compile analyzers on the fly, you can pass your ``*.spicy`` and
 ``*.evt`` files to Zeek just like any of its scripts, either on the
 command-line or through ``@load`` statements. The Spicy plugin hooks
 into Zeek's processing of input files and diverts them the right way
