@@ -3,4 +3,4 @@
 #pragma once
 
 #define HILTI_EXPORT __attribute__((visibility("default")))
-#define HILTI_WEAK   __attribute__((weak))
+#define HILTI_WEAK __attribute__((weak))

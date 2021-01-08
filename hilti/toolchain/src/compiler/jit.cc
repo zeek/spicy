@@ -7,6 +7,7 @@
 
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/cxx/unit.h>
 #include <hilti/compiler/jit.h>
 
@@ -87,10 +88,10 @@ JIT::~JIT() { _finish(); }
 hilti::Result<std::shared_ptr<const Library>> JIT::build() {
     util::timing::Collector _("hilti/jit");
 
-    if ( auto rc = _checkCompiler(); ! rc )
+    if ( auto rc = _initialize(); ! rc )
         return rc.error();
 
-    if ( auto rc = _initialize(); ! rc )
+    if ( auto rc = _checkCompiler(); ! rc )
         return rc.error();
 
     if ( auto rc = _compile(); ! rc )
@@ -99,6 +100,12 @@ hilti::Result<std::shared_ptr<const Library>> JIT::build() {
     auto library = _link();
     _finish(); // clean up no matter if successful
     return library;
+}
+
+hilti::Result<Nothing> JIT::_initialize() {
+    _tmpdir = hilti::rt::TemporaryDirectory();
+    HILTI_DEBUG(logging::debug::Jit, util::fmt("temporary directory %s", _tmpdir->path().native()));
+    return Nothing();
 }
 
 hilti::Result<Nothing> JIT::_checkCompiler() {
@@ -118,34 +125,11 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
     return Nothing();
 }
 
-hilti::Result<Nothing> JIT::_initialize() {
-    // Create tmp directory for compilation.
-    auto tmpdir = _make_tmp_directory();
-    if ( ! tmpdir )
-        return tmpdir.error();
-
-    _tmpdir = *tmpdir;
-    HILTI_DEBUG(logging::debug::Jit, util::fmt("temporary directory %s", _tmpdir.native()));
-    return Nothing();
-}
-
 void JIT::_finish() {
-    // Kill remaining jobs.
-    for ( auto& [id, job] : _jobs ) {
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] terminating process", id));
-        job.process->kill(true);
-    }
-
-    // Remove any temporaries.
-    if ( ! _tmpdir.empty() ) {
-        std::error_code ec;
-        hilti::rt::filesystem::remove_all(_tmpdir, ec); // ignore errors
-    }
-
     _objects.clear();
     _jobs.clear();
     _tmp_counters.clear();
-    _tmpdir.clear();
+    _tmpdir.reset();
 }
 
 hilti::Result<Nothing> JIT::_compile() {
@@ -173,7 +157,7 @@ hilti::Result<Nothing> JIT::_compile() {
 
             std::error_code ec;
             hilti::rt::filesystem::copy(cc, dbg, hilti::rt::filesystem::copy_options::overwrite_existing,
-                                        ec); // will save into current directory
+                                        ec); // will save into current directory; ignore errors
         }
 
         cc_files.push_back(cc);
@@ -239,7 +223,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("  - %s", path.native()));
 
         // Double check that we really got the file.
-        if ( ! hilti::rt::filesystem::exists(_tmpdir / path) )
+        if ( ! hilti::rt::filesystem::exists(_tmpdir->path() / path) )
             return result::Error(
                 util::fmt("missing object file %s, C++ compiler is probably not working", path.native()));
 
@@ -251,8 +235,9 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
             HILTI_DEBUG(logging::debug::Driver, util::fmt("saving object file to %s", dbg));
 
             std::error_code ec;
-            hilti::rt::filesystem::copy(_tmpdir / path, dbg, hilti::rt::filesystem::copy_options::overwrite_existing,
-                                        ec); // will save into current directory
+            hilti::rt::filesystem::copy(_tmpdir->path() / path, dbg,
+                                        hilti::rt::filesystem::copy_options::overwrite_existing,
+                                        ec); // will save into current directory; ignore errors
         }
     }
 
@@ -274,7 +259,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     try {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("copying library to %s", ext_lib));
         hilti::rt::filesystem::create_directory(ext_lib.parent_path());
-        hilti::rt::filesystem::rename(_tmpdir / lib, ext_lib);
+        hilti::rt::filesystem::rename(_tmpdir->path() / lib, ext_lib);
     } catch ( hilti::rt::filesystem::filesystem_error& e ) {
         return result::Error(e.what());
     }
@@ -314,8 +299,22 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
 
     Job& job = _jobs[jid];
     job.process = std::make_unique<TinyProcessLib::Process>(
-        cmdline, _tmpdir, [&job](const char* bytes, size_t n) { job.stdout_ += std::string(bytes, n); },
-        [&job](const char* bytes, size_t n) { job.stderr_ += std::string(bytes, n); });
+        cmdline, _tmpdir->path(),
+        // Callback for stdout data.
+        [&job](const char* bytes, size_t n) { job.stdout_ += std::string(bytes, n); },
+        // Callback for stderr data.
+        [&job](const char* bytes, size_t n) { job.stderr_ += std::string(bytes, n); },
+        // Custom deleter making sure the process gets terminated.
+        [](TinyProcessLib::Process* p) {
+            try {
+                int ec;
+                if ( ! p->try_get_exit_status(ec) )
+                    p->kill(true);
+            } catch ( ... ) {
+                // ignore errors
+            }
+            delete p;
+        });
 
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] -> pid %u", jid, job.process->get_id()));
 
@@ -337,10 +336,10 @@ Result<Nothing> JIT::_waitForJob(JobID id) {
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, ec));
 
     if ( job.stdout_.size() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, job.stdout_));
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, util::trim(job.stdout_)));
 
     if ( job.stderr_.size() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, job.stderr_));
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, util::trim(job.stderr_)));
 
     if ( ec != 0 ) {
         std::string stderr_ =
@@ -368,7 +367,7 @@ hilti::rt::filesystem::path JIT::_makeTmp(std::string base, std::string ext) {
     auto& counter = _tmp_counters[base];
 
     if ( ++counter > 1 )
-        return _tmpdir / util::fmt("%s.%u.%s", base, counter, ext);
+        return _tmpdir->path() / util::fmt("%s.%u.%s", base, counter, ext);
     else
-        return _tmpdir / util::fmt("%s.%s", base, ext);
+        return _tmpdir->path() / util::fmt("%s.%s", base, ext);
 }

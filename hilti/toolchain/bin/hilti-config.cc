@@ -23,7 +23,7 @@ Available options:
 
     --build                 Prints "debug" or "release", depending on the build configuration.
     --cxx                   Print the full path to the compiler used to compile HILTI.
-    --cxxflags              Print C++ flags when compiling code using the HILTI runtime library
+    --cxxflags              Print C++ flags when compiling generated code statically
     --cxxflags-hlto         Print C++ flags when building precompiled HLTO libraries
     --debug                 Output flags for working with debugging versions.
     --distbase              Print path of the HILTI source distribution.
@@ -31,7 +31,7 @@ Available options:
     --help                  Print this usage summary
     --hiltic                Print the full path to the hiltic binary.
     --include-dirs          Prints the HILTI runtime's C++ include directories
-    --ldflags               Print linker flags when linking code using the HILTI runtime library
+    --ldflags               Print linker flags when compiling generated code statically
     --ldflags-hlto          Print linker flags when building precompiled HLTO libraries
     --libdirs               Print standard HILTI library directories.
     --prefix                Print path of installation.
