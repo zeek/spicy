@@ -263,9 +263,7 @@ int main(int argc, char** argv) {
             if ( want_dynamic_linking ) {
 #if __APPLE__
                 result.push_back("-Wl,-all_load");
-#endif
-
-#if __linux__
+#else
                 result.push_back("-Wl,--export-dynamic");
                 result.push_back("-Wl,--whole-archive");
 #endif
@@ -279,9 +277,7 @@ int main(int argc, char** argv) {
             if ( want_dynamic_linking ) {
 #if __APPLE__
                 result.push_back("-Wl,-noall_load");
-#endif
-
-#if __linux__
+#else
                 result.push_back("-Wl,--no-whole-archive");
 #endif
             }

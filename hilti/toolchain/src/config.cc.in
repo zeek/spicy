@@ -53,7 +53,7 @@ void hilti::Configuration::initLocation(const char* argv0) { initLocation(std::s
 void hilti::Configuration::initLocation(const std::string_view& argv0) {
     auto exec = hilti::rt::filesystem::absolute(argv0).native();
     auto prefix = hilti::rt::filesystem::absolute("${CMAKE_BINARY_DIR}").native();
-    init(util::startsWith(exec, prefix));
+    init(util::startsWith(hilti::rt::normalizePath(exec), hilti::rt::normalizePath(prefix)));
 }
 
 void Configuration::init(bool use_build_directory) {

@@ -1,5 +1,5 @@
 // @TEST-EXEC: spicyc -j my-http.spicy -o my-http.hlto
-// @TEST-EXEC: $(spicy-config --cxx) -o my-http %INPUT $(spicy-config --cxxflags --ldflags --dynamic-loading)
+// @TEST-EXEC: $(spicy-config --cxx) -o my-http %INPUT $(spicy-config --cxxflags --ldflags --dynamic-loading --debug)
 // @TEST-EXEC: ./my-http my-http.hlto MyHTTP::RequestLine "$(cat data)" >output
 // @TEST-EXEC: btest-diff output
 //
