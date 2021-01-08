@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/library.h>
 
 #include <hilti/base/util.h>
@@ -192,7 +193,7 @@ private:
     std::vector<CxxCode> _codes;                     // all C++ code units to be compiled
     std::vector<hilti::rt::filesystem::path> _objects;
 
-    hilti::rt::filesystem::path _tmpdir;
+    std::optional<hilti::rt::TemporaryDirectory> _tmpdir;
 
     struct Job {
         std::unique_ptr<TinyProcessLib::Process> process;

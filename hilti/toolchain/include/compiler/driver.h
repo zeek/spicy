@@ -221,14 +221,6 @@ public:
      */
     Result<Nothing> run();
 
-    /**
-     * Returns a pointer the internal JIT instance. This will be available
-     * only after `compile()` and `initRuntime()` have executed.
-     *
-     * @return pointer to the JIT instance if available
-     */
-    //Result<hilti::JIT*> jit();
-
 protected:
     /**
      * Prints a usage message to stderr. The message summarizes the options

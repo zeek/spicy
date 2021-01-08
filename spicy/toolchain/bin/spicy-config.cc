@@ -24,14 +24,14 @@ Available options:
     --bindir                Prints the path to the directory where binaries are installed.
     --cmake-path            Prints the path to Spicy-provided CMake modules
     --cxx                   Print the path to the C++ compiler used to build Spicy
-    --cxxflags              Print flags for C++ compiler
+    --cxxflags              Print flags for C++ compiler when compiling generated code statically
     --cxxflags-hlto         Print flags for C++ compiler when building precompiled HLTO libraries
     --debug                 Output flags for working with debugging versions.
     --distbase              Print path of the Spicy source distribution.
     --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
     --help                  Print this usage summary
     --include-dirs          Prints the Spicy runtime's C++ include directories
-    --ldflags               Print flags for linker
+    --ldflags               Print flags for linker when compiling generated code statically
     --ldflags-hlto          Print flags for linker linker when building precompiled HLTO libraries
     --libdirs               Print standard Spicy library directories.
     --prefix                Print path of installation (TODO: same as --distbase currently)

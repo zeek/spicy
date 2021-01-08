@@ -23,18 +23,6 @@ std::optional<hilti::rt::filesystem::path> precompiled_libhilti(const Configurat
     return {};
 #endif
 
-    // Precompiled headers are only supported if we build with Clang.
-    //
-    // JIT always uses Clang to compile, but e.g., `hilti-config --cxx` will
-    // report the compiler used to build Spicy. Since precompiled headers
-    // created by Clang cannot be used by GCC and vice versa, we currently
-    // cannot support precompiled headers for both JIT and AOT compilation
-    // if we build with GCC. Disable them completely in that case.
-    //
-    // TODO: Can we generally enable this now?
-    if ( configuration.compiler_id != "clang" )
-        return {};
-
     if ( auto&& cache = util::cacheDirectory(configuration) ) {
         const rt::filesystem::path file_name = rt::fmt("precompiled_libhilti%s.h.pch", (debug ? "_debug" : ""));
 
@@ -101,6 +89,23 @@ void Configuration::init(bool use_build_directory) {
         util::transform(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "", installation_tag)),
                         [](auto s) { return hilti::rt::filesystem::path(s); });
 
+    // We hardcode the main compiler flags here instead of injecting them from
+    // CMake to make it clear that they are really independent on what CMake
+    // uses to compile the toolchain. This localizes the options here, and also
+    // allows us to customize them by use-case (JIT vs AOT). We do still inject
+    // some additional flags from CMake where we rely on stuff that CMake
+    // inferred about the environment.
+    //
+    // We compile generated code with hidden default symbol visibility because
+    // that:
+    //
+    // (1) reflects the public/non-public distinction at the HILTI level
+    //
+    // (2) avoids trouble when having the same symbols defined in multiple
+    // translation units (which can happen, e.g., because of code reuse).
+    //
+    // (3) it helps the optimizer to know that symbols won't be accessed
+    // externally.
     runtime_cxx_flags_debug = flatten({"-fPIC", "-std=c++17", "-g", "-fvisibility=hidden",
                                        prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
                                        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
@@ -139,6 +144,8 @@ void Configuration::init(bool use_build_directory) {
     hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup"});
 
 #ifdef __APPLE_
+    // This avoids duplicate symbols when the HLTO is loaded, seems default
+    // linker behavior is different on macOS.
     hlto_ld_flags_debug.push_back("-nostdlib");
     hlto_ld_flags_release.push_back("-nostdlib");
 #endif

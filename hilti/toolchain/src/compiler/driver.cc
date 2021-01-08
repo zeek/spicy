@@ -219,7 +219,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     int num_output_types = 0;
 
     opterr = 0; // don't print errors
-    std::string option_string = "ABlL:OcCpPvjJhvVdX:o:D:TUEeSR" + hookAddCommandLineOptions();
+    std::string option_string = "ABlL:OcCpPvjhvVdX:o:D:TUEeSR" + hookAddCommandLineOptions();
 
     while ( true ) {
         int c = getopt_long(argc, argv, option_string.c_str(), long_driver_options, nullptr);
@@ -828,7 +828,7 @@ Result<Nothing> Driver::jitUnits() {
     if ( ! lib)
         return lib.error();
 
-    _library = *lib;
+    _library = std::move(*lib);
     return Nothing();
 }
 
@@ -921,15 +921,3 @@ Result<Nothing> Driver::finishRuntime() {
 
     return Nothing();
 }
-
-/*
- * Result<hilti::JIT*> Driver::jit() {
- *     if ( ! _jit )
- *         return error("cannot retrieve JIT instance, JIT compilation hasn't been performed");
- *
- *     if ( ! _runtime_initialized )
- *         return error("cannot retrieve JIT instance, runtime hasn't been initialized");
- *
- *     return _jit.get();
- * }
- */

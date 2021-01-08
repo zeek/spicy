@@ -55,35 +55,6 @@ private:
     std::pair<std::string, std::optional<std::string>> _prev;
 };
 
-// RAII helper to create a temporary directory.
-class TemporaryDirectory {
-public:
-    TemporaryDirectory() {
-        const auto tmpdir = hilti::rt::filesystem::temp_directory_path();
-        auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").native();
-        auto path = ::mkdtemp(template_.data());
-        REQUIRE_NE(path, nullptr);
-        _path = path;
-    }
-
-    ~TemporaryDirectory() {
-        if ( ! hilti::rt::filesystem::exists(_path) )
-            return;
-
-        // Make sure we have permissions to remove the directory.
-        hilti::rt::filesystem::permissions(_path, hilti::rt::filesystem::perms::all);
-        for ( const auto& entry : hilti::rt::filesystem::recursive_directory_iterator(_path) )
-            hilti::rt::filesystem::permissions(entry, hilti::rt::filesystem::perms::all);
-
-        hilti::rt::filesystem::remove_all(_path);
-    }
-
-    const auto& path() const { return _path; }
-
-private:
-    hilti::rt::filesystem::path _path;
-};
-
 TEST_SUITE_BEGIN("Library");
 
 TEST_CASE("construct" * doctest::skip(geteuid() == 0)) {
@@ -122,7 +93,7 @@ TEST_CASE("save" * doctest::skip(geteuid() == 0)) {
     Library library(dummy1);
 
     SUBCASE("success") {
-        TemporaryDirectory tmp;
+        hilti::rt::TemporaryDirectory tmp;
         Env _("TMPDIR", tmp.path().c_str());
         CHECK_EQ(library.save(tmp.path()), Nothing());
 

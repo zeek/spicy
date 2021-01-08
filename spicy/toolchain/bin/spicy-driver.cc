@@ -236,9 +236,8 @@ int main(int argc, char** argv) {
 
     driver.parseOptions(argc, argv);
 
-    if ( auto x = driver.compile(); ! x ) {
+    if ( auto x = driver.compile(); ! x )
         fatalError(x.error());
-    }
 
     try {
         if ( auto x = driver.initRuntime(); ! x )
