@@ -70,7 +70,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         auto k = cg->compile(n.keyType(), codegen::TypeUsage::Storage);
         auto v = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
 
-        return fmt("hilti::rt::Map<%s, %s>{std::initializer_list<std::pair<const %s, %s>>{%s}}", k, v, k, v,
+        return fmt("hilti::rt::Map<%s, %s>({%s})", k, v,
                    util::join(util::transform(n.value(),
                                               [this](auto e) {
                                                   return fmt("{%s, %s}", cg->compile(e.first), cg->compile(e.second));
@@ -137,7 +137,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
         const auto k = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
 
-        return fmt("hilti::rt::Set<%s>{std::initializer_list<%s>{%s}}", k, k,
+        return fmt("hilti::rt::Set<%s>({%s})", k,
                    util::join(util::transform(n.value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));
     }
 
