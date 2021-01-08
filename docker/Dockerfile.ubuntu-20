@@ -28,7 +28,7 @@ RUN apt-get update \
  && rm -rf /tmp/zeek-packages \
  # Spicy build and test dependencies.
  && apt-get install -y --no-install-recommends git cmake ninja-build ccache bison flex libfl-dev python3 python3-pip zlib1g-dev jq locales-all python3-setuptools python3-wheel make \
- && pip3 install btest==0.64 pre-commit \
+ && pip3 install "btest>=0.66" pre-commit \
  # Clang-9.
  && apt-get install -y --no-install-recommends llvm-9-dev clang-9 libclang-9-dev libc++-dev libc++1 libc++abi-dev libc++abi1 \
  && apt-get clean \

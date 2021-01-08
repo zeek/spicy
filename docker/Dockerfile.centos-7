@@ -38,7 +38,7 @@ RUN mkdir -p /opt/clang11/src && \
 
 # Install Spicy dependencies.
 RUN yum install -y python3-sphinx
-RUN pip3 install btest==0.64 sphinx-rtd-theme
+RUN pip3 install "btest>=0.66" sphinx-rtd-theme
 
 # Need a more recent Bison than available.
 RUN cd /opt && curl -L http://ftp.gnu.org/gnu/bison/bison-3.5.tar.gz | tar xzvf - && cd /opt/bison-3.5 && ./configure && make install

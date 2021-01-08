@@ -58,7 +58,7 @@ RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/so
         python3-wheel \
         swig \
         zlib1g-dev && \
-  pip3 install --no-cache-dir btest pre-commit && \
+  pip3 install --no-cache-dir "btest>=0.66" pre-commit && \
   # recent CMake
   mkdir -p "${CMAKE_DIR}" && \
     curl -sSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" | tar xzf - -C "${CMAKE_DIR}" --strip-components 1 && \

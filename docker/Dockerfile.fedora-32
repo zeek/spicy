@@ -21,7 +21,7 @@ RUN yum install -y libpcap-devel openssl-devel zlib-devel \
     https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm \
 # Install Spicy build dependencies
  && yum install -y ccache git ninja-build cmake clang flex bison llvm-devel findutils diffutils python3-pip which \
- && pip3 install btest
+ && pip3 install "btest>=0.66"
 
 ENV CXX clang++
 ENV CC clang
