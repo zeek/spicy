@@ -20,7 +20,7 @@ inline const DebugStream Driver("driver");
 static hilti::Result<hilti::rt::filesystem::path> _make_tmp_directory() {
     std::string path = hilti::rt::filesystem::temp_directory_path() / "hilti.XXXXXXXXX";
     char buffer[path.size() + 1];
-    strcpy(buffer, path.c_str());
+    memcpy(buffer, path.c_str(), path.size() + 1);
     if ( ::mkdtemp(buffer) )
         return hilti::rt::filesystem::path(buffer);
     else
