@@ -38,12 +38,12 @@ public:
     static std::vector<std::string> all();
 
     /** Returns the stream for a given name. The stream must exist. */
-    static const auto& streamForName(const std::string& s) { return _all.at(s); }
+    static const auto& streamForName(const std::string& s) { return _streams().at(s); }
 
 private:
     uint64_t _id;
     std::string _name;
-    static inline std::map<std::string, DebugStream> _all;
+    static std::map<std::string, DebugStream>& _streams();
 };
 
 namespace debug {} // namespace debug
