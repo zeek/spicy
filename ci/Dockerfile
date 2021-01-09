@@ -4,6 +4,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG ZEEK_LTS=1
 ARG ZEEK_VERSION=3.0.11-0
+ARG UID=1000
+ARG GID=1000
 
 CMD ["sh"]
 ENV DEBIAN_FRONTEND=noninteractive
@@ -56,6 +58,6 @@ ENV PATH="/usr/local/cmake/bin:${PATH}"
 # Add a test user to catch unintentional host modifications. This is not a
 # security measure as we still allow the user to run commands as root via
 # explicit `sudo`.
-RUN groupadd -r test \
- && useradd --no-log-init -m -g test test -G sudo --password ''
+RUN groupadd -r test -g $GID \
+ && useradd --no-log-init -m -u $UID -g test test -G sudo --password ''
 USER test
