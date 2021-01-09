@@ -355,6 +355,10 @@ void detail::Fiber::_activate(const char* tag) {
         args.switcher = stack_switcher;
         args.from = current;
         args.to = this;
+
+        // Reinitialize fiber with same stack.
+        ::fiber_init(stack_switcher->_fiber.get(), ::fiber_stack(stack_switcher->_fiber.get()),
+                     ::fiber_stack_size(stack_switcher->_fiber.get()), fiber_bottom_abort, this);
         ::fiber_push_return(stack_switcher->_fiber.get(), __fiber_switch_trampoline, &args, sizeof(args));
         _executeSwitch(tag, current, stack_switcher);
     }
@@ -384,6 +388,10 @@ void detail::Fiber::_yield(const char* tag) {
         args.switcher = stack_switcher;
         args.from = this;
         args.to = _caller;
+
+        // Reinitialize fiber with same stack.
+        ::fiber_init(stack_switcher->_fiber.get(), ::fiber_stack(stack_switcher->_fiber.get()),
+                     ::fiber_stack_size(stack_switcher->_fiber.get()), fiber_bottom_abort, this); // TODO
         ::fiber_push_return(stack_switcher->_fiber.get(), __fiber_switch_trampoline, &args, sizeof(args));
         _executeSwitch(tag, this, stack_switcher);
     }
