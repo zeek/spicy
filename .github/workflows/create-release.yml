@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0 # Needed by `scripts/autogen-version`.
       - name: Prepare archive
         run: |
           ./scripts/make-tarball.sh
@@ -34,6 +37,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./spicy.tar.bz
+          asset_path: ./spicy.tar.bz2
           asset_name: spicy-${{ steps.get_version.outputs.version }}.tar.bz
           asset_content_type: application/x-tar
