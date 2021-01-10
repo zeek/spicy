@@ -1,4 +1,9 @@
 
+0.4.0-1199 | 2021-01-10 14:03:48 +0000
+
+  * Remove manual installation of Zeek CMake files on FreeBSD CI. (Benjamin
+    Bannier, Corelight)
+
 0.4.0-1196 | 2021-01-09 19:13:50 +0100
 
   * GH-650: Add infrastructure to upload a release tarball for tags. (Benjamin
