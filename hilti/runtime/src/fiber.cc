@@ -24,6 +24,9 @@ using namespace hilti::rt;
 static const auto DefaultFiberType = detail::Fiber::Type::SharedStack; // share stack by default
 static const auto AlwaysUseStackSwitchTrampoline = false;              // use switch trampoline only with shared stacks
 static const auto FiberGuardFlags = FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI;
+
+#define ASAN_NO_OPTIMIZE // just leave empty
+
 #else
 // Because the stack copying triggers false positives with ASAN, we use
 // individual stacks when that's active. We still force use of the stack
@@ -35,6 +38,13 @@ static const auto FiberGuardFlags = FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI;
 static const auto DefaultFiberType = detail::Fiber::Type::IndividualStack;
 static const auto AlwaysUseStackSwitchTrampoline = true;
 static const auto FiberGuardFlags = 0; // leak sanitizer may abort with "Tracer caught signal 11" if pages get protected
+
+#if defined(__clang__)
+#define ASAN_NO_OPTIMIZE __attribute__((optnone))
+#elif defined(__GNUC__)
+#define ASAN_NO_OPTIMIZE __attribute__((optimize(0)))
+#endif
+
 #endif
 
 // Wrapper similar to HILTI_RT_DEBUG that adds the current fiber to the message.
@@ -296,7 +306,8 @@ void detail::StackBuffer::restore() const {
     ::memcpy(lower, _buffer, (upper - lower));
 }
 
-void detail::Fiber::_startSwitchFiber(const char* tag, detail::Fiber* to) {
+// ASAN doesn't seem to always track the new stack correctly if this method gets optimized.
+void ASAN_NO_OPTIMIZE detail::Fiber::_startSwitchFiber(const char* tag, detail::Fiber* to) {
 #ifdef HILTI_HAVE_SANITIZER
     auto* current = context::detail::get()->fiber.current;
     __sanitizer_start_switch_fiber(&current->_asan.fake_stack, to->_asan.stack, to->_asan.stack_size);
@@ -307,7 +318,8 @@ void detail::Fiber::_startSwitchFiber(const char* tag, detail::Fiber* to) {
 #endif
 }
 
-void detail::Fiber::_finishSwitchFiber(const char* tag) {
+// ASAN doesn't seem to always track the new stack correctly if this method gets optimized.
+void ASAN_NO_OPTIMIZE detail::Fiber::_finishSwitchFiber(const char* tag) {
 #ifdef HILTI_HAVE_SANITIZER
     auto* context = context::detail::get();
     auto* current = context->fiber.current;
