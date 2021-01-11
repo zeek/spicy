@@ -23,6 +23,7 @@ using namespace hilti::rt;
 // Defaults for normal operation.
 static const auto DefaultFiberType = detail::Fiber::Type::SharedStack; // share stack by default
 static const auto AlwaysUseStackSwitchTrampoline = false;              // use switch trampoline only with shared stacks
+static const auto FiberGuardFlags = FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI;
 #else
 // Because the stack copying triggers false positives with ASAN, we use
 // individual stacks when that's active. We still force use of the stack
@@ -33,6 +34,7 @@ static const auto AlwaysUseStackSwitchTrampoline = false;              // use sw
 // just seem to be ignored.
 static const auto DefaultFiberType = detail::Fiber::Type::IndividualStack;
 static const auto AlwaysUseStackSwitchTrampoline = true;
+static const auto FiberGuardFlags = 0; // leak sanitizer may abort with "Tracer caught signal 11" if pages get protected
 #endif
 
 // Wrapper similar to HILTI_RT_DEBUG that adds the current fiber to the message.
@@ -130,7 +132,7 @@ detail::FiberContext::FiberContext() {
     // Instantiate an unused fiber just to create the shared stack.
     shared_stack = std::make_unique<::Fiber>();
     if ( ! ::fiber_alloc(shared_stack.get(), configuration::get().fiber_shared_stack_size, fiber_bottom_abort, this,
-                         FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI) )
+                         FiberGuardFlags) )
         throw RuntimeError("could not allocate shared stack");
 }
 
@@ -157,7 +159,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
 
         case Type::SwitchTrampoline:
             if ( ! ::fiber_alloc(_fiber.get(), configuration::get().fiber_individual_stack_size, fiber_bottom_abort,
-                                 this, FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI) )
+                                 this, FiberGuardFlags) )
                 internalError("could not allocate individual-stack fiber");
 
 #ifdef HILTI_HAVE_SANITIZER
@@ -179,7 +181,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
 
         case Type::IndividualStack: {
             if ( ! ::fiber_alloc(_fiber.get(), configuration::get().fiber_individual_stack_size, fiber_bottom_abort,
-                                 this, FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI) )
+                                 this, FiberGuardFlags) )
                 internalError("could not allocate individual-stack fiber");
 
 #ifdef HILTI_HAVE_SANITIZER
