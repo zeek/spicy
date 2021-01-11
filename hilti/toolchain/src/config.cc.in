@@ -119,6 +119,7 @@ void Configuration::init(bool use_build_directory) {
                  prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-Wl,-rpath,", installation_tag),
                  prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "-l", installation_tag),
                  prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
+                 prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag),
                  prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
 
     runtime_ld_flags_release =
@@ -126,6 +127,7 @@ void Configuration::init(bool use_build_directory) {
                  prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-Wl,-rpath,", installation_tag),
                  prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
                  prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
+                 prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag),
                  prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
 };
 

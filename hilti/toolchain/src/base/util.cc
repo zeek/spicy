@@ -243,7 +243,10 @@ std::string util::prefixParts(const std::string& in, const std::string& prefix, 
             }
         }
 
-        return prefix + trim(s);
+        if ( auto x = trim(s); ! util::startsWith(s, "-") )
+            return prefix + x;
+        else
+            return x;
     });
 
     return join(filter(x, [](auto s) -> bool { return s.size(); }), " ");
