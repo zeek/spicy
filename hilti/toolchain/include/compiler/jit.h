@@ -16,7 +16,9 @@
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/cxx/unit.h>
 
-#include <reproc++/reproc.hpp>
+namespace reproc {
+class process;
+}
 
 namespace hilti {
 

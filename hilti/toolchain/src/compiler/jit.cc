@@ -12,6 +12,7 @@
 #include <hilti/compiler/jit.h>
 
 #include <reproc++/drain.hpp>
+#include <reproc++/reproc.hpp>
 
 using namespace hilti;
 
