@@ -14,6 +14,7 @@ static void execute_one(benchmark::State& state) {
     hilti::rt::detail::Fiber::primeCache();
 
     for ( auto _ : state ) {
+        (void)_;
         state.PauseTiming();
 
         auto addl_stack_usage = state.range(0);
@@ -36,6 +37,7 @@ static void execute_one_yield(benchmark::State& state) {
     hilti::rt::detail::Fiber::primeCache();
 
     for ( auto _ : state ) {
+        (void)_;
         state.PauseTiming();
 
         auto addl_stack_usage = state.range(0);
@@ -60,6 +62,7 @@ static void execute_yield_to_other(benchmark::State& state) {
     hilti::rt::detail::Fiber::primeCache();
 
     for ( auto _ : state ) {
+        (void)_;
         state.PauseTiming();
 
         auto addl_stack_usage = state.range(0);
@@ -98,6 +101,7 @@ static void execute_many(benchmark::State& state) {
     hilti::rt::detail::Fiber::primeCache();
 
     for ( auto _ : state ) {
+        (void)_;
         state.PauseTiming();
 
         auto addl_stack_usage = state.range(0);
@@ -128,6 +132,7 @@ static void execute_many_resume(benchmark::State& state) {
     hilti::rt::detail::Fiber::primeCache();
 
     for ( auto _ : state ) {
+        (void)_;
         state.PauseTiming();
 
         auto addl_stack_usage = state.range(0);
