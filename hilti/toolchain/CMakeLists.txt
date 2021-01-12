@@ -105,29 +105,22 @@ set(SOURCES
     ${FLEX_scanner_hilti_OUTPUTS}
     )
 
-# tiny-process's CMake config would build a shared library. However, we want to
-# link it statically into libhilti, so we define our own object library here.
-set(TINY_PROCESS_ROOT ${CMAKE_SOURCE_DIR}/3rdparty/tiny-process-library)
-add_library(tiny-process-objects OBJECT ${TINY_PROCESS_ROOT}/process.cpp ${TINY_PROCESS_ROOT}/process_unix.cpp)
-target_include_directories(tiny-process-objects PRIVATE ${TINY_PROCESS_ROOT})
-set_property(TARGET tiny-process-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
-
 add_library(hilti-objects OBJECT ${SOURCES})
 set_property(TARGET hilti-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_dependencies(hilti-objects version)
 target_compile_options(hilti-objects PRIVATE "-Wall")
 target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
-target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
+target_link_libraries(hilti-objects PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
 
 # The following should instead just be:
 #
-#    target_link_libraries(hilti-objects PRIVATE tiny-process-objects)
+#    target_link_libraries(hilti-objects PRIVATE reproc++)
 #
 # but requires the same work-around as jrx-objects in hilti-rt (see there).
-add_dependencies(hilti-objects tiny-process-objects)
-target_include_directories(hilti-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/tiny-process-library)
-target_link_libraries(hilti-objects PRIVATE $<TARGET_OBJECTS:tiny-process-objects>)
+add_dependencies(hilti-objects reproc++)
+target_include_directories(hilti-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
+target_link_libraries(hilti-objects PRIVATE $<TARGET_OBJECTS:reproc++> $<TARGET_OBJECTS:reproc>)
 
 target_link_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -139,10 +132,6 @@ set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
 add_library(hilti)
 target_link_libraries(hilti PUBLIC hilti-objects)
-<<<<<<< HEAD
-target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
-=======
->>>>>>> 9e3e3a04... Remove the no-JIT build mode as well as anything specific to LLVM/clang.
 
 # TODO: The generator expression doesn't work for some reason, even though it
 # does elswhere. Not sure why?

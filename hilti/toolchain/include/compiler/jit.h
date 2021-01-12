@@ -16,7 +16,9 @@
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/cxx/unit.h>
 
-#include <tiny-process-library/process.hpp>
+namespace reproc {
+class process;
+}
 
 namespace hilti {
 
@@ -181,7 +183,6 @@ private:
 
     using JobID = uint64_t;
     Result<JobID> _spawnJob(hilti::rt::filesystem::path cmd, std::vector<std::string> args);
-    Result<Nothing> _waitForJob(JobID id);
     Result<Nothing> _waitForJobs();
 
     hilti::rt::filesystem::path _makeTmp(std::string base, std::string ext);
@@ -196,9 +197,11 @@ private:
     std::optional<hilti::rt::TemporaryDirectory> _tmpdir;
 
     struct Job {
-        std::unique_ptr<TinyProcessLib::Process> process;
+        std::unique_ptr<reproc::process> process;
         std::string stdout_;
         std::string stderr_;
+
+        void collect_outputs();
     };
 
     JobID _job_counter = 0;

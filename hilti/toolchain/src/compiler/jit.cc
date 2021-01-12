@@ -1,5 +1,6 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <array>
 #include <fstream>
 #include <utility>
 
@@ -11,7 +12,34 @@
 #include <hilti/compiler/detail/cxx/unit.h>
 #include <hilti/compiler/jit.h>
 
+#include <reproc++/drain.hpp>
+#include <reproc++/reproc.hpp>
+
 using namespace hilti;
+
+void hilti::JIT::Job::collect_outputs() {
+    if ( ! process )
+        return;
+
+    std::array<uint8_t, 4096> buffer;
+    for ( ;; ) {
+        {
+            auto [size, ec] = process->read(reproc::stream::out, buffer.begin(), buffer.size());
+            if ( ec || size == 0 )
+                break;
+
+            stdout_.append(reinterpret_cast<const char*>(buffer.begin()), size);
+        }
+
+        {
+            auto [size, ec] = process->read(reproc::stream::err, buffer.begin(), buffer.size());
+            if ( ec || size == 0 )
+                break;
+
+            stderr_.append(reinterpret_cast<const char*>(buffer.begin()), size);
+        }
+    }
+}
 
 namespace hilti::logging::debug {
 inline const DebugStream Driver("driver");
@@ -127,6 +155,20 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
 
 void JIT::_finish() {
     _objects.clear();
+
+    for ( auto&& [id, job] : _jobs ) {
+        auto [status, ec] = job.process->stop(reproc::stop_actions{
+            .first = {.action = reproc::stop::terminate, .timeout = reproc::milliseconds(250)},
+            .second = {.action = reproc::stop::kill, .timeout = reproc::milliseconds::max()},
+        });
+
+        if ( ec )
+            HILTI_DEBUG(logging::debug::Jit, util::fmt("failed to stop job: %s", ec.message()));
+
+        // Since we terminated the process forcibly which if the process was still running probably
+        // triggered a non-zero exist status, we ignore the status returned from `stop`.
+    }
+
     _jobs.clear();
     _tmp_counters.clear();
     _tmpdir.reset();
@@ -298,65 +340,100 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] %s", jid, util::join(cmdline, " ")));
 
     Job& job = _jobs[jid];
-    job.process = std::make_unique<TinyProcessLib::Process>(
-        cmdline, _tmpdir->path(),
-        // Callback for stdout data.
-        [&job](const char* bytes, size_t n) { job.stdout_ += std::string(bytes, n); },
-        // Callback for stderr data.
-        [&job](const char* bytes, size_t n) { job.stderr_ += std::string(bytes, n); },
-        // Custom deleter making sure the process gets terminated.
-        [](TinyProcessLib::Process* p) {
-            try {
-                int ec;
-                if ( ! p->try_get_exit_status(ec) )
-                    p->kill(true);
-            } catch ( ... ) {
-                // ignore errors
-            }
-            delete p;
-        });
+    job.process = std::make_unique<reproc::process>();
 
-    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] -> pid %u", jid, job.process->get_id()));
+    reproc::options options;
+    options.working_directory = _tmpdir->path().c_str();
+    options.redirect.out.type = reproc::redirect::default_;
+    options.redirect.err.type = reproc::redirect::default_;
 
-    // TinyProcessLibProcess fails silently if there's a problem, but leaves the PID unset.
-    if ( job.process->get_id() <= 0 )
-        return result::Error(util::fmt("process failed to start: %s %s", cmd.native(), util::join(args)));
+    auto ec = job.process->start(cmdline, options);
+
+    if ( ec ) {
+        _jobs.erase(jid);
+        return result::Error(
+            util::fmt("process '%s %s' failed to start: %s", cmd.native(), util::join(args), ec.message()));
+    }
+
+    if ( auto [pid, ec] = job.process->pid(); ! ec ) {
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] -> pid %u", jid, pid));
+    }
+    else {
+        _jobs.erase(jid);
+        return result::Error(
+            util::fmt("could not determine PID of process '%s %s': %s", cmd.native(), util::join(args), ec.message()));
+    }
 
     return jid;
 }
 
-Result<Nothing> JIT::_waitForJob(JobID id) {
-    if ( _jobs.find(id) == _jobs.end() )
-        return result::Error(util::fmt("unknown JIT job %u", id));
-
-    // Now move it out of the map.
-    const auto& job = _jobs[id];
-    auto ec = job.process->get_exit_status();
-
-    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, ec));
-
-    if ( job.stdout_.size() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, util::trim(job.stdout_)));
-
-    if ( job.stderr_.size() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, util::trim(job.stderr_)));
-
-    if ( ec != 0 ) {
-        std::string stderr_ =
-            job.stderr_.size() ? std::string("JIT output: \n") + util::trim(job.stderr_) : "(no error output)";
-        _jobs.erase(id);
-        return result::Error("JIT compilation failed", stderr_);
-    }
-
-    _jobs.erase(id);
-    return Nothing();
-}
-
 Result<Nothing> JIT::_waitForJobs() {
-    while ( _jobs.size() ) {
-        if ( auto rc = _waitForJob(_jobs.begin()->first); ! rc )
-            // We stop after the first one failing.
-            return rc;
+    if ( _jobs.empty() )
+        return Nothing();
+
+    std::vector<reproc::event::source> sources;
+    sources.reserve(_jobs.size());
+
+    std::vector<JobID> ids;
+    ids.reserve(_jobs.size());
+
+    while ( ! _jobs.empty() ) {
+        for ( auto&& [id, job] : _jobs ) {
+            sources.push_back(
+                reproc::event::source{.process = *job.process,
+                                      .interests = reproc::event::out | reproc::event::err | reproc::event::exit,
+                                      .events = 0});
+
+            ids.push_back(id);
+        }
+
+        auto ec = reproc::poll(&sources[0], sources.size());
+
+        if ( ec )
+            return result::Error(util::fmt("could not wait for processes: %s", ec.message()));
+
+        for ( size_t i = 0; i < sources.size(); ++i ) {
+            auto&& source = sources[i];
+            auto id = ids[i];
+            auto& job = _jobs[id];
+
+            if ( ! source.events )
+                continue;
+
+            if ( source.events & reproc::event::out || source.events & reproc::event::err )
+                job.collect_outputs();
+
+            if ( source.events & reproc::event::exit ) {
+                // Collect the exist status.
+                auto [status, ec] = job.process->wait(reproc::milliseconds::max());
+
+                if ( ec ) {
+                    _jobs.erase(id);
+                    return result::Error(util::fmt("could not wait for process: %s", ec.message()));
+                }
+
+                HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, status));
+
+                if ( ! job.stdout_.empty() )
+                    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, util::trim(job.stdout_)));
+
+                if ( ! job.stderr_.empty() )
+                    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, util::trim(job.stderr_)));
+
+                if ( status != 0 ) {
+                    std::string stderr__ = job.stderr_.empty() ?
+                                               "(no error output)" :
+                                               std::string("JIT output: \n") + util::trim(job.stderr_);
+                    _jobs.erase(id);
+                    return result::Error("JIT compilation failed", stderr__);
+                }
+
+                _jobs.erase(id);
+            }
+        }
+
+        sources.clear();
+        ids.clear();
     }
 
     return Nothing();
