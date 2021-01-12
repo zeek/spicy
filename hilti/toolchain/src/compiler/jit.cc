@@ -11,6 +11,8 @@
 #include <hilti/compiler/detail/cxx/unit.h>
 #include <hilti/compiler/jit.h>
 
+#include <reproc++/drain.hpp>
+
 using namespace hilti;
 
 namespace hilti::logging::debug {
@@ -298,29 +300,26 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] %s", jid, util::join(cmdline, " ")));
 
     Job& job = _jobs[jid];
-    job.process = std::make_unique<TinyProcessLib::Process>(
-        cmdline, _tmpdir->path(),
-        // Callback for stdout data.
-        [&job](const char* bytes, size_t n) { job.stdout_ += std::string(bytes, n); },
-        // Callback for stderr data.
-        [&job](const char* bytes, size_t n) { job.stderr_ += std::string(bytes, n); },
-        // Custom deleter making sure the process gets terminated.
-        [](TinyProcessLib::Process* p) {
-            try {
-                int ec;
-                if ( ! p->try_get_exit_status(ec) )
-                    p->kill(true);
-            } catch ( ... ) {
-                // ignore errors
-            }
-            delete p;
-        });
+    job = std::make_unique<reproc::process>();
 
-    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] -> pid %u", jid, job.process->get_id()));
+    reproc::options options;
+    options.working_directory = _tmpdir->path().c_str();
+    auto ec = job->start(cmdline, options);
 
-    // TinyProcessLibProcess fails silently if there's a problem, but leaves the PID unset.
-    if ( job.process->get_id() <= 0 )
-        return result::Error(util::fmt("process failed to start: %s %s", cmd.native(), util::join(args)));
+    if ( ec ) {
+        _jobs.erase(jid);
+        return result::Error(
+            util::fmt("process '%s %s' failed to start: %s", cmd.native(), util::join(args), ec.message()));
+    }
+
+    if ( auto [pid, ec] = job->pid(); ! ec ) {
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] -> pid %u", jid, pid));
+    }
+    else {
+        _jobs.erase(jid);
+        return result::Error(
+            util::fmt("could not determine PID of process '%s %s': %s", cmd.native(), util::join(args), ec.message()));
+    }
 
     return jid;
 }
@@ -331,21 +330,35 @@ Result<Nothing> JIT::_waitForJob(JobID id) {
 
     // Now move it out of the map.
     const auto& job = _jobs[id];
-    auto ec = job.process->get_exit_status();
 
-    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, ec));
+    auto [status, ec] = job->wait(reproc::milliseconds::max());
 
-    if ( job.stdout_.size() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, util::trim(job.stdout_)));
-
-    if ( job.stderr_.size() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, util::trim(job.stderr_)));
-
-    if ( ec != 0 ) {
-        std::string stderr_ =
-            job.stderr_.size() ? std::string("JIT output: \n") + util::trim(job.stderr_) : "(no error output)";
+    if ( ec ) {
         _jobs.erase(id);
-        return result::Error("JIT compilation failed", stderr_);
+        return result::Error(util::fmt("could not wait for process: %s", ec.message()));
+    }
+
+    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, status));
+
+    // Collect the process output.
+    std::mutex mutex;
+    std::string stdout_;
+    std::string stderr_;
+    reproc::sink::thread_safe::string sink_stdout(stdout_, mutex);
+    reproc::sink::thread_safe::string sink_stderr(stderr_, mutex);
+    reproc::drain(*job.get(), sink_stdout, sink_stderr);
+
+    if ( ! stdout_.empty() )
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, util::trim(stdout_)));
+
+    if ( ! stderr_.empty() )
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, util::trim(stderr_)));
+
+    if ( status != 0 ) {
+        std::string stderr__ =
+            stderr_.empty() ? "(no error output)" : std::string("JIT output: \n") + util::trim(stderr_);
+        _jobs.erase(id);
+        return result::Error("JIT compilation failed", stderr__);
     }
 
     _jobs.erase(id);

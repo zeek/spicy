@@ -16,7 +16,7 @@
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/cxx/unit.h>
 
-#include <tiny-process-library/process.hpp>
+#include <reproc++/reproc.hpp>
 
 namespace hilti {
 
@@ -195,11 +195,7 @@ private:
 
     std::optional<hilti::rt::TemporaryDirectory> _tmpdir;
 
-    struct Job {
-        std::unique_ptr<TinyProcessLib::Process> process;
-        std::string stdout_;
-        std::string stderr_;
-    };
+    using Job = std::unique_ptr<reproc::process>;
 
     JobID _job_counter = 0;
     std::map<JobID, Job> _jobs;

@@ -9,3 +9,7 @@ add_subdirectory(justrx)
 set(FIBER_SHARED OFF)
 set(FIBER_OBJECT ON)
 add_subdirectory(fiber)
+
+set(REPROC++ ON)
+set(REPROC_MULTITHREADED OFF)
+add_subdirectory(reproc)

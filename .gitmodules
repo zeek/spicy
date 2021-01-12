@@ -34,6 +34,6 @@
 [submodule "3rdparty/fiber"]
 	path = 3rdparty/fiber
 	url = https://github.com/simonfxr/fiber.git
-[submodule "3rdparty/tiny-process-library"]
-	path = 3rdparty/tiny-process-library
-	url = https://gitlab.com/eidheim/tiny-process-library.git
+[submodule "3rdparty/reproc"]
+	path = 3rdparty/reproc
+	url = https://github.com/DaanDeMeyer/reproc.git
