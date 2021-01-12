@@ -130,6 +130,20 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
 
 void JIT::_finish() {
     _objects.clear();
+
+    for ( auto&& [id, job] : _jobs ) {
+        auto [status, ec] = job->stop(reproc::stop_actions{
+            .first = {.action = reproc::stop::terminate, .timeout = reproc::milliseconds(250)},
+            .second = {.action = reproc::stop::kill, .timeout = reproc::milliseconds::max()},
+        });
+
+        if ( ec )
+            HILTI_DEBUG(logging::debug::Jit, util::fmt("failed to stop job: %s", ec.message()));
+
+        // Since we terminated the process forcibly which if the process was still running probably
+        // triggered a non-zero exist status, we ignore the status returned from `stop`.
+    }
+
     _jobs.clear();
     _tmp_counters.clear();
     _tmpdir.reset();
