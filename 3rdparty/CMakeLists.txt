@@ -12,4 +12,7 @@ add_subdirectory(fiber)
 
 set(REPROC++ ON)
 set(REPROC_MULTITHREADED OFF)
+set(REPROC_OBJECT_LIBRARIES ON)
 add_subdirectory(reproc)
+set_property(TARGET reproc PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET reproc++ PROPERTY POSITION_INDEPENDENT_CODE ON)

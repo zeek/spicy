@@ -124,6 +124,7 @@ set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
 add_library(hilti)
 target_link_libraries(hilti PUBLIC hilti-objects)
+target_link_libraries(hilti PUBLIC reproc++)
 
 # TODO: The generator expression doesn't work for some reason, even though it
 # does elswhere. Not sure why?
