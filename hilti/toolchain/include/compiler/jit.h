@@ -202,7 +202,7 @@ private:
         std::string stdout_;
         std::string stderr_;
 
-        void poll();
+        void collect_outputs();
     };
 
     JobID _job_counter = 0;

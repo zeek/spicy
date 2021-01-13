@@ -17,7 +17,7 @@
 
 using namespace hilti;
 
-void hilti::JIT::Job::poll() {
+void hilti::JIT::Job::collect_outputs() {
     if ( ! process )
         return;
 
@@ -25,17 +25,17 @@ void hilti::JIT::Job::poll() {
     for ( ;; ) {
         {
             auto [size, ec] = process->read(reproc::stream::in, buffer.begin(), buffer.size());
-            if ( ec || size == 0 ) {
+            if ( ec || size == 0 )
                 break;
-            }
+
             stdout_.append(reinterpret_cast<const char*>(buffer.begin()), size);
         }
 
         {
             auto [size, ec] = process->read(reproc::stream::err, buffer.begin(), buffer.size());
-            if ( ec || size == 0 ) {
+            if ( ec || size == 0 )
                 break;
-            }
+
             stderr_.append(reinterpret_cast<const char*>(buffer.begin()), size);
         }
     }
@@ -374,8 +374,20 @@ Result<Nothing> JIT::_waitForJob(JobID id) {
     // Now move it out of the map.
     auto job = std::move(_jobs[id]);
 
-    job.poll();
+    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] waiting for job", id));
 
+    // Wait for the process to finish. Since the process might be blocked
+    // because its outputs are full, we alternate between polling its status
+    // and collecting its outputs.
+    for ( ;; ) {
+        auto&& [status, ec] = job.process->wait(reproc::milliseconds(100));
+        job.collect_outputs();
+
+        if ( ! ec )
+            break;
+    }
+
+    // Collect the exist status.
     auto [status, ec] = job.process->wait(reproc::milliseconds::max());
 
     if ( ec ) {
