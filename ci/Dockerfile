@@ -50,7 +50,7 @@ RUN apt-get update \
 
 # Install a recent CMake.
 WORKDIR /usr/local/cmake
-RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.15.0-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
+RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
 ENV PATH="/usr/local/cmake/bin:${PATH}"
 
 # Add a test user to catch unintentional host modifications. This is not a
