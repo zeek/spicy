@@ -19,7 +19,7 @@ extraction:
         - libc++abi-dev
         - curl
     after_prepare:
-        - mkdir $HOME/cmake && curl -L https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.15.0-Linux-x86_64.tar.gz | tar xzvf - -C $HOME/cmake --strip-components 1
+        - mkdir $HOME/cmake && curl -L https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-Linux-x86_64.tar.gz | tar xzvf - -C $HOME/cmake --strip-components 1
         - export PATH=$HOME/cmake/bin:$PATH
         - export CXX=clang++-9
         - export CC=clang-9
