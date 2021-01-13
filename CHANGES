@@ -1,4 +1,9 @@
 
+0.4.0-1201 | 2021-01-11 21:03:10 +0100
+
+  * Activate building Spicy in CentOS 7 Docker image. (Benjamin Bannier,
+    Corelight)
+
 0.4.0-1199 | 2021-01-10 14:03:48 +0000
 
   * Remove manual installation of Zeek CMake files on FreeBSD CI. (Benjamin
