@@ -347,7 +347,7 @@ Result<Nothing> JIT::_waitForJob(JobID id) {
         return result::Error(util::fmt("unknown JIT job %u", id));
 
     // Now move it out of the map.
-    const auto& job = _jobs[id];
+    const auto job = std::move(_jobs[id]);
 
     auto [status, ec] = job->wait(reproc::milliseconds::max());
 
