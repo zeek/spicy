@@ -319,6 +319,9 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
 
     reproc::options options;
     options.working_directory = _tmpdir->path().c_str();
+    options.redirect.out.type = reproc::redirect::pipe;
+    options.redirect.err.type = reproc::redirect::pipe;
+
     auto ec = job->start(cmdline, options);
 
     if ( ec ) {
@@ -356,11 +359,10 @@ Result<Nothing> JIT::_waitForJob(JobID id) {
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, status));
 
     // Collect the process output.
-    std::mutex mutex;
     std::string stdout_;
     std::string stderr_;
-    reproc::sink::thread_safe::string sink_stdout(stdout_, mutex);
-    reproc::sink::thread_safe::string sink_stderr(stderr_, mutex);
+    reproc::sink::string sink_stdout(stdout_);
+    reproc::sink::string sink_stderr(stderr_);
     reproc::drain(*job.get(), sink_stdout, sink_stderr);
 
     if ( ! stdout_.empty() )
