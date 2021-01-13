@@ -167,8 +167,8 @@ hilti::rt::filesystem::path util::currentExecutable() { return normalizePath(::F
 
 void util::abort_with_backtrace() {
     std::cerr << "\n--- Aborting" << std::endl;
-    hilti::rt::Backtrace bt;
-    for ( const auto& f : bt.backtrace() )
+    auto bt = hilti::rt::Backtrace().backtrace();
+    for ( const auto& f : *bt )
         std::cerr << f << std::endl;
     abort();
 }
@@ -243,7 +243,10 @@ std::string util::prefixParts(const std::string& in, const std::string& prefix, 
             }
         }
 
-        return prefix + trim(s);
+        if ( auto x = trim(s); ! util::startsWith(s, "-") )
+            return prefix + x;
+        else
+            return x;
     });
 
     return join(filter(x, [](auto s) -> bool { return s.size(); }), " ");

@@ -45,6 +45,7 @@ __attribute__((weak)) int hilti::main(int argc, char** argv) {
 
     hilti::rt::configuration::set(config);
     hilti::rt::init();
+    hilti::rt::done();
 
     return 0;
 }

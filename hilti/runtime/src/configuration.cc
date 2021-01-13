@@ -18,7 +18,7 @@ Configuration::Configuration() {
     cout = std::cout;
 }
 
-Configuration configuration::get() {
+const Configuration& configuration::get() {
     if ( ! globalState()->configuration )
         globalState()->configuration = std::make_unique<hilti::rt::Configuration>();
 

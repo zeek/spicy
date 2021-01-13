@@ -98,7 +98,9 @@ public:
     ~Lambda() {
         if ( deleteLambda != nullptr )
             deleteLambda(lambda);
-    }
+
+        // Seems clang-tidy doesn't track through the reinterpret_cast inside the deleter.
+    } // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
 
     Lambda<Out(In...)>& operator=(Lambda<Out(In...)> const& other) {
         this->lambda = other.copyLambda ? other.copyLambda(other.lambda) : nullptr;

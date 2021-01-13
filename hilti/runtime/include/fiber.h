@@ -15,17 +15,20 @@
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/lambda.h>
+#include <hilti/rt/types/reference.h>
 #include <hilti/rt/util.h>
 
 struct Fiber;
 
+// Fiber entry point for execution of fiber payload.
+extern "C" void __fiber_run_trampoline(void* args);
+
+// Fiber entry point for stack switch trampoline.
+extern "C" void __fiber_switch_trampoline(void* args);
+
 namespace hilti::rt {
 
 namespace detail {
-extern "C" {
-void _Trampoline(void* argsp);
-}
-
 class Fiber;
 } // namespace detail
 
@@ -36,15 +39,106 @@ using Handle = detail::Fiber;
 
 namespace detail {
 
+/** Context-wide state for managing all fibers associated with that context. */
+struct FiberContext {
+    FiberContext();
+    ~FiberContext();
+
+    /** (Pseudo-)fiber representing the main function. */
+    std::unique_ptr<detail::Fiber> main;
+
+    /** Fiber implementing the switch trampoline. */
+    std::unique_ptr<detail::Fiber> switch_trampoline;
+
+    /** Currently executing fiber .*/
+    detail::Fiber* current = nullptr;
+
+    /** Fiber holding the shared stack (the fiber itself isn't used, just its stack memory) */
+    std::unique_ptr<::Fiber> shared_stack;
+
+    /** Cache of previously used fibers available for reuse. */
+    std::vector<std::unique_ptr<Fiber>> cache;
+};
+
+/**
+ * Helper retaining a fiber's saved stack content.
+ */
+struct StackBuffer {
+    /**
+     * Constructor.
+     *
+     * @param fiber fiber of which to track its current stack region
+     */
+    StackBuffer(const ::Fiber* fiber) : _fiber(fiber) {}
+
+    /** Destructor. */
+    ~StackBuffer();
+
+    /**
+     * Returns the lower/upper addresses of the memory region that is currently
+     * actively in use by the fiber's stack. This value is only well-defined if
+     * the fiber is *not* currently executing.
+     **/
+    std::pair<char*, char*> activeRegion() const;
+
+    /**
+     * Returns the lower/upper addresses of the memory region that is allocated
+     * for the fiber's stack.
+     **/
+    std::pair<char*, char*> allocatedRegion() const;
+
+    /**
+     * Returns the size of the memory region that is currently actively in use
+     * by the fiber's stack. This value is only well-defined if the fiber is
+     * *not* currently executing.
+     **/
+    size_t activeSize() const { return static_cast<size_t>(activeRegion().second - activeRegion().first); }
+
+    /** Returns the size of the memory region that's allocated for the fiber's stack. */
+    size_t allocatedSize() const { return static_cast<size_t>(allocatedRegion().second - allocatedRegion().first); }
+
+    /** Returns an approximate size of stack space left for a currently executing fiber. */
+    size_t liveRemainingSize() const;
+
+    /** Copies the fiber's stack out into an internally allocated buffer. */
+    void save();
+
+    /**
+     * Copies previously saved stack content back into its original location.
+     * This does nothing if no content has been saved so far.
+     **/
+    void restore() const;
+
+private:
+    const ::Fiber* _fiber;
+    void* _buffer = nullptr; // allocated memory holding swapped out stack content
+};
+
+// Render stack region for use in debug output.
+inline std::ostream& operator<<(std::ostream& out, const StackBuffer& s) {
+    out << fmt("%p-%p:%zu", s.activeRegion().first, s.activeRegion().second, s.activeSize());
+    return out;
+}
+
+
 /**
  * A fiber implements a co-routine that can at any time yield control back to
- * the caller, to be resumed later. This is the internal class implementing
- * the main functionalty. It's used by `Resumable`, which provides the
- * external interface.
+ * its caller, to be resumed later. This is the internal class implementing the
+ * main functionalty. It's used by `Resumable`, which provides the external
+ * interface.
  */
 class Fiber {
 public:
-    Fiber();
+    /** Type of fiber. */
+    enum class Type {
+        IndividualStack, /**< Fiver using a dedicated local stack (needs more memory, but switching is fast) */
+        SharedStack,     /**< Fiber sharing a global stack (needs less memory, but switching costs extra) */
+
+        Main,             /**< Pseudo-fiber for the top-level process; for internaly use only */
+        SwitchTrampoline, /**< Fiber representing a trampoline for stack switching; for internal use only */
+    };
+
+    Fiber(Type type);
     ~Fiber();
 
     Fiber(const Fiber&) = delete;
@@ -58,10 +152,18 @@ public:
         _function = std::move(f);
     }
 
+    /** Returns the fiber's type. */
+    auto type() { return _type; }
+
+    /** Returns the fiber's stack buffer. */
+    const auto& stackBuffer() const { return _stack_buffer; }
+
     void run();
     void yield();
     void resume();
     void abort();
+
+    bool isMain() const { return _type == Type::Main; }
 
     bool isDone() {
         switch ( _state ) {
@@ -82,6 +184,8 @@ public:
     auto&& result() { return std::move(_result); }
     std::exception_ptr exception() const { return _exception; }
 
+    std::string tag() const;
+
     static std::unique_ptr<Fiber> create();
     static void destroy(std::unique_ptr<Fiber> f);
     static void primeCache();
@@ -97,42 +201,44 @@ public:
 
     static Statistics statistics();
 
-    // Size of stack for each fiber.
-    static constexpr unsigned int StackSize = 327'680;
-
-    // Max. number of fibers cached for reuse.
-    static constexpr unsigned int CacheSize = 100;
-
 private:
-    friend void _Trampoline(void* argsp);
+    friend void ::__fiber_run_trampoline(void* argsp);
+    friend void ::__fiber_switch_trampoline(void* args0);
+
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 
+    void _yield(const char* tag);
+    void _activate(const char* tag);
+
     /** Code to run just before we switch to a fiber. */
-    void _startSwitchFiber(const char* tag, const void* stack_bottom = nullptr, size_t stack_size = 0);
+    static void _startSwitchFiber(const char* tag, detail::Fiber* to);
 
     /** Code to run just after we have switched to a fiber. */
-    void _finishSwitchFiber(const char* tag);
+    static void _finishSwitchFiber(const char* tag);
 
+    /** Low-level switch from one fiber to another. */
+    static void _executeSwitch(const char* tag, detail::Fiber* from, detail::Fiber* to);
+
+    Type _type;
     State _state{State::Init};
     std::optional<Lambda<std::any(resumable::Handle*)>> _function;
     std::optional<std::any> _result;
     std::exception_ptr _exception;
 
-    /** The underlying coroutine of this fiber. */
+    /** The underlying 3rdparty implementation of this fiber. */
     std::unique_ptr<::Fiber> _fiber;
 
-    /**
-     * The coroutine this fiber yields to.
-     *
-     * This is typically the coroutine of the fiber which invoked `run` on this
-     * coroutine.
-     */
-    ::Fiber* _caller = nullptr;
+    /** The coroutine this fiber will yield to. */
+    Fiber* _caller = nullptr;
+
+    /** Buffer for the fiber's stack when swapped out. */
+    StackBuffer _stack_buffer;
 
 #ifdef HILTI_HAVE_SANITIZER
+    /** Additional tracking state that ASAN needs. */
     struct {
-        const void* prev_bottom = nullptr;
-        size_t prev_size = 0;
+        const void* stack = nullptr;
+        size_t stack_size = 0;
         void* fake_stack = nullptr;
     } _asan;
 #endif
@@ -141,11 +247,22 @@ private:
     // move into global state.
     inline static uint64_t _total_fibers;
     inline static uint64_t _current_fibers;
+    inline static uint64_t _cached_fibers;
     inline static uint64_t _max_fibers;
     inline static uint64_t _initialized; // number of trampolines run
 };
 
+std::ostream& operator<<(std::ostream& out, const Fiber& fiber);
+
 extern void yield();
+
+/**
+ * Checks that the current fiber has sufficient stack space left for
+ * executing a function body.
+ *
+ * \throws StackSizeExceeded if the minimum size is not available
+ */
+extern void checkStack();
 
 } // namespace detail
 
@@ -157,7 +274,7 @@ extern void yield();
 class Resumable {
 public:
     /**
-     * Creates an instance initialied with a function to execute. The
+     * Creates an instance initialized with a function to execute. The
      * function can then be started by calling `run()`.
      *
      * @param f function to be executed
@@ -230,6 +347,32 @@ private:
     bool _done = false;
     std::optional<std::any> _result;
 };
+
+namespace resumable::detail {
+
+/** Helper to deep-copy `Resumable` arguments in preparation for moving them to the heap. */
+template<typename T>
+auto copyArg(T t) {
+    // In general, we can't move references to the heap.
+    static_assert(! std::is_reference<T>::value, "copyArg() does not accept references other than ValueReference<T>.");
+    return t;
+}
+
+// Special case: We don't want to (nor need to) deep-copy value references.
+// Their payload already resides on the heap, so reuse that.
+template<typename T>
+const ValueReference<T> copyArg(const ValueReference<T>& t) {
+    return ValueReference<T>(t.asSharedPtr());
+}
+
+// Special case: We don't want to (nor need to) deep-copy value references.
+// Their payload already resides on the heap, so reuse that.
+template<typename T>
+ValueReference<T> copyArg(ValueReference<T>& t) {
+    return ValueReference<T>(t.asSharedPtr());
+}
+
+} // namespace resumable::detail
 
 namespace fiber {
 

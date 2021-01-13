@@ -3,10 +3,12 @@
 #include <exception>
 #include <sstream>
 
+#include <hilti/rt/configuration.h>
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/result.h>
+#include "exception.h"
 
 class TestDtor { //NOLINT
 public:
@@ -278,8 +280,59 @@ TEST_CASE("prime-cache") {
     hilti::rt::detail::Fiber::primeCache();
 
     stats = hilti::rt::detail::Fiber::statistics();
-    REQUIRE(stats.current == hilti::rt::detail::Fiber::CacheSize);
-    REQUIRE(stats.cached == hilti::rt::detail::Fiber::CacheSize);
+    REQUIRE(stats.current == hilti::rt::configuration::get().fiber_cache_size);
+    REQUIRE(stats.cached == hilti::rt::configuration::get().fiber_cache_size);
+}
+
+TEST_CASE("copy-arg") {
+    hilti::rt::init();
+
+    // This mimics how the HILTI codegen generater moves fiber arguments to the heap.
+    auto s1 = std::string("string1");
+    auto s2 = hilti::rt::ValueReference<std::string>("string2");
+
+    auto args = std::make_tuple(hilti::rt::resumable::detail::copyArg(s1), hilti::rt::resumable::detail::copyArg(s2));
+    auto args_on_heap = std::make_shared<decltype(args)>(std::move(args));
+
+    // Check that the copied values have the expected content.
+    CHECK_EQ(std::get<0>(*args_on_heap), std::string("string1"));
+    CHECK_EQ(std::get<1>(*args_on_heap), std::string("string2"));
+
+    // Check that s1 got actually copied
+    CHECK_NE(std::get<0>(*args_on_heap).data(), s1.data());
+
+    // Check that s2 is referring to the same instance (because we specialize ValueReference&<T> that way)
+    CHECK_EQ(std::get<1>(*args_on_heap)->data(), s2->data());
+}
+
+void X() {}
+
+static int fibo(int i) {
+    hilti::rt::detail::checkStack(); // this will eventually throw
+
+    alloca(512); // Make it fail quicker
+
+    if ( i == 0 )
+        return 0;
+
+    if ( i == 1 )
+        return 1;
+
+    auto x = fibo(i - 1) + fibo(i - 2);
+    X(); // prevent compiler from removing tail calls
+    return x;
+}
+
+
+TEST_CASE("stack-size-check") {
+    hilti::rt::init();
+
+    auto f = [&](hilti::rt::resumable::Handle* r) {
+        fibo(1000000000); // stack won't suffice
+        return hilti::rt::Nothing();
+    };
+
+    CHECK_THROWS_AS(hilti::rt::fiber::execute(f), hilti::rt::StackSizeExceeded);
 }
 
 TEST_SUITE_END();

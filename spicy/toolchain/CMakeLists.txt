@@ -83,7 +83,7 @@ target_compile_options(spicy-objects PRIVATE "-Wall")
 target_compile_options(spicy-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(spicy-objects PUBLIC $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
 target_link_hilti(spicy-objects PUBLIC)
-target_link_libraries(spicy-objects  PRIVATE Threads::Threads ${CMAKE_DL_LIBS})
+target_link_libraries(spicy-objects  PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 target_link_options(spicy-objects    PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(spicy-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(spicy-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
@@ -95,7 +95,7 @@ set_target_properties(spicy-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 add_library(spicy)
 target_link_libraries(spicy PUBLIC spicy-objects)
 target_link_hilti(spicy PUBLIC) # doesn't seem to transfer from spicy-objects
-target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>) # doesn't transfer from hilti-objects
+target_link_libraries(spicy PUBLIC $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>) # doesn't transfer from hilti-objects
 
 ##### Configuration files
 

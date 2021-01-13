@@ -21,7 +21,7 @@ void hilti::rt::init() {
         return;
 
     if ( ! setlocale(LC_CTYPE, "") )
-        fatalError("cannot set locale");
+        warning("cannot set locale");
 
     if ( ! globalState()->configuration )
         globalState()->configuration = std::make_unique<hilti::rt::Configuration>();
@@ -73,7 +73,7 @@ void hilti::rt::done() {
     context::detail::set(nullptr);
 }
 
-bool hilti::rt::isInitialized() { return globalState()->runtime_is_initialized; }
+bool hilti::rt::isInitialized() { return __global_state && __global_state->runtime_is_initialized; }
 
 void hilti::rt::detail::registerModule(HiltiModule module) {
     HILTI_RT_DEBUG("libhilti", fmt("registering module %s", module.name));

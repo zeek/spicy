@@ -58,9 +58,6 @@ struct GlobalState {
     /** The context for the main thread. */
     std::unique_ptr<hilti::rt::Context> master_context;
 
-    /** Cache of previously used fibers available for reuse. */
-    std::vector<std::unique_ptr<Fiber>> fiber_cache;
-
     /**
      * List of HILTI modules registered with the runtime. This is filled through `registerModule()`, which in turn gets
      * called through a module's global constructors at initialization time.

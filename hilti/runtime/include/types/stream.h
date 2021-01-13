@@ -786,7 +786,7 @@ private:
         // here. This should be inconsequential to users as this function must
         // not be called if the data is invalid.
         if ( ! _chunk )
-            fatalError("dereference of invalid iterator");
+            internalError("dereference of invalid iterator");
 
         auto* byte = _chunk->data(_offset);
 

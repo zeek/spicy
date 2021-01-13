@@ -8,8 +8,8 @@
 #include <iostream>
 #include <utility>
 
-#include <hilti/rt/libhilti.h>
 #include <hilti/rt/json.h>
+#include <hilti/rt/libhilti.h>
 
 #include <hilti/hilti.h>
 
@@ -642,10 +642,8 @@ Result<Nothing> Driver::run() {
         return Nothing();
 
     } catch ( const std::exception& e ) {
-        std::cerr << util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
-                               util::demangle(typeid(e).name()), e.what())
-                  << std::endl;
-        exit(1);
+        return result::Error(
+            fmt("uncaught exception of type %s: %s", util::demangle(typeid(e).name()), e.what()));
     }
 
     return {};
@@ -861,10 +859,10 @@ void Driver::printHiltiException(const hilti::rt::Exception& e) {
     std::cerr << fmt("uncaught exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
 
     if ( _driver_options.show_backtraces ) {
-        if ( auto bt = e.backtrace(); ! bt.empty() ) {
+        if ( auto bt = e.backtrace(); ! bt->empty() ) {
             std::cerr << "backtrace:\n";
 
-            for ( const auto& s : bt )
+            for ( const auto& s : *bt )
                 std::cerr << "  " << s << "\n";
         }
     }
@@ -891,9 +889,13 @@ Result<Nothing> Driver::initRuntime() {
         hookInitRuntime();
     } catch ( const hilti::rt::Exception& e ) {
         printHiltiException(e);
+        hookFinishRuntime();
+        rt::done();
         exit(1);
     } catch ( const std::runtime_error& e ) {
         std::cerr << fmt("uncaught C++ exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
+        hookFinishRuntime();
+        rt::done();
         exit(1);
     }
 
@@ -915,9 +917,11 @@ Result<Nothing> Driver::executeMain() {
             rc = (*(reinterpret_cast<main_t*>(*main)))();
         } catch ( const hilti::rt::Exception& e ) {
             printHiltiException(e);
+            finishRuntime();
             exit(1);
         } catch ( const std::runtime_error& e ) {
             std::cerr << fmt("uncaught C++ exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
+            finishRuntime();
             exit(1);
         }
     }

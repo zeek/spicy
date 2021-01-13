@@ -27,7 +27,7 @@ template<typename T>
 using Parse2Function = hilti::rt::Resumable (*)(UnitType<T>&, hilti::rt::ValueReference<hilti::rt::Stream>&,
                                                 const std::optional<hilti::rt::stream::View>&);
 
-using Parse3Function = hilti::rt::Resumable (*)(ParsedUnit&, hilti::rt::ValueReference<hilti::rt::Stream>&,
+using Parse3Function = hilti::rt::Resumable (*)(hilti::rt::ValueReference<ParsedUnit>&, hilti::rt::ValueReference<hilti::rt::Stream>&,
                                                 const std::optional<hilti::rt::stream::View>&);
 
 namespace sink::detail {

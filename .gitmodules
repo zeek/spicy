@@ -34,3 +34,6 @@
 [submodule "3rdparty/fiber"]
 	path = 3rdparty/fiber
 	url = https://github.com/simonfxr/fiber.git
+[submodule "3rdparty/benchmark"]
+	path = 3rdparty/benchmark
+	url = https://github.com/google/benchmark.git

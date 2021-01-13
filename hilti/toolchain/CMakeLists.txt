@@ -118,7 +118,7 @@ target_compile_options(hilti-objects PRIVATE "-Wall")
 target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-objects PUBLIC $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
 target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
-target_link_libraries(hilti-objects PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
+target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 target_link_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
@@ -129,7 +129,16 @@ set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
 add_library(hilti)
 target_link_libraries(hilti PUBLIC hilti-objects)
-target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
+
+# TODO: The generator expression doesn't work for some reason, even though it
+# does elswhere. Not sure why?
+#
+# target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
+if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_link_libraries(hilti PUBLIC hilti-rt-debug-objects)
+else ()
+    target_link_libraries(hilti PUBLIC hilti-rt-objects)
+endif ()
 
 ##### Configuration files
 
@@ -148,9 +157,8 @@ set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "-fPIC -std=c++17 -g ${add
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "-fPIC -std=c++17 -g -O3 -DNDEBUG ${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # Libraries
-string(REPLACE "-l" "" threadslib "${CMAKE_THREAD_LIBS_INIT}")
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug ${threadslib}")
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE    "hilti-rt ${threadslib}")
+set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug")
+set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE    "hilti-rt")
 
 # Library directories
 set_config_val(HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG   "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")

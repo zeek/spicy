@@ -15,7 +15,12 @@ namespace hilti::rt {
 /** Reports an internal error and aborts execution. */
 // void internalError(const std::string& msg) __attribute__((noreturn)); // Declared in util.h
 
-/** Reports a fatal error and aborts execution. */
+/**
+ * Reports a fatal error and immediately aborts execution. This skips all
+ * cleanup and should be used only for catastrophic library issues; not for
+ * anything that can happen during "normal" operation (which is almost
+ * everything).
+ */
 void fatalError(const std::string& msg) __attribute__((noreturn));
 
 /** Reports a warning. */

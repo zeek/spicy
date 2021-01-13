@@ -297,7 +297,8 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                 cg->unit()->add(t); // XXX
 
             // Tell linker about our implementation.
-            auto hook_join = cxx::linker::Join{.id = id_hook_stub, .callee = d, .aux_types = aux_types, .priority = priority };
+            auto hook_join =
+                cxx::linker::Join{.id = id_hook_stub, .callee = d, .aux_types = aux_types, .priority = priority};
 
             cg->unit()->add(d);
             cg->unit()->add(hook_join);
@@ -347,6 +348,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
         auto body = cg->compile(*f.body());
 
+        // Add runtime stack size check at beginning of function.
+        body.addStatementAtFront("hilti::rt::detail::checkStack()");
+
         if ( n.linkage() == declaration::Linkage::Struct && ! f.isStatic() ) {
             if ( ! is_hook ) {
                 // Need a LHS value for __self.
@@ -380,27 +384,46 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
         if ( f.callingConvention() == function::CallingConvention::Extern ) {
             // Create a separate function that we expose to C++. Inside that
-            // wrapper we execute the actual function inside a lambda
-            // function prepared to suspend.
+            // wrapper we execute the actual function inside a lambda function
+            // prepared to suspend. We move also of the functions arguments to
+            // the heap, too, because the caller's stack may not be accessible
+            // inside the callee due to our fiber runtime swapping stacks out.
             auto body = cxx::Block();
             auto cb = cxx::Block();
-            auto args =
-                util::join(util::transform(cxx_func.declaration.args, [](auto& x) { return fmt("%s", x.id); }), ", ");
+
+            auto outer_args =
+                util::join(util::transform(cxx_func.declaration.args,
+                                           [](auto& x) { return fmt("::hilti::rt::resumable::detail::copyArg(%s)", x.id); }),
+
+                           ", ");
+
+            body.addLocal({.id = "args", .type = "auto", .init = fmt("std::make_tuple(%s)", outer_args)});
+
+            // Move the arguments to the heap. Would be nice to use a
+            // unique_ptr here and then move that into the lambda. However,
+            // turns out our `Lambda` requires a callback that can be copied,
+            // which the unique_ptr would prevent.
+            body.addLocal(
+                {.id = "args_on_heap", .type = "auto", .init = "std::make_shared<decltype(args)>(std::move(args))"});
+
+            int idx = 0;
+            auto inner_args =
+                util::join(util::transform(cxx_func.declaration.args,
+                                           [&idx](auto& x) { return fmt("std::get<%d>(*args_on_heap)", idx++); }),
+                           ", ");
 
             // If the function returns void synthesize a `Nothing` return value here.
             if ( ft.result().type() != type::Void() )
-                cb.addReturn(fmt("%s(%s)", d.id, args));
+                cb.addReturn(fmt("%s(%s)", d.id, inner_args));
             else {
-                cb.addStatement(fmt("%s(%s)", d.id, args));
+                cb.addStatement(fmt("%s(%s)", d.id, inner_args));
                 cb.addReturn("hilti::rt::Nothing()");
             }
 
-            body.addLambda("cb", "[&](hilti::rt::resumable::Handle* r) -> std::any", std::move(cb));
-
-            body.addLocal(
-                cxx::declaration::Local{.id = "r", .type = "hilti::rt::Resumable", .init = "{std::move(cb)}"});
-            body.addStatement("r.run()");
-            body.addReturn("r");
+            body.addLambda("cb", "[args_on_heap](hilti::rt::resumable::Handle* r) -> std::any", std::move(cb));
+            body.addLocal({.id = "r", .type = "auto", .init = "std::make_unique<hilti::rt::Resumable>(std::move(cb))"});
+            body.addStatement("r->run()");
+            body.addReturn("std::move(*r)");
 
             auto extern_d = d;
             extern_d.id = cxx::ID(

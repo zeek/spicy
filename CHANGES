@@ -1,4 +1,53 @@
 
+0.4.0-1227 | 2021-01-13 07:41:35 +0000
+
+  * Re-implement the runtime's fiber (co-routine) code. (Benjamin
+    Bannier, Robin Sommer; Corelight).
+
+    This should be mostly transparent to users, but internally the
+    main pieces are:
+
+    - GH-561: Switch from libtask to new 3rd-party fiber library
+      (https://github.com/simonfxr/fiber.git).
+
+    - GH-561: Support "shared stack" mode for fibers where the runtime
+      only allocates a single stack that's used by all fibers, vs.
+      individual per-fiber stacks. This comes with a slight
+      performance penalty for context switching, but substantially
+      improves memory usage (and, in turn, performance with lots of
+      concurrent fibers). The shared stack is used by default now.
+      There's also new benchmark hilti-rt-fiber-benchmark to profile
+      performance.
+
+    - GH-460: Add runtime checks for risk of stack overflow. When the
+      HILTI codegen creates a function, it now always inserts a stack
+      check at the beginning that ensures that a minimal amount of
+      stack space remains available. If it is not, we abort with a
+      runtime exception. This gives us well-defined behavior if call
+      stacks go too deep. The minimum amount of stack space is
+      configurable through a global option.
+
+    Along with this comes large refactor of the runtime's fiber code.
+
+  * Fix Linux' --ldflags for pthread. (Robin Sommer, Corelight)
+
+  * Make hilti::rt::isInitialized() save to be used when no global
+    state is available. (Robin Sommer, Corelight)
+
+  * When running the CI container through the Makefile, use local
+    user's UID/GID. (Robin Sommer, Corelight)
+
+  * Adding missing call to rt::done() to default main(). (Robin
+    Sommer, Corelight)
+
+  * Fix CMake logic for hilti-rt. (Robin Sommer, Corelight)
+
+  * Enable leak checking by default in ASAN builds. ASAN itself
+    enables it only on Linux by default. (Robin Sommer, Corelight)
+
+  * Let autogen-version find VERSION independent of current directory.
+    (Robin Sommer, Corelight)
+
 0.4.0-1201 | 2021-01-11 21:03:10 +0100
 
   * Activate building Spicy in CentOS 7 Docker image. (Benjamin Bannier,

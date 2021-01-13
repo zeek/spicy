@@ -25,7 +25,7 @@ set(SOURCES
 foreach ( lib spicy-rt spicy-rt-debug )
     add_library(${lib}-objects OBJECT ${SOURCES})
     target_compile_options(${lib}-objects PRIVATE "-fPIC")
-    target_link_libraries(${lib}-objects PRIVATE Threads::Threads ${CMAKE_DL_LIBS})
+    target_link_libraries(${lib}-objects PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
     target_link_libraries(${lib}-objects PUBLIC ZLIB::ZLIB)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
@@ -37,7 +37,7 @@ endforeach ()
 
 # Build spicy-rt with release flags.
 string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
-target_compile_options(spicy-rt-debug-objects     PRIVATE ${cxx_flags_release})
+target_compile_options(spicy-rt-objects           PRIVATE ${cxx_flags_release})
 target_compile_options(spicy-rt-objects           PRIVATE "-g;-O3;-DNDEBUG;-Wall")
 target_compile_definitions(spicy-rt-objects       PRIVATE "HILTI_RT_BUILD_TYPE_RELEASE")
 target_link_libraries(spicy-rt-objects            PUBLIC hilti-rt-objects)

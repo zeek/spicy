@@ -4,6 +4,7 @@
 
 #include <cxxabi.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,14 +14,22 @@ namespace hilti::rt {
 class Backtrace {
 public:
     Backtrace();
+    Backtrace(const Backtrace& other) = default;
+    Backtrace(Backtrace&& other) = default;
+    ~Backtrace() = default;
 
-    std::vector<std::string> backtrace() const;
+    // Returns pointer to save stack space.
+    std::unique_ptr<std::vector<std::string>> backtrace() const;
 
     friend bool operator==(const Backtrace& a, const Backtrace& b);
     friend bool operator!=(const Backtrace& a, const Backtrace& b) { return ! (a == b); }
 
+    Backtrace& operator=(const Backtrace& other) = default;
+    Backtrace& operator=(Backtrace&& other) = default;
+
 private:
-    void* _callstack[64];
+    using Callstack = std::array<void*, 32>;
+    std::shared_ptr<Callstack> _callstack = nullptr;
     int _frames = -1;
 };
 
