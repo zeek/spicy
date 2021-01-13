@@ -1,5 +1,6 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
+#include <array>
 #include <fstream>
 #include <utility>
 
@@ -15,6 +16,30 @@
 #include <reproc++/reproc.hpp>
 
 using namespace hilti;
+
+void hilti::JIT::Job::poll() {
+    if ( ! process )
+        return;
+
+    std::array<uint8_t, 4096> buffer;
+    for ( ;; ) {
+        {
+            auto [size, ec] = process->read(reproc::stream::in, buffer.begin(), buffer.size());
+            if ( ec || size == 0 ) {
+                break;
+            }
+            stdout_.append(reinterpret_cast<const char*>(buffer.begin()), size);
+        }
+
+        {
+            auto [size, ec] = process->read(reproc::stream::err, buffer.begin(), buffer.size());
+            if ( ec || size == 0 ) {
+                break;
+            }
+            stderr_.append(reinterpret_cast<const char*>(buffer.begin()), size);
+        }
+    }
+}
 
 namespace hilti::logging::debug {
 inline const DebugStream Driver("driver");
@@ -132,7 +157,7 @@ void JIT::_finish() {
     _objects.clear();
 
     for ( auto&& [id, job] : _jobs ) {
-        auto [status, ec] = job->stop(reproc::stop_actions{
+        auto [status, ec] = job.process->stop(reproc::stop_actions{
             .first = {.action = reproc::stop::terminate, .timeout = reproc::milliseconds(250)},
             .second = {.action = reproc::stop::kill, .timeout = reproc::milliseconds::max()},
         });
@@ -315,14 +340,14 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] %s", jid, util::join(cmdline, " ")));
 
     Job& job = _jobs[jid];
-    job = std::make_unique<reproc::process>();
+    job.process = std::make_unique<reproc::process>();
 
     reproc::options options;
     options.working_directory = _tmpdir->path().c_str();
     options.redirect.out.type = reproc::redirect::pipe;
     options.redirect.err.type = reproc::redirect::pipe;
 
-    auto ec = job->start(cmdline, options);
+    auto ec = job.process->start(cmdline, options);
 
     if ( ec ) {
         _jobs.erase(jid);
@@ -330,7 +355,7 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
             util::fmt("process '%s %s' failed to start: %s", cmd.native(), util::join(args), ec.message()));
     }
 
-    if ( auto [pid, ec] = job->pid(); ! ec ) {
+    if ( auto [pid, ec] = job.process->pid(); ! ec ) {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] -> pid %u", jid, pid));
     }
     else {
@@ -347,9 +372,11 @@ Result<Nothing> JIT::_waitForJob(JobID id) {
         return result::Error(util::fmt("unknown JIT job %u", id));
 
     // Now move it out of the map.
-    const auto job = std::move(_jobs[id]);
+    auto job = std::move(_jobs[id]);
 
-    auto [status, ec] = job->wait(reproc::milliseconds::max());
+    job.poll();
+
+    auto [status, ec] = job.process->wait(reproc::milliseconds::max());
 
     if ( ec ) {
         _jobs.erase(id);
@@ -359,21 +386,19 @@ Result<Nothing> JIT::_waitForJob(JobID id) {
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, status));
 
     // Collect the process output.
-    std::string stdout_;
-    std::string stderr_;
-    reproc::sink::string sink_stdout(stdout_);
-    reproc::sink::string sink_stderr(stderr_);
-    reproc::drain(*job.get(), sink_stdout, sink_stderr);
+    reproc::sink::string sink_stdout(const_cast<std::string&>(job.stdout_));
+    reproc::sink::string sink_stderr(const_cast<std::string&>((job.stderr_)));
+    reproc::drain(*job.process.get(), sink_stdout, sink_stderr);
 
-    if ( ! stdout_.empty() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, util::trim(stdout_)));
+    if ( ! job.stdout_.empty() )
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, util::trim(job.stdout_)));
 
-    if ( ! stderr_.empty() )
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, util::trim(stderr_)));
+    if ( ! job.stderr_.empty() )
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, util::trim(job.stderr_)));
 
     if ( status != 0 ) {
         std::string stderr__ =
-            stderr_.empty() ? "(no error output)" : std::string("JIT output: \n") + util::trim(stderr_);
+            job.stderr_.empty() ? "(no error output)" : std::string("JIT output: \n") + util::trim(job.stderr_);
         _jobs.erase(id);
         return result::Error("JIT compilation failed", stderr__);
     }

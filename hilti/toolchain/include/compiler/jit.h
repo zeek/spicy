@@ -197,7 +197,13 @@ private:
 
     std::optional<hilti::rt::TemporaryDirectory> _tmpdir;
 
-    using Job = std::unique_ptr<reproc::process>;
+    struct Job {
+        std::unique_ptr<reproc::process> process;
+        std::string stdout_;
+        std::string stderr_;
+
+        void poll();
+    };
 
     JobID _job_counter = 0;
     std::map<JobID, Job> _jobs;
