@@ -89,28 +89,68 @@ function(require_version name found have need require)
     endif()
 endfunction ()
 
-# Link a target against libhilti. This picks the right version of
+# Internal helper to link in all object libraries that libhilti needs.
+function(hilti_link_object_libraries lib)
+    target_link_libraries(${lib} "${ARGN}" hilti-objects)
+
+    if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_link_libraries(${lib} "${ARGN}" hilti-rt-debug-objects)
+    else ()
+        target_link_libraries(${lib} "${ARGN}" hilti-rt-objects)
+    endif ()
+
+    set(_private "")
+    if ( NOT "${ARGN}" STREQUAL "" )
+        set(_private "PRIVATE")
+    endif()
+
+    target_link_libraries(${lib} ${_private} reproc++)
+    target_link_libraries(${lib} ${_private} jrx-objects)
+    target_link_libraries(${lib} ${_private} fiber::fiber)
+endfunction()
+
+# Link a library against libhilti. This picks the right version of
 # libhilti (shared or object) based on the build configuration.
-function(target_link_hilti lib)
+function(hilti_link_libraries lib)
     if ( BUILD_SHARED_LIBS )
         target_link_libraries(${lib} "${ARGN}" hilti)
     else ()
-        target_link_libraries(${lib} "${ARGN}" hilti-objects)
-        target_link_libraries(${lib} "${ARGN}" $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
-        set_property(TARGET ${lib} PROPERTY ENABLE_EXPORTS true)
+        hilti_link_object_libraries(${lib} "${ARGN}")
     endif ()
 endfunction ()
 
-# Link a target against libspicy. This picks the right version of
+# Link an executable against libhilti. This picks the right version of
+# libhilti (shared or object) based on the build configuration.
+function(hilti_link_executable exec)
+    hilti_link_libraries(${exec} "${ARGN}")
+    set_property(TARGET ${exec} PROPERTY ENABLE_EXPORTS true)
+endfunction ()
+
+# Internal helper to link in all object libraries that libspicy needs.
+function(spicy_link_object_libraries lib)
+    target_link_libraries(${lib} "${ARGN}" spicy-objects)
+
+    if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_link_libraries(${lib} "${ARGN}" spicy-rt-debug-objects)
+    else ()
+        target_link_libraries(${lib} "${ARGN}" spicy-rt-objects)
+    endif ()
+endfunction()
+
+# Link a library against libspicy. This picks the right version of
 # libspicy (shared or object) based on the build configuration.
-function(target_link_spicy lib)
+function(spicy_link_libraries lib)
     if ( BUILD_SHARED_LIBS )
         target_link_libraries(${lib} "${ARGN}" spicy)
     else ()
-        target_link_libraries(${lib} "${ARGN}" spicy-objects)
-        target_link_libraries(${lib} "${ARGN}" $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>) # doesn't transfer from spicy-objects
-        set_property(TARGET ${lib} PROPERTY ENABLE_EXPORTS true)
+        spicy_link_object_libraries(${lib} "${ARGN}")
     endif ()
+endfunction ()
 
-    target_link_hilti(${lib} "${ARGN}")
+# Link an executable against libspicy. This picks the right version of
+# libspicy (shared or object) based on the build configuration.
+function(spicy_link_executable exec)
+    hilti_link_libraries(${exec} "${ARGN}")
+    spicy_link_libraries(${exec} "${ARGN}")
+    set_property(TARGET ${exec} PROPERTY ENABLE_EXPORTS true)
 endfunction ()
