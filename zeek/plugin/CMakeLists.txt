@@ -56,8 +56,8 @@ target_include_directories(${_plugin_lib} BEFORE PRIVATE include)
 target_link_libraries(${_plugin_lib} zeek-compiler)
 
 if ( HAVE_TOOLCHAIN )
-    target_link_hilti(${_plugin_lib})
-    target_link_spicy(${_plugin_lib})
+    hilti_link_libraries(${_plugin_lib})
+    spicy_link_libraries(${_plugin_lib})
 else ()
     # Just need the runtimes.
     target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)

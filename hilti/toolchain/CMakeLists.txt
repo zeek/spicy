@@ -110,19 +110,6 @@ set_property(TARGET hilti-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_dependencies(hilti-objects version)
 target_compile_options(hilti-objects PRIVATE "-Wall")
 target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
-target_link_libraries(hilti-objects PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
-
-# The following should instead just be:
-#
-#    target_link_libraries(hilti-objects PRIVATE reproc++)
-#
-# but requires the same work-around as jrx-objects in hilti-rt (see there).
-add_dependencies(hilti-objects reproc++)
-target_include_directories(hilti-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
-target_link_libraries(hilti-objects PRIVATE $<TARGET_OBJECTS:reproc++> $<TARGET_OBJECTS:reproc>)
-
-target_link_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
 
@@ -130,18 +117,14 @@ target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE
 # include path on some systems. (Seen on Ubuntu 19.10).
 set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
-add_library(hilti)
-target_link_libraries(hilti PUBLIC hilti-objects)
+target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+target_link_libraries(hilti-objects PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
 
-# TODO: The generator expression doesn't work for some reason, even though it
-# does elswhere. Not sure why?
-#
-# target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
-if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_libraries(hilti PUBLIC hilti-rt-debug-objects)
-else ()
-    target_link_libraries(hilti PUBLIC hilti-rt-objects)
-endif ()
+add_dependencies(hilti-objects reproc++)
+target_include_directories(hilti-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
+
+add_library(hilti)
+hilti_link_object_libraries(hilti PUBLIC)
 
 ##### Configuration files
 
@@ -160,8 +143,9 @@ set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "${addl_cxx_flags} ${EXTRA
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # Libraries
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug")
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE    "hilti-rt")
+string(REPLACE "-l" "" threadslib "${CMAKE_THREAD_LIBS_INIT}")
+set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug ${threadslib}")
+set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE    "hilti-rt ${threadslib}")
 
 # Library directories
 set_config_val(HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG   "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
@@ -178,11 +162,11 @@ configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
 
 add_executable(hilti-config bin/hilti-config.cc)
 target_compile_options(hilti-config PRIVATE "-Wall")
-target_link_hilti(hilti-config PRIVATE)
+hilti_link_executable(hilti-config PRIVATE)
 
 add_executable(hiltic bin/hiltic.cc)
 target_compile_options(hiltic PRIVATE "-Wall")
-target_link_hilti(hiltic PRIVATE)
+hilti_link_executable(hiltic PRIVATE)
 
 ##### Installation
 
@@ -200,7 +184,7 @@ add_executable(hilti-toolchain-tests
                tests/main.cc
                tests/visitor.cc
                tests/util.cc)
-target_link_hilti(hilti-toolchain-tests PRIVATE)
+hilti_link_executable(hilti-toolchain-tests PRIVATE)
 target_link_libraries(hilti-toolchain-tests PRIVATE doctest)
 target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")
 add_test(NAME hilti-toolchain-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-toolchain-tests)
