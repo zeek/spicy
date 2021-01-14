@@ -120,6 +120,7 @@ target_link_libraries(hilti-objects PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
 # but requires the same work-around as jrx-objects in hilti-rt (see there).
 add_dependencies(hilti-objects reproc++)
 target_include_directories(hilti-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
+target_link_libraries(hilti-objects PRIVATE $<TARGET_OBJECTS:reproc++> $<TARGET_OBJECTS:reproc>)
 
 target_link_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -131,7 +132,6 @@ set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
 add_library(hilti)
 target_link_libraries(hilti PUBLIC hilti-objects)
-target_link_libraries(hilti PRIVATE $<TARGET_OBJECTS:reproc++> $<TARGET_OBJECTS:reproc>)
 
 # TODO: The generator expression doesn't work for some reason, even though it
 # does elswhere. Not sure why?
