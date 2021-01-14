@@ -89,7 +89,7 @@ target_include_directories(spicy-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE
 set_target_properties(spicy-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
 target_link_libraries(spicy-objects PUBLIC $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
-target_link_libraries(spicy-objects PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
+target_link_libraries(spicy-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 target_link_libraries(spicy-objects PRIVATE hilti)
 
 add_library(spicy)
