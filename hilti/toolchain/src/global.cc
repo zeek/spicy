@@ -21,9 +21,12 @@ void hilti::render(logging::DebugStream stream, const Node& node, bool include_s
 }
 
 #ifdef HILTI_HAVE_SANITIZER
-// TODO(robin): Doesn't work on Linux to have this in shared library. The weak symbol in static ASAN runtime
-// wins during linking.
+// This following injects ASAN options. Note that this works on macOS, but
+// *not* work on Linux because there the ASAN runtime's weak version of the
+// same symbol seems to be winning during linking. However, the only option we
+// set here is "detect_leaks", which on Linux is already on by default (but not
+// on macOS).
 extern "C" {
-const char* __asan_default_options() { return "detect_odr_violation=0:detect_leaks=1"; }
+const char* __asan_default_options() { return "detect_leaks=1"; }
 }
 #endif
