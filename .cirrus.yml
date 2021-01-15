@@ -8,7 +8,7 @@ clang9_zeek_ubuntu_debug_task:
       - ZEEK_LTS:
       - ZEEK_VERSION: 3.2.2-0
     cpu: 4
-    memory: 8G
+    memory: 12G
 
   timeout_in: 120m
 
