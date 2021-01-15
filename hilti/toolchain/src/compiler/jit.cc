@@ -17,27 +17,20 @@
 
 using namespace hilti;
 
-void hilti::JIT::Job::collect_outputs() {
+void hilti::JIT::Job::collectOutputs(int events) {
     if ( ! process )
         return;
 
-    std::array<uint8_t, 4096> buffer;
-    for ( ;; ) {
-        {
-            auto [size, ec] = process->read(reproc::stream::out, buffer.begin(), buffer.size());
-            if ( ec || size == 0 )
-                break;
-
-            stdout_.append(reinterpret_cast<const char*>(buffer.begin()), size);
-        }
-
-        {
-            auto [size, ec] = process->read(reproc::stream::err, buffer.begin(), buffer.size());
-            if ( ec || size == 0 )
-                break;
-
+    if ( events & reproc::event::err ) {
+        std::array<uint8_t, 4096> buffer;
+        if ( auto [size, ec] = process->read(reproc::stream::err, buffer.begin(), buffer.size()); size && ! ec )
             stderr_.append(reinterpret_cast<const char*>(buffer.begin()), size);
-        }
+    }
+
+    if ( events & reproc::event::out ) {
+        std::array<uint8_t, 4096> buffer;
+        if ( auto [size, ec] = process->read(reproc::stream::out, buffer.begin(), buffer.size()); size && ! ec )
+            stdout_.append(reinterpret_cast<const char*>(buffer.begin()), size);
     }
 }
 
@@ -158,14 +151,14 @@ void JIT::_finish() {
 
     for ( auto&& [id, job] : _jobs ) {
         auto [status, ec] = job.process->stop(reproc::stop_actions{
-            .first = {.action = reproc::stop::terminate, .timeout = reproc::milliseconds(250)},
+            .first = {.action = reproc::stop::terminate, .timeout = reproc::milliseconds(1000)},
             .second = {.action = reproc::stop::kill, .timeout = reproc::milliseconds::max()},
         });
 
         if ( ec )
             HILTI_DEBUG(logging::debug::Jit, util::fmt("failed to stop job: %s", ec.message()));
 
-        // Since we terminated the process forcibly which if the process was still running probably
+        // Since we terminated the process forcibly, which if the process was still running probably
         // triggered a non-zero exist status, we ignore the status returned from `stop`.
     }
 
@@ -344,6 +337,7 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
 
     reproc::options options;
     options.working_directory = _tmpdir->path().c_str();
+    options.redirect.in.type = reproc::redirect::discard;
     options.redirect.out.type = reproc::redirect::default_;
     options.redirect.err.type = reproc::redirect::default_;
 
@@ -371,13 +365,10 @@ Result<Nothing> JIT::_waitForJobs() {
     if ( _jobs.empty() )
         return Nothing();
 
-    std::vector<reproc::event::source> sources;
-    sources.reserve(_jobs.size());
-
-    std::vector<JobID> ids;
-    ids.reserve(_jobs.size());
-
     while ( ! _jobs.empty() ) {
+        std::vector<reproc::event::source> sources;
+        std::vector<JobID> ids;
+
         for ( auto&& [id, job] : _jobs ) {
             sources.push_back(
                 reproc::event::source{.process = *job.process,
@@ -387,7 +378,7 @@ Result<Nothing> JIT::_waitForJobs() {
             ids.push_back(id);
         }
 
-        auto ec = reproc::poll(&sources[0], sources.size());
+        auto ec = reproc::poll(sources.data(), sources.size());
 
         if ( ec )
             return result::Error(util::fmt("could not wait for processes: %s", ec.message()));
@@ -400,12 +391,11 @@ Result<Nothing> JIT::_waitForJobs() {
             if ( ! source.events )
                 continue;
 
-            if ( source.events & reproc::event::out || source.events & reproc::event::err )
-                job.collect_outputs();
+            job.collectOutputs(source.events);
 
             if ( source.events & reproc::event::exit ) {
                 // Collect the exist status.
-                auto [status, ec] = job.process->wait(reproc::milliseconds::max());
+                auto [status, ec] = job.process->wait(reproc::milliseconds(0));
 
                 if ( ec ) {
                     _jobs.erase(id);
@@ -431,9 +421,6 @@ Result<Nothing> JIT::_waitForJobs() {
                 _jobs.erase(id);
             }
         }
-
-        sources.clear();
-        ids.clear();
     }
 
     return Nothing();

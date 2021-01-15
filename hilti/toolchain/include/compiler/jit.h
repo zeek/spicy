@@ -201,7 +201,7 @@ private:
         std::string stdout_;
         std::string stderr_;
 
-        void collect_outputs();
+        void collectOutputs(int events);
     };
 
     JobID _job_counter = 0;
