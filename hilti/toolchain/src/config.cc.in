@@ -140,8 +140,10 @@ void Configuration::init(bool use_build_directory) {
     hlto_cxx_flags_debug = runtime_cxx_flags_debug;
     hlto_cxx_flags_release = runtime_cxx_flags_release;
 
-    hlto_ld_flags_debug = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup"});
-    hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup"});
+    hlto_ld_flags_debug = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup",
+                                  prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag)});
+    hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup",
+                                  prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag)});
 
 #ifdef __APPLE_
     // This avoids duplicate symbols when the HLTO is loaded, seems default

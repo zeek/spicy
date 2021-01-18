@@ -128,16 +128,18 @@ hilti_link_object_libraries(hilti PUBLIC)
 
 ##### Configuration files
 
+# Additional flags
+if ( APPLE )
+    set(addl_cxx_flags "-isysroot ${CMAKE_OSX_SYSROOT}")
+    set(addl_ld_flags "-isysroot ${CMAKE_OSX_SYSROOT}")
+endif ()
+
 # HILTI library directories
 set_config_val(HILTI_CONFIG_LIBRARY_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/hilti !BUILD!${CMAKE_SOURCE_DIR}/hilti/lib")
 
 # Include directories
 set_config_val(HILTI_CONFIG_RUNTIME_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/hilti/runtime/include !BUILD!${CMAKE_BINARY_DIR}/include")
 
-# CXX flags
-if ( APPLE )
-    set(addl_cxx_flags "${cxx_flags} -isysroot ${CMAKE_OSX_SYSROOT}")
-endif ()
 
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
@@ -151,8 +153,8 @@ set_config_val(HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG   "!BUILD!${CMAKE_LIBRARY
 set_config_val(HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
 
 # LD flags
-set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG   "${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
-set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE "${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
+set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG   "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
+set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
 
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
 configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
