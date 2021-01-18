@@ -20,15 +20,11 @@ RUN yum install -y libpcap-devel openssl-devel zlib-devel \
     https://download.zeek.org/binary-packages/Fedora_32/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
     https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm \
 # Install Spicy build dependencies
- && yum install -y ccache git ninja-build cmake clang flex bison llvm-devel findutils diffutils python3-pip which \
+ && yum install -y ccache git ninja-build cmake flex bison gcc-c++ findutils diffutils python3-pip which \
  && pip3 install "btest>=0.66"
-
-ENV CXX clang++
-ENV CC clang
-ENV ASM clang
 
 WORKDIR /root
 
 # Install Spicy.
 ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build)
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)

@@ -12,6 +12,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV CCACHE_DIR=/var/spool/ccache
 ENV CCACHE_COMPRESS=1
 
+# We use clang to build as Spicy requires a C++17-capable compiler. Xenial
+# ships with gcc-6.0.0, but we require at least gcc-9 which is only available
+# in testing here. Use an LLVM stack instead.
 ENV CXX clang++-11
 ENV CC clang-11
 ENV ASM clang-11

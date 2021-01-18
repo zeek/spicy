@@ -14,7 +14,7 @@ RUN apk update
 RUN apk add ccache cmake curl g++ gcc gdb git make ninja python3 vim
 
 # Install Spicy dependencies.
-RUN apk add bash bison clang clang-dev clang-libs clang-static flex flex-dev flex-libs libucontext-dev llvm10-dev llvm10-static py3-pip py3-sphinx py3-sphinx_rtd_theme doxygen
+RUN apk add bash bison flex flex-dev flex-libs libucontext-dev py3-pip py3-sphinx py3-sphinx_rtd_theme doxygen
 RUN pip3 install "btest>=0.66"
 
 # Install Zeek dependencies.
@@ -29,4 +29,4 @@ WORKDIR /root
 
 # Install Spicy.
 ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && LDFLAGS="-lucontext" ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build)
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && LDFLAGS="-lucontext" ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)

@@ -13,7 +13,9 @@ ENV CCACHE_COMPRESS 1
 ENV CMAKE_DIR "/opt/cmake"
 ENV CMAKE_VERSION "3.19.1"
 
-# using clang instead of gcc because Spicy depends on it
+# We use clang to build as Spicy requires a C++17-capable compiler. Buster
+# ships with gcc-8.3.0, but we require at least gcc-9 which is only available
+# in testing here. Use an LLVM stack instead.
 ENV LLVM_VERSION "11"
 ENV CC "clang-${LLVM_VERSION}"
 ENV CXX "clang++-${LLVM_VERSION}"

@@ -11,10 +11,11 @@ ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy/"
 RUN yum install -y epel-release yum-utils
 RUN yum update -y
 
-# Install and activate devtoolsset-9.
+# Install and activate devtoolset-9.
 RUN yum install -y centos-release-scl && yum-config-manager --enable rhel-server-rhscl-7-rpms && yum install -y devtoolset-9
 SHELL [ "/usr/bin/scl", "enable", "devtoolset-9"]
 RUN echo ". scl_source enable devtoolset-9" >> /etc/profile
+ENV PATH="/opt/rh/devtoolset-9/root/usr/bin:${PATH}"
 
 # Install development tools.
 RUN yum install -y ccache git make ninja-build python3 python3-pip vim doxygen diffutils m4
@@ -23,18 +24,6 @@ RUN yum install -y ccache git make ninja-build python3 python3-pip vim doxygen d
 WORKDIR /usr/local/cmake
 RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
 ENV PATH="/usr/local/cmake/bin:${PATH}"
-
-# Need to compile Clang, there don't seem to be packages out there for v11.
-RUN mkdir -p /opt/clang11/src && \
-    cd /opt/clang11/src && \
-    git clone --branch llvmorg-11.0.0 --single-branch --recursive --depth=1 https://github.com/llvm/llvm-project.git && \
-    cd llvm-project && \
-    mkdir build && \
-    cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/opt/rh/devtoolset-9/root/usr -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DLLVM_TARGETS_TO_BUILD=host -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON -G Ninja ../llvm && \
-    ninja install && \
-    cd ../../.. && \
-    rm -rf /opt/clang11
 
 # Install Spicy dependencies.
 RUN yum install -y python3-sphinx
@@ -60,4 +49,4 @@ WORKDIR /root
 
 # Install Spicy.
 ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=/opt/rh/devtoolset-9/root/usr/bin/clang++ && ninja -C build install && rm -rf build)
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)
