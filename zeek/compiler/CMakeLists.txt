@@ -17,7 +17,7 @@ endif ()
 add_executable(spicyz bin/spicyz.cc)
 target_compile_options(spicyz PRIVATE "-Wall")
 target_link_libraries(spicyz PRIVATE zeek-compiler)
-target_link_spicy(spicyz PRIVATE)
+spicy_link_executable(spicyz PRIVATE)
 target_include_directories(spicyz BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../plugin)
 
 install(TARGETS spicyz RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

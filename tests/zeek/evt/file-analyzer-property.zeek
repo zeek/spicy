@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: have-zeek-plugin-jit
+# @TEST-REQUIRES: have-zeek-plugin
 #
 # @TEST-EXEC: ${ZEEK} -r ${TRACES}/http-post.trace text.spicy ./text.evt %INPUT >output
 # @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff output

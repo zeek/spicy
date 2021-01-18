@@ -40,8 +40,8 @@ code that exposes an API to host applications for instantiating
 parsers, feeding them input, and retrieving their results. At runtime,
 parsing proceeds fully incrementally—and potentially highly
 concurrently—on input streams of arbitrary size. Compilation of Spicy
-parsers takes place either just-in-time at startup (through
-Clang/LLVM), or ahead-of-time either by creating pre-compiled shared
+parsers takes place either just-in-time at startup (through a C++
+compiler), or ahead-of-time either by creating pre-compiled shared
 libraries or simply by giving you C++ code that you can link into your
 application.
 

@@ -94,8 +94,6 @@ set(SOURCES
     src/compiler/visitors/validator.cc
     src/global.cc
 
-    $<$<BOOL:${HILTI_HAVE_JIT}>:src/compiler/clang.cc>
-
     # Already included in hilti-rt, which we pull in.
     # src/3rdparty/utf8proc/utf8proc.c
 
@@ -107,19 +105,11 @@ set(SOURCES
     ${FLEX_scanner_hilti_OUTPUTS}
     )
 
-# Getting a link error without this.
-# (lib64/libhilti.so: undefined reference to `llvm::cfg::Update<llvm::BasicBlock*>::dump() const')
-set_source_files_properties(src/compiler/clang.cc PROPERTIES COMPILE_DEFINITIONS "NDEBUG")
-
 add_library(hilti-objects OBJECT ${SOURCES})
 set_property(TARGET hilti-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_dependencies(hilti-objects version)
 target_compile_options(hilti-objects PRIVATE "-Wall")
 target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_libraries(hilti-objects PUBLIC $<$<BOOL:${HILTI_HAVE_JIT}>:clang-jit>)
-target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
-target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
-target_link_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
 
@@ -127,18 +117,14 @@ target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE
 # include path on some systems. (Seen on Ubuntu 19.10).
 set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
-add_library(hilti)
-target_link_libraries(hilti PUBLIC hilti-objects)
+target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
-# TODO: The generator expression doesn't work for some reason, even though it
-# does elswhere. Not sure why?
-#
-# target_link_libraries(hilti PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>) # doesn't transfer from hilti-objects
-if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_libraries(hilti PUBLIC hilti-rt-debug-objects)
-else ()
-    target_link_libraries(hilti PUBLIC hilti-rt-objects)
-endif ()
+add_dependencies(hilti-objects reproc++)
+target_include_directories(hilti-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
+
+add_library(hilti)
+hilti_link_object_libraries(hilti PUBLIC)
 
 ##### Configuration files
 
@@ -153,8 +139,8 @@ if ( APPLE )
     set(addl_cxx_flags "${cxx_flags} -isysroot ${CMAKE_OSX_SYSROOT}")
 endif ()
 
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "-fPIC -std=c++17 -g ${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "-fPIC -std=c++17 -g -O3 -DNDEBUG ${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # Libraries
 set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug")
@@ -175,11 +161,11 @@ configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
 
 add_executable(hilti-config bin/hilti-config.cc)
 target_compile_options(hilti-config PRIVATE "-Wall")
-target_link_hilti(hilti-config PRIVATE)
+hilti_link_executable(hilti-config PRIVATE)
 
 add_executable(hiltic bin/hiltic.cc)
 target_compile_options(hiltic PRIVATE "-Wall")
-target_link_hilti(hiltic PRIVATE)
+hilti_link_executable(hiltic PRIVATE)
 
 ##### Installation
 
@@ -193,15 +179,11 @@ install(CODE "file(REMOVE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/hilti)") # Get 
 
 ##### Tests
 
-add_executable(jit-test bin/jit-test.cc)
-target_compile_options(jit-test PRIVATE "-Wall")
-target_link_hilti(jit-test PRIVATE)
-
 add_executable(hilti-toolchain-tests
                tests/main.cc
                tests/visitor.cc
                tests/util.cc)
-target_link_hilti(hilti-toolchain-tests PRIVATE)
+hilti_link_executable(hilti-toolchain-tests PRIVATE)
 target_link_libraries(hilti-toolchain-tests PRIVATE doctest)
 target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")
 add_test(NAME hilti-toolchain-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-toolchain-tests)

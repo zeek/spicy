@@ -1,0 +1,24 @@
+# @TEST-REQUIRES: using-build-directory
+# @TEST-EXEC: chmod +x cxx-wrapper
+# @TEST-EXEC: HILTI_CXX=$(pwd)/cxx-wrapper BUILD=$($SCRIPTS/build-directory) hiltic -d -D jit -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: btest-diff wrapper.output
+# @TEST-EXEC-FAIL: HILTI_CXX=/does/not/exist hiltic -j %INPUT 2>error
+# @TEST-EXEC: btest-diff error
+#
+# @TEST-DOC: Check that environment variable HILTI_CXX is used for JIT
+
+module Foo {
+
+import hilti;
+
+hilti::print("Hello, world!");
+
+}
+
+@TEST-START-FILE cxx-wrapper
+#! /bin/sh
+echo "our wrapper ran!" >$(dirname $0)/wrapper.output
+cxx=$(cat ${BUILD}/CMakeCache.txt | grep ^CMAKE_CXX_COMPILER: | cut -d = -f 2)
+${cxx} $@ >&2
+@TEST-END-FILE

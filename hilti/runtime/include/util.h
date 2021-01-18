@@ -526,4 +526,45 @@ extern ByteOrder systemByteOrder();
  */
 std::string strftime(const std::string& format, const Time& time);
 
+// RAII helper to create a temporary directory.
+class TemporaryDirectory {
+public:
+    TemporaryDirectory() {
+        const auto tmpdir = hilti::rt::filesystem::temp_directory_path();
+        auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").native();
+        auto path = ::mkdtemp(template_.data());
+        if ( ! path )
+            throw RuntimeError("cannot create temporary directory");
+
+        _path = path;
+    }
+
+    TemporaryDirectory(const TemporaryDirectory& other) = delete;
+    TemporaryDirectory(TemporaryDirectory&& other) { _path = std::move(other._path); }
+
+    ~TemporaryDirectory() {
+        if ( ! hilti::rt::filesystem::exists(_path) )
+            return;
+
+        // Make sure we have permissions to remove the directory.
+        hilti::rt::filesystem::permissions(_path, hilti::rt::filesystem::perms::all);
+        for ( const auto& entry : hilti::rt::filesystem::recursive_directory_iterator(_path) )
+            hilti::rt::filesystem::permissions(entry, hilti::rt::filesystem::perms::all);
+
+        std::error_code ec;
+        hilti::rt::filesystem::remove_all(_path, ec); // ignore errors
+    }
+
+    const auto& path() const { return _path; }
+
+    TemporaryDirectory& operator=(const TemporaryDirectory& other) = delete;
+    TemporaryDirectory& operator=(TemporaryDirectory&& other) {
+        _path = std::move(other._path);
+        return *this;
+    }
+
+private:
+    hilti::rt::filesystem::path _path;
+};
+
 } // namespace hilti::rt

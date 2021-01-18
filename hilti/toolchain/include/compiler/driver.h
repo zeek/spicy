@@ -18,7 +18,6 @@
 #include <hilti/base/result.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/context.h>
-#include <hilti/compiler/jit.h>
 #include <hilti/compiler/unit.h>
 
 namespace hilti {
@@ -49,8 +48,7 @@ struct Options {
     bool output_linker = false;     /**< output generated HILTI linker C++ code */
     Dependencies output_dependencies = Dependencies::None; /**< output dependencies for compiled modules */
     bool execute_code = false;                             /**< compile code, and execute unless output_path is set */
-    bool disable_jit = false;           /**< whether we should forcibly disable JIT, used for testing */
-    bool show_backtraces = false;       /**< include backtraces when printing unhandled excepttions */
+    bool show_backtraces = false;       /**< include backtraces when printing unhandled exceptions */
     bool abort_on_exceptions = false;   /**< abort() instead of throwing HILTI exceptions */
     bool keep_tmps = false;             /**< do not delete any temporary files created */
     bool skip_dependencies = false;     /**< do not automatically compile dependencies during JIT */
@@ -85,8 +83,8 @@ public:
     /**
      * @param name descriptive name for the tool using the driver, which will
      * be used in usage and error messages.
-     * @param argv0 if given, the current exectuable, which will tune the
-     * path's that the global options insance returns
+     * @param argv0 if given, the current executable, which will tune the
+     * path's that the global options instance returns
      */
     explicit Driver(std::string name, const std::string_view& argv0 = "");
     virtual ~Driver();
@@ -102,10 +100,10 @@ public:
      * `hilti::Options``. See the outout of `hiltic --help` for a list.
      *
      * `setDriverOptions()` and `setCompilerOptions()` provide alternative
-     * ways to set thhe options directly.
+     * ways to set the options directly.
      *
      * @param argc,argv command line arguments to parse
-     * @return set if succesfull; otherwise the result provides an error message
+     * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> parseOptions(int argc, char** argv);
 
@@ -119,7 +117,7 @@ public:
      *
      * @param m HILTI module to schedule for compilation
      * @param path path associated with the module, if any
-     * @return set if succesfull; otherwise the result provides an error message
+     * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> addInput(hilti::Module&& m, const hilti::rt::filesystem::path& path = "");
 
@@ -133,7 +131,7 @@ public:
      * new module after it has been parsed.
      *
      * @param input source of HILTI module to compile
-     * @return set if succesfull; otherwise the result provides an error message
+     * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> addInput(const hilti::rt::filesystem::path& path);
 
@@ -167,7 +165,7 @@ public:
      * Initializes the compilation process. Must be called after options have been set,
      * and before any inputs are added.
      *
-     * @return set if succesfull; otherwise the result provides an error  message
+     * @return set if successful; otherwise the result provides an error  message
      */
     Result<Nothing> initialize();
 
@@ -176,7 +174,7 @@ public:
      * after driver and compiler options have been set. Internally, it chains
      * the various `*Modules()` methods.
      *
-     * @return set if succesfull; otherwise the result provides an error message
+     * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> compile();
 
@@ -187,13 +185,13 @@ public:
     auto context() const { return _ctx; }
 
     /**
-     * Initializes HILT's runtime system to prepare for JIT execution of
+     * Initializes HILTI's runtime system to prepare for execution of
      * compiled code. This will already trigger execution of all
      * module-specific initialization code (initialization of globals;
-     * module-level stsatements). The method must be called only after
+     * module-level statements). The method must be called only after
      * `compile()` has run already.
      *
-     * @return set if succesfull; otherwise the result provides an error message
+     * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> initRuntime();
 
@@ -201,41 +199,27 @@ public:
      * Executes the `hilti_main` entry function in compiled code. This must
      * be called only after `initRuntime()` has run already.
      *
-     * @return set if succesfull; otherwise the result provides an error message
+     * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> executeMain();
 
     /**
-     * Shuts down HILT's runtime library after JIT execution has concluded,
+     * Shuts down HILT's runtime library after execution has concluded,
      * cleaning up resources.
      *
-     * @return set if succesfull; otherwise the result provides an error message
+     * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> finishRuntime();
 
     /**
-     * Compile and executes all source files. This is a convience wrapper
+     * Compile and executes all source files. This is a convenience wrapper
      * around the stages of the process provided by other methods. It
      * executes all of `compile()`, `initRuntime()`, `executeMain()`, and
      * `finishRuntime()` in that order.
      *
-     * @return set if succesfull; otherwise the result provides an error message
+     * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> run();
-
-    /**
-     * Returns a pointer the internal JIT instance. This will be available
-     * only after `compile()` and `initRuntime()` have executed.
-     *
-     * @return pointer to the JIT instance if available
-     */
-    Result<hilti::JIT*> jit();
-
-    /**
-     * Returns true if any input files have been added that require JIT for
-     * compilation before they can be executed.
-     */
-    bool needJIT() const { return _need_jit; }
 
 protected:
     /**
@@ -247,39 +231,38 @@ protected:
     /**
      * Main work horse compiling all registered input files to C++ code.
      *
-     * @return set if succesfull; otherwise the result provides an error  message
+     * @return set if successful; otherwise the result provides an error  message
      */
     Result<Nothing> compileUnits();
 
     /**
      * Runs the HILTI-side linker on all available C++ code.
      *
-     * @return set if succesfull; otherwise the result provides an error  message
+     * @return set if successful; otherwise the result provides an error  message
      */
     Result<Nothing> linkUnits();
 
     /**
      * Writes out generated code if requested by driver options.
      *
-     * @return set if succesfull; otherwise the result provides an error  message
+     * @return set if successful; otherwise the result provides an error  message
      */
     Result<Nothing> outputUnits();
 
     /**
-     * Jits all code compiled so far. This must be called only if the driver
-     * has been configured to run the JIT.
+     * JIT all code compiled so far.
      *
-     * @return set if succesfull; otherwise the result provides an error  message
+     * @return set if successful; otherwise the result provides an error  message
      */
     Result<Nothing> jitUnits();
 
     /**
      * Helper function to create an `result::Error` with a message that
-     * includig driver name and, optionally, a file the error refers to.
+     * including driver name and, optionally, a file the error refers to.
      *
      * @param msg error message
-     * @param p file to associate with the error, emoty for none
-     * @return error with an appropiately set message
+     * @param p file to associate with the error, empty for none
+     * @return error with an appropriately set message
      */
     result::Error error(std::string_view msg, const hilti::rt::filesystem::path& p = "");
 
@@ -288,8 +271,8 @@ protected:
      * includig driver name and, optionally, a file the error refers to.
      *
      * @param msg error message
-     * @param p file to associate with the error, emoty for none
-     * @return error with an appropiately set message
+     * @param p file to associate with the error, empty for none
+     * @return error with an appropriately set message
      */
     result::Error augmentError(const result::Error& err, const hilti::rt::filesystem::path& p = "");
 
@@ -299,7 +282,7 @@ protected:
      * @param p output file
      * @param binary true to open in binary mode
      * @param append true to append to existing file
-     * @return set if succesful, or an appropiate error result
+     * @return set if successful, or an appropriate error result
      */
     Result<std::ofstream> openOutput(const hilti::rt::filesystem::path& p, bool binary = false, bool append = false);
 
@@ -308,7 +291,7 @@ protected:
      *
      * @param in input stream to open with file with
      * @param p input file
-     * @return set if succesful, or an appropiate error result
+     * @return set if successful, or an appropriate error result
      */
     Result<Nothing> openInput(std::ifstream& in, const hilti::rt::filesystem::path& p);
 
@@ -317,7 +300,7 @@ protected:
      *
      * @param in stream to read data to write from
      * @param p output file
-     * @return set if succesful, or an appropiate error result
+     * @return set if successful, or an appropriate error result
      */
     Result<Nothing> writeOutput(std::ifstream& in, const hilti::rt::filesystem::path& p);
 
@@ -325,7 +308,7 @@ protected:
      * Helper function to read data from an input file.
      *
      * @param p input file
-     * @return string stream with the file's data, or an appropiate error result
+     * @return string stream with the file's data, or an appropriate error result
      */
     Result<std::stringstream> readInput(const hilti::rt::filesystem::path& p);
 
@@ -335,7 +318,7 @@ protected:
      * @param in stream to read from
      * @param name_hint a string to include into the temporary file's name
      * @param extension extension for the temporary file's name
-     * @return the path to the temporary file, or an appropiate error result
+     * @return the path to the temporary file, or an appropriate error result
      */
     Result<hilti::rt::filesystem::path> writeToTemp(std::ifstream& in, const std::string& name_hint,
                                                     const std::string& extension = "tmp");
@@ -405,7 +388,7 @@ protected:
 
     /**
      * Hook for derived classes to execute custom code when the HILTI runtime
-     * has been intialized.
+     * has been initialized.
      */
     virtual void hookInitRuntime() {}
 
@@ -422,8 +405,6 @@ private:
 
     void _addUnit(Unit unit);
     Result<Nothing> _compileUnit(Unit unit);
-
-    bool _requires_jit() const { return ! _pending_units.empty(); }
 
     /**
      * Look up a symbol in the global namespace.
@@ -444,6 +425,7 @@ private:
 
     std::shared_ptr<Context> _ctx;    // driver's compiler context
     std::unique_ptr<hilti::JIT> _jit; // driver's JIT instance
+    std::shared_ptr<const hilti::rt::Library> _library; // Compiled code
 
     std::vector<CxxCode> _generated_cxxs;
     std::unordered_map<std::string, Library> _libraries;
@@ -452,7 +434,6 @@ private:
     std::vector<Unit> _hlts;
 
     bool _runtime_initialized = false; // true once initRuntime() has succeeded
-    bool _need_jit = false; // true once a file has been adeed that needs JIT
     std::set<std::string> _tmp_files;  // all tmp files created, so that we can clean them up.
 };
 

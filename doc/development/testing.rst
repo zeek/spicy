@@ -44,11 +44,6 @@ directory) will run a smaller set of selected tests that exercise
 Spicy's main pieces. This is not sufficient to see if everything
 works, but can quickly determine that something clearly doesn't. :)
 
-.. rubric: Running only tests that don't need JIT
-
-``btest -g no-jit`` runs only tests tagged as not depending on
-having JIT support compiled into Spicy.
-
 .. rubric:: Running tests using installation after ``make install``
 
 By default, btests are running completely out of the source & build

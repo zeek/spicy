@@ -1,4 +1,50 @@
 
+0.4.0-1255 | 2021-01-18 08:45:26 +0000
+
+  * Port JIT to use host C++ compiler instead of libclang/libllvm.
+    (Robin Sommer, Benjamin Bannier; Corelight).
+
+    This completely removes the dependency on an existing clang
+    installation. Instead, JIT now requires only a C++17 host
+    compiler. Internally, this comes with a substantial refactor of
+    the JIT components.
+
+    This changes also includes the following additional pieces:
+
+        - We pull in `https://github.com/DaanDeMeyer/reproc` as a
+          submodule for spawning the host compiler.
+
+        - The environment variable `HILTI_CXX` overrides the
+          executable to use as the C++ compiler during JIT. It won't
+          work to switch in a completely different compiler that way
+          (because we'd continue to make some assumptions based on the
+          default compiler), but it allows to provide an additional
+          wrapper around the default compiler.
+
+        - We remove the distinction between building the toolchain
+          with/without JIT. We now always assume we have the JIT
+          capbility available, but will fail gracefully when unable to
+          use the host compiler.
+
+        - JIT compilation captures & reports C++ error output.
+
+  * Extend `{hilti,spicy}-config` with options `--cxx-flags-hlto`/`--cxx-flags-hlto`
+    printing compiler flags for building HLTO files.
+
+  * CMake: Redoing object library linking. We weren't consistent in
+    how we linked them, which led to some off effects. (Robin Sommer,
+    Corelight)
+
+  * Codegen: Construct initializer lists from literals. Benjamin
+    Bannier, Corelight)
+
+  * Cleanup left-over ASAN code that was no longer in use. (Robin
+    Sommer, Corelight)
+
+  * Increase CI memory limit for Ubuntu debug task. (Robin Sommer, Corelight)
+
+  * Bump CMake in CI Docker image. (Benjamin Bannier, Corelight)
+
 0.4.0-1227 | 2021-01-13 07:41:35 +0000
 
   * Re-implement the runtime's fiber (co-routine) code. (Benjamin

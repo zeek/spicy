@@ -3,16 +3,22 @@
 #pragma once
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/library.h>
 
 #include <hilti/base/util.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/cxx/unit.h>
+
+namespace reproc {
+class process;
+}
 
 namespace hilti {
 
@@ -20,9 +26,9 @@ namespace logging::debug {
 inline const DebugStream Jit("jit");
 } // namespace logging::debug
 
-namespace detail {
-class ClangJIT;
-} // namespace detail
+namespace detail::jit {
+class Cxx;
+} // namespace detail::jit
 
 /** Container for C++ code compiled from a HILTI source file */
 class CxxCode {
@@ -48,7 +54,6 @@ public:
      * @param u unit to initialize code instance from
      */
     explicit CxxCode(const detail::cxx::Unit& u);
-
 
     /**
      * Saves C++ code into a file.
@@ -109,25 +114,14 @@ using hilti::rt::Library;
  *
  * The class provides the entry point for compiling and executing C++ code
  * just in time.
- *
- * @note The compiler can be used only if the global configuration indicates
- * that HILTI has been compiled with JIT support.
- *
- * @todo The error handling in this class isn't great. Most methods just
- * return booleans, and otherwise report through the globa `Logger`; should
- * switch that to `Result<>`. Worse, the actual compilation/linking outpus
- * diagnostics directly to stderr currently.
- *
- * @todo Our JITing doesn't support C++ code with global
- * intialization/cleanup code currently (like global ctors/dtors). It would
- * probably be tricky to add that.
  */
 class JIT {
 public:
     /**
      * @param context compiler context to use
+     * @param dump_code if true, save all C++ code into files `dbg.*` for debugging
      */
-    explicit JIT(std::shared_ptr<Context> context);
+    explicit JIT(std::shared_ptr<Context> context, bool dump_code = false);
     ~JIT();
 
     JIT() = delete;
@@ -138,26 +132,11 @@ public:
 
     /**
      * Schedules C++ for just-in-time compilation. This must be called only
-     * before `compile()`.
+     * before `jit()`.
      *
      * @param d C++ code
      */
     void add(CxxCode d) { _codes.push_back(std::move(d)); }
-
-    /**
-     * Adds a precompiled shared library. This must be called only before
-     * `jit()`.
-     *
-     * @param library precompiled shared library
-     * @return version information extracted from loaded library
-     */
-    Result<hilti::rt::library::Version> add(Library library) { return library.open(); }
-
-    /**
-     * Activates saving any emitted code to disk for debugging purposes.
-     * It will land in files ``dbg.*``.
-     */
-    void setDumpCode();
 
     /**
      * Schedules C++ for just-in-time compilation. This must be called only
@@ -168,39 +147,17 @@ public:
     void add(const hilti::rt::filesystem::path& p) { _files.push_back(p); }
 
     /**
-     * Compiles all added C++ source files into internal bitcode.
-     *
-     * HILTI-level errors will be logged through the global `Logger`. If the
-     * C++ code contains any errors, that will currently be reported directly
-     * to stderr.
-     *
-     * @return true if all files have been succesfully compiled
-     */
-    bool compile();
-
-    /**
-     * Compiles the linked bitcode into native executable code and makes it
-     * available inside the current process. This must be called opnly after
-     * `link()`
-     *
-     * Errors will be logged through the global `Logger`
-     *
-     * @return succes if the bitcode has been succesfully JITed, otherwise an appropiate error
-     */
-    Result<Nothing> jit();
-
-    /**
-     * Returns already JITed code as a shared library that can be cached.
-     * This must be called only after `jit()` has been called and succeeded.
-     */
-    Result<std::shared_ptr<const Library>> retrieveLibrary() const;
-
-    /**
      * Returns true if any source files have been added that need to be
-     * compiled. If this returns false, its safe to skip calling `compile()`
-     * (though still doing so won't hurt).
+     * compiled.
      */
-    bool needsCompile() { return _codes.size() || _files.size(); }
+    bool hasInputs() { return _codes.size() || _files.size(); }
+
+    /**
+     * Compiles and links all scheduled C++ code into a shared library.
+     *
+     * @return the compiled library, which will be ready for loading.
+     */
+    Result<std::shared_ptr<const Library>> build();
 
     /** Returns the compiler context in use. */
     auto context() const { return _context; }
@@ -208,18 +165,49 @@ public:
     /** Returns the compiler options in use. */
     auto options() const { return _context->options(); }
 
-    /**
-     * Returs a string identifhing the underlying compiler used for JIT
-     * compilation. Currently, that's a always a version of `clang`.
-     */
-    static std::string compilerVersion();
-
 private:
-    std::shared_ptr<Context> _context;
+    // Check if we have a working compiler.
+    hilti::Result<Nothing> _checkCompiler();
+
+    // Prepare for compilation.
+    hilti::Result<Nothing> _initialize();
+
+    // Compile C++ to object files.
+    hilti::Result<Nothing> _compile();
+
+    // Link object files into shared library.
+    hilti::Result<std::shared_ptr<const Library>> _link();
+
+    // Clean up after compilation.
+    void _finish();
+
+    using JobID = uint64_t;
+    Result<JobID> _spawnJob(hilti::rt::filesystem::path cmd, std::vector<std::string> args);
+    Result<Nothing> _waitForJobs();
+
+    hilti::rt::filesystem::path _makeTmp(std::string base, std::string ext);
+
+    std::shared_ptr<Context> _context; // global context for options
+    bool _dump_code;                   // save all C++ code for debugging
+
     std::vector<hilti::rt::filesystem::path> _files; // all added source files
     std::vector<CxxCode> _codes;                     // all C++ code units to be compiled
-    std::vector<Library> _libraries;                 // all precomiled modules we know about
-    std::unique_ptr<detail::ClangJIT> _jit;          // JIT backend
+    std::vector<hilti::rt::filesystem::path> _objects;
+
+    std::optional<hilti::rt::TemporaryDirectory> _tmpdir;
+
+    struct Job {
+        std::unique_ptr<reproc::process> process;
+        std::string stdout_;
+        std::string stderr_;
+
+        void collectOutputs(int events);
+    };
+
+    JobID _job_counter = 0;
+    std::map<JobID, Job> _jobs;
+
+    std::map<std::string, unsigned int> _tmp_counters;
 };
 
 } // namespace hilti

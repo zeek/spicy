@@ -1,6 +1,5 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 //
-// @TEST-GROUP: no-jit
 // @TEST-REQUIRES: using-build-directory
 // @TEST-EXEC: test-visitor >&2
 //

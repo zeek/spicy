@@ -9,7 +9,6 @@
 
 #include <hilti/autogen/config.h>
 #include <hilti/base/util.h>
-#include <hilti/compiler/jit.h>
 
 #include <spicy/autogen/config.h>
 
@@ -25,15 +24,15 @@ Available options:
     --bindir                Prints the path to the directory where binaries are installed.
     --cmake-path            Prints the path to Spicy-provided CMake modules
     --cxx                   Print the path to the C++ compiler used to build Spicy
-    --cxxflags              Print flags for C++ compiler. (These are addition to any that HILTI needs.)
+    --cxxflags              Print flags for C++ compiler when compiling generated code statically
+    --cxxflags-hlto         Print flags for C++ compiler when building precompiled HLTO libraries
     --debug                 Output flags for working with debugging versions.
     --distbase              Print path of the Spicy source distribution.
     --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
     --help                  Print this usage summary
     --include-dirs          Prints the Spicy runtime's C++ include directories
-    --jit-compiler          Prints the version of the JIT compiler if compiled with corresponding support.
-    --jit-support           Prints 'yes' if compiled with JIT support, 'no' otherwise.
-    --ldflags               Print flags for linker. (These are addition to any that HILTI needs.)
+    --ldflags               Print flags for linker when compiling generated code statically
+    --ldflags-hlto          Print flags for linker linker when building precompiled HLTO libraries
     --libdirs               Print standard Spicy library directories.
     --prefix                Print path of installation (TODO: same as --distbase currently)
     --spicy-build           Print the path to the spicy-build script.
@@ -43,7 +42,6 @@ Available options:
     --zeek-include-dirs     Print the Spicy runtime's C++ include directories
     --zeek-prefix           Print the path to the Zeek installation prefix
     --zeek-plugin-path      Print the path to go into ZEEK_PLUGIN_PATH for enabling the Zeek Spicy plugin
-    --zeek-jit-support      Prints 'yes' if the Zeek plugin was compiled with JIT support, 'no' otherwise.
     --zeek-version          Print the Zeek version.
     --version               Print Spicy version.
 
@@ -118,16 +116,6 @@ int main(int argc, char** argv) {
 
         if ( opt == "--bindir" ) {
             result.emplace_back(spicy::configuration().spicyc.parent_path());
-            continue;
-        }
-
-        if ( opt == "--jit-compiler" ) {
-            result.emplace_back(hilti::JIT::compilerVersion());
-            continue;
-        }
-
-        if ( opt == "--jit-support" ) {
-            result.emplace_back(hilti::configuration().jit_enabled ? "yes" : "no");
             continue;
         }
 
@@ -210,19 +198,6 @@ int main(int argc, char** argv) {
 #endif
         }
 
-        if ( opt == "--zeek-jit-support" ) {
-#ifdef HAVE_ZEEK
-#ifdef ZEEK_HAVE_JIT
-            result.emplace_back("yes");
-#else
-            result.emplace_back("no");
-#endif
-            continue;
-#else
-            exit(1);
-#endif
-        }
-
         if ( opt == "--zeek-version" ) {
 #ifdef HAVE_ZEEK
             result.emplace_back(ZEEK_VERSION_NUMBER);
@@ -259,6 +234,15 @@ int main(int argc, char** argv) {
             continue;
         }
 
+        if ( opt == "--cxxflags-hlto" ) {
+            if ( want_debug )
+                join(result, hilti::configuration().hlto_cxx_flags_debug);
+            else
+                join(result, hilti::configuration().hlto_cxx_flags_release);
+
+            continue;
+        }
+
         if ( opt == "--ldflags" ) {
             if ( want_dynamic_linking ) {
 #if __APPLE__
@@ -281,6 +265,15 @@ int main(int argc, char** argv) {
                 result.push_back("-Wl,--no-whole-archive");
 #endif
             }
+
+            continue;
+        }
+
+        if ( opt == "--ldflags-hlto" ) {
+            if ( want_debug )
+                join(result, hilti::configuration().hlto_ld_flags_debug);
+            else
+                join(result, hilti::configuration().hlto_ld_flags_release);
 
             continue;
         }

@@ -23,16 +23,6 @@ std::optional<hilti::rt::filesystem::path> precompiled_libhilti(const Configurat
     return {};
 #endif
 
-    // Precompiled headers are only supported if we build with Clang.
-    //
-    // JIT always uses Clang to compile, but e.g., `hilti-config --cxx` will
-    // report the compiler used to build Spicy. Since precompiled headers
-    // created by Clang cannot be used by GCC and vice versa, we currently
-    // cannot support precompiled headers for both JIT and AOT compilation
-    // if we build with GCC. Disable them completely in that case.
-    if ( configuration.compiler_id != "clang" )
-        return {};
-
     if ( auto&& cache = util::cacheDirectory(configuration) ) {
         const rt::filesystem::path file_name = rt::fmt("precompiled_libhilti%s.h.pch", (debug ? "_debug" : ""));
 
@@ -64,7 +54,13 @@ void Configuration::init(bool use_build_directory) {
     std::transform(compiler_id.begin(), compiler_id.end(), compiler_id.begin(),
                    [](auto& c) { return std::tolower(c); });
 
-    cxx = "${CMAKE_CXX_COMPILER}";
+    // Allow to set a compiler wrapper through environment.
+    auto hilti_cxx = getenv("HILTI_CXX");
+    if ( hilti_cxx && *hilti_cxx )
+        cxx = hilti_cxx;
+    else
+        cxx = "${CMAKE_CXX_COMPILER}";
+
     distbase = "${CMAKE_SOURCE_DIR}";
     install_prefix = "${CMAKE_INSTALL_PREFIX}";
     build_directory = "${CMAKE_BINARY_DIR}";
@@ -77,15 +73,6 @@ void Configuration::init(bool use_build_directory) {
     version_prerelease = PROJECT_VERSION_PRERELEASE;
     version_string = PROJECT_VERSION_STRING_SHORT;
     version_string_long = PROJECT_VERSION_STRING_LONG;
-
-#ifdef HILTI_HAVE_JIT
-    jit_enabled = true;
-#else
-    jit_enabled = false;
-#endif
-
-    jit_clang_executable = "${CLANG_EXECUTABLE}";
-    jit_clang_resource_dir = "${CLANG_RESOURCE_DIR}";
 
     std::vector<std::string> library_paths;
 
@@ -102,14 +89,34 @@ void Configuration::init(bool use_build_directory) {
         util::transform(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "", installation_tag)),
                         [](auto s) { return hilti::rt::filesystem::path(s); });
 
-    runtime_cxx_flags_debug = flatten({prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+    // We hardcode the main compiler flags here instead of injecting them from
+    // CMake to make it clear that they are really independent on what CMake
+    // uses to compile the toolchain. This localizes the options here, and also
+    // allows us to customize them by use-case (JIT vs AOT). We do still inject
+    // some additional flags from CMake where we rely on stuff that CMake
+    // inferred about the environment.
+    //
+    // We compile generated code with hidden default symbol visibility because
+    // that:
+    //
+    // (1) reflects the public/non-public distinction at the HILTI level
+    //
+    // (2) avoids trouble when having the same symbols defined in multiple
+    // translation units (which can happen, e.g., because of code reuse).
+    //
+    // (3) it helps the optimizer to know that symbols won't be accessed
+    // externally.
+    runtime_cxx_flags_debug = flatten({"-fPIC", "-std=c++17", "-g", "-fvisibility=hidden",
+                                       prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
                                        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
+
+    runtime_cxx_flags_release = flatten({"-fPIC", "-std=c++17", "-g", "-O3", "-DNDEBUG", "-fvisibility=hidden",
+                                         prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
+                                         prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
+
 
     if ( auto libhilti_pch = precompiled_libhilti(*this, true) )
         runtime_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
-
-    runtime_cxx_flags_release = flatten({prefix("${HILTI_CONFIG_RUNTIME_INCLUDE_DIRS}", "-I", installation_tag),
-                                         prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
 
     if ( auto libhilti_pch = precompiled_libhilti(*this, false) )
         runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
@@ -129,6 +136,19 @@ void Configuration::init(bool use_build_directory) {
                  prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
                  prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag),
                  prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
+
+    hlto_cxx_flags_debug = runtime_cxx_flags_debug;
+    hlto_cxx_flags_release = runtime_cxx_flags_release;
+
+    hlto_ld_flags_debug = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup"});
+    hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup"});
+
+#ifdef __APPLE_
+    // This avoids duplicate symbols when the HLTO is loaded, seems default
+    // linker behavior is different on macOS.
+    hlto_ld_flags_debug.push_back("-nostdlib");
+    hlto_ld_flags_release.push_back("-nostdlib");
+#endif
 };
 
 Configuration& hilti::configuration() {

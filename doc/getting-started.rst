@@ -17,17 +17,16 @@ Here's a simple "Hello, world!" in Spicy:
 .. literalinclude:: examples/hello.spicy
    :lines: 4-
 
-Assuming that's stored in ``hello.spicy`` and you built Spicy with JIT
-support, you can compile and execute the code with Spicy's standalone
-compiler ``spicyc``::
+Assuming that's stored in ``hello.spicy``, you can compile and execute
+the code with Spicy's standalone compiler ``spicyc``::
 
     # spicyc -j hello.spicy
     Hello, world!
 
-``spicyc -j`` compiles the source code into native code on the fly,
-and then directly executes the result. If you run ``spicyc -c
-hello.spicy``, you will see the C++ code that Spicy generates behind
-the scenes.
+``spicyc -j`` compiles the source code into native code on the fly
+using your system's C++ compiler, and then directly executes the
+result. If you run ``spicyc -c hello.spicy``, you will see the C++
+code that Spicy generates behind the scenes.
 
 You can also precompile the code into an object file, and then load
 that for immediate execution::

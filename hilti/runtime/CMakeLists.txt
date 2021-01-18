@@ -48,31 +48,16 @@ foreach ( lib hilti-rt hilti-rt-debug )
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/3rdparty>)
 
-    # The following should instead just be:
-    #
-    #    target_link_libraries(${lib}-objects PRIVATE jrx-objects)
-    #
-    # but does not pull in the object files for some reason. Since at least
-    # with cmake-3.16.5 depending on some `TARGET_OBJECTS` does not ensure the
-    # referenced target is built before the dependent target is linked, we also
-    # explicitly depend on jrx-objects to make sure all its objects are build.
     add_dependencies(${lib}-objects jrx-objects)
     target_include_directories(${lib}-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/justrx/include)
-    target_link_libraries(${lib}-objects      PRIVATE $<TARGET_OBJECTS:jrx-objects>)
 
     add_dependencies(${lib}-objects fiber::fiber)
-    target_link_libraries(${lib}-objects PRIVATE $<TARGET_OBJECTS:fiber::fiber>)
     target_include_directories(${lib}-objects PRIVATE
         ${CMAKE_SOURCE_DIR}/3rdparty/fiber/include
         ${CMAKE_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include)
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
-
-    # Since only an OBJECT libraries usage requirements are propagated
-    # transitively, but not its object files, explicitly link against
-    # jrx-objects which is an OBJECT library itself and depended on by
-    # `jrx-objects`.
     target_link_libraries(${lib} jrx-objects)
     target_link_libraries(${lib} fiber::fiber)
 endforeach ()
@@ -90,9 +75,11 @@ target_compile_options(hilti-rt-debug-objects     PRIVATE "-UNDEBUG;-O0;-Wall")
 target_compile_definitions(hilti-rt-debug-objects PRIVATE "HILTI_RT_BUILD_TYPE_DEBUG")
 
 add_library(hilti-rt-tests-library-dummy1 SHARED src/tests/library-dummy.cc)
+target_include_directories(hilti-rt-tests-library-dummy1 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(hilti-rt-tests-library-dummy1 PUBLIC RETURN_VALUE=1)
 
 add_library(hilti-rt-tests-library-dummy2 SHARED src/tests/library-dummy.cc)
+target_include_directories(hilti-rt-tests-library-dummy2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(hilti-rt-tests-library-dummy2 PUBLIC RETURN_VALUE=2)
 
 ##### Configuration files
@@ -117,7 +104,7 @@ install_headers(${CMAKE_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyfo
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
 install_headers(${CMAKE_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)
 
-##### Tests & benchmarks
+##### Tests
 
 add_executable(hilti-rt-tests
                src/tests/main.cc
@@ -162,7 +149,7 @@ add_executable(hilti-rt-tests
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_compile_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects> doctest)
+target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
 add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-library-dummy2)
 add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)
 
@@ -170,10 +157,5 @@ add_executable(hilti-rt-configuration-tests src/tests/configuration.cc)
 target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")
 target_compile_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_libraries(hilti-rt-configuration-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects> doctest)
+target_link_libraries(hilti-rt-configuration-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
 add_test(NAME hilti-rt-configuration-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-configuration-tests)
-
-add_executable(hilti-rt-fiber-benchmark src/benchmarks/fiber.cc)
-target_compile_options(hilti-rt-fiber-benchmark PRIVATE "-Wall")
-target_link_libraries(hilti-rt-fiber-benchmark PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
-target_link_libraries(hilti-rt-fiber-benchmark PRIVATE benchmark)

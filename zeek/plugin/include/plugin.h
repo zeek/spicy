@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -10,6 +11,7 @@
 #include <hilti/rt/library.h>
 #include <hilti/rt/types/port.h>
 
+#include <compiler/driver.h>
 #include <zeek-spicy/zeek-compat.h>
 
 namespace spicy::rt {
@@ -18,7 +20,30 @@ struct Parser;
 
 namespace plugin::Zeek_Spicy {
 
-/**
+/** Customized Spicy-to-Zeek Driver class. */
+class Driver : public spicy::zeek::Driver {
+public:
+    using spicy::zeek::Driver::Driver;
+
+protected:
+    /** Overidden from driver class. */
+    void hookAddInput(const hilti::rt::filesystem::path& path) override;
+
+    /** Overidden from driver class. */
+    void hookAddInput(const hilti::Module& m, const hilti::rt::filesystem::path& path) override;
+
+    /** Overidden from driver class. */
+    void hookNewEnumType(const spicy::zeek::EnumInfo& e) override;
+
+private:
+    friend class Plugin;
+    void _initialize();
+
+    bool _initialized = false;
+    std::vector<hilti::rt::filesystem::path> _import_paths;
+};
+
+/*
  * Dynamic Zeek plugin. This class does not implement any JIT compilation.
  * For that, we have a separate PluginJIT that derives from this one.
  *
@@ -224,6 +249,8 @@ private:
     std::vector<PacketAnalyzerInfo> _packet_analyzers_by_subtype;
 #endif
     std::unordered_map<std::string, hilti::rt::Library> _libraries;
+
+    std::unique_ptr<Driver> _driver;
 };
 
 // Will be initalized to point to whatever type of plugin is instantiated.
@@ -231,6 +258,4 @@ extern Plugin* OurPlugin;
 
 } // namespace plugin::Zeek_Spicy
 
-#ifndef ZEEK_HAVE_JIT
 extern plugin::Zeek_Spicy::Plugin SpicyPlugin;
-#endif

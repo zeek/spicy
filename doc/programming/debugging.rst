@@ -142,7 +142,7 @@ given Spicy grammar:
 
 - When JITing a grammar with ``spicyc -j``, running with ``-D
   dump-code`` will record all generated intermediary code (HILTI code,
-  C++ code, LLVM bitcode) into files ``dbg.*`` inside the current
+  C++ code, object files) into files ``dbg.*`` inside the current
   directory.
 
 Skipping validation

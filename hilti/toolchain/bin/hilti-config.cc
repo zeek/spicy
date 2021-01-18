@@ -12,7 +12,6 @@
 
 #include <hilti/autogen/config.h>
 #include <hilti/base/util.h>
-#include <hilti/compiler/jit.h>
 
 using namespace std;
 
@@ -24,16 +23,16 @@ Available options:
 
     --build                 Prints "debug" or "release", depending on the build configuration.
     --cxx                   Print the full path to the compiler used to compile HILTI.
-    --cxxflags              Print C++ flags when compiling code using the HILTI runtime library
+    --cxxflags              Print C++ flags when compiling generated code statically
+    --cxxflags-hlto         Print C++ flags when building precompiled HLTO libraries
     --debug                 Output flags for working with debugging versions.
     --distbase              Print path of the HILTI source distribution.
     --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
     --help                  Print this usage summary
     --hiltic                Print the full path to the hiltic binary.
     --include-dirs          Prints the HILTI runtime's C++ include directories
-    --jit-compiler          Prints the version of the JIT compiler if compiled with corresponding support.
-    --jit-support           Prints 'yes' if compiled with JIT support, 'no' otherwise.
-    --ldflags               Print linker flags when linking code using the HILTI runtime library
+    --ldflags               Print linker flags when compiling generated code statically
+    --ldflags-hlto          Print linker flags when building precompiled HLTO libraries
     --libdirs               Print standard HILTI library directories.
     --prefix                Print path of installation.
     --toolchain             Prints 'yes' if the Spicy toolchain was built, 'no' otherwise.
@@ -108,16 +107,6 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        if ( opt == "--jit-compiler" ) {
-            result.emplace_back(hilti::JIT::compilerVersion());
-            continue;
-        }
-
-        if ( opt == "--jit-support" ) {
-            result.emplace_back((hilti::configuration().jit_enabled ? "yes" : "no"));
-            continue;
-        }
-
         if ( opt == "--toolchain" ) {
 #ifdef HAVE_TOOLCHAIN
             result.emplace_back("yes");
@@ -156,6 +145,15 @@ int main(int argc, char** argv) {
             continue;
         }
 
+        if ( opt == "--cxxflags-hlto" ) {
+            if ( want_debug )
+                join(result, hilti::configuration().hlto_cxx_flags_debug);
+            else
+                join(result, hilti::configuration().hlto_cxx_flags_release);
+
+            continue;
+        }
+
         if ( opt == "--ldflags" ) {
             if ( want_dynamic_linking ) {
 #if __APPLE__
@@ -181,6 +179,16 @@ int main(int argc, char** argv) {
 
             continue;
         }
+
+        if ( opt == "--ldflags-hlto" ) {
+            if ( want_debug )
+                join(result, hilti::configuration().hlto_ld_flags_debug);
+            else
+                join(result, hilti::configuration().hlto_ld_flags_release);
+
+            continue;
+        }
+
 
         if ( opt == "--using-build-dir" )
             exit(hilti::configuration().uses_build_directory ? 0 : 1);

@@ -37,3 +37,6 @@
 [submodule "3rdparty/benchmark"]
 	path = 3rdparty/benchmark
 	url = https://github.com/google/benchmark.git
+[submodule "3rdparty/reproc"]
+	path = 3rdparty/reproc
+	url = https://github.com/DaanDeMeyer/reproc.git

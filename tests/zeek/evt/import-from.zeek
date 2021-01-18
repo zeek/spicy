@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: have-zeek-plugin-jit
+# @TEST-REQUIRES: have-zeek-plugin
 #
 # @TEST-EXEC: mkdir -p a/b/c && mv y.spicy a/b/c
 # @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace  ssh.spicy ./ssh.evt %INPUT >output

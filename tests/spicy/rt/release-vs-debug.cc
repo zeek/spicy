@@ -10,17 +10,16 @@
 //
 // With JIT in hiltic, the library versions will match the distribution's
 // build type (i.e., not the cmd line arguments).
-// @TEST-EXEC: ! have-jit || ${SPICYC} -j %INPUT | awk 'NR==1' | grep -q `${HILTI_CONFIG} --build`
-// @TEST-EXEC: ! have-jit || ${SPICYC} -j -d %INPUT | awk 'NR==2' |grep -q `${HILTI_CONFIG} --build`
-
+// @TEST-EXEC: ${SPICYC} -j %INPUT | awk 'NR==1' | grep -q `${HILTI_CONFIG} --build`
+// @TEST-EXEC: ${SPICYC} -j -d %INPUT | awk 'NR==2' |grep -q `${HILTI_CONFIG} --build`
 
 #include <hilti/rt/libhilti.h>
 #include <spicy/rt/libspicy.h>
 
 // Just dummy data.
-const char* __hlto_library_version = R"({"created":1597144800.98031,"debug":false,"hilti_version":400,"magic":"v1","optimize":false})";
+const char HILTI_EXPORT HILTI_WEAK * __hlto_library_version = R"({"created":1597144800.98031,"debug":false,"hilti_version":400,"magic":"v1","optimize":false})";
 
-extern "C" int hilti_main() { // Point of entry for JIT
+extern "C" int HILTI_EXPORT hilti_main() { // Point of entry for JIT
     std::cout << hilti::rt::version() << std::endl;
     std::cout << spicy::rt::version() << std::endl;
     return 0;
