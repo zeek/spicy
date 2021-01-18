@@ -42,11 +42,12 @@ echo "Building benchmark"
 cd build || exit
 "${SPICY_BENCHMARK_DIR}"/scripts/run-benchmarks build
 
-# Run benchmark.
-echo "Running benchmark"
+# Run benchmarks.
+echo "Running benchmarks"
 for benchmark in short long; do
 	"${SPICY_BENCHMARK_DIR}"/scripts/run-benchmarks -t "${SPICY_BENCHMARK_DATA_DIR}"/$benchmark run | tee "${SPICY_BENCHMARK_DIR}"/$benchmark.log
 done
+"${SPICY_BENCHMARK_DIR}"/build/bin/hilti-rt-fiber-benchmark | tee "${SPICY_BENCHMARK_DIR}"/fiber.log
 
 # Generate a report.
 echo "Generating benchmark report"
@@ -55,7 +56,7 @@ rm -f "${SPICY_BENCHMARK_REPORT}"
 (
 	echo "Version: $(./bin/spicy-config --version)"
 	echo "Date: $(date)"
-	for benchmark in short long; do
+	for benchmark in short long fiber; do
 		echo ""
 		echo "Benchmark: $benchmark"
 		echo "---------------------"
