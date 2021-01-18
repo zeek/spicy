@@ -31,7 +31,7 @@ struct Configuration {
      * exception if we're getting too low. (It seems that the latter can
      * require quite a bit of space, hence the large default here.)
      **/
-    size_t fiber_min_stack_size = 10 * 1024;
+    size_t fiber_min_stack_size = 20 * 1024;
 
     /** File where debug output is to be sent. Default is stderr. */
     std::optional<hilti::rt::filesystem::path> debug_out;
