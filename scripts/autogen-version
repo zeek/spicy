@@ -10,6 +10,9 @@ usage() {
     echo "usage $(basename "$0") [--short | --header <file> | --cmake | --store] [--git-root <dir>] [<commit>]"
 }
 
+# Make the top-level git repository the current directory.
+cd $(dirname $0)/..
+
 output=long
 
 while [ $# -ge 1 ]; do
