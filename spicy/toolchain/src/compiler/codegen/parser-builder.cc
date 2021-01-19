@@ -663,7 +663,8 @@ struct ProductionVisitor
             }
 
             auto re = hilti::ID(fmt("__re_%" PRId64, lp.symbol()));
-            auto d = builder::constant(re, builder::regexp(flattened, AttributeSet({Attribute("&nosub"), Attribute("&anchor")})));
+            auto d = builder::constant(re, builder::regexp(flattened,
+                                                           AttributeSet({Attribute("&nosub"), Attribute("&anchor")})));
             pb->cg()->addDeclaration(d);
 
             // Create the token matcher state.
@@ -942,6 +943,10 @@ struct ProductionVisitor
             // Look-ahead based loop.
             auto body = builder()->addWhile(hilti::builder::bool_(true));
             pushBuilder(body, [&]() {
+                // If we don't have any input right now, we suspend because
+                // we might get an EOD next, in which case we need to abort the loop.
+                builder()->addExpression(pb->waitForInputOrEod(builder::integer(1)));
+
                 auto lah_prod = p.lookAheadProduction();
                 auto [builder_alt1, builder_alt2] = parseLookAhead(lah_prod);
 

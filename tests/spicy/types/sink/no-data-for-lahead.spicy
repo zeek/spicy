@@ -1,0 +1,23 @@
+# @TEST-EXEC: cat /dev/null | spicy-dump -p TESTING::Message %INPUT >output
+# @TEST-EXEC: btest-diff output
+# @TEST-DOC: Regression test for GH-671
+
+module TESTING;
+
+public type Message = unit {
+  sink alertsink;
+
+  on %init {
+    self.alertsink.connect(new Alert);
+  }
+};
+
+# note - this will mostly be garbage because it is encrypted.
+public type Alert = unit {
+  alerts: Alert_message[];
+};
+
+type Alert_message = unit {
+  level: uint8;
+#  description: uint8;
+};
