@@ -32,15 +32,6 @@ repos:
   - id: check-yaml
   - id: check-added-large-files
 
-- repo: https://github.com/jumanjihouse/pre-commit-hooks
-  rev: 2.1.4
-  hooks:
-  - id: script-must-have-extension
-  - id: shellcheck
-    files: '^ci/cron/.*'
-  - id: shfmt
-    files: '^ci/cron/.*'
-
 - repo: https://gitlab.com/daverona/pre-commit-cpp
   rev: 0.6.0
   hooks:
