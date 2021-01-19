@@ -1,4 +1,16 @@
 
+0.4.0-1262 | 2021-01-19 08:28:41 +0000
+
+  * macOS fixes (Robin Sommer, Corelight)
+
+    - GH-664: Increase minimum fiber stack size.
+    - Pass CMAKE_OSX_SYSROOT through to JIT linker.
+
+  * Add a couple cron scripts to repository. (Benjamin Bannier, Corelight)
+
+    - `ci/cron/spicy-benchmark.sh:` run Spicy benchmarks
+    - `ci/cron/update_spicy_dockerhub.sh: update Spicy Docker images
+
 0.4.0-1255 | 2021-01-18 08:45:26 +0000
 
   * Port JIT to use host C++ compiler instead of libclang/libllvm.
