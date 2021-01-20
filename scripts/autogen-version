@@ -10,6 +10,9 @@ usage() {
     echo "usage $(basename "$0") [--short | --header <file> | --cmake | --store] [--git-root <dir>] [<commit>]"
 }
 
+# Make the top-level git repository the current directory.
+cd $(dirname $0)/..
+
 output=long
 
 while [ $# -ge 1 ]; do
@@ -42,8 +45,6 @@ if [ $# != 0 ] && [ $# != 1 ]; then
 fi
 
 get_version() {
-    VERSION=$(dirname $0)/../VERSION
-
     if git rev-parse --git-dir > /dev/null 2>&1; then
         ref=HEAD
         describe_arg="--dirty"
@@ -53,9 +54,9 @@ get_version() {
         hash=$(git rev-parse --short "${ref}")
         branch=$(git symbolic-ref --short "${ref}" 2>/dev/null || echo "${hash}")
         git_version=$(git describe --always --match "v*" "${describe_arg}" | sed 's/^v//g')
-    elif [ -f ${VERSION} ]; then
+    elif [ -f ./VERSION ]; then
         # Read information from VERSION file which contains values for `branch`, `hash`, and `git_version`.
-        . ${VERSION}
+        . ./VERSION
     else
         >&2 echo "Cannot extract version information: neither git repository nor VERSION file present"
         exit 1

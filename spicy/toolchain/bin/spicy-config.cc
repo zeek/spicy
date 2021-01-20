@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
 
         if ( opt == "--zeek-version" ) {
 #ifdef HAVE_ZEEK
-            result.emplace_back(ZEEK_VERSION_NUMBER);
+            result.emplace_back(ZEEK_VERSION_NUMBER_STRING);
 #else
             result.emplace_back("0");
 #endif
