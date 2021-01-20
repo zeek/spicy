@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 // Do not use "#pragma once here". We use this file as top-level for header
 // pre-compilation, and GCC doesn't like that there.

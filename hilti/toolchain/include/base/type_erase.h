@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 //
 // Machinery for creating type-erased interface classes with value semantics.
 // Needs help through an external Python script generating a bunch of boiler

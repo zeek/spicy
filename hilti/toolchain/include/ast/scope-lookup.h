@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 //
 // Functionality factored out from scope.h to avoid header loops.
 

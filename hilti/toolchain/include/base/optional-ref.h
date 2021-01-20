@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 //
 // This was originally inspired by the version in
 // https://github.com/Chlorie/clu, but it turned into pretty much a rewrite. (That
