@@ -10,7 +10,7 @@ Zeek
 
 .. rubric:: Do I need a Spicy installation for using the Zeek plugin?
 
-No, if the Zeek plugin was compiled with ``--disable-jit-for-zeek``,
+No, if the Zeek plugin was compiled with ``--build-toolchain=no``,
 it will not require Spicy to be installed on the system. It will only
 be able to load pre-compiled analyzers then (i.e., ``*.hlto`` files),
 which you can create on a similar system that has Spicy installed
