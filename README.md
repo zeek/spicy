@@ -81,16 +81,17 @@ which provides the following sections:
 Having trouble using Spicy? Have ideas how to make Spicy better? We'd
 like to hear from you!
 
-- Report issues on [GitHub](https://github.com/zeek/spicy/issues).
+- Report issues on the GitHub [ticket tracker](https://github.com/zeek/spicy/issues).
 
 - Ask the `#spicy` channel [on Zeek's Slack](https://zeek.org/connect).
+
+- Propose ideas, and show what you're doing, in GitHub's [Discussions](https://github.com/zeek/spicy/discussions)
 
 - Subscribe to the [Spicy mailing list](https://lists.zeek.org/mailman3/lists/spicy.lists.zeek.org)
 
 - To follow development, subscribe to the [commits mailing
   list](https://lists.zeek.org/mailman3/lists/spicy-commits.lists.zeek.org) (it can
   be noisy).
-
 
 ## Status
 
