@@ -30,17 +30,41 @@ location::
 The binaries might require installation of additional dependencies;
 see the ``Dockerfile`` for the respective platform.
 
-ubuntu-18
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu_18/packages/build/spicy-linux.tar.gz>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18>`__
-
 alpine-3.12
     :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_12/packages/build/spicy-linux.tar.gz>`,
     `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.12>`__
 
+centos-7
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_7/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-7>`__
+
 centos-8
     :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8/packages/build/spicy-linux.tar.gz>`,
     `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-8>`__
+
+debian-9
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian9/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-9>`__
+
+fedora-32
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora32/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-32>`__
+
+fedora-33
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora33/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-33>`__
+
+ubuntu-16
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu16/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-16>`__
+
+ubuntu-18
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu18/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18>`__
+
+ubuntu-20
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu20/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-20>`__
 
 macOS
 ~~~~~
@@ -49,9 +73,9 @@ macOS
 
 .. rubric:: Homebrew
 
-We provide a Homebrew formula for installation of ``HEAD`` versions of Spicy on
-MacOS 10.15/Catalina. After `installing Homebrew
-<https://docs.brew.sh/Installation>`_ add the Zeek tap::
+We provide a Homebrew formula for installation of ``HEAD`` versions of Spicy.
+After `installing Homebrew <https://docs.brew.sh/Installation>`_ add the Zeek
+tap::
 
     brew tap zeek/zeek
 
@@ -63,14 +87,21 @@ To install Spicy execute::
 
 .. rubric:: Pre-built binaries
 
-We also provide :download:`pre-built binaries <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_release/packages/build/spicy-darwin.tar.gz>`.
-To prevent MacOS from quarantining the files, you should download and unpack
-with the command line, e.g.::
+.. todo:: Below links are broken at the moment. Please choose another installation method for the time being.
 
-    curl -L https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_release/packages/build/spicy-darwin.tar.gz -o spicy-darwin.tar.gz
+We additionally provide pre-build nightly binaries for :download:`MacOS Catalina
+<https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_catalina/packages/build/spicy-darwin.tar.gz>`
+and :download:`MacOS Big Sur
+<https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_big_sur/packages/build/spicy-darwin.tar.gz>`.
+To prevent MacOS from quarantining the files, you should download and unpack
+via the command line, e.g.::
+
+    curl -L https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_big_sur/packages/build/spicy-darwin.tar.gz -o spicy-darwin.tar.gz
     tar xf spicy-darwin.tar.gz
 
-These binaries require Zeek if you want to use the Spicy's plugin for that::
+For JIT support these binaries require an Xcode installation.
+
+These binaries require Zeek if you want to use the Spicy Zeek plugin::
 
     brew install zeek  # for Zeek integration
 
