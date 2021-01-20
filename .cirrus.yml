@@ -1,6 +1,9 @@
 environment:
     CCACHE_BASEDIR: $CIRRUS_WORKING_DIR
 
+    # Enforce sequential JIT'ing of files for controlled memory usage.
+    HILTI_JIT_SEQUENTIAL: 1
+
 clang9_zeek_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile

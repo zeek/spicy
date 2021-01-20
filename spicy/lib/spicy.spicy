@@ -80,7 +80,7 @@ public function current_time() : time &cxxname="hilti::rt::time::current_time" &
 public function bytes_to_hexstring(value: bytes) : string &cxxname="spicy::rt::bytes_to_hexstring" &have_prototype;
 
 ## Returns the value of an environment variable, if set.
-public function getenv(name: string) : optional<string> &cxxname="spicy::rt::getenv" &have_prototype;
+public function getenv(name: string) : optional<string> &cxxname="hilti::rt::getenv" &have_prototype;
 
 ##  Formats a time according to user-specified format string.
 ##

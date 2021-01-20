@@ -297,6 +297,16 @@ TEST_CASE("expandEscapes") {
     CHECK_EQ(expandEscapes("\\x01"), "\x01");
 }
 
+TEST_CASE("getenv") {
+    CHECK_EQ(hilti::rt::getenv(""), std::nullopt);
+
+    const auto home = hilti::rt::getenv("HOME");
+    REQUIRE(home);
+    CHECK_FALSE(home->empty());
+
+    CHECK_EQ(hilti::rt::getenv("SPICY_TEST_ENV_DOES_NOT_EXIST"), std::nullopt);
+}
+
 TEST_CASE("isDebugVersion") {
 #ifndef NDEBUG
     CHECK(isDebugVersion());

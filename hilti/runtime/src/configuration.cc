@@ -13,7 +13,7 @@ using namespace hilti::rt;
 using namespace hilti::rt::detail;
 
 Configuration::Configuration() {
-    auto x = getenv("HILTI_DEBUG");
+    auto x = ::getenv("HILTI_DEBUG");
     debug_streams = (x ? x : "");
     cout = std::cout;
 }
