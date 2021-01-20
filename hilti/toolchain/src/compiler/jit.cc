@@ -5,6 +5,7 @@
 #include <utility>
 
 #include <hilti/rt/init.h>
+#include <hilti/rt/util.h>
 
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
@@ -198,6 +199,8 @@ hilti::Result<Nothing> JIT::_compile() {
         cc_files.push_back(cc);
     }
 
+    bool sequential = hilti::rt::getenv("HILTI_JIT_SEQUENTIAL").has_value();
+
     // Compile all C++ files.
     for ( const auto& path : cc_files ) {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("compiling %s", path.filename().native()));
@@ -227,8 +230,14 @@ hilti::Result<Nothing> JIT::_compile() {
 
         if ( auto rc = _spawnJob(hilti::configuration().cxx, std::move(args)); ! rc )
             return rc.error();
+
+        if ( sequential ) {
+            if ( auto rc = _waitForJobs(); ! rc )
+                return rc.error();
+        }
     }
 
+    // Noop if sequential.
     if ( auto rc = _waitForJobs(); ! rc )
         return rc.error();
 
