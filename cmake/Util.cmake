@@ -91,7 +91,9 @@ endfunction ()
 
 # Internal helper to link in all object libraries that libhilti needs.
 function(hilti_link_object_libraries lib)
-    target_link_libraries(${lib} "${ARGN}" hilti-objects)
+    if ( HAVE_TOOLCHAIN )
+        target_link_libraries(${lib} "${ARGN}" hilti-objects)
+    endif ()
 
     if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_link_libraries(${lib} "${ARGN}" hilti-rt-debug-objects)
@@ -132,7 +134,9 @@ endfunction ()
 
 # Internal helper to link in all object libraries that libspicy needs.
 function(spicy_link_object_libraries lib)
-    target_link_libraries(${lib} "${ARGN}" spicy-objects)
+    if ( HAVE_TOOLCHAIN )
+        target_link_libraries(${lib} "${ARGN}" spicy-objects)
+    endif ()
 
     if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_link_libraries(${lib} "${ARGN}" spicy-rt-debug-objects)

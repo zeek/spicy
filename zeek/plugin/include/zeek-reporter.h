@@ -7,10 +7,11 @@
 
 #pragma once
 
-#include <compiler/debug.h>
 #include <stdlib.h>
 
 #include <string>
+
+#include <zeek-spicy/debug.h>
 
 #include "plugin.h"
 

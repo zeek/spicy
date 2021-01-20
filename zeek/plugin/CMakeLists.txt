@@ -23,6 +23,10 @@ set(CMAKE_CXX_FLAGS ${save_cxx_flags})
 
 zeek_plugin_begin(_Zeek Spicy)
 
+if ( HAVE_TOOLCHAIN )
+    zeek_plugin_cc(src/driver.cc)
+endif ()
+
 zeek_plugin_cc(src/file-analyzer.cc)
 zeek_plugin_cc(src/plugin.cc)
 zeek_plugin_cc(src/packet-analyzer.cc)
@@ -53,16 +57,16 @@ else ()
 endif ()
 
 target_include_directories(${_plugin_lib} BEFORE PRIVATE include)
-target_link_libraries(${_plugin_lib} zeek-compiler)
 
 if ( HAVE_TOOLCHAIN )
+    target_link_libraries(${_plugin_lib} zeek-compiler)
     hilti_link_libraries(${_plugin_lib})
     spicy_link_libraries(${_plugin_lib})
 else ()
-    # Just need the runtimes.
-    target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
-    target_link_libraries(${_plugin_lib} $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
+    hilti_link_object_libraries(${_plugin_lib})
+    spicy_link_object_libraries(${_plugin_lib})
 endif ()
+
 
 # Create an alias for the plugin target.
 add_custom_target(zeek-plugin DEPENDS ${_plugin_lib})

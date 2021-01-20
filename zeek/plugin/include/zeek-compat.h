@@ -1,6 +1,6 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 //
-// Provides backwards compability for older Zeek versions.
+// Provides backwards compatibility for older Zeek versions.
 
 #pragma once
 
