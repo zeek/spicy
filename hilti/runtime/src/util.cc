@@ -73,6 +73,13 @@ hilti::rt::ResourceUsage hilti::rt::resource_usage() {
     return stats;
 }
 
+std::optional<std::string> hilti::rt::getenv(const std::string& name) {
+    if ( auto x = ::getenv(name.c_str()) )
+        return {x};
+    else
+        return {};
+}
+
 hilti::rt::Result<hilti::rt::filesystem::path> hilti::rt::createTemporaryFile(const std::string& prefix) {
     std::error_code ec;
     auto tmp_dir = hilti::rt::filesystem::temp_directory_path(ec);

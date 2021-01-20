@@ -19,16 +19,6 @@ TEST_CASE("bytes_to_hexstring") {
     CHECK_EQ(bytes_to_hexstring("\x01\x02\x03"_b), "010203");
 }
 
-TEST_CASE("getenv") {
-    CHECK_EQ(spicy::rt::getenv(""), std::nullopt);
-
-    const auto home = spicy::rt::getenv("HOME");
-    REQUIRE(home);
-    CHECK_FALSE(home->empty());
-
-    CHECK_EQ(spicy::rt::getenv("SPICY_TEST_ENV_DOES_NOT_EXIST"), std::nullopt);
-}
-
 TEST_CASE("version") { CHECK_FALSE(version().empty()); }
 
 TEST_SUITE_END();

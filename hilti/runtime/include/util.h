@@ -63,6 +63,9 @@ struct ResourceUsage {
 /** Returns statistics about the current resource uage. */
 ResourceUsage resource_usage();
 
+/** Returns the value of an environment variable, if set. */
+extern std::optional<std::string> getenv(const std::string& name);
+
 /**
  * Creates a temporary file in the system temporary directory.
  *
