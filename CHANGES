@@ -1,4 +1,18 @@
 
+0.4.0-1277 | 2021-01-20 19:55:47 +0000
+
+  * Add final newline to ASCII output of spicy-dump. (Robin Sommer,
+    Corelight)
+
+  * GH-671: Fix parsing of empty look-ahead vectors. (Robin Sommer,
+    Corelight)
+
+  * Fix Zeek plugin build when toolchain is disabled. (Robin Sommer,
+    Corelight)
+
+  * Let the autogen-version script execute out of the top-level
+    directory. (Robin Sommer, Corelight)
+
 0.4.0-1270 | 2021-01-20 14:04:16 +0100
 
   * Allow to enforce sequential execution of jobs spawned during JIT.
