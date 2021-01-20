@@ -93,18 +93,6 @@ like to hear from you!
   list](https://lists.zeek.org/mailman3/lists/spicy-commits.lists.zeek.org) (it can
   be noisy).
 
-## Status
-
-Spicy is currently in a very early beta phase, it's *not* yet ready
-for production usage. You'll find plenty rough edges still, including
-unstable code, missing features, and confusing error messages if you
-do something unexpected. Specifics of the language and the toolchain
-may still change as well—there's no release yet, just a git `master`
-branch that keeps moving. We don't recommend Spicy and its parsers for
-anything critical yet, but we're very interested in feedback as we're
-working to stabilize all this.
-
-
 ## License
 
 Spicy is open source and released under a BSD license, which allows

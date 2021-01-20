@@ -50,16 +50,6 @@ History
     <https://www.corelight.com>`_, which has contributed the new
     implementation to the Zeek Project.
 
-.. note::
-
-    Spicy is currently in a very early beta phase, it's *not* yet
-    ready for production usage. You'll find plenty rough edges still,
-    including unstable code, missing features, and confusing error
-    messages if you do something unexpected. Specifics of the language
-    and the toolset may still change as well---there's no release yet,
-    just a git ``master`` branch that keeps moving. We don't recommend
-    Spicy and its parsers for anything critical yet, but we're very
-    interested in feedback as we're working to stabilize all this.
 
 Getting in Touch
 ----------------
