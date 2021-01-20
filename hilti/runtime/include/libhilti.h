@@ -1,6 +1,10 @@
 // Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
 
-#pragma once
+// Do not use "#pragma once here". We use this file as top-level for header
+// pre-compilation, and GCC doesn't like that there.
+// See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64117
+#ifndef HILTI_RUNTIME_LIBHILTI_H
+#define HILTI_RUNTIME_LIBHILTI_H
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/configuration.h>
@@ -20,3 +24,5 @@
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt::bytes::literals; // NOLINT (google-global-names-in-headers)
+
+#endif
