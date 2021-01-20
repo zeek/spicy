@@ -22,7 +22,7 @@ cmake_use_ccache="no"
 cmake_use_gold="yes"
 cmake_use_precompiled_headers="yes"
 cmake_use_sanitizers=""
-cmake_use_werror="false"
+cmake_use_werror="no"
 cmake_zeek_have_jit="yes"
 cmake_zeek_root_dir="/usr/local/zeek"
 cmake_zeek_install_plugin="yes"
@@ -109,7 +109,7 @@ while [ $# -ne 0 ]; do
 
     case "$1" in
         --build-dir=*|--builddir=*)        cmake_build_directory="${optarg}";;
-        --build-static-libs)               cmake_build_shared_libs="false";;
+        --build-static-libs)               cmake_build_shared_libs="no";;
         --build-toolchain=*)               cmake_build_toolchain="${optarg}";;
         --build-type=*)                    cmake_build_type="${optarg}";;
         --build-zeek-plugin=*)             cmake_build_zeek_plugin="${optarg}";;

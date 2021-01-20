@@ -79,7 +79,7 @@ else ()
    set(HILTI_HAVE_SANITIZER "no" CACHE BOOL "Using sanitizer")
 endif()
 
-if (USE_WERROR)
+if ( USE_WERROR )
     set(werror_flags "-Werror")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")
     set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${werror_flags}")
@@ -163,6 +163,11 @@ if ( ZEEK_FOUND )
 else ()
     set(HAVE_ZEEK no)
     set(BUILD_ZEEK_PLUGIN no)
+    set(ZEEK_VERSION "")
+    set(ZEEK_VERSION_NUMBER "")
+    set(ZEEK_DEBUG_BUILD "")
+    set(ZEEK_PREFIX "")
+    set(ZEEK_INSTALL_PLUGIN "")
 endif ()
 
 option(BUILD_TOOLCHAIN "Build the spicy compiler toolchain" ON)
@@ -200,6 +205,12 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)
 string(STRIP "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${BuildType}}" cflags)
 string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BuildType}}" cxxflags)
 
+if ( ZEEK_VERSION_NUMBER )
+    set(ZEEK_VERSION_DISPLAY "${ZEEK_VERSION} (${ZEEK_VERSION_NUMBER})")
+else ()
+    set(ZEEK_VERSION_DISPLAY "${ZEEK_VERSION}") # probably just empty
+endif ()
+
 # Global test target
 add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS tests)
 add_custom_target(tests DEPENDS hilti-tests spicy-tests)
@@ -234,7 +245,7 @@ message(
     "\nPrecompile headers:    ${HILTI_DEV_PRECOMPILE_HEADERS}"
     "\n"
     "\nZeek found:            ${HAVE_ZEEK}"
-    "\nZeek version:          ${ZEEK_VERSION} (${ZEEK_VERSION_NUMBER})"
+    "\nZeek version:          ${ZEEK_VERSION_DISPLAY}"
     "\nZeek debug build:      ${ZEEK_DEBUG_BUILD}"
     "\nZeek root dir:         ${ZEEK_PREFIX}"
     "\nZeek plugin install:   ${ZEEK_INSTALL_PLUGIN}"
