@@ -258,8 +258,10 @@ int main(int argc, char** argv) {
 
             if ( driver.opt_json )
                 JSONPrinter(std::cout, driver.output_options).print(unit->value());
-            else
+            else {
                 TextPrinter(std::cout, driver.output_options).print(unit->value());
+                std::cout << std::endl;
+            }
         }
 
         driver.finishRuntime();
