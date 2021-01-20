@@ -1,4 +1,22 @@
 
+0.4.0-1270 | 2021-01-20 14:04:16 +0100
+
+  * Allow to enforce sequential execution of jobs spawned during JIT.
+    If the environment variable `HILTI_JIT_SEQUENTIAL` is set jobs are
+    executed sequentially. (Benjamin Bannier, Corelight)
+
+  * Use sequential JIT mode in CI to save memory. (Benjamin Bannier,
+    Corelight)
+
+  * GH-582: Add master CI task for macOS Big Sur. (Benjamin Bannier,
+    Corelight)
+
+  * GH-670: Remove pre-commit hooks which require external tool
+    installation. (Benjamin Bannier, Corelight)
+
+  * Move `spicy::rt::getenv` to `hilti::rt`. (Benjamin Bannier,
+    Corelight)
+
 0.4.0-1262 | 2021-01-19 08:28:41 +0000
 
   * macOS fixes (Robin Sommer, Corelight)
