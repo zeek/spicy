@@ -48,7 +48,6 @@ Configure options:
     --clang-format <path>          Path to clang-format to use (default: found in PATH)
     --clang-tidy <path>            Path to clang-tidy to use   (default: found in PATH)
     --cxx-compiler <path>          Path to C++ compiler to use (default: found by cmake)
-    --disable-jit                  Do not compile in support for JIT compilation
     --disable-precompiled-headers  Disable use of precompiled headers for developer tests
     --rpath <path>                 Additional rpaths to use; will end up in LD_LIBRARY_PATH (default: none)
     --with-zeek <path>             Path to Zeek installation to use (default: none)
@@ -153,11 +152,6 @@ function run_configure {
                 zeek_ld_preload="$2"
                 test -e ${zeek_ld_preload} || error "zeek_ld_preload path not found: $2"
                 shift 2;
-                ;;
-
-            --disable-jit)
-                configure="${configure} --disable-jit"
-                shift 1;
                 ;;
 
             --disable-precompiled-headers)

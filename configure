@@ -16,14 +16,12 @@ cmake_c_compiler=""
 cmake_cxx_compiler=""
 cmake_flex_root=""
 cmake_generator=""
-cmake_hilti_have_jit="yes"
 cmake_install_prefix="/usr/local"
 cmake_use_ccache="no"
 cmake_use_gold="yes"
 cmake_use_precompiled_headers="yes"
 cmake_use_sanitizers=""
 cmake_use_werror="no"
-cmake_zeek_have_jit="yes"
 cmake_zeek_root_dir="/usr/local/zeek"
 cmake_zeek_install_plugin="yes"
 
@@ -114,8 +112,6 @@ while [ $# -ne 0 ]; do
         --build-type=*)                    cmake_build_type="${optarg}";;
         --build-zeek-plugin=*)             cmake_build_zeek_plugin="${optarg}";;
         --disable-gold)                    cmake_use_gold="no";;
-        --disable-jit)                     cmake_hilti_have_jit="no";;
-        --disable-jit-for-zeek)            cmake_zeek_have_jit="no";;
         --disable-precompiled-headers)     cmake_use_precompiled_headers="no";;
         --disable-zeek-plugin-install)     cmake_zeek_install_plugin="no";;
         --enable-ccache)                   cmake_use_ccache="yes";;
