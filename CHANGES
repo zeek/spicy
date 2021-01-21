@@ -1,4 +1,8 @@
 
+0.4.0-1305 | 2021-01-21 15:34:39 +0000
+
+  * Fix failing Zeek tests. (Robin Sommer, Corelight)
+
 0.4.0-1304 | 2021-01-21 13:37:38 +0000
 
   * Fix a couple of issues with Zeek 4.0. (Robin Sommer, Corelight)
