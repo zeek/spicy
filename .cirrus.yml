@@ -416,7 +416,7 @@ docker_centos_8_task:
     type: application/gzip
 
 homebrew_catalina_task:
-  only_if: $CIRRUS_BRANCH == 'master'
+  skip: $CIRRUS_BRANCH != 'master'
 
   osx_instance:
     image: catalina-base
@@ -427,7 +427,7 @@ homebrew_catalina_task:
   - brew test spicy
 
 homebrew_big_sur_task:
-  only_if: $CIRRUS_BRANCH == 'master'
+  skip: $CIRRUS_BRANCH != 'master'
 
   osx_instance:
     image: big-sur-base
@@ -438,7 +438,7 @@ homebrew_big_sur_task:
   - brew test spicy
 
 docker_debian9_task:
-  only_if: $CIRRUS_BRANCH == 'master'
+  skip: $CIRRUS_BRANCH != 'master'
   container:
     dockerfile: docker/Dockerfile.debian-9
     cpu: 4
@@ -518,7 +518,7 @@ docker_debian10_task:
     type: application/gzip
 
 docker_ubuntu16_task:
-  only_if: $CIRRUS_BRANCH == 'master'
+  skip: $CIRRUS_BRANCH != 'master'
   container:
     dockerfile: docker/Dockerfile.ubuntu-16
     cpu: 4
@@ -558,7 +558,7 @@ docker_ubuntu16_task:
     type: application/gzip
 
 docker_ubuntu18_task:
-  only_if: $CIRRUS_BRANCH == 'master'
+  skip: $CIRRUS_BRANCH != 'master'
   container:
     dockerfile: docker/Dockerfile.ubuntu-18
     cpu: 4
@@ -598,7 +598,7 @@ docker_ubuntu18_task:
     type: application/gzip
 
 docker_ubuntu20_task:
-  only_if: $CIRRUS_BRANCH == 'master'
+  skip: $CIRRUS_BRANCH != 'master'
   container:
     dockerfile: docker/Dockerfile.ubuntu-20
     cpu: 4
@@ -638,7 +638,7 @@ docker_ubuntu20_task:
     type: application/gzip
 
 docker_fedora32_task:
-  only_if: $CIRRUS_BRANCH == 'master'
+  skip: $CIRRUS_BRANCH != 'master'
   container:
     dockerfile: docker/Dockerfile.fedora-32
     cpu: 4
@@ -678,7 +678,7 @@ docker_fedora32_task:
     type: application/gzip
 
 docker_fedora33_task:
-  only_if: $CIRRUS_BRANCH == 'master'
+  skip: $CIRRUS_BRANCH != 'master'
   container:
     dockerfile: docker/Dockerfile.fedora-33
     cpu: 4
@@ -720,7 +720,7 @@ docker_fedora33_task:
 clang11_zeek_nightly_task:
   # This task is only executed on master.
   # Failing this task does not fail the build.
-  only_if: $CIRRUS_BRANCH == 'master'
+  skip: $CIRRUS_BRANCH != 'master'
   allow_failures: true
 
   container:
