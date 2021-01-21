@@ -12,9 +12,17 @@
 
 .. rubric:: Operators
 
+.. spicy:operator:: map::Begin <iterator> begin(<container>)
+
+    Returns an iterator to the beginning of the container's content.
+
 .. spicy:operator:: map::Delete void delete <sp> t:map[element]
 
     Removes an element from the map.
+
+.. spicy:operator:: map::End <iterator> end(<container>)
+
+    Returns an iterator to the end of the container's content.
 
 .. spicy:operator:: map::Equal bool t:map <sp> op:== <sp> t:map
 

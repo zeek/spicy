@@ -34,6 +34,14 @@
 
 .. rubric:: Operators
 
+.. spicy:operator:: stream::Begin <iterator> begin(<container>)
+
+    Returns an iterator to the beginning of the container's content.
+
+.. spicy:operator:: stream::End <iterator> end(<container>)
+
+    Returns an iterator to the end of the container's content.
+
 .. spicy:operator:: stream::Size uint<64> op:| t:stream op:|
 
     Returns the number of stream the value contains.
