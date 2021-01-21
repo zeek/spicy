@@ -310,7 +310,7 @@ function run_test_clang_tidy {
 function run_test_code {
     rc=0
 
-    pre-commit run -a || rc=1
+    SKIP=clang-format pre-commit run -a || rc=1
 
     pushd $(pwd) >/dev/null
     run_test_clang_format || rc=1
