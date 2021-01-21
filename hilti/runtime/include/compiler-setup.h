@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 //
 // This file is included at the beginning of each generated
 // C++ file to setup compiler options.

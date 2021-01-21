@@ -1,4 +1,4 @@
-# Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 set(AUTOGEN_H        "${CMAKE_BINARY_DIR}/include/hilti/rt/autogen")
 set(AUTOGEN_CC       "${CMAKE_BINARY_DIR}/hilti/runtime/src/autogen")

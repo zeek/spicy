@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 //
 // Note: We don't run clang-tidy on this file. The use of the JRX's C
 // interface triggers all kinds of warnings.

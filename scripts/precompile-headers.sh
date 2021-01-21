@@ -40,16 +40,13 @@ VERSION=$(${HILTI_CONFIG} --version | cut -d ' ' -f1)
 # if set; else a patch under the user's home directory is used.
 CACHE=${SPICY_CACHE:-$HOME/.cache/spicy/${VERSION}}
 
-echo "Clearing cache directory $CACHE"
 rm -rf "${CACHE}"
 mkdir -p "${CACHE}"
 
 # NOTE: The compiler invocation here should be kept in sync
 # with what we do in `hilti/runtime/CMakeLists.txt`.
 cp "${LIBHILTI}" "${CACHE}/precompiled_libhilti_debug.h"
-echo "Creating ${CACHE}/precompiled_libhilti_debug.h.pch"
 $("${HILTI_CONFIG}" --cxx --cxxflags --debug) -x c++-header "${LIBHILTI}" -o "${CACHE}/precompiled_libhilti_debug.h.pch"
 
 cp "${LIBHILTI}" "${CACHE}/precompiled_libhilti.h"
-echo "Creating ${CACHE}/precompiled_libhilti.h.pch"
 $("${HILTI_CONFIG}" --cxx --cxxflags) -x c++-header "${LIBHILTI}" -o "${CACHE}/precompiled_libhilti.h.pch"

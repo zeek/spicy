@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/id.h>

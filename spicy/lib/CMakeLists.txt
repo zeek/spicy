@@ -1,4 +1,4 @@
-# Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION ${CMAKE_INSTALL_DATADIR}/spicy

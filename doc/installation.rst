@@ -240,7 +240,7 @@ To build Spicy, you will need:
 
     - For testing:
 
-        * `BTest <https://github.com/zeek/btest>`_  >= 0.61 (``pip install btest``)
+        * `BTest <https://github.com/zeek/btest>`_  >= 0.66 (``pip install btest``)
         * Bash (for BTest)
 
     - For building the documentation:

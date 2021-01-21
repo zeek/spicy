@@ -81,28 +81,17 @@ which provides the following sections:
 Having trouble using Spicy? Have ideas how to make Spicy better? We'd
 like to hear from you!
 
-- Report issues on [GitHub](https://github.com/zeek/spicy/issues).
+- Report issues on the GitHub [ticket tracker](https://github.com/zeek/spicy/issues).
 
 - Ask the `#spicy` channel [on Zeek's Slack](https://zeek.org/connect).
+
+- Propose ideas, and show what you're doing, in GitHub's [Discussions](https://github.com/zeek/spicy/discussions)
 
 - Subscribe to the [Spicy mailing list](https://lists.zeek.org/mailman3/lists/spicy.lists.zeek.org)
 
 - To follow development, subscribe to the [commits mailing
   list](https://lists.zeek.org/mailman3/lists/spicy-commits.lists.zeek.org) (it can
   be noisy).
-
-
-## Status
-
-Spicy is currently in a very early beta phase, it's *not* yet ready
-for production usage. You'll find plenty rough edges still, including
-unstable code, missing features, and confusing error messages if you
-do something unexpected. Specifics of the language and the toolchain
-may still change as well—there's no release yet, just a git `master`
-branch that keeps moving. We don't recommend Spicy and its parsers for
-anything critical yet, but we're very interested in feedback as we're
-working to stabilize all this.
-
 
 ## License
 

@@ -50,16 +50,6 @@ History
     <https://www.corelight.com>`_, which has contributed the new
     implementation to the Zeek Project.
 
-.. note::
-
-    Spicy is currently in a very early beta phase, it's *not* yet
-    ready for production usage. You'll find plenty rough edges still,
-    including unstable code, missing features, and confusing error
-    messages if you do something unexpected. Specifics of the language
-    and the toolset may still change as well---there's no release yet,
-    just a git ``master`` branch that keeps moving. We don't recommend
-    Spicy and its parsers for anything critical yet, but we're very
-    interested in feedback as we're working to stabilize all this.
 
 Getting in Touch
 ----------------
@@ -67,11 +57,11 @@ Getting in Touch
 Having trouble using Spicy? Have ideas how to make Spicy better? We'd
 like to hear from you!
 
-    - Check out the `FAQ <http://docs.zeek.org/projects/spicy>`_ to see if any of that helps.
-
-    - Report issues on `GitHub <https://github.com/zeek/spicy/issues>`_.
+    - Report issues on the GitHub `ticket tracker <https://github.com/zeek/spicy/issues>`_.
 
     - Ask the ``#spicy`` channel on `Zeek's Slack <https://zeek.org/connect>`_.
+
+    - Propose ideas, and show what you're doing, in GitHub's `Discussions <https://github.com/zeek/spicy/discussions>`_.
 
     - Subscribe to the `Spicy mailing list <https://lists.zeek.org/mailman3/lists/spicy.lists.zeek.org>`_.
 
