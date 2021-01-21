@@ -19,7 +19,7 @@ using namespace spicy::zeek;
 using namespace spicy::zeek::rt;
 using namespace plugin::Zeek_Spicy;
 
-void PacketState::debug(const std::string_view& msg) { spicy::zeek::rt::debug(_cookie, msg); }
+void PacketState::debug(const std::string& msg) { spicy::zeek::rt::debug(_cookie, msg); }
 
 static auto create_packet_state(PacketAnalyzer* analyzer) {
     cookie::PacketAnalyzer cookie;

@@ -41,11 +41,11 @@ public:
      *
      * @param msg message to record
      */
-    void DebugMsg(const std::string_view& msg) { debug(msg); }
+    void DebugMsg(const std::string& msg) { debug(msg); }
 
 protected:
     // Overridden from driver::ParsingState.
-    void debug(const std::string_view& msg) override;
+    void debug(const std::string& msg) override;
 
 private:
     Cookie _cookie;
@@ -58,7 +58,7 @@ public:
     virtual ~PacketAnalyzer();
 
     /** Records a debug message. */
-    void DebugMsg(const std::string_view& msg) { _state.DebugMsg(msg); }
+    void DebugMsg(const std::string& msg) { _state.DebugMsg(msg); }
 
     static ::zeek::packet_analysis::AnalyzerPtr Instantiate(std::string name) {
         name = ::zeek::util::canonify_name(name);
