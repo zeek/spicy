@@ -1,4 +1,25 @@
 
+0.4.0-1304 | 2021-01-21 13:37:38 +0000
+
+  * Fix a couple of issues with Zeek 4.0. (Robin Sommer, Corelight)
+
+  * GH-640: Extend spicy-doc to document begin/end operators. (Robin
+    Sommer, Corelight)
+
+  * Bulk update of all test baselines. (Robin Sommer, Corelight)
+
+  * Update copyright headers. (Robin Sommer, Corelight)
+
+  * Do not use #pragma once in libhilti.h. (Robin Sommer, Corelight)
+
+  * Disable output from header compilation. (Robin Sommer, Corelight)
+
+  * Update README. (Robin Sommer, Corelight)
+
+  * Remove unused TLS baselines. (Robin Sommer, Corelight)
+
+  * Prettify configure output. (Robin Sommer, Corelight)
+
 0.4.0-1286 | 2021-01-21 12:04:58 +0100
 
   * Add CI job to validate release tarball. (Benjamin Bannier,

@@ -3,6 +3,8 @@
 # @TEST-EXEC: spicyz -C -o http.hlto ${DIST}/spicy/lib/protocols/http.spicy ${DIST}/zeek/plugin/lib/protocols/http.evt
 # @TEST-EXEC: ${SCRIPTS}/run-zeek -NN http.hlto | grep -q spicy_HTTP
 # @TEST-EXEC: ${SCRIPTS}/run-zeek -r ${TRACES}/http-post.trace frameworks/files/hash-all-files http.hlto %INPUT | sort >output
+#   With Zeek 4.0, order of file analyzers changed in output
+# @TEST-EXEC: cat files.log | sed 's/SHA1,MD5/MD5,SHA1/g' >files.log.tmp && mv -f files.log.tmp files.log
 # @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff conn.log
 # @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff http.log
 # @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff files.log
