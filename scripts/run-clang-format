@@ -2,7 +2,9 @@
 #
 # Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-base=$(dirname $0)
+set -e
+
+base=$(dirname $0)/..
 fix=0
 pre_commit_hook=0
 
