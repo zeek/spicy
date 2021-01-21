@@ -12,6 +12,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV CCACHE_DIR=/var/spool/ccache
 ENV CCACHE_COMPRESS=1
 
+# We use clang to build as Spicy requires a C++17-capable compiler. Bionic
+# ships with gcc-8.4.0, but we require at least gcc-9 which is only available
+# in testing here. Use an LLVM stack instead.
+ENV CXX=clang++-9
+ENV CC=clang-9
+
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 \
  # Zeek.
@@ -50,9 +56,6 @@ RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.1
 ENV PATH="/usr/local/cmake/bin:${PATH}"
 
 WORKDIR /root
-
-ENV CXX=clang++-9
-ENV CC=clang-9
 
 # Install Spicy.
 ADD . /opt/spicy/src

@@ -216,7 +216,7 @@ macos_catalina_task:
     - pip3 install "btest>=0.66" sphinx_rtd_theme
 
   configure_script:
-    - ./configure --generator=Ninja --with-cxx-compiler=/usr/local/opt/llvm/bin/clang++ --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache
+    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache
   build_script:
     - ninja -C build all check
   test_build_script:
@@ -325,9 +325,9 @@ docker_alpine_3_12_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++
+    - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -364,9 +364,9 @@ docker_centos_7_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - source scl_source enable devtoolset-9 && LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=/opt/rh/devtoolset-9/root/usr/bin/clang++
+    - source scl_source enable devtoolset-9 && LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - source scl_source enable devtoolset-9 && ninja -j5 -C build install
+    - source scl_source enable devtoolset-9 && ninja -j4 -C build install
   test_script:
     - cd tests && source scl_source enable devtoolset-9 && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -403,9 +403,9 @@ docker_centos_8_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -442,7 +442,7 @@ docker_debian9_task:
   container:
     dockerfile: docker/Dockerfile.debian-9
     cpu: 4
-    memory: 8G
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -467,7 +467,7 @@ docker_debian9_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -482,7 +482,7 @@ docker_debian10_task:
   container:
     dockerfile: docker/Dockerfile.debian-10
     cpu: 4
-    memory: 8G
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -507,7 +507,7 @@ docker_debian10_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -522,7 +522,7 @@ docker_ubuntu16_task:
   container:
     dockerfile: docker/Dockerfile.ubuntu-16
     cpu: 4
-    memory: 8G
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -547,7 +547,7 @@ docker_ubuntu16_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -562,7 +562,7 @@ docker_ubuntu18_task:
   container:
     dockerfile: docker/Dockerfile.ubuntu-18
     cpu: 4
-    memory: 8G
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -587,7 +587,7 @@ docker_ubuntu18_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -602,7 +602,7 @@ docker_ubuntu20_task:
   container:
     dockerfile: docker/Dockerfile.ubuntu-20
     cpu: 4
-    memory: 8G
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -627,7 +627,7 @@ docker_ubuntu20_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -642,7 +642,7 @@ docker_fedora32_task:
   container:
     dockerfile: docker/Dockerfile.fedora-32
     cpu: 4
-    memory: 8G
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -667,7 +667,7 @@ docker_fedora32_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -682,7 +682,7 @@ docker_fedora33_task:
   container:
     dockerfile: docker/Dockerfile.fedora-33
     cpu: 4
-    memory: 8G
+    memory: 12G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -707,7 +707,7 @@ docker_fedora33_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -808,7 +808,7 @@ freebsd11_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:
@@ -847,7 +847,7 @@ freebsd12_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local
   build_script:
-    - ninja -j5 -C build install
+    - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
   packaging_script:

@@ -15,22 +15,11 @@ RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
 RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled powertools
 
 # Install development tools.
-RUN yum install -y ccache gcc gcc-c++ gdb git make ninja-build python3 python3-pip vim doxygen diffutils
+RUN yum install -y ccache gdb git make ninja-build python3 python3-pip vim doxygen diffutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
+ENV PATH=/opt/rh/gcc-toolset-9/root/usr/bin:$PATH
 
 # Need a more recent CMake than available.
 RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - && ln -s /usr/local/cmake-3.16.4-Linux-x86_64/bin/cmake /usr/local/bin
-
-# Need to compile Clang, there don't seem to be packages out there for v9.
-RUN mkdir -p /opt/clang9/src && \
-    cd /opt/clang9/src && \
-    git clone --branch llvmorg-9.0.1 --single-branch --recursive https://github.com/llvm/llvm-project.git && \
-    cd llvm-project && \
-    mkdir build && \
-    cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DLLVM_TARGETS_TO_BUILD=host -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON -G Ninja ../llvm && \
-    ninja install && \
-    cd ../../.. && \
-    rm -rf /opt/clang9
 
 # Install Spicy dependencies.
 RUN yum install -y flex python3-sphinx
@@ -56,4 +45,4 @@ WORKDIR /root
 
 # Install Spicy.
 ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --with-cxx-compiler=clang++ && ninja -C build install && rm -rf build)
+RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)
