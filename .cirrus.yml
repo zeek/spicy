@@ -415,6 +415,47 @@ docker_centos_8_task:
     path: build/spicy-*.tar.gz
     type: application/gzip
 
+validate_release_tarball_task:
+  skip: $CIRRUS_BRANCH != 'master'
+
+  container:
+    dockerfile: ci/Dockerfile
+    cpu: 4
+    memory: 12G
+    docker_arguments:
+      - SKIP_BUILD: 1
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  create_tarball_script:
+    - scripts/make-tarball.sh
+  unpack_script:
+    - mkdir /tmp/spicy-tarball
+    - tar xf spicy.tar.bz2 -C /tmp/spicy-tarball
+    - cd /tmp/spicy-tarball
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+  build_script:
+    - ninja -j3 -C build
+  test_script:
+    - cd tests && btest -j -d
+
 homebrew_catalina_task:
   skip: $CIRRUS_BRANCH != 'master'
 
