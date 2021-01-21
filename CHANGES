@@ -1,4 +1,18 @@
 
+0.4.0-1286 | 2021-01-21 12:04:58 +0100
+
+  * Add CI job to validate release tarball. (Benjamin Bannier,
+    Corelight)
+
+  * Document more platforms in the installation docs. (Benjamin
+    Bannier, Corelight)
+
+  * Use "default" compiler if possible in Docker images. (Benjamin
+    Bannier, Corelight)
+
+  * Make master-only CI tasks triggerable. (Benjamin Bannier,
+    Corelight)
+
 0.4.0-1277 | 2021-01-20 19:55:47 +0000
 
   * Add final newline to ASCII output of spicy-dump. (Robin Sommer,
