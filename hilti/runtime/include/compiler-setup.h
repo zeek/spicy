@@ -12,6 +12,6 @@
 #if defined(__clang__)
 // Clang-specific options.
 #pragma clang diagnostic ignored "-Wtautological-compare"
-#elif defined(__GNUC__ ) // note that clang defines this as well
+#elif defined(__GNUC__) // note that clang defines this as well
 // GCC-specific options
 #endif

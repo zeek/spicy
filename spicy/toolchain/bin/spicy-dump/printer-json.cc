@@ -4,9 +4,9 @@
 
 #include <string>
 
+#include <hilti/rt/json.h>
 #include <hilti/rt/libhilti.h>
 
-#include <hilti/rt/json.h>
 #include <spicy/rt/util.h>
 
 using namespace hilti::rt;

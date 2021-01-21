@@ -48,10 +48,10 @@ struct Options {
     bool output_linker = false;     /**< output generated HILTI linker C++ code */
     Dependencies output_dependencies = Dependencies::None; /**< output dependencies for compiled modules */
     bool execute_code = false;                             /**< compile code, and execute unless output_path is set */
-    bool show_backtraces = false;       /**< include backtraces when printing unhandled exceptions */
-    bool abort_on_exceptions = false;   /**< abort() instead of throwing HILTI exceptions */
-    bool keep_tmps = false;             /**< do not delete any temporary files created */
-    bool skip_dependencies = false;     /**< do not automatically compile dependencies during JIT */
+    bool show_backtraces = false;                          /**< include backtraces when printing unhandled exceptions */
+    bool abort_on_exceptions = false;                      /**< abort() instead of throwing HILTI exceptions */
+    bool keep_tmps = false;                                /**< do not delete any temporary files created */
+    bool skip_dependencies = false;                        /**< do not automatically compile dependencies during JIT */
     bool report_resource_usage = false; /**< print summary of runtime resource usage at termination */
     bool report_times = false;          /**< Report break-down of driver's execution time. */
     bool dump_code = false;             /**< Record all final HILTI and C++ code to disk for debugging.  */
@@ -423,8 +423,8 @@ private:
     std::set<hilti::ID> _processed_units;
     std::set<hilti::rt::filesystem::path> _processed_paths;
 
-    std::shared_ptr<Context> _ctx;    // driver's compiler context
-    std::unique_ptr<hilti::JIT> _jit; // driver's JIT instance
+    std::shared_ptr<Context> _ctx;                      // driver's compiler context
+    std::unique_ptr<hilti::JIT> _jit;                   // driver's JIT instance
     std::shared_ptr<const hilti::rt::Library> _library; // Compiled code
 
     std::vector<CxxCode> _generated_cxxs;

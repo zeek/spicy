@@ -13,9 +13,9 @@
 #include <unordered_map>
 #include <utility>
 
-#include <hilti/base/util.h>
-#include <hilti/base/optional-ref.h>
 #include <hilti/base/intrusive-ptr.h>
+#include <hilti/base/optional-ref.h>
+#include <hilti/base/util.h>
 
 namespace hilti::util::type_erasure {
 

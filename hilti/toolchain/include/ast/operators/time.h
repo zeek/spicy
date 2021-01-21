@@ -37,7 +37,11 @@ END_METHOD
 
 BEGIN_METHOD(time, Nanoseconds)
     auto signature() const {
-        return Signature{.self = type::Time(), .result = type::UnsignedInteger(64), .id = "nanoseconds", .args = {}, .doc = R"(
+        return Signature{.self = type::Time(),
+                         .result = type::UnsignedInteger(64),
+                         .id = "nanoseconds",
+                         .args = {},
+                         .doc = R"(
 Returns the time as an integer value representing nanoseconds since the UNIX epoch.
 )"};
     }

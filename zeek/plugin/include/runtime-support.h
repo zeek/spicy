@@ -89,8 +89,7 @@ void register_file_analyzer(const std::string& name, const hilti::rt::Vector<std
  * Registers a Spicy packet analyzer with its EVT meta information with the
  * plugin's runtime.
  */
-void register_packet_analyzer(const std::string& name,
-                            const std::string& parser);
+void register_packet_analyzer(const std::string& name, const std::string& parser);
 
 /** Registers a Spicy enum type to make it available inside Zeek. */
 void register_enum_type(const std::string& ns, const std::string& id,
@@ -113,7 +112,8 @@ void raise_event(const ::zeek::EventHandlerPtr& handler, const hilti::rt::Vector
  * Returns the Zeek type of an event's i'th argument. The result's ref count
  * is not increased.
  */
-::zeek::TypePtr event_arg_type(const ::zeek::EventHandlerPtr& handler, const hilti::rt::integer::safe<uint64_t>& idx, const std::string& location);
+::zeek::TypePtr event_arg_type(const ::zeek::EventHandlerPtr& handler, const hilti::rt::integer::safe<uint64_t>& idx,
+                               const std::string& location);
 
 /**
  * Retrieves the connection ID for the currently processed Zeek connection.

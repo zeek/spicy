@@ -83,7 +83,8 @@ void rt::raise_event(const ::zeek::EventHandlerPtr& handler, const hilti::rt::Ve
     zeek::compat::event_mgr_Enqueue(handler, vl);
 }
 
-::zeek::TypePtr rt::event_arg_type(const ::zeek::EventHandlerPtr& handler, const hilti::rt::integer::safe<uint64_t>& idx, const std::string& location) {
+::zeek::TypePtr rt::event_arg_type(const ::zeek::EventHandlerPtr& handler,
+                                   const hilti::rt::integer::safe<uint64_t>& idx, const std::string& location) {
     assert(handler);
 
     auto zeek_args =

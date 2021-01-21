@@ -6,8 +6,8 @@
 #include <memory>
 #include <string>
 
-#include <hilti/base/util.h>
 #include <hilti/base/intrusive-ptr.h>
+#include <hilti/base/util.h>
 
 namespace hilti {
 

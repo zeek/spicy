@@ -75,7 +75,6 @@ TEST_CASE("to_string") {
     std::stringstream x;
     x << p;
     CHECK_EQ(x.str(), "<parsed unit>");
-
 }
 
 TEST_SUITE_END();

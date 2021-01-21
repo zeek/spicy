@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include <compiler/driver.h>
+
 #include <string>
 #include <vector>
 
 #include <zeek-spicy/zeek-compat.h>
-
-#include <compiler/driver.h>
 
 namespace spicy::rt {
 struct Parser;
@@ -50,4 +50,4 @@ private:
     std::vector<hilti::rt::filesystem::path> _import_paths;
 };
 
-}
+} // namespace plugin::Zeek_Spicy

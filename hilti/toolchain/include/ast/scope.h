@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <hilti/base/intrusive-ptr.h>
 #include <hilti/ast/node_ref.h>
+#include <hilti/base/intrusive-ptr.h>
 
 namespace hilti {
 

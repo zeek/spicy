@@ -64,12 +64,12 @@ struct FileAnalyzer {
 /** Representation of a Spicy packet analyzer, parsed from an EVT file. */
 struct PacketAnalyzer {
     // Information parsed directly from the *.evt file.
-    hilti::Location location;            /**< Location where the analyzer was defined. */
-    hilti::ID name;                      /**< Name of the analyzer. */
-    hilti::ID unit_name;                 /**< The fully-qualified name of the unit type to parse with. */
+    hilti::Location location; /**< Location where the analyzer was defined. */
+    hilti::ID name;           /**< Name of the analyzer. */
+    hilti::ID unit_name;      /**< The fully-qualified name of the unit type to parse with. */
 
     // Computed information.
-    std::optional<UnitInfo> unit;        /**< The type of the unit to parse the originator side. */
+    std::optional<UnitInfo> unit; /**< The type of the unit to parse the originator side. */
 };
 #endif
 
@@ -201,7 +201,7 @@ private:
     std::vector<glue::ProtocolAnalyzer> _protocol_analyzers; /**< protocol analyzers parsed from EVT files */
     std::vector<glue::FileAnalyzer> _file_analyzers;         /**< file analyzers parsed from EVT files */
 #ifdef HAVE_PACKET_ANALYZERS
-    std::vector<glue::PacketAnalyzer> _packet_analyzers;     /**< file analyzers parsed from EVT files */
+    std::vector<glue::PacketAnalyzer> _packet_analyzers; /**< file analyzers parsed from EVT files */
 #endif
     std::vector<hilti::Location> _locations; /**< location stack during parsing EVT files */
 };

@@ -30,8 +30,7 @@ public:
      * later be called with the grammar that the production has been inserted
      * into.
      */
-    While(const std::string& symbol, Production body, const Location& l =
-            location::None);
+    While(const std::string& symbol, Production body, const Location& l = location::None);
 
     /** Returns the loop expression if passed into the corresponding constructor. */
     const auto& expression() const { return _expression; }
