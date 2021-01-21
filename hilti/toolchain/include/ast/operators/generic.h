@@ -46,7 +46,7 @@ END_OPERATOR_CUSTOM
 BEGIN_OPERATOR_CUSTOM(generic, Begin)
     Type result(const std::vector<Expression>& ops) const {
         if ( ops.empty() )
-            return type::DocOnly("<iterable>");
+            return type::DocOnly("<iterator>");
 
         return type::isIterable(ops[0].type()) ? ops[0].type().iteratorType(ops[0].isConstant()) : type::unknown;
     }
@@ -55,7 +55,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Begin)
 
     std::vector<Operand> operands() const {
         return {
-            {.type = type::Any()},
+            {.type = type::Any(), .doc = "<container>"},
         };
     }
 
@@ -64,13 +64,13 @@ BEGIN_OPERATOR_CUSTOM(generic, Begin)
             p.node.addError("not an iterable type");
     }
 
-    std::string doc() const { return "Returns an iterator to the beginning of a container's content."; }
+    std::string doc() const { return "Returns an iterator to the beginning of the container's content."; }
 END_OPERATOR_CUSTOM
 
 BEGIN_OPERATOR_CUSTOM(generic, End)
     Type result(const std::vector<Expression>& ops) const {
         if ( ops.empty() )
-            return type::DocOnly("<iterable>");
+            return type::DocOnly("<iterator>");
 
         return type::isIterable(ops[0].type()) ? ops[0].type().iteratorType(ops[0].isConstant()) : type::unknown;
     }
@@ -79,7 +79,7 @@ BEGIN_OPERATOR_CUSTOM(generic, End)
 
     std::vector<Operand> operands() const {
         return {
-            {.type = type::Any()},
+            {.type = type::Any(), .doc = "<container>"},
         };
     }
 
@@ -88,7 +88,7 @@ BEGIN_OPERATOR_CUSTOM(generic, End)
             p.node.addError("not an iterable type");
     }
 
-    std::string doc() const { return "Returns an iterator to the end of a container's content."; }
+    std::string doc() const { return "Returns an iterator to the end of the container's content."; }
 END_OPERATOR_CUSTOM
 
 BEGIN_OPERATOR_CUSTOM(generic, New)

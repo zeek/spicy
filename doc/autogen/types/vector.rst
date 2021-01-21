@@ -48,6 +48,14 @@
 
 .. rubric:: Operators
 
+.. spicy:operator:: vector::Begin <iterator> begin(<container>)
+
+    Returns an iterator to the beginning of the container's content.
+
+.. spicy:operator:: vector::End <iterator> end(<container>)
+
+    Returns an iterator to the end of the container's content.
+
 .. spicy:operator:: vector::Equal bool t:vector <sp> op:== <sp> t:vector
 
     Compares two vectors element-wise.

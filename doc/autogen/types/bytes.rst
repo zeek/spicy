@@ -123,6 +123,14 @@
 
 .. rubric:: Operators
 
+.. spicy:operator:: bytes::Begin <iterator> begin(<container>)
+
+    Returns an iterator to the beginning of the container's content.
+
+.. spicy:operator:: bytes::End <iterator> end(<container>)
+
+    Returns an iterator to the end of the container's content.
+
 .. spicy:operator:: bytes::Equal bool t:bytes <sp> op:== <sp> t:bytes
 
     Compares two bytes values lexicographically.
