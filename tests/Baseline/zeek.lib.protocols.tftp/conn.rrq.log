@@ -8,5 +8,5 @@
 #set_separator	,
 #types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
 #unset_field	-
-1367411051.972852	CHhAvVGS1DHFjwGM9	192.168.0.253	50618	192.168.0.10	69	udp	spicy_tftp	-	-	-	S0	-	-	0	D	1	48	0	0	-
-1367411052.077243	ClEkJM2Vm5giqnMf4h	192.168.0.10	3445	192.168.0.253	50618	udp	spicy_tftp_data	0.181558	24795	196	SF	-	-	0	Dd	49	26167	49	1568	-
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	192.168.0.253	50618	192.168.0.10	69	udp	spicy_tftp	-	-	-	S0	-	-	0	D	1	48	0	0	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	192.168.0.10	3445	192.168.0.253	50618	udp	spicy_tftp_data	0.181558	24795	196	SF	-	-	0	Dd	49	26167	49	1568	-
