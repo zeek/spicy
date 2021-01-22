@@ -1,0 +1,17 @@
+# @TEST-REQUIRES: have-zeek-plugin
+#
+# @TEST-EXEC: spicyz -C -o tls.hlto ${DIST}/spicy/lib/protocols/tls.spicy ${DIST}/zeek/plugin/lib/protocols/zeek_TLS.spicy ${DIST}/zeek/plugin/lib/protocols/tls.evt
+# @TEST-EXEC: ${SCRIPTS}/run-zeek -NN tls.hlto | grep -q spicy_TLS
+# @TEST-EXEC: ${SCRIPTS}/run-zeek -r ${TRACES}/tls/tls-conn-with-extensions.trace tls.hlto
+# @TEST-EXEC: mv x509.log x509-tls-conn-with-extensions.log
+# @TEST-EXEC: mv ssl.log ssl-tls-conn-with-extensions.log
+# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff x509-tls-conn-with-extensions.log
+# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff ssl-tls-conn-with-extensions.log
+# @TEST-EXEC: ${SCRIPTS}/run-zeek -r ${TRACES}/tls/tls13draft23-chrome67.0.3368.0-canary.pcap tls.hlto
+# @TEST-EXEC: mv ssl.log ssl-tls13draft23-chrome67.0.3368.0-canary.log
+# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff ssl-tls13draft23-chrome67.0.3368.0-canary.log
+# @TEST-EXEC: ${SCRIPTS}/run-zeek -r ${TRACES}/tls/ecdhe.pcap tls.hlto
+# @TEST-EXEC: mv x509.log x509-ecdhe.log
+# @TEST-EXEC: mv ssl.log ssl-ecdhe.log
+# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff x509-ecdhe.log
+# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff ssl-ecdhe.log
