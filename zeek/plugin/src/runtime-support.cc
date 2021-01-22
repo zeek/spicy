@@ -255,6 +255,18 @@ void rt::file_data_in_at_offset(const hilti::rt::Bytes& data, const hilti::rt::i
         throw ValueUnavailable("no current connection available");
 }
 
+void rt::file_data_in_with_mime_type(const hilti::rt::Bytes& data, const hilti::rt::integer::safe<uint64_t>& offset, const std::string& mime_type) {
+    auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
+    assert(cookie);
+
+    if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
+        ::zeek::file_mgr->DataIn(reinterpret_cast<const unsigned char*>(data.data()), data.size(), offset,
+                                 OurPlugin->tagForProtocolAnalyzer(c->analyzer->GetAnalyzerTag()), c->analyzer->Conn(),
+                                 c->is_orig, _file_id(*c), mime_type);
+    else
+        throw ValueUnavailable("no current connection available");
+}
+
 void rt::file_gap(const hilti::rt::integer::safe<uint64_t>& offset, const hilti::rt::integer::safe<uint64_t>& len) {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);

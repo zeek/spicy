@@ -214,6 +214,15 @@ void file_data_in(const hilti::rt::Bytes& data);
 void file_data_in_at_offset(const hilti::rt::Bytes& data, const hilti::rt::integer::safe<uint64_t>& offset);
 
 /**
+ * Passes file content at a specific offset and with a specific mite type on to Zeek's file analysis.
+ *
+ * @param data next chunk of data
+ * @param offset file offset of the data geing passed in
+ * @param mime_type mime type passed to Zeek
+ */
+void file_data_in_with_mime_type(const hilti::rt::Bytes& data, const hilti::rt::integer::safe<uint64_t>& offset, const std::string& mime_type);
+
+/**
  * Signals a gap in a file to Zeek's file analysis.
  *
  * @param offset of the gap
