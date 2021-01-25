@@ -1,0 +1,38 @@
+name: Publish Docker
+on:
+  push:
+    branches:
+      # Since this action pushes a `latest` image it is only active for the `master` branch.
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Checkout submodules
+      run: git submodule update --init --recursive
+    - name: Get Version
+      id: version
+      run: echo "::set-output name=RELEASE_VERSION::$(./scripts/autogen-version --short)"
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: docker/Dockerfile.ubuntu-18
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/spicy:latest
+          ${{ secrets.DOCKER_USERNAME }}/spicy:${{ steps.version.outputs.RELEASE_VERSION }}
