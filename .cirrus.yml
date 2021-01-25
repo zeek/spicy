@@ -54,6 +54,8 @@ clang9_zeek_ubuntu_debug_task:
       path: artifacts/diag.xml
       type: text/xml
       format: junit
+    clang_artifacts:
+        path: build/ci
 
 clang10_zeek_lts_ubuntu_release_task:
   container:
