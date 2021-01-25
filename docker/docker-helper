@@ -2,6 +2,8 @@
 #
 # Helper for the Makefile to trigger Docker commands with the desired image.
 
+set -e
+
 usage() {
     echo "usage: $(basename $0) build|test|run <platform>"
     exit 1
@@ -29,11 +31,11 @@ case "${cmd}" in
         ;;
 
     test)
-        docker run "spicy-${platform}:latest" /bin/sh -c "cd /opt/spicy/src/tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -q -j -d"
+        docker run --cap-add SYS_PTRACE --security-opt seccomp=unconfined "spicy-${platform}:latest" /bin/sh -c "cd /opt/spicy/src/tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -q -j -d"
         ;;
 
     run)
-        docker run --cap-add SYS_PTRACE -i -t "spicy-${platform}:latest" /bin/bash -l
+        docker run --cap-add SYS_PTRACE --security-opt seccomp=unconfined -i -t "spicy-${platform}:latest" /bin/bash -l
         ;;
 
     *) usage;;
