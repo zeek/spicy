@@ -35,8 +35,13 @@ static hilti::Plugin spicy_plugin() {
         .resolve_ids = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* n,
                           hilti::Unit* u) { return resolveIDs(n, u); },
 
-        .resolve_operators = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* /* n */, hilti::Unit*
+        // TODO(bbannier): The following line is inconsistently formatted
+        // between clang-format-10 and clang-format-11. Remove this opt out
+        // once we bump the CI formatting to llvm-11.
+        // clang-format off
+        .resolve_operators = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* /* n */, hilti::Unit *
                                 /* u */) -> bool { return false; },
+        // clang-format on
 
         .apply_coercions = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* n,
                               hilti::Unit* u) { return applyCoercions(n, u); },
