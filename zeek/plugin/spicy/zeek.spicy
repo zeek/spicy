@@ -22,16 +22,14 @@ public function flip_roles() : void &cxxname="spicy::zeek::rt::flip_roles";
 public function number_packets() : uint64 &cxxname="spicy::zeek::rt::number_packets";
 
 ## Signals the beginning of a file to Zeek's file analysis, associating it with the current connection.
-public function file_begin() : void &cxxname="spicy::zeek::rt::file_begin";
+## Optionally, a mime type can be provided. It will be passed on to Zeek's file analysis framework.
+public function file_begin(mime_type: string = "") : void &cxxname="spicy::zeek::rt::file_begin";
 
 ## Signals the expected size of a file to Zeek's file analysis.
 public function file_set_size(size: uint64) : void &cxxname="spicy::zeek::rt::file_set_size";
 
 ## Passes file content on to Zeek's file analysis.
 public function file_data_in(data: bytes) : void &cxxname="spicy::zeek::rt::file_data_in";
-
-## Passes file content at a specific offset and with a given mime_type on to Zeek's file analysis.
-public function file_data_in_with_mime_type(data: bytes, offset: uint64, mime_type: string) : void &cxxname="spicy::zeek::rt::file_data_in_with_mime_type";
 
 ## Passes file content at a specific offset on to Zeek's file analysis.
 public function file_data_in_at_offset(data: bytes, offset: uint64) : void &cxxname="spicy::zeek::rt::data_in_at_offset";
