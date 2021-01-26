@@ -622,6 +622,29 @@ to be declared as ``inout`` (e.g., ``Bar(inout s: string)``).
     That way, the subunit can for example store state directly in the
     parent.
 
+.. _unit_attributes:
+
+Unit Attributes
+===============
+
+Unit types support the following type attributes:
+
+``&size=N``
+    Limits the unit's input to ``N`` bytes, which it must fully
+    consume. Example::
+
+        type Foo = unit {
+            a: int8;
+            b: bytes &eod;
+        } &size=5;
+
+    This expects 5 bytes of input when parsing an instance of ``Foo``.
+    The unit will store the first byte into ``a``, and then fill ``b``
+    with the remaining 4 bytes.
+
+    The expression ``N`` has access to ``self`` as well as to the
+    unit's parameters.
+
 .. _unit_meta_data:
 
 Meta data

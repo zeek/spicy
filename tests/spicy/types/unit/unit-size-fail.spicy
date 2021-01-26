@@ -1,0 +1,18 @@
+# @TEST-EXEC-FAIL:  printf '1234567890' | spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC:       btest-diff output
+#
+# @TEST-DOC: Limit unit size, but don't consume it all; that's an error
+
+module Mini;
+
+import spicy;
+
+type Foo = unit {
+    x: bytes &size=2;
+} &size=5;
+
+public type Test = unit {
+    y: Foo;
+
+    on %done { print self; }
+};
