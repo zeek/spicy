@@ -154,6 +154,47 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
     int errors = 0;
 
+    void operator()(const hilti::Module& m, position_t p) {
+        if ( auto version = m.moduleProperty("%spicy-version") ) {
+            if ( ! version->expression() ) {
+                error("%spicy-version requires an argument", p);
+                return;
+            }
+
+            bool ok = false;
+            if ( auto c = version->expression()->tryAs<hilti::expression::Ctor>() ) {
+                if ( auto s = c->ctor().tryAs<hilti::ctor::String>() ) {
+                    // Parse string as either "x.y" or "x.y.z".
+
+                    if ( auto v = hilti::util::split(s->value(), "."); v.size() >= 2 && v.size() <= 3 ) {
+                        auto parse_number = [&ok](const std::string& s) {
+                            return hilti::util::chars_to_uint64(s.c_str(), 10, [&ok]() { ok = false; });
+                        };
+
+                        ok = true;
+                        int major = parse_number(v[0]);
+                        int minor = parse_number(v[1]);
+                        int patch = 0;
+
+                        if ( v.size() == 3 )
+                            patch = parse_number(v[2]);
+
+                        // This must match the computation in our autogen-version script.
+                        int version = major * 10000 + minor * 100 + patch;
+                        if ( hilti::configuration().version_number < version )
+                            error(fmt("module %s requires at least Spicy version %s (have %s)", m.id(), s->value(),
+                                      hilti::configuration().version_string),
+                                  p);
+                    }
+                }
+            }
+
+            if ( ! ok )
+                error(fmt("%%spicy-version requires argument of the form x.y[.z] (have: %s)", *version->expression()),
+                      p);
+        }
+    }
+
     void operator()(const statement::Print& /* n */, position_t p) {
         // TODO(robin): .
     }

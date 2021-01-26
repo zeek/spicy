@@ -135,7 +135,7 @@ attribute for fields that support it:
 We see that unpacking the value has now flipped the bytes before
 storing it in the ``version`` field.
 
-Similar to ``%byte-order``, Spicy offers a variety of further
+Similar to ``&byte-order``, Spicy offers a variety of further
 attributes that control the specifics of how fields are parsed. We'll
 discuss them in the relevant sections throughout the rest of this
 chapter.

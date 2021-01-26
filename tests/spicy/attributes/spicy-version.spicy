@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc -p %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that %spicy-version passes for some always-true version numbers
+
+module Test;
+
+%spicy-version = "0.3";
+
+# @TEST-START-NEXT
+
+module Test;
+
+%spicy-version = "0.3.1";
