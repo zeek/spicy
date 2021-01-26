@@ -332,8 +332,12 @@ global_scope_decl
               | property_decl                    { $$ = std::move($1); }
               | hook_decl                        { $$ = std::move($1); }
 
-type_decl     : opt_linkage TYPE scoped_id '=' type opt_attributes ';'
-                                                 { $$ = hilti::declaration::Type(std::move($3), std::move($5), std::move($6), std::move($1), __loc__); }
+type_decl     : opt_linkage TYPE scoped_id '=' type opt_attributes ';' {
+                                                   if ( auto x = $5.tryAs<type::Unit>(); x && $6 && *$6 )
+                                                       $5 = Type(type::Unit::addAttributes(*x, *$6));
+
+                                                   $$ = hilti::declaration::Type(std::move($3), std::move($5), std::move($6), std::move($1), __loc__);
+                                                 }
 
 constant_decl : opt_linkage CONST scoped_id '=' expr ';'
                                                  { $$ = hilti::declaration::Constant($3, $5, $1, __loc__); }
