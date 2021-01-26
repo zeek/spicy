@@ -89,10 +89,10 @@ TEST_CASE("assignment") {
 }
 
 TEST_CASE("at") {
-        Vector<int> xs;
-        xs = Vector<int>({1, 2, 3, 4, 5});
-        CHECK_EQ(*xs.iteratorAt(1), 2);
-        CHECK_THROWS_WITH_AS(xs.iteratorAt(5), "vector index 5 out of range", const IndexError&);
+    Vector<int> xs;
+    xs = Vector<int>({1, 2, 3, 4, 5});
+    CHECK_EQ(*xs.iteratorAt(1), 2);
+    CHECK_THROWS_WITH_AS(xs.iteratorAt(5), "vector index 5 out of range", const IndexError&);
 }
 
 TEST_CASE("sub") {

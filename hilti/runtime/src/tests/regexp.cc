@@ -178,7 +178,8 @@ TEST_CASE("matchGroups") {
         CHECK_THROWS_WITH_AS(RegExp(std::vector<std::string>({"abc", "123"})).matchGroups("abc"_b),
                              "cannot capture groups during set matching", const NotSupported&);
 
-        CHECK_EQ(RegExp(".*(a)bc", regexp::Flags{.use_std = 1}).matchGroups(" abc "_b), Vector<Bytes>({" abc"_b, "a"_b}));
+        CHECK_EQ(RegExp(".*(a)bc", regexp::Flags{.use_std = 1}).matchGroups(" abc "_b),
+                 Vector<Bytes>({" abc"_b, "a"_b}));
 
         CHECK_EQ(RegExp("a(b*)c(d.f)g", regexp::Flags{.use_std = 1}).matchGroups("xyz"_b), Vector<Bytes>());
         CHECK_EQ(RegExp("a(b*)c(d.f)g", regexp::Flags{.use_std = 1}).matchGroups("abbbcdefg"_b),

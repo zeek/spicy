@@ -42,7 +42,7 @@ plugin::Zeek_Spicy::Plugin::Plugin() {
     if ( spicy::zeek::configuration::ZeekVersionNumber != ZEEK_VERSION_NUMBER )
         reporter::fatalError(
             hilti::rt::fmt("Zeek version mismatch: running with Zeek %d, but plugin compiled for Zeek %s",
-                             ZEEK_VERSION_NUMBER, spicy::zeek::configuration::ZeekVersionNumber));
+                           ZEEK_VERSION_NUMBER, spicy::zeek::configuration::ZeekVersionNumber));
 #endif
 
     Dl_info info;

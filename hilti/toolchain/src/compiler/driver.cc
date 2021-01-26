@@ -632,8 +632,7 @@ Result<Nothing> Driver::run() {
         return Nothing();
 
     } catch ( const std::exception& e ) {
-        return result::Error(
-            fmt("uncaught exception of type %s: %s", util::demangle(typeid(e).name()), e.what()));
+        return result::Error(fmt("uncaught exception of type %s: %s", util::demangle(typeid(e).name()), e.what()));
     }
 
     return {};
@@ -825,7 +824,7 @@ Result<Nothing> Driver::jitUnits() {
         return Nothing();
 
     auto lib = jit->build();
-    if ( ! lib)
+    if ( ! lib )
         return lib.error();
 
     _library = std::move(*lib);

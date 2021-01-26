@@ -49,8 +49,9 @@ struct Join {
     cxx::ID id;                        /**< name of externally visible function */
     cxx::declaration::Function callee; /**< callee function to execute through linker function */
     std::list<cxx::declaration::Type>
-        aux_types;    /**< additional types the linker needs to declare for external prototype to work */
-    int64_t priority = 0; /**< Priority determining the order between callees; higher priority callees will be called first */
+        aux_types; /**< additional types the linker needs to declare for external prototype to work */
+    int64_t priority =
+        0; /**< Priority determining the order between callees; higher priority callees will be called first */
     bool declare_only = false; /**< only declare the joined C++ function, don't generate the implementation */
 
     bool operator<(const Join& other) const {

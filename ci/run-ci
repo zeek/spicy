@@ -296,7 +296,7 @@ function run_test_clang_tidy {
 
     export CLANG_TIDY=${clang_tidy}
 
-    if ${root}//scripts/run-clang-tidy --fixit -j 10 ${build}; then
+    if ${root}/scripts/run-clang-tidy --fixit -j $(nproc) ${build}; then
         echo "clang-tidy run passed"
         return 0
     else
@@ -310,7 +310,7 @@ function run_test_clang_tidy {
 function run_test_code {
     rc=0
 
-    pre-commit run -a || rc=1
+    SKIP=clang-format pre-commit run -a || rc=1
 
     pushd $(pwd) >/dev/null
     run_test_clang_format || rc=1

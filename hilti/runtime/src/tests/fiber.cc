@@ -5,10 +5,10 @@
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/result.h>
-#include "exception.h"
 
 class TestDtor { //NOLINT
 public:

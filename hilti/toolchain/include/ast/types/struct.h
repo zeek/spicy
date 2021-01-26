@@ -94,9 +94,7 @@ public:
 private:
     ::hilti::function::CallingConvention _cc = ::hilti::function::CallingConvention::Standard;
 
-    mutable struct {
-        std::optional<Type> type;
-    } _cache;
+    mutable struct { std::optional<Type> type; } _cache;
 }; // namespace struct_
 
 inline Node to_node(Field f) { return Node(std::move(f)); }

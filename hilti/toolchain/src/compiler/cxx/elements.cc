@@ -1,11 +1,11 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/json.h>
+
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/cxx/elements.h>
 #include <hilti/compiler/detail/cxx/formatter.h>
-
-#include <hilti/rt/json.h>
 
 using namespace hilti;
 using namespace hilti::detail;

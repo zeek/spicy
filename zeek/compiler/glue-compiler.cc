@@ -845,9 +845,7 @@ bool GlueCompiler::compile() {
         }
 
         auto register_ =
-            builder::call("zeek_rt::register_packet_analyzer",
-                          {builder::string(a.name),
-                           builder::string(a.unit_name)});
+            builder::call("zeek_rt::register_packet_analyzer", {builder::string(a.name), builder::string(a.unit_name)});
 
         init_module.add(std::move(register_));
     }

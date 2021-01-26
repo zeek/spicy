@@ -376,7 +376,7 @@ void detail::Fiber::_activate(const char* tag) {
         ::fiber_init(fiber, ::fiber_stack(fiber), ::fiber_stack_size(fiber), fiber_bottom_abort, this);
         ::fiber_push_return(fiber, __fiber_switch_trampoline, &args, sizeof(args));
         fiber->alloc_stack = saved_alloc_stack;
-        fiber->state |= FiberGuardFlags;  // fiber_init() clears these
+        fiber->state |= FiberGuardFlags; // fiber_init() clears these
         _executeSwitch(tag, current, stack_switcher);
     }
     else
@@ -412,7 +412,7 @@ void detail::Fiber::_yield(const char* tag) {
         ::fiber_init(fiber, ::fiber_stack(fiber), ::fiber_stack_size(fiber), fiber_bottom_abort, this);
         ::fiber_push_return(fiber, __fiber_switch_trampoline, &args, sizeof(args));
         fiber->alloc_stack = saved_alloc_stack;
-        fiber->state |= FiberGuardFlags;  // fiber_init() clears these
+        fiber->state |= FiberGuardFlags; // fiber_init() clears these
         _executeSwitch(tag, this, stack_switcher);
     }
     else

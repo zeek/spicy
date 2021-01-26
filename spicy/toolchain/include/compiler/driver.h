@@ -60,4 +60,4 @@ private:
     spicy::Options _compiler_options;
 };
 
-} // namespace hilti
+} // namespace spicy

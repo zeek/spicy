@@ -20,9 +20,7 @@ enum class Kind {
 };
 
 namespace detail {
-constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Self, "self"},
-                                              {Kind::DollarDollar, "$$"},
-                                              {Kind::Captures, "$@"}};
+constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Self, "self"}, {Kind::DollarDollar, "$$"}, {Kind::Captures, "$@"}};
 } // namespace detail
 
 namespace kind {

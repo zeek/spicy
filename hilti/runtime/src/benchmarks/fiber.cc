@@ -1,8 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include <stdlib.h>
-
 #include <benchmark/benchmark.h>
+#include <stdlib.h>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/fiber.h>

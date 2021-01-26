@@ -301,9 +301,7 @@ public:
     void clearCache() { _cache.attributes.clear(); }
 
 private:
-    mutable struct {
-        std::vector<Attribute> attributes;
-    } _cache;
+    mutable struct { std::vector<Attribute> attributes; } _cache;
 };
 
 /**

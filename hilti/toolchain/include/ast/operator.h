@@ -115,8 +115,8 @@ inline auto iteratorType(unsigned int op, bool const_, const char* doc = "<itera
             return type::DocOnly(doc);
 
         if ( op >= resolved_ops.size() )
-            logger().internalError(util::fmt("iteratorType(): index %d out of range, only %" PRIu64 " ops available", op,
-                                             resolved_ops.size()));
+            logger().internalError(util::fmt("iteratorType(): index %d out of range, only %" PRIu64 " ops available",
+                                             op, resolved_ops.size()));
 
         if ( type::isIterable(resolved_ops[op].type()) )
             return resolved_ops[op].type().iteratorType(const_);

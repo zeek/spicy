@@ -2,7 +2,6 @@
 
 #include <spicy/compiler/detail/codegen/grammar.h>
 #include <spicy/compiler/detail/codegen/production.h>
-#include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/epsilon.h>
 #include <spicy/compiler/detail/codegen/productions/look-ahead.h>
 #include <spicy/compiler/detail/codegen/productions/resolved.h>

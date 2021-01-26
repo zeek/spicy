@@ -76,8 +76,7 @@ public:
      * match the name that Spicy registers the unit's
      * parser with.
      */
-    void registerPacketAnalyzer(const std::string& name,
-                                const std::string& parser);
+    void registerPacketAnalyzer(const std::string& name, const std::string& parser);
 
     /** TODO */
     void registerEnumType(const std::string& ns, const std::string& id,

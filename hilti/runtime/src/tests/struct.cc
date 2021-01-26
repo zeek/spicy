@@ -33,9 +33,7 @@ struct Test : trait::isStruct {
 
 struct TestWithCustomStr : public Test {
     using Test::Test;
-    std::optional<std::string> __str__() {
-        return "__str__";
-    }
+    std::optional<std::string> __str__() { return "__str__"; }
 };
 
 TEST_CASE("to_string") { CHECK_EQ(to_string(Test(42)), "[$_x=42, $_y=43]"); }

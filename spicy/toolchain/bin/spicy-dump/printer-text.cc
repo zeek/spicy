@@ -15,7 +15,7 @@ void TextPrinter::print(const type_info::Value& v) {
         case TypeInfo::Undefined: throw RuntimeError("unhandled type");
         case TypeInfo::Address: out() << type.address->get(v); break;
         case TypeInfo::Any: out() << "<any>"; break;
-        case TypeInfo::Bool: out() << (type.bool_->get(v) ? "True": "False"); break;
+        case TypeInfo::Bool: out() << (type.bool_->get(v) ? "True" : "False"); break;
         case TypeInfo::Bytes: out() << to_string_for_print(type.bytes->get(v)); break;
         case TypeInfo::BytesIterator: out() << to_string(type.bytes_iterator->get(v)); break;
         case TypeInfo::Enum: out() << type.enum_->get(v).name; break;
@@ -177,9 +177,7 @@ void TextPrinter::print(const type_info::Value& v) {
                 out() << "(not set)";
             break;
         }
-        case TypeInfo::UnsignedInteger_uint8:
-            out() << static_cast<int16_t>(type.unsigned_integer_uint8->get(v));
-            break;
+        case TypeInfo::UnsignedInteger_uint8: out() << static_cast<int16_t>(type.unsigned_integer_uint8->get(v)); break;
         case TypeInfo::UnsignedInteger_uint16: out() << type.unsigned_integer_uint16->get(v); break;
         case TypeInfo::UnsignedInteger_uint32: out() << type.unsigned_integer_uint32->get(v); break;
         case TypeInfo::UnsignedInteger_uint64: out() << type.unsigned_integer_uint64->get(v); break;

@@ -393,7 +393,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
             auto outer_args =
                 util::join(util::transform(cxx_func.declaration.args,
-                                           [](auto& x) { return fmt("::hilti::rt::resumable::detail::copyArg(%s)", x.id); }),
+                                           [](auto& x) {
+                                               return fmt("::hilti::rt::resumable::detail::copyArg(%s)", x.id);
+                                           }),
 
                            ", ");
 

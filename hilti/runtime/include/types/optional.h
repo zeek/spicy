@@ -80,7 +80,8 @@ namespace std {
 
 // Provide operator<< overload for optionals that have a custom HILTI-side to_string() conversion.
 template<typename T>
-inline auto operator<<(std::ostream& out, const std::optional<T>& x) -> decltype(::hilti::rt::detail::adl::to_string(x, ::hilti::rt::detail::adl::tag()), out) {
+inline auto operator<<(std::ostream& out, const std::optional<T>& x)
+    -> decltype(::hilti::rt::detail::adl::to_string(x, ::hilti::rt::detail::adl::tag()), out) {
     out << ::hilti::rt::to_string(x);
     return out;
 }

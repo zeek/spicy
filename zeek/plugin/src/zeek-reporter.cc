@@ -97,7 +97,8 @@ void reporter::analyzerError(::zeek::file_analysis::Analyzer* a, const std::stri
 }
 
 #ifdef HAVE_PACKET_ANALYZERS
-void reporter::analyzerError(::zeek::packet_analysis::Analyzer* a, const std::string& msg, const std::string& location) {
+void reporter::analyzerError(::zeek::packet_analysis::Analyzer* a, const std::string& msg,
+                             const std::string& location) {
     // Zeek's AnalyzerError() prints a location, so set that.
     auto zeek_location = _makeLocation(location);
     ::zeek::reporter->PushLocation(zeek_location.get());

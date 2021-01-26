@@ -101,17 +101,13 @@ public:
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"flavor", to_string(_flavor)}}; }
 
-    void clearCache() {
-        _cache.operands.reset();
-    }
+    void clearCache() { _cache.operands.reset(); }
 
 private:
     bool _wildcard = false;
     function::Flavor _flavor = function::Flavor::Standard;
 
-    mutable struct {
-        std::optional<hilti::type::OperandList> operands;
-    } _cache;
+    mutable struct { std::optional<hilti::type::OperandList> operands; } _cache;
 };
 
 /**

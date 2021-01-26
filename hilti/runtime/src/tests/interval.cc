@@ -23,8 +23,10 @@ TEST_CASE("seconds") {
     CHECK_EQ(Interval(0, Interval::SecondTag()).seconds(), 0);
     CHECK_EQ(Interval(-2.5, Interval::SecondTag()).seconds(), -2.5);
 
-    CHECK_THROWS_WITH_AS(Interval(-1e42, Interval::SecondTag{}).seconds(), "value cannot be represented as an interval", const RuntimeError&);
-    CHECK_THROWS_WITH_AS(Interval(1e42, Interval::SecondTag{}).seconds(), "value cannot be represented as an interval", const RuntimeError&);
+    CHECK_THROWS_WITH_AS(Interval(-1e42, Interval::SecondTag{}).seconds(), "value cannot be represented as an interval",
+                         const RuntimeError&);
+    CHECK_THROWS_WITH_AS(Interval(1e42, Interval::SecondTag{}).seconds(), "value cannot be represented as an interval",
+                         const RuntimeError&);
 }
 
 TEST_CASE("nanoseconds") {

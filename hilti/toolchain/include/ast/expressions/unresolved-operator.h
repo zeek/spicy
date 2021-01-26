@@ -53,9 +53,7 @@ public:
 private:
     operator_::Kind _kind;
 
-    mutable struct {
-        std::vector<Expression> operands;
-    } _cache;
+    mutable struct { std::vector<Expression> operands; } _cache;
 };
 
 } // namespace expression
