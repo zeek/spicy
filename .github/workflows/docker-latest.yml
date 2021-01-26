@@ -1,3 +1,5 @@
+# NOTE: keep this action in sync with `docker-tags.yml`.
+
 name: Publish Docker
 on:
   push:
