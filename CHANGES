@@ -1,4 +1,8 @@
 
+0.4.0-1324 | 2021-01-26 17:59:30 +0000
+
+  * Update reproc to release version. (Robin Sommer, Corelight)
+
 0.4.0-1321 | 2021-01-26 13:23:11 +0100
 
   * Lots of CI / clang-format / Docker cleanup. (Benjamin Bannier, Corelight)
