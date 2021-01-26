@@ -1,4 +1,8 @@
 
+0.4.0-1321 | 2021-01-26 13:23:11 +0100
+
+  * Lots of CI / clang-format / Docker cleanup. (Benjamin Bannier, Corelight)
+
 0.4.0-1305 | 2021-01-21 15:34:39 +0000
 
   * Fix failing Zeek tests. (Robin Sommer, Corelight)
