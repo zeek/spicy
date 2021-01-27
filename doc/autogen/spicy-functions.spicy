@@ -61,3 +61,18 @@ https://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html.
 This function can raise InvalidArgument if the timestamp could not be
 converted to local time or formatted.
 
+.. _spicy_strptime:
+
+.. rubric:: ``function spicy::strptime(buf: string, format: string) : time``
+
+Parse time from string.
+
+This function uses the currently active locale and timezone to parse values.
+
+The format string can contain format specifiers supported by POSIX strptime, see
+https://pubs.opengroup.org/onlinepubs/009695399/functions/strptime.html.
+
+This function raises InvalidArgument if the string could not be parsed
+with the given format string, or OutOfRange if the parsed time value cannot
+be represented.
+
