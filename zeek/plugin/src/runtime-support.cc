@@ -217,11 +217,11 @@ static std::string _file_id(const rt::cookie::ProtocolAnalyzer& c) {
 }
 
 void rt::file_begin(const std::string& mime_type) {
-		auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
+    auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
     assert(cookie);
 
     if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
-      c->mime_type = mime_type;
+        c->mime_type = mime_type;
     else
         throw ValueUnavailable("no current connection available");
 }
