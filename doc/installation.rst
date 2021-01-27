@@ -154,17 +154,12 @@ Install `Docker Desktop for Mac
 Using Pre-built Docker Images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We provide Docker images with nightly Spicy builds for the following platforms:
+We provide a `Docker image <https://hub.docker.com/repository/docker/zeekurity/spicy`
+with Spicy built from trunk.
 
-* `ubuntu-18 <https://hub.docker.com/repository/docker/zeekurity/spicy-ubuntu-18>`__
-* `centos-8 <https://hub.docker.com/repository/docker/zeekurity/spicy-centos-8>`__
-* `alpine-3.12 <https://hub.docker.com/repository/docker/zeekurity/spicy-alpine-3.12>`__
+To run the image execute the following command::
 
-To run the image execute the command for the desired platform::
-
-    docker run -it zeekurity/spicy-ubuntu-18:latest
-    docker run -it zeekurity/spicy-centos-8:latest
-    docker run -it zeekurity/spicy-alpine-3.12:latest
+    docker run -it zeekurity/spicy:latest
 
 Spicy is installed in `/opt/spicy`.
 
