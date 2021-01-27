@@ -16,6 +16,12 @@ Triggers a DPD protocol violation for the current connection.
 
 Returns true if we're currently parsing the originator side of a connection.
 
+.. _spicy_uid:
+
+.. rubric:: ``function zeek::uid() : string``
+
+Returns the current connection's UID.
+
 .. _spicy_flip_roles:
 
 .. rubric:: ``function zeek::flip_roles()``
@@ -33,6 +39,12 @@ Returns the number of packets seen so far on the current side of the current con
 .. rubric:: ``function zeek::file_begin()``
 
 Signals the beginning of a file to Zeek's file analysis, associating it with the current connection.
+
+.. _spicy_fuid:
+
+.. rubric:: ``function zeek::fuid() : string``
+
+Returns the current file's FUID.
 
 .. _spicy_file_set_size:
 

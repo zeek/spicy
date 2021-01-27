@@ -13,8 +13,15 @@ event text::data(f: fa_file, data: string)
 # @TEST-START-FILE text.spicy
 module Text;
 
+import zeek;
+
 public type Data = unit {
     data: bytes &eod;
+
+    on %done {
+        # File ID isn't stable across platforms, so just check expected length.
+        assert |zeek::fuid()| == 18;
+    }
 };
 # @TEST-END-FILE
 

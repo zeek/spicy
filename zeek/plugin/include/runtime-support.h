@@ -161,6 +161,11 @@ void debug(const std::string& msg);
  */
 hilti::rt::Bool is_orig();
 
+/**
+ * Returns the current connection's UID.
+ */
+std::string uid();
+
 /** Instructs to Zeek to flip the directionality of the current connecction. */
 void flip_roles();
 
@@ -190,6 +195,11 @@ void reject_protocol(const std::string& reason);
  * with the current connection.
  */
 void file_begin();
+
+/**
+ * Returns the current file's FUID.
+ */
+std::string fuid();
 
 /**
  * Signals the expected size of a file to Zeek's file analysis.
