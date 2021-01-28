@@ -191,7 +191,7 @@ void reject_protocol(const std::string& reason);
  *
  * param mime_type optional mime type passed to Zeek
  */
-void file_begin(const std::string& mime_type);
+void file_begin(const std::optional<std::string>& mime_type);
 
 /**
  * Signals the expected size of a file to Zeek's file analysis.

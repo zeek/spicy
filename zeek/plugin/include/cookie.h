@@ -24,7 +24,8 @@ struct ProtocolAnalyzer {
     uint64_t num_packets = 0;                       /**< number of packets seen so far */
     uint64_t analyzer_id = 0;                       /**< unique analyzer ID */
     uint64_t file_id = 0;                           /**< counter for file IDs */
-    std::string mime_type; /**< The mime type of the current file being passed to the file analysis framework */
+    std::optional<std::string>
+        mime_type; /**< The mime type of the current file being passed to the file analysis framework */
 };
 
 /** State on the current file analyzer. */
