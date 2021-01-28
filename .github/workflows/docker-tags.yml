@@ -35,7 +35,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: .
-        file: docker/Dockerfile.ubuntu-18
+        file: docker/Dockerfile.ubuntu-20
         push: true
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/spicy:${{ steps.version.outputs.RELEASE_VERSION }}
