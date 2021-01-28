@@ -529,6 +529,20 @@ extern ByteOrder systemByteOrder();
  */
 std::string strftime(const std::string& format, const Time& time);
 
+/** Parse time from string.
+ *
+ * This function uses the currently active locale and timezone to parse values.
+ *
+ * @param buf string to parse
+ * @param format format string dictating how to interpret `buf`, see
+ *        https://pubs.opengroup.org/onlinepubs/009695399/functions/strptime.html
+ *        for the available format specifiers.
+ * @return parsed time value
+ * @throw `InvalidArgument` if the time value could not be parsed
+ *        `OutOfRange` if the parse time value cannot be represented
+ */
+Time strptime(const std::string& buf, const std::string& format);
+
 // RAII helper to create a temporary directory.
 class TemporaryDirectory {
 public:

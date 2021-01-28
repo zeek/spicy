@@ -1,4 +1,8 @@
 
+0.4.0-1330 | 2021-01-28 10:22:55 +0100
+
+  * GH-701: Add strptime Spicy library function.
+
 0.4.0-1324 | 2021-01-26 17:59:30 +0000
 
   * Update reproc to release version. (Robin Sommer, Corelight)

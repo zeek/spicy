@@ -9,3 +9,6 @@ assert spicy::strftime("%A %c", time(0)) == "Thursday Thu Jan  1 00:00:00 1970";
 assert-exception spicy::strftime("", time(0));
 assert-exception spicy::strftime("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX %A %c",
                                  time(0));
+
+assert spicy::strptime("Thursday Thu Jan  1 00:00:00 1970", "%A %c") == time(0);
+assert spicy::strptime("Thursday Thu Jan  1 00:01:00 1970", "%A %c") == time(60);

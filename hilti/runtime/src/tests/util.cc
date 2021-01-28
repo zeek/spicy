@@ -596,6 +596,29 @@ TEST_CASE("strftime") {
                          "could not format timestamp", const InvalidArgument&);
 }
 
+TEST_CASE("strptime") {
+    REQUIRE_EQ(::setenv("TZ", "UTC", 1), 0);
+    std::locale::global(std::locale::classic());
+
+    CHECK_EQ(strptime("Thursday Thu Jan  1 00:00:00 1970", "%A %c"), Time());
+    CHECK_EQ(strptime("Thursday Thu Jan  1 00:01:00 1970", "%A %c"), Time(60, Time::SecondTag{}));
+
+    CHECK_THROWS_WITH_AS(strptime("", "%A %c"), "could not parse time string", const InvalidArgument&);
+    CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1970", ""),
+                         "unparsed remainder after parsing time string: Thursday Thu Jan  1 00:00:00 1970",
+                         const InvalidArgument&);
+
+    CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1970 REST", "%A %c"),
+                         "unparsed remainder after parsing time string:  REST", const InvalidArgument&);
+
+    CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1969", "%A %c"),
+                         "value cannot be represented as a time", const OutOfRange&);
+
+
+    CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1970", "%S"), "could not parse time string",
+                         const InvalidArgument&);
+}
+
 TEST_CASE("systemByteOrder") {
 #ifdef LITTLE_ENDIAN
     CHECK_EQ(systemByteOrder(), ByteOrder::Little);

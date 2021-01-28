@@ -8,6 +8,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <ctime>
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/autogen/version.h>
@@ -418,4 +419,26 @@ std::string hilti::rt::strftime(const std::string& format, const hilti::rt::Time
         throw InvalidArgument("could not format timestamp");
 
     return mbstr;
+}
+
+hilti::rt::Time hilti::rt::strptime(const std::string& buf, const std::string& format) {
+    tm time;
+    auto end = ::strptime(buf.c_str(), format.c_str(), &time);
+
+    if ( ! end )
+        throw InvalidArgument("could not parse time string");
+
+    if ( end != &*buf.end() )
+        throw InvalidArgument(hilti::rt::fmt("unparsed remainder after parsing time string: %s", end));
+
+    // If the struct tm object was obtained from POSIX strptime or equivalent
+    // function, the value of tm_isdst is indeterminate, and needs to be set explicitly
+    // before calling mktime, see https://en.cppreference.com/w/c/chrono/mktime.
+    time.tm_isdst = -1;
+
+    auto secs = ::mktime(&time);
+    if ( secs == -1 )
+        throw OutOfRange(hilti::rt::fmt("value cannot be represented as a time: %s", std::strerror(errno)));
+
+    return hilti::rt::Time(secs, hilti::rt::Time::SecondTag{});
 }
