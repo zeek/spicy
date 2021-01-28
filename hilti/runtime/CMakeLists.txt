@@ -9,7 +9,7 @@ file(MAKE_DIRECTORY  "${CMAKE_BINARY_DIR}/bin" "${CMAKE_BINARY_DIR}/lib")
 
 add_custom_target(version
                   ALL
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-version --header ${AUTOGEN_H}/version.h --git-root ${CMAKE_CURRENT_SOURCE_DIR}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-version --header ${AUTOGEN_H}/version.h --git-root ${PROJECT_SOURCE_DIR}
                   BYPRODUCTS ${AUTOGEN_H}/version.h)
 
 set(SOURCES
