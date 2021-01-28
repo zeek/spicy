@@ -1,0 +1,203 @@
+module PNG;
+
+import spicy;
+
+public type File = unit {
+	signature: bytes &size=8; # has to be 137 80 78 71 13 10 26 10
+	: Chunk[] &eod;
+
+	on signature {
+		local d: spicy::Base64Stream;
+		local thesig : bytes = spicy::base64_decode(d, b"iVBORw0KGgo=");
+		thesig += spicy::base64_finish(d);
+		if ( self.signature != thesig ) {
+			print "PNG signature not correct. Got ", self.signature;
+			print "Expected ", thesig;
+			1/0;
+		}
+	}
+};
+
+type Chunk = unit {
+	var colour_type: uint8 = 0;
+
+	length: uint32;
+	chunk_type: bytes &size=4;
+	switch (self.chunk_type) {
+		b"IHDR" -> ihdr: IHDR(self);
+		b"PLTE" -> plte: PLTE(self.length);
+		b"iCCP" -> iccp: iCCP(self.length);
+		b"pHYs" -> phys: pHYs;
+		b"iTXt" -> itxt: iTXt(self.length);
+		b"tEXt" -> text: tEXt(self.length);
+		b"zTXt" -> ztzt: zTXt(self.length);
+		b"IEND" -> iend: bytes &size=self.length; # should have length 0
+		b"IDAT" -> : bytes &size=self.length; # image data
+		b"hIST" -> frequency: uint16[self.length/2];
+		b"cHRM" -> chrm: cHRM;
+		b"gAMA" -> gama: gAMA;
+		b"sRGB" -> srgb: sRGB;
+		b"sBIT" -> sbit: sBIT(self.colour_type);
+		b"bKGD" -> bkgd: bKGD(self.colour_type);
+		b"tRNS" -> trns: tRNS(self.colour_type, self.length);
+		b"tIME" -> ttime: tIME;
+#		b"eXIf" -> exif: eXIf(self.length);
+		* -> : bytes &size=self.length;
+	};
+	crc: bytes &size=4;
+
+#	on %done {
+#		print "Chunk. Length ", self.length, "Type: ", self.chunk_type;
+#		print self;
+#	}
+};
+
+type IHDR = unit(inout chunk: Chunk) {
+	width: uint32;
+	height: uint32;
+	bit_depth: uint8;
+	colour_type: uint8;
+	compression_method: uint8;
+	filter_method: uint8;
+	interlace_method: uint8;
+
+	on %done {
+		chunk.colour_type = self.colour_type;
+	}
+};
+
+# palette
+type PLTE = unit(length: uint32) {
+	entries: PLTE_ENTRY[length/3];
+};
+
+type PLTE_ENTRY = unit {
+	red: uint8;
+	green: uint8;
+	blue: uint8;
+};
+
+# Embedded ICC profile
+type iCCP = unit(length: uint32) {
+	profile_name: bytes &until=b"\x00";
+	compression_method: uint8;
+	compressed_profile: bytes &size=length-(|self.profile_name|+2);
+};
+
+# Physical pixel dimensions
+type pHYs = unit {
+	ppux: uint32;
+	ppuy: uint32;
+	unit_specifier: uint8;
+};
+
+# International textual data
+type iTXt = unit(length: uint32) {
+	keyword: bytes &until=b"\x00";
+	compression_flag: uint8;
+	compression_method: uint8;
+	language_tag: bytes &until=b"\x00";
+	translated_keyword: bytes &until=b"\x00";
+	text: bytes &size=length-(|self.keyword|+|self.language_tag|+|self.translated_keyword|+5);
+};
+
+# Textual data
+type tEXt = unit(length: uint32) {
+	keyword: bytes &until=b"\x00";
+	text_string: bytes &size=length-(|self.keyword|+1);
+};
+
+# Compressed textual data
+type zTXt = unit(length: uint32) {
+	keyword: bytes &until=b"\x00";
+	compression_method: uint8;
+	compressed_text: bytes &size=length-(|self.keyword|+2);
+};
+
+# Primary chromaticities and white point
+type cHRM = unit {
+	white_point_x: uint32;
+	white_point_y: uint32;
+	red_x: uint32;
+	red_y: uint32;
+	green_x: uint32;
+	green_y: uint32;
+	blue_x: uint32;
+	blue_y: uint32;
+};
+
+# Image gamma
+type gAMA = unit {
+	gamma: uint32;
+};
+
+# Standard RGB colour space
+type sRGB = unit {
+	rendering_intent: uint8;
+};
+
+# Significant bits
+type sBIT = unit(colour_type: uint8) {
+	switch (colour_type) {
+		0 -> significant_greyscale_bits: uint8;
+		2, 3 -> {
+			significant_red_bits: uint8;
+			significant_green_bits: uint8;
+			significant_blue_bits: uint8;
+		}
+		4 -> {
+			significant_greyscale_bits: uint8;
+			significant_alpha_bits: uint8;
+		}
+		6 -> {
+			significant_red_bits: uint8;
+			significant_green_bits: uint8;
+			significant_blue_bits: uint8;
+			significant_alpha_bits: uint8;
+		}
+	};
+};
+
+# background colour
+type bKGD = unit(colour_type: uint8) {
+	switch (colour_type) {
+		0 -> greyscale: uint16;
+		2, 6 -> {
+			red: uint16;
+			green: uint16;
+			blue: uint16;
+		}
+		3 -> palette_index: uint8;
+	};
+};
+
+# Transparency
+type tRNS = unit(colour_type: uint8, length: uint32) {
+	switch (colour_type) {
+		0 -> grey_sample_value: uint16;
+		2 -> {
+			red_sample_value: uint16;
+			green_sample_value: uint16;
+			blue_sample_value: uint16;
+		}
+		3 -> alpha: uint8[length];
+	};
+};
+
+# image last-modification time
+type tIME = unit {
+	year: uint16;
+	month: uint8;
+	day: uint8;
+	hour: uint8;
+	minute: uint8;
+	second: uint8;
+};
+
+#type eXIf = unit(length: uint32) {
+#	data: bytes &size=length;
+#
+#	on %done {
+#		print self.data;
+#	}
+#};
