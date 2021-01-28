@@ -74,8 +74,11 @@ linkcheck_ignore = [
     r'http://download.zeek.org',
     r'https://download.zeek.org']
 
-# Generate Doxygen output if we are building in readthedocs. Outside of
-# readthedocs this is done by `docs/Makefile`.
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
-    subprocess.call('doxygen', shell=True)
+    # Fetch complete history if we are build in readthedocs. This is required
+    # for `scripts/autogen-version` to work.
+    subprocess.run(['git', 'fetch', '--unshallow'], shell=True)
+    # Generate Doxygen output if we are building in readthedocs. Outside of
+    # readthedocs this is done by `docs/Makefile`.
+    subprocess.run(['doxygen'], shell=True)
