@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Check that unsupported unit type attributes get rejected
+
+module Mini;
+
+type Foo = unit {
+    x: bytes &eod;
+} &no-emit;

@@ -113,9 +113,7 @@ public:
         return {};
     }
 
-    /**
-      Returns all properties of a given name.
-     */
+    /** Returns all properties of a given name. */
     auto propertyItems(const std::string& name) const {
         std::vector<unit::item::Property> props;
 

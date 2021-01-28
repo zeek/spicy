@@ -346,6 +346,19 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         }
     }
 
+    void operator()(const spicy::type::Unit& u, position_t p) {
+        if ( auto attrs = u.attributes() ) {
+            for ( const auto& a : attrs->attributes() ) {
+                if ( a.tag() == "&size" ) {
+                    if ( ! a.hasValue() )
+                        error("&size must provide an expression", p);
+                }
+                else
+                    error(fmt("attribute %s not supported for unit types", a.tag()), p);
+            }
+        }
+    }
+
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {
         auto count_attr = AttributeSet::find(f.attributes(), "&count");
         auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
