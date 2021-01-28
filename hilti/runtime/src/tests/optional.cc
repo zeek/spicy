@@ -3,6 +3,7 @@
 #include <optional>
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/types/null.h>
 #include <hilti/rt/types/optional.h>
 
 using namespace hilti::rt;
@@ -48,6 +49,15 @@ TEST_CASE("valueOrInit") {
 TEST_CASE("tryValue") {
     CHECK_THROWS_WITH_AS(optional::tryValue(std::optional<int8_t>()), "std::exception", const optional::Unset&);
     CHECK_EQ(optional::tryValue(std::optional<int8_t>(42)), 42);
+}
+
+std::optional<std::string> foo(std::optional<std::string> s) { return s; }
+
+TEST_CASE("null") {
+    std::optional<int8_t> x;
+    x = hilti::rt::Null();
+    CHECK(! x.has_value());
+    CHECK(! foo(hilti::rt::Null()).has_value());
 }
 
 TEST_SUITE_END();

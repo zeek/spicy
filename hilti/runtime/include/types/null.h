@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 
+#include <optional>
 #include <ostream>
 #include <string>
 #include <variant>
@@ -15,7 +16,12 @@ namespace hilti::rt {
 /**
  * Represents HILTI's "null" type.
  */
-struct Null {};
+struct Null {
+    template<typename T>
+    operator std::optional<T>() {
+        return std::nullopt;
+    }
+};
 
 namespace detail::adl {
 inline std::string to_string(const Null& x, adl::tag /*unused*/) { return "Null"; }
