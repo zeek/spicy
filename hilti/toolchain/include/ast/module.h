@@ -55,7 +55,7 @@ public:
 
     /**
      * Returns all of module's property declarations of a given name. If
-     * there's no property declaration of that ID, return an an empty container.
+     * there's no property declaration of that ID, return an empty container.
      *
      * @param id name of the property to return
      */

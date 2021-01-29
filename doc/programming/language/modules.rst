@@ -28,6 +28,9 @@ minimal ``hello-world`` module to look like the following:
 
 .. _modules_import:
 
+Importing
+---------
+
 To make the contents of another module accessible, Spicy provides an
 ``import NAME;`` statement that pulls in all public identifiers of the
 specified external module. Spicy then searches for ``name.spicy``
@@ -66,3 +69,18 @@ implicitly public.
 
 Spicy comes with a set of :ref:`library modules <library>` that you
 may import in your code to gain access to their functionality.
+
+Global Properties
+-----------------
+
+A module may define the following global properties:
+
+    ``%byte-order = ORDER;``
+        Defaults the byte order for any parsing inside this module to
+        `<expr>`, where ``ORDER`` must be of typei is type
+        :ref:`spicy_ByteOrder`.
+
+    ``%spicy-version = "VERSION";``
+        Specifies that the module requires a given minimum version of
+        Spicy, where ``VERSION`` must be a string of the form ``X.Y``
+        or ``X.Y.Z``.

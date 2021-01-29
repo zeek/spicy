@@ -112,6 +112,7 @@ test -z "${major}" && major=0
 test -z "${minor}" && minor=0
 test -z "${patch}" && patch=0
 
+# This must match the computation the Spicy validator does for "%spicy-version".
 version_number=$((major * 10000 + minor * 100 + patch))
 
 if [ "${output}" = "long" ]; then

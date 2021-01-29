@@ -1,0 +1,31 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that %spicy-version fails for some always-wrong versions, as well as when it can't parse a version string.
+
+module Test;
+%spicy-version = "10.0"; # will be too new for awhile
+
+# @TEST-START-NEXT
+module Test;
+%spicy-version = "10.0.1"; # will be too new for awhile
+
+# @TEST-START-NEXT
+module Test;
+%spicy-version = "XXX"; # cannot parse
+
+# @TEST-START-NEXT
+module Test;
+%spicy-version = "1.2.3.4.5"; # cannot parse
+
+# @TEST-START-NEXT
+module Test;
+%spicy-version = "1.2.3.4.5"; # cannot parse
+
+# @TEST-START-NEXT
+module Test;
+%spicy-version = 4.0; # must be string
+
+# @TEST-START-NEXT
+module Test;
+%spicy-version; # needs argument
