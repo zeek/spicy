@@ -1,4 +1,36 @@
 
+0.4.0-1346 | 2021-01-29 08:26:26 +0000
+
+  * GH-685: Allow to define a minimum Spicy version that a module
+    requires. Adding `%spicy-version = "1.0";` to a module now lets it
+    require to compile with a Spicy of at least that version. The
+    version can be specified as either `x.y` or `x.y.z`. (Robin
+    Sommer, Corelight)
+
+  * GH-688: Add functions `zeek::uid()` and `zeek::fuid()` to access
+    UIDs and FUIDs, respectively. (Robin Sommer, Corelight)
+
+  * GH-689: Allow to pass a MIME type to `file_new()` when beginning
+    file analysis. (Johanna Amann, Corelight)
+
+  * GH-700: Support `&size` attribute at the unit level.
+
+    This limits input to the given number of bytes for the unit:
+
+        type Bar = unit(n: uint64) {
+            x: bytes &eod;
+        } &size=n;
+
+    Parsing less than `n` bytes is an error. (Robin Sommer, Corelight)
+
+  * Fix --git-root in autogen-version call. (Robin Sommer, Corelight)
+
+  * Fix using `Null` as a parameter default value for `optional<T>`.
+    (Robin Sommer, Corelight)
+
+  * Add timestamp removal to the Zeek log canonification in tests.
+    (Johanna Amann, Corelight)
+
 0.4.0-1330 | 2021-01-28 10:22:55 +0100
 
   * GH-701: Add strptime Spicy library function.
