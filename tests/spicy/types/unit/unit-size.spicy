@@ -1,0 +1,23 @@
+# @TEST-EXEC:  printf '1234567890ABC' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Limit parse size at the unit level
+
+module Mini;
+
+import spicy;
+
+type Foo = unit {
+    x: bytes &eod;
+} &size=5;
+
+type Bar = unit(n: uint64) {
+    x: bytes &eod;
+} &size=n;
+
+public type Test = unit {
+    a: Foo;
+    b: Bar(5);
+
+    on %done { print self; }
+};

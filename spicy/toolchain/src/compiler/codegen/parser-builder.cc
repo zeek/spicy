@@ -509,10 +509,6 @@ struct ProductionVisitor
                 auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
 
                 // Establish limited view, remembering position to continue at.
-                // We always advance by the full amount eventually (as saved
-                // here), even though generally the parsing might not consume
-                // everything. That way, &size can be used to unconditionally
-                // skip a certain of amount of data.
                 auto pstate = state();
                 pstate.cur = limited;
                 pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
@@ -842,14 +838,39 @@ struct ProductionVisitor
             pushState(std::move(pstate));
         }
 
+        if ( auto a = AttributeSet::find(p.unitType().attributes(), "&size") ) {
+            // Limit input to the specified length.
+            auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
+            auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
+
+            // Establish limited view, remembering position to continue at.
+            auto pstate = state();
+            pstate.cur = limited;
+            pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
+            pushState(std::move(pstate));
+        }
+
         for ( const auto& i : p.fields() )
             parseProduction(i);
 
         pb->finalizeUnit(true, p.location());
-        popState();
+
+        if ( auto a = AttributeSet::find(p.unitType().attributes(), "&size") ) {
+            // Make sure we parsed the entire &size amount.
+            auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
+                                            builder::memberCall(*state().ncur, "offset", {}));
+            auto insufficient = builder()->addIf(std::move(missing));
+            pushBuilder(insufficient, [&]() { pb->parseError("&size amount not consumed", a->meta()); });
+
+            auto ncur = state().ncur;
+            popState();
+            builder()->addAssign(state().cur, *ncur);
+        }
 
         if ( p.unitType().usesRandomAccess() )
             popState();
+
+        popState();
     }
 
     void operator()(const production::Ctor& p) { pb->parseLiteral(p, destination()); }

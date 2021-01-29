@@ -113,9 +113,7 @@ public:
         return {};
     }
 
-    /**
-     * Returns all properties of a given name.
-     */
+    /** Returns all properties of a given name. */
     auto propertyItems(const std::string& name) const {
         std::vector<unit::item::Property> props;
 
@@ -216,6 +214,19 @@ public:
         for ( auto i : new_items )
             x.childs().emplace_back(std::move(i));
 
+        return x;
+    }
+
+    /**
+     * Copies an existing unit type, adding further attributes.
+     *
+     * @param unit original unit type
+     * @param attrs additional attributes to add
+     * @return new unit type that includes the additional attributes
+     */
+    static Unit addAttributes(const Unit& unit, AttributeSet attrs) {
+        auto x = Type(unit)._clone().as<Unit>();
+        x.childs().push_back(std::move(attrs));
         return x;
     }
 
