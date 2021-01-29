@@ -165,6 +165,15 @@ hilti::rt::Bool rt::is_orig() {
     else
         throw ValueUnavailable("is_orig() not available in current context");
 }
+std::string rt::uid() {
+    auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
+    assert(cookie);
+
+    if ( auto c = std::get_if<cookie::ProtocolAnalyzer>(cookie) )
+        return c->analyzer->Conn()->GetUID().Base62("C");
+    else
+        throw ValueUnavailable("uid() not available in current context");
+}
 
 void rt::flip_roles() {
     auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
@@ -218,6 +227,18 @@ static std::string _file_id(const rt::cookie::ProtocolAnalyzer& c) {
 
 void rt::file_begin() {
     // Nothing todo.
+}
+
+std::string rt::fuid() {
+    auto cookie = static_cast<Cookie*>(hilti::rt::context::cookie());
+    assert(cookie);
+
+    if ( auto f = std::get_if<cookie::FileAnalyzer>(cookie) ) {
+        if ( auto file = f->analyzer->GetFile() )
+            return file->GetID();
+    }
+
+    throw ValueUnavailable("fuid() not available in current context");
 }
 
 void rt::file_set_size(const hilti::rt::integer::safe<uint64_t>& size) {

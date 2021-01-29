@@ -36,7 +36,7 @@ public type Banner = unit {
     dash    : /-/;
     software: /[^\r\n]*/;
 
-    on %done { zeek::confirm_protocol(); }
+    on %done { zeek::confirm_protocol(); assert zeek::uid() == "CHhAvVGS1DHFjwGM9"; }
     on %error { zeek::reject_protocol("kaputt"); }
 };
 # @TEST-END-FILE

@@ -15,6 +15,9 @@ public function reject_protocol(reason: string) : void &cxxname="spicy::zeek::rt
 ## Returns true if we're currently parsing the originator side of a connection.
 public function is_orig() : bool &cxxname="spicy::zeek::rt::is_orig";
 
+## Returns the current connection's UID.
+public function uid() : string &cxxname="spicy::zeek::rt::uid";
+
 ## Instructs Zeek to flip the directionality of the current connection.
 public function flip_roles() : void &cxxname="spicy::zeek::rt::flip_roles";
 
@@ -23,6 +26,9 @@ public function number_packets() : uint64 &cxxname="spicy::zeek::rt::number_pack
 
 ## Signals the beginning of a file to Zeek's file analysis, associating it with the current connection.
 public function file_begin() : void &cxxname="spicy::zeek::rt::file_begin";
+
+## Returns the current file's FUID.
+public function fuid() : string &cxxname="spicy::zeek::rt::fuid";
 
 ## Signals the expected size of a file to Zeek's file analysis.
 public function file_set_size(size: uint64) : void &cxxname="spicy::zeek::rt::file_set_size";
