@@ -424,6 +424,9 @@ struct ProductionVisitor
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
+        // Save current parse position as e.g., attributes evaluated below might make use of it.
+        pb->saveParsePosition();
+
         if ( is_field_owner ) {
             // We are the field's owner, apply the various attributes.
 
