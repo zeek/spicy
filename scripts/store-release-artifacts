@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+set -eu
+set -o pipefail
+
+usage() {
+    cat << EOF
+Downloads CI packaging artifacts and optionally uploads them to a release.
+
+Usage: $0 --commit COMMIT --upload
+
+This script downloads Cirrus CI packaging artifacts for the given COMMIT from
+all completed tasks and stores them in a temporary directory. The packaging
+artifacts will be renamed to include te name of the job which produced them.
+The output directory will be reported.
+
+With '--upload' artifacts are uploaded to the release page and we expect a valid
+Github token with 'repo' scope passed on stdin. In this case COMMIT should
+refer to a tag for which a release already exists.
+EOF
+}
+
+if [ "$#" == 0 ]; then
+    usage;
+    exit 1
+fi
+
+while true; do
+    case "$1" in
+        --commit) COMMIT="$2"; shift; shift;;
+        --upload) UPLOAD=1
+    esac
+    :
+done
+
+REPO=zeek/spicy
+COMMIT=${COMMIT?Expected commit passed with '--commit COMMIT'}
+
+while read -r GITHUB_TOKEN; do
+    break
+done < /dev/stdin
+
+OUTPUT_DIR=$(mktemp -d "${TMPDIR:-/tmp}"spicy-artifacts-XXXXXX)
+cd "${OUTPUT_DIR}"
+
+echo "Storing artifacts in ${OUTPUT_DIR}"
+
+curl -sSL https://api.github.com/repos/"${REPO}"/commits/"${COMMIT}"/check-runs'?per_page=100' \
+    | jq -r '.check_runs[] | select(.app.name=="Cirrus CI") | select(.name | test("^(docker|macos|freebsd)")) | select(.conclusion=="success") | ["https://api.cirrus-ci.com/v1/artifact/task/" + .external_id + "/packages.zip", .name] | @tsv' \
+    | while IFS=$'\t' read -r URI NAME; do
+        echo "Fetching artifacts for CI job ${NAME}"
+        curl -sSL "$URI" -o packages.zip
+        unzip packages.zip 1> /dev/null
+        mv build/spicy*tar.gz "spicy_${NAME}.tar.gz"
+        rm -rf build packages.zip
+        break
+    done
+
+if [ "${UPLOAD+x}" != "x" ]; then
+    if [[ "${COMMIT}" != v* ]]; then
+        echo "Skipping upload since ${COMMIT} does not look like a release tag"
+        exit 1
+    fi
+
+    UPLOAD_URL=$(curl -sSL https://api.github.com/repos/"${REPO}"/releases | jq -r '.[] | select(.tag_name=="'"${COMMIT}"'") | .upload_url')
+
+    if [[ -z "${UPLOAD_URL}" ]]; then
+        echo "Not updating release artifacts since release ${COMMIT} does not exist"
+        exit 0
+    fi
+
+    for ARTIFACT in *.tar.gz; do
+        curl -sSL \
+            -X POST --data-binary @./"${ARTIFACT}" \
+            --header "Content-Type: application/octet-stream" \
+            --header "Authorization:token ${GITHUB_TOKEN}" \
+            "${UPLOAD_URL}?name=${ARTIFACT}"
+        done
+fi
