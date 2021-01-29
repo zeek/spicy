@@ -1,4 +1,5 @@
-# @TEST-EXEC-FAIL: spicyc -p %INPUT 2>output
+# @TEST-EXEC-FAIL: spicyc -p %INPUT 2>output.0
+# @TEST-EXEC: sed 's/(have.*)/(XXXXXX)/' output.0 > output
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: Check that %spicy-version fails for some always-wrong versions, as well as when it can't parse a version string.
