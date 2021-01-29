@@ -193,8 +193,10 @@ void reject_protocol(const std::string& reason);
 /**
  * Signals the beginning of a file to Zeek's file analysis, associating it
  * with the current connection.
+ *
+ * param mime_type optional mime type passed to Zeek
  */
-void file_begin();
+void file_begin(const std::optional<std::string>& mime_type);
 
 /**
  * Returns the current file's FUID.
