@@ -330,6 +330,7 @@ docker_alpine_3_12_task:
     - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 
@@ -369,6 +370,7 @@ docker_centos_7_task:
     - source scl_source enable devtoolset-9 && ninja -j4 -C build install
   test_script:
     - cd tests && source scl_source enable devtoolset-9 && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - source scl_source enable devtoolset-9 && ninja -C build package
 
@@ -408,6 +410,7 @@ docker_centos_8_task:
     - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 
@@ -511,6 +514,7 @@ docker_debian9_task:
     - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 
@@ -552,6 +556,7 @@ docker_debian10_task:
     - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 
@@ -592,6 +597,7 @@ docker_ubuntu16_task:
     - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 
@@ -632,6 +638,7 @@ docker_ubuntu18_task:
     - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 
@@ -672,6 +679,7 @@ docker_ubuntu20_task:
     - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 
@@ -712,6 +720,7 @@ docker_fedora32_task:
     - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 
@@ -752,6 +761,7 @@ docker_fedora33_task:
     - ninja -j4 -C build install
   test_script:
     - cd tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -j -d
+    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 

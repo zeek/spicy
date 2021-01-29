@@ -6,7 +6,7 @@ ARG zeek_version=v3.0.3
 WORKDIR /root
 
 ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
-ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy/"
+ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy:/opt/spicy/lib/spicy"
 
 RUN apk update
 

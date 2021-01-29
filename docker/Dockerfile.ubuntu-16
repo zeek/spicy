@@ -65,3 +65,6 @@ WORKDIR /root
 # Install Spicy.
 ADD . /opt/spicy/src
 RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)
+
+ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
+ENV ZEEK_PLUGIN_PATH="/opt/spicy/lib64/spicy:/opt/spicy/lib/spicy"
