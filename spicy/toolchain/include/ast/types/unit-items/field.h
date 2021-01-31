@@ -84,7 +84,8 @@ public:
     Engine engine() const { return _engine; }
 
     bool isContainer() const { return repeatCount().has_value(); }
-    auto isTransient() const { return _is_anonynmous; }
+    bool isTransient() const { return _is_anonynmous; }
+    bool emitHook() const { return ! isTransient() || hooks().size(); }
 
     Type parseType() const;
     Type originalType() const { return child<Type>(1); }

@@ -15,8 +15,9 @@ public type test = unit {
        b: bytes &size=2 { print "4", $$; }
        : Foo { print "5", $$; }
        c: bytes &size=2 { print "6", $$; }
-       : uint8[2] foreach { print "|", $$; }
-       d : bytes &size=2 { print "7", $$; }
+       : uint8[2] { print "7", $$; }
+                  foreach { print "|", $$; }
+       d : bytes &size=2 { print "8", $$; }
 
        on %done {
            print self;

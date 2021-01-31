@@ -158,7 +158,7 @@ struct ProductionVisitor
             builder()->addAssign(builder::tuple({pb->state().cur, pb->state().lahead, pb->state().lahead_end}), call);
         }
         else {
-            const auto is_transient = (meta.field() && meta.field()->isTransient());
+            const auto emit_hook = (meta.field() && meta.field()->emitHook());
 
             // We wrap the parsing of a non-atomic production into a new
             // function that's cached and reused. This ensures correct
@@ -171,7 +171,7 @@ struct ProductionVisitor
 
                     std::optional<type::function::Parameter> addl_param;
 
-                    if ( destination() && ! unit && ! is_transient )
+                    if ( destination() && ! unit && emit_hook )
                         addl_param =
                             builder::parameter("__dst", destination()->type(), declaration::parameter::Kind::InOut);
 
@@ -335,10 +335,10 @@ struct ProductionVisitor
                     // Second stage parse functionality implementing the main
                     // part of the unit's parsing.
                     auto build_parse_stage2_logic = [&]() {
-                        if ( destination() && ! unit && ! is_transient )
+                        if ( destination() && ! unit && emit_hook )
                             pushDestination(builder::type_wrapped(builder::id("__dst"), destination()->type()));
 
-                        if ( unit || is_transient )
+                        if ( unit || ! emit_hook )
                             pushDestination({});
 
                         if ( auto x = dispatch(p); ! x )
@@ -425,7 +425,7 @@ struct ProductionVisitor
             if ( unit )
                 dst = {};
 
-            if ( dst && ! is_transient )
+            if ( dst && emit_hook )
                 args.push_back(*dst);
 
             auto call = builder::memberCall(state().self, id, args);
@@ -1299,9 +1299,11 @@ Expression ParserBuilder::contextNewFunction(const type::Unit& t) {
 void ParserBuilder::newValueForField(const type::unit::item::Field& field, const Expression& value) {
     if ( value.type().isA<type::Void>() ) {
         // Special-case: No value parsed, but still run hook.
-        beforeHook();
-        builder()->addMemberCall(state().self, ID(fmt("__on_%s", field.id().local())), {}, field.meta());
-        afterHook();
+        if ( field.emitHook() ) {
+            beforeHook();
+            builder()->addMemberCall(state().self, ID(fmt("__on_%s", field.id().local())), {}, field.meta());
+            afterHook();
+        }
         return;
     }
 
@@ -1347,7 +1349,8 @@ void ParserBuilder::newValueForField(const type::unit::item::Field& field, const
             args.push_back(hilti::builder::default_(builder::typeByID("hilti::Captures")));
     }
 
-    builder()->addMemberCall(state().self, ID(fmt("__on_%s", field.id().local())), std::move(args), field.meta());
+    if ( field.emitHook() )
+        builder()->addMemberCall(state().self, ID(fmt("__on_%s", field.id().local())), std::move(args), field.meta());
 
     afterHook();
 }
