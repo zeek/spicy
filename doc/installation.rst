@@ -154,7 +154,7 @@ Install `Docker Desktop for Mac
 Using Pre-built Docker Images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We provide a `Docker image <https://hub.docker.com/repository/docker/zeekurity/spicy`
+We provide a `Docker image <https://hub.docker.com/repository/docker/zeekurity/spicy>`_
 with Spicy built from trunk.
 
 To run the image execute the following command::
