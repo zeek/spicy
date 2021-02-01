@@ -515,6 +515,10 @@ enum class ByteOrder { Little, Big, Network, Host, Undef = -1 };
  */
 extern ByteOrder systemByteOrder();
 
+namespace detail::adl {
+std::string to_string(const ByteOrder& x, tag /*unused*/);
+}
+
 /** Formats a time according to user-specified format string.
  *
  * This function uses the currently active locale and timezone to format

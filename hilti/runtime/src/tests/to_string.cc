@@ -101,6 +101,14 @@ TEST_CASE("Bool") {
     CHECK_EQ(to_string(Bool(false)), "False");
 }
 
+TEST_CASE("ByteOrder") {
+    CHECK_EQ(to_string(ByteOrder::Little), "ByteOrder::Little");
+    CHECK_EQ(to_string(ByteOrder::Big), "ByteOrder::Big");
+    CHECK_EQ(to_string(ByteOrder::Network), "ByteOrder::Network");
+    CHECK_EQ(to_string(ByteOrder::Host), "ByteOrder::Host");
+    CHECK_EQ(to_string(ByteOrder::Undef), "ByteOrder::Undef");
+}
+
 TEST_CASE("Bytes") {
     CHECK_EQ(to_string("ABC"_b), "b\"ABC\"");
     CHECK_EQ(to_string("\0\2\3\0\6\7A\01"_b), "b\"\\x00\\x02\\x03\\x00\\x06\\x07A\\x01\"");
