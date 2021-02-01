@@ -1,0 +1,26 @@
+# @TEST-EXEC: echo "1234567890" | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks that offsets can be used from attributes. This is a regression test for #701.
+
+module Test;
+
+public type Testing = unit {
+    la: Sub(4);
+};
+
+type Sub = unit(length: uint32) {
+    %random-access;
+
+    a: bytes &size=2;
+    : bytes &size=0;
+    z: bytes &size=length-cast<uint32>(self.offset());
+
+    on z {
+        assert self.offset() == 2;
+    }
+
+    on %done {
+        print self;
+    }
+};

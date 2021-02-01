@@ -1,4 +1,30 @@
 
+0.4.0-1358 | 2021-02-01 10:40:23 +0100
+
+  * GH-701: Make offsets usable from unit field attributes.
+
+    We previously updated parse positions when entering productions. This is
+    insufficient as the evaluation of attributes might already access the
+    position via `self.offset()`.
+
+    With this patch we now only update the parse position before we start
+    parsing of a field.
+
+    Closes #701. (Benjamin Bannier, Corelight)
+
+  * Use ubuntu-20 as base for published Docker image. (Benjamin Bannier, Corelight)
+
+  * Set PATH and ZEEK_PLUGIN_PATH for ubuntu Docker images. (Benjamin Bannier, Corelight)
+
+  * Validate Zeek installation for Docker CI tasks. (Benjamin Bannier, Corelight)
+
+  * Fix Docker images for possible lib libdir.
+
+    This patch fixes the `ZEEK_PLUGIN_PATH` set in Docker images so Zeek can
+    find plugins even if the Spicy installation was performed with a libdir
+    named `lib` instead of `lib64`. (Benjamin Bannier, Corelight)
+
+
 0.4.0-1346 | 2021-01-29 08:26:26 +0000
 
   * GH-685: Allow to define a minimum Spicy version that a module
