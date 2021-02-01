@@ -154,7 +154,7 @@ Install `Docker Desktop for Mac
 Using Pre-built Docker Images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We provide a `Docker image <https://hub.docker.com/repository/docker/zeekurity/spicy`
+We provide a `Docker image <https://hub.docker.com/repository/docker/zeekurity/spicy>`_
 with Spicy built from trunk.
 
 To run the image execute the following command::
@@ -264,7 +264,7 @@ If you are using `Homebrew <https://brew.sh>`_:
     - ``# pip3 install btest sphinx_rtd_theme``
 
 In either case, install Zeek >= 3.0 from source, `per the instructions
-<https://docs.zeek.org/en/stable/install/install.html#installing-from-source>`_
+<https://docs.zeek.org/en/current/install/install.html#installing-from-source>`_
 
 .. rubric:: Linux
 
