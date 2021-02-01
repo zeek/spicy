@@ -12,6 +12,7 @@ global auto x3 = vector(1, 2, 3);
 global auto x4 = vector("s1", "s2");
 global auto x5 = vector([1,2], [3,4], [4,5]);
 global auto x6 = vector(vector(1,2), vector(3,4), vector(4,5));
+global auto x7 = vector<uint<16>>(16);
 
 global vector<uint<16>> l1 = [1];
 global vector<int<32>> l2 = [];
@@ -26,6 +27,7 @@ hilti::print(x3);
 hilti::print(x4);
 hilti::print(x5);
 hilti::print(x6);
+hilti::print(x7);
 
 hilti::print(l1);
 hilti::print(l2);

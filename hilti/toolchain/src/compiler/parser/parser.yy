@@ -28,7 +28,7 @@ namespace hilti { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 102
+%expect 103
 %expect-rr 180
 
 %union {}
@@ -820,12 +820,13 @@ const_uint    : CUINTEGER                        { $$ = $1; }
 tuple         : '(' opt_tuple_elems1 ')'         { $$ = hilti::ctor::Tuple(std::move($2), __loc__); }
 
 opt_tuple_elems1
-              : tuple_elem ',' opt_tuple_elems2  { $$ = std::vector<hilti::Expression>{std::move($1)}; $$.insert($$.end(), $3.begin(), $3.end()); }
+              : tuple_elem                       { $$ = std::vector<hilti::Expression>{std::move($1)}; }
+              | tuple_elem ',' opt_tuple_elems2  { $$ = std::vector<hilti::Expression>{std::move($1)}; $$.insert($$.end(), $3.begin(), $3.end()); }
               | /* empty */                      { $$ = std::vector<hilti::Expression>(); }
 
 opt_tuple_elems2
-              : tuple_elem ',' opt_tuple_elems2  { $$ = std::vector<hilti::Expression>{std::move($1)}; $$.insert($$.end(), $3.begin(), $3.end()); }
-              | tuple_elem                       { $$ = std::vector<hilti::Expression>{ std::move($1)}; }
+              : tuple_elem                       { $$ = std::vector<hilti::Expression>{ std::move($1)}; }
+              | tuple_elem ',' opt_tuple_elems2  { $$ = std::vector<hilti::Expression>{std::move($1)}; $$.insert($$.end(), $3.begin(), $3.end()); }
               | /* empty */                      { $$ = std::vector<hilti::Expression>(); }
 
 
