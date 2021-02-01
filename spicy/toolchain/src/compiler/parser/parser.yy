@@ -623,6 +623,7 @@ struct_field  : type local_id opt_attributes ';' { $$ = hilti::type::struct_::Fi
 enum_type     : ENUM '{' enum_labels '}'         { $$ = hilti::type::Enum(std::move($3), __loc__); }
 
 enum_labels   : enum_labels ',' enum_label       { $$ = std::move($1); $$.push_back(std::move($3)); }
+              | enum_labels ','                  { $$ = std::move($1); }
               | enum_label                       { $$ = std::vector<hilti::type::enum_::Label>(); $$.push_back(std::move($1)); }
               ;
 

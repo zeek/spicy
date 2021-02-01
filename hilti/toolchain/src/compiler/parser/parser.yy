@@ -643,6 +643,7 @@ enum_type     : ENUM '{' enum_labels '}'         { $$ = hilti::type::Enum(std::m
               | ENUM '<' '*' '>'                 { $$ = hilti::type::Enum(type::Wildcard(), __loc__); }
 
 enum_labels   : enum_labels ',' enum_label       { $$ = std::move($1); $$.push_back(std::move($3)); }
+              | enum_labels ','                  { $$ = std::move($1); }
               | enum_label                       { $$ = std::vector<hilti::type::enum_::Label>(); $$.push_back(std::move($1)); }
               ;
 

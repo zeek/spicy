@@ -10,7 +10,7 @@ type X = enum {
 
 type Y = enum {
     B1,
-    B2
+    B2, # Optional tailing `,`.
 };
 
 type Z = struct {
