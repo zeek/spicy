@@ -146,10 +146,14 @@ public:
      *
      * @param id textual ID to associate with state for use in debug messages
      *
+     * @param cid if the state is associated with one side of a
+     * connection, a textual ID representing that connection.
+     *
      * @param driver driver owning this state
      */
-    ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, Driver* driver)
-        : ParsingState(type, parser), _id(id), _driver(driver) {}
+    ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, std::optional<std::string> cid,
+                          Driver* driver)
+        : ParsingState(type, parser), _id(id), _cid(cid), _driver(driver) {}
 
     /** Returns the textual ID associated with the state. */
     const auto& id() const { return _id; }
@@ -159,7 +163,16 @@ protected:
 
 private:
     std::string _id;
+    std::optional<std::string> _cid;
     Driver* _driver;
+};
+
+/** Connection state collecting parsing state for the two side. */
+struct ConnectionState {
+    std::string orig_id;
+    std::string resp_id;
+    ParsingStateForDriver* orig_state = nullptr;
+    ParsingStateForDriver* resp_state = nullptr;
 };
 
 } // namespace driver
@@ -210,7 +223,7 @@ public:
                                                           int increment = 0);
 
     /**
-     * Processes a batch of input streams given in Spicy's custom batch
+     * Processes a batch of input data given in Spicy's custom batch
      * format. See the documentation of `spicy-driver` for a reference of the
      * batch format.
      *
@@ -224,9 +237,10 @@ public:
 
 private:
     void _debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& data);
-    void _debugStats(size_t current_sessions);
+    void _debugStats(size_t current_flows, size_t current_connections);
 
-    uint64_t _total_sessions = 0;
+    uint64_t _total_flows = 0;
+    uint64_t _total_connections = 0;
 };
 
 } // namespace spicy::rt

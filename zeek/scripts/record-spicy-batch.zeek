@@ -36,15 +36,15 @@ function begin(c: connection, type_: string)
 	++num_conns;
 	print fmt("tracking %s", c$id);
 
-	print output, fmt("@begin %s-orig %s %s%%orig\n", id(c), type_, c$id$resp_p);
-	print output, fmt("@begin %s-resp %s %s%%resp\n", id(c), type_, c$id$resp_p);
+	local id_ = id(c);
+	print output, fmt("@begin-conn %s %s %s-orig %s%%orig %s-resp %s%%resp\n", id_, type_, id_, c$id$resp_p, id_, c$id$resp_p);
 	}
 
 event zeek_init()
 	{
 	output = open(filename);
 	enable_raw_output(output);
-	print output, "!spicy-batch v1\n";
+	print output, "!spicy-batch v2\n";
 	}
 
 event new_connection_contents(c: connection)
@@ -74,8 +74,7 @@ event connection_state_remove(c: connection)
 	if ( c$id !in conns )
 		return;
 
-	print output, fmt("@end %s-orig\n", id(c));
-	print output, fmt("@end %s-resp\n", id(c));
+	print output, fmt("@end-conn %s\n", id(c));
 	}
 
 event zeek_done()
