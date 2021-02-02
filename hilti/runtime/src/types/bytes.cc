@@ -5,6 +5,7 @@
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/stream.h>
+#include <hilti/rt/util.h>
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
@@ -171,3 +172,18 @@ Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
 }
 
 void Bytes::append(const stream::View& view) { Base::append(view.data()); }
+
+namespace hilti::rt::detail::adl {
+std::string to_string(const Bytes& x, tag /*unused*/) { return fmt("b\"%s\"", escapeBytes(x.str(), true)); }
+
+std::string to_string(const bytes::Side& x, tag /*unused*/) {
+    switch ( x ) {
+        case bytes::Side::Left: return "Side::Left";
+        case bytes::Side::Right: return "Side::Right";
+        case bytes::Side::Both: return "Side::Both";
+    }
+
+    cannot_be_reached();
+}
+
+} // namespace hilti::rt::detail::adl

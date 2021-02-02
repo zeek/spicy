@@ -529,7 +529,8 @@ inline std::string detail::to_string_for_print<Bytes>(const Bytes& x) {
 }
 
 namespace detail::adl {
-inline std::string to_string(const Bytes& x, adl::tag /*unused*/) { return fmt("b\"%s\"", escapeBytes(x.str(), true)); }
+std::string to_string(const Bytes& x, adl::tag /*unused*/);
+std::string to_string(const bytes::Side& x, adl::tag /*unused*/);
 } // namespace detail::adl
 
 } // namespace hilti::rt
