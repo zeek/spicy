@@ -216,6 +216,12 @@ TEST_CASE("Protocol") {
     CHECK_EQ(fmt("%s", Protocol::Undef), "<unknown protocol>");
 }
 
+TEST_CASE("real::Type") {
+    CHECK_EQ(to_string(real::Type::IEEE754_Double), "Type::IEEE754_Double");
+    CHECK_EQ(to_string(real::Type::IEEE754_Single), "Type::IEEE754_Single");
+    CHECK_EQ(to_string(real::Type::Undef), "Type::Undef");
+}
+
 TEST_CASE("RegExp") {
     CHECK_EQ(to_string(RegExp()), "<regexp w/o pattern>");
     CHECK_EQ(to_string(RegExp("a", regexp::Flags())), "/a/");
