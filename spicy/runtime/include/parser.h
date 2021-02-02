@@ -19,6 +19,7 @@
 #include <spicy/rt/filter.h>
 #include <spicy/rt/global-state.h>
 #include <spicy/rt/mime.h>
+#include <spicy/rt/parser-fwd.h>
 #include <spicy/rt/sink.h>
 #include <spicy/rt/typedefs.h>
 
