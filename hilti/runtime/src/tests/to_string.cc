@@ -101,6 +101,12 @@ TEST_CASE("Bool") {
     CHECK_EQ(to_string(Bool(false)), "False");
 }
 
+TEST_CASE("integer::BitOrder") {
+    CHECK_EQ(to_string(integer::BitOrder::LSB0), "BitOrder::LSB0");
+    CHECK_EQ(to_string(integer::BitOrder::MSB0), "BitOrder::MSB0");
+    CHECK_EQ(to_string(integer::BitOrder::Undef), "BitOrder::Undef");
+}
+
 TEST_CASE("ByteOrder") {
     CHECK_EQ(to_string(ByteOrder::Little), "ByteOrder::Little");
     CHECK_EQ(to_string(ByteOrder::Big), "ByteOrder::Big");

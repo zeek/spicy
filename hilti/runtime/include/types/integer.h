@@ -273,4 +273,9 @@ inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v, uin
 }
 
 } // namespace integer
+
+namespace detail::adl {
+std::string to_string(const integer::BitOrder& x, tag /*unused*/);
+}
+
 } // namespace hilti::rt
