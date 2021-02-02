@@ -16,6 +16,11 @@
     Filters can be connected only before a unit's parsing begins. The
     latest possible point is from inside the target unit's `%init` hook.
 
+.. spicy:method:: unit::context unit context False <context>& ()
+
+    Returns a reference to the `%context` instance associated with the
+    unit.
+
 .. spicy:method:: unit::forward unit forward False void (inout data: bytes)
 
     If the unit is connected as a filter to another one, this method

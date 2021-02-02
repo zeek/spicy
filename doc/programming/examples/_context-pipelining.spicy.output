@@ -1,0 +1,8 @@
+# Automatically generated; do not edit. -- <HASH> spicy-driver -F programming/examples/context-input.dat %INPUT/spicy-driver -F input.dat context.spicy/False
+# spicy-driver -F input.dat context.spicy
+msg -> 100
+put -> 200
+CAT -> 555
+end -> 300
+get -> 400
+LST -> 666

@@ -39,6 +39,10 @@ declare public void filter_disconnect(inout any unit) &cxxname="spicy::rt::filte
 declare public void filter_forward(inout any filter, bytes b) &cxxname="spicy::rt::filter::forward" &have_prototype;
 declare public void filter_forward_eod(inout any filter) &cxxname="spicy::rt::filter::forward_eod" &have_prototype;
 
+public type UnitContext = __library_type("spicy::rt::UnitContext");
+declare public UnitContext createContext(any ctx, TypeInfo ti) &cxxname="spicy::rt::detail::createContext" &have_prototype;
+declare public void setContext(inout any unit, optional<UnitContext> ctx, TypeInfo ti) &cxxname="spicy::rt::detail::setContext" &have_prototype;
+
 # Type for a parser definition. When making changes, adapt the C++-side
 # spicy::rt::Parser as well.
 public type Parser = struct {
@@ -46,6 +50,7 @@ public type Parser = struct {
     any parse1;
     any parse2;
     any parse3;
+    any context_new;
     TypeInfo type_info;
     string description;
     any mime_types;

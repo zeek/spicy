@@ -1,0 +1,20 @@
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that %context validation catches stuff.
+
+module Test;
+
+type A = unit { # needs public
+    %context = string;
+};
+
+public type B = unit {
+    %context; # no argument
+    %context = 42; # needs type
+};
+
+public type C = unit {
+    %context = string;
+    %context = bytes; # more than one context
+};

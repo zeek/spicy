@@ -6,6 +6,7 @@
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/resolved-operator.h>
+#include <hilti/ast/expressions/type.h>
 #include <hilti/ast/statements/switch.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
@@ -269,6 +270,17 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 error(fmt("%requires expression must be of type bool, but is of type %d ", e->type()), p);
         }
 
+        else if ( i.id().str() == "%context" ) {
+            if ( auto e = i.expression(); ! e )
+                error("%context requires an argument", p);
+            else if ( ! e->isA<hilti::expression::Type_>() )
+                error("%context requires a type", p);
+
+            auto decl = p.findParent<hilti::declaration::Type>();
+            if ( decl && decl->get().linkage() != hilti::declaration::Linkage::Public )
+                error("only public units can have %context", p);
+        }
+
         else
             error(fmt("unknown property '%s'", i.id().str()), p);
     }
@@ -398,6 +410,9 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                     error(fmt("attribute %s not supported for unit types", a.tag()), p);
             }
         }
+
+        if ( auto contexts = u.propertyItems("%context"); contexts.size() > 1 )
+            error("unit cannot have more than one %context", p);
     }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {

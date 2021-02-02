@@ -5,6 +5,7 @@
 #include <iostream>
 #include <optional>
 #include <string>
+#include <utility>
 
 #include <hilti/rt/result.h>
 
@@ -32,8 +33,11 @@ public:
      *
      * @param parser parser to use; can be left unset to either not perform
      * any parsing at all, or set it later through `setParser()`.
+     *
+     * @param context context to make available to unit instance during parsing
      */
-    ParsingState(ParsingType type, const Parser* parser = nullptr) : _type(type), _parser(parser) {}
+    ParsingState(ParsingType type, const Parser* parser = nullptr, std::optional<UnitContext> context = {})
+        : _type(type), _parser(parser), _context(std::move(context)) {}
 
     /**
      * Returns false if a parser has neither been passed into the constructor
@@ -44,8 +48,16 @@ public:
     /**
      * Explicitly sets a parser to use. Once stream-based matching has
      * started, changing a parser won't have any effect.
+     *
+     * @param parser parser to use; can be left unset to either not perform
+     * any parsing at all, or set it later through `setParser()`.
+     *
+     * @param context context to make available to unit instance during parsing
      */
-    void setParser(const Parser* parser) { _parser = parser; }
+    void setParser(const Parser* parser, std::optional<UnitContext> context = {}) {
+        _parser = parser;
+        _context = std::move(context);
+    }
 
     /**
      * Returns true if parsing has finished due to either: regularly reaching
@@ -122,9 +134,10 @@ protected:
 private:
     State _process(size_t size, const char* data, bool eod = true);
 
-    ParsingType _type;     /**< type of parsing */
-    const Parser* _parser; /**< parser to use, or null if not specified */
-    bool _skip = false;    /**< true if all further input is to be skipped */
+    ParsingType _type;                   /**< type of parsing */
+    const Parser* _parser;               /**< parser to use, or null if not specified */
+    bool _skip = false;                  /**< true if all further input is to be skipped */
+    std::optional<UnitContext> _context; /** context to make available to parsing unit */
 
     // State for stream matching only
     bool _done = false; /**< flag to indicate that stream matching has completed (either regularly or irregularly) */
@@ -152,8 +165,8 @@ public:
      * @param driver driver owning this state
      */
     ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, std::optional<std::string> cid,
-                          Driver* driver)
-        : ParsingState(type, parser), _id(id), _cid(cid), _driver(driver) {}
+                          std::optional<UnitContext> context, Driver* driver)
+        : ParsingState(type, parser, std::move(context)), _id(id), _cid(cid), _driver(driver) {}
 
     /** Returns the textual ID associated with the state. */
     const auto& id() const { return _id; }

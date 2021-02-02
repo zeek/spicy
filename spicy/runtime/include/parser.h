@@ -84,6 +84,19 @@ namespace spicy::rt {
  */
 struct Parser {
     Parser(std::string name, Parse1Function parse1, std::any parse2, Parse3Function parse3,
+           ContextNewFunction context_new, const hilti::rt::TypeInfo* type, std::string description,
+           hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
+        : name(std::move(name)),
+          parse1(parse1),
+          parse2(std::move(parse2)),
+          parse3(parse3),
+          context_new(context_new),
+          type(type),
+          description(std::move(description)),
+          mime_types(std::move(mime_types)),
+          ports(std::move(ports)) {}
+
+    Parser(std::string name, Parse1Function parse1, std::any parse2, Parse3Function parse3, hilti::rt::Null /* null */,
            const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
            hilti::rt::Vector<ParserPort> ports)
         : name(std::move(name)),
@@ -96,10 +109,10 @@ struct Parser {
           ports(std::move(ports)) {}
 
     Parser(std::string name, hilti::rt::Null /* null */, std::any parse2, hilti::rt::Null /* null */,
-           const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
-           hilti::rt::Vector<ParserPort> ports)
-        : Parser(std::move(name), nullptr, parse2, nullptr, type, std::move(description), std::move(mime_types),
-                 std::move(ports)) {}
+           hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type, std::string description,
+           hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
+        : Parser(std::move(name), nullptr, parse2, nullptr, nullptr, type, std::move(description),
+                 std::move(mime_types), std::move(ports)) {}
 
     Parser(const Parser&) = default;
 
@@ -108,6 +121,17 @@ struct Parser {
     Parser(Parser&&) noexcept = default;
     Parser& operator=(const Parser&) = default;
     Parser& operator=(Parser&&) noexcept = default;
+
+    /**
+     * Create a new instance of the `%context` type defined for the parser. If
+     * there's no context defined, returns an unset optional.
+     */
+    std::optional<UnitContext> createContext() const {
+        if ( context_new )
+            return (*context_new)();
+        else
+            return {};
+    }
 
     /** Short descriptive name. */
     std::string name;
@@ -123,6 +147,12 @@ struct Parser {
 
     /** Function performing parsing of given input into a ParsedUnited that will be returned. */
     Parse3Function parse3{};
+
+    /**
+     * Function instantantiating a new instance of the `%context` defined for
+     * the parse. Unset if no context is defined.
+     */
+    ContextNewFunction context_new = nullptr;
 
     const hilti::rt::TypeInfo* type;
 

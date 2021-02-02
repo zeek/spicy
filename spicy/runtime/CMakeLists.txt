@@ -15,6 +15,7 @@ set(SOURCES
     src/mime.cc
     src/parser.cc
     src/sink.cc
+    src/unit-context.cc
     src/util.cc
     src/zlib.cc
 
@@ -75,6 +76,7 @@ add_executable(spicy-rt-tests
                src/tests/parsed-unit.cc
                src/tests/parser.cc
                src/tests/sink.cc
+               src/tests/unit-context.cc
                src/tests/util.cc
                src/tests/zlib.cc)
 

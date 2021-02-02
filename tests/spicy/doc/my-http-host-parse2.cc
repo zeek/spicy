@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     auto request = hilti::rt::reference::make_value<__hlt::MyHTTP::RequestLine>();
 
     // Feed data.
-    hlt::MyHTTP::RequestLine::parse2(request, stream, {});
+    hlt::MyHTTP::RequestLine::parse2(request, stream, {}, {});
 
     // Access fields.
     std::cout << "method : " << *request->method << std::endl;

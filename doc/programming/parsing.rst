@@ -1654,3 +1654,112 @@ control Spicy's gap handling, including when to stop buffering data
 because you know nothing further will arrive anymore. Spicy can also
 notify you about unsuccessful reassembly through a series of built-in unit hooks.
 See :ref:`type_sink` for a reference of the available functionality.
+
+
+.. _unit_context:
+
+Contexts
+========
+
+Parsing may need to retain state beyond any specific unit's lifetime.
+For example, a UDP protocol may want to remember information across
+individual packets (and hence units), or a bi-directional protocol may
+need to correlate the request side with the response side. One option
+for implementing this is maintaining the state in :ref:`global
+variables <variables>`. However, doing so can be cumbersome because a
+global will often not match semantics well. As an alternative, a unit
+can make use of a dedicated *context* value, which is an instance of a
+custom type that has its lifetime determined suitably by the host
+application running the parser. The host application could, for
+example, tie the context to the underlying connection.
+
+A public unit may declare such a context through a unit-level property
+called ``%context``, which takes an arbitrary type as its argument. For
+example:
+
+.. spicy-code::
+
+    public type Foo = unit {
+        %property = bytes;
+        [...]
+    };
+
+By default, each instance of such a unit will then receive a unique
+context value of that type. The context value can be accessed through
+the :spicy:method:`unit::context` method, which will return a
+reference to it:
+
+.. spicy-code:: context-empty.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        %context = int64;
+
+        on %init { print self.context(); }
+    };
+
+.. spicy-output:: context-empty.spicy
+    :exec: spicy-driver %INPUT </dev/null
+    :show-with: foo.spicy
+
+By itself, this is not very useful. However, host applications may
+change how contexts are maintained, and they may assign the same
+context value to multiple units. For example, when parsing a protocol,
+a host application could create a single context value shared by all
+top-level units belonging to the same connection.
+
+That's indeed what both the :ref:`Zeek plugin <zeek>` and the batch
+mode of :ref:`spicy-driver <spicy-driver>` do, enabling parsers to
+maintain bi-directional, per-connection state. As an example, the
+following grammar---mimicking a request/reply-style
+protocol---maintains a queue of outstanding textual commands to then
+associate numerical result codes with them as the responses come in:
+
+.. spicy-code:: context-pipelining.spicy
+
+    module Test;
+
+    # We wrap the state into a tuple to make it easy to add more attributes if needed later.
+    type Pending = tuple<pending: vector<bytes>>;
+
+    public type Requests = unit {
+        %context = Pending;
+
+        : Request[] foreach { self.context().pending.push_back($$.cmd); }
+    };
+
+    public type Replies = unit {
+        %context = Pending;
+
+        : Reply[] foreach {
+            if ( |self.context().pending| ) {
+                print "%s -> %s" % (self.context().pending.back(), $$.response);
+                self.context().pending.pop_back();
+            }
+            else
+                print "<missing request> -> %s", $$.response;
+          }
+    };
+
+    type Request = unit {
+        cmd: /[A-Za-z]+/;
+        : b"\n";
+    };
+
+    type Reply = unit {
+        response: /[0-9]+/;
+        : b"\n";
+    };
+
+.. spicy-output:: context-pipelining.spicy
+    :exec: spicy-driver -F programming/examples/context-input.dat %INPUT
+    :show-as: spicy-driver -F input.dat context.spicy
+
+The output is produced from :download:`this input batch file
+<examples/context-input.dat>`. This would work the same when used with
+the Zeek plugin on a corresponding packet trace.
+
+Note that the units for the two sides of the connection need to
+declare the same ``%context`` type. Processing will abort at
+runtime with a type mismatch error if that's not the case.

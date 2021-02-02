@@ -9,6 +9,7 @@
 #include <hilti/rt/types/stream.h>
 
 #include <spicy/rt/parsed-unit.h>
+#include <spicy/rt/unit-context.h>
 
 namespace spicy::rt {
 
@@ -20,16 +21,25 @@ using UnitRef = hilti::rt::StrongReference<T>;
 
 /** Defines the type of the generic version of units' public parsing functions. */
 using Parse1Function = hilti::rt::Resumable (*)(hilti::rt::ValueReference<hilti::rt::Stream>&,
-                                                const std::optional<hilti::rt::stream::View>&);
+                                                const std::optional<hilti::rt::stream::View>&,
+                                                const std::optional<UnitContext>& context);
 
 /** Defines the type of the generic version of units' public parsing functions. */
 template<typename T>
 using Parse2Function = hilti::rt::Resumable (*)(UnitType<T>&, hilti::rt::ValueReference<hilti::rt::Stream>&,
-                                                const std::optional<hilti::rt::stream::View>&);
+                                                const std::optional<hilti::rt::stream::View>&,
+                                                const std::optional<UnitContext>& context);
 
 using Parse3Function = hilti::rt::Resumable (*)(hilti::rt::ValueReference<ParsedUnit>&,
                                                 hilti::rt::ValueReference<hilti::rt::Stream>&,
-                                                const std::optional<hilti::rt::stream::View>&);
+                                                const std::optional<hilti::rt::stream::View>&,
+                                                const std::optional<UnitContext>& context);
+
+/**
+ * Defines the type of the generic version of a units' public function to
+ * instantiate a new `%context` instance.
+ */
+using ContextNewFunction = UnitContext (*)();
 
 namespace sink::detail {
 struct State;

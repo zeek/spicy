@@ -166,7 +166,7 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
 
         if ( ! r ) {
             DRIVER_DEBUG(fmt("beginning parsing input (eod=%s)", data->isFrozen()));
-            r = parser.parse3(unit, data, {});
+            r = parser.parse3(unit, data, {}, {});
         }
         else {
             DRIVER_DEBUG(fmt("resuming parsing input (eod=%s)", data->isFrozen()));
@@ -227,6 +227,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
         return Done;
     }
 
+
     try {
         switch ( _type ) {
             case ParsingType::Block: {
@@ -235,7 +236,13 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                 auto input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                 input->freeze();
 
-                _resumable = _parser->parse1(input, {});
+                if ( _parser->context_new ) {
+                    if ( _context )
+                        DRIVER_DEBUG("context was provided");
+                    else
+                        DRIVER_DEBUG("no context provided");
+                }
+                _resumable = _parser->parse1(input, {}, _context);
                 if ( ! *_resumable )
                     hilti::rt::internalError("block-based parsing yielded");
 
@@ -255,11 +262,19 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                 if ( ! _input ) {
                     // First chunk.
                     DRIVER_DEBUG("first data chunk", size, data);
+
+                    if ( _parser->context_new ) {
+                        if ( _context )
+                            DRIVER_DEBUG("context was provided");
+                        else
+                            DRIVER_DEBUG("no context provided");
+                    }
+
                     _input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                     if ( eod )
                         (*_input)->freeze();
 
-                    _resumable = _parser->parse1(*_input, {});
+                    _resumable = _parser->parse1(*_input, {}, _context);
                 }
 
                 else {
@@ -314,17 +329,20 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
 
     // Helper to add flows to the map.
     auto create_state = [&](driver::ParsingType type, const std::string& parser_name, const std::string& id,
-                            std::optional<std::string> cid) {
+                            std::optional<std::string> cid, std::optional<UnitContext> context) {
         if ( auto parser = lookupParser(parser_name) ) {
-            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, cid, this));
+            if ( ! context )
+                context = (*parser)->createContext();
+
+            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, cid, context, this));
             if ( x.second )
                 _total_flows++;
 
-            return x.first;
+            return std::make_pair(x.first, std::move(context));
         }
         else {
             DRIVER_DEBUG(hilti::rt::fmt("no parser for ID %s, skipping", id));
-            return flows.end();
+            return std::make_pair(flows.end(), std::optional<UnitContext>{});
         }
     };
 
@@ -355,7 +373,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
                 return hilti::rt::result::Error(hilti::rt::fmt("unknown session type '%s'", m[2]));
 
 
-            create_state(type, parser_name, id, {});
+            create_state(type, parser_name, id, {}, {});
         }
         else if ( m[0] == "@begin-conn" ) {
             // @begin-conn <conn-id> <type> <orig-id> <orig-parser> <resp-id> <resp-parser>
@@ -386,10 +404,14 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             driver::ParsingStateForDriver* orig_state = nullptr;
             driver::ParsingStateForDriver* resp_state = nullptr;
 
-            if ( auto x = create_state(driver::ParsingType::Stream, orig_parser_name, orig_id, cid); x != flows.end() )
-                orig_state = &x->second;
+            std::optional<UnitContext> context;
 
-            if ( auto x = create_state(driver::ParsingType::Stream, resp_parser_name, resp_id, cid); x != flows.end() )
+            if ( auto [x, ctx] = create_state(type, orig_parser_name, orig_id, cid, context); x != flows.end() ) {
+                orig_state = &x->second;
+                context = std::move(ctx);
+            }
+
+            if ( auto [x, ctx] = create_state(type, resp_parser_name, resp_id, cid, context); x != flows.end() )
                 resp_state = &x->second;
 
             if ( ! (orig_state && resp_state) ) {

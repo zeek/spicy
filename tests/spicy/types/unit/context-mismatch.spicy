@@ -1,0 +1,33 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: spicy-driver -F test.dat test.hlto >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Using units with different contexts for the same connection should fail.
+
+module Test;
+
+type Context1 = tuple<bytes>;
+type Context2 = tuple<int32>;
+
+public type Requests = unit {
+    %context = Context1;
+    on %init { print self.context(); }
+    x : bytes &eod;
+};
+
+public type Replies = unit {
+    %context = Context2;
+    on %init { print self.context(); } # this won't be reached anymore
+    y : bytes &eod;
+};
+
+@TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-conn cid1 stream cid1-orig Test::Requests cid1-resp Test::Replies
+@data cid1-orig 4
+get
+
+@data cid1-resp 4
+100
+
+@end-conn cid1

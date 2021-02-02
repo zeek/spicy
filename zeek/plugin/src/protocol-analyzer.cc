@@ -49,8 +49,12 @@ void ProtocolAnalyzer::Process(bool is_orig, int len, const u_char* data) {
 
     if ( ! endp->hasParser() && ! endp->isSkipping() ) {
         auto parser = OurPlugin->parserForProtocolAnalyzer(endp->cookie().analyzer->GetAnalyzerTag(), is_orig);
-        if ( parser )
-            endp->setParser(parser);
+        if ( parser ) {
+            if ( ! _context )
+                _context = parser->createContext();
+
+            endp->setParser(parser, _context);
+        }
         else {
             STATE_DEBUG_MSG(is_orig, "no unit specified for parsing");
             endp->skipRemaining();

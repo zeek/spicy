@@ -144,7 +144,7 @@ void connect(S& state, UnitRef<F> filter_unit) {
                                         SPICY_RT_DEBUG_VERBOSE(
                                             hilti::rt::fmt("  + parsing from stream %p, forwarding to stream %p",
                                                            data.get(), lhs_filter_unit->__forward.get()));
-                                        return (*parse2)(lhs_filter_unit, data, cur);
+                                        return (*parse2)(lhs_filter_unit, data, cur, {});
                                     },
                                     .input = hilti::rt::Stream()};
 
