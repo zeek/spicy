@@ -107,6 +107,12 @@ TEST_CASE("integer::BitOrder") {
     CHECK_EQ(to_string(integer::BitOrder::Undef), "BitOrder::Undef");
 }
 
+TEST_CASE("bytes::Charset") {
+    CHECK_EQ(to_string(bytes::Charset::ASCII), "Charset::ASCII");
+    CHECK_EQ(to_string(bytes::Charset::UTF8), "Charset::UTF8");
+    CHECK_EQ(to_string(bytes::Charset::Undef), "Charset::Undef");
+}
+
 TEST_CASE("bytes::Side") {
     CHECK_EQ(to_string(bytes::Side::Left), "Side::Left");
     CHECK_EQ(to_string(bytes::Side::Right), "Side::Right");
