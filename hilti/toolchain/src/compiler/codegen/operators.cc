@@ -925,6 +925,11 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("%s.emplace_back(%s)", self, args[0]);
     }
 
+    result_t operator()(const operator_::vector::PopBack& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.pop_back()", self);
+    }
+
     result_t operator()(const operator_::vector::Reserve& n) {
         auto [self, args] = methodArguments(n);
         return fmt("%s.reserve(%s)", self, args[0]);

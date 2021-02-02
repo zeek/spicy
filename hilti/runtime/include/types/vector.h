@@ -297,6 +297,18 @@ public:
     }
 
     /**
+     * Removes the last element of the `vector`.
+     *
+     * @throw `IndexError` if the `Vector` is empty
+     */
+    void pop_back() {
+        if ( V::empty() )
+            throw IndexError("vector is empty");
+
+        V::pop_back();
+    }
+
+    /**
      * Returns an iterator referring to a specific element.
      *
      * @param i index of element

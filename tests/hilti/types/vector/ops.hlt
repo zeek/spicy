@@ -38,6 +38,9 @@ assert v2 == vector("a", "b", "c");
 
 assert *v2.at(1) == "b";
 
+v2.pop_back();
+assert v2 == vector("a", "b");
+
 # Test const version.
 
 function void p(vector<uint<64>> v) {
