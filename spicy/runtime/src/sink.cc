@@ -431,17 +431,14 @@ void Sink::write(hilti::rt::Bytes data, std::optional<uint64_t> seq, std::option
         _newData(std::move(data), _cur_rseq, n);
 }
 
-#if 0
-void Sink::write(const hilti::rt::Bytes& data, std::optional<uint64_t> seq, std::optional<uint64_t> len) {
-    if ( ! data.size() )
-        return;
+namespace hilti::rt::detail::adl {
+std::string to_string(const Sink& /*x*/, tag /*unused*/) { return "<sink>"; }
 
-    for ( auto s : _states ) {
-        if ( s->resumable )
-            throw ParseError("more data after sink's unit has already completed parsing");
-
-        s->data += data;
-        s->resumable.resume();
+std::string to_string(const sink::ReassemblerPolicy& x, tag /*unused*/) {
+    switch ( x ) {
+        case spicy::rt::sink::ReassemblerPolicy::First: return "sink::ReassemblerPolicy::First";
     }
+
+    cannot_be_reached();
 }
-#endif
+} // namespace hilti::rt::detail::adl

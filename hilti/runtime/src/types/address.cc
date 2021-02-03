@@ -175,9 +175,9 @@ Result<std::tuple<Address, stream::View>> address::unpack(const stream::View& da
 
 std::string detail::adl::to_string(const AddressFamily& x, tag /*unused*/) {
     switch ( x ) {
-        case AddressFamily::IPv4: return "IPv4";
-        case AddressFamily::IPv6: return "IPv6";
-        case AddressFamily::Undef: return "Undef";
+        case AddressFamily::IPv4: return "AddressFamily::IPv4";
+        case AddressFamily::IPv6: return "AddressFamily::IPv6";
+        case AddressFamily::Undef: return "AddressFamily::Undef";
     }
 
     cannot_be_reached();

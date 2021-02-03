@@ -74,6 +74,7 @@ add_executable(spicy-rt-tests
                src/tests/mime.cc
                src/tests/parsed-unit.cc
                src/tests/parser.cc
+               src/tests/sink.cc
                src/tests/util.cc
                src/tests/zlib.cc)
 

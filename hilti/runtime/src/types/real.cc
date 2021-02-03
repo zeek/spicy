@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/fmt.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/real.h>
 #include <hilti/rt/util.h>
@@ -45,4 +46,19 @@ Result<std::tuple<double, Bytes>> real::unpack(const Bytes& data, real::Type typ
 
 Result<std::tuple<double, stream::View>> real::unpack(const stream::View& data, real::Type type, ByteOrder fmt) {
     return _unpack(data, type, fmt);
+}
+
+std::string detail::adl::to_string(double x, tag /*unused*/) {
+    // %g general floating point format drops '.'
+    return fmt("%g", x);
+}
+
+std::string detail::adl::to_string(const real::Type& x, adl::tag /*unused*/) {
+    switch ( x ) {
+        case real::Type::IEEE754_Double: return "Type::IEEE754_Double";
+        case real::Type::IEEE754_Single: return "Type::IEEE754_Single";
+        case real::Type::Undef: return "Type::Undef";
+    }
+
+    cannot_be_reached();
 }

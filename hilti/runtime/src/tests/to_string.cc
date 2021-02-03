@@ -87,18 +87,44 @@ TEST_CASE("Address") {
 }
 
 TEST_CASE("AddressFamily") {
-    CHECK_EQ(to_string(AddressFamily::IPv4), "IPv4");
-    CHECK_EQ(to_string(AddressFamily::IPv6), "IPv6");
-    CHECK_EQ(to_string(AddressFamily::Undef), "Undef");
+    CHECK_EQ(to_string(AddressFamily::IPv4), "AddressFamily::IPv4");
+    CHECK_EQ(to_string(AddressFamily::IPv6), "AddressFamily::IPv6");
+    CHECK_EQ(to_string(AddressFamily::Undef), "AddressFamily::Undef");
 
-    CHECK_EQ(fmt("%s", AddressFamily::IPv4), "IPv4");
-    CHECK_EQ(fmt("%s", AddressFamily::IPv6), "IPv6");
-    CHECK_EQ(fmt("%s", AddressFamily::Undef), "Undef");
+    CHECK_EQ(fmt("%s", AddressFamily::IPv4), "AddressFamily::IPv4");
+    CHECK_EQ(fmt("%s", AddressFamily::IPv6), "AddressFamily::IPv6");
+    CHECK_EQ(fmt("%s", AddressFamily::Undef), "AddressFamily::Undef");
 }
 
 TEST_CASE("Bool") {
     CHECK_EQ(to_string(Bool(true)), "True");
     CHECK_EQ(to_string(Bool(false)), "False");
+}
+
+TEST_CASE("integer::BitOrder") {
+    CHECK_EQ(to_string(integer::BitOrder::LSB0), "BitOrder::LSB0");
+    CHECK_EQ(to_string(integer::BitOrder::MSB0), "BitOrder::MSB0");
+    CHECK_EQ(to_string(integer::BitOrder::Undef), "BitOrder::Undef");
+}
+
+TEST_CASE("bytes::Charset") {
+    CHECK_EQ(to_string(bytes::Charset::ASCII), "Charset::ASCII");
+    CHECK_EQ(to_string(bytes::Charset::UTF8), "Charset::UTF8");
+    CHECK_EQ(to_string(bytes::Charset::Undef), "Charset::Undef");
+}
+
+TEST_CASE("bytes::Side") {
+    CHECK_EQ(to_string(bytes::Side::Left), "Side::Left");
+    CHECK_EQ(to_string(bytes::Side::Right), "Side::Right");
+    CHECK_EQ(to_string(bytes::Side::Both), "Side::Both");
+}
+
+TEST_CASE("ByteOrder") {
+    CHECK_EQ(to_string(ByteOrder::Little), "ByteOrder::Little");
+    CHECK_EQ(to_string(ByteOrder::Big), "ByteOrder::Big");
+    CHECK_EQ(to_string(ByteOrder::Network), "ByteOrder::Network");
+    CHECK_EQ(to_string(ByteOrder::Host), "ByteOrder::Host");
+    CHECK_EQ(to_string(ByteOrder::Undef), "ByteOrder::Undef");
 }
 
 TEST_CASE("Bytes") {
@@ -200,6 +226,12 @@ TEST_CASE("Protocol") {
     CHECK_EQ(fmt("%s", Protocol::UDP), "UDP");
     CHECK_EQ(fmt("%s", Protocol::ICMP), "ICMP");
     CHECK_EQ(fmt("%s", Protocol::Undef), "<unknown protocol>");
+}
+
+TEST_CASE("real::Type") {
+    CHECK_EQ(to_string(real::Type::IEEE754_Double), "Type::IEEE754_Double");
+    CHECK_EQ(to_string(real::Type::IEEE754_Single), "Type::IEEE754_Single");
+    CHECK_EQ(to_string(real::Type::Undef), "Type::Undef");
 }
 
 TEST_CASE("RegExp") {

@@ -15,7 +15,10 @@
 #include <hilti/rt/types/stream.h>
 
 #include <spicy/rt/debug.h>
-#include <spicy/rt/parser.h>
+#include <spicy/rt/filter.h>
+#include <spicy/rt/mime.h>
+#include <spicy/rt/parser-fwd.h>
+#include <spicy/rt/typedefs.h>
 
 namespace spicy::rt {
 
@@ -352,5 +355,6 @@ private:
 } // namespace spicy::rt
 
 namespace hilti::rt::detail::adl {
-extern inline std::string to_string(const spicy::rt::Sink& /* x */, adl::tag /*unused*/) { return "<sink>"; }
+std::string to_string(const spicy::rt::Sink& /* x */, adl::tag /*unused*/);
+std::string to_string(const spicy::rt::sink::ReassemblerPolicy& x, adl::tag /*unused*/);
 } // namespace hilti::rt::detail::adl

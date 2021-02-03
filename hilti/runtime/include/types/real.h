@@ -25,11 +25,8 @@ extern Result<std::tuple<double, stream::View>> unpack(const stream::View& data,
 } // namespace real
 
 namespace detail::adl {
-inline std::string to_string(double x, adl::tag /*unused*/) {
-    // %g general floating point format drops '.'
-    return fmt("%g", x);
-}
-
+std::string to_string(double x, tag /*unused*/);
+std::string to_string(const real::Type& x, tag /*unused*/);
 } // namespace detail::adl
 
 } // namespace hilti::rt
