@@ -9,13 +9,17 @@ BUILDDIR      = $(PWD)/../build
 SOURCEDIR     = $(PWD)
 DESTDIR       = $(BUILDDIR)/html
 
+.PHONY: all
 all: html
 
+.PHONY: clean
 clean:
 	rm -rf $(DESTDIR)
 
+.PHONY: html
 html: autogen-docs sphinx
 
+.PHONY: sphinx
 sphinx:
 	@rm -f "$(BUILDDIR)/doc-root" && ln -s "../doc" "$(BUILDDIR)/doc-root"
 	@  # Since Sphinx expects the Doxygen output directory, create it here to
@@ -25,15 +29,16 @@ sphinx:
 	@PYTHONWARNINGS="ignore" PATH=$(BUILDDIR)/bin:$$PATH $(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(DESTDIR)" $(SPHINXOPTS) $(O)
 	@echo Built documentation in $(realpath $(DESTDIR)/html/index.html)
 
+.PHONY: autogen-docs
 autogen-docs:
 	@echo Auto-generating reference documentation ...
 	(cd $(BUILDDIR)/.. && ./doc/scripts/autogen-docs)
 
+.PHONY: doxygen
 doxygen:
 	mkdir -p ../build/html/html/doxygen
 	doxygen
 
+.PHONY: check
 check:
 	@$(SPHINXBUILD) -q -b linkcheck $(SOURCEDIR) $(DESTDIR)/linkcheck
-
-.PHONY: autogen-docs check doxygen
