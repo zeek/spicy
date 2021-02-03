@@ -438,6 +438,26 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             cg->unit()->add(extern_d);
         }
 
+        if ( f.callingConvention() == function::CallingConvention::ExternNoSuspend ) {
+            // Create a separate function to expose under the externally
+            // visible name, which will simply forward to the actual function.
+            auto body = cxx::Block();
+            cxx::Expression forward_call = fmt("%s(%s)", d.id, util::join(cxx_func.declaration.args, ", "));
+
+            if ( ft.result().type() != type::Void() )
+                body.addReturn(forward_call);
+            else
+                body.addStatement(forward_call);
+
+            auto extern_d = d;
+            extern_d.id = cxx::ID(
+                util::replace(extern_d.id, cg->options().cxx_namespace_intern, cg->options().cxx_namespace_extern));
+            auto extern_cxx_func = cxx::Function{.declaration = extern_d, .body = std::move(body)};
+
+            cg->unit()->add(extern_cxx_func);
+            cg->unit()->add(extern_d);
+        }
+
         if ( n.linkage() == declaration::Linkage::Struct && ! f.isStatic() )
             cg->popSelf();
 
@@ -501,7 +521,7 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function ft, dec
     };
 
     auto linkage_ = [&]() {
-        if ( cc == function::CallingConvention::Extern )
+        if ( cc == function::CallingConvention::Extern || cc == function::CallingConvention::ExternNoSuspend )
             return "extern";
 
         switch ( linkage ) {

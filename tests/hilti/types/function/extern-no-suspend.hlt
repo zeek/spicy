@@ -1,0 +1,23 @@
+# @TEST-EXEC: hiltic -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: hiltic -c %INPUT | grep -qv Resumable
+#
+# @TEST-DOC: Test use of the extern-no-suspend linkage.
+#
+# We don't have a direct way to test that using this linkage changes
+# behavior compared to `extern` because internally it's primarily
+# an optimization. So we (1) check that the HILTI compiler accepts
+# the linkage, and (2) ensure that the generated HILTI code doesn't
+# contain any code involving resumables.
+
+module Foo {
+
+import hilti;
+
+function extern-no-suspend void foo() {
+    hilti::print("foo");
+}
+
+foo();
+
+}

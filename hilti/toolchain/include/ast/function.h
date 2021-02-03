@@ -17,13 +17,15 @@ namespace function {
 
 /** A function's calling convention. */
 enum class CallingConvention {
-    Extern,  /**< function can be called from external C++ code */
-    Standard /**< default, nothing special */
+    Extern,          /**< function can be called from external C++ code */
+    ExternNoSuspend, /**< function can be called from external C++ code, and is guaranteed to not suspend. */
+    Standard         /**< default, nothing special */
 };
 
 namespace detail {
 constexpr util::enum_::Value<CallingConvention> conventions[] = {
     {CallingConvention::Extern, "extern"},
+    {CallingConvention::ExternNoSuspend, "extern-no-suspend"},
     {CallingConvention::Standard, "<standard>"},
 };
 } // namespace detail

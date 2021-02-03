@@ -134,9 +134,15 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         if ( auto f = n.declaration().tryAs<declaration::Function>() ) {
             // If we're refering to, but not calling, an "external" function
             // or static method, bind to the externally visible name.
-            if ( f->function().callingConvention() == function::CallingConvention::Extern &&
-                 (p.path.empty() || ! p.parent().isA<operator_::function::Call>()) )
-                return cxx::ID(cg->options().cxx_namespace_extern, cxx::ID(n.id()));
+            if ( (f->function().callingConvention() == function::CallingConvention::Extern ||
+                  f->function().callingConvention() == function::CallingConvention::ExternNoSuspend) &&
+                 (p.path.empty() || ! p.parent().isA<operator_::function::Call>()) ) {
+                if ( n.id().namespace_().empty() )
+                    // Call to local function, don't qualify it.
+                    return cxx::ID(n.id());
+                else
+                    return cxx::ID(cg->options().cxx_namespace_extern, n.id());
+            }
         }
 
         if ( auto p = n.declaration().tryAs<declaration::Parameter>(); p && p->isStructParameter() ) {
