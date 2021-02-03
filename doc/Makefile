@@ -14,7 +14,7 @@ all: html
 clean:
 	rm -rf $(DESTDIR)
 
-html: Makefile autogen-docs sphinx
+html: autogen-docs sphinx
 
 sphinx:
 	@rm -f "$(BUILDDIR)/doc-root" && ln -s "../doc" "$(BUILDDIR)/doc-root"
@@ -36,4 +36,4 @@ doxygen:
 check:
 	@$(SPHINXBUILD) -q -b linkcheck $(SOURCEDIR) $(DESTDIR)/linkcheck
 
-.PHONY: Makefile autogen-docs check doxygen
+.PHONY: autogen-docs check doxygen
