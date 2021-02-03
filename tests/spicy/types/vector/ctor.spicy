@@ -1,0 +1,34 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+global x1 = vector();
+global x2 = vector(1);
+global x3 = vector(1, 2, 3);
+global x4 = vector("s1", "s2");
+global x5 = vector([1,2], [3,4], [4,5]);
+global x6 = vector(vector(1,2), vector(3,4), vector(4,5));
+global x7 = vector<uint16>(16);
+
+global l1: vector<uint16> = [1];
+global l2: vector<int32> = [];
+global l3: vector<int32> = [1];
+global l4: vector<string> = ["s1", "s2"];
+global l5: vector<vector<uint16>> = [[1,2], [3,4], [4,5]];
+global l6: vector<bool> = [True, False, True, False];
+
+hilti::print(x1);
+hilti::print(x2);
+hilti::print(x3);
+hilti::print(x4);
+hilti::print(x5);
+hilti::print(x6);
+hilti::print(x7);
+
+hilti::print(l1);
+hilti::print(l2);
+hilti::print(l3);
+hilti::print(l4);
+hilti::print(l5);
+hilti::print(l6);
