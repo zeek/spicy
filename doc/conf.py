@@ -34,7 +34,8 @@ needs_sphinx = '1.8'
 extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.extlinks',
-    'spicy'
+    'spicy',
+    'spicy-pygments'
 ]
 
 exclude_patterns = [u'_build', 'autogen', 'Thumbs.db',
