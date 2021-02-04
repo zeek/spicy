@@ -6,7 +6,7 @@ Spicy --- Generating Parsers for Protocols & Files
 ==================================================
 
 .. literalinclude:: examples/frontpage.spicy
-    :language: text
+    :language: spicy
 
 Overview
     Spicy is a C++ parser generator that makes it easy to create

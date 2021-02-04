@@ -183,7 +183,9 @@ properties are supported:
         Here, ``SMTP`` is the name you would write into ``replaces`` to
         disable the built-in SMTP analyzer.
 
-As a full example, here's what a new HTTP analyzer could look like::
+As a full example, here's what a new HTTP analyzer could look like:
+
+.. code-block:: spicy-evt
 
     protocol analyzer spicy::HTTP over TCP:
         parse originator with HTTP::Requests,
@@ -227,7 +229,9 @@ for more. You will need to use the
 <https://docs.zeek.org/en/master/scripts/base/bif/packet_analysis.bif.zeek.html#id-PacketAnalyzer::try_register_packet_analyzer_by_name>`_
 for registering Spicy analyzers (not `register_packet_analyzer`), with
 the name of the new Spicy analyzer being ``ANALYZER_NAME``. `zeek -NN`
-shows the names of existing analyzers. For example::
+shows the names of existing analyzers. For example:
+
+.. code-block:: zeek
 
     event zeek_init()
         {
@@ -278,7 +282,9 @@ File analyzers support the following properties:
             HTTP's ``Content-Type`` header). If in doubt, examine
             ``files.log`` for what it records as a file's type.
 
-As a full example, here's what a new GIF analyzer could look like::
+As a full example, here's what a new GIF analyzer could look like:
+
+.. code-block:: spicy-evt
 
     file analyzer spicy::GIF:
         parse with GIF::Image,
@@ -556,7 +562,7 @@ behavior, similar to what the :ref:`spicy-driver` provides as
 command-line arguments:
 
 .. literalinclude:: /../zeek/plugin/scripts/base/spicy/main.zeek
-    :language: bro
+    :language: zeek
     :start-after: doc-start
     :end-before:  doc-end
 

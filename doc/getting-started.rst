@@ -16,6 +16,7 @@ Here's a simple "Hello, world!" in Spicy:
 
 .. literalinclude:: examples/hello.spicy
    :lines: 4-
+   :language: spicy
 
 Assuming that's stored in ``hello.spicy``, you can compile and execute
 the code with Spicy's standalone compiler ``spicyc``::
@@ -80,6 +81,7 @@ Here's an example of a Spicy script for parsing HTTP request lines:
 .. literalinclude:: examples/my-http.spicy
    :lines: 4-
    :caption: my-http.spicy
+   :language: spicy
 
 In this example, you can see a number of things that are typical for
 Spicy code:
@@ -255,6 +257,7 @@ We do both of these by creating an additional control file for Zeek:
 .. literalinclude:: examples/my-http.evt
     :caption: my-http.evt
     :linenos:
+    :language: spicy-evt
 
 The first block (lines 1-3) tells Zeek that we have a new protocol
 analyzer to provide. The analyzer's Zeek-side name is
@@ -284,6 +287,7 @@ information we are parsing. Let's use this:
 
 .. literalinclude:: examples/my-http.zeek
     :caption: my-http.zeek
+    :language: zeek
 
 You see an Zeek event handler for the event that we just defined,
 having the expected signature of four parameters matching the types of
@@ -348,6 +352,7 @@ specific parser. Here's a small C++ program that parses input with our
 
 .. literalinclude:: examples/my-http.cc
     :caption: my-http.cc
+    :language: c++
 
 .. code::
 

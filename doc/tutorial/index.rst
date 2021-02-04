@@ -582,6 +582,7 @@ following complete grammar for TFTP, including the packet formats in
 comments as well:
 
 .. literalinclude:: examples/tftp.spicy
+    :language: spicy
 
 Zeek Integration
 ================
@@ -603,7 +604,7 @@ comes with a tool :ref:`spicyz <spicyz>` for that. The following
 command line produces a binary object file ``tftp.hlto`` containing
 the executable analyzer code:
 
-.. spicy-code::
+.. code::
 
     # spicyz -o tftp.hlto tftp.spicy
 
@@ -612,13 +613,13 @@ Below, we will prepare an additional interface definition file
 will need to give that to ``spicyz`` as well, and our full
 compilation command hence becomes:
 
-.. spicy-code::
+.. code::
 
     # spicyz -o tftp.hlto tftp.spicy tftp.evt
 
 When starting Zeek, we add ``tftp.hlto`` to its command line:
 
-.. spicy-code::
+.. code::
 
     # zeek -r tftp_rrq.pcap tftp.hlto
 
@@ -638,6 +639,7 @@ following into ``tftp.evt``, the analyzer definition file:
 
 .. literalinclude:: examples/tftp.evt
     :lines: 3-5
+    :language: spicy-evt
 
 The first line provides our analyzer with a Zeek-side name
 (``spicy::TFTP``) and also tells Zeek that we are adding an
@@ -653,7 +655,7 @@ will not generate any events yet, but we can at least see the output of
 the ``on %done { print self; }`` hook that still remains part of the
 grammar from earlier:
 
-.. spicy-code::
+.. code::
 
     # zeek -r tftp_rrq.pcap tftp.hlto Spicy::enable_print=T
     [$opcode=Opcode::RRQ, $rrq=[$filename=b"rfc1350.txt", $mode=b"octet"], $wrq=(not set), $data=(not set), $ack=(not set), $error=(not set)]
@@ -684,6 +686,7 @@ by adding this definition to ``tftp.evt``:
 
 .. literalinclude:: examples/tftp-single-request.evt
     :lines: 5-7
+    :language: spicy-evt
 
 The first line makes our Spicy TFTP grammar available to the rest of
 the file. The line ``on ...`` defines one event: Every time a
@@ -698,10 +701,11 @@ Now we need a Zeek event handler for our new event. Let's put this
 into ``tftp.zeek``:
 
 .. literalinclude:: examples/tftp-single-request.zeek
+    :language: zeek
 
 Running Zeek then gives us:
 
-.. spicy-code::
+.. code::
 
     # spicyz -o tftp.hlto tftp.spicy tftp.evt
     # zeek -r tftp_rrq.pcap tftp.hlto tftp.zeek
@@ -711,6 +715,7 @@ Let's extend the event signature a bit by passing further arguments:
 
 .. literalinclude:: examples/tftp-single-request-more-args.evt
     :lines: 5-7
+    :language: spicy-evt
 
 This shows how each parameter gets specified as a Spicy expression:
 ``self`` refers to the instance currently being parsed (``self``), and
@@ -720,8 +725,9 @@ will be true if the event has been triggered by originator-side
 traffic. On the Zeek side, our event now has the following signature:
 
 .. literalinclude:: examples/tftp-single-request-more-args.zeek
+    :language: zeek
 
-.. spicy-code::
+.. code::
 
     # spicyz -o tftp.hlto tftp.spicy tftp.evt
     # zeek -r tftp_rrq.pcap tftp.hlto tftp.zeek
@@ -735,14 +741,16 @@ generation through an additional ``if`` condition:
 
 .. literalinclude:: examples/tftp.evt
     :lines: 9-10
+    :language: spicy-evt
 
 This now defines two separate events, each being generated only for
 the corresponding value of ``is_read``. Let's try it with a new
 ``tftp.zeek``:
 
 .. literalinclude:: examples/tftp-two-requests.zeek
+    :language: zeek
 
-.. spicy-code::
+.. code::
 
     # spicyz -o tftp.hlto tftp.spicy tftp.evt
     # zeek -r tftp_rrq.pcap tftp.hlto tftp.zeek
@@ -761,8 +769,9 @@ because this is Zeek-specific logic:
 
 .. literalinclude:: examples/zeek_tftp.spicy
     :lines: 3-
+    :language: spicy
 
-.. spicy-code::
+.. code::
 
     # spicyz -o tftp.hlto tftp.spicy zeek_tftp.spicy tftp.evt
     # zeek -r tftp_rrq.pcap tftp.hlto tftp.zeek
@@ -781,6 +790,7 @@ file:
 
 .. literalinclude:: examples/tftp.evt
     :lines: 3-
+    :language: spicy-evt
 
 
 Detour: Zeek vs. TFTP
@@ -792,7 +802,7 @@ pcap file contains multiple different types of packets. The reason
 becomes clear once we look more closely at the UDP ports that are in
 use:
 
-.. spicy-code::
+.. code::
 
     # tcpdump -ttnr tftp_rrq.pcap
     1367411051.972852 IP 192.168.0.253.50618 > 192.168.0.10.69:  20 RRQ "rfc1350.txtoctet" [tftp]
@@ -811,7 +821,7 @@ one at all due to its lack of the well-known port (neither does
 ``tcpdump``!). Zeek's connection log confirms this by showing two
 separate entries:
 
-.. spicy-code::
+.. code::
 
     # cat conn.log
     1367411051.972852  CH3xFz3U1nYI1Dp1Dk  192.168.0.253  50618  192.168.0.10  69  udp  spicy_tftp  -  -  -  S0  -  -  0  D  1  48  0  0  -
@@ -824,8 +834,9 @@ function to designate a specific analyzer for an anticipated future
 connection. We can call that function when we see the initial request:
 
 .. literalinclude:: examples/tftp-schedule-analyzer.zeek
+    :language: zeek
 
-.. spicy-code::
+.. code::
 
     # spicyz -o tftp.hlto tftp.spicy zeek_tftp.spicy tftp.evt
     # zeek -r tftp_rrq.pcap tftp.hlto tftp.zeek
@@ -854,7 +865,7 @@ desired. We have created such :download:`a script for TFTP
 generates. Once we add that to the Zeek command line, we will see a
 new ``tftp.log``:
 
-.. spicy-code::
+.. code::
 
     # spicyz -o tftp.hlto tftp.spicy zeek_tftp.spicy tftp.evt
     # zeek -r tftp_rrq.pcap tftp.hlto tftp.zeek
@@ -867,7 +878,7 @@ adding a corresponding entry to the ``service`` field inside the
 Zeek-side connection record. With that, we are now seeing this in
 ``conn.log``:
 
-.. spicy-code::
+.. code::
 
     1367411051.972852  ChbSfq3QWKuNirt9Uh  192.168.0.253  50618  192.168.0.10  69  udp  spicy_tftp  -  -  -  S0  -  -0  D  1  48  0  0  -
     1367411052.077243  CowFQj20FHHduhHSYk  192.168.0.10  3445  192.168.0.253  50618  udp  spicy_tftp_data  0.181558  24795  196  SF  --  0  Dd  49  26167  49  1568  -

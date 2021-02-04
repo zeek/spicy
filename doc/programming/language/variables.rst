@@ -20,13 +20,17 @@ As a shortcut, you can skip ``: TYPE`` if the global comes with a
 default.Spicy then just applies the expression's type to the global.
 
 We define global constants in a similar way, just replacing ``global``
-with ``const``::
+with ``const``:
+
+.. spicy-code::
 
     const x: uint32 = 42;
     const foo = "Foo";
 
 Inside a function, local variables use the same syntax once more, just
-prefixed with ``local`` this time::
+prefixed with ``local`` this time:
+
+.. spicy-code::
 
     function f() {
         local x: bytes;

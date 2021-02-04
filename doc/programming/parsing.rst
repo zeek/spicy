@@ -17,7 +17,9 @@ or records in other languages: It defines an ordered set of fields,
 each with a name and a type, that during runtime will store
 corresponding values. Units can be instantiated, fields can be
 assigned values, and these values can then be retrieved. Here's about
-the most basic Spicy unit one can define::
+the most basic Spicy unit one can define:
+
+.. spicy-code::
 
     type Foo = unit {
         version: uint32;
@@ -443,7 +445,9 @@ type; we discuss these the :ref:`corresponding section <sinks>`.
 There are three locations where hooks can be implemented:
 
 - Inside a unit, ``on <hook name> { ... }`` implements the hook of the
-  given name::
+  given name:
+
+  .. spicy-code::
 
     type Foo = unit {
         x: uint32;
@@ -456,7 +460,9 @@ There are three locations where hooks can be implemented:
     }
 
 - Field and container hooks may be directly attached to their field,
-  skipping the ``on ...`` part::
+  skipping the ``on ...`` part:
+
+  .. spicy-code::
 
     type Foo = unit {
         x: uint32 { ... }
@@ -465,7 +471,9 @@ There are three locations where hooks can be implemented:
 
 - At the global module level, one can add hooks to any available unit
   type through ``on <unit type>::<hook name> { ... }``. With the
-  definition of ``Foo`` above, this implements hooks externally::
+  definition of ``Foo`` above, this implements hooks externally:
+
+  .. spicy-code::
 
       on Foo::%init { ... }
       on Foo::x { ... }
@@ -479,7 +487,9 @@ There are three locations where hooks can be implemented:
 If multiple implementations are provided for the same hook, by default
 it remains undefined in which order they will execute. If a particular
 order is desired, you can specify priorities for your hook
-implementations::
+implementations:
+
+.. spicy-code::
 
       on Foo::v priority=5 { ... }
       on Foo::v priority=-5 { ... }
@@ -607,7 +617,9 @@ to be declared as ``inout`` (e.g., ``Bar(inout s: string)``).
 .. note::
 
     A common use-case for unit parameters is passing the ``self`` of a
-    higher-level unit down into a subunit::
+    higher-level unit down into a subunit:
+
+    .. spicy-code::
 
         type Foo = unit {
             ...
@@ -631,7 +643,9 @@ Unit types support the following type attributes:
 
 ``&size=N``
     Limits the unit's input to ``N`` bytes, which it must fully
-    consume. Example::
+    consume. Example:
+
+    .. spicy-code::
 
         type Foo = unit {
             a: int8;
@@ -889,7 +903,9 @@ expected to match at the current position of the input stream. The
 field's type becomes ``bytes``, and it will store the matching data.
 
 Inside hooks for fields with regular expressions, you can access
-capture groups through ``$1``, ``$2``, ``$3``, etc. For example::
+capture groups through ``$1``, ``$2``, ``$3``, etc. For example:
+
+.. spicy-code::
 
     x : /(a.c)(de*f)(h.j)/ {
         print $1, $2, $3;
@@ -1146,13 +1162,15 @@ explicit branch and one driving by look-ahead:
 
 .. rubric:: Branch by expression
 
-The most basic form of switching by expression looks like this::
+The most basic form of switching by expression looks like this:
+
+.. spicy-code::
 
     switch ( EXPR ) {
         VALUE_1 -> FIELD_1;
         VALUE_2 -> FIELD_2;
         ...
-        VALUE_N -> FIELD_N``
+        VALUE_N -> FIELD_N;
     };
 
 This evaluates ``EXPR`` at the time parsing reaches the ``switch``. If
