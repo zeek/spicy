@@ -1,4 +1,13 @@
 
+0.4.0-1392 | 2021-02-04 15:14:31 +0000
+
+  * GH-962: Fix type inference for constructors of
+    vector/list/set/map, and for locals/globals. (Benjamin Bannier,
+    Corelight; Robin Sommer, Corelight)
+
+  * Remove unused function typeOfExpressions. (Benjamin Bannier,
+    Corelight)
+
 0.4.0-1385 | 2021-02-04 14:59:06 +0000
 
   * Add Pygments lexers for `.spicy` and `.evt` files. (Jon Siwek,

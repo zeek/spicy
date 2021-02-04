@@ -6,4 +6,9 @@ module Test {
 local value_ref<string> x = "foo"; # type that coerces to string
 
 assert map("foo": "1", "2": "foo") == map<string, string>(x: "1", "2": x);
+
+global auto i = 1;
+global auto j = -1;
+assert map(i: j) == map(1:-1);
+assert map<uint<64>, int<64>>(i: j) == map(1:-1);
 }

@@ -19,12 +19,32 @@ namespace ctor {
 class Map : public NodeBase, public hilti::trait::isCtor {
 public:
     using Element = std::pair<Expression, Expression>;
-    Map(const std::vector<Element>& e, const Meta& m = Meta()) : NodeBase(nodes(_inferTypes(e, m), _flatten(e)), m) {}
+    Map(const std::vector<Element>& e, const Meta& m = Meta())
+        : NodeBase(nodes(node::none, node::none, _flatten(e)), m) {}
     Map(Type key, Type value, const std::vector<Element>& e, Meta m = Meta())
         : NodeBase(nodes(std::move(key), std::move(value), _flatten(e)), std::move(m)) {}
 
-    auto keyType() const { return type::effectiveType(child<Type>(0)); }
-    auto elementType() const { return type::effectiveType(child<Type>(1)); }
+    auto keyType() const {
+        if ( auto t = childs()[0].tryAs<Type>() )
+            return type::effectiveType(*t);
+        else {
+            if ( childs().size() < 2 )
+                return type::unknown;
+
+            return childs()[2].as<Expression>().type();
+        }
+    }
+
+    auto elementType() const {
+        if ( auto t = childs()[1].tryAs<Type>() )
+            return type::effectiveType(*t);
+        else {
+            if ( childs().size() < 3 )
+                return type::unknown;
+
+            return childs()[3].as<Expression>().type();
+        }
+    }
 
     auto value() const {
         auto exprs = childs<Expression>(2, -1);
@@ -52,12 +72,6 @@ public:
     auto properties() const { return node::Properties{}; }
 
 private:
-    std::vector<Type> _inferTypes(const std::vector<Element>& e, const Meta& /* m */) {
-        auto keys = util::transform(e, [](const auto& e) { return e.first; });
-        auto values = util::transform(e, [](const auto& e) { return e.second; });
-        return {builder::typeOfExpressions(keys), builder::typeOfExpressions(values)};
-    }
-
     std::vector<Expression> _flatten(const std::vector<Element>& elems) {
         std::vector<Expression> exprs;
         for ( auto&& e : elems ) {

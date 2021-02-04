@@ -20,14 +20,12 @@
 [debug/ast-final]     - statement::Block (types.hlt:5:1-10:2)
 [debug/ast-final]     - declaration::GlobalVariable %3 <linkage="private"> (types.hlt:5:13-7:20)
 [debug/ast-final]       - ID <name="x1"> (types.hlt:7:8)
-[debug/ast-final]       - type::Bytes (types.hlt:5:13-7:20) (non-const)
+[debug/ast-final]       - node::None (types.hlt:5:13-7:20)
 [debug/ast-final]       - expression::Ctor (types.hlt:7:13) (non-const)
 [debug/ast-final]         - ctor::Bytes <value="abc"> (types.hlt:7:13)
 [debug/ast-final]     - declaration::GlobalVariable %4 <linkage="private"> (types.hlt:7:20-8:20)
 [debug/ast-final]       - ID <name="x2"> (types.hlt:8:8)
-[debug/ast-final]       - type::Tuple <wildcard="false"> (types.hlt:8:13) (non-const)
-[debug/ast-final]         - type::UnsignedInteger <width="64"> (types.hlt:8:13) (non-const)
-[debug/ast-final]         - type::UnsignedInteger <width="64"> (types.hlt:8:13) (non-const)
+[debug/ast-final]       - node::None (types.hlt:5:13-7:20)
 [debug/ast-final]       - expression::Ctor (types.hlt:8:13) (const)
 [debug/ast-final]         - ctor::Tuple (types.hlt:8:13)
 [debug/ast-final]           - expression::Ctor (types.hlt:8:14) (const)
@@ -37,7 +35,7 @@
 [debug/compiler]   updated cached AST for module Foo (final: yes, requires_compilation: yes, dependencies: (none))
 module Foo {
 
-global bytes x1 = b"abc";
-global tuple<uint<64>, uint<64>> x2 = (1, 2);
+global auto x1 = b"abc";
+global auto x2 = (1, 2);
 
 }

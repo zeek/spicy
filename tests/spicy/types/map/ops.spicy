@@ -11,3 +11,9 @@ global m1: map<int64, bytes> = map(1: b"AAA", 2: b"BBB", 3: b"CCC");
 print m1;
 print m1[2];
 assert 1 in m1;
+
+global i = 1;
+global j = -1;
+assert map(i: j) == map(1: -1);
+assert map<uint64, int64>(i: j) == map(1: -1);
+assert map(i: j) == map<uint64, int64>(1: -1);

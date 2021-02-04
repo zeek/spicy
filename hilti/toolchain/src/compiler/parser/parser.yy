@@ -321,7 +321,7 @@ constant_decl : opt_linkage CONST scoped_id '=' expr ';'
                                                  { $$ = hilti::declaration::Constant($4, $3, $6, $1, __loc__); }
               ;
 
-local_decl    : LOCAL local_id '=' expr ';'     { $$ = hilti::declaration::LocalVariable($2, $4.type(), $4, false, __loc__); }
+local_decl    : LOCAL local_id '=' expr ';'     { $$ = hilti::declaration::LocalVariable($2, $4, false, __loc__); }
               | LOCAL type local_id opt_type_arguments';' { $$ = hilti::declaration::LocalVariable($3, $2, $4, {}, false, __loc__); }
               | LOCAL type local_id '=' expr ';'
                                                  { $$ = hilti::declaration::LocalVariable($3, $2, $5, false, __loc__); }
@@ -337,7 +337,7 @@ local_init_decl
               ;
 
 global_decl   : opt_linkage GLOBAL scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($3, $5.type(), $5, $1, __loc__); }
+                                                 { $$ = hilti::declaration::GlobalVariable($3, $5, $1, __loc__); }
               | opt_linkage GLOBAL type scoped_id opt_type_arguments ';'
                                                  { $$ = hilti::declaration::GlobalVariable($4, $3, $5, {}, $1, __loc__); }
               | opt_linkage GLOBAL type scoped_id '=' expr ';'
