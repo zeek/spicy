@@ -11,8 +11,22 @@
 
 #include <zeek-spicy/autogen/config.h>
 
-// TODO: Move to <zeek/zeek-config.h> once we don't need to support Zeek < 3.2 anymore.
+/*
+ * We use the version determined by our CMake initially. Once we have
+ * zeek-config.h, we can then use the standard ZEEK_VERSION_NUMBER. Both must
+ * be the same.
+ */
+#if SPICY_ZEEK_VERSION_NUMBER >= 30200 // Zeek >= 3.2
+#include <zeek/zeek-config.h>
+#else
 #include "zeek-config.h"
+#endif
+
+#ifdef ZEEK_VERSION_NUMBER
+#if SPICY_ZEEK_VERSION_NUMBER != ZEEK_VERSION_NUMBER
+#error "Mismatch in Zeek version numbers" SPICY_ZEEK_VERSION_NUMBER
+#endif
+#endif
 
 //// Collect all the Zeek includes here that we need anywhere in the plugin.
 
@@ -190,6 +204,11 @@ inline auto ToValPtr(std::unique_ptr<T> p) {
 }
 
 template<typename T>
+inline auto ToValCtorType(T p) {
+    return ::zeek::IntrusivePtr{::zeek::NewRef{}, p};
+}
+
+template<typename T>
 inline auto Unref(const ::zeek::IntrusivePtr<T>& o) {
     // nothing to do
 }
@@ -217,7 +236,11 @@ inline auto ZeekArgs_Get(const std::vector<::zeek::TypePtr>& vl, uint64_t idx) {
 inline auto event_mgr_Enqueue(const ::zeek::EventHandlerPtr& h, ::zeek::Args vl) {
     return ::zeek::event_mgr.Enqueue(h, std::move(vl));
 }
+#if ZEEK_VERSION_NUMBER >= 40000 // Zeek >= 4.0
+inline auto event_register_Register(const std::string& x) { return ::zeek::event_registry->Register(x); }
+#else
 inline auto event_register_Register(const std::string& x) { return ::event_registry->Register(x); }
+#endif
 inline auto val_mgr_Bool(bool b) { return ::zeek::val_mgr->Bool(b); }
 inline auto val_mgr_Count(uint64_t i) { return ::zeek::val_mgr->Count(i); }
 inline auto val_mgr_Int(int64_t i) { return ::zeek::val_mgr->Int(i); }
@@ -259,6 +282,11 @@ inline auto EnumType_New(std::string& x) { return new ::EnumType(x); }
 template<typename T>
 inline auto ToValPtr(std::unique_ptr<T> p) {
     return p.release();
+}
+
+template<typename T>
+inline auto ToValCtorType(T p) {
+    return p;
 }
 
 inline auto Unref(::BroObj* o) { ::Unref(o); }

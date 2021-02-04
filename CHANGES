@@ -1,4 +1,9 @@
 
+0.4.0-1394 | 2021-02-05 07:09:51 +0000
+
+  * Fix compatibility with Zeek 4.1 API changes/removals. (Jon Siwek,
+    Corelight)
+
 0.4.0-1392 | 2021-02-04 15:14:31 +0000
 
   * GH-962: Fix type inference for constructors of

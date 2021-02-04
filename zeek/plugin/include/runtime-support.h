@@ -438,7 +438,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Vector<T>& v, ::zeek::TypePtr targ
         throw TypeMismatch("expected vector or list", target, location);
 
     auto vt = target->AsVectorType();
-    auto zv = std::make_unique<::zeek::VectorVal>(vt);
+    auto zv = std::make_unique<::zeek::VectorVal>(zeek::compat::ToValCtorType(vt));
     for ( auto i : v )
         zv->Assign(zv->Size(), to_val(i, zeek::compat::VectorType_Yield(vt), location));
 
@@ -464,7 +464,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Map<K, V>& m, ::zeek::TypePtr targ
     if ( zeek::compat::TableType_GetIndexTypesLength(tt) != 1 )
         throw TypeMismatch("map with non-tuple elements", target, location);
 
-    auto zv = std::make_unique<::zeek::TableVal>(tt);
+    auto zv = std::make_unique<::zeek::TableVal>(zeek::compat::ToValCtorType(tt));
 
     for ( auto i : m ) {
         auto k = to_val(i.first, zeek::compat::TableType_GetIndexTypes(tt)[0], location);
@@ -489,7 +489,7 @@ inline ::zeek::ValPtr to_val(const hilti::rt::Set<T>& s, ::zeek::TypePtr target,
     if ( ! tt->IsSet() )
         throw TypeMismatch("set", target, location);
 
-    auto zv = std::make_unique<::zeek::TableVal>(tt);
+    auto zv = std::make_unique<::zeek::TableVal>(zeek::compat::ToValCtorType(tt));
 
     for ( auto i : s ) {
         if constexpr ( hilti::rt::is_tuple<T>::value )
@@ -521,7 +521,7 @@ inline ::zeek::ValPtr to_val(const T& t, ::zeek::TypePtr target, const std::stri
     if ( std::tuple_size<T>::value != rtype->NumFields() )
         throw TypeMismatch("tuple", target, location);
 
-    auto rval = std::make_unique<::zeek::RecordVal>(rtype);
+    auto rval = std::make_unique<::zeek::RecordVal>(zeek::compat::ToValCtorType(rtype));
     int idx = 0;
     hilti::rt::tuple_for_each(t, [&](const auto& x) {
         ::zeek::ValPtr v = nullptr;
