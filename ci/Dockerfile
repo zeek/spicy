@@ -32,6 +32,7 @@ RUN apt-get update \
  && pip3 install "btest>=0.66" pre-commit \
  # Spicy doc dependencies.
  && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme doxygen \
+ && pip3 install --upgrade pygments \
  # GCC-9.
  && apt-get install -y --no-install-recommends g++ gcc \
  # Clang-9.
