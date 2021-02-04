@@ -1,4 +1,21 @@
 
+0.4.0-1375 | 2021-02-03 11:43:19 +0100
+
+  * Enhance parsing of single-element container constructors so that
+    trailing `,` is optional. (Benjamin Bannier, Corelight)
+
+  * GH-711: Fix formatting of a number of predefined enum values.
+    (Benjamin Bannier, Corelight)
+
+  * GH-697: Allow trailing ',' in enum declarations. (Benjamin
+    Bannier, Corelight)
+
+  * Update some links in the documentations. (Benjamin Bannier,
+    Corelight)
+
+  * GH-699: Add script to store and upload release artifacts.
+    (Benjamin Bannier, Corelight)
+
 0.4.0-1358 | 2021-02-01 10:40:23 +0100
 
   * GH-701: Make offsets usable from unit field attributes.
