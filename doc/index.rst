@@ -8,6 +8,11 @@ Spicy --- Generating Parsers for Protocols & Files
 .. literalinclude:: examples/frontpage.spicy
     :language: spicy
 
+::
+
+    # echo "GET /index.html HTTP/1.0" | spicy-driver http-request.spicy
+    [$method=b"GET", $uri=b"/index.html", $version=[$number=b"1.0"]]
+
 Overview
     Spicy is a C++ parser generator that makes it easy to create
     robust parsers for network protocols, file formats, and more.
