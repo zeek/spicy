@@ -5,6 +5,8 @@ module Foo {
 
 import hilti;
 
+global auto i = 32;
+
 hilti::print([1, 2, 3]);
 
 global auto x1 = [];
@@ -12,24 +14,28 @@ global auto x2 = [1];
 global auto x3 = [1, 2, 3];
 global auto x4 = ["s1", "s2"];
 global auto x5 = [[1,2], [3,4], [4,5]];
+global auto x6 = [i, i];
 
 global list<uint<16>> l1 = [1];
 global list<int<32>> l2 = [];
 global list<int<32>> l3 = [1];
 global list<string> l4 = ["s1", "s2"];
 global list<list<uint<16>>> l5 = [[1,2], [3,4], [4,5]];
+global list<uint<64>> l6 = [i, i];
 
 hilti::print(x1);
 hilti::print(x2);
 hilti::print(x3);
 hilti::print(x4);
 hilti::print(x5);
+hilti::print(x6);
 
 hilti::print(l1);
 hilti::print(l2);
 hilti::print(l3);
 hilti::print(l4);
 hilti::print(l5);
+hilti::print(l6);
 
 local value_ref<string> x = "foo"; # type that coerces to string
 assert list("foo", "bar") == list<string>(x, "bar");
@@ -37,4 +43,7 @@ assert list("foo", "bar") == list<string>(x, "bar");
 local vector<string> y = [x, "bar"];
 assert list("foo", "bar") == y;
 
+assert list(32) == list(i);
+assert list<uint<64>>(32) == list(i);
+assert list(32) == list<uint<64>>(i);
 }
