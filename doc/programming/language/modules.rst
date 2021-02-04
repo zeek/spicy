@@ -51,7 +51,9 @@ X.Y.Z;`` searches the module ``NAME`` (i.e., ``NAME.spicy``) inside a
 sub-directory ``X/Y/Z`` along the search path.
 
 Once Spicy code  has imported a module, it can access identifiers by
-prefixing them with the module's namespace::
+prefixing them with the module's namespace:
+
+.. spicy-code::
 
     import MyModule;
 

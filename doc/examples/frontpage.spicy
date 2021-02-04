@@ -1,4 +1,4 @@
-# cat http-request.spicy
+# http-request.spicy
 
 module HTTP;
 
@@ -21,6 +21,3 @@ type Version = unit {
     :       /HTTP\//;
     number: /[0-9]+\.[0-9]+/;
 };
-
-# echo "GET /index.html HTTP/1.0" | spicy-driver http-request.spicy
-[$method=b"GET", $uri=b"/index.html", $version=[$number=b"1.0"]]

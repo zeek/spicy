@@ -45,6 +45,7 @@ C++ application.
 .. literalinclude:: examples/my-http.spicy
    :lines: 4-
    :caption: my-http.spicy
+   :language: spicy
 
 First, we'll use :ref:`spicyc` to generate a C++ parser from the Spicy
 source code::
@@ -109,6 +110,7 @@ Let's start by using ``parse1()``:
 .. literalinclude:: examples/my-http-host-parse1.cc
    :caption: my-http-host.cc
    :lines: 10-34
+   :language: c++
 
 This code first instantiates a stream from data giving on the command
 line. It freezes the stream to indicate that no further data will
@@ -132,9 +134,10 @@ If we want that, we can use ``parse2()`` instead and provide it with a
 ``struct`` to fill in:
 
 .. literalinclude:: examples/my-http-host-parse2.cc
-   :caption: my-http-host.spicy
+   :caption: my-http-host.cc
    :lines: 10-44
    :emphasize-lines: 19-28
+   :language: c++
 
 ::
 
@@ -156,6 +159,7 @@ and (2) implement a Spicy hook that calls it:
    :caption: my-http.spicy
    :start-after: doc-start-callback-spicy
    :end-before: doc-end-callback-spicy
+   :language: spicy
 
 The ``&cxxname`` attribute for ``got_request_line`` indicates to Spicy
 that this is a function implemented externally inside custom C++ code,
@@ -166,6 +170,7 @@ function:
    :caption: my-http-callback.cc
    :start-after: doc-start-callback-cc
    :end-before: doc-end-callback-cc
+   :language: c++
 
 Finally, we compile it altogether:
 
@@ -229,6 +234,7 @@ prints out our one available parser:
 .. literalinclude:: examples/my-http-host-driver.cc
    :caption: my-http-host.cc
    :lines:   9-13,31-42,57-63
+   :language: c++
 
 ::
 
@@ -243,6 +249,7 @@ instantiate it from C++, and then feed it data:
 
 .. literalinclude:: examples/my-http-host-driver.cc
    :lines:   44-53
+   :language: c++
 
 ::
 
@@ -261,6 +268,7 @@ generically over HILTI types like this unit:
 
 .. literalinclude:: examples/my-http-host-driver.cc
    :lines: 15-29
+   :language: c++
 
 Adding ``print(unit->value()`` after the call to ``processInput()``
 then gives us this output:
@@ -288,6 +296,7 @@ taking the file to load from the command line:
     :caption: my-driver
     :lines: 31-69
     :emphasize-lines: 5-8
+    :language: c++
 
 ::
 

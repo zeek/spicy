@@ -1,4 +1,15 @@
 
+0.4.0-1385 | 2021-02-04 14:59:06 +0000
+
+  * Add Pygments lexers for `.spicy` and `.evt` files. (Jon Siwek,
+    Corelight)
+
+  * Use syntax highlighting for Spicy/EVT/Zeek/C++ in documentation.
+    (Jon Siwek, Corelight)
+
+  * Add 'livehtml' target to `doc/Makefile` that will run
+    `sphinx-autobuild`, plus some cleanup. (Jon Siwek, Corelight)
+
 0.4.0-1375 | 2021-02-03 11:43:19 +0100
 
   * Enhance parsing of single-element container constructors so that

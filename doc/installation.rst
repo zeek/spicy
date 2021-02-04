@@ -241,6 +241,7 @@ To build Spicy, you will need:
     - For building the documentation:
 
         * `Sphinx <https://www.sphinx-doc.org/en/master>`_  >= 1.8
+        * `Pygments <https://pygments.org/>`_  >= 2.5
         * `Read the Docs Sphinx Theme <https://sphinx-rtd-theme.readthedocs.io/en/stable/>`_  (``pip install sphinx_rtd_theme``)
 
 In the following we record how to get these dependencies in place on
