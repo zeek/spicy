@@ -17,12 +17,21 @@ namespace ctor {
 /** AST node for a set constructor. */
 class Set : public NodeBase, public hilti::trait::isCtor {
 public:
-    Set(const std::vector<Expression>& e, const Meta& m = Meta())
-        : NodeBase(nodes(builder::typeOfExpressions(e), e), m) {}
+    Set(const std::vector<Expression>& e, const Meta& m = Meta()) : NodeBase(nodes(node::none, e), m) {}
     Set(Type t, std::vector<Expression> e, Meta m = Meta())
         : NodeBase(nodes(std::move(t), std::move(e)), std::move(m)) {}
 
-    auto elementType() const { return type::effectiveType(child<Type>(0)); }
+    auto elementType() const {
+        if ( auto t = childs()[0].tryAs<Type>() )
+            return type::effectiveType(*t);
+        else {
+            if ( childs().size() < 2 )
+                return type::unknown;
+
+            return childs()[1].as<Expression>().type();
+        }
+    }
+
     auto value() const { return childs<Expression>(1, -1); }
 
     bool operator==(const Set& other) const { return elementType() == other.elementType() && value() == other.value(); }

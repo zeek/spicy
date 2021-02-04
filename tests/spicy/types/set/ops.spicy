@@ -7,8 +7,13 @@ module Test;
 
 import spicy;
 
+global i = 1;
+global j = 2;
+
 global s0: set<string> = ["A", "B"];
 global s1: set<int64> = set(1, 2, 3);
+global s2 = set(i, j);
+global s3: set<uint64> = set(i, j);
 
 print s0;
 print s1;
