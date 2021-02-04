@@ -242,7 +242,7 @@ class SpicyCode(CodeBlock):
             file = None
 
         args = list(args)
-        args[1] = ["text"]
+        args[1] = self.arguments = ['spicy']
         args[2]['lines'] = "2-"
         super(CodeBlock, self).__init__(*args, **kwargs)
         if file:
@@ -265,6 +265,7 @@ class SpicyCode(CodeBlock):
 
     def run(self):
         literal = CodeBlock.run(self)
+        language = literal[0]['language']
 
         if not self.file:
             return literal
@@ -302,6 +303,7 @@ class SpicyCode(CodeBlock):
 
         ntext = ntext.strip()
         literal[0] = nodes.literal_block(ntext, ntext)
+        literal[0]['language'] = language
 
         return literal
 
