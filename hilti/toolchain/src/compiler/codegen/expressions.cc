@@ -32,6 +32,32 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("%s = %s", cg->compile(n.target(), true), cg->compile(n.source()));
     }
 
+    result_t operator()(const expression::BuiltinFunction& n) {
+        // We use a statement expression (this is an extension supported by
+        // both GCC and Clang) in order for this to be callable in global
+        // contexts.
+        // This "obvious" approach runs into issues there since temporaries
+        // potentially created via `CodeGen::compile` require a block which is
+        // not present for certain globals:
+        //
+        //     auto arguments =
+        //         util::join(util::transform(n.arguments(), [this](auto& x) { return cg->compile(x, true); }), ", ");
+        //
+        //     return fmt("%s(%s)", cxx::ID(n.cxxname()), arguments);
+
+        cxx::Block block;
+        cg->pushCxxBlock(&block);
+        auto arguments =
+            util::join(util::transform(n.arguments(), [this](auto& x) { return cg->compile(x, true); }), ", ");
+        cg->popCxxBlock();
+
+        block.addStatement(fmt("%s(%s)", cxx::ID(n.cxxname()), arguments));
+
+        cxx::Formatter f;
+        f << block;
+        return fmt("(%s)", f.str());
+    }
+
     result_t operator()(const expression::Coerced& n) {
         return cg->coerce(cg->compile(n.expression(), lhs), n.expression().type(), n.type());
     }
