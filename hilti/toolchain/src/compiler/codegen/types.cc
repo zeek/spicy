@@ -187,6 +187,22 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
                 fields.emplace_back(std::move(self));
 
+
+                if ( n.hasFinalizer() ) {
+                    // Call the finalizer hook from a C++ destructor.
+                    cxx::Block dtor_body;
+                    dtor_body.addStatement("_0x7e_finally()");
+
+                    auto dtor = cxx::declaration::Function{.result = "",
+                                                           .id = cxx::ID::fromNormalized(
+                                                               fmt("~%s", id.local())), // don't escape the ~
+                                                           .args = {},
+                                                           .linkage = "inline",
+                                                           .inline_body = std::move(dtor_body)};
+
+                    fields.emplace_back(std::move(dtor));
+                }
+
                 cg->disablePrioritizeTypes();
 
                 // Also add a forward declaration.

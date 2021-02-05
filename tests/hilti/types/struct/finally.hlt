@@ -1,0 +1,35 @@
+# @TEST-EXEC: hiltic -j %INPUT | sort >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test that struct finallyrs execute as expected.
+#
+# Note that the generated code default-constructs a couple of additional copies
+# of the struct, meaning we see more execution of the finallyr as one might expect.
+# Also generally execution order remains undefined.
+
+module Foo {
+
+import hilti;
+
+type X = struct(string name) {
+    string s;
+
+    hook void ~finally();
+};
+
+method hook void X::~finally() {
+    hilti::print("%s: finally 1!" % name);
+}
+
+method hook void X::~finally() {
+    hilti::print("%s: finally 2!" % name);
+}
+
+function void foo() {
+    local X x3("x3");
+}
+
+global X x1("x1");
+global strong_ref<X> x2 = new X("x2");
+foo();
+}

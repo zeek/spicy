@@ -87,6 +87,7 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 
 %token <str>       IDENT          "identifier"
 %token <str>       SCOPED_IDENT   "scoped identifier"
+%token <str>       SCOPED_FINALIZE "scoped ~finally"
 %token <str>       DOTTED_IDENT   "dotted identifier"
 %token <str>       ATTRIBUTE      "attribute"
 %token <str>       PROPERTY       "property"
@@ -145,6 +146,7 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token EXTERN "extern"
 %token EXTERN_NO_SUSPEND "extern-no-suspend"
 %token FILE "file"
+%token FINALIZE "~finally"
 %token FOR "for"
 %token FROM "from"
 %token FUNCTION "function"
@@ -222,7 +224,7 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token WEAK_REF "weak_ref"
 %token YIELD "yield"
 
-%type <id>                          local_id scoped_id dotted_id
+%type <id>                          local_id scoped_id dotted_id function_id scoped_function_id
 %type <declaration>                 local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl
 %type <decls_and_stmts>             global_scope_items
 %type <type>                        base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type
@@ -373,15 +375,23 @@ opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Link
 
 /* Functions */
 
+function_id   : local_id                         { $$ = std::move($1); }
+              | FINALIZE                         { $$ = hilti::ID("~finally", __loc__); }
+
+scoped_function_id:
+                function_id                      { $$ = std::move($1); }
+              | SCOPED_IDENT                     { $$ = hilti::ID($1, __loc__); }
+              | SCOPED_FINALIZE                  { $$ = hilti::ID($1, __loc__); }
+
 function_with_body
-              : opt_func_flavor opt_func_cc func_result scoped_id '(' opt_func_params ')' opt_attributes braced_block
+              : opt_func_flavor opt_func_cc func_result scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
                                                  {
                                                     auto ftype = hilti::type::Function($3, $6, $1, __loc__);
                                                     $$ = hilti::Function($4, std::move(ftype), $9, $2, $8, __loc__);
                                                  }
 
 function_without_body
-              : opt_func_flavor opt_func_cc func_result scoped_id '(' opt_func_params ')' opt_attributes
+              : opt_func_flavor opt_func_cc func_result scoped_function_id '(' opt_func_params ')' opt_attributes
                                                  {
                                                     auto ftype = hilti::type::Function($3, $6, $1, __loc__);
                                                     $$ = hilti::Function($4, std::move(ftype), {}, $2, $8, __loc__);
@@ -624,7 +634,7 @@ struct_fields : struct_fields struct_field       { $$ = std::move($1); $$.push_b
               | /* empty */                      { $$ = std::vector<hilti::type::struct_::Field>{}; }
 
 struct_field  : type local_id opt_attributes ';' { $$ = hilti::type::struct_::Field(std::move($2), std::move($1), std::move($3), __loc__); }
-              | func_flavor opt_func_cc func_result local_id '(' opt_func_params ')' opt_attributes ';' {
+              | func_flavor opt_func_cc func_result function_id '(' opt_func_params ')' opt_attributes ';' {
                                                    auto ftype = hilti::type::Function(std::move($3), std::move($6), $1, __loc__);
                                                    $$ = hilti::type::struct_::Field(std::move($4), $2, std::move(ftype), $8, __loc__);
                                                    }

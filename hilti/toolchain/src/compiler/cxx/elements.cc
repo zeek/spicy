@@ -102,7 +102,9 @@ std::string cxx::normalize_id(std::string id) {
         if ( reserved.find(id) != reserved.end() )
             id.append("_");
 
-        return util::replace(id, "%", "0x25");
+        id = util::replace(id, "%", "0x25");
+        id = util::replace(id, "~", "_0x7e_"); // we expect to see this only at the beginning (for "~finally")
+        return id;
     };
 
     return util::join(util::transform(util::split(std::move(id), "::"), map), "::");
