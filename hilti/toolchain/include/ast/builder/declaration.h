@@ -92,9 +92,9 @@ inline auto parameter(ID id, Type type, Expression default_,
     return type::function::Parameter(std::move(id), std::move(type), kind, std::move(default_), std::move(m));
 }
 
-template<typename T, typename... Params>
+template<typename... Params>
 static auto parameters(Params&&... params) {
-    return std::vector<hilti::type::function::Parameter>(std::forward<Params>(params)...);
+    return std::vector<hilti::type::function::Parameter>{std::forward<Params>(params)...};
 }
 
 inline auto function(ID id, Type result, const std::vector<type::function::Parameter>& params,
