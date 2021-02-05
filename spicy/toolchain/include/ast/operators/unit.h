@@ -58,10 +58,8 @@ BEGIN_METHOD(unit, SetInput)
                                            .args = {{.id = "i",
                                                      .type = type::constant(hilti::type::stream::Iterator())}},
                                            .doc = R"(
-Moves the current parsing position to *i*. The new position *i* must be located
-inside the range between the first bytes of the current unit (i.e., the result
-of ``self.input()``) and the current parsing position. If the new position is
-outside of that range, the method will throw a runtime exception.
+Moves the current parsing position to *i*. The iterator *i* must be into the
+input of the current unit, or the method will throw a runtime execption.
 
 Usage of this method requires the unit to be declared with the `%random-access`
 property.

@@ -1,0 +1,17 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09' | spicy-driver -i1 -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module Mini;
+
+public type Foo = unit {
+    %random-access;
+    : uint8;
+    a: uint8 {
+        # Skip forward beyond current position.
+        assert self.offset() == 1;
+        self.set_input(self.input() + 9);
+    }
+    b: uint8;
+
+    on %done { print self; }
+};
