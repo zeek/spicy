@@ -121,29 +121,27 @@ void Configuration::init(bool use_build_directory) {
     if ( auto libhilti_pch = precompiled_libhilti(*this, false) )
         runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
 
-    runtime_ld_flags_debug =
-        flatten({prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-L", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-Wl,-rpath,", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "-l", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
-                 prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag),
-                 prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
+    runtime_ld_flags_debug = flatten(
+        {prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-L", installation_tag),
+         prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG}", "-Wl,-rpath,", installation_tag),
+         prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "-l", installation_tag),
+         prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
+         prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag), prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
 
-    runtime_ld_flags_release =
-        flatten({prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-L", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-Wl,-rpath,", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
-                 prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
-                 prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag),
-                 prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
+    runtime_ld_flags_release = flatten(
+        {prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-L", installation_tag),
+         prefix("${HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE}", "-Wl,-rpath,", installation_tag),
+         prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
+         prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
+         prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag), prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
 
     hlto_cxx_flags_debug = runtime_cxx_flags_debug;
     hlto_cxx_flags_release = runtime_cxx_flags_release;
 
     hlto_ld_flags_debug = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup",
-                                  prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag)});
+                                   prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag)});
     hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup",
-                                  prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag)});
+                                     prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag)});
 
 #ifdef __APPLE_
     // This avoids duplicate symbols when the HLTO is loaded, seems default

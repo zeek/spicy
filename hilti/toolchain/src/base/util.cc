@@ -17,16 +17,12 @@
 
 #include <hilti/base/logger.h>
 
-// There's a bizarr "printf" inside the PathFind code. So we include the
-// source file here to be able to #define that away.
-#define __ignore__(x, y)
-#define printf __ignore__
+// We include pathfind directly here so we do not have to work
+// around it being installed by its default install target.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #include <pathfind/src/PathFind.cpp>
 #pragma GCC diagnostic pop
-#undef printf
-#undef __ignore__
 
 using namespace hilti;
 using namespace hilti::util;
@@ -163,7 +159,7 @@ hilti::Result<hilti::rt::filesystem::path> util::findInPaths(const hilti::rt::fi
     return hilti::result::Error(fmt("%s not found", file));
 }
 
-hilti::rt::filesystem::path util::currentExecutable() { return normalizePath(::FindExecutable()); }
+hilti::rt::filesystem::path util::currentExecutable() { return normalizePath(PathFind::FindExecutable()); }
 
 void util::abort_with_backtrace() {
     std::cerr << "\n--- Aborting" << std::endl;
