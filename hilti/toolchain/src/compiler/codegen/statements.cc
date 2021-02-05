@@ -288,7 +288,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                 arg = {.id = cxx::ID(p->id()), .type = std::move(t)};
             }
             else
-                arg = {.id = "", .type = cxx::Type("const hilti::rt::UserException&")};
+                arg = {.id = "", .type = cxx::Type("...")};
 
             catches.emplace_back(std::move(arg), cg->compile(c.body()));
         }

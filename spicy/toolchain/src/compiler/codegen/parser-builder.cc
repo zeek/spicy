@@ -201,13 +201,12 @@ struct ProductionVisitor
 
                         popBuilder();
 
-                        // TODO(robin) [copied here from the prototype]:
-                        // Unclear if we should catch just ParseErrors
-                        // here, or any exception. For now we catch them
-                        // all, as that allows %error to trigger Bro
-                        // events that would be missing otherwise.
-                        auto catch_ =
-                            try_->addCatch(builder::parameter(ID("e"), builder::typeByID("hilti::Exception")));
+                        // We catch *any* exceptions here, not just parse
+                        // errors, and not even only HILTI errors. The reason
+                        // is that we want a reliably point of error handling
+                        // no matter what kind of trouble a Spicy script runs
+                        // into.
+                        auto catch_ = try_->addCatch();
                         pushBuilder(catch_, [&]() {
                             pb->finalizeUnit(false, p.location());
                             builder()->addRethrow();
