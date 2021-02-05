@@ -407,13 +407,22 @@ The most commonly used hooks are:
     Executes just before unit parsing will start.
 
 ``on %done { ... }``
-    Executes just after unit parsing has completed.
+    Executes just after unit parsing has completed successfully.
 
 .. _on_error:
 
 ``on %error  { ... }``
     Executes when a parse error has been encountered, just before the
     parser either aborts processing.
+
+``on %finally  { ... }``
+    Executes once unit parsing has completed in any way. This hook is
+    most useful to modify global state that needs to be updated no
+    matter the success of the parsing process. Once `%init` triggers, this
+    hook is guaranteed to eventually execute as well. It will run
+    *after* either ``%done`` or ``%error``, respectively. (If a new
+    error occurs during execution of ``%finally``, that will not
+    trigger the unit's ``%error`` hook.)
 
 ``on %print  { ... }``
     Executes when a unit is about to be printed (and more generally:

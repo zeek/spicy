@@ -1,0 +1,21 @@
+# @TEST-EXEC:      spicyc -j -o x.hlto %INPUT
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf 'abc' | spicy-driver x.hlto >>output 2>&1
+# @TEST-EXEC:      btest-diff output
+#
+# @TEST-DOC: Check that an error inside %finallydoes not trigger %error
+
+module Mini;
+
+import spicy;
+
+# Unit that supports filters.
+public type Bar = unit {
+    on %init    { print "Bar init", self; }
+    x: b"abc"   { print "Bar %s" % self.x; }
+    on %done    { print "Bar done", self; }
+    on %error   { print "Bar error - must not see", self; }
+    on %finally { print "Bar finally - 1", self;
+                  1/0;
+                  print "Bar finally - 2 - must not see";
+                }
+};

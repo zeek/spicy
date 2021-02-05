@@ -75,7 +75,7 @@ string    \"(\\.|[^\\"])*\"
 [\n]+                 yylloc->lines(yyleng); yylloc->step();
 {comment}             yylloc->lines(1); yylloc->step();
 
-~finally             return token::FINALIZE;
+~finally              return token::FINALIZE;
 __library_type        return token::LIBRARY_TYPE;
 addr                  return token::ADDRESS;
 add                   return token::ADD;
@@ -201,7 +201,7 @@ b{string}             yylval->str = expandEscapes(driver, std::string(yytext, 2,
 {attribute}           yylval->str = yytext; return token::ATTRIBUTE;
 {property}            yylval->str = yytext; return token::PROPERTY;
 {id}(::{id}){1,}      yylval->str = yytext; return token::SCOPED_IDENT;
-{id}(::~finally)     yylval->str = yytext; return token::SCOPED_FINALIZE;
+{id}(::~finally)      yylval->str = yytext; return token::SCOPED_FINALIZE;
 
 [][!$?.,=:;<>(){}/|*/&^%!+~-] return (token_type) yytext[0];
 

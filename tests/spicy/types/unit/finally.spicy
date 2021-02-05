@@ -1,0 +1,32 @@
+# @TEST-EXEC:      spicyc -j -o x.hlto %INPUT
+# @TEST-EXEC:      ${SCRIPTS}/printf 'abcdef' | spicy-driver x.hlto >>output 2>&1
+# @TEST-EXEC:      echo >>output
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf 'abcXYZ' | spicy-driver x.hlto >>output 2>&1
+# @TEST-EXEC:      echo >>output
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf 'XYZdef' | spicy-driver x.hlto >>output 2>&1
+# @TEST-EXEC:      btest-diff output
+#
+# @TEST-DOC: Check that %finally hook turns into a HILTI-side finalizer.
+
+module Mini;
+
+import spicy;
+
+# Unit that supports filters.
+public type Bar = unit {
+    on %init    { print "Bar init", self; }
+    x: b"abc"   { print "Bar %s" % self.x; }
+    y: Foo      { print "Bar %s" % self.y; }
+    on %done    { print "Bar done", self; }
+    on %error   { print "Bar error", self; }
+    on %finally { print "Bar finally", self; }
+};
+
+# Unit that does not support filters, which triggers a different code path.
+type Foo = unit {
+    on %init    { print "Foo init", self; }
+    y: b"def"   { print "Foo %s" % self.y; }
+    on %done    { print "Foo done", self; }
+    on %error   { print "Foo error", self; }
+    on %finally { print "Foo finally", self; }
+};

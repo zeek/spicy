@@ -182,6 +182,12 @@ struct ProductionVisitor
                     // filter support); or into just a single joint function
                     // doing both (w/o filtering).
 
+                    auto run_finally = [&]() {
+                        pb->beforeHook();
+                        builder()->addMemberCall(state().self, "__on_0x25_finally", {}, p.location());
+                        pb->afterHook();
+                    };
+
                     // Helper to wrap future code into a "try" block to catch
                     // errors, if necessary.
                     auto begin_try = [&](bool insert_try = true) -> std::optional<builder::Builder::TryProxy> {
@@ -203,12 +209,13 @@ struct ProductionVisitor
 
                         // We catch *any* exceptions here, not just parse
                         // errors, and not even only HILTI errors. The reason
-                        // is that we want a reliably point of error handling
+                        // is that we want a reliable point of error handling
                         // no matter what kind of trouble a Spicy script runs
                         // into.
                         auto catch_ = try_->addCatch();
                         pushBuilder(catch_, [&]() {
                             pb->finalizeUnit(false, p.location());
+                            run_finally();
                             builder()->addRethrow();
                         });
                     };
@@ -252,6 +259,10 @@ struct ProductionVisitor
                         pstate.lahead = builder::id("__lah");
                         pstate.lahead_end = builder::id("__lahe");
 
+                        auto result_type =
+                            type::Tuple({type::stream::View(), look_ahead::Type, type::stream::Iterator()});
+                        auto store_result = builder()->addTmp("result", result_type);
+
                         auto try_ = begin_try();
 
                         if ( unit )
@@ -268,13 +279,14 @@ struct ProductionVisitor
                         if ( addl_param )
                             args.push_back(builder::id(addl_param->id()));
 
+
                         if ( unit && unit->unitType().supportsFilters() ) {
                             // If we have a filter attached, we initialize it and change to parse from its output.
                             auto filtered =
                                 builder::local("filtered", builder::call("spicy_rt::filter_init",
                                                                          {state().self, state().data, state().cur}));
 
-                            auto have_filter = builder()->addIf(filtered);
+                            auto [have_filter, not_have_filter] = builder()->addIfElse(filtered);
                             pushBuilder(have_filter);
 
                             auto args2 = args;
@@ -293,14 +305,24 @@ struct ProductionVisitor
                                 state().lahead_end,
                             });
 
-                            builder()->addReturn(result);
+                            builder()->addAssign(store_result, result);
+                            popBuilder();
+
+                            pushBuilder(not_have_filter);
+                            builder()->addAssign(store_result,
+                                                 builder::memberCall(state().self, id_stage2, std::move(args)));
                             popBuilder();
                         }
-
-                        builder()->addReturn(builder::memberCall(state().self, id_stage2, std::move(args)));
+                        else {
+                            builder()->addAssign(store_result,
+                                                 builder::memberCall(state().self, id_stage2, std::move(args)));
+                        }
 
                         end_try(try_);
+                        run_finally();
                         popState();
+
+                        builder()->addReturn(store_result);
 
                         return popBuilder()->block();
                     }; // End of build_parse_stage1()
@@ -346,16 +368,26 @@ struct ProductionVisitor
                         pushState(std::move(pstate));
                         pushBuilder();
 
+                        auto result_type =
+                            type::Tuple({type::stream::View(), look_ahead::Type, type::stream::Iterator()});
+                        auto store_result = builder()->addTmp("result", result_type);
+
                         auto try_ = begin_try(join_stages);
 
                         if ( join_stages )
                             build_parse_stage1_logic();
 
                         auto result = build_parse_stage2_logic();
-                        builder()->addReturn(result);
+                        builder()->addAssign(store_result, result);
 
                         end_try(try_);
+
+                        if ( join_stages && unit )
+                            run_finally();
+
                         popState();
+
+                        builder()->addReturn(store_result);
 
                         if ( unit || destination() )
                             popDestination();
@@ -367,7 +399,7 @@ struct ProductionVisitor
                     // stage1 method is already declared (but not
                     // implemented) by the struct that unit-builder is
                     // declaring.
-                    if ( unit->unitType().supportsFilters() ) {
+                    if ( unit && unit->unitType().supportsFilters() ) {
                         addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage1(), addl_param,
                                        p.location());
                         addParseMethod(true, id_stage2, build_parse_stage12_or_stage2(false), addl_param, p.location());
