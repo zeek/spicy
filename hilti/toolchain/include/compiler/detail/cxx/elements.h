@@ -76,9 +76,6 @@ public:
 
     /** Wrapper to construct an ID from an already normalized string name. */
     static ID fromNormalized(std::string id) { return ID(std::move(id), Base::AlreadyNormalized()); }
-
-private:
-    static std::string _normalize(std::string id);
 };
 
 extern void to_json(nlohmann::json& j, const cxx::ID& id);   // NOLINT

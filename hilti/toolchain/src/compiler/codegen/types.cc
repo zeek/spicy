@@ -775,7 +775,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
 
             auto id = cxx::ID(scope, sid);
             auto decl = cxx::declaration::Function{.result = "",
-                                                   .id = cxx::ID{fmt("%s::~%s", id, id.local())},
+                                                   .id = cxx::ID::fromNormalized(fmt("%s::~%s", id, id.local())),
                                                    .args = {},
                                                    .linkage = ""};
             auto func = cxx::Function{.declaration = std::move(decl), .body = cxx::Block()};
