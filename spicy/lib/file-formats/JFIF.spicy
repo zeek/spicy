@@ -1,11 +1,27 @@
 module JFIF;
 
 import spicy;
+import Exif;
 
 type Markers = enum {
 	SOI = 0xFFD8, # Start Of Image
+	DRI = 0xFFDD,
 	APP0 = 0xFFE0,
 	APP1 = 0xFFE1,
+	APP2 = 0xFFE2,
+	APP3 = 0xFFE3,
+	APP4 = 0xFFE4,
+	APP5 = 0xFFE5,
+	APP6 = 0xFFE6,
+	APP7 = 0xFFE7,
+	APP8 = 0xFFE8,
+	APP9 = 0xFFE9,
+	APP10 = 0xFFEA,
+	APP11 = 0xFFEB,
+	APP12 = 0xFFEC,
+	APP13 = 0xFFED,
+	APP14 = 0xFFEE,
+	APP15 = 0xFFEF,
 	SOF0 = 0xFFC0, # Start of Frame (baseline DCT)
 	SOF2 = 0xFFC2, # Start of Frame (progressive DCT)
 	DHT = 0xFFC4, # Huffman Table
@@ -30,15 +46,19 @@ type Segment = unit {
 	}
 	switch (self.marker) {
 		Markers::APP0 -> app0: APP0;
+		Markers::APP1 -> app1: APP1;
+		Markers::APP2 -> app2: APP2;
 		Markers::DQT -> { dqtlen: uint16; read : bytes &size=self.dqtlen-2;}
 		Markers::DHT -> { dhtlen: uint16; read : bytes &size=self.dhtlen-2;}
+		Markers::DRI -> {
+			drilen: uint16 &requires=($$==4);
+			dri: uint16;
+		}
 		Markers::SOF0 -> sof0: SOF0;
 		Markers::SOS -> sos: SOS;
 		Markers::EOI -> : bytes &size=0; # In theory, it should be over now.
-		* -> { len : uint16; la: bytes &size=self.len+4 { print "Unknown marker:", self; 1/0;} }
+		* -> { len : uint16; : bytes &size=self.len-2 { print "Unknown marker:", self.marker;} }
 	};
-
-	on %done { print self; }
 };
 
 type SOS = unit {
@@ -53,7 +73,6 @@ type SOS = unit {
 	# Image data
 	:uint8[];
 	: /\xFF[^\x00\xD0|\xD1|\xD2|\xD3|\xD4|\xD5|\xD6|\xD7]/ {
-		print self.offset();
 		self.set_input(self.input() + (cast<uint64>(self.offset()))); # went two bytes too far - this is the next marker
 	}
 };
@@ -73,6 +92,21 @@ type APP0 = unit {
 	thumbnail: bytes &size=(3*(self.xthumbnail*self.ythumbnail));
 	# This may be followed by an extension which is not super interesting for us.
 	: bytes &size=(cast<uint32>(self.offset()) - self.length);
+};
+
+# Exif data
+type APP1 = unit {
+	length: uint16 {
+		print "Exif length will be", $$;
+	}
+	exif_marker: bytes &size=6 &requires=($$ == b"Exif\x00\x00");
+	exif: Exif::Top(self.length - 8);
+};
+
+# XMP data
+type APP2 = unit {
+	length: uint16;
+	xmp_data: bytes &size=self.length - 2;
 };
 
 type SOF0 = unit {

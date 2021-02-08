@@ -1,14 +1,15 @@
-module EXIF;
+module Exif;
 
-public type EXIF = unit(length: uint32) {
+import spicy;
+
+public type Top = unit(length: uint32) {
 	%random-access;
 	var byteorder: spicy::ByteOrder = spicy::ByteOrder::Little;
 	var tiff_header_input: iterator<stream>;
 	var continue_parsing: bool = True;
 
 	# TIFF header
-	: bytes &size=0 {
-	}
+	: bytes &size=0;
 	endian_marker: bytes &size=2 &requires=( ($$ == b"II") || ($$ == b"MM") ) {
 		self.tiff_header_input = self.input();
 		print self.offset();
@@ -21,22 +22,44 @@ public type EXIF = unit(length: uint32) {
 		self.set_input(self.tiff_header_input + $$);
 	}
 	: bytes &size=8-self.tiff_offset &requires=(self.tiff_offset >= 8);
-	#ifd1: IFD(self)[] &until-including=($$.next_ifd==0);
-	ifd: IFD(self)[] &while=(self.continue_parsing) foreach { if ( $$.next_ifd == 0 ) { self.continue_parsing = False; } }
-	data: bytes &size=length-cast<uint32>(self.offset());
+	#ifd1: IFD(self)[] &until-including=($$.next_ifd==0); # GH-726
+	ifd: IFDSwitch(self)[] &while=(self.continue_parsing) foreach {
+		if ( $$.ifd.next_ifd == 0 ) {
+			self.continue_parsing = False;
+			print "Done with parsing IFD";
+		} else {
+			self.set_input(self.tiff_header_input + $$.ifd.next_ifd);
+		}
+	}
+	: bytes &size=0 {
+		print "Setting input to end of Exit";
+		self.set_input(self.tiff_header_input + length);
+	}
 
-	on %done {
-		print self;
+#	on %done {
+#		print self;
+#	}
+};
+
+type IFDSwitch = unit(top: Top) {
+	ifd: IFD(top) if ( top.continue_parsing );
+	:bytes &size=0 {
+		if ( ! top.continue_parsing ) {
+			print "Continue parsing was called - and we were false";
+		}
 	}
 };
 
-type IFD = unit(top: eXIf) {
+type IFD = unit(top: Top) {
 	%byte-order = top.byteorder;
 	%random-access;
+	var counter: uint32 = 0;
 
 	number_of_fields: uint16;
-	fields: IFDField(top)[self.number_of_fields];
-	next_ifd: uint32;
+	fields: IFDField(top)[self.number_of_fields] foreach { self.counter++; print "Parsed field", self.counter, "of", self.number_of_fields; }
+	next_ifd: uint32 {
+		print "next_ifd", $$;
+	}
 };
 
 type ExifType = enum {
@@ -540,20 +563,20 @@ function calculate_length(tpe: ExifType, count: uint32) : uint32 {
 	local element_length: uint32 = 0;
 	switch ( tpe ) {
 		case ExifType::BYTE:  { element_length = 1; }
-		case ExifType::ASCII:  { element_length = 100; } # gosh, I really hope you can't save that in te offset
+		case ExifType::ASCII:  { element_length = 1; }
 		case ExifType::SHORT:  { element_length = 2; }
 		case ExifType::LONG:  { element_length = 4; }
 		case ExifType::RATIONAL:  { element_length = 8; }
 		case ExifType::UNDEFINED:  { element_length = 1; }
 		case ExifType::SLONG:  { element_length = 4; }
 		case ExifType::SRATIONAL:  { element_length = 8; }
-		default: { element_length = 100; }
+		default: { element_length = 100;  1/0; }
 	}
 
 	return element_length * count;
 }
 
-type IFDField = unit(top: eXIf) {
+type IFDField = unit(top: Top) {
 	%byte-order = top.byteorder;
 	%random-access;
 
@@ -569,6 +592,7 @@ type IFDField = unit(top: eXIf) {
 	# otherwise the data is stored in it. It always has a minimal length of
 	# 4, so we might have to swallow bytes if the data is < 4 bytes long.
 	on count {
+		print "Calling calculate_length with ", self.tpe, self.count;
 		local length = calculate_length(ExifType(self.tpe), self.count);
 		if ( length <= 4 ) {
 			self.have_value_offset = False;
@@ -584,10 +608,19 @@ type IFDField = unit(top: eXIf) {
 	: bytes &size=0 if ( !self.have_value_offset ) {
 		self.next_location = self.input() + (cast<uint32>(self.offset()) + 4);
 	}
-	values: IDFValue(ExifType(self.tpe), top.byteorder)[self.count];
+	values: IDFValue(ExifType(self.tpe), top.byteorder)[self.count] if ( ( ExifType(self.tpe) != ExifType::ASCII) && (ExifType(self.tpe) != ExifType::UNDEFINED) && (ExifType(self.tpe) != ExifType::BYTE) ); # apparently for ASCII count just gives the length...
+	ascii_value: bytes &size=self.count if ( ( ExifType(self.tpe) == ExifType::ASCII ) || ( ExifType(self.tpe) == ExifType::UNDEFINED ) || ( ExifType(self.tpe) == ExifType::BYTE ) ) {
+		print $$;
+	}
 	swallowed: bytes &size=self.swallow_bytes;
 
 	on values {
+		if ( self.have_value_offset ) {
+			print "Set saved location", self.next_location;
+			self.set_input(self.next_location);
+		}
+	}
+	on ascii_value {
 		if ( self.have_value_offset ) {
 			print "Set saved location", self.next_location;
 			self.set_input(self.next_location);
@@ -598,14 +631,17 @@ type IFDField = unit(top: eXIf) {
 	switch (self.tag) {
 		ExifTag::ExifOffset -> {
 			: bytes &size=0 { print self.values[0].long; print top.tiff_header_input; self.set_input(top.tiff_header_input + self.values[0].long); }
-			exif: IFD(top) {
+			: IFD(top) {
+				print "Done with exif, setting next location", self.next_location;
 				self.set_input(self.next_location);
-				print $$;
 			}
 		}
 		* -> : bytes &size=0;
 	};
 
+	on %done {
+		print self;
+	}
 };
 
 type IDFValue = unit(tpe: ExifType, byteorder: spicy::ByteOrder) {
@@ -620,6 +656,7 @@ type IDFValue = unit(tpe: ExifType, byteorder: spicy::ByteOrder) {
 		ExifType::UNDEFINED -> whatever: uint8;
 		ExifType::SLONG -> slong: int32;
 		ExifType::SRATIONAL -> { snumerator: int32; sdenominator: int32; }
+		* -> { : bytes &size=0 { print "Unknown type ", tpe; 1/0; } }
 	};
 };
 

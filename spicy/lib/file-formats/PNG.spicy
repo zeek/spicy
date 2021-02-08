@@ -1,7 +1,7 @@
 module PNG;
 
 import spicy;
-import EXIF;
+import Exif;
 
 public type File = unit {
 	signature: bytes &size=8; # has to be 137 80 78 71 13 10 26 10
@@ -42,7 +42,7 @@ type Chunk = unit {
 		b"bKGD" -> bkgd: bKGD(self.colour_type);
 		b"tRNS" -> trns: tRNS(self.colour_type, self.length);
 		b"tIME" -> ttime: tIME;
-		#b"eXIf" -> exif: EXIF::EXIF(self.length);
+		b"eXIf" -> exif: Exif::Top(self.length);
 		* -> : bytes &size=self.length;
 	};
 	crc: bytes &size=4;
