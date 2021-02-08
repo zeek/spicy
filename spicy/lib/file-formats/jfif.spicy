@@ -1,0 +1,89 @@
+module JFIF;
+
+import spicy;
+
+type Markers = enum {
+	SOI = 0xFFD8, # Start Of Image
+	APP0 = 0xFFE0,
+	APP1 = 0xFFE1,
+	SOF0 = 0xFFC0, # Start of Frame (baseline DCT)
+	SOF2 = 0xFFC2, # Start of Frame (progressive DCT)
+	DHT = 0xFFC4, # Huffman Table
+	DQT = 0xFFDB, # Define Quantization Table
+	SOS = 0xFFDA, # Start of Scan
+	EOI = 0xFFD9 # End of Image
+};
+
+public type File = unit {
+	SOI : bytes &size=2 &requires=($$ == b"\xFF\xD8");
+
+	segments: Segment[] &eod;
+
+	on %done {
+		print self;
+	}
+};
+
+type Segment = unit {
+	marker: uint16 &convert=Markers($$);
+	switch (self.marker) {
+		Markers::APP0 -> app0: APP0;
+		Markers::DQT -> { dqtlen: uint16; read : bytes &size=self.dqtlen-2;}
+		Markers::DHT -> { dhtlen: uint16; read : bytes &size=self.dhtlen-2;}
+		Markers::SOF0 -> sof0: SOF0;
+		Markers::SOS -> sos: SOS;
+		* -> { len : uint16; la: bytes &size=self.len+4 { print "Unknown marker:", self; 1/0;} }
+	};
+
+	on %done { print self; }
+};
+
+type SOS = unit {
+	%random-access;
+
+	length: uint16;
+	: bytes &size=self.length;
+	# Followed by image data.
+
+	var continue_parsing: bool = True;
+	var prev_byte: uint8;
+	# Image data
+	#: bytes &while=(self.continue_parsing) foreach { print $$; }
+	:uint8[] &while=(self.continue_parsing) foreach {
+		if ( self.prev_byte == 255 ) {
+			if ( $$ != 00 && $$ != 208 && $$ != 209 && $$ != 210 && $$ != 211 && $$ != 212 && $$ != 213 && $$ != 214 && $$ != 215 ) {
+				self.continue_parsing = False;
+				self.set_input(self.input() + (cast<uint64>(self.offset())-2)); # went two bytes too far.
+			}
+		}
+
+		self.prev_byte = $$;
+	}
+};
+
+type APP0 = unit {
+	%random-access;
+
+	length: uint16;
+	identifier: bytes &size=5 &requires=($$ == b"JFIF\x00");
+	version_major: uint8;
+	version_minor: uint8;
+	density_units: uint8;
+	xdensity: uint16;
+	ydensity: uint16;
+	xthumbnail: uint8;
+	ythumbnail: uint8;
+	thumbnail: bytes &size=(3*(self.xthumbnail*self.ythumbnail));
+	# This may be followed by an extension which is not super interesting for us.
+	: bytes &size=(cast<uint32>(self.offset()) - self.length);
+};
+
+type SOF0 = unit {
+	length: uint16;
+	data_precition: uint8;
+	height: uint16;
+	width: uint16;
+	num_components: uint8;
+	# followed by component data which we are ignoring for now...
+	: bytes &size=self.length-8;
+};
