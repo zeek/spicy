@@ -25,13 +25,16 @@ public type File = unit {
 };
 
 type Segment = unit {
-	marker: uint16 &convert=Markers($$);
+	marker: uint16 &convert=Markers($$) {
+		print "Marker: ", $$;
+	}
 	switch (self.marker) {
 		Markers::APP0 -> app0: APP0;
 		Markers::DQT -> { dqtlen: uint16; read : bytes &size=self.dqtlen-2;}
 		Markers::DHT -> { dhtlen: uint16; read : bytes &size=self.dhtlen-2;}
 		Markers::SOF0 -> sof0: SOF0;
 		Markers::SOS -> sos: SOS;
+		Markers::EOI -> : bytes &size=0; # In theory, it should be over now.
 		* -> { len : uint16; la: bytes &size=self.len+4 { print "Unknown marker:", self; 1/0;} }
 	};
 
@@ -48,16 +51,10 @@ type SOS = unit {
 	var continue_parsing: bool = True;
 	var prev_byte: uint8;
 	# Image data
-	#: bytes &while=(self.continue_parsing) foreach { print $$; }
-	:uint8[] &while=(self.continue_parsing) foreach {
-		if ( self.prev_byte == 255 ) {
-			if ( $$ != 00 && $$ != 208 && $$ != 209 && $$ != 210 && $$ != 211 && $$ != 212 && $$ != 213 && $$ != 214 && $$ != 215 ) {
-				self.continue_parsing = False;
-				self.set_input(self.input() + (cast<uint64>(self.offset())-2)); # went two bytes too far.
-			}
-		}
-
-		self.prev_byte = $$;
+	:uint8[];
+	: /\xFF[^\x00\xD0|\xD1|\xD2|\xD3|\xD4|\xD5|\xD6|\xD7]/ {
+		print self.offset();
+		self.set_input(self.input() + (cast<uint64>(self.offset()))); # went two bytes too far - this is the next marker
 	}
 };
 
