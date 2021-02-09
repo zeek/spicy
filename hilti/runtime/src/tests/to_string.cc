@@ -29,7 +29,7 @@ using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("to_string");
 
-TEST_CASE("any") { CHECK_EQ(to_string(std::any()), "<any value>"); }
+TEST_CASE("any") { CHECK_EQ(to_string(hilti::rt::any()), "<any value>"); }
 
 TEST_CASE("primitive") {
     CHECK_EQ(to_string(true), "True");

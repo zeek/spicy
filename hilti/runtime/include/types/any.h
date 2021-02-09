@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include <any>
 #include <string>
 
+#include <hilti/rt/any.h>
 #include <hilti/rt/extension-points.h>
 
 namespace hilti::rt {
 
 namespace detail::adl {
-inline std::string to_string(const std::any& x, adl::tag /*unused*/) { return "<any value>"; }
+inline std::string to_string(const hilti::rt::any& x, adl::tag /*unused*/) { return "<any value>"; }
 
 } // namespace detail::adl
 

@@ -140,7 +140,7 @@ void connect(S& state, UnitRef<F> filter_unit) {
                                                            const std::optional<hilti::rt::stream::View>& cur) mutable
                                     -> hilti::rt::Resumable {
                                         auto lhs_filter_unit = filter_unit.derefAsValue();
-                                        auto parse2 = std::any_cast<Parse2Function<F>>(F::__parser.parse2);
+                                        auto parse2 = hilti::rt::any_cast<Parse2Function<F>>(F::__parser.parse2);
                                         SPICY_RT_DEBUG_VERBOSE(
                                             hilti::rt::fmt("  + parsing from stream %p, forwarding to stream %p",
                                                            data.get(), lhs_filter_unit->__forward.get()));

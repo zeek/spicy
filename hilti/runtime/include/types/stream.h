@@ -3,7 +3,6 @@
 #pragma once
 
 #include <algorithm>
-#include <any>
 #include <array>
 #include <cassert>
 #include <cinttypes>
@@ -17,6 +16,7 @@
 #include <variant>
 #include <vector>
 
+#include <hilti/rt/any.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/intrusive-ptr.h>
 #include <hilti/rt/logging.h>

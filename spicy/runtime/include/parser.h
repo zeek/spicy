@@ -83,7 +83,7 @@ namespace spicy::rt {
  * as well.
  */
 struct Parser {
-    Parser(std::string name, Parse1Function parse1, std::any parse2, Parse3Function parse3,
+    Parser(std::string name, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
            hilti::rt::Vector<ParserPort> ports)
         : name(std::move(name)),
@@ -95,7 +95,7 @@ struct Parser {
           mime_types(std::move(mime_types)),
           ports(std::move(ports)) {}
 
-    Parser(std::string name, hilti::rt::Null /* null */, std::any parse2, hilti::rt::Null /* null */,
+    Parser(std::string name, hilti::rt::Null /* null */, hilti::rt::any parse2, hilti::rt::Null /* null */,
            const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
            hilti::rt::Vector<ParserPort> ports)
         : Parser(std::move(name), nullptr, parse2, nullptr, type, std::move(description), std::move(mime_types),
@@ -119,7 +119,7 @@ struct Parser {
      * Function performing parsing of given input into a provided instance.
      * The actual type of this member is Parse2Function<T>.
      */
-    std::any parse2;
+    hilti::rt::any parse2;
 
     /** Function performing parsing of given input into a ParsedUnited that will be returned. */
     Parse3Function parse3{};

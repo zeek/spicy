@@ -357,17 +357,18 @@ void Sink::connect_mime_type(const MIMEType& mt) {
         if ( const auto& x = detail::globalState()->parsers_by_mime_type.find(mt.asKey());
              x != detail::globalState()->parsers_by_mime_type.end() ) {
             for ( const auto& p : x->second ) {
-                auto [unit, state] = (*p->__parse_sink)();
+                auto m = (*p->__parse_sink)(); // using a structured binding here triggers what seems to be a clang-tidy
+                                               // false positive
 
-                SPICY_RT_DEBUG_VERBOSE(fmt("connecting parser %s [%p] to sink %p for MIME type %s", p->name, &unit,
+                SPICY_RT_DEBUG_VERBOSE(fmt("connecting parser %s [%p] to sink %p for MIME type %s", p->name, &m.first,
                                            this, std::string(mt)));
-                _units.emplace_back(std::move(unit));
-                _states.emplace_back(state);
+                _units.emplace_back(std::move(m.first));
+                _states.emplace_back(m.second);
             }
         }
     };
 
-    connect_matching(mt); // NOLINT(clang-analyzer-core.uninitialized.Branch) I believe this is a FP -Robin
+    connect_matching(mt);
     connect_matching(MIMEType(mt.mainType(), "*"));
     connect_matching(MIMEType("*", "*"));
 }

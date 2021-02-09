@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include <any>
 #include <memory>
 #include <string>
 #include <utility>
 
+#include <hilti/rt/any.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/string.h>
@@ -627,21 +627,21 @@ public:
      * */
     template<typename T>
     T* as() const {
-        if ( ! _ptr.has_value() )
+        if ( _ptr.empty() )
             return nullptr;
 
         try {
-            return std::any_cast<StrongReference<T>>(_ptr).get();
-        } catch ( const std::bad_any_cast& ) {
+            return hilti::rt::any_cast<StrongReference<T>>(_ptr).get();
+        } catch ( const hilti::rt::bad_any_cast& ) {
             throw IllegalReference("invalid target type");
         }
     }
 
     /** Releases the bound reference. */
-    void reset() { _ptr.reset(); }
+    void reset() { _ptr.clear(); }
 
 private:
-    std::any _ptr;
+    hilti::rt::any _ptr;
 };
 
 namespace reference {

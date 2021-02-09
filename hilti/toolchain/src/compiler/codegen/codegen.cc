@@ -422,7 +422,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                 cb.addReturn("hilti::rt::Nothing()");
             }
 
-            body.addLambda("cb", "[args_on_heap](hilti::rt::resumable::Handle* r) -> std::any", std::move(cb));
+            body.addLambda("cb", "[args_on_heap](hilti::rt::resumable::Handle* r) -> hilti::rt::any", std::move(cb));
             body.addLocal({.id = "r", .type = "auto", .init = "std::make_unique<hilti::rt::Resumable>(std::move(cb))"});
             body.addStatement("r->run()");
             body.addReturn("std::move(*r)");
