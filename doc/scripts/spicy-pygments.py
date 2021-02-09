@@ -144,7 +144,7 @@ class SpicyLexer(RegexLexer):
 
             # Numeric
             (fr'\b0[xX]{_hex}+\b', Number.Hex),
-            (r'\b{_float}\b', Number.Float),
+            (fr'\b{_float}\b', Number.Float),
             (r'\b(\d+)\b', Number.Integer),
         ],
 
