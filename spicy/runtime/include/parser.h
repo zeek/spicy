@@ -112,7 +112,11 @@ struct Parser {
     /** Short descriptive name. */
     std::string name;
 
-    /** Function performing parsing of given input into a temporary instance. */
+    /**
+     * Function performing parsing of given input into a temporary instance.
+     * This will remain unset if the unit type cannot be used through a
+     * `parse1`-style function because it receives parameters.
+     */
     Parse1Function parse1{};
 
     /**
@@ -121,7 +125,12 @@ struct Parser {
      */
     std::any parse2;
 
-    /** Function performing parsing of given input into a ParsedUnited that will be returned. */
+    /**
+     * Function performing parsing of given input into a ParsedUnited
+     * that will be returned. This will remain unset if the unit type
+     * cannot be used through a `parse3`-style function because it
+     * receives parameters.
+     */
     Parse3Function parse3{};
 
     const hilti::rt::TypeInfo* type;
