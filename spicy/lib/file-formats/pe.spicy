@@ -1,0 +1,451 @@
+# Spicy parser for Portable Executable (PE) image file format
+#   https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
+#   https://docs.microsoft.com/en-us/previous-versions/ms809762(v=msdn.10)
+#   https://en.wikipedia.org/wiki/Portable_Executable
+
+# TODOs:
+#  - use MaxStringSize to limit size of null-terminated strings
+#  - parse the data from remaining directory sections
+
+module PE;
+import spicy;
+%byte-order = spicy::ByteOrder::Little;
+
+# Parsing constraints in the interest of mitigating DoS-ease (memory/cpu).
+const MaxFileSize    = 256 * 1024 * 1024;
+const MaxStubSize    = 4 * 1024 * 1024;
+const MaxDirectories = 128;
+const MaxSections    = 1024;
+const MaxImportDLLs  = 1024;
+const MaxImportSyms  = 16384;
+const MaxExportSyms  = 16384;
+const MaxStringSize  = 512;
+
+const DOS_HeaderSize       = 64;
+const PE_HeaderSize        = 24;
+const OptionalHeaderSize32 = 96;
+const OptionalHeaderSize64 = 112;
+const DataDirectorySize    = 8;
+const SectionHeaderSize    = 40;
+
+const PE32:      uint16 = 0x10b;
+const PE32_Plus: uint16 = 0x20b;
+
+type Offset = optional<uint64>;
+type DirInfo = tuple<offset: Offset, size: uint64>;
+
+type Dir = enum {
+    ExportTable                 = 0,
+    ImportTable                 = 1,
+    ResourceTable               = 2,
+    ExceptionTable              = 3,
+    CertificateTable            = 4,
+    BaseRelocationTable         = 5,
+    Debug                       = 6,
+    Architecture                = 7,
+    GlobalPtr                   = 8,
+    ThreadLocalStorageTable     = 9,
+    LoadConfigTable             = 10,
+    BoundImport                 = 11,
+    ImportAddressTable          = 12,
+    DelayImportDescriptor       = 13,
+    CommonLanguageRuntimeHeader = 14,
+};
+
+type NullTerminatedString = unit {
+    s: bytes &until=b"\x00";
+};
+
+public type ImageFile = unit {
+    %description = "Parses the Portable Executable (PE) image file format";
+    %mime-type = "application/x-dosexec";
+    %random-access;
+
+    dosHeader:      DOS_Header
+                        # TODO: &requires evaluated before field hook ?
+                        #       Prevents use of self.dosStubSize ?  Spicy bug ?
+                        &requires=($$.peHeaderOffset - DOS_HeaderSize <= MaxStubSize);
+    dosStub:        bytes &size=self.dosStubSize;
+    peHeader:       PE_Header
+                        &requires=($$.sizeOfOptionalHeader > 0 &&
+                                   $$.numberOfSections <= MaxSections);
+    optHeader:      OptionalHeader; # Required for image files
+    sectionHeaders: SectionHeader[self.peHeader.numberOfSections];
+    :               bytes &size=self.headerPadSize + self.sectionDataSize
+                        if ( self.fileSize <= MaxFileSize );
+
+    exportTable:    ExportDirectoryTable(self)
+                        &parse-at=(self.peStart + safeOffset(self.exportDirInfo))
+                        if ( self.exportDirInfo.offset );
+    importTable:    ImportDirectoryTable(self)
+                        &parse-at=(self.peStart + safeOffset(self.importDirInfo))
+                        if ( self.importDirInfo.offset );
+
+    on %init
+        { self.peStart = self.input(); }
+
+    on dosHeader
+        { self.dosStubSize = self.dosHeader.peHeaderOffset - DOS_HeaderSize; }
+
+    on optHeader
+        { self.peFileFormat = self.optHeader.magic; }
+
+    on sectionHeaders
+        {
+        self.peFileFormat = self.optHeader.magic;
+
+        local off = DOS_HeaderSize + self.dosStubSize + PE_HeaderSize +
+                    (self.peFileFormat == PE32 ? OptionalHeaderSize32
+                                               : OptionalHeaderSize64) +
+                    self.optHeader.numberOfRvaAndSizes * DataDirectorySize +
+                    self.peHeader.numberOfSections * SectionHeaderSize;
+
+        if ( off < self.optHeader.sizeOfHeaders )
+            self.headerPadSize = self.optHeader.sizeOfHeaders - off;
+
+        for ( sh in self.sectionHeaders )
+            {
+            local max = sh.sizeOfRawData + sh.pointerToRawData;
+
+            if ( max > self.fileSize )
+                self.fileSize = max;
+            }
+
+        if ( self.optHeader.sizeOfHeaders < self.fileSize )
+            self.sectionDataSize = self.fileSize - self.optHeader.sizeOfHeaders;
+
+        if ( self.fileSize <= MaxFileSize )
+            {
+            self.exportDirInfo = dirInfo(self, Dir::ExportTable);
+            self.importDirInfo = dirInfo(self, Dir::ImportTable);
+            }
+        }
+
+    var peStart: iterator<stream>;
+    var peFileFormat: uint16;
+    var dosStubSize: uint64;
+    var headerPadSize: uint64;
+    var fileSize: uint64;
+    var sectionDataSize: uint64;
+    var exportDirInfo: DirInfo;
+    var importDirInfo: DirInfo;
+};
+
+type DOS_Header = unit {
+    magic:                  b"MZ";
+    bytesInLastPage:        uint16;
+    pagesInFile:            uint16;
+    relocations:            uint16;
+    paragraphsInHeader:     uint16;
+    minExtraParagraphs:     uint16;
+    maxExtraParagraphs:     uint16;
+    initialRelativeSS:      uint16;
+    initialSP:              uint16;
+    checksum:               uint16;
+    initialIP:              uint16;
+    initialRelativeCS:      uint16;
+    relocationTableAddress: uint16;
+    overlayNumber:          uint16;
+    reserved1:              bytes &size=8;
+    oemID:                  uint16;
+    oemInfo:                uint16;
+    reserved2:              bytes &size=20;
+    peHeaderOffset:         uint32 &requires=($$ >= DOS_HeaderSize);
+};
+
+type PE_Header = unit {
+    magic:                b"PE\x00\x00";
+    machine:              uint16;
+    numberOfSections:     uint16;
+    timeDateStamp:        uint32;
+    pointerToSymbolTable: uint32;
+    nubmerOfSymbols:      uint32;
+    sizeOfOptionalHeader: uint16;
+    characteristics:      uint16;
+};
+
+type OptionalHeader = unit {
+    magic:                       uint16 &requires=($$ == PE32 || $$ == PE32_Plus);
+    majorLinkerVersion:          uint8;
+    minorLinkerVersion:          uint8;
+    sizeOfCode:                  uint32;
+    sizeOfInitializedData:       uint32;
+    sizeOfUninitializedData:     uint32;
+    addressOfEntryPoint:         uint32;
+    baseOfCode:                  uint32;
+
+    switch ( self.magic ) {
+        PE32 -> {
+            baseOfData:          uint32;
+            imageBase:           uint32 &convert=cast<uint64>($$);
+        }
+        PE32_Plus -> {
+            imageBase:           uint64;
+        }
+    };
+
+    sectionAlignment:            uint32;
+    fileAlignment:               uint32;
+    majorOperatingSystemVersion: uint16;
+    minorOperatingSystemVersion: uint16;
+    majorImageVersion:           uint16;
+    minorImageVersion:           uint16;
+    majorSubsystemVersion:       uint16;
+    minorSubsystemVersion:       uint16;
+    win32VersionValue:           uint32;
+    sizeOfImage:                 uint32;
+    sizeOfHeaders:               uint32;
+    checkSum:                    uint32;
+    subsystem:                   uint16;
+    dllCharacteristics:          uint16;
+
+    switch ( self.magic ) {
+        PE32 -> {
+            sizeOfStackReserve:  uint32 &convert=cast<uint64>($$);
+            sizeOfStackCommit:   uint32 &convert=cast<uint64>($$);
+            sizeOfHeapReserve:   uint32 &convert=cast<uint64>($$);
+            sizeOfHeapCommit:    uint32 &convert=cast<uint64>($$);
+        }
+        PE32_Plus -> {
+            sizeOfStackReserve:  uint64;
+            sizeOfStackCommit:   uint64;
+            sizeOfHeapReserve:   uint64;
+            sizeOfHeapCommit:    uint64;
+        }
+    };
+
+    loaderFlags:                 uint32;
+    numberOfRvaAndSizes:         uint32 &requires=($$ < MaxDirectories);
+    dataDirectories:             DataDirectory[self.numberOfRvaAndSizes];
+};
+
+type DataDirectory = unit {
+    virtualAddress: uint32;
+    size:           uint32;
+};
+
+type SectionHeader = unit {
+    name:                 bytes &size=8;
+    virtualSize:          uint32;
+    virtualAddress:       uint32;
+    sizeOfRawData:        uint32;
+    pointerToRawData:     uint32;
+    pointerToRelocations: uint32;
+    pointerToLinenumbers: uint32;
+    numberOfRelocations:  uint16;
+    numberOfLinenumbers:  uint16;
+    characteristics:      uint32;
+};
+
+######################
+###################### Export Directory Table
+######################
+
+type ExportDirectoryTable = unit(f: ImageFile) {
+    flags:             uint32;
+    timeDateStamp:     uint32;
+    majorVersion:      uint16;
+    minorVersion:      uint16;
+    dllNameRVA:        uint32;
+    ordinalBase:       uint32;
+    addressTableCount: uint32;
+    namePtrTableCount: uint32; # Also the entry-count for Ordinal Table
+    addressTableRVA:   uint32;
+    namePtrTableRVA:   uint32;
+    ordinalTableRVA:   uint32;
+
+    dllName:           NullTerminatedString
+                           &parse-at=(f.peStart + safeOffset(self.dllNameOffset))
+                           if ( self.dllNameOffset );
+    addressTable:      ExportAddressTable(f, self.addressTableCount)
+                           &parse-at=(f.peStart + safeOffset(self.addressTableOffset))
+                           if ( self.addressTableOffset );
+    namePtrTable:      ExportNamePtrTable(f, self.namePtrTableCount)
+                           &parse-at=(f.peStart + safeOffset(self.namePtrTableOffset))
+                           if ( self.namePtrTableOffset );
+    ordinalTable:      ExportOrdinalTable(f, self.namePtrTableCount)
+                           &parse-at=(f.peStart + safeOffset(self.ordinalTableOffset))
+                           if ( self.ordinalTableOffset );
+
+    on dllNameRVA { self.dllNameOffset = rvaToOffset(f, $$); }
+    on addressTableRVA { self.addressTableOffset = rvaToOffset(f, $$); }
+    on namePtrTableRVA { self.namePtrTableOffset = rvaToOffset(f, $$); }
+    on ordinalTableRVA { self.ordinalTableOffset = rvaToOffset(f, $$); }
+
+    var dllNameOffset: Offset;
+    var addressTableOffset: Offset;
+    var namePtrTableOffset: Offset;
+    var ordinalTableOffset: Offset;
+};
+
+type ExportAddressTable = unit(f: ImageFile, entryCount: uint32) {
+    entries: ExportAddressTableEntry(f)[min(entryCount, MaxExportSyms)];
+};
+
+type ExportNamePtrTable = unit(f: ImageFile, entryCount: uint32) {
+    entries: ExportNamePtrTableEntry(f)[min(entryCount, MaxExportSyms)];
+};
+
+type ExportOrdinalTable = unit(f: ImageFile, entryCount: uint32) {
+    entries: uint16[min(entryCount, MaxExportSyms)];
+};
+
+type ExportNamePtrTableEntry = unit(f: ImageFile) {
+    rva:  uint32;
+
+    name: NullTerminatedString
+              &parse-at=(f.peStart + safeOffset(self.nameOffset))
+              if ( self.nameOffset );
+
+    on rva { self.nameOffset = rvaToOffset(f, $$); }
+
+    var nameOffset: Offset;
+};
+
+type ExportAddressTableEntry = unit(f: ImageFile) {
+    rva:       uint32;
+
+    forwarder: NullTerminatedString
+                   &parse-at=(f.peStart + safeOffset(self.forwarderOffset))
+                   if ( self.forwarderOffset );
+
+    on rva
+        {
+        local off = rvaToOffset(f, $$);
+
+        if ( ! off )
+            return;
+
+        if ( *off >= *f.exportDirInfo.offset &&
+             *off < *f.exportDirInfo.offset + f.exportDirInfo.size )
+            self.forwarderOffset = off;
+        }
+
+    var forwarderOffset: Offset;
+};
+
+######################
+###################### Import Directory Table
+######################
+
+type ImportDirectoryTable = unit(f: ImageFile) {
+    entries: ImportDirectoryTableEntry(f)[]
+        &while=(! isNull($$) && |self.entries| < MaxImportDLLs);
+};
+
+type ImportDirectoryTableEntry = unit(f: ImageFile) {
+    importLookupTableRVA:  uint32;
+    timeDateStamp:         uint32;
+    forwarderChain:        uint32;
+    dllNameRVA:            uint32;
+    importAddressTableRVA: uint32;
+
+    dllName:               NullTerminatedString
+                               &parse-at=(f.peStart + safeOffset(self.dllNameOffset))
+                               if ( self.dllNameOffset );
+    importLookupTable:     ImportLookupTable(f)
+                               &parse-at=(f.peStart + safeOffset(self.iltOffset))
+                               if ( self.iltOffset );
+
+    on importLookupTableRVA { self.iltOffset = rvaToOffset(f, $$); }
+    on dllNameRVA { self.dllNameOffset = rvaToOffset(f, $$); }
+
+    var iltOffset: Offset;
+    var dllNameOffset: Offset;
+};
+
+function isNull(e: ImportDirectoryTableEntry): bool
+    {
+    return e.importLookupTableRVA == 0 && e.timeDateStamp == 0 &&
+           e.forwarderChain == 0 && e.dllNameRVA == 0 &&
+           e.importAddressTableRVA == 0;
+    }
+
+type ImportLookupTable = unit(f: ImageFile) {
+    entries: ImportLookupTableEntry(f)[]
+        &while=(! isNull($$) && |self.entries| < MaxImportSyms);
+};
+
+type ImportLookupTableEntry = unit(f: ImageFile) {
+    switch ( f.peFileFormat ) {
+        PE32      -> entry: bitfield(32) {
+            full:         0..31 &convert=cast<uint64>($$);
+            importByName: 31    &convert=cast<bool>(! $$);
+            ordinal:      0..15 &convert=cast<uint16>($$);
+            hintNameRVA:  0..30 &convert=cast<uint32>($$);
+        };
+        PE32_Plus -> entry: bitfield(64) {
+            full:         0..63 &convert=cast<uint64>($$);
+            importByName: 63    &convert=cast<bool>(! $$);
+            ordinal:      0..15 &convert=cast<uint16>($$);
+            hintNameRVA:  0..30 &convert=cast<uint32>($$);
+        };
+    };
+
+    hintName: HintName
+                  &parse-at=(f.peStart + safeOffset(self.hintNameOffset))
+                  if ( self.hintNameOffset );
+
+    on entry
+        {
+        if ( self.entry.importByName )
+            self.hintNameOffset = rvaToOffset(f, self.entry.hintNameRVA);
+        }
+
+    var hintNameOffset: Offset;
+};
+
+function isNull(e: ImportLookupTableEntry): bool
+    { return e.entry.full == 0; }
+
+type HintName = unit {
+    hint: uint16;
+    name: bytes &until=b"\x00";
+    # Technically may end with a one-byte pad to make total byte-count even.
+};
+
+function getSectionForRVA(f: ImageFile, rva: uint32): optional<SectionHeader>
+    {
+    # Note: Virtual Addresses for sections are assigned so they're ascending.
+    for ( sh in f.sectionHeaders )
+        if ( sh.virtualAddress <= rva &&
+             sh.virtualAddress + sh.sizeOfRawData > rva )
+            return sh;
+
+    return Null;
+    }
+
+function dirInfo(f: ImageFile, d: Dir): DirInfo
+    {
+    local di = cast<uint64>(d);
+
+    if ( di >= f.optHeader.numberOfRvaAndSizes )
+        return (Null, 0);
+
+    local dd = f.optHeader.dataDirectories[di];
+    local dirRVA = dd.virtualAddress;
+    local dirSize = dd.size;
+    local dirOff = rvaToOffset(f, dirRVA);
+
+    return (dirOff, dirSize);
+    }
+
+function rvaToOffset(f: ImageFile, rva: uint32): Offset
+    {
+    local optSH = getSectionForRVA(f, rva);
+
+    if ( ! optSH )
+        return Null;
+
+    local sh = *optSH;
+    return sh.pointerToRawData + (rva - sh.virtualAddress);
+    }
+
+function min(a: uint64, b: uint64): uint64
+    { return a < b ? a : b; }
+
+function safeOffset(o: Offset): uint64
+    { return o ? *o : 0; }
+
+function safeOffset(di: DirInfo): uint64
+    { return di.offset ? *di.offset : 0; }
