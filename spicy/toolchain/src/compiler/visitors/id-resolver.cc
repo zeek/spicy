@@ -23,6 +23,8 @@ using namespace spicy;
 
 namespace {
 
+inline const hilti::logging::DebugStream Resolver("resolver");
+
 template<typename T>
 auto resolveField(const type::unit::item::UnresolvedField& u, const T& t) {
     auto field = type::unit::item::Field(u.fieldID(), std::move(t), u.engine(), u.arguments(), u.repeatCount(),
@@ -38,8 +40,10 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
     bool modified = false;
 
     template<typename T>
-    void replaceNode(position_t* p, T&& n) {
+    void replaceNode(position_t* p, T&& n, int line) {
         p->node = std::forward<T>(n);
+        HILTI_DEBUG(Resolver, hilti::util::fmt("  modified by Spicy %s:%d",
+                                               hilti::rt::filesystem::path(__FILE__).filename().native(), line))
         modified = true;
     }
 
@@ -62,13 +66,13 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
                 if ( t->type().isA<type::Unit>() || AttributeSet::has(t->attributes(), "&on-heap") )
                     tt = hilti::type::ValueReference(tt, u.meta());
 
-                replaceNode(&p, resolveField(u, tt));
+                replaceNode(&p, resolveField(u, tt), __LINE__);
                 return;
             }
 
             if ( auto c = resolved->first->tryAs<hilti::declaration::Constant>() ) {
                 if ( auto ctor = c->value().tryAs<hilti::expression::Ctor>() )
-                    replaceNode(&p, resolveField(u, ctor->ctor()));
+                    replaceNode(&p, resolveField(u, ctor->ctor()), __LINE__);
                 else
                     p.node.addError("field value must be a constant");
 
@@ -80,13 +84,13 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
         }
 
         else if ( auto c = u.ctor() )
-            replaceNode(&p, resolveField(u, *c));
+            replaceNode(&p, resolveField(u, *c), __LINE__);
 
         else if ( auto t = u.type() )
-            replaceNode(&p, resolveField(u, *t));
+            replaceNode(&p, resolveField(u, *t), __LINE__);
 
         else if ( auto i = u.item() )
-            replaceNode(&p, resolveField(u, *i));
+            replaceNode(&p, resolveField(u, *i), __LINE__);
 
         else
             hilti::logger().internalError("no known typw for unresolved field");
@@ -95,7 +99,7 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
     void operator()(const type::Unit& n, position_t p) {
         if ( auto t = p.parent().tryAs<hilti::declaration::Type>();
              ! t && ! p.parent(2).tryAs<hilti::declaration::Type>() )
-            replaceNode(&p, hilti::type::UnresolvedID(*n.typeID(), p.node.meta()));
+            replaceNode(&p, hilti::type::UnresolvedID(*n.typeID(), p.node.meta()), __LINE__);
     }
 };
 
@@ -105,8 +109,10 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
     bool modified = false;
 
     template<typename T>
-    void replaceNode(position_t* p, T&& n) {
+    void replaceNode(position_t* p, T&& n, int line) {
         p->node = std::forward<T>(n);
+        HILTI_DEBUG(Resolver, hilti::util::fmt("  modified by Spicy %s:%d",
+                                               hilti::rt::filesystem::path(__FILE__).filename().native(), line))
         modified = true;
     }
 
@@ -153,8 +159,10 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
             }
 
             if ( dd )
-                replaceNode(&p, hilti::expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, *dd,
-                                                           p.node.meta()));
+                replaceNode(&p,
+                            hilti::expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, *dd,
+                                                       p.node.meta()),
+                            __LINE__);
             else {
                 p.node.addError("$$ not supported here");
                 return;
@@ -165,7 +173,7 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
     void operator()(const type::Unit& n, position_t p) {
         if ( auto t = p.parent().tryAs<hilti::declaration::Type>();
              ! t && ! p.parent(2).tryAs<hilti::declaration::Type>() )
-            replaceNode(&p, hilti::type::UnresolvedID(*n.typeID(), p.node.meta()));
+            replaceNode(&p, hilti::type::UnresolvedID(*n.typeID(), p.node.meta()), __LINE__);
     }
 };
 

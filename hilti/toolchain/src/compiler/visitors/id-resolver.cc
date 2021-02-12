@@ -14,6 +14,8 @@ using namespace hilti;
 
 namespace {
 
+inline const hilti::logging::DebugStream Resolver("resolver");
+
 struct Visitor : public visitor::PreOrder<void, Visitor> {
     explicit Visitor(Unit* unit) : unit(unit) {}
     Unit* unit;
@@ -21,10 +23,13 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     bool modified = false;
 
     template<typename T>
-    void replaceNode(position_t* p, T&& n, bool set_modified = true) {
+    void replaceNode(position_t* p, T&& n, int line, bool set_modified = true) {
         p->node = std::forward<T>(n);
-        if ( set_modified )
+        if ( set_modified ) {
+            HILTI_DEBUG(Resolver, hilti::util::fmt("  modified by HILTI %s/%d",
+                                                   hilti::rt::filesystem::path(__FILE__).filename().native(), line))
             modified = true;
+        }
     }
 
 #if 0
@@ -92,16 +97,16 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
                 t = type::ValueReference(t, Location("<on-heap-replacement>"));
         }
 
-        replaceNode(&p, t);
+        replaceNode(&p, t, __LINE__);
     }
 
     void operator()(const type::Computed& u, position_t p) {
         // As soon as we now the computed type, we swap it in.
         if ( auto t = u.type(); ! t.isA<type::Unknown>() ) {
             if ( auto id = t.typeID() )
-                replaceNode(&p, type::UnresolvedID(*id, p.node.meta()));
+                replaceNode(&p, type::UnresolvedID(*id, p.node.meta()), __LINE__);
             else
-                replaceNode(&p, t);
+                replaceNode(&p, t, __LINE__);
         }
     }
 
@@ -118,7 +123,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             if ( ! t->typeID() )
                 *resolved->first = declaration::Type::setType(*t, nt);
 
-            replaceNode(&p, expression::Type_(nt, u.meta()));
+            replaceNode(&p, expression::Type_(nt, u.meta()), __LINE__);
             return;
         }
 
@@ -127,7 +132,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         if ( auto op = p.parent().tryAs<expression::UnresolvedOperator>(); op && op->kind() == operator_::Kind::Call )
             return;
 
-        replaceNode(&p, expression::ResolvedID(resolved->second, NodeRef(resolved->first), u.meta()));
+        replaceNode(&p, expression::ResolvedID(resolved->second, NodeRef(resolved->first), u.meta()), __LINE__);
     }
 
     void operator()(const expression::ResolvedID& u, position_t p) {
@@ -165,7 +170,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         // the cheapest approach either way.
         //
         // (*) if ( (! u.isValid()) || u.declaration() != resolved->first->as<Declaration>() )
-        replaceNode(&p, expression::ResolvedID(resolved->second, NodeRef(resolved->first), u.meta()), false);
+        replaceNode(&p, expression::ResolvedID(resolved->second, NodeRef(resolved->first), u.meta()), __LINE__, false);
     }
 
     void operator()(const declaration::Type& d, position_t p) {
@@ -182,12 +187,12 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             if ( cxx_id && d.cxxID() != *cxx_id )
                 nt = type::setCxxID(nt, std::move(*cxx_id));
 
-            replaceNode(&p, declaration::Type::setType(d, nt));
+            replaceNode(&p, declaration::Type::setType(d, nt), __LINE__);
         }
 
         else if ( cxx_id && d.cxxID() != *cxx_id ) {
             auto nt = type::setCxxID(d.type(), std::move(*cxx_id));
-            replaceNode(&p, declaration::Type::setType(d, nt));
+            replaceNode(&p, declaration::Type::setType(d, nt), __LINE__);
         }
     }
 };
