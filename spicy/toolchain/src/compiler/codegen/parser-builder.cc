@@ -1265,63 +1265,50 @@ void ParserBuilder::newValueForField(const type::unit::item::Field& field, const
 Expression ParserBuilder::newContainerItem(const type::unit::item::Field& field, const Expression& self,
                                            const Expression& item) {
     auto stop = builder()->addTmp("stop", builder::bool_(false));
-    std::optional<Expression> addl_stop_condition;
 
-    bool push_after_condition = true;
-
-    if ( auto a = AttributeSet::find(field.attributes(), "&until") )
-        addl_stop_condition = a->valueAs<spicy::Expression>();
-
-    if ( auto a = AttributeSet::find(field.attributes(), "&until-including") ) {
-        addl_stop_condition = a->valueAs<spicy::Expression>();
-        push_after_condition = false;
-    }
-
-    if ( auto a = AttributeSet::find(field.attributes(), "&while") )
-        addl_stop_condition = builder::not_(*a->valueAs<spicy::Expression>());
-
-    // The following makes sure that (1) both hook and vector will see the
-    // same fields; (2) at the time the hook runs, the element has not yet
-    // been added to the vector; and (3) the hook can signal "stop" as well,
-    // overriding the condition.
+    auto push_element = [&]() {
+        if ( ! field.isTransient() )
+            pushBuilder(builder()->addIf(builder::not_(stop)),
+                        [&]() { builder()->addExpression(builder::memberCall(self, "push_back", {item})); });
+    };
 
     auto run_hook = [&]() {
         builder()->addDebugMsg("spicy-verbose", "- got container item");
-        beforeHook();
-        builder()->addMemberCall(state().self, ID(fmt("__on_%s_foreach", field.id().local())), {item, stop},
-                                 field.meta());
-        afterHook();
-    };
-
-    auto eval_condition = [&]() {
-        if ( ! addl_stop_condition )
-            return;
-
-        pushBuilder(builder()->addBlock(), [&]() {
-            builder()->addLocal("__dd", item);
-            builder()->addAssign(stop, builder::or_(stop, *addl_stop_condition));
+        pushBuilder(builder()->addIf(builder::not_(stop)), [&]() {
+            beforeHook();
+            builder()->addMemberCall(state().self, ID(fmt("__on_%s_foreach", field.id().local())), {item, stop},
+                                     field.meta());
+            afterHook();
         });
     };
 
-    if ( push_after_condition ) {
-        eval_condition();
+    auto eval_condition = [&](const Expression& cond) {
+        pushBuilder(builder()->addBlock(), [&]() {
+            builder()->addLocal("__dd", item);
+            builder()->addAssign(stop, builder::or_(stop, cond));
+        });
+    };
 
-        pushBuilder(builder()->addIf(builder::not_(stop)), [&]() { run_hook(); });
+    if ( auto a = AttributeSet::find(field.attributes(), "&until") ) {
+        eval_condition(*a->valueAs<spicy::Expression>());
+        run_hook();
+        push_element();
+    }
 
-        if ( ! field.isTransient() )
-            pushBuilder(builder()->addIf(builder::not_(stop)), [&]() {
-                builder()->addExpression(builder::memberCall(self, "push_back", {builder::move(item)}));
-            });
+    else if ( auto a = AttributeSet::find(field.attributes(), "&until-including") ) {
+        run_hook();
+        push_element();
+        eval_condition(*a->valueAs<spicy::Expression>());
+    }
+
+    else if ( auto a = AttributeSet::find(field.attributes(), "&while") ) {
+        run_hook();
+        eval_condition(builder::not_(*a->valueAs<spicy::Expression>()));
+        push_element();
     }
     else {
         run_hook();
-
-        if ( ! field.isTransient() )
-            pushBuilder(builder()->addIf(builder::not_(stop)), [&]() {
-                builder()->addExpression(builder::memberCall(self, "push_back", {builder::move(item)}));
-            });
-
-        eval_condition();
+        push_element();
     }
 
     return stop;

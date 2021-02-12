@@ -1,0 +1,15 @@
+# @TEST-EXEC: echo "ananananeee" | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test that we can access a loop's $$ from inside &until-including.
+
+module Test;
+
+public type Testing = unit {
+    la: Sub[] &until-including=($$.second_el == b"e");
+    on %done { print self; }
+};
+
+type Sub = unit() {
+    second_el: bytes &size=1;
+};
