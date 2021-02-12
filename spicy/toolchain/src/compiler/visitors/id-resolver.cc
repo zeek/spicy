@@ -117,7 +117,7 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
     }
 
     void operator()(const hilti::expression::Keyword& n, position_t p) {
-        if ( n.kind() == hilti::expression::keyword::Kind::DollarDollar && n.type().isA<type::Unknown>() ) {
+        if ( n.kind() == hilti::expression::keyword::Kind::DollarDollar && ! n.hasType() ) {
             std::optional<Type> dd;
 
             if ( auto f = p.findParent<hilti::Function>() ) {
