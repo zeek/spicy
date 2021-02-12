@@ -1,0 +1,28 @@
+file analyzer spicy::PE:
+    parse with PE::ImageFile,
+    # TODO: file analyzer replacement not yet supported ?
+    #replaces PE,
+    mime-type application/x-dosexec;
+
+import Zeek_PE;
+
+on PE::DOS_Header ->
+    event pe_dos_header($file, Zeek_PE::makeDOSHeader(self));
+
+on PE::ImageFile::dosStub ->
+    event pe_dos_code($file, self.dosStub);
+
+on PE::PE_Header ->
+    event pe_file_header($file, Zeek_PE::makeFileHeader(self));
+
+on PE::OptionalHeader ->
+    event pe_optional_header($file, Zeek_PE::makeOptionalHeader(self));
+
+on PE::SectionHeader ->
+    event pe_section_header($file, Zeek_PE::makeSectionHeader(self));
+
+on PE::ExportDirectoryTable ->
+    event pe_export_table($file, Zeek_PE::makeExportTable(self));
+
+on PE::ImportDirectoryTable ->
+    event pe_import_table($file, Zeek_PE::makeImportTable(self));

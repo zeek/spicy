@@ -159,7 +159,7 @@ type PE_Header = unit {
     numberOfSections:     uint16;
     timeDateStamp:        uint32;
     pointerToSymbolTable: uint32;
-    nubmerOfSymbols:      uint32;
+    numberOfSymbols:      uint32;
     sizeOfOptionalHeader: uint16;
     characteristics:      uint16;
 };

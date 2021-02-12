@@ -1,0 +1,359 @@
+module Zeek_PE;
+import PE;
+
+type DOSHeader = tuple<
+    signature                : bytes,
+    used_bytes_in_last_page  : uint64,
+    file_in_pages            : uint64,
+    num_reloc_items          : uint64,
+    header_in_paragraphs     : uint64,
+    min_extra_paragraphs     : uint64,
+    max_extra_paragraphs     : uint64,
+    init_relative_ss         : uint64,
+    init_sp                  : uint64,
+    checksum                 : uint64,
+    init_ip                  : uint64,
+    init_relative_cs         : uint64,
+    addr_of_reloc_table      : uint64,
+    overlay_num              : uint64,
+    oem_id                   : uint64,
+    oem_info                 : uint64,
+    addr_of_new_exe_header   : uint64
+    >;
+
+public function makeDOSHeader(h: PE::DOS_Header): DOSHeader
+    {
+    return (
+            h.magic,
+            h.bytesInLastPage,
+            h.pagesInFile,
+            h.relocations,
+            h.paragraphsInHeader,
+            h.minExtraParagraphs,
+            h.maxExtraParagraphs,
+            h.initialRelativeSS,
+            h.initialSP,
+            h.checksum,
+            h.initialIP,
+            h.initialRelativeCS,
+            h.relocationTableAddress,
+            h.overlayNumber,
+            h.oemID,
+            h.oemInfo,
+            h.peHeaderOffset,
+           );
+    }
+
+type FileHeader = tuple<
+    machine              : uint64,
+    ts                   : time,
+    sym_table_ptr        : uint64,
+    num_syms             : uint64,
+    optional_header_size : uint64,
+    characteristics      : set<uint64>
+    >;
+
+function makeCharacteristics(c: uint32, len: uint8): set<uint64>
+    {
+    local rval: set<uint64>;
+
+    while ( local i = 0; i < len )
+        {
+        if ( ((c >> i) & 0x1) == 1 )
+            add rval[1 << i];
+
+        ++i;
+        }
+
+    return rval;
+    }
+
+public function makeFileHeader(h: PE::PE_Header): FileHeader
+    {
+    return (
+            h.machine,
+            cast<time>(h.timeDateStamp),
+            h.pointerToSymbolTable,
+            h.numberOfSymbols,
+            h.sizeOfOptionalHeader,
+            makeCharacteristics(h.characteristics, 16)
+           );
+    }
+
+type OptionalHeader = tuple<
+	magic                   : uint64,
+	major_linker_version    : uint64,
+	minor_linker_version    : uint64,
+	size_of_code            : uint64,
+	size_of_init_data       : uint64,
+	size_of_uninit_data     : uint64,
+	addr_of_entry_point     : uint64,
+	base_of_code            : uint64,
+	base_of_data            : optional<uint64>,
+	image_base              : uint64,
+	section_alignment       : uint64,
+	file_alignment          : uint64,
+	os_version_major        : uint64,
+	os_version_minor        : uint64,
+	major_image_version     : uint64,
+	minor_image_version     : uint64,
+	major_subsys_version    : uint64,
+	minor_subsys_version    : uint64,
+	size_of_image           : uint64,
+	size_of_headers         : uint64,
+	checksum                : uint64,
+	subsystem               : uint64,
+	dll_characteristics     : set<uint64>,
+	table_sizes             : vector<uint64>
+	>;
+
+public function makeOptionalHeader(h: PE::OptionalHeader): OptionalHeader
+    {
+    local bod: optional<uint64>;
+
+    if ( h.magic == 0x10b )
+        bod = h.baseOfData;
+
+    local ddSizes: vector<uint64> =
+        [cast<uint64>(dd.size) for dd in h.dataDirectories];
+
+    return (
+            h.magic,
+            h.majorLinkerVersion,
+            h.minorLinkerVersion,
+            h.sizeOfCode,
+            h.sizeOfInitializedData,
+            h.sizeOfUninitializedData,
+            h.addressOfEntryPoint,
+            h.baseOfCode,
+            bod,
+            h.imageBase,
+            h.sectionAlignment,
+            h.fileAlignment,
+            h.majorOperatingSystemVersion,
+            h.minorOperatingSystemVersion,
+            h.majorImageVersion,
+            h.minorImageVersion,
+            h.majorSubsystemVersion,
+            h.minorSubsystemVersion,
+            # h.win32VersionValue,
+            h.sizeOfImage,
+            h.sizeOfHeaders,
+            h.checkSum,
+            h.subsystem,
+            makeCharacteristics(h.dllCharacteristics, 16),
+            # h.sizeOfStackReserve,
+            # h.sizeOfStackCommit,
+            # h.sizeOfHeapReserve,
+            # h.sizeOfHeapCommit,
+            # h.loaderFlags,
+            # h.numberOfRvaAndSizes,
+            ddSizes,
+           );
+    }
+
+type SectionHeader = tuple<
+	name             : bytes,
+	virtual_size     : uint64,
+	virtual_addr     : uint64,
+	size_of_raw_data : uint64,
+	ptr_to_raw_data  : uint64,
+	ptr_to_relocs    : uint64,
+	ptr_to_line_nums : uint64,
+	num_of_relocs    : uint64,
+	num_of_line_nums : uint64,
+	characteristics  : set<uint64>
+	>;
+
+public function makeSectionHeader(h: PE::SectionHeader): SectionHeader
+    {
+    return (
+            h.name,
+            h.virtualSize,
+            h.virtualAddress,
+            h.sizeOfRawData,
+            h.pointerToRawData,
+            h.pointerToRelocations,
+            h.pointerToLinenumbers,
+            h.numberOfRelocations,
+            h.numberOfLinenumbers,
+            makeCharacteristics(h.characteristics, 32),
+           );
+    }
+
+type ExportName = tuple<
+    rva:  uint64,
+    name: optional<bytes>
+    >;
+
+type ExportAddress = tuple<
+    rva:       uint64,
+    forwarder: optional<bytes>
+    >;
+
+type ExportTable = tuple<
+    flags:               uint64,
+    timestamp:           time,
+    major_version:       uint64,
+    minor_version:       uint64,
+    dll_name_rva:        uint64,
+    ordinal_base:        uint64,
+    address_table_count: uint64,
+    name_table_count:    uint64,
+    address_table_rva:   uint64,
+    name_table_rva:      uint64,
+    ordinal_table_rva:   uint64,
+    dll:                 optional<bytes>,
+    addresses:           optional<vector<ExportAddress>>,
+    names:               optional<vector<ExportName>>,
+    ordinals:            optional<vector<uint64>>
+    >;
+
+public function makeExportTable(edt: PE::ExportDirectoryTable): ExportTable
+    {
+    local dll: optional<bytes>;
+    local opt_addresses: optional<vector<ExportAddress>>;
+    local opt_names: optional<vector<ExportName>>;
+    local opt_ordinals: optional<vector<uint64>>;
+
+    if ( edt.dllNameOffset )
+        dll = edt.dllName.s;
+
+    if ( edt.addressTableOffset )
+        {
+        local addresses: vector<ExportAddress>;
+
+        for ( a in edt.addressTable.entries )
+            {
+            local ea: ExportAddress;
+
+            if ( a.forwarderOffset )
+                ea = (a.rva, a.forwarder.s);
+            else
+                ea = (a.rva, Null);
+
+            addresses.push_back(ea);
+            }
+
+        opt_addresses = addresses;
+        }
+
+    if ( edt.namePtrTableOffset )
+        {
+        local names: vector<ExportName>;
+
+        for ( n in edt.namePtrTable.entries )
+            {
+            local en: ExportName;
+
+            if ( n.nameOffset )
+                en = (n.rva, n.name.s);
+            else
+                en = (n.rva, Null);
+
+            names.push_back(en);
+            }
+
+        opt_names = names;
+        }
+
+    if ( edt.ordinalTableOffset )
+        {
+        local ordinals: vector<uint64> =
+            [cast<uint64>(o) for o in edt.ordinalTable.entries];
+        opt_ordinals = ordinals;
+        }
+
+    return (
+            edt.flags,
+            cast<time>(edt.timeDateStamp),
+            edt.majorVersion,
+            edt.minorVersion,
+            edt.dllNameRVA,
+            edt.ordinalBase,
+            edt.addressTableCount,
+            edt.namePtrTableCount,
+            edt.addressTableRVA,
+            edt.namePtrTableRVA,
+            edt.ordinalTableRVA,
+            dll,
+            opt_addresses,
+            opt_names,
+            opt_ordinals
+           );
+    }
+
+type Import = tuple<
+    hint_name_rva: optional<uint64>,
+
+    hint: optional<uint64>,
+    name: optional<bytes>,
+    ordinal: optional<uint64>
+    >;
+
+type ImportTableEntry = tuple<
+    import_lookup_table_rva: uint64,
+    timestamp: time,
+    forwarder_chain: uint64,
+    dll_rva: uint64,
+    import_address_table_rva: uint64,
+
+    dll: optional<bytes>,
+    imports: optional<vector<Import>>
+    >;
+
+type ImportTable = tuple<
+    entries: vector<ImportTableEntry>
+    >;
+
+public function makeImportTable(idt: PE::ImportDirectoryTable): ImportTable
+    {
+    local entries: vector<ImportTableEntry>;
+
+    for ( e in idt.entries )
+        {
+        local dll: optional<bytes>;
+        local opt_imports: optional<vector<Import>>;
+
+        if ( e.dllNameOffset )
+            dll = e.dllName.s;
+
+        if ( e.iltOffset )
+            {
+            local imports = vector<Import>();
+
+            for ( i in e.importLookupTable.entries )
+                {
+                local imp: Import;
+
+                if ( i.entry.importByName )
+                    {
+                    if ( i.hintNameOffset )
+                        imp = (i.entry.hintNameRVA,
+                               i.hintName.hint, i.hintName.name, Null);
+                    else
+                        imp = (i.entry.hintNameRVA, Null, Null, Null);
+                    }
+                else
+                    imp = (Null, Null, Null, i.entry.ordinal);
+
+                imports.push_back(imp);
+                }
+
+            opt_imports = imports;
+            }
+
+        local ite: ImportTableEntry = (e.importLookupTableRVA,
+                                       cast<time>(e.timeDateStamp),
+                                       e.forwarderChain,
+                                       e.dllNameRVA,
+                                       e.importAddressTableRVA,
+                                       dll,
+                                       opt_imports
+                                       );
+
+        entries.push_back(ite);
+        }
+
+    return (entries,);
+    }
