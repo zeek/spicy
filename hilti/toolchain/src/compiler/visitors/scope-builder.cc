@@ -114,7 +114,7 @@ struct VisitorPass1 : public visitor::PostOrder<void, VisitorPass1> {
 
     void operator()(const statement::Switch& s, position_t p) {
         auto wrapper =
-            type::Computed(NodeRef(p.node), [](auto n) { return n.template as<statement::Switch>().type(); });
+            type::Computed(NodeRef(p.node), [](Node& n) { return n.template as<statement::Switch>().type(); });
 
         auto d = declaration::LocalVariable(ID("__x"), wrapper, {}, true, s.meta());
         p.node.scope()->insert(d.id(), Declaration(d));
@@ -157,6 +157,10 @@ struct VisitorPass1 : public visitor::PostOrder<void, VisitorPass1> {
     }
 
     void operator()(const expression::ListComprehension& e, position_t p) {
+        if ( p.node.scope()->has(e.id()) )
+            // We can encounter this node multiple times.
+            return;
+
         auto wrapper = type::Computed(NodeRef(p.node), [](auto n) {
             const auto& lc = n.template as<expression::ListComprehension>();
             if ( lc.input().type().template isA<type::Unknown>() )

@@ -105,24 +105,24 @@
 [debug/ast-scopes]         - node::None (foo.hlt:9:8)
 [debug/ast-scopes]         - node::None (foo.hlt:6:1)
 [debug/compiler]     resolving IDs in module Bar
-[debug/resolver]   modified by HILTI id-resolver.cc/190
-[debug/resolver]   modified by HILTI id-resolver.cc/190
+[debug/resolver]   modified by HILTI id-resolver.cc/264
+[debug/resolver]   modified by HILTI id-resolver.cc/264
 [debug/resolver] resolved ID Foo::Foo1 (./bar.hlt:7:20) to declaration::Type %14 <linkage="public"> (foo.hlt:6:1)
-[debug/resolver]   modified by HILTI id-resolver.cc/100
+[debug/resolver]   modified by HILTI id-resolver.cc/104
 [debug/resolver] resolved ID Bar1 (./bar.hlt:9:20) to declaration::Type %10 <linkage="public"> (bar.hlt:6:1)
-[debug/resolver]   modified by HILTI id-resolver.cc/100
+[debug/resolver]   modified by HILTI id-resolver.cc/104
 [debug/resolver] resolved ID Foo::Foo1 (./bar.hlt:9:30) to declaration::Type %14 <linkage="public"> (foo.hlt:6:1)
-[debug/resolver]   modified by HILTI id-resolver.cc/100
+[debug/resolver]   modified by HILTI id-resolver.cc/104
 [debug/compiler]       -> modified
 [debug/compiler]     resolving IDs in module Foo
-[debug/resolver]   modified by HILTI id-resolver.cc/190
-[debug/resolver]   modified by HILTI id-resolver.cc/190
+[debug/resolver]   modified by HILTI id-resolver.cc/264
+[debug/resolver]   modified by HILTI id-resolver.cc/264
 [debug/resolver] resolved ID Bar::Bar1 (foo.hlt:7:20) to declaration::Type %10 <linkage="public"> (bar.hlt:6:1)
-[debug/resolver]   modified by HILTI id-resolver.cc/100
+[debug/resolver]   modified by HILTI id-resolver.cc/104
 [debug/resolver] resolved ID Foo1 (foo.hlt:9:20) to declaration::Type %14 <linkage="public"> (foo.hlt:6:1)
-[debug/resolver]   modified by HILTI id-resolver.cc/100
+[debug/resolver]   modified by HILTI id-resolver.cc/104
 [debug/resolver] resolved ID Bar::Bar1 (foo.hlt:9:30) to declaration::Type %10 <linkage="public"> (bar.hlt:6:1)
-[debug/resolver]   modified by HILTI id-resolver.cc/100
+[debug/resolver]   modified by HILTI id-resolver.cc/104
 [debug/compiler]       -> modified
 [debug/compiler]     resolving operators in module Bar
 [debug/compiler]     resolving operators in module Foo
@@ -228,10 +228,10 @@
 [debug/ast-scopes]         - node::None (foo.hlt:9:8)
 [debug/ast-scopes]         - node::None (foo.hlt:6:1)
 [debug/compiler]     resolving IDs in module Bar
-[debug/resolver]   modified by HILTI id-resolver.cc/190
+[debug/resolver]   modified by HILTI id-resolver.cc/264
 [debug/compiler]       -> modified
 [debug/compiler]     resolving IDs in module Foo
-[debug/resolver]   modified by HILTI id-resolver.cc/190
+[debug/resolver]   modified by HILTI id-resolver.cc/264
 [debug/compiler]       -> modified
 [debug/compiler]     resolving operators in module Bar
 [debug/compiler]     resolving operators in module Foo

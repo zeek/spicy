@@ -2,6 +2,7 @@
 
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/id.h>
+#include <hilti/ast/expressions/list-comprehension.h>
 #include <hilti/ast/expressions/type.h>
 #include <hilti/ast/expressions/typeinfo.h>
 #include <hilti/ast/operator.h>
@@ -263,6 +264,37 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     }
 };
 
+// 2nd pass of further transformations that would intefere with those in the
+// 1st pass.
+//
+// TODO: This could eventually become a separate type-resolver pass.
+struct Visitor2 : public visitor::PostOrder<void, Visitor2> {
+    explicit Visitor2(Unit* unit) : unit(unit) {}
+    Unit* unit;
+    bool modified = false;
+
+    template<typename T>
+    void replaceNode(position_t* p, T&& n, int line, bool set_modified = true) {
+        p->node = std::forward<T>(n);
+        if ( set_modified ) {
+            HILTI_DEBUG(Resolver, hilti::util::fmt("  modified by HILTI %s/%d",
+                                                   hilti::rt::filesystem::path(__FILE__).filename().native(), line))
+            modified = true;
+        }
+    }
+
+    void operator()(const expression::ListComprehension& e, position_t p) {
+        if ( ! e.type().isA<type::Unknown>() )
+            return;
+
+        if ( e.output().type().isA<type::Unknown>() )
+            return;
+
+        p.node.as<expression::ListComprehension>().typeNode() = type::List(e.output().type());
+        modified = true;
+    }
+};
+
 } // anonymous namespace
 
 bool hilti::detail::resolveIDs(Node* root, Unit* unit) {
@@ -272,5 +304,9 @@ bool hilti::detail::resolveIDs(Node* root, Unit* unit) {
     for ( auto i : v.walk(root) )
         v.dispatch(i);
 
-    return v.modified;
+    auto v2 = Visitor2(unit);
+    for ( auto i : v2.walk(root) )
+        v2.dispatch(i);
+
+    return v.modified || v2.modified;
 }
