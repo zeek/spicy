@@ -156,7 +156,7 @@ static inline auto contextResult(bool is_const) {
         if ( resolved_ops.empty() )
             return type::DocOnly("<context>&");
 
-        return type::Computed(hilti::builder::member(hilti::builder::id("self"), "__context"), is_const);
+        return type::Computed(hilti::builder::member(hilti::builder::id("self"), "__context"));
     };
 }
 
