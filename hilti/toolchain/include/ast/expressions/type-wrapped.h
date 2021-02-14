@@ -39,9 +39,6 @@ public:
 
     TypeWrapped(Expression e, Meta m = Meta()) : NodeBase(nodes(std::move(e), node::none), std::move(m)) {}
 
-    TypeWrapped(Expression e, bool change_constness_to, Meta m = Meta())
-        : NodeBase(nodes(std::move(e), node::none), std::move(m)), _change_constness_to(change_constness_to) {}
-
     TypeWrapped(Expression e, Type t, Meta m = Meta()) : NodeBase(nodes(std::move(e), std::move(t)), std::move(m)) {}
 
     TypeWrapped(Expression e, Type t, ValidateTypeMatch _, Meta m = Meta())
@@ -78,9 +75,6 @@ public:
             return type::effectiveType(*t);
         }
 
-        if ( _change_constness_to.has_value() )
-            return type::Computed(expression(), *_change_constness_to, meta());
-
         return type::Computed(expression(), meta());
     }
 
@@ -93,7 +87,6 @@ public:
     auto properties() const { return node::Properties{{"validate_type_match", _validate_type_match}}; }
 
 private:
-    std::optional<bool> _change_constness_to;
     bool _validate_type_match = false;
     NodeRef _type_node_ref;
 };
