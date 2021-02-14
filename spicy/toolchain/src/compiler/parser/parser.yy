@@ -705,16 +705,16 @@ unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_fiel
               | opt_unit_field_id opt_unit_field_engine scoped_id  opt_unit_field_args opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), std::move($4), std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__); }
 
-              | opt_unit_field_id opt_unit_field_engine '(' unit_field_in_container ')' unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+              | opt_unit_field_id opt_unit_field_engine '(' unit_field_in_container ')' opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($4), std::move($2), {}, std::move($6), std::move($9), std::move($7), std::move($8), std::move($10), __loc__); }
 
 unit_field_in_container
               : ctor opt_unit_field_args opt_attributes
                                                  { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
-              | scoped_id opt_unit_field_args opt_attributes
-                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
-              | base_type opt_unit_field_args opt_attributes
-                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
+              | scoped_id opt_unit_field_args opt_unit_field_repeat opt_attributes
+                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), std::move($3), {}, std::move($4), {}, {}, __loc__); }
+              | base_type opt_unit_field_repeat opt_unit_field_args opt_attributes
+                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($3), std::move($2), {}, std::move($4), {}, {}, __loc__); }
 
 unit_wide_hook : ON unit_hook_id unit_hook       { $$ = spicy::type::unit::item::UnitHook(std::move($2), std::move($3), __loc__); }
 

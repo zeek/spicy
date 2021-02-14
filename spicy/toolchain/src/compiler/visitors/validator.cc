@@ -22,7 +22,9 @@ using hilti::util::fmt;
 namespace {
 
 // Helper to validate that a type is parseable.
-hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::item::Field& f) {
+hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::Field& f) {
+    pt = type::effectiveType(pt);
+
     if ( pt.isA<type::Bitfield>() )
         return hilti::Nothing();
 
@@ -114,15 +116,9 @@ hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::
 
     // A vector can be parsed either through a sub-item, or through a type.
 
-    if ( auto item = f.vectorItem() ) {
+    if ( auto item = f.item() ) {
         if ( auto item_field = item->tryAs<spicy::type::unit::item::Field>() ) {
-            const auto& item_attrs = item_field->attributes();
-
-            if ( AttributeSet::has(item_attrs, "&chunked") )
-                return hilti::result::Error("vector elements cannot have &chunked attribute");
-
-            if ( AttributeSet::has(item_attrs, "&convert") )
-                return hilti::result::Error("vector elements cannot have &convert attribute");
+            // Nothing to check here right now.
         }
 
         return hilti::Nothing();
@@ -439,6 +435,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
         auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
         auto repeat = f.repeatCount();
+        auto is_sub_item = p.parent().isA<spicy::type::unit::item::Field>();
 
         if ( count_attr && (repeat && ! repeat->type().isA<type::Null>()) )
             error("cannot have both `[..]` and &count", p);
@@ -461,10 +458,16 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 return;
             }
 
-            // Check that parsing type is supported.
-            if ( auto rc = isParseableType(f.parseType(), f); ! rc ) {
-                error(rc.error(), p);
+            if ( f.originalType().isA<type::Vector>() && is_sub_item ) {
+                error("use [] syntax to parse vectors", p);
                 return;
+            }
+
+            if ( is_sub_item ) {
+                if ( auto rc = isParseableType(f.parseType(), f); ! rc ) {
+                    error(rc.error(), p);
+                    return;
+                }
             }
         }
     }
