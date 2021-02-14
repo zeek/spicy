@@ -53,7 +53,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
         }
 
         // Add hooks.
-        auto addHookDeclaration = [&](bool foreach) {
+        auto addHookDeclaration = [&](const auto& f, bool foreach) {
             if ( auto hook_decl = cg->compileHook(unit, f.id(), {f}, foreach, false, {}, {}, {}, f.meta()) ) {
                 auto nf =
                     hilti::type::struct_::Field(hook_decl->id().local(), hook_decl->function().type(), {}, f.meta());
@@ -68,14 +68,17 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
         };
 
         if ( f.emitHook() ) {
-            addHookDeclaration(false);
+            addHookDeclaration(f, false);
+
+            if ( f.isContainer() )
+                addHookDeclaration(f, true);
 
             for ( auto& h : f.hooks() )
                 addHookImplementation(h);
         }
 
-        if ( f.isContainer() )
-            addHookDeclaration(true);
+        if ( auto x = f.item() )
+            dispatch(*x);
     }
 
     void operator()(const spicy::type::unit::item::Switch& f, const position_t /* p */) {

@@ -372,7 +372,7 @@ public:
     void parseError(const std::string& fmt, std::vector<Expression> args, const Meta& location);
 
     /** Called when a field has been updated. */
-    void newValueForField(const type::unit::item::Field& field, const Expression& value);
+    void newValueForField(const production::Meta& meta, const Expression& value, const Expression& dd);
 
     /**
      * Signal that new values for fields are reported through custom logic,
@@ -390,7 +390,18 @@ public:
      * Called when a container item has been parsed. Returns a boolean
      * expression that true if container parsing is to continue.
      */
-    Expression newContainerItem(const type::unit::item::Field& field, const Expression& self, const Expression& item);
+    Expression newContainerItem(const type::unit::item::Field& field, const Expression& self, const Expression& item,
+                                bool need_value);
+
+    /**
+     * Applies a field's `&convert` expression to a value, and returns the
+     * converted result. If the field does not have that attribute set, returns
+     * the original value. If destination is given, also saves the result to
+     * that destination (and then it might not need create a tmp to store the
+     * result in).
+     */
+    Expression applyConvertExpression(const type::unit::item::Field& field, const Expression& value,
+                                      std::optional<Expression> dst = {});
 
     /**
      * Trims the input's beginning to the current parsing position,

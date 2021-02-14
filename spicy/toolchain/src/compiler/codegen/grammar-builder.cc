@@ -29,11 +29,8 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
     hilti::util::Cache<std::string, Production> cache;
 
     auto currentField() { return fields.back(); }
-
     void pushField(CurrentField f) { fields.emplace_back(f); }
-
     void popField() { fields.pop_back(); }
-
     bool haveField() { return ! fields.empty(); }
 
     std::optional<Production> productionForItem(std::reference_wrapper<hilti::Node> node) {
@@ -119,13 +116,23 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         if ( auto c = n.ctor() ) {
             prod = productionForCtor(*c, n.id());
 
-            if ( n.parseType().isA<type::Vector>() || n.parseType().isA<type::List>() )
+            if ( n.isContainer() )
                 prod = productionForLoop(prod, p);
         }
-        else if ( n.vectorItem() ) {
-            auto sub = productionForItem(p.node.as<spicy::type::unit::item::Field>().vectorItemNode());
-            assert(sub);
-            prod = productionForLoop(std::move(*sub), p);
+        else if ( n.item() ) {
+            auto sub = productionForItem(p.node.as<spicy::type::unit::item::Field>().itemNode());
+            auto m = sub->meta();
+
+            if ( n.isContainer() )
+                prod = productionForLoop(std::move(*sub), p);
+            else {
+                if ( sub->meta().field() ) {
+                    auto field = sub->meta().fieldRef();
+                    *field = type::unit::item::Field::setForwarding(field->as<spicy::type::unit::item::Field>(), true);
+                }
+
+                prod = production::Enclosure(cg->uniquer()->get(n.id()), *sub);
+            }
         }
         else
             prod = productionForType(n.parseType(), n.id());
@@ -133,6 +140,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         auto m = prod.meta();
         m.setField(NodeRef(currentField().second), true);
         prod.setMeta(std::move(m));
+
         return prod;
     }
 
@@ -281,13 +289,13 @@ Result<Nothing> GrammarBuilder::run(const type::Unit& unit, Node* node, CodeGen*
 
     g.setRoot(*root);
 
-    if ( auto r = g.finalize(); ! r )
-        return r.error();
-
     if ( hilti::logger().isEnabled(spicy::logging::debug::Grammar) ) {
         hilti::logging::Stream dbg(spicy::logging::debug::Grammar);
         g.printTables(dbg, true);
     }
+
+    if ( auto r = g.finalize(); ! r )
+        return r.error();
 
     _grammars[id] = std::move(g);
     return Nothing();

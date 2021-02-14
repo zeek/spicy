@@ -104,7 +104,7 @@ struct VisitorPassInit : public hilti::visitor::PreOrder<void, VisitorPassInit> 
         }
 
         auto ns = cg->compileUnit(nu, false);
-        auto attrs = AttributeSet::add(t.attributes(), Attribute("&on-heap"));
+        auto attrs = AttributeSet({Attribute("&on-heap")});
         auto nd = hilti::declaration::Type(nt.id(), ns, attrs, nt.linkage(), nt.meta());
         replaceNode(&p, nd);
     }
@@ -409,18 +409,23 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
     if ( debug && ! options().debug )
         return {};
 
+    bool is_container = false;
     std::optional<Type> original_field_type;
 
     if ( field ) {
         if ( ! field->get().parseType().isA<type::Void>() )
             original_field_type = field->get().originalType();
+
+        is_container = field->get().isContainer();
     }
     else {
         // Try to locate field by ID.
         if ( auto i = unit.field(id.local()) ) {
             auto f = i->as<type::unit::item::Field>();
-            if ( ! f.parseType().isA<type::Void>() )
+            if ( ! f.parseType().isA<type::Void>() ) {
+                is_container = f.isContainer();
                 original_field_type = f.originalType();
+            }
         }
     }
 
@@ -431,7 +436,10 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
     else if ( original_field_type ) {
         params.push_back({ID("__dd"), hilti::type::Auto(), hilti::type::function::parameter::Kind::In, {}});
 
-        if ( original_field_type->isA<type::RegExp>() )
+        // Pass on captures for fields of type regexp, which are the only
+        // ones they have it (for vector of regexps, it wouldn't be clear what
+        // to bind to).
+        if ( original_field_type->isA<type::RegExp>() && ! is_container )
             params.push_back({ID("__captures"),
                               builder::typeByID("hilti::Captures"),
                               hilti::type::function::parameter::Kind::In,

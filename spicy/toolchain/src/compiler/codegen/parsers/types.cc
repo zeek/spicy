@@ -207,9 +207,10 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                     pushBuilder(have_data, [&]() {
                         builder()->addAssign(target, state().cur);
                         pb->advanceInput(builder::size(state().cur));
+                        auto value = pb->applyConvertExpression(*meta.field(), target);
 
                         if ( meta.field() && ! meta.container() )
-                            pb->newValueForField(*meta.field(), target);
+                            pb->newValueForField(meta, value, target);
                     });
 
                     auto at_eod = builder()->addIf(builder::not_(builder::id("more_data")));
@@ -292,7 +293,7 @@ Expression ParserBuilder::_parseType(const Type& t, const production::Meta& meta
                                      bool is_try) {
     assert(! is_try || (t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>()));
 
-    if ( auto e = Visitor(this, meta, dst, is_try).dispatch(t) )
+    if ( auto e = Visitor(this, meta, dst, is_try).dispatch(type::effectiveType(t)) )
         return std::move(*e);
 
     hilti::logger().internalError(fmt("codegen: type parser did not return expression for '%s'", t));

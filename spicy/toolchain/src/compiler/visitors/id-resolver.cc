@@ -25,6 +25,7 @@ namespace {
 
 inline const hilti::logging::DebugStream Resolver("resolver");
 
+// Turns an unresolved field into a resolved field.
 template<typename T>
 auto resolveField(const type::unit::item::UnresolvedField& u, const T& t) {
     auto field = type::unit::item::Field(u.fieldID(), std::move(t), u.engine(), u.arguments(), u.repeatCount(),
@@ -47,7 +48,7 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
         modified = true;
     }
 
-    void operator()(const type::unit::item::UnresolvedField& u, position_t p) {
+    void replaceUnresolvedField(const type::unit::item::UnresolvedField& u, position_t p) {
         if ( auto id = u.unresolvedID() ) {
             auto resolved = hilti::scope::lookupID<hilti::Declaration>(*id, p, "field");
 
@@ -79,7 +80,7 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
                 return;
             }
 
-            p.node.addError(hilti::util::fmt("field value must be a constant or type, but is a %s",
+            p.node.addError(hilti::util::fmt("field value must be a constant or type (but is a %s)",
                                              resolved->first->as<hilti::Declaration>().displayName()));
         }
 
@@ -93,8 +94,10 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
             replaceNode(&p, resolveField(u, *i), __LINE__);
 
         else
-            hilti::logger().internalError("no known typw for unresolved field");
+            hilti::logger().internalError("no known type for unresolved field", p.node.location());
     }
+
+    void operator()(const type::unit::item::UnresolvedField& u, position_t p) { replaceUnresolvedField(u, p); }
 
     void operator()(const type::Unit& n, position_t p) {
         if ( auto t = p.parent().tryAs<hilti::declaration::Type>();
@@ -117,14 +120,14 @@ struct Visitor2 : public hilti::visitor::PostOrder<void, Visitor2> {
     }
 
     void operator()(const hilti::expression::Keyword& n, position_t p) {
-        if ( n.kind() == hilti::expression::keyword::Kind::DollarDollar && ! n.hasType() ) {
+        if ( n.kind() == hilti::expression::keyword::Kind::DollarDollar && ! n.isSet() ) {
             std::optional<Type> dd;
 
             if ( auto f = p.findParent<hilti::Function>() ) {
                 for ( const auto& p : f->get().type().parameters() ) {
                     if ( p.id() == ID("__dd") ) {
                         // Inside a free function that defines a "__dd" parameter; use it.
-                        dd = hilti::type::Computed(hilti::builder::id("__dd"));
+                        dd = type::Computed(hilti::builder::id("__dd"));
                         break;
                     }
                 }

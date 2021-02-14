@@ -49,14 +49,16 @@ Type spicy::type::unit::item::Field::parseType() const {
 Type spicy::type::unit::item::Field::itemType() const {
     if ( auto convert = convertExpression() ) {
         return type::Computed(convert->first, [](Node& n) -> Type {
-            auto& e = n.as<Expression>();
+            auto t = type::effectiveType(n.as<Expression>().type());
+            if ( t.isA<type::Unknown>() )
+                return t;
 
             // If there's list comprehension, morph the type into a vector.
             // Assignment will transparently work.
-            if ( e.isA<hilti::expression::ListComprehension>() )
-                return e.as<hilti::expression::ListComprehension>().vectorType();
+            if ( auto x = t.tryAs<type::List>() )
+                return hilti::type::Vector(x->elementType(), x->meta());
 
-            return e.type();
+            return t;
         });
     }
 
@@ -84,9 +86,6 @@ std::optional<std::pair<Expression, bool>> spicy::type::unit::item::Field::conve
     if ( auto convert = AttributeSet::find(attributes(), "&convert") )
         return std::make_pair(*convert->valueAs<Expression>(), true);
 
-    // The original unit type may have been replaced with the generated struct
-    // already, to which the unit builder will have copied to attribute.
-
     auto t = parseType();
 
     if ( auto x = t.tryAs<type::ValueReference>() )
@@ -97,6 +96,8 @@ std::optional<std::pair<Expression, bool>> spicy::type::unit::item::Field::conve
             return std::make_pair(*convert->valueAs<Expression>(), false);
     }
 
+    // The original unit type may have been replaced with the generated struct
+    // already.
     if ( auto x = t.tryAs<type::Struct>(); x && x->originalNode() ) {
         if ( auto y = x->originalNode()->tryAs<type::Unit>() ) {
             if ( auto convert = AttributeSet::find(y->attributes(), "&convert") )
