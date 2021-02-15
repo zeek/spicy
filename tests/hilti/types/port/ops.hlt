@@ -7,17 +7,22 @@ import hilti;
 
 global p1 = 80/tcp;
 global p2 = 123/udp;
+global p3 = port(1, hilti::Protocol::TCP);
 
 hilti::print(p1);
 hilti::print(p2);
+hilti::print(p3);
 hilti::print(p1.protocol());
 hilti::print(p2.protocol());
+hilti::print(p3.protocol());
 
 assert p1 == 80/tcp;
 assert p1 != p2;
+assert p3 == 1/tcp;
 
 assert p1.protocol() == hilti::Protocol::TCP;
 assert p2.protocol() == hilti::Protocol::UDP;
+assert p3.protocol() == hilti::Protocol::TCP;
 assert p1.protocol() != p2.protocol();
 
 }

@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/ast/builder/declaration.h>
 #include <hilti/ast/ctors/all.h>
 #include <hilti/ast/expressions/all.h>
 #include <hilti/ast/types/id.h>
@@ -338,5 +339,15 @@ inline Expression expect_type(Expression e, Type expected, const Meta& m = Meta(
 inline Expression library_type_value(Expression e, ID library_type, const Meta& m = Meta()) {
     return expression::TypeWrapped(e, hilti::type::UnresolvedID(std::move(library_type), m), m);
 }
+
+inline auto port(Expression port, Expression protocol, const Meta& m = Meta()) {
+    return hilti::expression::BuiltinFunction(
+        "port", "hilti::rt::Port", hilti::type::Port(),
+        hilti::builder::parameters(hilti::builder::parameter(hilti::ID("port"), hilti::type::UnsignedInteger(16)),
+                                   hilti::builder::parameter(hilti::ID("protocol"),
+                                                             hilti::builder::typeByID("hilti::Protocol"))),
+        std::vector<Expression>{std::move(port), std::move(protocol)}, m);
+}
+
 
 } // namespace hilti::builder
