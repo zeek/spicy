@@ -1,4 +1,13 @@
 
+0.4.0-1415 | 2021-02-16 10:29:53 +0000
+
+  * GH-726: $$ wasn't accessible from inside an `&until-including`
+    expression. (Robin Sommer, Corelight)
+
+  * GH-740: May address the unstable behavior by rewriting the code
+    surrrounding the `&while` parsing (but keeping semantics the
+    same). (Robin Sommer, Corelight)
+
 0.4.0-1412 | 2021-02-16 10:07:45 +0000
 
   * Activate CI for Debian 10 on master. (Robin Sommer, Corelight)
