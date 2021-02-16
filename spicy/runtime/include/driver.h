@@ -30,8 +30,10 @@ public:
      * @param type of parsing; this determines how subsequent chunks of input
      * data are handled (stream-wise vs independent blocks)
      *
-     * @param parser parser to use; can be left unset to either not perform
-     * any parsing at all, or set it later through `setParser()`.
+     * @param parser parser to use; can be left unset to either not perform any
+     * parsing at all, or set it later through `setParser()`; only parsers that
+     * do not take any unit parameters are supported, otherwise a
+     * `InvalidUnitType`  exception will be thrown at runtime.
      */
     ParsingState(ParsingType type, const Parser* parser = nullptr) : _type(type), _parser(parser) {}
 
@@ -42,8 +44,10 @@ public:
     bool hasParser() const { return _parser != nullptr; }
 
     /**
-     * Explicitly sets a parser to use. Once stream-based matching has
-     * started, changing a parser won't have any effect.
+     * Explicitly sets a parser to use. Once stream-based matching has started,
+     * changing a parser won't have any effect. Only parsers that do not take
+     * any unit parameters are supported, otherwise a `InvalidUnitType`
+     * exception will be thrown at runtime.
      */
     void setParser(const Parser* parser) { _parser = parser; }
 
@@ -163,6 +167,9 @@ private:
 };
 
 } // namespace driver
+
+/** Exception thrown when a unit type is requested for parsing that isn't useable. */
+HILTI_EXCEPTION(InvalidUnitType, UserException);
 
 /**
  * Runtime driver to retrieve and feed Spicy parsers.

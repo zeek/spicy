@@ -261,7 +261,8 @@ int main(int argc, char** argv) {
                 if ( ! parser )
                     fatalError(parser.error());
 
-                driver.processInput(**parser, in, driver.opt_increment);
+                if ( auto x = driver.processInput(**parser, in, driver.opt_increment); ! x )
+                    fatalError(x.error());
             }
         }
 

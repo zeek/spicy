@@ -1,0 +1,17 @@
+# @TEST-EXEC-FAIL: spicy-driver %INPUT >output </dev/null >>output 2>&1
+# @TEST-EXEC: spicy-driver -F test.dat %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Top = unit(length: uint32) {
+    a: bytes &eod;
+};
+
+@TEST-START-FILE test.dat
+!spicy-batch v1
+@begin id1 stream Test::Top
+@data id1 2
+ab
+@end id1
+@TEST-END-FILE

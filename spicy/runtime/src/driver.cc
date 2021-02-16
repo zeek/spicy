@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/init.h>
 
@@ -28,6 +29,8 @@ using namespace spicy::rt;
 #define DRIVER_DEBUG(...)
 #define DRIVER_DEBUG_STATS(...)
 #endif
+
+HILTI_EXCEPTION_IMPL(InvalidUnitType);
 
 inline static auto pretty_print_number(uint64_t n) {
     if ( n > 1024 * 1024 * 1024 )
@@ -142,6 +145,10 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
     if ( ! hilti::rt::isInitialized() )
         return Error("runtime not initialized");
 
+    if ( ! parser.parse3 )
+        return Error(
+            fmt("unit type '%s' cannot be used as external entry point because it requires arguments", parser.name));
+
     char buffer[4096];
     hilti::rt::ValueReference<hilti::rt::Stream> data;
     std::optional<hilti::rt::Resumable> r;
@@ -232,6 +239,11 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                 auto input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                 input->freeze();
 
+                if ( ! _parser->parse1 )
+                    throw InvalidUnitType(
+                        fmt("unit type '%s' cannot be used as external entry point because it requires arguments",
+                            _parser->name));
+
                 _resumable = _parser->parse1(input, {});
                 if ( ! *_resumable )
                     hilti::rt::internalError("block-based parsing yielded");
@@ -255,6 +267,11 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     _input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                     if ( eod )
                         (*_input)->freeze();
+
+                    if ( ! _parser->parse1 )
+                        throw InvalidUnitType(
+                            fmt("unit type '%s' cannot be used as external entry point because it requires arguments",
+                                _parser->name));
 
                     _resumable = _parser->parse1(*_input, {});
                 }
@@ -339,7 +356,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
                 _total_sessions++;
             }
             else
-                DRIVER_DEBUG(hilti::rt::fmt("no parser for ID %s, skipping", id));
+                DRIVER_DEBUG(hilti::rt::fmt("no valid parser for ID %s, skipping", id));
         }
         else if ( m[0] == "@data" ) {
             // @begin <id> <size>>p
