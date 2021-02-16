@@ -9,9 +9,9 @@ public type Top = unit(length: uint32) {
 };
 
 @TEST-START-FILE test.dat
-!spicy-batch v1
-@begin id1 stream Test::Top
+!spicy-batch v2
+@begin-flow id1 stream Test::Top
 @data id1 2
 ab
-@end id1
+@end-flow id1
 @TEST-END-FILE

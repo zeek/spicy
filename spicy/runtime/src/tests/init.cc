@@ -42,7 +42,7 @@ TEST_CASE("init") {
     }
 
     SUBCASE("single parser") {
-        const Parser parser("Parser", Parse1Function(), Parse2Function<int>(), Parse3Function(), nullptr,
+        const Parser parser("Parser", Parse1Function(), Parse2Function<int>(), Parse3Function(), nullptr, nullptr,
                             "Parser: description", {MIMEType("foo/bar")},
                             {ParserPort{{hilti::rt::Port(4040, hilti::rt::Protocol::TCP), Direction::Both}}});
         detail::globalState()->parsers.push_back(&parser);
@@ -64,10 +64,10 @@ TEST_CASE("init") {
     }
 
     SUBCASE("multiple parsers") {
-        const Parser parser1("Parser1", Parse1Function(), Parse2Function<int>(), Parse3Function(), nullptr,
+        const Parser parser1("Parser1", Parse1Function(), Parse2Function<int>(), Parse3Function(), nullptr, nullptr,
                              "Parser1: description", {MIMEType("foo/bar")},
                              {ParserPort{{hilti::rt::Port(4040, hilti::rt::Protocol::TCP), Direction::Originator}}});
-        const Parser parser2("Parser2", Parse1Function(), Parse2Function<int>(), Parse3Function(), nullptr,
+        const Parser parser2("Parser2", Parse1Function(), Parse2Function<int>(), Parse3Function(), nullptr, nullptr,
                              "Parser2: description", {MIMEType("foo/*")},
                              {ParserPort{{hilti::rt::Port(4040, hilti::rt::Protocol::TCP), Direction::Responder}}});
         detail::globalState()->parsers.push_back(&parser1);

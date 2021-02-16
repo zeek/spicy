@@ -2,9 +2,13 @@
 
 #pragma once
 
+#include <vector>
+
+#include <hilti/ast/builder/expression.h>
 #include <hilti/ast/operator.h>
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/bytes.h>
+#include <hilti/ast/types/computed.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/stream.h>
 
@@ -127,5 +131,38 @@ Aborts parsing at the current position and returns back to the most recent
     }
 END_METHOD
 
+static inline auto contextResult(bool is_const) {
+    return [=](const std::vector<Expression>& /* orig_ops */,
+               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+        if ( resolved_ops.empty() )
+            return type::DocOnly("<context>&");
+
+        return type::Computed(hilti::builder::member(hilti::builder::id("self"), "__context"), is_const);
+    };
+}
+
+BEGIN_METHOD(unit, ContextConst)
+    auto signature() const {
+        return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
+                                           .result = contextResult(true),
+                                           .id = "context",
+                                           .args = {},
+                                           .doc = R"(
+Returns a reference to the `%context` instance associated with the unit.
+)"};
+    }
+END_METHOD
+
+BEGIN_METHOD(unit, ContextNonConst)
+    auto signature() const {
+        return hilti::operator_::Signature{.self = spicy::type::Unit(type::Wildcard()),
+                                           .result = contextResult(false),
+                                           .id = "context",
+                                           .args = {},
+                                           .doc = R"(
+Returns a reference to the `%context` instance associated with the unit.
+)"};
+    }
+END_METHOD
 
 } // namespace spicy::operator_

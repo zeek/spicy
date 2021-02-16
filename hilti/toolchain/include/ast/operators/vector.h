@@ -71,6 +71,18 @@ Appends *x* to the end of the vector.
     }
 END_METHOD
 
+BEGIN_METHOD(vector, PopBack)
+    auto signature() const {
+        return Signature{.self = type::Vector(type::Wildcard()),
+                         .result = type::Void(),
+                         .id = "pop_back",
+                         .args = {},
+                         .doc = R"(
+Removes the last element from the vector, which must be non-empty.
+)"};
+    }
+END_METHOD
+
 BEGIN_METHOD(vector, Front)
     auto signature() const {
         return Signature{.self = type::constant(type::Vector(type::Wildcard())),

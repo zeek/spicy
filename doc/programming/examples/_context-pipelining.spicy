@@ -1,0 +1,34 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+# We wrap the state into a tuple to make it easy to add more attributes if needed later.
+type Pending = tuple<pending: vector<bytes>>;
+
+public type Requests = unit {
+    %context = Pending;
+
+    : Request[] foreach { self.context().pending.push_back($$.cmd); }
+};
+
+public type Replies = unit {
+    %context = Pending;
+
+    : Reply[] foreach {
+        if ( |self.context().pending| ) {
+            print "%s -> %s" % (self.context().pending.back(), $$.response);
+            self.context().pending.pop_back();
+        }
+        else
+            print "<missing request> -> %s", $$.response;
+      }
+};
+
+type Request = unit {
+    cmd: /[A-Za-z]+/;
+    : b"\n";
+};
+
+type Reply = unit {
+    response: /[0-9]+/;
+    : b"\n";
+};

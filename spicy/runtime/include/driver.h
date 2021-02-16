@@ -5,6 +5,7 @@
 #include <iostream>
 #include <optional>
 #include <string>
+#include <utility>
 
 #include <hilti/rt/result.h>
 
@@ -34,8 +35,11 @@ public:
      * parsing at all, or set it later through `setParser()`; only parsers that
      * do not take any unit parameters are supported, otherwise a
      * `InvalidUnitType`  exception will be thrown at runtime.
+     *
+     * @param context context to make available to unit instance during parsing
      */
-    ParsingState(ParsingType type, const Parser* parser = nullptr) : _type(type), _parser(parser) {}
+    ParsingState(ParsingType type, const Parser* parser = nullptr, std::optional<UnitContext> context = {})
+        : _type(type), _parser(parser), _context(std::move(context)) {}
 
     /**
      * Returns false if a parser has neither been passed into the constructor
@@ -48,8 +52,16 @@ public:
      * changing a parser won't have any effect. Only parsers that do not take
      * any unit parameters are supported, otherwise a `InvalidUnitType`
      * exception will be thrown at runtime.
+     *
+     * @param parser parser to use; can be left unset to either not perform
+     * any parsing at all, or set it later through `setParser()`.
+     *
+     * @param context context to make available to unit instance during parsing
      */
-    void setParser(const Parser* parser) { _parser = parser; }
+    void setParser(const Parser* parser, std::optional<UnitContext> context = {}) {
+        _parser = parser;
+        _context = std::move(context);
+    }
 
     /**
      * Returns true if parsing has finished due to either: regularly reaching
@@ -126,9 +138,10 @@ protected:
 private:
     State _process(size_t size, const char* data, bool eod = true);
 
-    ParsingType _type;     /**< type of parsing */
-    const Parser* _parser; /**< parser to use, or null if not specified */
-    bool _skip = false;    /**< true if all further input is to be skipped */
+    ParsingType _type;                   /**< type of parsing */
+    const Parser* _parser;               /**< parser to use, or null if not specified */
+    bool _skip = false;                  /**< true if all further input is to be skipped */
+    std::optional<UnitContext> _context; /** context to make available to parsing unit */
 
     // State for stream matching only
     bool _done = false; /**< flag to indicate that stream matching has completed (either regularly or irregularly) */
@@ -150,10 +163,14 @@ public:
      *
      * @param id textual ID to associate with state for use in debug messages
      *
+     * @param cid if the state is associated with one side of a
+     * connection, a textual ID representing that connection.
+     *
      * @param driver driver owning this state
      */
-    ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, Driver* driver)
-        : ParsingState(type, parser), _id(id), _driver(driver) {}
+    ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, std::optional<std::string> cid,
+                          std::optional<UnitContext> context, Driver* driver)
+        : ParsingState(type, parser, std::move(context)), _id(id), _cid(cid), _driver(driver) {}
 
     /** Returns the textual ID associated with the state. */
     const auto& id() const { return _id; }
@@ -163,7 +180,16 @@ protected:
 
 private:
     std::string _id;
+    std::optional<std::string> _cid;
     Driver* _driver;
+};
+
+/** Connection state collecting parsing state for the two side. */
+struct ConnectionState {
+    std::string orig_id;
+    std::string resp_id;
+    ParsingStateForDriver* orig_state = nullptr;
+    ParsingStateForDriver* resp_state = nullptr;
 };
 
 } // namespace driver
@@ -217,7 +243,7 @@ public:
                                                           int increment = 0);
 
     /**
-     * Processes a batch of input streams given in Spicy's custom batch
+     * Processes a batch of input data given in Spicy's custom batch
      * format. See the documentation of `spicy-driver` for a reference of the
      * batch format.
      *
@@ -231,9 +257,10 @@ public:
 
 private:
     void _debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& data);
-    void _debugStats(size_t current_sessions);
+    void _debugStats(size_t current_flows, size_t current_connections);
 
-    uint64_t _total_sessions = 0;
+    uint64_t _total_flows = 0;
+    uint64_t _total_connections = 0;
 };
 
 } // namespace spicy::rt

@@ -1,0 +1,97 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: spicy-driver -F test.dat test.hlto >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Running spicy-driver in batch mode with the bi-directional connection semanticis, giving each side access to the other
+
+module Test;
+
+type Connection = tuple<orig: Requests&, resp: Replies&>;
+
+public type Requests = unit {
+    %context = Connection;
+
+    on %init { self.context().orig = self; }
+
+    : (Request(self))[];
+
+    on %done {
+        if ( self.context().resp )
+            print "replies seen", self.context().resp.count;
+        else
+            print "no replies seen";
+    }
+
+    var count: uint64;
+};
+
+public type Replies = unit {
+    %context = Connection;
+
+    on %init { self.context().resp = self; }
+
+    : (Reply(self))[];
+
+    on %done {
+        if ( self.context().orig )
+            print "requests seen", self.context().orig.count;
+        else
+            print "no requests seen";
+    }
+
+    var count: uint64;
+};
+
+public type Request = unit(inout reqs: Requests) {
+    cmd: /[A-Za-z]+/;
+    : b"\n";
+
+    on %done { ++reqs.count; }
+};
+
+public type Reply = unit(inout replies: Replies) {
+    response: /[0-9]+/;
+    : b"\n";
+
+    on %done { ++replies.count; }
+};
+
+@TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-conn cid1 stream cid1-orig Test::Requests cid1-resp Test::Replies
+@data cid1-orig 4
+get
+
+@begin-conn cid2 stream cid2-orig Test::Requests cid2-resp Test::Replies
+@data cid1-orig 4
+put
+
+@data cid1-orig 4
+msg
+
+@data cid1-resp 4
+100
+
+@data cid2-orig 4
+LST
+
+@data cid1-resp 4
+200
+
+@data cid1-orig 4
+end
+
+@data cid2-orig 4
+CAT
+
+@data cid2-resp 4
+555
+
+@data cid1-resp 4
+300
+
+@end-conn cid1
+@data cid2-resp 4
+666
+
+@end-conn cid2

@@ -20,6 +20,10 @@
     Returns the first element of the vector. It throws an exception if the
     vector is empty.
 
+.. spicy:method:: vector::pop_back vector pop_back False void ()
+
+    Removes the last element from the vector, which must be non-empty.
+
 .. spicy:method:: vector::push_back vector push_back False void (x: <any>)
 
     Appends *x* to the end of the vector.

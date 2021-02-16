@@ -16,11 +16,11 @@
 [spicy-driver] [id2] block: |56|
 [spicy-driver] [id1] end of data
 [spicy-driver] [id1] parsing finished
-[spicy-driver] sessions: current=1 total=2
+[spicy-driver] state: current_flows=1 total_flows=2 current_connections=0 total_connections=0
 [spicy-driver] memory  : XXX
-[spicy-driver] sessions: current=0 total=2
+[spicy-driver] state: current_flows=0 total_flows=2 current_connections=0 total_connections=0
 [spicy-driver] memory  : XXX
-[spicy-driver] sessions: current=0 total=2
+[spicy-driver] state: current_flows=0 total_flows=2 current_connections=0 total_connections=0
 [spicy-driver] memory  : XXX
 [libspicy] shutting down runtime
 [libspicy] destroying global state

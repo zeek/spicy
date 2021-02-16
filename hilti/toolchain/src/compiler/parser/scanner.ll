@@ -102,6 +102,7 @@ enum                  return token::ENUM;
 error                 return token::ERROR;
 exception             return token::EXCEPTION;
 extern                return token::EXTERN;
+extern-no-suspend     return token::EXTERN_NO_SUSPEND;
 for                   return token::FOR;
 from                  return token::FROM;
 function              return token::FUNCTION;

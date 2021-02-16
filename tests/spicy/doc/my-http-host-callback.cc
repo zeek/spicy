@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     stream->freeze();
 
     // Feed data.
-    hlt::MyHTTP::RequestLine::parse1(stream, {});
+    hlt::MyHTTP::RequestLine::parse1(stream, {}, {});
 
     // Wrap up runtime library.
     hilti::rt::done();

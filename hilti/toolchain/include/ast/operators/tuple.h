@@ -26,7 +26,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, Index)
         return ops[0].type().as<type::Tuple>().types()[i.value()];
     }
 
-    bool isLhs() const { return false; }
+    bool isLhs() const { return true; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Tuple(type::Wildcard())}, {.type = type::UnsignedInteger(64)}};
@@ -62,7 +62,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
         return elem->second;
     }
 
-    bool isLhs() const { return false; }
+    bool isLhs() const { return true; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Tuple(type::Wildcard())}, {.type = type::Member(type::Wildcard()), .doc = "<id>"}};

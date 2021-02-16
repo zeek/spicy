@@ -143,6 +143,7 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token EXCEPTION "exception"
 %token EXPORT "export"
 %token EXTERN "extern"
+%token EXTERN_NO_SUSPEND "extern-no-suspend"
 %token FILE "file"
 %token FOR "for"
 %token FROM "from"
@@ -393,8 +394,8 @@ func_flavor     : METHOD                         { $$ = hilti::type::function::F
                 | HOOK                           { $$ = hilti::type::function::Flavor::Hook; }
 
 opt_func_cc     : EXTERN                         { $$ = hilti::function::CallingConvention::Extern; }
+                | EXTERN_NO_SUSPEND              { $$ = hilti::function::CallingConvention::ExternNoSuspend; }
                 | /* empty */                    { $$ = hilti::function::CallingConvention::Standard; }
-
 
 opt_func_params : func_params                    { $$ = std::move($1); }
                | /* empty */                     { $$ = std::vector<hilti::type::function::Parameter>{}; }

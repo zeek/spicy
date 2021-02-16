@@ -64,11 +64,14 @@ void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& dat
                      cached_stacks, max_stacks));
 }
 
-void Driver::_debugStats(size_t current_sessions) {
-    auto num_sessions = pretty_print_number(current_sessions);
-    auto total_sessions = pretty_print_number(_total_sessions);
+void Driver::_debugStats(size_t current_flows, size_t current_connections) {
+    auto num_flows = pretty_print_number(current_flows);
+    auto total_flows = pretty_print_number(_total_flows);
+    auto num_connections = pretty_print_number(current_connections);
+    auto total_connections = pretty_print_number(_total_connections);
 
-    DRIVER_DEBUG(fmt("sessions: current=%s total=%s", num_sessions, total_sessions));
+    DRIVER_DEBUG(fmt("state: current_flows=%s total_flows=%s current_connections=%s total_connections=%s", num_flows,
+                     total_flows, num_connections, total_connections));
 
     auto stats = hilti::rt::resource_usage();
     auto memory_heap = pretty_print_number(stats.memory_heap);
@@ -170,7 +173,7 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
 
         if ( ! r ) {
             DRIVER_DEBUG(fmt("beginning parsing input (eod=%s)", data->isFrozen()));
-            r = parser.parse3(unit, data, {});
+            r = parser.parse3(unit, data, {}, {});
         }
         else {
             DRIVER_DEBUG(fmt("resuming parsing input (eod=%s)", data->isFrozen()));
@@ -231,6 +234,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
         return Done;
     }
 
+
     try {
         switch ( _type ) {
             case ParsingType::Block: {
@@ -244,7 +248,15 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                         fmt("unit type '%s' cannot be used as external entry point because it requires arguments",
                             _parser->name));
 
-                _resumable = _parser->parse1(input, {});
+                if ( _parser->context_new ) {
+                    if ( _context )
+                        DRIVER_DEBUG("context was provided");
+                    else
+                        DRIVER_DEBUG("no context provided");
+                }
+
+                _resumable = _parser->parse1(input, {}, _context);
+
                 if ( ! *_resumable )
                     hilti::rt::internalError("block-based parsing yielded");
 
@@ -264,6 +276,14 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                 if ( ! _input ) {
                     // First chunk.
                     DRIVER_DEBUG("first data chunk", size, data);
+
+                    if ( _parser->context_new ) {
+                        if ( _context )
+                            DRIVER_DEBUG("context was provided");
+                        else
+                            DRIVER_DEBUG("no context provided");
+                    }
+
                     _input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                     if ( eod )
                         (*_input)->freeze();
@@ -273,7 +293,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                             fmt("unit type '%s' cannot be used as external entry point because it requires arguments",
                                 _parser->name));
 
-                    _resumable = _parser->parse1(*_input, {});
+                    _resumable = _parser->parse1(*_input, {}, _context);
                 }
 
                 else {
@@ -320,10 +340,30 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
     std::string magic;
     std::getline(in, magic);
 
-    if ( magic != std::string("!spicy-batch v1") )
-        return hilti::rt::result::Error("input is not a Spicy batch file");
+    if ( magic != std::string("!spicy-batch v2") )
+        return hilti::rt::result::Error("input is not a v2 Spicy batch file");
 
-    std::unordered_map<std::string, driver::ParsingStateForDriver> states;
+    std::unordered_map<std::string, driver::ParsingStateForDriver> flows;
+    std::unordered_map<std::string, driver::ConnectionState> connections;
+
+    // Helper to add flows to the map.
+    auto create_state = [&](driver::ParsingType type, const std::string& parser_name, const std::string& id,
+                            std::optional<std::string> cid, std::optional<UnitContext> context) {
+        if ( auto parser = lookupParser(parser_name) ) {
+            if ( ! context )
+                context = (*parser)->createContext();
+
+            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, cid, context, this));
+            if ( x.second )
+                _total_flows++;
+
+            return std::make_pair(x.first, std::move(context));
+        }
+        else {
+            DRIVER_DEBUG(hilti::rt::fmt("no parser for ID %s, skipping", id));
+            return std::make_pair(flows.end(), std::optional<UnitContext>{});
+        }
+    };
 
     while ( in.good() && ! in.eof() ) {
         std::string cmd;
@@ -334,10 +374,10 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             continue;
 
         auto m = hilti::rt::split(cmd);
-        if ( m[0] == "@begin" ) {
-            // @begin <id> <parser> <type>
+        if ( m[0] == "@begin-flow" ) {
+            // @begin-flow <id> <parser> <type>
             if ( m.size() != 4 )
-                return hilti::rt::result::Error("unexpected number of argument for @begin");
+                return hilti::rt::result::Error("unexpected number of argument for @begin-flow");
 
             auto id = std::string(m[1]);
             auto parser_name = std::string(m[3]);
@@ -351,15 +391,63 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             else
                 return hilti::rt::result::Error(hilti::rt::fmt("unknown session type '%s'", m[2]));
 
-            if ( auto parser = lookupParser(parser_name) ) {
-                states.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, this));
-                _total_sessions++;
-            }
+
+            create_state(type, parser_name, id, {}, {});
+        }
+        else if ( m[0] == "@begin-conn" ) {
+            // @begin-conn <conn-id> <type> <orig-id> <orig-parser> <resp-id> <resp-parser>
+            if ( m.size() != 7 )
+                return hilti::rt::result::Error("unexpected number of argument for @begin-conn");
+
+            auto cid = std::string(m[1]);
+            auto orig_id = std::string(m[3]);
+            auto orig_parser_name = std::string(m[4]);
+            auto resp_id = std::string(m[5]);
+            auto resp_parser_name = std::string(m[6]);
+
+            driver::ParsingType type;
+
+            if ( m[2] == "stream" )
+                type = driver::ParsingType::Stream;
+            else if ( m[2] == "block" )
+                type = driver::ParsingType::Block;
             else
-                DRIVER_DEBUG(hilti::rt::fmt("no valid parser for ID %s, skipping", id));
+                return hilti::rt::result::Error(hilti::rt::fmt("unknown session type '%s'", m[2]));
+
+            if ( connections.find(cid) != connections.end() ) {
+                // already exists, ignore
+                DRIVER_DEBUG(hilti::rt::fmt("connection %s exists, skipping", cid));
+                continue;
+            }
+
+            driver::ParsingStateForDriver* orig_state = nullptr;
+            driver::ParsingStateForDriver* resp_state = nullptr;
+
+            std::optional<UnitContext> context;
+
+            if ( auto [x, ctx] = create_state(type, orig_parser_name, orig_id, cid, context); x != flows.end() ) {
+                orig_state = &x->second;
+                context = std::move(ctx);
+            }
+
+            if ( auto [x, ctx] = create_state(type, resp_parser_name, resp_id, cid, context); x != flows.end() )
+                resp_state = &x->second;
+
+            if ( ! (orig_state && resp_state) ) {
+                // cannot get parsers, ignore
+                flows.erase(orig_id);
+                flows.erase(resp_id);
+                continue;
+            }
+
+            connections[cid] = driver::ConnectionState{.orig_id = orig_id,
+                                                       .resp_id = resp_id,
+                                                       .orig_state = orig_state,
+                                                       .resp_state = resp_state};
+            _total_connections++;
         }
         else if ( m[0] == "@data" ) {
-            // @begin <id> <size>>p
+            // @data <id> <size>>
             // [data]\n
             if ( m.size() != 3 )
                 return hilti::rt::result::Error("unexpected number of argument for @data");
@@ -374,8 +462,8 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( in.eof() || in.fail() )
                 return hilti::rt::result::Error("premature end of @data");
 
-            auto s = states.find(id);
-            if ( s != states.end() ) {
+            auto s = flows.find(id);
+            if ( s != flows.end() ) {
                 try {
                     s->second.process(size, data);
                 } catch ( const hilti::rt::Exception& e ) {
@@ -383,23 +471,49 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
                 }
             }
         }
-        else if ( m[0] == "@end" ) {
-            // @end <id>
+        else if ( m[0] == "@end-flow" ) {
+            // @end-flow <id>
             if ( m.size() != 2 )
-                return hilti::rt::result::Error("unexpected number of argument for @end");
+                return hilti::rt::result::Error("unexpected number of argument for @end-flow");
 
             auto id = std::string(m[1]);
 
-            auto s = states.find(id);
-            if ( s != states.end() ) {
+            auto s = flows.find(id);
+            if ( s != flows.end() ) {
                 try {
                     s->second.finish();
                 } catch ( const hilti::rt::Exception& e ) {
                     std::cout << hilti::rt::fmt("error for ID %s: %s\n", id, e.what());
                 }
 
-                states.erase(s);
-                DRIVER_DEBUG_STATS(states.size());
+                flows.erase(s);
+                DRIVER_DEBUG_STATS(flows.size(), connections.size());
+            }
+        }
+        else if ( m[0] == "@end-conn" ) {
+            // @end-conn <cid>
+            if ( m.size() != 2 )
+                return hilti::rt::result::Error("unexpected number of argument for @end-conn");
+
+            auto cid = std::string(m[1]);
+
+            if ( auto s = connections.find(cid); s != connections.end() ) {
+                try {
+                    s->second.orig_state->finish();
+                } catch ( const hilti::rt::Exception& e ) {
+                    std::cout << hilti::rt::fmt("error for ID %s: %s\n", s->second.orig_id, e.what());
+                }
+
+                try {
+                    s->second.resp_state->finish();
+                } catch ( const hilti::rt::Exception& e ) {
+                    std::cout << hilti::rt::fmt("error for ID %s: %s\n", s->second.resp_id, e.what());
+                }
+
+                flows.erase(s->second.orig_id);
+                flows.erase(s->second.resp_id);
+                connections.erase(s);
+                DRIVER_DEBUG_STATS(flows.size(), connections.size());
             }
         }
         else
@@ -407,7 +521,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
     }
 
 
-    DRIVER_DEBUG_STATS(states.size());
+    DRIVER_DEBUG_STATS(flows.size(), connections.size());
 
     return hilti::rt::Nothing();
 }

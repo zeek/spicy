@@ -78,11 +78,11 @@ Batch input
 -----------
 
 ``spicy-driver`` provides a batch input mode for processing multiple
-interleaved input streams in parallel, mimicking how host applications
+interleaved input flows in parallel, mimicking how host applications
 like Zeek would be employing Spicy parsers for processing many
 sessions concurrently. The batch input must be prepared in a specific
 format (see below) that provides embedded meta information about the
-contained streams of input. The easiest way to generate such a batch
+contained flows of input. The easiest way to generate such a batch
 is :download:`a Zeek script coming with Spicy
 </_static/record-spicy-batch.zeek>`. If you run Zeek with this script
 on a PCAP trace, it will record the contained TCP and UDP sessions
@@ -114,33 +114,58 @@ Spicy source code would need to provide a public unit with property
 
 In case you want to create batches yourself, we document the batch
 format in the following. A batch needs to start with a line
-``!spicy-batch v1<NL>``, followed by lines with commands of the form
-``@<tag> <arguments><NL>``. All commands refer to a stream of input
-through a unique, free-form ID. The following commands are supported:
+``!spicy-batch v2<NL>``, followed by lines with commands of the form
+``@<tag> <arguments><NL>``.
 
-``@begin ID TYPE PARSER<NL>``
-    Initializes a new input stream for parsing, associating the unique
-    ID ``ID`` with it. ``TYPE`` must be either ``stream`` for
+There are two types of input that the batch format can represent: (1)
+individual, uni-directional flows; and (2) bi-directional connections
+consisting in turn of one flow per side. The type is determined
+through an initial command: ``@begin-flow`` starts a flow flow, and
+``@begin-conn`` starts a connection. Either form introduces a unique,
+free-form ID that subsequent commands will then refer to. The
+following commands are supported:
+
+``@begin-flow FID TYPE PARSER<NL>``
+    Initializes a new input flow for parsing, associating the unique
+    ID ``FID`` with it. ``TYPE`` must be either ``stream`` for
     stream-based parsing (think: TCP), or ``block`` for parsing each
     data block independent of others (think: UDP). ``PARSER`` is the
-    name of the Spicy parser to use for parsing this input stream,
+    name of the Spicy parser to use for parsing this input flow,
     given in the same form as with ``spicy-driver``'s ``--parser``
     option (i.e., either as a unit name, a ``%port``, or a
     ``%mime-type``).
 
-``@data ID SIZE<NL>``
-    A block of data for the input stream ``ID``. This command must be
+``@begin-conn CID TYPE ORIG_FID ORIG_PARSER RESP_FID RESP_PARSER<NL>``
+    Initializes a new input connection for parsing, associating the
+    unique connection ID ``CID`` with it. ``TYPE`` must be either
+    ``stream`` for stream-based parsing (think: TCP), or ``block`` for
+    parsing each data block independent of others (think: UDP).
+    ``ORIG_FID`` is separate unique ID for the originator-side flow,
+    and ``ORIG_PARSER`` is the name of the Spicy parser to use for
+    parsing that flow. ``RESP_FID`` and ``RESP_PARSER`` work
+    accordingly for the responder-side flow. The parsers can be given
+    in the same form as with ``spicy-driver``'s ``--parser`` option
+    (i.e., either as a unit name, a ``%port``, or a ``%mime-type``).
+
+``@data FID SIZE<NL>``
+    A block of data for the input flow ``FID``. This command must be
     followed directly by binary data of length ``SIZE``, plus a final
     newline character. The data represents the next chunk of input for
-    the corresponding parsing stream. ``@data`` can be used only
-    inside corresponding ``@start`` and ``@end`` commands bracketing
-    it.
+    the corresponding flow. ``@data`` can be used only inside
+    corresponding ``@begin-*`` and ``@end-*`` commands bracketing the
+    flow ID.
 
-``@end ID<NL>``
-    Finalizes parsing of the input stream associated with ``ID``,
+``@end-flow FID<NL>``
+    Finalizes parsing of the input flow associated with ``FID``,
     releasing all state. This must come only after a corresponding
-    ``@begin`` command, and every ``@begin`` must eventually be
-    followed by an ``@end``.
+    ``@begin-flow`` command, and every ``@begin-flow`` must eventually
+    be followed by an ``@end-flow``.
+
+``@end-conn CID<NL>``
+    Finalizes parsing the input connection associated with ``CID``,
+    releasing all state (including for its two flows). This must come
+    only after a corresponding ``@begin-conn`` command, and every
+    ``@begin-conn`` must eventually be followed by an ``@end-end``.
 
 .. _spicy-dump:
 

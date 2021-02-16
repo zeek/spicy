@@ -1,0 +1,87 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: HILTI_DEBUG=spicy-driver:libspicy spicy-driver -F test.dat -U test.hlto >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: grep -q "^# user_time" .stderr
+# @TEST-EXEC: test "$BUILD" = "release" || TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff .stderr
+#
+# @TEST-DOC: Running spicy-driver in batch mode with the bi-directional connection semantics
+
+module Test;
+
+type Connection = tuple<pending: vector<bytes>>;
+
+public type Requests = unit {
+    %context = Connection;
+    : (Request(self))[];
+};
+
+public type Replies = unit {
+    %context = Connection;
+    : (Reply(self))[];
+};
+
+public type Request = unit(inout reqs: Requests) {
+    cmd: /[A-Za-z]+/;
+    : b"\n";
+
+    on %done {
+        reqs.context().pending.push_back(self.cmd);
+        }
+};
+
+public type Reply = unit(inout replies: Replies) {
+    response: /[0-9]+/;
+    : b"\n";
+
+    on %done {
+        if ( |replies.context().pending| ) {
+            print "%s -> %s" % (replies.context().pending.back(), self.response);
+            replies.context().pending.pop_back();
+            }
+        else
+            print "<missing request> -> %s", self.response;
+    }
+};
+
+@TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-conn cid1 stream cid1-orig Test::Requests cid1-resp Test::Replies
+@data cid1-orig 4
+get
+
+@begin-conn cid2 stream cid2-orig Test::Requests cid2-resp Test::Replies
+@data cid1-orig 4
+put
+
+@data cid1-orig 4
+msg
+
+@data cid1-resp 4
+100
+
+@data cid2-orig 4
+LST
+
+@data cid1-resp 4
+200
+
+@data cid1-orig 4
+end
+
+@data cid2-orig 4
+CAT
+
+@data cid2-resp 4
+555
+
+@data cid1-resp 4
+300
+
+@data cid1-resp 4
+400
+
+@end-conn cid1
+@data cid2-resp 4
+666
+
+@end-conn cid2

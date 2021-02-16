@@ -339,6 +339,9 @@ public:
      */
     explicit StrongReference(const ValueReference<T>& t) : Base(t.asSharedPtr()) {}
 
+    /** Instantiate an unset reference. */
+    explicit StrongReference(std::nullptr_t) {}
+
     /**
      * Copy constructor. This copies the reference, not the value, which will
      * be shared afterwards.
@@ -441,6 +444,12 @@ public:
         return *this;
     }
 
+    /** Reset pointer. */
+    StrongReference& operator=(std::nullptr_t) noexcept {
+        Base::reset();
+        return *this;
+    }
+
 private:
     void _check() const {
         if ( ! *this )
@@ -478,6 +487,9 @@ public:
      * shared afterwards.
      */
     explicit WeakReference(const StrongReference<T>& t) : Base(t) {}
+
+    /** Instantiate an unset reference. */
+    explicit WeakReference(std::nullptr_t) {}
 
     /**
      * Copy constructor. This copies the reference, not the value, which will
@@ -582,6 +594,12 @@ public:
      */
     WeakReference& operator=(const StrongReference<T>& other) {
         Base::operator=(other);
+        return *this;
+    }
+
+    /** Reset pointer. */
+    WeakReference& operator=(std::nullptr_t) noexcept {
+        Base::reset();
         return *this;
     }
 

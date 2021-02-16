@@ -29,8 +29,8 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 86
-%expect-rr 144
+%expect 118
+%expect-rr 153
 
 %union {}
 %{
@@ -228,7 +228,7 @@ static int _field_width = 0;
 %type <id>                          local_id scoped_id dotted_id unit_hook_id
 %type <declaration>                 local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl
 %type <decls_and_stmts>             global_scope_items
-%type <type>                        base_type_no_attrs base_type type tuple_type struct_type enum_type unit_type bitfield_type
+%type <type>                        base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
 %type <ctor>                        ctor tuple struct_ regexp list vector map set
 %type <expression>                  expr tuple_elem member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
 %type <expressions>                 opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
@@ -298,9 +298,9 @@ module        : MODULE local_id ';'
 
 local_id      : IDENT                            { std::string name($1);
 
-                                                   if (name.find('-') != std::string::npos)
+                                                   if ( name.find('-') != std::string::npos)
                                                        hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot contain '-'", name), __loc__.location());
-                                                   if (name.substr(0, 2) == "__")
+                                                   if ( name.substr(0, 2) == "__" )
                                                        hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
 
                                                    $$ = hilti::ID(std::move(name), __loc__);
@@ -378,6 +378,7 @@ import_decl   : IMPORT local_id ';'              { $$ = hilti::declaration::Impo
 
 property_decl : PROPERTY ';'                     { $$ = hilti::declaration::Property(ID(std::move($1)), __loc__); }
               | PROPERTY '=' expr ';'            { $$ = hilti::declaration::Property(ID(std::move($1)), std::move($3), __loc__); }
+              | PROPERTY '=' base_type ';'       { $$ = hilti::declaration::Property(ID(std::move($1)), hilti::expression::Type_(std::move($3)), __loc__); }
               ;
 
 hook_decl     : ON unit_hook_id unit_hook        { ID unit = $2.namespace_();
@@ -536,7 +537,7 @@ stmt_expr     : expr                             { $$ = hilti::statement::Expres
 
 /* Types */
 
-base_type_no_attrs
+base_type_no_ref
               : ANY                              { $$ = hilti::type::Any(__loc__); }
               | ADDRESS                          { $$ = hilti::type::Address(__loc__); }
               | BOOL                             { $$ = hilti::type::Bool(__loc__); }
@@ -579,14 +580,17 @@ base_type_no_attrs
               | bitfield_type                    { $$ = std::move($1); }
               | unit_type                        { $$ = std::move($1); }
 
-              | type '&'                         { $$ = hilti::type::StrongReference(std::move($1), true, __loc__); }
               ;
 
-base_type     : base_type_no_attrs /* opt_attributes */
-                                                 { $$ = std::move($1); }
+/* We split this out from "base_type" because it can lead to ambigitious in some contexts. */
+reference_type: type '&'                         { $$ = hilti::type::StrongReference(std::move($1), true, __loc__); }
+
+base_type     : base_type_no_ref
+                reference_type: type '&'         { $$ = hilti::type::StrongReference(std::move($1), true, __loc__); }
               ;
 
 type          : base_type                        { $$ = std::move($1); }
+              | reference_type                   { $$ = std::move($1); }
               | scoped_id                        { $$ = hilti::type::UnresolvedID(std::move($1)); }
               ;
 
@@ -685,6 +689,8 @@ unit_sink     : SINK local_id opt_attributes ';' { $$ = spicy::type::unit::item:
 unit_property : PROPERTY opt_attributes ';'      { $$ = type::unit::item::Property(ID(std::move($1)), std::move($2), false, __loc__); };
               | PROPERTY '=' expr opt_attributes';'
                                                  { $$ = type::unit::item::Property(ID(std::move($1)), std::move($3), std::move($4), false, __loc__); };
+              | PROPERTY '=' base_type_no_ref ';'       { $$ = type::unit::item::Property(ID(std::move($1)), hilti::expression::Type_(std::move($3)), {}, false, __loc__); };
+
 
 unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  {   if ( $3.isA<type::Vector>() )

@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/ast/expressions/type.h>
+
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit-items/property.h>
@@ -79,6 +81,14 @@ public:
             types.push_back(c.as<unit::Item>().itemType());
 
         return types;
+    }
+
+    /** Returns the type set through ``%context`, if available. */
+    std::optional<Type> contextType() const {
+        if ( auto context = propertyItem("%context") )
+            return context->expression()->as<hilti::expression::Type_>().typeValue();
+        else
+            return {};
     }
 
     /**

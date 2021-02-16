@@ -1,0 +1,10 @@
+# @TEST-EXEC: spicy-driver -d %INPUT </dev/null
+#
+# @TEST-DOC: Running spicy-driver outside of batch mode should give unit a default initialized context instance.
+
+module Test;
+
+public type Foo = unit {
+    %context = bytes;
+    on %init { assert self.context() == b""; }
+};

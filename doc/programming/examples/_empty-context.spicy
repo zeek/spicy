@@ -1,0 +1,8 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+    %context = bytes;
+
+    on %init { print self.context(); }
+};

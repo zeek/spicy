@@ -30,6 +30,19 @@ TEST_CASE("back") {
     CHECK_EQ(xs.size(), 1u);
 }
 
+TEST_CASE("pop_back") {
+    Vector<int> xs;
+    CHECK_THROWS_WITH_AS(xs.pop_back(), "vector is empty", const IndexError&);
+
+    xs.push_back(1);
+    xs.push_back(2);
+    CHECK_EQ(xs.size(), 2u);
+    xs.pop_back();
+    CHECK_EQ(xs.size(), 1u);
+    xs.pop_back();
+    CHECK_EQ(xs.size(), 0u);
+}
+
 TEST_CASE("concat") {
     Vector<int> x({1});
     auto xs = x + x;

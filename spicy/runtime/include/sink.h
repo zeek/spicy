@@ -62,8 +62,8 @@ auto _connectUnit(UnitRef<U>& unit) {
     auto self = hilti::rt::ValueReference<U>::self(&*unit);
 
     auto& state = unit->__sink;
-    state = new sink::detail::State();                   // NOLINT
-    state->resumable = (*parse2)(self, state->data, {}); // Kick-off parsing with empty data.
+    state = new sink::detail::State();                       // NOLINT
+    state->resumable = (*parse2)(self, state->data, {}, {}); // Kick-off parsing with empty data.
     state->parser = &U::__parser;
     return state;
 }

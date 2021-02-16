@@ -193,6 +193,13 @@ public:
     Expression parseMethodExternalOverload3(const type::Unit& t);
 
     /**
+     * Returns an expression referencing a publically visible function
+     * instantiating a unit's `%context` type. If the unit does not set
+     * `%context`, the returned expression will evaluate to null at runtime.
+     */
+    Expression contextNewFunction(const type::Unit& t);
+
+    /**
      * Adds a unit's external parsing methods to the HILTI struct
      * corresponding to the parse object. Returns the modified type.
      */

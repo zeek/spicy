@@ -156,6 +156,13 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                                                AttributeSet({Attribute("&internal")})));
     }
 
+    if ( auto context = unit.contextType() ) {
+        auto attrs = AttributeSet({Attribute("&internal")});
+        auto ftype = hilti::type::StrongReference(*context);
+        auto f = hilti::type::struct_::Field(ID("__context"), ftype, std::move(attrs), unit.meta());
+        v.addField(std::move(f));
+    }
+
     add_hook("0x25_init", {});
     add_hook("0x25_done", {});
     add_hook("0x25_error", {});
@@ -249,11 +256,17 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
             parse3 = _pb.parseMethodExternalOverload3(unit);
         }
 
+        Expression context_new = builder::null();
+
+        if ( unit.contextType() )
+            context_new = _pb.contextNewFunction(unit);
+
         auto parser =
             builder::struct_({{ID("name"), builder::string(*unit.typeID())},
                               {ID("parse1"), parse1},
                               {ID("parse2"), _pb.parseMethodExternalOverload2(unit)},
                               {ID("parse3"), parse3},
+                              {ID("context_new"), context_new},
                               {ID("type_info"), builder::typeinfo(unit)},
                               {ID("description"), (description ? *description->expression() : builder::string(""))},
                               {ID("mime_types"),

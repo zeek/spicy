@@ -401,6 +401,16 @@ TEST_CASE("reset") {
     CHECK(ref2.isNull());
 }
 
+TEST_CASE("nullptr") {
+    auto r1 = StrongReference<int>(nullptr);
+    CHECK(r1.isNull());
+
+    auto r2 = StrongReference<int>(42);
+    CHECK_EQ(*r2, 42);
+    r2 = nullptr;
+    CHECK(r2.isNull());
+}
+
 TEST_CASE("fmt") {
     CHECK_EQ(fmt("%s", StrongReference<int>()), "Null");
     CHECK_EQ(fmt("%s", StrongReference<int>(42)), "42");
@@ -699,6 +709,17 @@ TEST_CASE("reset") {
         wref.reset();
         CHECK(wref.isNull());
     }
+}
+
+TEST_CASE("nullptr") {
+    auto r1 = WeakReference<int>(nullptr);
+    CHECK(r1.isNull());
+
+    const auto sref = StrongReference<int>(42);
+    auto r2 = WeakReference<int>(sref);
+    CHECK_EQ(*r2, 42);
+    r2 = nullptr;
+    CHECK(r2.isNull());
 }
 
 TEST_CASE("fmt") {
