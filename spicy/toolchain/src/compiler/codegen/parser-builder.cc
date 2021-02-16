@@ -1302,8 +1302,8 @@ Expression ParserBuilder::newContainerItem(const type::unit::item::Field& field,
     }
 
     else if ( auto a = AttributeSet::find(field.attributes(), "&while") ) {
-        run_hook();
         eval_condition(builder::not_(*a->valueAs<spicy::Expression>()));
+        run_hook();
         push_element();
     }
     else {
