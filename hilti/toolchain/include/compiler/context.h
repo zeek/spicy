@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <any>
 #include <map>
 #include <memory>
 #include <set>
@@ -12,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/any.h>
 #include <hilti/rt/filesystem.h>
 
 #include <hilti/ast/id.h>
@@ -60,7 +60,7 @@ struct Options {
     T getAuxOption(const std::string& key, T default_) const {
         auto i = _aux_options.find(key);
         if ( i != _aux_options.end() )
-            return std::any_cast<T>(i->second);
+            return hilti::rt::any_cast<T>(i->second);
         else
             return default_;
     }
@@ -88,7 +88,7 @@ struct Options {
     Result<Nothing> parseDebugAddl(const std::string& flags);
 
 private:
-    std::map<std::string, std::any> _aux_options;
+    std::map<std::string, hilti::rt::any> _aux_options;
 };
 
 namespace context {

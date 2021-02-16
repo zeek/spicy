@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <any>
 #include <csetjmp>
 #include <functional>
 #include <iostream>
@@ -13,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/any.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/lambda.h>
 #include <hilti/rt/types/reference.h>
@@ -146,7 +146,7 @@ public:
     Fiber& operator=(const Fiber&) = delete;
     Fiber& operator=(Fiber&&) = delete;
 
-    void init(Lambda<std::any(resumable::Handle*)> f) {
+    void init(Lambda<hilti::rt::any(resumable::Handle*)> f) {
         _result = {};
         _exception = nullptr;
         _function = std::move(f);
@@ -221,8 +221,8 @@ private:
 
     Type _type;
     State _state{State::Init};
-    std::optional<Lambda<std::any(resumable::Handle*)>> _function;
-    std::optional<std::any> _result;
+    std::optional<Lambda<hilti::rt::any(resumable::Handle*)>> _function;
+    std::optional<hilti::rt::any> _result;
     std::exception_ptr _exception;
 
     /** The underlying 3rdparty implementation of this fiber. */
@@ -325,8 +325,8 @@ public:
             return {};
         else {
             try {
-                return std::any_cast<const Result&>(*_result);
-            } catch ( const std::bad_any_cast& ) {
+                return hilti::rt::any_cast<const Result&>(*_result);
+            } catch ( const hilti::rt::bad_any_cast& ) {
                 throw InvalidArgument("mismatch in result type");
             }
         }
@@ -345,7 +345,7 @@ private:
 
     std::unique_ptr<detail::Fiber> _fiber;
     bool _done = false;
-    std::optional<std::any> _result;
+    std::optional<hilti::rt::any> _result;
 };
 
 namespace resumable::detail {

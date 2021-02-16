@@ -57,7 +57,7 @@ struct State {
  */
 template<typename U>
 auto _connectUnit(UnitRef<U>& unit) {
-    auto parse2 = std::any_cast<spicy::rt::Parse2Function<U>>(U::__parser.parse2);
+    auto parse2 = hilti::rt::any_cast<spicy::rt::Parse2Function<U>>(U::__parser.parse2);
 
     auto self = hilti::rt::ValueReference<U>::self(&*unit);
 

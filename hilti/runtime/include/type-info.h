@@ -245,7 +245,7 @@ public:
 private:
     const IterableType* _type = nullptr;
     Value _value;
-    std::optional<std::any> _cur;
+    std::optional<hilti::rt::any> _cur;
 };
 
 /**
@@ -298,9 +298,9 @@ public:
      * refers to.
      *
      */
-    using Accessor = std::tuple<std::optional<std::any> (*)(const Value&),    // begin()
-                                std::optional<std::any> (*)(const std::any&), // next()
-                                const void* (*)(const std::any&)>;            // deref()
+    using Accessor = std::tuple<std::optional<hilti::rt::any> (*)(const Value&),          // begin()
+                                std::optional<hilti::rt::any> (*)(const hilti::rt::any&), // next()
+                                const void* (*)(const hilti::rt::any&)>;                  // deref()
 
     /**
      * Constructor.
@@ -515,7 +515,7 @@ public:
 private:
     const Map* _type = nullptr;
     Value _value;
-    std::optional<std::any> _cur;
+    std::optional<hilti::rt::any> _cur;
 };
 
 /**
@@ -550,9 +550,9 @@ public:
      * Similar semantics as with `IterableType`, but with different type for
      * dereferenced value.
      */
-    using Accessor = std::tuple<std::optional<std::any> (*)(const Value&),                 // begin()
-                                std::optional<std::any> (*)(const std::any&),              // next()
-                                std::pair<const void*, const void*> (*)(const std::any&)>; // deref()
+    using Accessor = std::tuple<std::optional<hilti::rt::any> (*)(const Value&),                 // begin()
+                                std::optional<hilti::rt::any> (*)(const hilti::rt::any&),        // next()
+                                std::pair<const void*, const void*> (*)(const hilti::rt::any&)>; // deref()
 
     /**
      * Constructor.
@@ -586,23 +586,23 @@ public:
     template<typename K, typename V>
     static Accessor accessor() {
         return std::make_tuple(
-            [](const Value& v_) -> std::optional<std::any> { // begin()
+            [](const Value& v_) -> std::optional<hilti::rt::any> { // begin()
                 auto v = static_cast<const hilti::rt::Map<K, V>*>(v_.pointer());
                 if ( v->cbegin() != v->cend() )
                     return std::make_pair(v->cbegin(), v->cend());
                 else
                     return std::nullopt;
             },
-            [](const std::any& i_) -> std::optional<std::any> { // next()
-                auto i = std::any_cast<iterator_pair<K, V>>(i_);
+            [](const hilti::rt::any& i_) -> std::optional<hilti::rt::any> { // next()
+                auto i = hilti::rt::any_cast<iterator_pair<K, V>>(i_);
                 auto n = std::make_pair(++i.first, i.second);
                 if ( n.first != n.second )
                     return std::move(n);
                 else
                     return std::nullopt;
             },
-            [](const std::any& i_) -> std::pair<const void*, const void*> { // deref()
-                auto i = std::any_cast<iterator_pair<K, V>>(i_);
+            [](const hilti::rt::any& i_) -> std::pair<const void*, const void*> { // deref()
+                auto i = hilti::rt::any_cast<iterator_pair<K, V>>(i_);
                 return std::make_pair(&(*i.first).first, &(*i.first).second);
             });
     }
@@ -755,23 +755,23 @@ public:
     template<typename T>
     static Accessor accessor() {
         return std::make_tuple(
-            [](const Value& v_) -> std::optional<std::any> {
+            [](const Value& v_) -> std::optional<hilti::rt::any> {
                 auto v = static_cast<const hilti::rt::Set<T>*>(v_.pointer());
                 if ( v->begin() != v->end() )
                     return std::make_pair(v->begin(), v->end());
                 else
                     return std::nullopt;
             },
-            [](const std::any& i_) -> std::optional<std::any> {
-                auto i = std::any_cast<iterator_pair<T>>(i_);
+            [](const hilti::rt::any& i_) -> std::optional<hilti::rt::any> {
+                auto i = hilti::rt::any_cast<iterator_pair<T>>(i_);
                 auto n = std::make_pair(++i.first, i.second);
                 if ( n.first != n.second )
                     return std::move(n);
                 else
                     return std::nullopt;
             },
-            [](const std::any& i_) -> const void* {
-                auto i = std::any_cast<iterator_pair<T>>(i_);
+            [](const hilti::rt::any& i_) -> const void* {
+                auto i = hilti::rt::any_cast<iterator_pair<T>>(i_);
                 return &*i.first;
             });
     }
@@ -1080,23 +1080,23 @@ public:
     template<typename T, typename Allocator = std::allocator<T>>
     static Accessor accessor() {
         return std::make_tuple(
-            [](const Value& v_) -> std::optional<std::any> { // begin()
+            [](const Value& v_) -> std::optional<hilti::rt::any> { // begin()
                 auto v = static_cast<const hilti::rt::Vector<T, Allocator>*>(v_.pointer());
                 if ( v->begin() != v->end() )
                     return std::make_pair(v->begin(), v->end());
                 else
                     return std::nullopt;
             },
-            [](const std::any& i_) -> std::optional<std::any> { // next()
-                auto i = std::any_cast<iterator_pair<T, Allocator>>(i_);
+            [](const hilti::rt::any& i_) -> std::optional<hilti::rt::any> { // next()
+                auto i = hilti::rt::any_cast<iterator_pair<T, Allocator>>(i_);
                 auto n = std::make_pair(++i.first, i.second);
                 if ( n.first != n.second )
                     return std::move(n);
                 else
                     return std::nullopt;
             },
-            [](const std::any& i_) -> const void* { // deref()
-                auto i = std::any_cast<iterator_pair<T, Allocator>>(i_);
+            [](const hilti::rt::any& i_) -> const void* { // deref()
+                auto i = hilti::rt::any_cast<iterator_pair<T, Allocator>>(i_);
                 return &*i.first;
             });
     }

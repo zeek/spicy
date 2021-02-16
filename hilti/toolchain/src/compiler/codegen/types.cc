@@ -309,7 +309,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
     result_t operator()(const type::Address& n) { return CxxTypes{.base_type = "hilti::rt::Address"}; }
 
-    result_t operator()(const type::Any& n) { return CxxTypes{.base_type = "std::any"}; }
+    result_t operator()(const type::Any& n) { return CxxTypes{.base_type = "hilti::rt::any"}; }
 
     result_t operator()(const type::Bool& n) { return CxxTypes{.base_type = "hilti::rt::Bool"}; }
 
