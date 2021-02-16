@@ -30,7 +30,7 @@ public type ByteOrder = enum {
 ## Captures state for incremental regular expression matching.
 public type MatchState = __library_type("hilti::rt::regexp::MatchState");
 
-## Specifies a transport-layer prtocool.
+## Specifies a transport-layer protocol.
 public type Protocol = enum {
     TCP,
     UDP,
