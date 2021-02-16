@@ -91,8 +91,6 @@ To install Spicy execute::
 
 .. rubric:: Pre-built binaries
 
-.. todo:: Below links are broken at the moment. Please choose another installation method for the time being.
-
 We additionally provide pre-build nightly binaries for :download:`MacOS Catalina
 <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_catalina/packages/build/spicy-darwin.tar.gz>`
 and :download:`MacOS Big Sur
