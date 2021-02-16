@@ -40,6 +40,7 @@ public:
         : NodeBase({node::none}, std::move(m)), _kind(kind), _decl(d) {}
 
     keyword::Kind kind() const { return _kind; }
+    bool hasType() const { return _decl.has_value() || ! childs()[0].isA<type::Unknown>(); }
 
     bool operator==(const Keyword& other) const { return _kind == other._kind && type() == other.type(); }
 
