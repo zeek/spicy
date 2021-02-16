@@ -533,7 +533,7 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function ft, dec
         }
     };
 
-    auto cxx_id = id;
+    auto cxx_id = cxx::ID(id);
 
     if ( linkage == declaration::Linkage::Struct ) {
         // For method implementations, check if the ID is fully scoped with

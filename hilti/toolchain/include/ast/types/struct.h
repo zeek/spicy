@@ -121,6 +121,8 @@ public:
         _state().flags += type::Flag::NoInheritScope;
     }
 
+    auto hasFinalizer() const { return field("~finally").has_value(); }
+
     auto parameters() const { return childsOfType<type::function::Parameter>(); }
 
     std::vector<NodeRef> parameterNodes() {

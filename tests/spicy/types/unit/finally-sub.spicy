@@ -1,0 +1,23 @@
+# @TEST-EXEC: spicyc -j -o x.hlto %INPUT
+# @TEST-EXEC: ${SCRIPTS}/printf 'abcde' | spicy-driver x.hlto >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that %finally hook executes as expected with subunits.
+
+module Mini;
+
+import spicy;
+
+type Sub = unit {
+    on %init    { print "Sub init", self; }
+    x: uint8    { print "Sub %s" % self.x; }
+    on %error   { print "Sub error", self; }
+    on %finally { print "Sub finally", self; }
+};
+
+public type Foo = unit {
+    on %init    { print "Foo init", self; }
+    xs: Sub[];
+    on %error   { print "Foo error", self; }
+    on %finally { print "Foo finally", self; }
+};

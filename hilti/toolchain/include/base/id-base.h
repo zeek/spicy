@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <initializer_list>
 #include <string>
 #include <utility>
@@ -29,21 +30,26 @@ public:
     IDBase(const char* s) : _id(N(s)) {}
     explicit IDBase(std::string s) : _id(N(std::move(s))) {}
 
-    /** Concatenates multiple strings into a single ID, separating them with `::`. */
-    template<typename... T, typename enable = std::enable_if_t<(... && std::is_convertible_v<T, std::string>)>>
-    explicit IDBase(const T&... s) : _id(N(util::join<std::string>({s...}, "::"))) {}
+    /** Constructor that assumes the ID string has already been normalized. */
+    struct AlreadyNormalized {};
+    IDBase(std::string id, AlreadyNormalized /*unused*/) : _id(std::move(id)) {}
 
     /** Concatenates multiple strings into a single ID, separating them with `::`. */
-    IDBase(const std::initializer_list<std::string>& x) : _id(util::join(x, "::")) {}
+    template<typename... T, typename enable = std::enable_if_t<(... && std::is_convertible_v<T, std::string>)>>
+    explicit IDBase(const T&... s) : _id((util::join<std::string>({N(s)...}, "::"))) {}
+
+    /** Concatenates multiple strings into a single ID, separating them with `::`. */
+    IDBase(const std::initializer_list<std::string>& x)
+        : _id(util::join(util::transform(x, [](auto i) { return N(i); }), "::")) {}
 
     /** Returns the ID's full name as a string. */
     const auto& str() const { return _id; }
 
     /** Returns the ID's namespace. That's everything except the local part. */
-    Derived namespace_() const { return Derived(util::rsplit1(_id, "::").first); }
+    Derived namespace_() const { return Derived(util::rsplit1(_id, "::").first, AlreadyNormalized()); }
 
     /** Returns the ID local part. */
-    Derived local() const { return Derived(util::rsplit1(_id, "::").second); }
+    Derived local() const { return Derived(util::rsplit1(_id, "::").second, AlreadyNormalized()); }
 
     /** Returns true if the ID's value has length zero. */
     bool empty() const { return _id.empty(); }
@@ -61,7 +67,7 @@ public:
         if ( i < 0 )
             i = x.size() + i;
 
-        return Derived(i >= 0 && static_cast<size_t>(i) < x.size() ? x[i] : "");
+        return Derived(i >= 0 && static_cast<size_t>(i) < x.size() ? x[i] : "", AlreadyNormalized());
     }
 
     /**
@@ -72,7 +78,7 @@ public:
      * @param to one beyond last index to include
      */
     Derived sub(int from, int to) const {
-        return Derived(util::join(util::slice(util::split(_id, "::"), from, to), "::"));
+        return Derived(util::join(util::slice(util::split(_id, "::"), from, to), "::"), AlreadyNormalized());
     }
 
     /**
@@ -81,7 +87,7 @@ public:
      *
      * @param n number of path components to include
      */
-    Derived firstN(int n) const { return Derived(sub(0, -1 - n)); }
+    Derived firstN(int n) const { return Derived(sub(0, -1 - n), AlreadyNormalized()); }
 
     /**
      * Returns a new ID containing the a subpath of the ID, starting at the
@@ -89,7 +95,7 @@ public:
      *
      * @param n number of path components to include
      */
-    Derived lastN(int n) const { return Derived(sub(-1 - n, -1)); }
+    Derived lastN(int n) const { return Derived(sub(-1 - n, -1), AlreadyNormalized()); }
 
     /**
      * "Rebases" the ID relative to another one.
@@ -97,26 +103,26 @@ public:
      * If the ID already starts with `root`, the remaining part is returned.
      * If not, the returned value is `root` plus the ID.
      */
-    Derived relativeTo(const IDBase& root) const {
+    Derived relativeTo(const Derived& root) const {
         if ( _id == root._id )
             return Derived();
 
         if ( ! util::startsWith(_id, root._id + "::") )
-            return Derived(root, _id);
+            return Derived(root + _id, AlreadyNormalized());
 
-        return Derived(_id.substr(root._id.size() + 2));
+        return Derived(_id.substr(root._id.size() + 2), AlreadyNormalized());
     }
 
     /** Concantenates two IDs, separating them wiht `::`. */
     Derived operator+(const std::string& other) const {
-        Derived n(_id);
+        Derived n(_id, AlreadyNormalized());
         n += N(other);
         return n;
     }
 
     /** Concantenates two IDs, separating them wiht `::`. */
-    Derived operator+(const IDBase& other) const {
-        Derived n(_id);
+    Derived operator+(const Derived& other) const {
+        Derived n(_id, AlreadyNormalized());
         n += other;
         return n;
     }
@@ -134,7 +140,7 @@ public:
     }
 
     /** Appends an ID, separating it with `::`. */
-    Derived& operator+=(const IDBase& other) {
+    Derived& operator+=(const Derived& other) {
         if ( ! other._id.empty() ) {
             if ( other._id.empty() )
                 _id = other._id;
@@ -145,20 +151,14 @@ public:
         return static_cast<Derived&>(*this);
     }
 
-    bool operator==(const IDBase& other) const { return _id == other._id; };
-    bool operator!=(const IDBase& other) const { return _id != other._id; };
+    bool operator==(const Derived& other) const { return _id == other._id; };
+    bool operator!=(const Derived& other) const { return _id != other._id; };
     bool operator==(const std::string& other) const { return _id == N(other); }
     bool operator!=(const std::string& other) const { return _id != N(other); }
-    bool operator<(const IDBase& other) const { return _id < other._id; };
+    bool operator<(const Derived& other) const { return _id < other._id; };
 
     explicit operator bool() const { return ! empty(); }
     operator std::string() const { return _id; }
-
-protected:
-    struct AlreadyNormalized {};
-
-    /** no normalization */
-    IDBase(std::string id, AlreadyNormalized /*unused*/) : _id(std::move(id)) {}
 
 private:
     std::string _id;

@@ -407,6 +407,23 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
             if ( auto d = f.default_(); d && d->type() != f.type() )
                 error(fmt("type mismatch for &default expression, expecting type %s", f.type()), p);
+
+            if ( f.id().str() == "~finally" ) {
+                auto ft = f.type().tryAs<type::Function>();
+                if ( ! ft ) {
+                    error("~finally must be a hook", p);
+                    continue;
+                }
+
+                if ( ft->flavor() != type::function::Flavor::Hook )
+                    error("~finally must be a hook", p);
+
+                if ( ! ft->result().type().isA<type::Void>() )
+                    error("~finally must have return type void", p);
+
+                if ( ft->parameters().size() )
+                    error("~finally cannot take any parameters", p);
+            }
         }
 
         for ( const auto& param : n.parameters() ) {
