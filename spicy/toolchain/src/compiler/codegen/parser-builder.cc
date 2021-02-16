@@ -186,6 +186,11 @@ struct ProductionVisitor
                         pb->beforeHook();
                         builder()->addMemberCall(state().self, "__on_0x25_finally", {}, p.location());
                         pb->afterHook();
+
+                        if ( unit && unit->unitType().contextType() ) {
+                            // Unset the context to help break potential reference cycles.
+                            builder()->addAssign(builder::member(state().self, "__context"), builder::null());
+                        }
                     };
 
                     // Helper to wrap future code into a "try" block to catch
@@ -1455,10 +1460,6 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
 
     for ( const auto& s : unit.items<type::unit::item::Sink>() )
         builder()->addMemberCall(builder::member(state().self, s.id()), "close", {}, l);
-
-    if ( auto context = unit.contextType() )
-        // Unset the context to help break potential reference cycles.
-        builder()->addAssign(builder::member(state().self, "__context"), builder::null());
 }
 
 static Expression _filters(const ParserState& state) {
