@@ -1,4 +1,17 @@
 
+0.4.0-1412 | 2021-02-16 10:07:45 +0000
+
+  * Activate CI for Debian 10 on master. (Robin Sommer, Corelight)
+
+  * GH-629: Use linb::any instead of std::any across the code base.
+    (Robin Sommer, Corelight)
+
+  * GH-738: Fix crash in spicy-driver when used with units that
+    require parameters. (Robin Sommer, Corelight)
+
+  * GH-737: Fix non-converging AST in case of ambiguous ID usage.
+    (Robin Sommer, Corelight)
+
 0.4.0-1403 | 2021-02-09 13:23:55 +0000
 
   * Fix missing f-string in Spicy Pygments lexer for floats/reals (Jon

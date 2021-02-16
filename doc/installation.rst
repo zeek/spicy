@@ -46,6 +46,10 @@ debian-9
     :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian9/packages/build/spicy-linux.tar.gz>`,
     `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-9>`__
 
+debian-10
+    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian10/packages/build/spicy-linux.tar.gz>`,
+    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-10>`__
+
 fedora-32
     :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora32/packages/build/spicy-linux.tar.gz>`,
     `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-32>`__

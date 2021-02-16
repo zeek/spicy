@@ -523,8 +523,7 @@ docker_debian9_task:
     type: application/gzip
 
 docker_debian10_task:
-  # TODO(bbannier): Document this platform in doc/installation.rst once we enable it.
-  trigger_type: manual
+  skip: $CIRRUS_BRANCH != 'master'
   container:
     dockerfile: docker/Dockerfile.debian-10
     cpu: 4
