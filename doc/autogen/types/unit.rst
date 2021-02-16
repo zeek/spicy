@@ -56,6 +56,17 @@
     Usage of this method requires the unit to be declared with the
     `%random-access` property.
 
+.. spicy:method:: unit::position unit position False iterator<stream> ()
+
+    Returns an iterator to the current position in the unit's input
+    stream. If executed from inside a field hook, the position will
+    represent the first byte that the field has been parsed from. If this
+    method is called before the unit's parsing has begun, it will throw a
+    runtime exception.
+
+    Usage of this method requires the unit to be declared with the
+    `%random-access` property.
+
 .. spicy:method:: unit::set_input unit set_input False void (i: iterator<stream>)
 
     Moves the current parsing position to *i*. The iterator *i* must be

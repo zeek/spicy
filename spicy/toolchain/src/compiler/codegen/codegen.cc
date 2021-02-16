@@ -183,6 +183,10 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
         replaceNode(&p, builder::difference(cur, begin));
     }
 
+    result_t operator()(const operator_::unit::Position& n, position_t p) {
+        replaceNode(&p, builder::member(n.op0(), ID("__position")));
+    }
+
     result_t operator()(const operator_::unit::Input& n, position_t p) {
         auto begin = builder::deref(builder::member(n.op0(), ID("__begin")));
         replaceNode(&p, begin);
