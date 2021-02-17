@@ -621,7 +621,36 @@ syntax is a bit peculiar:
 Unit parameters follow the same passing conventions as :ref:`function
 parameters <functions>`. In particular, they are read-only by default.
 If the subunit wants to modify a parameter it receives, it needs
-to be declared as ``inout`` (e.g., ``Bar(inout s: string)``).
+to be declared as ``inout`` (e.g., ``Bar(inout foo: Foo)``
+
+.. note::
+
+    ``inout`` parameters need to be reference types which holds for other units
+    types, but currently not for basic types (:issue:`674`). In order to pass a
+    basic type as unit parameter it needs to be declared as a reference (e.g.,
+    ``string&``) and explicitly wrapped when being set:
+
+    .. spicy-code:: unit-params-string.spicy
+
+        module Test;
+
+        type X = unit(inout msg: string&) {
+            n : uint8 {
+              local s = "Parsed %d" % $$;
+              msg = new s;
+            }
+        };
+
+        global msg = new "Nothing parsed, yet";
+
+        public type Y = unit {
+            x: X(msg);
+            on %done { print msg; }
+        };
+
+    .. spicy-output:: unit-params-string.spicy
+        :exec: printf '\x2a' | spicy-driver %INPUT
+        :show-with: foo.spicy
 
 .. note::
 
