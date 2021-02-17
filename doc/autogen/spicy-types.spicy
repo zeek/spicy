@@ -55,7 +55,7 @@ Captures state for incremental regular expression matching.
 
 .. rubric:: ``spicy::Protocol``
 
-Specifies a transport-layer prtocool.
+Specifies a transport-layer protocol.
 
 .. spicy-code::
 

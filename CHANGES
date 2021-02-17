@@ -1,3 +1,9 @@
+0.4.0-1435 | 2021-02-17 11:07:03 +0100
+
+  * GH-723: Provide constructor for ports.
+
+    Closes #723. (Benjamin Bannier, Corelight)
+
 0.4.0-1430 | 2021-02-17 11:06:27 +0100
 
   * GH-731: Add unit `position` method.

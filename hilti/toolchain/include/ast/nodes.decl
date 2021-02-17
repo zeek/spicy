@@ -70,6 +70,7 @@ hilti::declaration::Property : isDeclaration
 hilti::declaration::Type : isDeclaration
 
 hilti::expression::Assign : isExpression
+hilti::expression::BuiltinFunction : isExpression
 hilti::expression::Coerced : isExpression
 hilti::expression::Ctor : isExpression
 hilti::expression::Deferred : isExpression

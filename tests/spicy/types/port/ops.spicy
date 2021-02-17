@@ -9,7 +9,9 @@ import spicy;
 
 global p1 = 80/tcp;
 global p2 = 123/udp;
+global p3 = port(1, spicy::Protocol::TCP);
 
 print p1;
 print p2;
-assert p1.protocol() == hilti::Protocol::TCP;
+print p3;
+assert p1.protocol() == spicy::Protocol::TCP;

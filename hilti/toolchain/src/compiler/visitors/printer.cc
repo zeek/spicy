@@ -409,6 +409,11 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const expression::Assign& n) { out << n.target() << " = " << n.source(); }
 
+    void operator()(const expression::BuiltinFunction& n) {
+        out << n.name() << "(" << util::join(util::transform(n.arguments(), [](auto& p) { return fmt("%s", p); }), ", ")
+            << ")";
+    }
+
     void operator()(const expression::Coerced& n) { out << n.expression(); }
 
     void operator()(const expression::Ctor& n) { out << n.ctor(); }

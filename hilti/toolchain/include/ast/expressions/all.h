@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/ast/expressions/assign.h>
+#include <hilti/ast/expressions/builtin-function.h>
 #include <hilti/ast/expressions/coerced.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/deferred.h>

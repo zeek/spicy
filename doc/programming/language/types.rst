@@ -256,6 +256,8 @@ associated transport-layer protocol.
 
 - ``443/tcp``, ``53/udp``
 
+- ``port(PORT, PROTOCOL)`` creates a ``port`` where ``PORT`` is a port number and ``PROTOCOL`` a :ref:`spicy::Protocol <spicy_protocol>`.
+
 .. include:: /autogen/types/port.rst
 
 .. _type_real:

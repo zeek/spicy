@@ -63,8 +63,8 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     Result<std::optional<std::vector<Expression>>> coerceCallArguments(Node* n, std::vector<Expression> exprs,
                                                                        std::vector<declaration::Parameter> params) {
         // Build a tuple to coerce expression according to an OperandList.
-        auto src = expression::Ctor(ctor::Tuple(exprs));
-        auto dst = type::OperandList::fromParameters(params);
+        auto src = expression::Ctor(ctor::Tuple(std::move(exprs)));
+        auto dst = type::OperandList::fromParameters(std::move(params));
 
         auto coerced = coerceExpression(src, type::constant(dst), CoercionStyle::TryAllForFunctionCall);
         if ( ! coerced )
@@ -399,6 +399,11 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
                 replaceNode(&p, std::move(m));
             }
         }
+    }
+
+    void operator()(const expression::BuiltinFunction& n, position_t p) {
+        if ( auto coerced = coerceCallArguments(&p.node, n.arguments(), n.parameters()); coerced && *coerced )
+            expression::BuiltinFunction::setArguments(n, **coerced);
     }
 
     void operator()(const expression::LogicalAnd& n, position_t p) {

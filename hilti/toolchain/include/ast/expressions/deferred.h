@@ -5,6 +5,7 @@
 #include <utility>
 
 #include <hilti/ast/expression.h>
+#include <hilti/ast/types/result.h>
 
 namespace hilti {
 namespace expression {
