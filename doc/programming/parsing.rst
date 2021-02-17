@@ -1407,6 +1407,10 @@ can use a set of built-in unit methods to control the current position:
     Returns the numerical offset of the current input position
     relative to position of the first byte fed into this unit.
 
+:spicy:method:`unit::position`
+    Returns iterator to the current input position in the stream fed
+    into this unit.
+
 For random access, you'd typically get the current position through
 ``input()``, subtract from it the desired number of bytes you want to
 back, and then use ``set_input`` to establish that new position. By

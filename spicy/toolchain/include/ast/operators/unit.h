@@ -36,6 +36,25 @@ property.
     }
 END_METHOD
 
+BEGIN_METHOD(unit, Position)
+    auto signature() const {
+        return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
+                                           .result = hilti::type::stream::Iterator(),
+                                           .id = "position",
+                                           .args = {},
+                                           .doc = R"(
+Returns an iterator to the current position in the unit's input stream. If
+executed from inside a field hook, the position will represent the first byte
+that the field has been parsed from. If this method is called before the unit's
+parsing has begun, it will throw a runtime exception.
+
+Usage of this method requires the unit to be declared with the `%random-access`
+property.
+)"};
+    }
+END_METHOD
+
+
 BEGIN_METHOD(unit, Input)
     auto signature() const {
         return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
