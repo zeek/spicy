@@ -196,6 +196,21 @@ public:
     }
 
     /**
+     * Retrieves all attributes with a given name from the set.
+     *
+     * @return all attributes with matching name
+     */
+    std::vector<Attribute> findAll(std::string_view tag) const {
+        std::vector<Attribute> result;
+
+        for ( auto& a : attributes() )
+            if ( a.tag() == tag )
+                result.push_back(a);
+
+        return result;
+    }
+
+    /**
      * If an attribute of a given name exists and has an expression value,
      * the value is coerced to a specified type. If not, nothing is done.
      *
@@ -280,6 +295,20 @@ public:
     static std::optional<Attribute> find(const std::optional<AttributeSet>& attrs, std::string_view tag) {
         if ( attrs )
             return attrs->find(tag);
+        else
+            return {};
+    }
+
+    /**
+     * Retrieves all attribute with a given name from a set, dealing correctly
+     * with an unset optional set.
+     *
+     * @param attrs set to inspect
+     * @return all attributes with matching name
+     */
+    static std::vector<Attribute> findAll(const std::optional<AttributeSet>& attrs, std::string_view tag) {
+        if ( attrs )
+            return attrs->findAll(tag);
         else
             return {};
     }
