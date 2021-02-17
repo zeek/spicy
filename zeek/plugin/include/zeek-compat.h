@@ -139,6 +139,7 @@ inline auto& GLOBAL_MODULE_NAME = ::GLOBAL_MODULE_NAME;
 namespace zeek {
 
 namespace plugin {
+using ::plugin::BifItem;
 using ::plugin::Configuration;
 using ::plugin::HookType;
 using ::plugin::Plugin;

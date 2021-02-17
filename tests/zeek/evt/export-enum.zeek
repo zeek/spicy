@@ -1,6 +1,13 @@
 # @TEST-REQUIRES: have-zeek-plugin
 #
-# @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace tupleenum.spicy ./tupleenum.evt %INPUT >output
+# @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace tupleenum.spicy ./tupleenum.evt %INPUT >>output
+#
+# Same, but precompiled:
+# @TEST-EXEC: spicyz -o x.hlto tupleenum.spicy ./tupleenum.evt
+# @TEST-EXEC: ${ZEEK} -r ${TRACES}/ssh-single-conn.trace x.hlto %INPUT >>output
+#
+# @TEST-EXEC: ${ZEEK} -NN x.hlto | grep TestEnum >>output
+#
 # @TEST-EXEC: btest-diff output
 
 event zeek_init() {
