@@ -1,0 +1,18 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x00\x00\x00\x03123' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Check fix for offset() from #709.
+
+module Test;
+
+public type Testing = unit {
+  length: uint32;
+  la: Sub(self.length);
+
+  on %done { print self; }
+};
+
+type Sub = unit(length: uint32) {
+  %random-access;
+  la: bytes &size=length-self.offset();
+};

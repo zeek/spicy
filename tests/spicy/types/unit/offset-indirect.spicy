@@ -12,7 +12,7 @@ public type Test = unit {
     on %done   { print self; }
 };
 
-type Sub = unit(t: Test, o: int64) {
+type Sub = unit(t: Test, o: uint64) {
     on %init   { assert t.offset() == o; }
     x: uint16  { assert t.offset() == o; }
     y: uint8;
