@@ -23,7 +23,13 @@ BEGIN_OPERATOR_CUSTOM(tuple, Index)
             return type::DocOnly("<type of element>");
 
         auto i = ops[1].as<expression::Ctor>().ctor().as<ctor::UnsignedInteger>();
-        return ops[0].type().as<type::Tuple>().types()[i.value()];
+
+        const auto& types = ops[0].type().as<type::Tuple>().types();
+
+        if ( types.size() <= i.value() )
+            return type::unknown;
+
+        return types[i.value()];
     }
 
     bool isLhs() const { return true; }
