@@ -217,13 +217,6 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 error("%filter does not accept an argument", p);
         }
 
-        else if ( i.id().str() == "%byte-order" ) {
-            if ( ! i.expression() )
-                error("%byte-order requires an expression", p);
-
-            // expression type is checked by code generater
-        }
-
         else if ( i.id().str() == "%description" ) {
             if ( ! i.expression() ) {
                 error("%description requires an argument", p);
@@ -408,6 +401,12 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                         if ( e->type() != type::unknown && e->type() != type::Bool() )
                             error(fmt("&requires expression must be of type bool, but is of type %d ", e->type()), p);
                     }
+                }
+
+                else if ( a.tag() == "&byte-order" ) {
+                    auto e = a.valueAs<Expression>();
+                    if ( ! e )
+                        error(e.error(), p);
                 }
 
                 else

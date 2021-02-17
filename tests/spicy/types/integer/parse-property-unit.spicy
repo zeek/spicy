@@ -5,8 +5,6 @@ module Mini;
 import spicy;
 
 public type test = unit {
-    %byte-order = spicy::ByteOrder::Little;
-
     f1: uint32;
     f2: uint32 &byte-order = spicy::ByteOrder::Little;
     f3: uint32 &byte-order = spicy::ByteOrder::Network;
@@ -18,4 +16,4 @@ public type test = unit {
         assert self.f3 == 0x01020304;
         assert self.f4 == 0x01020304;
     }
-};
+} &byte-order = spicy::ByteOrder::Little;

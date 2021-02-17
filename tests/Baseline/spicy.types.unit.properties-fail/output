@@ -5,9 +5,9 @@
 [error] <...>/properties-fail.spicy:12:5: %description requires a string argument
 [error] <...>/properties-fail.spicy:13:5: %random-access does not accept an argument
 [error] <...>/properties-fail.spicy:14:5: %filter does not accept an argument
-[error] <...>/properties-fail.spicy:15:5: %byte-order requires an expression
-[error] <...>/properties-fail.spicy:16:5: %mime-type requires an argument
-[error] <...>/properties-fail.spicy:17:5: %mime-type requires a string argument
-[error] <...>/properties-fail.spicy:18:5: %mime-type argument must follow "main/sub" form
-[error] <...>/properties-fail.spicy:19:5: unknown property '%unknown'
+[error] <...>/properties-fail.spicy:15:5: %mime-type requires an argument
+[error] <...>/properties-fail.spicy:16:5: %mime-type requires a string argument
+[error] <...>/properties-fail.spicy:17:5: %mime-type argument must follow "main/sub" form
+[error] <...>/properties-fail.spicy:18:5: unknown property '%unknown'
+[error] <...>/properties-fail.spicy:19:3: &byte-order requires an expression
 [error] spicyc: aborting after errors
