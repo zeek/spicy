@@ -1435,12 +1435,12 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     const auto& unit = state().unit.get();
 
     if ( success ) {
-        // We evaluate any "%requires" before running the final "%done" hook
+        // We evaluate any "&requires" before running the final "%done" hook
         // so that (1) that one can rely on the condition, and (2) we keep
         // running either "%done" or "%error".
-        for ( auto cond : unit.propertyItems("%requires") ) {
-            pushBuilder(builder()->addIf(builder::not_(*cond.expression())),
-                        [&]() { parseError("%requires failed", cond.meta()); });
+        for ( auto attr : AttributeSet::findAll(unit.attributes(), "&requires") ) {
+            auto cond = *attr.valueAs<Expression>();
+            pushBuilder(builder()->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", cond.meta()); });
         }
     }
 

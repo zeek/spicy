@@ -351,13 +351,12 @@ Example:
     :show-with: foo.spicy
     :expect-failure:
 
-One can also enforce conditions globally at the unit level through a
-property ``%requires = EXPR``. ``EXPR`` works similar as with the
-attribute: It will be evaluated once the unit has been full parsed,
-but before any ``%done`` hook executes. If ``EXPR`` returns ``False``,
-the unit's parsing process will abort with an error. As usual,
-``EXPR`` has access to the parsed instance through ``self``. More than
-one ``%requires`` property may be specified.
+One can also enforce conditions globally at the unit level through a attribute
+``&requires = EXPR``. ``EXPR`` will be evaluated once the unit has been fully
+parsed, but before any ``%done`` hook executes. If ``EXPR`` returns ``False``,
+the unit's parsing process will abort with an error. As usual, ``EXPR`` has
+access to the parsed instance through ``self``. More than one ``&requires``
+attribute may be specified.
 
 Example:
 
@@ -368,11 +367,10 @@ Example:
     import spicy;
 
     public type Foo = unit {
-        %requires = self.x < 5;
-
         x: int8;
         on %done { print self; }
-    };
+    } &requires = self.x < 5;
+
 
 .. spicy-output:: parse-requires-property.spicy 1
     :exec: printf '\001' | spicy-driver %INPUT

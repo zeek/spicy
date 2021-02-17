@@ -9,12 +9,10 @@ module Test;
 type E = enum { X = 1, Y = 2 };
 
 public type Foo = unit {
-    %requires = self.x < 5;
-    %requires = self.y == E::X;
-
     x: uint8;
     y: uint8 &convert=E($$);
 
     on %done { print "success", self; }
     on %error { print "error", self; }
-};
+} &requires = self.x < 5
+  &requires = self.y == E::X ;

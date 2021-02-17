@@ -4,8 +4,6 @@ module Test;
 import spicy;
 
 public type Foo = unit {
-    %requires = self.x < 5;
-
     x: int8;
     on %done { print self; }
-};
+} &requires = self.x < 5;

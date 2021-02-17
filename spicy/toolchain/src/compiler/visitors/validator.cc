@@ -263,13 +263,6 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 error("%port requires a port as its argument", p);
         }
 
-        else if ( i.id().str() == "%requires" ) {
-            if ( auto e = i.expression(); ! e )
-                error("%requires requires an expression", p);
-            else if ( e->type() != type::unknown && e->type() != type::Bool() )
-                error(fmt("%requires expression must be of type bool, but is of type %d ", e->type()), p);
-        }
-
         else if ( i.id().str() == "%context" ) {
             if ( auto e = i.expression(); ! e )
                 error("%context requires an argument", p);
@@ -406,6 +399,17 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                     if ( ! a.hasValue() )
                         error("&size must provide an expression", p);
                 }
+
+                else if ( a.tag() == "&requires" ) {
+                    auto e = a.valueAs<Expression>();
+                    if ( ! e )
+                        error(e.error(), p);
+                    else {
+                        if ( e->type() != type::unknown && e->type() != type::Bool() )
+                            error(fmt("&requires expression must be of type bool, but is of type %d ", e->type()), p);
+                    }
+                }
+
                 else
                     error(fmt("attribute %s not supported for unit types", a.tag()), p);
             }
