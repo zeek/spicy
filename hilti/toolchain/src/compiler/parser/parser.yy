@@ -29,7 +29,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 104
-%expect-rr 182
+%expect-rr 184
 
 %union {}
 %{
@@ -186,6 +186,7 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token PLUSPLUS "++"
 %token PORT "port"
 %token POW "**"
+%token PREINIT "preinit"
 %token PRIVATE "private"
 %token PUBLIC "public"
 %token STRONG_REF "strong_ref"
@@ -371,6 +372,7 @@ property_decl : PROPERTY ';'                     { $$ = hilti::declaration::Prop
 opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Linkage::Public; }
               | PRIVATE                          { $$ = hilti::declaration::Linkage::Private; }
               | INIT                             { $$ = hilti::declaration::Linkage::Init; }
+              | PREINIT                          { $$ = hilti::declaration::Linkage::PreInit; }
               | /* empty */                      { $$ = hilti::declaration::Linkage::Private; }
 
 /* Functions */

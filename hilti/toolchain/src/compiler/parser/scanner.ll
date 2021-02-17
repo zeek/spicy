@@ -127,6 +127,7 @@ net                   return token::NETWORK;
 new                   return token::NEW;
 optional              return token::OPTIONAL;
 port                  return token::PORT;
+preinit               return token::PREINIT;
 private               return token::PRIVATE;
 public                return token::PUBLIC;
 real                  return token::REAL;

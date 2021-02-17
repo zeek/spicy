@@ -20,6 +20,7 @@ namespace declaration {
 /** Linkage defining visibility/accessability of a declaration. */
 enum class Linkage {
     Init,    /// executes automatically at startup, not otherwise accessible
+    PreInit, /// executes automatically at load time, even before the runtime library is fully set up
     Struct,  /// method inside a method
     Private, /// accessible only locally
     Public,  /// accessible across modules
@@ -27,10 +28,8 @@ enum class Linkage {
 
 namespace detail {
 constexpr util::enum_::Value<Linkage> linkages[] = {
-    {Linkage::Struct, "method"},
-    {Linkage::Public, "public"},
-    {Linkage::Private, "private"},
-    {Linkage::Init, "init"},
+    {Linkage::Struct, "method"}, {Linkage::Public, "public"},   {Linkage::Private, "private"},
+    {Linkage::Init, "init"},     {Linkage::PreInit, "preinit"},
 };
 } // namespace detail
 

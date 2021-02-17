@@ -1,0 +1,33 @@
+# @TEST-EXEC: hiltic -j %INPUT >>output
+# @TEST-EXEC: echo >>output
+# @TEST-EXEC: hiltic -j -o a.hlto %INPUT && hiltic -j a.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that "preinit" and "init" functions are called in the expected order.
+
+module Test {
+
+import hilti;
+
+init function void test_init() {
+    hilti::print("init");
+}
+
+init function void test_init2() {
+    hilti::print("init");
+}
+
+preinit function void test_preinit() {
+    # Calling runtime functionality isn't well-defined from
+    # inside a preinit function but this happens to work.
+    hilti::print("preinit");
+}
+
+preinit function void test_preinit2() {
+    # Calling runtime functionality isn't well-defined from
+    # inside a preinit function but this happens to work.
+    hilti::print("preinit");
+}
+
+hilti::print("module init");
+}

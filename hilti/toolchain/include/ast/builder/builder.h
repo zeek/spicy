@@ -234,6 +234,8 @@ public:
                               TryProxy(this, lastStatement<statement::Try>()));
     }
 
+    bool empty() const { return _block.statements().empty() && _tmps.empty(); }
+
 private:
     friend class SwitchProxy;
 
