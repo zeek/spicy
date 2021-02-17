@@ -283,6 +283,8 @@ inline Expression expression(const Location& l) { return expression::Ctor(ctor::
 
 inline Expression expression(const Meta& m) { return expression::Ctor(ctor::String(m.location()), m); }
 
+inline Expression grouping(Expression e, Meta m = Meta()) { return expression::Grouping(std::move(e), std::move(m)); }
+
 inline Expression move(Expression e, Meta m = Meta()) { return expression::Move(std::move(e), std::move(m)); }
 
 inline Expression typeinfo(Type t, Meta m = Meta()) {
