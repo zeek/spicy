@@ -351,13 +351,12 @@ Example:
     :show-with: foo.spicy
     :expect-failure:
 
-One can also enforce conditions globally at the unit level through a
-property ``%requires = EXPR``. ``EXPR`` works similar as with the
-attribute: It will be evaluated once the unit has been full parsed,
-but before any ``%done`` hook executes. If ``EXPR`` returns ``False``,
-the unit's parsing process will abort with an error. As usual,
-``EXPR`` has access to the parsed instance through ``self``. More than
-one ``%requires`` property may be specified.
+One can also enforce conditions globally at the unit level through a attribute
+``&requires = EXPR``. ``EXPR`` will be evaluated once the unit has been fully
+parsed, but before any ``%done`` hook executes. If ``EXPR`` returns ``False``,
+the unit's parsing process will abort with an error. As usual, ``EXPR`` has
+access to the parsed instance through ``self``. More than one ``&requires``
+attribute may be specified.
 
 Example:
 
@@ -368,11 +367,10 @@ Example:
     import spicy;
 
     public type Foo = unit {
-        %requires = self.x < 5;
-
         x: int8;
         on %done { print self; }
-    };
+    } &requires = self.x < 5;
+
 
 .. spicy-output:: parse-requires-property.spicy 1
     :exec: printf '\001' | spicy-driver %INPUT
@@ -649,6 +647,34 @@ Unit Attributes
 ===============
 
 Unit types support the following type attributes:
+
+``&byte-order=ORDER``
+   Specifies a byte order to use for parsing the unit where ``ORDER`` is of
+   type :ref:`spicy_ByteOrder`. This overrides the byte order specified for the
+   module. Individual fields can override this value by specifying their own
+   byte-order. Example:
+
+    .. spicy-code::
+
+        type Foo = unit {
+            version: uint32;
+        } &byte-order=spicy::ByteOrder::Little;
+
+``&requires=EXPR``
+   Enforces post-conditions on the parsed unit. ``EXPR`` must be a boolean
+   expression that will be evaluated after the parsing for the unit has
+   finished, but before any hooks execute. More than one ``&requires``
+   attributes may be specified. Example:
+
+    .. spicy-code::
+
+        type Foo = unit {
+            a: int8;
+            b: int8;
+        } &requires=self.a==self.b;
+
+   See the :ref:`section on parsing constraints <attribute_requires>` for more
+   details.
 
 ``&size=N``
     Limits the unit's input to ``N`` bytes, which it must fully

@@ -8,9 +8,8 @@ module Test;
 import spicy;
 
 type X = unit(byteorder: string, expected: uint32) {
-  %byte-order = byteorder;
   x: uint32 { assert self.x == expected; }
-};
+} &byte-order = byteorder;
 
 public type Y = unit {
     a: X("little", 0x04030201) &parse-from=b"\x01\x02\x03\x04";

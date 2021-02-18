@@ -81,9 +81,12 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
         if ( const auto& a = AttributeSet::find(meta.field()->attributes(), "&byte-order") )
             byte_order = *a->valueAs<spicy::Expression>();
+
+        else if ( const auto& a = AttributeSet::find(state().unit.get().attributes(), "&byte-order") )
+            byte_order = *a->valueAs<Expression>();
+
         else if ( const auto& p = state().unit.get().propertyItem("%byte-order") )
             byte_order = *p->expression();
-
 
         if ( byte_order )
             return builder::expect_type(std::move(*byte_order), builder::typeByID("spicy::ByteOrder"));

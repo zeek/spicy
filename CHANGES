@@ -1,3 +1,21 @@
+0.4.0-1455 | 2021-02-18 17:05:01 +0100
+
+  * Document `&byte-order` unit attribute. (Benjamin Bannier, Corelight)
+
+  * Document `&requires` unit attribute. (Benjamin Bannier, Corelight)
+
+  * Convert %byte-order unit property to an attribute. (Benjamin Bannier, Corelight)
+
+  * Convert %requires property to an attribute. (Benjamin Bannier, Corelight)
+
+  * Make tuple index type calculation more resilient. (Benjamin Bannier, Corelight)
+
+  * GH-744: Fix out-of-bounds access in tuple index type resolution.
+
+    This code was previously indexing into a vector beyond the end when
+    determining the type of a tuple index operation. We now
+    return an unknown type here here so that we can reject the operation
+    during later validation.
 
 0.4.0-1446 | 2021-02-18 09:31:13 +0000
 
