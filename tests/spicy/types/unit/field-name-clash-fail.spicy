@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks that unit fields with names identical to the unit name are rejected
+
+module Test;
+
+type Foo = unit {
+    Foo: uint8;
+};
