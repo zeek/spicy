@@ -12,6 +12,7 @@
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/operators/struct.h>
+#include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/regexp.h>
 #include <hilti/base/logger.h>
@@ -22,6 +23,7 @@
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/grammar-builder.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
+
 
 using namespace spicy;
 using namespace spicy::detail;
@@ -180,7 +182,7 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
     result_t operator()(const operator_::unit::Offset& n, position_t p) {
         auto begin = builder::deref(builder::member(n.op0(), ID("__begin")));
         auto cur = builder::deref(builder::member(n.op0(), ID("__position")));
-        replaceNode(&p, builder::difference(cur, begin));
+        replaceNode(&p, builder::cast(builder::difference(cur, begin), type::UnsignedInteger(64)));
     }
 
     result_t operator()(const operator_::unit::Position& n, position_t p) {

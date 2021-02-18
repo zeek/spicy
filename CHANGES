@@ -1,4 +1,21 @@
 
+0.4.0-1445 | 2021-02-18 08:40:32 +0000
+
+  * GH-709: Fix codegen's result type of unit.offset(). (Robin Sommer,
+    Corelight)
+
+  * GH-709: Add description of enum use to Zeek plugin documentation.
+    (Robin Sommer, Corelight)
+
+  * Fix bug with custom enum types not being available in time for Zeek scripts.
+    Turns out that for precompiled Zeek analyzers it didn't work to
+    automatically make the Spicy-side enum types available to Zeek scripts
+    because of a timing issue. (Robin Sommer, Corelight)
+
+  * Add grouping() function to builder API. (Robin Sommer, Corelight)
+
+  * Add new function linkage "preinit" to HILTI. (Robin Sommer, Corelight)
+
 0.4.0-1437 | 2021-02-17 11:08:16 +0100
 
   * GH-682: Remove TODO in docs. (Benjamin Bannier, Corelight)
