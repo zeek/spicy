@@ -160,3 +160,8 @@ target_compile_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O
 target_link_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-rt-configuration-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
 add_test(NAME hilti-rt-configuration-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-configuration-tests)
+
+add_executable(hilti-rt-fiber-benchmark src/benchmarks/fiber.cc)
+target_compile_options(hilti-rt-fiber-benchmark PRIVATE "-Wall")
+target_link_libraries(hilti-rt-fiber-benchmark PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>)
+target_link_libraries(hilti-rt-fiber-benchmark PRIVATE benchmark)
