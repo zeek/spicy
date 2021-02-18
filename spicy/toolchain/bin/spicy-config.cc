@@ -37,14 +37,13 @@ Available options:
     --prefix                Print path of installation (TODO: same as --distbase currently)
     --spicy-build           Print the path to the spicy-build script.
     --spicyc                Print the path to the spicyc binary.
-    --toolchain             Prints 'yes' if the Spicy toolchain was built, 'no' otherwise.
-    --version               Print the Spicy version as a string.
-    --version-number        Print the Spicy version as a numerical value.
+/toolchain/bin/spicy-config    --toolchain             Prints 'yes' if the Spicy toolchain was built, 'no' otherwise.
     --zeek                  Print the path to the Zeek executable
     --zeek-include-dirs     Print the Spicy runtime's C++ include directories
     --zeek-prefix           Print the path to the Zeek installation prefix
     --zeek-plugin-path      Print the path to go into ZEEK_PLUGIN_PATH for enabling the Zeek Spicy plugin
-    --zeek-version-number   Print the Zeek version as a numerical value (zero if no Zeek available)
+    --zeek-version          Print the Zeek version.
+    --version               Print Spicy version.
 
 )";
 }
@@ -103,11 +102,6 @@ int main(int argc, char** argv) {
 
         if ( opt == "--version" ) {
             result.emplace_back(hilti::configuration().version_string_long);
-            continue;
-        }
-
-        if ( opt == "--version-number" ) {
-            result.emplace_back(std::to_string(hilti::configuration().version_number));
             continue;
         }
 
@@ -204,8 +198,7 @@ int main(int argc, char** argv) {
 #endif
         }
 
-        if ( opt == "--zeek-version" || opt == "--zeek-version-number" ) {
-            // Renamed to --zeek-version-number, but accept old name for backwards compatibility.
+        if ( opt == "--zeek-version" ) {
 #ifdef HAVE_ZEEK
             result.emplace_back(ZEEK_VERSION_NUMBER_STRING);
 #else

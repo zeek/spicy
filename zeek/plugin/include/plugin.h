@@ -180,9 +180,6 @@ private:
     // Search SPICY_MODULE_PATH for pre-compiled *.hlto modules and load them.
     void autoDiscoverModules();
 
-    // XXX
-    void searchModules(std::string paths);
-
     /** Captures a registered protocol analyzer. */
     struct ProtocolAnalyzerInfo {
         // Filled in when registering the analyzer.

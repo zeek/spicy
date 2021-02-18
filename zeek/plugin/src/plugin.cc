@@ -217,7 +217,7 @@ void plugin::Zeek_Spicy::Plugin::InitPreScript() {
     addLibraryPaths(hilti::rt::normalizePath(OurPlugin->PluginDirectory()).string() + "/spicy");
     autoDiscoverModules();
 
-    ZEEK_DEBUG("Done with pre-script initialization");
+    ZEEK_DEBUG("Beginning pre-script initialization");
 }
 
 // Returns a port's Zeek-side transport protocol.
@@ -457,9 +457,13 @@ int plugin::Zeek_Spicy::Plugin::HookLoadFile(const LoadType type, const std::str
     return -1;
 }
 
-void plugin::Zeek_Spicy::Plugin::searchModules(std::string paths) {
-    for ( auto dir_ : hilti::rt::split(paths, ":") ) {
-        std::string dir = std::string(dir_);
+void plugin::Zeek_Spicy::Plugin::autoDiscoverModules() {
+    const char* search_paths = getenv("SPICY_MODULE_PATH");
+
+    if ( ! search_paths )
+        search_paths = spicy::zeek::configuration::PluginModuleDirectory;
+
+    for ( auto dir : hilti::rt::split(search_paths, ":") ) {
         std::string pattern = hilti::rt::filesystem::path(hilti::rt::trim(dir)) / "*.hlto";
         ZEEK_DEBUG(hilti::rt::fmt("Searching for %s", pattern));
 
@@ -470,36 +474,5 @@ void plugin::Zeek_Spicy::Plugin::searchModules(std::string paths) {
 
             globfree(&gl);
         }
-
-        DIR* d = opendir(dir.c_str());
-        if ( ! d )
-            return;
-
-        while ( auto dp = readdir(d) ) {
-            struct stat st;
-
-            if ( strcmp(dp->d_name, "..") == 0 || strcmp(dp->d_name, ".") == 0 )
-                continue;
-
-            std::string path = dir + "/" + dp->d_name;
-
-            if ( stat(path.c_str(), &st) < 0 ) {
-                continue;
-            }
-
-            if ( st.st_mode & S_IFDIR )
-                searchModules(path);
-        }
     }
-};
-
-
-void plugin::Zeek_Spicy::Plugin::autoDiscoverModules() {
-    const char* search_paths = getenv("SPICY_MODULE_PATH");
-
-    if ( ! search_paths )
-        search_paths = spicy::zeek::configuration::PluginModuleDirectory;
-
-    searchModules(search_paths);
-    searchModules(zeek::util::zeek_plugin_path());
 }
