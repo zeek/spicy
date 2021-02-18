@@ -1,0 +1,14 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that out-of-bounds tuple access is diagnosed
+
+module Foo {
+
+import hilti;
+
+global auto x = ("Hello!", True);
+
+hilti::print(x[2]);
+
+}

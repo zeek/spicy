@@ -1,0 +1,15 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that only constants can be used as tuple indices
+
+module Foo {
+
+import hilti;
+
+global auto x = ("Hello!", True);
+
+global auto i = 1;
+hilti::print(x[i]);
+
+}
