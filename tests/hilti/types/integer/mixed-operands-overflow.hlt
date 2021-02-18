@@ -3,7 +3,7 @@
 
 module Test {
 
-local uint<8> x3 = 0;
+global uint<8> x3 = 0;
 x3 = x3 + 256;
 
 }

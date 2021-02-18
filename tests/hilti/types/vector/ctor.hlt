@@ -42,7 +42,7 @@ hilti::print(l4);
 hilti::print(l5);
 hilti::print(l6);
 
-local value_ref<string> x = "foo"; # type that coerces to string
+global value_ref<string> x = "foo"; # type that coerces to string
 assert vector("foo", "bar") == vector<string>(x, "bar");
 
 }

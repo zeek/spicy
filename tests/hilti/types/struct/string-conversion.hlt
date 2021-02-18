@@ -23,8 +23,8 @@ method hook optional<string> Foo::__str__() {
     return self.x + "|" + self.y;
 }
 
-local Foo f = [$x="xxx", $y="yyy"];
-local Bar b = [$x="xxx", $y="yyy"];
+global Foo f = [$x="xxx", $y="yyy"];
+global Bar b = [$x="xxx", $y="yyy"];
 
 hilti::print(f);
 hilti::print(b);

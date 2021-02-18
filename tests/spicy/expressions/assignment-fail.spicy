@@ -3,7 +3,7 @@
 
 module Foo;
 
-local x: bytes;
+global x: bytes;
 
 b"" = b"bytes"; # assign to non-lhs
 x = "string"; # type mismatch

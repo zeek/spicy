@@ -5,7 +5,7 @@ module Foo {
 
 import hilti;
 
-local stream x;
+global stream x;
 x += b"1";
 x += b"2";
 x += b"";
@@ -21,7 +21,7 @@ assert-exception x += b"XXX";
 x.unfreeze();
 assert ! x.is_frozen();
 
-local stream y = stream(b"0123456789");
+global stream y = stream(b"0123456789");
 assert begin(y) == y.at(0);
 assert y.find(b"0") == (True, y.at(0));
 assert y.find(b"234") == (True, y.at(2));
@@ -35,7 +35,7 @@ assert y.starts_with(b"");
 assert ! y.starts_with(b"XYZ");
 assert |y| == 10;
 
-local stream m = stream(b"1234567890");
+global stream m = stream(b"1234567890");
 m.trim(m.at(5));
 assert m == b"67890"; # More trim() tests in cc/rt-stream.cc
 
@@ -52,7 +52,7 @@ function void p(stream x) {
     assert |x| == 3;
 }
 
-local stream x2 = stream(b"abc");
+global stream x2 = stream(b"abc");
 p(x2);
 
 }

@@ -3,7 +3,7 @@
 
 module Test {
 
-local value_ref<string> x = "foo"; # type that coerces to string
+global value_ref<string> x = "foo"; # type that coerces to string
 assert set("foo", "bar") == set<string>(x, "bar");
 
 global auto i = 1;

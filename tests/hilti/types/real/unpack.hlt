@@ -20,10 +20,10 @@ do_unpack(b"\x40\x28\xB0\xFC\xD3\x2F\x6F\x3BXXX", hilti::RealType::IEEE754_Doubl
 do_unpack(b"\x3B\x6F\x2F\xD3\xFC\xB0\x28\x40XXX", hilti::RealType::IEEE754_Double, hilti::ByteOrder::Little, "12.345679");
 
 # Check that stream version works, too.
-local stream s = stream(b"@H\xf5\xc3XXX");
-local view<stream> v = s;
-local real a;
-local view<stream> r;
+global stream s = stream(b"@H\xf5\xc3XXX");
+global view<stream> v = s;
+global real a;
+global view<stream> r;
 (a, r) = *unpack<real>(v, hilti::RealType::IEEE754_Single, hilti::ByteOrder::Big);
 assert ("%f" % a) == "3.140000" && r == b"XXX";
 

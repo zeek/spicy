@@ -5,10 +5,10 @@ module Foo {
 
 import hilti;
 
-local stream x = stream(b"01234567890");
+global stream x = stream(b"01234567890");
 
-local auto i = begin(x);
-local auto j = i;
+global auto i = begin(x);
+global auto j = i;
 assert i == begin(x);
 assert j == begin(x);
 assert i.offset() == 0;
@@ -72,7 +72,7 @@ function void p(stream x) {
         assert j == *i++;
 }
 
-local stream x2 = stream(b"01234567890");
+global stream x2 = stream(b"01234567890");
 p(x2);
 
 }

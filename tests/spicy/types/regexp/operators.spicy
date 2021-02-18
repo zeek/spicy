@@ -22,6 +22,6 @@ global ms: spicy::MatchState = r2.token_matcher();
 assert ms.advance(stream(b"X12")) == (-1, stream(b""));
 assert ms.advance(stream(b"345")) == (-1, stream(b""));
 
-local x = stream(b"6Y");
+global x = stream(b"6Y");
 x.freeze();
 assert ms.advance(x) == (1, stream(b""));

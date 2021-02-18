@@ -11,7 +11,7 @@ assert True;
 assert 4 == 4;
 assert 4 == 4 : "This is a message";
 
-local iterator<bytes> i;
+global iterator<bytes> i;
 assert-exception *i : "No exception!";
 
 }

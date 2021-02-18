@@ -5,11 +5,11 @@ module Foo {
 
 import hilti;
 
-local stream x = stream(b"01234567890");
+global stream x = stream(b"01234567890");
 
-local view<stream> all = x;
-local view<stream> v = x.sub(x.at(1), x.at(10));
-local auto v2 = x.sub(x.at(5), x.at(7));
+global view<stream> all = x;
+global view<stream> v = x.sub(x.at(1), x.at(10));
+global auto v2 = x.sub(x.at(5), x.at(7));
 
 assert v == b"123456789";
 assert v != b"XXX";
@@ -27,17 +27,17 @@ assert ! v.starts_with(b"XYZ");
 
 assert |v| == 9;
 
-local stream x2 = stream(b"AbCdEf");
+global stream x2 = stream(b"AbCdEf");
 v2 = cast<view<stream>>(x2).sub(x2.at(1), x2.at(5));
 
-local auto m = begin(x);
+global auto m = begin(x);
 ++m;
 
 for ( i in v )
     assert i == *m++;
 
 # Invalidate iterator
-local stream x3;
+global stream x3;
 x = x3;
 assert-exception hilti::print(v);
 

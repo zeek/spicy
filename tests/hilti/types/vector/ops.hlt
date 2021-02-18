@@ -5,7 +5,7 @@ module Foo {
 
 import hilti;
 
-local auto v = vector("a", "b", "c");
+global auto v = vector("a", "b", "c");
 
 assert v == ["a", "b", "c"];
 assert v != [];
@@ -27,7 +27,7 @@ v.reserve(20); # No visible change
 
 hilti::print(v);
 
-local v2 = vector("a", "b", "c", "d", "e");
+global v2 = vector("a", "b", "c", "d", "e");
 assert v2.sub(1, 3) == vector("b", "c");
 assert v2.sub(3) == vector("a", "b", "c");
 
@@ -54,7 +54,7 @@ p([1,2,3]);
 
 # Test coercion.
 
-local vector<real> b;
+global vector<real> b;
 
 b.assign(1, 0);
 b.assign(2, 42);
@@ -68,7 +68,7 @@ assert b[3] == 0.0;
 assert b[4] == 1.0;
 hilti::print(b);
 
-local vector<real> c = [1,0,3];
+global vector<real> c = [1,0,3];
 assert c == [1.0, 0.0, 3.0];
 hilti::print(c);
 
