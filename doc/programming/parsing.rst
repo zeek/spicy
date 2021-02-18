@@ -648,6 +648,22 @@ Unit Attributes
 
 Unit types support the following type attributes:
 
+``&requires=EXPR``
+   Enforces post-conditions on the parsed unit. ``EXPR`` must be a boolean
+   expression that will be evaluated after the parsing for the unit has
+   finished, but before any hooks execute. More than one ``&requires``
+   attributes may be specified. Example:
+
+    .. spicy-code::
+
+        type Foo = unit {
+            a: int8;
+            b: int8;
+        } &requires=self.a==self.b;
+
+   See the :ref:`section on parsing constraints <attribute_requires>` for more
+   details.
+
 ``&size=N``
     Limits the unit's input to ``N`` bytes, which it must fully
     consume. Example:
