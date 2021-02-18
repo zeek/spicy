@@ -121,7 +121,7 @@ protected:
 
     Duration _time_used = Duration(0);
     uint64_t _num_completed = 0;
-    uint64_t _level = 0;
+    int64_t _level = 0;
     std::string _name;
 
 private:
