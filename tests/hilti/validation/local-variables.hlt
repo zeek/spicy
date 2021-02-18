@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that local variables cannot be declared at module scope
+
+module Foo {
+
+local auto x = 1;
+
+}

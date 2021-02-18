@@ -3,6 +3,7 @@
 #include <unordered_set>
 
 #include <hilti/ast/detail/visitor.h>
+#include <hilti/ast/module.h>
 #include <hilti/ast/types/function.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/visitors.h>
@@ -100,6 +101,14 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         if ( auto st = n.type().tryAs<type::Struct>() )
             _checkStructArguments(n.typeArguments(), st->parameters(), p);
+
+        // Check whether this local variable was declared at module scope. We
+        // need to match exact parent nodes here to not match other locals
+        // three levels under a `Module` (e.g., a local in a `while` statement
+        // at module scope).
+        if ( p.pathLength() > 3 && p.parent(1).isA<statement::Declaration>() && p.parent(2).isA<statement::Block>() &&
+             p.parent(3).isA<Module>() )
+            error("local variables cannot be declared at module scope", p);
     }
 
     void operator()(const declaration::Parameter& n, position_t p) {
