@@ -217,7 +217,7 @@ void plugin::Zeek_Spicy::Plugin::InitPreScript() {
     addLibraryPaths(hilti::rt::normalizePath(OurPlugin->PluginDirectory()).string() + "/spicy");
     autoDiscoverModules();
 
-    ZEEK_DEBUG("Beginning pre-script initialization");
+    ZEEK_DEBUG("Done with pre-script initialization");
 }
 
 // Returns a port's Zeek-side transport protocol.
@@ -426,11 +426,19 @@ void plugin::Zeek_Spicy::Plugin::Done() {
 
 void plugin::Zeek_Spicy::Plugin::loadModule(const hilti::rt::filesystem::path& path) {
     try {
-        ZEEK_DEBUG(hilti::rt::fmt("Loading %s", path.native()));
+        // If our auto discovery ends up finding the same module multiple times,
+        // we ignore subsequent requests.
+        auto canonical_path = hilti::rt::filesystem::canonical(path);
 
-        if ( auto [library, inserted] = _libraries.insert({path, hilti::rt::Library(path)}); inserted ) {
+        if ( auto [library, inserted] = _libraries.insert({canonical_path, hilti::rt::Library(canonical_path)});
+             inserted ) {
+            ZEEK_DEBUG(hilti::rt::fmt("Loading %s", canonical_path.native()));
             if ( auto load = library->second.open(); ! load )
-                hilti::rt::fatalError(hilti::rt::fmt("could not open library path %s: %s", path, load.error()));
+                hilti::rt::fatalError(
+                    hilti::rt::fmt("could not open library path %s: %s", canonical_path, load.error()));
+        }
+        else {
+            ZEEK_DEBUG(hilti::rt::fmt("Ignoring duplicate loading request for %s", canonical_path.native()));
         }
     } catch ( const hilti::rt::EnvironmentError& e ) {
         hilti::rt::fatalError(e.what());
@@ -457,22 +465,32 @@ int plugin::Zeek_Spicy::Plugin::HookLoadFile(const LoadType type, const std::str
     return -1;
 }
 
-void plugin::Zeek_Spicy::Plugin::autoDiscoverModules() {
-    const char* search_paths = getenv("SPICY_MODULE_PATH");
+void plugin::Zeek_Spicy::Plugin::searchModules(std::string paths) {
+    for ( const auto& dir : hilti::rt::split(paths, ":") ) {
+        auto trimmed_dir = hilti::rt::trim(dir);
+        if ( trimmed_dir.empty() )
+            continue;
 
-    if ( ! search_paths )
-        search_paths = spicy::zeek::configuration::PluginModuleDirectory;
-
-    for ( auto dir : hilti::rt::split(search_paths, ":") ) {
-        std::string pattern = hilti::rt::filesystem::path(hilti::rt::trim(dir)) / "*.hlto";
-        ZEEK_DEBUG(hilti::rt::fmt("Searching for %s", pattern));
-
-        glob_t gl;
-        if ( glob(pattern.c_str(), 0, 0, &gl) == 0 ) {
-            for ( size_t i = 0; i < gl.gl_pathc; i++ )
-                loadModule(gl.gl_pathv[i]);
-
-            globfree(&gl);
+        if ( ! hilti::rt::filesystem::is_directory(trimmed_dir) ) {
+            ZEEK_DEBUG(hilti::rt::fmt("Module directory %s does not exist, skipping", trimmed_dir));
+            continue;
         }
+
+        ZEEK_DEBUG(hilti::rt::fmt("Searching %s for *.hlto", trimmed_dir));
+
+        for ( const auto& e : hilti::rt::filesystem::recursive_directory_iterator(trimmed_dir) ) {
+            if ( e.is_regular_file() && e.path().extension() == ".hlto" )
+                loadModule(e.path());
+        }
+    }
+};
+
+void plugin::Zeek_Spicy::Plugin::autoDiscoverModules() {
+    if ( const char* search_paths = getenv("SPICY_MODULE_PATH") )
+        // This overrides all other paths.
+        searchModules(search_paths);
+    else {
+        searchModules(spicy::zeek::configuration::PluginModuleDirectory);
+        searchModules(zeek::util::zeek_plugin_path());
     }
 }

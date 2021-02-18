@@ -537,10 +537,14 @@ something changes, starting up Zeek now executes quickly.
 Instead of providing the precompiled analyzer on the Zeek command
 line, you can also copy them into
 `${prefix}/lib/spicy/Zeek_Spicy/modules`. The Spicy plugin will
-automatically load any ``*.hlto`` object files it finds there.
-Alternatively, you can override that location by setting the environment
-variable ``SPICY_MODULE_PATH`` to a set of colon-separated directories
-to search for precompiled analyzers.
+automatically load any ``*.hlto`` object files it finds there. In
+addition, the plugin also scans Zeek's plugin directory for ``*.hlto``
+files. Alternatively, you can override both of those locations by
+setting the environment variable ``SPICY_MODULE_PATH`` to a set of
+colon-separated directories to search instead. The plugin will then
+*only* look there. In all cases, the plugin searches any directories
+recursively, so it will find ``*.hlto`` also if they are nested in
+subfolders.
 
 Run ``spicyz -h`` to see some additional options it provides, which
 are similar to :ref:`spicy-driver`.

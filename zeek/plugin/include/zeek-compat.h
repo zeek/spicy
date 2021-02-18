@@ -122,8 +122,12 @@ using File = ::file_analysis::File;
 using Tag = ::file_analysis::Tag;
 } // namespace file_analysis
 
+namespace util {
+inline const auto& zeek_plugin_path = ::bro_plugin_path;
+}
+
 namespace util::detail {
-inline auto& add_to_zeek_path = ::add_to_bro_path;
+inline const auto& add_to_zeek_path = ::add_to_bro_path;
 }
 
 namespace detail {
@@ -269,6 +273,7 @@ inline ::ID* install_ID(const char* name, const char* module_name, bool is_globa
 }
 
 } // namespace detail
+
 } // namespace zeek
 
 namespace spicy::zeek::compat {
