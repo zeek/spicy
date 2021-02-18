@@ -760,6 +760,8 @@ bool GlueCompiler::compile() {
     auto import_ = hilti::declaration::ImportedModule(ID("zeek_rt"), std::string(".hlt"));
     init_module.add(std::move(import_));
 
+    auto preinit_body = hilti::builder::Builder(_driver->context());
+
     for ( auto&& [id, m] : _spicy_modules )
         m->spicy_module = hilti::Module(hilti::ID(hilti::util::fmt("spicy_hooks_%s", id)));
 
@@ -876,14 +878,10 @@ bool GlueCompiler::compile() {
             return builder::tuple({builder::string(l.id()), builder::integer(l.value())});
         });
 
-        auto register_ =
-            builder::call("zeek_rt::register_enum_type",
-                          {builder::string(e.id.namespace_()), builder::string(e.id.local()), builder::vector(labels)});
-
-        init_module.add(std::move(register_));
+        preinit_body.addCall("zeek_rt::register_enum_type", {builder::string(e.id.namespace_()),
+                                                             builder::string(e.id.local()), builder::vector(labels)});
     }
 
-    _driver->addInput(std::move(init_module));
 
     for ( auto&& [id, m] : _spicy_modules ) {
         // Import runtime module.
@@ -903,6 +901,14 @@ bool GlueCompiler::compile() {
         _driver->addInput(std::move(*m->spicy_module));
     }
 
+    if ( ! preinit_body.empty() ) {
+        auto preinit_function =
+            hilti::builder::function("zeek_preinit", type::Void(), {}, preinit_body.block(),
+                                     hilti::type::function::Flavor::Standard, declaration::Linkage::PreInit);
+        init_module.add(std::move(preinit_function));
+    }
+
+    _driver->addInput(std::move(init_module));
     return true;
 }
 

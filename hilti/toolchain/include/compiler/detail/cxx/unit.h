@@ -95,6 +95,7 @@ public:
 
     void addComment(const std::string& comment);
     void addInitialization(cxx::Block block) { _init_module.appendFromBlock(std::move(block)); }
+    void addPreInitialization(cxx::Block block) { _preinit_module.appendFromBlock(std::move(block)); }
 
     Result<Nothing> finalize();
 
@@ -143,6 +144,7 @@ private:
     std::set<ID> _ids;
 
     cxx::Block _init_module;
+    cxx::Block _preinit_module;
     cxx::Block _init_globals;
 };
 

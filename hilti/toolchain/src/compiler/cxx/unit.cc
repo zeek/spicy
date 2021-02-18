@@ -172,12 +172,18 @@ void Unit::_addModuleInitFunction() {
     if ( _init_module )
         addInitFunction(_context.get(), _init_module, "__init_module");
 
+    if ( _preinit_module )
+        addInitFunction(_context.get(), _preinit_module, "__preinit_module");
+
     if ( moduleID() != cxx::ID("__linker__") ) {
         cxx::Block register_;
         register_.addStatement(fmt("hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s})", moduleID(),
                                    _init_module ? "&__init_module" : "nullptr",
                                    _uses_globals ? "&__init_globals" : "nullptr",
                                    _uses_globals ? "&__globals_index" : "nullptr"));
+
+        if ( _preinit_module )
+            register_.addStatement(fmt("__preinit_module()"));
 
         auto id = addInitFunction(_context.get(), register_, "__register_module");
         add(fmt("HILTI_PRE_INIT(%s)", id));

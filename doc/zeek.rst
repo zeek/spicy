@@ -354,7 +354,7 @@ the pieces going into such an event definition:
 
         [1]
             A corresponding Zeek-side ``enum`` type is automatically
-            created.
+            created. See :ref:`below <zeek_enum>` for more.
 
         [2]
             The optional value must have a value, otherwise a runtime
@@ -421,6 +421,54 @@ the pieces going into such an event definition:
     evaluates to true. Just like event arguments, the expression is
     evaluated in the context of the current unit instance and has
     access to ``self``.
+
+
+.. _zeek_enum:
+
+Enum Types
+~~~~~~~~~~
+
+The Zeek plugin automatically makes Spicy :ref:`enum types
+<type_enum>` available on the Zeek-side if you declare them
+``public``. For example, assume the following Spicy declaration:
+
+.. spicy-code::
+
+    module Test;
+
+    public type MyEnum = enum {
+        A = 83,
+        B = 84,
+        C = 85
+    };
+
+The plugin will then create the equivalent of the following Zeek type
+for use in your scripts:
+
+.. code-block:: zeek
+
+    module Test;
+
+    export {
+
+      type MyEnum: enum {
+          MyEnum_A = 83,
+          MyEnum_B = 84,
+          MyEnum_A = 85,
+          MyEnum_Undef = -1
+      };
+
+    }
+
+(The odd naming is due to ID limitations on the Zeek side.)
+
+You can also see the type in the output of ``zeek -NN``::
+
+    [...]
+    _Zeek::Spicy - Support for Spicy parsers
+        [Type] Test::MyEnum
+    [...]
+
 
 Importing Spicy Modules
 -----------------------

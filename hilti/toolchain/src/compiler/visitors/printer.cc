@@ -110,6 +110,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     auto linkage(declaration::Linkage l) {
         switch ( l ) {
             case declaration::Linkage::Init: return "init ";
+            case declaration::Linkage::PreInit: return "preinit ";
             case declaration::Linkage::Struct: return "method ";
             case declaration::Linkage::Private: return ""; // That's the default.
             case declaration::Linkage::Public: return "public ";

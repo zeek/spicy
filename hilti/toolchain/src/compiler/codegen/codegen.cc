@@ -348,8 +348,11 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
         auto body = cg->compile(*f.body());
 
-        // Add runtime stack size check at beginning of function.
-        body.addStatementAtFront("hilti::rt::detail::checkStack()");
+        if ( n.linkage() != declaration::Linkage::PreInit )
+            // Add runtime stack size check at beginning of function.
+            // Cannot do this for "preinit" functions as we won't have a
+            // runtime yet.
+            body.addStatementAtFront("hilti::rt::detail::checkStack()");
 
         if ( n.linkage() == declaration::Linkage::Struct && ! f.isStatic() ) {
             if ( ! is_hook ) {
@@ -470,6 +473,13 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             call_init_func.addStatement(fmt("%s()", d.id));
             cg->unit()->addInitialization(call_init_func);
         }
+
+        if ( n.linkage() == declaration::Linkage::PreInit ) {
+            // Add a call to this to the module's pre-initialization code.
+            cxx::Block call_preinit_func;
+            call_preinit_func.addStatement(fmt("%s()", d.id));
+            cg->unit()->addPreInitialization(call_preinit_func);
+        }
     }
 
     void operator()(const declaration::Type& n) { cg->compile(n.type(), codegen::TypeUsage::Storage); }
@@ -526,6 +536,7 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function ft, dec
 
         switch ( linkage ) {
             case declaration::Linkage::Init:
+            case declaration::Linkage::PreInit:
             case declaration::Linkage::Public: return "extern";
             case declaration::Linkage::Private: return "static";
             case declaration::Linkage::Struct: return "";

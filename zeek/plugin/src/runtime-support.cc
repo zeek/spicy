@@ -34,6 +34,7 @@ void rt::register_enum_type(
     const std::string& ns, const std::string& id,
     const hilti::rt::Vector<std::tuple<std::string, hilti::rt::integer::safe<int64_t>>>& labels) {
     OurPlugin->registerEnumType(ns, id, labels);
+    OurPlugin->AddBifItem(::hilti::rt::fmt("%s::%s", ns, id), ::zeek::plugin::BifItem::TYPE);
 }
 
 ::zeek::EventHandlerPtr rt::internal_handler(const std::string& name) {
