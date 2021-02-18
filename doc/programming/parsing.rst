@@ -648,6 +648,18 @@ Unit Attributes
 
 Unit types support the following type attributes:
 
+``&byte-order=ORDER``
+   Specifies a byte order to use for parsing the unit where ``ORDER`` is of
+   type :ref:`spicy_ByteOrder`. This overrides the byte order specified for the
+   module. Individual fields can override this value by specifying their own
+   byte-order. Example:
+
+    .. spicy-code::
+
+        type Foo = unit {
+            version: uint32;
+        } &byte-order=spicy::ByteOrder::Little;
+
 ``&requires=EXPR``
    Enforces post-conditions on the parsed unit. ``EXPR`` must be a boolean
    expression that will be evaluated after the parsing for the unit has
