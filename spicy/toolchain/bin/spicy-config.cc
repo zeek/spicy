@@ -20,8 +20,8 @@ Usage: spicy-config [options]
 
 Available options:
 
-    --build                 Prints "debug" or "release", depending on the build configuration.
     --bindir                Prints the path to the directory where binaries are installed.
+    --build                 Prints "debug" or "release", depending on the build configuration.
     --cmake-path            Prints the path to Spicy-provided CMake modules
     --cxx                   Print the path to the C++ compiler used to build Spicy
     --cxxflags              Print flags for C++ compiler when compiling generated code statically
@@ -29,21 +29,25 @@ Available options:
     --debug                 Output flags for working with debugging versions.
     --distbase              Print path of the Spicy source distribution.
     --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
+    --have-toolchain        Prints 'yes' if the Spicy toolchain was built, 'no' otherwise.
+    --have-zeek             Prints 'yes' if the Spicy was compiled with Zeek support, 'no' otherwise.
     --help                  Print this usage summary
     --include-dirs          Prints the Spicy runtime's C++ include directories
     --ldflags               Print flags for linker when compiling generated code statically
     --ldflags-hlto          Print flags for linker linker when building precompiled HLTO libraries
     --libdirs               Print standard Spicy library directories.
-    --prefix                Print path of installation (TODO: same as --distbase currently)
+    --prefix                Print path of installation
     --spicy-build           Print the path to the spicy-build script.
     --spicyc                Print the path to the spicyc binary.
-/toolchain/bin/spicy-config    --toolchain             Prints 'yes' if the Spicy toolchain was built, 'no' otherwise.
+    --version               Print the Spicy version as a string.
+    --version-number        Print the Spicy version as a numerical value.
     --zeek                  Print the path to the Zeek executable
     --zeek-include-dirs     Print the Spicy runtime's C++ include directories
-    --zeek-prefix           Print the path to the Zeek installation prefix
+    --zeek-module-path      Print the path of the directory the Zeek plugin searches for *.hlto modules
     --zeek-plugin-path      Print the path to go into ZEEK_PLUGIN_PATH for enabling the Zeek Spicy plugin
-    --zeek-version          Print the Zeek version.
-    --version               Print Spicy version.
+    --zeek-prefix           Print the path to the Zeek installation prefix
+    --zeek-version          Print the Zeek version (empty if no Zeek available)
+    --zeek-version-number   Print the Zeek version as a numerical value (zero if no Zeek available)
 
 )";
 }
@@ -105,6 +109,11 @@ int main(int argc, char** argv) {
             continue;
         }
 
+        if ( opt == "--version-number" ) {
+            result.emplace_back(std::to_string(hilti::configuration().version_number));
+            continue;
+        }
+
         if ( opt == "--build" ) {
 #ifndef NDEBUG
             result.emplace_back("debug");
@@ -119,7 +128,7 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        if ( opt == "--toolchain" ) {
+        if ( opt == "--have-toolchain" ) {
 #ifdef HAVE_TOOLCHAIN
             result.emplace_back("yes");
 #else
@@ -152,39 +161,60 @@ int main(int argc, char** argv) {
             continue;
         }
 
+        if ( opt == "--have-zeek" ) {
+#ifdef HAVE_ZEEK
+            result.emplace_back("yes");
+#else
+            result.emplace_back("no");
+#endif
+            continue;
+        }
+
         if ( opt == "--zeek" ) {
 #ifdef HAVE_ZEEK
             result.emplace_back(ZEEK_EXECUTABLE);
             continue;
 #else
-            exit(1);
+            result.emplace_back("");
 #endif
+            continue;
         }
 
         if ( opt == "--zeek-prefix" ) {
 #ifdef HAVE_ZEEK
             result.emplace_back(ZEEK_PREFIX);
-            continue;
 #else
-            exit(1);
+            result.emplace_back("");
 #endif
+            continue;
         }
 
         if ( opt == "--zeek-plugin-path" ) {
-#ifdef HAVE_ZEEK_PLUGIN
+#ifdef HAVE_ZEEK
             if ( hilti::configuration().uses_build_directory )
                 result.emplace_back(hilti::configuration().build_directory / "zeek/plugin");
             else
                 result.emplace_back(hilti::configuration().lib_directory / "spicy/Zeek_Spicy");
-
-            continue;
 #else
-            exit(1);
+            result.emplace_back("");
 #endif
+            continue;
+        }
+
+        if ( opt == "--zeek-module-path" ) {
+#ifdef HAVE_ZEEK
+            if ( hilti::configuration().uses_build_directory )
+                result.emplace_back(hilti::configuration().build_directory / "zeek/plugin/modules");
+            else
+                result.emplace_back(hilti::configuration().lib_directory / "spicy/Zeek_Spicy/modules");
+#else
+            result.emplace_back("");
+#endif
+            continue;
         }
 
         if ( opt == "--zeek-include-dirs" ) {
-#ifdef HAVE_ZEEK_PLUGIN
+#ifdef HAVE_ZEEK
             if ( hilti::configuration().uses_build_directory ) {
                 result.emplace_back(hilti::configuration().distbase / "zeek/plugin/include");
                 result.emplace_back(hilti::configuration().build_directory / "zeek/plugin");
@@ -194,11 +224,20 @@ int main(int argc, char** argv) {
 
             continue;
 #else
-            exit(1);
+            result.emplace_back("");
 #endif
         }
 
         if ( opt == "--zeek-version" ) {
+#ifdef HAVE_ZEEK
+            result.emplace_back(ZEEK_VERSION);
+#else
+            result.emplace_back("");
+#endif
+            continue;
+        }
+
+        if ( opt == "--zeek-version-number" ) {
 #ifdef HAVE_ZEEK
             result.emplace_back(ZEEK_VERSION_NUMBER_STRING);
 #else
