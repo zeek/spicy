@@ -226,6 +226,21 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     auto ft = _pb.parseMethodFunctionType({}, unit.meta());
     v.addField(type::struct_::Field(type::struct_::Field("__parse_stage1", std::move(ft))));
 
+    if ( auto convert = AttributeSet::find(unit.attributes(), "&convert") ) {
+        auto expression = *convert->valueAs<Expression>();
+        auto result = type::Auto();
+        auto params = std::vector<type::function::Parameter>();
+        auto ftype = type::Function(type::function::Result(std::move(result), expression.meta()), std::move(params),
+                                    hilti::type::function::Flavor::Method, expression.meta());
+
+        _pb.pushBuilder();
+        _pb.builder()->addReturn(expression);
+        auto body = _pb.popBuilder();
+        auto function = hilti::Function(ID("__convert"), std::move(ftype), body->block());
+        auto convert_ = hilti::type::struct_::Field(ID("__convert"), std::move(function));
+        v.addField(std::move(convert_));
+    }
+
     assert(unit.typeID());
     Type s = hilti::type::Struct(unit.parameters(), std::move(v.fields));
     s = type::setTypeID(s, *unit.typeID());

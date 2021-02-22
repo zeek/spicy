@@ -1,0 +1,33 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '\xff\xff\x00\x15\x00\x0a123456' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: A unit-level &convert that replaces the whole instance inside a parent unit.
+
+module Mini;
+
+import spicy;
+
+type Foo = unit {
+    x: uint16;
+} &convert="foo!";
+
+type Bar = unit(XXfactor: uint16) {
+    x: uint16;
+} &convert=(XXfactor * self.x);
+
+function foo(d: Data): int64 {
+    return d.data.to_int();
+}
+
+type Data = unit {
+    data: bytes &size=2;
+} &convert=foo(self);
+
+public type Test = unit {
+    foo: Foo { print self.foo; }
+    bar1: Bar(2) { print self.bar1; }
+    bar2: Bar(3) &convert=($$ + 12) { print self.bar2; }
+    numbers: Data[];
+
+    on %done { print self; }
+};

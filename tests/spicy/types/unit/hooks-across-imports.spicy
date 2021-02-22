@@ -1,4 +1,4 @@
-# @TEST-EXEC:  echo 123456666677777 | spicy-driver -p A::tA b.spicy %INPUT | sort >output
+# @TEST-EXEC:  echo 123456666677777CC | spicy-driver -p A::tA b.spicy %INPUT | sort >output
 # @TEST-EXEC:  btest-diff output
 
 module A;
@@ -8,9 +8,14 @@ import B;
 public type tA = unit {
        a: bytes &size=5;
        B: B::tB;
+       C: B::tC;
 
        on %init {
            print "tA";
+       }
+
+       on %done {
+           print self;
        }
 };
 
@@ -37,6 +42,10 @@ public type tB = unit {
            print "tB";
        }
 };
+
+public type tC = unit {
+       z: bytes &size=2;
+} &convert=self.z;
 
 on tB::x {
     print "tB: x-1 $", self.x;

@@ -396,7 +396,6 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                     if ( ! a.hasValue() )
                         error("&size must provide an expression", p);
                 }
-
                 else if ( a.tag() == "&requires" ) {
                     auto e = a.valueAs<Expression>();
                     if ( ! e )
@@ -406,13 +405,15 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                             error(fmt("&requires expression must be of type bool, but is of type %d ", e->type()), p);
                     }
                 }
-
                 else if ( a.tag() == "&byte-order" ) {
                     auto e = a.valueAs<Expression>();
                     if ( ! e )
                         error(e.error(), p);
                 }
-
+                else if ( a.tag() == "&convert" ) {
+                    if ( ! a.hasValue() )
+                        error("&convert must provide an expression", p);
+                }
                 else
                     error(fmt("attribute %s not supported for unit types", a.tag()), p);
             }

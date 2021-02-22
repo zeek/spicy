@@ -49,7 +49,7 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
     }
 
     void replaceUnresolvedField(const type::unit::item::UnresolvedField& u, position_t p) {
-        if ( auto id = u.unresolvedID() ) {
+        if ( auto id = u.unresolvedID() ) { // check for unresolved IDs first to overrides the other cases below
             auto resolved = hilti::scope::lookupID<hilti::Declaration>(*id, p, "field");
 
             if ( ! resolved ) {
@@ -58,30 +58,50 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
             }
 
             if ( auto t = resolved->first->tryAs<hilti::declaration::Type>() ) {
+                auto unit_type = t->type().tryAs<type::Unit>();
+
+                if ( ! unit_type && t->type().originalNode() )
+                    unit_type = t->type().originalNode()->tryAs<type::Unit>();
+
                 // Because we're doing type resolution ourselves here, we
                 // need to account for any &on-heap attribute. Normally,
                 // HILTI would take care of that for us when resolving a
                 // type.
                 Type tt = hilti::type::ResolvedID(*id, NodeRef(resolved->first), u.meta());
 
-                if ( t->type().isA<type::Unit>() || AttributeSet::has(t->attributes(), "&on-heap") )
+                if ( unit_type || AttributeSet::has(t->attributes(), "&on-heap") )
                     tt = hilti::type::ValueReference(tt, u.meta());
 
-                replaceNode(&p, resolveField(u, tt), __LINE__);
-                return;
+                // If a unit comes with a &convert attribute, we wrap it into a
+                // subitem so that  we have our recursive machinery available
+                // (which we don't have for pure types).
+                if ( unit_type && AttributeSet::has(unit_type->attributes(), "&convert") ) {
+                    auto inner_field = type::unit::item::Field({}, std::move(tt), spicy::Engine::All, u.arguments(), {},
+                                                               {}, {}, {}, {}, u.meta());
+                    inner_field = type::unit::item::Field::setIndex(std::move(inner_field), *u.index());
+
+                    auto outer_field =
+                        type::unit::item::Field(u.fieldID(), std::move(inner_field), u.engine(), {}, u.repeatCount(),
+                                                u.sinks(), u.attributes(), u.condition(), u.hooks(), u.meta());
+
+                    outer_field = type::unit::item::Field::setIndex(std::move(outer_field), *u.index());
+                    replaceNode(&p, std::move(outer_field), __LINE__);
+                }
+
+                else
+                    // Default treatment for types is to create a corresponding field.
+                    replaceNode(&p, resolveField(u, std::move(tt)), __LINE__);
             }
 
-            if ( auto c = resolved->first->tryAs<hilti::declaration::Constant>() ) {
+            else if ( auto c = resolved->first->tryAs<hilti::declaration::Constant>() ) {
                 if ( auto ctor = c->value().tryAs<hilti::expression::Ctor>() )
                     replaceNode(&p, resolveField(u, ctor->ctor()), __LINE__);
                 else
                     p.node.addError("field value must be a constant");
-
-                return;
             }
-
-            p.node.addError(hilti::util::fmt("field value must be a constant or type (but is a %s)",
-                                             resolved->first->as<hilti::Declaration>().displayName()));
+            else
+                p.node.addError(hilti::util::fmt("field value must be a constant or type (but is a %s)",
+                                                 resolved->first->as<hilti::Declaration>().displayName()));
         }
 
         else if ( auto c = u.ctor() )
@@ -90,9 +110,10 @@ struct Visitor1 : public hilti::visitor::PostOrder<void, Visitor1> {
         else if ( auto t = u.type() )
             replaceNode(&p, resolveField(u, *t), __LINE__);
 
-        else if ( auto i = u.item() )
-            replaceNode(&p, resolveField(u, *i), __LINE__);
-
+        else if ( auto i = u.item() ) {
+            auto f = resolveField(u, *i);
+            replaceNode(&p, f, __LINE__);
+        }
         else
             hilti::logger().internalError("no known type for unresolved field", p.node.location());
     }

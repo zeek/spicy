@@ -313,6 +313,33 @@ representation as a ``uint64``:
     :exec: printf 12345 | spicy-driver %INPUT
     :show-with: foo.spicy
 
+``&convert`` also works at the unit level to transform a whole
+instance into a different value after it has been parsed:
+
+.. spicy-code:: parse-convert-unit.spicy
+
+    module Test;
+
+    type Data = unit {
+        data: bytes &size=2;
+    } &convert=self.data.to_int();
+
+    public type Foo = unit {
+        numbers: Data[];
+
+        on %done { print self.numbers; }
+    };
+
+.. spicy-output:: parse-convert-unit.spicy
+    :exec: printf 12345678 | spicy-driver %INPUT
+    :show-with: foo.spicy
+
+Note how the ``Data`` instances have been turned into integers.
+Without the ``&convert`` attribute, the output would have looked like
+this::
+
+    [[$data=b"12"], [$data=b"34"], [$data=b"56"], [$data=b"78"]]
+
 .. _attribute_requires:
 
 Enforcing Parsing Constraints
@@ -678,10 +705,10 @@ Unit Attributes
 Unit types support the following type attributes:
 
 ``&byte-order=ORDER``
-   Specifies a byte order to use for parsing the unit where ``ORDER`` is of
-   type :ref:`spicy_ByteOrder`. This overrides the byte order specified for the
-   module. Individual fields can override this value by specifying their own
-   byte-order. Example:
+    Specifies a byte order to use for parsing the unit where ``ORDER`` is of
+    type :ref:`spicy_ByteOrder`. This overrides the byte order specified for the
+    module. Individual fields can override this value by specifying their own
+    byte-order. Example:
 
     .. spicy-code::
 
@@ -689,11 +716,17 @@ Unit types support the following type attributes:
             version: uint32;
         } &byte-order=spicy::ByteOrder::Little;
 
+``&convert=EXPR``
+    Replaces a unit instance with the result of the expression
+    ``EXPR`` after parsing it from inside a parent unit. See
+    :ref:`attribute_convert` for an example. ``EXPR`` has access to
+    ``self`` to retrieves state from the unit.
+
 ``&requires=EXPR``
-   Enforces post-conditions on the parsed unit. ``EXPR`` must be a boolean
-   expression that will be evaluated after the parsing for the unit has
-   finished, but before any hooks execute. More than one ``&requires``
-   attributes may be specified. Example:
+    Enforces post-conditions on the parsed unit. ``EXPR`` must be a boolean
+    expression that will be evaluated after the parsing for the unit has
+    finished, but before any hooks execute. More than one ``&requires``
+    attributes may be specified. Example:
 
     .. spicy-code::
 
