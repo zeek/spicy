@@ -409,58 +409,34 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
     if ( debug && ! options().debug )
         return {};
 
-    std::optional<Type> item_type;
-    std::optional<Type> original_item_type;
+    std::optional<Type> original_field_type;
 
     if ( field ) {
-        if ( ! field->get().parseType().isA<type::Void>() ) {
-            item_type = field->get().itemType();
-            original_item_type = field->get().originalType();
-        }
+        if ( ! field->get().parseType().isA<type::Void>() )
+            original_field_type = field->get().originalType();
     }
     else {
         // Try to locate field by ID.
         if ( auto i = unit.field(id.local()) ) {
             auto f = i->as<type::unit::item::Field>();
-            if ( ! f.parseType().isA<type::Void>() ) {
-                item_type = f.itemType();
-                original_item_type = f.originalType();
-            }
+            if ( ! f.parseType().isA<type::Void>() )
+                original_field_type = f.originalType();
         }
     }
 
     if ( foreach ) {
-        // We have no easy way to get to the resolved element type, so defer
-        // that until we can derive it manually.
-        auto ut = Type(hilti::type::UnresolvedID(*unit.typeID()));
-
-        auto cb = [id](Node& n) -> Type {
-            auto t = type::effectiveType(n.as<Type>());
-
-            auto rt = t.tryAs<type::ValueReference>();
-            if ( ! rt )
-                return type::unknown;
-
-            auto st = rt->dereferencedType().tryAs<type::Struct>();
-            if ( ! st )
-                return type::unknown;
-
-            return st->field(id.local())->auxType()->as<type::Vector>().elementType();
-        };
-
-        auto element_type = type::Computed(ut, cb);
-        params.push_back({ID("__dd"), element_type, hilti::type::function::parameter::Kind::In, {}});
+        params.push_back({ID("__dd"), hilti::type::Auto(), hilti::type::function::parameter::Kind::In, {}});
         params.push_back({ID("__stop"), type::Bool(), hilti::type::function::parameter::Kind::InOut, {}});
     }
-    else if ( item_type ) {
-        params.push_back({ID("__dd"), *item_type, hilti::type::function::parameter::Kind::In, {}});
+    else if ( original_field_type ) {
+        params.push_back({ID("__dd"), hilti::type::Auto(), hilti::type::function::parameter::Kind::In, {}});
 
-        if ( original_item_type && original_item_type->isA<type::RegExp>() )
+        if ( original_field_type->isA<type::RegExp>() )
             params.push_back({ID("__captures"),
                               builder::typeByID("hilti::Captures"),
                               hilti::type::function::parameter::Kind::In,
                               {}});
-    };
+    }
 
     std::string hid;
     Type result;
