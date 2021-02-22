@@ -25,11 +25,11 @@ public:
                     std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
                     std::vector<Hook> hooks = {}, Meta m = Meta())
 
-        : NodeBase(nodes(std::move(type), id, std::move(repeat), std::move(attrs), std::move(cond), args, sinks,
-                         std::move(hooks)),
+        : NodeBase(nodes(node::none, std::move(type), id, std::move(repeat), std::move(attrs), std::move(cond), args,
+                         sinks, std::move(hooks)),
                    std::move(m)),
           _engine(e),
-          _args_start(5),
+          _args_start(6),
           _args_end(_args_start + static_cast<int>(args.size())),
           _sinks_start(_args_end),
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
@@ -38,11 +38,11 @@ public:
                     std::optional<Expression> repeat, const std::vector<Expression>& sinks,
                     std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
                     std::vector<Hook> hooks = {}, Meta m = Meta())
-        : NodeBase(nodes(std::move(ctor), id, std::move(repeat), std::move(attrs), std::move(cond), args, sinks,
-                         std::move(hooks)),
+        : NodeBase(nodes(node::none, std::move(ctor), id, std::move(repeat), std::move(attrs), std::move(cond), args,
+                         sinks, std::move(hooks)),
                    std::move(m)),
           _engine(e),
-          _args_start(5),
+          _args_start(6),
           _args_end(_args_start + static_cast<int>(args.size())),
           _sinks_start(_args_end),
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
@@ -51,11 +51,11 @@ public:
                     std::optional<Expression> repeat, const std::vector<Expression>& sinks,
                     std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
                     std::vector<Hook> hooks = {}, Meta m = Meta())
-        : NodeBase(nodes(std::move(item), id, std::move(repeat), std::move(attrs), std::move(cond), args, sinks,
-                         std::move(hooks)),
+        : NodeBase(nodes(node::none, std::move(item), id, std::move(repeat), std::move(attrs), std::move(cond), args,
+                         sinks, std::move(hooks)),
                    std::move(m)),
           _engine(e),
-          _args_start(5),
+          _args_start(6),
           _args_end(_args_start + static_cast<int>(args.size())),
           _sinks_start(_args_end),
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
@@ -64,28 +64,29 @@ public:
                     std::optional<Expression> repeat, const std::vector<Expression>& sinks,
                     std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
                     std::vector<Hook> hooks = {}, Meta m = Meta())
-        : NodeBase(nodes(std::move(unresolved_id), std::move(id), std::move(repeat), std::move(attrs), std::move(cond),
-                         args, sinks, std::move(hooks)),
+        : NodeBase(nodes(std::move(unresolved_id), node::none, std::move(id), std::move(repeat), std::move(attrs),
+                         std::move(cond), args, sinks, std::move(hooks)),
                    std::move(m)),
           _engine(e),
-          _args_start(5),
+          _args_start(6),
           _args_end(_args_start + static_cast<int>(args.size())),
           _sinks_start(_args_end),
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
 
-    auto fieldID() const { return childs()[1].tryReferenceAs<ID>(); }
+    auto fieldID() const { return childs()[2].tryReferenceAs<ID>(); }
 
     const auto& index() const { return _index; }
 
-    // Only one of these will have return value.
     auto unresolvedID() const { return childs()[0].tryReferenceAs<ID>(); }
-    auto type() const { return childs()[0].tryReferenceAs<Type>(); }
-    auto ctor() const { return childs()[0].tryReferenceAs<Ctor>(); }
-    auto item() const { return childs()[0].tryReferenceAs<Item>(); }
 
-    auto repeatCount() const { return childs()[2].tryReferenceAs<Expression>(); }
-    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
-    auto condition() const { return childs()[4].tryReferenceAs<Expression>(); }
+    // Only one of these will have return value.
+    auto type() const { return childs()[1].tryReferenceAs<Type>(); }
+    auto ctor() const { return childs()[1].tryReferenceAs<Ctor>(); }
+    auto item() const { return childs()[1].tryReferenceAs<Item>(); }
+
+    auto repeatCount() const { return childs()[3].tryReferenceAs<Expression>(); }
+    auto attributes() const { return childs()[4].tryReferenceAs<AttributeSet>(); }
+    auto condition() const { return childs()[5].tryReferenceAs<Expression>(); }
     auto arguments() const { return childs<Expression>(_args_start, _args_end); }
     auto sinks() const { return childs<Expression>(_sinks_start, _sinks_end); }
     auto hooks() const { return childs<Hook>(_sinks_end, -1); }
