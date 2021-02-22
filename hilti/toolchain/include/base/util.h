@@ -193,7 +193,7 @@ extern std::pair<std::string, std::string> rsplit1(std::string s, const std::str
  * @param end one beyond last index; if negative, counts from end Python-style
  */
 template<typename T>
-std::vector<T> slice(const std::vector<T>& v, unsigned int begin, unsigned int end = -1) {
+std::vector<T> slice(const std::vector<T>& v, int begin, int end = -1) {
     if ( begin < 0 )
         begin = v.size() + begin;
 
