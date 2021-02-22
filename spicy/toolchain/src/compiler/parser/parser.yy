@@ -609,6 +609,7 @@ tuple_type    : TUPLE type_param_begin '*' type_param_end                { $$ = 
 tuple_type_elems
               : tuple_type_elems ',' tuple_type_elem
                                                  { $$ = std::move($1); $$.push_back(std::move($3)); }
+              | tuple_type_elems ','             { $$ = std::move($1); }
               | tuple_type_elem                  { $$ = std::vector<std::pair<hilti::ID, hilti::Type>>{ std::move($1) }; }
               ;
 
