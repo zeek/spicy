@@ -27,4 +27,5 @@ global auto a6 = new A; # pass
 global auto b6 = new B("x", 3.14); # pass
 global auto b7 = new B("x"); # pass
 
+local auto b7 = default<value_ref<B>>(42);
 }

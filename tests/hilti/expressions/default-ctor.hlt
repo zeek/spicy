@@ -14,5 +14,6 @@ assert(default<string>() == "");
 assert(default<int<64>>() == 0);
 assert(default<X>().a == "");
 hilti::print(default<X>());
+hilti::print(default<value_ref<X>>());
 
 }

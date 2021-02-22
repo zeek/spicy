@@ -155,7 +155,12 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     ////// Ctors
 
     void operator()(const ctor::Default& c, position_t p) {
-        if ( auto st = c.type().tryAs<type::Struct>() )
+        auto t = c.type();
+
+        if ( auto vr = t.tryAs<type::ValueReference>() )
+            t = vr->dereferencedType();
+
+        if ( auto st = t.tryAs<type::Struct>() )
             _checkStructArguments(c.typeArguments(), st->parameters(), p);
     }
 
