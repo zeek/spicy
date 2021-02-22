@@ -1,0 +1,3 @@
+# Automatically generated; do not edit. -- <HASH> printf '\x2a' | spicy-driver %INPUT/printf '\x2a' | spicy-driver %INPUT/False
+# printf '\x2a' | spicy-driver foo.spicy
+Parsed 42
