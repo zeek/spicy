@@ -4,6 +4,7 @@
 #include <hilti/ast/builder/expression.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/visitors.h>
 #include <hilti/compiler/unit.h>
 #include <hilti/global.h>
@@ -20,12 +21,24 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
 
     /** Returns a method call's i-th argument. */
     auto methodArgument(const expression::ResolvedOperatorBase& o, int i) {
-        auto ctor = o.op2().as<expression::Ctor>().ctor();
+        auto ops = o.op2();
 
-        if ( auto x = ctor.tryAs<ctor::Coerced>() )
-            ctor = x->coercedCtor();
+        // If the argument list was the result of a coercion unpack its result.
+        if ( auto coerced = ops.tryAs<expression::Coerced>() )
+            ops = coerced->expression();
 
-        return ctor.as<ctor::Tuple>().value()[i];
+        if ( auto ctor_ = ops.tryAs<expression::Ctor>() ) {
+            auto ctor = ctor_->ctor();
+
+            // If the argument was the result of a coercion unpack its result.
+            if ( auto x = ctor.tryAs<ctor::Coerced>() )
+                ctor = x->coercedCtor();
+
+            if ( auto args = ctor.tryAs<ctor::Tuple>(); args && i < args->value().size() )
+                return args->value()[i];
+        }
+
+        util::cannot_be_reached();
     }
 
 #if 0

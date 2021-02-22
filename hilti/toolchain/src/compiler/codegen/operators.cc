@@ -4,6 +4,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/operators/all.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
 #include <hilti/compiler/detail/visitors.h>
@@ -46,12 +47,24 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     auto methodArguments(const expression::ResolvedOperatorBase& o) {
-        auto ctor = o.op2().as<expression::Ctor>().ctor();
+        auto ops = o.op2();
 
-        if ( auto x = ctor.tryAs<ctor::Coerced>() )
-            ctor = x->coercedCtor();
+        // If the argument list was the result of a coercion unpack its result.
+        if ( auto coerced = ops.tryAs<expression::Coerced>() )
+            ops = coerced->expression();
 
-        return std::make_pair(op0(o), compileExpressions(ctor.as<ctor::Tuple>().value()));
+        if ( auto ctor_ = ops.tryAs<expression::Ctor>() ) {
+            auto ctor = ctor_->ctor();
+
+            // If the argument was the result of a coercion unpack its result.
+            if ( auto x = ctor.tryAs<ctor::Coerced>() )
+                ctor = x->coercedCtor();
+
+            if ( auto args = ctor.tryAs<ctor::Tuple>() )
+                return std::make_pair(op0(o), compileExpressions(args->value()));
+        }
+
+        util::cannot_be_reached();
     }
 
     auto optionalArgument(const std::vector<cxx::Expression>& args, unsigned int i) {

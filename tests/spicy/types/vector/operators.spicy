@@ -22,3 +22,9 @@ assert v[3] == 4;
 
 assert v == [1, 42, 3, 4];
 assert v != [];
+
+type t = tuple<entry: uint64>;
+global v1: vector<t>;
+v1.push_back((42, ));
+assert |v1| == 1;
+assert v1[0] == (42, );
