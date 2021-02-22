@@ -213,6 +213,13 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             // resolver will take care of that.
             return;
 
+        // We can get into trouble when re-look-upping "self" inside a new
+        // context. As a work-around, just ignore self here.
+        // TODO: We should do this differently, and ideally not need any
+        // re-loopup anyways (see below)
+        if ( u.id().str() == "self" )
+            return;
+
         // Look it up again because the AST may have changed the mapping.
         //
         // TODO(robin): Not quite sure in which cases this happen, ideally it
