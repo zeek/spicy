@@ -643,6 +643,11 @@ struct_field  : type local_id opt_attributes ';' { $$ = hilti::type::struct_::Fi
                                                    auto ftype = hilti::type::Function(std::move($3), std::move($6), $1, __loc__);
                                                    $$ = hilti::type::struct_::Field(std::move($4), $2, std::move(ftype), $8, __loc__);
                                                    }
+              | func_flavor opt_func_cc func_result function_id '(' opt_func_params ')' opt_attributes braced_block {
+                                                   auto ftype = hilti::type::Function(std::move($3), std::move($6), $1, __loc__);
+                                                   auto func = hilti::Function($4, std::move(ftype), std::move($9), $2, {});
+                                                   $$ = hilti::type::struct_::Field($4, std::move(func), $8, __loc__);
+                                                   }
 
 union_type    : UNION opt_attributes'{' opt_union_fields '}'
                                                  { $$ = hilti::type::Union(std::move($4), __loc__); }

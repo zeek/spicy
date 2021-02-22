@@ -48,8 +48,18 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                 std::vector<cxx::declaration::Argument> args;
                 std::vector<cxx::type::struct_::Member> fields;
 
-                cg->enablePrioritizeTypes();
+                cxx::Block self_body;
+                self_body.addStatement(util::fmt("return hilti::rt::ValueReference<%s>::self(this)", id));
 
+                auto self = cxx::declaration::Function{.result = "auto",
+                                                       .id = "__self",
+                                                       .args = {},
+                                                       .linkage = "inline",
+                                                       .inline_body = std::move(self_body)};
+
+                fields.emplace_back(std::move(self));
+
+                cg->enablePrioritizeTypes();
                 cxx::Type type;
                 cxx::Type internal_type;
 
@@ -90,6 +100,34 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
                         if ( f.isStatic() )
                             d.linkage = "static";
+
+                        if ( auto func = f.inlineFunction(); func && func->body() ) {
+                            auto cxx_body = cxx::Block();
+
+                            // Need a LHS for __self.
+                            auto tid = n.typeID();
+
+                            if ( ! tid )
+                                logger().internalError("Struct type with hooks does not have a type ID");
+
+                            auto id_module = tid->sub(-2);
+                            auto id_class = tid->sub(-1);
+
+                            if ( id_module.empty() )
+                                id_module = cg->hiltiUnit()->id();
+
+                            auto id_type = cxx::ID(id_module, id_class);
+                            auto self = cxx::declaration::Local{.id = "__self",
+                                                                .type = "auto",
+                                                                .init = fmt("%s::__self()", id_type)};
+                            cxx_body.addLocal(self);
+                            cg->compile(*func->body(), &cxx_body);
+
+                            auto method_impl = cxx::Function{.declaration = d, .body = std::move(cxx_body)};
+                            method_impl.declaration.id = cxx::ID(scope, sid, f.id());
+                            method_impl.declaration.linkage = "inline";
+                            cg->unit()->add(method_impl);
+                        }
 
                         if ( ft->flavor() == type::function::Flavor::Hook ) {
                             auto tid = n.typeID();
@@ -175,18 +213,6 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
                     fields.emplace_back(std::move(x));
                 }
-
-                cxx::Block self_body;
-                self_body.addStatement(util::fmt("return hilti::rt::ValueReference<%s>::self(this)", id));
-
-                auto self = cxx::declaration::Function{.result = "auto",
-                                                       .id = "__self",
-                                                       .args = {},
-                                                       .linkage = "inline",
-                                                       .inline_body = std::move(self_body)};
-
-                fields.emplace_back(std::move(self));
-
 
                 if ( n.hasFinalizer() ) {
                     // Call the finalizer hook from a C++ destructor.
@@ -685,10 +711,9 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
         if ( auto x = dispatch(n.type()) )
             return *x;
 
-        logger()
-            .internalError(fmt("codegen: type wrapper (auto) resolves to type %s, which does not have a visitor",
-                               to_node(n.type()).render()),
-                           n);
+        logger().internalError(fmt("codegen: type wrapper (auto) resolves to type %s, which does not have a visitor",
+                                   to_node(n.type()).render()),
+                               n);
     }
 
     result_t operator()(const type::Computed& n) {
