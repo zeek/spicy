@@ -13,7 +13,7 @@ using namespace hilti::builder;
 
 using util::fmt;
 
-Expression Builder::addTmp(const std::string& prefix, const Type& t) {
+Expression Builder::addTmp(const std::string& prefix, const Type& t, const std::vector<Expression>& args) {
     int n = 0;
 
     if ( auto i = _tmps.find(prefix); i != _tmps.end() )
@@ -27,7 +27,7 @@ Expression Builder::addTmp(const std::string& prefix, const Type& t) {
         tmp = ID(fmt("__%s_%d", prefix, n));
 
     _tmps[prefix] = n;
-    _block._add(builder::local(tmp, t));
+    _block._add(builder::local(tmp, t, args));
     return builder::id(tmp);
 }
 
