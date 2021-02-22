@@ -10,7 +10,7 @@ type A = union {
     string b
 };
 
-local A x;
+global A x;
 assert !x;
 
 x.a = "A";

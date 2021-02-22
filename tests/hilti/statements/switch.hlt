@@ -59,7 +59,7 @@ switch ( x ) {
     case 4: hilti::print("1F");
 }
 
-local i = 1;
+global i = 1;
 
 switch ( ++i ) {
     case 2: hilti::print("A");

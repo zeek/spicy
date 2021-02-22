@@ -2,8 +2,8 @@
 
 module Test {
 
-local uint<16> x1;
-local uint<16> y1;
+global uint<16> x1;
+global uint<16> y1;
 
 y1 = 10;
 
@@ -13,8 +13,8 @@ assert x1 == 11;
 x1 = 2 + y1;
 assert x1 == 12;
 
-local int<16> x2;
-local int<16> y2;
+global int<16> x2;
+global int<16> y2;
 
 y2 = -10;
 

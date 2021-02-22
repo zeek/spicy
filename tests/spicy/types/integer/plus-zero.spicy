@@ -2,5 +2,5 @@
 
 module Test;
 
-local x: int64 = int64(6) - +3;
+global x: int64 = int64(6) - +3;
 assert x == 3;

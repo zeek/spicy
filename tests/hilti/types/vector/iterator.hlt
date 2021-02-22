@@ -36,8 +36,8 @@ function void p2(vector<vector<uint<64>>> v) {
 }
 
 # Checking non-constant iterator
-local auto v = vector(1, 2, 3);
-local auto i = begin(v);
+global auto v = vector(1, 2, 3);
+global auto i = begin(v);
 hilti::print(i);
 
 assert *i++ == 1;
@@ -50,7 +50,7 @@ assert i == end(v);
 # Checking constant iterators
 p(v);
 
-local vector<vector<uint<64>>> v2 = vector(vector(1,2), vector(2, 3), vector(3, 4));
+global vector<vector<uint<64>>> v2 = vector(vector(1,2), vector(2, 3), vector(3, 4));
 p2(v2);
 
 #  Checking for loop
@@ -58,7 +58,7 @@ i = begin(v);
 for ( x in v )
     x == *i++;
 
-local auto j = begin(v2);
+global auto j = begin(v2);
 for ( x in v2 )
     x == *j++;
 }

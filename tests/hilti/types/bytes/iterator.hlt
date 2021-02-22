@@ -6,10 +6,10 @@ module Foo {
 
 import hilti;
 
-local auto x = b"01234567890";
+global auto x = b"01234567890";
 
-local auto i = begin(x);
-local auto j = i;
+global auto i = begin(x);
+global auto j = i;
 assert i == begin(x);
 assert j == begin(x);
 assert j == i;
@@ -62,7 +62,7 @@ function void p(bytes x) {
         assert j == *i++;
 }
 
-local auto x2 = b"01234567890";
+global auto x2 = b"01234567890";
 p(x2);
 p(b"01234567890");
 

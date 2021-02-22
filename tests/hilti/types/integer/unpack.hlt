@@ -17,9 +17,9 @@ hilti::print("L 0x%04x" % u16);
 hilti::print("B 0x%04x" % u16);
 
 # Check that stream version works, too.
-local stream s = stream(b"\x00\x01X");
-local view<stream> v = s;
-local view<stream> vr;
+global stream s = stream(b"\x00\x01X");
+global view<stream> v = s;
+global view<stream> vr;
 (u16, vr) = *unpack<uint<16>>(v, hilti::ByteOrder::Little);
 hilti::print("L 0x%04x" % u16);
 (u16, vr) = *unpack<uint<16>>(v, hilti::ByteOrder::Big);

@@ -15,7 +15,7 @@ type X = struct {
     string s;
 };
 
-local tuple<x: strong_ref<X>, y: int<64>> t2;
+global tuple<x: strong_ref<X>, y: int<64>> t2;
 
 t2.x = new X;
 t2.x.s = "foo";

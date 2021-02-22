@@ -3,10 +3,10 @@
 
 module Foo {
 
-local auto s1 = "S1";
-local auto s2 = "S2";
-local auto t = True;
-local auto f = False;
+global auto s1 = "S1";
+global auto s2 = "S2";
+global auto t = True;
+global auto f = False;
 
 assert 1 == (True ? 1 : 2);
 assert 2 == (False ? 1 : 2);

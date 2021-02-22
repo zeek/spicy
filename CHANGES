@@ -1,3 +1,10 @@
+
+0.4.0-1462 | 2021-02-22 10:10:53 +0100
+
+  * GH-719: Reject local variables at module scope.
+
+    Closes #719. (Benjamin Bannier, Corelight)
+
 0.4.0-1455 | 2021-02-18 17:05:01 +0100
 
   * Document `&byte-order` unit attribute. (Benjamin Bannier, Corelight)
