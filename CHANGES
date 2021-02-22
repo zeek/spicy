@@ -1,3 +1,26 @@
+
+0.4.0-1474 | 2021-02-22 13:46:31 +0000
+
+  * Tweak auto-discover of *.hlto files in Zeek plugin. (Robin Sommer, Corelight)
+
+    The plugin now scans for *.hlto files at startup at two locations by
+    default:
+
+        1. A directory "modules/" inside the plugins top-level directory.
+
+        2. Zeek's default plugin directory.
+
+    Both of these places are searched *recursively*, similar to how Zeek
+    looks for binary plugins.
+
+    Alternatively, one can override both of these by setting an environment
+    variable `SPICY_MODULE_PATH` to a colon-separated list of directories,
+    which will then be searched recursively *instead* of the default
+    locations.
+
+  * Extend spicy-config with a couple more Zeek-related options, and
+    tweak some existing option names. (Robin Sommer, Corelight)
+
 0.4.0-1470 | 2021-02-22 14:31:35 +0100
 
   * GH-772: Allow trailing comma in tuple type list.

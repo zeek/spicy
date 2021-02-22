@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <set>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -179,6 +180,9 @@ private:
 
     // Search SPICY_MODULE_PATH for pre-compiled *.hlto modules and load them.
     void autoDiscoverModules();
+
+    // Recursively search pre-compiled *.hlto in colon-separated paths.
+    void searchModules(std::string paths);
 
     /** Captures a registered protocol analyzer. */
     struct ProtocolAnalyzerInfo {

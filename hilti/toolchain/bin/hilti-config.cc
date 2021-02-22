@@ -35,7 +35,7 @@ Available options:
     --ldflags-hlto          Print linker flags when building precompiled HLTO libraries
     --libdirs               Print standard HILTI library directories.
     --prefix                Print path of installation.
-    --toolchain             Prints 'yes' if the Spicy toolchain was built, 'no' otherwise.
+    --have-toolchain        Prints 'yes' if the HILTI toolchain was built, 'no' otherwise.
     --version               Print HILTI version.
 
     --using-build-dir       Returns true when hilti-config's output is referring to the build directory;
@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        if ( opt == "--toolchain" ) {
+        if ( opt == "--have-toolchain" ) {
 #ifdef HAVE_TOOLCHAIN
             result.emplace_back("yes");
 #else
