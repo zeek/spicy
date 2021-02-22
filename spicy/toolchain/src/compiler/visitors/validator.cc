@@ -416,6 +416,14 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
         if ( auto contexts = u.propertyItems("%context"); contexts.size() > 1 )
             error("unit cannot have more than one %context", p);
+
+        if ( const auto& typeId = u.typeID() ) {
+            const auto& type_name = typeId->local();
+            for ( const auto& item : u.items() )
+                if ( auto field = item.tryAs<spicy::type::unit::item::Field>(); field && field->id() == type_name )
+                    error(fmt("field name '%s' cannot have name identical to owning unit '%s'", field->id(), *typeId),
+                          p);
+        }
     }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {

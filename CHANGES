@@ -1,3 +1,10 @@
+0.4.0-1468 | 2021-02-22 10:12:33 +0100
+
+  * GH-600: Add validation for field names clashing with unit names.
+
+    This would previously fail during C++ codegen; now we reject this code.
+
+    Closes #600. (Benjamin Bannier, Corelight)
 
 0.4.0-1462 | 2021-02-22 10:10:53 +0100
 
