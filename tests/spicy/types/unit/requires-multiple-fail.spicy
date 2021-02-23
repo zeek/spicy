@@ -1,0 +1,16 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC-FAIL: printf '\001' | spicy-driver -d test.hlto -p Test::Foo >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001' | spicy-driver -d test.hlto -p Test::Bar >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks that of all multiple requires clauses are evaluated.
+
+module Test;
+
+public type Foo = unit {
+    x: uint8 &requires=($$ == 1) &requires=($$ == 2);
+};
+
+public type Bar = unit {
+    x: uint8;
+} &requires=(self.x == 1) &requires=(self.x == 2);
