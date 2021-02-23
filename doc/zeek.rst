@@ -339,6 +339,7 @@ the pieces going into such an event definition:
         ``bool``, ``bool``,
         ``enum { ... }``, ``enum { ... }``, [1]
         ``int(8|16|32|64)``, ``int``,
+        ``interval``, ``interval``,
         ``list<T>``, ``vector of T``,
         "``map<V,K>``", "``table[V] of K``",
         ``optional<T>``, ``T``,  [2]
@@ -346,6 +347,7 @@ the pieces going into such an event definition:
         ``real``, ``double``,
         ``set<T>``, ``set[T]``,
         ``string``, ``string``,
+        ``time``, ``time``,
         "``tuple<T_1, ... ,T_N>``", "``record { T1, ..., T_N }``", [3]
         ``uint(8|16|32|64)``, ``count``,
         ``vector<T>``, ``vector of T``,
