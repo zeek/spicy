@@ -226,7 +226,7 @@ return value of a function that may fail.
 
 .. rubric:: Constants
 
-- ``optional(EXPR)`` creates an ``optional<T>``, where ``T` is the
+- ``optional(EXPR)`` creates an ``optional<T>``, where ``T`` is the
   type of the expression ``EXPR`` and initializes it with the value of
   ``EXPR``.
 
@@ -469,10 +469,12 @@ Tuple
 -----
 
 Tuples are heterogeneous containers of a fixed, ordered set of types.
+Tuple elements may optionally be declared and addressed with custom
+identifier names.
 
 .. rubric:: Type
 
-- ``tuple<TYPE_1, ...TYPE_N``
+- ``tuple<[IDENTIFIER_1: ]TYPE_1, ...[IDENTIFIER_N: ]TYPE_N>``
 
 .. rubric:: Constants
 

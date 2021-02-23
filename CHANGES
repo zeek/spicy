@@ -1,3 +1,14 @@
+
+0.4.0-1486 | 2021-02-23 19:02:16 +0000
+
+  * Documentation updates. (Jon Siwek, Corelight)
+
+    - Add explicit mention of named-tuple elements.
+    - Fix inline literal markup in "optional" type.
+    - Add time/interval to Spicy->Zeek type conversion table.
+    - Remove "missing" tag on README's link to "real analyzer tutorial".
+    - Fix documentation link. (Benjamin Bannier, Corelight)
+
 0.4.0-1479 | 2021-02-23 14:22:12 +0100
 
   * GH-770: Evaluate the AND of all field `requires` clauses.
