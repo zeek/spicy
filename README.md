@@ -68,7 +68,7 @@ which provides the following sections:
 * [Installation](https://docs.zeek.org/projects/spicy/en/latest/installation.html)
 * [Getting Started](https://docs.zeek.org/projects/spicy/en/latest/getting-started.html)
 * [FAQ](https://docs.zeek.org/projects/spicy/en/latest/faq.html)
-* [Tutorial: A Real Analyzer](https://docs.zeek.org/projects/spicy/en/latest/tutorial/index.html) (Missing)
+* [Tutorial: A Real Analyzer](https://docs.zeek.org/projects/spicy/en/latest/tutorial/index.html)
 * [Programming in Spicy](https://docs.zeek.org/projects/spicy/en/latest/programming/index.html)
 * [Toolchain](https://docs.zeek.org/projects/spicy/en/latest/toolchain.html)
 * [Zeek Integration](https://docs.zeek.org/projects/spicy/en/latest/zeek.html)
