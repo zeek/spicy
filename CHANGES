@@ -1,3 +1,10 @@
+0.4.0-1479 | 2021-02-23 14:22:12 +0100
+
+  * GH-770: Evaluate the AND of all field `requires` clauses.
+
+    We already did this correctly for units by previously only evaluated the
+    first `&requires` clause for fields.
+
 0.4.0-1476 | 2021-02-23 14:21:25 +0100
 
   * GH-774: Fix method argument type deduction for argument packs.

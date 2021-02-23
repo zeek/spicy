@@ -1316,15 +1316,14 @@ void ParserBuilder::newValueForField(const type::unit::item::Field& field, const
         nvalue = builder::member(state().self, field.id());
     }
 
-    if ( auto a = AttributeSet::find(field.attributes(), "&requires") ) {
+    for ( const auto& a : AttributeSet::findAll(field.attributes(), "&requires") ) {
         // We evaluate "&requires" here so that the field's value has been
         // set already, and is hence accessible to the condition through
         // "self.<x>".
         auto block = builder()->addBlock();
         block->addLocal(ID("__dd"), field.parseType(), value);
-        auto cond = block->addTmp("requires", *a->valueAs<Expression>());
-        pushBuilder(block->addIf(builder::not_(cond)),
-                    [&]() { parseError("&requires failed ($$ == %s)", {value}, a->value().location()); });
+        auto cond = block->addTmp("requires", *a.valueAs<Expression>());
+        pushBuilder(block->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", a.value().location()); });
     }
 
     if ( ! field.parseType().isA<spicy::type::Bitfield>() ) {
