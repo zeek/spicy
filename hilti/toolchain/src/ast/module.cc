@@ -11,7 +11,7 @@ void Module::clear() {
 
     // We fully walk the AST here in order to break any reference cycles it may
     // contain. Start at child 1 to leave ID in place.
-    for ( auto i = 1; i < childs().size(); i++ ) {
+    for ( size_t i = 1; i < childs().size(); i++ ) {
         for ( auto j : v.walk(&childs()[i]) )
             j.node = node::none;
     }

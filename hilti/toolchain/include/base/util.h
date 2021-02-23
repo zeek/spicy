@@ -197,7 +197,7 @@ std::vector<T> slice(const std::vector<T>& v, int begin, int end = -1) {
     if ( begin < 0 )
         begin = v.size() + begin;
 
-    if ( begin > v.size() )
+    if ( static_cast<size_t>(begin) > v.size() )
         return {};
 
     if ( end < 0 )
@@ -209,7 +209,7 @@ std::vector<T> slice(const std::vector<T>& v, int begin, int end = -1) {
     if ( end < 0 )
         end = 0;
 
-    if ( end > v.size() )
+    if ( static_cast<size_t>(end) > v.size() )
         end = v.size();
 
     return std::vector<T>(v.begin() + begin, v.begin() + end);

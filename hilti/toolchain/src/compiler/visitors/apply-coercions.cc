@@ -20,7 +20,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     bool modified = false;
 
     /** Returns a method call's i-th argument. */
-    auto methodArgument(const expression::ResolvedOperatorBase& o, int i) {
+    auto methodArgument(const expression::ResolvedOperatorBase& o, size_t i) {
         auto ops = o.op2();
 
         // If the argument list was the result of a coercion unpack its result.
