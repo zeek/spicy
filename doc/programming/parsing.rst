@@ -1436,7 +1436,7 @@ can, e.g., be used to reparse previously received input:
 
 For ``&parse-at``, ``EXPR`` must yield an iterator pointing to (a
 still valid) position of the current unit's input stream (such as
-retrieved through spicy:method:`unit::input`). The field will then be
+retrieved through :spicy:method:`unit::input`). The field will then be
 parsed from the data starting at that location.
 
 .. _random_access:
