@@ -226,7 +226,7 @@ return value of a function that may fail.
 
 .. rubric:: Constants
 
-- ``optional(EXPR)`` creates an ``optional<T>``, where ``T` is the
+- ``optional(EXPR)`` creates an ``optional<T>``, where ``T`` is the
   type of the expression ``EXPR`` and initializes it with the value of
   ``EXPR``.
 
