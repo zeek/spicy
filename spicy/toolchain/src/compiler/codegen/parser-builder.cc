@@ -1323,8 +1323,7 @@ void ParserBuilder::newValueForField(const type::unit::item::Field& field, const
         auto block = builder()->addBlock();
         block->addLocal(ID("__dd"), field.parseType(), value);
         auto cond = block->addTmp("requires", *a.valueAs<Expression>());
-        pushBuilder(block->addIf(builder::not_(cond)),
-                    [&]() { parseError("&requires failed ($$ == %s)", {value}, a.value().location()); });
+        pushBuilder(block->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", a.value().location()); });
     }
 
     if ( ! field.parseType().isA<spicy::type::Bitfield>() ) {
