@@ -507,6 +507,9 @@ struct ProductionVisitor
                 }
             }
 
+            if ( auto c = field->condition() )
+                pushBuilder(builder()->addIf(*c));
+
             if ( auto a = AttributeSet::find(field->attributes(), "&parse-from") ) {
                 // Redirect input to a bytes value.
                 auto pstate = state();
@@ -538,9 +541,6 @@ struct ProductionVisitor
                 pstate.ncur = {};
                 pushState(std::move(pstate));
             }
-
-            if ( auto c = field->condition() )
-                pushBuilder(builder()->addIf(*c));
 
             if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
                 // Limit input to the specified length.
