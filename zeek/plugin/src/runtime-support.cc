@@ -18,8 +18,8 @@ void rt::register_protocol_analyzer(const std::string& name, hilti::rt::Protocol
 }
 
 void rt::register_file_analyzer(const std::string& name, const hilti::rt::Vector<std::string>& mime_types,
-                                const std::string& parser) {
-    OurPlugin->registerFileAnalyzer(name, mime_types, parser);
+                                const std::string& parser, const std::string& replaces) {
+    OurPlugin->registerFileAnalyzer(name, mime_types, parser, replaces);
 }
 
 void rt::register_packet_analyzer(const std::string& name, const std::string& parser) {

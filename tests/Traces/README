@@ -13,3 +13,4 @@ Sources for external PCAPs:
     - Zeek
         * dns53.pcap
         * http-post.trace (post.trace)
+        * ftp-pe.pcap (pe/pe.trace, pruned a single file transfer)

@@ -644,6 +644,14 @@ glue::FileAnalyzer GlueCompiler::parseFileAnalyzer(const std::string& chunk) {
             a.mime_types.push_back(mtype.string());
         }
 
+        else if ( looking_at(chunk, i, "replaces") ) {
+            if ( _zeek_version < 40100 )
+                throw ParseError("file analyzer replacement requires Zeek 4.1+");
+
+            eat_token(chunk, &i, "replaces");
+            a.replaces = extract_id(chunk, &i);
+        }
+
         else
             throw ParseError("unexpect token");
 
@@ -827,7 +835,7 @@ bool GlueCompiler::compile() {
                           {builder::string(a.name),
                            builder::vector(
                                hilti::util::transform(a.mime_types, [](auto m) { return builder::string(m); })),
-                           builder::string(a.unit_name)});
+                           builder::string(a.unit_name), builder::string(a.replaces)});
 
         init_module.add(std::move(register_));
     }

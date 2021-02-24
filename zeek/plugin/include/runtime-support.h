@@ -83,7 +83,7 @@ void register_protocol_analyzer(const std::string& name, hilti::rt::Protocol pro
  * plugin's runtime.
  */
 void register_file_analyzer(const std::string& name, const hilti::rt::Vector<std::string>& mime_types,
-                            const std::string& parser);
+                            const std::string& parser, const std::string& replaces = "");
 
 /**
  * Registers a Spicy packet analyzer with its EVT meta information with the

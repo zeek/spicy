@@ -46,7 +46,7 @@ public:
      * unit's parser with
      * @param parser_resp name of the Spicy parser for the originator side; must match the name that Spicy registers the
      * unit's parser with
-     * @param replaces optional name of existing Zeek analyzder that this one replaces; the Zeek analyzer will
+     * @param replaces optional name of existing Zeek analyzer that this one replaces; the Zeek analyzer will
      * automatically be disabled
      */
     void registerProtocolAnalyzer(const std::string& name, hilti::rt::Protocol proto,
@@ -63,9 +63,11 @@ public:
      * types
      * @param parser name of the Spicy parser for parsing the file; must match the name that Spicy registers the unit's
      * parser with
+     * @param replaces optional name of existing Zeek analyzer that this one replaces; the Zeek analyzer will
+     * automatically be disabled
      */
     void registerFileAnalyzer(const std::string& name, const hilti::rt::Vector<std::string>& mime_types,
-                              const std::string& parser);
+                              const std::string& parser, const std::string& replaces = "");
 
     /**
      * Runtime method to register a packet analyzer with its Zeek-side
@@ -133,7 +135,7 @@ public:
      * @param tag original tag we query for how to pass it to script-land.
      * @return desired tag for passing to script-land.
      */
-    ::zeek::analyzer::Tag tagForFileAnalyzer(const ::zeek::analyzer::Tag& tag);
+    ::zeek::file_analysis::Tag tagForFileAnalyzer(const ::zeek::file_analysis::Tag& tag);
 
 #ifdef HAVE_PACKET_ANALYZERS
     /**
@@ -206,11 +208,13 @@ private:
         // Filled in when registering the analyzer.
         std::string name_analyzer;
         std::string name_parser;
+        std::string name_replaces;
         hilti::rt::Vector<std::string> mime_types;
-        ::zeek::analyzer::Tag::subtype_t subtype;
+        ::zeek::file_analysis::Tag::subtype_t subtype;
 
         // Filled in during InitPostScript().
         const spicy::rt::Parser* parser;
+        ::zeek::file_analysis::Tag replaces;
     };
 
 #ifdef HAVE_PACKET_ANALYZERS
