@@ -193,9 +193,10 @@ private:
         std::string name_parser_orig;
         std::string name_parser_resp;
         std::string name_replaces;
+        std::string name_zeekygen;
         hilti::rt::Protocol protocol = hilti::rt::Protocol::Undef;
         hilti::rt::Vector<hilti::rt::Port> ports;
-        ::zeek::analyzer::Tag::subtype_t subtype;
+        ::zeek::analyzer::Tag::type_t type;
 
         // Filled in during InitPostScript().
         const spicy::rt::Parser* parser_orig;
@@ -209,8 +210,9 @@ private:
         std::string name_analyzer;
         std::string name_parser;
         std::string name_replaces;
+        std::string name_zeekygen;
         hilti::rt::Vector<std::string> mime_types;
-        ::zeek::file_analysis::Tag::subtype_t subtype;
+        ::zeek::analyzer::Tag::type_t type;
 
         // Filled in during InitPostScript().
         const spicy::rt::Parser* parser;
@@ -223,17 +225,18 @@ private:
         // Filled in when registering the analyzer.
         std::string name_analyzer;
         std::string name_parser;
-        ::zeek::packet_analysis::Tag::subtype_t subtype;
+        std::string name_zeekygen;
+        ::zeek::packet_analysis::Tag::type_t type;
 
         // Filled in during InitPostScript().
         const spicy::rt::Parser* parser;
     };
 #endif
 
-    std::vector<ProtocolAnalyzerInfo> _protocol_analyzers_by_subtype;
-    std::vector<FileAnalyzerInfo> _file_analyzers_by_subtype;
+    std::vector<ProtocolAnalyzerInfo> _protocol_analyzers_by_type;
+    std::vector<FileAnalyzerInfo> _file_analyzers_by_type;
 #ifdef HAVE_PACKET_ANALYZERS
-    std::vector<PacketAnalyzerInfo> _packet_analyzers_by_subtype;
+    std::vector<PacketAnalyzerInfo> _packet_analyzers_by_type;
 #endif
     std::unordered_map<std::string, hilti::rt::Library> _libraries;
 

@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o common.hlto
+# @TEST-EXEC: spicyc -j -L ${SPICY_ANALYZERS} %INPUT -o common.hlto
 
 # @TEST-EXEC: cat %DIR/requests.dat | spicy-driver common.hlto -p HTTP::Requests >>requests
 # @TEST-EXEC: cat %DIR/requests.dat | spicy-dump common.hlto -p HTTP::Request >>requests
@@ -27,7 +27,7 @@
 
 module Test;
 
-import HTTP from protocols;
+import HTTP from protocol.http;
 
 on HTTP::Request::%done {
     print self;

@@ -209,6 +209,11 @@ function run_build {
     # do not trigger OOM kills in the Docker environments.
     (cd ${build} && ninja -j4) || exit 1
 
+    if cat ${build}/CMakeCache.txt | egrep -iq 'BUILD_TOOLCHAIN.*(yes|on|off)'; then
+        log_stage "Building analyzers ..."
+        (cd ${build} && ninja -j4 spicy-analyzers) || exit 1
+    fi
+
     log_stage "Building docs ..."
     (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc doxygen html) || exit 1
 
@@ -247,6 +252,33 @@ function run_test_btest {
               -x ${artifacts}/diag.xml \
               ${btest_alternative} \
               ${btest_group}
+
+    rc=$?
+
+    if [ ${rc} != 0 ]; then
+        cp -a .tmp ${artifacts}/btest-tmp
+        log_diag "Begin diagnostics"
+        cat ${artifacts}/diag.log
+        log_diag "End diagnostics (complete test output in 'btest-tmp')"
+        log_error "Tests have failed"
+    fi
+
+    return ${rc}
+}
+
+function run_test_analyzers {
+    export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
+    export ZEEK_LD_PRELOAD=$(cat ${build}/.zeek_ld_preload)
+    export SPICY_MODULE_PATH=${build}/zeek/spicy-analyzers/spicy-modules
+
+    log_stage "Running analyzer tests ..."
+
+    cd zeek/spicy-analyzers/tests
+    eval ${preload} \
+        btest -b \
+              -j 5 \
+              -f ${artifacts}/diag.log \
+              -x ${artifacts}/diag.xml
 
     rc=$?
 
@@ -337,6 +369,10 @@ function run_test_common {
 function run_test_build {
     export SPICY_BUILD_DIRECTORY=${build}
     run_test_common
+
+    pushd $(pwd) >/dev/null
+    run_test_analyzers || rc=1
+    popd >/dev/null
 }
 
 function run_test_install {

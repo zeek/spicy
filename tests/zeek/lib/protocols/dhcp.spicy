@@ -1,8 +1,0 @@
-# @TEST-REQUIRES: have-zeek-plugin
-#
-# @TEST-EXEC: spicyz -o dhcp.hlto ${DIST}/spicy/lib/protocols/dhcp.spicy ${DIST}/zeek/plugin/lib/protocols/dhcp.evt ${DIST}/zeek/plugin/lib/protocols/zeek_dhcp.spicy
-# @TEST-EXEC: ${SCRIPTS}/run-zeek -NN dhcp.hlto | grep -q spicy_DHCP
-# @TEST-EXEC: ${SCRIPTS}/run-zeek -C -r ${TRACES}/dhcp.pcap dhcp.hlto
-#    Zeek 4.0 emits our DHCP entries in a different order.
-# @TEST-EXEC: cat dhcp.log | sort >dhcp.log.tmp && mv -f dhcp.log.tmp dhcp.log
-# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-zeek-log btest-diff dhcp.log

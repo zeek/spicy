@@ -84,10 +84,9 @@ void plugin::Zeek_Spicy::Plugin::registerProtocolAnalyzer(const std::string& nam
     info.name_parser_orig = parser_orig;
     info.name_parser_resp = parser_resp;
     info.name_replaces = replaces;
+    info.name_zeekygen = hilti::rt::fmt("<Spicy-%s>", name);
     info.protocol = proto;
     info.ports = ports;
-    info.subtype = _protocol_analyzers_by_subtype.size();
-    _protocol_analyzers_by_subtype.push_back(std::move(info));
 
     if ( replaces.size() ) {
         if ( zeek::analyzer::Tag tag = ::zeek::analyzer_mgr->GetAnalyzerTag(replaces.c_str()) ) {
@@ -97,6 +96,30 @@ void plugin::Zeek_Spicy::Plugin::registerProtocolAnalyzer(const std::string& nam
         else
             ZEEK_DEBUG(hilti::rt::fmt("%s i supposed to replace %s, but that does not exist", name, replaces, name));
     }
+
+    ::zeek::analyzer::Component::factory_callback factory = nullptr;
+
+    switch ( proto ) {
+        case hilti::rt::Protocol::TCP: factory = spicy::zeek::rt::TCP_Analyzer::InstantiateAnalyzer; break;
+        case hilti::rt::Protocol::UDP: factory = spicy::zeek::rt::UDP_Analyzer::InstantiateAnalyzer; break;
+        default: reporter::error("unsupported protocol in analyzer"); return;
+    }
+
+    auto c = new ::zeek::analyzer::Component(info.name_analyzer, factory, 0);
+    AddComponent(c);
+
+    // Hack to prevent Zeekygen from reporting the ID as not having a
+    // location during the following initialization step.
+    ::zeek::detail::zeekygen_mgr->Script(info.name_zeekygen);
+    ::zeek::detail::set_location(::zeek::detail::Location(info.name_zeekygen.c_str(), 0, 0, 0, 0));
+
+    // TODO: Should Zeek do this? It has run component intiialization at
+    // this point already, so ours won't get initialized anymore.
+    c->Initialize();
+
+    info.type = c->Tag().Type();
+    _protocol_analyzers_by_type.resize(info.type + 1);
+    _protocol_analyzers_by_type[info.type] = info;
 }
 
 void plugin::Zeek_Spicy::Plugin::registerFileAnalyzer(const std::string& name,
@@ -108,9 +131,8 @@ void plugin::Zeek_Spicy::Plugin::registerFileAnalyzer(const std::string& name,
     info.name_analyzer = name;
     info.name_parser = parser;
     info.name_replaces = replaces;
+    info.name_zeekygen = hilti::rt::fmt("<Spicy-%s>", name);
     info.mime_types = mime_types;
-    info.subtype = _file_analyzers_by_subtype.size();
-    _file_analyzers_by_subtype.push_back(std::move(info));
 
 #if ZEEK_VERSION_NUMBER >= 40100
     // Zeek does not have a way to disable file analyzers until 4.1.
@@ -126,6 +148,23 @@ void plugin::Zeek_Spicy::Plugin::registerFileAnalyzer(const std::string& name,
             ZEEK_DEBUG(hilti::rt::fmt("%s i supposed to replace %s, but that does not exist", name, replaces, name));
     }
 #endif
+
+    auto c = new ::zeek::file_analysis::Component(info.name_analyzer,
+                                                  ::spicy::zeek::rt::FileAnalyzer::InstantiateAnalyzer, 0);
+    AddComponent(c);
+
+    // Hack to prevent Zeekygen from reporting the ID as not having a
+    // location during the following initialization step.
+    ::zeek::detail::zeekygen_mgr->Script(info.name_zeekygen);
+    ::zeek::detail::set_location(::zeek::detail::Location(info.name_zeekygen.c_str(), 0, 0, 0, 0));
+
+    // TODO: Should Zeek do this? It has run component intiialization at
+    // this point already, so ours won't get initialized anymore.
+    c->Initialize();
+
+    info.type = c->Tag().Type();
+    _file_analyzers_by_type.resize(info.type + 1);
+    _file_analyzers_by_type[info.type] = info;
 }
 
 #ifdef HAVE_PACKET_ANALYZERS
@@ -135,8 +174,27 @@ void plugin::Zeek_Spicy::Plugin::registerPacketAnalyzer(const std::string& name,
     PacketAnalyzerInfo info;
     info.name_analyzer = name;
     info.name_parser = parser;
-    info.subtype = _packet_analyzers_by_subtype.size();
-    _packet_analyzers_by_subtype.push_back(std::move(info));
+    info.name_zeekygen = hilti::rt::fmt("<Spicy-%s>", name);
+
+    auto instantiate = [info]() -> ::zeek::packet_analysis::AnalyzerPtr {
+        return ::spicy::zeek::rt::PacketAnalyzer::Instantiate(info.name_analyzer);
+    };
+
+    auto c = new ::zeek::packet_analysis::Component(info.name_analyzer, instantiate, 0);
+    AddComponent(c);
+
+    // Hack to prevent Zeekygen from reporting the ID as not having a
+    // location during the following initialization step.
+    ::zeek::detail::zeekygen_mgr->Script(info.name_zeekygen);
+    ::zeek::detail::set_location(::zeek::detail::Location(info.name_zeekygen.c_str(), 0, 0, 0, 0));
+
+    // TODO: Should Zeek do this? It has run component intiialization at
+    // this point already, so ours won't get initialized anymore.
+    c->Initialize();
+
+    info.type = c->Tag().Type();
+    _packet_analyzers_by_type.resize(info.type + 1);
+    _packet_analyzers_by_type[info.type] = info;
 }
 #endif
 
@@ -171,30 +229,30 @@ void plugin::Zeek_Spicy::Plugin::registerEnumType(
 const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForProtocolAnalyzer(const ::zeek::analyzer::Tag& tag,
                                                                                bool is_orig) {
     if ( is_orig )
-        return _protocol_analyzers_by_subtype[tag.Subtype()].parser_orig;
+        return _protocol_analyzers_by_type[tag.Type()].parser_orig;
     else
-        return _protocol_analyzers_by_subtype[tag.Subtype()].parser_resp;
+        return _protocol_analyzers_by_type[tag.Type()].parser_resp;
 }
 
 const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForFileAnalyzer(const ::zeek::file_analysis::Tag& tag) {
-    return _file_analyzers_by_subtype[tag.Subtype()].parser;
+    return _file_analyzers_by_type[tag.Type()].parser;
 }
 
 #ifdef HAVE_PACKET_ANALYZERS
 const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForPacketAnalyzer(const ::zeek::packet_analysis::Tag& tag) {
-    return _packet_analyzers_by_subtype[tag.Subtype()].parser;
+    return _packet_analyzers_by_type[tag.Type()].parser;
 }
 #endif
 
 ::zeek::analyzer::Tag plugin::Zeek_Spicy::Plugin::tagForProtocolAnalyzer(const ::zeek::analyzer::Tag& tag) {
-    if ( auto r = _protocol_analyzers_by_subtype[tag.Subtype()].replaces )
+    if ( auto r = _protocol_analyzers_by_type[tag.Type()].replaces )
         return r;
     else
         return tag;
 }
 
 ::zeek::file_analysis::Tag plugin::Zeek_Spicy::Plugin::tagForFileAnalyzer(const ::zeek::file_analysis::Tag& tag) {
-    if ( auto r = _file_analyzers_by_subtype[tag.Subtype()].replaces )
+    if ( auto r = _file_analyzers_by_type[tag.Subtype()].replaces )
         return r;
     else
         return tag;
@@ -305,7 +363,11 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         return nullptr; // cannot be reached
     };
 
-    for ( auto& p : _protocol_analyzers_by_subtype ) {
+    for ( auto& p : _protocol_analyzers_by_type ) {
+        if ( p.type == 0 )
+            // vector element not set
+            continue;
+
         ZEEK_DEBUG(hilti::rt::fmt("Registering %s protocol analyzer %s with Zeek", p.protocol, p.name_analyzer));
 
         p.parser_orig = find_parser(p.name_analyzer, p.name_parser_orig);
@@ -319,28 +381,6 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
                 reporter::error(hilti::rt::fmt("Parser '%s' is to replace '%s', but that one does not exist",
                                                p.name_analyzer, p.name_replaces));
         }
-
-        ::zeek::analyzer::Component::factory_callback factory = nullptr;
-
-        switch ( p.protocol ) {
-            case hilti::rt::Protocol::TCP: factory = spicy::zeek::rt::TCP_Analyzer::InstantiateAnalyzer; break;
-
-            case hilti::rt::Protocol::UDP: factory = spicy::zeek::rt::UDP_Analyzer::InstantiateAnalyzer; break;
-
-            default: reporter::error("unsupported protocol in analyzer"); return;
-        }
-
-        auto c = new ::zeek::analyzer::Component(p.name_analyzer, factory, p.subtype);
-        AddComponent(c);
-
-        // Hack to prevent Zeekygen fromp reporting the ID as not having a
-        // location during the following initialization step.
-        ::zeek::detail::zeekygen_mgr->Script("<Spicy>");
-        ::zeek::detail::set_location(::zeek::detail::Location("<Spicy>", 0, 0, 0, 0));
-
-        // TODO(robin): Should Zeek do this? It has run component intiialization at
-        // this point already, so ours won't get initialized anymore.
-        c->Initialize();
 
         // Register analyzer for its well-known ports.
         auto tag = ::zeek::analyzer_mgr->GetAnalyzerTag(p.name_analyzer.c_str());
@@ -363,32 +403,14 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         }
     }
 
-    for ( auto& p : _file_analyzers_by_subtype ) {
+    for ( auto& p : _file_analyzers_by_type ) {
+        if ( p.type == 0 )
+            // vector element not set
+            continue;
+
         ZEEK_DEBUG(hilti::rt::fmt("Registering file analyzer %s with Zeek", p.name_analyzer.c_str()));
 
         p.parser = find_parser(p.name_analyzer, p.name_parser);
-
-        if ( p.name_replaces.size() ) {
-            ZEEK_DEBUG(hilti::rt::fmt("  Replaces existing file analyzer %s", p.name_replaces));
-            p.replaces = ::zeek::file_mgr->GetComponentTag(p.name_replaces);
-
-            if ( ! p.replaces )
-                reporter::error(hilti::rt::fmt("Parser '%s' is to replace '%s', but that one does not exist",
-                                               p.name_analyzer, p.name_replaces));
-        }
-
-        auto c = new ::zeek::file_analysis::Component(p.name_analyzer,
-                                                      ::spicy::zeek::rt::FileAnalyzer::InstantiateAnalyzer, p.subtype);
-        AddComponent(c);
-
-        // Hack to prevent Zeekygen from reporting the ID as not having a
-        // location during the following initialization step.
-        ::zeek::detail::zeekygen_mgr->Script("<Spicy>");
-        ::zeek::detail::set_location(::zeek::detail::Location("<Spicy>", 0, 0, 0, 0));
-
-        // TODO: Should Zeek do this? It has run component intiialization at
-        // this point already, so ours won't get initialized anymore.
-        c->Initialize();
 
         // Register analyzer for its MIME types.
         auto tag = ::zeek::file_mgr->GetComponentTag(p.name_analyzer.c_str());
@@ -419,25 +441,13 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
     }
 
 #ifdef HAVE_PACKET_ANALYZERS
-    for ( auto& p : _packet_analyzers_by_subtype ) {
+    for ( auto& p : _packet_analyzers_by_type ) {
+        if ( p.type == 0 )
+            // vector element not set
+            continue;
+
         ZEEK_DEBUG(hilti::rt::fmt("Registering packet analyzer %s with Zeek", p.name_analyzer.c_str()));
-
         p.parser = find_parser(p.name_analyzer, p.name_parser);
-
-        auto instantiate = [p]() -> ::zeek::packet_analysis::AnalyzerPtr {
-            return ::spicy::zeek::rt::PacketAnalyzer::Instantiate(p.name_analyzer);
-        };
-        auto c = new ::zeek::packet_analysis::Component(p.name_analyzer, instantiate, p.subtype);
-        AddComponent(c);
-
-        // Hack to prevent Zeekygen from reporting the ID as not having a
-        // location during the following initialization step.
-        ::zeek::detail::zeekygen_mgr->Script("<Spicy>");
-        ::zeek::detail::set_location(::zeek::detail::Location("<Spicy>", 0, 0, 0, 0));
-
-        // TODO: Should Zeek do this? It has run component intiialization at
-        // this point already, so ours won't get initialized anymore.
-        c->Initialize();
     }
 #endif
 

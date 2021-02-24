@@ -55,7 +55,7 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --build-static-libs                Build static libraries instead [default: shared]
     --build-toolchain={yes,no}         Build the Spicy compiler toolchain [default: ${cmake_build_toolchain}]
     --build-type=TYPE                  Set build type (Debug,Release,RelWithDebInfo) [default: ${cmake_build_type}]
-    --build-zeek-plugin={yes,no}       Build the the Spicy plugin for Zeek [default: ${cmake_build_zeek_plugin}]
+    --build-zeek-plugin={yes,no}       Build the Spicy plugin for Zeek [default: ${cmake_build_zeek_plugin}]
     --disable-gold                     On Linux, do not try to use the gold linker
     --disable-precompiled-headers      Disable use of precompiled headers for developer tests
     --disable-zeek-plugin-install      Do not copy Zeek plugin into Zeek plugin path on install
