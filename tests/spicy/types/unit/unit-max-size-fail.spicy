@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test invalid uses of unit `&max-size`
+
+module Mini;
+
+public type Test = unit {
+    xs: bytes &eod;
+} &size=1 &max-size=2;

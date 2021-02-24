@@ -38,8 +38,7 @@ hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::F
         auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
         auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
         auto size_attr = AttributeSet::find(f.attributes(), "&size");
-
-        // &size can be combined with any other attribute, or be used standalone.
+        auto max_size_attr = AttributeSet::find(f.attributes(), "&max-size");
 
         std::vector<std::string> start_attrs_present;
         for ( const auto& i : {parse_from_attr, parse_at_attr} ) {
@@ -53,7 +52,13 @@ hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::F
                 end_attrs_present.emplace_back(i->tag());
         }
 
-        for ( const auto* attrs_present : {&start_attrs_present, &end_attrs_present} ) {
+        std::vector<std::string> size_attrs_present;
+        for ( const auto& i : {size_attr, max_size_attr} ) {
+            if ( i )
+                size_attrs_present.emplace_back(i->tag());
+        }
+
+        for ( const auto* attrs_present : {&start_attrs_present, &end_attrs_present, &size_attrs_present} ) {
             if ( attrs_present->size() > 1 )
                 return hilti::result::Error(
                     fmt("attributes cannot be combined: %s", hilti::util::join(*attrs_present, ", ")));
@@ -299,6 +304,9 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         if ( a.tag() == "&size" && ! a.hasValue() )
             error("&size must provide an expression", p);
 
+        else if ( a.tag() == "&max-size" && ! a.hasValue() )
+            error("&max-size must provide an expression", p);
+
         else if ( a.tag() == "&byte-order" && ! a.hasValue() )
             error("&byte-order requires an expression", p);
 
@@ -391,11 +399,20 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
     void operator()(const spicy::type::Unit& u, position_t p) {
         if ( auto attrs = u.attributes() ) {
+            if ( AttributeSet::find(attrs, "&size") && AttributeSet::find(attrs, "&max-size") )
+                error(("attributes cannot be combined: &size, &max-size"), p);
+
             for ( const auto& a : attrs->attributes() ) {
                 if ( a.tag() == "&size" ) {
                     if ( ! a.hasValue() )
                         error("&size must provide an expression", p);
                 }
+
+                else if ( a.tag() == "&max-size" ) {
+                    if ( ! a.hasValue() )
+                        error("&max-size must provide an expression", p);
+                }
+
                 else if ( a.tag() == "&requires" ) {
                     auto e = a.valueAs<Expression>();
                     if ( ! e )
