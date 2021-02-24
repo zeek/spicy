@@ -37,19 +37,27 @@ hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::
         auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
         auto size_attr = AttributeSet::find(f.attributes(), "&size");
 
-        std::vector<std::string> attrs_present;
-        for ( const auto& i : {eod_attr, parse_from_attr, parse_at_attr, until_attr, until_including_attr} ) {
-            if ( i )
-                attrs_present.emplace_back(i->tag());
-        }
-
         // &size can be combined with any other attribute, or be used standalone.
 
-        if ( attrs_present.size() > 1 )
-            return hilti::result::Error(
-                fmt("attributes cannot be combined: %s", hilti::util::join(attrs_present, ", ")));
+        std::vector<std::string> start_attrs_present;
+        for ( const auto& i : {parse_from_attr, parse_at_attr} ) {
+            if ( i )
+                start_attrs_present.emplace_back(i->tag());
+        }
 
-        if ( attrs_present.empty() && ! size_attr )
+        std::vector<std::string> end_attrs_present;
+        for ( const auto& i : {eod_attr, until_attr, until_including_attr} ) {
+            if ( i )
+                end_attrs_present.emplace_back(i->tag());
+        }
+
+        for ( const auto* attrs_present : {&start_attrs_present, &end_attrs_present} ) {
+            if ( attrs_present->size() > 1 )
+                return hilti::result::Error(
+                    fmt("attributes cannot be combined: %s", hilti::util::join(*attrs_present, ", ")));
+        }
+
+        if ( ! size_attr && start_attrs_present.empty() && end_attrs_present.empty() )
             return hilti::result::Error(
                 "bytes field requires one of &eod, &parse_at, &parse_from, &size, &until, &until-including");
 
@@ -434,9 +442,6 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
         if ( count_attr && (repeat && ! repeat->type().isA<type::Null>()) )
             error("cannot have both `[..]` and &count", p);
-
-        if ( parse_from_attr && parse_at_attr )
-            error("cannot have both &parse-from and &parse-at", p);
 
         if ( f.sinks().size() && ! f.parseType().isA<type::Bytes>() )
             error("only a bytes field can have sinks attached", p);
