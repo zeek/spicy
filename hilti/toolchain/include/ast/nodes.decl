@@ -111,6 +111,7 @@ hilti::statement::Yield : isStatement
 
 hilti::type::Address : isType
 hilti::type::Any : isType
+hilti::type::Auto : isType
 hilti::type::Bool : isType
 hilti::type::Bytes : isType
 hilti::type::Computed : isType

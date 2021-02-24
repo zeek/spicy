@@ -857,7 +857,7 @@ freebsd11_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --with-cxx-compiler=clang++11 --with-c-compiler=clang11
   build_script:
     - ninja -j4 -C build install
   test_script:

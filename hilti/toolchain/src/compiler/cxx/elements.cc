@@ -322,8 +322,10 @@ std::string cxx::type::Struct::str() const {
 
             if ( x->inline_body ) {
                 cxx::Formatter f;
-                f.compact_block = true;
+                f.compact_block = (! x->inline_body || x->inline_body->size() <= 1);
+                f.indent();
                 f << (*x->inline_body);
+                f.dedent();
                 return fmt("%s%s %s", linkage, x->prototype(false), util::trim(f.str()));
             }
 

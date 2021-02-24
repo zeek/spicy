@@ -1,0 +1,33 @@
+# @TEST-EXEC:  printf '1234512345abcABCDEF12X45X78XabcABCDEF123456789012345678abcABC1234512345123123123456100200' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Test variants of global field declarations.
+
+module Mini;
+
+type FooImpl = unit {
+    data: bytes &size=3;
+};
+
+type Bytes = bytes;
+
+public type Test = unit {
+     i1: (bytes &size=5);
+     i1b: (bytes &size=5 &convert=42);
+     i2: (int8[3]);
+     i3: (int8[2])[3];
+     i4: (int8[] &until=($$=='X'))[] &until=($$==vector(55, 56));
+     i5: (FooImpl);
+     i6: (FooImpl[2]);
+     i7: (FooImpl[2])[3];
+     i8: (FooImpl &convert=42);
+     i9: (FooImpl &convert=42) &convert=$$*2;
+    i10a: (bytes &size=5 &convert=$$.to_int());
+    i10b: (Bytes &size=5 &convert=$$.to_int());
+    i10c: (FooImpl &convert=$$.data.to_int());
+     i11: (FooImpl &convert=$$.data.to_int()) &convert=$$*2;
+     i12: (FooImpl &convert=$$.data.to_int())[2];
+     i13: (FooImpl &convert=$$.data.to_int())[2] &convert=[3 * xyz for xyz in $$];
+
+    on %done   { print self; }
+};

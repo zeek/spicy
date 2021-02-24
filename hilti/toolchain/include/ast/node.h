@@ -152,6 +152,12 @@ public:
      */
     void setScope(IntrusivePtr<Scope> new_scope) { _scope = std::move(new_scope); }
 
+    /** Clears out the current scope. */
+    void clearScope() {
+        if ( _scope )
+            _scope->clear();
+    }
+
     /** Returns any error messages associated with the node. */
     std::vector<node::Error> errors() const {
         if ( _errors )

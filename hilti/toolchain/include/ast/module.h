@@ -45,6 +45,12 @@ public:
     }
 
     /**
+     * Removes any content from the module. The result is an empty module just
+     * as if it had just been created. (The ID remains in place.)
+     */
+    void clear();
+
+    /**
      * Returns a module's property declaration of a given name. If there's no
      * property declaration of that name, return an error. If there's more than
      * one of that name, it's undefined which one is returned.

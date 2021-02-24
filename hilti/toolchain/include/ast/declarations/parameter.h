@@ -9,6 +9,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/auto.h>
 
 namespace hilti {
 namespace declaration {
@@ -128,7 +129,16 @@ private:
 
 /** Returns true if two parameters are different only by name of their ID. */
 inline bool areEquivalent(const Parameter& p1, const Parameter& p2) {
-    return p1.type() == p2.type() && p1.kind() == p2.kind() && p1.default_() == p2.default_();
+    if ( p1.kind() != p2.kind() || p1.default_() != p2.default_() )
+        return false;
+
+    auto auto1 = p1.type().tryAs<type::Auto>();
+    auto auto2 = p2.type().tryAs<type::Auto>();
+
+    if ( auto1 || auto2 )
+        return true;
+
+    return p1.type() == p2.type();
 }
 
 } // namespace declaration

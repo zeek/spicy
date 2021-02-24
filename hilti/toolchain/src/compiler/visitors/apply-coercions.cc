@@ -205,7 +205,12 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const ctor::Default& n, position_t p) {
-        if ( auto stype = n.type().tryAs<type::Struct>() ) {
+        auto t = n.type();
+
+        if ( auto vr = t.tryAs<type::ValueReference>() )
+            t = vr->dereferencedType();
+
+        if ( auto stype = t.tryAs<type::Struct>() ) {
             if ( auto x = n.typeArguments(); x.size() ) {
                 if ( auto coerced = coerceCallArguments(&p.node, x, stype->parameters()); coerced && *coerced ) {
                     auto m = ctor::Default::setTypeArguments(n, **coerced);

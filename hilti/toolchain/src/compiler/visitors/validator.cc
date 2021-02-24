@@ -112,8 +112,10 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const declaration::Parameter& n, position_t p) {
-        if ( ! type::isAllocable(n.type()) && n.type() != type::Any() )
-            error(fmt("type '%s' cannot be used for function parameter", n.type()), p);
+        if ( ! n.type().isA<type::Auto>() ) {
+            if ( ! type::isAllocable(n.type()) && n.type() != type::Any() )
+                error(fmt("type '%s' cannot be used for function parameter", n.type()), p);
+        }
 
         if ( n.type().isWildcard() ) {
             if ( auto d = p.parent(3).tryAs<declaration::Function>() ) {
@@ -153,7 +155,12 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     ////// Ctors
 
     void operator()(const ctor::Default& c, position_t p) {
-        if ( auto st = c.type().tryAs<type::Struct>() )
+        auto t = c.type();
+
+        if ( auto vr = t.tryAs<type::ValueReference>() )
+            t = vr->dereferencedType();
+
+        if ( auto st = t.tryAs<type::Struct>() )
             _checkStructArguments(c.typeArguments(), st->parameters(), p);
     }
 
@@ -350,6 +357,11 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     ////// Types
+
+    void operator()(const type::Auto& n, position_t p) {
+        if ( ! n.isSet() )
+            error("'auto' type has not been resolved", p);
+    }
 
     void operator()(const type::Exception& n, position_t p) {
         if ( n.baseType() && ! n.baseType()->isA<type::Exception>() )

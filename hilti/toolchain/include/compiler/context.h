@@ -138,6 +138,9 @@ public:
      */
     explicit Context(Options options);
 
+    /** Destructor. */
+    ~Context();
+
     /** Returns the context's compiler options. */
     const Options& options() const { return _options; }
 

@@ -23,23 +23,34 @@ class Field : public NodeBase {
 public:
     Field() : NodeBase({ID("<no id>"), type::unknown, node::none, node::none}, Meta()) {}
     Field(ID id, Type t, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(t), node::none, std::move(attrs)), std::move(m)) {}
+        : NodeBase(nodes(std::move(id), std::move(t), node::none, std::move(attrs), node::none), std::move(m)) {}
     Field(ID id, Type t, Type aux_type, std::optional<AttributeSet> attrs, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(t), std::move(aux_type), std::move(attrs)), std::move(m)) {}
+        : NodeBase(nodes(std::move(id), std::move(t), std::move(aux_type), std::move(attrs), node::none),
+                   std::move(m)) {}
     Field(ID id, ::hilti::function::CallingConvention cc, type::Function ft, std::optional<AttributeSet> attrs = {},
           Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(ft), node::none, std::move(attrs)), std::move(m)), _cc(cc) {}
+        : NodeBase(nodes(std::move(id), std::move(ft), node::none, std::move(attrs), node::none), std::move(m)),
+          _cc(cc) {}
+    Field(ID id, hilti::Function inline_func, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
+        : NodeBase(nodes(std::move(id), node::none, node::none, std::move(attrs), inline_func), std::move(m)),
+          _cc(inline_func.callingConvention()) {}
 
     const auto& id() const { return child<ID>(0); }
-    const auto& type() const {
-        if ( ! _cache.type )
-            _cache.type = type::effectiveType(child<Type>(1));
+
+    auto callingConvention() const { return _cc; }
+    auto inlineFunction() const { return childs()[4].tryReferenceAs<hilti::Function>(); }
+    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
+
+    Type type() const {
+        if ( ! _cache.type ) {
+            if ( auto func = inlineFunction() )
+                _cache.type = func->type();
+            else
+                _cache.type = type::effectiveType(child<Type>(1));
+        }
 
         return *_cache.type;
     }
-
-    auto callingConvention() const { return _cc; }
-    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
 
     /**
      * Returns the auxiliary type as passed into the corresponding

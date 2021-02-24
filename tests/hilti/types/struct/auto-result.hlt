@@ -1,0 +1,34 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC:  Test deduction of 'auto' method return values.
+
+module Test {
+
+type Foo = struct(uint<16> i) {
+    uint<16> x &default=21;
+
+    method auto foo() {
+        return i * (*self).x;
+    }
+
+};
+
+type Bar = struct {
+    bytes y;
+
+    method auto simple() { return "string"; }
+
+    method uint<64> bar() {
+        local f = new Foo(2);
+        local i = f.foo();
+        return i;
+    }
+
+};
+
+global Bar f;
+assert f.simple() == "string";
+assert f.bar() == 42;
+
+}

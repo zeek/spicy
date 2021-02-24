@@ -423,10 +423,11 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     result_t operator()(const expression::Keyword& n) {
         switch ( n.kind() ) {
-            case expression::keyword::Kind::Self: out << "self";
-            case expression::keyword::Kind::DollarDollar: out << "$$";
+            case expression::keyword::Kind::Self: out << "self"; break;
+            case expression::keyword::Kind::DollarDollar: out << "$$"; break;
             case expression::keyword::Kind::Captures:
                 out << "$@"; // this is technically not valid source code; we don't expose this to users
+                break;
         }
     }
 
@@ -641,6 +642,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const statement::try_::Catch& n) {
+        out.beginLine();
         out << "catch ";
 
         if ( auto p = n.parameter() )
@@ -699,6 +701,8 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     void operator()(const type::Any& n) { out << const_(n) << "any"; }
 
     void operator()(const type::Address& n) { out << const_(n) << "addr"; }
+
+    void operator()(const type::Auto& n) { out << const_(n) << "auto"; }
 
     void operator()(const type::Bool& n) { out << const_(n) << "bool"; }
 
@@ -877,7 +881,26 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.attributes() )
             out << ' ' << *n.attributes();
 
-        out << ";" << out.newline();
+        if ( auto f = n.inlineFunction(); f && f->body() ) {
+            const auto& block = f->body()->tryAs<statement::Block>();
+            if ( block && block->statements().empty() ) {
+                out << " {}";
+                out.endLine();
+            }
+            else if ( block && block->statements().size() == 1 ) {
+                auto old_compact = out.setCompact(true);
+                out << " { " << block->statements().front() << " }";
+                out.setCompact(old_compact);
+                out.endLine();
+            }
+            else {
+                out.incrementIndent();
+                out << ' ' << *f->body();
+                out.decrementIndent();
+            }
+        }
+        else
+            out << ";" << out.newline();
     }
 
     void operator()(const type::Struct& n, position_t p) {

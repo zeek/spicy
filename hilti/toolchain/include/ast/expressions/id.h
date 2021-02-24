@@ -27,6 +27,7 @@ public:
         assert(_node);
         return _node->as<Declaration>();
     }
+
     bool isValid() const { return static_cast<bool>(_node); }
 
     bool operator==(const ResolvedID& other) const {

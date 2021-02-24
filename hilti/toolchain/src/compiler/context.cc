@@ -33,6 +33,13 @@ Context::Context(Options options) : _options(std::move(std::move(options))) {
     operator_::Registry::singleton().printDebug();
 }
 
+Context::~Context() {
+    // We explicitly clear out the modules to break any reference cycles they
+    // may contain.
+    for ( auto& m : _modules )
+        m.first->as<Module>().clear();
+}
+
 const CachedModule& Context::registerModule(const ModuleIndex& idx, Node&& module, bool requires_compilation) {
     auto id = module.as<hilti::Module>().id();
     if ( _module_cache_by_id.find(id) != _module_cache_by_id.end() )

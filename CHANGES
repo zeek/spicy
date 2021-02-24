@@ -1,3 +1,74 @@
+
+0.4.0-1511 | 2021-02-24 19:34:56 +0000
+
+  * GH-694: Support unit-level `&convert` attribute. (Robin Sommer,
+    Corelight)
+
+    This attribute transforms a unit instance after parsing by returning the
+    result of a custom expression to parent units, instead of the instance
+    itself.
+
+    Example:
+
+        type Data = unit {
+            data: bytes &size=2;
+        } &convert=self.data.to_int();
+
+        public type Foo = unit {
+            numbers: Data[];
+            on %done { print self.numbers; }
+        };
+
+        # printf 12345678 | spicy-driver unit-convert.spicy
+        [12, 34, 56, 78]
+
+    Note how the `Data` sub-elements have been turned into integers. Without
+    the new `&convert` attribute, the output would have looked like this:
+
+        [[$data=b"12"], [$data=b"34"], [$data=b"56"], [$data=b"78"]]
+
+  * GH-736: Fix bug that could cause hooks for anonymous fields to not
+    execute. (Robin Sommer, Corelight)
+
+  * Support parsing of nested fields. (Robin Sommer, Corelight)
+
+    The new test case shows a number of examples that are now supported:
+
+        public type Test = unit {
+             i1: (bytes &size=5);
+             i1b: (bytes &size=5 &convert=42);
+             i2: (int8[3]);
+             i3: (int8[2])[3];
+             i4: (int8[] &until=($$=='X'))[] &until=($$==vector(55, 56));
+             i5: (FooImpl);
+             i6: (FooImpl[2]);
+             i7: (FooImpl[2])[3];
+             i8: (FooImpl &convert=42);
+             i9: (FooImpl &convert=42) &convert=$$*2;
+           i10a: (bytes &size=5 &convert=$$.to_int());
+           i10b: (Bytes &size=5 &convert=$$.to_int());
+           i10c: (FooImpl &convert=$$.data.to_int());
+            i11: (FooImpl &convert=$$.data.to_int()) &convert=$$*2;
+            i12: (FooImpl &convert=$$.data.to_int())[2];
+            i13: (FooImpl &convert=$$.data.to_int())[2] &convert=[3 * xyz for xyz in $$];
+        }
+
+    While the expectation isn't really that people would write this, this
+    puts the infrastructure in place to support functionality that needs
+    more complex field structures. (Robin Sommer, Corelight)
+
+
+  * Force use of clang11 on FreeBSD 11. (Benjamin Bannier, Corelight)
+
+  * Support inline methods in HILTI structs. (Benjamin Bannier,
+    Corelight)
+
+  * Prettify error message when ID lookups yield something of
+    unexpected type. (Robin Sommer, Corelight)
+
+  * Add HILTI support for "auto" type that's derived through operator
+    resolving. (Robin Sommer, Corelight)
+
 0.4.0-1491 | 2021-02-24 09:00:24 +0100
 
   * GH-773: Refine check for incompatible parse attributes.

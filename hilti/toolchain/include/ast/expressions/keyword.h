@@ -42,6 +42,9 @@ public:
     keyword::Kind kind() const { return _kind; }
     bool hasType() const { return _decl.has_value() || ! childs()[0].isA<type::Unknown>(); }
 
+    /** Returns true if the keyword expression has been resolved to a known type. */
+    bool isSet() const { return (! childs()[0].isA<type::Unknown>()) || _decl.has_value(); }
+
     bool operator==(const Keyword& other) const { return _kind == other._kind && type() == other.type(); }
 
     /** Implements `Expression` interface. */

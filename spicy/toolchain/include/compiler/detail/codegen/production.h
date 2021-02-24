@@ -82,7 +82,7 @@ public:
 
 private:
     template<class T>
-    std::optional<T> _value(const NodeRef& n) const {
+    hilti::optional_ref<const T> _value(const NodeRef& n) const {
         if ( n )
             return n->as<T>();
 

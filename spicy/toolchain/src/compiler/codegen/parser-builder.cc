@@ -7,6 +7,7 @@
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/id.h>
+#include <hilti/ast/expressions/type-wrapped.h>
 #include <hilti/ast/expressions/void.h>
 #include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/types/integer.h>
@@ -36,6 +37,10 @@ using namespace spicy::detail::codegen;
 using hilti::util::fmt;
 
 namespace builder = hilti::builder;
+
+namespace spicy::logging::debug {
+inline const hilti::logging::DebugStream ParserBuilder("parser-builder");
+} // namespace spicy::logging::debug
 
 const hilti::Type look_ahead::Type = hilti::type::SignedInteger(64); // TODO(cppcoreguidelines-interfaces-global-init)
 const hilti::Expression look_ahead::None = builder::integer(0);      // TODO(cppcoreguidelines-interfaces-global-init)
@@ -73,10 +78,22 @@ struct ProductionVisitor
     auto popBuilder() { return pb->popBuilder(); }
 
     auto destination() { return _destinations.back(); }
-    auto pushDestination(const std::optional<Expression>& e) { _destinations.push_back(e); }
+
+    auto pushDestination(Expression e) {
+        HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- push destination: %s", e));
+        _destinations.emplace_back(std::move(e));
+    }
+
     auto popDestination() {
         auto back = _destinations.back();
         _destinations.pop_back();
+
+        if ( _destinations.size() ) {
+            HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- pop destination, now: %s", destination()));
+        }
+        else
+            HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- pop destination, now: none"));
+
         return back;
     }
 
@@ -84,9 +101,11 @@ struct ProductionVisitor
     const Grammar& grammar;
     hilti::util::Cache<std::string, ID> parse_functions;
     std::vector<hilti::type::struct_::Field> new_fields;
-    std::vector<std::optional<Expression>> _destinations = {{}};
+    std::vector<Expression> _destinations;
 
     void beginProduction(const Production& p) {
+        HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- begin production"));
+
         builder()->addComment(fmt("Begin parsing production: %s", hilti::util::trim(std::string(p))),
                               hilti::statement::comment::Separator::Before);
         if ( pb->options().debug ) {
@@ -99,6 +118,8 @@ struct ProductionVisitor
     }
 
     void endProduction(const Production& p) {
+        HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- end production"));
+
         if ( pb->options().debug )
             builder()->addCall("hilti::debugDedent", {builder::string("spicy-verbose")});
 
@@ -106,24 +127,334 @@ struct ProductionVisitor
                               hilti::statement::comment::Separator::After);
     }
 
+    void parseNonAtomicProduction(const Production& p, const std::optional<type::Unit>& unit) {
+        // We wrap the parsing of a non-atomic production into a new
+        // function that's cached and reused. This ensures correct
+        // operation for productions that recurse.
+        auto id = parse_functions.getOrCreate(
+            p.symbol(), [&]() { return unit ? ID("__parse_stage1") : ID(fmt("__parse_%s_stage1", p.symbol())); },
+            [&](auto& id) {
+                auto id_stage1 = id;
+                auto id_stage2 = ID(fmt("__parse_%s_stage2", p.symbol()));
+
+                std::optional<type::function::Parameter> addl_param;
+
+                if ( ! unit ) // for units, "self" is the destination
+                    addl_param = builder::parameter("__dst", type::Auto(), declaration::parameter::Kind::InOut);
+
+                // In the following, we structure the parsing into two
+                // stages. Depending on whether the unit may have
+                // filtered input, we either put these stages into
+                // separate functions where the 1st calls the 2nd (w/
+                // filter support); or into just a single joint function
+                // doing both (w/o filtering).
+
+                auto run_finally = [&]() {
+                    pb->beforeHook();
+                    builder()->addMemberCall(state().self, "__on_0x25_finally", {}, p.location());
+                    pb->afterHook();
+
+                    if ( unit && unit->contextType() ) {
+                        // Unset the context to help break potential reference cycles.
+                        builder()->addAssign(builder::member(state().self, "__context"), builder::null());
+                    }
+                };
+
+                // Helper to wrap future code into a "try" block to catch
+                // errors, if necessary.
+                auto begin_try = [&](bool insert_try = true) -> std::optional<builder::Builder::TryProxy> {
+                    if ( ! (unit && insert_try) )
+                        return {};
+
+                    auto x = builder()->addTry();
+                    pushBuilder(x.first);
+                    return x.second;
+                };
+
+                // Helper to close previous "try" block and report
+                // errors, if necessary.
+                auto end_try = [&](std::optional<builder::Builder::TryProxy>& try_) {
+                    if ( ! try_ )
+                        return;
+
+                    popBuilder();
+
+                    // We catch *any* exceptions here, not just parse
+                    // errors, and not even only HILTI errors. The reason
+                    // is that we want a reliable point of error handling
+                    // no matter what kind of trouble a Spicy script runs
+                    // into.
+                    auto catch_ = try_->addCatch();
+                    pushBuilder(catch_, [&]() {
+                        pb->finalizeUnit(false, p.location());
+                        run_finally();
+                        builder()->addRethrow();
+                    });
+                };
+
+                // First stage parse functionality implementing
+                // initialization and potentially filtering.
+                auto build_parse_stage1_logic = [&]() {
+                    if ( unit ) {
+                        auto field = p.meta().field();
+                        auto type = p.type();
+
+                        std::string msg;
+
+                        if ( field && field->id() )
+                            msg = field->id();
+
+                        if ( type && type->typeID() ) {
+                            if ( msg.empty() )
+                                msg = *type->typeID();
+                            else
+                                msg = fmt("%s: %s", msg, *type->typeID());
+                        }
+
+                        builder()->addDebugMsg("spicy", msg);
+                        builder()->addCall("hilti::debugIndent", {builder::string("spicy")});
+                    }
+
+                    if ( unit )
+                        pb->initializeUnit(p.location());
+                };
+
+                auto build_parse_stage1 = [&]() {
+                    pushBuilder();
+
+                    auto pstate = state();
+                    pstate.self = hilti::expression::UnresolvedID(ID("self"));
+                    pstate.data = builder::id("__data");
+                    pstate.cur = builder::id("__cur");
+                    pstate.ncur = {};
+                    pstate.trim = builder::id("__trim");
+                    pstate.lahead = builder::id("__lah");
+                    pstate.lahead_end = builder::id("__lahe");
+
+                    auto result_type = type::Tuple({type::stream::View(), look_ahead::Type, type::stream::Iterator()});
+                    auto store_result = builder()->addTmp("result", result_type);
+
+                    auto try_ = begin_try();
+
+                    if ( unit )
+                        pstate.unit = *unit;
+
+                    pushState(std::move(pstate));
+
+                    build_parse_stage1_logic();
+
+                    // Call stage 2.
+                    std::vector<Expression> args = {state().data, state().cur, state().trim, state().lahead,
+                                                    state().lahead_end};
+
+                    if ( addl_param )
+                        args.push_back(builder::id(addl_param->id()));
+
+                    if ( unit && unit->supportsFilters() ) {
+                        // If we have a filter attached, we initialize it and change to parse from its output.
+                        auto filtered =
+                            builder::local("filtered", builder::call("spicy_rt::filter_init",
+                                                                     {state().self, state().data, state().cur}));
+
+                        auto [have_filter, not_have_filter] = builder()->addIfElse(filtered);
+                        pushBuilder(have_filter);
+
+                        auto args2 = args;
+                        builder()->addLocal("filtered_data", type::ValueReference(type::Stream()),
+                                            builder::id("filtered"));
+                        args2[0] = builder::id("filtered_data");
+                        args2[1] = builder::deref(args2[0]);
+                        builder()->addExpression(builder::memberCall(state().self, id_stage2, std::move(args2)));
+
+                        // Assume the filter consumed the full input.
+                        pb->advanceInput(builder::size(state().cur));
+
+                        auto result = builder::tuple({
+                            state().cur,
+                            state().lahead,
+                            state().lahead_end,
+                        });
+
+                        builder()->addAssign(store_result, result);
+                        popBuilder();
+
+                        pushBuilder(not_have_filter);
+                        builder()->addAssign(store_result,
+                                             builder::memberCall(state().self, id_stage2, std::move(args)));
+                        popBuilder();
+                    }
+                    else {
+                        builder()->addAssign(store_result,
+                                             builder::memberCall(state().self, id_stage2, std::move(args)));
+                    }
+
+                    end_try(try_);
+                    run_finally();
+                    popState();
+
+                    builder()->addReturn(store_result);
+
+                    return popBuilder()->block();
+                }; // End of build_parse_stage1()
+
+                // Second stage parse functionality implementing the main
+                // part of the unit's parsing.
+                auto build_parse_stage2_logic = [&]() {
+                    if ( ! unit )
+                        pushDestination(builder::id("__dst"));
+                    else
+                        pushDestination(builder::id("self"));
+
+                    if ( auto x = dispatch(p); ! x )
+                        hilti::logger().internalError(
+                            fmt("ParserBuilder: non-atomic production %s not handled (%s)", p.typename_(), p));
+
+                    if ( unit )
+                        builder()->addCall("hilti::debugDedent", {builder::string("spicy")});
+
+                    auto result = builder::tuple({
+                        state().cur,
+                        state().lahead,
+                        state().lahead_end,
+                    });
+
+                    popDestination();
+                    return result;
+                };
+
+                auto build_parse_stage12_or_stage2 = [&](bool join_stages) {
+                    auto pstate = state();
+                    pstate.self = hilti::expression::UnresolvedID(ID("self"));
+                    pstate.data = builder::id("__data");
+                    pstate.cur = builder::id("__cur");
+                    pstate.ncur = {};
+                    pstate.trim = builder::id("__trim");
+                    pstate.lahead = builder::id("__lah");
+                    pstate.lahead_end = builder::id("__lahe");
+
+                    if ( unit )
+                        pstate.unit = *unit;
+
+                    pushState(std::move(pstate));
+                    pushBuilder();
+
+                    auto result_type = type::Tuple({type::stream::View(), look_ahead::Type, type::stream::Iterator()});
+                    auto store_result = builder()->addTmp("result", result_type);
+
+                    auto try_ = begin_try(join_stages);
+
+                    if ( join_stages )
+                        build_parse_stage1_logic();
+
+                    auto result = build_parse_stage2_logic();
+                    builder()->addAssign(store_result, result);
+
+                    end_try(try_);
+
+                    if ( join_stages && unit )
+                        run_finally();
+
+                    popState();
+
+                    builder()->addReturn(store_result);
+
+                    return popBuilder()->block();
+                }; // End of build_parse_stage2()
+
+                // Add the parse methods. Note the unit's primary
+                // stage1 method is already declared (but not
+                // implemented) by the struct that unit-builder is
+                // declaring.
+                if ( unit && unit->supportsFilters() ) {
+                    addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage1(), addl_param,
+                                   p.location());
+                    addParseMethod(true, id_stage2, build_parse_stage12_or_stage2(false), addl_param, p.location());
+                }
+                else
+                    addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage12_or_stage2(true),
+                                   addl_param, p.location());
+
+                return id_stage1;
+            });
+
+        std::vector<Expression> args = {
+            state().data, state().cur, state().trim, state().lahead, state().lahead_end,
+        };
+
+        if ( ! unit )
+            args.push_back(destination());
+
+        auto call = builder::memberCall(state().self, id, args);
+        builder()->addAssign(builder::tuple({state().cur, state().lahead, state().lahead_end}), call);
+    }
+
     // Returns a boolean expression that's 'true' if a 'stop' was encountered.
-    Expression _parseProduction(const Production& p, const production::Meta& meta, bool forwarding) {
+    Expression _parseProduction(const Production& p, const production::Meta& meta) {
         const auto is_field_owner = (meta.field() && meta.isFieldProduction() && ! p.isA<production::Resolved>());
 
-        if ( meta.field() && meta.isFieldProduction() )
-            preParseField(p, meta, is_field_owner);
+        auto field = meta.field();
+        assert(field || ! meta.isFieldProduction());
 
-        beginProduction(p);
+        HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("* production %s", hilti::util::trim(std::string(p))));
+        hilti::logging::DebugPushIndent _(spicy::logging::debug::ParserBuilder);
 
-        std::optional<Expression> container_element;
+        if ( field ) {
+            HILTI_DEBUG(spicy::logging::debug::ParserBuilder,
+                        fmt("- field '%s': %s", field->id(), meta.fieldRef()->render(false)));
+        }
 
-        if ( const auto& c = meta.container(); c && ! forwarding ) {
+        if ( const auto& r = p.tryAs<production::Resolved>() )
+            // Directly forward, without going through any of the remaining machinery.
+            return _parseProduction(grammar.resolved(*r), r->meta());
+
+        // Push destination for parsed value onto stack.
+
+        if ( auto c = meta.container() ) {
             auto etype = type::unit::item::Field::vectorElementTypeThroughSelf(c->id());
-            container_element = builder()->addTmp("elem", etype);
+            auto container_element = builder()->addTmp("elem", etype);
             pushDestination(container_element);
         }
 
-        if ( p.atomic() ) {
+        else if ( ! meta.isFieldProduction() )
+            pushDestination(destination());
+
+        else if ( field->parseType().isA<type::Void>() )
+            // No value to store.
+            pushDestination(builder::void_());
+
+        else if ( field->isForwarding() ) {
+            // No need for a new destination, but we need to initialize the one
+            // we have.
+            builder()->addAssign(destination(), builder::default_(field->itemType(), field->arguments()));
+        }
+
+        else if ( field->isTransient() ) {
+            // We won't have a field to store the valule in, create a temporary.
+            // auto init = builder::default_(field->itemType(), field->arguments());
+            auto dst = builder()->addTmp(fmt("transient_%s", field->id()), field->itemType());
+            pushDestination(dst);
+        }
+
+        else {
+            // Can store parsed value directly in struct field.
+            auto dst = builder::member(pb->state().self, field->id());
+            pushDestination(dst);
+        }
+
+        // Parse production
+
+        if ( is_field_owner )
+            preParseField(p, meta);
+
+        beginProduction(p);
+
+        if ( const auto& x = p.tryAs<production::Enclosure>() ) {
+            // Recurse.
+            parseProduction(x->child());
+        }
+
+        else if ( p.atomic() ) {
+            // dispatch() will write value to current destination.
             if ( auto x = dispatch(p); ! x )
                 hilti::logger().internalError(
                     fmt("ParserBuilder: atomic production %s not handled (%s)", p.typename_(), p));
@@ -144,516 +475,226 @@ struct ProductionVisitor
 
             Expression default_ =
                 builder::default_(builder::typeByID(*unit->unitType().typeID()), std::move(type_args), location);
+            builder()->addAssign(destination(), std::move(default_));
 
-            Expression self;
-
-            if ( destination() ) {
-                self = *destination();
-                builder()->addAssign(self, std::move(default_));
-            }
-            else
-                self = builder()->addTmp("unit", std::move(default_));
-
-            auto call = builder::memberCall(self, "__parse_stage1", std::move(args));
+            auto call = builder::memberCall(destination(), "__parse_stage1", std::move(args));
             builder()->addAssign(builder::tuple({pb->state().cur, pb->state().lahead, pb->state().lahead_end}), call);
         }
-        else {
-            const auto is_transient = (meta.field() && meta.field()->isTransient());
 
-            // We wrap the parsing of a non-atomic production into a new
-            // function that's cached and reused. This ensures correct
-            // operation for productions that recurse.
-            auto id = parse_functions.getOrCreate(
-                p.symbol(), [&]() { return unit ? ID("__parse_stage1") : ID(fmt("__parse_%s_stage1", p.symbol())); },
-                [&](auto& id) {
-                    auto id_stage1 = id;
-                    auto id_stage2 = ID(fmt("__parse_%s_stage2", p.symbol()));
-
-                    std::optional<type::function::Parameter> addl_param;
-
-                    if ( destination() && ! unit && ! is_transient )
-                        addl_param =
-                            builder::parameter("__dst", destination()->type(), declaration::parameter::Kind::InOut);
-
-                    // In the following, we structure the parsing into two
-                    // stages. Depending on whether the unit may have
-                    // filtered input, we either put these stages into
-                    // separate functions where the 1st calls the 2nd (w/
-                    // filter support); or into just a single joint function
-                    // doing both (w/o filtering).
-
-                    auto run_finally = [&]() {
-                        pb->beforeHook();
-                        builder()->addMemberCall(state().self, "__on_0x25_finally", {}, p.location());
-                        pb->afterHook();
-
-                        if ( unit && unit->unitType().contextType() ) {
-                            // Unset the context to help break potential reference cycles.
-                            builder()->addAssign(builder::member(state().self, "__context"), builder::null());
-                        }
-                    };
-
-                    // Helper to wrap future code into a "try" block to catch
-                    // errors, if necessary.
-                    auto begin_try = [&](bool insert_try = true) -> std::optional<builder::Builder::TryProxy> {
-                        if ( ! (unit && insert_try) )
-                            return {};
-
-                        auto x = builder()->addTry();
-                        pushBuilder(x.first);
-                        return x.second;
-                    };
-
-                    // Helper to close previous "try" block and report
-                    // errors, if necessary.
-                    auto end_try = [&](std::optional<builder::Builder::TryProxy>& try_) {
-                        if ( ! try_ )
-                            return;
-
-                        popBuilder();
-
-                        // We catch *any* exceptions here, not just parse
-                        // errors, and not even only HILTI errors. The reason
-                        // is that we want a reliable point of error handling
-                        // no matter what kind of trouble a Spicy script runs
-                        // into.
-                        auto catch_ = try_->addCatch();
-                        pushBuilder(catch_, [&]() {
-                            pb->finalizeUnit(false, p.location());
-                            run_finally();
-                            builder()->addRethrow();
-                        });
-                    };
-
-                    // First stage parse functionality implementing
-                    // initialization and potentially filtering.
-                    auto build_parse_stage1_logic = [&]() {
-                        if ( unit ) {
-                            auto field = p.meta().field();
-                            auto type = p.type();
-
-                            std::string msg;
-
-                            if ( field && field->id() )
-                                msg = field->id();
-
-                            if ( type && type->typeID() ) {
-                                if ( msg.empty() )
-                                    msg = *type->typeID();
-                                else
-                                    msg = fmt("%s: %s", msg, *type->typeID());
-                            }
-
-                            builder()->addDebugMsg("spicy", msg);
-                            builder()->addCall("hilti::debugIndent", {builder::string("spicy")});
-                        }
-
-                        if ( unit )
-                            pb->initializeUnit(p.location());
-                    };
-
-                    auto build_parse_stage1 = [&]() {
-                        pushBuilder();
-
-                        auto pstate = state();
-                        pstate.self = hilti::expression::UnresolvedID(ID("self"));
-                        pstate.data = builder::id("__data");
-                        pstate.cur = builder::id("__cur");
-                        pstate.ncur = {};
-                        pstate.trim = builder::id("__trim");
-                        pstate.lahead = builder::id("__lah");
-                        pstate.lahead_end = builder::id("__lahe");
-
-                        auto result_type =
-                            type::Tuple({type::stream::View(), look_ahead::Type, type::stream::Iterator()});
-                        auto store_result = builder()->addTmp("result", result_type);
-
-                        auto try_ = begin_try();
-
-                        if ( unit )
-                            pstate.unit = unit->unitType();
-
-                        pushState(std::move(pstate));
-
-                        build_parse_stage1_logic();
-
-                        // Call stage 2.
-                        std::vector<Expression> args = {state().data, state().cur, state().trim, state().lahead,
-                                                        state().lahead_end};
-
-                        if ( addl_param )
-                            args.push_back(builder::id(addl_param->id()));
-
-
-                        if ( unit && unit->unitType().supportsFilters() ) {
-                            // If we have a filter attached, we initialize it and change to parse from its output.
-                            auto filtered =
-                                builder::local("filtered", builder::call("spicy_rt::filter_init",
-                                                                         {state().self, state().data, state().cur}));
-
-                            auto [have_filter, not_have_filter] = builder()->addIfElse(filtered);
-                            pushBuilder(have_filter);
-
-                            auto args2 = args;
-                            builder()->addLocal("filtered_data", type::ValueReference(type::Stream()),
-                                                builder::id("filtered"));
-                            args2[0] = builder::id("filtered_data");
-                            args2[1] = builder::deref(args2[0]);
-                            builder()->addExpression(builder::memberCall(state().self, id_stage2, std::move(args2)));
-
-                            // Assume the filter consumed the full input.
-                            pb->advanceInput(builder::size(state().cur));
-
-                            auto result = builder::tuple({
-                                state().cur,
-                                state().lahead,
-                                state().lahead_end,
-                            });
-
-                            builder()->addAssign(store_result, result);
-                            popBuilder();
-
-                            pushBuilder(not_have_filter);
-                            builder()->addAssign(store_result,
-                                                 builder::memberCall(state().self, id_stage2, std::move(args)));
-                            popBuilder();
-                        }
-                        else {
-                            builder()->addAssign(store_result,
-                                                 builder::memberCall(state().self, id_stage2, std::move(args)));
-                        }
-
-                        end_try(try_);
-                        run_finally();
-                        popState();
-
-                        builder()->addReturn(store_result);
-
-                        return popBuilder()->block();
-                    }; // End of build_parse_stage1()
-
-                    // Second stage parse functionality implementing the main
-                    // part of the unit's parsing.
-                    auto build_parse_stage2_logic = [&]() {
-                        if ( destination() && ! unit && ! is_transient )
-                            pushDestination(builder::type_wrapped(builder::id("__dst"), destination()->type()));
-
-                        if ( unit || is_transient )
-                            pushDestination({});
-
-                        if ( auto x = dispatch(p); ! x )
-                            hilti::logger().internalError(
-                                fmt("ParserBuilder: non-atomic production %s not handled (%s)", p.typename_(), p));
-
-                        if ( unit )
-                            builder()->addCall("hilti::debugDedent", {builder::string("spicy")});
-
-                        auto result = builder::tuple({
-                            state().cur,
-                            state().lahead,
-                            state().lahead_end,
-                        });
-
-                        return result;
-                    };
-
-                    auto build_parse_stage12_or_stage2 = [&](bool join_stages) {
-                        auto pstate = state();
-                        pstate.self = hilti::expression::UnresolvedID(ID("self"));
-                        pstate.data = builder::id("__data");
-                        pstate.cur = builder::id("__cur");
-                        pstate.ncur = {};
-                        pstate.trim = builder::id("__trim");
-                        pstate.lahead = builder::id("__lah");
-                        pstate.lahead_end = builder::id("__lahe");
-
-                        if ( unit )
-                            pstate.unit = unit->unitType();
-
-                        pushState(std::move(pstate));
-                        pushBuilder();
-
-                        auto result_type =
-                            type::Tuple({type::stream::View(), look_ahead::Type, type::stream::Iterator()});
-                        auto store_result = builder()->addTmp("result", result_type);
-
-                        auto try_ = begin_try(join_stages);
-
-                        if ( join_stages )
-                            build_parse_stage1_logic();
-
-                        auto result = build_parse_stage2_logic();
-                        builder()->addAssign(store_result, result);
-
-                        end_try(try_);
-
-                        if ( join_stages && unit )
-                            run_finally();
-
-                        popState();
-
-                        builder()->addReturn(store_result);
-
-                        if ( unit || destination() )
-                            popDestination();
-
-                        return popBuilder()->block();
-                    }; // End of build_parse_stage2()
-
-                    // Add the parse methods. Note the unit's primary
-                    // stage1 method is already declared (but not
-                    // implemented) by the struct that unit-builder is
-                    // declaring.
-                    if ( unit && unit->unitType().supportsFilters() ) {
-                        addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage1(), addl_param,
-                                       p.location());
-                        addParseMethod(true, id_stage2, build_parse_stage12_or_stage2(false), addl_param, p.location());
-                    }
-                    else
-                        addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1,
-                                       build_parse_stage12_or_stage2(true), addl_param, p.location());
-
-                    return id_stage1;
-                });
-
-            std::vector<Expression> args = {
-                state().data, state().cur, state().trim, state().lahead, state().lahead_end,
-            };
-
-            auto dst = destination();
-
-            if ( unit )
-                dst = {};
-
-            if ( dst && ! is_transient )
-                args.push_back(*dst);
-
-            auto call = builder::memberCall(state().self, id, args);
-            builder()->addAssign(builder::tuple({state().cur, state().lahead, state().lahead_end}), call);
-        }
-
-        Expression stop = builder::bool_(false);
-
-        if ( container_element ) {
-            popDestination();
-            stop = pb->newContainerItem(*meta.container(), *destination(), *container_element);
-        }
+        else if ( unit )
+            parseNonAtomicProduction(p, unit->unitType());
+        else
+            parseNonAtomicProduction(p, {});
 
         endProduction(p);
 
-        if ( meta.field() && meta.isFieldProduction() )
-            postParseField(p, meta, is_field_owner);
+        if ( is_field_owner )
+            postParseField(p, meta);
 
-        return stop;
-    }
+        // Top of stack will now have the final value for the field.
+        Expression stop = builder::bool_(false);
 
-    void preParseField(const Production& /* i */, const production::Meta& meta, bool is_field_owner) {
-        // Helper function that returns a computed type that delays
-        // determining a field's actual type to when it's needed.
-        auto field_type = [&]() -> Type {
-            auto callback = [](Node& n) { return n.as<type::unit::item::Field>().itemType(); };
-
-            assert(meta.fieldRef());
-            return type::Computed(meta.fieldRef(), callback);
-        };
-
-        const auto& field = meta.field();
-        assert(field); // Must only be called if we have a field.
-
-        // Save current parse position as e.g., attributes evaluated below might make use of it.
-        pb->saveParsePosition();
-
-        if ( is_field_owner ) {
-            // We are the field's owner, apply the various attributes.
-
-            if ( ! meta.container() ) {
-                pb->enableDefaultNewValueForField(true);
-
-                if ( field->parseType().isA<type::Void>() ) {
-                    // No value to store.
-                    pushDestination(hilti::expression::Void());
-                }
-                else if ( AttributeSet::find(field->attributes(), "&convert") ) {
-                    // Need a temporary for the parsed field.
-                    auto dst = builder()->addTmp(fmt("parsed_%s", field->id()), field->parseType());
-                    pushDestination(builder::type_wrapped(dst, field->parseType(), field->meta()));
-                }
-                else if ( field->isTransient() ) {
-                    // Won't have the field in the emitted C++ code, so we need a temporary.
-                    auto ftype = field_type();
-                    auto dst = builder()->addTmp(fmt("transient_%s", field->id()), ftype);
-                    pushDestination(builder::type_wrapped(dst, ftype, field->meta()));
-                }
-                else {
-                    // Can store parsed value directly in struct field.
-                    auto dst = builder::member(pb->state().self, field->id());
-                    pushDestination(builder::type_wrapped(dst, field_type(), field->meta()));
-                }
-            }
-
-            if ( field->originalType().isA<type::RegExp>() ) {
-                bool needs_captures = true;
-
-                if ( auto ctor_ = field->ctor(); ctor_ && ctor_->as<hilti::ctor::RegExp>().isNoSub() )
-                    needs_captures = false;
-
-                if ( AttributeSet::find(field->attributes(), "&nosub") )
-                    needs_captures = false;
-
-                if ( needs_captures ) {
-                    auto pstate = state();
-                    pstate.captures = builder()->addTmp("captures", builder::typeByID("hilti::Captures"));
-                    pushState(std::move(pstate));
-                }
-            }
-
-            if ( auto c = field->condition() )
-                pushBuilder(builder()->addIf(*c));
-
-            if ( auto a = AttributeSet::find(field->attributes(), "&parse-from") ) {
-                // Redirect input to a bytes value.
-                auto pstate = state();
-                pstate.trim = builder::bool_(false);
-                pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
-                pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
-                auto expr = a->valueAs<Expression>();
-
-                auto tmp = builder()->addTmp("parse_from", type::ValueReference(type::Stream()), *expr);
-                pstate.data = tmp;
-                pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
-                pstate.ncur = {};
-                builder()->addMemberCall(tmp, "freeze", {});
-
-                pushState(std::move(pstate));
-            }
-
-            if ( auto a = AttributeSet::find(field->attributes(), "&parse-at") ) {
-                // Redirect input to a stream position.
-                auto pstate = state();
-                pstate.trim = builder::bool_(false);
-                pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
-                pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
-                auto expr = a->valueAs<Expression>();
-
-                auto cur = builder::memberCall(state().cur, "advance", {*expr});
-
-                pstate.cur = builder()->addTmp("parse_cur", cur);
-                pstate.ncur = {};
-                pushState(std::move(pstate));
-            }
-
-            if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
-                // Limit input to the specified length.
-                auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
-                auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
-
-                // Establish limited view, remembering position to continue at.
-                auto pstate = state();
-                pstate.cur = limited;
-                pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
-                pushState(std::move(pstate));
-            }
-            else {
-                auto pstate = state();
-                pstate.ncur = {};
-                pushState(std::move(pstate));
-            }
-
-            if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
-                auto __offsets = builder::member(state().self, "__offsets");
-                auto cur_offset = builder::memberCall(state().cur, "offset", {});
-
-                // Since the offset list is created empty resize the
-                // vector so that we can access the current field's index.
-                assert(field->index());
-                auto index = builder()->addTmp("index", builder::integer(*field->index()));
-                builder()->addMemberCall(__offsets, "resize", {builder::sum(index, builder::integer(1))});
-
-                builder()->addAssign(builder::index(__offsets, *field->index()),
-                                     builder::tuple({cur_offset, builder::optional(hilti::type::UnsignedInteger(64))}));
-            }
-
-            if ( auto a = AttributeSet::find(field->attributes(), "&try") )
-                pb->initBacktracking();
+        if ( const auto& c = meta.container() ) {
+            auto elem = destination();
+            popDestination();
+            stop = pb->newContainerItem(*meta.container(), destination(), elem, true);
         }
-    }
 
-    void postParseField(const Production& /* i */, const production::Meta& meta, bool is_field_owner) {
-        const auto& field = meta.field();
-        assert(field); // Must only be called if we have a field.
-
-        if ( ! is_field_owner ) {
-            // Just need to move position ahead.
+        else if ( ! meta.isFieldProduction() ) {
+            // Need to move position ahead.
             if ( state().ncur ) {
                 builder()->addAssign(state().cur, *state().ncur);
                 state().ncur = {};
             }
+
+            popDestination();
+        }
+
+        else if ( field->parseType().isA<type::Void>() )
+            popDestination();
+
+        else if ( field->isForwarding() ) {
+            // nothing to do
+        }
+
+        else if ( field->isTransient() )
+            popDestination();
+
+        else
+            popDestination();
+
+        return stop;
+    }
+
+    void preParseField(const Production& /* i */, const production::Meta& meta) {
+        const auto& field = meta.field();
+        assert(field); // Must only be called if we have a field.
+
+        HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- pre-parse field: %s", field->id()));
+
+        if ( field && field->convertExpression() ) {
+            // Need an additional temporary for the parsed field.
+            auto dst = builder()->addTmp(fmt("parsed_%s", field->id()), field->parseType());
+            pushDestination(dst);
+        }
+
+        pb->enableDefaultNewValueForField(true);
+
+        if ( auto c = field->condition() )
+            pushBuilder(builder()->addIf(*c));
+
+        if ( field->originalType().isA<type::RegExp>() && ! field->isContainer() ) {
+            bool needs_captures = true;
+
+            if ( auto ctor_ = field->ctor(); ctor_ && ctor_->as<hilti::ctor::RegExp>().isNoSub() )
+                needs_captures = false;
+
+            if ( AttributeSet::find(field->attributes(), "&nosub") )
+                needs_captures = false;
+
+            if ( needs_captures ) {
+                auto pstate = state();
+                pstate.captures = builder()->addTmp("captures", builder::typeByID("hilti::Captures"));
+                pushState(std::move(pstate));
+            }
+        }
+
+        if ( auto a = AttributeSet::find(field->attributes(), "&parse-from") ) {
+            // Redirect input to a bytes value.
+            auto pstate = state();
+            pstate.trim = builder::bool_(false);
+            pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
+            pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
+            auto expr = a->valueAs<Expression>();
+
+            auto tmp = builder()->addTmp("parse_from", type::ValueReference(type::Stream()), *expr);
+            pstate.data = tmp;
+            pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
+            pstate.ncur = {};
+            builder()->addMemberCall(tmp, "freeze", {});
+
+            pushState(std::move(pstate));
+        }
+
+        if ( auto a = AttributeSet::find(field->attributes(), "&parse-at") ) {
+            // Redirect input to a stream position.
+            auto pstate = state();
+            pstate.trim = builder::bool_(false);
+            pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
+            pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
+            auto expr = a->valueAs<Expression>();
+
+            auto cur = builder::memberCall(state().cur, "advance", {*expr});
+            pstate.cur = builder()->addTmp("parse_cur", cur);
+            pstate.ncur = {};
+            pushState(std::move(pstate));
+        }
+
+        if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
+            // Limit input to the specified length.
+            auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
+            auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
+
+            // Establish limited view, remembering position to continue at.
+            auto pstate = state();
+            pstate.cur = limited;
+            pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
+            pushState(std::move(pstate));
         }
         else {
-            if ( auto a = AttributeSet::find(field->attributes(), "&try") )
-                pb->finishBacktracking();
-
-            // We are the field's owner, record offsets and post-process the various attributes.
-            if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
-                assert(field->index());
-                auto __offsets = builder::member(state().self, "__offsets");
-                auto cur_offset = builder::memberCall(state().cur, "offset", {});
-                auto offsets = builder::index(__offsets, *field->index());
-                builder()->addAssign(offsets, builder::tuple({builder::index(builder::deref(offsets), 0), cur_offset}));
-            }
-
-            auto ncur = state().ncur;
-            state().ncur = {};
-
-            if ( auto a = AttributeSet::find(field->attributes(), "&size"); a && is_field_owner ) {
-                // Make sure we parsed the entire &size amount.
-                auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
-                                                builder::memberCall(*ncur, "offset", {}));
-                auto insufficient = builder()->addIf(std::move(missing));
-                pushBuilder(insufficient, [&]() {
-                    // We didn't parse all the data, which is an error.
-                    if ( ! field->isTransient() && destination() && ! destination()->type().isA<type::Void>() )
-                        // Clear the field in case the type parsing has started
-                        // to fill it.
-                        builder()->addExpression(builder::unset(state().self, field->id()));
-
-                    pb->parseError("&size amount not consumed", a->meta());
-                });
-            }
-
-            popState(); // From &size (pushed even if absent).
-
-            if ( AttributeSet::find(field->attributes(), "&parse-from") ||
-                 AttributeSet::find(field->attributes(), "&parse-at") ) {
-                ncur = {};
-                popState();
-            }
-
-            if ( ncur )
-                builder()->addAssign(state().cur, *ncur);
-
-            if ( ! meta.container() ) {
-                auto dst = popDestination();
-
-                if ( dst && pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
-                    pb->newValueForField(*field, *dst);
-            }
-
-            if ( state().captures )
-                popState();
-
-            if ( field->condition() )
-                popBuilder();
+            auto pstate = state();
+            pstate.ncur = {};
+            pushState(std::move(pstate));
         }
+
+        if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
+            auto __offsets = builder::member(state().self, "__offsets");
+            auto cur_offset = builder::memberCall(state().cur, "offset", {});
+
+            // Since the offset list is created empty resize the
+            // vector so that we can access the current field's index.
+            assert(field->index());
+            auto index = builder()->addTmp("index", builder::integer(*field->index()));
+            builder()->addMemberCall(__offsets, "resize", {builder::sum(index, builder::integer(1))});
+
+            builder()->addAssign(builder::index(__offsets, *field->index()),
+                                 builder::tuple({cur_offset, builder::optional(hilti::type::UnsignedInteger(64))}));
+        }
+
+        if ( auto a = AttributeSet::find(field->attributes(), "&try") )
+            pb->initBacktracking();
+    }
+
+    void postParseField(const Production& p, const production::Meta& meta) {
+        const auto& field = meta.field();
+        assert(field); // Must only be called if we have a field.
+
+        HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- post-parse field: %s", field->id()));
+
+        if ( auto a = AttributeSet::find(field->attributes(), "&try") )
+            pb->finishBacktracking();
+
+        if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
+            assert(field->index());
+            auto __offsets = builder::member(state().self, "__offsets");
+            auto cur_offset = builder::memberCall(state().cur, "offset", {});
+            auto offsets = builder::index(__offsets, *field->index());
+            builder()->addAssign(offsets, builder::tuple({builder::index(builder::deref(offsets), 0), cur_offset}));
+        }
+
+        auto ncur = state().ncur;
+        state().ncur = {};
+
+        if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
+            // Make sure we parsed the entire &size amount.
+            auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
+                                            builder::memberCall(*ncur, "offset", {}));
+            auto insufficient = builder()->addIf(std::move(missing));
+            pushBuilder(insufficient, [&]() {
+                // We didn't parse all the data, which is an error.
+                if ( ! destination().type().isA<type::Void>() && ! field->isTransient() )
+                    // Clear the field in case the type parsing has started
+                    // to fill it.
+                    builder()->addExpression(builder::unset(state().self, field->id()));
+
+                pb->parseError("&size amount not consumed", a->meta());
+            });
+        }
+
+        auto dd = destination();
+
+        if ( field->convertExpression() ) {
+            // Value was stored in temporary. Apply expression and store result
+            // at destination.
+            popDestination();
+            pb->applyConvertExpression(*field, dd, destination());
+        }
+
+        popState(); // From &size (pushed even if absent).
+
+        if ( AttributeSet::find(field->attributes(), "&parse-from") ||
+             AttributeSet::find(field->attributes(), "&parse-at") ) {
+            ncur = {};
+            popState();
+        }
+
+        if ( ncur )
+            builder()->addAssign(state().cur, *ncur);
+
+        if ( ! meta.container() ) {
+            if ( pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
+                pb->newValueForField(meta, destination(), dd);
+        }
+
+        if ( state().captures )
+            popState();
+
+        if ( field->condition() )
+            popBuilder();
     }
 
     // Returns a boolean expression that's 'true' if a 'stop' was encountered.
-    Expression parseProduction(const Production& p) { return _parseProduction(p, p.meta(), false); }
-
-    // Returns a boolean expression that's 'true' if a 'stop' was encountered.
-    Expression parseProduction(const Production& p, const Production& forwarded_to) {
-        return _parseProduction(forwarded_to, p.meta(), true);
-    }
+    Expression parseProduction(const Production& p) { return _parseProduction(p, p.meta()); }
 
     // Retrieve a look-ahead symbol. Once the code generated by the function
     // has executed, the parsing state will reflect what look-ahead has been
@@ -839,7 +880,7 @@ struct ProductionVisitor
         popBuilder();
     }
 
-    void operator()(const production::Resolved& p) { parseProduction(p, grammar.resolved(p)); }
+    void operator()(const production::Resolved& p) { parseProduction(grammar.resolved(p)); }
 
     void operator()(const production::Switch& p) {
         builder()->addCall("hilti::debugIndent", {builder::string("spicy")});
@@ -864,10 +905,8 @@ struct ProductionVisitor
     }
 
     void operator()(const production::Unit& p) {
-        assert(! destination()); // parseProduction() ensures this, destination is "this".
-
         auto pstate = pb->state();
-        pstate.self = builder::id("self");
+        pstate.self = destination();
         pushState(std::move(pstate));
 
         if ( p.unitType().usesRandomAccess() ) {
@@ -1153,6 +1192,9 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
                                {builder::member(builder::id("unit"), "__context"), ctx, builder::typeinfo(*context)});
         };
 
+        HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("creating parser for %s", *t.typeID()));
+        hilti::logging::DebugPushIndent _(spicy::logging::debug::ParserBuilder);
+
         auto grammar = cg()->grammarBuilder()->grammar(t);
         auto visitor = ProductionVisitor(this, grammar);
 
@@ -1180,9 +1222,8 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             pstate.lahead = builder::id("lahead");
             pstate.lahead_end = builder::id("lahead_end");
             pushState(pstate);
-            visitor.pushDestination(builder::id("unit"));
+            visitor.pushDestination(pstate.self);
             visitor.parseProduction(*grammar.root());
-            visitor.popDestination();
             builder()->addReturn(state().cur);
             popState();
 
@@ -1216,9 +1257,8 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             pstate.lahead = builder::id("lahead");
             pstate.lahead_end = builder::id("lahead_end");
             pushState(pstate);
-            visitor.pushDestination(builder::id("unit"));
+            visitor.pushDestination(pstate.self);
             visitor.parseProduction(*grammar.root());
-            visitor.popDestination();
             builder()->addReturn(state().cur);
 
             popState();
@@ -1245,9 +1285,8 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
         pstate.lahead = builder::id("lahead");
         pstate.lahead_end = builder::id("lahead_end");
         pushState(pstate);
-        visitor.pushDestination(builder::id("unit"));
+        visitor.pushDestination(pstate.self);
         visitor.parseProduction(*grammar.root());
-        visitor.popDestination();
         builder()->addReturn(state().cur);
         popState();
 
@@ -1296,68 +1335,63 @@ Expression ParserBuilder::contextNewFunction(const type::Unit& t) {
     return hilti::expression::UnresolvedID(std::move(id));
 }
 
-void ParserBuilder::newValueForField(const type::unit::item::Field& field, const Expression& value) {
+void ParserBuilder::newValueForField(const production::Meta& meta, const Expression& value, const Expression& dd) {
+    const auto& field = meta.field();
+
     if ( value.type().isA<type::Void>() ) {
         // Special-case: No value parsed, but still run hook.
         beforeHook();
-        builder()->addMemberCall(state().self, ID(fmt("__on_%s", field.id().local())), {}, field.meta());
+        builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), {}, field->meta());
         afterHook();
         return;
     }
 
-    auto nvalue = value;
-
-    if ( auto a = AttributeSet::find(field.attributes(), "&convert"); a && ! field.isTransient() ) {
-        // Value was stored in temporary. Apply expression and store result
-        // at destination.
-        auto block = builder()->addBlock();
-        block->addLocal(ID("__dd"), field.parseType(), value);
-        block->addAssign(builder::member(state().self, field.id()), *a->valueAs<Expression>());
-        nvalue = builder::member(state().self, field.id());
-    }
-
-    for ( const auto& a : AttributeSet::findAll(field.attributes(), "&requires") ) {
+    for ( const auto& a : AttributeSet::findAll(field->attributes(), "&requires") ) {
         // We evaluate "&requires" here so that the field's value has been
         // set already, and is hence accessible to the condition through
         // "self.<x>".
         auto block = builder()->addBlock();
-        block->addLocal(ID("__dd"), field.parseType(), value);
+        block->addLocal(ID("__dd"), field->parseType(), dd);
         auto cond = block->addTmp("requires", *a.valueAs<Expression>());
         pushBuilder(block->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", a.value().location()); });
     }
 
-    if ( ! field.parseType().isA<spicy::type::Bitfield>() ) {
-        builder()->addDebugMsg("spicy", fmt("%s = %%s", field.id()), {nvalue});
-        builder()->addDebugMsg("spicy-verbose", fmt("- setting field '%s' to '%%s'", field.id()), {nvalue});
+    if ( ! field->parseType().isA<spicy::type::Bitfield>() ) {
+        builder()->addDebugMsg("spicy", fmt("%s = %%s", field->id()), {value});
+        builder()->addDebugMsg("spicy-verbose", fmt("- setting field '%s' to '%%s'", field->id()), {value});
     }
 
-    for ( const auto& s : field.sinks() ) {
-        builder()->addDebugMsg("spicy-verbose", "- writing %" PRIu64 " bytes to sink", {builder::size(nvalue)});
-        builder()->addMemberCall(builder::deref(s), "write", {nvalue, builder::null(), builder::null()}, field.meta());
+    for ( const auto& s : field->sinks() ) {
+        builder()->addDebugMsg("spicy-verbose", "- writing %" PRIu64 " bytes to sink", {builder::size(value)});
+        builder()->addMemberCall(builder::deref(s), "write", {value, builder::null(), builder::null()}, field->meta());
     }
 
-    beforeHook();
+    if ( field->emitHook() ) {
+        beforeHook();
 
-    std::vector<Expression> args = {std::move(nvalue)};
+        std::vector<Expression> args = {std::move(value)};
 
-    if ( field.originalType().isA<type::RegExp>() ) {
-        if ( state().captures )
-            args.push_back(*state().captures);
-        else
-            args.push_back(hilti::builder::default_(builder::typeByID("hilti::Captures")));
+        if ( field->originalType().isA<type::RegExp>() && ! field->isContainer() ) {
+            if ( state().captures )
+                args.push_back(*state().captures);
+            else
+                args.push_back(hilti::builder::default_(builder::typeByID("hilti::Captures")));
+        }
+
+        builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), std::move(args), field->meta());
+
+        afterHook();
     }
 
-    builder()->addMemberCall(state().self, ID(fmt("__on_%s", field.id().local())), std::move(args), field.meta());
-
-    afterHook();
+    return;
 }
 
 Expression ParserBuilder::newContainerItem(const type::unit::item::Field& field, const Expression& self,
-                                           const Expression& item) {
+                                           const Expression& item, bool need_value) {
     auto stop = builder()->addTmp("stop", builder::bool_(false));
 
     auto push_element = [&]() {
-        if ( ! field.isTransient() )
+        if ( need_value )
             pushBuilder(builder()->addIf(builder::not_(stop)),
                         [&]() { builder()->addExpression(builder::memberCall(self, "push_back", {item})); });
     };
@@ -1365,10 +1399,12 @@ Expression ParserBuilder::newContainerItem(const type::unit::item::Field& field,
     auto run_hook = [&]() {
         builder()->addDebugMsg("spicy-verbose", "- got container item");
         pushBuilder(builder()->addIf(builder::not_(stop)), [&]() {
-            beforeHook();
-            builder()->addMemberCall(state().self, ID(fmt("__on_%s_foreach", field.id().local())), {item, stop},
-                                     field.meta());
-            afterHook();
+            if ( field.emitHook() ) {
+                beforeHook();
+                builder()->addMemberCall(state().self, ID(fmt("__on_%s_foreach", field.id().local())), {item, stop},
+                                         field.meta());
+                afterHook();
+            }
         });
     };
 
@@ -1402,6 +1438,27 @@ Expression ParserBuilder::newContainerItem(const type::unit::item::Field& field,
     }
 
     return stop;
+}
+
+Expression ParserBuilder::applyConvertExpression(const type::unit::item::Field& field, const Expression& value,
+                                                 std::optional<Expression> dst) {
+    auto convert = field.convertExpression();
+    if ( ! convert )
+        return value;
+
+    if ( ! dst )
+        dst = builder()->addTmp("converted", field.itemType());
+
+    if ( convert->second ) {
+        auto block = builder()->addBlock();
+        block->addLocal(ID("__dd"), field.parseType(), value);
+        block->addAssign(*dst, convert->first);
+    }
+    else
+        // Unit got its own __convert() method for us to call.
+        builder()->addAssign(*dst, builder::memberCall(value, "__convert", {}));
+
+    return *dst;
 }
 
 void ParserBuilder::trimInput(bool force) {

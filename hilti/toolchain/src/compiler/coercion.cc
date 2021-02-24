@@ -10,6 +10,7 @@
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/types/any.h>
+#include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/operand-list.h>
 #include <hilti/ast/types/optional.h>
 #include <hilti/ast/types/reference.h>
@@ -278,6 +279,10 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src_
         _line = __LINE__;                                                                                              \
         goto exit;                                                                                                     \
     }
+
+    if ( auto auto_ = dst_.tryAs<type::Auto>() )
+        // Always accept, we're going to update the auto type later.
+        RETURN(no_change);
 
     if ( style & CoercionStyle::TryExactMatch ) {
         if ( src == dst ) {

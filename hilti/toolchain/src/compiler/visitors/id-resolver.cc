@@ -2,10 +2,14 @@
 
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/id.h>
+#include <hilti/ast/expressions/list-comprehension.h>
 #include <hilti/ast/expressions/type.h>
 #include <hilti/ast/expressions/typeinfo.h>
+#include <hilti/ast/operator.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/types/id.h>
+#include <hilti/ast/types/void.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/visitors.h>
 #include <hilti/compiler/unit.h>
 #include <hilti/global.h>
@@ -43,7 +47,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     void operator()(const Module& m) { module_id = m.id(); }
 
     void operator()(const type::UnresolvedID& u, position_t p) {
-        auto resolved = scope::lookupID<declaration::Type>(u.id(), p);
+        auto resolved = scope::lookupID<declaration::Type>(u.id(), p, "type");
 
         if ( ! resolved ) {
             p.node.addError(resolved.error());
@@ -110,8 +114,71 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         }
     }
 
+    void operator()(const statement::Return& r, position_t p) {
+        if ( ! r.expression() || r.expression()->type().isA<type::Unknown>() )
+            return;
+
+        // Resolve any `auto` return type.
+        const auto& function = p.findParent<Function>();
+        if ( ! function )
+            return;
+
+        if ( auto a = function->get().type().result().type().tryAs<type::Auto>(); a && ! a->isSet() ) {
+            a->typeNode() = r.expression()->type();
+            modified = true;
+        }
+    }
+
+    void operator()(const expression::ResolvedOperator& r, position_t p) {
+        // For calls that have been resolved to user-defined functions and
+        // methods, check if any of the targetis have `auto` parameters thar
+        // aren't resolved yet. If so, replace those automatic types with the
+        // type of the argument that we know now.
+
+        std::vector<type::function::Parameter> params;
+
+        if ( r.operator_().kind() == operator_::Kind::Call && r.op0().type().isA<type::Function>() )
+            // Call to function.
+            params = r.op0().type().as<type::Function>().parameters();
+        else if ( r.operator_().kind() == operator_::Kind::MemberCall && r.op0().type().isA<type::Struct>() &&
+                  r.op1().type().isA<type::Function>() )
+            // Call to struct method.
+            params = r.op1().type().as<type::Function>().parameters();
+        else
+            // Not interested in these.
+            return;
+
+        for ( auto&& [arg_, param] : util::enumerate(params) ) {
+            auto at = param.type().tryAs<type::Auto>();
+            if ( ! at || at->isSet() )
+                continue;
+
+            // Compute new type for 'auto' parameter.
+            auto arg = arg_; // need this so that the lambda can capture it
+            Type type = type::Computed(NodeRef(p.node), [arg](Node& n) {
+                auto r = n.as<expression::ResolvedOperator>();
+                switch ( r.operator_().kind() ) {
+                    case operator_::Kind::Call:
+                        return type::effectiveType(
+                            r.op1().as<expression::Ctor>().ctor().as<ctor::Tuple>().value()[arg].type());
+
+                    case operator_::Kind::MemberCall:
+                        return type::effectiveType(
+                            r.op2().as<expression::Ctor>().ctor().as<ctor::Tuple>().value()[arg].type());
+
+                    default: hilti::util::cannot_be_reached();
+                }
+
+                hilti::util::cannot_be_reached();
+            });
+
+            param.type().as<type::Auto>().typeNode() = type;
+            modified = true;
+        }
+    }
+
     void operator()(const expression::UnresolvedID& u, position_t p) {
-        auto resolved = scope::lookupID<Declaration>(u.id(), p);
+        auto resolved = scope::lookupID<Declaration>(u.id(), p, "declaration");
 
         if ( ! resolved ) {
             p.node.addError(resolved.error());
@@ -146,12 +213,19 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             // resolver will take care of that.
             return;
 
+        // We can get into trouble when re-look-upping "self" inside a new
+        // context. As a work-around, just ignore self here.
+        // TODO: We should do this differently, and ideally not need any
+        // re-loopup anyways (see below)
+        if ( u.id().str() == "self" )
+            return;
+
         // Look it up again because the AST may have changed the mapping.
         //
         // TODO(robin): Not quite sure in which cases this happen, ideally it
         // shouldn't be necessary to re-lookup an ID once it has been
         // resolved.
-        auto resolved = scope::lookupID<Declaration>(u.id(), p);
+        auto resolved = scope::lookupID<Declaration>(u.id(), p, "declaration");
 
         if ( ! resolved )
             return;
@@ -197,6 +271,37 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     }
 };
 
+// 2nd pass of further transformations that would intefere with those in the
+// 1st pass.
+//
+// TODO: This could eventually become a separate type-resolver pass.
+struct Visitor2 : public visitor::PostOrder<void, Visitor2> {
+    explicit Visitor2(Unit* unit) : unit(unit) {}
+    Unit* unit;
+    bool modified = false;
+
+    template<typename T>
+    void replaceNode(position_t* p, T&& n, int line, bool set_modified = true) {
+        p->node = std::forward<T>(n);
+        if ( set_modified ) {
+            HILTI_DEBUG(Resolver, hilti::util::fmt("  modified by HILTI %s/%d",
+                                                   hilti::rt::filesystem::path(__FILE__).filename().native(), line))
+            modified = true;
+        }
+    }
+
+    void operator()(const expression::ListComprehension& e, position_t p) {
+        if ( ! e.type().isA<type::Unknown>() )
+            return;
+
+        if ( e.output().type().isA<type::Unknown>() )
+            return;
+
+        p.node.as<expression::ListComprehension>().typeNode() = type::List(e.output().type());
+        modified = true;
+    }
+};
+
 } // anonymous namespace
 
 bool hilti::detail::resolveIDs(Node* root, Unit* unit) {
@@ -206,5 +311,9 @@ bool hilti::detail::resolveIDs(Node* root, Unit* unit) {
     for ( auto i : v.walk(root) )
         v.dispatch(i);
 
-    return v.modified;
+    auto v2 = Visitor2(unit);
+    for ( auto i : v2.walk(root) )
+        v2.dispatch(i);
+
+    return v.modified || v2.modified;
 }

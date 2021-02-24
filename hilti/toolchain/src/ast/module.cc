@@ -1,9 +1,23 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/module.h>
 #include <hilti/compiler/detail/visitors.h>
 
 using namespace hilti;
+
+void Module::clear() {
+    auto v = visitor::PostOrder<>();
+
+    // We fully walk the AST here in order to break any reference cycles it may
+    // contain. Start at child 1 to leave ID in place.
+    for ( auto i = 1; i < childs().size(); i++ ) {
+        for ( auto j : v.walk(&childs()[i]) )
+            j.node = node::none;
+    }
+
+    childs()[1] = statement::Block({}, meta());
+}
 
 NodeRef Module::preserve(Node n) {
     detail::clearErrors(&n);

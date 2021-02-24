@@ -5,6 +5,4 @@ module Test;
 
 public type Foo = unit {
     x: (bytes)[3];
-    y: (bytes &eod &chunked)[3];
-    z: (bytes &eod &convert=$$)[];
 };

@@ -30,7 +30,7 @@ public:
     }
 
     Expression addTmp(const std::string& prefix, const Expression& init);
-    Expression addTmp(const std::string& prefix, const Type& t);
+    Expression addTmp(const std::string& prefix, const Type& t, const std::vector<Expression>& args = {});
     Expression addTmp(const std::string& prefix, const Type& t, const Expression& init);
 
     void addLocal(ID id, Type t, Meta m = Meta()) {

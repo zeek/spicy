@@ -33,6 +33,11 @@ public:
     void popScope() { _scopes.pop_back(); }
 
     bool isCompact() { return _compact; }
+    bool setCompact(bool new_compact) {
+        auto old = _compact;
+        _compact = new_compact;
+        return old;
+    }
 
     bool isExpandSubsequentType() const { return _expand_subsequent_type; }
     void setExpandSubsequentType(bool expand) { _expand_subsequent_type = expand; }

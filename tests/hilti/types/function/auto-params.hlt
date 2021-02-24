@@ -1,0 +1,15 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function void foo(auto x) {
+    hilti::print(x);
+}
+
+foo(42);
+
+}

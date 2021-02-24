@@ -28,7 +28,7 @@ namespace hilti { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 104
+%expect 109
 %expect-rr 184
 
 %union {}
@@ -417,6 +417,8 @@ func_params : func_params ',' func_param { $$ = std::move($1); $$.push_back($3);
 
 func_param      : opt_func_param_kind type local_id opt_func_default_expr
                                                  { $$ = hilti::type::function::Parameter($3, $2, $1, $4, __loc__); }
+                | opt_func_param_kind AUTO local_id opt_func_default_expr
+                                                 { $$ = hilti::type::function::Parameter($3, type::Auto(__loc__), $1, $4, __loc__); }
 
 func_result   : type                             { $$ = hilti::type::function::Result(std::move($1), __loc__); }
 
@@ -537,6 +539,7 @@ stmt_expr     : expr                             { $$ = hilti::statement::Expres
 base_type_no_attrs
               : ANY                              { $$ = hilti::type::Any(__loc__); }
               | ADDRESS                          { $$ = hilti::type::Address(__loc__); }
+              | AUTO                             { $$ = hilti::type::Auto(__loc__); }
               | BOOL                             { $$ = hilti::type::Bool(__loc__); }
               | BYTES                            { $$ = hilti::type::Bytes(__loc__); }
               | ERROR                            { $$ = hilti::type::Error(__loc__); }
@@ -639,6 +642,11 @@ struct_field  : type local_id opt_attributes ';' { $$ = hilti::type::struct_::Fi
               | func_flavor opt_func_cc func_result function_id '(' opt_func_params ')' opt_attributes ';' {
                                                    auto ftype = hilti::type::Function(std::move($3), std::move($6), $1, __loc__);
                                                    $$ = hilti::type::struct_::Field(std::move($4), $2, std::move(ftype), $8, __loc__);
+                                                   }
+              | func_flavor opt_func_cc func_result function_id '(' opt_func_params ')' opt_attributes braced_block {
+                                                   auto ftype = hilti::type::Function(std::move($3), std::move($6), $1, __loc__);
+                                                   auto func = hilti::Function($4, std::move(ftype), std::move($9), $2, {});
+                                                   $$ = hilti::type::struct_::Field($4, std::move(func), $8, __loc__);
                                                    }
 
 union_type    : UNION opt_attributes'{' opt_union_fields '}'

@@ -748,7 +748,7 @@ void Unit::_resetNodes(const ID& id, Node* root) {
 
     for ( const auto&& i : hilti::visitor::PreOrder<>().walk(root) ) {
         i.node.clearCache();
-        i.node.scope()->clear();
+        i.node.clearScope();
         i.node.clearErrors();
     }
 }
