@@ -45,10 +45,12 @@ public:
     ~Env() {
         const auto& [k, v] = _prev;
 
-        if ( v )
+        if ( v ) {
             REQUIRE_EQ(::setenv(k.c_str(), v->c_str(), 1), 0);
-        else
+        }
+        else {
             REQUIRE_EQ(::unsetenv(k.c_str()), 0);
+        }
     }
 
 private:
