@@ -86,7 +86,7 @@ event conv::test(x: connection,
     print g;
     print h;
     print i;
-    print j;
+    print fmt("%f", j), type_name(j); # print as float as interval format differs between versions
     print s;
     print v;
     print l;
