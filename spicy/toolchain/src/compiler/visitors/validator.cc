@@ -464,7 +464,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 return;
             }
 
-            if ( is_sub_item ) {
+            if ( ! f.item() ) {
                 if ( auto rc = isParseableType(f.parseType(), f); ! rc ) {
                     error(rc.error(), p);
                     return;
