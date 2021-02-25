@@ -1,4 +1,9 @@
 
+0.4.0-1513 | 2021-02-25 14:49:43 +0000
+
+  * GH-771: Improve docs for vector &until parsing. (Jon Siwek,
+    Corelight)
+
 0.4.0-1511 | 2021-02-24 19:34:56 +0000
 
   * GH-694: Support unit-level `&convert` attribute. (Robin Sommer,

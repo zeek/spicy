@@ -1098,11 +1098,11 @@ loop. To that end, vectors support the following attributes:
     common to use it with vectors.)
 
 ``&until=EXPR``
-    Parses elements until one with the value ``EXPR`` is encountered.
-    ``EXPR`` must be of the same type as the vector's elements. Once
-    the specified element is encountered, vector parsing stops
-    *without* including the matching one into the field's vector
-    value.
+    Vector elements are parsed in a loop with ``EXPR`` being evaluated
+    as a boolean expression after each parsed element, and before
+    adding the element to the vector. Once ``EXPR`` evaluates to true,
+    parsing stops *without* adding the element that was just
+    parsed.
 
 ``&until-including=EXPR``
     Similar to ``&until``, but does include the final element ``EXPR``
