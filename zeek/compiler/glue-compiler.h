@@ -55,6 +55,7 @@ struct FileAnalyzer {
     hilti::ID name;                      /**< Name of the analyzer. */
     std::vector<std::string> mime_types; /**< The mime_types associated with the analyzer. */
     hilti::ID unit_name;                 /**< The fully-qualified name of the unit type to parse with. */
+    std::string replaces;                /**< Name of another analyzer this one replaces. */
 
     // Computed information.
     std::optional<UnitInfo> unit; /**< The type of the unit to parse the originator side. */

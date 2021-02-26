@@ -282,6 +282,25 @@ File analyzers support the following properties:
             HTTP's ``Content-Type`` header). If in doubt, examine
             ``files.log`` for what it records as a file's type.
 
+    ``replaces ANALYZER_NAME``
+        Disables an existing file analyzer that Zeek already provides
+        internally, allowing you to replace a built-in analyzer with a new
+        Spicy version. ``ANALYZER_NAME`` is the Zeek-side name of the
+        analyzer. To find that name, inspect the output of ``zeek -NN``
+        for available analyzers::
+
+            # zeek -NN | grep '\[File Analyzer\]'
+            ...
+            [File Analyzer] PE (ANALYZER_PE, enabled)
+            ...
+
+        Here, ``PE`` is the name you would write into ``replaces`` to
+        disable the built-in PE analyzer.
+
+        .. note::
+
+            This feature requires Zeek >= 4.1
+
 As a full example, here's what a new GIF analyzer could look like:
 
 .. code-block:: spicy-evt

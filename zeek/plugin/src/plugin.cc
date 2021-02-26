@@ -101,15 +101,31 @@ void plugin::Zeek_Spicy::Plugin::registerProtocolAnalyzer(const std::string& nam
 
 void plugin::Zeek_Spicy::Plugin::registerFileAnalyzer(const std::string& name,
                                                       const hilti::rt::Vector<std::string>& mime_types,
-                                                      const std::string& parser) {
+                                                      const std::string& parser, const std::string& replaces) {
     ZEEK_DEBUG(hilti::rt::fmt("Have Spicy file analyzer %s", name));
 
     FileAnalyzerInfo info;
     info.name_analyzer = name;
     info.name_parser = parser;
+    info.name_replaces = replaces;
     info.mime_types = mime_types;
     info.subtype = _file_analyzers_by_subtype.size();
     _file_analyzers_by_subtype.push_back(std::move(info));
+
+#if ZEEK_VERSION_NUMBER >= 40100
+    // Zeek does not have a way to disable file analyzers until 4.1.
+    // There's separate logic to nicely reject 'replaces' usages found
+    // in .evt files if using inadequate Zeek version, but this is just
+    // to make Spicy compilation work regardless.
+    if ( replaces.size() ) {
+        if ( auto component = ::zeek::file_mgr->Lookup(replaces) ) {
+            ZEEK_DEBUG(hilti::rt::fmt("Disabling %s for %s", replaces, name));
+            component->SetEnabled(false);
+        }
+        else
+            ZEEK_DEBUG(hilti::rt::fmt("%s i supposed to replace %s, but that does not exist", name, replaces, name));
+    }
+#endif
 }
 
 #ifdef HAVE_PACKET_ANALYZERS
@@ -177,9 +193,11 @@ const spicy::rt::Parser* plugin::Zeek_Spicy::Plugin::parserForPacketAnalyzer(con
         return tag;
 }
 
-::zeek::analyzer::Tag plugin::Zeek_Spicy::Plugin::tagForFileAnalyzer(const ::zeek::analyzer::Tag& tag) {
-    // Don't have a replacement mechanism currently.
-    return tag;
+::zeek::file_analysis::Tag plugin::Zeek_Spicy::Plugin::tagForFileAnalyzer(const ::zeek::file_analysis::Tag& tag) {
+    if ( auto r = _file_analyzers_by_subtype[tag.Subtype()].replaces )
+        return r;
+    else
+        return tag;
 }
 
 #ifdef HAVE_PACKET_ANALYZERS
@@ -349,6 +367,15 @@ void plugin::Zeek_Spicy::Plugin::InitPostScript() {
         ZEEK_DEBUG(hilti::rt::fmt("Registering file analyzer %s with Zeek", p.name_analyzer.c_str()));
 
         p.parser = find_parser(p.name_analyzer, p.name_parser);
+
+        if ( p.name_replaces.size() ) {
+            ZEEK_DEBUG(hilti::rt::fmt("  Replaces existing file analyzer %s", p.name_replaces));
+            p.replaces = ::zeek::file_mgr->GetComponentTag(p.name_replaces);
+
+            if ( ! p.replaces )
+                reporter::error(hilti::rt::fmt("Parser '%s' is to replace '%s', but that one does not exist",
+                                               p.name_analyzer, p.name_replaces));
+        }
 
         auto c = new ::zeek::file_analysis::Component(p.name_analyzer,
                                                       ::spicy::zeek::rt::FileAnalyzer::InstantiateAnalyzer, p.subtype);

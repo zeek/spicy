@@ -1,4 +1,12 @@
 
+0.4.0-1521 | 2021-02-26 08:50:04 +0000
+
+  * GH-791: Bring back validation of field parseability. (Robin
+    Sommer, Corelight)
+
+  * GH-762: Add support for Zeek file analyzer replacement (requires
+    Zeek 4.1+). (Jon Siwek, Corelight)
+
 0.4.0-1513 | 2021-02-25 14:49:43 +0000
 
   * GH-771: Improve docs for vector &until parsing. (Jon Siwek,
