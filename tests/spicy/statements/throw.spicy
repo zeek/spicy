@@ -1,0 +1,15 @@
+# @TEST-EXEC-FAIL: spicyc -d -j throw-1.spicy >>output 2>&1
+# @TEST-EXEC-FAIL: spicyc -d -j throw-2.spicy >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check the throw statement
+
+# @TEST-START-FILE throw-1.spicy
+module Test;
+throw "User-triggered error";
+# @TEST-END-FILE
+
+# @TEST-START-FILE throw-2.spicy
+module Test;
+throw "Runtime error string: %s" % (1 + 2);
+# @TEST-END-FILE

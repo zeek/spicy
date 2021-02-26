@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: spicyc -j -d %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check validation of the throw statement
+
+module Test;
+
+throw 1;
+throw 8080/tcp;
+throw 127.0.0.1;

@@ -156,6 +156,7 @@ stream                return token::STREAM;
 string                return token::STRING;
 struct                return token::STRUCT;
 switch                return token::SWITCH;
+throw                 return token::THROW;
 time                  return token::TIME;
 time_ns               return token::TIME_NS;
 timer                 return token::TIMER;
