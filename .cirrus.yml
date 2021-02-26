@@ -171,7 +171,7 @@ macos_catalina_task:
     - pip3 install "btest>=0.66" sphinx_rtd_theme
 
   configure_script:
-    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache
+    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror
   build_script:
     - ninja -C build all check
   test_build_script:
@@ -208,7 +208,7 @@ macos_big_sur_task:
     - pip3 install btest sphinx_rtd_theme
 
   configure_script:
-    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache
+    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror
   build_script:
     - ninja -C build all check
   test_build_script:
@@ -325,7 +325,7 @@ docker_alpine_3_12_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_script:
@@ -365,7 +365,7 @@ docker_centos_7_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - source scl_source enable devtoolset-9 && LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - source scl_source enable devtoolset-9 && LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
     - source scl_source enable devtoolset-9 && ninja -j4 -C build install
   test_script:
@@ -405,6 +405,8 @@ docker_centos_8_task:
     - git submodule update --recursive --init
 
   configure_script:
+    # TODO(bbannier): We do not enable -Werror on centos8 since it ships with
+    # flex-2.6.1 which generates code which triggers sign-compare diagnostics.
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
     - ninja -j4 -C build install
@@ -453,7 +455,7 @@ validate_release_tarball_task:
     - tar xf spicy.tar.bz2 -C /tmp/spicy-tarball
     - cd /tmp/spicy-tarball
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
     - ninja -j3 -C build
   test_script:
@@ -509,7 +511,7 @@ docker_debian9_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_script:
@@ -550,7 +552,7 @@ docker_debian10_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_script:
@@ -591,6 +593,8 @@ docker_ubuntu16_task:
     - git submodule update --recursive --init
 
   configure_script:
+    # TODO(bbannier): We do not enable -Werror on ubuntu16 since there
+    # the generated flex scanners trigger null-conversion diagnostics.
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
     - ninja -j4 -C build install
@@ -632,7 +636,7 @@ docker_ubuntu18_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_script:
@@ -673,7 +677,7 @@ docker_ubuntu20_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_script:
@@ -714,7 +718,7 @@ docker_fedora32_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_script:
@@ -755,7 +759,7 @@ docker_fedora33_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_script:
@@ -857,7 +861,7 @@ freebsd11_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --with-cxx-compiler=clang++11 --with-c-compiler=clang11
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --with-cxx-compiler=clang++11 --with-c-compiler=clang11 --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_script:
@@ -896,7 +900,7 @@ freebsd12_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_script:

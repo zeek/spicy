@@ -334,11 +334,12 @@ TEST_CASE("toInt") {
         CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
         CHECK_EQ("100"_b.toInt(ByteOrder::Network), 3223600);
         CHECK_EQ("100"_b.toInt(ByteOrder::Little), 3158065);
-        if ( systemByteOrder() == ByteOrder::Little )
+        if ( systemByteOrder() == ByteOrder::Little ) {
             CHECK_EQ("100"_b.toInt(ByteOrder::Host), 3158065);
-        else
+        }
+        else {
             CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
-
+        }
 
         CHECK_THROWS_WITH_AS("1234567890"_b.toInt(ByteOrder::Big), "more than max of 8 bytes for conversion to integer",
                              const RuntimeError&);

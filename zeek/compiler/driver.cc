@@ -107,7 +107,7 @@ hilti::Result<hilti::Nothing> Driver::parseOptionsPreScript(const std::string& o
                                                            [](auto o) { return hilti::util::trim(o); }),
                                     [](auto o) { return o.size(); });
 
-    auto idx = 0;
+    size_t idx = 0;
     auto argc = args.size();
     while ( idx < argc ) {
         if ( args[idx][0] != '-' ) {
@@ -152,7 +152,7 @@ hilti::Result<hilti::Nothing> Driver::parseOptionsPostScript(const std::string& 
                                                            [](auto o) { return hilti::util::trim(o); }),
                                     [](auto o) { return o.size(); });
 
-    auto idx = 0;
+    size_t idx = 0;
     auto argc = args.size();
     while ( idx < argc ) {
         if ( args[idx][0] != '-' ) {

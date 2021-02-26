@@ -95,10 +95,12 @@ TEST_CASE("atEod") {
             for ( size_t i = 0; i < stream->size() + 5; ++i ) {
                 CAPTURE(i);
                 view = view.trim(view.begin() + i);
-                if ( i < 2 )
+                if ( i < 2 ) {
                     CHECK_FALSE(detail::atEod(stream, view));
-                else
+                }
+                else {
                     CHECK(detail::atEod(stream, view));
+                }
             }
         }
     }
