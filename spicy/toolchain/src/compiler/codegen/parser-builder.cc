@@ -494,7 +494,7 @@ struct ProductionVisitor
         // Top of stack will now have the final value for the field.
         Expression stop = builder::bool_(false);
 
-        if ( const auto& c = meta.container() ) {
+        if ( meta.container() ) {
             auto elem = destination();
             popDestination();
             stop = pb->newContainerItem(*meta.container(), destination(), elem, true);
