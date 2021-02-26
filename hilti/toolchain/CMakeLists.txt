@@ -59,6 +59,7 @@ set(SOURCES
     src/ast/types/tuple.cc
     src/base/code-formatter.cc
     src/base/logger.cc
+    src/base/preprocessor.cc
     src/base/timing.cc
     src/base/type_erase.cc
     src/base/util.cc
