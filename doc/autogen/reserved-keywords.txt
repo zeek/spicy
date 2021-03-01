@@ -75,6 +75,7 @@ stream
 string
 struct
 switch
+throw
 time
 time_ns
 timer

@@ -207,22 +207,13 @@ there's no matching case.
 ``throw``
 ---------
 
-.. todo:: This isn't available in Spicy yet (:issue:`89`).
-
 ::
 
     throw EXPR;
 
-    throw;      # only inside "catch"
 
-
-Throws an exception, letting execution stop at the current location
-and propagating ``EXPR`` up the call stack to the nearest matching
-:ref:`statement_try`. If not match is found, the exception eventually
-bubbles up to the host application. If that doesn't catch it either,
-the runtime will abort execution. ``EXPR`` must be of type
-:ref:`type_exception`. ``EXPR`` can be skipped to rethrow the current
-exception inside a ``catch`` block.
+Triggers a parse error exception with the message indicated by ``EXPR``. ``EXPR`` needs
+to be a :ref:`type_string`. ``throw`` aborts parsing.
 
 .. _statement_try:
 

@@ -1,3 +1,13 @@
+0.4.0-1531 | 2021-03-01 11:40:35 +0100
+
+  * GH-768: Add language support to explicitly trigger a parse error.
+
+    This patch adds a Spicy `throw` statement of the form
+
+        throw EXPR;
+
+    which when hit triggers a parse error with the message `EXPR`.
+
 0.4.0-1529 | 2021-03-01 11:06:22 +0100
 
   * GH-767: Add &max-size attribute.

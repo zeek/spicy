@@ -164,6 +164,12 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             _checkStructArguments(c.typeArguments(), st->parameters(), p);
     }
 
+    void operator()(const hilti::ctor::Exception& e, position_t p) {
+        if ( auto x = e.value().tryAs<hilti::expression::Ctor>() )
+            if ( ! x->type().isA<type::String>() )
+                error("exceptions need to be a string", p);
+    }
+
     void operator()(const ctor::List& n, position_t p) {
         if ( ! n.value().empty() && n.elementType() == type::unknown ) {
             // List constructors are often used to initialize other elements,

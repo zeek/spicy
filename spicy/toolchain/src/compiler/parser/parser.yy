@@ -30,7 +30,7 @@ namespace spicy { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 121
-%expect-rr 155
+%expect-rr 157
 
 %union {}
 %{
@@ -204,6 +204,7 @@ static int _field_width = 0;
 %token         STRING
 %token         STRUCT
 %token         SWITCH
+%token         THROW
 %token         TIME
 %token         TIME_NS
 %token         TIMER
@@ -481,6 +482,7 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
               | RETURN ';'                       { $$ = hilti::statement::Return(__loc__); }
               | RETURN expr ';'                  { $$ = hilti::statement::Return(std::move($2), __loc__); }
               | STOP ';'                         { $$ = spicy::statement::Stop(__loc__); }
+              | THROW expr ';'                   { $$ = hilti::statement::Throw(hilti::builder::exception(hilti::builder::typeByID("spicy_rt::ParseError"), $2, __loc__), __loc__); }
               | SWITCH '(' expr ')' '{' switch_cases '}'
                                                  { $$ = hilti::statement::Switch(std::move($3), std::move($6), __loc__); }
               | SWITCH '(' local_init_decl ')' '{' switch_cases '}'
