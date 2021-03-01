@@ -18,14 +18,14 @@ Linux
 ~~~~~
 
 We provide pre-built binaries for some platforms from the Git ``master``
-branch. Artifacts are distributed as TAR archives which can be unpacked to any
-location::
+branch. Artifacts are distributed as TAR archives which should be unpacked at
+the directory root::
 
-    # Unpack archive to e.g., /opt/spicy overwriting any previous installation.
-    # Writing to /opt/spicy likely requires superuser priviledges.
-    # The path /opt/spicy can be replaced with a custom path.
-    rm -rf /opt/spicy && mkdir /opt/spicy
-    tar xf spicy-linux.tar.gz -C /opt/spicy --strip-components=1
+    # Unpack archive. Creating output directories likely superuser priviledges.
+    tar xvf build/spicy-linux.tar.gz -C / --strip-components=1 2>&1 | grep '^x ' | cut -d'/' -f2- | sed 's/^/\//' > ~/spicy-files.txt
+
+    # Uninstall archive. Removing output files likely requires superuser priviledges.
+    rm -ir $(cat ~/spicy-files.txt)
 
 The binaries might require installation of additional dependencies;
 see the ``Dockerfile`` for the respective platform.
