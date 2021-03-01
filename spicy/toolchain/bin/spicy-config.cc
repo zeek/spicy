@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
             if ( hilti::configuration().uses_build_directory )
                 result.emplace_back(hilti::configuration().distbase / "cmake");
             else
-                result.emplace_back(hilti::configuration().install_prefix / "share/spicy/cmake");
+                result.emplace_back(hilti::configuration().install_prefix / "share" / "spicy" / "cmake");
 
             continue;
         }
@@ -192,9 +192,9 @@ int main(int argc, char** argv) {
         if ( opt == "--zeek-plugin-path" ) {
 #ifdef HAVE_ZEEK
             if ( hilti::configuration().uses_build_directory )
-                result.emplace_back(hilti::configuration().build_directory / "zeek/plugin");
+                result.emplace_back(hilti::configuration().build_directory / "zeek" / "plugin");
             else
-                result.emplace_back(hilti::configuration().lib_directory / "spicy/Zeek_Spicy");
+                result.emplace_back(hilti::configuration().lib_directory / "spicy" / "Zeek_Spicy");
 #else
             result.emplace_back("");
 #endif
@@ -204,9 +204,9 @@ int main(int argc, char** argv) {
         if ( opt == "--zeek-module-path" ) {
 #ifdef HAVE_ZEEK
             if ( hilti::configuration().uses_build_directory )
-                result.emplace_back(hilti::configuration().build_directory / "zeek/plugin/modules");
+                result.emplace_back(hilti::configuration().build_directory / "zeek" / "plugin" / "modules");
             else
-                result.emplace_back(hilti::configuration().lib_directory / "spicy/Zeek_Spicy/modules");
+                result.emplace_back(hilti::configuration().lib_directory / "spicy" / "Zeek_Spicy" / "modules");
 #else
             result.emplace_back("");
 #endif
@@ -216,8 +216,8 @@ int main(int argc, char** argv) {
         if ( opt == "--zeek-include-dirs" ) {
 #ifdef HAVE_ZEEK
             if ( hilti::configuration().uses_build_directory ) {
-                result.emplace_back(hilti::configuration().distbase / "zeek/plugin/include");
-                result.emplace_back(hilti::configuration().build_directory / "zeek/plugin");
+                result.emplace_back(hilti::configuration().distbase / "zeek" / "plugin" / "include");
+                result.emplace_back(hilti::configuration().build_directory / "zeek" / "plugin");
             }
             else
                 result.emplace_back(hilti::configuration().install_prefix / "include");
