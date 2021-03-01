@@ -31,4 +31,5 @@ Spicy pretty quickly.
     types
     statements
     error-handling
+    conditional
     appendix

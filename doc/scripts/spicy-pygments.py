@@ -25,6 +25,7 @@ class SpicyLexer(RegexLexer):
         'root': [
             include('whitespace'),
             include('comments'),
+            include('directives'),
             include('attributes'),
             include('hooks'),
             include('properties'),
@@ -47,6 +48,8 @@ class SpicyLexer(RegexLexer):
         'comments': [
             (r'#.*$', Comment),
         ],
+
+        'directives': [(r'(@(if|else|endif))\b', Comment.Preproc)],
 
         'attributes': [
             (words(('bit-order', 'byte-order', 'chunked', 'convert', 'count',
@@ -220,7 +223,7 @@ class SpicyEvtLexer(RegexLexer):
 
         'whitespace': SpicyLexer.tokens['whitespace'],
         'comments': SpicyLexer.tokens['comments'],
-        'directives': [(r'(@(if|else|endif))\b', Comment.Preproc)],
+        'directives': SpicyLexer.tokens['directives'],
         'hooks': SpicyLexer.tokens['hooks'],
         'modules': SpicyLexer.tokens['modules'],
 
