@@ -94,6 +94,7 @@ static int _field_width = 0;
 %token <str>       DOLLAR_IDENT   "$-identifier"
 %token <str>       ATTRIBUTE      "attribute"
 %token <str>       PROPERTY       "property"
+%token <str>       PREPROCESSOR   "preprocessor directive"
 
 %token <str>       CSTRING        "string value"
 %token <str>       CBYTES         "bytes value"
