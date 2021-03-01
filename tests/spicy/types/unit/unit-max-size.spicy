@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
+# @TEST-EXEC: printf '\000' | spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: printf '\001\000' | spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001\001\000' | spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001\001\001\000' | spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Validate effects of unit-level `&max-size` attribute
+
+module Mini;
+
+public type Foo = unit {
+    xs: bytes &until-including=b"\x00";
+
+    on %done { print "done", self; }
+    on %error { print "error", self; }
+} &max-size=2;

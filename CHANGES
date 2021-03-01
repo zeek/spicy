@@ -1,3 +1,16 @@
+0.4.0-1529 | 2021-03-01 11:06:22 +0100
+
+  * GH-767: Add &max-size attribute.
+
+    This patch adds a &max-size field and unit attribute. The attribute
+    allows setting up a maximum number of bytes a parse step should consume.
+
+    It is conceptually similar to the existing &size attribute but differs
+    from it in that an error is raised only if more than the specified bytes
+    were extracted (&size enforces that exactly the specified number of
+    bytes is extracted).
+
+    &max-size cannot be used together with &size.
 
 0.4.0-1521 | 2021-02-26 08:50:04 +0000
 

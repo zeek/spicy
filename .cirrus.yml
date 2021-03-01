@@ -23,7 +23,7 @@ clang9_zeek_ubuntu_debug_task:
   env:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
-    LD_LIBRARY_PATH: /usr/lib/llvm-9/lib/clang/9.0.1/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-10/lib/clang/10.0.1/lib/linux/
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
   # are needed for `git describe` used in `scripts/autogen-version`. We also

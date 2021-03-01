@@ -590,15 +590,26 @@ struct ProductionVisitor
             pushState(std::move(pstate));
         }
 
-        if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
+        // `&size` and `&max-size` share the same underlying infrastructure
+        // so try to extract both of them and compute the ultimate value.
+        std::optional<Expression> length;
+        // Only at most one of `&max-size` and `&size` will be set.
+        assert(! (AttributeSet::find(field->attributes(), "&size") &&
+                  AttributeSet::find(field->attributes(), "&max-size")));
+        if ( auto a = AttributeSet::find(field->attributes(), "&size") )
+            length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
+        if ( auto a = AttributeSet::find(field->attributes(), "&max-size") )
+            // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
+            length = builder::incrementPrefix(builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64)));
+
+        if ( length ) {
             // Limit input to the specified length.
-            auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
-            auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
+            auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {*length}));
 
             // Establish limited view, remembering position to continue at.
             auto pstate = state();
             pstate.cur = limited;
-            pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
+            pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {*length}));
             pushState(std::move(pstate));
         }
         else {
@@ -645,7 +656,23 @@ struct ProductionVisitor
         auto ncur = state().ncur;
         state().ncur = {};
 
-        if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
+        if ( auto a = AttributeSet::find(field->attributes(), "&max-size") ) {
+            // Check that we did not read into the sentinel byte.
+            auto cond = builder::greaterEqual(builder::memberCall(state().cur, "offset", {}),
+                                              builder::memberCall(*ncur, "offset", {}));
+            auto exceeded = builder()->addIf(std::move(cond));
+            pushBuilder(exceeded, [&]() {
+                // We didn't finish parsing the data, which is an error.
+                if ( ! destination().type().isA<type::Void>() && ! field->isTransient() )
+                    // Clear the field in case the type parsing has started
+                    // to fill it.
+                    builder()->addExpression(builder::unset(state().self, field->id()));
+
+                pb->parseError("parsing not done within &max-size bytes", a->meta());
+            });
+        }
+
+        else if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
             // Make sure we parsed the entire &size amount.
             auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
                                             builder::memberCall(*ncur, "offset", {}));
@@ -916,15 +943,28 @@ struct ProductionVisitor
             pushState(std::move(pstate));
         }
 
-        if ( auto a = AttributeSet::find(p.unitType().attributes(), "&size") ) {
+        // `&size` and `&max-size` share the same underlying infrastructure
+        // so try to extract both of them and compute the ultimate value. We
+        // already reject cases where `&size` and `&max-size` are combined
+        // during validation.
+        std::optional<Expression> length;
+        // Only at most one of `&max-size` and `&size` will be set.
+        assert(! (AttributeSet::find(p.unitType().attributes(), "&size") &&
+                  AttributeSet::find(p.unitType().attributes(), "&max-size")));
+        if ( auto a = AttributeSet::find(p.unitType().attributes(), "&size") )
+            length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
+        else if ( auto a = AttributeSet::find(p.unitType().attributes(), "&max-size") )
+            // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
+            length = builder::incrementPrefix(builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64)));
+
+        if ( length ) {
             // Limit input to the specified length.
-            auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
-            auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
+            auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {*length}));
 
             // Establish limited view, remembering position to continue at.
             auto pstate = state();
             pstate.cur = limited;
-            pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
+            pstate.ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {*length}));
             pushState(std::move(pstate));
         }
 
@@ -933,7 +973,20 @@ struct ProductionVisitor
 
         pb->finalizeUnit(true, p.location());
 
-        if ( auto a = AttributeSet::find(p.unitType().attributes(), "&size") ) {
+        if ( auto a = AttributeSet::find(p.unitType().attributes(), "&max-size") ) {
+            // Check that we did not read into the sentinel byte.
+            auto cond = builder::greaterEqual(builder::memberCall(state().cur, "offset", {}),
+                                              builder::memberCall(*state().ncur, "offset", {}));
+            auto exceeded = builder()->addIf(std::move(cond));
+            pushBuilder(exceeded, [&]() { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
+
+            // Restore parser state.
+            auto ncur = state().ncur;
+            popState();
+            builder()->addAssign(state().cur, *ncur);
+        }
+
+        else if ( auto a = AttributeSet::find(p.unitType().attributes(), "&size") ) {
             // Make sure we parsed the entire &size amount.
             auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
                                             builder::memberCall(*state().ncur, "offset", {}));

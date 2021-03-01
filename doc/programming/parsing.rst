@@ -196,8 +196,8 @@ that's different than what's being parsed, see the
 
 .. _attribute_size:
 
-Limiting Input Size
-^^^^^^^^^^^^^^^^^^^
+Parsing Fields With Known Size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can limit the input that a field receives by attaching a
 ``&size=EXPR`` attribute that specifies the number of raw bytes to
@@ -236,6 +236,39 @@ them all.
 
     Parsing a regular expression would make a nice example for
     ``&size`` as well.
+
+Defensively Limiting Input Size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On their own, parsers place no intrinsic upper limit on the size of
+variable-size fields or units. This can have negative effects like
+out-of-memory errors, e.g., when available memory is constrained, or for
+malformed input.
+
+As a defensive mechanism you can put an upper limit on the data a field or unit
+receives by attaching a ``&max-size=EXPR`` attribute where ``EXPR`` is an
+unsigned integer specifying the upper limit of number of raw bytes a field or
+unit should receive. If more than ``&max-size`` bytes are consumed during
+parsing, an error will be triggered.  This attribute works on top of any other
+attributes that control parsing. Example:
+
+.. spicy-code:: max-size.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        x: bytes &until=b"\x00" &max-size=1024;
+        on %done { print self; }
+    };
+
+.. spicy-output:: max-size.spicy
+    :exec: printf '\001\002\003\004\005\000' | spicy-driver %INPUT
+    :show-with: foo.spicy
+
+Here ``x`` will parse a ``NULL``-terminated byte sequence (excluding the
+terminating ``NULL``), but never more than 1024 bytes.
+
+``&max-size`` cannot be combined with ``&size``.
 
 Anonymous Fields
 ^^^^^^^^^^^^^^^^
