@@ -263,5 +263,6 @@ message(
 # unmodified links to the latest version.
 string(TOLOWER ${CMAKE_SYSTEM_NAME} SPICY_SYSTEM_NAME)
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${SPICY_SYSTEM_NAME}")
+set(CPACK_SET_DESTDIR "ON")
 
 include(CPack)
