@@ -88,6 +88,8 @@ void Configuration::init(bool use_build_directory) {
 
     hlto_ld_flags_debug = flatten({});
     hlto_ld_flags_release = flatten({});
+
+    preprocessor_constants = {{"SPICY_VERSION", hilti::configuration().version_number}};
 };
 
 Configuration& spicy::configuration() {

@@ -63,6 +63,8 @@ struct Configuration {
     std::vector<std::string>
         hlto_ld_flags_release; /**< Linker flags when when building a precompiled HLTO library in release mode. */
 
+    std::map<std::string, int> preprocessor_constants; /**< constants available for `@if` preprocessor tests. */
+
     /**
      * Augments the global HILTI configuration with Spicy's options. For
      * condfiguration options that are offered separately by both HILTI and

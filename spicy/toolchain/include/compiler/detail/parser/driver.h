@@ -19,6 +19,7 @@
 #include <hilti/base/preprocessor.h>
 
 #include <spicy/ast/all.h>
+#include <spicy/autogen/config.h>
 
 #undef YY_DECL
 #define YY_DECL                                                                                                        \
@@ -118,7 +119,7 @@ class Scanner;
 /** Driver for flex/bison. */
 class Driver {
 public:
-    Driver() : _preprocessor({{"SPICY_VERSION", hilti::configuration().version_number}}) {}
+    Driver() : _preprocessor(spicy::configuration().preprocessor_constants) {}
 
     hilti::Result<hilti::Node> parse(std::istream& in, const std::string& filename);
     hilti::Result<hilti::Node> parseExpression(const std::string& expression, const Meta& m = Meta());
