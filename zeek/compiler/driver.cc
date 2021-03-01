@@ -80,6 +80,11 @@ Driver::Driver(const std::string& argv0, int zeek_version) : spicy::Driver("<Spi
         hilti::configuration().initLocation(argv0);
 
     spicy::Configuration::extendHiltiConfiguration();
+
+    auto& config = spicy::configuration();
+    config.preprocessor_constants["HAVE_ZEEK"] = 1;
+    config.preprocessor_constants["ZEEK_VERSION"] = zeek_version;
+
     _glue = std::make_unique<GlueCompiler>(this, zeek_version);
 }
 
