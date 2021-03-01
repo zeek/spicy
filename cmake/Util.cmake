@@ -35,12 +35,6 @@ function(install_headers src dst)
     endif ()
 endfunction ()
 
-# Add a symlink at installation time.
-function(install_symlink filepath sympath)
-    install(CODE "message(\"-- Creating symbolic link: ${sympath} -> ${filepath}\")")
-    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})")
-endfunction(install_symlink)
-
 # Initialize a variable that'll go into a {hilti,spicy}/config.cc
 # file. This performans some normalization: turn lists into
 # space-separated strings and strip/reduce whitespace.

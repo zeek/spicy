@@ -41,12 +41,11 @@ zeek_plugin_bif(src/functions.bif)
 zeek_plugin_dist_files(spicy/zeek.spicy)
 zeek_plugin_dist_files(spicy/zeek_rt.hlt)
 
-# We disable Zeek's standard installation logic so that we control
-# things better (like RPATHs etc.). Unfortunately Zeek doesn't just
-# have a "no install, please" switch, so we change its destination
-# to some scratch space.
-set(BRO_PLUGIN_BRO_PLUGIN_INSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/zeek-install-scratch")
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/zeek-install-scratch") # suppress warning by Zeek
+if ( !ZEEK_INSTALL_PLUGIN )
+    # Unfortunately Zeek doesn't just have a "no install, please" switch,
+    # so we change its destination to some scratch space.
+    set(BRO_PLUGIN_BRO_PLUGIN_INSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/zeek-install-scratch")
+endif ()
 
 zeek_plugin_end()
 
@@ -77,29 +76,3 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in ${AUTOGEN_H}/config.h
 
 add_custom_command(TARGET ${_plugin_lib}
                    POST_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/spicy ${CMAKE_CURRENT_BINARY_DIR}/spicy)
-
-install(FILES     ${CMAKE_CURRENT_BINARY_DIR}/__bro_plugin__
-                  DESTINATION "${PLUGIN_INSTALL_DIR}")
-
-install(DIRECTORY scripts
-                  spicy
-                  DESTINATION "${PLUGIN_INSTALL_DIR}")
-
-install(TARGETS ${_plugin_lib} DESTINATION "${PLUGIN_INSTALL_DIR}/lib")
-
-make_install_rpath(rpath_build ${BRO_PLUGIN_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-set_target_properties(${_plugin_lib} PROPERTIES BUILD_RPATH "${rpath_build}")
-
-make_install_rpath(rpath_install ${PLUGIN_INSTALL_DIR}/lib ${CMAKE_INSTALL_FULL_LIBDIR})
-set_target_properties(${_plugin_lib} PROPERTIES INSTALL_RPATH "${rpath_install}")
-
-install_headers(include zeek-spicy runtime-support.h cookie.h zeek-compat.h)
-install_headers(${CMAKE_CURRENT_BINARY_DIR}/zeek-spicy/autogen zeek-spicy/autogen config.h)
-
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/cmake DESTINATION ${CMAKE_INSTALL_DATADIR}/spicy
-        FILES_MATCHING PATTERN "FindZeekSpicy.cmake")
-
-if ( ZEEK_INSTALL_PLUGIN )
-    # This may need additional permissions, but we just leave it fail in that case.
-    install_symlink("${PLUGIN_INSTALL_DIR}" "${ZEEK_PLUGIN_DIR}/Zeek_Spicy")
-endif ()

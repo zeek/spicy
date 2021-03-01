@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
             if ( hilti::configuration().uses_build_directory )
                 result.emplace_back(hilti::configuration().build_directory / "zeek" / "plugin");
             else
-                result.emplace_back(hilti::configuration().lib_directory / "spicy" / "Zeek_Spicy");
+                result.emplace_back(hilti::rt::filesystem::path(ZEEK_PLUGIN_DIR) / "Zeek_Spicy");
 #else
             result.emplace_back("");
 #endif
