@@ -420,6 +420,11 @@ std::string hilti::rt::strftime(const std::string& format, const hilti::rt::Time
     constexpr size_t size = 128;
     char mbstr[size];
 
+    // localtime() is required to call tzset() internally, whereas
+    // localtime_r() may or may not do so -- to be portable we have to
+    // call it ourselves:
+    ::tzset();
+
     auto localtime = ::localtime_r(&seconds, &tm);
     if ( ! localtime )
         throw InvalidArgument(hilti::rt::fmt("cannot convert timestamp to local time: %s", std::strerror(errno)));
