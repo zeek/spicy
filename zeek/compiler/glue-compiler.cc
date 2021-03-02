@@ -8,12 +8,14 @@
 
 #include <hilti/ast/all.h>
 #include <hilti/ast/builder/all.h>
+#include <hilti/base/preprocessor.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/unit.h>
 
 #include <spicy/global.h>
 
 #include "debug.h"
+#include "util.h"
 
 using namespace spicy::zeek;
 
@@ -313,7 +315,7 @@ hilti::Result<std::string> GlueCompiler::getNextEvtBlock(std::istream& in, int* 
 }
 
 void GlueCompiler::preprocessEvtFile(hilti::rt::filesystem::path& path, std::istream& in, std::ostream& out) {
-    std::vector<bool> including = {true};
+    hilti::util::SourceCodePreprocessor pp({{"ZEEK_VERSION", _zeek_version}});
     int lineno = 0;
 
     while ( true ) {
@@ -332,81 +334,25 @@ void GlueCompiler::preprocessEvtFile(hilti::rt::filesystem::path& path, std::ist
             // Output empty line to keep line numbers the same
             out << '\n';
 
-            auto m = hilti::util::split(trimmed);
+            auto m = hilti::util::split1(trimmed);
 
-            if ( m[0] == "@if" ) {
-                if ( m.size() != 4 )
-                    throw ParseError("syntax error in @if directive");
-
-                if ( m[1] == "ZEEK_VERSION" ) {
-                    bool result;
-                    int want_version = 0;
-                    hilti::util::atoi_n(m[3].begin(), m[3].end(), 10, &want_version);
-
-                    if ( m[2] == "==" )
-                        result = (_zeek_version == want_version);
-                    else if ( m[2] == "!=" )
-                        result = (_zeek_version != want_version);
-                    else if ( m[2] == "<" )
-                        result = (_zeek_version < want_version);
-                    else if ( m[2] == "<=" )
-                        result = (_zeek_version <= want_version);
-                    else if ( m[2] == ">" )
-                        result = (_zeek_version > want_version);
-                    else if ( m[2] == ">=" )
-                        result = (_zeek_version >= want_version);
-                    else
-                        throw ParseError("unknown operator in preprocessor expression");
-
-                    including.push_back(result);
-                }
-                else
-                    throw ParseError("unknown preprocessor variable in @if condition");
-            }
-
-            else if ( m[0] == "@else" ) {
-                if ( m.size() != 1 )
-                    throw ParseError("syntax error in @else directive");
-
-                if ( including.size() == 1 )
-                    throw ParseError("@else without @if");
-
-                auto x = including.back();
-                including.pop_back();
-                including.push_back(! x);
-            }
-
-            else if ( m[0] == "@endif" ) {
-                if ( m.size() != 1 )
-                    throw ParseError("syntax error in @endif directive");
-
-                if ( including.size() == 1 )
-                    throw ParseError("@endif without @if");
-
-
-                including.pop_back();
-            }
-
-            else
-                throw ParseError("unknown preprocessor directive");
+            if ( auto rc = pp.processLine(m.first, m.second); ! rc )
+                throw ParseError(rc.error());
         }
 
         else {
-            // Not a preprocessor directive
-            if ( including.back() )
-                out << line << '\n';
-            else
-                // Output empty line to keep line numbers the same
-                out << '\n';
+            switch ( pp.state() ) {
+                case hilti::util::SourceCodePreprocessor::State::Include: out << line << '\n'; break;
+                case hilti::util::SourceCodePreprocessor::State::Skip:
+                    // Output empty line to keep line numbers the same
+                    out << '\n';
+                    break;
+            }
         }
-
-        _locations.pop_back();
     }
 
-    if ( including.size() > 1 ) {
-        _locations.emplace_back(path, lineno);
-        throw ParseError("unterminated @if");
-    }
+    if ( pp.expectingDirective() )
+        throw ParseError("unterminated preprocessor directive");
 }
 
 bool GlueCompiler::loadEvtFile(hilti::rt::filesystem::path& path) {

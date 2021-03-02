@@ -1,4 +1,15 @@
 
+0.4.0-1541 | 2021-03-02 07:22:26 +0000
+
+  * Add support for `@if/@else/@endif` in Spicy scripts, similar to
+    what EVT files already provided. This currently supports testing
+    for three constants at compile time: `SPICY_VERSION`,
+    `ZEEK_VERSION`, `HAVE_ZEEK`. See the documentation for more.
+    (Robin Sommer, Corelight)
+
+  * Increase CI memory for platforms that are prone to OOMing. (Robin
+    Sommer, Corelight)
+
 0.4.0-1533 | 2021-03-02 07:21:39 +0000
 
   * Fix strftime unit test: increase portability of localtime_r()

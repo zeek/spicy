@@ -26,6 +26,8 @@ using namespace spicy::detail::parser;
 %x DOTTED_ID
 %x HOOK_ID
 %x RE
+%x IGNORE
+%x PP_EXPRESSION
 
 %{
 #define YY_USER_ACTION yylloc->columns(yyleng);
@@ -42,6 +44,8 @@ static std::string expandEscapes(Driver* driver, std::string s, spicy::detail::p
         return "<error>";
     }
 }
+
+static std::string preprocessor_directive;
 
 %}
 
@@ -62,6 +66,7 @@ hexfloat  0[xX]({hexit}+{P}|{hexit}*\.{hexit}+{P}?|{hexit}+\.{hexit}+{P}?)
 id        [a-zA-Z_]|[a-zA-Z_][a-zA-Z_0-9]*[a-zA-Z_0-9]|[$][$]
 property  %[a-zA-Z_][a-zA-Z_0-9-]*
 string    \"(\\.|[^\\"])*\"
+preprocessor @[a-zA-Z_][a-zA-Z_0-9-]*
 
 %%
 
@@ -239,6 +244,13 @@ b{string}             yylval->str = expandEscapes(driver, std::string(yytext, 2,
 <HOOK_ID>{blank}+       yylloc->step();
 <HOOK_ID>[\n]+          yylloc->lines(yyleng); yylloc->step();
 
+{preprocessor}          preprocessor_directive = yytext; yy_push_state(PP_EXPRESSION);
+<PP_EXPRESSION>[^\n]*(\n|$) yy_pop_state(); yylloc->lines(1); driver->processPreprocessorLine(preprocessor_directive, hilti::rt::trim(yytext), toMeta(*yylloc));
+
+<IGNORE>{preprocessor}  preprocessor_directive = yytext; yy_push_state(PP_EXPRESSION);
+<IGNORE>[\n]+           yylloc->lines(yyleng); yylloc->step(); /* eat */
+<IGNORE>.               /* eat */
+
 %%
 
 int SpicyFlexLexer::yylex()
@@ -289,4 +301,15 @@ void spicy::detail::parser::Scanner::enableHookIDMode()
 void spicy::detail::parser::Scanner::disableHookIDMode()
 {
     yy_pop_state();
+}
+
+void spicy::detail::parser::Scanner::setIgnoreMode(bool enable)
+{
+    // Note to self: use YY_START, not yy_top_state(), that's the *previous* state.
+
+    if ( enable && YY_START != IGNORE )
+            yy_push_state(IGNORE);
+
+    if ( ! enable && YY_START == IGNORE )
+        yy_pop_state();
 }

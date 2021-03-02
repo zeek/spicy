@@ -26,3 +26,12 @@
 @if ZEEK_VERSION < 90000
 @else
 @endif
+# @TEST-START-NEXT
+
+@if ZEEK_VERSION >= thirtythousand
+@endif
+
+# @TEST-START-NEXT
+
+@if ZEEK_VERSION >= 3.0.0
+@endif

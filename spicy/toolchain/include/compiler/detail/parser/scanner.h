@@ -30,6 +30,7 @@ public:
     void disableDottedIDMode();
     void enableHookIDMode();
     void disableHookIDMode();
+    void setIgnoreMode(bool enable);
 };
 
 } // namespace spicy::detail::parser

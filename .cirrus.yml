@@ -302,7 +302,7 @@ docker_alpine_3_12_task:
   container:
     dockerfile: docker/Dockerfile.alpine-3.12
     cpu: 4
-    memory: 12G
+    memory: 14G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -342,7 +342,7 @@ docker_centos_7_task:
   container:
     dockerfile: docker/Dockerfile.centos-7
     cpu: 4
-    memory: 12G
+    memory: 14G
     docker_arguments:
       - SKIP_BUILD: 1
 
@@ -382,7 +382,7 @@ docker_centos_8_task:
   container:
     dockerfile: docker/Dockerfile.centos-8
     cpu: 4
-    memory: 12G
+    memory: 14G
     docker_arguments:
       - SKIP_BUILD: 1
 

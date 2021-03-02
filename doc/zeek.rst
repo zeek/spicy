@@ -508,25 +508,35 @@ insert ``import`` statements into the ``*.evt`` file that work
         ``NAME.spicy``) inside a sub-directory ``X/Y/Z`` along the
         search path, and then imports it.
 
+.. _zeek_conditional_compilation:
 
 Conditional Compilation
 -----------------------
 
-``*.evt`` files offer a basic form of conditional compilation through
-``@if COND``/``@else``/``@endif`` blocks, similar to a C preprocessor. For
-now, this supports only a single type of condition that allows
-comparing against the Zeek version the plugin is being used with,
-available inside ``COND`` as ``ZEEK_VERSION``. For example::
+``*.evt`` files offer the same basic form of :ref:`conditional
+compilation <conditional_compilation>` through
+``@if``/``@else``/``@endif`` blocks as Spicy scripts. The Zeek plugin
+makes two additional identifiers available for testing to both
+``*.evt`` and ``*.spicy`` code:
+
+    ``HAVE_ZEEK``
+        Always set to 1 by the plugin. This can be used for feature
+        testing from Spicy code to check if it's being compiled for
+        Zeek.
+
+    ``ZEEK_VERSION``
+        The numerical Zeek version that's being compiled for (see the
+        output of ``spicy-config --zeek-version-number``).
+
+This is an example bracketing code by Zeek version in an EVT file:
+
+.. code-block:: spicy-evt
 
     @if ZEEK_VERSION < 30200
         <EVT code for Zeek versions older than 3.2>
     @else
         <EVT code for Zeek version 3.2 or newer>
     @endif
-
-Supported comparisons in ``COND`` are ``==``, ``!=``, ``<``, ``<=``,
-``>``, ``>=``. Note that ``COND`` does not support more complex
-expressions (e.g., no nested expressions or parentheses).
 
 .. _zeek_compiling:
 

@@ -119,3 +119,17 @@ void Driver::enableDottedIDMode() { _scanner->enableDottedIDMode(); }
 void Driver::disableHookIDMode() { _scanner->disableHookIDMode(); }
 
 void Driver::enableHookIDMode() { _scanner->enableHookIDMode(); }
+
+void Driver::processPreprocessorLine(const std::string_view& directive, const std::string_view& expression,
+                                     const Meta& m) {
+    auto state = _preprocessor.processLine(directive, expression);
+    if ( ! state ) {
+        error(state.error(), m);
+        return;
+    }
+
+    switch ( *state ) {
+        case hilti::util::SourceCodePreprocessor::State::Include: _scanner->setIgnoreMode(false); break;
+        case hilti::util::SourceCodePreprocessor::State::Skip: _scanner->setIgnoreMode(true); break;
+    }
+}

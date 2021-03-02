@@ -16,8 +16,10 @@
 #include <vector>
 
 #include <hilti/ast/all.h>
+#include <hilti/base/preprocessor.h>
 
 #include <spicy/ast/all.h>
+#include <spicy/autogen/config.h>
 
 #undef YY_DECL
 #define YY_DECL                                                                                                        \
@@ -117,6 +119,8 @@ class Scanner;
 /** Driver for flex/bison. */
 class Driver {
 public:
+    Driver() : _preprocessor(spicy::configuration().preprocessor_constants) {}
+
     hilti::Result<hilti::Node> parse(std::istream& in, const std::string& filename);
     hilti::Result<hilti::Node> parseExpression(const std::string& expression, const Meta& m = Meta());
 
@@ -139,6 +143,7 @@ public:
     void setDestinationModule(Module m) { _module = std::move(m); }
     void setDestinationExpression(Expression e) { _expression = std::move(e); }
     int nextToken();
+    void processPreprocessorLine(const std::string_view& directive, const std::string_view& expression, const Meta& m);
 
 private:
     Module _module;
@@ -148,6 +153,7 @@ private:
     Parser* _parser = nullptr;
     Scanner* _scanner = nullptr;
     int _next_token = 0;
+    hilti::util::SourceCodePreprocessor _preprocessor;
 };
 
 } // namespace parser
