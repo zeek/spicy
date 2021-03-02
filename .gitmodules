@@ -46,3 +46,6 @@
 [submodule "zeek/analyzers"]
 	path = zeek/spicy-analyzers
 	url = https://github.com/zeek/spicy-analyzers
+[submodule "zeek/spicy-plugin"]
+	path = zeek/spicy-plugin
+	url = https://github.com/zeek/spicy-plugin

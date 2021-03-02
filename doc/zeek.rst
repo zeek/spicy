@@ -644,7 +644,7 @@ The Spicy plugin provides a set of script-level options to tune its
 behavior, similar to what the :ref:`spicy-driver` provides as
 command-line arguments:
 
-.. literalinclude:: /../zeek/plugin/scripts/base/spicy/main.zeek
+.. literalinclude:: /../zeek/spicy-plugin/plugin/scripts/base/spicy/main.zeek
     :language: zeek
     :start-after: doc-start
     :end-before:  doc-end

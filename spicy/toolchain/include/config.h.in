@@ -9,17 +9,6 @@
 
 #include <hilti/base/util.h>
 
-#cmakedefine HAVE_ZEEK
-#cmakedefine HAVE_ZEEK_PLUGIN
-
-#ifdef HAVE_ZEEK
-#define ZEEK_EXECUTABLE "@ZEEK_EXE@"
-#define ZEEK_PREFIX "@ZEEK_PREFIX@"
-#define ZEEK_VERSION "@ZEEK_VERSION@"
-#define ZEEK_VERSION_NUMBER @ZEEK_VERSION_NUMBER@
-#define ZEEK_VERSION_NUMBER_STRING "@ZEEK_VERSION_NUMBER@"
-#endif
-
 namespace spicy {
 
 struct Configuration {
@@ -35,8 +24,16 @@ struct Configuration {
     hilti::rt::filesystem::path spicyc; /**< Full path to `spicyc` binary */
     std::vector<hilti::rt::filesystem::path>
         spicy_library_paths; /**< Default search path for Spicy modules, separated by `:` */
+
     std::vector<hilti::rt::filesystem::path>
-        spicy_include_paths;                           /**< C++ include directories for Spicy runtime headers */
+        runtime_cxx_include_paths; /**< C++ include directories for runtime headers */
+    std::vector<hilti::rt::filesystem::path>
+        runtime_cxx_library_paths; /**< C++ library directories for runtime */
+    std::vector<hilti::rt::filesystem::path>
+        toolchain_cxx_include_paths; /**< C++ include directories for toolchain headers */
+    std::vector<hilti::rt::filesystem::path>
+        toolchain_cxx_library_paths; /**< C++ library directories for runtime */
+
     std::vector<std::string> compiler_cxx_flags_debug; /**< C++ compiler flags when compiling custom code in debug mode
                                                           that uses the HILTI compiler */
     std::vector<std::string> compiler_ld_flags_debug;  /**< Linker flags when compiling custom code in debug mode that

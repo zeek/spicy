@@ -1,10 +1,11 @@
 #! /bin/sh
 #
-# Returns success if we have Zeek's Spicy plugin (and Zeek itself) available for testing.
-# Optionally it also requires at least Zeek version $1.
+# Returns success if we have Zeek's Spicy plugin available in tree for testing.
 
-min_version=0
-test $# -ge 1 && min_version=$1
+base=$(cd $(dirname $0) && pwd)
 
-spicy-config --zeek-plugin-path >/dev/null && \
-    test "$(spicy-config --zeek-version-number)" -ge "${min_version}"
+if [ -n "${SPICY_INSTALLATION_DIRECTORY}" ]; then
+     test -x ${SPICY_INSTALLATION_DIRECTORY}/bin/spicyz
+else
+    cat $(${base}/build-directory)/CMakeCache.txt | egrep -iq 'HAVE_ZEEK_PLUGIN.*=(yes|on|true)'
+fi

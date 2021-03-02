@@ -226,7 +226,7 @@ hilti::Result<Nothing> JIT::_compile() {
         args.push_back(obj); // will be relative to tmpdir
         _objects.push_back(obj);
 
-        args.push_back(hilti::rt::filesystem::absolute(path));
+        args.push_back(hilti::rt::filesystem::canonical(path));
 
         if ( auto rc = _spawnJob(hilti::configuration().cxx, std::move(args)); ! rc )
             return rc.error();

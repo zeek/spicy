@@ -1,5 +1,5 @@
 #! /bin/sh
 #
-# Returns success if we have Zeek's Spicy plugin (and Zeek itself) available for testing
+# Returns success if we have JIT support available.
 
 test $(spicy-config --jit-support) = "yes"

@@ -106,8 +106,7 @@ hilti::rt::filesystem::path hilti::rt::normalizePath(const hilti::rt::filesystem
     if ( ! hilti::rt::filesystem::exists(p) )
         return p;
 
-    char buffer[PATH_MAX];
-    return realpath(hilti::rt::filesystem::absolute(p).native().c_str(), buffer);
+    return hilti::rt::filesystem::canonical(p);
 }
 
 std::vector<std::string_view> hilti::rt::split(std::string_view s, std::string_view delim) {

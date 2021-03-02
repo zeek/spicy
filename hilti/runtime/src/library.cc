@@ -54,7 +54,7 @@ void hilti::rt::library::Version::checkCompatibility() const {
                 path.filename()));
 }
 
-hilti::rt::Library::Library(const hilti::rt::filesystem::path& path) : _path(hilti::rt::filesystem::absolute(path)) {}
+hilti::rt::Library::Library(const hilti::rt::filesystem::path& path) : _path(hilti::rt::filesystem::canonical(path)) {}
 
 hilti::rt::Library::~Library() {
     if ( _handle ) {

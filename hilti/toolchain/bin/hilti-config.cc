@@ -21,25 +21,28 @@ Usage: hilti-config [options]
 
 Available options:
 
-    --build                 Prints "debug" or "release", depending on the build configuration.
-    --cxx                   Print the full path to the compiler used to compile HILTI.
-    --cxxflags              Print C++ flags when compiling generated code statically
-    --cxxflags-hlto         Print C++ flags when building precompiled HLTO libraries
-    --debug                 Output flags for working with debugging versions.
-    --distbase              Print path of the HILTI source distribution.
-    --dynamic-loading       Adjust --ldflags for host applications that dynamically load precompiled modules
-    --help                  Print this usage summary
-    --hiltic                Print the full path to the hiltic binary.
-    --include-dirs          Prints the HILTI runtime's C++ include directories
-    --ldflags               Print linker flags when compiling generated code statically
-    --ldflags-hlto          Print linker flags when building precompiled HLTO libraries
-    --libdirs               Print standard HILTI library directories.
-    --prefix                Print path of installation.
-    --have-toolchain        Prints 'yes' if the HILTI toolchain was built, 'no' otherwise.
-    --version               Print HILTI version.
+    --build                  Prints "debug" or "release", depending on the build configuration.
+    --cxx                    Print the full path to the compiler used to compile HILTI.
+    --cxxflags               Print C++ flags when compiling generated code statically
+    --cxxflags-hlto          Print C++ flags when building precompiled HLTO libraries
+    --debug                  Output flags for working with debugging versions.
+    --distbase               Print path of the HILTI source distribution.
+    --dynamic-loading        Adjust --ldflags for host applications that dynamically load precompiled modules
+    --help                   Print this usage summary
+    --hiltic                 Print the full path to the hiltic binary.
+    --include-dirs           Prints the HILTI runtime's C++ include directories
+    --include-dirs-toolchain Prints the Spicy compiler's C++ include directories
+    --ldflags                Print linker flags when compiling generated code statically
+    --ldflags-hlto           Print linker flags when building precompiled HLTO libraries
+    --libdirs                Print standard HILTI library directories.
+    --libdirs-cxx-runtime    Print C++ library directories for runtime.
+    --libdirs-cxx-toolchain  Print C++ library directories for toolchain.
+    --prefix                 Print path of installation.
+    --have-toolchain         Prints 'yes' if the HILTI toolchain was built, 'no' otherwise.
+    --version                Print HILTI version.
 
-    --using-build-dir       Returns true when hilti-config's output is referring to the build directory;
-                            and false when refering to the installation
+    --using-build-dir        Returns true when hilti-config's output is referring to the build directory;
+                             and false when refering to the installation
 )";
 }
 
@@ -131,8 +134,23 @@ int main(int argc, char** argv) {
             continue;
         }
 
+        if ( opt == "--libdirs-cxx-runtime" ) {
+            join(result, hilti::configuration().runtime_cxx_library_paths);
+            continue;
+        }
+
+        if ( opt == "--libdirs-cxx-toolchain" ) {
+            join(result, hilti::configuration().toolchain_cxx_library_paths);
+            continue;
+        }
+
         if ( opt == "--include-dirs" ) {
-            join(result, hilti::configuration().hilti_include_paths);
+            join(result, hilti::configuration().runtime_cxx_include_paths);
+            continue;
+        }
+
+        if ( opt == "--include-dirs-toolchain" ) {
+            join(result, hilti::configuration().toolchain_cxx_include_paths);
             continue;
         }
 
