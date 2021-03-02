@@ -10,11 +10,13 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include <hilti/rt/deferred-expression.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/all.h>
 
 #include <zeek-spicy/autogen/config.h>
@@ -254,8 +256,15 @@ template<typename T>
 ::zeek::ValPtr to_val(const std::optional<T>& t, ::zeek::TypePtr target, const std::string& location);
 template<typename T>
 ::zeek::ValPtr to_val(const hilti::rt::DeferredExpression<T>& t, ::zeek::TypePtr target, const std::string& location);
+
 template<typename T>
 ::zeek::ValPtr to_val(hilti::rt::integer::safe<T> i, ::zeek::TypePtr target, const std::string& location);
+template<typename T>
+std::enable_if_t<std::is_integral_v<T>, ::zeek::ValPtr> to_val(const T& x, ::zeek::TypePtr target,
+                                                               const std::string& location) {
+    // This specialization implicitly converts integers to safe integers.
+    return to_val(hilti::rt::integer::safe<T>(x), std::move(target), location);
+}
 
 inline ::zeek::ValPtr to_val(const hilti::rt::Bool& b, ::zeek::TypePtr target, const std::string& location);
 inline ::zeek::ValPtr to_val(const hilti::rt::Address& d, ::zeek::TypePtr target, const std::string& location);
