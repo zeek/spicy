@@ -1,3 +1,9 @@
+
+0.4.0-1533 | 2021-03-02 07:21:39 +0000
+
+  * Fix strftime unit test: increase portability of localtime_r()
+    usage (Christian Kreibich, Corelight)
+
 0.4.0-1531 | 2021-03-01 11:40:35 +0100
 
   * GH-768: Add language support to explicitly trigger a parse error.
