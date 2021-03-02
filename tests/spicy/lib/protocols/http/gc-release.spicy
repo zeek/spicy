@@ -1,4 +1,4 @@
-# @TEST-EXEC: spicyc -d -j -o http.hlto -d %INPUT
+# @TEST-EXEC: spicyc -d -j -L ${SPICY_ANALYZERS} -o http.hlto %INPUT
 # @TEST-EXEC: awk -f generate.awk | HILTI_DEBUG=spicy-driver spicy-driver http.hlto -i 83 -p HTTP::Replies >output 2>debug.log
 # @TEST-EXEC: btest-diff output
 # @TEST-EXEC: cat debug.log | grep memory: | sed 's/.*heap=//' | sed 's/ .*//g' | sort | uniq | wc -l | awk '$1 > 5 { print "Error: Heap size changed too much"; exit 1; }' >&2
@@ -13,7 +13,7 @@
 
 module Test;
 
-import HTTP from protocols;
+import HTTP from protocol.http;
 
 on HTTP::Message::%done {
     print "Content-Length:", self.content_length;

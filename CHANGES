@@ -1,4 +1,20 @@
 
+0.4.0-1543 | 2021-03-02 07:37:21 +0000
+
+  * Move protocol analyzers into submodule. This moves all the
+    protocol analyzers into its own submodule `spicy-analyzers`, which
+    doubles as a Zeek package installing them. There's a new
+    `spicy-analyzers` target to pre-compile those analyzers for Zeek.
+    (Robin Sommer, Corelight)
+
+  * Zeek plugin updates (Robin Sommer, Corelight)
+
+      - Move registration of Zeek components to load time.
+      - Work around problem in Zeek's analyzer API.
+
+   * Update pathfind to fix problem on Alpine. (Robin Sommer,
+     Corelight)
+
 0.4.0-1541 | 2021-03-02 07:22:26 +0000
 
   * Add support for `@if/@else/@endif` in Spicy scripts, similar to
@@ -64,15 +80,19 @@
     Example:
 
         type Data = unit {
-            data: bytes &size=2;
-        } &convert=self.data.to_int();
+    data:
+        bytes& size = 2;
+    }
+    &convert = self.data.to_int();
 
-        public type Foo = unit {
-            numbers: Data[];
-            on %done { print self.numbers; }
-        };
+public
+    type Foo = unit {
+    numbers:
+        Data[];
+        on % done { print self.numbers; }
+    };
 
-        # printf 12345678 | spicy-driver unit-convert.spicy
+#printf 12345678 | spicy - driver unit - convert.spicy
         [12, 34, 56, 78]
 
     Note how the `Data` sub-elements have been turned into integers. Without
@@ -88,22 +108,37 @@
     The new test case shows a number of examples that are now supported:
 
         public type Test = unit {
-             i1: (bytes &size=5);
-             i1b: (bytes &size=5 &convert=42);
-             i2: (int8[3]);
-             i3: (int8[2])[3];
-             i4: (int8[] &until=($$=='X'))[] &until=($$==vector(55, 56));
-             i5: (FooImpl);
-             i6: (FooImpl[2]);
-             i7: (FooImpl[2])[3];
-             i8: (FooImpl &convert=42);
-             i9: (FooImpl &convert=42) &convert=$$*2;
-           i10a: (bytes &size=5 &convert=$$.to_int());
-           i10b: (Bytes &size=5 &convert=$$.to_int());
-           i10c: (FooImpl &convert=$$.data.to_int());
-            i11: (FooImpl &convert=$$.data.to_int()) &convert=$$*2;
-            i12: (FooImpl &convert=$$.data.to_int())[2];
-            i13: (FooImpl &convert=$$.data.to_int())[2] &convert=[3 * xyz for xyz in $$];
+        i1:
+            (bytes& size = 5);
+        i1b:
+            (bytes& size = 5 & convert = 42);
+        i2:
+            (int8[3]);
+        i3:
+            (int8[2])[3];
+        i4:
+            (int8[]& until = ($$ == 'X'))[]& until = ($$ == vector(55, 56));
+        i5:
+            (FooImpl);
+        i6:
+            (FooImpl[2]);
+        i7:
+            (FooImpl[2])[3];
+        i8:
+            (FooImpl& convert = 42);
+        i9:
+            (FooImpl& convert = 42)& convert = $$ * 2;
+        i10a:
+            (bytes& size = 5 & convert = $$.to_int());
+        i10b:
+            (Bytes& size = 5 & convert = $$.to_int());
+        i10c:
+            (FooImpl& convert = $$.data.to_int());
+        i11:
+            (FooImpl& convert = $$.data.to_int())& convert = $$ * 2;
+        i12:
+            (FooImpl& convert = $$.data.to_int())[2];
+        i13: (FooImpl &convert=$$.data.to_int())[2] &convert=[3 * xyz for xyz in $$];
         }
 
     While the expectation isn't really that people would write this, this
@@ -254,7 +289,9 @@
 
   * GH-690: Add `%finally` hook to Spicy units.
 
-    ``on %finally  { ... }``
+    ``on %finally  {
+        ...
+    }``
         Executes once unit parsing has completed in any way. This hook is
         most useful to modify global state that needs to be updated no
         matter the success of the parsing process. Once `%init` triggers, this
@@ -437,7 +474,8 @@
     This limits input to the given number of bytes for the unit:
 
         type Bar = unit(n: uint64) {
-            x: bytes &eod;
+x:
+    bytes& eod;
         } &size=n;
 
     Parsing less than `n` bytes is an error. (Robin Sommer, Corelight)

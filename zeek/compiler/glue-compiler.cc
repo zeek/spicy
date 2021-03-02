@@ -753,14 +753,11 @@ bool GlueCompiler::compile() {
             default: hilti::logger().internalError("unexpected protocol");
         }
 
-        auto register_ =
-            builder::call("zeek_rt::register_protocol_analyzer",
-                          {builder::string(a.name), builder::id(protocol),
-                           builder::vector(hilti::util::transform(a.ports, [](auto p) { return builder::port(p); })),
-                           builder::string(a.unit_name_orig), builder::string(a.unit_name_resp),
-                           builder::string(a.replaces)});
-
-        init_module.add(std::move(register_));
+        preinit_body.addCall("zeek_rt::register_protocol_analyzer",
+                             {builder::string(a.name), builder::id(protocol),
+                              builder::vector(hilti::util::transform(a.ports, [](auto p) { return builder::port(p); })),
+                              builder::string(a.unit_name_orig), builder::string(a.unit_name_resp),
+                              builder::string(a.replaces)});
     }
 
     for ( auto& a : _file_analyzers ) {
@@ -776,14 +773,11 @@ bool GlueCompiler::compile() {
             }
         }
 
-        auto register_ =
-            builder::call("zeek_rt::register_file_analyzer",
-                          {builder::string(a.name),
-                           builder::vector(
-                               hilti::util::transform(a.mime_types, [](auto m) { return builder::string(m); })),
-                           builder::string(a.unit_name), builder::string(a.replaces)});
-
-        init_module.add(std::move(register_));
+        preinit_body.addCall("zeek_rt::register_file_analyzer",
+                             {builder::string(a.name),
+                              builder::vector(
+                                  hilti::util::transform(a.mime_types, [](auto m) { return builder::string(m); })),
+                              builder::string(a.unit_name), builder::string(a.replaces)});
     }
 
 #ifdef HAVE_PACKET_ANALYZERS
@@ -800,10 +794,8 @@ bool GlueCompiler::compile() {
             }
         }
 
-        auto register_ =
-            builder::call("zeek_rt::register_packet_analyzer", {builder::string(a.name), builder::string(a.unit_name)});
-
-        init_module.add(std::move(register_));
+        preinit_body.addCall("zeek_rt::register_packet_analyzer",
+                             {builder::string(a.name), builder::string(a.unit_name)});
     }
 #endif
 

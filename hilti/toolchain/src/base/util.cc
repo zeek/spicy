@@ -21,7 +21,7 @@
 // around it being installed by its default install target.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
-#include <pathfind/src/PathFind.cpp>
+#include <pathfind/src/pathfind.cpp>
 #pragma GCC diagnostic pop
 
 using namespace hilti;
