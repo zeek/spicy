@@ -280,6 +280,13 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             error(fmt("unknown property '%s'", i.id().str()), p);
     }
 
+    void operator()(const spicy::Hook& h, position_t p) {
+        if ( auto field = p.findParent<spicy::type::unit::item::Field>() ) {
+            if ( h.isForEach() && ! field->get().isContainer() )
+                error("foreach can only be used with containers", p);
+        }
+    }
+
     void operator()(const spicy::type::unit::item::UnitHook& i, position_t p) {
         auto decl = p.findParent<hilti::declaration::Type>();
         if ( ! decl )
