@@ -19,7 +19,7 @@ This analyzer is a good introductory example because the Spicy side is
 pretty straight-forward. The Zeek-side logging is more tricky because
 of the data transfer happening over a separate network session.
 
-    - :repo:`Spicy grammar <spicy/lib/protocols/tftp.spicy>`
+    - `TFTP Spicy grammar <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/tftp/tftp.spicy>`_
     - :repo:`Spicy code for Zeek integration <zeek/plugin/lib/protocols/zeek_tftp.spicy>`
     - :repo:`Zeek analyzer definition (EVT)  <zeek/plugin/lib/protocols/tftp.evt>`
     - :repo:`Zeek TFTP script for logging <zeek/plugin/lib/protocols/tftp.zeek>`
@@ -30,7 +30,7 @@ A nearly complete HTTP parser. This parser was used with the original
 Spicy prototype to compare output with Zeek's native handwritten HTTP
 parser. We observed only negligible differences.
 
-    - :repo:`Spicy grammar <spicy/lib/protocols/http.spicy>`
+    - `HTTP Spicy grammar <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/http/http.spicy>`_
     - :repo:`Spicy code for Zeek integration <zeek/plugin/lib/protocols/zeek_http.spicy>`
     - :repo:`Zeek analyzer definition (EVT)  <zeek/plugin/lib/protocols/http.evt>`
 
@@ -43,7 +43,7 @@ parser. We observed only negligible differences.
 The DNS parser is a good example of using :ref:`random access
 <random_access>`.
 
-    - :repo:`Spicy grammar <spicy/lib/protocols/dns.spicy>`
+    - `DNS Spicy grammar <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dns/dns.spicy>`_
     - :repo:`Spicy code for Zeek integration <zeek/plugin/lib/protocols/zeek_dns.spicy>`
     - :repo:`Zeek analyzer definition (EVT)  <zeek/plugin/lib/protocols/dns.evt>`
 
@@ -53,6 +53,6 @@ A nearly complete DHCP parser. This parser extracts most DHCP option
 messages understood by Zeek. The Zeek integration is almost direct and
 most of the work is in formulating the parser itself.
 
-    - :repo:`Spicy grammar <spicy/lib/protocols/dhcp.spicy>`
+    - `DHCP Spicy grammar <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dhcp/dhcp.spicy>`_
     - :repo:`Spicy code for Zeek integration <zeek/plugin/lib/protocols/zeek_dhcp.spicy>`
     - :repo:`Zeek analyzer definition (EVT)  <zeek/plugin/lib/protocols/dhcp.evt>`
