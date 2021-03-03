@@ -93,7 +93,7 @@ hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::F
                 return hilti::result::Error("&type attribute must be a spicy::RealType");
         }
         else
-            return hilti::result::Error("field of type real must with a &type attribute");
+            return hilti::result::Error("field of type real must be used with a &type attribute");
 
         return hilti::Nothing();
     }
