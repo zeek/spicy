@@ -1,3 +1,17 @@
+
+0.4.0-1547 | 2021-03-03 09:13:25 +0100
+
+  * GH-798: Prevent conversions of some integers to doubles on the Zeek interface.
+
+    While we previously provided specialized conversion functions to Zeek
+    `ValPtr` these were not used for plain integer types like e.g.,
+    `std::size_t` or `unsigned long`. Instead C++ overload resolution
+    preferred to instead convert the integers to `double` (for which we
+    provide a specialization) and them being emitted with `TYPE_DOUBLE`.
+
+    This patch introduces an additional specialization which converts such
+    naked integers to safe integers and then converts them to Zeek.
+
 0.4.0-1545 | 2021-03-03 09:12:29 +0100
 
   * GH-733: Validate that `foreach` is only used with container fields.
