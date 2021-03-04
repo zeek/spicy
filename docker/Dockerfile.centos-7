@@ -33,6 +33,9 @@ RUN cd /opt && curl -L http://ftp.gnu.org/gnu/bison/bison-3.5.tar.gz | tar xzvf 
 # Need a more recent flex than available.
 RUN cd /opt && curl -L https://github.com/westes/flex/files/981163/flex-2.6.4.tar.gz | tar xzvf - && cd /opt/flex-2.6.4  && ./configure && make install
 
+# Install rpmdevtools for packaging RPM files.
+RUN yum install -y rpmdevtools
+
 # Install Zeek.
 RUN yum install -y libpcap-devel openssl-devel zlib-devel \
  && rpm -iv \
