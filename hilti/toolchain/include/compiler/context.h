@@ -87,6 +87,9 @@ struct Options {
      */
     Result<Nothing> parseDebugAddl(const std::string& flags);
 
+    /** Prints out a humand-readable version of the current options. */
+    void print(std::ostream& out) const;
+
 private:
     std::map<std::string, hilti::rt::any> _aux_options;
 };

@@ -384,8 +384,19 @@ Result<Nothing> Driver::initialize() {
 
     _stage = INITIALIZED;
 
+    auto uniquify = [](auto& v) {
+        std::sort(v.begin(), v.end());
+        v.erase(std::unique(v.begin(), v.end()), v.end());
+    };
+
+    uniquify(_compiler_options.cxx_include_paths);
+    uniquify(_compiler_options.library_paths);
+
     if ( _driver_options.logger )
         setLogger(std::move(_driver_options.logger));
+
+    if ( getenv("HILTI_PRINT_SETTINGS") )
+        _compiler_options.print(std::cerr);
 
     _ctx = std::make_shared<Context>(_compiler_options);
     return Nothing();

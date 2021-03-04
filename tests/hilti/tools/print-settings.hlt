@@ -1,0 +1,6 @@
+# @TEST-EXEC: HILTI_PRINT_SETTINGS=1 hiltic -L x/x/x/x -L y/y/y/y/y -p %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check behavior of environment variable HILTI_PRINT_SETTINGS
+
+module Foo {}
