@@ -1,0 +1,11 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Tests validations for `real` fields.
+
+module Mini;
+
+public type Test = unit {
+    f2: real;
+    f1: real &type=123;
+};
