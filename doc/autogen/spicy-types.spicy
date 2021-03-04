@@ -108,5 +108,5 @@ Specifies a side an operation should operate on.
 
 .. rubric:: ``spicy::ZlibStream``
 
-Captures the state of gzip decompression the corresponding library functions.
+Captures the state of gzip decompression for the corresponding library functions.
 

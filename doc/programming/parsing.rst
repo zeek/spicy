@@ -1579,7 +1579,7 @@ the time we print it out.
 
    Spicy parsers discard input data as quickly as possible as parsing
    moves through the input stream. Indeed, that's why using random
-   access may come with a performance penality as the parser now needs
+   access may come with a performance penalty as the parser now needs
    to buffer all of unit's data until it has been fully processed.
 
 .. _filters:
@@ -1723,7 +1723,7 @@ selection through a generalized notion of MIME types: Units can
 declare which MIME types they know how to parse (see
 :ref:`unit_meta_data`) , and sinks have
 :spicy:method:`sink::connect_mime_type` method that will instantiate and
-connect any that match their argument (if that's multiple, all will
+connect any that match their argument (if that's multiple, all will be
 connected and all will receive the same data).
 
 "MIME type" can mean actual MIME types, such ``text/html``.
@@ -1814,7 +1814,7 @@ example:
 .. spicy-code::
 
     public type Foo = unit {
-        %property = bytes;
+        %context = bytes;
         [...]
     };
 
