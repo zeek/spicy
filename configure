@@ -163,8 +163,6 @@ append_cache_entry USE_SANITIZERS               STRING "${cmake_use_sanitizers}"
 append_cache_entry HILTI_DEV_PRECOMPILE_HEADERS BOOL   "${cmake_use_precompiled_headers}"
 append_cache_entry USE_WERROR                   BOOL   "${cmake_use_werror}"
 append_cache_entry ZEEK_ROOT_DIR                PATH   "${cmake_zeek_root_dir}"
-append_cache_entry CPACK_BINARY_STGZ            BOOL   "OFF"
-append_cache_entry CPACK_BINARY_TGZ             BOOL   "ON"
 
 if [ -n "${cmake_generator}" ]; then
     cmake="${cmake_exe} -G '${cmake_generator}' ${cmake_cache_entries} ${source_dir}"
