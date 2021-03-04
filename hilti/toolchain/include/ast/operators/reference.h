@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/ast/operators/common.h>
+#include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/reference.h>
 
 namespace hilti {

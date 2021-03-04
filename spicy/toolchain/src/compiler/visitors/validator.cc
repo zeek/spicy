@@ -7,6 +7,7 @@
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/expressions/type.h>
+#include <hilti/ast/operators/reference.h>
 #include <hilti/ast/statements/switch.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
@@ -14,6 +15,7 @@
 #include <spicy/ast/all.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/hook.h>
+#include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/visitors.h>
 
 using namespace spicy;
@@ -453,6 +455,30 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                     error(fmt("field name '%s' cannot have name identical to owning unit '%s'", field->id(), *typeId),
                           p);
         }
+    }
+
+    void operator()(const hilti::operator_::value_reference::Equal& o, position_t p) {
+        if ( auto ref = o.op0().type().tryAs<hilti::type::ValueReference>();
+             ref && ref->dereferencedType().isA<type::Unit>() )
+            error("units cannot be compared with ==", p);
+    }
+
+    void operator()(const hilti::operator_::value_reference::Unequal& o, position_t p) {
+        if ( auto ref = o.op0().type().tryAs<hilti::type::ValueReference>();
+             ref && ref->dereferencedType().isA<type::Unit>() )
+            error("units cannot be compared with !=", p);
+    }
+
+    void operator()(const hilti::operator_::strong_reference::Equal& o, position_t p) {
+        if ( auto ref = o.op0().type().tryAs<hilti::type::ValueReference>();
+             ref && ref->dereferencedType().isA<type::Unit>() )
+            error("units cannot be compared with ==", p);
+    }
+
+    void operator()(const hilti::operator_::strong_reference::Unequal& o, position_t p) {
+        if ( auto ref = o.op0().type().tryAs<hilti::type::ValueReference>();
+             ref && ref->dereferencedType().isA<type::Unit>() )
+            error("units cannot be compared with !=", p);
     }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {

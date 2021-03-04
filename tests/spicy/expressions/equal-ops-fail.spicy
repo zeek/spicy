@@ -1,0 +1,13 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Validates that comparisons of units with '==' and '!=' are rejected
+
+module Test;
+
+type X = unit {};
+
+function foo(x: X) {
+    x == x;
+    x != x;
+}

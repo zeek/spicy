@@ -1,4 +1,17 @@
 
+0.4.0-1551 | 2021-03-04 09:52:00 +0100
+
+  * GH-570: Explicitly reject comparisons of units with `==` and `!=`.
+
+    Comparisons with `==` and `!=` are not explicitly modelled in Spicy or
+    HILTI which means that while we resolved the types of the LHS and RHS,
+    during codegen we just emit a `==` or `!=` which needs to be resolved.
+
+    While most runtime types should support these operators, units do not,
+    so that previously users would see a compiler error during JIT when
+    comparing values of unit type with `==` or `!=`. This patch adds a
+    validator which explicitly rejects such comparisons.
+
 0.4.0-1547 | 2021-03-03 09:13:25 +0100
 
   * GH-798: Prevent conversions of some integers to doubles on the Zeek interface.
