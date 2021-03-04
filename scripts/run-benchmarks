@@ -22,6 +22,7 @@
 #
 #   zeek -r trace.pcap zeek/scripts/record-spicy-batch.zeek
 #
+set -e
 
 build="<no build directory>"
 work=./benchmark
@@ -45,7 +46,7 @@ check_deps() {
 }
 
 check_zeek() {
-    ${zeek} -v | grep -q debug && echo "Warning: Using debug version of Zeek"
+    ${zeek} -v | grep -q debug && echo "Warning: Using debug version of Zeek" || true
 }
 
 check_binaries() {
@@ -73,16 +74,16 @@ do_build() {
         echo Building ${p} binaries ...
 
         # Standalone binary
-        spicy-build -o ${p}-opt ${dist}/spicy/lib/protocols/http.spicy &
-        spicy-build -o ${p}-dbg -d ${dist}/spicy/lib/protocols/http.spicy &
+        spicy-build -o ${p}-opt ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy &
+        spicy-build -o ${p}-dbg -d ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy &
 
         # Standalone HLTO
-        spicyc -j -o ${p}-opt.hlto -O ${dist}/spicy/lib/protocols/http.spicy &
-        spicyc -j -o ${p}-dbg.hlto -d ${dist}/spicy/lib/protocols/http.spicy &
+        spicyc -j -o ${p}-opt.hlto -O ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy &
+        spicyc -j -o ${p}-dbg.hlto -d ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy &
 
         # Zeek HLTO
-        spicyz -o ${p}-zeek-opt.hlto -O ${dist}/spicy/lib/protocols/${p}.spicy ${dist}/zeek/plugin/lib/protocols/${p}.evt ${dist}/zeek/plugin/lib/protocols/zeek_${p}.spicy &
-        spicyz -o ${p}-zeek-dbg.hlto -d ${dist}/spicy/lib/protocols/${p}.spicy ${dist}/zeek/plugin/lib/protocols/${p}.evt ${dist}/zeek/plugin/lib/protocols/zeek_${p}.spicy &
+        spicyz -o ${p}-zeek-opt.hlto -O ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy ${dist}/zeek/plugin/lib/protocols/${p}.evt ${dist}/zeek/plugin/lib/protocols/zeek_${p}.spicy &
+        spicyz -o ${p}-zeek-dbg.hlto -d ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy ${dist}/zeek/plugin/lib/protocols/${p}.evt ${dist}/zeek/plugin/lib/protocols/zeek_${p}.spicy &
 
         wait
     done
