@@ -55,7 +55,7 @@ public type Side = enum {
     Both     # operate on both sides
 } &cxxname="hilti::rt::bytes::Side";
 
-## Captures the state of gzip decompression the corresponding library functions.
+## Captures the state of gzip decompression for the corresponding library functions.
 public type ZlibStream = __library_type("spicy::rt::zlib::Stream");
 
 ## Decompresses a chunk of data through the given zlib stream.
