@@ -35,7 +35,7 @@ case "${cmd}" in
         ;;
 
     run)
-        docker run --cap-add SYS_PTRACE --security-opt seccomp=unconfined -i -t "spicy-${platform}:latest" /bin/bash -l
+        docker run --cap-add SYS_PTRACE --security-opt seccomp=unconfined -i -t "spicy-${platform}:latest" /bin/sh -l
         ;;
 
     *) usage;;
