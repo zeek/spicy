@@ -1,4 +1,8 @@
 
+0.4.0-1564 | 2021-03-10 11:21:02 +0000
+
+  * Fix broken links in documentation. (Robin Sommer, Corelight)
+
 0.4.0-1561 | 2021-03-10 08:40:38 +0000
 
   * Move Zeek plugin into submodule and remove all dependencies on
