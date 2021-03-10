@@ -59,8 +59,8 @@ test-analyzers-install:
 _build-spicy-analyzers:
 	@if ./Scripts/have-zeek-plugin; then \
 		cd $$(Scripts/build-directory); \
-			if [ -e Makefile ]; then $(MAKE) -j zeek-analyzers; else true; fi; \
-			if [ -e build.ninja ]; then ninja zeek-analyzers; else true; fi; \
+			if [ -e Makefile ]; then $(MAKE) -j build-spicy-analyzers; else true; fi; \
+			if [ -e build.ninja ]; then ninja build-spicy-analyzers; else true; fi; \
 	fi
 
 clean:
