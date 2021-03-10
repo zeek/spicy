@@ -35,7 +35,6 @@ Stages
     test-code                                         Run code & formatting checks
     test-build                                        Run the test suite on the built version
     test-install                                      Run the test suite on the installed version
-    test-install-nojit                                Run the test suite on the installed version, limit to non-JIT tests only
     cleanup                                           Delete all build artifcats.
 
 Global options:
@@ -190,6 +189,8 @@ function run_configure {
     git fetch --tags
 
     log_stage "Running configure ... (${configure})"
+
+    export LD_LIBRARY_PATH=${rpath}
     ${configure} || exit 1
     mkdir -p ${artifacts}
 
@@ -207,12 +208,7 @@ function run_build {
     # The level of parallelism choosen here is tuned for what's configured
     # in `.cirrus.yml` so that (1) we align with number of CPUs, and (2) we
     # do not trigger OOM kills in the Docker environments.
-    (cd ${build} && ninja -j4) || exit 1
-
-    if cat ${build}/CMakeCache.txt | egrep -iq 'BUILD_TOOLCHAIN.*(yes|on|off)'; then
-        log_stage "Building analyzers ..."
-        (cd ${build} && ninja -j4 spicy-analyzers) || exit 1
-    fi
+    (cd ${build} && ninja -j4 build-all) || exit 1
 
     log_stage "Building docs ..."
     (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc doxygen html) || exit 1
@@ -223,35 +219,40 @@ function run_build {
 
 function run_install {
     log_stage "Installing code ..."
-    (cd ${build} && ninja install) || exit 1
+    (cd ${build} && ninja install-all) || exit 1
 }
 
-function run_test_btest {
-    if [ -n "$1" ]; then
-        btest_alternative="-a $1"
+function execute_btest {
+    name="$1"
+    cwd="$2"
+    alternative="$3"
+
+    if [ -n "${alternative}" ]; then
+        alternative="-a ${alternative}"
     else
-        btest_alternative=""
+        alternative=""
     fi
 
     if [ -n "${SPICY_BTEST_GROUPS}" ]; then
-        btest_group="-g no-jit"
+        group="-g ${SPICY_BTEST_GROUPS}"
     else
-        btest_group=""
+        group=""
     fi
+
+
+    log_stage "Running ${name} tests ... (${btest_alternative} ${btest_group})"
+    pushd ${cwd} >/dev/null
 
     export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
     export ZEEK_LD_PRELOAD=$(cat ${build}/.zeek_ld_preload)
 
-    log_stage "Running tests ... (${btest_alternative} ${btest_group})"
-
-    cd tests
     eval ${preload} \
         btest -b \
               -j 5 \
               -f ${artifacts}/diag.log \
               -x ${artifacts}/diag.xml \
-              ${btest_alternative} \
-              ${btest_group}
+              ${alternative} \
+              ${group}
 
     rc=$?
 
@@ -263,34 +264,23 @@ function run_test_btest {
         log_error "Tests have failed"
     fi
 
+    popd >/dev/null
     return ${rc}
 }
 
-function run_test_analyzers {
-    export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
-    export ZEEK_LD_PRELOAD=$(cat ${build}/.zeek_ld_preload)
-    export SPICY_MODULE_PATH=${build}/zeek/spicy-analyzers/spicy-modules
+function run_test_btest {
+    alternative="$1"
+    execute_btest "Spicy" "tests" "${alternative}"
+}
 
-    log_stage "Running analyzer tests ..."
+function run_test_zeek_plugin {
+    alternative="$1"
+    execute_btest "Zeek plugin" "zeek/spicy-plugin/tests" "${alternative}"
+}
 
-    cd zeek/spicy-analyzers/tests
-    eval ${preload} \
-        btest -b \
-              -j 5 \
-              -f ${artifacts}/diag.log \
-              -x ${artifacts}/diag.xml
-
-    rc=$?
-
-    if [ ${rc} != 0 ]; then
-        cp -a .tmp ${artifacts}/btest-tmp
-        log_diag "Begin diagnostics"
-        cat ${artifacts}/diag.log
-        log_diag "End diagnostics (complete test output in 'btest-tmp')"
-        log_error "Tests have failed"
-    fi
-
-    return ${rc}
+function run_test_zeek_analyzers {
+    alternative="$1"
+    execute_btest "Zeek analyzers" "zeek/spicy-analyzers/tests" "${alternative}"
 }
 
 function run_test_clang_format {
@@ -356,12 +346,17 @@ function run_test_code {
 }
 
 function run_test_common {
-    btest_alternative=$1
+    btest_alternative="$1"
     rc=0
 
-    pushd $(pwd) >/dev/null
-    run_test_btest ${btest_alternative} || rc=1
-    popd >/dev/null
+    run_test_btest "${btest_alternative}" || rc=1
+
+    if cat ${build}/CMakeCache.txt | egrep -iq 'BUILD_TOOLCHAIN.*(yes|on|off)'; then
+        run_test_zeek_plugin "${btest_alternative}" || rc=1
+        run_test_zeek_analyzers "${btest_alternative}" || rc=1
+    else
+        log_warning "skipping Zeek tests, no toolchain"
+    fi
 
     return ${rc}
 }
@@ -370,19 +365,11 @@ function run_test_build {
     export SPICY_BUILD_DIRECTORY=${build}
     run_test_common
 
-    pushd $(pwd) >/dev/null
-    run_test_analyzers || rc=1
-    popd >/dev/null
+    return ${rc}
 }
 
 function run_test_install {
     export SPICY_INSTALLATION_DIRECTORY=${install}
-    run_test_common installation
-}
-
-function run_test_install_nojit {
-    export SPICY_INSTALLATION_DIRECTORY=${install}
-    export SPICY_BTEST_GROUPS=no-jit
     run_test_common installation
 }
 
@@ -442,7 +429,6 @@ case "${cmd}" in
     install)             (run_install $@);;
     test-build)          (run_test_build $@);;
     test-install)        (run_test_install $@);;
-    test-install-nojit)  (run_test_install_nojit $@);;
     test-code)           (run_test_code $@);;
     deploy)              (run_deploy $@);;
     cleanup)             (run_cleanup $@);;

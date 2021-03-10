@@ -7,6 +7,7 @@
 #include <memory>
 #include <ostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -61,7 +62,7 @@ TEST_SUITE_BEGIN("Library");
 
 TEST_CASE("construct" * doctest::skip(geteuid() == 0)) {
     Library _(dummy1); // Does not throw
-    CHECK_NOTHROW(Library("/does/not/exist"));
+    CHECK_THROWS_AS(Library("/does/not/exist"), std::runtime_error);
 }
 
 TEST_CASE("open") {

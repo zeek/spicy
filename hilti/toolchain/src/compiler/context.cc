@@ -29,6 +29,35 @@ Result<Nothing> Options::parseDebugAddl(const std::string& flags) {
     return Nothing();
 }
 
+void Options::print(std::ostream& out) const {
+    auto print_one = [&](const char* label, const auto& x) { out << util::fmt("  %25s   %s", label, x) << std::endl; };
+    auto print_list = [&](const char* label, const auto& x) {
+        if ( x.empty() )
+            out << util::fmt("  %25s   <empty>\n", label);
+        else {
+            bool first = true;
+            for ( const auto& i : x ) {
+                out << util::fmt("  %25s   %s\n", (first ? label : ""), i);
+                first = false;
+            }
+        }
+    };
+
+    out << "\n=== HILTI compiler settings:\n\n";
+    print_one("debug", debug);
+    print_one("debug_trace", debug_trace);
+    print_one("debug_flow", debug_flow);
+    print_one("track_location", track_location);
+    print_one("skip_validation", skip_validation);
+    print_one("optimize", optimize);
+    print_list("addl library_paths", library_paths);
+    print_one("cxx_namespace_extern", cxx_namespace_extern);
+    print_one("cxx_namespace_intern", cxx_namespace_intern);
+    print_list("addl cxx_include_paths", cxx_include_paths);
+
+    out << "\n";
+}
+
 Context::Context(Options options) : _options(std::move(std::move(options))) {
     operator_::Registry::singleton().printDebug();
 }

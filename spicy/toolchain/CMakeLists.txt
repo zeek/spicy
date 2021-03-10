@@ -93,8 +93,8 @@ target_link_libraries(spicy-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_
 target_link_libraries(spicy-objects PRIVATE hilti)
 
 add_library(spicy)
-hilti_link_libraries(spicy PUBLIC)
-spicy_link_object_libraries(spicy PUBLIC)
+hilti_link_libraries_in_tree(spicy PUBLIC)
+spicy_link_object_libraries_in_tree(spicy PUBLIC)
 
 ##### Configuration files
 
@@ -102,7 +102,8 @@ spicy_link_object_libraries(spicy PUBLIC)
 set_config_val(SPICY_CONFIG_LIBRARY_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/spicy !BUILD!${CMAKE_SOURCE_DIR}/spicy/lib")
 
 # Include directories
-set_config_val(SPICY_CONFIG_RUNTIME_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/spicy/runtime/include !BUILD!${CMAKE_BINARY_DIR}/include")
+set_config_val(SPICY_CONFIG_RUNTIME_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/spicy/runtime/include !BUILD!${CMAKE_BINARY_DIR}/include")
+set_config_val(SPICY_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/spicy/toolchain/include !BUILD!${CMAKE_BINARY_DIR}/include")
 
 # CXX flags
 set_config_val(SPICY_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "")
@@ -113,8 +114,8 @@ set_config_val(SPICY_CONFIG_RUNTIME_LIBRARIES_DEBUG   "spicy-rt-debug z")
 set_config_val(SPICY_CONFIG_RUNTIME_LIBRARIES_RELEASE "spicy-rt z")
 
 # Library directories
-set_config_val(SPICY_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG   "")
-set_config_val(SPICY_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE "")
+set_config_val(SPICY_CONFIG_RUNTIME_CXX_LIBRARY_DIRS    "")
+set_config_val(SPICY_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS  "")
 
 # LD flags
 set_config_val(SPICY_CONFIG_RUNTIME_LD_FLAGS_DEBUG   "")
@@ -128,23 +129,23 @@ configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
 
 add_executable(spicy-config bin/spicy-config.cc)
 target_compile_options(spicy-config PRIVATE "-Wall")
-spicy_link_executable(spicy-config PRIVATE)
+spicy_link_executable_in_tree(spicy-config PRIVATE)
 
 add_executable(spicyc bin/spicyc.cc)
 target_compile_options(spicyc PRIVATE "-Wall")
-spicy_link_executable(spicyc PRIVATE)
+spicy_link_executable_in_tree(spicyc PRIVATE)
 
 add_executable(spicy-driver bin/spicy-driver.cc)
 target_compile_options(spicy-driver PRIVATE "-Wall")
-spicy_link_executable(spicy-driver PRIVATE)
+spicy_link_executable_in_tree(spicy-driver PRIVATE)
 
 add_executable(spicy-doc bin/spicy-doc.cc)
 target_compile_options(spicy-doc PRIVATE "-Wall")
-spicy_link_executable(spicy-doc PRIVATE)
+spicy_link_executable_in_tree(spicy-doc PRIVATE)
 
 add_executable(spicy-batch-extract bin/spicy-batch-extract.cc)
 target_compile_options(spicy-batch-extract PRIVATE "-Wall")
-spicy_link_executable(spicy-batch-extract PRIVATE)
+spicy_link_executable_in_tree(spicy-batch-extract PRIVATE)
 
 add_subdirectory(bin/spicy-dump)
 
@@ -168,7 +169,7 @@ install(CODE "file(REMOVE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/spicy/spicy)") # Get 
 add_executable(spicy-toolchain-tests
                tests/main.cc
                tests/grammar.cc)
-spicy_link_executable(spicy-toolchain-tests PRIVATE)
+spicy_link_executable_in_tree(spicy-toolchain-tests PRIVATE)
 target_link_libraries(spicy-toolchain-tests PRIVATE doctest)
 target_compile_options(spicy-toolchain-tests PRIVATE "-Wall")
 add_test(NAME spicy-toolchain-tests COMMAND ${CMAKE_BINARY_DIR}/bin/spicy-toolchain-tests)

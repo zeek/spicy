@@ -1,1 +1,1 @@
-../../../zeek/plugin/lib/protocols/tftp.zeek
+../../../zeek/spicy-analyzers/analyzer/protocol/tftp/tftp.zeek

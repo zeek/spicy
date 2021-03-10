@@ -69,8 +69,15 @@ struct Configuration {
     hilti::rt::filesystem::path build_directory; /**< Full path to directory where HILTI was built */
     std::vector<hilti::rt::filesystem::path>
         hilti_library_paths; /**< Default search path for HILTI modules, separated by `:` */
+
     std::vector<hilti::rt::filesystem::path>
-        hilti_include_paths; /**< C++ include directories for HILTI runtime headers */
+        runtime_cxx_include_paths; /**< C++ include directories for runtime headers */
+    std::vector<hilti::rt::filesystem::path>
+        runtime_cxx_library_paths; /**< C++ library directories for runtime */
+    std::vector<hilti::rt::filesystem::path>
+        toolchain_cxx_include_paths; /**< C++ include directories for toolchain headers */
+    std::vector<hilti::rt::filesystem::path>
+        toolchain_cxx_library_paths; /**< C++ library directories for runtime */
 
     int version_number;              /**< Single version number encoding major/minor/patch levels */
     int version_major;               /**< Major number of the HILTI version */

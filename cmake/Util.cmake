@@ -90,7 +90,7 @@ function(require_version name found have need require)
 endfunction ()
 
 # Internal helper to link in all object libraries that libhilti needs.
-function(hilti_link_object_libraries lib)
+function(hilti_link_object_libraries_in_tree lib)
     if ( HAVE_TOOLCHAIN )
         target_link_libraries(${lib} "${ARGN}" hilti-objects)
     endif ()
@@ -113,27 +113,27 @@ endfunction()
 
 # Link a library against libhilti. This picks the right version of
 # libhilti (shared or object) based on the build configuration.
-function(hilti_link_libraries lib)
+function(hilti_link_libraries_in_tree lib)
     if ( BUILD_SHARED_LIBS )
         target_link_libraries(${lib} "${ARGN}" hilti)
     else ()
-        hilti_link_object_libraries(${lib} "${ARGN}")
+        hilti_link_object_libraries_in_tree(${lib} "${ARGN}")
     endif ()
 endfunction ()
 
 # Link an executable against libhilti. This picks the right version of
 # libhilti (shared or object) based on the build configuration.
-function(hilti_link_executable exec)
+function(hilti_link_executable_in_tree exec)
     # Ideally, we'd just link against the static hilti library here. However,
     # ENABLE_EXPORTS doesn't seem to apply through to that, and we'd get
     # missing symbol errors at runtime. So instead we link directly
-    # against our set of objects libraries by calling hilti_link_libraries().
-    hilti_link_libraries(${exec} "${ARGN}")
+    # against our set of objects libraries by calling hilti_link_libraries_in_tree().
+    hilti_link_libraries_in_tree(${exec} "${ARGN}")
     set_property(TARGET ${exec} PROPERTY ENABLE_EXPORTS true)
 endfunction ()
 
 # Internal helper to link in all object libraries that libspicy needs.
-function(spicy_link_object_libraries lib)
+function(spicy_link_object_libraries_in_tree lib)
     if ( HAVE_TOOLCHAIN )
         target_link_libraries(${lib} "${ARGN}" spicy-objects)
     endif ()
@@ -147,19 +147,19 @@ endfunction()
 
 # Link a library against libspicy. This picks the right version of
 # libspicy (shared or object) based on the build configuration.
-function(spicy_link_libraries lib)
+function(spicy_link_libraries_in_tree lib)
     if ( BUILD_SHARED_LIBS )
         target_link_libraries(${lib} "${ARGN}" spicy)
     else ()
-        spicy_link_object_libraries(${lib} "${ARGN}")
+        spicy_link_object_libraries_in_tree(${lib} "${ARGN}")
     endif ()
 endfunction ()
 
 # Link an executable against libspicy. This picks the right version of
 # libspicy (shared or object) based on the build configuration.
-function(spicy_link_executable exec)
-    # Similar comment here as hilti_link_executable().
-    hilti_link_libraries(${exec} "${ARGN}")
-    spicy_link_libraries(${exec} "${ARGN}")
+function(spicy_link_executable_in_tree exec)
+    # Similar comment here as hilti_link_executable_in_tree().
+    hilti_link_libraries_in_tree(${exec} "${ARGN}")
+    spicy_link_libraries_in_tree(${exec} "${ARGN}")
     set_property(TARGET ${exec} PROPERTY ENABLE_EXPORTS true)
 endfunction ()

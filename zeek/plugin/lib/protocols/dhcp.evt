@@ -1,9 +1,0 @@
-protocol analyzer spicy::DHCP over UDP:
-    parse with DHCP::Message,
-    port 67/udp,
-    port 68/udp,
-    replaces DHCP;
-
-import Zeek_DHCP;
-
-on DHCP::Message -> event dhcp_message($conn, $is_orig, Zeek_DHCP::create_msg(self), Zeek_DHCP::create_options(self));

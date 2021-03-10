@@ -125,7 +125,7 @@ add_dependencies(hilti-objects reproc++)
 target_include_directories(hilti-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
 
 add_library(hilti)
-hilti_link_object_libraries(hilti PUBLIC)
+hilti_link_object_libraries_in_tree(hilti PUBLIC)
 
 ##### Configuration files
 
@@ -139,9 +139,10 @@ endif ()
 set_config_val(HILTI_CONFIG_LIBRARY_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/hilti !BUILD!${CMAKE_SOURCE_DIR}/hilti/lib")
 
 # Include directories
-set_config_val(HILTI_CONFIG_RUNTIME_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/hilti/runtime/include !BUILD!${CMAKE_BINARY_DIR}/include")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/hilti/runtime/include !BUILD!${CMAKE_BINARY_DIR}/include")
+set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/hilti/toolchain/include !BUILD!${CMAKE_BINARY_DIR}/include")
 
-
+# CXX flags
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
@@ -150,8 +151,8 @@ set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug")
 set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE    "hilti-rt")
 
 # Library directories
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_DEBUG   "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARY_DIRS_RELEASE "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS     "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
+set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS   "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
 
 # LD flags
 set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG   "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
@@ -164,11 +165,11 @@ configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
 
 add_executable(hilti-config bin/hilti-config.cc)
 target_compile_options(hilti-config PRIVATE "-Wall")
-hilti_link_executable(hilti-config PRIVATE)
+hilti_link_executable_in_tree(hilti-config PRIVATE)
 
 add_executable(hiltic bin/hiltic.cc)
 target_compile_options(hiltic PRIVATE "-Wall")
-hilti_link_executable(hiltic PRIVATE)
+hilti_link_executable_in_tree(hiltic PRIVATE)
 
 ##### Installation
 
@@ -186,7 +187,7 @@ add_executable(hilti-toolchain-tests
                tests/main.cc
                tests/visitor.cc
                tests/util.cc)
-hilti_link_executable(hilti-toolchain-tests PRIVATE)
+hilti_link_executable_in_tree(hilti-toolchain-tests PRIVATE)
 target_link_libraries(hilti-toolchain-tests PRIVATE doctest)
 target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")
 add_test(NAME hilti-toolchain-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-toolchain-tests)

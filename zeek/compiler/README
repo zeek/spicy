@@ -1,6 +1,0 @@
-This library implements all code generation & compilation for
-interfacing Spicy with Zeek. It's independent of having a Zeek process
-itself available, everything that requires having access to Zeek
-itself is out of scope. This way, this library will later be able to
-support a standalone compiler tool that outputs C++ code for static
-compilation.

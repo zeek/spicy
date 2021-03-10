@@ -1,13 +1,11 @@
 # @TEST-EXEC: echo == spicyc >>output
 # @TEST-EXEC: spicyc -c %INPUT | grep print >>output
 #
-# @TEST-EXEC: echo == spicyz >>output
-# @TEST-EXEC: spicyz -c x %INPUT
-# @TEST-EXEC: cat x_Foo.cc | grep print >>output
-#
 # @TEST-EXEC: btest-diff output
 #
-# @TEST-DOC: Test various Spicy preprocessor constructs.
+# @TEST-DOC: Test various Spicy preprocessor constructs
+#
+# Same test is part of spicy-plugin as well, with different results.
 
 module Foo;
 
