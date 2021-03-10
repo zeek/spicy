@@ -1,4 +1,23 @@
 
+0.4.0-1561 | 2021-03-10 08:40:38 +0000
+
+  * Move Zeek plugin into submodule and remove all dependencies on
+    Zeek from main Spicy distribution. (Robin Sommer, Corelight)
+
+  * Add environment variable HILTI_PRINT_SETTINGS that trigger
+    printing out compiler settings to stderr. (Robin Sommer,
+    Corelight)
+
+  * GH-812: Fix typos in docs. (Benjamin Bannier, Corelight)
+
+  * GH-813: Add missing word in docs. (Benjamin Bannier, Corelight)
+
+  * GH-569: Fix error message in validation of `real` fields.
+    (Benjamin Bannier, Corelight)
+
+  * GH-806: Fix benchmark script for move of analyzers. (Benjamin
+    Bannier, Corelight)
+
 0.4.0-1551 | 2021-03-04 09:52:00 +0100
 
   * GH-570: Explicitly reject comparisons of units with `==` and `!=`.
