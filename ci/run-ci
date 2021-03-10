@@ -208,7 +208,11 @@ function run_build {
     # The level of parallelism choosen here is tuned for what's configured
     # in `.cirrus.yml` so that (1) we align with number of CPUs, and (2) we
     # do not trigger OOM kills in the Docker environments.
-    (cd ${build} && ninja -j4 all build-spicy-analyzers) || exit 1
+    (cd ${build} && ninja -j4 all) || exit 1
+
+    if cat ${build}/CMakeCache.txt | egrep -iq 'BUILD_TOOLCHAIN.*(yes|on|off)'; then
+            (cd ${build} && ninja -j4 build-spicy-analyzers) || exit 1
+    fi
 
     log_stage "Building docs ..."
     (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc doxygen html) || exit 1
@@ -219,7 +223,11 @@ function run_build {
 
 function run_install {
     log_stage "Installing code ..."
-    (cd ${build} && ninja install install-spicy-analyzers) || exit 1
+    (cd ${build} && ninja install) || exit 1
+
+    if cat ${build}/CMakeCache.txt | egrep -iq 'BUILD_TOOLCHAIN.*(yes|on|off)'; then
+        (cd ${build} && ninja install-spicy-analyzers) || exit 1
+    fi
 }
 
 function execute_btest {

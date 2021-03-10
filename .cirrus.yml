@@ -173,7 +173,7 @@ macos_catalina_task:
   configure_script:
     - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror
   build_script:
-    - ninja -C build build-all check
+    - ninja -C build all build-spicy-analyzers check
   test_build_script:
     - make -C tests test-all-build
   packaging_script:
@@ -210,7 +210,7 @@ macos_big_sur_task:
   configure_script:
     - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror
   build_script:
-    - ninja -C build build-all check
+    - ninja -C build all build-spicy-analyzers check
   test_build_script:
     - make -C tests test-all-build
   packaging_script:
