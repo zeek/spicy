@@ -173,7 +173,7 @@ macos_catalina_task:
   configure_script:
     - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror
   build_script:
-    - ninja -C build build-all check
+    - ninja -C build all build-spicy-analyzers check
   test_build_script:
     - make -C tests test-all-build
   packaging_script:
@@ -210,7 +210,7 @@ macos_big_sur_task:
   configure_script:
     - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror
   build_script:
-    - ninja -C build build-all check
+    - ninja -C build all build-spicy-analyzers check
   test_build_script:
     - make -C tests test-all-build
   packaging_script:
@@ -294,7 +294,7 @@ docker_alpine_3_12_task:
   configure_script:
     - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -334,7 +334,7 @@ docker_centos_7_task:
   configure_script:
     - source scl_source enable devtoolset-9 && LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
-    - source scl_source enable devtoolset-9 && ninja -j4 -C build install-all
+    - source scl_source enable devtoolset-9 && ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - source scl_source enable devtoolset-9 && SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -376,7 +376,7 @@ docker_centos_8_task:
     # flex-2.6.1 which generates code which triggers sign-compare diagnostics.
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -480,7 +480,7 @@ docker_debian9_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -521,7 +521,7 @@ docker_debian10_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -564,7 +564,7 @@ docker_ubuntu16_task:
     # the generated flex scanners trigger null-conversion diagnostics.
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -605,7 +605,7 @@ docker_ubuntu18_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -646,7 +646,7 @@ docker_ubuntu20_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -687,7 +687,7 @@ docker_fedora32_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -728,7 +728,7 @@ docker_fedora33_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
     - zeek -N | grep Spicy
@@ -830,7 +830,7 @@ freebsd11_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --with-cxx-compiler=clang++11 --with-c-compiler=clang11 --enable-werror
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
   packaging_script:
@@ -869,7 +869,7 @@ freebsd12_task:
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --enable-werror
   build_script:
-    - ninja -j4 -C build install-all
+    - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
   packaging_script:

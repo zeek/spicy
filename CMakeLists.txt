@@ -166,10 +166,6 @@ endif ()
 # Set up testing infrastructure.
 enable_testing()
 
-# Set up targets that subprojects can add to if they aren't built by default.
-add_custom_target(build-all DEPENDS all)
-add_custom_target(install-all DEPENDS install)
-
 # Add subdirectories.
 add_subdirectory(hilti)
 add_subdirectory(spicy)
