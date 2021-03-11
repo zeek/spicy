@@ -640,14 +640,17 @@ with your analyzer, add two pieces:
 Configuration
 =============
 
+Options
+-------
+
 The Spicy plugin provides a set of script-level options to tune its
 behavior, similar to what the :ref:`spicy-driver` provides as
-command-line arguments:
+command-line arguments. These all live in the ``Spicy::`` namespace:
 
 .. literalinclude:: /../zeek/spicy-plugin/plugin/scripts/base/spicy/main.zeek
     :language: zeek
-    :start-after: doc-start
-    :end-before:  doc-end
+    :start-after: doc-options-start
+    :end-before:  doc-options-end
 
 Note, however, that most of those options affect code generation. It's
 usually easier to set them through `spicyz` when precompiling an
@@ -680,6 +683,17 @@ set ``SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
 
 To get that usage message, set ``SPICY_PLUGIN_OPTIONS=-h`` when
 running Zeek.
+
+Functions
+---------
+
+The Spicy plugin also adds the following new built-in functions to
+Zeek, which likewise live in the ``Spicy::`` namespace:
+
+.. literalinclude:: /../zeek/spicy-plugin/plugin/scripts/base/spicy/main.zeek
+    :language: zeek
+    :start-after: doc-functions-start
+    :end-before:  doc-functions-end
 
 .. _zeek_debugging:
 
