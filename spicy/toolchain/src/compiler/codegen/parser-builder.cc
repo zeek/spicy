@@ -600,7 +600,10 @@ struct ProductionVisitor
             length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
         if ( auto a = AttributeSet::find(field->attributes(), "&max-size") )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
-            length = builder::incrementPrefix(builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64)));
+            length =
+                builder()->addTmp("max_size",
+                                  builder::sum(builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64)),
+                                               builder::integer(1)));
 
         if ( length ) {
             // Limit input to the specified length.
@@ -955,7 +958,10 @@ struct ProductionVisitor
             length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
         else if ( auto a = AttributeSet::find(p.unitType().attributes(), "&max-size") )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
-            length = builder::incrementPrefix(builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64)));
+            length =
+                builder()->addTmp("max_size",
+                                  builder::sum(builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64)),
+                                               builder::integer(1)));
 
         if ( length ) {
             // Limit input to the specified length.
