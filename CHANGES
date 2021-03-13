@@ -1,7 +1,11 @@
 
-0.4.0-1569 | 2021-03-12 17:31:23 +0000
+0.4.0-1575 | 2021-03-13 09:24:03 +0000
 
-  * Updating submodule(s).
+  * GH-821: Fix &max-size with constant argument. (Robin Sommer,
+    Corelight)
+
+  * GH-819: Fix unification of internal compiler arguments to not
+    change order. (Robin Sommer, Corelight)
 
 0.4.0-1568 | 2021-03-11 07:04:13 +0000
 
