@@ -582,6 +582,23 @@ std::vector<T>& append(std::vector<T>& v1, const std::vector<T>& v2) {
     return v1;
 }
 
+/** Remov duplicates from a vector without changing order. */
+template<typename T>
+std::vector<T> remove_duplicates(std::vector<T> v) {
+    std::set<T> seen;
+    std::vector<T> out;
+
+    for ( auto&& i : v ) {
+        if ( seen.find(i) != seen.end() )
+            continue;
+
+        seen.insert(i);
+        out.emplace_back(std::move(i));
+    }
+
+    return out;
+}
+
 /**
  * Given an associative container and an index hint, returns a new index
  * value that doesn't exist in the container yet. If the hint itself doesn't

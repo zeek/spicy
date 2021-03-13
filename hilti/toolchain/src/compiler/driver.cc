@@ -384,13 +384,8 @@ Result<Nothing> Driver::initialize() {
 
     _stage = INITIALIZED;
 
-    auto uniquify = [](auto& v) {
-        std::sort(v.begin(), v.end());
-        v.erase(std::unique(v.begin(), v.end()), v.end());
-    };
-
-    uniquify(_compiler_options.cxx_include_paths);
-    uniquify(_compiler_options.library_paths);
+    util::remove_duplicates(_compiler_options.cxx_include_paths);
+    util::remove_duplicates(_compiler_options.library_paths);
 
     if ( _driver_options.logger )
         setLogger(std::move(_driver_options.logger));
