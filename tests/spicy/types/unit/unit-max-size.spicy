@@ -9,9 +9,11 @@
 
 module Mini;
 
+const MaxSize = 2;
+
 public type Foo = unit {
     xs: bytes &until-including=b"\x00";
 
     on %done { print "done", self; }
     on %error { print "error", self; }
-} &max-size=2;
+} &max-size=MaxSize;
