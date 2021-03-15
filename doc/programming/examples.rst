@@ -20,9 +20,9 @@ pretty straight-forward. The Zeek-side logging is more tricky because
 of the data transfer happening over a separate network session.
 
     - `TFTP Spicy grammar <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/tftp/tftp.spicy>`_
-    - `Spicy code for Zeek integration <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/tftp/zeek_tftp.spicy>`
-    - `Zeek analyzer definition (EVT) <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/tftp//tftp.evt>`
-    - `Zeek TFTP script for logging <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/tftp//tftp.zeek>`
+    - `Spicy code for TFTP analyzer Zeek integration <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/tftp/zeek_tftp.spicy>`_
+    - `TFTP Zeek analyzer definition (EVT) <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/tftp//tftp.evt>`_
+    - `Zeek TFTP script for logging <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/tftp//tftp.zeek>`_
 
 .. rubric:: HTTP
 
@@ -31,8 +31,8 @@ Spicy prototype to compare output with Zeek's native handwritten HTTP
 parser. We observed only negligible differences.
 
     - `HTTP Spicy grammar <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/http/http.spicy>`_
-    - `Spicy code for Zeek integration <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/http//zeek_http.spicy>`
-    - `Zeek analyzer definition (EVT)  <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/http/http.evt>`
+    - `Spicy code for HTTP analyzer Zeek integration <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/http//zeek_http.spicy>`_
+    - `HTTP Zeek analyzer definition (EVT)  <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/http/http.evt>`_
 
 .. rubric:: DNS
 
@@ -44,8 +44,8 @@ The DNS parser is a good example of using :ref:`random access
 <random_access>`.
 
     - `DNS Spicy grammar <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dns/dns.spicy>`_
-    - `Spicy code for Zeek integration <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dns/zeek_dns.spicy>`
-    - `Zeek analyzer definition (EVT)  <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dns/dns.evt>`
+    - `Spicy code for DNS analyzer Zeek integration <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dns/zeek_dns.spicy>`_
+    - `DNS Zeek analyzer definition (EVT)  <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dns/dns.evt>`_
 
 .. rubric:: DHCP
 
@@ -54,5 +54,5 @@ messages understood by Zeek. The Zeek integration is almost direct and
 most of the work is in formulating the parser itself.
 
     - `DHCP Spicy grammar <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dhcp/dhcp.spicy>`_
-    - `Spicy code for Zeek integration <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dhcp/zeek_dhcp.spicy>`
-    - `Zeek analyzer definition (EVT)  <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dhcp/dhcp.evt>`
+    - `Spicy code for DHCP analyzer Zeek integration <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dhcp/zeek_dhcp.spicy>`_
+    - `DHCP analyzer Zeek analyzer definition (EVT)  <https://github.com/zeek/spicy-analyzers/blob/main/analyzer/protocol/dhcp/dhcp.evt>`_
