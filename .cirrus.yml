@@ -294,7 +294,7 @@ docker_alpine_3_12_task:
   build_script:
     - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
     - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
@@ -335,8 +335,7 @@ docker_centos_7_task:
     - rpm -i ./spicy.rpm
     - rm -rf build
   test_install_script:
-    - source scl_source enable devtoolset-9 && SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
+    - source scl_source enable devtoolset-9 && SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
     path: ./spicy.{deb,rpm}
@@ -376,8 +375,7 @@ docker_centos_8_task:
     - rpm -i ./spicy.rpm
     - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
     path: ./spicy.{deb,rpm}
@@ -477,8 +475,7 @@ docker_debian9_task:
     - dpkg --install ./spicy.deb
     - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
     path: ./spicy.{deb,rpm}
@@ -517,8 +514,7 @@ docker_debian10_task:
     - dpkg --install ./spicy.deb
     - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
     path: ./spicy.{deb,rpm}
@@ -559,8 +555,7 @@ docker_ubuntu16_task:
     - dpkg --install ./spicy.deb
     - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
     path: ./spicy.{deb,rpm}
@@ -599,8 +594,7 @@ docker_ubuntu18_task:
     - dpkg --install ./spicy.deb
     - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
     path: ./spicy.{deb,rpm}
@@ -639,8 +633,7 @@ docker_ubuntu20_task:
     - dpkg --install ./spicy.deb
     - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
     path: ./spicy.{deb,rpm}
@@ -679,8 +672,7 @@ docker_fedora32_task:
     - rpm -i ./spicy.rpm
     - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
     path: ./spicy.{deb,rpm}
@@ -719,8 +711,7 @@ docker_fedora33_task:
     - rpm -i ./spicy.rpm
     - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
     path: ./spicy.{deb,rpm}
