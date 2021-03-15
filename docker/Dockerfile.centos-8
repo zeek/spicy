@@ -1,11 +1,10 @@
 FROM centos:8
 
-ARG SKIP_BUILD=
 ARG ZEEK_VERSION=3.0.11-2.2
 
 WORKDIR /root
 
-ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
+ENV PATH="/opt/zeek/bin:${PATH}"
 
 RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
  && echo 'LC_ALL="C"' >> /etc/locale.conf \
@@ -41,7 +40,3 @@ RUN yum install -y libpcap-devel openssl-devel zlib-devel \
     https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm
 
 WORKDIR /root
-
-# Install Spicy.
-ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)
