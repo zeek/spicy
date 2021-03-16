@@ -2,8 +2,7 @@ all: help
 
 help:
 	@echo
-	@echo 'Run "make build-<platform>", then optionally "make test-<platform>",'
-	@echo 'and finally "make run-<platform>".'
+	@echo 'Run "make build-<platform>", and then "make run-<platform>".'
 	@echo
 	@echo Available platforms:
 	@echo
@@ -11,9 +10,6 @@ help:
 
 build-%:
 	./docker-helper build $*
-
-test-%: build-%
-	./docker-helper test $*
 
 run-%:
 	./docker-helper run $*
