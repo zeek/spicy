@@ -36,45 +36,29 @@ branch. Artifacts are distributed as DEB or RPM distribution packages, or TAR ar
 The binaries might require installation of additional dependencies;
 see the ``Dockerfile`` for the respective platform.
 
-alpine-3.12
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_12/packages/build/spicy.tar.gz>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.12>`__
-
-centos-7
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_7/packages/spicy.rpm>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-7>`__
-
-centos-8
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8/packages/spicy.rpm>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-8>`__
-
-debian-9
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian9/packages/spicy.deb>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-9>`__
-
-debian-10
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian10/packages/spicy.deb>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-10>`__
-
-fedora-32
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora32/packages/spicy.rpm>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-32>`__
-
-fedora-33
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora33/packages/spicy.rpm>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-33>`__
-
-ubuntu-16
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu16/packages/spicy.deb>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-16>`__
-
-ubuntu-18
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu18/packages/spicy.deb>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18>`__
-
-ubuntu-20
-    :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu20/packages/spicy.deb>`,
-    `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-20>`__
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|Platform    | Binary artifacts                                                                                                            | Dockerfile                                                                              |
++============+=============================================================================================================================+=========================================================================================+
+|alpine-3.12 | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_12/packages/build/spicy.tar.gz>` | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.12>`__|
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|centos-7    | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_7/packages/spicy.rpm>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-7>`__   |
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|centos-8    | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8/packages/spicy.rpm>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-8>`__   |
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|debian-9    | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian9/packages/spicy.deb>`              | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-9>`__   |
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|debian-10   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian10/packages/spicy.deb>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-10>`__  |
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|fedora-32   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora32/packages/spicy.rpm>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-32>`__  |
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|fedora-33   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora33/packages/spicy.rpm>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-33>`__  |
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|ubuntu-16   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu16/packages/spicy.deb>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-16>`__  |
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|ubuntu-18   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu18/packages/spicy.deb>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18>`__  |
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+|ubuntu-20   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu20/packages/spicy.deb>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-20>`__  |
++------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
 
 macOS
 ~~~~~
