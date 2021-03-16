@@ -196,9 +196,20 @@ execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-version
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # Packaging.
-# Hide version number in package filename so that we can e.g., provide
-# unmodified links to the latest version.
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}")
+# Check tags the HEAD commit corresponds to.
+execute_process(COMMAND git tag --points-at
+    OUTPUT_VARIABLE GIT_TAGS)
+
+if ( "${GIT_TAGS}" STREQUAL "" )
+    # If the HEAD commit does not correspond to a tag it is not a release. Hide
+    # the version number in packaging artifacts so we can e.g., provide stable
+    # links to the latest version.
+    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}")
+else ()
+    # If the HEAD commit corresponds to a tag it is a release and we expect a
+    # version number in packaging artifacts.
+    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
+endif ()
 
 set(CPACK_PACKAGE_CONTACT "info@zeek.org")
 
