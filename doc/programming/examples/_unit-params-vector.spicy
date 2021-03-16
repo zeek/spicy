@@ -8,5 +8,5 @@ type Bar = unit(mult: int8) {
 
 public type Foo = unit {
     x: int8;
-    y: (Bar(self.x))[]; # Element constructor must be in "(...)"
+    y: Bar(self.x)[];
 };

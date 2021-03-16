@@ -655,8 +655,7 @@ have access to the values passed in.
    in through ``spicy-driver``. A custom host application could make
    use of them, though.
 
-This works with subunits inside containers as well, though the
-syntax is a bit peculiar:
+This works with subunits inside containers as well:
 
 .. spicy-code:: unit-params-vector.spicy
 
@@ -669,7 +668,7 @@ syntax is a bit peculiar:
 
     public type Foo = unit {
         x: int8;
-        y: (Bar(self.x))[]; # Element constructor must be in "(...)"
+        y: Bar(self.x)[];
     };
 
 .. spicy-output:: unit-params-vector.spicy
@@ -1152,10 +1151,7 @@ field, this may not be possible, in which case Spicy will decline to
 compile the unit.
 
 The syntax shown above generally works for all element types,
-including subunits (e.g., ``x: MyUnit[]``). The one exception that
-requires special syntax are units with parameters. In that case, one
-needs to wrap the ``ELEM_TYPE`` in additional parentheses, and then
-add the parameters to it (e.g., ``x: (MyUnit("arg1"))[]``).
+including subunits (e.g., ``x: MyUnit[]``).
 
 .. note::
 
