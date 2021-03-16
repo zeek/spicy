@@ -5,7 +5,7 @@
 set -e
 
 usage() {
-    echo "usage: $(basename $0) build|test|run <platform>"
+    echo "usage: $(basename $0) build|run <platform>"
     exit 1
 }
 
@@ -28,10 +28,6 @@ case "${cmd}" in
         docker tag \
             "$(docker inspect --format='{{.Id}}' "spicy-${platform}:${version}")" \
             "spicy-${platform}:latest"
-        ;;
-
-    test)
-        docker run --cap-add SYS_PTRACE --security-opt seccomp=unconfined "spicy-${platform}:latest" /bin/sh -c "cd /opt/spicy/src/tests && SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -a installation -q -j -d"
         ;;
 
     run)
