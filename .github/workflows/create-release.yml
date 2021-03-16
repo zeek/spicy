@@ -27,16 +27,10 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-      - name: Get release version
-        id: get_version
-        uses: battila7/get-version-action@v2
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
+      - name: Upload Release Assets
+        id: upload-release-assets
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./spicy.tar.bz2
-          asset_name: spicy-${{ steps.get_version.outputs.version }}.tar.bz
-          asset_content_type: application/x-tar
+          files: spicy-*.(tar.gz|deb|rpm)
