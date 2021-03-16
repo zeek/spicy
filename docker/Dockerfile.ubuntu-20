@@ -8,8 +8,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ZEEK_LTS=1
 ARG ZEEK_VERSION=3.0.11-0
 
-ARG SPICY_BRANCH=master
-
 CMD ["sh"]
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
@@ -39,14 +37,12 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends git cmake ninja-build ccache bison flex g++ libfl-dev zlib1g-dev jq locales-all make \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
+ # Install a recent CMake.
+ && mkdir -p /opt/cmake \
+ && curl -L https://github.com/Kitware/CMake/releases/download/v3.18.0/cmake-3.18.0-Linux-x86_64.tar.gz | tar xzvf - -C /opt/cmake --strip-components 1 \
  # Configure zkg \
  && zkg autoconfig \
  && echo "@load packages" >>"$(zeek-config --site_dir)"/local.zeek
-
-# Install Spicy.
-ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --build-zeek-plugin=no && ninja -C build install && rm -rf build)
-
-ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
+ENV PATH="/opt/zeek/bin:/opt/cmake/bin:${PATH}"
 
 WORKDIR /root

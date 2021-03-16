@@ -2,8 +2,6 @@ FROM fedora:32
 
 ARG ZEEK_VERSION=3.0.11-2.1
 
-ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
-
 RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
  && echo 'LC_ALL="C"' >> /etc/locale.conf \
  && echo 'LANG="C"' >> /etc/locale.conf
@@ -18,7 +16,14 @@ RUN yum install -y libpcap-devel openssl-devel zlib-devel \
     https://download.zeek.org/binary-packages/Fedora_32/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
     https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm \
 # Install Spicy build dependencies
- && yum install -y ccache git ninja-build cmake flex bison gcc-c++ findutils diffutils python3-pip which \
- && pip3 install "btest>=0.66"
+ && yum install -y ccache git ninja-build flex bison gcc-c++ findutils diffutils python3-pip which \
+ && pip3 install "btest>=0.66" \
+ # Install a recent CMake.
+ && mkdir -p /opt/cmake \
+ && curl -L https://github.com/Kitware/CMake/releases/download/v3.18.0/cmake-3.18.0-Linux-x86_64.tar.gz | tar xzvf - -C /opt/cmake --strip-components 1 \
+ # Install rpmdevtools for packaging RPM files.
+ && yum install -y rpmdevtools
+
+ENV PATH="/opt/zeek/bin:/opt/cmake/bin:${PATH}"
 
 WORKDIR /root
