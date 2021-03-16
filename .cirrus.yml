@@ -270,8 +270,6 @@ docker_alpine_3_12_task:
     dockerfile: docker/Dockerfile.alpine-3.12
     cpu: 4
     memory: 14G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -310,8 +308,6 @@ docker_centos_7_task:
     dockerfile: docker/Dockerfile.centos-7
     cpu: 4
     memory: 14G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -350,8 +346,6 @@ docker_centos_8_task:
     dockerfile: docker/Dockerfile.centos-8
     cpu: 4
     memory: 14G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -394,8 +388,6 @@ validate_release_tarball_task:
     dockerfile: ci/Dockerfile
     cpu: 4
     memory: 12G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -456,8 +448,6 @@ docker_debian9_task:
     dockerfile: docker/Dockerfile.debian-9
     cpu: 4
     memory: 12G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -497,8 +487,6 @@ docker_debian10_task:
     dockerfile: docker/Dockerfile.debian-10
     cpu: 4
     memory: 12G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -538,8 +526,6 @@ docker_ubuntu16_task:
     dockerfile: docker/Dockerfile.ubuntu-16
     cpu: 4
     memory: 12G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -581,8 +567,6 @@ docker_ubuntu18_task:
     dockerfile: docker/Dockerfile.ubuntu-18
     cpu: 4
     memory: 12G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -622,8 +606,6 @@ docker_ubuntu20_task:
     dockerfile: docker/Dockerfile.ubuntu-20
     cpu: 4
     memory: 12G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -663,8 +645,6 @@ docker_fedora32_task:
     dockerfile: docker/Dockerfile.fedora-32
     cpu: 4
     memory: 12G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 
@@ -704,8 +684,6 @@ docker_fedora33_task:
     dockerfile: docker/Dockerfile.fedora-33
     cpu: 4
     memory: 12G
-    docker_arguments:
-      - SKIP_BUILD: 1
 
   timeout_in: 120m
 

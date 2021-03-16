@@ -33,7 +33,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: .
-        file: docker/Dockerfile.ubuntu-20
+        file: ci/Dockerfile.dockerhub
         push: true
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/spicy:latest

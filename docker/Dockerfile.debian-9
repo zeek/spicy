@@ -1,6 +1,5 @@
 FROM debian:stretch-slim
 
-ARG SKIP_BUILD=
 ARG ZEEK_VERSION=v3.2.2
 
 ENV BISON_VERSION "3.6.2"
@@ -83,7 +82,3 @@ RUN mkdir -p /opt/zeek/src \
  && cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek --disable-python && cd build && ninja && ninja install && cd ../.. && rm -rf zeek
 
 WORKDIR /root
-
-# Install Spicy.
-ADD . /opt/spicy/src
-RUN test ! -z "${SKIP_BUILD}" || (cd /opt/spicy/src && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek && ninja -C build install && rm -rf build)
