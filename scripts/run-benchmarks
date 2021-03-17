@@ -82,8 +82,8 @@ do_build() {
         spicyc -j -o ${p}-dbg.hlto -d ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy &
 
         # Zeek HLTO
-        spicyz -o ${p}-zeek-opt.hlto -O ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy ${dist}/zeek/plugin/lib/protocols/${p}.evt ${dist}/zeek/plugin/lib/protocols/zeek_${p}.spicy &
-        spicyz -o ${p}-zeek-dbg.hlto -d ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy ${dist}/zeek/plugin/lib/protocols/${p}.evt ${dist}/zeek/plugin/lib/protocols/zeek_${p}.spicy &
+        spicyz -o ${p}-zeek-opt.hlto -O ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.evt ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/zeek_${p}.spicy &
+        spicyz -o ${p}-zeek-dbg.hlto -d ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.spicy ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/${p}.evt ${dist}/zeek/spicy-analyzers/analyzer/protocol/${p}/zeek_${p}.spicy &
 
         wait
     done
@@ -211,7 +211,7 @@ fi
 
 export PATH=${build}/bin:${PATH}
 dist=$(spicy-config --distbase)
-zeek=$(spicy-config --zeek)
+zeek=$(grep ZEEK_EXE ${dist}/build/CMakeCache.txt | cut -d'=' -f2-)
 
 mkdir -p ${work}
 cd ${work}
