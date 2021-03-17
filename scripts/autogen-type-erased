@@ -285,7 +285,7 @@ class_methods_impl += ["inline bool {}::{}() const {{ return data()->{}(); }}\n"
     class_, t.method, t.method) for t in trait_methods]
 
 model_methods = ["{} {}({}) {} final;" .format(
-    m.result, m.name, varsToString(m.params), m.attrs, m.name) for m in methods]
+    m.result, m.name, varsToString(m.params), m.attrs) for m in methods]
 model_methods += ["bool {}() const final;".format(t.method)
                   for t in trait_methods]
 

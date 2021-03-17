@@ -24,7 +24,7 @@ PluginRegistry& plugin::registry() {
 
 void PluginRegistry::register_(const Plugin& p) {
     _plugins.push_back(p);
-    std::sort(_plugins.begin(), _plugins.end(), [](const auto x, const auto& y) { return x.order < y.order; });
+    std::sort(_plugins.begin(), _plugins.end(), [](const auto& x, const auto& y) { return x.order < y.order; });
 }
 
 // Always-on default plugin with HILTI functionality.

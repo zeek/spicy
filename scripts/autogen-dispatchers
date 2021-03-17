@@ -1,10 +1,7 @@
 #! /usr/bin/env python3
 
 import argparse
-import string
 import sys
-import os
-import re
 
 # Main
 
@@ -53,7 +50,7 @@ for f in args.nodes:
         nodes.append((cls, trait))
 
 for (cls, trait) in nodes:
-    if not trait in traits:
+    if trait not in traits:
         print("No 'trait' definition for {}".format(trait), file=sys.stderr)
         sys.exit(1)
 
@@ -66,7 +63,7 @@ for (btrait, bcls) in traits.items():
             continue
 
         def output(msg):
-            print(msg.format(cls=cls, trait=trait) + " \\", file=out)
+            print(msg.format(cls=cls) + " \\", file=out)
 
         output(
             "    if ( auto r = do_dispatch_one<Result, {cls}, Erased, Dispatcher, Iterator>(n, tn, d, i, no_match_so_far) ) return r;")

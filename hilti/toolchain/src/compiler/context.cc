@@ -104,7 +104,7 @@ void Context::updateModule(const CachedModule& module) {
 
     std::string deps = "n/a";
     if ( cached->dependencies ) {
-        deps = util::join(util::transform(*cached->dependencies, [](auto idx) { return idx.id; }), ", ");
+        deps = util::join(util::transform(*cached->dependencies, [](const auto& idx) { return idx.id; }), ", ");
         if ( deps.empty() )
             deps = "(none)";
     }
