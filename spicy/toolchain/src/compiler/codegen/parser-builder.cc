@@ -898,7 +898,7 @@ struct ProductionVisitor
         Expression cond;
 
         if ( p.eodOk() )
-            cond = builder::not_(builder::call("spicy_rt::atEod", {state().data, state().cur}));
+            cond = builder::not_(pb->atEod());
         else
             cond = builder::bool_(true);
 
@@ -1590,7 +1590,9 @@ Expression ParserBuilder::waitForInputOrEod() {
     return builder::call("spicy_rt::waitForInputOrEod", {state().data, state().cur, _filters(state())});
 }
 
-Expression ParserBuilder::atEod() { return builder::call("spicy_rt::atEod", {state().data, state().cur}); }
+Expression ParserBuilder::atEod() {
+    return builder::call("spicy_rt::atEod", {state().data, state().cur, _filters(state())});
+}
 
 void ParserBuilder::waitForInput(const std::string& error_msg, const Meta& location) {
     builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, builder::string(error_msg),

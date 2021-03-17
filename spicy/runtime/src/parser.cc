@@ -14,6 +14,21 @@ using namespace spicy::rt::detail;
 HILTI_EXCEPTION_IMPL(Backtrack)
 HILTI_EXCEPTION_IMPL(ParseError)
 
+// Returns true if EOD can be seen already, even if not reached yet.
+static bool _haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur) {
+    // We've the reached end-of-data if either (1) the bytes object is frozen
+    // (then the input won't change anymore), or (2) our view is limited to
+    // something before the current end (then even appending more data to the
+    // input won't help).
+    if ( data->isFrozen() )
+        return true;
+
+    if ( cur.isOpenEnded() )
+        return false;
+
+    return cur.unsafeEnd().offset() <= data->unsafeEnd().offset();
+}
+
 void detail::printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                               const hilti::rt::stream::View& cur, int64_t lahead,
                               const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
@@ -87,7 +102,7 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
     auto new_ = cur.size();
 
     while ( old == new_ ) {
-        if ( detail::haveEod(data, cur) )
+        if ( _haveEod(data, cur) )
             return false;
 
         SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("suspending to wait for more input for stream %p, currently have %lu",
@@ -101,6 +116,7 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
 
         SPICY_RT_DEBUG_VERBOSE(
             hilti::rt::fmt("resuming after insufficient input, now have %lu for stream %p", cur.size(), data.get()));
+
         new_ = cur.size();
     }
 
@@ -117,20 +133,16 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, co
     }
 }
 
-bool detail::atEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur) {
-    return cur.size() == 0 && detail::haveEod(data, cur);
-}
-
-bool detail::haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur) {
-    // We've the reached end-of-data if either (1) the bytes object is frozen
-    // (then the input won't change anymore), or (2) our view is limited to
-    // something before the current end (then even appending more data to the
-    // input won't help).
-    if ( data->isFrozen() )
-        return true;
-
-    if ( cur.isOpenEnded() )
+bool detail::atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+                   hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters) {
+    if ( cur.size() > 0 )
         return false;
 
-    return cur.unsafeEnd().offset() <= data->unsafeEnd().offset();
+    if ( _haveEod(data, cur) )
+        return true;
+
+    // Wait until we have at least one byte available, because otherwise the
+    // EOD could still come immediately with the next update of the input
+    // stream.
+    return ! waitForInputOrEod(data, cur, filters);
 }

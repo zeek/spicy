@@ -360,17 +360,8 @@ extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // 
  * @param cur view of *data* that's being parsed
  * @return true if end-of-data has been reached
  */
-extern bool atEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur);
-
-/**
- * Used by generated parsers to recognize when end-of-data has been seen,
- * but possibly not reached.
- *
- * @param data current input data
- * @param cur view of *data* that's being parsed
- * @return true if end-of-data has been seen, but not necessarily reached.
- */
-extern bool haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur);
+extern bool atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+                  hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters);
 
 /**
  * Manually trigger a backtrack operation, reverting back to the most revent &try.

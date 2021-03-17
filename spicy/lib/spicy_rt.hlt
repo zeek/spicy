@@ -69,9 +69,7 @@ declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream>
 declare public void waitForInput(inout value_ref<stream> data, view<stream> cur, string error_msg, string location, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForInput" &have_prototype;
 declare public void waitForInput(inout value_ref<stream> data, view<stream> cur, uint<64> n, string error_msg, string location, strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForInput" &have_prototype;
 declare public bool waitForEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForEod" &have_prototype;
-
-declare public bool atEod(inout value_ref<stream> data, view<stream> cur) &cxxname="spicy::rt::detail::atEod" &have_prototype;
-declare public bool haveEod(inout value_ref<stream> data, view<stream> cur) &cxxname="spicy::rt::detail::haveEod" &have_prototype;
+declare public bool atEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::atEod" &have_prototype;
 
 declare public void backtrack() &cxxname="spicy::rt::detail::backtrack" &have_prototype;
 
