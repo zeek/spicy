@@ -9,7 +9,7 @@ clang9_zeek_ubuntu_debug_task:
     dockerfile: ci/Dockerfile
     docker_arguments:
       - ZEEK_LTS:
-      - ZEEK_VERSION: 3.2.2-0
+      - ZEEK_VERSION: 4.0.0-0
     cpu: 4
     memory: 12G
 
@@ -62,7 +62,7 @@ clang10_zeek_lts_ubuntu_release_task:
     dockerfile: ci/Dockerfile
     docker_arguments:
       - ZEEK_LTS: 1
-      - ZEEK_VERSION: 3.0.11-0
+      - ZEEK_VERSION: 4.0.0-0
     cpu: 4
     memory: 8G
 
@@ -110,6 +110,7 @@ clang9_zeek_lts_ubuntu_release_static_task:
     dockerfile: ci/Dockerfile
     docker_arguments:
       - ZEEK_LTS: 1
+      # For now we keep this build at the last Zeek LTS release to also test that one somewhere.
       - ZEEK_VERSION: 3.0.11-0
     cpu: 4
     memory: 8G
@@ -225,7 +226,7 @@ no_toolchain_task:
     dockerfile: ci/Dockerfile
     docker_arguments:
       - ZEEK_LTS: 1
-      - ZEEK_VERSION: 3.0.11-0
+      - ZEEK_VERSION: 4.0.0-0
     cpu: 4
     memory: 12G
 
@@ -729,7 +730,7 @@ clang11_zeek_nightly_task:
       # We specify these only to pin a certain base image;
       # we install nightly Zeek packages in a CI step below.
       - ZEEK_LTS:
-      - ZEEK_VERSION: 3.2.2-0
+      - ZEEK_VERSION: 4.0.0-0
     cpu: 4
     memory: 8G
 

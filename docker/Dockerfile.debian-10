@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-ARG ZEEK_VERSION=3.0.11-0
+ARG ZEEK_VERSION=4.0.0-0
 ARG ZEEK_LTS=1
 
 ENV BISON_VERSION "3.7.4"
@@ -85,9 +85,11 @@ RUN mkdir -p /tmp/zeek-packages \
    https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_amd64.deb \
    https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
    https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-btest_${ZEEK_VERSION}_amd64.deb \
+   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-zkg_${ZEEK_VERSION}_amd64.deb \
    https://download.zeek.org/binary-packages/Debian_10/amd64/zeekctl${ZEEK_LTS}-dbgsym_${ZEEK_VERSION}_amd64.deb \
    https://download.zeek.org/binary-packages/Debian_10/amd64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb  \
- && apt-get install -y libpcap-dev python2 \
+ && apt-get install -y libpcap-dev python python3-semantic-version python3-git \
  && dpkg -i *.deb \
  && cd - \
  && rm -rf /tmp/zeek-packages
