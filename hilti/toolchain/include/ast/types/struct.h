@@ -3,6 +3,7 @@
 #pragma once
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -123,7 +124,9 @@ public:
     Struct(std::vector<type::function::Parameter> params, std::vector<struct_::Field> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields),
                          util::transform(params,
-                                         [](auto p) { return type::function::Parameter::setIsStructParameter(p); })),
+                                         [](const auto& p) {
+                                             return type::function::Parameter::setIsStructParameter(p);
+                                         })),
                    std::move(m)) {
         _state().flags += type::Flag::NoInheritScope;
     }

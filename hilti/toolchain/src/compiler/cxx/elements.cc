@@ -299,7 +299,7 @@ std::string cxx::declaration::Global::str() const { return fmtDeclaration(id, ty
 std::string cxx::type::Struct::str() const {
     std::vector<std::string> visitor_calls;
 
-    auto fmt_member = [&](auto f) {
+    auto fmt_member = [&](const auto& f) {
         if ( auto x = std::get_if<declaration::Local>(&f) ) {
             if ( ! (x->isInternal() || x->linkage == "inline static") ) // Don't visit internal or static fields.
                 visitor_calls.emplace_back(fmt("_(\"%s\", %s); ", x->id, x->id));
@@ -321,12 +321,12 @@ std::string cxx::type::Struct::str() const {
                 linkage = "inline ";
 
             if ( x->inline_body ) {
-                cxx::Formatter f;
-                f.compact_block = (! x->inline_body || x->inline_body->size() <= 1);
-                f.indent();
-                f << (*x->inline_body);
-                f.dedent();
-                return fmt("%s%s %s", linkage, x->prototype(false), util::trim(f.str()));
+                cxx::Formatter formatter;
+                formatter.compact_block = (! x->inline_body || x->inline_body->size() <= 1);
+                formatter.indent();
+                formatter << (*x->inline_body);
+                formatter.dedent();
+                return fmt("%s%s %s", linkage, x->prototype(false), util::trim(formatter.str()));
             }
 
             return fmt("%s%s;", linkage, x->prototype(false));
@@ -335,7 +335,7 @@ std::string cxx::type::Struct::str() const {
         throw std::bad_variant_access();
     };
 
-    auto fmt_argument = [&](auto a) {
+    auto fmt_argument = [&](const auto& a) {
         // We default initialize any parameters here that don't have an
         // explicit "default" expression. Those that do will be initialized
         // through our constructors.
@@ -380,7 +380,7 @@ std::string cxx::type::Struct::str() const {
         if ( args.size() ) {
             // Add decidated constructor to initialize the struct's arguments.
             auto params_ctor_args =
-                util::join(util::transform(args, [&](auto x) { return fmt("%s %s", x.type, x.id); }), ", ");
+                util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
             auto params_ctor = fmt("inline %s(%s);", type_name, params_ctor_args);
             struct_fields.emplace_back(params_ctor);
         }
@@ -389,7 +389,7 @@ std::string cxx::type::Struct::str() const {
     struct_fields.emplace_back(
         fmt("template<typename F> void __visit(F _) const { %s}", util::join(visitor_calls, "")));
     auto struct_fields_as_str =
-        util::join(util::transform(struct_fields, [&](auto x) { return fmt("    %s", x); }), "\n");
+        util::join(util::transform(struct_fields, [&](const auto& x) { return fmt("    %s", x); }), "\n");
 
     std::string has_params;
     if ( args.size() )
@@ -469,7 +469,7 @@ std::string cxx::type::Struct::inlineCode() const {
     if ( locals_user.size() ) {
         // Create constructor taking the struct's (non-function) fields.
         auto ctor_args = util::join(util::transform(locals_user,
-                                                    [&](auto x) {
+                                                    [&](const auto& x) {
                                                         auto& l = std::get<declaration::Local>(x);
                                                         return fmt("std::optional<%s> %s_", l.type, l.id);
                                                     }),

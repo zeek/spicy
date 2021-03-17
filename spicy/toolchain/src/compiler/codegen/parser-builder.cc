@@ -1262,7 +1262,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             pushBuilder();
             builder()->addLocal("unit", builder::value_reference(
                                             builder::default_(builder::typeByID(*t.typeID()),
-                                                              hilti::util::transform(t.parameters(), [](auto p) {
+                                                              hilti::util::transform(t.parameters(), [](const auto& p) {
                                                                   return builder::id(p.id());
                                                               }))));
             builder()->addLocal("ncur", type::stream::View(),
@@ -1294,7 +1294,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             pushBuilder();
             builder()->addLocal("unit", builder::value_reference(
                                             builder::default_(builder::typeByID(*t.typeID()),
-                                                              hilti::util::transform(t.parameters(), [](auto p) {
+                                                              hilti::util::transform(t.parameters(), [](const auto& p) {
                                                                   return builder::id(p.id());
                                                               }))));
 

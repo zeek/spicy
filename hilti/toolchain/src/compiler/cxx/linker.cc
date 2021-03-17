@@ -73,7 +73,8 @@ void cxx::Linker::finalize() {
         auto body = cxx::Block();
 
         auto sorted_joins = j.second;
-        std::sort(sorted_joins.begin(), sorted_joins.end(), [](auto x, auto y) { return x.priority > y.priority; });
+        std::sort(sorted_joins.begin(), sorted_joins.end(),
+                  [](const auto& x, const auto& y) { return x.priority > y.priority; });
 
         bool first = true;
         for ( const auto& c : sorted_joins ) {
