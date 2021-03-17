@@ -9,7 +9,7 @@ ENV CCACHE_DIR "/var/spool/ccache"
 ENV CCACHE_COMPRESS 1
 
 ENV CMAKE_DIR "/opt/cmake"
-ENV CMAKE_VERSION "3.17.2"
+ENV CMAKE_VERSION "3.18.0"
 
 # We use clang to build as Spicy requires a C++17-capable compiler. Strech
 # ships with gcc-6.3.0, but we require at least gcc-9 which is only available

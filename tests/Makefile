@@ -3,6 +3,7 @@ all: test-spicy-build
 
 # Shortcuts
 test: test-spicy-build
+test-install: test-spicy-install
 test-zeek: test-zeek-build
 test-analyzers: test-analyzers-build
 

@@ -195,6 +195,51 @@ execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-version
                 OUTPUT_VARIABLE VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+# Packaging.
+# Check tags the HEAD commit corresponds to.
+execute_process(COMMAND git tag --points-at
+    OUTPUT_VARIABLE GIT_TAGS)
+
+if ( "${GIT_TAGS}" STREQUAL "" )
+    # If the HEAD commit does not correspond to a tag it is not a release. Hide
+    # the version number in packaging artifacts so we can e.g., provide stable
+    # links to the latest version.
+    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}")
+else ()
+    # If the HEAD commit corresponds to a tag it is a release and we expect a
+    # version number in packaging artifacts.
+    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
+endif ()
+
+set(CPACK_PACKAGE_CONTACT "info@zeek.org")
+
+set(CPACK_BINARY_DEB OFF)
+set(CPACK_BINARY_RPM OFF)
+set(CPACK_BINARY_STGZ OFF)
+set(CPACK_BINARY_TZ OFF)
+set(CPACK_BINARY_TGZ ON)
+
+find_program(RPMBUILD rpmbuild)
+if (RPMBUILD)
+    set(CPACK_BINARY_RPM ON)
+endif ()
+
+find_program(DPKG_DEB dpkg-deb)
+if (DPKG_DEB)
+    set(CPACK_BINARY_DEB ON)
+endif ()
+
+# While this should be sufficient to set a prefix for installation, we still
+# bake in other absolute paths by using `CMAKE_INSTALL_FULL_*`-style variables,
+# e.g., when baking details about the installation into binaries.
+set(CPACK_SET_DESTDIR ON)
+set(CPACK_INSTALL_PREFIX "/opt/spicy")
+set(CPACK_PACKAGE_RELOCATABLE OFF)
+
+include(CPack)
+
+# Emit configuration summary.
+
 message(
     "\n====================|  Spicy Build Summary  |===================="
     "\n"
@@ -228,10 +273,3 @@ message(
     "\n"
     "\n================================================================\n"
 )
-
-# Hide version number in package filename so that we can e.g., provide
-# unmodified links to the latest version.
-string(TOLOWER ${CMAKE_SYSTEM_NAME} SPICY_SYSTEM_NAME)
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${SPICY_SYSTEM_NAME}")
-
-include(CPack)

@@ -167,15 +167,15 @@ macos_catalina_task:
     - git submodule update --recursive --init
 
   install_dependencies_script:
-    - brew install llvm bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache zeek
+    - brew install llvm bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache
     - pip3 install "btest>=0.66" sphinx_rtd_theme
 
   configure_script:
-    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror
+    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror --build-zeek-plugin=no
   build_script:
-    - ninja -C build all build-spicy-analyzers check
+    - ninja -C build all check
   test_build_script:
-    - make -C tests test-all-build
+    - make -C tests test
   packaging_script:
     - ninja -C build package
 
@@ -204,15 +204,15 @@ macos_big_sur_task:
     - git submodule update --recursive --init
 
   install_dependencies_script:
-    - brew install bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache zeek
+    - brew install bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache
     - pip3 install btest sphinx_rtd_theme
 
   configure_script:
-    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror
+    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror --build-zeek-plugin=no
   build_script:
-    - ninja -C build all build-spicy-analyzers check
+    - ninja -C build all check
   test_build_script:
-    - make -C tests test-all-build
+    - make -C tests test
   packaging_script:
     - ninja -C build package
 
@@ -294,7 +294,7 @@ docker_alpine_3_12_task:
   build_script:
     - ninja -j4 -C build install install-spicy-analyzers
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
     - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
@@ -328,17 +328,17 @@ docker_centos_7_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - source scl_source enable devtoolset-9 && LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - source scl_source enable devtoolset-9 && LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror --build-zeek-plugin=no
   build_script:
-    - source scl_source enable devtoolset-9 && ninja -j4 -C build install install-spicy-analyzers
+    - source scl_source enable devtoolset-9 && ninja -j4 -C build check all package
+    - cp build/spicy.rpm .
+    - rpm -i ./spicy.rpm
+    - rm -rf build
   test_install_script:
-    - source scl_source enable devtoolset-9 && SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
-  packaging_script:
-    - source scl_source enable devtoolset-9 && ninja -C build package
+    - source scl_source enable devtoolset-9 && SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy-*.tar.gz
+    path: ./spicy.{deb,rpm}
     type: application/gzip
 
 docker_centos_8_task:
@@ -368,17 +368,17 @@ docker_centos_8_task:
   configure_script:
     # TODO(bbannier): We do not enable -Werror on centos8 since it ships with
     # flex-2.6.1 which generates code which triggers sign-compare diagnostics.
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --build-zeek-plugin=no
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build check all package
+    - cp build/spicy.rpm .
+    - rpm -i ./spicy.rpm
+    - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
-  packaging_script:
-    - ninja -C build package
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy-*.tar.gz
+    path: ./spicy.{deb,rpm}
     type: application/gzip
 
 validate_release_tarball_task:
@@ -468,17 +468,17 @@ docker_debian9_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror --build-zeek-plugin=no
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build check all package
+    - cp build/spicy.deb .
+    - dpkg --install ./spicy.deb
+    - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
-  packaging_script:
-    - ninja -C build package
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy-*.tar.gz
+    path: ./spicy.{deb,rpm}
     type: application/gzip
 
 docker_debian10_task:
@@ -507,17 +507,17 @@ docker_debian10_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror --build-zeek-plugin=no
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build check all package
+    - cp build/spicy.deb .
+    - dpkg --install ./spicy.deb
+    - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
-  packaging_script:
-    - ninja -C build package
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy-*.tar.gz
+    path: ./spicy.{deb,rpm}
     type: application/gzip
 
 docker_ubuntu16_task:
@@ -548,17 +548,17 @@ docker_ubuntu16_task:
   configure_script:
     # TODO(bbannier): We do not enable -Werror on ubuntu16 since there
     # the generated flex scanners trigger null-conversion diagnostics.
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --build-zeek-plugin=no
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build check all package
+    - cp build/spicy.deb .
+    - dpkg --install ./spicy.deb
+    - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
-  packaging_script:
-    - ninja -C build package
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy-*.tar.gz
+    path: ./spicy.{deb,rpm}
     type: application/gzip
 
 docker_ubuntu18_task:
@@ -587,17 +587,17 @@ docker_ubuntu18_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror --build-zeek-plugin=no
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build check all package
+    - cp build/spicy.deb .
+    - dpkg --install ./spicy.deb
+    - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
-  packaging_script:
-    - ninja -C build package
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy-*.tar.gz
+    path: ./spicy.{deb,rpm}
     type: application/gzip
 
 docker_ubuntu20_task:
@@ -626,17 +626,17 @@ docker_ubuntu20_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror --build-zeek-plugin=no
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build check all package
+    - cp build/spicy.deb .
+    - dpkg --install ./spicy.deb
+    - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
-  packaging_script:
-    - ninja -C build package
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy-*.tar.gz
+    path: ./spicy.{deb,rpm}
     type: application/gzip
 
 docker_fedora32_task:
@@ -665,17 +665,17 @@ docker_fedora32_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror --build-zeek-plugin=no
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build check all package
+    - cp build/spicy.rpm .
+    - rpm -i ./spicy.rpm
+    - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
-  packaging_script:
-    - ninja -C build package
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy-*.tar.gz
+    path: ./spicy.{deb,rpm}
     type: application/gzip
 
 docker_fedora33_task:
@@ -704,17 +704,17 @@ docker_fedora33_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror --build-zeek-plugin=no
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build check all package
+    - cp build/spicy.rpm .
+    - rpm -i ./spicy.rpm
+    - rm -rf build
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
-    - zeek -N | grep Spicy
-  packaging_script:
-    - ninja -C build package
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy-*.tar.gz
+    path: ./spicy.{deb,rpm}
     type: application/gzip
 
 clang11_zeek_nightly_task:

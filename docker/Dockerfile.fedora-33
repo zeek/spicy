@@ -19,6 +19,8 @@ RUN yum install -y libpcap-devel openssl-devel zlib-devel \
     https://download.zeek.org/binary-packages/Fedora_33/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm \
 # Install Spicy build dependencies
  && yum install -y ccache git ninja-build cmake flex bison gcc-c++ findutils diffutils python3-pip which \
- && pip3 install "btest>=0.66"
+ && pip3 install "btest>=0.66" \
+ # Install rpmdevtools for packaging RPM files.
+ && yum install -y rpmdevtools
 
 WORKDIR /root
