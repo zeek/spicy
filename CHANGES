@@ -1,4 +1,17 @@
 
+0.4.0-1614 | 2021-03-18 12:27:45 +0000
+
+  * GH-827: Bump Zeek LTS version to 4.0.0 in some CI and Docker
+    images. (Benjamin Bannier, Corelight)
+
+  * Code optimization: Pass some arguments by ref if no value is
+    needed. (Benjamin Bannier, Corelight)
+
+  * Remove duplicate key in clang-format configuration. (Benjamin
+    Bannier, Corelight)
+
+  * Updating submodules.
+
 0.4.0-1609 | 2021-03-18 09:45:01 +0000
 
   * GH-817: Fix vector parsing potentially missing EOD. (Robin Sommer, Corelight)
