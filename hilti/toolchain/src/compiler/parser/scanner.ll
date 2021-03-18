@@ -112,6 +112,7 @@ hook                  return token::HOOK;
 if                    return token::IF;
 import                return token::IMPORT;
 in                    return token::IN;
+!in                   return token::NOT_IN;
 init                  return token::INIT;
 inout                 return token::INOUT;
 int                   return token::INT;

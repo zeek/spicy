@@ -330,7 +330,6 @@ constexpr auto isCommutative(Kind k) {
         case Kind::Unknown:
         case Kind::Unpack:
         case Kind::Unset: return false;
-        default: util::cannot_be_reached();
     };
 }
 

@@ -126,6 +126,7 @@ ident                 return token::IDENT;
 if                    return token::IF;
 import                return token::IMPORT;
 in                    return token::IN;
+!in                   return token::NOT_IN;
 inout                 return token::INOUT;
 int16                 return token::INT16;
 int32                 return token::INT32;

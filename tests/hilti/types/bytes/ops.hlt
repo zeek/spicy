@@ -47,6 +47,7 @@ assert y2.sub(y2.find(b"def")[1], end(y2)) == b"de";
 assert y.find(b"XYZ") == (False, end(y));
 assert (b"456" in y);
 assert ! (b"xyz" in y);
+assert b"xyz" !in y;
 assert y.starts_with(b"012");
 assert y.starts_with(b"");
 assert ! y.starts_with(b"XYZ");

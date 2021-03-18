@@ -16,6 +16,7 @@ hilti::print(set());
 
 assert 2 in s1;
 assert ! (4 in s1);
+assert 4 !in s1;
 
 add s1[4];
 assert 4 in s1;

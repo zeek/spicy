@@ -23,6 +23,7 @@ assert n2 != 193.168.1.0/24;
 
 assert 192.168.1.15 in n2;
 assert ! (192.168.2.15 in n2);
+assert 192.168.2.15 !in n2;
 
 assert n1.family() == hilti::AddressFamily::IPv6;
 assert n2.family() == n3.family();
