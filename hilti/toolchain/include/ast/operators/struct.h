@@ -164,7 +164,7 @@ BEGIN_OPERATOR_CUSTOM(struct_, HasMember)
     bool isLhs() const { return false; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Struct(type::Wildcard()), .doc = "struct"},
+        return {{.type = type::constant(type::Struct(type::Wildcard())), .doc = "struct"},
                 {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
     }
 
