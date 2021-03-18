@@ -33,7 +33,8 @@ public:
         : NodeBase(nodes(std::move(id), std::move(ft), node::none, std::move(attrs), node::none), std::move(m)),
           _cc(cc) {}
     Field(ID id, hilti::Function inline_func, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), node::none, node::none, std::move(attrs), inline_func), std::move(m)),
+        : NodeBase(nodes(std::move(id), node::none, node::none, std::move(attrs), std::move(inline_func)),
+                   std::move(m)),
           _cc(inline_func.callingConvention()) {}
 
     const auto& id() const { return child<ID>(0); }
