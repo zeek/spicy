@@ -216,9 +216,6 @@ function run_build {
 
     log_stage "Building docs ..."
     (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc doxygen html) || exit 1
-
-    log_stage "Checking docs ..."
-    (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc check) || true
 }
 
 function run_install {
@@ -365,6 +362,9 @@ function run_test_common {
     else
         log_warning "skipping Zeek tests, no toolchain"
     fi
+
+    log_stage "Checking docs ..."
+    (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc check) || true
 
     return ${rc}
 }
