@@ -3,7 +3,7 @@ FROM ubuntu:focal
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG ZEEK_LTS=1
-ARG ZEEK_VERSION=3.0.11-0
+ARG ZEEK_VERSION=4.0.0-0
 ARG UID=1000
 ARG GID=1000
 
@@ -16,6 +16,7 @@ RUN apt-get update \
  && mkdir -p /tmp/zeek-packages \
  && cd /tmp/zeek-packages \
  && if [ -n "${ZEEK_LTS}" ]; then ZEEK_LTS="-lts"; fi && export ZEEK_LTS \
+ && apt-get install -y --no-install-recommends libpcap0.8 libpcap-dev libssl-dev zlib1g-dev libmaxminddb0 libmaxminddb-dev python python3 python3-pip python3-semantic-version python3-git \
  && curl -L --remote-name-all \
     https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
     https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_amd64.deb \
@@ -23,7 +24,10 @@ RUN apt-get update \
     https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_amd64.deb \
     https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_amd64.deb \
     https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
- && apt-get install -y libpcap0.8 libpcap-dev python libssl-dev zlib1g-dev libmaxminddb0 libmaxminddb-dev \
+ && [[ ${ZEEK_VERSION} = 4.* ]] && curl -L --remote-name-all \
+    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-btest_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-zkg_${ZEEK_VERSION}_amd64.deb \
+ ||  pip3 install --no-cache-dir "btest>=0.66" zkg \
  && dpkg -i *.deb \
  && cd - \
  && rm -rf /tmp/zeek-packages \

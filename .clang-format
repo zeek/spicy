@@ -68,7 +68,6 @@ IncludeCategories:
     Priority:        6
   - Regex:           'hilti/rt.*\.(h|hpp)>'
     Priority:        5
-    Priority:        3
   - Regex:           'clang.*\.h>'
     Priority:        10
   - Regex:           'llvm.*\.h>'

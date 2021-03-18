@@ -1,6 +1,6 @@
 FROM ubuntu:bionic
 
-ARG ZEEK_VERSION=3.0.11-0
+ARG ZEEK_VERSION=4.0.0-0
 ENV BISON_VERSION "3.6.2"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -20,6 +20,7 @@ ENV CC=clang-9
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 \
  # Zeek.
+ && apt-get install -y --no-install-recommends libpcap0.8 libpcap-dev libssl-dev zlib1g-dev libmaxminddb0 libmaxminddb-dev python python3 python3-pip python3-semantic-version python3-git \
  && mkdir -p /tmp/zeek-packages \
  && cd /tmp/zeek-packages \
  && curl -L --remote-name-all \
@@ -29,7 +30,8 @@ RUN apt-get update \
     https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/zeek-lts-core-dev_${ZEEK_VERSION}_amd64.deb \
     https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/libbroker-lts-dev_${ZEEK_VERSION}_amd64.deb \
     https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/zeek-lts-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
- && apt-get install -y libpcap0.8 libpcap-dev python libssl-dev zlib1g-dev \
+    https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/zeek-lts-btest_${ZEEK_VERSION}_amd64.deb \
+    https://download.zeek.org/binary-packages/xUbuntu_18.04/amd64/zeek-lts-zkg_${ZEEK_VERSION}_amd64.deb \
  && dpkg -i *.deb \
  && cd - \
  && rm -rf /tmp/zeek-packages \

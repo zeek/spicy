@@ -361,14 +361,14 @@ std::string cxx::type::Struct::str() const {
         for ( auto x : {dctor, cctor, mctor, cassign, massign} )
             struct_fields.emplace_back(x);
 
-        auto locals_user = util::filter(members, [](auto m) {
+        auto locals_user = util::filter(members, [](const auto& m) {
             auto l = std::get_if<declaration::Local>(&m);
             return l && ! l->isInternal();
         });
 
         if ( locals_user.size() ) {
             auto locals_ctor_args = util::join(util::transform(locals_user,
-                                                               [&](auto x) {
+                                                               [&](const auto& x) {
                                                                    auto& l = std::get<declaration::Local>(x);
                                                                    return fmt("std::optional<%s> %s", l.type, l.id);
                                                                }),
@@ -403,19 +403,19 @@ std::string cxx::type::Struct::inlineCode() const {
     if ( ! add_ctors )
         return "";
 
-    auto locals_user = util::filter(members, [](auto m) {
+    auto locals_user = util::filter(members, [](const auto& m) {
         auto l = std::get_if<declaration::Local>(&m);
         return l && ! l->isInternal();
     });
 
-    auto locals_non_user = util::filter(members, [](auto m) {
+    auto locals_non_user = util::filter(members, [](const auto& m) {
         auto l = std::get_if<declaration::Local>(&m);
         return l && l->isInternal();
     });
 
     auto init_locals_user = [&]() {
         return util::join(util::transform(locals_user,
-                                          [&](auto x) {
+                                          [&](const auto& x) {
                                               auto& l = std::get<declaration::Local>(x);
                                               return l.init ? fmt("    %s = %s;\n", l.id, *l.init) : std::string();
                                           }),
@@ -424,7 +424,7 @@ std::string cxx::type::Struct::inlineCode() const {
 
     auto init_locals_non_user = [&]() {
         return util::join(util::transform(locals_non_user,
-                                          [&](auto x) {
+                                          [&](const auto& x) {
                                               auto& l = std::get<declaration::Local>(x);
                                               return l.init ? fmt("    %s = %s;\n", l.id, *l.init) : std::string();
                                           }),
@@ -433,7 +433,7 @@ std::string cxx::type::Struct::inlineCode() const {
 
     auto init_parameters = [&]() {
         return util::join(util::transform(args,
-                                          [&](auto x) {
+                                          [&](const auto& x) {
                                               return x.default_ ? fmt("    %s = %s;\n", x.id, *x.default_) :
                                                                   std::string();
                                           }),
@@ -457,10 +457,12 @@ std::string cxx::type::Struct::inlineCode() const {
 
     if ( args.size() ) {
         // Create constructor taking the struct's parameters.
-        auto ctor_args = util::join(util::transform(args, [&](auto x) { return fmt("%s %s", x.type, x.id); }), ", ");
+        auto ctor_args =
+            util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
 
         auto ctor_inits =
-            util::join(util::transform(args, [&](auto x) { return fmt("%s(std::move(%s))", x.id, x.id); }), ", ");
+            util::join(util::transform(args, [&](const auto& x) { return fmt("%s(std::move(%s))", x.id, x.id); }),
+                       ", ");
 
         inline_code += fmt("inline %s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits,
                            init_locals_user(), init_locals_non_user());
@@ -477,7 +479,7 @@ std::string cxx::type::Struct::inlineCode() const {
 
         auto ctor_inits =
             util::join(util::transform(locals_user,
-                                       [&](auto x) {
+                                       [&](const auto& x) {
                                            auto& l = std::get<declaration::Local>(x);
                                            return fmt("    if ( %s_ ) %s = std::move(*%s_);\n", l.id, l.id, l.id);
                                        }),
@@ -508,7 +510,7 @@ std::string cxx::type::Union::str() const {
 
 std::string cxx::type::Enum::str() const {
     // The following line triggers a NullDereference in tinyformat.h for some reason.
-    auto x = util::transform(labels, [](auto l) {
+    auto x = util::transform(labels, [](const auto& l) {
         return fmt("%s = %d", l.first, l.second);
     }); // NOLINT(clang-analyzer-core.NullDereference)
     return fmt("enum class %s : int64_t { %s }", type_name, util::join(x, ", "));
