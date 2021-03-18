@@ -57,16 +57,15 @@ TEST_CASE("ParserPort") {
 
 TEST_CASE("atEod") {
     auto stream = hilti::rt::ValueReference<hilti::rt::Stream>();
+    auto filters = hilti::rt::StrongReference<filter::detail::Filters>();
 
     SUBCASE("empty") {
         bool expanding = false;
         SUBCASE("expanding view") { expanding = true; }
         SUBCASE("not expanding view") { expanding = false; }
 
-        CHECK_EQ(detail::atEod(stream, stream->view(expanding)), ! expanding);
-
         stream->freeze();
-        CHECK(detail::atEod(stream, stream->view(expanding)));
+        CHECK(detail::atEod(stream, stream->view(expanding), filters));
     }
 
     SUBCASE("not empty") {
@@ -78,12 +77,12 @@ TEST_CASE("atEod") {
             for ( size_t i = 0; i < stream->size() + 5; ++i ) {
                 view.advance(i);
                 CAPTURE(i);
-                CHECK_FALSE(detail::atEod(stream, view));
+                CHECK_FALSE(detail::atEod(stream, view, filters));
             }
 
             stream->freeze();
-            CHECK_FALSE(detail::atEod(stream, view));
-            CHECK_FALSE(detail::atEod(stream, stream->view()));
+            CHECK_FALSE(detail::atEod(stream, view, filters));
+            CHECK_FALSE(detail::atEod(stream, stream->view(), filters));
         }
 
         SUBCASE("trimmed view") {
@@ -96,10 +95,10 @@ TEST_CASE("atEod") {
                 CAPTURE(i);
                 view = view.trim(view.begin() + i);
                 if ( i < 2 ) {
-                    CHECK_FALSE(detail::atEod(stream, view));
+                    CHECK_FALSE(detail::atEod(stream, view, filters));
                 }
                 else {
-                    CHECK(detail::atEod(stream, view));
+                    CHECK(detail::atEod(stream, view, filters));
                 }
             }
         }

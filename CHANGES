@@ -1,3 +1,12 @@
+
+0.4.0-1609 | 2021-03-18 09:45:01 +0000
+
+  * GH-817: Fix vector parsing potentially missing EOD. (Robin Sommer, Corelight)
+
+  * GH-835: Fix some issues diagnosed by LGTM. (Benjamin Bannier, Corelight)
+
+  * Fix `?.` operator to work with constant structs. (Robin Sommer, Corelight)
+
 0.4.0-1603 | 2021-03-17 10:02:17 +0100
 
   * GH-815: Add creation of DEB and RPM packaging artifacts. (Benjamin Bannier, Corelight)
