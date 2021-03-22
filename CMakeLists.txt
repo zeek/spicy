@@ -171,6 +171,8 @@ add_subdirectory(hilti)
 add_subdirectory(spicy)
 add_subdirectory(scripts)
 
+option(BUILD_ZEEK_PLUGIN "Whether to build Zeek spicy-plugin and spicy-analyzers as submodules. Their preferred installation method is via 'zkg'." OFF)
+
 if ( BUILD_ZEEK_PLUGIN )
     add_subdirectory(zeek)
 else ()
