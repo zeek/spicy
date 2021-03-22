@@ -4,10 +4,23 @@
 Installation
 =============
 
-Spicy can be installed from pre-built binaries (:ref:`Linux <prebuilt_linux>`,
-:ref:`MacOS <prebuilt_macos>`) or with :ref:`Homebrew (macOS)
-<homebrew_macos>`, executed via :ref:`Docker containers <docker>`, or
-:ref:`built from source <building_from_source>`.
+Spicy can be installed from pre-built binaries (Linux, macOS) or with
+Homebrew (macOS), executed via Docker containers (Linux), or built
+from source (Linux, macOS, FreeBSD):
+
+.. contents::
+    :local:
+
+We generally aim to follow `Zeek's platform policy
+<https://github.com/zeek/zeek/wiki/Platform-Support-Policy>`_ in terms
+which platforms to support and test.
+
+.. note::
+
+    Most of the installation options discussed in this chapter do
+    *not* include the Zeek plugin for Spicy. We recommend installing
+    the plugin through Zeek's package manager; see its
+    :ref:`installation instructions <zeek_installation>`.
 
 Pre-built binaries
 ------------------
@@ -17,109 +30,189 @@ Pre-built binaries
 Linux
 ~~~~~
 
-We provide pre-built binaries for some platforms from the Git ``master``
-branch. Artifacts are distributed as DEB or RPM distribution packages, or TAR archives; TAR archives need to be unpacked to `/opt/spicy`::
+We provide pre-built Spicy binaries for a range of Linux
+distributions, both for the current release version and for
+development builds made from the Git ``main`` branch.
 
-    # Using DEB distribution packages.
-    dpkg --install spicy.deb
+These binary artifacts are distributed as either DEB or RPM packages
+for the corresponding distribution; or, in a couple cases, as TAR
+archives. To install the binaries, download the corresponding package
+and execute one of the following:
 
-    # Using RPM distribution packages.
-    rpm -i spicy.rpm
+DEB packages
+    .. code::
 
-    # Using TAR archives.
-    #
-    # Unpack archive to /opt/spicy (required) replacing any previous
-    # installation. Writing to /opt/spicy likely requires superuser privileges.
-    rm -rf /opt/spicy && mkdir /opt/spicy
-    tar xf spicy.tar.gz -C /opt/spicy --strip-components=1
+        # dpkg --install spicy.deb
 
-The binaries might require installation of additional dependencies;
-see the ``Dockerfile`` for the respective platform.
+RPM packages
+    .. code::
 
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|Platform    | Binary artifacts                                                                                                            | Dockerfile                                                                              |
-+============+=============================================================================================================================+=========================================================================================+
-|alpine-3.12 | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_12/packages/build/spicy.tar.gz>` | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.12>`__|
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|centos-7    | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_7/packages/spicy.rpm>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-7>`__   |
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|centos-8    | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8/packages/spicy.rpm>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-8>`__   |
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|debian-9    | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian9/packages/spicy.deb>`              | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-9>`__   |
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|debian-10   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian10/packages/spicy.deb>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-10>`__  |
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|fedora-32   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora32/packages/spicy.rpm>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-32>`__  |
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|fedora-33   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora33/packages/spicy.rpm>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-33>`__  |
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|ubuntu-16   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu16/packages/spicy.deb>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-16>`__  |
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|ubuntu-18   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu18/packages/spicy.deb>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18>`__  |
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
-|ubuntu-20   | :download:`master <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu20/packages/spicy.deb>`             | `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-20>`__  |
-+------------+-----------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
+        # rpm -i spicy.rpm
+
+TAR archives
+    The TAR archives need to be unpacked into ``/opt/spicy``. Any
+    previous installation must be removed first::
+
+        # rm -rf /opt/spicy && mkdir /opt/spicy
+        # tar xf spicy.tar.gz -C /opt/spicy --strip-components=1
+
+The binaries may require installation of additional dependencies; see
+the ``Dockerfile`` for the respective platform for what's needed.
+
+.. list-table::
+    :widths: auto
+    :header-rows: 1
+    :align: center
+
+    * - Platform
+      - Release Version
+      - Development Version
+      - Dockerfile
+
+    * - Alpine 3.12
+      - *(coming soon)*
+      - :download:`TAR <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_12/packages/build/spicy.tar.gz>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.12>`__
+
+    * - CentOS 7
+      - *(coming soon)*
+      - :download:`RPM <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_7/packages/spicy.rpm>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-7>`__
+
+    * - CentOS 8
+      - *(coming soon)*
+      - :download:`RPM <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8/packages/spicy.rpm>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-8>`__
+
+    * - Debian 9
+      - *(coming soon)*
+      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian9/packages/spicy.deb>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-9>`__
+
+    * - Debian 10
+      - *(coming soon)*
+      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian10/packages/spicy.deb>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-10>`__
+
+    * - Fedora 32
+      - *(coming soon)*
+      - :download:`RPM <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora32/packages/spicy.rpm>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-32>`__
+
+    * - Fedora 33
+      - *(coming soon)*
+      - :download:`RPM <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora33/packages/spicy.rpm>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-33>`__
+
+    * - Ubuntu 16
+      - *(coming soon)*
+      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu16/packages/spicy.deb>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-16>`__
+
+    * - Ubuntu 18
+      - *(coming soon)*
+      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu18/packages/spicy.deb>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18>`__
+
+    * - Ubuntu 20
+      - *(coming soon)*
+      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu20/packages/spicy.deb>`
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-20>`__
+
+.. todo:
+
+    Can we rename all the `spicy.{rpm,deb,tar.gz}` to
+    `spicy-dev.{rpm,deb,tar.gz}`?
 
 macOS
 ~~~~~
 
 .. _homebrew_macos:
 
-.. rubric:: Homebrew
+Homebrew
+^^^^^^^^
 
-We provide a Homebrew formula for installation of ``HEAD`` versions of Spicy.
-After `installing Homebrew <https://docs.brew.sh/Installation>`_ add the Zeek
-tap::
+We provide a Homebrew formula for installation of Spicy. After
+`installing Homebrew <https://docs.brew.sh/Installation>`_ add the
+Zeek tap::
 
-    brew tap zeek/zeek
+    # brew tap zeek/zeek
 
-To install Spicy execute::
+To install the most recent Spicy release version, execute::
 
-    brew install --HEAD spicy
+    # brew install spicy
+
+To instead install the current development version, execute::
+
+    # brew install --HEAD spicy
+
+.. todo:
+
+    Is the above correct to get to the two different versions?
 
 .. _prebuilt_macos:
 
-.. rubric:: Pre-built binaries
+Pre-built binaries
+^^^^^^^^^^^^^^^^^^
 
-We additionally provide pre-build nightly binaries for :download:`MacOS Catalina
-<https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_catalina/packages/build/spicy.tar.gz>`
-and :download:`MacOS Big Sur
-<https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_big_sur/packages/build/spicy.tar.gz>`.
-To prevent MacOS from quarantining the files, you should download and unpack
-via the command line, e.g.::
+We provide TAR archives with pre-built binaries for the following
+macOS versions:
 
-    curl -L https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_big_sur/packages/build/spicy.tar.gz -o spicy.tar.gz
-    tar xf spicy.tar.gz
+.. list-table::
+    :widths: auto
+    :header-rows: 1
+    :align: center
 
-For JIT support these binaries require an Xcode installation.
+    * - macOS
+      - Release Version
+      - Development Version
 
-These binaries require Zeek if you want to use the Spicy Zeek plugin::
+    * - Catalina (10.15)
+      - *(coming soon)*
+      - :download:`TAR <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_catalina/packages/build/spicy.tar.gz>`
 
-    brew install zeek  # for Zeek integration
+    * - Big Sur (11)
+      - *(coming soon)*
+      - :download:`TAR <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_big_sur/packages/build/spicy.tar.gz>`
+
+To prevent macOS from quarantining the files, you should download and
+unpack via the command line, e.g.::
+
+    # curl -L https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_big_sur/packages/build/spicy.tar.gz -o spicy.tar.gz
+    # tar xf spicy.tar.gz
+
+For JIT support, these binaries require an Xcode installation.
+
+.. todo::
+
+    - Do these TAR files need to be extracted into ``/opt/spicy`` as well?
+    - Can we rename ``spicy.tar.gz`` to ``spicy-dev.tar.gz``?
 
 .. _docker:
 
 Using Docker
 ------------
 
-The Spicy distribution comes with a :repo:`set of Docker files
-<docker>` that create images for selected Linux distributions. We walk
-through how to use these in the following. We also welcome
-contributions to support more Linux distributions. If you create a new
-Docker file, please file a :pr:`pull request <>`.
+We provide :ref:`pre-built Docker images <prebuilt_docker>` on Docker
+Hub. The Spicy distribution also comes with a :ref:`set of Docker
+files <docker>` that create base images for all the supported Linux
+distributions that put all of Spicy's dependencies in place. We'll walk
+through using either of these in the following.
 
 Pre-requisites
 ~~~~~~~~~~~~~~
 
-You first need to install Docker on your host system if you haven't yet.
+You first need to install Docker on your host system, if you haven't yet.
 
-.. rubric:: Linux
+Linux
+^^^^^
 
 All major Linux distributions provide Docker. Install it using your
 package manager. Alternatively, follow the official
 `instructions <https://docs.docker.com/install/>`__.
 
-.. rubric:: macOS
+macOS
+^^^^^
 
 Install `Docker Desktop for Mac
 <https://docs.docker.com/docker-for-mac>`_ following the official
@@ -143,26 +236,62 @@ Install `Docker Desktop for Mac
     tab and then use the slider to select 8 GB of RAM. Docker Desktop will
     restart and then you will be ready to go.
 
-Using Pre-built Docker Images
+.. _prebuilt_docker:
+
+Using pre-built Docker images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We provide a `Docker image <https://hub.docker.com/repository/docker/zeekurity/spicy>`_
-with Spicy built from trunk.
+We provide the following Docker images `on DockerHub <https://hub.docker.com/repository/docker/zeekurity/spicy>`_:
 
-To run the image execute the following command::
+.. list-table::
+    :widths: auto
+    :header-rows: 1
+    :align: center
 
-    docker run -it zeekurity/spicy:latest
+    * - Spicy Version
+      - Image name
+      - Source
 
-Spicy is installed in `/opt/spicy`.
+    * - Release
+      - *(coming soon)*
+      - *(coming soon)*
 
-Build Your Own Spicy Container
+    * - Development
+      - ``zeekurity/spicy-dev``
+      - `Dockerfile <https://github.com/zeek/spicy/blob/master/ci/Dockerfile.dockerhub>`_
+
+These images include Zeek, the :ref:`Spicy plugin <zeek_plugin>` for
+Zeek, and the `Zeek analyzer collection
+<https://github.com/zeek/spicy-analyzers>`_ as well, so you can use
+them to try out the full setup end-to-end.
+
+To run the release image, execute the following command::
+
+    # docker run -it zeekurity/spicy:latest
+
+Spicy is installed in ``/opt/spicy`` on these images. The development
+image is updated nightly.
+
+.. todo::
+
+    Switch the nightly image to the `spicy-dev` label.
+
+.. _dockerfiles:
+
+Build your own Spicy container
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can build your Spicy container from one of the Docker files coming
-with Spicy: Go into Spicy's ``docker`` directory and run ``make`` to
-see the container platforms available::
+You can build base images for your own Spicy setups through the
+`Docker files <https://github.com/zeek/spicy/tree/master/docker>`_
+coming with the distribution. These images do *not* include Spicy
+itself, just the dependencies that it needs on each platform, both for
+a source build and for the using the corresponding binary packages.
+(The images do include Zeek, but not the Zeek plugin.)
 
-    # cd spicy
+To build an image, go into Spicy's ``docker`` directory and run
+``make`` to see the container platforms available::
+
+    # cd docker
     # make
 
     Run "make build-<platform>", then "make run-<platform>".
@@ -170,26 +299,30 @@ see the container platforms available::
     Available platforms:
 
         alpine-3.12
+        centos-7
         centos-8
-        ubuntu-18
+        debian-10
+        [...]
 
-To build a Spicy container image based on, for example, Ubuntu 18, run::
+To build and run a container image based on, for example,
+Debian 10, execute::
 
-    # make build-ubuntu-18
+    # make build-debian-10
+    # make run-debian-10
 
-Once the container build has finished, you can double-check that the
-container image is now available in your local Docker registry::
+.. note::
 
-    # docker images | grep -e spicy -e REPO
-    REPOSITORY                                            TAG                 IMAGE ID            CREATED             SIZE
-    spicy-ubuntu-18                                       0.2.0-dev           6f48daf3ade3        2 minutes ago       2.45GB
-    spicy-ubuntu-18                                       latest              6f48daf3ade3        2 minutes ago       2.45GB
+    The primary purpose of these Docker files is creating the
+    foundation for our CI pipelines. However, they can also double as
+    verified installation instructions for setting up Spicy's
+    dependencies on the various platforms, which is why we are
+    describing them here.
 
-Great, let's fire it up! ::
+.. todo::
 
-    # make run-ubuntu-18
-    root@bc93113300bc:~# spicyc --version
-    0.2.0-dev
+    The Dockerfiles install different Zeek versions by default. Can we
+    just set them all to the most recent 4.0, and pass different CI
+    versions in through ``ZEEK_VERSION``?
 
 .. _building_from_source:
 
@@ -199,31 +332,16 @@ Building from source
 Prerequisites
 ~~~~~~~~~~~~~
 
-Spicy currently supports the following platforms:
-
-    - Linux (x86_64)
-
-    - MacOS 10.15 / Catalina
-
-Other platforms are unlikely to work at the moment.
-
-.. note:: Earlier versions of macOS aren't easily supported because of
-   their older C++ standard libraries.
-
-To build Spicy, you will need:
+To build Spicy from source, you will need:
 
     - For compiling the toolchain:
 
         * A C++ compiler that supports C++17 (known to work are Clang >= 9 and GCC >= 9)
-        * `CMake <https://cmake.org>`_  >= 3.13
+        * `CMake <https://cmake.org>`_  >= 3.15
         * `Bison <https://www.gnu.org/software/bison>`_  >= 3.4
         * `Flex <https://www.gnu.org/software/flex>`_  >= 2.6
         * `Python <https://www.python.org/downloads/>`_ >= 3.4
         * `Zlib <https://www.zlib.net>`_ (no particular version)
-
-    - For integration with Zeek:
-
-        * `Zeek <https://www.zeek.org>`_  >= 3.0
 
     - For testing:
 
@@ -238,86 +356,64 @@ To build Spicy, you will need:
 
 In the following we record how to get these dependencies in place on
 some popular platforms. Please :issue:`file an issue <>` if you have
-instructions for platforms not yet listed here. Additionally, we provide
-Docker files for building on selected Linux distributions, see :ref:`docker`.
+instructions for platforms not yet listed here.
 
-.. rubric:: macOS
+Linux
+^^^^^
 
-Make sure you have Xcode installed, including its command tools:
-``xcode-select --install``.
+See the corresponding :ref:`Dockerfiles <dockerfiles>`.
 
-If you are using `MacPorts <https://www.macports.org>`_:
+macOS
+^^^^^
 
-    - ``# port install flex bison cmake ninja python38 py38-pip py38-sphinx py38-sphinx_rtd_theme``
-    - ``# pip install btest``
+Make sure you have Xcode installed, including its command-line tools
+(``xcode-select --install``).
 
-If you are using `Homebrew <https://brew.sh>`_:
+If you are using `Homebrew <https://brew.sh>`_::
 
-    - ``# brew install bison flex cmake ninja python@3.8 sphinx-doc``
-    - ``# pip3 install btest sphinx_rtd_theme``
+    # brew install bison flex cmake ninja python@3.8 sphinx-doc
+    # pip3 install btest sphinx_rtd_theme
 
-In either case, install Zeek >= 3.0 from source, `per the instructions
-<https://docs.zeek.org/en/current/install/install.html#installing-from-source>`_
+If you are using `MacPorts <https://www.macports.org>`_::
 
-.. rubric:: Linux
+    # port install flex bison cmake ninja python38 py38-pip py38-sphinx py38-sphinx_rtd_theme
+    # pip install btest
 
-On Ubuntu 18 (Bionic):
+FreeBSD
+^^^^^^^
 
-    - See the :repo:`Ubuntu 18 Docker file <docker/Dockerfile.ubuntu-18>`.
+See the `prepare script
+https://github.com/zeek/spicy/blob/master/ci/prepare_freebsd.sh>`_
+coming with the Spicy distribution.
 
-On Alpine 3.12:
-
-    - See the :repo:`Alpine 3.11 Docker file <docker/Dockerfile.alpine-3.12>`.
-
-On CentOS 8 / RedHat 8:
-
-    - See the :repo:`CentOS 8 Docker file <docker/Dockerfile.centos-8>`.
-
-
-Installing the Spicy Toolchain
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Building Spicy
+~~~~~~~~~~~~~~
 
 Get the code::
 
-   # git clone --recursive https://github.com/zeek/spicy
+    # git clone --recursive https://github.com/zeek/spicy
 
-The short version to install Spicy is the standard ``./configure &&
-make && make install``. However, you'll likely need to customize the
-build a bit, so we'll walk through some of the options in the
-following.
+The short version to build Spicy is the usual process then::
 
-Normally, Spicy's build system will just pick up the system's standard
-C++ compiler. If you want to point it to a different compiler, the
-``configure`` script provides  an option ``--with-cxx-compiler`` to do
-so.
+    # ./configure && make && make install
 
-Spicy by default installs into ``/usr/local``. You can change that by
-giving ``configure`` a ``--prefix``::
+However, you may want to customize the build a bit, see the output
+``./configure --help`` for the available options. In particular, you
+can use ``--prefix=/other/path`` to install into something else than
+``/usr/local``.
 
-   # ./configure --prefix=/opt/spicy
-
-If Zeek is installed but not in its standard location (i.e.,
-``/usr/local/zeek``), you can tell ``configure`` the prefix where to
-look for it::
-
-   # ./configure --with-zeek=/opt/zeek
-
-The final ``configure`` output will summarize your build's configuration.
-To ensure that Zeek support is enabled, verify the presence of
-the following line::
-
-    Zeek plugin enabled:   yes
+The final ``configure`` output will summarize your build's
+configuration.
 
 .. note::
 
-    ``configure`` has a few more flags that may be helpful, see its
-    ``--help`` output. For developers, the following may be particular
-    useful:
+    For developers, the following ``configure`` options may be
+    particular useful:
 
+        - ``--enable-ccache``: use the ``ccache`` compiler cache to speed up compilation
         - ``--enable-debug``: compile a non-optimized debug version
         - ``--enable-sanitizer``: enable address & leak sanitizers
         - ``--generator=Ninja``: use the faster ``ninja`` build system instead of ``make``
-        - ``--enable-ccache``: use the ``ccache`` compiler cache to speed up compilation
 
     Using Ninja and ``ccache`` will speed up compile times. On Linux,
     compiling will also be quite a bit faster if you have the "Gold
@@ -335,17 +431,17 @@ non-standard location, make sure that ``<prefix>/bin`` is in your
 ``PATH``.
 
 .. note:: You can also use the Spicy tools directly out of the build
-   directory without installing it, the binaries land in ``build/bin``.
+   directory without installing; the binaries land in ``build/bin``.
 
 To build Spicy's documentation, run ``make`` inside the ``docs/`` directory.
-Documentation will be located in ``build/doc/html``.
+Documentation will then be located in ``build/doc/html``.
 
-Development setup
------------------
+Parser development setup
+------------------------
 
-In order to speed up precompilation of Spicy parsers, users can create a cache of
-precompiled files. This cache is tied to a specific Spicy version, and needs to
-be recreated each time Spicy is updated.
+In order to speed up compilation of Spicy parsers, users can create a
+cache of precompiled files. This cache is tied to a specific Spicy
+version, and needs to be recreated each time Spicy is updated.
 
 To precompile the files execute the following command::
 
@@ -353,7 +449,8 @@ To precompile the files execute the following command::
 
 .. note::
 
-    By default the cache is located in the folder ``.cache/spicy/<VERSION>`` in
-    the user's home directory. This location can be overriden by setting the
-    environment variable ``SPICY_CACHE`` to a different folder path, both when
-    executing ``spicy-precompile-headers`` and Spicy toolchain commands.
+    By default the cache is located in the folder
+    ``.cache/spicy/<VERSION>`` inside the user's home directory. This
+    location can be overridden by setting the environment variable
+    ``SPICY_CACHE`` to a different folder path, both when executing
+    ``spicy-precompile-headers`` and Spicy toolchain commands.

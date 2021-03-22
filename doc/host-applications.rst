@@ -217,7 +217,7 @@ Supporting Arbitrary Parsers
 This approach is more complex, and we'll just briefly describe the
 main pieces here. All of the tools coming with Spicy support arbitrary
 parsers and can serve as further examples (e.g., :ref:`spicy-driver`,
-:ref:`spicy-dump`, the :ref:`Zeek plugin <zeek>`). Indeed, they all
+:ref:`spicy-dump`, the :ref:`Zeek plugin <zeek_plugin>`). Indeed, they all
 build on the same C++ library class ``spicy::rt::Driver`` that
 provides a higher-level API to working with Spicy's parsers in a
 generic fashion. We'll do the same in the following.
@@ -330,6 +330,5 @@ applications.
 Our examples always passed the full input at once. You don't need to
 do that, Spicy's parsers can process input incrementally as it comes
 in, and return back to the caller to retrieve more. See the source of
-`spicy::Driver::processInput()
-<https://github.com/zeek/spicy/blob/master/spicy/runtime/src/driver.cc>`_
+:repo:`spicy::Driver::processInput() <spicy/runtime/src/driver.cc>`
 for an example of how to implement that.

@@ -1839,7 +1839,7 @@ context value to multiple units. For example, when parsing a protocol,
 a host application could create a single context value shared by all
 top-level units belonging to the same connection.
 
-That's indeed what both the :ref:`Zeek plugin <zeek>` and the batch
+That's indeed what both the :ref:`Zeek plugin <zeek_plugin>` and the batch
 mode of :ref:`spicy-driver <spicy-driver>` do, enabling parsers to
 maintain bi-directional, per-connection state. As an example, the
 following grammar---mimicking a request/reply-style
