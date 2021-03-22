@@ -11,7 +11,7 @@ usage() {
 }
 
 # Make the top-level git repository the current directory.
-cd $(dirname $0)/..
+cd "$(dirname "$0")"/..
 
 output=long
 
