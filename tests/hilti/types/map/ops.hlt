@@ -14,6 +14,7 @@ hilti::print(m1[2]);
 
 assert 1 in m1;
 assert !( 5 in m1);
+assert 5 !in m1;
 m1[5] = b"FFF";
 assert 5 in m1;
 assert m1[5] == b"FFF";

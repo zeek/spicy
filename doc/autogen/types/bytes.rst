@@ -148,6 +148,10 @@
     Returns true if the right-hand-side value contains the left-hand-side
     value as a subsequence.
 
+.. spicy:operator:: bytes::InInv bool t:bytes <sp> op:!in <sp> t:bytes
+
+    Performs the inverse of the corresponding ``in`` operation.
+
 .. spicy:operator:: bytes::Lower bool t:bytes <sp> op:< <sp> t:bytes
 
     Compares two bytes values lexicographically.

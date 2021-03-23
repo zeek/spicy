@@ -30,6 +30,10 @@
 
     Returns true if an element is part of the set.
 
+.. spicy:operator:: set::InInv bool t:<any> <sp> op:!in <sp> t:set
+
+    Performs the inverse of the corresponding ``in`` operation.
+
 .. spicy:operator:: set::Size uint<64> op:| t:set op:|
 
     Returns the number of elements a set contains.

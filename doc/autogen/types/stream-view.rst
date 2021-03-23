@@ -80,6 +80,14 @@
     Returns true if the right-hand-side view contains the left-hand-side
     bytes as a subsequence.
 
+.. spicy:operator:: stream::view::InInv bool t:bytes <sp> op:!in <sp> t:view<stream>
+
+    Performs the inverse of the corresponding ``in`` operation.
+
+.. spicy:operator:: stream::view::InInv bool t:view<stream> <sp> op:!in <sp> t:bytes
+
+    Performs the inverse of the corresponding ``in`` operation.
+
 .. spicy:operator:: stream::view::Size uint<64> op:| t:view<stream> op:|
 
     Returns the number of stream the view contains.
