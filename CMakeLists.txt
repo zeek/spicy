@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 3.15.0)
 
-execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR}
+execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR} --store ${CMAKE_SOURCE_DIR}/VERSION
     OUTPUT_VARIABLE SPICY_VERSION
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 

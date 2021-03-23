@@ -14,7 +14,7 @@ git archive -o "${TARBALL}" HEAD
 git submodule foreach --quiet 'cd $toplevel && tar rf '"${TARBALL}"' $sm_path'
 
 # Add a VERSION file to the archive.
-./scripts/autogen-version --store
+./scripts/autogen-version --store VERSION
 tar rf "${TARBALL}" VERSION
 
 # Compress archive.

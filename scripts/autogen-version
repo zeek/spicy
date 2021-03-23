@@ -7,11 +7,11 @@
 set -e
 
 usage() {
-    echo "usage $(basename "$0") [--short | --header <file> | --cmake | --store] [--git-root <dir>] [<commit>]"
+    echo "usage $(basename "$0") [--short | --header <file> | --cmake | --store <file>] [--git-root <dir>] [<commit>]"
 }
 
 # Make the top-level git repository the current directory.
-cd $(dirname $0)/..
+cd "$(dirname "$0")"/..
 
 output=long
 
@@ -29,7 +29,10 @@ while [ $# -ge 1 ]; do
         output=cmake
         shift
     elif [ "$1" = "--store" ]; then
+        test $# -lt 2 && usage && exit 1
         output=store
+        dst=$2
+        shift
         shift
     elif [ "$1" = "--git-root" ]; then
         test $# -lt 2 && usage && exit 1
