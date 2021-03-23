@@ -12,8 +12,8 @@ from source (Linux, macOS, FreeBSD):
     :local:
 
 We generally aim to follow `Zeek's platform policy
-<https://github.com/zeek/zeek/wiki/Platform-Support-Policy>`_ in terms
-which platforms to support and test.
+<https://github.com/zeek/zeek/wiki/Platform-Support-Policy>`_ on which
+platforms to support and test.
 
 .. note::
 
@@ -146,7 +146,7 @@ To install the most recent Spicy release version, execute::
 
 To instead install the current development version, execute::
 
-    # brew install --HEAD spicy
+    # brew install spicy-dev
 
 .. todo:
 
@@ -177,11 +177,13 @@ macOS versions:
       - *(coming soon)*
       - :package-dev-tgz:`TAR <macos_big_sur>`
 
-To prevent macOS from quarantining the files, you should download and
-unpack via the command line, e.g.::
+The TAR archives need to be unpacked into ``/opt/spicy``. Any previous
+installation must be removed first. To prevent macOS from quarantining
+the files, you should download and unpack via the command line::
 
     # curl -L <link-per-above> -o spicy.tar.gz
-    # tar xf spicy.tar.gz
+    # rm -rf /opt/spicy && mkdir /opt/spicy
+    # tar xf spicy.tar.gz -C /opt/spicy --strip-components 1
 
 For JIT support, these binaries require an Xcode installation.
 
@@ -198,7 +200,7 @@ Using Docker
 
 We provide :ref:`pre-built Docker images <prebuilt_docker>` on Docker
 Hub. The Spicy distribution also comes with a :ref:`set of Docker
-files <docker>` that create base images for all the supported Linux
+files <docker>` to create base images for all the supported Linux
 distributions that put all of Spicy's dependencies in place. We'll walk
 through using either of these in the following.
 
@@ -252,7 +254,7 @@ We provide the following Docker images `on DockerHub <https://hub.docker.com/rep
     :align: center
 
     * - Spicy Version
-      - Image name
+      - Image name/tag
       - Source
 
     * - Release
@@ -316,7 +318,7 @@ Debian 10, execute::
 .. note::
 
     The primary purpose of these Docker files is creating the
-    foundation for our CI pipelines. However, they can also double as
+    foundation for our CI pipelines. However, they also double as
     verified installation instructions for setting up Spicy's
     dependencies on the various platforms, which is why we are
     describing them here.

@@ -9,7 +9,7 @@ While Spicy itself remains application independent, transparent
 integration into Zeek has been a primary goal for its development. To
 facilitate adding new protocol and file analyzers to `Zeek
 <https://zeek.org>`_, there is a `Zeek plugin
-<https://github.com/zeek/spicy-plugin>`_ that makes its parsers
+<https://github.com/zeek/spicy-plugin>`_ that makes Spicy parsers
 accessible to Zeek's processing pipeline. In the following, we dig
 deeper into how to use all of this.
 

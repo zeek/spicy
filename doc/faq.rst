@@ -12,11 +12,12 @@ Spicy Language
 
 Indeed, they are. Changes to global variables become visible to all
 Spicy code; their values are not associated with specific connections
-or other dynamic state. This means that often globals won't be the
-right tool for the job; it's rare that a parser needs truly global
-state. Take a look at :ref:`unit_context` for a different mechanism
-tying state to the current connection, which is a much more common
-requirement.
+or other dynamic state. If they are public, they can even be accessed
+from other, unrelated modules as well. This all means that globals
+often won't be the right tool for the job; it's rare that a parser
+needs truly global state. Take a look at :ref:`unit_context` for a
+different mechanism tying state to the current connection, which is a
+much more common requirement.
 
 Zeek
 ----
