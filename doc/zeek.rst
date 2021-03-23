@@ -158,8 +158,10 @@ properties are supported:
         Specifies one or more well-known ports for which you want Zeek to
         automatically activate your analyzer with corresponding
         connections. Each port must be specified in Spicy's :ref:`syntax
-        for port constants <type_port>` (e.g., ``80/tcp``). The ports'
-        transport protocol must match that of the analyzer.
+        for port constants <type_port>` (e.g., ``80/tcp``), or as a port range
+        ``PORT_START-PORT_END`` where start and end port are port constants
+        forming a closed interval. The ports' transport protocol must match
+        that of the analyzer.
 
         .. note::
 
