@@ -11,7 +11,7 @@ import re
 import sys
 import textwrap
 
-from typing import Dict, List, Set
+from typing import Dict, List, Pattern, Set
 
 
 def fatalError(message: str):
@@ -69,7 +69,8 @@ Operators = {
     "Call": lambda op: "{}({})".format(
         op.operands[0].rst(in_operator=True,
                            markup=False),
-        ", ".join(arg.rst(in_operator=True, markup=False) for arg in op.operands[1:])),
+        ", ".join(arg.rst(in_operator=True, markup=False)
+                  for arg in op.operands[1:])),
     "Cast": lambda op: "cast<{}>({})".format(
         TypedType.sub("\\1", op.operands[1].rst(
             in_operator=True, markup=False)),
@@ -134,7 +135,7 @@ TypeMappings = {
 }
 
 LibraryType = re.compile(r'__library_type\("(.*)"\)')
-TypedType = re.compile(r'type<(.*)>')
+TypedType: Pattern = re.compile(r'type<(.*)>')
 
 
 def namespace(ns):
@@ -157,7 +158,7 @@ def fmtDoc(doc):
     return "\n\n".join(n)
 
 
-def fmtType(ty, in_operator=False):
+def fmtType(ty):
     ty = LibraryType.sub("\\1", ty)
     ty = TypeMappings.get(ty, ty)
 
@@ -167,9 +168,8 @@ def fmtType(ty, in_operator=False):
     if ty == "any":
         return "<any>"
 
-    old = ty
     ty = ty.replace("<*>", "")
-    ty = re.sub("\s+{\s+}", "", ty)  # e.g., "enum { }" -> "enum"
+    ty = re.sub("\\s+{\\s+}", "", ty)  # e.g., "enum { }" -> "enum"
     # e.g., type<enum> -> "enum-type"
     ty = re.sub("type<([^>0-9]+)>", "\\1-type", ty)
     return ty.replace(" ", "~")
@@ -187,9 +187,9 @@ class Operand:
 
     def rst(self, in_operator=False, prefix="", markup=True):
         if self.doc:
-            type = fmtType(self.doc, in_operator=in_operator)
+            type = fmtType(self.doc)
         else:
-            type = fmtType(self.type, in_operator=in_operator)
+            type = fmtType(self.type)
 
         if not in_operator:
             default = " = {}".format(self.default) if self.default else ""
@@ -313,6 +313,8 @@ for op in meta:
         x2 = operators.setdefault(m2.namespace, [])
         x2 += [m2]
 
+keys = set()
+
 if args.dir:
     keys = set(operators.keys()) | set(methods.keys())
     try:
@@ -321,14 +323,14 @@ if args.dir:
         pass
 
 if args.types:
-    keys = set()
-
     for k in args.types.split(","):
         for i in operators.keys() | methods.keys():
             if i.startswith(k):
                 keys.add(i)
 
 for ns in sorted(keys):
+    fname = None
+    fname_tmp = None
     if args.dir:
         fname = namespace(ns)
 
@@ -377,7 +379,8 @@ for ns in sorted(keys):
         for operator in sorted(x2):
             print_unique(operator.rst())
 
-    if args.dir:
+    if fname:
+        assert fname_tmp
         out.close()
 
         if not os.path.exists(fname) or not filecmp.cmp(fname, fname_tmp):
