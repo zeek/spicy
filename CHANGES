@@ -1,4 +1,14 @@
 
+0.4.0-1632 | 2021-03-23 20:01:10 +0100
+
+  * GH-853: Fix extraction of integer bits when all bits requested.
+
+    When calculating the extraction mask, we previously would shift an
+    integer beyond its width which triggers UB. With this patch we now
+    correctly detect such cases and directly return the input.
+
+  * GH-450: Add `!in` to HILTI and Spicy parser.
+
 0.4.0-1614 | 2021-03-18 12:27:45 +0000
 
   * GH-827: Bump Zeek LTS version to 4.0.0 in some CI and Docker

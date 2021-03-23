@@ -166,6 +166,12 @@ TEST_CASE("bits") {
                          "upper limit needs to be less or equal the input width", const InvalidArgument&);
     CHECK_THROWS_WITH_AS(integer::bits(integer::safe<uint8_t>(0), 0, 3, integer::BitOrder::Undef),
                          "undefined bit order", const RuntimeError&);
+
+    // Extracting all bits should reproduce the input.
+    CHECK_EQ(hilti::rt::integer::bits(hilti::rt::integer::safe<uint64_t>(72623859790382848),
+                                      hilti::rt::integer::safe<std::uint64_t>{0u},
+                                      hilti::rt::integer::safe<std::uint64_t>{63u}, hilti::rt::integer::BitOrder::LSB0),
+             72623859790382848);
 }
 
 TEST_CASE("unpack") {

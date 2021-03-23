@@ -247,7 +247,7 @@ enum class BitOrder { LSB0, MSB0, Undef };
 template<typename UINT>
 inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v, uint64_t lower, uint64_t upper,
                                            BitOrder bo) {
-    const auto width = std::numeric_limits<UINT>::digits;
+    constexpr auto width = std::numeric_limits<UINT>::digits;
 
     if ( lower > upper )
         throw InvalidArgument("lower limit needs to be less or equal the upper limit");
@@ -268,7 +268,15 @@ inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v, uin
     }
 
     assert(lower <= upper);
-    auto mask = ((1U << (upper - lower + 1)) - 1U) << lower;
+    const auto range = upper - lower + 1;
+
+    // If the range to extract equals the width there is no work to do.
+    //
+    // NOTE: Not returning early here would lead to a shift beyond the width below.
+    if ( range == width )
+        return v;
+
+    const auto mask = ((1U << range) - 1U) << lower;
     return (v & mask) >> lower;
 }
 
