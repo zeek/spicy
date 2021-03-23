@@ -25,7 +25,7 @@ copyright = u'2020 by the Zeek Project'
 author = u'Zeek Project'
 
 version = subprocess.check_output("../scripts/autogen-version").decode("utf8")
-release = version
+release = "1.0.0" # most recent release version
 
 # -- General configuration ---------------------------------------------------
 
@@ -56,6 +56,14 @@ extlinks = {
     "repo":  ("https://github.com/zeek/spicy/blob/master/%s", "#"),
     "issue": ("https://github.com/zeek/spicy/issues/%s", "#"),
     "pr":    ("https://github.com/zeek/spicy/pulls/%s", "#"),
+
+    # Links to binary builds.
+    "package-dev-tgz": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/spicy.tar.gz", ""),
+    "package-dev-rpm": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/spicy.rpm", ""),
+    "package-dev-deb": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/spicy.deb", ""),
+    "package-release-tgz": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%%s/packages/spicy-%s.tar.gz" % release, ""),
+    "package-release-rpm": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%%s/packages/spicy-%s.rpm" % release, ""),
+    "package-release-deb": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%%s/packages/spicy-%s.deb" % release, "")
 }
 
 # -- Options for HTML output -------------------------------------------------

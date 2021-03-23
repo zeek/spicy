@@ -71,58 +71,60 @@ the ``Dockerfile`` for the respective platform for what's needed.
 
     * - Alpine 3.12
       - *(coming soon)*
-      - :download:`TAR <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_alpine_3_12/packages/build/spicy.tar.gz>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.alpine-3.12>`__
+      - :package-dev-tgz:`TAR <docker_alpine_3_12>`
+      - :repo:`Dockerfile <docker/Dockerfile.centos-7>`
 
     * - CentOS 7
       - *(coming soon)*
-      - :download:`RPM <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_7/packages/spicy.rpm>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-7>`__
+      - :package-dev-rpm:`RPM <docker_centos_7>`
+      - :repo:`Dockerfile <docker/Dockerfile.centos-7>`
 
     * - CentOS 8
       - *(coming soon)*
-      - :download:`RPM <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_centos_8/packages/spicy.rpm>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.centos-8>`__
+      - :package-dev-rpm:`RPM <docker_centos_8>`
+      - :repo:`Dockerfile <docker/Dockerfile.centos-8>`
 
     * - Debian 9
       - *(coming soon)*
-      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian9/packages/spicy.deb>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-9>`__
+      - :package-dev-deb:`DEB <docker_debian9>`
+      - :repo:`Dockerfile <docker/Dockerfile.debian-9>`
 
     * - Debian 10
       - *(coming soon)*
-      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_debian10/packages/spicy.deb>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.debian-10>`__
+      - :package-dev-deb:`DEB <docker_debian10>`
+      - :repo:`Dockerfile <docker/Dockerfile.debian-10>`
 
     * - Fedora 32
       - *(coming soon)*
-      - :download:`RPM <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora32/packages/spicy.rpm>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-32>`__
+      - :package-dev-rpm:`RPM <docker_fedora32>`
+      - :repo:`Dockerfile <docker/Dockerfile.fedora-32>`
 
     * - Fedora 33
       - *(coming soon)*
-      - :download:`RPM <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_fedora33/packages/spicy.rpm>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.fedora-33>`__
+      - :package-dev-rpm:`RPM <docker_fedora33>`
+      - :repo:`Dockerfile <docker/Dockerfile.fedora-33>`
 
     * - Ubuntu 16
       - *(coming soon)*
-      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu16/packages/spicy.deb>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-16>`__
+      - :package-dev-deb:`DEB <docker_ubuntu16>`
+      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-16>`
 
     * - Ubuntu 18
       - *(coming soon)*
-      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu18/packages/spicy.deb>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-18>`__
+      - :package-dev-deb:`DEB <docker_ubuntu18>`
+      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-18>`
 
     * - Ubuntu 20
       - *(coming soon)*
-      - :download:`DEB <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/docker_ubuntu20/packages/spicy.deb>`
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/docker/Dockerfile.ubuntu-20>`__
+      - :package-dev-deb:`DEB <docker_ubuntu20>`
+      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-20>`
 
-.. todo:
+.. todo::
 
-    Can we rename all the `spicy.{rpm,deb,tar.gz}` to
-    `spicy-dev.{rpm,deb,tar.gz}`?
+     - Can we rename all the `spicy.{rpm,deb,tar.gz}` to
+       `spicy-dev.{rpm,deb,tar.gz}`?
+     - The Alpine link doesn't work, nor does the one that's
+       live in the current docs on RTD.
 
 macOS
 ~~~~~
@@ -169,16 +171,16 @@ macOS versions:
 
     * - Catalina (10.15)
       - *(coming soon)*
-      - :download:`TAR <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_catalina/packages/build/spicy.tar.gz>`
+      - :package-dev-tgz:`TAR <macos_catalina>`
 
     * - Big Sur (11)
       - *(coming soon)*
-      - :download:`TAR <https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_big_sur/packages/build/spicy.tar.gz>`
+      - :package-dev-tgz:`TAR <macos_big_sur>`
 
 To prevent macOS from quarantining the files, you should download and
 unpack via the command line, e.g.::
 
-    # curl -L https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/macos_big_sur/packages/build/spicy.tar.gz -o spicy.tar.gz
+    # curl -L <link-per-above> -o spicy.tar.gz
     # tar xf spicy.tar.gz
 
 For JIT support, these binaries require an Xcode installation.
@@ -187,6 +189,7 @@ For JIT support, these binaries require an Xcode installation.
 
     - Do these TAR files need to be extracted into ``/opt/spicy`` as well?
     - Can we rename ``spicy.tar.gz`` to ``spicy-dev.tar.gz``?
+    - Like for Alpine, above the links for the TGZs don't work.
 
 .. _docker:
 
@@ -258,7 +261,7 @@ We provide the following Docker images `on DockerHub <https://hub.docker.com/rep
 
     * - Development
       - ``zeekurity/spicy-dev``
-      - `Dockerfile <https://github.com/zeek/spicy/blob/master/ci/Dockerfile.dockerhub>`_
+      - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
 These images include Zeek, the :ref:`Spicy plugin <zeek_plugin>` for
 Zeek, and the `Zeek analyzer collection
@@ -274,7 +277,7 @@ image is updated nightly.
 
 .. todo::
 
-    Switch the nightly image to the `spicy-dev` label.
+    Switch the nightly image to the ``spicy-dev`` label.
 
 .. _dockerfiles:
 
@@ -282,11 +285,11 @@ Build your own Spicy container
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can build base images for your own Spicy setups through the
-`Docker files <https://github.com/zeek/spicy/tree/master/docker>`_
-coming with the distribution. These images do *not* include Spicy
-itself, just the dependencies that it needs on each platform, both for
-a source build and for the using the corresponding binary packages.
-(The images do include Zeek, but not the Zeek plugin.)
+:repo:`Docker files <docker>` coming with the distribution. These
+images do *not* include Spicy itself, just the dependencies that it
+needs on each platform, both for a source build and for the using the
+corresponding binary packages. (The images do include Zeek, but not
+the Zeek plugin.)
 
 To build an image, go into Spicy's ``docker`` directory and run
 ``make`` to see the container platforms available::
@@ -382,9 +385,8 @@ If you are using `MacPorts <https://www.macports.org>`_::
 FreeBSD
 ^^^^^^^
 
-See the `prepare script
-https://github.com/zeek/spicy/blob/master/ci/prepare_freebsd.sh>`_
-coming with the Spicy distribution.
+See the :repo:`prepare script <ci/prepare_freebsd.sh>` coming with
+the Spicy distribution.
 
 Building Spicy
 ~~~~~~~~~~~~~~
