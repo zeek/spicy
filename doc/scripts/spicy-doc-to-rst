@@ -13,6 +13,7 @@ import textwrap
 
 from typing import Dict, List, Set
 
+
 def fatalError(message: str):
     print(message, file=sys.stderr)
     sys.exit(1)
@@ -54,11 +55,12 @@ def binary(token):
 
     return _
 
+
 Operators = {
     "Add": lambda op: "add <sp> {}[{}]".format(
         op.operands[0].rst(in_operator=True),
         op.operands[1].rst(in_operator=True, markup=False)
-        ),
+    ),
     "Begin": call("begin"),
     "BitAnd": binary("&"),
     "BitOr": binary("|"),
@@ -69,12 +71,13 @@ Operators = {
                            markup=False),
         ", ".join(arg.rst(in_operator=True, markup=False) for arg in op.operands[1:])),
     "Cast": lambda op: "cast<{}>({})".format(
-        TypedType.sub("\\1", op.operands[1].rst(in_operator=True, markup=False)),
+        TypedType.sub("\\1", op.operands[1].rst(
+            in_operator=True, markup=False)),
         op.operands[0].rst(in_operator=True, markup=False)),
     "Delete": lambda op: "delete <sp> {}[{}]".format(
         op.operands[0].rst(in_operator=True),
         op.operands[1].rst(in_operator=True, markup=False)
-        ),
+    ),
     "Deref": unary("*"),
     "DecrPostfix": unary("", "--"),
     "DecrPrefix": unary("++"),
@@ -109,7 +112,7 @@ Operators = {
     "Unset": lambda op: "unset <sp> {}.{}".format(
         op.operands[0].rst(in_operator=True),
         op.operands[1].rst(in_operator=True, markup=False)
-        ),
+    ),
     "SignNeg": unary("-"),
     "Size": unary("|", "|"),
     "ShiftLeft": binary("<<"),
@@ -166,9 +169,11 @@ def fmtType(ty, in_operator=False):
 
     old = ty
     ty = ty.replace("<*>", "")
-    ty = re.sub("\s+{\s+}", "", ty) # e.g., "enum { }" -> "enum"
-    ty = re.sub("type<([^>0-9]+)>", "\\1-type", ty) # e.g., type<enum> -> "enum-type"
+    ty = re.sub("\s+{\s+}", "", ty)  # e.g., "enum { }" -> "enum"
+    # e.g., type<enum> -> "enum-type"
+    ty = re.sub("type<([^>0-9]+)>", "\\1-type", ty)
     return ty.replace(" ", "~")
+
 
 class Operand:
     def __init__(self, m):
