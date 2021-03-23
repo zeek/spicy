@@ -3,6 +3,7 @@
 # Turn the output spicy-doc into reST.
 
 import argparse
+import copy
 import filecmp
 import json
 import os.path
@@ -90,6 +91,8 @@ Operators = {
     "Greater": binary(">"),
     "GreaterEqual": binary(">="),
     "In": binary("in"),
+    # Operator generated here; named so it is sorted after `In`.
+    "InInv": binary("!in"),
     "HasMember": binary("?."),
     "TryMember": binary(".?"),
     "Member": binary("."),
@@ -313,6 +316,14 @@ for op in meta:
         x2 = operators.setdefault(m2.namespace, [])
         x2 += [m2]
 
+        # If we have a `in` operator automatically generate docs for `!in`.
+        if m2.kind == 'In':
+            m3 = copy.copy(m2)
+            m3.kind = 'InInv'
+            m3.doc = "Performs the inverse of the corresponding ``in`` operation."
+            x2 = operators.setdefault(m3.namespace, [])
+            x2 += [m3]
+
 keys = set()
 
 if args.dir:
@@ -373,6 +384,7 @@ for ns in sorted(keys):
             print_unique(method.rst())
 
     x2 = sorted(operators.get(ns, []))
+
     if x2:
         print(".. rubric:: %sOperators\n" % prefix, file=out)
 

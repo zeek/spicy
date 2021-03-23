@@ -32,6 +32,10 @@
 
     Returns true if an element is part of the map.
 
+.. spicy:operator:: map::InInv bool t:<any> <sp> op:!in <sp> t:map
+
+    Performs the inverse of the corresponding ``in`` operation.
+
 .. spicy:operator:: map::Index <type~of~element> t:map[<any>]
 
     Returns the map's element for the given key. The key must exist,
