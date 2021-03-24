@@ -412,7 +412,7 @@ validate_release_tarball_task:
     - scripts/make-tarball.sh
   unpack_script:
     - mkdir /tmp/spicy-tarball
-    - tar xf spicy.tar.bz2 -C /tmp/spicy-tarball
+    - tar xf spicy*.tar.gz -C /tmp/spicy-tarball
     - cd /tmp/spicy-tarball
   configure_script:
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
