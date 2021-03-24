@@ -18,4 +18,4 @@ git submodule foreach --quiet 'cd $toplevel && tar rf '"${TARBALL}"' $sm_path'
 tar rf "${TARBALL}" VERSION
 
 # Compress archive.
-bzip2 -9 "${TARBALL}"
+gzip -9 "${TARBALL}"
