@@ -204,7 +204,7 @@ if ( "${GIT_TAGS}" STREQUAL "" )
     # If the HEAD commit does not correspond to a tag it is not a release. Hide
     # the version number in packaging artifacts so we can e.g., provide stable
     # links to the latest version.
-    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}")
+    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-dev")
 else ()
     # If the HEAD commit corresponds to a tag it is a release and we expect a
     # version number in packaging artifacts.
