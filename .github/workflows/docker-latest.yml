@@ -36,5 +36,7 @@ jobs:
         file: ci/Dockerfile.dockerhub
         push: true
         tags: |
+          ${{ secrets.DOCKER_USERNAME }}/spicy-dev:latest
+          ${{ secrets.DOCKER_USERNAME }}/spicy-dev:${{ steps.version.outputs.RELEASE_VERSION }}
+          # TODO(bbannier): Move this to docker-tags.yml after the release.
           ${{ secrets.DOCKER_USERNAME }}/spicy:latest
-          ${{ secrets.DOCKER_USERNAME }}/spicy:${{ steps.version.outputs.RELEASE_VERSION }}
