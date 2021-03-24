@@ -117,7 +117,7 @@ public:
     Sink(const Sink&) = delete;
     Sink(Sink&&) = default;
     Sink& operator=(const Sink&) = delete;
-    Sink& operator=(Sink&&) noexcept = default;
+    Sink& operator=(Sink&&) = default;
 
     /**
      * Connects a unit instance to the sink. The unit will then receive any
