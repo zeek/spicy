@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script regenerates documentation files. Running it again a `master`
+# This script regenerates documentation files. Running it again a `main`
 # commit should not produce any changes.
 
 set -o errexit

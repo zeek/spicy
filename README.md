@@ -19,7 +19,7 @@
 <tr><th></th>                 <th>Release</th> <th>Development</th> </tr>
 <tr><td> Documentation </td>  <td> (coming soon) </td> <td> <a href="https://docs.zeek.org/projects/spicy">Spicy Manual</a> </td></tr>
 <tr><td> Changelog </td>      <td> (coming soon) </td> <td> <a href="/CHANGES">CHANGES</a> </td></tr>
-<tr><td> Build status </td>   <td> (coming soon) </td> <td> <a href="https://cirrus-ci.com/github/zeek/spicy/master"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg" alt="Build status"> </a> </td></tr>
+<tr><td> Build status </td>   <td> (coming soon) </td> <td> <a href="https://cirrus-ci.com/github/zeek/spicy/main"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg" alt="Build status"> </a> </td></tr>
 </table>
 </td>
 

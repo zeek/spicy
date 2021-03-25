@@ -383,7 +383,7 @@ docker_centos_8_task:
     type: application/gzip
 
 validate_release_tarball_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
 
   container:
     dockerfile: ci/Dockerfile
@@ -422,7 +422,7 @@ validate_release_tarball_task:
     - make -C tests test-build
 
 homebrew_catalina_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
 
   osx_instance:
     image: catalina-base
@@ -433,7 +433,7 @@ homebrew_catalina_task:
   - brew test spicy
 
 homebrew_big_sur_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
 
   osx_instance:
     image: big-sur-base
@@ -444,7 +444,7 @@ homebrew_big_sur_task:
   - brew test spicy
 
 docker_debian9_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
   container:
     dockerfile: docker/Dockerfile.debian-9
     cpu: 4
@@ -483,7 +483,7 @@ docker_debian9_task:
     type: application/gzip
 
 docker_debian10_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
   container:
     dockerfile: docker/Dockerfile.debian-10
     cpu: 4
@@ -522,7 +522,7 @@ docker_debian10_task:
     type: application/gzip
 
 docker_ubuntu16_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
   container:
     dockerfile: docker/Dockerfile.ubuntu-16
     cpu: 4
@@ -563,7 +563,7 @@ docker_ubuntu16_task:
     type: application/gzip
 
 docker_ubuntu18_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
   container:
     dockerfile: docker/Dockerfile.ubuntu-18
     cpu: 4
@@ -602,7 +602,7 @@ docker_ubuntu18_task:
     type: application/gzip
 
 docker_ubuntu20_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
   container:
     dockerfile: docker/Dockerfile.ubuntu-20
     cpu: 4
@@ -641,7 +641,7 @@ docker_ubuntu20_task:
     type: application/gzip
 
 docker_fedora32_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
   container:
     dockerfile: docker/Dockerfile.fedora-32
     cpu: 4
@@ -680,7 +680,7 @@ docker_fedora32_task:
     type: application/gzip
 
 docker_fedora33_task:
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
   container:
     dockerfile: docker/Dockerfile.fedora-33
     cpu: 4
@@ -719,9 +719,9 @@ docker_fedora33_task:
     type: application/gzip
 
 clang11_zeek_nightly_task:
-  # This task is only executed on master.
+  # This task is only executed on main.
   # Failing this task does not fail the build.
-  skip: $CIRRUS_BRANCH != 'master'
+  skip: $CIRRUS_BRANCH != 'main'
   allow_failures: true
 
   container:

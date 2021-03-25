@@ -784,9 +784,9 @@ zeek``. For example, reusing the :ref:`HTTP example
 <example_zeek_my_http>` from the *Getting Started* guide::
 
     # spicyz -D zeek my-http.spicy my-http.evt -o my-http.hlt
-    [debug/zeek] Loading Spicy file "/Users/robin/work/spicy/master/tests/spicy/doc/my-http.spicy"
-    [debug/zeek] Loading EVT file "/Users/robin/work/spicy/master/doc/examples/my-http.evt"
-    [debug/zeek] Loading events from /Users/robin/work/spicy/master/doc/examples/my-http.evt
+    [debug/zeek] Loading Spicy file "/Users/robin/work/spicy/main/tests/spicy/doc/my-http.spicy"
+    [debug/zeek] Loading EVT file "/Users/robin/work/spicy/main/doc/examples/my-http.evt"
+    [debug/zeek] Loading events from /Users/robin/work/spicy/main/doc/examples/my-http.evt
     [debug/zeek]   Got protocol analyzer definition for spicy_MyHTTP
     [debug/zeek]   Got event definition for MyHTTP::request_line
     [debug/zeek] Running Spicy driver
