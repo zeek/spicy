@@ -93,7 +93,7 @@ function run_configure {
     shift
 
     mkdir -p ${install}
-    configure="./configure --builddir=${build} --prefix=${install} --generator=Ninja --enable-werror --enable-ccache"
+    configure="./configure --builddir=${build} --prefix=${install} --generator=Ninja --enable-werror --enable-ccache --build-zeek-plugin=yes"
 
     clang_format=$(which clang-format 2>/dev/null)
     clang_tidy=$(which clang-tidy 2>/dev/null)

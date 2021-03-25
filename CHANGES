@@ -1,4 +1,12 @@
 
+0.4.0-1650 | 2021-03-25 07:40:06 +0000
+
+  * GH-848: Disable default building of Zeek plugin. (Benjamin
+    Bannier, Corelight)
+
+  * Update installation instructions for recent changes. (Robin
+    Sommer, Corelight)
+
 0.4.0-1640 | 2021-03-24 22:09:16 +0100
 
   * Clean up of CI artifact naming. (Benjamin Bannier, Corelight)
