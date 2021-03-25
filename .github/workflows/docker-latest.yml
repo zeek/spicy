@@ -35,8 +35,8 @@ jobs:
         context: .
         file: ci/Dockerfile.dockerhub
         push: true
+        # TODO(bbannier): Create `spicy:latest` from tagged in release to docker-tags.yml.
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/spicy-dev:latest
           ${{ secrets.DOCKER_USERNAME }}/spicy-dev:${{ steps.version.outputs.RELEASE_VERSION }}
-          # TODO(bbannier): Move this to docker-tags.yml after the release.
           ${{ secrets.DOCKER_USERNAME }}/spicy:latest
