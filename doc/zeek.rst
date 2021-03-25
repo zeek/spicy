@@ -1,5 +1,5 @@
 
-.. _zeek:
+.. _zeek_plugin:
 
 ================
 Zeek Integration
@@ -7,10 +7,11 @@ Zeek Integration
 
 While Spicy itself remains application independent, transparent
 integration into Zeek has been a primary goal for its development. To
-facilitate adding new protocol and file analyzers to Zeek, Spicy ships
-with a Zeek plugin that makes its parsers accessible to Zeek's
-processing pipeline. In the following, we dig deeper into how to use
-all of this.
+facilitate adding new protocol and file analyzers to `Zeek
+<https://zeek.org>`_, there is a `Zeek plugin
+<https://github.com/zeek/spicy-plugin>`_ that makes Spicy parsers
+accessible to Zeek's processing pipeline. In the following, we dig
+deeper into how to use all of this.
 
 .. _zeek_terminology:
 
@@ -18,52 +19,110 @@ Terminology
 ===========
 
 In Zeek, the term "analyzer" refers generally to a component that
-processes a particular protocol ("protocol analyzer") or file format
-("file analyzer"). "Processing" here is more than just parsing
-content: An analyzer controls when it wants to be used (e.g., with
-connection on specific ports, or with files of a specific MIME type);
-what events to generate for Zeek's scripting layer; and how to handle
-any errors occurring during parsing. While Spicy itself focuses just
-on the parsing part, the Spicy plugin provides the remaining pieces to
+processes a particular protocol ("protocol analyzer"), file format
+("file analyzer"), or low-level packet structure ("packet analyzer").
+"Processing" here means more than just parsing content: An analyzer
+controls when it wants to be used (e.g., with connections on specific
+ports, or with files of a specific MIME type); what events to generate
+for Zeek's scripting layer; and how to handle any errors occurring
+during parsing. While Spicy itself focuses just on the parsing part,
+the Spicy plugin makes it possible to provide the remaining pieces to
 Zeek, turning a Spicy parser into a full Zeek analyzer. That's what we
-refer to as "Spicy (protocol or file) analyzer" for Zeek.
+refer to as a "Spicy (protocol/file/packet) analyzer" for Zeek.
 
 .. _zeek_installation:
 
 Installation
 ============
 
-To use the Spicy plugin with Zeek, the main preparation task is making
-sure Zeek knows where to find it. If you performed a standard Spicy
-installation through ``make install``, that will normally have linked
-the plugin right into Zeek's system-wide plugin directory so that it
-becomes directly available. You can check the output of ``zeek -N`` to
-confirm::
+To use the Spicy plugin with Zeek, it first needs to be installed. The
+recommended way to do so is through Zeek's package manager `zkg
+<https://docs.zeek.org/projects/package-manager/en/stable>`_. If you
+have not yet installed *zkg*, follow `its instructions
+<https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html>`_.
+
+You will need to have Spicy and Zeek installed as well of course.
+Before proceeding, make sure ``spicy-config`` and ``zeek-config`` are
+in your ``PATH``::
+
+    # which spicy-config
+    /opt/spicy/bin/spicy-config
+
+    # which zeek-config
+    /usr/local/zeek/bin/zeek-config
+
+Package Installation
+--------------------
+
+The easiest way to install the plugin is through Zeek's package
+manager::
+
+    # zkg install zeek/spicy-plugin
+
+This will pull down the plugin's package, compile and test the plugin,
+and then install and activate it. That process may take a bit to
+complete. To check afterwards that the plugin has
+become available, run ``zeek -N _Zeek::Spicy``, it should show output
+like this::
 
     # zeek -N _Zeek::Spicy
-    _Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version 0.3.0)
+    _Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version x.y.z)
 
-If the symlink didn't get installed (e.g., because you're lacking
-permission to write into Zeek's plugin's directory), you can
-alternatively set Zeek's ``ZEEK_PLUGIN_PATH`` manually to the
-directory where the installation placed the plugin. ``spicy-config
---zeek-plugin-path`` knows where that is::
+By default, *zkg* will install the most recent release version of the
+plugin. If you want to install the current development version, use
+``zkg install --version main zeek/spicy-plugin`` instead.
 
-    # export ZEEK_PLUGIN_PATH=$(spicy-config --zeek-plugin-path)
-    # zeek -N _Zeek::Spicy
-    _Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version 0.3.0)
+If you want to develop your own Spicy analyzers for Zeek, you will
+need a tool that comes with the plugin's installation: ``spicyz``. If
+you are using a (very) recent version of *zkg* (>= TBD) , that tool
+should automatically show up in your ``PATH`` once the plugin has been
+installed::
 
-If you want to move the plugin to other systems, you can find a binary
-distribution inside your build directory at
-``zeek/plugin/Zeek_Spicy.tgz``. On the target system, the plugin will
-not require a Spicy installation to operate as long as you are not
-using just-in-time compilation.
+    # which spicyz
+    /usr/local/zeek/bin/spicyz
+
+If that's not the case, make sure you are using `zkg env
+<https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html?highlight=zkg%20env#advanced-configuration>`_.
+
+If you are using an older version of *zkg* (including the version
+coming with Zeek 4.0), it's a bit more difficult to find ``spicyz``:
+it will be inside your *zkg* state directory at
+``<state_dir>/clones/package/spicy-plugin/build/plugin/bin/spicyz``.
+We recommend adding that directory to your ``PATH``. (The state
+directory is usually either ``<zeek-prefix>/var/lib/zkg`` or
+``~/.zkg``, depending on how you have set up *zkg*.)
+
+.. todo::
+
+    That "very recent version of *zkg*" does not exist yet; needs this
+    PR merged: https://github.com/zeek/package-manager/pull/100.
+
+Manual Installation
+-------------------
+
+If you prefer, you can also compile the Zeek plugin yourself, outside
+of the package manager. There are two options for doing so:
+
+    1. You can clone the plugin's GitHub repository and build it
+       through CMake. See the instructions in its `README
+       <https://github.com/zeek/spicy-plugin>`_.
+
+    2. If you are building Spicy from source, you can set up the build
+       to include the plugin as well by adding
+       ``--build-zeek-plugin=yes`` to your ``configure`` command. This
+       will build and install the Zeek plugin along with the Spicy
+       toolchain. You may need to adjust Zeek's plugin search path
+       (``ZEEK_PLUGIN_PATH``) to have it find the plugin code. It
+       will be installed into `<prefix>/lib/spicy/zeek`.
+
+Both of these options will install ``spicyz`` into ``<prefix>/bin``.
 
 .. note::
 
-    Developer's note: You can also point ``ZEEK_PLUGIN_PATH`` to the
-    Spicy build directory, without installing it first. The plugin get
-    built into ``<build-directory>/zeek/plugin``.
+    Developer's note: It works to point ``ZEEK_PLUGIN_PATH`` directly
+    to the plugin's build directory, without installing it first. If
+    you are building the plugin as part of the Spicy distribution, it
+    will land in ``<build-directory>/zeek/spicy-plugin``.
 
 Interface Definitions ("evt files")
 ===================================

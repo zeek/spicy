@@ -1,9 +1,9 @@
 
 |today|.
 
-==================================================
-Spicy --- Generating Parsers for Protocols & Files
-==================================================
+================================================================
+Spicy --- Generating Robust Parsers for Protocols & File Formats
+================================================================
 
 .. literalinclude:: examples/frontpage.spicy
     :language: spicy
@@ -14,11 +14,11 @@ Spicy --- Generating Parsers for Protocols & Files
     [$method=b"GET", $uri=b"/index.html", $version=[$number=b"1.0"]]
 
 Overview
-    Spicy is a C++ parser generator that makes it easy to create
-    robust parsers for network protocols, file formats, and more.
-    Spicy is a bit like a "yacc for protocols", but it's much more
-    than that: It's an all-in-one system enabling developers to write
-    attributed grammars that define both syntax and semantics of an
+    Spicy is a parser generator that makes it easy to create robust
+    C++ parsers for network protocols, file formats, and more. Spicy
+    is a bit like a "yacc for protocols", but it's much more than
+    that: It's an all-in-one system enabling developers to write
+    attributed grammars that describe both syntax and semantics of an
     input format using a single, unified language. Think of Spicy as a
     domain-specific scripting language for all your parsing needs.
 
@@ -28,17 +28,21 @@ Overview
     runtime, parsing proceeds fully incrementally—and potentially
     highly concurrently—on input streams of arbitrary size.
     Compilation of Spicy parsers takes place either just-in-time at
-    startup (through the system's C++ compiler), or ahead-of-time
-    either by creating pre-compiled shared libraries or simply by
-    giving you C++ code that you can link into your application.
+    startup (through a C++ compiler); or ahead-of-time either by
+    creating pre-compiled shared libraries, or by giving you generated
+    C++ code that you can link into your application.
 
-    Spicy comes with a `Zeek <https://www.zeek.org>`_ plugin that
-    enables adding new protocols to Zeek without having to write any
-    C++ code. You define the grammar, specify which Zeek events to
-    generate, and Spicy takes care of the rest.
+    Spicy comes with a `Zeek plugin
+    <https://github.com/zeek/spicy-plugin>`_ that enables adding new
+    protocol and file analyzers to `Zeek <https://www.zeek.org>`_
+    without having to write any C++ code. You define the grammar,
+    specify which Zeek events to generate, and Spicy takes care of the
+    rest. There's also a `Zeek analyzers
+    <https://github.com/zeek/spicy-analyzers>`_ package that provides
+    Zeek with several new, Spicy-based analyzers.
 
-    See our growing :ref:`collection of example grammars <examples>`
-    to get a sense of how Spicy works.
+    See our :ref:`collection of example grammars <examples>` to get a
+    sense of what Spicy looks like.
 
 License
     Spicy is open source and released under a BSD license, which
@@ -66,13 +70,13 @@ like to hear from you!
 
     - Ask the ``#spicy`` channel on `Zeek's Slack <https://zeek.org/connect>`_.
 
-    - Propose ideas, and show what you're doing, in GitHub's `Discussions <https://github.com/zeek/spicy/discussions>`_.
+    - Propose ideas, and show what you're doing, on GitHub's `Discussions <https://github.com/zeek/spicy/discussions>`_.
 
     - Subscribe to the `Spicy mailing list <https://lists.zeek.org/mailman3/lists/spicy.lists.zeek.org>`_.
 
     - To follow development, subscribe to the `commits mailing list
       <https://lists.zeek.org/mailman3/lists/spicy-commits.lists.zeek.org>`_ (it
-      can be noisy).
+      can be noisy!).
 
 Documentation
 -------------

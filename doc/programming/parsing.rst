@@ -1795,17 +1795,18 @@ Parsing may need to retain state beyond any specific unit's lifetime.
 For example, a UDP protocol may want to remember information across
 individual packets (and hence units), or a bi-directional protocol may
 need to correlate the request side with the response side. One option
-for implementing this is maintaining the state in :ref:`global
-variables <variables>`. However, doing so can be cumbersome because a
-global will often not match semantics well. As an alternative, a unit
-can make use of a dedicated *context* value, which is an instance of a
-custom type that has its lifetime determined suitably by the host
-application running the parser. The host application could, for
-example, tie the context to the underlying connection.
+for implementing this in Spicy is managing such state manually in
+:ref:`global variables <variables>`, for example by maintaining a
+global map that ties a unique connection ID to the information that
+needs to be retained. However, doing so is clearly cumbersome and
+error prone. As an alternative, a unit can make use of a dedicated
+*context* value, which is an instance of a custom type that has its
+lifetime determined by the host application running the parser. For
+example, Zeek will tie the context to the underlying connection.
 
-A public unit may declare such a context through a unit-level property
-called ``%context``, which takes an arbitrary type as its argument. For
-example:
+A public unit can declare its context through a unit-level property
+called ``%context``, which takes an arbitrary type as its argument.
+For example:
 
 .. spicy-code::
 
@@ -1833,16 +1834,15 @@ reference to it:
     :exec: spicy-driver %INPUT </dev/null
     :show-with: foo.spicy
 
-By itself, this is not very useful. However, host applications may
-change how contexts are maintained, and they may assign the same
+By itself, this is not very useful. However, host applications can
+control how contexts are maintained, and they may assign the same
 context value to multiple units. For example, when parsing a protocol,
-a host application could create a single context value shared by all
-top-level units belonging to the same connection.
+the :ref:`Zeek plugin <zeek_plugin>` always creates a single context
+value shared by all top-level units belonging to the same connection,
+enabling parsers to maintain bi-directional, per-connection state.
+The batch mode of :ref:`spicy-driver <spicy-driver>` does the same.
 
-That's indeed what both the :ref:`Zeek plugin <zeek>` and the batch
-mode of :ref:`spicy-driver <spicy-driver>` do, enabling parsers to
-maintain bi-directional, per-connection state. As an example, the
-following grammar---mimicking a request/reply-style
+As an example, the following grammar---mimicking a request/reply-style
 protocol---maintains a queue of outstanding textual commands to then
 associate numerical result codes with them as the responses come in:
 

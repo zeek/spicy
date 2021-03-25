@@ -23,7 +23,9 @@ output. We use `BTest <https://github.com/zeek/btest>`_ to drive
 these, very similar to Zeek. ``make test`` from the top-level
 directory will execute these tests. You get the same effect by
 changing into ``tests/`` and running ``btest -j`` there (``-j``
-parallelizes test execution).
+parallelizes test execution). If your build includes the Zeek  plugin
+(``configure --build-zeek-plugin=yes``), running ``make test-all``
+will include its tests, too (and also the ``spicy-analyzers`` tests).
 
 The most important BTest options are:
 
@@ -36,13 +38,6 @@ The most important BTest options are:
 
 There are some alternatives to running just all tests, per the
 following:
-
-.. rubric:: Running a smaller subset of tests for quick results
-
-``btest -g spicy-core`` (or ``make test-core`` from the top-level
-directory) will run a smaller set of selected tests that exercise
-Spicy's main pieces. This is not sufficient to see if everything
-works, but can quickly determine that something clearly doesn't. :)
 
 .. rubric:: Running tests using installation after ``make install``
 

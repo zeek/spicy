@@ -1,4 +1,4 @@
-# Spicy — Generating Parsers for Protocols & Files
+# Spicy — Generating Robust Parsers for Protocols & File Formats
 
 <table><tr>
 
@@ -16,22 +16,23 @@
 
 <td>
 <table>
-<tr><th></th>                 <th> <code>master</code> </th> </tr>
-<tr><td> Documentation </td>  <td> <a href="https://docs.zeek.org/projects/spicy">Spicy Manual</a> </td></tr>
-<tr><td> Changelog </td>      <td> <a href="/CHANGES">CHANGES </a> </td></tr>
-<tr><td> Build status </td>   <td> <a href="https://cirrus-ci.com/github/zeek/spicy/master"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg" alt="Build status"> </a> </td></tr>
+<tr><th></th>                 <th>Release</th> <th>Development</th> </tr>
+<tr><td> Documentation </td>  <td> (coming soon) </td> <td> <a href="https://docs.zeek.org/projects/spicy">Spicy Manual</a> </td></tr>
+<tr><td> Changelog </td>      <td> (coming soon) </td> <td> <a href="/CHANGES">CHANGES</a> </td></tr>
+<tr><td> Build status </td>   <td> (coming soon) </td> <td> <a href="https://cirrus-ci.com/github/zeek/spicy/master"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg" alt="Build status"> </a> </td></tr>
 </table>
 </td>
 
 </table>
 
+
 ## Overview <img src='doc/_static/spicy-logo-square.png' align="right" width="150" />
 
-Spicy is a C++ parser generator that makes it easy to create robust
+Spicy is a parser generator that makes it easy to create robust C++
 parsers for network protocols, file formats, and more. Spicy is a bit
 like a "yacc for protocols", but it's much more than that: It's an
 all-in-one system enabling developers to write attributed grammars
-that define both syntax and semantics of an input format using a
+that describe both syntax and semantics of an input format using a
 single, unified language. Think of Spicy as a domain-specific
 scripting language for all your parsing needs.
 
@@ -41,24 +42,32 @@ parsers, feeding them input, and retrieving their results. At runtime,
 parsing proceeds fully incrementally—and potentially highly
 concurrently—on input streams of arbitrary size. Compilation of Spicy
 parsers takes place either just-in-time at startup (through a C++
-compiler), or ahead-of-time either by creating pre-compiled shared
-libraries or simply by giving you C++ code that you can link into your
-application.
+compiler); or ahead-of-time either by creating pre-compiled shared
+libraries, or by giving you generated C++ code that you can link into
+your application.
 
-Spicy comes with a [Zeek](https://www.zeek.org) plugin that enables
-adding new protocols to Zeek without having to write any C++ code. You
+Spicy comes with a [Zeek plugin](https://github.com/zeek/spicy-plugin)
+that enables adding new protocol and file analyzers to
+[Zeek](https://www.zeek.org) without having to write any C++ code. You
 define the grammar, specify which Zeek events to generate, and Spicy
-takes care of the rest.
+takes care of the rest. There's also a [Zeek
+analyzers](https://github.com/zeek/spicy-analyzers) package that
+provides Zeek with several new, Spicy-based analyzers.
 
+See our [collection of example grammars](https://docs.zeek.org/projects/spicy/en/latest/programming/examples.html#examples)
+to get a sense of what Spicy looks like.
 
 ## Installation
 
-While there are no dedicated releases yet, we provide pre-built Spicy
-binaries for some Linux platforms as well as a Homebrew formula for
-installation on macOS. You can also use one of the included Docker
-files, or just build Spicy from source directly. See the [installation
+We provide pre-built Spicy binaries for several Linux platforms, as
+well as a Homebrew formula (and also binaries) for installation on
+macOS. You can also pull a Docker image from Docker Hub, or leverage
+one of several included Docker files as a starting point. Of course,
+you can also just build Spicy from source directly. See the
+[installation
 instructions](https://docs.zeek.org/projects/spicy/en/latest/installation.html)
 for more information on any of these options.
+
 
 ## Documentation
 
@@ -72,11 +81,12 @@ which provides the following sections:
 * [Programming in Spicy](https://docs.zeek.org/projects/spicy/en/latest/programming/index.html)
 * [Toolchain](https://docs.zeek.org/projects/spicy/en/latest/toolchain.html)
 * [Zeek Integration](https://docs.zeek.org/projects/spicy/en/latest/zeek.html)
+* [Custom Host Applications](https://docs.zeek.org/projects/spicy/en/latest/host-applications.html)
 * [Release Notes](https://docs.zeek.org/projects/spicy/en/latest/release-notes.html)
 * [Developer's Manual](https://docs.zeek.org/projects/spicy/en/latest/development/index.html)
 
 
-## Getting in Touch
+## Getting in touch
 
 Having trouble using Spicy? Have ideas how to make Spicy better? We'd
 like to hear from you!
@@ -85,13 +95,14 @@ like to hear from you!
 
 - Ask the `#spicy` channel [on Zeek's Slack](https://zeek.org/connect).
 
-- Propose ideas, and show what you're doing, in GitHub's [Discussions](https://github.com/zeek/spicy/discussions)
+- Propose ideas, and show what you're doing, on GitHub's [Discussions](https://github.com/zeek/spicy/discussions).
 
-- Subscribe to the [Spicy mailing list](https://lists.zeek.org/mailman3/lists/spicy.lists.zeek.org)
+- Subscribe to the [Spicy mailing list](https://lists.zeek.org/mailman3/lists/spicy.lists.zeek.org).
 
 - To follow development, subscribe to the [commits mailing
   list](https://lists.zeek.org/mailman3/lists/spicy-commits.lists.zeek.org) (it can
-  be noisy).
+  be noisy!).
+
 
 ## License
 

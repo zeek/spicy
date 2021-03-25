@@ -6,8 +6,10 @@
 Examples
 ========
 
-We collect some example Spicy parsers here that come with the Spicy
-distribution.
+We collect some example Spicy parsers here that come with a growing
+collection of `Spicy-based Zeek analyzers
+<https://github.com/zeek/spicy-analyzers>`_. Check out that repository
+for more examples.
 
 .. rubric:: TFTP
 
