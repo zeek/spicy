@@ -1,4 +1,10 @@
 
+0.4.0-1640 | 2021-03-24 22:09:16 +0100
+
+  * Clean up of CI artifact naming. (Benjamin Bannier, Corelight)
+
+  * Drop noexcept in Sink move constructor. (Benjamin Bannier, Corelight)
+
 0.4.0-1632 | 2021-03-23 20:01:10 +0100
 
   * GH-853: Fix extraction of integer bits when all bits requested.
