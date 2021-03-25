@@ -53,7 +53,7 @@ todo_include_todos = True
 
 # Extlinks extension
 extlinks = {
-    "repo":  ("https://github.com/zeek/spicy/blob/master/%s", "#"),
+    "repo":  ("https://github.com/zeek/spicy/blob/main/%s", "#"),
     "issue": ("https://github.com/zeek/spicy/issues/%s", "#"),
     "pr":    ("https://github.com/zeek/spicy/pulls/%s", "#"),
 

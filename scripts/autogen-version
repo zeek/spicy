@@ -81,7 +81,7 @@ dirty=$(echo "${git_version}" | awk -F - '{print $4}')
 test -n "${commit}" -a -n "${dirty}" && commit="${commit}.${dirty}"
 
 case "${branch}" in
-    master)
+    main|master)
         # As we don't have (actual or anticipated) releases yet, we use the old
         # Zeek scheme for now: commits since last tag.
         prerelease="${commit}"
