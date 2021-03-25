@@ -38,6 +38,7 @@ static std::string renderOperator(operator_::Kind kind, const std::vector<std::s
         case operator_::Kind::IncrPostfix: return fmt("%s++", ops[0]);
         case operator_::Kind::IncrPrefix: return fmt("++%s", ops[0]);
         case operator_::Kind::Index: return fmt("%s[%s]", ops[0], ops[1]);
+        case operator_::Kind::IndexAssign: return fmt("%s[%s] = %s", ops[0], ops[1], ops[2]);
         case operator_::Kind::Lower: return fmt("%s < %s", ops[0], ops[1]);
         case operator_::Kind::LowerEqual: return fmt("%s <= %s", ops[0], ops[1]);
         case operator_::Kind::Member: return fmt("%s.%s", ops[0], ops[1]);

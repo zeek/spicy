@@ -50,6 +50,7 @@ static std::string kindToString(hilti::operator_::Kind kind) {
         KIND_TO_STRING(hilti::operator_::Kind::IncrPostfix);
         KIND_TO_STRING(hilti::operator_::Kind::IncrPrefix);
         KIND_TO_STRING(hilti::operator_::Kind::Index);
+        KIND_TO_STRING(hilti::operator_::Kind::IndexAssign);
         KIND_TO_STRING(hilti::operator_::Kind::Lower);
         KIND_TO_STRING(hilti::operator_::Kind::LowerEqual);
         KIND_TO_STRING(hilti::operator_::Kind::Member);

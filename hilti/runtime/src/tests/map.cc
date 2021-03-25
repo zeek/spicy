@@ -15,7 +15,7 @@ TEST_CASE("get") {
     Map<int, int> m;
     DOCTEST_CHECK_THROWS_WITH_AS(m.get(1), "key is unset", const IndexError&);
 
-    m[1] = 2;
+    m.index_assign(1, 2);
     CHECK_EQ(m.get(1), 2);
 }
 
@@ -33,24 +33,12 @@ TEST_CASE("subscript") {
     SUBCASE("mut lvalue") {
         Map<int, int> m;
 
-        m[1] = 11;
+        m.index_assign(1, 11);
         CHECK(m.contains(1));
-        CHECK_EQ(m[1].operator int(), 11);
+        CHECK_EQ(m[1], 11);
         int m1 = m[1];
         CHECK_EQ(m1, 11);
-        CHECK_THROWS_WITH_AS(m[99].operator int(), "key is unset", const IndexError&);
-
-        // Proxy objects perform lazy insertion.
-        auto p = m[2];
-        (void)p;
-        CHECK(! m.contains(2));
-
-        // Proxy objects stringify to the referenced value if it exists, and throw otherwise.
-        CHECK_EQ(to_string(m[1]), "11");
-        CHECK_THROWS_WITH_AS(to_string(m[2]), "key is unset", const IndexError&);
-
-        CHECK_EQ(fmt("%s", m[1]), "11");
-
+        CHECK_THROWS_WITH_AS(m[99], "key is unset", const IndexError&);
         // Proxy objects only invalidate iterators if an element was actually inserted.
         m = Map<int, int>{{1, 11}};
         REQUIRE(m.size());
@@ -59,12 +47,13 @@ TEST_CASE("subscript") {
         REQUIRE_EQ(begin->second, 11);
 
         // Just modify existing entry.
+        REQUIRE(m.contains(1));
         m[1] = 111;
         CHECK_EQ(begin->first, 1);
         CHECK_EQ(begin->second, 111);
 
         // Invalidating insertion of new entry.
-        m[2] = 22;
+        m.index_assign(2, 22);
         REQUIRE(m.contains(2));
         CHECK_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
     }
@@ -154,6 +143,25 @@ TEST_CASE("Iterator") {
         CHECK_EQ(fmt("%s", Map<int, int>({{1, 11}}).begin()), "<map iterator>");
         CHECK_EQ(fmt("%s", Map<int, int>({{1, 11}}).cbegin()), "<const map iterator>");
     }
+}
+
+TEST_CASE("index_assign") {
+    // Modifying an existing element does not invalidate iterators.
+    auto m = Map<int, int>{{1, 11}};
+    REQUIRE(m.size());
+    auto begin = m.begin();
+    REQUIRE_EQ(begin->first, 1);
+    REQUIRE_EQ(begin->second, 11);
+
+    // Just modify existing entry.
+    m.index_assign(1, 111);
+    CHECK_EQ(begin->first, 1);
+    CHECK_EQ(begin->second, 111);
+
+    // Inserting new elements does invalidate iterators.
+    m.index_assign(2, 22);
+    REQUIRE(m.contains(2));
+    CHECK_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
 }
 
 TEST_SUITE_END();

@@ -68,6 +68,8 @@ STANDARD_OPERATOR_2x_lhs(map, IndexNonConst, Index, operator_::elementType(0), t
                          "Returns the map's element for the given key. The key must exist, otherwise the operation "
                          "will throw a runtime error.");
 
+STANDARD_OPERATOR_3(map, IndexAssign, type::Void(), type::Map(type::Wildcard()), type::Any(), type::Any(),
+                    "Updates the map value for a given key. If the key does not exist a new element is inserted.");
 
 BEGIN_METHOD(map, Get)
     auto signature() const {

@@ -325,8 +325,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::map::Get& n) {
         auto [self, args] = methodArguments(n);
 
-        std::string k = args[0];
-        ;
+        const std::string& k = args[0];
 
         if ( auto default_ = optionalArgument(args, 1); ! default_.empty() )
             return fmt(
@@ -334,6 +333,13 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
                 self, k, default_);
         else
             return fmt("%s.get(%s)", self, k);
+    }
+
+    result_t operator()(const operator_::map::IndexAssign& n) {
+        const auto& map = op0(n);
+        const auto& key = op1(n);
+        const auto& value = op2(n);
+        return fmt("%s.index_assign(%s, %s)", map, key, value);
     }
 
     result_t operator()(const operator_::map::Clear& n) {
