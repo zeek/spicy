@@ -119,13 +119,6 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-deb:`DEB <docker_ubuntu20>`
       - :repo:`Dockerfile <docker/Dockerfile.ubuntu-20>`
 
-.. todo::
-
-     - Can we rename all the `spicy.{rpm,deb,tar.gz}` to
-       `spicy-dev.{rpm,deb,tar.gz}`?
-     - The Alpine link doesn't work, nor does the one that's
-       live in the current docs on RTD.
-
 macOS
 ~~~~~
 
@@ -146,11 +139,7 @@ To install the most recent Spicy release version, execute::
 
 To instead install the current development version, execute::
 
-    # brew install spicy-dev
-
-.. todo:
-
-    Is the above correct to get to the two different versions?
+    # brew install --HEAD spicy
 
 .. _prebuilt_macos:
 
@@ -186,12 +175,6 @@ the files, you should download and unpack via the command line::
     # tar xf spicy.tar.gz -C /opt/spicy --strip-components 1
 
 For JIT support, these binaries require an Xcode installation.
-
-.. todo::
-
-    - Do these TAR files need to be extracted into ``/opt/spicy`` as well?
-    - Can we rename ``spicy.tar.gz`` to ``spicy-dev.tar.gz``?
-    - Like for Alpine, above the links for the TGZs don't work.
 
 .. _docker:
 
@@ -277,10 +260,6 @@ To run the release image, execute the following command::
 Spicy is installed in ``/opt/spicy`` on these images. The development
 image is updated nightly.
 
-.. todo::
-
-    Switch the nightly image to the ``spicy-dev`` label.
-
 .. _dockerfiles:
 
 Build your own Spicy container
@@ -322,12 +301,6 @@ Debian 10, execute::
     verified installation instructions for setting up Spicy's
     dependencies on the various platforms, which is why we are
     describing them here.
-
-.. todo::
-
-    The Dockerfiles install different Zeek versions by default. Can we
-    just set them all to the most recent 4.0, and pass different CI
-    versions in through ``ZEEK_VERSION``?
 
 .. _building_from_source:
 
