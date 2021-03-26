@@ -245,13 +245,36 @@ public:
      * @return the value
      * @throw `IndexError` if `k` is not set in the map
      */
-    const V& get(const K& k) const {
+    const V& get(const K& k) const& {
         try {
             return this->at(k);
         } catch ( const std::out_of_range& ) {
             throw IndexError("key is unset");
         }
     }
+
+    /**
+     * Attempts to get the value for a key.
+     *
+     * @param k key to retrieve
+     * @return the value
+     * @throw `IndexError` if `k` is not set in the map
+     */
+    V& get(const K& k) & {
+        try {
+            return this->at(k);
+        } catch ( const std::out_of_range& ) {
+            throw IndexError("key is unset");
+        }
+    }
+
+    /** Access an element by key
+     *
+     * @param k key of the element
+     * @return a reference to the element
+     * @throw `IndexError` if `k` is not set in the map
+     */
+    auto& operator[](const K& k) & { return this->get(k); }
 
     /** Access an element by key
      *
