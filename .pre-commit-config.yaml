@@ -23,7 +23,7 @@ repos:
     language: script
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.5.0
+  rev: v3.4.0
   hooks:
   - id: trailing-whitespace
     exclude: '^tests/Baseline'
@@ -33,14 +33,14 @@ repos:
   - id: check-added-large-files
 
 - repo: https://gitlab.com/daverona/pre-commit-cpp
-  rev: 0.6.0
+  rev: 0.8.0
   hooks:
   - id: cpplint
     exclude: '3rdparty/'
     args: ["--quiet"]
 
 - repo: https://github.com/jorisroovers/gitlint
-  rev:  v0.13.1
+  rev:  v0.15.0
   hooks:
   - id: gitlint
 
