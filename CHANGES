@@ -1,4 +1,12 @@
 
+0.4.0-1662 | 2021-03-27 08:49:01 +0000
+
+  * Update Zeek submodules.
+
+  * Fix doc links to package artifacts. (Benjamin Bannier, Corelight)
+
+  * Test plugins in CI on macOS. (Benjamin Bannier, Corelight)
+
 0.4.0-1656 | 2021-03-25 12:19:35 +0000
 
   * Adapt to `master` -> `main` branch renaming. (Robin Sommer, Corelight)
