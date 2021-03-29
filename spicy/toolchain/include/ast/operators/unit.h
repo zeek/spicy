@@ -30,7 +30,7 @@ before the unit's parsing has begun, it will throw a runtime exception. Once
 parsing has started, the offset will remain available for the unit's entire
 life time.
 
-Usage of this method requires the unit to be declared with the `%random-access`
+Usage of this method requires the unit to be declared with the ``%random-access``
 property.
 )"};
     }
@@ -48,7 +48,7 @@ executed from inside a field hook, the position will represent the first byte
 that the field has been parsed from. If this method is called before the unit's
 parsing has begun, it will throw a runtime exception.
 
-Usage of this method requires the unit to be declared with the `%random-access`
+Usage of this method requires the unit to be declared with the ``%random-access``
 property.
 )"};
     }
@@ -67,7 +67,7 @@ begun parsing. If this method is called before the units parsing has begun, it
 will throw a runtime exception. Once available, the input position will remain
 accessible for the unit's entire life time.
 
-Usage of this method requires the unit to be declared with the `%random-access`
+Usage of this method requires the unit to be declared with the ``%random-access``
 property.
 )"};
     }
@@ -84,7 +84,7 @@ BEGIN_METHOD(unit, SetInput)
 Moves the current parsing position to *i*. The iterator *i* must be into the
 input of the current unit, or the method will throw a runtime execption.
 
-Usage of this method requires the unit to be declared with the `%random-access`
+Usage of this method requires the unit to be declared with the ``%random-access``
 property.
 )"};
     }
@@ -101,10 +101,10 @@ BEGIN_METHOD(unit, ConnectFilter)
                                            .doc = R"(
 Connects a separate filter unit to transform the unit's input transparently
 before parsing. The filter unit will see the original input, and this unit will
-receive everything the filter passes on through `forward()`.
+receive everything the filter passes on through ``forward()``.
 
 Filters can be connected only before a unit's parsing begins. The latest
-possible point is from inside the target unit's `%init` hook.
+possible point is from inside the target unit's ``%init`` hook.
 )"};
     }
 END_METHOD
@@ -167,7 +167,7 @@ BEGIN_METHOD(unit, ContextConst)
                                            .id = "context",
                                            .args = {},
                                            .doc = R"(
-Returns a reference to the `%context` instance associated with the unit.
+Returns a reference to the ``%context`` instance associated with the unit.
 )"};
     }
 END_METHOD
@@ -179,7 +179,7 @@ BEGIN_METHOD(unit, ContextNonConst)
                                            .id = "context",
                                            .args = {},
                                            .doc = R"(
-Returns a reference to the `%context` instance associated with the unit.
+Returns a reference to the ``%context`` instance associated with the unit.
 )"};
     }
 END_METHOD
