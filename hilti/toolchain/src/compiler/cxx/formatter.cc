@@ -17,8 +17,8 @@ void Formatter::pushNamespace(std::string relative_ns) {
 
     if ( util::endsWith(relative_ns, "::") ) {
         assert(relative_ns != "::");
-        // Add an nonymous namespace.
-        f << "namespace " << relative_ns.substr(0, relative_ns.size() - 2) << " { namespace { ";
+        // Add an anonymous namespace.
+        f << "namespace " << relative_ns.substr(0, relative_ns.size() - 2) << " { namespace {";
         f.indent();
         f.eol();
     }

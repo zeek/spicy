@@ -17,3 +17,22 @@ global j = -1;
 assert map(i: j) == map(1: -1);
 assert map<uint64, int64>(i: j) == map(1: -1);
 assert map(i: j) == map<uint64, int64>(1: -1);
+
+type S = struct {
+    int8 i;
+};
+global s: S;
+s.i = 42;
+global m = map<string, S>("foo": s);
+print m["foo"].i;
+m["foo"].i = 43;
+print m["foo"].i;
+
+type U = unit {
+    i: uint8;
+};
+global u: U;
+u.i = 42;
+global m2 = map<string, U>("foo": u);
+m2["foo"].i = 43;
+print m2["foo"].i;

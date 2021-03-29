@@ -41,6 +41,11 @@
     Returns the map's element for the given key. The key must exist,
     otherwise the operation will throw a runtime error.
 
+.. spicy:operator:: map::IndexAssign void t:map[<any>] = <any>
+
+    Updates the map value for a given key. If the key does not exist a new
+    element is inserted.
+
 .. spicy:operator:: map::Size uint<64> op:| t:map op:|
 
     Returns the number of elements a map contains.

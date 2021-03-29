@@ -143,55 +143,7 @@ private:
         : _control(control), _iterator(std::move(iterator)) {}
 };
 
-namespace detail {
-
-/** Proxy class for performing save assignments to `Map` entries.
- *
- * @note All methods accessing the underlying map are only defined for r-values
- * since this class only holds a reference to it. That makes it in general
- * unsafe to use these methods when the instance was bound to a later expired
- * `Map`. User should not need to `move` class instances to use them.
- */
-template<typename K, typename V>
-class AssignProxy {
-    using M = Map<K, V>;
-
-public:
-    AssignProxy(K key, M& map) : _key(std::move(key)), _map(map) {}
-
-    AssignProxy& operator=(V v) && {
-        // If we insert a new element invalidate all iterators into the map.
-        if ( ! _map.contains(_key) ) {
-            _map.invalidateIterators();
-        }
-
-        auto& map = static_cast<typename M::M&>(_map);
-        map[_key] = std::move(v);
-        return *this;
-
-        throw IndexError("cannot assign to expired key");
-    }
-
-    operator V() && { return _map.get(_key); }
-
-    // We need to define an overload for const references for `hilti::to_string` to work.
-    operator V() const& { return _map.get(_key); }
-
-private:
-    K _key;
-    M& _map;
-};
-
-template<typename K, typename V>
-inline std::ostream& operator<<(std::ostream& out, const AssignProxy<K, V>& p) {
-    return out << static_cast<V>(p);
-}
-
-} // namespace detail
-
 } // namespace map
-
-// Proxy to facilitate safe assignment.
 
 /** HILTI's `Map` is a `std::map`-like type with additional safety guarantees.
  *
@@ -245,7 +197,22 @@ public:
      * @return the value
      * @throw `IndexError` if `k` is not set in the map
      */
-    const V& get(const K& k) const {
+    const V& get(const K& k) const& {
+        try {
+            return this->at(k);
+        } catch ( const std::out_of_range& ) {
+            throw IndexError("key is unset");
+        }
+    }
+
+    /**
+     * Attempts to get the value for a key.
+     *
+     * @param k key to retrieve
+     * @return the value
+     * @throw `IndexError` if `k` is not set in the map
+     */
+    V& get(const K& k) & {
         try {
             return this->at(k);
         } catch ( const std::out_of_range& ) {
@@ -255,22 +222,19 @@ public:
 
     /** Access an element by key
      *
-     * This function invalidates all iterators into the map iff `k` was not present in the map.
-     *
      * @param k key of the element
      * @return a reference to the element
+     * @throw `IndexError` if `k` is not set in the map
      */
-    auto operator[](const K& k) & { return map::detail::AssignProxy<K, V>(k, *this); }
+    auto& operator[](const K& k) & { return this->get(k); }
 
     /** Access an element by key
-     *
-     * This function invalidates all iterators into the map iff `k` was not present in the map.
      *
      * @param k key of the element
      * @return a reference to the element
      * @throw `IndexError` if `k` is not set in the map
      */
-    auto operator[](const K& k) const& { return this->get(k); }
+    const auto& operator[](const K& k) const& { return this->get(k); }
 
     /** Access an element by key
      *
@@ -281,6 +245,13 @@ public:
      * @throw `IndexError` if `k` is not set in the map
      */
     auto operator[](const K& k) && { return this->get(k); }
+
+    void index_assign(const K& key, V value) {
+        if ( ! contains(key) )
+            this->invalidateIterators();
+
+        this->insert_or_assign(key, std::move(value));
+    }
 
     auto begin() const { return this->cbegin(); }
     auto end() const { return this->cend(); }
@@ -330,7 +301,6 @@ public:
 private:
     friend map::Iterator<K, V>;
     friend map::ConstIterator<K, V>;
-    friend map::detail::AssignProxy<K, V>;
 
     void invalidateIterators() {
         // Update control block to invalidate all iterators previously created from it.
@@ -393,10 +363,6 @@ inline std::string to_string(const map::ConstIterator<K, V>& /*unused*/, adl::ta
     return "<const map iterator>";
 }
 
-template<typename K, typename V>
-inline std::string to_string(const map::detail::AssignProxy<K, V>& p, adl::tag /*unused*/) {
-    return hilti::rt::to_string(V(p));
-}
 } // namespace detail::adl
 
 template<typename K, typename V>

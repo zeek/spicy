@@ -2,6 +2,7 @@
 
 #include <unordered_set>
 
+#include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/tuple.h>
 #include <hilti/ast/detail/operator-registry.h>
 #include <hilti/ast/detail/visitor.h>
@@ -11,6 +12,7 @@
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/expressions/unresolved-operator.h>
+#include <hilti/ast/operator.h>
 #include <hilti/ast/operators/function.h>
 #include <hilti/ast/operators/generic.h>
 #include <hilti/base/util.h>
@@ -150,6 +152,36 @@ struct Normalizer : public hilti::visitor::PostOrder<void, Normalizer> {
             }
             default: { /* ignore */
             }
+        }
+    }
+
+    void operator()(const expression::Assign& assign, position_t p) {
+        // Rewrite assignments to map elements to use the `index_assign` operator.
+        auto& lhs = assign.childs().front();
+        if ( const auto& index_non_const = lhs.tryAs<operator_::map::IndexNonConst>() ) {
+            const auto map = index_non_const->op0();
+
+            const auto map_type = map.type().as<type::Map>();
+            const auto key_type = map_type.keyType();
+            auto value_type = map_type.elementType();
+
+            auto key = index_non_const->op1();
+            if ( key.type() != key_type ) {
+                if ( auto nexpr = hilti::coerceExpression(key, key_type).nexpr )
+                    key = std::move(*nexpr);
+            }
+
+            auto value = assign.source();
+            if ( value.type() != value_type ) {
+                if ( auto nexpr = hilti::coerceExpression(value, value_type).nexpr )
+                    value = std::move(*nexpr);
+            }
+
+            Expression index_assign =
+                hilti::expression::UnresolvedOperator(hilti::operator_::Kind::IndexAssign,
+                                                      {std::move(map), std::move(key), std::move(value)},
+                                                      assign.meta());
+            replaceNode(&p, std::move(index_assign));
         }
     }
 };

@@ -99,6 +99,10 @@ Operators = {
     "Index": lambda op: "{}[{}]".format(
         op.operands[0].rst(in_operator=True),
         op.operands[1].rst(in_operator=True, markup=False)),
+    "IndexAssign": lambda op: "{}[{}] = {}".format(
+        op.operands[0].rst(in_operator=True),
+        op.operands[1].rst(in_operator=True, markup=False),
+        op.operands[2].rst(in_operator=True, markup=False)),
     "IncrPostfix": unary("", "++"),
     "IncrPrefix": unary("++"),
     "LogicalAnd": binary("&&"),

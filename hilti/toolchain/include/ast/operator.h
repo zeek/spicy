@@ -256,6 +256,7 @@ enum class Kind {
     IncrPostfix,
     IncrPrefix,
     Index,
+    IndexAssign,
     Lower,
     LowerEqual,
     Member,
@@ -311,6 +312,7 @@ constexpr auto isCommutative(Kind k) {
         case Kind::IncrPostfix:
         case Kind::IncrPrefix:
         case Kind::Index:
+        case Kind::IndexAssign:
         case Kind::Lower:
         case Kind::LowerEqual:
         case Kind::Member:
@@ -356,6 +358,7 @@ constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Add, "add"},
                                               {Kind::IncrPostfix, "++"},
                                               {Kind::IncrPrefix, "++"},
                                               {Kind::Index, "index"},
+                                              {Kind::IndexAssign, "index_assign"},
                                               {Kind::Lower, "<"},
                                               {Kind::LowerEqual, "<="},
                                               {Kind::Member, "."},
