@@ -147,7 +147,8 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
     auto start_ms_offset = _pimpl->_ms.offset;
 
     for ( auto block = data.firstBlock(); block; block = data.nextBlock(block) ) {
-        if ( is_final && block->is_last )
+        const auto final_block = is_final && block->is_last;
+        if ( final_block )
             last |= (JRX_ASSERTION_EOL | JRX_ASSERTION_EOD);
 
 #ifdef _DEBUG_MATCHING
@@ -158,10 +159,10 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
 
         if ( use_std_matcher )
             rc = jrx_regexec_partial_std(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size,
-                                         first, last, &_pimpl->_ms, is_final);
+                                         first, last, &_pimpl->_ms, final_block);
         else
             rc = jrx_regexec_partial_min(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size,
-                                         first, last, &_pimpl->_ms, is_final);
+                                         first, last, &_pimpl->_ms, final_block);
 
             // Note: The JRX match_state initializes offsets with 1.
 
