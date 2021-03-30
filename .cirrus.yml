@@ -172,7 +172,7 @@ macos_catalina_task:
     - pip3 install "btest>=0.66" sphinx_rtd_theme
 
   configure_script:
-    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror --build-zeek-plugin=yes
+    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror --prefix=/opt/spicy
   build_script:
     - ninja -C build all check
   test_build_script:
@@ -209,7 +209,7 @@ macos_big_sur_task:
     - pip3 install btest sphinx_rtd_theme zkg
 
   configure_script:
-    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror --build-zeek-plugin=yes
+    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror --prefix=/opt/spicy
   build_script:
     - ninja -C build all check
   test_build_script:
