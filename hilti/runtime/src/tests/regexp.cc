@@ -4,20 +4,15 @@
 
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
+#include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/stream.h>
+#include <hilti/rt/types/tuple.h>
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes::literals;
-
-namespace std {
-template<typename A, typename B>
-std::ostream& operator<<(std::ostream& stream, const std::tuple<A, B>& xs) {
-    return stream << '[' << to_string(std::get<0>(xs)) << ", " << to_string(std::get<1>(xs)) << ']';
-}
-} // namespace std
 
 TEST_SUITE_BEGIN("RegExp");
 
@@ -339,6 +334,20 @@ TEST_CASE("advance") {
 
             CHECK_EQ(rc, -1); // No match found yet in available, limited data.
         }
+    }
+
+    SUBCASE("advance on view split with match split across blocks") {
+        // This is a regression test for GH-860.
+
+        // Construct a stream where the chunk border is exactly on a group we want to match.
+        // We freeze the stream to force regex matcher to decide on match immediately.
+        auto s = Stream();
+        s.append("\n");
+        s.append(" ");
+        s.freeze();
+        REQUIRE_EQ(s.numberOfChunks(), 2);
+
+        CHECK_EQ(RegExp("[ \\n]*", {}).tokenMatcher().advance(s.view()), std::make_tuple(1, stream::View()));
     }
 }
 

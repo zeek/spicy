@@ -11,14 +11,14 @@
     Connects a separate filter unit to transform the unit's input
     transparently before parsing. The filter unit will see the original
     input, and this unit will receive everything the filter passes on
-    through `forward()`.
+    through ``forward()``.
 
     Filters can be connected only before a unit's parsing begins. The
-    latest possible point is from inside the target unit's `%init` hook.
+    latest possible point is from inside the target unit's ``%init`` hook.
 
 .. spicy:method:: unit::context unit context False <context>& ()
 
-    Returns a reference to the `%context` instance associated with the
+    Returns a reference to the ``%context`` instance associated with the
     unit.
 
 .. spicy:method:: unit::forward unit forward False void (inout data: bytes)
@@ -42,7 +42,7 @@
     time.
 
     Usage of this method requires the unit to be declared with the
-    `%random-access` property.
+    ``%random-access`` property.
 
 .. spicy:method:: unit::offset unit offset False uint<64> ()
 
@@ -54,7 +54,7 @@
     the offset will remain available for the unit's entire life time.
 
     Usage of this method requires the unit to be declared with the
-    `%random-access` property.
+    ``%random-access`` property.
 
 .. spicy:method:: unit::position unit position False iterator<stream> ()
 
@@ -65,7 +65,7 @@
     runtime exception.
 
     Usage of this method requires the unit to be declared with the
-    `%random-access` property.
+    ``%random-access`` property.
 
 .. spicy:method:: unit::set_input unit set_input False void (i: iterator<stream>)
 
@@ -74,5 +74,5 @@
     execption.
 
     Usage of this method requires the unit to be declared with the
-    `%random-access` property.
+    ``%random-access`` property.
 
