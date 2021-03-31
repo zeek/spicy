@@ -40,8 +40,8 @@ while read -r GITHUB_TOKEN; do
     break
 done < /dev/stdin
 
-OUTPUT_DIR=$(mktemp -d "${TMPDIR:-/tmp}"spicy-artifacts-XXXXXX)
-cd "${OUTPUT_DIR}"
+OUTPUT_DIR=binary_artifacts
+mkdir ${OUTPUT_DIR} && cd "${OUTPUT_DIR}"
 
 echo "Storing artifacts in ${OUTPUT_DIR}"
 
