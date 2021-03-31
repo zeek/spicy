@@ -33,4 +33,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: spicy*.(tar.gz|deb|rpm)
+          files: spicy*.tar.gz
