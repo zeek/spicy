@@ -35,10 +35,17 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
+      - name: Fetch platform packages
+        run: |
+          ./scripts/store-release-artifacts --commit ${{ github.sha }}
       - name: Upload Release Assets
         id: upload-release-assets
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: spicy*.tar.gz
+          files: |
+            spicy*.tar.gz
+            binary_artifacts/spicy*.tar.gz
+            binary_artifacts/spicy*.deb
+            binary_artifacts/spicy*.rpm

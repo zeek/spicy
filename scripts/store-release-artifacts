@@ -36,7 +36,7 @@ done
 REPO=zeek/spicy
 COMMIT=${COMMIT?Expected commit passed with '--commit COMMIT'}
 
-while read -r GITHUB_TOKEN; do
+while read -t 0 -r GITHUB_TOKEN; do
     break
 done < /dev/stdin
 
