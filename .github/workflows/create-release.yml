@@ -37,8 +37,14 @@ jobs:
       #     tag_name: ${{ github.ref }}
       #     release_name: Release ${{ github.ref }}
       - name: Fetch platform packages
+        shell: bash
         run: |
           ./scripts/store-release-artifacts --commit ${{ github.sha }}
+          for f in binary_artifacts/*.*; do
+              if [[ "$f" == *"docker"* ]]; then
+                mv "$f" "${f//docker/linux}"
+              fi
+          done
       - name: Upload Release Assets
         id: upload-release-assets
         uses: softprops/action-gh-release@v1
