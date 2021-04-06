@@ -413,6 +413,8 @@ non-standard location, make sure that ``<prefix>/bin`` is in your
 To build Spicy's documentation, run ``make`` inside the ``docs/`` directory.
 Documentation will then be located in ``build/doc/html``.
 
+.. _parser-development-setup:
+
 Parser development setup
 ------------------------
 

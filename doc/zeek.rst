@@ -72,17 +72,18 @@ By default, *zkg* will install the most recent release version of the
 plugin. If you want to install the current development version, use
 ``zkg install --version main zeek/spicy-plugin`` instead.
 
+.. _zeek_spicyz:
+
 If you want to develop your own Spicy analyzers for Zeek, you will
 need a tool that comes with the plugin's installation: ``spicyz``. If
-you are using a (very) recent version of *zkg* (>= TBD) , that tool
-should automatically show up in your ``PATH`` once the plugin has been
-installed::
+you are using a recent version of *zkg* (>= 2.8.0), it's easy to make
+the tool show up in your ``PATH``: Either run `\`zkg env\`
+<https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html?highlight=zkg%20env#advanced-configuration>`_
+or update your ``PATH`` manually::
 
+    # export PATH=$(zkg config bin_dir):$PATH
     # which spicyz
     /usr/local/zeek/bin/spicyz
-
-If that's not the case, make sure you are using `zkg env
-<https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html?highlight=zkg%20env#advanced-configuration>`_.
 
 If you are using an older version of *zkg* (including the version
 coming with Zeek 4.0), it's a bit more difficult to find ``spicyz``:
@@ -91,11 +92,6 @@ it will be inside your *zkg* state directory at
 We recommend adding that directory to your ``PATH``. (The state
 directory is usually either ``<zeek-prefix>/var/lib/zkg`` or
 ``~/.zkg``, depending on how you have set up *zkg*.)
-
-.. todo::
-
-    That "very recent version of *zkg*" does not exist yet; needs this
-    PR merged: https://github.com/zeek/package-manager/pull/100.
 
 Manual Installation
 -------------------
