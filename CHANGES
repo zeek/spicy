@@ -1,4 +1,24 @@
 
+0.4.0-1684 | 2021-04-06 10:56:32 +0000
+
+  * Add a couple of documentation updates. (Robin Sommer, Corelight)
+
+  * Update CI release infrastructure. (Benjamin Bannier, Corelight)
+
+  * GH-860: Fix regexp matching across chunk boundaries. (Benjamin
+    Bannier, Corelight)
+
+  * Fix code markup in unit and sink docs. (Benjamin Bannier,
+    Corelight)
+
+  * GH-861: Add new combined operation for combined map indexing &
+    assignment. (Benjamin Bannier, Corelight)
+
+  * Add map index operator which can mutate contained returned value.
+    (Benjamin Bannier, Corelight)
+
+  * Bump pre-commit plugins. (Benjamin Bannier, Corelight)
+
 0.4.0-1662 | 2021-03-27 08:49:01 +0000
 
   * Update Zeek submodules.
