@@ -56,7 +56,7 @@ get_version() {
 
         hash=$(git rev-parse --short "${ref}")
         branch=$(git symbolic-ref --short "${ref}" 2>/dev/null || echo "${hash}")
-        git_version=$(git describe --always --match "v*" "${describe_arg}" | sed 's/^v//g')
+        git_version=$(git describe --always --tags --match "v*" "${describe_arg}" | sed 's/^v//g')
     elif [ -f ./VERSION ]; then
         # Read information from VERSION file which contains values for `branch`, `hash`, and `git_version`.
         . ./VERSION

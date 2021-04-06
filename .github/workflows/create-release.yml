@@ -8,9 +8,17 @@ name: Create Release
 
 jobs:
   build:
-    name: Upload Release Asset
+    name: Upload Release Assets
     runs-on: ubuntu-latest
     steps:
+      - name: 'Wait for status checks'
+        id: waitforstatuschecks
+        uses: "WyriHaximus/github-action-wait-for-status@v1"
+        with:
+          ignoreActions: "Upload Release Assets"
+          checkInterval: 60
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -19,18 +27,32 @@ jobs:
       - name: Prepare archive
         run: |
           ./scripts/make-tarball.sh
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+      # For now we let Github automatically create releases from tags.
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: Release ${{ github.ref }}
+      - name: Fetch platform packages
+        shell: bash
+        run: |
+          ./scripts/store-release-artifacts --commit ${{ github.sha }}
+          for f in binary_artifacts/*.*; do
+              if [[ "$f" == *"docker"* ]]; then
+                mv "$f" "${f//docker/linux}"
+              fi
+          done
       - name: Upload Release Assets
         id: upload-release-assets
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: spicy*.(tar.gz|deb|rpm)
+          files: |
+            spicy*.tar.gz
+            binary_artifacts/spicy*.tar.gz
+            binary_artifacts/spicy*.deb
+            binary_artifacts/spicy*.rpm

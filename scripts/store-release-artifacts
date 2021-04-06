@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -e
 set -o pipefail
 
 usage() {
@@ -28,35 +28,49 @@ fi
 while true; do
     case "$1" in
         --commit) COMMIT="$2"; shift; shift;;
-        --upload) UPLOAD=1
+        --upload) UPLOAD=1; shift;;
+        *) break;;
     esac
-    :
 done
 
 REPO=zeek/spicy
 COMMIT=${COMMIT?Expected commit passed with '--commit COMMIT'}
 
-while read -r GITHUB_TOKEN; do
+while read -t 0 -r GITHUB_TOKEN; do
     break
 done < /dev/stdin
 
-OUTPUT_DIR=$(mktemp -d "${TMPDIR:-/tmp}"spicy-artifacts-XXXXXX)
-cd "${OUTPUT_DIR}"
+OUTPUT_DIR=binary_artifacts
+mkdir ${OUTPUT_DIR} && cd "${OUTPUT_DIR}"
 
 echo "Storing artifacts in ${OUTPUT_DIR}"
 
+mkdir packages
 curl -sSL https://api.github.com/repos/"${REPO}"/commits/"${COMMIT}"/check-runs'?per_page=100' \
     | jq -r '.check_runs[] | select(.app.name=="Cirrus CI") | select(.name | test("^(docker|macos|freebsd)")) | select(.conclusion=="success") | ["https://api.cirrus-ci.com/v1/artifact/task/" + .external_id + "/packages.zip", .name] | @tsv' \
     | while IFS=$'\t' read -r URI NAME; do
         echo "Fetching artifacts for CI job ${NAME}"
         curl -sSL "$URI" -o packages.zip
         unzip packages.zip 1> /dev/null
-        mv build/spicy*tar.gz "spicy_${NAME}.tar.gz"
-        rm -rf build packages.zip
-        break
+
+        # Testing with `-e` only works if there is a single glob match. We know
+        # this is the case here.
+        # shellcheck disable=SC2144
+        if [ -e build/spicy*.tar.gz ]; then
+            mv build/spicy*.tar.gz "packages/spicy_${NAME}.tar.gz"
+        elif [ -e spicy*.deb ]; then
+            mv spicy*.deb "packages/spicy_${NAME}.deb"
+        elif [ -e spicy*.rpm ]; then
+            mv spicy*.rpm "packages/spicy_${NAME}.rpm"
+        fi
+
+        rm -rf build spicy* packages.zip
     done
 
-if [ "${UPLOAD+x}" != "x" ]; then
+mv packages/* .
+rmdir packages
+
+if [ -n "${UPLOAD}" ]; then
     if [[ "${COMMIT}" != v* ]]; then
         echo "Skipping upload since ${COMMIT} does not look like a release tag"
         exit 1
