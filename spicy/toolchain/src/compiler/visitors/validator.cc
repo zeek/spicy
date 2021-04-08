@@ -235,6 +235,18 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             }
         }
 
+        else if ( const auto& prop = i.id().str(); prop == "%skip" || prop == "%skip-post" || prop == "%skip-pre" ) {
+            if ( const auto& e = i.expression(); ! e ) {
+                error(fmt("%s requires an argument", prop), p);
+                return;
+            }
+
+            else if ( auto t = e->type(); ! t.isA<type::RegExp>() && ! t.isA<type::Null>() ) {
+                error(fmt("%s requires a regexp as its argument", prop), p);
+                return;
+            }
+        }
+
         else
             error(fmt("unknown property '%s'", i.id().str()), p);
     }
@@ -298,6 +310,18 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             auto decl = p.findParent<hilti::declaration::Type>();
             if ( decl && decl->get().linkage() != hilti::declaration::Linkage::Public )
                 error("only public units can have %context", p);
+        }
+
+        else if ( const auto& prop = i.id().str(); prop == "%skip" || prop == "%skip-post" || prop == "%skip-pre" ) {
+            if ( const auto& e = i.expression(); ! e ) {
+                error(fmt("%s requires an argument", prop), p);
+                return;
+            }
+
+            else if ( auto t = e->type(); ! t.isA<type::RegExp>() && ! t.isA<type::Null>() ) {
+                error(fmt("%s requires a regexp as its argument", prop), p);
+                return;
+            }
         }
 
         else

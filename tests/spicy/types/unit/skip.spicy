@@ -1,0 +1,55 @@
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+
+# @TEST-EXEC: echo "Parsing X w/o any skipping" >> output
+# @TEST-EXEC: printf 'AB' | spicy-driver -p Test::X test.hlto >> output 2>&1
+
+# @TEST-EXEC: echo "Parsing Y w/o any skipping" >> output
+# @TEST-EXEC: printf 'AB' | spicy-driver -p Test::Y test.hlto >> output 2>&1
+
+# @TEST-EXEC: echo "Parsing X w/ content like skip-post" >> output
+# @TEST-EXEC: printf '01' | spicy-driver -p Test::X test.hlto >> output 2>&1
+# @TEST-EXEC: printf '0011' | spicy-driver -p Test::X test.hlto >> output 2>&1
+
+# @TEST-EXEC: echo "Parsing X w/o any skipping since skip-pre and -post in the wrong place" >> output
+# @TEST-EXEC: printf '1AB0' | spicy-driver -p Test::X test.hlto >> output 2>&1
+# @TEST-EXEC: echo "Parsing Y w/o any skipping since skip-pre and -post in the wrong place" >> output
+# @TEST-EXEC-FAIL: printf '1AB0' | spicy-driver -p Test::Y test.hlto >> output 2>&1
+
+# @TEST-EXEC: echo "Parsing Y w/ skipping pre and post" >> output
+# @TEST-EXEC: printf '0AB1' | spicy-driver -p Test::Y test.hlto >> output 2>&1
+
+# @TEST-EXEC: echo "Parsing Y w/ skip between xs" >> output
+# @TEST-EXEC: printf '0A2BC21' | spicy-driver -p Test::Y test.hlto >> output 2>&1
+
+# @TEST-EXEC: echo "Parsing Y with incremental input" >> output
+# @TEST-EXEC: printf '0A2BC21' | spicy-driver -p Test::Y -i 1 test.hlto >> output 2>&1
+
+# @TEST-EXEC: echo "Parsing Z overriding module-level %skip-pre and %skip" >> output
+# @TEST-EXEC: printf '0A2B01CD21' | spicy-driver -p Test::Z test.hlto >> output 2>&1
+
+# @TEST-EXEC: btest-diff output
+
+# @TEST-DOC: Unit and module level skip properties.
+
+module Test;
+
+%skip-pre = /0*/;
+%skip-post = /1*/;
+%skip = /2*/;
+
+public type X = unit {
+    x: bytes &size=1;
+    on %done { print "X", self; }
+};
+
+public type Y = unit {
+    xs: X[] &eod;
+    on %done { print "Y", self; }
+};
+
+public type Z = unit {
+    %skip-pre = Null;
+    %skip = Null;
+    xs: X[] &eod;
+    on %done { print "Y", self; }
+};

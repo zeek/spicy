@@ -825,6 +825,21 @@ properties:
     make use of the information to decide which unit type to use for
     parsing a connection's payload.
 
+``%skip = ( REGEXP | Null );``
+    Specifies a pattern which should be skipped when encountered in the input
+    stream in between parsing of unit fields. This overwrites a value set at
+    the module level; use ``Null`` to reset the property, i.e., not skip
+    anything.
+``%skip-pre = ( REGEXP | Null );``
+    Specifies a pattern which should be skipped when encountered in the input
+    stream before parsing of a unit begins. This overwrites a value set at the
+    module level; use ``Null`` to reset the property, i.e., not skip anything.
+``%skip-post = ( REGEXP | Null );``
+    Specifies a pattern which should be skipped when encountered in the input
+    stream after parsing of a unit has finished. This overwrites a value set at
+    the module level; use ``Null`` to reset the property, i.e., not skip
+    anything.
+
 Units support some further properties for other purposes, which we
 introduce in the corresponding sections.
 
