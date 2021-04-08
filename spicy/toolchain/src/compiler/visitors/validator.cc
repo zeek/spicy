@@ -217,6 +217,28 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             error("'stop' can only be used inside a 'foreach' hook", p);
     }
 
+    void operator()(const hilti::declaration::Property& i, position_t p) {
+        if ( i.id().str() == "%spicy-version" )
+            ; // Nothing; handled in validator for `hilti::Module`.
+
+        else if ( i.id().str() == "%byte-order" ) {
+            if ( auto e = i.expression(); ! e ) {
+                error("%byte-order requires an argument", p);
+                return;
+            }
+        }
+
+        else if ( i.id().str() == "%cxx-include" ) {
+            if ( auto e = i.expression(); ! e ) {
+                error("%byte-order requires an argument", p);
+                return;
+            }
+        }
+
+        else
+            error(fmt("unknown property '%s'", i.id().str()), p);
+    }
+
     void operator()(const spicy::type::unit::item::Property& i, position_t p) {
         if ( i.id().str() == "%random-access" ) {
             if ( i.expression() )
