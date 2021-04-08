@@ -82,10 +82,7 @@ test -n "${commit}" -a -n "${dirty}" && commit="${commit}.${dirty}"
 
 case "${branch}" in
     main|master)
-        # As we don't have (actual or anticipated) releases yet, we use the old
-        # Zeek scheme for now: commits since last tag.
-        prerelease="${commit}"
-        # prerelease="dev-${commit}"
+        prerelease="dev-${commit}"
         ;;
 
     release/*)
