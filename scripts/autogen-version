@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Generates a readable representation of the current version number; with
 # --short a short one. Or alternatively with --header, a version.h file with
@@ -82,10 +82,7 @@ test -n "${commit}" -a -n "${dirty}" && commit="${commit}.${dirty}"
 
 case "${branch}" in
     main|master)
-        # As we don't have (actual or anticipated) releases yet, we use the old
-        # Zeek scheme for now: commits since last tag.
-        prerelease="${commit}"
-        # prerelease="dev-${commit}"
+        prerelease="dev-${commit}"
         ;;
 
     release/*)
@@ -101,6 +98,11 @@ case "${branch}" in
         hash=""
         ;;
 esac
+
+# If we are exactly on a release tag drop the prelease specifier.
+if git describe --tags --match='v*' --exact-match > /dev/null 2>&1; then
+    prerelease=""
+fi
 
 test -n "${prerelease}" && str_prerelease="-${prerelease}"
 
