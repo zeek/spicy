@@ -2,24 +2,16 @@
 
 <table><tr>
 
-<td width="66%">
-<ul>
-<li><a href="#overview-">Overview</a></li>
-<li><a href="#installation">Installation</a></li>
-<li><a href="#documentation">Documentation</a></li>
-<li><a href="#getting-in-touch">Getting in touch</a></li>
-<li><a href="#status">Status</a></li>
-<li><a href="#license">License</a></li>
-<li><a href="#history">History</a></li>
-</ul>
-</td>
-
 <td>
 <table>
-<tr><th></th>                 <th>Release</th> <th>Development</th> </tr>
-<tr><td> Documentation </td>  <td> (coming soon) </td> <td> <a href="https://docs.zeek.org/projects/spicy">Spicy Manual</a> </td></tr>
-<tr><td> Changelog </td>      <td> (coming soon) </td> <td> <a href="/CHANGES">CHANGES</a> </td></tr>
-<tr><td> Build status </td>   <td> (coming soon) </td> <td> <a href="https://cirrus-ci.com/github/zeek/spicy/main"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg" alt="Build status"> </a> </td></tr>
+<tr><th></th>              <th>Release</th> <th>Development</th> </tr>
+<tr><td>Documentation</td> <td colspan="2" align="center"><a href="https://docs.zeek.org/projects/spicy">Spicy Manual</a></td></tr>
+<tr><td>Changelog</td>     <td><a href="https://github.com/zeek/spicy/blob/v1.0.0/CHANGES">CHANGES</td> <td><a href="/CHANGES">CHANGES</a></td></tr>
+<tr>
+  <td>Build status</td>
+  <td><a href="https://cirrus-ci.com/github/zeek/spicy/release"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg?branch=release" alt="Build status release"></a></td>
+  <td><a href="https://cirrus-ci.com/github/zeek/spicy/main"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg" alt="Build status development"></a></td>
+</tr>
 </table>
 </td>
 
