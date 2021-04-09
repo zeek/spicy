@@ -70,52 +70,52 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - Dockerfile
 
     * - Alpine 3.12
-      - *(coming soon)*
+      - :package-release-tgz:`TAR <linux_alpine_3_12>`
       - :package-dev-tgz:`TAR <docker_alpine_3_12>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-7>`
 
     * - CentOS 7
-      - *(coming soon)*
+      - :package-release-rpm:`RPM <linux_centos_7>`
       - :package-dev-rpm:`RPM <docker_centos_7>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-7>`
 
     * - CentOS 8
-      - *(coming soon)*
+      - :package-release-rpm:`RPM <linux_centos_8>`
       - :package-dev-rpm:`RPM <docker_centos_8>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-8>`
 
     * - Debian 9
-      - *(coming soon)*
+      - :package-release-deb:`DEB <linux_debian9>`
       - :package-dev-deb:`DEB <docker_debian9>`
       - :repo:`Dockerfile <docker/Dockerfile.debian-9>`
 
     * - Debian 10
-      - *(coming soon)*
+      - :package-release-deb:`DEB <linux_debian10>`
       - :package-dev-deb:`DEB <docker_debian10>`
       - :repo:`Dockerfile <docker/Dockerfile.debian-10>`
 
     * - Fedora 32
-      - *(coming soon)*
+      - :package-release-rpm:`RPM <linux_fedora32>`
       - :package-dev-rpm:`RPM <docker_fedora32>`
       - :repo:`Dockerfile <docker/Dockerfile.fedora-32>`
 
     * - Fedora 33
-      - *(coming soon)*
+      - :package-release-rpm:`RPM <linux_fedora33>`
       - :package-dev-rpm:`RPM <docker_fedora33>`
       - :repo:`Dockerfile <docker/Dockerfile.fedora-33>`
 
     * - Ubuntu 16
-      - *(coming soon)*
+      - :package-release-deb:`DEB <linux_ubuntu16>`
       - :package-dev-deb:`DEB <docker_ubuntu16>`
       - :repo:`Dockerfile <docker/Dockerfile.ubuntu-16>`
 
     * - Ubuntu 18
-      - *(coming soon)*
+      - :package-release-deb:`DEB <linux_ubuntu18>`
       - :package-dev-deb:`DEB <docker_ubuntu18>`
       - :repo:`Dockerfile <docker/Dockerfile.ubuntu-18>`
 
     * - Ubuntu 20
-      - *(coming soon)*
+      - :package-release-deb:`DEB <linux_ubuntu20>`
       - :package-dev-deb:`DEB <docker_ubuntu20>`
       - :repo:`Dockerfile <docker/Dockerfile.ubuntu-20>`
 
@@ -159,11 +159,11 @@ macOS versions:
       - Development Version
 
     * - Catalina (10.15)
-      - *(coming soon)*
+      - :package-release-tgz:`TAR <macos_catalina>`
       - :package-dev-tgz:`TAR <macos_catalina>`
 
     * - Big Sur (11)
-      - *(coming soon)*
+      - :package-release-tgz:`TAR <macos_big_sur>`
       - :package-dev-tgz:`TAR <macos_big_sur>`
 
 The TAR archives need to be unpacked into ``/opt/spicy``. Any previous
