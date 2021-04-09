@@ -241,8 +241,8 @@ We provide the following Docker images `on DockerHub <https://hub.docker.com/rep
       - Source
 
     * - Release
-      - *(coming soon)*
-      - *(coming soon)*
+      - ``zeekurity/spicy``
+      - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
     * - Development
       - ``zeekurity/spicy-dev``
