@@ -229,7 +229,7 @@ Install `Docker Desktop for Mac
 Using pre-built Docker images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We provide the following Docker images `on DockerHub <https://hub.docker.com/repository/docker/zeekurity/spicy>`_:
+We provide the following Docker images:
 
 .. list-table::
     :widths: auto
@@ -241,11 +241,11 @@ We provide the following Docker images `on DockerHub <https://hub.docker.com/rep
       - Source
 
     * - Release
-      - ``zeekurity/spicy``
+      - `zeekurity/spicy <https://hub.docker.com/repository/docker/zeekurity/spicy>`_
       - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
     * - Development
-      - ``zeekurity/spicy-dev``
+      - `zeekurity/spicy-dev <https://hub.docker.com/repository/docker/zeekurity/spicy-dev>`_
       - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
 These images include Zeek, the :ref:`Spicy plugin <zeek_plugin>` for
