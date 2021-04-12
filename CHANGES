@@ -1,3 +1,11 @@
+0.4.0-1694 | 2021-04-12 11:15:53 +0200
+
+  * Do not take freebsd12 into account for cumulative CI status.
+
+  * Documentation updates for 1.0.0 release. (Benjamin Bannier, Corelight)
+
+  * Do not automatically create `spicy:latest` Docker tag from `main`.
+
 0.4.0-1687 | 2021-04-08 17:07:45 +0200
 
   * Fix version string checking out release tags.

@@ -61,9 +61,9 @@ extlinks = {
     "package-dev-tgz": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/build/spicy-dev.tar.gz", ""),
     "package-dev-rpm": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/spicy-dev.rpm", ""),
     "package-dev-deb": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/spicy-dev.deb", ""),
-    "package-release-tgz": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%%s/packages/build/spicy-%s.tar.gz" % release, ""),
-    "package-release-rpm": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%%s/packages/spicy-%s.rpm" % release, ""),
-    "package-release-deb": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%%s/packages/spicy-%s.deb" % release, "")
+    "package-release-tgz": ("https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.tar.gz" % release, ""),
+    "package-release-rpm": ("https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.rpm" % release, ""),
+    "package-release-deb": ("https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.deb" % release, ""),
 }
 
 # -- Options for HTML output -------------------------------------------------
