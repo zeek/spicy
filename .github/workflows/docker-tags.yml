@@ -3,8 +3,6 @@
 name: Publish Docker
 on:
   push:
-    branches:
-      - master
     tags:
       # Since this action pushes just a tagged image it is only active on tags.
       - v*

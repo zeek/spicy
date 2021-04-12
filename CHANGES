@@ -1,3 +1,9 @@
+1.0.0-3 | 2021-04-12 18:23:41 +0200
+
+  * Fix leftovers in GH actions from master -> main rename. (Benjamin Bannier, Corelight)
+
+  * Remove build tag for release build from README for now [skip ci]. (Benjamin Bannier, Corelight)
+
 1.0.0 | 2021-04-12 14:22:09 +0200
 
   * Fix metadata in Docker publishing workflow. (Benjamin Bannier, Corelight)
