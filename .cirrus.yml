@@ -827,6 +827,7 @@ freebsd11_task:
     type: application/gzip
 
 freebsd12_task:
+  allow_failures: true
   freebsd_instance:
     image_family: freebsd-12-2
     cpu: 8
