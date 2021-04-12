@@ -60,10 +60,12 @@ inline Node to_node(Case c) { return Node(std::move(c)); }
 class Switch : public hilti::NodeBase, public spicy::trait::isUnitItem {
 public:
     Switch(std::optional<Expression> expr, const std::vector<switch_::Case>& cases, Engine e,
-           std::optional<Expression> cond, std::vector<Hook> hooks, Meta m = Meta())
-        : NodeBase(nodes(std::move(expr), std::move(cond), cases, std::move(hooks)), std::move(m)),
+           std::optional<Expression> cond, std::vector<Hook> hooks, std::optional<AttributeSet> attributes,
+           Meta m = Meta())
+        : NodeBase(nodes(std::move(expr), std::move(cond), std::move(attributes), cases, std::move(hooks)),
+                   std::move(m)),
           _engine(e),
-          _cases_start(2),
+          _cases_start(3),
           _cases_end(_cases_start + static_cast<int>(cases.size())),
           _hooks_start(_cases_end),
           _hooks_end(-1) {}
@@ -72,8 +74,8 @@ public:
     Engine engine() const { return _engine; }
     auto condition() const { return childs()[1].tryReferenceAs<Expression>(); }
     auto cases() const { return childs<switch_::Case>(_cases_start, _cases_end); }
-    auto cases() { return childs<switch_::Case>(_cases_start, _cases_end); }
     auto casesNodes() { return nodesOfType<switch_::Case>(); }
+    auto attributes() const { return childs()[2].tryReferenceAs<AttributeSet>(); }
 
     auto hooks() const { return childs<Hook>(_hooks_start, _hooks_end); }
 

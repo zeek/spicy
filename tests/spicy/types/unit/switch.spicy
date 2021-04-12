@@ -1,21 +1,28 @@
 # @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
-# @TEST-EXEC: echo 1234567890 | spicy-driver %INPUT.hlto >output
-# @TEST-EXEC: echo 2234567890 | spicy-driver %INPUT.hlto >>output
-# @TEST-EXEC: echo 3234567890 | spicy-driver %INPUT.hlto >>output
-# @TEST-EXEC: echo 4234567890 | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: echo 1234567890 | spicy-driver -p Mini::X %INPUT.hlto >output
+# @TEST-EXEC: echo 2234567890 | spicy-driver -p Mini::X %INPUT.hlto >>output
+# @TEST-EXEC: echo 3234567890 | spicy-driver -p Mini::X %INPUT.hlto >>output
+# @TEST-EXEC: echo 4234567890 | spicy-driver -p Mini::X %INPUT.hlto >>output
+# @TEST-EXEC-FAIL: printf '\02' | spicy-driver -p Mini::Y %INPUT.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\02A' | spicy-driver -p Mini::Y %INPUT.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\02AB' | spicy-driver -p Mini::Y %INPUT.hlto >>output 2>&1
+# @TEST-EXEC: printf '\01ABC' | spicy-driver -p Mini::Y %INPUT.hlto >>output
+# @TEST-EXEC: printf '\02ABC' | spicy-driver -p Mini::Y %INPUT.hlto >>output
 # @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks unit switch statement.
 
 module Mini;
 
-public type test = unit {
+public type X = unit {
 
        a: bytes &size=1;
 
        switch ( self.a ) {
-           b"1"       -> b1: bytes &size=4 &default=b"nope";
-           b"2", b"3" -> b2: bytes &size=4 &default=b"nope";
-           *          -> b3: bytes &size=4 &default=b"nope";
-           };
+           b"1"       -> b1: bytes &eod &default=b"nope";
+           b"2", b"3" -> b2: bytes &eod &default=b"nope";
+           *          -> b3: bytes &eod &default=b"nope";
+           } &size=4;
 
        c: bytes &size=5 {
            print self;
@@ -28,4 +35,16 @@ public type test = unit {
            print self.b2;
            print self.b3;
            }
+};
+
+public type Y = unit {
+    tag: uint8;
+     switch ( self.tag ) {
+         # 1 -> b1: bytes &eod;
+         # 2 -> b2: bytes &eod &convert=$$.lower();
+         1 -> b1: bytes &eod;
+         2 -> b2: bytes &eod &convert=$$.lower();
+     } &size=3;
+
+     on %done { print self; }
 };

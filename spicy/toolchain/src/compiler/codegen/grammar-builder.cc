@@ -175,8 +175,12 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
                 }
             }
 
+            AttributeSet attributes;
+            if ( auto a = n.attributes() )
+                attributes = std::move(*a);
+
             return production::Switch(switch_sym, *n.expression(), std::move(cases), std::move(default_),
-                                      n.meta().location());
+                                      std::move(attributes), n.meta().location());
         }
 
         else {

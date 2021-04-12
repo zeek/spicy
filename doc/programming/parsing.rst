@@ -1404,6 +1404,32 @@ once you have subunits that are recognizable by how they start:
     :exec: printf 'A ' | spicy-driver %INPUT; printf '\377\377' | spicy-driver %INPUT
     :show-with: foo.spicy
 
+.. rubric:: Switching Over Fields With Common Size
+
+You can limit the input any field in a unit switch receives by attaching an
+optional ``&size=EXPR`` attribute that specifies the number of raw bytes to
+make available. This is analog to the `field size attribute <attribute_size>`_
+and especially useful to remove duplication when each case is subject to the
+same constraint.
+
+.. spicy-code:: parse-switch-size.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        tag: uint8;
+        switch ( self.tag ) {
+           1 -> b1: bytes &eod;
+           2 -> b2: bytes &eod &convert=$$.lower();
+        } &size=3;
+
+        on %done { print self; }
+    };
+
+.. spicy-output:: parse-switch-size.spicy
+   :exec: printf '\01ABC' | spicy-driver %INPUT; printf '\02ABC' | spicy-driver %INPUT
+   :show-with: foo.spicy
+
 .. _backtracking:
 
 Backtracking

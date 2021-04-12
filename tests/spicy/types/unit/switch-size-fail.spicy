@@ -1,0 +1,13 @@
+# @TEST-EXEC-FAIL: spicyc %INPUT -j >> output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks validation of switch size attribution.
+
+module Test;
+
+public type X = unit {
+    a: uint8;
+    switch (self.a) {
+        1 -> b1 :uint8;
+    } &size=b"abc";
+};
