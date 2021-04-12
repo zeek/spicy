@@ -4,8 +4,8 @@ name: Publish Docker
 on:
   push:
     branches:
-      # Since this action pushes a `latest` image it is only active for the `master` branch.
-      - master
+      # Since this action pushes a `latest` image it is only active for the `main` branch.
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
