@@ -1,4 +1,4 @@
-# Spicy — Generating Robust Parsers for Protocols & File Formats
+# Spicy — Robust Parsers for Protocols & File Formats
 
 <table><tr>
 
