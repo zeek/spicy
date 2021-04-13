@@ -4,8 +4,9 @@ name: Publish Docker
 on:
   push:
     tags:
-      # Since this action pushes just a tagged image it is only active on tags.
-      - v*
+      # Since this action pushes just a tagged image it is only active on tags. We exclude `-dev` tags.
+      - 'v*'
+      - '!v*-dev'
 jobs:
   build:
     runs-on: ubuntu-latest

@@ -1,3 +1,9 @@
+1.0.0-7 | 2021-04-13 11:49:36 +0200
+
+  * Disable 'create-release' and 'docker-tags' workflows for dev tags [skip ci]. (Benjamin Bannier, Corelight)
+
+  * Include build status for 1.0 release branch in README [skip ci]. (Benjamin Bannier, Corelight)
+
 1.0.0-3 | 2021-04-12 18:23:41 +0200
 
   * Fix leftovers in GH actions from master -> main rename. (Benjamin Bannier, Corelight)
