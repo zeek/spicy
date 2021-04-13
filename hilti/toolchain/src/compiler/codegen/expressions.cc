@@ -152,7 +152,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
         if ( auto c = n.declaration().tryAs<declaration::Constant>() ) {
             if ( c->value().type().isA<type::Enum>() )
-                return cg->compile(c->value()); // This constructs the right ID.
+                return cxx::ID(cg->compile(c->value()));
 
             return cxx::ID(cg->options().cxx_namespace_intern, cxx::ID(n.id()));
         }
