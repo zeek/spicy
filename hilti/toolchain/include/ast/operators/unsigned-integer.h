@@ -120,7 +120,8 @@ STANDARD_OPERATOR_2x(unsigned_integer, CastToReal, Cast, type::Real(), type::Uns
 STANDARD_OPERATOR_2x(unsigned_integer, CastToEnum, Cast, operator_::typedType(1, "enum<*>"),
                      type::UnsignedInteger(type::Wildcard()), type::Type_(type::Enum(type::Wildcard())),
                      "Converts the value into an enum instance. The value does *not* need to correspond to "
-                     "any of the target type's enumerator labels");
+                     "any of the target type's enumerator labels. It must not be larger than the maximum that a "
+                     "*signed* 64-bit integer value can represent.");
 STANDARD_OPERATOR_2x(unsigned_integer, CastToTime, Cast, type::Time(), type::UnsignedInteger(type::Wildcard()),
                      type::Type_(type::Time()), "Interprets the value as number of seconds since the UNIX epoch.");
 STANDARD_OPERATOR_2x(unsigned_integer, CastToInterval, Cast, type::Interval(), type::UnsignedInteger(type::Wildcard()),

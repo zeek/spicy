@@ -12,10 +12,17 @@
 
     Computes the bit-wise 'xor' of the two integers.
 
+.. spicy:operator:: integer::Cast enum cast<enum-type>(int)
+
+    Converts the value into an enum instance. The value does *not* need to
+    correspond to any of the target type's enumerator labels.
+
 .. spicy:operator:: integer::Cast enum cast<enum-type>(uint)
 
     Converts the value into an enum instance. The value does *not* need to
-    correspond to any of the target type's enumerator labels
+    correspond to any of the target type's enumerator labels. It must not
+    be larger than the maximum that a *signed* 64-bit integer value can
+    represent.
 
 .. spicy:operator:: integer::Cast int cast<int-type>(int)
 

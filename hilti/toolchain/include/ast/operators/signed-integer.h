@@ -106,6 +106,10 @@ STANDARD_OPERATOR_2x(signed_integer, CastToUnsigned, Cast, operator_::typedType(
                      "Converts the value into an unsigned integer type, accepting any loss of information.");
 STANDARD_OPERATOR_2x(signed_integer, CastToReal, Cast, type::Real(), type::SignedInteger(type::Wildcard()),
                      type::Type_(type::Real()), "Converts the value into a real, accepting any loss of information.");
+STANDARD_OPERATOR_2x(signed_integer, CastToEnum, Cast, operator_::typedType(1, "enum<*>"),
+                     type::SignedInteger(type::Wildcard()), type::Type_(type::Enum(type::Wildcard())),
+                     "Converts the value into an enum instance. The value does *not* need to correspond to "
+                     "any of the target type's enumerator labels.");
 STANDARD_OPERATOR_2x(signed_integer, CastToInterval, Cast, type::Interval(), type::SignedInteger(type::Wildcard()),
                      type::Type_(type::Interval()), "Interprets the value as number of seconds.");
 

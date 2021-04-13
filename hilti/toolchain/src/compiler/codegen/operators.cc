@@ -777,6 +777,10 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
                    ") * 1000000000, hilti::rt::Interval::NanosecondTag())",
                    op0(n));
     }
+    result_t operator()(const operator_::signed_integer::CastToEnum& n) {
+        auto t = n.op1().type().as<type::Type_>().typeValue();
+        return fmt("::hilti::rt::enum_::from_int<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
+    }
     result_t operator()(const operator_::signed_integer::DecrPostfix& n) { return fmt("%s--", op0(n)); }
     result_t operator()(const operator_::signed_integer::DecrPrefix& n) { return fmt("--%s", op0(n)); }
     result_t operator()(const operator_::signed_integer::Difference& n) { return fmt("%s - %s", op0(n), op1(n)); }
@@ -849,14 +853,14 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("std::get<%u>(%s)", elem->first, op0(n));
     }
 
-    // Unigned integer
+    // Unsigned integer
 
     result_t operator()(const operator_::unsigned_integer::BitAnd& n) { return fmt("(%s & %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::BitOr& n) { return fmt("(%s | %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::BitXor& n) { return fmt("(%s ^ %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::CastToEnum& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
-        return fmt("static_cast<%s>(%s.Ref())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
+        return fmt("::hilti::rt::enum_::from_uint<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
     result_t operator()(const operator_::unsigned_integer::CastToInterval& n) {
         return fmt("hilti::rt::Interval(hilti::rt::integer::safe<uint64_t>(%" PRIu64

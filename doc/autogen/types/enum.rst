@@ -17,7 +17,7 @@
 
     Instantiates an enum instance initialized from an unsigned integer
     value. The value does *not* need to correspond to any of the type's
-    enumerator labels. It must not be larger that the maximum that a
+    enumerator labels. It must not be larger than the maximum that a
     *signed* 64-bit integer value can represent.
 
 .. spicy:operator:: enum_::Cast int cast<int-type>(enum)
