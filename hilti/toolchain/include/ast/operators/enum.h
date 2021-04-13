@@ -24,13 +24,26 @@ STANDARD_OPERATOR_2x(
     type::Type_(type::UnsignedInteger(type::Wildcard())),
     "Casts an enum value into a unsigned integer. This will throw an exception if the enum value is ``Undef``.");
 
-BEGIN_CTOR(enum_, Ctor)
+BEGIN_CTOR(enum_, CtorSigned)
+    auto ctorType() const { return type::Enum(type::Wildcard()); }
+
+    auto signature() const {
+        return Signature{.args = {{.id = "value", .type = type::SignedInteger(type::Wildcard())}}, .doc = R"(
+Instantiates an enum instance initialized from a signed integer value. The value does
+*not* need to correspond to any of the type's enumerator labels.
+)"};
+    }
+END_CTOR
+
+BEGIN_CTOR(enum_, CtorUnsigned)
     auto ctorType() const { return type::Enum(type::Wildcard()); }
 
     auto signature() const {
         return Signature{.args = {{.id = "value", .type = type::UnsignedInteger(type::Wildcard())}}, .doc = R"(
-Instantiates an enum instance initialized from an integer value. The value does
-*not* need to correspond to any of the type's enumerator labels.
+Instantiates an enum instance initialized from an unsigned integer
+value. The value does *not* need to correspond to any of the type's
+enumerator labels. It must not be larger than the maximum that a
+*signed* 64-bit integer value can represent.
 )"};
     }
 END_CTOR

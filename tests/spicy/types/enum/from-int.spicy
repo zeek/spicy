@@ -1,0 +1,15 @@
+# @TEST-EXEC: printf '\01' | spicy-driver %INPUT
+
+module Test;
+
+type E = enum {
+    A = 1
+};
+
+public type X = unit {
+    a: int8 &convert=E($$);
+
+    on %done {
+        assert self.a == E::A;
+    }
+};

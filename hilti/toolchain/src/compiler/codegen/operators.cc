@@ -254,10 +254,16 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
-    result_t operator()(const operator_::enum_::Ctor& n) {
+    result_t operator()(const operator_::enum_::CtorSigned& n) {
         auto args = tupleArguments(n, n.op1());
         auto t = n.op0().type().as<type::Type_>().typeValue();
-        return fmt("static_cast<%s>(%s.Ref())", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
+        return fmt("::hilti::rt::enum_::from_int<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
+    }
+
+    result_t operator()(const operator_::enum_::CtorUnsigned& n) {
+        auto args = tupleArguments(n, n.op1());
+        auto t = n.op0().type().as<type::Type_>().typeValue();
+        return fmt("::hilti::rt::enum_::from_uint<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
     result_t operator()(const operator_::enum_::HasLabel& n) {

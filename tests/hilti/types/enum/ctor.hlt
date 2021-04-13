@@ -1,0 +1,38 @@
+# @TEST-EXEC: hiltic -j %INPUT
+#
+# @TEST-DOC: Test construction from various integer types, constant and non-constant.
+
+module Foo {
+
+import hilti;
+
+type X = enum {
+    A1 = 1,
+    A2 = 2,
+    A3 = 2
+};
+
+global int<8>  two_i8 = 2;
+global int<32> two_i32 = 2;
+global int<64> two_i64 = 2;
+
+global uint<8>  two_u8 = 2;
+global uint<32> two_u32 = 2;
+global uint<64> two_u64 = 2;
+
+global uint<64> too_large = 9223372036854775809;
+
+assert X(2) == X::A2;
+
+assert X(two_i8) == X::A2;
+assert X(two_i32) == X::A2;
+assert X(two_i64) == X::A2;
+
+assert X(two_u8) == X::A2;
+assert X(two_u32) == X::A2;
+assert X(two_u64) == X::A2;
+
+# cannot represent this in our int64 enums.
+assert-exception X(too_large);
+
+}
