@@ -4,8 +4,6 @@ FROM debian:stretch-slim
 # newer packages are published for debian-9.
 ARG ZEEK_VERSION=v3.2.2
 
-ENV BISON_VERSION "3.6.2"
-
 ENV DEBIAN_FRONTEND noninteractive
 ENV CCACHE_DIR "/var/spool/ccache"
 ENV CCACHE_COMPRESS 1
@@ -36,6 +34,7 @@ RUN sed -i "s/stretch main/stretch main contrib non-free/g" /etc/apt/sources.lis
     apt-get -q update && \
     apt-get install -q -y -t stretch-backports --no-install-recommends \
         binutils \
+        bison \
         ccache \
         clang-${LLVM_VERSION} \
         file \
@@ -65,15 +64,6 @@ RUN sed -i "s/stretch main/stretch main contrib non-free/g" /etc/apt/sources.lis
   # recent CMake
   mkdir -p "${CMAKE_DIR}" && \
     curl -sSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" | tar xzf - -C "${CMAKE_DIR}" --strip-components 1 && \
-  # recent Bison
-  cd /tmp && \
-    curl -sSL "https://ftp.gnu.org/gnu/bison/bison-${BISON_VERSION}.tar.gz" | tar xzf - -C /tmp && \
-    cd "./bison-${BISON_VERSION}" && \
-    ./configure --prefix=/usr && \
-    make && \
-    make install && \
-    cd /tmp && \
-    rm -rf /tmp/bison* && \
   echo "deb http://httpredir.debian.org/debian unstable main" >> /etc/apt/sources.list && \
     apt-get update && \
     apt-get -y --no-install-recommends install libstdc++-10-dev

@@ -13,7 +13,7 @@ RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
 RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled powertools
 
 # Install development tools.
-RUN yum install -y ccache gdb git make ninja-build python3 python3-pip vim doxygen diffutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
+RUN yum install -y ccache gdb git make ninja-build python3 python3-pip vim doxygen diffutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++ bison
 ENV PATH=/opt/rh/gcc-toolset-9/root/usr/bin:$PATH
 
 # Need a more recent CMake than available.
@@ -24,9 +24,6 @@ ENV PATH="/usr/local/cmake/bin:${PATH}"
 # Install Spicy dependencies.
 RUN yum install -y flex python3-sphinx
 RUN pip3 install "btest>=0.66" sphinx-rtd-theme
-
-# Need a more recent Bison than available.
-RUN cd /opt && curl -L http://ftp.gnu.org/gnu/bison/bison-3.5.tar.gz | tar xzvf - && cd /opt/bison-3.5 && ./configure && make install
 
 # Install rpmdevtools for packaging RPM files.
 RUN yum install -y rpmdevtools
