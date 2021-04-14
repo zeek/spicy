@@ -3,8 +3,6 @@ FROM debian:buster-slim
 ARG ZEEK_VERSION=4.0.0-0
 ARG ZEEK_LTS=1
 
-ENV BISON_VERSION "3.7.4"
-
 ENV DEBIAN_FRONTEND noninteractive
 ENV CCACHE_DIR "/var/spool/ccache"
 ENV CCACHE_COMPRESS 1
@@ -34,6 +32,7 @@ RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/so
     apt-get -q update && \
     apt-get install -q -y -t buster-backports --no-install-recommends \
         binutils \
+        bison \
         ccache \
         clang-${LLVM_VERSION} \
         file \
@@ -62,16 +61,7 @@ RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/so
   pip3 install --no-cache-dir "btest>=0.66" pre-commit && \
   # recent CMake
   mkdir -p "${CMAKE_DIR}" && \
-    curl -sSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" | tar xzf - -C "${CMAKE_DIR}" --strip-components 1 && \
-  # recent Bison
-  cd /tmp && \
-    curl -sSL "https://ftp.gnu.org/gnu/bison/bison-${BISON_VERSION}.tar.gz" | tar xzf - -C /tmp && \
-    cd "./bison-${BISON_VERSION}" && \
-    ./configure --prefix=/usr && \
-    make && \
-    make install && \
-    cd /tmp && \
-    rm -rf /tmp/bison*
+    curl -sSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" | tar xzf - -C "${CMAKE_DIR}" --strip-components 1
 
 # Install Zeek
 RUN mkdir -p /tmp/zeek-packages \
