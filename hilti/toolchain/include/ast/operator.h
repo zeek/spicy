@@ -14,6 +14,7 @@
 #include <hilti/ast/types/type.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/type_erase.h>
+#include <hilti/base/util.h>
 #include <hilti/base/visitor-types.h>
 
 namespace hilti {
@@ -333,6 +334,8 @@ constexpr auto isCommutative(Kind k) {
         case Kind::Unpack:
         case Kind::Unset: return false;
     };
+
+    util::cannot_be_reached();
 }
 
 namespace detail {
