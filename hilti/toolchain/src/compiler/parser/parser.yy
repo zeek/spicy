@@ -1,7 +1,11 @@
 /* Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details. */
 
+/* This grammar is written against the bison-3.3 API. If an older Bison version
+ * was detected we perform preprocessing to support versions down to at least
+ * bison-3.0, see the CMake macro `BISON_TARGET_PP`. */
+%require "3.3"
+
 %skeleton "lalr1.cc"                          /*  -*- C++ -*- */
-%require "3.4"
 %defines
 
 %{

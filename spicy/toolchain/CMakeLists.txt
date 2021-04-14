@@ -11,7 +11,7 @@ set(AUTOGEN_H_HILTI  "${CMAKE_BINARY_DIR}/include/hilti/autogen")
 
 FLEX_TARGET(scanner_spicy src/compiler/parser/scanner.ll ${AUTOGEN_CC}/__scanner.cc
             DEFINES_FILE ${AUTOGEN_CC}/__scanner.h)
-BISON_TARGET(parser_spicy src/compiler/parser/parser.yy ${AUTOGEN_CC}/__parser.cc
+BISON_TARGET_PP(parser_spicy src/compiler/parser/parser.yy ${AUTOGEN_CC}/__parser.cc
             DEFINES_FILE ${AUTOGEN_CC}/__parser.h
 )
 
