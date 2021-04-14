@@ -1,7 +1,7 @@
 /* Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details. */
 
 %skeleton "lalr1.cc"                          /*  -*- C++ -*- */
-%require "3.4"
+%require "3.0"
 %defines
 
 %{
@@ -21,7 +21,7 @@ namespace hilti { namespace detail { class Parser; } }
 %lex-param   {class Driver* driver}
 
 %define api.namespace {hilti::detail::parser}
-%define api.parser.class {Parser}
+%define parser_class_name {Parser} /* new name after switching to bison 3.3 -> api.parser.class */
 %define parse.error verbose
 
 %debug
