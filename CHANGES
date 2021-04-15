@@ -1,3 +1,7 @@
+1.0.0-9 | 2021-04-15 13:25:20 +0200
+
+  * Add assertion to ensure that code cannot be reached. (Benjamin Bannier, Corelight)
+
 1.0.0-7 | 2021-04-13 11:49:36 +0200
 
   * Disable 'create-release' and 'docker-tags' workflows for dev tags [skip ci]. (Benjamin Bannier, Corelight)
