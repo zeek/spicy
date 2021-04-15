@@ -1,3 +1,9 @@
+1.0.0-12 | 2021-04-15 14:26:45 +0200
+
+  * GH-26: Add skip, skip-pre and skip-post properties. (Benjamin Bannier, Corelight)
+
+  * Perform explicit validation of Spicy module properties. (Benjamin Bannier, Corelight)
+
 1.0.0-9 | 2021-04-15 13:25:20 +0200
 
   * Add assertion to ensure that code cannot be reached. (Benjamin Bannier, Corelight)

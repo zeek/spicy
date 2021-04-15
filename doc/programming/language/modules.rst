@@ -79,10 +79,21 @@ A module may define the following global properties:
 
     ``%byte-order = ORDER;``
         Defaults the byte order for any parsing inside this module to
-        `<expr>`, where ``ORDER`` must be of typei is type
+        `<expr>`, where ``ORDER`` must be of type is type
         :ref:`spicy_ByteOrder`.
 
     ``%spicy-version = "VERSION";``
         Specifies that the module requires a given minimum version of
         Spicy, where ``VERSION`` must be a string of the form ``X.Y``
         or ``X.Y.Z``.
+
+    ``%skip = REGEXP;``
+        Specifies a pattern which should be skipped when encountered in the
+        input stream in between parsing of unit fields (including before/after
+        the first/last field).
+    ``%skip-pre = REGEXP;``
+        Specifies a pattern which should be skipped when encountered in the
+        input stream before parsing of a unit begins.
+    ``%skip-post = REGEXP;``
+        Specifies a pattern which should be skipped when encountered in the
+        input stream after parsing of a unit has finished.
