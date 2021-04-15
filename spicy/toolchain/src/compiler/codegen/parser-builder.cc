@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <optional>
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
@@ -980,6 +981,21 @@ struct ProductionVisitor
     void operator()(const production::Switch& p) {
         builder()->addCall("hilti::debugIndent", {builder::string("spicy")});
 
+        std::optional<Expression> ncur;
+        if ( auto a = AttributeSet::find(p.attributes(), "&size") ) {
+            // Limit input to the specified length.
+            auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
+            auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
+
+            // Establish limited view, remembering position to continue at.
+            auto pstate = state();
+            pstate.cur = limited;
+            // NOTE: We do not store `ncur` in `pstate` since builders
+            // for different cases might update `pstate.ncur` as well.
+            ncur = builder()->addTmp("ncur", builder::memberCall(state().cur, "advance", {length}));
+            pushState(std::move(pstate));
+        }
+
         auto switch_ = builder()->addSwitch(p.expression(), p.location());
 
         for ( const auto& [exprs, prod] : p.cases() ) {
@@ -994,6 +1010,17 @@ struct ProductionVisitor
         else {
             auto default_ = switch_.addDefault(p.location());
             pushBuilder(default_, [&]() { pb->parseError("no matching case in switch statement", p.location()); });
+        }
+
+        if ( auto a = AttributeSet::find(p.attributes(), "&size") ) {
+            // Make sure we parsed the entire &size amount.
+            auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
+                                            builder::memberCall(*ncur, "offset", {}));
+            auto insufficient = builder()->addIf(std::move(missing));
+            pushBuilder(insufficient, [&]() { pb->parseError("&size amount not consumed", a->meta()); });
+
+            popState();
+            builder()->addAssign(state().cur, *ncur);
         }
 
         builder()->addCall("hilti::debugDedent", {builder::string("spicy")});

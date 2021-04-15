@@ -1,3 +1,7 @@
+1.0.0-14 | 2021-04-15 14:27:47 +0200
+
+  * GH-844: Add support for &size attribute for unit switch statement. (Benjamin Bannier, Corelight)
+
 1.0.0-12 | 2021-04-15 14:26:45 +0200
 
   * GH-26: Add skip, skip-pre and skip-post properties. (Benjamin Bannier, Corelight)

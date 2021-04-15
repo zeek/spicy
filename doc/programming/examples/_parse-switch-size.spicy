@@ -1,0 +1,12 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+    tag: uint8;
+    switch ( self.tag ) {
+       1 -> b1: bytes &eod;
+       2 -> b2: bytes &eod &convert=$$.lower();
+    } &size=3;
+
+    on %done { print self; }
+};

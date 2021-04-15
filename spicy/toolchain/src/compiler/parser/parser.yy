@@ -787,8 +787,8 @@ opt_hook_engine
               | HOOK_PARSE                       { $$ = spicy::Engine::Parser; }
               | /* empty */                      { $$ = spicy::Engine::Parser; } /* Default */
 
-unit_switch   : SWITCH opt_unit_switch_expr '{' unit_switch_cases '}' opt_unit_field_condition ';'
-                                                 { $$ = spicy::type::unit::item::Switch(std::move($2), std::move($4), spicy::Engine::All, std::move($6), {}, __loc__); }
+unit_switch   : SWITCH opt_unit_switch_expr '{' unit_switch_cases '}' opt_attributes opt_unit_field_condition ';'
+                                                 { $$ = spicy::type::unit::item::Switch(std::move($2), std::move($4), spicy::Engine::All, std::move($7), {}, std::move($6), __loc__); }
 
 opt_unit_switch_expr: '(' expr ')'               { $$ = std::move($2); }
               | /* empty */                      { $$ = {}; }
