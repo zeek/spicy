@@ -1,4 +1,8 @@
 
+1.1.0-dev.22 | 2021-04-19 09:24:14 +0000
+
+  * GH-766: Port Spicy to Apple silicon. (Robin Sommer, Corelight)
+
 1.1.0-dev.20 | 2021-04-19 08:58:24 +0000
 
   * GH-872: Fix missing normalization of enum label IDs. (Robin

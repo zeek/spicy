@@ -6,7 +6,7 @@ module Foo;
 global untrue: bool = 1.01;
 global falser: bool = 0.0;
 
-global u64max: real = 0xFFFFFFFFFFFFFFFF;
+# global u64max: real = 0xFFFFFFFFFFFFFFFF; # seems that this may work depending on platform
 
 global sig_54: real = 0xFFFFFFFFFFFFFC00;
 
