@@ -1,8 +1,11 @@
 #pragma once
 
+#include <limits>
 #include <string>
+#include <type_traits>
 #include <variant>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/logging.h>
 #include <hilti/rt/type-info.h>
 
@@ -29,5 +32,43 @@ bool has_label(const T& t, const TypeInfo* ti) {
 
     return false;
 }
+
+/**
+ * Converts a signed integer value into an enum value. The value does
+ * not need to correspond to a valid label. (Internally, this is a
+ * straight-forward cast.)
+ *
+ * @param t numerical value to convert
+ * @tparam T enum type, which must have int64_t as its underlying type (like
+ * all codegen'd enums do)
+ */
+template<typename T>
+T from_int(int64_t n) {
+    static_assert(std::is_enum<T>::value && std::is_same_v<std::underlying_type_t<T>, int64_t>);
+    return static_cast<T>(n);
+}
+
+/**
+ * Converts an unsigned integer value into an enum value. The value
+ * does not need to correspond to a valid label, but it cannot be
+ * larger than the maximum possible signed int64 value. (Internally,
+ * this is mostly a straight-forward cast, we just add the range
+ * check.)
+ *
+ * @param t numerical value to convert
+ * @tparam T enum type, which must have int64_t as its underlying type (like
+ * all codegen'd enums do)
+ * @throws InvalidValue if value exceeds range
+ */
+template<typename T>
+T from_uint(uint64_t n) {
+    static_assert(std::is_enum<T>::value && std::is_same_v<std::underlying_type_t<T>, int64_t>);
+
+    if ( n > std::numeric_limits<int64_t>::max() )
+        throw InvalidValue("enum value exceeds range");
+
+    return static_cast<T>(n);
+}
+
 } // namespace enum_
 } // namespace hilti::rt

@@ -238,7 +238,8 @@ private:                                                                        
 
 #define END_CTOR                                                                                                       \
     std::vector<hilti::operator_::Operand> operands() const {                                                          \
-        return {{.type = hilti::type::Type_(ctorType())}, {.type = hilti::type::OperandList(signature().args)}};       \
+        return {{.type = type::constant(hilti::type::Type_(ctorType()))},                                              \
+                {.type = hilti::type::OperandList(signature().args)}};                                                 \
     }                                                                                                                  \
                                                                                                                        \
     std::string doc() const { return signature().doc; }                                                                \

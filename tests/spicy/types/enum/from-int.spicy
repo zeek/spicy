@@ -1,0 +1,28 @@
+# @TEST-EXEC: printf '\001\002\003\004' | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module intcasttest;
+
+import spicy;
+
+type ResultCode = enum {
+  SUCCESS = 1,
+  OPERATIONS_ERROR = 2,
+  PROTOCOL_ERROR = 3,
+  OTHER = 4
+};
+
+type IntUnit = unit {
+  num_value: bytes &size=1 &convert=$$.to_int(spicy::ByteOrder::Big);
+};
+
+public type Result = unit {
+  code1: IntUnit &convert=ResultCode($$.num_value);
+  code2: IntUnit &convert=cast<ResultCode>($$.num_value);
+  code3: IntUnit &convert=cast<ResultCode>(cast<int32>($$.num_value));
+  code4: IntUnit &convert=cast<ResultCode>(cast<uint8>($$.num_value));
+
+  on %done {
+    print self;
+  }
+};
