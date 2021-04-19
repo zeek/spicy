@@ -39,6 +39,8 @@ while [ $# -ge 1 ]; do
         cd "$2" || exit
         shift
         shift
+    else
+        break
     fi
 done
 
@@ -56,7 +58,8 @@ get_version() {
 
         hash=$(git rev-parse --short "${ref}")
         branch=$(git symbolic-ref --short "${ref}" 2>/dev/null || echo "${hash}")
-        git_version=$(git describe --always --tags --match "v*" "${describe_arg}" | sed 's/^v//g')
+        git_version=$(git describe --always --tags --match "v*" "${describe_arg}" | sed 's/^v//' | sed 's/-\([0-9]*\)-g[0-9a-z]*/.\1/g'
+    )
     elif [ -f ./VERSION ]; then
         # Read information from VERSION file which contains values for `branch`, `hash`, and `git_version`.
         . ./VERSION
@@ -76,13 +79,20 @@ test -n "${CIRRUS_BRANCH}" && branch=${CIRRUS_BRANCH} # Cirrus CI
 
 version=$(echo "${git_version}" | awk -F - '{print $1}' | sed 's/^v//g')
 commit=$(echo "${git_version}" | awk -F - '{print $2}')
-dirty=$(echo "${git_version}" | awk -F - '{print $4}')
+
+dirty=
+echo "${git_version}" | grep -q 'dirty$' && dirty=dirty
+
+# echo "% ${git_version}"
+# echo version ${version}
+# echo commit ${commit}
+# echo dirty ${dirty}
 
 test -n "${commit}" -a -n "${dirty}" && commit="${commit}.${dirty}"
 
 case "${branch}" in
     main|master)
-        prerelease="dev-${commit}"
+        prerelease="${commit}"
         ;;
 
     release/*)

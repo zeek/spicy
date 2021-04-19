@@ -1,24 +1,29 @@
-1.0.0-14 | 2021-04-15 14:27:47 +0200
+
+1.1.0-dev.15 | 2021-04-19 08:57:24 +0000
+
+  * Fix versioning for development. (Robin Sommer, Corelight)
+
+1.1.0-dev.13 | 2021-04-15 14:27:47 +0200
 
   * GH-844: Add support for &size attribute for unit switch statement. (Benjamin Bannier, Corelight)
 
-1.0.0-12 | 2021-04-15 14:26:45 +0200
+1.1.0-dev.12 | 2021-04-15 14:26:45 +0200
 
   * GH-26: Add skip, skip-pre and skip-post properties. (Benjamin Bannier, Corelight)
 
   * Perform explicit validation of Spicy module properties. (Benjamin Bannier, Corelight)
 
-1.0.0-9 | 2021-04-15 13:25:20 +0200
+1.1.0-dev.9 | 2021-04-15 13:25:20 +0200
 
   * Add assertion to ensure that code cannot be reached. (Benjamin Bannier, Corelight)
 
-1.0.0-7 | 2021-04-13 11:49:36 +0200
+1.1.0-dev.7 | 2021-04-13 11:49:36 +0200
 
   * Disable 'create-release' and 'docker-tags' workflows for dev tags [skip ci]. (Benjamin Bannier, Corelight)
 
   * Include build status for 1.0 release branch in README [skip ci]. (Benjamin Bannier, Corelight)
 
-1.0.0-3 | 2021-04-12 18:23:41 +0200
+1.1.0-dev.3 | 2021-04-12 18:23:41 +0200
 
   * Fix leftovers in GH actions from master -> main rename. (Benjamin Bannier, Corelight)
 
