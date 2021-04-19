@@ -1,4 +1,11 @@
 
+1.1.0-dev.20 | 2021-04-19 08:58:24 +0000
+
+  * GH-872: Fix missing normalization of enum label IDs. (Robin
+    Sommer, Corelight)
+
+  * GH-878: Fix casting integers to enums. (Robin Sommer, Corelight)
+
 1.1.0-dev.15 | 2021-04-19 08:57:24 +0000
 
   * Fix versioning for development. (Robin Sommer, Corelight)
