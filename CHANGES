@@ -1,3 +1,6 @@
+1.1.0-dev.24 | 2021-04-19 15:30:16 +0200
+
+  * Build Zeek plugin for benchmarking job [skip ci]. (Benjamin Bannier, Corelight)
 
 1.1.0-dev.22 | 2021-04-19 09:24:14 +0000
 

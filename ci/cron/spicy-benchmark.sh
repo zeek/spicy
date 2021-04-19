@@ -34,7 +34,7 @@ export CXX=/opt/clang10/bin/clang++
 export CC=/opt/clang10/bin/clang
 export ASM=${CC}
 rm -rf build
-./configure --enable-ccache --with-zeek=/data/zeek-3.2.3/ --build-type=Release --generator=Ninja
+./configure --enable-ccache --with-zeek=${ZEEK_PREFIX:-/data/zeek-4.0.0} --build-zeek-plugin=yes --build-type=Release --generator=Ninja
 ninja -C build
 
 # Build benchmark.
