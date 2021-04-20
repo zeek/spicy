@@ -1,0 +1,10 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -d -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03' | spicy-dump %INPUT.hlto >> output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type X = unit {
+    : void;
+    x: uint8;
+};

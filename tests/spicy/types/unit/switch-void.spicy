@@ -3,18 +3,18 @@
 # @TEST-EXEC: echo 2234567890 | spicy-driver %INPUT.hlto >>output
 # @TEST-EXEC: echo 3234567890 | spicy-driver %INPUT.hlto >>output
 # @TEST-EXEC: echo 4234567890 | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: echo 0234567890 | spicy-driver %INPUT.hlto >>output
 # @TEST-EXEC: btest-diff output
 
 module Mini;
 
-public type test = unit {
+public type X = unit {
+    a: bytes &size=1;
 
-       a: bytes &size=1;
-
-       switch ( self.a ) {
-           b"1"       ->  : void { print "1"; }
-           b"2", b"3" ->  : void { print "2 or 3"; }
-           *          ->  : void { print "something else"; }
-           };
-
+    switch ( self.a ) {
+        b"0"       -> : void; # No hook.
+        b"1"       -> : void { print "1"; }
+        b"2", b"3" -> : void { print "2 or 3"; }
+        *          -> : void { print "something else"; }
+    };
 };
