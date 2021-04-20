@@ -1,10 +1,13 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -d -j -o %INPUT.hlto
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03' | spicy-dump %INPUT.hlto >> output
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x01\x02' | spicy-dump %INPUT.hlto >> output 2>&1
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x01' | spicy-dump %INPUT.hlto >> output 2>&1
 # @TEST-EXEC: btest-diff output
 
 module Test;
 
 public type X = unit {
-    : void;
+    : void; # Implicit `&size=0`, consumes nothing.
+    : void &size=2;
     x: uint8;
 };
