@@ -1502,14 +1502,6 @@ Expression ParserBuilder::contextNewFunction(const type::Unit& t) {
 void ParserBuilder::newValueForField(const production::Meta& meta, const Expression& value, const Expression& dd) {
     const auto& field = meta.field();
 
-    if ( value.type().isA<type::Void>() ) {
-        // Special-case: No value parsed, but still run hook.
-        beforeHook();
-        builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), {}, field->meta());
-        afterHook();
-        return;
-    }
-
     for ( const auto& a : AttributeSet::findAll(field->attributes(), "&requires") ) {
         // We evaluate "&requires" here so that the field's value has been
         // set already, and is hence accessible to the condition through
@@ -1520,7 +1512,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
         pushBuilder(block->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", a.value().location()); });
     }
 
-    if ( ! field->parseType().isA<spicy::type::Bitfield>() ) {
+    if ( ! field->parseType().isA<spicy::type::Bitfield>() && ! value.type().isA<type::Void>() ) {
         builder()->addDebugMsg("spicy", fmt("%s = %%s", field->id()), {value});
         builder()->addDebugMsg("spicy-verbose", fmt("- setting field '%s' to '%%s'", field->id()), {value});
     }
@@ -1542,12 +1534,16 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
                 args.push_back(hilti::builder::default_(builder::typeByID("hilti::Captures")));
         }
 
-        builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), std::move(args), field->meta());
+        if ( value.type().isA<type::Void>() )
+            // Special-case: No value parsed, but still run hook.
+            builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), {}, field->meta());
+        else
+            builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), std::move(args),
+                                     field->meta());
+
 
         afterHook();
     }
-
-    return;
 }
 
 Expression ParserBuilder::newContainerItem(const type::unit::item::Field& field, const Expression& self,
