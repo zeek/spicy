@@ -118,8 +118,14 @@ hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::F
         return hilti::Nothing();
     }
 
-    if ( pt.isA<type::Void>() )
+    if ( pt.isA<type::Void>() ) {
+        if ( const auto& attrs = f.attributes() )
+            for ( const auto& a : attrs->attributes() )
+                if ( a.tag() != "&size" )
+                    return hilti::result::Error(fmt("unsupported attribute for field of type void: %s", a));
+
         return hilti::Nothing();
+    }
 
     // A vector can be parsed either through a sub-item, or through a type.
 
