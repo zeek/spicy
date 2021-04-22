@@ -25,7 +25,7 @@ namespace linker {
 /**
  * Linker meta data associated with a HILTI unit. When HILTI compiles a
  * module, it records information the HILTI's internal linker, including for
- * example any global variables the moduel defines as well what
+ * example any global variables the module defines as well what
  * initialization code it needs. The HILTI linker then later combines the
  * meta data from all HILTI modules and generated additional C++ code from it
  * for use by the HILTI runtime library.
@@ -34,7 +34,7 @@ using MetaData = detail::cxx::linker::MetaData;
 } // namespace linker
 
 /**
- * Container for a single HILTI code module. For each HULTI source file, one
+ * Container for a single HILTI code module. For each HILTI source file, one
  * compiler unit gets instantiated. That unit then drives the process to
  * compile module comp into C++ code. While that's in progress, the unit
  * maintains state about the process, such as a cache of all external modules
@@ -62,7 +62,7 @@ public:
 
     /**
      * Compiles the unit's module AST into its final internal representation.
-     * @return set if succesful, or an appropiate error result
+     * @return set if successful, or an appropriate error result
      */
     Result<Nothing> compile();
 
@@ -71,27 +71,27 @@ public:
 
     /**
      *
-     * Prints out a cimpled HILTI module by recreasting its code from the
-     * internal AST. Must be called only after `compile()` was succesful.
+     * Prints out a HILTI module by recreating its code from the
+     * internal AST. Must be called only after `compile()` was successful.
      *
      * @param out stream to print the code to
-     * @return set if succesful, or an appropiate error result
+     * @return set if successful, or an appropriate error result
      */
     Result<Nothing> print(std::ostream& out) const;
 
     /**
      * Prints out C++ prototypes that host applications can use to interface
      * with the generated C++ code. Must be called only after `compile()` was
-     * succesful.
+     * successful.
      *
      * @param out stream to print the code to
-     * @return set if succesful, or an appropiate error result
+     * @return set if successful, or an appropriate error result
      */
     Result<Nothing> createPrototypes(std::ostream& out);
 
     /**
      * Returns the generated C++ code. Must be called only after `compile()`
-     * was succesful.
+     * was successful.
      *
      * @return code wrapped into the JIT's container class
      */
@@ -101,7 +101,7 @@ public:
      * Makes an external HILTI module available to the one this unit is
      * compiling. Essentially, this implements the HITLI's `import`
      * statement. Importing another module means that the compiled module
-     * will know how to access the other one's functinality. However, that
+     * will know how to access the other one's functionality. However, that
      * external module will still need to be compiled itself as well; and
      * then all the compiled modules need to be linked together.
      *
@@ -115,7 +115,7 @@ public:
      * @param scope if given, qualifies the ID with a path prefix to find the
      * module (e.g., a scope of `a.b.c` will search the module in `<search path>/a/b/c/<name>`.)
      * @param  dirs additional directories to search first
-     * @return the modules' cache index if successfull,or an appropiate error result if not
+     * @return the modules' cache index if successful,or an appropriate error result if not
      */
     Result<context::ModuleIndex> import(const ID& id, const hilti::rt::filesystem::path& ext,
                                         std::optional<ID> scope = {},
@@ -124,13 +124,13 @@ public:
     /**
      * Makes an external HILTI module available to the one this unit is
      * compiling. See `import(const ID, const hilti::rt::filesystem::path)` for
-     * more details on importng.
+     * more details on importing.
      *
      * This version of the `import` method imports directly from a given
      * file.
      *
      * @param path to the file to import
-     * @return the modules' cache index if successfull,or an appropiate error result if not
+     * @return the modules' cache index if successful,or an appropriate error result if not
      */
     Result<context::ModuleIndex> import(const hilti::rt::filesystem::path& path);
 
@@ -165,7 +165,7 @@ public:
     }
 
     /**
-     * Returns the unit's meta data for the internal HILTI linkger.
+     * Returns the unit's meta data for the internal HILTI linker.
      *
      * @return meta data, or an error if no code has been compiled yet
      */
@@ -190,58 +190,58 @@ public:
     const Options& options() const { return _context->options(); }
 
     /**
-     * Factory method that instantiastes a unit from an existing HILTI module
+     * Factory method that instantiates a unit from an existing HILTI module
      * that's be compiled.
      *
      * This method also caches the module with the global context. Note that
      * the module's ID or path must not exist with the context yet.
      *
-     * @param context glocal compiler context
+     * @param context global compiler context
      * @param module HILTI module to compile, of which the unit will take ownership
      * @param path path associated with the module, if any
-     * @return instantiated unit, or an appropiate error result if operation failed
+     * @return instantiated unit, or an appropriate error result if operation failed
      */
     static Result<Unit> fromModule(const std::shared_ptr<Context>& context, hilti::Module&& module,
                                    const hilti::rt::filesystem::path& path = "");
 
     /**
-     * Factory method that instantiastes a unit from an existing source file that it will parse.
+     * Factory method that instantiates a unit from an existing source file that it will parse.
      *
      * This method also caches the module with the global context. Note that
      * the module's ID or path must not exist with the context yet.
      *
-     * @param context glocal compiler context
+     * @param context global compiler context
      * @param path path to parse the module from
-     * @return instantiated unit, or an appropiate error result if operation failed
+     * @return instantiated unit, or an appropriate error result if operation failed
      */
     static Result<Unit> fromSource(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path);
 
     /**
      * Factory method that instantiates a unit from an existing HILTI module
-     * alreached cached by the global context.
+     * already cached by the global context.
      *
-     * @param context glocal compiler context
+     * @param context global compiler context
      * @param id ID of the cached module
-     * @return instantiated unit, or an appropiate error result if operation failed
+     * @return instantiated unit, or an appropriate error result if operation failed
      */
     static Result<Unit> fromCache(const std::shared_ptr<Context>& context, const hilti::ID& id);
 
     /**
      * Factory method that instantiates a unit from an existing HILTI module
-     * alreached cached by the global context.
+     * already cached by the global context.
      *
-     * @param context glocal compiler context
+     * @param context global compiler context
      * @param path path of the cached module
-     * @return instantiated unit, or an appropiate error result if operation failed
+     * @return instantiated unit, or an appropriate error result if operation failed
      */
     static Result<Unit> fromCache(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path);
 
     /**
      * Factory method that instantiates a unit from existing C++ source code that's to compiled.
      *
-     * @param context glocal compiler context
+     * @param context global compiler context
      * @param path path associated with the C++ code, if any
-     * @return instantiated unit, or an appropiate error result if operation failed
+     * @return instantiated unit, or an appropriate error result if operation failed
      */
     static Result<Unit> fromCXX(std::shared_ptr<Context> context, detail::cxx::Unit cxx,
                                 const hilti::rt::filesystem::path& path = "");
@@ -260,7 +260,7 @@ public:
 
     /**
      * Reads linker meta from a file. This expects the file to contain linker
-     * meta somewhere inside a appropiately marked block bracked by by
+     * meta somewhere inside a appropriately marked block bracketed by
      * C-style comments. When printing the generated C++ code for a compiled
      * HILTI module, it will include that block. In other words, you can just
      * save the C++ and reread the meta data with this method.
@@ -269,8 +269,8 @@ public:
      * @param path file associated with the stream, for logging and error reporting
      *
      * @return If the input had valid meta data, the 1st element is true and
-     * the second contains it. If the inout was valid but had no meta data
-     * included, the 1st element is true whiule the 2nd remains unset. If
+     * the second contains it. If the input was valid but had no meta data
+     * included, the 1st element is true while the 2nd remains unset. If
      * there was an error reading the input, the 1st element is false and the
      * 2nd undefined.
      */
@@ -280,7 +280,7 @@ public:
 private:
     // Private constructor initializing the unit's meta data. Note that the
     // corresponding module must then be imported into the unit as well.
-    // Nornmally you'd use the static ``Unit::from*()`` functions to do that
+    // Normally you'd use the static ``Unit::from*()`` functions to do that
     // while creating a unit.
     Unit(std::shared_ptr<Context> context, ID id, hilti::rt::filesystem::path path, bool have_hilti_ast)
         : _context(std::move(context)), _id(std::move(id)), _path(std::move(path)), _have_hilti_ast(have_hilti_ast) {}
@@ -321,7 +321,7 @@ private:
     // Clear any previously computed AST state before beginning a pass over the AST.
     void _resetNodes(const ID& id, Node* root);
 
-    // Parses a source file with the appropiate plugin.
+    // Parses a source file with the appropriate plugin.
     static Result<hilti::Module> parse(const std::shared_ptr<Context>& context,
                                        const hilti::rt::filesystem::path& path);
 
