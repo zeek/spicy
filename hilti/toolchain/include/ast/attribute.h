@@ -47,7 +47,7 @@ public:
         : NodeBase({std::move(v)}, std::move(m)), _tag(std::move(tag)) {}
 
     /** Returns the name of the attribute, including the leading `&`. */
-    auto tag() const { return _tag; }
+    const auto& tag() const { return _tag; }
 
     /** Returns true if an argument is associated with the attribute. */
     bool hasValue() const { return ! childs()[0].isA<node::None>(); }
