@@ -546,6 +546,9 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         if ( f.sinks().size() && ! f.parseType().isA<type::Bytes>() )
             error("only a bytes field can have sinks attached", p);
 
+        if ( f.parseType().isA<type::Void>() && ! f.isTransient() )
+            error("void fields never store a value and cannot be named", p);
+
         if ( const auto& c = f.ctor() ) {
             // Check that constants are of a supported type.
             const auto& t = c->type();

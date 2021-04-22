@@ -4,6 +4,7 @@
 module Test;
 
 type X = unit {
-    : void &size=2 { print $$; }
+    : void &size=2;
     : void &size=2 &max-size=2;
+    a: void;
 };
