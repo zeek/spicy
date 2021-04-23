@@ -382,6 +382,29 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         }
     }
 
+    void operator()(const expression::Keyword& n, position_t p) {
+        switch ( n.kind() ) {
+            case expression::keyword::Kind::DollarDollar:
+                if ( const auto& function = p.findParent<Function>() ) {
+                    for ( const auto& hook : function->get().childsOfType<type::Function>() ) {
+                        if ( hook.flavor() != type::function::Flavor::Hook )
+                            continue;
+
+                        const auto& parameters = hook.parameters();
+                        if ( parameters.end() == std::find_if(parameters.begin(), parameters.end(),
+                                                              [](auto&& p) { return p.id() == ID("__dd"); }) )
+                            error("$$ is not available in this hook", p);
+                    }
+                    break;
+                }
+
+            case expression::keyword::Kind::Captures:
+            case expression::keyword::Kind::Self:
+                // Nothing.
+                break;
+        }
+    }
+
     void operator()(const type::SignedInteger& n, position_t p) {
         auto w = n.width();
 

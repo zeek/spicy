@@ -167,7 +167,14 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         return performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
     }
 
-    result_t operator()(const hilti::type::Void& /* t */) { return hilti::expression::Void(); }
+    result_t operator()(const hilti::type::Void& /* t */) {
+        if ( auto size = AttributeSet::find(meta.field()->attributes(), "&size") )
+            // Even though we we do not store parsed data, we still need to consume
+            // data in the input stream so that `&size` checks can work.
+            pb->advanceInput(*size->valueAs<Expression>());
+
+        return hilti::expression::Void();
+    }
 
     result_t operator()(const hilti::type::Bytes& t) {
         auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");

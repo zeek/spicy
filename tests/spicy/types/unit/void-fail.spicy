@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >> output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+type X = unit {
+    : void &size=2;
+    : void &size=2 &max-size=2;
+    a: void;
+};

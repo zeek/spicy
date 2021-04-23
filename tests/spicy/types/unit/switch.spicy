@@ -40,8 +40,6 @@ public type X = unit {
 public type Y = unit {
     tag: uint8;
      switch ( self.tag ) {
-         # 1 -> b1: bytes &eod;
-         # 2 -> b2: bytes &eod &convert=$$.lower();
          1 -> b1: bytes &eod;
          2 -> b2: bytes &eod &convert=$$.lower();
      } &size=3;

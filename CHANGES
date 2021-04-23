@@ -1,3 +1,14 @@
+
+1.1.0-dev.33 | 2021-04-23 09:41:18 +0200
+
+  * Reject `void` fields with names. (Benjamin Bannier, Corelight)
+
+  * Validate supported attributes for `void` fields. (Benjamin Bannier, Corelight)
+
+  * Add validation rejecting `$$` in hooks not supporting it. (Benjamin Bannier, Corelight)
+
+  * GH-37: Fix handling of `&size` attribute for anonymous void fields. (Benjamin Bannier, Corelight)
+
 1.1.0-dev.26 | 2021-04-21 13:13:11 +0200
 
   * GH-889: Fix hook handling for anonymous void fields.
