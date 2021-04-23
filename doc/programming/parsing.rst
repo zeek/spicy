@@ -1204,10 +1204,30 @@ the current element anymore. See :ref:`unit_hooks` for more on hooks.
 Void
 ^^^^
 
-The :ref:`type_void` type can be used as a place-holder for not
-parsing anything. While that's not very useful for normal fields, it
-allows branches in :ref:`switch <parse_switch>` constructs to forego
-any parsing.
+The :ref:`type_void` type can be used as a place-holder for not storing any
+data. By default ``void`` fields do not consume any data, and while not very
+useful for normal fields, this allows branches in :ref:`switch <parse_switch>`
+constructs to forego any parsing.
+
+If a non-zero ``&size`` is specified, the given number of bytes of input data
+are consumed. This allows skipping over data without storing their result:
+
+.. spicy-code:: parse-void-size.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        : void &size=2;
+        x: uint8;
+
+        on %done { print self; }
+    };
+
+.. spicy-output:: parse-void-size.spicy
+    :exec: printf '\01\02\03' | spicy-driver %INPUT
+    :show-with: foo.spicy
+
+``void`` fields cannot have names.
 
 Controlling Parsing
 ===================
