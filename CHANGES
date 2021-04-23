@@ -1,4 +1,8 @@
 
+1.1.0-dev.35 | 2021-04-23 11:27:07 +0200
+
+  * GH-37: Add documentation on how to skip data with `void` fields.
+
 1.1.0-dev.33 | 2021-04-23 09:41:18 +0200
 
   * Reject `void` fields with names. (Benjamin Bannier, Corelight)

@@ -1,0 +1,9 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+    : void &size=2;
+    x: uint8;
+
+    on %done { print self; }
+};
