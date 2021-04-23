@@ -24,7 +24,14 @@ class ZlibError : public hilti::rt::RuntimeError {
  */
 class Stream {
 public:
-    Stream();
+    /**
+     * Constructor initializing a new stream for decompression.
+     *
+     * @param windows_bits value corresponding to zlib's `windowBits` parameter
+     * for `inflateInit2`; the default means "check for, and require, a gzip
+     * file"
+     */
+    Stream(int64_t window_bits = 15 + 32);
     ~Stream();
 
     Stream(const Stream&) = default;
@@ -60,6 +67,12 @@ public:
 private:
     std::shared_ptr<detail::State> _state;
 };
+
+/** Instantiates a new `Stream` object, forwarding arguments to its constructor. */
+inline Stream init(int64_t window_bits) // NOLINT(google-runtime-references)
+{
+    return Stream(window_bits);
+}
 
 /** Forwards to the corresponding `Stream` method. */
 inline hilti::rt::Bytes decompress(Stream& stream, // NOLINT(google-runtime-references)

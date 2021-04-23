@@ -13,15 +13,13 @@ struct detail::State {
     z_stream stream;
 };
 
-Stream::Stream() {
+Stream::Stream(int64_t window_bits) {
     _state = std::shared_ptr<detail::State>(new detail::State(), [](auto p) {
         inflateEnd(&p->stream);
         delete p; // NOLINT(cppcoreguidelines-owning-memory)
     });
 
-    // "15" here means maximum compression.  "32" is a gross overload hack
-    // that means "check it for whether it's a gzip file. Sheesh.
-    if ( inflateInit2(&_state->stream, 15 + 32) != Z_OK ) {
+    if ( inflateInit2(&_state->stream, window_bits) != Z_OK ) {
         _state = nullptr;
         throw ZlibError("inflateInit2 failed");
     }
