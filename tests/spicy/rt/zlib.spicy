@@ -1,11 +1,14 @@
-# @TEST-EXEC: echo "H4sIAOVzEV0CA/NIzcnJ11EILshMrlQEACp6Q+YNAAAA" | base64 -d | spicy-driver %INPUT >output
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: echo "H4sIAOVzEV0CA/NIzcnJ11EILshMrlQEACp6Q+YNAAAA" | base64 -d | spicy-driver -p Test::X1 test.hlto >>output
+# @TEST-EXEC: echo "MzSEAS4A" | base64 -d | spicy-driver -p Test::X2 test.hlto >>output
 # @TEST-EXEC: btest-diff output
 
 module Test;
 
 import spicy;
 
-public type X = unit {
+# Expect gzip data.
+public type X1 = unit {
     b1: bytes &size=10;
     b2: bytes &size=10;
     b3: bytes &eod=10;
@@ -16,5 +19,13 @@ public type X = unit {
         out += spicy::zlib_decompress(z, self.b2);
         out += spicy::zlib_decompress(z, self.b3);
         print(out);
+    }
+};
+
+# Expect raw deflate data (like inside a zip archive).
+public type X2 = unit {
+    : bytes &eod {
+        local z = spicy::zlib_init(-15); # Negative for deflating raw data, 15 maximum window size.
+        print spicy::zlib_decompress(z, $$);
     }
 };

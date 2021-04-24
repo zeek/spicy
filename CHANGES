@@ -1,4 +1,12 @@
 
+1.1.0-dev.37 | 2021-04-24 09:28:04 +0200
+
+  * Add new Spicy runtime function `spicy::zlib_init(window_bits)`
+    that initializes a `ZlibStream` for decompression with the given
+    window size argument. See the zlib documentation at
+    https://www.zlib.net/manual.html for more on the argument. (Robin
+    Sommer, Corelight)
+
 1.1.0-dev.35 | 2021-04-23 11:27:07 +0200
 
   * GH-37: Add documentation on how to skip data with `void` fields.

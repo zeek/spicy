@@ -1,3 +1,14 @@
+.. _spicy_zlib_init:
+
+.. rubric:: ``function spicy::zlib_init(window_bits: int64) : ZlibStream``
+
+Initializes a zlib stream for decompression.
+
+``window_bits``: Same as the corresponding parameter for zlib's `inflateInit2`
+(see https://www.zlib.net/manual.html).
+
+Will throw a `ZlibError` exception if initialization fails.
+
 .. _spicy_zlib_decompress:
 
 .. rubric:: ``function spicy::zlib_decompress(inout stream_: ZlibStream, data: bytes) : bytes``

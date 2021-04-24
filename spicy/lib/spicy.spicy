@@ -58,6 +58,14 @@ public type Side = enum {
 ## Captures the state of gzip decompression for the corresponding library functions.
 public type ZlibStream = __library_type("spicy::rt::zlib::Stream");
 
+## Initializes a zlib stream for decompression.
+##
+## ``window_bits``: Same as the corresponding parameter for zlib's `inflateInit2`
+## (see https://www.zlib.net/manual.html).
+##
+## Will throw a `ZlibError` exception if initialization fails.
+public function zlib_init(window_bits: int64) : ZlibStream &cxxname="spicy::rt::zlib::init" &have_prototype;
+
 ## Decompresses a chunk of data through the given zlib stream.
 public function zlib_decompress(inout stream_: ZlibStream, data: bytes) : bytes &cxxname="spicy::rt::zlib::decompress" &have_prototype;
 

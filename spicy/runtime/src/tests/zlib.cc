@@ -28,6 +28,12 @@ TEST_CASE("decompress") {
             CHECK_EQ(zlib::finish(stream), ""_b);
         }
 
+        SUBCASE("raw deflate") {
+            auto raw_stream = zlib::Stream(-15);
+            CHECK_EQ(zlib::decompress(raw_stream, "\x33\x34\x84\x01\x2e\x00"_b), "1111111111\n"_b);
+            CHECK_EQ(zlib::finish(raw_stream), ""_b);
+        }
+
         SUBCASE("multiple blocks") {
             auto decompress = zlib::decompress(stream, "x\x01\x01\x03\x00\xfc\xff\x00\x01\x02\x00\x07\x00\x04"_b);
             decompress.append(zlib::decompress(stream, "\x00\x01\x02"_b));
