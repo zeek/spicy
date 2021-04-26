@@ -1,4 +1,14 @@
 
+1.1.0-dev.43 | 2021-04-26 15:32:25 +0000
+
+  * Allow to pass zlib's window bits parameter into Zlib unit type.
+    (Robin Sommer, Corelight)
+
+  * Force type information to come last in generated C++ code.
+
+  * Fix crash on macOS ARM when writing over an existing HLTO file.
+    (Robin Sommer, Corelight)
+
 1.1.0-dev.37 | 2021-04-24 09:28:04 +0200
 
   * Add new Spicy runtime function `spicy::zlib_init(window_bits)`

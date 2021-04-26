@@ -5,8 +5,13 @@ module filter;
 import spicy;
 
 ## A filter that performs zlib decompression.
-type Zlib = unit {
+type Zlib = unit(window_bits: optional<int64> = Null) {
     %filter;
+
+    on %init {
+        if ( window_bits )
+            self.z = spicy::zlib_init(*window_bits);
+    }
 
     data: bytes &chunked &eod {
         self.forward(spicy::zlib_decompress(self.z, self.data));
