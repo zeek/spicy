@@ -18,6 +18,27 @@ Time time::current_time() {
     return Time(t, Time::SecondTag());
 }
 
+Time time::mktime(uint64_t y, uint64_t m, uint64_t d, uint64_t H, uint64_t M, uint64_t S) {
+    if ( y < 1970 || (m < 1 || m > 12) || (d < 1 || d > 31) || H > 23 || M > 59 || S > 59 )
+        throw InvalidValue("value out of range");
+
+    struct tm t;
+    t.tm_sec = S;
+    t.tm_min = M;
+    t.tm_hour = H;
+    t.tm_mday = d;
+    t.tm_mon = m - 1;
+    t.tm_year = y - 1900;
+    t.tm_isdst = -1;
+
+    time_t teatime = mktime(&t);
+
+    if ( teatime < 0 )
+        throw InvalidValue("cannot create time value");
+
+    return Time(teatime, Time::SecondTag());
+}
+
 Time::operator std::string() const {
     if ( _nsecs == 0 )
         return "<not set>";

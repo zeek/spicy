@@ -97,6 +97,7 @@ private:
 
 namespace time {
 extern Time current_time();
+extern Time mktime(uint64_t y, uint64_t m, uint64_t d, uint64_t H, uint64_t M, uint64_t S);
 } // namespace time
 
 namespace detail::adl {

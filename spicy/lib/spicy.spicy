@@ -84,6 +84,16 @@ public function base64_finish(inout stream_: Base64Stream) : bytes &cxxname="spi
 ## Returns the current wall clock time.
 public function current_time() : time &cxxname="hilti::rt::time::current_time" &have_prototype;
 
+## Constructs a time value from a tuple of broken-out elements specifying local time.
+##
+## - *y*: year (1970-...)
+## - *m*: month (1-12)
+## - *d*: day (1-31)
+## - *H*: hour (0-23)
+## - *M*: minute (0-59)
+## - *S*: second (0-59)
+public function mktime(y: uint64, m: uint64, d: uint64, H: uint64, M: uint64, S: uint64) : time &cxxname="hilti::rt::time::mktime" &have_prototype;
+
 ## Returns a bytes value rendered as a hex string.
 public function bytes_to_hexstring(value: bytes) : string &cxxname="spicy::rt::bytes_to_hexstring" &have_prototype;
 
