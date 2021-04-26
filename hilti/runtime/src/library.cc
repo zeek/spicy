@@ -119,6 +119,15 @@ hilti::rt::Result<Nothing> hilti::rt::Library::remove() const {
 
 hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::filesystem::path& path) const {
     std::error_code ec;
+
+    // On macOS ARM, there are weird crashes during execution if we don't remove an existing file first. Note that
+    // `is_regular_file(`) fails if we cannot access the file due to permissions, but we let it fail during removal.
+    if ( hilti::rt::filesystem::is_regular_file(path, ec) ) {
+        hilti::rt::filesystem::remove(path, ec);
+        if ( ec )
+            return result::Error(fmt("could not remove existing library when saving to %s: %s", path, ec.message()));
+    }
+
     hilti::rt::filesystem::copy(_path, path, hilti::rt::filesystem::copy_options::overwrite_existing, ec);
 
     if ( ec )
