@@ -22,6 +22,7 @@ declare public void debugIndent(string dbg_stream) &cxxname="hilti::rt::debug::i
 declare public void debugDedent(string dbg_stream) &cxxname="hilti::rt::debug::dedent" &have_prototype;
 
 declare public time current_time() &cxxname="hilti::rt::time::current_time" &have_prototype;
+declare public time mktime(uint<64> y, uint<64> m, uint<64> d, uint<64> H, uint<64> M, uint<64> S) &cxxname="hilti::rt::time::mktime" &have_prototype;
 
 declare public void abort() &cxxname="hilti::rt::abort_with_backtrace" &have_prototype;
 

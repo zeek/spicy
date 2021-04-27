@@ -45,6 +45,19 @@ Finalizes a base64 stream used for decoding or encoding.
 
 Returns the current wall clock time.
 
+.. _spicy_mktime:
+
+.. rubric:: ``function spicy::mktime(y: uint64, m: uint64, d: uint64, H: uint64, M: uint64, S: uint64) : time``
+
+Constructs a time value from a tuple of broken-out elements specifying local time.
+
+- *y*: year (1970-...)
+- *m*: month (1-12)
+- *d*: day (1-31)
+- *H*: hour (0-23)
+- *M*: minute (0-59)
+- *S*: second (0-59)
+
 .. _spicy_bytes_to_hexstring:
 
 .. rubric:: ``function spicy::bytes_to_hexstring(value: bytes) : string``

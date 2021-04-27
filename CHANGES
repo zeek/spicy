@@ -1,4 +1,10 @@
 
+1.1.0-dev.45 | 2021-04-27 08:51:29 +0000
+
+  * Provide mktime() library function. This allows creating a `time`
+    value from individual compenents, similar to mktime(3). (Robin
+    Sommer, Corelight)
+
 1.1.0-dev.43 | 2021-04-26 15:32:25 +0000
 
   * Allow to pass zlib's window bits parameter into Zlib unit type.

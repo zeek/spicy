@@ -24,6 +24,16 @@ TEST_CASE("current_time") {
     CHECK_GE(end + 1, current_time.seconds());
 }
 
+TEST_CASE("mktime") {
+    setenv("TZ", "", 1);
+    tzset();
+    const auto t = time::mktime(2021, 4, 1, 1, 2, 3);
+    CHECK_EQ(t, Time(1617238923, Time::SecondTag{}));
+
+    CHECK_THROWS_AS(time::mktime(42, 4, 1, 1, 2, 3), const InvalidValue&);
+    CHECK_THROWS_AS(time::mktime(2021, 4, 1, 1, 2, 100), const InvalidValue&);
+}
+
 TEST_SUITE_BEGIN("Time");
 
 TEST_CASE("comparisions") {
