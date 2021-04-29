@@ -982,7 +982,13 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "tuple<*>";
         else {
-            out << const_(n) << "tuple<" << std::make_pair(n.types(), ", ") << ">";
+            out << const_(n) << "tuple<";
+
+            auto types = util::transform(n.elements(), [](const auto& x) {
+                return x.first ? fmt("%s: %s", x.first, x.second) : fmt("%s", x.second);
+            });
+
+            out << util::join(types, ", ") << '>';
         }
     }
 
