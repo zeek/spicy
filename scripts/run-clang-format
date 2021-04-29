@@ -10,7 +10,7 @@ pre_commit_hook=0
 
 # Directories to run on by default. When changing, adapt .pre-commit-config.yam
 # as well.
-files="hilti spicy zeek"
+files="hilti spicy"
 
 error() {
     test "${pre_commit_hook}" = 0 && echo "$@" >&2 && exit 1

@@ -19,7 +19,7 @@ repos:
     name: Run clang-format on code
     entry: ./scripts/run-clang-format
     args: ["--pre-commit-hook"]
-    files: ^(hilti|spicy|zeek)/.*\.(c|h|C|H|cpp|hpp|cc|hh|c\+\+|h\+\+|cxx|hxx)$
+    files: ^(hilti|spicy)/.*\.(c|h|C|H|cpp|hpp|cc|hh|c\+\+|h\+\+|cxx|hxx)$
     language: script
 
 - repo: https://github.com/pre-commit/pre-commit-hooks

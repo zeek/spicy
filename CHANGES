@@ -1,3 +1,11 @@
+
+1.1.0-dev.53 | 2021-04-29 13:00:26 +0000
+
+  * Updating submodule(s).
+
+  * Do not run clang-tidy/clang-format on Zeek submodules. (Robin
+    Sommer, Corelight)
+
 1.1.0-dev.48 | 2021-04-27 15:52:40 +0200
 
   * GH-882: Make spicy compile with bison 3.0. (Johanna)
