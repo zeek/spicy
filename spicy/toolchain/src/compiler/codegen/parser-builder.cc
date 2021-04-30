@@ -1609,7 +1609,7 @@ Expression ParserBuilder::applyConvertExpression(const type::unit::item::Field& 
     if ( ! dst )
         dst = builder()->addTmp("converted", field.itemType());
 
-    if ( convert->second ) {
+    if ( ! convert->second ) {
         auto block = builder()->addBlock();
         block->addLocal(ID("__dd"), field.parseType(), value);
         block->addAssign(*dst, convert->first);

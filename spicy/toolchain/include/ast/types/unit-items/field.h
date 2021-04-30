@@ -101,7 +101,10 @@ public:
     Node& itemNode() { return childs()[2]; }
     Node& attributesNode() { return childs()[4]; }
 
-    std::optional<std::pair<Expression, bool>> convertExpression() const;
+    // Get the `&convert` expression, if any.
+    //
+    // For unit-level converts, returns the unit type as well.
+    std::optional<std::pair<Expression, std::optional<Type>>> convertExpression() const;
 
     bool operator==(const Field& other) const {
         return _engine == other._engine && id() == other.id() && originalType() == other.originalType() &&
