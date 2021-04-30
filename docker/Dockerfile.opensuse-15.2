@@ -1,0 +1,24 @@
+FROM opensuse/leap:15.2
+
+RUN zypper addrepo https://download.opensuse.org/repositories/openSUSE:Leap:15.2:Update/standard/openSUSE:Leap:15.2:Update.repo \
+ && zypper addrepo -G https://download.opensuse.org/repositories/security:zeek/openSUSE_Leap_15.2/security:zeek.repo \
+ && zypper refresh \
+ && zypper install -y \
+      bison \
+      ccache \
+      cmake \
+      flex \
+      gcc9-c++ \
+      git \
+      ninja \
+      python3 \
+      rpmbuild \
+      which \
+      zeek \
+      zeek-btest \
+      zlib-devel \
+ && zypper clean
+
+ENV CXX g++-9
+ENV CC gcc-9
+ENV PATH ${PATH}:/opt/zeek/bin

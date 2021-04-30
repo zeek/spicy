@@ -64,7 +64,7 @@ template<typename T>
 T from_uint(uint64_t n) {
     static_assert(std::is_enum<T>::value && std::is_same_v<std::underlying_type_t<T>, int64_t>);
 
-    if ( n > std::numeric_limits<int64_t>::max() )
+    if ( n > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
         throw InvalidValue("enum value exceeds range");
 
     return static_cast<T>(n);

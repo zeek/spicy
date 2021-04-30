@@ -147,6 +147,68 @@ clang9_zeek_lts_ubuntu_release_static_task:
       type: text/xml
       format: junit
 
+clang11_zeek_nightly_task:
+  # This task is only executed on main.
+  # Failing this task does not fail the build.
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+  allow_failures: true
+
+  container:
+    dockerfile: ci/Dockerfile
+    docker_arguments:
+      # We specify these only to pin a certain base image;
+      # we install nightly Zeek packages in a CI step below.
+      - ZEEK_LTS:
+      - ZEEK_VERSION: 4.0.0-0
+    cpu: 4
+    memory: 8G
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+    LD_LIBRARY_PATH: /usr/lib/llvm-11/lib/clang/9.0.1/lib/linux/
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  install_zeek_nightly_script:
+    - echo 'deb http://download.opensuse.org/repositories/security:/zeek/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/security:zeek.list
+    - curl -fsSL https://download.opensuse.org/repositories/security:zeek/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/security_zeek.gpg > /dev/null
+    - sudo apt update
+    - sudo DEBIAN_FRONTEND=noninteractive apt install -y zeek-nightly
+
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-11 --with-zeek /opt/zeek-nightly --clang-format `which clang-format-11` --clang-tidy `which clang-tidy-11`
+  build_script:          ./ci/run-ci -b build build
+  test_build_script:     ./ci/run-ci -b build test-build
+  install_script:        ./ci/run-ci -b build install
+  cleanup_script:        ./ci/run-ci -b build cleanup
+  test_install_script:   ./ci/run-ci -b build test-install
+  packaging_script:
+    - ninja -C build package
+
+  packages_artifacts:
+    path: build/spicy*.tar.gz
+    type: application/gzip
+
+  on_failure:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
+
 macos_catalina_task:
   osx_instance:
     image: catalina-base
@@ -266,6 +328,67 @@ no_toolchain_task:
       type: text/xml
       format: junit
 
+validate_release_tarball_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+
+  container:
+    dockerfile: ci/Dockerfile
+    cpu: 4
+    memory: 12G
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  # Pull tags as well since by default Cirrus CI does not fetch them, but they
+  # are needed for `git describe` used in `scripts/autogen-version`. We also
+  # pull submodules here.
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  create_tarball_script:
+    - scripts/make-tarball.sh
+  unpack_script:
+    - mkdir /tmp/spicy-tarball
+    - tar xf spicy*.tar.gz -C /tmp/spicy-tarball
+    - cd /tmp/spicy-tarball
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+  build_script:
+    - ninja -j3 -C build
+  test_build_script:
+    - make -C tests test-build
+
+homebrew_catalina_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+
+  osx_instance:
+    image: catalina-base
+
+  script:
+  - brew tap zeek/zeek
+  - brew install spicy --HEAD
+  - brew test spicy
+
+homebrew_big_sur_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+
+  osx_instance:
+    image: big-sur-base
+
+  script:
+  - brew tap zeek/zeek
+  - brew install spicy --HEAD
+  - brew test spicy
+
 docker_alpine_3_12_task:
   container:
     dockerfile: docker/Dockerfile.alpine-3.12
@@ -381,67 +504,6 @@ docker_centos_8_task:
   packages_artifacts:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
-
-validate_release_tarball_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  container:
-    dockerfile: ci/Dockerfile
-    cpu: 4
-    memory: 12G
-
-  timeout_in: 120m
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-
-  env:
-    CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
-
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
-  update_git_script:
-    - git fetch --tags
-    - git submodule update --recursive --init
-
-  create_tarball_script:
-    - scripts/make-tarball.sh
-  unpack_script:
-    - mkdir /tmp/spicy-tarball
-    - tar xf spicy*.tar.gz -C /tmp/spicy-tarball
-    - cd /tmp/spicy-tarball
-  configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
-  build_script:
-    - ninja -j3 -C build
-  test_build_script:
-    - make -C tests test-build
-
-homebrew_catalina_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  osx_instance:
-    image: catalina-base
-
-  script:
-  - brew tap zeek/zeek
-  - brew install spicy --HEAD
-  - brew test spicy
-
-homebrew_big_sur_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  osx_instance:
-    image: big-sur-base
-
-  script:
-  - brew tap zeek/zeek
-  - brew install spicy --HEAD
-  - brew test spicy
 
 docker_debian9_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
@@ -725,21 +787,13 @@ docker_fedora33_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-clang11_zeek_nightly_task:
-  # This task is only executed on main.
-  # Failing this task does not fail the build.
+docker_opensuse15_2_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-  allow_failures: true
 
   container:
-    dockerfile: ci/Dockerfile
-    docker_arguments:
-      # We specify these only to pin a certain base image;
-      # we install nightly Zeek packages in a CI step below.
-      - ZEEK_LTS:
-      - ZEEK_VERSION: 4.0.0-0
+    dockerfile: docker/Dockerfile.opensuse-15.2
     cpu: 4
-    memory: 8G
+    memory: 12G
 
   timeout_in: 120m
 
@@ -751,7 +805,6 @@ clang11_zeek_nightly_task:
   env:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
-    LD_LIBRARY_PATH: /usr/lib/llvm-11/lib/clang/9.0.1/lib/linux/
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
   # are needed for `git describe` used in `scripts/autogen-version`. We also
@@ -760,32 +813,19 @@ clang11_zeek_nightly_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
-  install_zeek_nightly_script:
-    - echo 'deb http://download.opensuse.org/repositories/security:/zeek/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/security:zeek.list
-    - curl -fsSL https://download.opensuse.org/repositories/security:zeek/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/security_zeek.gpg > /dev/null
-    - sudo apt update
-    - sudo DEBIAN_FRONTEND=noninteractive apt install -y zeek-nightly
-
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-11 --with-zeek /opt/zeek-nightly --clang-format `which clang-format-11` --clang-tidy `which clang-tidy-11`
-  build_script:          ./ci/run-ci -b build build
-  test_build_script:     ./ci/run-ci -b build test-build
-  install_script:        ./ci/run-ci -b build install
-  cleanup_script:        ./ci/run-ci -b build cleanup
-  test_install_script:   ./ci/run-ci -b build test-install
-  packaging_script:
-    - ninja -C build package
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+  build_script:
+    - ninja -j4 -C build check all package
+    - cp build/spicy*.rpm .
+    - rpm -i ./spicy*.rpm
+    - rm -rf build
+  test_install_script:
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
 
   packages_artifacts:
-    path: build/spicy*.tar.gz
+    path: ./spicy*.{deb,rpm}
     type: application/gzip
-
-  on_failure:
-    ci_artifacts:
-      path: artifacts
-    junit_artifacts:
-      path: artifacts/diag.xml
-      type: text/xml
-      format: junit
 
 freebsd11_task:
   freebsd_instance:

@@ -1,4 +1,12 @@
 
+1.1.0-dev.59 | 2021-04-30 14:34:20 +0200
+
+  * GH-882: Add Cirrus CI task for opensuse-15.2. (Benjamin Bannier, Corelight)
+
+  * Add Dockerfile for opensuse-15.2. (Benjamin Bannier, Corelight)
+
+  * Silence a signed-unsigned comparison warning. (Benjamin Bannier, Corelight)
+
 1.1.0-dev.53 | 2021-04-29 13:00:26 +0000
 
   * Updating submodule(s).
