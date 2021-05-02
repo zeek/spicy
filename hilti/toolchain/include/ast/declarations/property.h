@@ -13,14 +13,14 @@ namespace hilti {
 namespace declaration {
 
 /** AST node for a declaration of a module property. */
-class Property : public NodeBase, public hilti::trait::isDeclaration {
+class Property : public DeclarationBase {
 public:
-    Property(ID id, Meta m = Meta()) : NodeBase(nodes(std::move(id), node::none), std::move(m)) {}
+    Property(ID id, Meta m = Meta()) : DeclarationBase(nodes(std::move(id), node::none), std::move(m)) {}
 
     Property(ID id, hilti::Expression attr, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(attr)), std::move(m)) {}
+        : DeclarationBase(nodes(std::move(id), std::move(attr)), std::move(m)) {}
 
-    auto expression() const { return childs()[1].tryReferenceAs<hilti::Expression>(); }
+    auto expression() const { return childs()[1].tryAs<hilti::Expression>(); }
 
     bool operator==(const Property& other) const { return id() == other.id() && expression() == other.expression(); }
 

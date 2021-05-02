@@ -14,14 +14,14 @@ namespace ctor {
 /** AST node for a bytes constructor. */
 class Bytes : public NodeBase, public hilti::trait::isCtor {
 public:
-    Bytes(std::string v, Meta m = Meta()) : NodeBase(std::move(m)), _value(std::move(v)) {}
+    Bytes(std::string v, Meta m = Meta()) : NodeBase(nodes(type::Bytes(m)), m), _value(std::move(v)) {}
 
     auto value() const { return _value; }
 
     bool operator==(const Bytes& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Bytes(); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return false; }
     /** Implements `Ctor` interface. */

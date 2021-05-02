@@ -19,14 +19,18 @@ inline auto import(std::string module, const Meta& m = Meta()) {
     return declaration::ImportedModule(hilti::ID(std::move(module), m), std::string(".hlt"), m);
 }
 
-inline auto import(std::string module, std::vector<hilti::rt::filesystem::path> search_dirs, const Meta& m = Meta()) {
-    return declaration::ImportedModule(hilti::ID(std::move(module), m), std::string(".hlt"), {}, std::move(search_dirs),
-                                       m);
+inline auto import(std::string module, const std::string& parse_extension, const Meta& m = Meta()) {
+    return declaration::ImportedModule(hilti::ID(std::move(module), m), parse_extension, m);
 }
 
-inline auto import(std::string module, std::optional<ID> search_scope,
+inline auto import(std::string module, const std::string& parse_extension,
                    std::vector<hilti::rt::filesystem::path> search_dirs, const Meta& m = Meta()) {
-    return declaration::ImportedModule(hilti::ID(std::move(module), m), std::string(".hlt"), std::move(search_scope),
+    return declaration::ImportedModule(hilti::ID(std::move(module), m), parse_extension, {}, std::move(search_dirs), m);
+}
+
+inline auto import(std::string module, const std::string& parse_extension, std::optional<ID> search_scope,
+                   std::vector<hilti::rt::filesystem::path> search_dirs, const Meta& m = Meta()) {
+    return declaration::ImportedModule(hilti::ID(std::move(module), m), parse_extension, std::move(search_scope),
                                        std::move(search_dirs), m);
 }
 

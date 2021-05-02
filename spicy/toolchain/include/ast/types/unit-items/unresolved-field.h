@@ -73,24 +73,24 @@ public:
           _sinks_start(_args_end),
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
 
-    auto fieldID() const { return childs()[2].tryReferenceAs<ID>(); }
-
+    auto fieldID() const { return childs()[2].tryAs<ID>(); }
+    auto unresolvedID() const { return childs()[0].tryAs<ID>(); }
     const auto& index() const { return _index; }
 
-    auto unresolvedID() const { return childs()[0].tryReferenceAs<ID>(); }
-
     // Only one of these will have return value.
-    auto type() const { return childs()[1].tryReferenceAs<Type>(); }
-    auto ctor() const { return childs()[1].tryReferenceAs<Ctor>(); }
-    auto item() const { return childs()[1].tryReferenceAs<Item>(); }
+    auto ctor() const { return childs()[1].tryAs<Ctor>(); }
+    auto item() const { return childs()[1].tryAs<Item>(); }
+    auto type() const { return childs()[1].tryAs<Type>(); }
 
-    auto repeatCount() const { return childs()[3].tryReferenceAs<Expression>(); }
-    auto attributes() const { return childs()[4].tryReferenceAs<AttributeSet>(); }
-    auto condition() const { return childs()[5].tryReferenceAs<Expression>(); }
+    auto repeatCount() const { return childs()[3].tryAs<Expression>(); }
+    auto attributes() const { return childs()[4].tryAs<AttributeSet>(); }
+    auto condition() const { return childs()[5].tryAs<Expression>(); }
     auto arguments() const { return childs<Expression>(_args_start, _args_end); }
     auto sinks() const { return childs<Expression>(_sinks_start, _sinks_end); }
     auto hooks() const { return childs<Hook>(_sinks_end, -1); }
     Engine engine() const { return _engine; }
+
+    void setIndex(uint64_t index) { _index = index; }
 
     bool operator==(const UnresolvedField& other) const {
         return _engine == other._engine && unresolvedID() == other.unresolvedID() && fieldID() == other.fieldID() &&
@@ -99,24 +99,12 @@ public:
     }
 
     // Unit item interface
-    Type itemType() const { return hilti::type::unknown; }
+    const Type& itemType() const { return hilti::type::auto_; }
+    bool isResolved() const { return false; }
     auto isEqual(const Item& other) const { return node::isEqual(this, other); }
 
     // Node interface.
     auto properties() const { return node::Properties{{"engine", to_string(_engine)}}; }
-
-    /**
-     * Copies an existing field but changes it unit index.
-     *
-     * @param unit original field
-     * @param index the new index of the field
-     * @return new Field with unit index set as requested
-     */
-    static UnresolvedField setIndex(const UnresolvedField& f, uint64_t index) {
-        auto x = Item(f)._clone().as<UnresolvedField>();
-        x._index = index;
-        return x;
-    }
 
 private:
     Engine _engine;

@@ -23,7 +23,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const { return expression().type(); }
+    const auto& type() const { return expression().type(); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return expression().isConstant(); }
     /** Implements `Expression` interface. */

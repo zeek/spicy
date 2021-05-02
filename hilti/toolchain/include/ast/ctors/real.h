@@ -13,14 +13,14 @@ namespace ctor {
 /** AST node for a double precision floating-point constructor. */
 class Real : public NodeBase, public hilti::trait::isCtor {
 public:
-    Real(double v, Meta m = Meta()) : NodeBase(std::move(m)), _value(v) {}
+    Real(double v, Meta m = Meta()) : NodeBase(nodes(type::Real(m)), m), _value(v) {}
 
     auto value() const { return _value; }
 
     bool operator==(const Real& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Real(); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

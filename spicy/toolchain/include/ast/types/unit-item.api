@@ -2,7 +2,10 @@
 
 class Item(trait::isUnitItem) : hilti::trait::isNode {
     /** Returns the type of the parsed unit item. */
-    Type itemType() const;
+    const Type& itemType() const;
+
+    /** Returns true if the item's type has been resolved. */
+    bool isResolved() const;
 
     /** Returns true if the unit item is equivalent to another one. */
     bool isEqual(const Item& other) const;
@@ -23,11 +26,5 @@ class Item(trait::isUnitItem) : hilti::trait::isNode {
     void setMeta(Meta m);
 
     /** Implements the `Node` interface. */
-    const NodeRef& originalNode() const;
-
-    /** Implements the `Node` interface. */
-    void setOriginalNode(const NodeRef& n);
-
-    /** Implements the `Node` interface. */
-    void clearCache();
+    bool pruneWalk() const;
 };

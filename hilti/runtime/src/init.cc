@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "hilti/rt/init.h"
-
 #include <sys/resource.h>
 #include <unistd.h>
 
@@ -11,6 +9,7 @@
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
 #include <hilti/rt/global-state.h>
+#include <hilti/rt/init.h>
 #include <hilti/rt/logging.h>
 
 using namespace hilti::rt;

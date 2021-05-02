@@ -13,14 +13,14 @@ namespace ctor {
 /** AST node for a boolean constructor. */
 class Bool : public NodeBase, public hilti::trait::isCtor {
 public:
-    Bool(bool v, Meta m = Meta()) : NodeBase(std::move(m)), _value(v) {}
+    Bool(bool v, Meta m = Meta()) : NodeBase(nodes(type::Bool(m)), m), _value(v) {}
 
     auto value() const { return _value; }
 
     bool operator==(const Bool& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Bool(); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

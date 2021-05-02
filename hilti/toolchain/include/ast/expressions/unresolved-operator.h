@@ -7,7 +7,7 @@
 
 #include <hilti/ast/expression.h>
 #include <hilti/ast/operator.h>
-#include <hilti/ast/types/unknown.h>
+#include <hilti/ast/types/auto.h>
 
 namespace hilti {
 namespace expression {
@@ -16,30 +16,37 @@ namespace expression {
 class UnresolvedOperator : public NodeBase, public trait::isExpression {
 public:
     UnresolvedOperator(operator_::Kind op, std::vector<Expression> operands, Meta meta = Meta())
-        : NodeBase(nodes(std::move(operands)), std::move(meta)), _kind(op) {}
+        : NodeBase(nodes(type::auto_, std::move(operands)), std::move(meta)), _kind(op) {}
+
+    UnresolvedOperator(operator_::Kind op, hilti::node::Range<Expression> operands, Meta meta = Meta())
+        : NodeBase(nodes(type::auto_, std::move(operands)), std::move(meta)), _kind(op) {}
 
     auto kind() const { return _kind; }
 
-    /** Implements interfave for use with `OverloadRegistry`. */
-    const auto& operands() const {
-        if ( _cache.operands.empty() )
-            _cache.operands = childs<Expression>(0, -1);
+    bool areOperandsResolved() const {
+        for ( auto op : childs<Expression>(1, -1) ) {
+            if ( ! type::isResolved(op.type()) )
+                return false;
+        }
 
-        return _cache.operands;
+        return true;
     }
 
     bool operator==(const UnresolvedOperator& other) const {
         return kind() == other.kind() && operands() == other.operands();
     }
 
-    /** Implements `Expression` interface. */
+    /** Implements interfave for use with `OverloadRegistry`. */
+    hilti::node::Range<Expression> operands() const { return childs<Expression>(1, -1); }
 
     // Dummy implementations as the node will be rejected in validation anyway.
+
+    /** Implements `Expression` interface. */
     bool isLhs() const { return false; }
     /** Implements `Expression` interface. */
     bool isTemporary() const { return false; }
     /** Implements `Expression` interface. */
-    auto type() const { return type::unknown; }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return false; }
     /** Implements `Expression` interface. */
@@ -48,12 +55,8 @@ public:
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{{"kind", to_string(_kind)}}; }
 
-    void clearCache() { _cache.operands.clear(); }
-
 private:
     operator_::Kind _kind;
-
-    mutable struct { std::vector<Expression> operands; } _cache;
 };
 
 } // namespace expression

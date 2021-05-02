@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: List comprehension with a container of units, to ensure &on-heap is treated correctly.
+
+module X;
+
+type Bar = unit {
+    data: bytes &eod;
+};
+
+global x: vector<Bar>;
+print [i.data for i in x];

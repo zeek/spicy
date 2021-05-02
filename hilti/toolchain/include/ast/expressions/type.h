@@ -13,9 +13,9 @@ namespace expression {
 /** AST node for a type expression. */
 class Type_ : public NodeBase, public trait::isExpression {
 public:
-    Type_(Type t, Meta m = Meta()) : NodeBase({std::move(t)}, std::move(m)) {}
+    Type_(Type t, Meta m = Meta()) : NodeBase(nodes(type::Type_(std::move(t), m)), m) {}
 
-    auto typeValue() const { return type::effectiveType(child<Type>(0)); }
+    const auto& typeValue() const { return child<type::Type_>(0).typeValue(); }
 
     bool operator==(const Type_& other) const { return typeValue() == other.typeValue(); }
 
@@ -24,7 +24,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const { return type::Type_(child<Type>(0)); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return true; }
     /** Implements `Expression` interface. */

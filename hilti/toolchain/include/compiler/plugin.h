@@ -3,6 +3,7 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -31,22 +32,22 @@ class Stream;
 } // namespace printer
 
 /**
- * Compiler plugin that can hook into the compilation process that's driven
- * by `Unit`.
+ * Compiler plugin that implements AST-to-AST translation through a set of
+ * passes.
  *
- * A plugin gets access to the AST at all major stages. In particular it can
- * add support implement support for new language using HILTI as its code
- * generation backend by providing a parse method building its AST, along
- * with a transformation method converting any non-standard nodes HILTI
- * equivalents.
+ * The HILTI compiler itself is the one plugin that's always available. On top
+ * of that, further plugins may implement passes as needed to preprocess an AST
+ * before it gets to the HILTI plugin. That way, an external plugin can
+ * implement support for new language using HILTI as its codegen backend by (1)
+ * reading its representation into an AST using its own set of nodes (which may
+ * include reusing existing HILTI AST nodes where convinient), (2) implementing
+ * the resolution passes to fully resolve that AST (reusing HILTI passes
+ * internally where convenient), and (3) finally transforming that AST into a
+ * pure HILTI AST consisting only of the HILT nodes.
  *
- * A plugin implements a set of hook methods that get called by the
- * compilation process at the appropriate times. All hooks should be
- * stateless, apart from changing the AST where appropriate.
- *
- * @note HILTI compilation itself is also implemented through a default
- * plugin that's always available. `Unit` cycles through all available
- * plugins during the compilation process, including that default plugin.
+ * A plugin implements a set of hook methods that get called by the compilation
+ * process at the appropriate times. All hooks should be stateless, apart from
+ * changing the AST as appropriate.
  */
 struct Plugin {
     /** Helper template to define the type of hook methods. */
@@ -56,6 +57,12 @@ struct Plugin {
     /** Name of the plugin. */
     std::string component;
 
+    /**
+     * Plugins will be executed in numerical order, with lower order numbers
+     * executing first.
+     */
+    int order = 0;
+
     /** Extension for source files that the plugin handles. Must include the leading `.`. */
     hilti::rt::filesystem::path extension;
 
@@ -64,12 +71,6 @@ struct Plugin {
      * generated C++ code.
      */
     std::vector<hilti::rt::filesystem::path> cxx_includes;
-
-    /**
-     * Callbacks for plugins will be executed in numerical order, with lower
-     * order numbers executing first.
-     */
-    int order = 0;
 
     /**
      * Hook called to retrieve paths to search when importing modules that
@@ -129,94 +130,69 @@ struct Plugin {
      * @param arg3 current unit being compiled
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<void, std::shared_ptr<hilti::Context>, const std::vector<std::pair<ID, NodeRef>>&, Unit*> build_scopes;
+    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_build_scopes;
 
     /**
-     * Hook called to resolved IDs in a module's AST.
+     * Hook called to prepare an AST before any further stages execute.
      *
      * @param arg1 compiler context that's in use
      * @param arg2 root node of AST; the hook may modify the AST
      * @param arg3 current unit being compiled
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> resolve_ids;
+    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_normalize;
 
     /**
-     * Hook called to resolved operators in a module's AST.
+     * Hook called to apply type coersions to the AST.
      *
      * @param arg1 compiler context that's in use
      * @param arg2 root node of AST; the hook may modify the AST
      * @param arg3 current unit being compiled
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> resolve_operators;
+    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_coerce;
 
     /**
-     * Hook called perform coercions. This must carry out all the coercions
-     * that `coerce_type` has indicated as valid.
+     * Hook called to resolve unknown types and other entities.
      *
      * @param arg1 compiler context that's in use
      * @param arg2 root node of AST; the hook may modify the AST
      * @param arg3 current unit being compiled
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> apply_coercions;
+    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_resolve;
 
     /**
-     * Hook called to validate correctness of an AST, pre-transformation. Any
+     * Hook called to validate correctness of an AST once fully resolved. Any
      * errors must be reported by setting the nodes' error information.
      *
      * @param arg1 compiler context that's in use
      * @param arg2 root node of AST; the hook may not modify the AST
      * @param arg3 current unit being compiled
-     * @param arg4 pointer to boolean that the hook must set to true to
-     * indicate that errors were encountered.
      */
-    Hook<void, std::shared_ptr<hilti::Context>, Node*, Unit*, bool*> pre_validate;
+    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_validate;
 
     /**
-     * Hook called to validate correctness of an AST, post-transformation.
-     * Any errors must be reported by setting the nodes' error information.
-     *
-     * @param arg1 compiler context that's in use
-     * @param arg2 root node of AST; the hook may not modify the AST
-     * @param arg3 current unit being compiled
-     */
-    Hook<void, std::shared_ptr<hilti::Context>, Node*, Unit*> post_validate;
-
-    /**
-     * Hook called to validate correctness of AST nodes that a module
-     * preserved before transformation. The hook runs just before the
-     * ``post_validate`` hook. Any errors must be reported by setting the
-     * nodes' error information.
-     *
-     * @param arg1 compiler context that's in use
-     * @param arg2 preserved nodes to validate
-     * @param arg3 current unit being compiled
-     */
-    Hook<void, std::shared_ptr<hilti::Context>, std::vector<Node>*, Unit*> preserved_validate;
-
-    /**
-     * Hook called to replace any custom AST nodes with standard HILTI
-     * nodes. Note that this may be called multiple times while ASTs are built.
-     *
-     * @param arg1 compiler context that's in use
-     * @param arg2 root node of AST; the hook may modify the AST
-     * @param arg3 boolean that's true if this hook runs for the first time on this AST.
-     * @param arg4 current unit being compiled
-     * @return true if the hook modified the AST in a substantial way
-     */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, bool, Unit*> transform;
-
-    /**
-     * Hook called to print an AST back as source code. The hook gets to
-     * choose if it wants to print the node itself, or fall back to the default printer.
+     * Hook called to print an AST back as source code. The hook gets to choose
+     * if it wants to print the node itself, or fall back to the default
+     * printer.
      *
      * @param arg1 root of AST to print
      * @param arg2 stream to print to
      * @return true if the hook printed the AST, false to fall back to default
      */
-    Hook<bool, const Node&, hilti::printer::Stream&> print_ast;
+    Hook<bool, const Node&, hilti::printer::Stream&> ast_print;
+
+    /**
+     * Hook called to replace AST nodes of one language (plugin) with nodes
+     * of another coming further down in the pipeline.
+     *
+     * @param arg1 compiler context that's in use
+     * @param arg2 root node of AST; the hook may modify the AST
+     * @param arg3 current unit being compiled
+     * @return true if the hook modified the AST in a substantial way
+     */
+    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_transform;
 };
 
 class PluginRegistry;
@@ -247,7 +223,13 @@ public:
      * @param ext extension, including the leading `.`
      * @return plugin if any has been register for the extension
      */
-    Result<Plugin> pluginForExtension(hilti::rt::filesystem::path ext) const;
+    Result<std::reference_wrapper<const Plugin>> pluginForExtension(hilti::rt::filesystem::path ext) const;
+
+    /**
+     * Shortcut to return the HILTI plugin. This must have been registered
+     * already when called.
+     */
+    const Plugin& hiltiPlugin() const;
 
     /**
      * Checks if at least one plugin implements a given hook.

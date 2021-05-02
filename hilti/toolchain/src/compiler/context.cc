@@ -3,12 +3,14 @@
 #include <hilti/ast/detail/operator-registry.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/plugin.h>
+#include <hilti/compiler/unit.h>
 
 using namespace hilti;
 using namespace hilti::context;
 
 namespace hilti::logging::debug {
 inline const DebugStream Compiler("compiler");
+inline const DebugStream AstCache("ast-cache");
 } // namespace hilti::logging::debug
 
 Result<Nothing> Options::parseDebugAddl(const std::string& flags) {
@@ -65,89 +67,118 @@ Context::Context(Options options) : _options(std::move(std::move(options))) {
 Context::~Context() {
     // We explicitly clear out the modules to break any reference cycles they
     // may contain.
-    for ( auto& m : _modules )
-        m.first->as<Module>().clear();
+    for ( auto& u : _unit_cache_by_id )
+        u.second->unit = nullptr;
+
+    for ( auto& u : _unit_cache_by_path )
+        u.second->unit = nullptr;
 }
 
-const CachedModule& Context::registerModule(const ModuleIndex& idx, Node&& module, bool requires_compilation) {
-    auto id = module.as<hilti::Module>().id();
-    if ( _module_cache_by_id.find(id) != _module_cache_by_id.end() )
-        logger().internalError(util::fmt("module '%s' registered more than once in context", id));
+void Context::cacheUnit(std::shared_ptr<Unit> unit) {
+    auto entry = std::make_shared<CacheEntry>(unit);
+    auto idx = unit->cacheIndex();
 
-    HILTI_DEBUG(logging::debug::Compiler, util::fmt("registering AST for module %s (%s)", idx.id, idx.path));
+    auto i = _unit_cache_by_id.find(idx.id);
+    if ( i == _unit_cache_by_id.end() ) {
+        HILTI_DEBUG(logging::debug::Compiler,
+                    util::fmt("registering %s AST for module %s (%s)", unit->extension(), idx.id, idx.path));
 
-    _modules.emplace_back(std::make_unique<Node>(std::move(module)), nullptr);
-    auto cached = std::make_shared<CachedModule>(idx, NodeRef(*_modules.back().first));
-    cached->requires_compilation = requires_compilation;
-    _modules.back().second = cached;
-    _module_cache_by_id.insert({idx.id, cached});
+        _unit_cache_by_id.insert({idx.id, entry});
 
-    if ( ! idx.path.empty() )
-        _module_cache_by_path.insert({idx.path, cached});
-
-    return *cached;
+        if ( ! idx.path.empty() )
+            _unit_cache_by_path.insert({idx.path, entry});
+    }
+    else {
+        HILTI_DEBUG(logging::debug::Compiler, util::fmt("updating cached AST for module %s", unit->id()));
+        i->second->unit = unit;
+    }
 }
 
-void Context::updateModule(const CachedModule& module) {
-    assert(module.index.id);
-
-    auto i = _module_cache_by_id.find(module.index.id);
-    if ( i == _module_cache_by_id.end() )
-        logger().internalError(util::fmt("module '%s' to update has not been registered", module.index.id));
-
-    const auto& cached = i->second;
-
-    if ( cached->node->identity() != module.node->identity() )
-        logger().internalError("updating module with name of existing but different AST");
-
-    *cached = module;
-
-    std::string deps = "n/a";
-    if ( cached->dependencies ) {
-        deps = util::join(util::transform(*cached->dependencies, [](const auto& idx) { return idx.id; }), ", ");
-        if ( deps.empty() )
-            deps = "(none)";
+std::optional<CacheEntry> Context::lookupUnit(const ID& id, const hilti::rt::filesystem::path& extension) {
+    if ( auto x = _unit_cache_by_id.find(id); x != _unit_cache_by_id.end() ) {
+        if ( x->second->unit->extension() == extension )
+            return *x->second;
     }
 
-    std::string requires_compilation = (cached->requires_compilation ? "yes" : "no");
-    std::string final = (cached->final ? "yes" : "no");
-
-    HILTI_DEBUG(logging::debug::Compiler,
-                util::fmt("updated cached AST for module %s (final: %s, requires_compilation: %s, dependencies: %s)",
-                          cached->index.id, final, requires_compilation, deps));
+    return {};
 }
 
-std::optional<CachedModule> Context::lookupModule(const ID& id) {
-    if ( auto x = _module_cache_by_id.find(id); x != _module_cache_by_id.end() )
-        return *x->second;
-    else
-        return {};
+std::optional<CacheEntry> Context::lookupUnit(const hilti::rt::filesystem::path& path,
+                                              std::optional<hilti::rt::filesystem::path> ast_extension) {
+    if ( ! ast_extension )
+        ast_extension = path.extension();
+
+    if ( auto x = _unit_cache_by_path.find(util::normalizePath(path)); x != _unit_cache_by_path.end() ) {
+        if ( x->second->unit->extension() == *ast_extension )
+            return *x->second;
+    }
+
+    return {};
 }
 
-std::optional<CachedModule> Context::lookupModule(const hilti::rt::filesystem::path& path) {
-    if ( auto x = _module_cache_by_path.find(util::normalizePath(path)); x != _module_cache_by_path.end() )
-        return *x->second;
-    else
-        return {};
+
+static void _dependencies(std::weak_ptr<Unit> u, std::vector<std::weak_ptr<Unit>>* seen) {
+    auto unit = u.lock();
+
+    for ( const auto& d : *seen ) {
+        if ( d.lock().get() == unit.get() )
+            return;
+    }
+
+    seen->push_back(u);
+
+    for ( const auto& x : unit->dependencies() )
+        _dependencies(x, seen);
 }
 
-std::vector<CachedModule> Context::lookupDependenciesForModule(const ID& id) {
-    auto m = lookupModule(id);
+std::vector<std::weak_ptr<Unit>> Context::lookupDependenciesForUnit(const ID& id,
+                                                                    const hilti::rt::filesystem::path& extension) {
+    auto m = lookupUnit(id, extension);
     if ( ! m )
         return {};
 
-    if ( ! m->dependencies )
-        return {};
+    std::vector<std::weak_ptr<Unit>> seen;
+    _dependencies(m->unit, &seen);
+    seen.erase(seen.begin()); // don't report entry point
+    return seen;
+}
 
-    std::vector<CachedModule> deps;
+void Context::dumpUnitCache(const hilti::logging::DebugStream& stream) {
+    HILTI_DEBUG(stream, "### Unit cache");
+    HILTI_DEBUG(stream, "");
 
-    for ( const auto& x : *m->dependencies ) {
-        auto d = lookupModule(x.id);
-        if ( ! d )
-            return {}; // Shouldn't really happen. Assert?
-
-        deps.push_back(*d);
+    for ( const auto& x : _unit_cache_by_id ) {
+        auto idx = x.first;
+        auto unit = x.second->unit;
+        HILTI_DEBUG(stream, util::fmt("- %s -> %s %s [%p] [%p]", idx, unit->id(), unit->extension(),
+                                      unit->module().renderedRid(), unit.get()));
     }
 
-    return deps;
+    HILTI_DEBUG(stream, "");
+
+    for ( const auto& x : _unit_cache_by_path ) {
+        auto idx = x.first;
+        auto unit = x.second->unit;
+        HILTI_DEBUG(stream, util::fmt("- %s -> %s %s [%p] [%p]", idx, unit->id(), unit->extension(),
+                                      unit->module().renderedRid(), unit.get()));
+    }
+
+    HILTI_DEBUG(stream, "");
+
+    for ( const auto& x : _unit_cache_by_id ) {
+        auto unit = x.second->unit;
+        HILTI_DEBUG(stream, util::fmt("### %s %s [%p] [%p]", unit->id(), unit->extension(),
+                                      unit->module().renderedRid(), unit.get()));
+
+        for ( const auto& d_ : unit->dependencies() ) {
+            auto d = d_.lock();
+            HILTI_DEBUG(stream, util::fmt("###  Dependency: %s %s [%p] [%p]", d->id(), d->extension(),
+                                          d->module().renderedRid(), d.get()));
+        }
+
+        hilti::render(stream, unit->module(), true);
+        HILTI_DEBUG(stream, "");
+    }
+
+    HILTI_DEBUG(stream, "");
 }

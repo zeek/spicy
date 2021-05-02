@@ -17,14 +17,14 @@ class Network : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Network;
 
-    Network(const Value& network, Meta m = Meta()) : NodeBase(std::move(m)), _network(network) {}
+    Network(const Value& network, Meta m = Meta()) : NodeBase(nodes(type::Network(m)), m), _network(network) {}
 
     const auto& value() const { return _network; }
 
     bool operator==(const Network& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Network(meta()); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

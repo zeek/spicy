@@ -19,28 +19,33 @@ void Module::clear() {
     childs()[1] = statement::Block({}, meta());
 }
 
-NodeRef Module::preserve(Node n) {
-    detail::clearErrors(&n);
-    _preserved.push_back(std::move(n));
-    return NodeRef(_preserved.back());
-}
-
-Result<declaration::Property> Module::moduleProperty(const ID& id) const {
+hilti::optional_ref<const declaration::Property> Module::moduleProperty(const ID& id) const {
     for ( const auto& d : declarations() ) {
-        if ( auto p = d.tryAs<declaration::Property>(); p && p->id() == id )
-            return *p;
+        if ( ! d.isA<declaration::Property>() )
+            return {};
+
+        auto& x = d.as<declaration::Property>();
+        if ( x.id() == id )
+            return {x};
     }
 
-    return result::Error("no property of specified id");
+    return {};
 }
 
-std::vector<declaration::Property> Module::moduleProperties(const ID& id) const {
-    std::vector<declaration::Property> props;
+node::Set<declaration::Property> Module::moduleProperties(const std::optional<ID>& id) const {
+    node::Set<declaration::Property> props;
 
     for ( const auto& d : declarations() ) {
-        if ( auto p = d.tryAs<declaration::Property>(); p && p->id() == id )
-            props.push_back(*p);
+        if ( auto p = d.tryAs<declaration::Property>(); p && (! id || p->id() == id) )
+            props.insert(*p);
     }
 
     return props;
+}
+
+void Module::destroyPreservedNodes() {
+    for ( auto& n : _preserved )
+        n.destroyChilds();
+
+    _preserved.clear();
 }

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include <hilti/ast/expression.h>
+#include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/result.h>
 
 namespace hilti {
@@ -18,23 +19,30 @@ namespace expression {
  */
 class Deferred : public NodeBase, public trait::isExpression {
 public:
-    Deferred(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
+    Deferred(Expression e, Meta m = Meta()) : NodeBase(nodes(std::move(e), type::auto_), std::move(m)) {}
     Deferred(Expression e, bool catch_exception, Meta m = Meta())
-        : NodeBase({std::move(e)}, std::move(m)), _catch_exception(catch_exception) {}
+        : NodeBase(nodes(e, type::auto_), m), _catch_exception(catch_exception) {}
 
     const auto& expression() const { return child<Expression>(0); }
     bool catchException() const { return _catch_exception; }
 
-    bool operator==(const Deferred& other) const { return expression() == other.expression(); }
+    void setType(Type t) {
+        if ( _catch_exception )
+            childs()[1] = type::Result(std::move(t));
+        else
+            childs()[1] = std::move(t);
+    }
+
+    bool operator==(const Deferred& other) const {
+        return expression() == other.expression() && _catch_exception == other._catch_exception;
+    }
 
     /** Implements `Expression` interface. */
     bool isLhs() const { return false; }
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const {
-        return _catch_exception ? Type(type::Result(expression().type(), meta())) : expression().type();
-    }
+    const auto& type() const { return child<Type>(1); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return expression().isConstant(); }
     /** Implements `Expression` interface. */

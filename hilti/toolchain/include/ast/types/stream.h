@@ -20,14 +20,16 @@ class Iterator : public TypeBase,
                  trait::isMutable,
                  trait::isRuntimeNonTrivial {
 public:
-    Iterator(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    Iterator(Meta m = Meta()) : TypeBase(nodes(type::UnsignedInteger(8)), std::move(m)) {}
 
     bool operator==(const Iterator& /* other */) const { return true; }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type dereferencedType() const;
+    auto _isResolved(ResolvedState* rstate) const { return true; }
+    /** Implements the `Type` interface. */
+    const Type& dereferencedType() const { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 };
@@ -35,16 +37,18 @@ public:
 /** AST node for a stream view type. */
 class View : public TypeBase, trait::isView, trait::isIterable, trait::isAllocable, trait::isRuntimeNonTrivial {
 public:
-    View(Meta m = Meta());
+    View(Meta m = Meta()) : TypeBase(nodes(stream::Iterator(m)), m) {}
 
     bool operator==(const View& /* other */) const { return true; }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type elementType() const { return type::UnsignedInteger(8); }
+    auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Type` interface. */
-    Type iteratorType(bool /* const_ */) const { return stream::Iterator(meta()); }
+    const Type& elementType() const { return iteratorType(true).dereferencedType(); }
+    /** Implements the `Type` interface. */
+    const Type& iteratorType(bool /* const_ */) const { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 };
@@ -59,32 +63,27 @@ class Stream : public TypeBase,
                trait::isViewable,
                trait::isRuntimeNonTrivial {
 public:
-    Stream(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    Stream(Meta m = Meta()) : TypeBase(nodes(stream::View(m)), m) {}
 
     bool operator==(const Stream& /* other */) const { return true; }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type elementType() const { return type::UnsignedInteger(8); }
-
+    auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Type` interface. */
-    Type iteratorType(bool /* const_ */) const { return stream::Iterator(meta()); }
+    const Type& elementType() const { return iteratorType(true).dereferencedType(); }
     /** Implements the `Type` interface. */
-    Type viewType() const { return stream::View(meta()); }
+    const Type& iteratorType(bool /* const_ */) const { return viewType().iteratorType(true); }
+    /** Implements the `Type` interface. */
+    const Type& viewType() const { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-private:
-    std::optional<Node> _etype;
 };
 
 namespace detail::stream {
 inline Node element_type = Node(type::UnsignedInteger(8, Location()));
 } // namespace detail::stream
-
-inline Type stream::Iterator::dereferencedType() const { return type::UnsignedInteger(8); }
-inline stream::View::View(Meta m) : TypeBase({type::Stream()}, std::move(m)) {}
 
 } // namespace type
 

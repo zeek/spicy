@@ -3,7 +3,7 @@
 /** Interface for HILTI expressions. */
 class Expression(hilti::trait::isExpression) : hilti::trait::isNode {
     /** Returns the expressions's HILTI type when evaluated. */
-    hilti::Type type() const;
+    const hilti::Type& type() const;
 
     /**
      * Returns true if the constructor's value is a value that will never
@@ -39,11 +39,5 @@ class Expression(hilti::trait::isExpression) : hilti::trait::isNode {
     void setMeta(Meta m);
 
     /** Implements the `Node` interface. */
-    const NodeRef& originalNode() const;
-
-    /** Implements the `Node` interface. */
-    void setOriginalNode(const NodeRef& n);
-
-    /** Implements the `Node` interface. */
-    void clearCache();
+    bool pruneWalk() const;
 };

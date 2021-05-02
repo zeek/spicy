@@ -3,6 +3,7 @@
 #include <hilti/ast/builder/all.h>
 
 #include <spicy/ast/detail/visitor.h>
+#include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/switch.h>
 
 using namespace spicy;
@@ -19,7 +20,7 @@ bool spicy::type::unit::item::Switch::hasNoFields() const {
     return true;
 }
 
-std::optional<spicy::type::unit::item::switch_::Case> spicy::type::unit::item::Switch::case_(
+hilti::optional_ref<const spicy::type::unit::item::switch_::Case> spicy::type::unit::item::Switch::case_(
     const type::unit::item::Field& x) {
     for ( const auto& c : cases() ) {
         for ( const auto& f : c.items() ) {
@@ -29,4 +30,8 @@ std::optional<spicy::type::unit::item::switch_::Case> spicy::type::unit::item::S
     }
 
     return {};
+}
+
+bool spicy::type::unit::item::switch_::Case::operator==(const Case& other) const {
+    return expressions() == other.expressions() && items() == other.items();
 }

@@ -32,9 +32,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         out << ";" << out.newline();
     }
 
-    void operator()(const type::Bitfield& n, position_t /* p */) {
+    void operator()(const type::Bitfield& n, position_t p) {
         if ( ! out.isExpandSubsequentType() ) {
-            if ( auto id = n.typeID() ) {
+            if ( auto id = p.node.as<Type>().typeID() ) {
                 out << *id;
                 return;
             }
@@ -60,12 +60,14 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         }
     }
 
+    void operator()(const type::unit::item::Field& n) { out << n.id(); }
+
     hilti::printer::Stream& out;
 };
 
 } // anonymous namespace
 
-bool detail::printAST(const hilti::Node& root, hilti::printer::Stream& out) {
+bool spicy::detail::ast::print(const hilti::Node& root, hilti::printer::Stream& out) {
     hilti::util::timing::Collector _("spicy/printer");
 
     return Visitor(out).dispatch(root);

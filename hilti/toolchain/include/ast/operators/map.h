@@ -17,8 +17,8 @@ namespace operator_ {
 namespace detail {
 
 static inline auto constantKeyType(unsigned int op, const char* doc = "<type of key>") {
-    return [=](const std::vector<Expression>& /* orig_ops */,
-               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
         if ( resolved_ops.empty() )
             return type::DocOnly(doc);
 
@@ -57,7 +57,7 @@ STANDARD_OPERATOR_2(map, Unequal, type::Bool(), type::constant(type::Map(type::W
                     operator_::sameTypeAs(0, "map<*>"), "Compares two maps element-wise.");
 STANDARD_OPERATOR_2(map, In, type::Bool(), type::Any(), type::constant(type::Map(type::Wildcard())),
                     "Returns true if an element is part of the map.");
-STANDARD_OPERATOR_2(map, Delete, type::Void(), type::Map(type::Wildcard()), detail::constantKeyType(0, "element"),
+STANDARD_OPERATOR_2(map, Delete, type::void_, type::Map(type::Wildcard()), detail::constantKeyType(0, "element"),
                     "Removes an element from the map.")
 
 STANDARD_OPERATOR_2x(map, IndexConst, Index, operator_::constantElementType(0),
@@ -68,7 +68,7 @@ STANDARD_OPERATOR_2x_lhs(map, IndexNonConst, Index, operator_::elementType(0), t
                          "Returns the map's element for the given key. The key must exist, otherwise the operation "
                          "will throw a runtime error.");
 
-STANDARD_OPERATOR_3(map, IndexAssign, type::Void(), type::Map(type::Wildcard()), type::Any(), type::Any(),
+STANDARD_OPERATOR_3(map, IndexAssign, type::void_, type::Map(type::Wildcard()), type::Any(), type::Any(),
                     "Updates the map value for a given key. If the key does not exist a new element is inserted.");
 
 BEGIN_METHOD(map, Get)
@@ -88,7 +88,7 @@ END_METHOD
 BEGIN_METHOD(map, Clear)
     auto signature() const {
         return Signature{.self = type::Map(type::Wildcard()),
-                         .result = type::Void(),
+                         .result = type::void_,
                          .id = "clear",
                          .args = {},
                          .doc = R"(

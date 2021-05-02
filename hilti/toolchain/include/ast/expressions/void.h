@@ -13,7 +13,7 @@ namespace expression {
 /** AST node for a void expression. */
 class Void : public NodeBase, public hilti::trait::isExpression {
 public:
-    Void(Meta m = Meta()) : NodeBase(std::move(m)) {}
+    Void(Meta m = Meta()) : NodeBase(nodes(type::void_), m) {}
 
     bool operator==(const Void& /* other */) const { return true; }
 
@@ -22,7 +22,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const { return type::Void(); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return true; }
     /** Implements `Expression` interface. */

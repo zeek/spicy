@@ -11,6 +11,7 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/auto.h>
+#include <hilti/ast/types/unknown.h>
 
 namespace hilti {
 namespace declaration {
@@ -43,27 +44,35 @@ constexpr auto from_string(const std::string_view& s) { return util::enum_::from
 } // namespace parameter
 
 /** AST node for a declaration of a function parameter. */
-class Parameter : public NodeBase, public hilti::trait::isDeclaration {
+class Parameter : public DeclarationBase {
 public:
     Parameter(ID id, hilti::Type type, parameter::Kind kind, std::optional<hilti::Expression> default_,
               std::optional<AttributeSet> attrs, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(type), std::move(default_), std::move(attrs)), std::move(m)),
+        : DeclarationBase(nodes(std::move(id), type::nonConstant(std::move(type)), std::move(default_),
+                                std::move(attrs)),
+                          std::move(m)),
           _kind(kind) {}
 
     Parameter(ID id, hilti::Type type, parameter::Kind kind, std::optional<hilti::Expression> default_,
-              bool is_struct_param, std::optional<AttributeSet> attrs, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(type), std::move(default_), std::move(attrs)), std::move(m)),
+              bool is_type_param, std::optional<AttributeSet> attrs, Meta m = Meta())
+        : DeclarationBase(nodes(std::move(id), type::nonConstant(std::move(type)), std::move(default_),
+                                std::move(attrs)),
+                          std::move(m)),
           _kind(kind),
-          _is_struct_param(is_struct_param) {}
+          _is_type_param(is_type_param) {}
 
-    Parameter() : NodeBase({node::none, node::none, node::none}, Meta()) {}
+    Parameter() : DeclarationBase({node::none, type::unknown, node::none, node::none}, Meta()) {}
 
-    auto type() const { return type::effectiveType(child<hilti::Type>(1)); }
-
-    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
-    auto default_() const { return childs()[2].tryReferenceAs<hilti::Expression>(); }
+    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
+    auto default_() const { return childs()[2].tryAs<hilti::Expression>(); }
     auto kind() const { return _kind; }
-    auto isStructParameter() const { return _is_struct_param; }
+    const auto& type() const { return child<hilti::Type>(1); }
+    auto isTypeParameter() const { return _is_type_param; }
+    auto isResolved(type::ResolvedState* rstate) const { return type::detail::isResolved(type(), rstate); }
+
+    void setDefault(hilti::Expression e) { childs()[2] = std::move(e); }
+    void setIsTypeParameter() { _is_type_param = true; }
+    void setType(hilti::Type t) { childs()[1] = std::move(t); }
 
     bool operator==(const Parameter& other) const {
         return id() == other.id() && type() == other.type() && kind() == other.kind() && default_() == other.default_();
@@ -81,54 +90,11 @@ public:
     auto isEqual(const Declaration& other) const { return node::isEqual(this, other); }
 
     /** Implements `Node` interface. */
-    auto properties() const {
-        return node::Properties{{"kind", to_string(_kind)}, {"is_struct_param", _is_struct_param}};
-    }
-
-    /**
-     * Returns a new parameter declaration with its type replaced.
-     *
-     * @param d original declaration
-     * @param b new type
-     * @return new declaration that's equal to original one but with the type replaced
-     */
-    static Declaration setType(const Parameter& d, std::optional<hilti::Type> t) {
-        auto x = Declaration(d)._clone().as<Parameter>();
-        if ( t )
-            x.childs()[1] = *t;
-        else
-            x.childs()[1] = node::none;
-
-        return x;
-    }
-
-    /**
-     * Returns a new parameter declaration with the default expression replaced.
-     *
-     * @param d original declaration
-     * @param e new default expresssion
-     * @return new declaration that's equal to original one but with the default expression replaced
-     */
-    static Declaration setDefault(const Parameter& d, const hilti::Expression& e) {
-        auto x = Declaration(d)._clone().as<Parameter>();
-        x.childs()[2] = e;
-        return x;
-    }
-
-    /**
-     * Returns a new parameter declaration with the is-struct-parameter option set.
-     * @param d original declaration
-     * @return new declaration that's equal to original one but with the flag set
-     */
-    static Declaration setIsStructParameter(const Parameter& d) {
-        auto x = Declaration(d)._clone().as<Parameter>();
-        x._is_struct_param = true;
-        return x;
-    }
+    auto properties() const { return node::Properties{{"kind", to_string(_kind)}, {"is_type_param", _is_type_param}}; }
 
 private:
     parameter::Kind _kind = parameter::Kind::Unknown;
-    bool _is_struct_param = false;
+    bool _is_type_param = false;
 };
 
 /** Returns true if two parameters are different only by name of their ID. */

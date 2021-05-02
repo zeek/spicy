@@ -55,12 +55,6 @@ enum class CoercionStyle {
      */
     TryCoercion = (1U << 5U),
 
-    /**
-     * If the source expression's AST node has an original type associated
-     * with it, use that's type for coercion.
-     */
-    PreferOriginalType = (1U << 6U),
-
     /** Never allow any substantial type changes. */
     DisallowTypeChanges = (1U << 7U),
 
@@ -168,8 +162,7 @@ struct CoercedExpression {
     CoercedExpression(Type src, Expression coerced)
         : coerced(coerced),
           nexpr(coerced),
-          consider_type_changed(type::effectiveType(std::move(src)).typename_() !=
-                                type::effectiveType(coerced.type()).typename_()) {}
+          consider_type_changed(std::move(src).typename_() != coerced.type().typename_()) {}
 
     /** Represents an unsuccessful coercion. */
     CoercedExpression() = default;
@@ -242,7 +235,7 @@ CoercedExpression coerceExpression(const Expression& e, const Type& src_, const 
  * available (missing expressions for optional operands without defaults will
  * remain left out). If unsuccessful, an error.
  */
-Result<std::pair<bool, std::vector<Expression>>> coerceOperands(const std::vector<Expression>& exprs,
+Result<std::pair<bool, std::vector<Expression>>> coerceOperands(const hilti::node::Range<Expression>& exprs,
                                                                 const std::vector<operator_::Operand>& operands,
                                                                 bitmask<CoercionStyle> style);
 
@@ -271,5 +264,11 @@ Result<Ctor> coerceCtor(Ctor c, const Type& dst, bitmask<CoercionStyle> style = 
 Result<Type> coerceType(const Type& src_, const Type& dst_,
                         bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment);
 
+namespace detail {
+/** Implements the corresponding functionality for the default HILTI compiler plugin. */
+std::optional<Ctor> coerceCtor(Ctor c, const Type& dst, bitmask<CoercionStyle> style);
+/** Implements the corresponding functionality for the default HILTI compiler plugin. */
+std::optional<Type> coerceType(Type t, const Type& dst, bitmask<CoercionStyle> style);
+} // namespace detail
 
 } // namespace hilti

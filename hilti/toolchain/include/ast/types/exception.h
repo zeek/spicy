@@ -16,18 +16,16 @@ public:
     Exception(Type base, Meta m = Meta()) : TypeBase({std::move(base)}, std::move(m)) {}
     Exception(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({node::none}, std::move(m)), _wildcard(true) {}
 
-    std::optional<Type> baseType() const {
-        auto t = childs()[0].tryAs<Type>();
-        if ( t )
-            return type::effectiveType(*t);
-
-        return {};
-    }
+    hilti::optional_ref<const Type> baseType() const { return childs()[0].tryAs<Type>(); }
 
     bool operator==(const Exception& other) const { return baseType() == other.baseType(); }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    /** Implements the `Type` interface. */
+    auto _isResolved(ResolvedState* rstate) const {
+        return baseType().has_value() ? type::detail::isResolved(baseType(), rstate) : true;
+    }
     /** Implements the `Type` interface. */
     auto typeParameters() const { return childs(); }
     /** Implements the `Type` interface. */

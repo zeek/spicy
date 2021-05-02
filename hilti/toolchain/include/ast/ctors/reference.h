@@ -7,6 +7,8 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/ctors/null.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/type.h>
+#include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/reference.h>
 
 namespace hilti {
@@ -16,14 +18,14 @@ namespace ctor {
 class StrongReference : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a null value of type `t`. */
-    StrongReference(Type t, Meta m = Meta()) : NodeBase({std::move(t)}, std::move(m)) {}
+    StrongReference(Type t, Meta m = Meta()) : NodeBase(nodes(t, type::StrongReference(t, m)), m) {}
 
-    Type dereferencedType() const { return type::effectiveType(child<Type>(0)); }
+    const Type& dereferencedType() const { return child<Type>(0); }
 
     bool operator==(const StrongReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
     /** Implements `Ctor` interface. */
-    Type type() const { return type::StrongReference(dereferencedType(), meta()); }
+    const Type& type() const { return child<Type>(1); }
 
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
@@ -43,14 +45,14 @@ public:
 class WeakReference : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a null value of type `t`. */
-    WeakReference(Type t, Meta m = Meta()) : NodeBase({std::move(t)}, std::move(m)) {}
+    WeakReference(Type t, Meta m = Meta()) : NodeBase(nodes(t, type::WeakReference(t, m)), m) {}
 
-    Type dereferencedType() const { return type::effectiveType(child<Type>(0)); }
+    const Type& dereferencedType() const { return child<Type>(0); }
 
     bool operator==(const WeakReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
     /** Implements `Ctor` interface. */
-    Type type() const { return type::WeakReference(dereferencedType(), meta()); }
+    const Type& type() const { return child<Type>(1); }
 
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
@@ -70,15 +72,18 @@ public:
 class ValueReference : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a reference value of type `t`. */
-    ValueReference(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
+    ValueReference(Expression e, Meta m = Meta())
+        : NodeBase(nodes(type::ValueReference(type::auto_, m), e), std::move(m)) {}
 
-    const Expression& expression() const { return child<Expression>(0); }
-    Type dereferencedType() const { return child<Expression>(0).type(); }
+    const Type& dereferencedType() const { return child<type::ValueReference>(0).dereferencedType(); }
+    const Expression& expression() const { return child<Expression>(1); }
+
+    void setDereferencedType(Type x) { childs()[0] = type::ValueReference(std::move(x)); }
 
     bool operator==(const ValueReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
     /** Implements `Ctor` interface. */
-    Type type() const { return type::ValueReference(dereferencedType(), meta()); }
+    const Type& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

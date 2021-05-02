@@ -17,7 +17,7 @@ static auto ast() {
     auto s = hilti::declaration::Type(hilti::ID("s"), hilti::type::String());
     auto i32 = hilti::declaration::Type(hilti::ID("i32"), hilti::type::SignedInteger(32));
     auto d = hilti::declaration::Type(hilti::ID("d"), hilti::type::Real());
-    auto e = hilti::declaration::LocalVariable(hilti::ID("e"), hilti::type::Void());
+    auto e = hilti::declaration::LocalVariable(hilti::ID("e"), hilti::type::void_);
     auto c = hilti::declaration::LocalVariable(hilti::ID("c"), hilti::type::Bool(),
                                                hilti::expression::Ctor(hilti::ctor::Bool(true)));
 
@@ -94,7 +94,7 @@ TEST_CASE("Visitor, pre-order, no result, constant nodes") {
 
         std::string x;
         const std::string expected =
-            "(mo),(id),-,-,(id),(ts)(t),-,-,(id),(ti)(t),-,-,(id),(t),-,-,(id),(t),-,-,(id),(t),(e:c),(c:b),";
+            "(mo),(id),-,-,(id),(ts)(t),-,-,(id),(ti)(t),-,-,(id),(t),-,-,(id),(t),-,-,(id),(t),(e:c),(c:b),(t),";
     };
 
     // Node an rvalue.
@@ -128,7 +128,7 @@ TEST_CASE("Visitor, pre-order, no result, constant nodes") {
     auto walk = Visitor().walk(root4);
     std::for_each(walk.begin(), walk.end(), [&](auto&&) { ++c; });
 
-    CHECK(c == 24);
+    CHECK(c == 25);
 }
 
 TEST_CASE("Visitor, pre-order, with result, constant nodes") {
@@ -160,7 +160,7 @@ TEST_CASE("Visitor, pre-order, with result, constant nodes") {
 
         std::string x;
         const std::string expected =
-            "(mo),(id),-,-,(id),(ts),-,-,(id),(ti),-,-,(id),(t),-,-,(id),(t),-,-,(id),(t),(e:c),(c:b),";
+            "(mo),(id),-,-,(id),(ts),-,-,(id),(ti),-,-,(id),(t),-,-,(id),(t),-,-,(id),(t),(e:c),(c:b),(t),";
     };
 
 
@@ -197,7 +197,7 @@ TEST_CASE("Visitor, post-order") {
 
         std::string x;
         const std::string expected =
-            "(id),-,(id),(ts)(t),-,-,(id),(ti)(t),-,-,(id),(t),-,-,(id),(t),-,-,(id),(t),(c:b),(e:c),-,(mo),";
+            "(id),-,(id),(ts)(t),-,-,(id),(ti)(t),-,-,(id),(t),-,-,(id),(t),-,-,(id),(t),(t),(c:b),(e:c),-,(mo),";
     };
 
     auto root = ast();
@@ -241,9 +241,9 @@ TEST_CASE("Find specific parent") {
 TEST_CASE("Copy node by value") {
     hilti::Type t = hilti::type::Vector(hilti::type::String());
     CHECK(! hilti::type::isConstant(t));
-    auto t2 = hilti::type::setConstant(t._clone(), true);
-    auto t3 = hilti::type::setConstant(t, true);
-    auto t4(hilti::type::setConstant(t, true));
+    auto t2 = hilti::type::constant(t._clone().as<hilti::Type>());
+    auto t3 = hilti::type::constant(t);
+    auto t4(hilti::type::constant(t));
     CHECK(hilti::type::isConstant(t2));
     CHECK(hilti::type::isConstant(t3));
     CHECK(hilti::type::isConstant(t4));

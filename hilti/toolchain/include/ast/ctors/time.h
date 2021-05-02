@@ -17,14 +17,14 @@ class Time : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Time;
 
-    Time(const Value& time, Meta m = Meta()) : NodeBase(std::move(m)), _time(time) {}
+    Time(const Value& time, Meta m = Meta()) : NodeBase(nodes(type::Time(m)), m), _time(time) {}
 
     const auto& value() const { return _time; }
 
     bool operator==(const Time& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Time(meta()); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

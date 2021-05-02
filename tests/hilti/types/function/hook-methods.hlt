@@ -12,28 +12,28 @@ type X = struct {
     hook optional<int<64>> f2();
 };
 
-method hook void X::f1(string s) {
+hook void X::f1(string s) {
     hilti::print("f1 %s %s" % (self.m, s));
 }
 
-method hook void X::f1(string s) {
+hook void X::f1(string s) {
     hilti::print("f2 %s %s" % (self.m, s));
 }
 
-method hook void X::f1(string s) {
+hook void X::f1(string s) {
     hilti::print("f3 %s %s" % (self.m, s));
 }
 
-method hook optional<int<64>> X::f2() {
+hook optional<int<64>> X::f2() {
     return Null;
 }
 
-method hook optional<int<64>> X::f2() {
+hook optional<int<64>> X::f2() {
     hilti::print(("in f2:", self.m));
     return 42;
 }
 
-method hook optional<int<64>> X::f2() {
+hook optional<int<64>> X::f2() {
     return Null;
 }
 

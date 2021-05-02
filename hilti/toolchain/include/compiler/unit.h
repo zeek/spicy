@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <unistd.h>
+
 #include <functional>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,6 +22,9 @@
 #include <hilti/compiler/jit.h>
 
 namespace hilti {
+
+struct Plugin;
+
 namespace linker {
 /**
  * Linker meta data associated with a HILTI unit. When HILTI compiles a
@@ -36,37 +40,100 @@ using MetaData = detail::cxx::linker::MetaData;
 /**
  * Container for a single HILTI code module. For each HILTI source file, one
  * compiler unit gets instantiated. That unit then drives the process to
- * compile module comp into C++ code. While that's in progress, the unit
- * maintains state about the process, such as a cache of all external modules
- * imported by the one that's being compiled.
+ * compile the module AST into C++ code. While that's in progress, the unit
+ * maintains state about the process, such as a list of dependencies this unit
+ * requires.
  */
 class Unit {
 public:
-    /** Returns the root node of the module AST's. */
-    NodeRef module() {
-        assert(_id);
-        return NodeRef(imported(_id));
+    /** Destructor. */
+    ~Unit();
+
+    /** Returns a reference to the root node of the module AST's. */
+    NodeRef moduleRef() const { return _module ? NodeRef(*_module) : NodeRef(); }
+
+    /**
+     * Returns the root node of the module AST's. Must only be called if
+     * `isCompiledHilti()` returns true.
+     */
+    Node& module() {
+        assert(_module);
+        return *_module;
     }
 
     /**
-     * Returns the ID of the unit's top-level module (i.e., the one being
-     * compiled).
+     * Returns the index to use when storing the unit inside the context's
+     * unit cache.
      */
-    auto id() const { return _id; }
+    const auto& cacheIndex() { return _index; }
+
+    /** Returns the ID of the unit's module. */
+    const auto& id() const { return _index.id; }
+
+    /** Returns the path associated with the unit's module. */
+    const auto& path() const { return _index.path; }
 
     /**
-     * Returns the path associated with the unit's top-level module (i.e.,
-     * the one being compiled).
+     * Returns the file extension associated with the unit's code. This
+     * extension determines which plugin the unit's AST will be processed with.
+     * Note that this does not necessarily match the extension of module's
+     * source path.
      */
-    auto path() const { return _path; }
+    const auto& extension() const { return _extension; }
 
     /**
-     * Compiles the unit's module AST into its final internal representation.
-     * @return set if successful, or an appropriate error result
+     * Set a file extension associagted with the unit's code. By default, the
+     * extension is set when a AST module is being created, for example from
+     * the file it's being parsed from. This method can explicitly override the
+     * extension to have the AST processed by a different plugin.
+     *
+     * @param ext new extension
      */
-    Result<Nothing> compile();
+    void setExtension(const hilti::rt::filesystem::path& ext) { _extension = ext; }
 
-    /** Triggers generation of C++ code from the compiled AST. */
+    enum ASTState { Modified, NotModified };
+
+    /** Clears any scopes and errors accumulated inside the unit's AST. */
+    void resetAST();
+
+    /**
+     * Runs a plugin's scope-building phase on the unit's AST.
+     *
+     * @param plugin plugin to execute
+     * @returns success if no error occurred, and an appropiate error otherwise
+     */
+    Result<Nothing> buildASTScopes(const Plugin& plugin);
+
+    /**
+     * Runs a plugin's resolver phase on the unit's AST.
+     *
+     * @param plugin plugin to execute
+     * @returns flag indicating whether the AST was modified or not; or an
+     * appropiate error if a failure occurred
+     */
+    Result<ASTState> resolveAST(const Plugin& plugin);
+
+    /**
+     * Runs a plugin's validation phase on the unit's AST.
+     *
+     * @param plugin plugin to execute
+     * @returns true if the AST does not contain any errors
+     */
+    bool validateAST(const Plugin& plugin);
+
+    /**
+     * Runs a plugin's tranformation phase on the unit's AST.
+     *
+     * @param plugin plugin to execute
+     * @returns success if no error occurred, and an appropiate error otherwise
+     */
+    Result<Nothing> transformAST(const Plugin& plugin);
+
+    /**
+     * Triggers generation of C++ code from the compiled AST.
+     *
+     * @returns success if no error occurred, and an appropiate error otherwise
+     */
     Result<Nothing> codegen();
 
     /**
@@ -97,72 +164,19 @@ public:
      */
     Result<CxxCode> cxxCode() const;
 
-    /**
-     * Makes an external HILTI module available to the one this unit is
-     * compiling. Essentially, this implements the HITLI's `import`
-     * statement. Importing another module means that the compiled module
-     * will know how to access the other one's functionality. However, that
-     * external module will still need to be compiled itself as well; and
-     * then all the compiled modules need to be linked together.
-     *
-     * This version of the `import` method imports by module ID: it searches
-     * `Configuration::hilti_library_paths` for a file with a corresponding
-     * name and extension.
-     *
-     * @param id ID of module to import
-     * @param ext file name extension to search; `.hlt` is HILTI's standard extension, but plugins can add support for
-     * other extensions as well
-     * @param scope if given, qualifies the ID with a path prefix to find the
-     * module (e.g., a scope of `a.b.c` will search the module in `<search path>/a/b/c/<name>`.)
-     * @param  dirs additional directories to search first
-     * @return the modules' cache index if successful,or an appropriate error result if not
-     */
-    Result<context::ModuleIndex> import(const ID& id, const hilti::rt::filesystem::path& ext,
-                                        std::optional<ID> scope = {},
-                                        std::vector<hilti::rt::filesystem::path> search_dirs = {});
+    /** Returns the list of dependencies registered for the unit so far. */
+    const auto& dependencies() { return _dependencies; }
+
+    /** Removes any dependencies registered for the unit so far. */
+    void clearDependencies() { _dependencies.clear(); };
 
     /**
-     * Makes an external HILTI module available to the one this unit is
-     * compiling. See `import(const ID, const hilti::rt::filesystem::path)` for
-     * more details on importing.
+     * Register a dependency on another unit for the current one.
      *
-     * This version of the `import` method imports directly from a given
-     * file.
-     *
-     * @param path to the file to import
-     * @return the modules' cache index if successful,or an appropriate error result if not
+     * @param unit the unit this one depends on
+     * @returns true if this is a new dependency that had not been previously added
      */
-    Result<context::ModuleIndex> import(const hilti::rt::filesystem::path& path);
-
-    /**
-     * Returns the AST for an imported module.
-     *
-     * @param id module ID
-     * @return Reference to the root node of the imported module's AST
-     * @exception `std::out_of_range` if no module of that name has been imported yet
-     */
-    Node& imported(const ID& id) const;
-
-    /**
-     * Returns set of all imported modules so far.
-     *
-     * @param code_only if true include only dependencies that require independent compilation themselves
-     */
-    std::set<context::ModuleIndex> allImported(bool code_only = false) const;
-
-    /**
-     * Returns true if an imported module provides code that needs
-     * independent compilation to resolve references at link-time.
-     *
-     * @return a boolean that true if the module provides code for
-     * compilation, or an error value if no such module is known.
-     */
-    Result<bool> requiresCompilation(const ID& id) {
-        if ( auto x = _lookupModule(id) )
-            return x->requires_compilation;
-
-        return result::Error("unknown module");
-    }
+    bool addDependency(std::shared_ptr<Unit> unit);
 
     /**
      * Returns the unit's meta data for the internal HILTI linker.
@@ -181,40 +195,87 @@ public:
      * usually the case, but we also represent HILTI's linker output as a
      * unit and there's no corresponding HILTI source code for that.
      */
-    bool isCompiledHILTI() const { return _have_hilti_ast; }
+    bool isCompiledHILTI() const { return _module.has_value(); }
+
+    /**
+     * Returns true if the AST has been determined to contain code that needs
+     * to be compiled as its own C++ module, rather than just declaration for
+     * other units.
+     */
+    bool requiresCompilation();
+
+    /**
+     * Returns true if the unit has been marked as fully resolved, so that no further AST processing is needed.
+     */
+    bool isResolved() { return _resolved; }
+
+    /**
+     * Sets the resolver state for the unit.
+     *
+     * @param resolved true to mark the module as fully resolved, so that no
+     * further AST processing is needed
+     */
+    void setResolved(bool resolved) { _resolved = resolved; }
 
     /** Returns the compiler context in use. */
-    std::shared_ptr<Context> context() const { return _context; }
+    std::shared_ptr<Context> context() const { return _context.lock(); }
 
     /** Returns the compiler options in use. */
-    const Options& options() const { return _context->options(); }
+    const Options& options() const { return context()->options(); }
 
     /**
-     * Factory method that instantiates a unit from an existing HILTI module
-     * that's be compiled.
+     * Factory method that instantiates a unit from an existing source file
+     * that it will parse.
      *
      * This method also caches the module with the global context. Note that
-     * the module's ID or path must not exist with the context yet.
-     *
-     * @param context global compiler context
-     * @param module HILTI module to compile, of which the unit will take ownership
-     * @param path path associated with the module, if any
-     * @return instantiated unit, or an appropriate error result if operation failed
-     */
-    static Result<Unit> fromModule(const std::shared_ptr<Context>& context, hilti::Module&& module,
-                                   const hilti::rt::filesystem::path& path = "");
-
-    /**
-     * Factory method that instantiates a unit from an existing source file that it will parse.
-     *
-     * This method also caches the module with the global context. Note that
-     * the module's ID or path must not exist with the context yet.
+     * the module's ID or path should usually not exist with the context yet.
      *
      * @param context global compiler context
      * @param path path to parse the module from
+     * @param ast_extension extension indicating which plugin to use for
+     * processing the AST; if not given, this will be taken from the filename
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<Unit> fromSource(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path);
+    static Result<std::shared_ptr<Unit>> fromSource(const std::shared_ptr<Context>& context,
+                                                    const hilti::rt::filesystem::path& path,
+                                                    std::optional<hilti::rt::filesystem::path> ast_extension = {});
+
+    /**
+     * Factory method that instantiates a unit from an existing HILTI AST.
+     *
+     * This method also caches the module with the global context. Note that
+     * the module's ID or path should usually not exist with the context yet.
+     * If it does, this one will replace the existing version.
+     *
+     * @param context global compiler context
+     * @param module  AST of the module
+     * @param extension extension indicating which plugin to use for
+     * processing the AST
+     * @return instantiated unit, or an appropriate error result if operation failed
+     */
+    static std::shared_ptr<Unit> fromModule(const std::shared_ptr<Context>& context, hilti::Module module,
+                                            hilti::rt::filesystem::path extension);
+
+    /**
+     * Factory method that instantiates a unit for an `import` statement,
+     * performing the search for the right source file first.
+     *
+     * This method also caches the module with the global context. Note that
+     * the module's ID or path should usually not exist with the context yet.
+     *
+     * @param context global compiler context
+     * @param id ID of the module to be imported
+     * @param parse_extension file extension indicating how to parse the module's source file
+     * @param ast_extension extension indicating which plugin to use for
+     * processing the AST; this will usually match `parse_extesion`, but
+     * doesn't need to.
+     * @return instantiated unit, or an appropriate error result if operation failed
+     */
+    static Result<std::shared_ptr<Unit>> fromImport(const std::shared_ptr<Context>& context, const ID& id,
+                                                    const hilti::rt::filesystem::path& parse_extension,
+                                                    const hilti::rt::filesystem::path& ast_extension,
+                                                    std::optional<ID> scope,
+                                                    std::vector<hilti::rt::filesystem::path> search_dirs);
 
     /**
      * Factory method that instantiates a unit from an existing HILTI module
@@ -222,9 +283,11 @@ public:
      *
      * @param context global compiler context
      * @param id ID of the cached module
+     * @param extension file extension to limit cache hits to
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<Unit> fromCache(const std::shared_ptr<Context>& context, const hilti::ID& id);
+    static Result<std::shared_ptr<Unit>> fromCache(const std::shared_ptr<Context>& context, const hilti::ID& id,
+                                                   const hilti::rt::filesystem::path& extension);
 
     /**
      * Factory method that instantiates a unit from an existing HILTI module
@@ -234,17 +297,19 @@ public:
      * @param path path of the cached module
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<Unit> fromCache(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path);
+    static Result<std::shared_ptr<Unit>> fromCache(const std::shared_ptr<Context>& context,
+                                                   const hilti::rt::filesystem::path& path);
 
     /**
-     * Factory method that instantiates a unit from existing C++ source code that's to compiled.
+     * Factory method that instantiates a unit from existing C++ source code
+     * that's to compiled.
      *
      * @param context global compiler context
      * @param path path associated with the C++ code, if any
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<Unit> fromCXX(std::shared_ptr<Context> context, detail::cxx::Unit cxx,
-                                const hilti::rt::filesystem::path& path = "");
+    static Result<std::shared_ptr<Unit>> fromCXX(std::shared_ptr<Context> context, detail::cxx::Unit cxx,
+                                                 const hilti::rt::filesystem::path& path = "");
 
     /**
      * Entry point for the HILTI linker, The linker combines meta data from
@@ -256,7 +321,8 @@ public:
      * @param mds set of meta data from modules to be linked together
      * @return a unit representing additional C++ code that the modules need to function
      */
-    static Result<Unit> link(const std::shared_ptr<Context>& context, const std::vector<linker::MetaData>& mds);
+    static Result<std::shared_ptr<Unit>> link(const std::shared_ptr<Context>& context,
+                                              const std::vector<linker::MetaData>& mds);
 
     /**
      * Reads linker meta from a file. This expects the file to contain linker
@@ -278,60 +344,44 @@ public:
         std::istream& input, const hilti::rt::filesystem::path& path = "<input stream>");
 
 private:
-    // Private constructor initializing the unit's meta data. Note that the
-    // corresponding module must then be imported into the unit as well.
-    // Normally you'd use the static ``Unit::from*()`` functions to do that
-    // while creating a unit.
-    Unit(std::shared_ptr<Context> context, ID id, hilti::rt::filesystem::path path, bool have_hilti_ast)
-        : _context(std::move(context)), _id(std::move(id)), _path(std::move(path)), _have_hilti_ast(have_hilti_ast) {}
+    // Private constructor initializing the unit's meta data. Use the public
+    // `from*()` factory functions instead to instantiate a unit.
+    Unit(std::shared_ptr<Context> context, ID id, hilti::rt::filesystem::path path,
+         hilti::rt::filesystem::path extension, Node&& module)
+        : _index(id, util::normalizePath(path)),
+          _extension(extension),
+          _module(std::move(module)),
+          _context(std::move(context)) {}
 
-    // Returns a list of all currently known/imported modules.
-    std::vector<std::pair<ID, NodeRef>> _currentModules() const;
-
-    // Looks up a module by its ID. The module must have been imported into
-    // the unit to succeed. Assuming so, it returns the context's cache entry
-    // for the module.
-    std::optional<context::CachedModule> _lookupModule(const ID& id) const;
+    Unit(std::shared_ptr<Context> context, ID id, hilti::rt::filesystem::path path,
+         hilti::rt::filesystem::path extension, std::optional<detail::cxx::Unit> cxx_unit = {})
+        : _index(id, util::normalizePath(path)),
+          _extension(extension),
+          _context(std::move(context)),
+          _cxx_unit(std::move(cxx_unit)) {}
 
     // Backend for the public import() methods.
-    Result<context::ModuleIndex> _import(const hilti::rt::filesystem::path& path, std::optional<ID> expected_name);
+    Result<context::CacheIndex> _import(const hilti::rt::filesystem::path& path, std::optional<ID> expected_name);
 
-    // Runs a validation pass on a set of modules and reports any errors.
-    bool _validateASTs(std::vector<std::pair<ID, NodeRef>>& modules,
-                       const std::function<bool(const ID&, NodeRef&)>& run_hooks_callback);
+    // Reports any errors recorded in the AST to stderr.
+    //
+    // @returns false if there were errors, true if the AST is all good
+    bool _collectErrors();
 
-    // Runs a validation pass on a module and reports any errors.
-    bool _validateAST(const ID& id, NodeRef module, const std::function<bool(const ID&, NodeRef&)>& run_hooks_callback);
-
-    // Runs a validation pass on a set of nodes and reports any errors.
-    bool _validateASTs(const ID& id, std::vector<Node>& nodes,
-                       const std::function<bool(const ID&, std::vector<Node>&)>& run_hooks_callback);
-    // Updates the requires_compilation flags for all of a module's imports.
-    void _determineCompilationRequirements(const Node& module);
-    // Sends a debug dump of a module's AST to the global logger.
-    void _dumpAST(const Node& module, const logging::DebugStream& stream, const std::string& prefix, int round = 0);
-    // Sends a debug dump of all modules parsed so far to the global logger.
-    void _dumpASTs(const logging::DebugStream& stream, const std::string& prefix, int round = 0);
-    // Sends a debug dump of a module's AST to an output stream.
-    void _dumpAST(const Node& module, std::ostream& stream, const std::string& prefix, int round = 0);
-    // Sends a debug dump of all modules parsed so far to an output stream.
-    void _dumpASTs(std::ostream& stream, const std::string& prefix, int round = 0);
-    // Records a debug dump of all modules parsed so far to disk.
-    void _saveIterationASTs(const std::string& prefix, int round = 0);
-    // Clear any previously computed AST state before beginning a pass over the AST.
-    void _resetNodes(const ID& id, Node* root);
+    // Recursively destroys the module's AST.
+    void _destroyModule();
 
     // Parses a source file with the appropriate plugin.
-    static Result<hilti::Module> parse(const std::shared_ptr<Context>& context,
-                                       const hilti::rt::filesystem::path& path);
+    static Result<hilti::Module> _parse(const std::shared_ptr<Context>& context,
+                                        const hilti::rt::filesystem::path& path);
 
-    std::shared_ptr<Context> _context; // global context
-    ID _id;                            // ID of top-level module being compiled by this unit
-    hilti::rt::filesystem::path _path; // path of top-level module being compiled by this unit
-    bool _have_hilti_ast;  // true if the top-level module comes with a HILTI AST (normally the case, but not for the
-                           // linker's C++ code)
-    std::set<ID> _modules; // set of all module ASTs this unit has parsed and processed (inc. imported ones)
-    std::optional<detail::cxx::Unit> _cxx_unit; // compiled C++ code for this unit, once available
+    context::CacheIndex _index;                     // index for the context's module cache
+    hilti::rt::filesystem::path _extension;         // AST extension, which may differ from source file
+    std::optional<Node> _module;                    // root node for AST (always a `Module`), if available
+    std::vector<std::weak_ptr<Unit>> _dependencies; // recorded dependencies
+    std::weak_ptr<Context> _context;                // global context
+    std::optional<detail::cxx::Unit> _cxx_unit;     // compiled C++ code for this unit, once available
+    bool _resolved = false;                         // state of resolving the AST
 };
 
 } // namespace hilti

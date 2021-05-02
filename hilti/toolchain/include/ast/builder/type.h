@@ -4,7 +4,7 @@
 
 #include <hilti/ast/meta.h>
 #include <hilti/ast/type.h>
-#include <hilti/ast/types/id.h>
+#include <hilti/ast/types/unresolved-id.h>
 
 namespace hilti::builder {
 

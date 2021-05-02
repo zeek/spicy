@@ -12,7 +12,8 @@ namespace expression {
 /** AST node for an expression that's being coerced from one type to another. */
 class Coerced : public NodeBase, public trait::isExpression {
 public:
-    Coerced(Expression e, Type t, Meta m = Meta()) : NodeBase({std::move(e), std::move(t)}, std::move(m)) {}
+    Coerced(Expression e, Type t, Meta m = Meta())
+        : NodeBase({std::move(e), type::nonConstant(std::move(t))}, std::move(m)) {}
 
     const auto& expression() const { return child<Expression>(0); }
 
@@ -23,7 +24,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    Type type() const { return type::nonConstant(type::effectiveType(child<Type>(1))); }
+    const Type& type() const { return child<Type>(1); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return expression().isConstant(); }
     /** Implements `Expression` interface. */

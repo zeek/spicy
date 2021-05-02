@@ -5,11 +5,27 @@
 
 module Foo {
 
-import hilti;
-
 type X = struct {
     method void ~finally();
+};
+
+}
+
+@TEST-START-NEXT
+
+module Foo {
+
+type X = struct {
     hook optional<string> ~finally();
+};
+
+}
+
+@TEST-START-NEXT
+
+module Foo {
+
+type X = struct {
     hook void ~finally(string s);
 };
 

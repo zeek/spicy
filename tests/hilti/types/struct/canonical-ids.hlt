@@ -1,0 +1,21 @@
+# @TEST-EXEC: hiltic -D ast-declarations -p %INPUT 2>output >/dev/null
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Records internal canonical IDs for an example struct.
+
+module Foo {
+
+type S = struct {
+    method void test(string A, real B);
+};
+
+method void S::test(string A, real B) {}
+
+global auto s1 = new S();
+s1.test("a", 3);
+
+# Anonymous struct ctor.
+[$foo=42, $bar="string"];
+
+
+}

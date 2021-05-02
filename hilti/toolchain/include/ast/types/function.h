@@ -50,12 +50,14 @@ public:
 
     Result() : NodeBase(nodes(node::none), Meta()) {}
 
-    auto type() const { return type::effectiveType(child<Type>(0)); }
+    const auto& type() const { return child<Type>(0); }
+
+    void setType(Type x) { childs()[0] = std::move(x); }
+
+    bool operator==(const Result& other) const { return type() == other.type(); }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-    bool operator==(const Result& other) const { return type() == other.type(); }
 };
 
 using Parameter = declaration::Parameter;
@@ -69,23 +71,19 @@ using Kind = declaration::parameter::Kind;
 class Function : public TypeBase, trait::isParameterized {
 public:
     Function(Wildcard /*unused*/, Meta m = Meta())
-        : TypeBase({function::Result(type::Error(m))}, std::move(m)), _wildcard(true) {}
+        : TypeBase(nodes(function::Result(type::Error(m))), std::move(m)), _wildcard(true) {}
     Function(function::Result result, const std::vector<function::Parameter>& params,
              function::Flavor flavor = function::Flavor::Standard, Meta m = Meta())
         : TypeBase(nodes(std::move(result), util::transform(params, [](const auto& p) { return Declaration(p); })),
                    std::move(m)),
           _flavor(flavor) {}
 
-    auto parameters() const { return childs<function::Parameter>(1, -1); }
     const auto& result() const { return child<function::Result>(0); }
+    auto parameters() const { return childs<function::Parameter>(1, -1); }
+    auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
     auto flavor() const { return _flavor; }
 
-    const auto& operands() const {
-        if ( ! _cache.operands )
-            _cache.operands = type::OperandList::fromParameters(parameters());
-
-        return *_cache.operands;
-    }
+    void setResultType(Type t) { childs()[0].as<function::Result>().setType(std::move(t)); }
 
     bool operator==(const Function& other) const {
         return result() == other.result() && parameters() == other.parameters();
@@ -93,6 +91,26 @@ public:
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+
+    /** Implements the `Type` interface. */
+    auto _isResolved(ResolvedState* rstate) const {
+        if ( result().type().isA<type::Auto>() )
+            // We treat this as resolved because (1) it doesn't need to hold up
+            // other resolving, and (2) can lead to resolver dead-locks if we
+            // let it.
+            return true;
+
+        if ( ! type::detail::isResolved(result().type(), rstate) )
+            return false;
+
+        for ( auto p = childs().begin() + 1; p != childs().end(); p++ ) {
+            if ( ! p->as<function::Parameter>().isResolved(rstate) )
+                return false;
+        }
+
+        return true;
+    }
+
     /** Implements the `Type` interface. */
     auto typeParameters() const { return childs(); }
     /** Implements the `Type` interface. */
@@ -101,13 +119,9 @@ public:
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"flavor", to_string(_flavor)}}; }
 
-    void clearCache() { _cache.operands.reset(); }
-
 private:
     bool _wildcard = false;
     function::Flavor _flavor = function::Flavor::Standard;
-
-    mutable struct { std::optional<hilti::type::OperandList> operands; } _cache;
 };
 
 /**
@@ -120,7 +134,7 @@ inline bool areEquivalent(const Function& f1, const Function& f2) {
 
     auto p1 = f1.parameters();
     auto p2 = f2.parameters();
-    return std::equal(begin(p1), end(p1), begin(p2), end(p2),
+    return std::equal(std::begin(p1), std::end(p1), std::begin(p2), std::end(p2),
                       [](const auto& p1, const auto& p2) { return areEquivalent(p1, p2); });
 }
 

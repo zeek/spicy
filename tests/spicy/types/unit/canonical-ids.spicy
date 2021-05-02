@@ -1,0 +1,16 @@
+# @TEST-EXEC: spicyc -D ast-declarations -p %INPUT 2>output >/dev/null
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Records internal canonical IDs for a sufficiently complex example.
+#
+# We reuse the cycle.spicy code here.
+
+module DNS;
+
+type Label = unit() {
+    ptr: Pointer;
+};
+
+type Pointer = unit() {
+    name: Label;
+    };

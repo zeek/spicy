@@ -23,15 +23,15 @@ namespace __hlt::Foo {
 
     inline unsigned int __globals_index;
     static inline auto __globals() { return hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
-    extern void __init_globals(hilti::rt::Context* ctx);
+    extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
     extern void __register_module();
 }
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
-extern void __hlt::Foo::__init_globals(hilti::rt::Context* ctx) {
-    hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index);
+extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
+    ::hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index);
     __globals()->r = 0x1.999999999999ap-4;
 }
 
@@ -42,7 +42,7 @@ extern void __hlt::Foo::__init_module() {
     }
 }
 
-extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", &__init_module, &__init_globals, &__globals_index}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", &__init_module, &__init_globals, &__globals_index}); }
 
 /* __HILTI_LINKER_V1__
 {"module":"Foo","namespace":"__hlt::Foo","path":"<...>/nops.hlt","version":1}

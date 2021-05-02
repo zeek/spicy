@@ -5,13 +5,16 @@
 #include <hilti/ast/ctors/string.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/id.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/expressions/type.h>
 #include <hilti/ast/operators/reference.h>
 #include <hilti/ast/statements/switch.h>
+#include <hilti/ast/types/stream.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
 #include <hilti/base/util.h>
+#include <hilti/compiler/plugin.h>
 
 #include <spicy/ast/all.h>
 #include <spicy/ast/detail/visitor.h>
@@ -24,10 +27,10 @@ using hilti::util::fmt;
 
 namespace {
 
+bool isEnumType(const Type& t, const char* expected_id) { return t.typeID() && *t.typeID() == ID(expected_id); }
+
 // Helper to validate that a type is parseable.
 hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::Field& f) {
-    pt = type::effectiveType(pt);
-
     if ( pt.isA<type::Bitfield>() )
         return hilti::Nothing();
 
@@ -91,8 +94,7 @@ hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::F
         auto type = AttributeSet::find(f.attributes(), "&type");
 
         if ( type ) {
-            if ( auto t = type->valueAs<Expression>()->type().tryAs<type::Enum>();
-                 ! (t && t->cxxID() && *t->cxxID() == ID("hilti::rt::real::Type")) )
+            if ( const auto& t = type->valueAsExpression()->get().type(); ! isEnumType(t, "spicy::RealType") )
                 return hilti::result::Error("&type attribute must be a spicy::RealType");
         }
         else
@@ -108,10 +110,7 @@ hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::F
         return hilti::Nothing();
 
     if ( const auto& x = pt.tryAs<type::ValueReference>() ) {
-        auto dt = x->dereferencedType();
-
-        if ( dt.originalNode() )
-            dt = dt.originalNode()->as<Type>();
+        const auto& dt = x->dereferencedType();
 
         if ( auto rc = isParseableType(dt, f); ! rc )
             return rc;
@@ -149,7 +148,8 @@ hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::F
 }
 
 
-struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformVisitor> {
+struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
+    int errors = 0;
     // Record error at location of current node.
     void error(std::string msg, position_t& p,
                hilti::node::ErrorPriority priority = hilti::node::ErrorPriority::Normal) {
@@ -171,7 +171,27 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         ++errors;
     }
 
-    int errors = 0;
+    /** Returns a method call's i-th argument. */
+    const Expression& methodArgument(const hilti::expression::ResolvedOperatorBase& o, size_t i) {
+        auto ops = o.op2();
+
+        // If the argument list was the result of a coercion unpack its result.
+        if ( auto coerced = ops.tryAs<hilti::expression::Coerced>() )
+            ops = coerced->expression();
+
+        if ( auto ctor_ = ops.tryAs<hilti::expression::Ctor>() ) {
+            auto ctor = ctor_->ctor();
+
+            // If the argument was the result of a coercion unpack its result.
+            if ( auto x = ctor.tryAs<hilti::ctor::Coerced>() )
+                ctor = x->coercedCtor();
+
+            if ( auto args = ctor.tryAs<hilti::ctor::Tuple>(); args && i < args->value().size() )
+                return args->value()[i];
+        }
+
+        hilti::util::cannot_be_reached();
+    }
 
     void operator()(const hilti::Module& m, position_t p) {
         if ( auto version = m.moduleProperty("%spicy-version") ) {
@@ -291,7 +311,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             }
 
             if ( auto x = i.expression()->tryAs<hilti::expression::Ctor>() ) {
-                auto mt = x->ctor().as<hilti::ctor::String>().value();
+                const auto& mt = x->ctor().as<hilti::ctor::String>().value();
 
                 if ( ! spicy::rt::MIMEType::parse(mt) )
                     error("%mime-type argument must follow \"main/sub\" form", p);
@@ -331,6 +351,18 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             }
         }
 
+        else if ( i.id().str() == "%byte-order" ) {
+            if ( const auto& e = i.expression(); ! e ) {
+                error(fmt("%s requires an argument", prop), p);
+                return;
+            }
+
+            if ( ! isEnumType(i.expression()->type(), "spicy::ByteOrder") )
+                error(fmt("%byte-order expression must be of spicy::ByteOrder, but is of type %s ",
+                          i.expression()->type()),
+                      p);
+        }
+
         else
             error(fmt("unknown property '%s'", i.id().str()), p);
     }
@@ -344,18 +376,21 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
     void operator()(const spicy::type::unit::item::UnitHook& i, position_t p) {
         auto decl = p.findParent<hilti::declaration::Type>();
-        if ( ! decl )
+        if ( ! decl || ! decl->get().type().isA<type::Unit>() )
             return;
 
-        if ( auto unit = decl->get().type().tryAs<type::Unit>() )
-            _checkHook(*unit, i, decl->get().linkage() == hilti::declaration::Linkage::Public, p);
+        auto unit = p.findParent<type::Unit>(); // note that this can be a different unit than in the decl, when nested
+        if ( ! unit )
+            return;
+
+        _checkHook(*unit, i.hook(), decl->get().linkage() == hilti::declaration::Linkage::Public, false, p);
     }
 
     void operator()(const Attribute& a, position_t p) {
         auto getAttrField = [](position_t p) -> std::optional<spicy::type::unit::item::Field> {
             try {
                 // Expected parent is AttributeSet whose expected parent is Field.
-                auto n = p.parent(2);
+                const auto& n = p.parent(2);
                 return n.tryAs<spicy::type::unit::item::Field>();
             } catch ( std::out_of_range& ) {
             }
@@ -377,7 +412,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 if ( ! a.hasValue() )
                     error("&default requires an argument", p);
                 else {
-                    if ( auto x = a.valueAs<Expression>(); ! x ) {
+                    if ( auto x = a.valueAsExpression(); ! x ) {
                         error(x.error(), p);
                     }
 
@@ -440,8 +475,8 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             if ( auto f = getAttrField(p) ) {
                 if ( ! a.hasValue() )
                     error("&parse-from must provide an expression", p);
-                else if ( auto e = a.valueAs<Expression>();
-                          e && e->type() != type::unknown && e->type() != type::Bytes() )
+                else if ( auto e = a.valueAsExpression();
+                          e && e->get().type() != type::stream::Iterator() && e->get().type() != type::Bytes() )
                     error("&parse-from must have an expression of type either bytes or iterator<stream>", p);
             }
         }
@@ -450,8 +485,8 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             if ( auto f = getAttrField(p) ) {
                 if ( ! a.hasValue() )
                     error("&parse-at must provide an expression", p);
-                else if ( auto e = a.valueAs<Expression>();
-                          e && e->type() != type::unknown && e->type() != type::stream::Iterator() )
+                else if ( auto e = a.valueAsExpression(); e && e->get().type() != type::stream::Iterator() &&
+                                                          e->get().type() != type::stream::Iterator() )
                     error("&parse-at must have an expression of type iterator<stream>", p);
             }
         }
@@ -459,8 +494,8 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         else if ( a.tag() == "&requires" ) {
             if ( ! a.hasValue() )
                 error("&requires must provide an expression", p);
-            else if ( auto e = a.valueAs<Expression>(); e && e->type() != type::unknown && e->type() != type::Bool() )
-                error(fmt("&requires expression must be of type bool, but is of type %d ", e->type()), p);
+            else if ( auto e = a.valueAsExpression(); e && e->get().type() != type::Bool() )
+                error(fmt("&requires expression must be of type bool, but is of type %d ", e->get().type()), p);
         }
     }
 
@@ -481,18 +516,25 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 }
 
                 else if ( a.tag() == "&requires" ) {
-                    auto e = a.valueAs<Expression>();
+                    auto e = a.valueAsExpression();
                     if ( ! e )
                         error(e.error(), p);
                     else {
-                        if ( e->type() != type::unknown && e->type() != type::Bool() )
-                            error(fmt("&requires expression must be of type bool, but is of type %d ", e->type()), p);
+                        if ( e->get().type() != type::Bool() )
+                            error(fmt("&requires expression must be of type bool, but is of type %s ", e->get().type()),
+                                  p);
                     }
                 }
                 else if ( a.tag() == "&byte-order" ) {
-                    auto e = a.valueAs<Expression>();
+                    auto e = a.valueAsExpression();
                     if ( ! e )
                         error(e.error(), p);
+                    else {
+                        if ( ! isEnumType(e->get().type(), "spicy::ByteOrder") )
+                            error(fmt("&byte-order expression must be of spicy::ByteOrder, but is of type %s ",
+                                      e->get().type()),
+                                  p);
+                    }
                 }
                 else if ( a.tag() == "&convert" ) {
                     if ( ! a.hasValue() )
@@ -506,7 +548,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
         if ( auto contexts = u.propertyItems("%context"); contexts.size() > 1 )
             error("unit cannot have more than one %context", p);
 
-        if ( const auto& typeId = u.typeID() ) {
+        if ( const auto& typeId = u.id() ) {
             const auto& type_name = typeId->local();
             for ( const auto& item : u.items() )
                 if ( auto field = item.tryAs<spicy::type::unit::item::Field>(); field && field->id() == type_name )
@@ -541,8 +583,6 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {
         auto count_attr = AttributeSet::find(f.attributes(), "&count");
-        auto parse_at_attr = AttributeSet::find(f.attributes(), "&parse-at");
-        auto parse_from_attr = AttributeSet::find(f.attributes(), "&parse-from");
         auto repeat = f.repeatCount();
         auto is_sub_item = p.parent().isA<spicy::type::unit::item::Field>();
 
@@ -666,110 +706,89 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
     }
 
     void operator()(const spicy::declaration::UnitHook& u, position_t p) {
-        if ( const auto& ut = u.unitType() )
-            _checkHook(*ut, u.unitHook(), ut->isPublic(), p);
+        if ( const auto& ut = u.hook().unitType() )
+            _checkHook(*ut, u.hook(), ut->isPublic(), true, p);
         else
             error("unknown unit type", p);
     }
 
-    void _checkHook(const type::Unit& unit, const type::unit::item::UnitHook& hook, bool is_public, position_t& p) {
+    void _checkHook(const type::Unit& unit, const Hook& hook, bool is_public, bool is_external, position_t& p) {
         // Note: We can't use any of the unit.isX() methods here that depend
         // on unit.isPublic() being set correctly, as they might not have
         // happened yet.
 
-        auto params = hook.hook().type().parameters();
-        auto location = hook.location();
+        auto params = hook.ftype().parameters();
+        const auto& location = hook.meta().location();
 
-        if ( ! hook.hook().type().result().type().isA<type::Void>() )
+        if ( ! hook.ftype().result().type().isA<type::Void>() && hook.id().local().str() != "0x25_print" )
             error("hook cannot have a return value", p, location);
 
-        if ( hook.id().namespace_() )
+        if ( hook.id().namespace_() && ! is_external )
             error("hook ID cannot be scoped", p, location);
-        else {
-            auto id = hook.id().local().str();
-            bool needs_sink_support = false;
 
-            if ( id.find(".") != std::string::npos )
-                error("cannot use paths in hooks; trigger on the top-level field instead", p, location);
+        auto id = hook.id().local().str();
+        bool needs_sink_support = false;
 
-            else if ( hilti::util::startsWith(id, "0x25_") ) {
-                auto id_readable = hilti::util::replace(hook.id().local().str(), "0x25_", "%");
+        if ( id.find(".") != std::string::npos )
+            error("cannot use paths in hooks; trigger on the top-level field instead", p, location);
 
-                if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_error" || id == "0x25_print" ||
-                     id == "0x25_finally" ) {
-                    if ( params.size() != 0 )
-                        error(fmt("hook '%s' does not take any parameters", id_readable), p, location);
-                }
+        else if ( hilti::util::startsWith(id, "0x25_") ) {
+            auto id_readable = hilti::util::replace(hook.id().local().str(), "0x25_", "%");
 
-                else if ( id == "0x25_gap" ) {
-                    needs_sink_support = true;
-                    if ( params.size() != 2 || params[0].type() != type::UnsignedInteger(64) ||
-                         params[1].type() != type::UnsignedInteger(64) )
-                        error("signature for hook must be: %gap(seq: uint64, len: uint64)", p, location);
-                }
-
-                else if ( id == "0x25_overlap" ) {
-                    needs_sink_support = true;
-                    if ( params.size() != 3 || params[0].type() != type::UnsignedInteger(64) ||
-                         params[1].type() != type::Bytes() || params[2].type() != type::Bytes() )
-                        error("signature for hook must be: %overlap(seq: uint64, old: bytes, new_: bytes)", p,
-                              location);
-                }
-
-                else if ( id == "0x25_skipped" ) {
-                    needs_sink_support = true;
-                    if ( params.size() != 1 || params[0].type() != type::UnsignedInteger(64) )
-                        error("signature for hook must be: %skipped(seq: uint64)", p, location);
-                }
-
-                else if ( id == "0x25_undelivered" ) {
-                    needs_sink_support = true;
-                    if ( params.size() != 2 || params[0].type() != type::UnsignedInteger(64) ||
-                         params[1].type() != type::Bytes() )
-                        error("signature for hook must be: %undelivered(seq: uint64, data: bytes)", p, location);
-                }
-
-                else
-                    error(fmt("unknown hook '%s'", id_readable), p, location);
-
-                if ( needs_sink_support && ! is_public ) // don't use supportsSink() here, see above
-                    error(fmt("cannot use hook '%s', unit type does not support sinks because it is not public",
-                              id_readable),
-                          p, location);
+            if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_error" || id == "0x25_print" ||
+                 id == "0x25_finally" ) {
+                if ( params.size() != 0 )
+                    error(fmt("hook '%s' does not take any parameters", id_readable), p, location);
             }
-            else {
-                if ( auto i = unit.field(ID(id)); ! i )
-                    error(fmt("no field '%s' in unit type", id), p, location);
-                else if ( ! i->isA<spicy::type::unit::item::Field>() )
-                    error(fmt("'%s' does not support hooks", id), p, location);
+
+            else if ( id == "0x25_gap" ) {
+                needs_sink_support = true;
+                if ( params.size() != 2 || params[0].type() != type::UnsignedInteger(64) ||
+                     params[1].type() != type::UnsignedInteger(64) )
+                    error("signature for hook must be: %gap(seq: uint64, len: uint64)", p, location);
             }
+
+            else if ( id == "0x25_overlap" ) {
+                needs_sink_support = true;
+                if ( params.size() != 3 || params[0].type() != type::UnsignedInteger(64) ||
+                     params[1].type() != type::Bytes() || params[2].type() != type::Bytes() )
+                    error("signature for hook must be: %overlap(seq: uint64, old: bytes, new_: bytes)", p, location);
+            }
+
+            else if ( id == "0x25_skipped" ) {
+                needs_sink_support = true;
+                if ( params.size() != 1 || params[0].type() != type::UnsignedInteger(64) )
+                    error("signature for hook must be: %skipped(seq: uint64)", p, location);
+            }
+
+            else if ( id == "0x25_undelivered" ) {
+                needs_sink_support = true;
+                if ( params.size() != 2 || params[0].type() != type::UnsignedInteger(64) ||
+                     params[1].type() != type::Bytes() )
+                    error("signature for hook must be: %undelivered(seq: uint64, data: bytes)", p, location);
+            }
+
+            else
+                error(fmt("unknown hook '%s'", id_readable), p, location);
+
+            if ( needs_sink_support && ! is_public ) // don't use supportsSink() here, see above
+                error(fmt("cannot use hook '%s', unit type does not support sinks because it is not public",
+                          id_readable),
+                      p, location);
         }
-    }
-};
-
-struct PostTransformVisitor : public hilti::visitor::PreOrder<void, PostTransformVisitor> {
-    void error(std::string msg, position_t& p) { p.node.addError(msg); }
-};
-
-struct PreservedVisitor : public hilti::visitor::PreOrder<void, PreservedVisitor> {
-    void error(std::string msg, position_t& p) { p.node.addError(msg); }
-
-    auto methodArgument(const hilti::expression::ResolvedOperatorBase& o, int i) {
-        auto ctor = o.op2().as<hilti::expression::Ctor>().ctor();
-
-        if ( auto x = ctor.tryAs<hilti::ctor::Coerced>() )
-            ctor = x->coercedCtor();
-
-        return ctor.as<hilti::ctor::Tuple>().value()[i];
+        else {
+            if ( auto i = unit.itemByName(ID(id)); ! i )
+                error(fmt("no field '%s' in unit type", id), p, location);
+        }
     }
 
     void operator()(const operator_::sink::Connect& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>(); x && ! x->supportsSinks() )
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->supportsSinks() )
             error("unit type does not support sinks", p);
     }
 
     void operator()(const operator_::sink::ConnectMIMETypeBytes& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>() ) {
+        if ( auto x = n.op0().type().tryAs<type::Unit>() ) {
             if ( ! x->supportsSinks() )
                 error("unit type does not support sinks", p);
 
@@ -779,7 +798,7 @@ struct PreservedVisitor : public hilti::visitor::PreOrder<void, PreservedVisitor
     }
 
     void operator()(const operator_::sink::ConnectMIMETypeString& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>() ) {
+        if ( auto x = n.op0().type().tryAs<type::Unit>() ) {
             if ( ! x->supportsSinks() )
                 error("unit type does not support sinks", p);
 
@@ -789,76 +808,56 @@ struct PreservedVisitor : public hilti::visitor::PreOrder<void, PreservedVisitor
     }
 
     void operator()(const operator_::unit::ConnectFilter& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>(); x && ! x->supportsFilters() )
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->supportsFilters() )
             error("unit type does not support filters", p);
 
-        if ( auto y = methodArgument(n, 0)
-                          .type()
-                          .as<type::StrongReference>()
-                          .dereferencedType()
-                          .originalNode()
-                          ->as<type::Unit>();
+        if ( const auto& y =
+                 methodArgument(n, 0).type().as<type::StrongReference>().dereferencedType().as<type::Unit>();
              ! y.isFilter() )
             error("unit type cannot be a filter, %filter missing", p);
     }
 
     void operator()(const operator_::unit::Forward& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>(); x && ! x->isFilter() )
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->isFilter() )
             error("unit type cannot be a filter, %filter missing", p);
     }
 
     void operator()(const operator_::unit::ForwardEod& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>(); x && ! x->isFilter() )
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->isFilter() )
             error("unit type cannot be a filter, %filter missing", p);
     }
 
     void operator()(const operator_::unit::Input& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
             error("use of 'input()' requires unit type to have property `%random-access`", p);
     }
 
     void operator()(const operator_::unit::Offset& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
             error("use of 'offset()' requires unit type to have property `%random-access`", p);
     }
 
     void operator()(const operator_::unit::SetInput& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
             error("use of 'set_input()' requires unit type to have property `%random-access`", p);
     }
 
     void operator()(const operator_::unit::Find& n, position_t p) {
-        if ( auto x = n.op0().type().originalNode()->tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
             error("use of 'find()' requires unit type to have property `%random-access`", p);
     }
 };
 
 } // anonymous namespace
 
-void spicy::detail::preTransformValidateAST(Node* root, hilti::Unit* /* unit */, bool* found_errors) {
-    hilti::util::timing::Collector _("spicy/compiler/validator");
+void spicy::detail::ast::validate(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit) {
+    {
+        auto v = Visitor();
+        hilti::util::timing::Collector _("spicy/compiler/validator");
 
-    auto v = PreTransformVisitor();
-    for ( auto i : v.walk(root) )
-        v.dispatch(i);
-
-    *found_errors = (v.errors > 0);
-}
-
-void spicy::detail::postTransformValidateAST(Node* root, hilti::Unit* /* unit */) {
-    hilti::util::timing::Collector _("spicy/compiler/validator");
-
-    auto v = PostTransformVisitor();
-    for ( auto i : v.walk(root) )
-        v.dispatch(i);
-}
-
-void spicy::detail::preservedValidateAST(std::vector<Node>* nodes, hilti::Unit* /* unit */) {
-    hilti::util::timing::Collector _("spicy/compiler/validator");
-
-    auto v = PreservedVisitor();
-    for ( auto& root : *nodes ) {
-        for ( auto i : v.walk(&root) )
+        for ( auto i : v.walk(root) )
             v.dispatch(i);
     }
+
+    (*hilti::plugin::registry().hiltiPlugin().ast_validate)(ctx, root, unit);
 }

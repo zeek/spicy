@@ -18,8 +18,8 @@ namespace operator_ {
 
 namespace detail {
 inline static auto widestTypeSigned() {
-    return [=](const std::vector<Expression>& orig_ops,
-               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+    return [=](const hilti::node::Range<Expression>& orig_ops,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
         if ( orig_ops.empty() && resolved_ops.empty() )
             return type::DocOnly("int<*>");
 

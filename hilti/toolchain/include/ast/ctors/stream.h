@@ -14,14 +14,14 @@ namespace ctor {
 /** AST node for a stream constructor. */
 class Stream : public NodeBase, public hilti::trait::isCtor {
 public:
-    Stream(std::string v, Meta m = Meta()) : NodeBase(std::move(m)), _value(std::move(v)) {}
+    Stream(std::string v, Meta m = Meta()) : NodeBase(nodes(type::Stream(m)), m), _value(std::move(v)) {}
 
     auto value() const { return _value; }
 
     bool operator==(const Stream& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Stream(); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return false; }
     /** Implements `Ctor` interface. */

@@ -1,8 +1,8 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 //
-// This was originally inspired by the version in
-// https://github.com/Chlorie/clu, but it turned into pretty much a rewrite. (That
-// code comes with an MIT license, FWIW).
+// This was originally inspired by similar code part of
+// https://github.com/Chlorie/clu, but it turned into pretty much a rewrite.
+// (FWIW, that code comes with an MIT license.)
 
 #pragma once
 
@@ -29,8 +29,9 @@ public:
     optional_ref(std::nullopt_t) {}
     optional_ref(T& other) : _ptr(&other) {}
     optional_ref(T&& other) = delete; // to avoid easy mistakes
+    ~optional_ref() = default;
 
-    bool has_value() const { return _ptr; }
+    bool has_value() const { return _ptr != nullptr; }
 
     T& value() const {
         if ( ! _ptr )

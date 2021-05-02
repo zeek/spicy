@@ -1,0 +1,9 @@
+# @TEST-EXEC: spicyc -p %INPUT
+# @TEST-DOC: Check that unit T coerces to T&.
+
+module testing;
+
+public type U = unit {};
+
+global x: U;
+global y: U& = x;

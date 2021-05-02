@@ -22,8 +22,8 @@ public:
         : NodeBase(nodes(std::move(id), std::move(expr), std::move(attrs)), std::move(m)), _inherited(inherited) {}
 
     const auto& id() const { return child<ID>(0); }
-    auto expression() const { return childs()[1].tryReferenceAs<Expression>(); }
-    auto attributes() const { return childs()[2].tryReferenceAs<AttributeSet>(); }
+    auto expression() const { return childs()[1].tryAs<Expression>(); }
+    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
     bool interited() const { return _inherited; }
 
     bool operator==(const Property& other) const {
@@ -31,7 +31,8 @@ public:
     }
 
     // Unit field interface
-    Type itemType() const { return type::Void(); }
+    const Type& itemType() const { return type::void_; }
+    bool isResolved() const { return type::isResolved(itemType()); }
     auto isEqual(const Item& other) const { return node::isEqual(this, other); }
 
     // Node interface.

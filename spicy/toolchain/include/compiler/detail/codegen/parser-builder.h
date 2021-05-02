@@ -466,7 +466,7 @@ public:
     void guardFeatureCode(const type::Unit& unit, std::string_view feature, std::function<void()> f);
 
     CodeGen* cg() const { return _cg; }
-    const std::shared_ptr<hilti::Context>& context() const;
+    std::shared_ptr<hilti::Context> context() const;
     const hilti::Options& options() const;
 
 private:

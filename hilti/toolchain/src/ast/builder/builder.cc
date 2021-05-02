@@ -68,7 +68,7 @@ Expression Builder::addTmp(const std::string& prefix, const Type& t, const Expre
 }
 
 void Builder::addDebugMsg(const std::string& stream, const std::string& fmt, std::vector<Expression> args) {
-    if ( ! _context->options().debug )
+    if ( ! context()->options().debug )
         return;
 
     Expression call;
@@ -88,7 +88,7 @@ void Builder::addDebugMsg(const std::string& stream, const std::string& fmt, std
 }
 
 void Builder::addDebugIndent(const std::string& stream) {
-    if ( ! _context->options().debug )
+    if ( ! context()->options().debug )
         return;
 
     auto call = builder::call("hilti::debugIndent", {builder::string(stream)});
@@ -96,7 +96,7 @@ void Builder::addDebugIndent(const std::string& stream) {
 }
 
 void Builder::addDebugDedent(const std::string& stream) {
-    if ( ! _context->options().debug )
+    if ( ! context()->options().debug )
         return;
 
     auto call = builder::call("hilti::debugDedent", {builder::string(stream)});

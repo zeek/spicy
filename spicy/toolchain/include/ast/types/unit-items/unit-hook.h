@@ -13,7 +13,9 @@ namespace spicy::type::unit::item {
 /** AST node for a unit hook. */
 class UnitHook : public hilti::NodeBase, public spicy::trait::isUnitItem {
 public:
-    UnitHook(ID id, Hook hook, Meta m = Meta()) : NodeBase(nodes(std::move(id), std::move(hook)), std::move(m)) {}
+    UnitHook(ID id, Hook hook, Meta m = Meta()) : NodeBase(nodes(id, std::move(hook)), std::move(m)) {
+        childs()[1].as<Hook>().setID(id);
+    }
 
     const auto& id() const { return child<ID>(0); }
     const auto& hook() const { return child<Hook>(1); }
@@ -22,7 +24,8 @@ public:
     bool operator==(const UnitHook& other) const { return id() == other.id() && hook() == other.hook(); }
 
     // Unit field interface
-    Type itemType() const { return hook().type(); }
+    const Type& itemType() const { return hook().function().type(); }
+    bool isResolved() const { return type::isResolved(itemType()); }
     auto isEqual(const Item& other) const { return node::isEqual(this, other); }
 
     // Node interface.

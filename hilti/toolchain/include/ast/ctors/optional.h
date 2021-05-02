@@ -7,6 +7,7 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/ctors/null.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/optional.h>
 
 namespace hilti {
@@ -16,24 +17,20 @@ namespace ctor {
 class Optional : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a set value. */
-    Optional(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
+    Optional(Expression e, Meta m = Meta()) : NodeBase(nodes(type::Optional(type::auto_), e), m) {}
 
     /** Constructs an unset value of type `t`. */
-    Optional(Type t, Meta m = Meta()) : NodeBase({std::move(t)}, std::move(m)) {}
+    Optional(Type t, Meta m = Meta()) : NodeBase(nodes(type::Optional(t, m), node::none), m) {}
 
-    std::optional<Expression> value() const { return childs()[0].tryAs<Expression>(); }
+    const Type& dereferencedType() const { return childs()[0].as<type::Optional>().dereferencedType(); }
+    hilti::optional_ref<const Expression> value() const { return childs()[1].tryAs<Expression>(); }
 
-    Type dereferencedType() const {
-        if ( auto x = childs()[0].tryAs<Expression>() )
-            return x->type();
-
-        return type::effectiveType(child<Type>(0));
-    }
+    void setDereferencedType(Type x) { childs()[0] = type::Optional(std::move(x)); }
 
     bool operator==(const Optional& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    Type type() const { return type::Optional(dereferencedType(), meta()); }
+    const auto& type() const { return child<Type>(0); }
 
     /** Implements `Ctor` interface. */
     bool isConstant() const {

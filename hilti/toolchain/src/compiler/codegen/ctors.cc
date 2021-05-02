@@ -21,20 +21,20 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     explicit Visitor(CodeGen* cg) : cg(cg) {}
     CodeGen* cg;
 
-    result_t operator()(const ctor::Address& n) { return fmt("hilti::rt::Address(\"%s\")", n.value()); }
+    result_t operator()(const ctor::Address& n) { return fmt("::hilti::rt::Address(\"%s\")", n.value()); }
 
-    result_t operator()(const ctor::Bool& n) { return fmt("hilti::rt::Bool(%s)", n.value() ? "true" : "false"); }
+    result_t operator()(const ctor::Bool& n) { return fmt("::hilti::rt::Bool(%s)", n.value() ? "true" : "false"); }
 
     result_t operator()(const ctor::Bytes& n) { return fmt("\"%s\"_b", util::escapeBytesForCxx(n.value())); }
 
     result_t operator()(const ctor::Coerced& n) { return cg->compile(n.coercedCtor()); }
 
     result_t operator()(const ctor::Default& n) {
-        auto args = util::join(util::transform(n.typeArguments(), [&](const auto e) { return cg->compile(e); }), ", ");
+        auto args = util::join(node::transform(n.typeArguments(), [&](const auto e) { return cg->compile(e); }), ", ");
         return fmt("(%s(%s))", cg->compile(n.type(), codegen::TypeUsage::Ctor), args);
     }
 
-    result_t operator()(const ctor::Error& n) { return fmt("hilti::rt::result::Error(\"%s\")", n.value()); }
+    result_t operator()(const ctor::Error& n) { return fmt("::hilti::rt::result::Error(\"%s\")", n.value()); }
 
     result_t operator()(const ctor::Exception& n) {
         std::string type;
@@ -48,41 +48,45 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const ctor::Interval& n) {
-        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
+        return fmt("::hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
                    "), hilti::rt::Interval::NanosecondTag())",
                    n.value().nanoseconds());
+    }
+
+    result_t operator()(const ctor::Library& n) {
+        return fmt("%s(%s)", n.type().as<type::Library>().cxxName(), cg->compile(n.value()));
     }
 
     result_t operator()(const ctor::List& n) {
         if ( n.elementType() == type::unknown )
             // Can only be the empty list.
-            return "hilti::rt::vector::Empty()";
+            return "::hilti::rt::vector::Empty()";
 
-        return fmt("hilti::rt::Vector<%s>({%s})", cg->compile(n.elementType(), codegen::TypeUsage::Storage),
-                   util::join(util::transform(n.value(), [this](auto e) { return cg->compile(e); }), ", "));
+        return fmt("::hilti::rt::Vector<%s>({%s})", cg->compile(n.elementType(), codegen::TypeUsage::Storage),
+                   util::join(node::transform(n.value(), [this](auto e) { return cg->compile(e); }), ", "));
     }
 
     result_t operator()(const ctor::Map& n) {
-        if ( n.elementType() == type::unknown )
+        if ( n.valueType() == type::unknown )
             // Can only be the empty map.
-            return "hilti::rt::map::Empty()";
+            return "::hilti::rt::map::Empty()";
 
         auto k = cg->compile(n.keyType(), codegen::TypeUsage::Storage);
-        auto v = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
+        auto v = cg->compile(n.valueType(), codegen::TypeUsage::Storage);
 
-        return fmt("hilti::rt::Map<%s, %s>({%s})", k, v,
-                   util::join(util::transform(n.value(),
-                                              [this](auto e) {
-                                                  return fmt("{%s, %s}", cg->compile(e.first), cg->compile(e.second));
+        return fmt("::hilti::rt::Map<%s, %s>({%s})", k, v,
+                   util::join(node::transform(n.value(),
+                                              [this](const auto& e) {
+                                                  return fmt("{%s, %s}", cg->compile(e.key()), cg->compile(e.value()));
                                               }),
                               ", "));
     }
 
     result_t operator()(const ctor::Network& n) {
-        return fmt("hilti::rt::Network(\"%s\", %u)", n.value().prefix(), n.value().length());
+        return fmt("::hilti::rt::Network(\"%s\", %u)", n.value().prefix(), n.value().length());
     }
 
-    result_t operator()(const ctor::Null& n) { return fmt("hilti::rt::Null()"); }
+    result_t operator()(const ctor::Null& n) { return fmt("::hilti::rt::Null()"); }
 
     result_t operator()(const ctor::Optional& n) {
         if ( auto e = n.value() )
@@ -91,7 +95,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("std::optional<%s>()", cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor));
     }
 
-    result_t operator()(const ctor::Port& n) { return fmt("hilti::rt::Port(\"%s\")", n.value()); }
+    result_t operator()(const ctor::Port& n) { return fmt("::hilti::rt::Port(\"%s\")", n.value()); }
 
     result_t operator()(const ctor::Real& n) {
         // We use hexformat for lossless serialization. Older platforms like
@@ -113,7 +117,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const ctor::StrongReference& n) {
-        return fmt("hilti::rt::StrongReference<%s>()", cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor));
+        return fmt("::hilti::rt::StrongReference<%s>()", cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor));
     }
 
     result_t operator()(const ctor::RegExp& n) {
@@ -123,9 +127,11 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             flags.emplace_back(".no_sub = true");
 
         auto t = (n.value().size() == 1 ? "std::string" : "std::vector<std::string>");
-        return fmt("hilti::rt::RegExp(%s{%s}, {%s})", t,
+        return fmt("::hilti::rt::RegExp(%s{%s}, {%s})", t,
                    util::join(util::transform(n.value(),
-                                              [&](auto s) { return fmt("\"%s\"", util::escapeUTF8(s, true, false)); }),
+                                              [&](const auto& s) {
+                                                  return fmt("\"%s\"", util::escapeUTF8(s, true, false));
+                                              }),
                               ", "),
                    util::join(flags, ", "));
     }
@@ -133,30 +139,30 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const ctor::Set& n) {
         if ( n.elementType() == type::unknown )
             // Can only be the empty list.
-            return "hilti::rt::set::Empty()";
+            return "::hilti::rt::set::Empty()";
 
         const auto k = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
 
-        return fmt("hilti::rt::Set<%s>({%s})", k,
-                   util::join(util::transform(n.value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));
+        return fmt("::hilti::rt::Set<%s>({%s})", k,
+                   util::join(node::transform(n.value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));
     }
 
     result_t operator()(const ctor::SignedInteger& n) {
         if ( /* n.width() == 64 && */ n.value() == INT64_MIN )
-            return fmt("hilti::rt::integer::safe<std::int64_t>{INT64_MIN}");
+            return fmt("::hilti::rt::integer::safe<std::int64_t>{INT64_MIN}");
 
-        return fmt("hilti::rt::integer::safe<std::int%u_t>{%" PRId64 "}", n.width(), n.value());
+        return fmt("::hilti::rt::integer::safe<std::int%u_t>{%" PRId64 "}", n.width(), n.value());
     }
 
     result_t operator()(const ctor::Stream& n) {
-        return fmt("hilti::rt::Stream(\"%s\"_b)", util::escapeBytesForCxx(n.value()));
+        return fmt("::hilti::rt::Stream(\"%s\"_b)", util::escapeBytesForCxx(n.value()));
     }
 
     result_t operator()(const ctor::String& n) { return fmt("std::string(\"%s\")", util::escapeUTF8(n.value(), true)); }
 
     result_t operator()(const ctor::Tuple& n) {
         return fmt("std::make_tuple(%s)",
-                   util::join(util::transform(n.value(), [this](auto e) { return cg->compile(e); }), ", "));
+                   util::join(node::transform(n.value(), [this](auto e) { return cg->compile(e); }), ", "));
     }
 
     result_t operator()(const ctor::Struct& n) {
@@ -165,20 +171,20 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         auto is_field = [&](auto f) { return ! f.type().template isA<type::Function>(); };
 
         auto convert_field = [&](auto f) {
-            if ( const auto& c = n.field(f.id()) )
-                return cg->compile(c->second);
+            if ( auto c = n.field(f.id()) )
+                return cg->compile(c->expression());
 
             return cxx::Expression("{}");
         };
 
         return fmt("%s(%s)", id,
-                   util::join(util::transform(util::filter(n.type().as<type::Struct>().fields(), is_field),
+                   util::join(node::transform(node::filter(n.type().as<type::Struct>().fields(), is_field),
                                               convert_field),
                               ", "));
     }
 
     result_t operator()(const ctor::Time& n) {
-        return fmt("hilti::rt::Time(%" PRId64 ", hilti::rt::Time::NanosecondTag())", n.value().nanoseconds());
+        return fmt("::hilti::rt::Time(%" PRId64 ", hilti::rt::Time::NanosecondTag())", n.value().nanoseconds());
     }
 
     result_t operator()(const ctor::Enum& n) {
@@ -187,14 +193,14 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const ctor::ValueReference& n) {
-        return fmt("hilti::rt::reference::make_value<%s>(%s)",
+        return fmt("::hilti::rt::reference::make_value<%s>(%s)",
                    cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor), cg->compile(n.expression()));
     }
 
     result_t operator()(const ctor::Vector& n) {
         if ( n.elementType() == type::unknown )
             // Can only be the empty list.
-            return "hilti::rt::vector::Empty()";
+            return "::hilti::rt::vector::Empty()";
 
         auto x = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
 
@@ -202,16 +208,16 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         if ( auto def = cg->typeDefaultValue(n.elementType()) )
             allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
-        return fmt("hilti::rt::Vector<%s%s>({%s})", x, allocator,
-                   util::join(util::transform(n.value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));
+        return fmt("::hilti::rt::Vector<%s%s>({%s})", x, allocator,
+                   util::join(node::transform(n.value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));
     }
 
     result_t operator()(const ctor::UnsignedInteger& n) {
-        return fmt("hilti::rt::integer::safe<std::uint%u_t>{%" PRId64 "u}", n.width(), n.value());
+        return fmt("::hilti::rt::integer::safe<std::uint%u_t>{%" PRId64 "u}", n.width(), n.value());
     }
 
     result_t operator()(const ctor::WeakReference& n) {
-        return fmt("hilti::rt::WeakReference<%s>()", cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor));
+        return fmt("::hilti::rt::WeakReference<%s>()", cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor));
     }
 };
 

@@ -8,16 +8,16 @@ module spicy;
 public type AddressFamily = enum {
     IPv4, # IP4 address
     IPv6  # IPv6 address
-} &cxxname="hilti::rt::AddressFamily";
+} &cxxname="::hilti::rt::AddressFamily";
 
 ## Captures the state of base64 encoding/decoding for the corresponding library functions.
-public type Base64Stream = __library_type("spicy::rt::base64::Stream");
+public type Base64Stream = __library_type("::spicy::rt::base64::Stream");
 
 ## Specifies the bit order for individual bit ranges inside a bitfield.
 public type BitOrder = enum {
     LSB0,     # bits are interpreted as lowest-significant-bit coming first
     MSB0      # bits are interpreted as most-significant-bit coming first
-} &cxxname="hilti::rt::integer::BitOrder";
+} &cxxname="::hilti::rt::integer::BitOrder" ;
 
 ## Specifies byte order for data operations.
 public type ByteOrder = enum {
@@ -25,44 +25,51 @@ public type ByteOrder = enum {
     Big,      # data is in big-endian byte order
     Network,  # data is in network byte order (same a big endian)
     Host      # data is in byte order of the host we are executing on
-} &cxxname="hilti::rt::ByteOrder";
+} &cxxname="::hilti::rt::ByteOrder" ;
+
+## Specifies the character set for bytes encoding/decoding.
+public type Charset = enum {
+    ASCII,
+    UTF8
+} &cxxname="::hilti::rt::bytes::Charset";
 
 ## Captures state for incremental regular expression matching.
-public type MatchState = __library_type("hilti::rt::regexp::MatchState");
+public type MatchState = struct {
+} &cxxname="::hilti::rt::regexp::MatchState";
 
 ## Specifies a transport-layer protocol.
 public type Protocol = enum {
     TCP,
     UDP,
     ICMP
-} &cxxname="hilti::rt::Protocol";
+} &cxxname="::hilti::rt::Protocol";
 
 ## Specifies the type of a real value.
 public type RealType = enum {
     IEEE754_Single, # single precision in IEEE754 format
     IEEE754_Double  # double precision in IEEE754 format
-} &cxxname="hilti::rt::real::Type";
+} &cxxname="::hilti::rt::real::Type" ;
 
 ## Specifies the policy for a sink's reassembler when encountering overlapping data.
 public type ReassemblerPolicy = enum {
     First # take the original data & discard the new data
-} &cxxname="spicy::rt::sink::ReassemblerPolicy";
+} &cxxname="::spicy::rt::sink::ReassemblerPolicy";
 
 ## Specifies a side an operation should operate on.
 public type Side = enum {
     Left,    # operate on left side
     Right,   # operate on right side
     Both     # operate on both sides
-} &cxxname="hilti::rt::bytes::Side";
+} &cxxname="::hilti::rt::bytes::Side" ;
 
 ## Specifies direction of a search.
 public type Direction = enum {
     Forward, # search forward
     Backward, # search backward
-} &cxxname="hilti::rt::stream::Direction";
+} &cxxname="::hilti::rt::stream::Direction";
 
 ## Captures the state of gzip decompression for the corresponding library functions.
-public type ZlibStream = __library_type("spicy::rt::zlib::Stream");
+public type ZlibStream = __library_type("::spicy::rt::zlib::Stream");
 
 ## Initializes a zlib stream for decompression.
 ##
@@ -70,31 +77,31 @@ public type ZlibStream = __library_type("spicy::rt::zlib::Stream");
 ## (see https://www.zlib.net/manual.html).
 ##
 ## Will throw a `ZlibError` exception if initialization fails.
-public function zlib_init(window_bits: int64) : ZlibStream &cxxname="spicy::rt::zlib::init" &have_prototype;
+public function zlib_init(window_bits: int64) : ZlibStream &cxxname="::spicy::rt::zlib::init" &have_prototype;
 
 ## Decompresses a chunk of data through the given zlib stream.
-public function zlib_decompress(inout stream_: ZlibStream, data: bytes) : bytes &cxxname="spicy::rt::zlib::decompress" &have_prototype;
+public function zlib_decompress(inout stream_: ZlibStream, data: bytes) : bytes &cxxname="::spicy::rt::zlib::decompress" &have_prototype;
 
 ## Finalizes a zlib stream used for decompression.
-public function zlib_finish(inout stream_: ZlibStream) : bytes &cxxname="spicy::rt::zlib::finish" &have_prototype;
+public function zlib_finish(inout stream_: ZlibStream) : bytes &cxxname="::spicy::rt::zlib::finish" &have_prototype;
 
 ## Encodes a stream of data into base64.
-public function base64_encode(inout stream_: Base64Stream, data: bytes) : bytes &cxxname="spicy::rt::base64::encode" &have_prototype;
+public function base64_encode(inout stream_: Base64Stream, data: bytes) : bytes &cxxname="::spicy::rt::base64::encode" &have_prototype;
 
 ## Decodes a stream of base64 data back into the clear.
-public function base64_decode(inout stream_: Base64Stream, data: bytes) : bytes &cxxname="spicy::rt::base64::decode" &have_prototype;
+public function base64_decode(inout stream_: Base64Stream, data: bytes) : bytes &cxxname="::spicy::rt::base64::decode" &have_prototype;
 
 ## Finalizes a base64 stream used for decoding or encoding.
-public function base64_finish(inout stream_: Base64Stream) : bytes &cxxname="spicy::rt::base64::finish" &have_prototype;
+public function base64_finish(inout stream_: Base64Stream) : bytes &cxxname="::spicy::rt::base64::finish" &have_prototype;
 
 ## Returns the initialization value for CRC32 computation.
-public function crc32_init() : uint64 &cxxname="spicy::rt::zlib::crc32_init" &have_prototype;
+public function crc32_init() : uint64 &cxxname="::spicy::rt::zlib::crc32_init" &have_prototype;
 
 ## Computes a running CRC32.
-public function crc32_add(crc: uint64, data: bytes) : uint64 &cxxname="spicy::rt::zlib::crc32_add" &have_prototype;
+public function crc32_add(crc: uint64, data: bytes) : uint64 &cxxname="::spicy::rt::zlib::crc32_add" &have_prototype;
 
 ## Returns the current wall clock time.
-public function current_time() : time &cxxname="hilti::rt::time::current_time" &have_prototype;
+public function current_time() : time &cxxname="::hilti::rt::time::current_time" &have_prototype;
 
 ## Constructs a time value from a tuple of broken-out elements specifying local time.
 ##
@@ -104,13 +111,13 @@ public function current_time() : time &cxxname="hilti::rt::time::current_time" &
 ## - *H*: hour (0-23)
 ## - *M*: minute (0-59)
 ## - *S*: second (0-59)
-public function mktime(y: uint64, m: uint64, d: uint64, H: uint64, M: uint64, S: uint64) : time &cxxname="hilti::rt::time::mktime" &have_prototype;
+public function mktime(y: uint64, m: uint64, d: uint64, H: uint64, M: uint64, S: uint64) : time &cxxname="::hilti::rt::time::mktime" &have_prototype;
 
 ## Returns a bytes value rendered as a hex string.
-public function bytes_to_hexstring(value: bytes) : string &cxxname="spicy::rt::bytes_to_hexstring" &have_prototype;
+public function bytes_to_hexstring(value: bytes) : string &cxxname="::spicy::rt::bytes_to_hexstring" &have_prototype;
 
 ## Returns the value of an environment variable, if set.
-public function getenv(name: string) : optional<string> &cxxname="hilti::rt::getenv" &have_prototype;
+public function getenv(name: string) : optional<string> &cxxname="::hilti::rt::getenv" &have_prototype;
 
 ## Formats a time according to user-specified format string.
 ##
@@ -122,7 +129,7 @@ public function getenv(name: string) : optional<string> &cxxname="hilti::rt::get
 ##
 ## This function can raise InvalidArgument if the timestamp could not be
 ## converted to local time or formatted.
-public function strftime(format: string, timestamp: time) : string &cxxname="hilti::rt::strftime" &have_prototype;
+public function strftime(format: string, timestamp: time) : string &cxxname="::hilti::rt::strftime" &have_prototype;
 
 ## Parse time from string.
 ##
@@ -134,4 +141,4 @@ public function strftime(format: string, timestamp: time) : string &cxxname="hil
 ## This function raises InvalidArgument if the string could not be parsed
 ## with the given format string, or OutOfRange if the parsed time value cannot
 ## be represented.
-public function strptime(buf: string, format: string) : time &cxxname="hilti::rt::strptime" &have_prototype;
+public function strptime(buf: string, format: string) : time &cxxname="::hilti::rt::strptime" &have_prototype;

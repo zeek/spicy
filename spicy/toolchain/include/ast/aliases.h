@@ -11,8 +11,8 @@
 #include <hilti/ast/location.h>
 #include <hilti/ast/meta.h>
 #include <hilti/ast/module.h>
+#include <hilti/ast/node-ref.h>
 #include <hilti/ast/node.h>
-#include <hilti/ast/node_ref.h>
 #include <hilti/ast/operator.h>
 #include <hilti/ast/scope.h>
 #include <hilti/ast/statement.h>

@@ -24,7 +24,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return ctor().isTemporary(); }
     /** Implements `Expression` interface. */
-    auto type() const { return type::effectiveType(ctor().type()); }
+    const auto& type() const { return ctor().type(); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return ctor().isConstant(); }
     /** Implements `Expression` interface. */

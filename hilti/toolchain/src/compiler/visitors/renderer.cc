@@ -3,7 +3,7 @@
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/id.h>
 #include <hilti/ast/expressions/unresolved-operator.h>
-#include <hilti/ast/types/id.h>
+#include <hilti/ast/types/unresolved-id.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/visitors.h>
 
@@ -13,29 +13,12 @@ using util::fmt;
 static void render(const Node& n, std::ostream* out, std::optional<logging::DebugStream> dbg, bool include_scopes) {
     util::timing::Collector _("hilti/renderer");
 
-    int dbg_level = 0;
-
-    for ( const auto&& i : visitor::PreOrder<>().walk(n) ) {
-        int new_dbg_level = i.path.size();
-
-        while ( dbg_level < new_dbg_level ) {
-            logger().debugPushIndent(*dbg);
-            dbg_level++;
-        }
-
-        while ( dbg_level > new_dbg_level ) {
-            logger().debugPopIndent(*dbg);
-            dbg_level--;
-        }
-
-#if 0
-        // Condense AST output, struct types can be very long.
-        if ( i.findParent<type::Struct>() )
-            continue;
-#endif
+    for ( const auto i : visitor::PreOrder<>().walk(n) ) {
+        if ( dbg )
+            logger().debugSetIndent(*dbg, i.path.size());
 
         if ( out )
-            (*out) << std::string(dbg_level - 1, ' ');
+            (*out) << std::string(i.path.size() - 1, ' ');
 
         auto s = fmt("- %s", i.node.render());
 
@@ -63,8 +46,8 @@ static void render(const Node& n, std::ostream* out, std::optional<logging::Debu
         }
     }
 
-    while ( dbg_level-- > 0 )
-        logger().debugPopIndent(*dbg);
+    if ( dbg )
+        logger().debugSetIndent(*dbg, 0);
 }
 
 void detail::renderNode(const Node& n, std::ostream& out, bool include_scopes) {

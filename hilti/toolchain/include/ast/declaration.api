@@ -14,13 +14,29 @@ class Declaration(trait::isDeclaration) : trait::isNode {
     bool isConstant() const;
 
     /**
-     * Returns a user-friendly name for the type of object the declararion
+     * Returns the canonical ID associated with the declaration. Canonical IDs
+     * are automatically computed during AST processing and guaranteed to be
+     * globally unique and stable across runs.
+     */
+    const ID& canonicalID() const;
+
+    /**
+     * Associates a canonical ID with the declaration. To be called from AST
+     * processing.
+     */
+    void setCanonicalID(ID id);
+
+    /**
+     * Returns a user-friendly name for the type of object the declaration
      * refers to. This is used in error messages.
      */
     std::string displayName() const;
 
-    /** Returns true if the declaration is equivalent to another one in HILTI semantics. */
-    bool isEqual(const Declaration& other) const;
+    /**
+     * Returns true if the declaration is equivalent to another one in HILTI
+     * semantics.
+     */
+    bool isEqual(const hilti::Declaration& other) const;
 
     /** Implements the `Node` interface. */
     hilti::node::Properties properties() const;
@@ -38,11 +54,5 @@ class Declaration(trait::isDeclaration) : trait::isNode {
     void setMeta(Meta m);
 
     /** Implements the `Node` interface. */
-    const NodeRef& originalNode() const;
-
-    /** Implements the `Node` interface. */
-    void setOriginalNode(const NodeRef& n);
-
-    /** Implements the `Node` interface. */
-    void clearCache();
+    bool pruneWalk() const;
 };

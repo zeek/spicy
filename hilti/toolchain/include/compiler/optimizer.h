@@ -13,14 +13,17 @@ namespace hilti {
 
 struct Optimizer {
 public:
-    Optimizer(std::vector<Unit>* units, const std::shared_ptr<Context> ctx) : _units(units), _ctx(std::move(ctx)) {}
-    ~Optimizer() { _units = nullptr; }
+    Optimizer(const std::vector<std::shared_ptr<Unit>>& units, const std::shared_ptr<Context> ctx)
+        : _units(units), _ctx(std::move(ctx)) {}
+    ~Optimizer() {}
 
     void run();
 
+    auto context() const { return _ctx.lock(); }
+
 private:
-    std::vector<Unit>* _units = nullptr;
-    std::shared_ptr<Context> _ctx;
+    const std::vector<std::shared_ptr<Unit>>& _units;
+    std::weak_ptr<Context> _ctx;
 };
 
 } // namespace hilti

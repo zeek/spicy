@@ -19,12 +19,12 @@ public:
         : NodeBase(nodes(std::move(unit_type), std::move(value)), std::move(m)) {}
 
     /** Returns the value to initialize the unit with. */
-    Expression value() const { return child<Expression>(1); }
+    const Expression& value() const { return child<Expression>(1); }
 
     bool operator==(const Union& other) const { return type() == other.type() && value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    Type type() const { return child<Type>(0); }
+    const Type& type() const { return child<Type>(0); }
 
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }

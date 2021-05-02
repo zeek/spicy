@@ -9,7 +9,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/module.h>
-#include <hilti/ast/node_ref.h>
+#include <hilti/ast/node-ref.h>
 #include <hilti/ast/type.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/visitor-types.h>

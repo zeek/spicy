@@ -1,0 +1,25 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+#
+# @TEST-DOC: Ensure deref chains on &on-heap objects work.
+#
+# No output check, we just ensure this compiles (this used to have constness issue).
+
+module Foo {
+
+type X = struct {
+    method void bar();
+} &on-heap;
+
+type Y = struct {
+    X x;
+    method void foo();
+} &on-heap;
+
+method void X::bar() {
+}
+
+method void Y::foo() {
+    (*self.x).bar();
+}
+
+}

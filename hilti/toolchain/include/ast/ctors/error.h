@@ -14,14 +14,14 @@ namespace ctor {
 /** AST node for an error constructor. */
 class Error : public NodeBase, public hilti::trait::isCtor {
 public:
-    Error(std::string v, Meta m = Meta()) : NodeBase(std::move(m)), _value(std::move(v)) {}
+    Error(std::string v, Meta m = Meta()) : NodeBase(nodes(type::Error(m)), m), _value(std::move(v)) {}
 
     auto value() const { return _value; }
 
     bool operator==(const Error& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Error(); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

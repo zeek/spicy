@@ -4,7 +4,7 @@
 
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/expression.h>
-#include <hilti/ast/declarations/forward.h>
+#include <hilti/ast/declarations/field.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/imported-module.h>

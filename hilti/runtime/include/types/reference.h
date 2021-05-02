@@ -173,6 +173,13 @@ public:
     T* operator->() { return _safeGet(); }
 
     /**
+     * Implicitly converts to the contained type.
+     *
+     * @throws NullReference if the instance does not refer to a valid value
+     */
+    operator const T&() const { return *_safeGet(); }
+
+    /**
      * Compares the values of two references.
      *
      * @throws NullReference if one of the instances does not refer to a

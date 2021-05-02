@@ -491,9 +491,10 @@ The most commonly used hooks are:
 
 ``on <field name> { ... }`` (field hook)
     Executes just after the given unit field has been parsed. The
-    parsed value is accessible through the ``$$`` identifier. It will
-    also have been assigned to the field already, potentially with any
-    relevant type conversion applied (see :ref:`attribute_convert`).
+    parsed value is accessible through the ``$$``, potentially with
+    any relevant type conversion applied (see
+    :ref:`attribute_convert`). The same will also have been assigned
+    to the field already.
 
 .. _foreach:
 

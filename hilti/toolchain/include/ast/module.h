@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -19,7 +20,7 @@ namespace hilti {
 /** AST node representing a HILTI module. */
 class Module : public NodeBase {
 public:
-    Module(ID id = {}, Meta m = Meta()) : NodeBase({std::move(id), statement::Block({}, m)}, std::move(m)) {}
+    Module(ID id, Meta m = Meta()) : NodeBase({std::move(id), statement::Block({}, m)}, std::move(m)) {}
 
     Module(ID id, std::vector<Declaration> decls, Meta m = Meta())
         : NodeBase(nodes(std::move(id), statement::Block({}, m), std::move(decls)), std::move(m)) {}
@@ -27,17 +28,12 @@ public:
     Module(ID id, std::vector<Declaration> decls, std::vector<Statement> stmts, const Meta& m = Meta())
         : NodeBase(nodes(std::move(id), statement::Block(std::move(stmts), m), std::move(decls)), m) {}
 
+    Module() : NodeBase(nodes(ID(), statement::Block({}, Meta())), Meta()) {}
+
     const auto& id() const { return child<ID>(0); }
     const auto& statements() const { return child<statement::Block>(1); }
-    const auto& declarations() const {
-        if ( _cache.declarations.empty() )
-            _cache.declarations = childsOfType<Declaration>();
-
-        return _cache.declarations;
-    }
-
-    const auto& preserved() const { return _preserved; }
-    auto& preserved() { return _preserved; }
+    auto declarations() const { return childsOfType<Declaration>(); }
+    auto declarationRefs() const { return childRefsOfType<Declaration>(); }
 
     bool isEmpty() const {
         // We always have an ID and a block as childs.
@@ -57,15 +53,15 @@ public:
      *
      * @param id name of the property to return
      */
-    Result<declaration::Property> moduleProperty(const ID& id) const;
+    hilti::optional_ref<const declaration::Property> moduleProperty(const ID& id) const;
 
     /**
      * Returns all of module's property declarations of a given name. If
      * there's no property declaration of that ID, return an empty container.
      *
-     * @param id name of the property to return
+     * @param id name of the property to return; leave unset for returning all
      */
-    std::vector<declaration::Property> moduleProperties(const ID& id) const;
+    hilti::node::Set<declaration::Property> moduleProperties(const std::optional<ID>& id) const;
 
     /**
      * Adds a declaration to the module. It will be appended to the current
@@ -102,25 +98,28 @@ public:
     void add(Expression e) { add(statement::Expression(std::move(e))); }
 
     /**
-     * Saves a node along with the module, but outside of the actual AST.
-     * This allows keeping references to the node valid while not making the
-     * node itself part of the AST. That's especially useful when
-     * transforming nodes from one representation to another, but wanting to
-     * retain a link to the original one through `Node::setOriginalNode()`.
+     * Saves a node along with the module, but outside of the actual AST. This
+     * allows keeping references to the node's sub-AST valid while not making
+     * the node itself part of the AST. That's especially useful when
+     * transforming nodes from one representation to another while other parts
+     * of the AST are still refering to the original once.
      *
-     * @return reference to the preserved node
+     * @param n node to retain with all of its children
+     * @returns a reference to the internally stored node
      */
-    NodeRef preserve(Node n);
+    NodeRef preserve(const Node& n) {
+        _preserved.push_back(n);
+        return NodeRef(_preserved.back());
+    }
+
+    /** Destroys any nodes retained previously through `preserve()`. */
+    void destroyPreservedNodes();
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
-    void clearCache() { _cache.declarations.clear(); }
-
 private:
     std::vector<Node> _preserved;
-
-    mutable struct { std::vector<Declaration> declarations; } _cache;
 };
 
 /** Creates an AST node representing a `Module`. */

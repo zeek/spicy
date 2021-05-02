@@ -50,6 +50,9 @@ public:
     $class _clone() const;
 
     hilti::IntrusivePtr<Concept> _clone_ptr() const;
+
+protected:
+    $class_members
 };
 
 $model_methods_impl
@@ -181,6 +184,16 @@ def parseTrait(s):
 
     return t
 
+
+def parseMember(s):
+    class Member:
+        pass
+
+    m = Member()
+    x = s.split()
+    m.declaration = " ".join(x[1:])
+    return m
+
 # Main
 
 
@@ -203,6 +216,7 @@ traits = []
 attrs = []
 class_ = None
 trait_methods = []
+class_members = []
 
 in_comment = False
 comment = ""
@@ -251,6 +265,12 @@ for line in open(args.api):
         comment = ""
         continue
 
+    if line.startswith("member"):
+        m = parseMember(line)
+        class_members.append(m)
+        comment = ""
+        continue
+
     if line.startswith("}"):
         break
 
@@ -283,12 +303,12 @@ class_methods_impl = ["inline {} {}::{}({}) {} {{ return data()->{}({}); }}\n".f
     m.params), m.attrs, m.name, ", ".join([forwardParam(p) for p in m.params])) for m in methods]
 class_methods_impl += ["inline bool {}::{}() const {{ return data()->{}(); }}\n" .format(
     class_, t.method, t.method) for t in trait_methods]
+class_members = ["{};\n".format(m.declaration) for m in class_members]
 
 model_methods = ["{} {}({}) {} final;" .format(
     m.result, m.name, varsToString(m.params), m.attrs) for m in methods]
 model_methods += ["bool {}() const final;".format(t.method)
                   for t in trait_methods]
-
 
 def mmi(m):
     result = "return data().{}({});".format(
@@ -348,6 +368,7 @@ vals = {
     "class_methods_impl": "\n".join(class_methods_impl),
     "class_requires": class_requires,
     "class_traits": "".join(class_traits),
+    "class_members": "\n    ".join(class_members),
     "concept_ctors": "\n    ".join(concept_ctors),
     "concept_operators": "\n    ".join(concept_operators),
     "concept_private_attrs": "\n    ".join(concept_private_attrs),

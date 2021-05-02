@@ -22,14 +22,15 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const type::Bytes& src) {
         if ( auto t = dst.tryAs<type::Stream>() )
-            return fmt("hilti::rt::Stream(%s)", expr);
+            return fmt("::hilti::rt::Stream(%s)", expr);
 
         logger().internalError(fmt("codegen: unexpected type coercion from bytes to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Enum& src) {
+    result_t operator()(const type::Enum& src, position_t p) {
         if ( auto t = dst.tryAs<type::Bool>() ) {
-            auto id = cg->compile(src, codegen::TypeUsage::Storage);
+            auto etype = p.node.as<Type>(); // preserve type ID
+            auto id = cg->compile(std::move(etype), codegen::TypeUsage::Storage);
             return fmt("(%s != %s::Undef)", expr, id);
         }
 
@@ -43,9 +44,18 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
         logger().internalError(fmt("codegen: unexpected type coercion from error to %s", dst.typename_()));
     }
 
+    result_t operator()(const type::Interval& src) {
+        if ( auto t = dst.tryAs<type::Bool>() ) {
+            auto id = cg->compile(src, codegen::TypeUsage::Storage);
+            return fmt("(%s != hilti::rt::Interval())", expr);
+        }
+
+        logger().internalError(fmt("codegen: unexpected type coercion from interval to %s", dst.typename_()));
+    }
+
     result_t operator()(const type::List& src) {
         if ( auto t = dst.tryAs<type::Set>() )
-            return fmt("hilti::rt::Set(%s)", expr);
+            return fmt("::hilti::rt::Set(%s)", expr);
 
         if ( auto t = dst.tryAs<type::Vector>() ) {
             auto x = cg->compile(t->elementType(), codegen::TypeUsage::Storage);
@@ -54,7 +64,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
             if ( auto def = cg->typeDefaultValue(t->elementType()) )
                 allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
-            return fmt("hilti::rt::Vector<%s%s>(%s)", x, allocator, expr);
+            return fmt("::hilti::rt::Vector<%s%s>(%s)", x, allocator, expr);
         }
 
         logger().internalError(fmt("codegen: unexpected type coercion from lisst to %s", dst.typename_()));
@@ -81,7 +91,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("%s.derefAsValue()", expr);
 
         if ( auto t = dst.tryAs<type::WeakReference>() )
-            return fmt("hilti::rt::WeakReference<%s>(%s)",
+            return fmt("::hilti::rt::WeakReference<%s>(%s)",
                        cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( src.dereferencedType() == dst )
@@ -89,6 +99,16 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
 
         logger().internalError(fmt("codegen: unexpected type coercion from %s to %s", Type(src), dst.typename_()));
     }
+
+    result_t operator()(const type::Time& src) {
+        if ( auto t = dst.tryAs<type::Bool>() ) {
+            auto id = cg->compile(src, codegen::TypeUsage::Storage);
+            return fmt("(%s != hilti::rt::Time())", expr);
+        }
+
+        logger().internalError(fmt("codegen: unexpected type coercion from time to %s", dst.typename_()));
+    }
+
 
     result_t operator()(const type::Result& src) {
         if ( auto t = dst.tryAs<type::Bool>() )
@@ -105,10 +125,10 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("static_cast<bool>(%s)", expr);
 
         if ( auto t = dst.tryAs<type::SignedInteger>() )
-            return fmt("hilti::rt::integer::safe<int%d_t>(%s)", std::max(16, t->width()), expr);
+            return fmt("::hilti::rt::integer::safe<int%d_t>(%s)", std::max(16, t->width()), expr);
 
         if ( auto t = dst.tryAs<type::UnsignedInteger>() )
-            return fmt("hilti::rt::integer::safe<uint%d_t>(%s)", std::max(16, t->width()), expr);
+            return fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", std::max(16, t->width()), expr);
 
         logger().internalError(fmt("codegen: unexpected type coercion from signed integer to %s", dst.typename_()));
     }
@@ -120,9 +140,10 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
         logger().internalError(fmt("codegen: unexpected type coercion from stream to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Union& src) {
+    result_t operator()(const type::Union& src, position_t p) {
         if ( auto t = dst.tryAs<type::Bool>() ) {
-            auto id = cg->compile(src, codegen::TypeUsage::Storage);
+            auto utype = p.node.as<Type>(); // preserve type ID
+            auto id = cg->compile(std::move(utype), codegen::TypeUsage::Storage);
             return fmt("(%s.index() > 0)", expr);
         }
 
@@ -138,16 +159,17 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const type::Tuple& src) {
         if ( auto t = dst.tryAs<type::Tuple>() ) {
-            int i = 0;
             std::vector<cxx::Expression> exprs;
 
-            for ( auto [src, dst] : util::zip2(src.types(), t->types()) )
-                exprs.push_back(cg->coerce(fmt("std::get<%d>(%s)", i++, expr), src, dst));
+            assert(src.elements().size() == t->elements().size());
+            for ( auto i = 0u; i < src.elements().size(); i++ )
+                exprs.push_back(
+                    cg->coerce(fmt("std::get<%d>(%s)", i, expr), src.elements()[i].type(), t->elements()[i].type()));
 
             return fmt("std::make_tuple(%s)", util::join(exprs, ", "));
         }
 
-        logger().internalError(fmt("codegen: unexpected type coercion from result to %s", dst.typename_()));
+        logger().internalError(fmt("codegen: unexpected type coercion from tuple to %s", dst.typename_()));
     }
 
     result_t operator()(const type::UnsignedInteger& src) {
@@ -155,10 +177,10 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("static_cast<bool>(%s)", expr);
 
         if ( auto t = dst.tryAs<type::SignedInteger>() )
-            return fmt("hilti::rt::integer::safe<int%d_t>(%s)", std::max(16, t->width()), expr);
+            return fmt("::hilti::rt::integer::safe<int%d_t>(%s)", std::max(16, t->width()), expr);
 
         if ( auto t = dst.tryAs<type::UnsignedInteger>() )
-            return fmt("hilti::rt::integer::safe<uint%d_t>(%s)", std::max(16, t->width()), expr);
+            return fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", std::max(16, t->width()), expr);
 
         logger().internalError(fmt("codegen: unexpected type coercion from unsigned integer to %s", dst.typename_()));
     }
@@ -168,7 +190,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("static_cast<bool>(%s)", expr);
 
         if ( auto t = dst.tryAs<type::StrongReference>() )
-            return fmt("hilti::rt::StrongReference<%s>(%s)",
+            return fmt("::hilti::rt::StrongReference<%s>(%s)",
                        cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( auto t = dst.tryAs<type::ValueReference>() )
@@ -177,25 +199,29 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
         if ( src.dereferencedType() == dst )
             return fmt("(*%s)", expr);
 
-        logger().internalError(fmt("codegen: unexpected type coercion from result to %s", dst.typename_()));
+        logger().internalError(fmt("codegen: unexpected type coercion from weak reference to %s", dst.typename_()));
     }
 
     result_t operator()(const type::ValueReference& src) {
         if ( auto t = dst.tryAs<type::Bool>() )
             return cg->coerce(fmt("*%s", expr), src.dereferencedType(), dst);
 
+        if ( auto t = dst.tryAs<type::ValueReference>();
+             t && type::sameExceptForConstness(src.dereferencedType(), t->dereferencedType()) )
+            return fmt("%s", expr);
+
         if ( auto t = dst.tryAs<type::StrongReference>() )
-            return fmt("hilti::rt::StrongReference<%s>(%s)",
+            return fmt("::hilti::rt::StrongReference<%s>(%s)",
                        cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( auto t = dst.tryAs<type::WeakReference>() )
-            return fmt("hilti::rt::WeakReference<%s>(%s)",
+            return fmt("::hilti::rt::WeakReference<%s>(%s)",
                        cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( src.dereferencedType() == dst )
             return fmt("(*%s)", expr);
 
-        logger().internalError(fmt("codegen: unexpected type coercion from result to %s", dst.typename_()));
+        logger().internalError(fmt("codegen: unexpected type coercion from value reference to %s", dst.typename_()));
     }
 };
 

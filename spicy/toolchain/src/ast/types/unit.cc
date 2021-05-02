@@ -1,17 +1,47 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "spicy/ast/types/unit.h"
-
 #include <spicy/ast/detail/visitor.h>
+#include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
 #include <spicy/compiler/detail/visitors.h>
 
 using namespace spicy;
 
-std::optional<type::unit::Item> type::Unit::field(const ID& id) const {
-    for ( const auto& f : hilti::node::flattenedChilds<type::unit::item::Field>(*this) ) {
-        if ( f.id() == id )
-            return f;
+static NodeRef _itemByName(const Node& i, const ID& id) {
+    if ( auto x = i.tryAs<type::unit::item::Field>(); x && x->id() == id )
+        return NodeRef(i);
+
+    if ( auto x = i.tryAs<type::unit::item::Variable>(); x && x->id() == id )
+        return NodeRef(i);
+
+    if ( auto x = i.tryAs<type::unit::item::Sink>(); x && x->id() == id )
+        return NodeRef(i);
+
+    if ( auto x = i.tryAs<type::unit::item::Switch>() ) {
+        for ( const auto& c : x->cases() ) {
+            for ( const auto& si : c.itemRefs() ) {
+                if ( auto x = _itemByName(*si, id) )
+                    return x;
+            }
+        }
+    }
+
+    return {};
+}
+
+hilti::optional_ref<const type::unit::Item> type::Unit::itemByName(const ID& id) const {
+    for ( const auto& i : itemRefs() ) {
+        if ( auto x = _itemByName(i, id) )
+            return x->as<type::unit::Item>();
+    }
+
+    return {};
+}
+
+NodeRef type::Unit::itemRefByName(const ID& id) const {
+    for ( const auto& i : itemRefs() ) {
+        if ( auto x = _itemByName(*i, id) )
+            return x;
     }
 
     return {};
@@ -21,11 +51,11 @@ struct AssignFieldIndicesVisitor : public hilti::visitor::PreOrder<void, AssignF
     AssignFieldIndicesVisitor(uint64_t next_index) : next_index(next_index) {}
 
     result_t operator()(const type::unit::item::Field& n, position_t p) {
-        p.node = type::unit::Item(type::unit::item::Field::setIndex(n, next_index++));
+        p.node.as<type::unit::item::Field>().setIndex(next_index++);
     }
 
     result_t operator()(const type::unit::item::UnresolvedField& n, position_t p) {
-        p.node = type::unit::Item(type::unit::item::UnresolvedField::setIndex(n, next_index++));
+        p.node.as<type::unit::item::UnresolvedField>().setIndex(next_index++);
     }
 
     uint64_t next_index;

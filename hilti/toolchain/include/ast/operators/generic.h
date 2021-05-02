@@ -19,11 +19,11 @@ namespace hilti {
 namespace operator_ {
 
 BEGIN_OPERATOR_CUSTOM(generic, Unpack)
-    Type result(const std::vector<Expression>& ops) const {
+    Type result(const hilti::node::Range<Expression>& ops) const {
         if ( ops.empty() )
             return type::DocOnly("<unpackable>");
 
-        auto data_type = ops[1].type().as<type::Tuple>().types()[0];
+        const auto& data_type = ops[1].type().as<type::Tuple>().elements()[0].type();
         return type::Result(type::Tuple({ops[0].type().as<type::Type_>().typeValue(), data_type}, ops[0].meta()));
     }
 
@@ -34,7 +34,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
-        auto data_type = i.op1().type().template as<type::Tuple>().types()[0];
+        const auto& data_type = i.op1().type().template as<type::Tuple>().elements()[0].type();
 
         if ( ! (data_type.isA<type::Bytes>() || data_type.isA<type::stream::View>()) )
             p.node.addError("unpack() can be used only with bytes or a stream view as input");
@@ -44,7 +44,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
 END_OPERATOR_CUSTOM
 
 BEGIN_OPERATOR_CUSTOM(generic, Begin)
-    Type result(const std::vector<Expression>& ops) const {
+    Type result(const hilti::node::Range<Expression>& ops) const {
         if ( ops.empty() )
             return type::DocOnly("<iterator>");
 
@@ -68,7 +68,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Begin)
 END_OPERATOR_CUSTOM
 
 BEGIN_OPERATOR_CUSTOM(generic, End)
-    Type result(const std::vector<Expression>& ops) const {
+    Type result(const hilti::node::Range<Expression>& ops) const {
         if ( ops.empty() )
             return type::DocOnly("<iterator>");
 
@@ -92,7 +92,7 @@ BEGIN_OPERATOR_CUSTOM(generic, End)
 END_OPERATOR_CUSTOM
 
 BEGIN_OPERATOR_CUSTOM(generic, New)
-    Type result(const std::vector<Expression>& ops) const {
+    Type result(const hilti::node::Range<Expression>& ops) const {
         if ( ops.empty() )
             return type::DocOnly("strong_ref<T>");
 
@@ -150,7 +150,9 @@ public:
 
         static operator_::Kind kind() { return operator_::Kind::Cast; }
         std::vector<operator_::Operand> operands() const { return {}; } // Won't participate in overload resolution
-        Type result(const std::vector<Expression>& ops) const { return ops[1].as<expression::Type_>().typeValue(); }
+        Type result(const hilti::node::Range<Expression>& ops) const {
+            return ops[1].as<expression::Type_>().typeValue();
+        }
         bool isLhs() const { return false; }
         void validate(const expression::ResolvedOperator& /* i */, operator_::position_t /* p */) const {}
         std::string doc() const { return "<dynamic - no doc>"; }

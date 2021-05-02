@@ -3,10 +3,9 @@
 // Note: We don't run clang-tidy on this file. The use of the JRX's C
 // interface triggers all kinds of warnings.
 
-#include "hilti/rt/types/regexp.h"
-
 #include <utility>
 
+#include <hilti/rt/types/regexp.h>
 #include <hilti/rt/util.h>
 
 extern "C" {

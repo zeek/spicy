@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/ast/expressions/id.h>
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/string.h>
@@ -24,7 +25,7 @@ public:
     struct Operator : public hilti::trait::isOperator {
         Operator(const Scope::Referee& r, const type::Function& ftype) {
             auto op0 = operator_::Operand{.type = type::Any()}; // IDs won't be resolved
-            auto op1 = operator_::Operand{.type = ftype.operands()};
+            auto op1 = operator_::Operand{.type = type::OperandList::fromParameters(ftype.parameters())};
             _referee = r;
             _operands = {op0, op1};
             _result = ftype.result().type();
@@ -32,7 +33,7 @@ public:
 
         static operator_::Kind kind() { return operator_::Kind::Call; }
         std::vector<operator_::Operand> operands() const { return _operands; }
-        Type result(const std::vector<Expression>& /* ops */) const { return _result; }
+        Type result(const hilti::node::Range<Expression>& /* ops */) const { return _result; }
         bool isLhs() const { return false; }
         void validate(const expression::ResolvedOperator& /* i */, operator_::position_t /* p */) const {}
         std::string doc() const { return "<dynamic - no doc>"; }

@@ -21,11 +21,5 @@ class Statement(trait::isStatement) : trait::isNode {
     void setMeta(Meta m);
 
     /** Implements the `Node` interface. */
-    const NodeRef& originalNode() const;
-
-    /** Implements the `Node` interface. */
-    void setOriginalNode(const NodeRef& n);
-
-    /** Implements the `Node` interface. */
-    void clearCache();
+    bool pruneWalk() const;
 };

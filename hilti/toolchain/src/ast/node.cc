@@ -1,10 +1,12 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <iomanip>
+#include <sstream>
 
 #include <hilti/ast/expressions/id.h>
 #include <hilti/ast/node.h>
-#include <hilti/ast/types/id.h>
+#include <hilti/ast/types/unresolved-id.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/visitors.h>
 
 using namespace hilti;
@@ -35,17 +37,14 @@ std::string Node::render(bool include_location) const {
 
     auto location = (include_location && meta().location()) ? util::fmt(" (%s)", meta().location().render(true)) : "";
     auto id = rid() ? util::fmt(" %s", renderedRid()) : "";
-    auto orig = originalNode() ? util::fmt(" (original %s)", originalNode()->renderedRid()) : "";
+    auto prune = (this->pruneWalk() ? " (prune)" : "");
 
     std::string type;
 
     if ( auto x = this->tryAs<expression::ResolvedID>() )
-        type = util::fmt(" (type: %s)", x->type());
+        type = util::fmt(" (type: %s [@t:%p])", x->type(), x->type().identity());
 
-    else if ( auto x = this->tryAs<type::ResolvedID>() )
-        type = util::fmt(" (type: %s)", x->type());
-
-    auto s = util::fmt("%s%s%s%s%s%s", name, id, orig, sprops, type, location);
+    auto s = util::fmt("%s%s%s%s%s%s", name, id, sprops, type, prune, location);
 
     if ( auto t = this->tryAs<Type>() ) {
         std::vector<std::string> flags;
@@ -68,20 +67,46 @@ std::string Node::render(bool include_location) const {
 
         if ( t->isWildcard() )
             s += " (wildcard)";
+
+        s += (type::isResolved(t) ? " (resolved)" : " (not resolved)");
     }
 
-    else if ( auto e = this->tryAs<Expression>() )
+    else if ( auto e = this->tryAs<Expression>() ) {
         s += (e->isConstant() ? " (const)" : " (non-const)");
+        s += (type::isResolved(e->type()) ? " (resolved)" : " (not resolved)");
+    }
+
+    else if ( auto d = this->tryAs<Declaration>() ) {
+        s += util::fmt(" [canon-id: %s]", d->canonicalID() ? d->canonicalID().str() : "not set");
+
+        if ( auto t = this->tryAs<declaration::Type>() )
+            s += (type::isResolved(t->type()) ? " (resolved)" : " (not resolved)");
+    }
+
+    s += util::fmt(" [@%s:%p]", util::tolower(name.substr(0, 1)), identity());
 
     // Format errors last on the line since they are not properly delimited.
     if ( hasErrors() )
-        for ( auto&& e : errors() )
-            s += util::fmt("  [ERROR] %s%s", e.message, (e.priority == node::ErrorPriority::Low ? " (low prio)" : ""));
+        for ( auto&& e : errors() ) {
+            auto prio = "";
+            if ( e.priority == node::ErrorPriority::Low )
+                prio = " (low prio)";
+            else if ( e.priority == node::ErrorPriority::High )
+                prio = " (high prio)";
+
+            s += util::fmt("  [ERROR] %s%s", e.message, prio);
+        }
 
     return s;
 }
 
 void Node::print(std::ostream& out, bool compact) const { detail::printAST(*this, out, compact); }
+
+std::string Node::print() const {
+    std::stringstream out;
+    detail::printAST(*this, out, true);
+    return out.str();
+}
 
 node::Properties operator+(const node::Properties& p1, const node::Properties& p2) {
     node::Properties p;
@@ -93,4 +118,26 @@ node::Properties operator+(const node::Properties& p1, const node::Properties& p
         p.insert(i);
 
     return p;
+}
+
+void node::detail::flattenedChilds(const hilti::Node& n, node::Set<const hilti::Node>* dst) {
+    const auto& childs = n.childs();
+    for ( auto i = 0u; i < childs.size(); i++ ) {
+        dst->insert(childs[i]);
+        flattenedChilds(childs[i], dst);
+    }
+}
+
+static void _destroyChildsRecursively(Node* n) {
+    for ( auto& c : n->childs() ) {
+        if ( ! c.pruneWalk() )
+            _destroyChildsRecursively(&c);
+    }
+
+    n->childs().clear();
+}
+
+void Node::destroyChilds() {
+    _destroyChildsRecursively(this);
+    childs().clear();
 }

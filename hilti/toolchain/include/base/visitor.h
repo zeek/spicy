@@ -142,9 +142,15 @@ private:
         p.child += 1;
 
         if ( p.child == -1 ) {
-            if constexpr ( order == Order::Pre )
+            if ( order == Order::Pre || p.node.pruneWalk() )
                 return;
 
+            next();
+            return;
+        }
+
+        if ( p.node.pruneWalk() ) {
+            _path.pop_back();
             next();
             return;
         }

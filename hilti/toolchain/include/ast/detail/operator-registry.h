@@ -21,15 +21,10 @@ public:
     using OperatorMap = std::map<Kind, std::vector<Operator>>;
 
     /** Returns a map of all available operators. */
-    const OperatorMap& all() const { return _operators; }
+    const auto& all() const { return _operators; }
 
     /** Returns a map of all available operators. */
-    const std::vector<Operator>& allOfKind(Kind kind) const {
-        if ( auto x = _operators.find(kind); x != _operators.end() )
-            return x->second;
-
-        logger().internalError("unregistered operator requested in allOfKind()");
-    }
+    const auto& allOfKind(Kind kind) const { return _operators.at(kind); }
 
     /** Registers an Operator as available. */
     void register_(Kind kind, Operator info) { _operators[kind].push_back(std::move(info)); }
@@ -64,7 +59,7 @@ public:
     Register(Kind k, Operator c) { Registry::singleton().register_(k, std::move(c)); }
 };
 
-inline auto registry() { return Registry::singleton(); }
+inline const auto& registry() { return Registry::singleton(); }
 
 } // namespace operator_
 } // namespace hilti

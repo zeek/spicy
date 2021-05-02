@@ -10,12 +10,14 @@ namespace hilti {
 namespace type {
 
 /** AST node for an unknown place-holder type. */
-class Unknown : public TypeBase, public util::type_erasure::trait::Singleton {
+class Unknown : public TypeBase, public type::trait::isAllocable, public util::type_erasure::trait::Singleton {
 public:
     bool operator==(const Unknown& /* other */) const { return true; }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    /** Implements the `Type` interface. */
+    auto _isResolved(ResolvedState* rstate) const { return true; } // sic!
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }

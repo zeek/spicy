@@ -4,7 +4,10 @@
 
 #include <utility>
 
+#include <hilti/ast/declaration.h>
+#include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/unknown.h>
 #include <hilti/base/util.h>
 
@@ -34,16 +37,10 @@ constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::kind
 /** AST node for an expression representing a reservered keyword. */
 class Keyword : public NodeBase, public hilti::trait::isExpression {
 public:
-    Keyword(keyword::Kind kind, Meta m = Meta()) : NodeBase({type::unknown}, std::move(m)), _kind(kind) {}
-    Keyword(keyword::Kind kind, Type t, Meta m = Meta()) : NodeBase({std::move(t)}, std::move(m)), _kind(kind) {}
-    Keyword(keyword::Kind kind, NodeRef d, Meta m = Meta())
-        : NodeBase({node::none}, std::move(m)), _kind(kind), _decl(d) {}
+    Keyword(keyword::Kind kind, Meta m = Meta()) : NodeBase(nodes(type::auto_), std::move(m)), _kind(kind) {}
+    Keyword(keyword::Kind kind, Type t, Meta m = Meta()) : NodeBase(nodes(std::move(t)), std::move(m)), _kind(kind) {}
 
     keyword::Kind kind() const { return _kind; }
-    bool hasType() const { return _decl.has_value() || ! childs()[0].isA<type::Unknown>(); }
-
-    /** Returns true if the keyword expression has been resolved to a known type. */
-    bool isSet() const { return (! childs()[0].isA<type::Unknown>()) || _decl.has_value(); }
 
     bool operator==(const Keyword& other) const { return _kind == other._kind && type() == other.type(); }
 
@@ -52,41 +49,25 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return false; }
     /** Implements `Expression` interface. */
-    Type type() const {
-        auto t = type::effectiveType(_decl ? (**_decl).as<declaration::Type>().type() : childs()[0].as<Type>());
-
-        if ( _kind == keyword::Kind::Self )
-            t = type::removeFlags(t, type::Flag::Constant);
-
-        return t;
-    }
+    const Type& type() const { return childs()[0].as<Type>(); }
 
     /** Implements `Expression` interface. */
     auto isConstant() const { return false; }
-
     /** Implements `Expression` interface. */
     auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
 
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{{"kind", to_string(_kind)}}; }
 
-    /**
-     * Returns a new keyword expression with the resulting type replaced.
-     *
-     * @param d original expression
-     * @param t new type
-     * @return new expression that's equal to original one but with the resulting type replaced
-     */
-    static Expression setType(const Keyword& e, const Type& t) {
-        auto x = Expression(e)._clone().as<Keyword>();
-        x.childs()[0] = t;
-        x._decl = {};
-        return x;
+    /** Helper to create `$$` a declaration of a given type. */
+    static Declaration createDollarDollarDeclaration(Type t) {
+        Expression kw = hilti::expression::Keyword(hilti::expression::keyword::Kind::DollarDollar,
+                                                   hilti::type::pruneWalk(std::move(t)));
+        return hilti::declaration::Expression("__dd", std::move(kw), hilti::declaration::Linkage::Private);
     }
 
 private:
     keyword::Kind _kind;
-    std::optional<NodeRef> _decl;
 };
 
 } // namespace expression

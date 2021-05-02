@@ -8,8 +8,9 @@
 #include <hilti/ast/builder/type.h>
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/types/auto.h>
+#include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/set.h>
-#include <hilti/ast/types/unknown.h>
 
 namespace hilti {
 namespace ctor {
@@ -17,27 +18,26 @@ namespace ctor {
 /** AST node for a set constructor. */
 class Set : public NodeBase, public hilti::trait::isCtor {
 public:
-    Set(const std::vector<Expression>& e, const Meta& m = Meta()) : NodeBase(nodes(node::none, e), m) {}
-    Set(Type t, std::vector<Expression> e, Meta m = Meta())
-        : NodeBase(nodes(std::move(t), std::move(e)), std::move(m)) {}
+    Set(std::vector<Expression> e, Meta m = Meta())
+        : NodeBase(nodes(type::Set(e.size() ? Type(type::auto_) : Type(type::Bool())), e), m) {
+    } // Bool is just an arbitrary place-holder type for empty values
+    Set(Type t, std::vector<Expression> e, Meta m = Meta()) : NodeBase(nodes(type::Set(t, m), std::move(e)), m) {}
 
-    auto elementType() const {
-        if ( auto t = childs()[0].tryAs<Type>() )
-            return type::effectiveType(*t);
-        else {
-            if ( childs().size() < 2 )
-                return type::unknown;
-
-            return childs()[1].as<Expression>().type();
-        }
-    }
-
+    const auto& elementType() const { return childs()[0].as<type::Set>().elementType(); }
     auto value() const { return childs<Expression>(1, -1); }
+
+    void setElementType(Type t) { childs()[0] = type::Set(std::move(t), meta()); }
+
+    void setValue(std::vector<Expression> elems) {
+        childs().erase(childs().begin() + 1, childs().end());
+        for ( auto&& e : elems )
+            childs().push_back(e);
+    }
 
     bool operator==(const Set& other) const { return elementType() == other.elementType() && value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Set(elementType(), meta()); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return false; }
     /** Implements `Ctor` interface. */

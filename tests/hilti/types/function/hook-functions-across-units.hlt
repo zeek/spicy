@@ -11,7 +11,7 @@ declare public hook void f1();
 declare public hook void f2();
 declare public hook void f3();
 
-public function hook void f1() { hilti::print("Foo: f1"); }
+public hook void f1() { hilti::print("Foo: f1"); }
 
 }
 
@@ -24,8 +24,8 @@ module Bar {
 import hilti;
 import Foo;
 
-function hook void Foo::f1() { hilti::print("Bar: f1"); }
-function hook void Foo::f2() { hilti::print("Bar: f2"); }
+hook void Foo::f1() { hilti::print("Bar: f1"); }
+hook void Foo::f2() { hilti::print("Bar: f2"); }
 
 }
 

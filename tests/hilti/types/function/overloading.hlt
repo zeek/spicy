@@ -1,0 +1,14 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function void foo(int<64> x) { hilti::print(("int64", x)); }
+function void foo(string x) { hilti::print(("string", x)); }
+
+foo(42);
+foo("foo");
+
+}

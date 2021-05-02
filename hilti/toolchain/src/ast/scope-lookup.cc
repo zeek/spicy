@@ -8,10 +8,6 @@
 
 using namespace hilti;
 
-namespace hilti::logging::debug {
-inline const DebugStream Resolver("resolver");
-} // namespace hilti::logging::debug
-
 std::pair<bool, Result<std::pair<NodeRef, ID>>> hilti::scope::detail::lookupID(const ID& id, const Node& n) {
     auto resolved = n.scope()->lookupAll(id);
 
@@ -26,6 +22,12 @@ std::pair<bool, Result<std::pair<NodeRef, ID>>> hilti::scope::detail::lookupID(c
         if ( ! r.node ) {
             auto err = result::Error(util::fmt("internal error: scope's entry for ID '%s' is no longer valid", id));
             return std::make_pair(false, std::move(err));
+        }
+
+        if ( r.node->isA<node::None>() ) {
+            // Explict stop of scope traversal.
+            auto err = result::Error(util::fmt("unknown ID '%s'", id));
+            return std::make_pair(true, std::move(err));
         }
 
         if ( auto d = r.node->template tryAs<Declaration>() ) {
@@ -54,11 +56,14 @@ std::pair<bool, Result<std::pair<NodeRef, ID>>> hilti::scope::detail::lookupID(c
                 }
             }
 
-            HILTI_DEBUG(logging::debug::Resolver, util::fmt("resolved ID %s (%s) to %s", id, id.meta().location(),
-                                                            resolved.front().node->render()));
-
             auto x = std::make_pair(resolved.front().node, ID(resolved.front().qualified));
             return std::make_pair(true, std::move(x));
+        }
+
+        if ( r.node->isA<node::None>() ) {
+            // Likely a node delete through assignment.
+            auto err = result::Error("node has been deleted");
+            return std::make_pair(false, std::move(err));
         }
 
         logger().internalError(util::fmt("ID '%s' resolved to something else than a declaration (%s)", id,

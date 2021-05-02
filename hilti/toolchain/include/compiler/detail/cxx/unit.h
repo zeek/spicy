@@ -105,7 +105,7 @@ public:
     Result<linker::MetaData> linkerMetaData() const;     // only after finalize
     cxx::ID cxxNamespace() const;
 
-    std::shared_ptr<Context> context() const { return _context; }
+    std::shared_ptr<Context> context() const { return _context.lock(); }
 
     static std::pair<bool, std::optional<linker::MetaData>> readLinkerMetaData(std::istream& input);
 
@@ -119,7 +119,7 @@ private:
     void _addHeader(Formatter& f);
     void _addModuleInitFunction();
 
-    std::shared_ptr<Context> _context;
+    std::weak_ptr<Context> _context;
 
     cxx::ID _module_id;
     hilti::rt::filesystem::path _module_path;

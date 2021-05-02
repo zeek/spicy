@@ -1,0 +1,23 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: printf "\001\000\001" | spicy-driver %INPUT.hlto >output 2>&1
+# @TEST-EXEC: printf "\002\000\000\000\002" | spicy-driver %INPUT.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test hooks on switch fields that have the same name and item types, but different parse types.
+
+module Mini;
+
+public type test = unit {
+       a: bytes &size=1;
+
+       switch ( self.a ) {
+           b"\x01" -> x: uint16 &convert=cast<uint32>($$);
+           b"\x02" -> x: uint32;
+           };
+
+       on x { print "in x:1", $$; }
+
+       on %done { print self; }
+};
+
+on test::x { print "in x:2", $$; }

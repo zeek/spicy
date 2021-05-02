@@ -1,572 +1,536 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include <utility>
-
-#include <hilti/ast/ctor.h>
-#include <hilti/ast/ctors/bool.h>
-#include <hilti/ast/ctors/integer.h>
-#include <hilti/ast/ctors/list.h>
-#include <hilti/ast/ctors/result.h>
+#include <hilti/ast/all.h>
+#include <hilti/ast/builder/expression.h>
 #include <hilti/ast/detail/visitor.h>
-#include <hilti/ast/expression.h>
-#include <hilti/ast/expressions/coerced.h>
-#include <hilti/ast/expressions/ctor.h>
-#include <hilti/ast/type.h>
-#include <hilti/ast/types/any.h>
-#include <hilti/ast/types/bool.h>
-#include <hilti/ast/types/error.h>
-#include <hilti/ast/types/integer.h>
-#include <hilti/ast/types/list.h>
-#include <hilti/ast/types/result.h>
+#include <hilti/ast/operators/tuple.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/visitors.h>
-#include <hilti/compiler/plugin.h>
+#include <hilti/compiler/unit.h>
 #include <hilti/global.h>
 
 using namespace hilti;
+using util::fmt;
+
+namespace hilti::logging::debug {
+inline const hilti::logging::DebugStream Coercer("coercer");
+} // namespace hilti::logging::debug
 
 namespace {
 
-struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> {
-    VisitorCtor(const Type& dst, bitmask<CoercionStyle> style) : dst(dst), style(style) {}
+struct Visitor : public visitor::PreOrder<void, Visitor> {
+    Visitor(Unit* unit) : unit(unit) {}
+    Unit* unit;
+    bool modified = false;
 
-    const Type& dst;
-    bitmask<CoercionStyle> style;
+    // Log debug message recording updating attributes.
+    void logChange(const Node& old, const Node& new_, const char* desc) {
+        HILTI_DEBUG(logging::debug::Coercer,
+                    util::fmt("[%s] %s -> %s %s (%s)", old.typename_(), old, desc, new_, old.location()));
+    }
 
-    result_t operator()(const ctor::Enum& c) {
-        if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
-            return ctor::Bool(c.value().id() != ID("Undef"), c.meta());
+    /** Returns a method call's i-th argument. */
+    const Expression& methodArgument(const expression::ResolvedOperatorBase& o, size_t i) {
+        auto ops = o.op2();
 
+        // If the argument list was the result of a coercion unpack its result.
+        if ( auto coerced = ops.tryAs<expression::Coerced>() )
+            ops = coerced->expression();
+
+        if ( auto ctor_ = ops.tryAs<expression::Ctor>() ) {
+            auto ctor = ctor_->ctor();
+
+            // If the argument was the result of a coercion unpack its result.
+            if ( auto x = ctor.tryAs<ctor::Coerced>() )
+                ctor = x->coercedCtor();
+
+            if ( auto args = ctor.tryAs<ctor::Tuple>(); args && i < args->value().size() )
+                return args->value()[i];
+        }
+
+        util::cannot_be_reached();
+    }
+
+    /**
+     * Coerces an expression to a given type, return the new value if it's
+     * changed from the the old one. Records an error with the node if coercion
+     * is not possible. Will indicate no-chage if expression or type hasn't
+     * been resolved.
+     **/
+    std::optional<Expression> coerceTo(Node* n, const Expression& e, const Type& t, bool contextual, bool assignment) {
+        if ( ! (expression::isResolved(e) && type::isResolved(t)) )
+            return {};
+
+        if ( e.type() == t )
+            return {};
+
+        bitmask<CoercionStyle> style =
+            (assignment ? CoercionStyle::TryAllForAssignment : CoercionStyle::TryAllForMatching);
+
+        if ( contextual )
+            style |= CoercionStyle::ContextualConversion;
+
+        if ( auto c = hilti::coerceExpression(e, t, style) )
+            return c.nexpr;
+
+        n->addError(fmt("cannot coerce expression '%s' of type '%s' to type '%s'", e, e.type(), t));
         return {};
     }
 
-    result_t operator()(const ctor::Map& c) {
-        if ( auto t = dst.tryAs<type::Map>() ) {
-            std::vector<ctor::Map::Element> nelemns;
-            for ( const auto& e : c.value() ) {
-                auto k = hilti::coerceExpression(e.first, t->keyType(), style);
-                auto v = hilti::coerceExpression(e.second, t->elementType(), style);
+    template<typename Container1, typename Container2>
+    Result<std::optional<std::vector<Expression>>> coerceCallArguments(Container1 exprs, Container2 params) {
+        // Build a tuple to coerce expression according to an OperandList.
+        if ( ! expression::isResolved(exprs) )
+            return {std::nullopt};
 
-                if ( k && v )
-                    nelemns.emplace_back(*k.coerced, *v.coerced);
-                else
-                    return {};
-            }
+        auto src = expression::Ctor(ctor::Tuple(std::move(exprs.copy())));
+        auto dst = type::OperandList::fromParameters(std::move(params));
 
-            return ctor::Map(t->keyType(), t->elementType(), nelemns, c.meta());
-        }
+        auto coerced = coerceExpression(src, type::constant(dst), CoercionStyle::TryAllForFunctionCall);
+        if ( ! coerced )
+            return result::Error("coercion failed");
 
-        return {};
+        if ( ! coerced.nexpr )
+            // No change.
+            return {std::nullopt};
+
+        return {coerced.nexpr->template as<expression::Ctor>().ctor().template as<ctor::Tuple>().value().copy()};
     }
 
-    result_t operator()(const ctor::Null& c) {
-        if ( auto t = dst.tryAs<type::Optional>() )
-            return ctor::Optional(t->dereferencedType());
+    // Will do nothing if expressions or type aren't resolved.
+    template<typename Container>
+    Result<std::optional<std::vector<Expression>>> coerceExpressions(const Container& exprs, const Type& dst) {
+        if ( ! type::isResolved(dst) )
+            return {std::nullopt};
 
-        if ( auto t = dst.tryAs<type::StrongReference>() )
-            return ctor::StrongReference(t->dereferencedType());
+        for ( const auto& e : exprs ) {
+            if ( ! expression::isResolved(e) )
+                return {std::nullopt};
+        }
 
-        if ( auto t = dst.tryAs<type::WeakReference>() )
-            return ctor::WeakReference(t->dereferencedType());
+        bool changed = false;
+        std::vector<Expression> nexprs;
 
-        return {};
+        for ( const auto& e : exprs ) {
+            auto coerced = coerceExpression(e, type::constant(dst), CoercionStyle::TryAllForAssignment);
+            if ( ! coerced )
+                return result::Error("coercion failed");
+
+            if ( coerced.nexpr )
+                changed = true;
+
+            nexprs.emplace_back(std::move(*coerced.coerced));
+        }
+
+        if ( changed )
+            return {std::move(nexprs)};
+        else
+            // No change.
+            return {std::nullopt};
     }
 
-    result_t operator()(const ctor::List& c) {
-        if ( auto t = dst.tryAs<type::List>() ) {
-            std::vector<Expression> nexprs;
-            for ( const auto& e : c.value() ) {
-                if ( auto x = hilti::coerceExpression(e, t->elementType(), CoercionStyle::TryAllForAssignment) )
-                    nexprs.push_back(*x.coerced);
-                else
-                    return {};
-            }
-            return ctor::List(t->elementType(), std::move(nexprs), c.meta());
-        }
-
-        if ( auto t = dst.tryAs<type::Vector>() ) {
-            auto dt = t->isWildcard() ? c.elementType() : t->elementType();
-
-            std::vector<Expression> nexprs;
-            for ( const auto& e : c.value() ) {
-                if ( auto x = hilti::coerceExpression(e, dt, CoercionStyle::TryAllForAssignment) )
-                    nexprs.push_back(*x.coerced);
-                else
-                    return {};
-            }
-            return ctor::Vector(dt, std::move(nexprs), c.meta());
-        }
-
-        if ( auto t = dst.tryAs<type::Set>() ) {
-            auto dt = t->isWildcard() ? c.elementType() : t->elementType();
-
-            std::vector<Expression> nexprs;
-            for ( const auto& e : c.value() ) {
-                if ( auto x = hilti::coerceExpression(e, dt, CoercionStyle::TryAllForAssignment) )
-                    nexprs.push_back(*x.coerced);
-                else
-                    return {};
-            }
-            return ctor::Set(dt, std::move(nexprs), c.meta());
-        }
-
-        return {};
+    void operator()(const Attribute& n) {
+        // TODO(robin): Coerce attributes with expressions.
     }
 
-    result_t operator()(const ctor::Real& c) {
-        // Note: double->Integral constant conversions check 'non-narrowing' via
-        // double->Int->double roundtrip - the generated code looks good.
+    void operator()(const ctor::List& n, position_t p) {
+        if ( auto coerced = coerceExpressions(n.value(), n.elementType()) ) {
+            if ( *coerced ) {
+                logChange(p.node, ctor::Tuple(**coerced), "elements");
+                p.node.as<ctor::List>().setValue(std::move(**coerced));
+                modified = true;
+            }
+        }
+        else {
+            if ( n.type().elementType() != type::unknown )
+                p.node.addError("type mismatch in list elements");
+        }
+    }
 
-        if ( auto t = dst.tryAs<type::SignedInteger>() ) {
-            double d = c.value();
+    void operator()(const ctor::Map& n, position_t p) {
+        if ( ! (type::isResolved(n.keyType()) && type::isResolved(n.valueType())) )
+            return;
 
-            if ( static_cast<double>(static_cast<int64_t>(d)) == d ) {
-                switch ( t->isWildcard() ? 64 : t->width() ) {
-                    case 8:
-                        if ( static_cast<double>(int8_t(d)) == d )
-                            return ctor::SignedInteger(int64_t(d), 8, c.meta());
-                        break;
+        for ( const auto& e : n.value() ) {
+            if ( ! (expression::isResolved(e.key()) && expression::isResolved(e.value())) )
+                return;
+        }
 
-                    case 16:
-                        if ( static_cast<double>(static_cast<int16_t>(d)) == d )
-                            return ctor::SignedInteger(static_cast<int64_t>(d), 16, c.meta());
-                        break;
+        bool changed = false;
 
-                    case 32:
-                        if ( static_cast<double>(static_cast<int32_t>(d)) == d )
-                            return ctor::SignedInteger(static_cast<int64_t>(d), 32, c.meta());
-                        break;
+        std::vector<ctor::map::Element> nelems;
+        for ( const auto& e : n.value() ) {
+            auto k = coerceExpression(e.key(), n.keyType());
+            if ( ! k ) {
+                p.node.addError("type mismatch in map keys");
+                return;
+            }
 
-                    case 64: return ctor::SignedInteger(static_cast<int64_t>(d), 64, c.meta()); break;
+            auto v = coerceExpression(e.value(), n.valueType());
+            if ( ! v ) {
+                p.node.addError("type mismatch in map values");
+                return;
+            }
+
+            if ( k.nexpr || v.nexpr ) {
+                nelems.emplace_back(*k.coerced, *v.coerced);
+                changed = true;
+            }
+            else
+                nelems.push_back(e);
+        }
+
+        if ( changed ) {
+            logChange(p.node, ctor::Map(nelems), "value");
+            p.node.as<ctor::Map>().setValue(std::move(nelems));
+            modified = true;
+        }
+    }
+
+    void operator()(const ctor::Set& n, position_t p) {
+        auto coerced = coerceExpressions(n.value(), n.elementType());
+        if ( ! coerced )
+            p.node.addError("type mismatch in set elements");
+        else if ( *coerced ) {
+            logChange(p.node, ctor::Tuple(**coerced), "value");
+            p.node.as<ctor::Set>().setValue(std::move(**coerced));
+            modified = true;
+        }
+    }
+
+    void operator()(const ctor::Vector& n, position_t p) {
+        auto coerced = coerceExpressions(n.value(), n.elementType());
+        if ( ! coerced )
+            p.node.addError("type mismatch in vector elements");
+        else if ( *coerced ) {
+            logChange(p.node, ctor::Tuple(**coerced), "value");
+            p.node.as<ctor::Vector>().setValue(std::move(**coerced));
+            modified = true;
+        }
+    }
+
+    void operator()(const ctor::Default& n, position_t p) {
+        if ( ! type::isResolved(n.type()) )
+            return;
+
+        auto t = n.type();
+
+        if ( auto vr = t.tryAs<type::ValueReference>() )
+            t = vr->dereferencedType();
+
+        if ( type::takesArguments(t) ) {
+            if ( auto x = n.typeArguments(); x.size() ) {
+                if ( auto coerced = coerceCallArguments(x, t.parameters()); coerced && *coerced ) {
+                    logChange(p.node, ctor::Tuple(**coerced), "call arguments");
+                    p.node.as<ctor::Default>().setTypeArguments(std::move(**coerced));
+                    modified = true;
                 }
             }
         }
+    }
 
-        if ( auto t = dst.tryAs<type::UnsignedInteger>() ) {
-            double d = c.value();
+    void operator()(const declaration::Constant& n, position_t p) {
+        if ( auto x = coerceTo(&p.node, n.value(), n.type(), false, true) ) {
+            logChange(p.node, *x, "value");
+            p.node.as<declaration::Constant>().setValue(std::move(*x));
+            modified = true;
+        }
+    }
 
-            if ( static_cast<double>(static_cast<uint64_t>(d)) == d ) {
-                switch ( t->isWildcard() ? 64 : t->width() ) {
-                    case 8:
-                        if ( static_cast<double>(static_cast<uint8_t>(d)) == d )
-                            return ctor::UnsignedInteger(static_cast<uint64_t>(d), 8, c.meta());
-                        break;
+    void operator()(const declaration::Parameter& n, position_t p) {
+        if ( auto def = n.default_() ) {
+            if ( auto x = coerceTo(&p.node, *def, n.type(), false, true) ) {
+                logChange(p.node, *x, "default value");
+                p.node.as<declaration::Parameter>().setDefault(std::move(*x));
+                modified = true;
+            }
+        }
+    }
 
-                    case 16:
-                        if ( static_cast<double>(static_cast<uint16_t>(d)) == d )
-                            return ctor::UnsignedInteger(uint64_t(d), 16, c.meta());
-                        break;
+    void operator()(const declaration::LocalVariable& n, position_t p) {
+        std::optional<Expression> init;
+        std::optional<std::vector<Expression>> args;
 
-                    case 32:
-                        if ( static_cast<double>(static_cast<uint32_t>(d)) == d )
-                            return ctor::UnsignedInteger(static_cast<uint64_t>(d), 32, c.meta());
-                        break;
+        if ( auto e = n.init() ) {
+            if ( auto x = coerceTo(&p.node, *e, n.type(), false, true) )
+                init = std::move(*x);
+        }
 
-                    case 64: return ctor::UnsignedInteger(static_cast<uint64_t>(d), 64, c.meta()); break;
+        if ( type::takesArguments(n.type()) && n.typeArguments().size() ) {
+            auto coerced = coerceCallArguments(n.typeArguments(), n.type().parameters());
+            if ( coerced && *coerced )
+                args = std::move(*coerced);
+        }
+
+        if ( init || args ) {
+            if ( init ) {
+                logChange(p.node, *init, "init expression");
+                p.node.as<declaration::LocalVariable>().setInit(std::move(*init));
+            }
+
+            if ( args ) {
+                logChange(p.node, ctor::Tuple(*args), "type arguments");
+                p.node.as<declaration::LocalVariable>().setTypeArguments(std::move(*args));
+            }
+
+            modified = true;
+        }
+    }
+
+    void operator()(const declaration::GlobalVariable& n, position_t p) {
+        std::optional<Expression> init;
+        std::optional<std::vector<Expression>> args;
+
+        if ( auto e = n.init() ) {
+            if ( auto x = coerceTo(&p.node, *e, n.type(), false, true) )
+                init = std::move(*x);
+        }
+
+        if ( type::takesArguments(n.type()) && n.typeArguments().size() ) {
+            auto coerced = coerceCallArguments(n.typeArguments(), n.type().parameters());
+            if ( coerced && *coerced )
+                args = std::move(*coerced);
+        }
+
+        if ( init || args ) {
+            if ( init ) {
+                logChange(p.node, *init, "init expression");
+                p.node.as<declaration::GlobalVariable>().setInit(std::move(*init));
+            }
+
+            if ( args ) {
+                logChange(p.node, ctor::Tuple(*args), "type arguments");
+                p.node.as<declaration::GlobalVariable>().setTypeArguments(std::move(*args));
+            }
+
+            modified = true;
+        }
+    }
+
+    void operator()(const operator_::generic::New& n, position_t p) {
+        auto etype = n.op0().tryAs<expression::Type_>();
+        if ( ! etype )
+            return;
+
+        if ( type::takesArguments(etype->typeValue()) ) {
+            auto args = n.op1().as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
+            if ( auto coerced = coerceCallArguments(args, etype->typeValue().parameters()); coerced && *coerced ) {
+                Expression ntuple = expression::Ctor(ctor::Tuple(**coerced), n.op1().meta());
+                logChange(p.node, ntuple, "type arguments");
+                p.node.as<operator_::generic::New>().setOp1(std::move(ntuple));
+                modified = true;
+            }
+        }
+    }
+
+    void operator()(const operator_::vector::PushBack& n, position_t p) {
+        if ( ! (expression::isResolved(n.op0()) && expression::isResolved(n.op2())) )
+            return;
+
+        // Need to coerce the element here as the normal overload resolution
+        // couldn't know the element type yet.
+        auto etype = n.op0().type().as<type::Vector>().elementType();
+        auto elem = methodArgument(n, 0);
+
+        if ( auto x = coerceTo(&p.node, n.op2(), type::Tuple({etype}), false, true) ) {
+            logChange(p.node, *x, "element type");
+            p.node.as<operator_::vector::PushBack>().setOp2(std::move(*x));
+            modified = true;
+        }
+    }
+
+    void operator()(const statement::Assert& n, position_t p) {
+        if ( n.expectsException() )
+            return;
+
+        if ( auto x = coerceTo(&p.node, n.expression(), type::Bool(), true, false) ) {
+            logChange(p.node, *x, "expression");
+            p.node.as<statement::Assert>().setCondition(std::move(*x));
+            modified = true;
+        }
+    }
+
+    void operator()(const statement::If& n, position_t p) {
+        if ( auto cond = n.condition() ) {
+            if ( auto x = coerceTo(&p.node, *cond, type::Bool(), true, false) ) {
+                logChange(p.node, *x, "condition");
+                p.node.as<statement::If>().setCondition(std::move(*x));
+                modified = true;
+            }
+        }
+    }
+
+    void operator()(const statement::Return& n, position_t p) {
+        auto func = p.findParent<Function>();
+        if ( ! func ) {
+            p.node.addError("return outside of function");
+            return;
+        }
+
+        auto e = n.expression();
+        if ( ! e )
+            return;
+
+        const auto& t = func->get().ftype().result().type();
+
+        if ( auto x = coerceTo(&p.node, *e, t, false, true) ) {
+            logChange(p.node, *x, "expression");
+            p.node.as<statement::Return>().setExpression(std::move(*x));
+            modified = true;
+        }
+    }
+
+    void operator()(const statement::While& n, position_t p) {
+        if ( auto cond = n.condition() ) {
+            if ( auto x = coerceTo(&p.node, *cond, type::Bool(), true, false) ) {
+                logChange(p.node, *x, "condition");
+                p.node.as<statement::While>().setCondition(std::move(*x));
+                modified = true;
+            }
+        }
+    }
+
+    void operator()(const declaration::Field& f, position_t p) {
+        if ( auto a = f.attributes() ) {
+            AttributeSet attrs = *a;
+            if ( auto x = attrs.coerceValueTo("&default", f.type()) ) {
+                if ( *x ) {
+                    logChange(p.node, attrs, "attributes");
+                    p.node.as<declaration::Field>().setAttributes(std::move(attrs));
+                    modified = true;
                 }
+
+                return;
+            }
+            else
+                p.node.addError(fmt("cannot coerce default expression to type '%s'", f.type()));
+        }
+    }
+
+    void operator()(const expression::Assign& n, position_t p) {
+        // We allow assignments from const to non-const here, assignment
+        // is by value.
+        if ( auto x = coerceTo(&p.node, n.source(), n.target().type(), false, true) ) {
+            logChange(p.node, *x, "source");
+            p.node.as<expression::Assign>().setSource(std::move(*x));
+            modified = true;
+        }
+    }
+
+    void operator()(const expression::BuiltinFunction& n, position_t p) {
+        if ( auto coerced = coerceCallArguments(n.arguments(), n.parameters()); coerced && *coerced ) {
+            logChange(p.node, ctor::Tuple(**coerced), "call arguments");
+            p.node.as<expression::BuiltinFunction>().setArguments(std::move(**coerced));
+            modified = true;
+        }
+    }
+
+    void operator()(const expression::LogicalAnd& n, position_t p) {
+        if ( auto x = coerceTo(&p.node, n.op0(), type::Bool(), true, false) ) {
+            logChange(p.node, *x, "op0");
+            p.node.as<expression::LogicalAnd>().setOp0(std::move(*x));
+            modified = true;
+        }
+
+        if ( auto x = coerceTo(&p.node, n.op1(), type::Bool(), true, false) ) {
+            logChange(p.node, *x, "op1");
+            p.node.as<expression::LogicalAnd>().setOp1(std::move(*x));
+            modified = true;
+        }
+    }
+
+    void operator()(const expression::LogicalNot& n, position_t p) {
+        if ( auto x = coerceTo(&p.node, n.expression(), type::Bool(), true, false) ) {
+            logChange(p.node, *x, "expression");
+            p.node.as<expression::LogicalNot>().setExpression(std::move(*x));
+            modified = true;
+        }
+    }
+
+    void operator()(const expression::LogicalOr& n, position_t p) {
+        if ( auto x = coerceTo(&p.node, n.op0(), type::Bool(), true, false) ) {
+            logChange(p.node, *x, "op0");
+            p.node.as<expression::LogicalOr>().setOp0(std::move(*x));
+            modified = true;
+        }
+
+        if ( auto x = coerceTo(&p.node, n.op1(), type::Bool(), true, false) ) {
+            logChange(p.node, *x, "op1");
+            p.node.as<expression::LogicalOr>().setOp1(std::move(*x));
+            modified = true;
+        }
+    }
+
+    void operator()(const expression::PendingCoerced& pc, position_t p) {
+        if ( auto ner = hilti::coerceExpression(pc.expression(), pc.type()); ner.coerced ) {
+            if ( ner.nexpr ) {
+                // A coercion expression was created, use it.
+                p.node = *ner.nexpr;
+                modified = true;
+            }
+            else {
+                // Coercion not needed, use original expression.
+                p.node = pc.expression();
+                modified = true;
             }
         }
-
-        return {};
+        else
+            p.node.addError(fmt("cannot coerce expression '%s' to type '%s'", pc.expression(), pc.type()));
     }
 
-    result_t operator()(const ctor::Set& c) {
-        if ( auto t = dst.tryAs<type::Set>() ) {
-            std::vector<Expression> nexprs;
-            for ( const auto& e : c.value() ) {
-                if ( auto x = hilti::coerceExpression(e, t->elementType(), style) )
-                    nexprs.push_back(*x.coerced);
-                else
-                    return {};
+    void operator()(const operator_::tuple::CustomAssign& n, position_t p) {
+        if ( ! (expression::isResolved(n.op0()) && expression::isResolved(n.op1())) )
+            return;
+
+        auto lhs = n.op0().as<expression::Ctor>().ctor().as<ctor::Tuple>();
+        auto lhs_type = lhs.type().as<type::Tuple>();
+        auto rhs_type = n.op1().type().tryAs<type::Tuple>();
+
+        if ( ! rhs_type || lhs_type.elements().size() != rhs_type->elements().size() )
+            // Validator will catch these.
+            return;
+
+        if ( lhs_type == *rhs_type )
+            // Nothing to coerce.
+            return;
+
+        bool changed = false;
+        std::vector<Expression> new_elems;
+
+        for ( auto i = 0u; i < lhs_type.elements().size(); i++ ) {
+            const auto& lhs_elem_type = lhs_type.elements()[i].type();
+            auto rhs_elem_type = rhs_type->elements()[i].type();
+            auto rhs_elem =
+                expression::TypeWrapped(operator_::tuple::Index::Operator().instantiate({n.op1(), builder::integer(i)},
+                                                                                        n.meta()),
+                                        rhs_elem_type);
+
+            if ( auto x = coerceTo(&p.node, rhs_elem, lhs_elem_type, false, true) ) {
+                changed = true;
+                new_elems.push_back(std::move(*x));
             }
-            return ctor::Set(t->elementType(), std::move(nexprs), c.meta());
+            else
+                new_elems.push_back(std::move(rhs_elem));
         }
 
-        return {};
-    }
-
-    result_t operator()(const ctor::SignedInteger& c) {
-        if ( auto t = dst.tryAs<type::SignedInteger>() ) {
-            if ( t->width() == 64 )
-                return c;
-
-            int64_t i = c.value();
-
-            if ( t->isWildcard() )
-                return ctor::SignedInteger(i, c.type().width(), c.meta());
-
-            if ( auto [imin, imax] = util::signed_integer_range(t->width()); i >= imin && i <= imax )
-                return ctor::SignedInteger(i, t->width(), c.meta());
+        if ( changed ) {
+            auto new_rhs = builder::tuple(std::move(new_elems));
+            logChange(p.node, new_rhs, "tuple assign");
+            p.node.as<operator_::tuple::CustomAssign>().setOp1(std::move(new_rhs));
+            modified = true;
         }
-
-        if ( auto t = dst.tryAs<type::UnsignedInteger>(); t && c.value() >= 0 ) {
-            auto u = static_cast<uint64_t>(c.value());
-
-            if ( t->isWildcard() )
-                return ctor::UnsignedInteger(u, c.type().width(), c.meta());
-
-            if ( auto [zero, umax] = util::unsigned_integer_range(t->width()); u <= umax )
-                return ctor::UnsignedInteger(u, t->width(), c.meta());
-        }
-
-        if ( auto t = dst.tryAs<type::Real>() ) {
-            if ( static_cast<int64_t>(static_cast<double>(c.value())) == c.value() )
-                return ctor::Real(static_cast<double>(c.value()));
-        }
-
-        if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
-            return ctor::Bool(c.value() != 0, c.meta());
-
-        return {};
-    }
-
-    result_t operator()(const ctor::Vector& c) {
-        if ( auto t = dst.tryAs<type::Vector>() ) {
-            std::vector<Expression> nexprs;
-            for ( const auto& e : c.value() ) {
-                if ( auto x = hilti::coerceExpression(e, t->elementType(), style) )
-                    nexprs.push_back(*x.coerced);
-                else
-                    return {};
-            }
-            return ctor::Vector(t->elementType(), std::move(nexprs), c.meta());
-        }
-
-        return {};
-    }
-
-    result_t operator()(const ctor::UnsignedInteger& c) {
-        if ( auto t = dst.tryAs<type::UnsignedInteger>() ) {
-            if ( t->width() == 64 )
-                return c;
-
-            uint64_t u = c.value();
-
-            if ( t->isWildcard() )
-                return ctor::UnsignedInteger(u, c.type().width(), c.meta());
-
-            if ( auto [umin, umax] = util::unsigned_integer_range(t->width()); u >= umin && u <= umax )
-                return ctor::UnsignedInteger(u, t->width(), c.meta());
-        }
-
-        if ( auto t = dst.tryAs<type::SignedInteger>(); t && static_cast<int64_t>(c.value()) >= 0 ) {
-            auto i = static_cast<int64_t>(c.value());
-
-            if ( t->isWildcard() )
-                return ctor::SignedInteger(i, c.type().width(), c.meta());
-
-            if ( auto [imin, imax] = util::signed_integer_range(t->width()); i >= imin && i <= imax )
-                return ctor::SignedInteger(i, t->width(), c.meta());
-        }
-
-        if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
-            return ctor::Bool(c.value() != 0, c.meta());
-
-        if ( auto t = dst.tryAs<type::Real>() ) {
-            if ( static_cast<uint64_t>(static_cast<double>(c.value())) == c.value() )
-                return ctor::Real(static_cast<double>(c.value()));
-        }
-
-        return {};
-    }
-
-    result_t operator()(const ctor::Tuple& c) {
-        if ( auto t = dst.tryAs<type::Tuple>() ) {
-            auto vc = c.value();
-            auto vt = t.value().types();
-
-            if ( vc.size() != vt.size() )
-                return {};
-
-            std::vector<Expression> coerced;
-            coerced.reserve(vc.size());
-
-            for ( auto i = std::make_pair(vc.cbegin(), vt.cbegin()); i.first != vc.cend(); ++i.first, ++i.second ) {
-                if ( auto x = hilti::coerceExpression(*i.first, *i.second, CoercionStyle::TryAllForAssignment) ) {
-                    coerced.push_back(*x.coerced);
-                }
-                else
-                    return {};
-            }
-
-            return ctor::Tuple(std::move(coerced), c.meta());
-        }
-
-        return {};
-    }
-
-    result_t operator()(const ctor::Struct& c) {
-        auto dst_ = dst;
-
-        if ( (dst.isA<type::ValueReference>() || dst.isA<type::StrongReference>()) && ! type::isReferenceType(dst) )
-            // Allow coercion from value to reference type with new instance.
-            dst_ = dst.dereferencedType();
-
-        if ( auto dtype = dst_.tryAs<type::Struct>() ) {
-            auto stype = c.type().as<type::Struct>();
-
-            std::set<ID> src_fields;
-            for ( const auto& f : stype.fields() )
-                src_fields.insert(f.id());
-
-            std::set<ID> dst_fields;
-            for ( const auto& f : dtype->fields() )
-                dst_fields.insert(f.id());
-
-            // Check for fields in ctor that type does not have.
-            if ( ! util::set_difference(src_fields, dst_fields).empty() )
-                return {};
-
-            // Check for fields in type that ctor does not have, they must be
-            // optional,
-            auto x = util::set_difference(dst_fields, src_fields);
-
-            std::set<ID> can_be_missing;
-
-            for ( const auto& k : x ) {
-                auto f = dtype->field(k);
-                if ( f->isOptional() || f->default_() || f->type().isA<type::Function>() )
-                    can_be_missing.insert(k);
-            }
-
-            x = util::set_difference(x, can_be_missing);
-
-            if ( ! x.empty() )
-                // Uninitialized fields.
-                return {};
-
-            // Coerce each field.
-            std::vector<ctor::struct_::Field> nf;
-
-            for ( const auto& sf : stype.fields() ) {
-                auto df = dtype->field(sf.id());
-                auto se = c.field(sf.id());
-                assert(df && se);
-                if ( auto ne = hilti::coerceExpression((*se).second, df->type(), style) )
-                    nf.emplace_back(sf.id(), *ne.coerced);
-                else
-                    // Cannot coerce.
-                    return {};
-            }
-
-            return ctor::Struct(std::move(nf), *dtype, c.meta());
-        }
-
-        return {};
-    }
-};
-
-struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> {
-    VisitorType(const Type& dst, bitmask<CoercionStyle> style) : dst(dst), style(style) {}
-
-    const Type& dst;
-    bitmask<CoercionStyle> style;
-
-    result_t operator()(const type::Enum& c) {
-        if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::Null& c) {
-        if ( auto t = dst.tryAs<type::Optional>() )
-            return dst;
-
-        if ( auto t = dst.tryAs<type::StrongReference>() )
-            return dst;
-
-        if ( auto t = dst.tryAs<type::WeakReference>() )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::Bytes& c) {
-        if ( dst.tryAs<type::Stream>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::Error& e) {
-        if ( auto t = dst.tryAs<type::Result>() )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::List& e) {
-        if ( auto t = dst.tryAs<type::Set>(); t && t->elementType() == e.elementType() )
-            return dst;
-
-        if ( auto t = dst.tryAs<type::Vector>(); t && t->elementType() == e.elementType() )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::Optional& r) {
-        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::StrongReference& r) {
-        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return dst;
-
-        if ( type::isReferenceType(dst) ) {
-            if ( type::sameExceptForConstness(r.dereferencedType(), dst.dereferencedType()) )
-                return dst;
-        }
-
-        if ( ! (style & CoercionStyle::Assignment) ) {
-            if ( r.dereferencedType() == dst )
-                return dst;
-        }
-
-        return {};
-    }
-
-    result_t operator()(const type::Result& r) {
-        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return dst;
-
-        if ( auto t = dst.tryAs<type::Optional>(); t && t->dereferencedType() == r.dereferencedType() )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::SignedInteger& src) {
-        if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
-            return dst;
-
-        if ( auto t = dst.tryAs<type::SignedInteger>() ) {
-            if ( src.width() <= t->width() )
-                return dst;
-        }
-
-        return {};
-    }
-
-    result_t operator()(const type::Stream& c) {
-        if ( auto t = dst.tryAs<type::stream::View>() )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::stream::View& c) {
-        if ( dst.tryAs<type::Bytes>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::Type_& src) {
-        if ( auto t = dst.tryAs<type::Type_>() ) {
-            // We don't allow arbitrary coercions here, just (more or less) direct matches.
-            if ( auto x = hilti::coerceType(src.typeValue(), t->typeValue(), CoercionStyle::TryDirectForMatching) )
-                return type::Type_(*x);
-        }
-
-        return {};
-    }
-
-    result_t operator()(const type::Union& c) {
-        if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::UnsignedInteger& src) {
-        if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
-            return dst;
-
-        if ( auto t = dst.tryAs<type::UnsignedInteger>() ) {
-            if ( src.width() <= t->width() )
-                return dst;
-        }
-
-        if ( auto t = dst.tryAs<type::SignedInteger>() ) {
-            // As long as the target type has more bits, we can coerce.
-            if ( src.width() < t->width() )
-                return dst;
-        }
-
-        return {};
-    }
-
-    result_t operator()(const type::Tuple& src) {
-        if ( auto t = dst.tryAs<type::Tuple>() ) {
-            auto vc = src.types();
-            auto vt = t->types();
-
-            if ( vc.size() != vt.size() )
-                return {};
-
-            for ( auto i = std::make_pair(vc.cbegin(), vt.cbegin()); i.first != vc.cend(); ++i.first, ++i.second ) {
-                if ( auto x = hilti::coerceType(*i.first, *i.second); ! x )
-                    return {};
-            }
-
-            return dst;
-        }
-
-        return {};
-    }
-
-    result_t operator()(const type::ValueReference& r) {
-        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return hilti::coerceType(r.dereferencedType(), dst, style);
-
-        if ( type::isReferenceType(dst) ) {
-            if ( type::sameExceptForConstness(r.dereferencedType(), dst.dereferencedType()) )
-                return dst;
-        }
-
-        if ( r.dereferencedType() == dst )
-            return dst;
-
-        return {};
-    }
-
-    result_t operator()(const type::WeakReference& r) {
-        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return dst;
-
-        if ( type::isReferenceType(dst) ) {
-            if ( type::sameExceptForConstness(r.dereferencedType(), dst.dereferencedType()) )
-                return dst;
-        }
-
-        if ( ! (style & CoercionStyle::Assignment) ) {
-            if ( r.dereferencedType() == dst )
-                return dst;
-        }
-
-        return {};
     }
 };
 
 } // anonymous namespace
 
-// Plugin-specific version just kicking off the local visitor.
-std::optional<Ctor> detail::coerceCtor(Ctor c, const Type& dst, bitmask<CoercionStyle> style) {
-    if ( auto nc = VisitorCtor(dst, style).dispatch(std::move(c)) )
-        return *nc;
+bool hilti::detail::ast::coerce(Node* root, Unit* unit) {
+    util::timing::Collector _("hilti/compiler/ast/coerce");
 
-    return {};
-}
+    auto v = Visitor(unit);
+    for ( auto i : v.walk(root) )
+        v.dispatch(i);
 
-// Plugin-specific version just kicking off the local visitor.
-std::optional<Type> detail::coerceType(Type t, const Type& dst, bitmask<CoercionStyle> style) {
-    if ( auto nt = VisitorType(dst, style).dispatch(std::move(t)) )
-        return *nt;
-
-    return {};
+    return v.modified;
 }

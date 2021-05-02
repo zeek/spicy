@@ -4,6 +4,8 @@
 
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/module.h>
+#include <hilti/ast/node.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/function.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/visitors.h>
@@ -66,10 +68,10 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     void operator()(const Function& f, position_t p) {
         if ( auto attrs = f.attributes() ) {
             if ( auto prio = attrs->find("&priority") ) {
-                if ( f.type().flavor() != type::function::Flavor::Hook )
+                if ( f.ftype().flavor() != type::function::Flavor::Hook )
                     error("only hooks can have priorities", p);
 
-                else if ( auto x = prio->valueAs<int64_t>(); ! x )
+                else if ( auto x = prio->valueAsInteger(); ! x )
                     error(x.error(), p);
             }
         }
@@ -89,18 +91,23 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         if ( n.type().isWildcard() )
             error("cannot use wildcard type for variables", p);
 
-        if ( ! n.typeArguments().empty() ) {
-            auto t = n.type();
+        if ( p.parent().isA<statement::Block>() ) {
+            // If we're at the block level, check type arguments. If not, we're
+            // part of another statement (like if/while/...) where
+            // initialization happens internally.
+            if ( ! n.typeArguments().empty() ) {
+                auto t = n.type();
 
-            if ( type::isReferenceType(t) )
-                t = t.dereferencedType();
+                if ( type::isReferenceType(t) )
+                    t = t.dereferencedType();
 
-            if ( ! t.isA<type::Struct>() )
-                error("only struct types can have arguments", p);
+                if ( ! type::takesArguments(t) )
+                    error("type does not take arguments", p);
+            }
+
+            if ( type::takesArguments(n.type()) )
+                _checkStructArguments(n.typeArguments(), n.type().parameters(), p);
         }
-
-        if ( auto st = n.type().tryAs<type::Struct>() )
-            _checkStructArguments(n.typeArguments(), st->parameters(), p);
 
         // Check whether this local variable was declared at module scope. We
         // need to match exact parent nodes here to not match other locals
@@ -111,9 +118,14 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             error("local variables cannot be declared at module scope", p);
     }
 
+    void operator()(const declaration::ImportedModule& n, position_t p) {
+        if ( ! n.unit() )
+            error(fmt("could not import module %s", n.id()), p);
+    }
+
     void operator()(const declaration::Parameter& n, position_t p) {
         if ( ! n.type().isA<type::Auto>() ) {
-            if ( ! type::isAllocable(n.type()) && n.type() != type::Any() )
+            if ( ! type::isAllocable(n.type()) && type::nonConstant(n.type()) != type::Any() )
                 error(fmt("type '%s' cannot be used for function parameter", n.type()), p);
         }
 
@@ -141,7 +153,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                     error(fmt("invalid attribute '%s' for function parameter", attr.tag()), p);
 
                 else {
-                    if ( auto x = attr.valueAs<std::string>(); ! x )
+                    if ( auto x = attr.valueAsString(); ! x )
                         error(x.error(), p);
                 }
             }
@@ -155,12 +167,12 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             error("cannot use wildcard type for variables", p);
 
         if ( auto args = n.typeArguments(); args.size() ) {
-            if ( ! n.type().isA<type::Struct>() )
-                error("only struct types can have arguments", p);
+            if ( ! type::takesArguments(n.type()) )
+                error("type does not take arguments", p);
         }
 
-        if ( auto st = n.type().tryAs<type::Struct>() )
-            _checkStructArguments(n.typeArguments(), st->parameters(), p);
+        if ( type::takesArguments(n.type()) )
+            _checkStructArguments(n.typeArguments(), n.type().parameters(), p);
     }
 
     ////// Ctors
@@ -171,8 +183,13 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         if ( auto vr = t.tryAs<type::ValueReference>() )
             t = vr->dereferencedType();
 
-        if ( auto st = t.tryAs<type::Struct>() )
-            _checkStructArguments(c.typeArguments(), st->parameters(), p);
+        if ( auto args = c.typeArguments(); args.size() ) {
+            if ( ! type::takesArguments(t) )
+                error("type does not take arguments", p);
+        }
+
+        if ( type::takesArguments(t) )
+            _checkStructArguments(c.typeArguments(), t.parameters(), p);
     }
 
     void operator()(const hilti::ctor::Exception& e, position_t p) {
@@ -193,14 +210,14 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const ctor::Map& n, position_t p) {
-        if ( ! n.value().empty() && (n.keyType() == type::unknown || n.elementType() == type::unknown) )
+        if ( ! n.value().empty() && (n.keyType() == type::unknown || n.valueType() == type::unknown) )
             error("map elements have inconsistent types", p);
     }
 
     void operator()(const ctor::Null& c, position_t p) {}
 
     void operator()(const ctor::SignedInteger& n, position_t p) {
-        auto [min, max] = util::signed_integer_range(n.type().width());
+        auto [min, max] = util::signed_integer_range(n.width());
 
         if ( n.value() < min || n.value() > max )
             error("integer value out of range for type", p);
@@ -216,7 +233,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const ctor::UnsignedInteger& n, position_t p) {
-        auto [min, max] = util::unsigned_integer_range(n.type().width());
+        auto [min, max] = util::unsigned_integer_range(n.width());
 
         if ( n.value() < min || n.value() > max )
             error("integer value out of range for type", p);
@@ -253,16 +270,18 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                   p);
     }
 
-    void operator()(const expression::TypeWrapped& n, position_t p) {
-        if ( n.validateTypeMatch() && n.expression().type() != n.type() )
-            error(fmt("type mismatch, expression has type '%s', but expected '%s'", n.expression().type(), n.type()),
-                  p);
-    }
-
     void operator()(const expression::UnresolvedID& n, position_t p) {
-        // We prefer the error message from a parent UnresolvedOperator.
-        if ( ! p.node.hasErrors() && ! p.parent().isA<expression::UnresolvedOperator>() )
-            error("unresolved ID", p);
+        if ( auto decl = p.findParent<Declaration>(); decl && ! decl->get().isA<declaration::Function>() ) {
+            if ( n.id() == decl->get().id() ) {
+                error("ID cannot be used inside its own declaration", p);
+                return;
+            }
+        }
+
+        // We prefer the error message from a parent's unresolved call operator.
+        auto op = p.parent().tryAs<expression::UnresolvedOperator>();
+        if ( ! op || op->kind() != operator_::Kind::Call )
+            error(fmt("unknown ID '%s'", n.id()), p);
     }
 
     ////// Statements
@@ -305,7 +324,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             return;
         }
 
-        if ( func->get().type().result().type() == type::Void() ) {
+        if ( func->get().ftype().result().type() == type::void_ ) {
             if ( n.expression() )
                 error("void function cannot return a value", p);
         }
@@ -355,13 +374,6 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             error("'while' header lacking both condition and declaration", p);
     }
 
-    void operator()(const expression::ResolvedID& n, position_t p) {
-        if ( auto decl = p.findParent<Declaration>(); decl && ! decl->get().isA<declaration::Function>() ) {
-            if ( n.id() == decl->get().id() )
-                error("ID cannot be used inside its own declaration", p);
-        }
-    }
-
     void operator()(const expression::ResolvedOperator& n, position_t p) {
         // We are running after both overload resolution and the
         // apply-coercion pass, so operands types are ensured to be fine at
@@ -370,14 +382,14 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const expression::UnresolvedOperator& n, position_t p) {
-        error(fmt("unsupported operator: %s", hilti::detail::renderOperatorInstance(n)), p, node::ErrorPriority::Low);
+        if ( p.node.errors().empty() )
+            error(fmt("unsupported operator: %s", hilti::detail::renderOperatorInstance(n)), p);
     }
 
     ////// Types
 
     void operator()(const type::Auto& n, position_t p) {
-        if ( ! n.isSet() )
-            error("'auto' type has not been resolved", p);
+        error("automatic type has not been resolved", p, node::ErrorPriority::Low);
     }
 
     void operator()(const type::Exception& n, position_t p) {
@@ -388,31 +400,8 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     void operator()(const type::Function& n, position_t p) {
         if ( n.flavor() == type::function::Flavor::Hook ) {
             auto r = n.result().type();
-            if ( ! (r == type::Void() || r.isA<type::Optional>()) )
+            if ( ! (r == type::void_ || r.isA<type::Optional>()) )
                 error(fmt("hooks must have return type either void or optional<T>"), p);
-        }
-    }
-
-    void operator()(const expression::Keyword& n, position_t p) {
-        switch ( n.kind() ) {
-            case expression::keyword::Kind::DollarDollar:
-                if ( const auto& function = p.findParent<Function>() ) {
-                    for ( const auto& hook : function->get().childsOfType<type::Function>() ) {
-                        if ( hook.flavor() != type::function::Flavor::Hook )
-                            continue;
-
-                        const auto& parameters = hook.parameters();
-                        if ( parameters.end() == std::find_if(parameters.begin(), parameters.end(),
-                                                              [](auto&& p) { return p.id() == ID("__dd"); }) )
-                            error("$$ is not available in this hook", p);
-                    }
-                    break;
-                }
-
-            case expression::keyword::Kind::Captures:
-            case expression::keyword::Kind::Self:
-                // Nothing.
-                break;
         }
     }
 
@@ -516,9 +505,9 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const type::Tuple& n, position_t p) {
-        for ( const auto& t : n.types() ) {
-            if ( ! type::isAllocable(t) )
-                error(fmt("type '%s' cannot be used inside a tuple", t), p);
+        for ( const auto& e : n.elements() ) {
+            if ( ! type::isAllocable(e.type()) && ! e.type().isA<type::Null>() )
+                error(fmt("type '%s' cannot be used inside a tuple", e.type()), p);
         }
     }
 
@@ -540,8 +529,8 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     void operator()(const operator_::generic::New& n, position_t p) {
         // We reuse the _checkStructArguments() here, that's why this operator is covered here.
         if ( auto t = n.operands()[0].type().tryAs<type::Type_>() ) {
-            if ( auto st = t->typeValue().tryAs<type::Struct>() ) {
-                std::vector<Expression> args;
+            if ( type::takesArguments(t->typeValue()) ) {
+                node::Range<Expression> args;
                 if ( n.operands().size() > 1 ) {
                     auto ctor = n.operands()[1].as<expression::Ctor>().ctor();
                     if ( auto x = ctor.tryAs<ctor::Coerced>() )
@@ -550,12 +539,12 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                     args = ctor.as<ctor::Tuple>().value();
                 }
 
-                _checkStructArguments(args, st->parameters(), p);
+                _checkStructArguments(args, t->typeValue().parameters(), p);
             }
         }
     }
 
-    void _checkStructArguments(const std::vector<Expression>& have, const std::vector<type::function::Parameter>& want,
+    void _checkStructArguments(const node::Range<Expression>& have, const node::Set<type::function::Parameter>& want,
                                position_t& p) {
         if ( have.size() > want.size() )
             error(fmt("type expects %u parameter%s, but receives %u", have.size(), (have.size() > 1 ? "s" : ""),
@@ -564,10 +553,14 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         for ( size_t i = 0; i < want.size(); i++ ) {
             if ( i < have.size() ) {
-                if ( have[i].type() != want[i].type() )
-                    error(fmt("type expects %s for parameter %u, but receives %s", want[i].type(), i + 1,
-                              have[i].type()),
-                          p);
+                if ( have[i].type() == want[i].type() )
+                    continue;
+
+                if ( type::sameExceptForConstness(have[i].type(), want[i].type()) && type::isConstant(want[i].type()) )
+                    continue;
+
+                error(fmt("type expects %s for parameter %u, but receives %s", want[i].type(), i + 1, have[i].type()),
+                      p);
             }
             else if ( ! want[i].default_() )
                 error(fmt("type parameter %u is missing (%s)", i + 1, want[i].id()), p);
@@ -577,7 +570,9 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
 } // anonymous namespace
 
-void hilti::detail::validateAST(Node* root) {
+void hilti::detail::ast::validate(Node* root) {
+    util::timing::Collector _("hilti/compiler/ast/validator");
+
     auto v = Visitor();
     for ( auto i : v.walk(root) )
         v.dispatch(i);

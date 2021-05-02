@@ -1,7 +1,7 @@
-// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #pragma once
 
+#include <optional>
 #include <utility>
 
 #include <hilti/ast/id.h>
@@ -28,7 +28,7 @@ enum class Linkage {
 
 namespace detail {
 constexpr util::enum_::Value<Linkage> linkages[] = {
-    {Linkage::Struct, "method"}, {Linkage::Public, "public"},   {Linkage::Private, "private"},
+    {Linkage::Struct, "struct"}, {Linkage::Public, "public"},   {Linkage::Private, "private"},
     {Linkage::Init, "init"},     {Linkage::PreInit, "preinit"},
 };
 } // namespace detail
@@ -46,8 +46,14 @@ constexpr auto from_string(const std::string_view& s) { return util::enum_::from
 } // namespace linkage
 
 namespace detail {
-
 #include <hilti/autogen/__declaration.h>
+}
+} // namespace declaration
+
+class Declaration : public declaration::detail::Declaration {
+public:
+    using declaration::detail::Declaration::Declaration;
+};
 
 /** Creates an AST node representing a `Declaration`. */
 inline Node to_node(Declaration t) { return Node(std::move(t)); }
@@ -65,16 +71,30 @@ inline bool operator==(const Declaration& x, const Declaration& y) {
 
 inline bool operator!=(const Declaration& d1, const Declaration& d2) { return ! (d1 == d2); }
 
-} // namespace detail
-} // namespace declaration
-
-using Declaration = declaration::detail::Declaration;
-using declaration::detail::to_node;
-
+namespace declaration {
 /** Constructs an AST node from any class implementing the `Declaration` interface. */
 template<typename T, typename std::enable_if_t<std::is_base_of<trait::isDeclaration, T>::value>* = nullptr>
 inline Node to_node(T t) {
     return Node(Declaration(std::move(t)));
 }
+} // namespace declaration
+
+/**
+ * Base class for classes implementing the `Declaration` interface. This class
+ * provides implementations for some interface methods shared that are shared
+ * by all declarations.
+ */
+class DeclarationBase : public NodeBase, public hilti::trait::isDeclaration {
+public:
+    using NodeBase::NodeBase;
+
+    /** Implements the `Declaration` interface. */
+    const ID& canonicalID() const { return _id; }
+    /** Implements the `Declaration` interface. */
+    void setCanonicalID(ID id) { _id = std::move(id); }
+
+private:
+    ID _id;
+};
 
 } // namespace hilti

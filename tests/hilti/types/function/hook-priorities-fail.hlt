@@ -7,8 +7,8 @@ import hilti;
 
 declare public hook void f();
 
-function hook void f() &priority="foo" { }
-function hook void f() &priority { }
+hook void f() &priority="foo" { }
+hook void f() &priority { }
 function void g() &priority=42 { }
 
 }

@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "hilti/base/util.h"
-
 #include <errno.h>
 #include <pwd.h>
 #include <sys/stat.h>
@@ -17,6 +15,7 @@
 #include <hilti/rt/util.h>
 
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 
 // We include pathfind directly here so we do not have to work
 // around it being installed by its default install target.

@@ -1,10 +1,9 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "hilti/rt/types/string.h"
-
 #include <utf8proc/utf8proc.h>
 
 #include <hilti/rt/exception.h>
+#include <hilti/rt/types/string.h>
 
 using namespace hilti::rt;
 

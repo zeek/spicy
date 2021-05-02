@@ -21,7 +21,7 @@ public:
     bool operator==(const Exception& other) const { return type() == other.type() && value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    Type type() const { return type::effectiveType(child<Type>(0)); }
+    const Type& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

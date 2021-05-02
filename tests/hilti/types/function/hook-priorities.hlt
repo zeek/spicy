@@ -9,7 +9,7 @@ import hilti;
 
 declare public hook void f();
 
-public function hook void f() { hilti::print("f with priority 0"); }
+public hook void f() { hilti::print("f with priority 0"); }
 
 }
 
@@ -22,8 +22,8 @@ module Bar {
 import hilti;
 import Foo;
 
-public function hook void Foo::f() &priority=-5 { hilti::print("f with priority -5"); }
-public function hook void Foo::f() &priority=15 { hilti::print("f with priority 15"); }
+public hook void Foo::f() &priority=-5 { hilti::print("f with priority -5"); }
+public hook void Foo::f() &priority=15 { hilti::print("f with priority 15"); }
 
 }
 
@@ -36,6 +36,6 @@ import Foo;
 
 Foo::f();
 
-public function hook void Foo::f() &priority=10 { hilti::print("f with priority 10"); }
+public hook void Foo::f() &priority=10 { hilti::print("f with priority 10"); }
 
 }

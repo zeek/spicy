@@ -1,0 +1,20 @@
+# @TEST-EXEC: hiltic -j a.hlt %INPUT
+# @TEST-DOC: Check that our C++ code fully prototypes typed imported from another module.
+
+module B {
+
+import A;
+
+public type Bar = struct(strong_ref<A::Foo> a) {};
+
+}
+
+@TEST-START-FILE a.hlt
+
+module A {
+
+type Foo = struct {};
+
+}
+
+@TEST-END-FILE

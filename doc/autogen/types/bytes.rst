@@ -164,7 +164,7 @@
 
     Returns the number of bytes the value contains.
 
-.. spicy:operator:: bytes::Sum const~bytes t:bytes <sp> op:+ <sp> t:bytes
+.. spicy:operator:: bytes::Sum bytes t:bytes <sp> op:+ <sp> t:bytes
 
     Returns the concatenation of two bytes values.
 

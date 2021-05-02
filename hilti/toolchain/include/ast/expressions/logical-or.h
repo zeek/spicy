@@ -14,10 +14,13 @@ namespace expression {
 class LogicalOr : public NodeBase, public trait::isExpression {
 public:
     LogicalOr(Expression op0, Expression op1, Meta m = Meta())
-        : NodeBase({std::move(op0), std::move(op1)}, std::move(m)) {}
+        : NodeBase(nodes(std::move(op0), std::move(op1), type::Bool(m)), m) {}
 
     const auto& op0() const { return child<Expression>(0); }
     const auto& op1() const { return child<Expression>(1); }
+
+    void setOp0(const Expression& op) { childs()[0] = std::move(op); }
+    void setOp1(const Expression& op) { childs()[1] = std::move(op); }
 
     bool operator==(const LogicalOr& other) const { return op0() == other.op0() && op1() == other.op1(); }
 
@@ -26,7 +29,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const { return type::Bool(); }
+    const auto& type() const { return child<Type>(2); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return op0().isConstant() && op1().isConstant(); }
     /** Implements `Expression` interface. */
@@ -34,32 +37,6 @@ public:
 
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-    /**
-     * Returns a new "or" expression with the first operand expression replaced.
-     *
-     * @param e original expression
-     * @param op new operand expresssion
-     * @return new expression that's equal to original one but with the operand replaced
-     */
-    static Expression setOp0(const LogicalOr& e, const Expression& op) {
-        auto x = Expression(e)._clone().as<LogicalOr>();
-        x.childs()[0] = op;
-        return x;
-    }
-
-    /**
-     * Returns a new "or" expression with the second operand expression replaced.
-     *
-     * @param e original expression
-     * @param op new operand expresssion
-     * @return new expression that's equal to original one but with the operand replaced
-     */
-    static Expression setOp1(const LogicalOr& e, const Expression& op) {
-        auto x = Expression(e)._clone().as<LogicalOr>();
-        x.childs()[1] = op;
-        return x;
-    }
 };
 
 } // namespace expression

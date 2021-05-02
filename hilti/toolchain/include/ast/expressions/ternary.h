@@ -28,7 +28,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true_().isTemporary() || false_().isTemporary(); }
     /** Implements `Expression` interface. */
-    Type type() const {
+    const Type& type() const {
         return true_().type();
     } // TODO(robin): Currentluy we enforce both having the same type; we might need to coerce to target type though
     /** Implements `Expression` interface. */

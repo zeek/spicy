@@ -185,6 +185,7 @@ std::string join(const T& l, const std::string& delim = "") {
     for ( const auto& i : l ) {
         if ( not first )
             result += delim;
+
         result += std::string(i);
         first = false;
     }

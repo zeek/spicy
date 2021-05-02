@@ -60,7 +60,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
             cxx::Block try_body;
             try_body.addTmp(
-                cxx::declaration::Local{.id = "_", .type = "hilti::rt::exception::DisableAbortOnExceptions"});
+                cxx::declaration::Local{.id = "_", .type = "::hilti::rt::exception::DisableAbortOnExceptions"});
             try_body.addStatement(fmt("%s", cg->compile(n.expression())));
 
             if ( cg->options().debug_flow )
@@ -119,20 +119,17 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError("statements can only declare local variables");
 
         std::vector<cxx::Expression> args;
-
-        auto t = d->type();
-        if ( type::isReferenceType(t) )
-            t = t.dereferencedType();
-
-        if ( auto s = t.tryAs<type::Struct>() )
-            args = cg->compileCallArguments(d->typeArguments(), s->parameters());
-
         std::optional<cxx::Expression> init;
 
         if ( auto i = d->init() )
             init = cg->compile(*i);
-        else
+
+        else {
+            if ( auto s = d->type().tryAs<type::Struct>() )
+                args = cg->compileCallArguments(d->typeArguments(), s->parameters());
+
             init = cg->typeDefaultValue(d->type());
+        }
 
         auto l = cxx::declaration::Local{.id = cxx::ID(d->id()),
                                          .type = cg->compile(d->type(), codegen::TypeUsage::Storage),
@@ -149,7 +146,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         std::string cond;
 
         if ( auto x = n.init() ) {
-            auto& l = x->template as<declaration::LocalVariable>();
+            auto& l = *x;
             std::optional<cxx::Expression> cxx_init;
 
             if ( auto i = l.init() )
@@ -182,7 +179,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const statement::For& n) {
-        auto id = cxx::ID(n.id());
+        auto id = cxx::ID(n.local().id());
         auto seq = cg->compile(n.sequence());
         auto body = cg->compile(n.body());
 
@@ -192,7 +189,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             cxx::Block b;
             b.setEnsureBracesforBlock();
             b.addTmp(cxx::declaration::Local{.id = "__seq", .type = "auto", .init = seq});
-            b.addForRange(true, id, fmt("hilti::rt::range(__seq)"), body);
+            b.addForRange(true, id, fmt("::hilti::rt::range(__seq)"), body);
             block->addBlock(std::move(b));
         }
     }
@@ -215,28 +212,24 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         std::string cxx_type;
         std::string cxx_init;
 
-        if ( n.init() ) {
-            auto init = n.init()->as<declaration::LocalVariable>();
-            cxx_type = cg->compile(n.type(), codegen::TypeUsage::Storage);
-            cxx_id = cxx::ID(init.id());
-            cxx_init = cg->compile(*init.init());
-        }
-        else {
-            cxx_type = cxx::ID("const auto");
-            cxx_id = cxx::ID("__x");
-            cxx_init = cg->compile(n.expression());
-        }
+        auto cond = n.condition();
+        cxx_type = cg->compile(cond.type(), codegen::TypeUsage::Storage);
+        cxx_id = cxx::ID(cond.id());
+        cxx_init = cg->compile(*cond.init());
 
         bool first = true;
         for ( const auto& c : n.cases() ) {
+            if ( c.isDefault() )
+                continue; // will handle below
+
             std::string cond;
 
             auto exprs = c.preprocessedExpressions();
 
             if ( exprs.size() == 1 )
-                cond = cg->compile(exprs.front());
+                cond = cg->compile(*exprs.begin());
             else
-                cond = util::join(util::transform(exprs, [&](auto& e) { return cg->compile(e); }), " || ");
+                cond = util::join(node::transform(exprs, [&](auto& e) { return cg->compile(e); }), " || ");
 
             auto body = cg->compile(c.body());
 
@@ -301,7 +294,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         std::optional<cxx::Expression> cxx_init;
 
         if ( n.init() )
-            init = n.init()->as<declaration::LocalVariable>();
+            init = n.init();
 
         if ( init ) {
             if ( auto i = init->init() )
@@ -380,7 +373,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         if ( cg->options().debug_flow )
             block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: yield"))", n.meta().location()));
 
-        block->addStatement("hilti::rt::detail::yield()");
+        block->addStatement("::hilti::rt::detail::yield()");
     }
 };
 

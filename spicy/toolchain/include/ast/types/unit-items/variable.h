@@ -25,8 +25,8 @@ public:
         : NodeBase(nodes(std::move(id), std::move(type), default_, std::move(attrs)), std::move(m)) {}
 
     const auto& id() const { return child<ID>(0); }
-    auto default_() const { return childs()[2].tryReferenceAs<Expression>(); }
-    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
+    auto default_() const { return childs()[2].tryAs<Expression>(); }
+    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
 
     bool isOptional() const { return AttributeSet::find(attributes(), "&optional").has_value(); }
 
@@ -35,8 +35,9 @@ public:
                attributes() == other.attributes();
     }
 
-    // Unit field interface
-    Type itemType() const { return type::effectiveType(child<Type>(1)); }
+    // Unit item interface
+    const Type& itemType() const { return child<Type>(1); }
+    bool isResolved() const { return type::isResolved(itemType()); }
     auto isEqual(const Item& other) const { return node::isEqual(this, other); }
 
     // Node interface.

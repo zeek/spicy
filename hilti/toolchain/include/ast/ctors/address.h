@@ -17,14 +17,14 @@ class Address : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Address;
 
-    Address(const Value& addr, Meta m = Meta()) : NodeBase(std::move(m)), _address(addr) {}
+    Address(const Value& addr, Meta m = Meta()) : NodeBase(nodes(type::Address(m)), m), _address(addr) {}
 
     const auto& value() const { return _address; }
 
     bool operator==(const Address& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Address(meta()); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */
@@ -33,6 +33,7 @@ public:
     auto isTemporary() const { return true; }
     /** Implements `Ctor` interface. */
     auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{{"address", to_string(_address)}}; }
 

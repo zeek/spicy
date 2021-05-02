@@ -1,13 +1,12 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "spicy/rt/util.h"
-
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/type-info.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/util.h>
 
 #include <spicy/rt/autogen/config.h>
+#include <spicy/rt/util.h>
 
 std::string spicy::rt::version() {
     constexpr char spicy_version[] = PROJECT_VERSION_STRING_LONG;

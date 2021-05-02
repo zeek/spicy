@@ -55,22 +55,20 @@ public:
 
     bool operator==(const Case& other) const { return expressions() == other.expressions() && body() == other.body(); }
 
-    /**
-     * Replaces a case's expresssions.
-     *
-     * @param c case to replace expressions in
-     * @param exprs new expressions
-     * @return new case that is a duplicate of *c* but has its expressions replaced with *expr*
-     */
-    static Case setExpressions(Case c, std::vector<hilti::Expression> exprs) {
-        c.childs() = hilti::nodes(c._bodyNode(), std::move(exprs));
-        return c;
-    }
-
 private:
     friend class hilti::statement::Switch;
 
-    void _addPreprocessedExpression(hilti::Expression e) { childs().emplace_back(std::move(e)); }
+    void _preprocessExpressions(const std::string& id) {
+        childs().erase(childs().begin() + _end_exprs, childs().end());
+        childs().reserve(_end_exprs * 2); // avoid resizing/invalidation below on emplace
+
+        for ( const auto& e : expressions() ) {
+            hilti::Expression n =
+                expression::UnresolvedOperator(operator_::Kind::Equal, {expression::UnresolvedID(ID(id)), e}, e.meta());
+
+            childs().emplace_back(std::move(n));
+        }
+    }
 
     int _end_exprs{};
 };
@@ -83,50 +81,38 @@ inline Node to_node(Case c) { return Node(std::move(c)); }
 class Switch : public NodeBase, public hilti::trait::isStatement {
 public:
     Switch(hilti::Expression cond, const std::vector<switch_::Case>& cases, Meta m = Meta())
-        : NodeBase(nodes(node::none, std::move(cond), cases), std::move(m)) {
-        _preprocessCases("__x");
-    }
+        : Switch(hilti::declaration::LocalVariable(hilti::ID("__x"), std::move(cond), true, m), std::move(cases), m) {}
 
-    Switch(const hilti::Declaration& init, hilti::Expression cond, const std::vector<switch_::Case>& cases,
-           Meta m = Meta())
-        : NodeBase(nodes(init, std::move(cond), cases), std::move(m)) {
-        if ( ! init.isA<declaration::LocalVariable>() )
+    Switch(const hilti::Declaration& cond, const std::vector<switch_::Case>& cases, Meta m = Meta())
+        : NodeBase(nodes(cond, cases), std::move(m)) {
+        if ( ! cond.isA<declaration::LocalVariable>() )
             logger().internalError("initialization for 'switch' must be a local declaration");
-        _preprocessCases(init.id());
     }
 
-    auto init() const { return childs()[0].tryReferenceAs<hilti::Declaration>(); }
-    const auto& expression() const { return childs()[1].as<hilti::Expression>(); }
-    auto type() const {
-        if ( auto i = init() )
-            return i->as<declaration::LocalVariable>().type();
+    const auto& condition() const { return childs()[0].as<hilti::declaration::LocalVariable>(); }
+    auto conditionRef() const { return NodeRef(childs()[0]); }
+    auto cases() const { return childs<switch_::Case>(1, -1); }
 
-        return expression().type();
-    }
-
-    auto cases() const {
-        std::vector<switch_::Case> cases;
-        for ( auto& c : childs<switch_::Case>(2, -1) ) {
-            if ( ! c.isDefault() )
-                cases.push_back(c);
-        }
-
-        return cases;
-    }
-
-    auto caseNodes() { return nodesOfType<switch_::Case>(); }
-
-    std::optional<switch_::Case> default_() const {
-        for ( auto& c : childs<switch_::Case>(2, -1) ) {
+    hilti::optional_ref<const switch_::Case> default_() const {
+        for ( const auto& c : childs<switch_::Case>(1, -1) ) {
             if ( c.isDefault() )
                 return c;
         }
         return {};
     }
 
+    void preprocessCases() {
+        if ( _preprocessed )
+            return;
+
+        for ( auto c = childs().begin() + 1; c != childs().end(); c++ )
+            c->as<switch_::Case>()._preprocessExpressions(condition().id());
+
+        _preprocessed = true;
+    }
+
     bool operator==(const Switch& other) const {
-        return init() == other.init() && expression() == other.expression() && default_() == other.default_() &&
-               cases() == other.cases();
+        return condition() == other.condition() && default_() == other.default_() && cases() == other.cases();
     }
 
     /** Internal method for use by builder API only. */
@@ -134,14 +120,9 @@ public:
 
     /** Internal method for use by builder API only. */
     void _addCase(switch_::Case case_) {
-        for ( const auto& c : case_.expressions() )
-            case_._addPreprocessedExpression(expression::UnresolvedOperator(operator_::Kind::Equal,
-                                                                            {expression::UnresolvedID(ID(_id)), c},
-                                                                            c.meta()));
-
         addChild(std::move(case_));
+        _preprocessed = false;
     }
-
 
     /** Implements the `Statement` interface. */
     auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
@@ -150,19 +131,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
 private:
-    void _preprocessCases(const std::string& id) {
-        _id = id;
-
-        for ( uint64_t i = 2; i < childs().size(); i++ ) {
-            auto& case_ = childs()[i].as<switch_::Case>();
-            for ( const auto& c : case_.expressions() )
-                case_._addPreprocessedExpression(expression::UnresolvedOperator(operator_::Kind::Equal,
-                                                                                {expression::UnresolvedID(ID(id)), c},
-                                                                                c.meta()));
-        }
-    }
-
-    std::string _id;
+    bool _preprocessed = false;
 };
 
 } // namespace statement

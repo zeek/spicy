@@ -13,7 +13,8 @@ namespace expression {
 /** AST node for a "move" expression. */
 class TypeInfo : public NodeBase, public trait::isExpression {
 public:
-    TypeInfo(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
+    TypeInfo(Expression e, Meta m = Meta())
+        : NodeBase(nodes(std::move(e), Type(type::Library("const hilti::rt::TypeInfo*"))), std::move(m)) {}
 
     const auto& expression() const { return child<Expression>(0); }
 
@@ -24,7 +25,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const { return type::Library("const hilti::rt::TypeInfo*"); }
+    const auto& type() const { return child<Type>(1); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return true; }
     /** Implements `Expression` interface. */

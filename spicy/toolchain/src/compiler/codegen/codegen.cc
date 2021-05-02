@@ -3,20 +3,24 @@
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
+#include <hilti/ast/builder/declaration.h>
 #include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/ctors/tuple.h>
 #include <hilti/ast/declaration.h>
+#include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/declarations/property.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/coerced.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/resolved-operator.h>
+#include <hilti/ast/operators/function.h>
 #include <hilti/ast/operators/struct.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/regexp.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/optional-ref.h>
 #include <hilti/global.h>
 
 #include <spicy/ast/detail/visitor.h>
@@ -24,6 +28,7 @@
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/grammar-builder.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
+#include <spicy/compiler/detail/visitors.h>
 
 using namespace spicy;
 using namespace spicy::detail;
@@ -36,83 +41,56 @@ namespace builder = hilti::builder;
 namespace {
 
 // Visitor that runs only once the 1st time AST transformation is triggered.
-struct VisitorPassInit : public hilti::visitor::PreOrder<void, VisitorPassInit> {
-    VisitorPassInit(CodeGen* cg, hilti::Module* module) : cg(cg), module(module) {}
+struct VisitorPass1 : public hilti::visitor::PreOrder<void, VisitorPass1> {
+    VisitorPass1(CodeGen* cg, hilti::Module* module) : cg(cg), module(module) {}
     CodeGen* cg;
     hilti::Module* module;
     ID module_id = ID("<no module>");
     bool modified = false;
 
-    std::vector<std::pair<NodeRef, Node>> new_nodes;
-
     template<typename T>
     void replaceNode(position_t* p, T&& n) {
-        auto x = p->node;
         p->node = std::forward<T>(n);
-        p->node.setOriginalNode(module->preserve(x));
         modified = true;
     }
 
-    void finalize() {
-        if ( new_nodes.empty() )
-            return;
+    void replaceNode(position_t* p, Node&& n) {
+        if ( p->node.location() && ! n.location() ) {
+            auto m = n.meta();
+            m.setLocation(p->node.location());
+            n.setMeta(std::move(m));
+        }
 
-        for ( auto& n : new_nodes )
-            *n.first = std::move(n.second);
-
-        new_nodes.clear();
+        p->node = std::move(n);
         modified = true;
-    }
-
-    void operator()(const hilti::declaration::Property& m) { cg->recordModuleProperty(m); }
-
-    void operator()(const hilti::Module& m) {
-        module_id = m.id();
-        cg->addDeclaration(builder::import("hilti", m.meta()));
-        cg->addDeclaration(builder::import("spicy_rt", m.meta()));
     }
 
     void operator()(const hilti::declaration::Type& t, position_t p) {
+        // Replace unit type with compiled struct type.
         auto u = t.type().tryAs<type::Unit>();
-
         if ( ! u )
             return;
 
-        auto nu = type::setTypeID(*u, ID(module_id, t.id())).as<type::Unit>();
-
-        if ( t.linkage() == declaration::Linkage::Public && ! nu.isPublic() )
-            nu = type::Unit::setPublic(nu, true);
-
-        // Create unit property items from global module items where the unit
-        // does not provide an overriding one.
-        std::vector<type::unit::Item> ni;
-        for ( auto& p : cg->moduleProperties() ) {
-            if ( ! u->propertyItem(p.id()) )
-                ni.emplace_back(type::unit::item::Property(p.id(), *p.expression(), {}, true, p.meta()));
-        }
-
-        if ( ni.size() )
-            nu = type::Unit::addItems(nu, ni);
-
-        auto nt = hilti::declaration::Type::setType(t, nu);
-        replaceNode(&p, nt);
-
         // Build the unit's grammar.
-        if ( auto r = cg->grammarBuilder()->run(nu, &p.node, cg); ! r ) {
+        if ( auto r = cg->grammarBuilder()->run(*u, &p.node, cg); ! r ) {
             hilti::logger().error(r.error().description(), p.node.location());
             return;
         }
 
-        auto ns = cg->compileUnit(nu, false);
+        // Make sure references to the Spicy type remain valid after replacing
+        // the declaration.
+        module->preserve(p.node);
+
+        auto ns = cg->compileUnit(*u, false);
         auto attrs = AttributeSet({Attribute("&on-heap")});
-        auto nd = hilti::declaration::Type(nt.id(), ns, attrs, nt.linkage(), nt.meta());
+        auto nd = hilti::declaration::Type(t.id(), ns, attrs, t.linkage(), t.meta());
         replaceNode(&p, nd);
     }
 };
 
-// Visitor that runs multiple times whenever a transformation pass is triggered.
-struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIterate> {
-    VisitorPassIterate(CodeGen* cg, hilti::Module* module) : cg(cg), module(module) {}
+// Visitor that runs repeatedly over the AST until no further changes.
+struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
+    VisitorPass2(CodeGen* cg, hilti::Module* module) : cg(cg), module(module) {}
     CodeGen* cg;
     hilti::Module* module;
     ID module_id = ID("<no module>");
@@ -120,9 +98,18 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
 
     template<typename T>
     void replaceNode(position_t* p, T&& n) {
-        auto x = p->node;
         p->node = std::forward<T>(n);
-        p->node.setOriginalNode(module->preserve(x));
+        modified = true;
+    }
+
+    void replaceNode(position_t* p, Node&& n) {
+        if ( p->node.location() && ! n.location() ) {
+            auto m = n.meta();
+            m.setLocation(p->node.location());
+            n.setMeta(std::move(m));
+        }
+
+        p->node = std::move(n);
         modified = true;
     }
 
@@ -143,40 +130,68 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
         hilti::logger().internalError(fmt("missing argument %d", i));
     }
 
-    void replaceNode(position_t* p, Node&& n) {
-        auto x = p->node;
-
-        if ( x.location() && ! n.location() ) {
-            auto m = n.meta();
-            m.setLocation(x.location());
-            n.setMeta(std::move(m));
-        }
-
-        p->node = std::move(n);
-        p->node.setOriginalNode(module->preserve(x));
-        modified = true;
-    }
+    void operator()(const hilti::declaration::Property& m) { cg->recordModuleProperty(m); }
 
     void operator()(const declaration::UnitHook& n, position_t p) {
-        const auto& unit_type = n.unitType();
-        const auto& hook = n.unitHook().hook();
+        const auto& hook = n.hook();
+        auto unit_type = hook.unitType();
+        assert(unit_type);
 
-        if ( ! unit_type )
-            // Not resolved yet.
-            return;
-
-        auto func = cg->compileHook(*unit_type, ID(*unit_type->typeID(), n.unitHook().id()), {}, hook.isForEach(),
-                                    hook.isDebug(), hook.type().parameters(), hook.body(), hook.priority(), n.meta());
+        auto func = cg->compileHook(*unit_type, n.hook().id(), {}, hook.isForEach(), hook.isDebug(),
+                                    hook.ftype().parameters().copy(), hook.body(), hook.priority(), n.meta());
 
         replaceNode(&p, std::move(func));
     }
 
+    void operator()(const hilti::expression::ResolvedID& n, position_t p) {
+        // Re-resolve IDs (except function calls).
+        if ( ! p.parent().isA<hilti::operator_::function::Call>() )
+            replaceNode(&p, hilti::expression::UnresolvedID(n.id(), p.node.meta()));
+    }
+
+    /*
+     * void operator()(const hilti::expression::ResolvedOperator& n, position_t p) {
+     *     // Re-resolve operators.
+     *     replaceNode(&p, hilti::expression::UnresolvedOperator(n.operator_().kind(), n.operands(), p.node.meta()));
+     * }
+     */
     result_t operator()(const operator_::bitfield::Member& n, position_t p) {
-        auto id = n.op1().as<hilti::expression::Member>().id();
+        const auto& id = n.op1().as<hilti::expression::Member>().id();
         auto idx = n.op0().type().as<spicy::type::Bitfield>().bitsIndex(id);
         assert(idx);
         auto x = builder::index(n.op0(), *idx, n.meta());
         replaceNode(&p, std::move(x));
+    }
+
+    result_t operator()(const operator_::unit::Unset& n, position_t p) {
+        const auto& id = n.op1().as<hilti::expression::Member>().id();
+        replaceNode(&p, builder::unset(n.op0(), id, n.meta()));
+    }
+
+    result_t operator()(const operator_::unit::MemberConst& n, position_t p) {
+        const auto& id = n.op1().as<hilti::expression::Member>().id();
+        replaceNode(&p, builder::member(n.op0(), id, n.meta()));
+    }
+
+    result_t operator()(const operator_::unit::MemberNonConst& n, position_t p) {
+        const auto& id = n.op1().as<hilti::expression::Member>().id();
+        replaceNode(&p, builder::member(n.op0(), id, n.meta()));
+    }
+
+    result_t operator()(const operator_::unit::TryMember& n, position_t p) {
+        const auto& id = n.op1().as<hilti::expression::Member>().id();
+        replaceNode(&p, builder::tryMember(n.op0(), id, n.meta()));
+    }
+
+    result_t operator()(const operator_::unit::HasMember& n, position_t p) {
+        const auto& id = n.op1().as<hilti::expression::Member>().id();
+        replaceNode(&p, builder::hasMember(n.op0(), id, n.meta()));
+    }
+
+    result_t operator()(const operator_::unit::MemberCall& n, position_t p) {
+        const auto& id = n.op1().as<hilti::expression::Member>().id();
+        const auto& args = n.op2().as<hilti::expression::Ctor>().ctor().as<hilti::ctor::Tuple>();
+        replaceNode(&p, builder::memberCall(n.op0(), id, args, n.meta()));
     }
 
     result_t operator()(const operator_::unit::Offset& n, position_t p) {
@@ -190,7 +205,7 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
     }
 
     result_t operator()(const operator_::unit::Input& n, position_t p) {
-        auto begin = builder::deref(builder::member(n.op0(), ID("__begin")));
+        auto begin = builder::deref(builder::grouping(builder::member(n.op0(), ID("__begin"))));
         replaceNode(&p, begin);
     }
 
@@ -202,9 +217,9 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
     result_t operator()(const operator_::unit::Find& n, position_t p) {
         auto begin = builder::deref(builder::member(n.op0(), ID("__begin")));
         auto end = builder::deref(builder::member(n.op0(), ID("__position")));
-        auto i = argument(n.op2(), 2, builder::null());
         auto needle = argument(n.op2(), 0);
         auto direction = argument(n.op2(), 1, builder::id("spicy::Direction::Forward"));
+        auto i = argument(n.op2(), 2, builder::null());
         auto x = builder::call("spicy_rt::unit_find", {begin, end, i, needle, direction});
         replaceNode(&p, std::move(x));
     }
@@ -317,7 +332,7 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
     }
 
     void operator()(const statement::Print& n, position_t p) {
-        auto exprs = n.expressions();
+        auto exprs = n.expressions().copy();
 
         switch ( exprs.size() ) {
             case 0: {
@@ -347,69 +362,65 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
         replaceNode(&p, b.block());
     }
 
-    void operator()(const type::ResolvedID& n, position_t p) {
-        // Some of the original name/type bindings may have become invalid,
-        // flag them to be resolved again.
-
-        if ( n.isValid() )
-            return;
-
-        replaceNode(&p, builder::typeByID(n.id()));
-    }
-
     void operator()(const type::Sink& n, position_t p) {
         // Strong reference (instead of value reference) so that copying unit
         // instances doesn't copy the sink.
         auto sink = hilti::type::StrongReference(builder::typeByID("spicy_rt::Sink", n.meta()));
         replaceNode(&p, Type(sink));
     }
+
+    void operator()(const type::Unit& n, position_t p) {
+        // Replace usage of the the unit type with a reference to the compiled struct.
+        if ( auto t = p.parent().tryAs<hilti::declaration::Type>();
+             ! t && ! p.parent(2).tryAs<hilti::declaration::Type>() ) {
+            assert(n.id());
+            replaceNode(&p, hilti::type::UnresolvedID(*n.id(), p.node.meta()));
+        }
+    }
 };
 
 
 } // anonymous namespace
 
-bool CodeGen::compileModule(hilti::Node* root, bool init, hilti::Unit* u) {
+bool CodeGen::compileModule(hilti::Node* root, hilti::Unit* u) {
     hilti::util::timing::Collector _("spicy/compiler/codegen");
 
     _hilti_unit = u;
     _root = root;
 
-    bool modified = false;
+    auto v1 = VisitorPass1(this, &root->as<hilti::Module>());
+    for ( auto i : v1.walk(root) )
+        v1.dispatch(i);
 
-    if ( init ) {
-        auto v = VisitorPassInit(this, &root->as<hilti::Module>());
-        for ( auto i : v.walk(root) )
-            v.dispatch(i);
+    bool v2_modified = false;
 
-        v.finalize();
+    while ( true ) {
+        auto v2 = VisitorPass2(this, &root->as<hilti::Module>());
+        for ( auto i : v2.walk(root) )
+            v2.dispatch(i);
 
-        modified = (modified || v.modified);
+        v2_modified = v2_modified || v2.modified;
 
-        if ( hilti::logger().errors() )
-            goto done;
+        if ( ! hilti::logger().errors() ) {
+            if ( _new_decls.size() ) {
+                for ( const auto& n : _new_decls )
+                    hiltiModule()->add(n);
 
-        if ( _new_decls.size() ) {
-            for ( const auto& n : _new_decls )
-                hiltiModule()->add(n);
-
-            _new_decls.clear();
-            modified = true;
+                _new_decls.clear();
+                continue; // modified, next round
+            }
         }
+
+        if ( ! v2.modified )
+            break;
     }
 
-    {
-        auto v = VisitorPassIterate(this, &root->as<hilti::Module>());
-        for ( auto i : v.walk(root) )
-            v.dispatch(i);
+    u->setExtension(".hlt");
 
-        modified = (modified || v.modified);
-    }
-
-done:
     _hilti_unit = nullptr;
     _root = nullptr;
 
-    return modified;
+    return v1.modified || v2_modified;
 }
 
 std::optional<hilti::declaration::Function> CodeGen::compileHook(
@@ -430,24 +441,27 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
     }
     else {
         // Try to locate field by ID.
-        if ( auto i = unit.field(id.local()) ) {
-            auto f = i->as<type::unit::item::Field>();
-            if ( ! f.parseType().isA<type::Void>() ) {
-                is_container = f.isContainer();
-                original_field_type = f.originalType();
+        if ( auto i = unit.itemByName(id.local()) ) {
+            if ( auto f = i->tryAs<type::unit::item::Field>() ) {
+                if ( ! f->parseType().isA<type::Void>() ) {
+                    is_container = f->isContainer();
+                    field = *f;
+                    original_field_type = f->originalType();
+                }
             }
         }
     }
 
     if ( foreach ) {
-        params.push_back({ID("__dd"), hilti::type::Auto(), hilti::type::function::parameter::Kind::In, {}, {}});
+        params.push_back(
+            {ID("__dd"), field->get().ddType().elementType(), hilti::type::function::parameter::Kind::In, {}, {}});
         params.push_back({ID("__stop"), type::Bool(), hilti::type::function::parameter::Kind::InOut, {}, {}});
     }
     else if ( original_field_type ) {
-        params.push_back({ID("__dd"), hilti::type::Auto(), hilti::type::function::parameter::Kind::In, {}, {}});
+        params.push_back({ID("__dd"), field->get().itemType(), hilti::type::function::parameter::Kind::In, {}, {}});
 
         // Pass on captures for fields of type regexp, which are the only
-        // ones they have it (for vector of regexps, it wouldn't be clear what
+        // ones that have it (for vector of regexps, it wouldn't be clear what
         // to bind to).
         if ( original_field_type->isA<type::RegExp>() && ! is_container )
             params.push_back({ID("__captures"),
@@ -466,7 +480,7 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
         hid = "__str__";
     }
     else {
-        result = hilti::type::Void();
+        result = hilti::type::void_;
         hid = fmt("__on_%s%s", id.local(), (foreach ? "_foreach" : ""));
     }
 
@@ -499,9 +513,3 @@ hilti::Unit* CodeGen::hiltiUnit() const {
 
     return _hilti_unit;
 }
-
-NodeRef CodeGen::preserveNode(Expression x) { return hiltiModule()->preserve(std::move(x)); }
-
-NodeRef CodeGen::preserveNode(Statement x) { return hiltiModule()->preserve(std::move(x)); }
-
-NodeRef CodeGen::preserveNode(Type x) { return hiltiModule()->preserve(std::move(x)); }

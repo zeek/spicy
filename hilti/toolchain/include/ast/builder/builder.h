@@ -21,13 +21,15 @@ namespace hilti::builder {
 
 class Builder {
 public:
-    Builder(std::shared_ptr<hilti::Context> context)
+    Builder(std::weak_ptr<hilti::Context> context)
         : _context(std::move(context)), _our_block(statement::Block()), _block(*_our_block) {}
 
     Statement block() {
         assert(_our_block);
         return *_our_block;
     }
+
+    auto context() const { return _context.lock(); }
 
     Expression addTmp(const std::string& prefix, const Expression& init);
     Expression addTmp(const std::string& prefix, const Type& t, const std::vector<Expression>& args = {});
@@ -197,8 +199,8 @@ public:
         return SwitchProxy(this, lastStatement<statement::Switch>());
     }
 
-    auto addSwitch(const statement::Declaration& init, Expression cond, Meta m = Meta()) {
-        _block._add(statement::Switch(init.declaration(), std::move(cond), {}, std::move(m)));
+    auto addSwitch(const statement::Declaration& cond, Meta m = Meta()) {
+        _block._add(statement::Switch(cond.declaration(), {}, std::move(m)));
         return SwitchProxy(this, lastStatement<statement::Switch>());
     }
 
@@ -239,7 +241,7 @@ public:
 private:
     friend class SwitchProxy;
 
-    Builder(std::shared_ptr<hilti::Context> context, Statement& s) // NOLINT
+    Builder(std::weak_ptr<hilti::Context> context, Statement& s) // NOLINT
         : _context(std::move(context)), _block(s.as<statement::Block>()) {}
 
     template<typename T>
@@ -251,7 +253,7 @@ private:
         return std::shared_ptr<Builder>(new Builder(_context, n.template as<Statement>()));
     }
 
-    std::shared_ptr<hilti::Context> _context;
+    std::weak_ptr<hilti::Context> _context;
     std::optional<statement::Block> _our_block;
     statement::Block& _block;
 

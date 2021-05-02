@@ -21,6 +21,26 @@ t2.x = new X;
 t2.x.s = "foo";
 t2.y = 42;
 
+hilti::print(t2);
+
 assert t2.x.s == "foo";
 assert t2.y == 42;
+
+type X2 = struct {
+    addr a;
+    bytes b;
+    stream s;
+    };
+
+global X2 x2;
+(x2.a, x2.b) = (1.2.3.4, b"xxx");
+assert x2.a == 1.2.3.4;
+assert x2.b == b"xxx";
+
+global t = (1.2.3.4, b"xxx", b"YYY");
+(x2.a, x2.b, x2.s) = t;
+assert x2.a == 1.2.3.4;
+assert x2.b == b"xxx";
+assert x2.s == b"YYY";
+
 }

@@ -152,7 +152,6 @@ public:
     ErasedBase(T t, ConceptArgs&&... args)
         : _data(make_intrusive<Model<T>>(std::move(t), std::forward<ConceptArgs>(args)...)) {}
 
-    explicit ErasedBase(IntrusivePtr<Concept> data) : _data(std::move(data)) {}
     ErasedBase& operator=(IntrusivePtr<Concept> data) {
         _data = std::move(data);
         ;
@@ -217,16 +216,7 @@ public:
 
     /** Attempts to cast the contained object into a specified type. */
     template<typename T>
-    std::optional<T> tryAs() const {
-        if ( auto p = _tryAs<T>() )
-            return *p;
-
-        return {};
-    }
-
-    /** Attempts to cast the contained object into a specified type. */
-    template<typename T>
-    optional_ref<const T> tryReferenceAs() const {
+    optional_ref<const T> tryAs() const {
         if ( auto p = _tryAs<T>() )
             return *p;
 

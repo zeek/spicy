@@ -4,7 +4,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -16,12 +15,14 @@
 
 #include <hilti/ast/id.h>
 #include <hilti/autogen/config.h>
+#include <hilti/base/logger.h>
 #include <hilti/base/result.h>
 #include <hilti/base/util.h>
 
 namespace hilti {
 
 class PluginRegistry;
+class Unit;
 
 /**
  * Options controlling the compiler's code generation.
@@ -102,13 +103,13 @@ namespace context {
  * meaning that the mapping from path to ID must be consisten throughout all
  * processing.
  */
-struct ModuleIndex {
+struct CacheIndex {
     ID id;                            /**< module ID */
     hilti::rt::filesystem::path path; /**< path to module's source code on disk; can be left empty if no file exists */
 
-    ModuleIndex() = default;
-    ModuleIndex(ID id, const hilti::rt::filesystem::path& path) : id(std::move(id)), path(util::normalizePath(path)) {}
-    bool operator<(const ModuleIndex& other) const { return id < other.id; }
+    CacheIndex() = default;
+    CacheIndex(ID id, const hilti::rt::filesystem::path& path) : id(std::move(id)), path(util::normalizePath(path)) {}
+    bool operator<(const CacheIndex& other) const { return id < other.id; }
 };
 
 /**
@@ -117,18 +118,11 @@ struct ModuleIndex {
  * "final" is set, the information is assumed to correct and no longer
  * changing.
  */
-struct CachedModule {
-    ModuleIndex index; /**< ID and path of module */
-    NodeRef node;      /**< module's root AST node */
-    bool requires_compilation =
-        false; /**< true if the module contains code that requires compilation itself (vs. modules that only declare
-                  elements, but don't generate produce any code for linking) */
-    std::optional<std::set<ModuleIndex>> dependencies; /**< further modules imported by the processed one */
+struct CacheEntry {
+    std::shared_ptr<Unit> unit; /**< cached unit */
 
-    bool final = false; /**< once true, one can start relying on the other fields outside of AST processing */
-
-    CachedModule() = default;
-    CachedModule(ModuleIndex index, NodeRef node) : index(std::move(index)), node(std::move(node)) {}
+    CacheEntry() = default;
+    CacheEntry(std::shared_ptr<Unit> unit) : unit(std::move(unit)) {}
 };
 
 } // namespace context
@@ -148,59 +142,55 @@ public:
     const Options& options() const { return _options; }
 
     /**
-     * Makes a new module known to the context, which will take ownershiup
-     * and cache it, along with further meta data. A module with the same ID
-     * or path must only be registered once, the method will abort otherwise.
+     * Caches a code unit inside the context. The cache uses a unit's `(ID,
+     * path)` tuple as the index. Any previously cached unit with the same
+     * index tuple will be replaced.
      *
-     * @param idx cache index for module
-     * @param module module to cache
-     * @param requires_compilation initial value for the corresponding `CachedModule` field; this may later be
-     * overridden if AST processing finds out more
+     * @param unit unit to cache
      * @return the meta data associated with the newly registered module
      */
-    const context::CachedModule& registerModule(const context::ModuleIndex& idx, Node&& module,
-                                                bool requires_compilation);
+    void cacheUnit(std::shared_ptr<Unit> unit);
 
     /**
-     * Updates the meta data associated with a previoysly cached module AST.
+     * Looks up a previously cached unit by its ID.
      *
-     * @param module module to cache; all the fields of the struct must have been filled out
+     * @param path path to look up a unit for
+     * @param extension a file extension expected for the unit, indicating its
+     * source language; a cached unit will only be returned if its extension
+     * matches
+     * @return the cache entry associated with the path if found
      */
-    void updateModule(const context::CachedModule& module);
+    std::optional<context::CacheEntry> lookupUnit(const ID& id, const hilti::rt::filesystem::path& extension);
 
     /**
-     * Looks up a previously cached module AST.
+     * Looks up a previously cached unit by its path. It will only return a
+     * cached module if its extension matches that of the given path.
      *
-     * @param id ID that was used to cache the AST
-     * @return the meta data associated with the previously cached module, or not set if no module is associated with
-     * that ID
+     * @param path path to look up a unit for
+     * @return the cache entry associated with the path if found
      */
-    std::optional<context::CachedModule> lookupModule(const ID& id);
+    std::optional<context::CacheEntry> lookupUnit(const hilti::rt::filesystem::path& path,
+                                                  std::optional<hilti::rt::filesystem::path> ast_extension = {});
 
     /**
-     * Looks up a previously cached module AST.
-     *
-     * @param path path that was used to cache the AST
-     * @return the meta data associated with the previously cached module, or not set if no module is associated with
-     * that path
+     * Returns all (direct & indirect) dependencies that a module imports. This
+     * information will be complete only once all AST have been fully resolved.
      */
-    std::optional<context::CachedModule> lookupModule(const hilti::rt::filesystem::path& path);
+    std::vector<std::weak_ptr<Unit>> lookupDependenciesForUnit(const ID& id,
+                                                               const hilti::rt::filesystem::path& extension);
 
     /**
-     * Returns all (direct) dependencies that a module imports. This
-     * information may be correct yet, if `final` isn't set in the module
-     * meta data.
+     * Dumps the current state of the unit cache to a debug stream.
      *
-     * @param meta data for all dependencies
+     * @param stream debug stream to write to
      */
-    std::vector<context::CachedModule> lookupDependenciesForModule(const ID& id);
+    void dumpUnitCache(const hilti::logging::DebugStream& stream);
 
 private:
     Options _options;
 
-    std::vector<std::pair<std::unique_ptr<Node>, std::shared_ptr<context::CachedModule>>> _modules;
-    std::unordered_map<ID, std::shared_ptr<context::CachedModule>> _module_cache_by_id;
-    std::unordered_map<std::string, std::shared_ptr<context::CachedModule>> _module_cache_by_path;
+    std::unordered_map<ID, std::shared_ptr<context::CacheEntry>> _unit_cache_by_id;
+    std::unordered_map<std::string, std::shared_ptr<context::CacheEntry>> _unit_cache_by_path;
 };
 
 } // namespace hilti

@@ -5,6 +5,8 @@
 #include <optional>
 #include <vector>
 
+#include <hilti/ast/node-ref.h>
+
 namespace hilti::visitor {
 
 /** Represents the location of a single node inside an AST during iteration. */
@@ -65,6 +67,17 @@ public:
         }
 
         return std::nullopt;
+    }
+
+    /** Returns a reference to the first parent that has a given type. */
+    template<typename T>
+    NodeRef findParentRef() const {
+        for ( auto i = path.rbegin() + 1; i != path.rend(); i++ ) {
+            if ( (**i).template isA<T>() )
+                return NodeRef(**i);
+        }
+
+        return {};
     }
 };
 

@@ -2,13 +2,19 @@
 
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <hilti/ast/declarations/expression.h>
+#include <hilti/ast/expressions/grouping.h>
+#include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/expressions/type.h>
+#include <hilti/ast/types/reference.h>
 
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/field.h>
@@ -52,39 +58,38 @@ class Unit : detail::AssignIndices,
              public hilti::TypeBase,
              hilti::type::trait::isAllocable,
              hilti::type::trait::isParameterized,
-             hilti::type::trait::isOnHeap {
+             hilti::type::trait::takesArguments,
+             hilti::type::trait::isMutable {
 public:
-    Unit(std::vector<type::function::Parameter> p, std::vector<unit::Item> i,
+    Unit(std::vector<type::function::Parameter> params, std::vector<unit::Item> i,
          const std::optional<AttributeSet>& /* attrs */ = {}, Meta m = Meta())
-        : TypeBase(hilti::nodes(std::move(p), assignIndices(std::move(i))), std::move(m)) {
-        _state().flags += type::Flag::NoInheritScope;
-    }
+        : TypeBase(hilti::nodes(node::none, node::none, node::none,
+                                hilti::util::transform(params,
+                                                       [](auto p) {
+                                                           p.setIsTypeParameter();
+                                                           return Declaration(p);
+                                                       }),
+                                assignIndices(std::move(i))),
+                   std::move(m)) {}
 
-    Unit(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(std::move(m)), _wildcard(true) {
-        _state().flags += type::Flag::NoInheritScope;
-    }
+    Unit(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(std::move(m)), _wildcard(true) {}
 
-    auto parameters() const { return childsOfType<type::function::Parameter>(); }
-    auto items() const { return childsOfType<unit::Item>(); }
-
-    std::optional<AttributeSet> attributes() const {
-        auto x = childsOfType<AttributeSet>();
-        if ( x.size() )
-            return x[0];
+    NodeRef selfRef() const {
+        if ( childs()[0].isA<Declaration>() )
+            return NodeRef(childs()[0]);
         else
             return {};
     }
 
-    auto types() const {
-        std::vector<Type> types;
-        for ( auto c : childs() )
-            types.push_back(c.as<unit::Item>().itemType());
-
-        return types;
-    }
+    auto id() const { return childs()[1].tryAs<ID>(); }
+    auto parameters() const { return childsOfType<type::function::Parameter>(); }
+    auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
+    auto items() const { return childsOfType<unit::Item>(); }
+    auto itemRefs() const { return childRefsOfType<unit::Item>(); }
+    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
 
     /** Returns the type set through ``%context`, if available. */
-    std::optional<Type> contextType() const {
+    hilti::optional_ref<const Type> contextType() const {
         if ( auto context = propertyItem("%context") )
             return context->expression()->as<hilti::expression::Type_>().typeValue();
         else
@@ -92,30 +97,28 @@ public:
     }
 
     /**
-     * Returns the field of a given name if it exists. This descends
+     * Returns the item of a given name if it exists. This descends
      * recursively into childs as well.
      */
-    std::optional<unit::Item> field(const ID& id) const;
+    hilti::optional_ref<const type::unit::Item> itemByName(const ID& id) const;
+
+    /** Returns a reference to an item give by its ID. */
+    NodeRef itemRefByName(const ID& id) const;
 
     /**
      * Returns all of the unit's items of a particular subtype T.
      **/
     template<typename T>
     auto items() const {
-        std::vector<T> v;
-        for ( const auto& c : childs() ) {
-            if ( auto x = c.tryAs<T>() )
-                v.push_back(*x);
-        }
-        return v;
+        return childsOfType<T>();
     }
 
     /**
      * Returns the property of a given name if it exists. If it exists more
      * than once, it's undefined which one is returned.
      */
-    std::optional<unit::item::Property> propertyItem(const std::string& name) const {
-        for ( auto i : items<unit::item::Property>() ) {
+    hilti::optional_ref<const unit::item::Property> propertyItem(const std::string& name) const {
+        for ( const auto& i : items<unit::item::Property>() ) {
             if ( i.id() == name )
                 return i;
         }
@@ -125,11 +128,11 @@ public:
 
     /** Returns all properties of a given name. */
     auto propertyItems(const std::string& name) const {
-        std::vector<unit::item::Property> props;
+        hilti::node::Set<unit::item::Property> props;
 
         for ( const auto& i : items<unit::item::Property>() ) {
             if ( i.id() == name )
-                props.push_back(i);
+                props.insert(i);
         }
 
         return props;
@@ -179,16 +182,43 @@ public:
      */
     bool isFilter() const { return propertyItem("%filter").has_value(); }
 
-    /** Returns the grammar associated with the type. It must have been set before through `setGrammar()`. */
+    /** Returns the grammar associated with the type. It must have been set
+     * before through `setGrammar()`. */
     const spicy::detail::codegen::Grammar& grammar() const {
         assert(_grammar);
         return *_grammar;
     }
 
-    bool operator==(const Unit& other) const { return typeID() == other.typeID(); }
+    /** Adds a number of new items to the unit. */
+    void addItems(std::vector<unit::Item> items) {
+        auto new_items = assignIndices(items);
+
+        for ( auto i : new_items )
+            childs().emplace_back(std::move(i));
+    }
+
+    void setAttributes(AttributeSet attrs) { childs()[2] = std::move(attrs); }
+    void setGrammar(std::shared_ptr<spicy::detail::codegen::Grammar> g) { _grammar = std::move(g); }
+    void setID(ID id) { childs()[1] = std::move(id); }
+    void setPublic(bool p) { _public = p; }
+
+    bool operator==(const Unit& other) const {
+        // We treat units as equal (only) if their type IDs match. That's
+        // checked upstream in the Type's comparision operator.
+        return false;
+    }
 
     // Type interface.
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+
+    auto _isResolved(ResolvedState* rstate) const {
+        for ( const auto& i : items() ) {
+            if ( ! i.isResolved() )
+                return false;
+        }
+
+        return true;
+    }
 
     // type::trait::Parameterized interface.
     auto typeParameters() const { return childs(); }
@@ -198,59 +228,18 @@ public:
     auto properties() const { return node::Properties{{"public", _public}}; }
 
     /**
-     * Copies an existing unit type but changes it ``public`` state.
-     *
-     * @param unit original unit type
-     * @param p true if the copied type is to be public
-     * @return new type with ``public`` state set as requested
+     * Given an existing node wrapping a unit type, updates the contained unit
+     * type to have its `self` declaration initialized. Note that the unit
+     * type's constructor cannot do this because we need the `Node` shell for
+     * this.
      */
-    static Unit setPublic(const Unit& unit, bool p) {
-        auto x = Type(unit)._clone().as<Unit>();
-        x._public = p;
-        return x;
-    }
-
-    /**
-     * Copies an existing unit type, adding further unit items.
-     *
-     * @param unit original unit type
-     * @param items additional items to add
-     * @return new unit type that includes the additional items
-     */
-    static Unit addItems(const Unit& unit, std::vector<unit::Item> items) {
-        auto x = Type(unit)._clone().as<Unit>();
-        auto new_items = x.assignIndices(items);
-
-        for ( auto i : new_items )
-            x.childs().emplace_back(std::move(i));
-
-        return x;
-    }
-
-    /**
-     * Copies an existing unit type, adding further attributes.
-     *
-     * @param unit original unit type
-     * @param attrs additional attributes to add
-     * @return new unit type that includes the additional attributes
-     */
-    static Unit addAttributes(const Unit& unit, AttributeSet attrs) {
-        auto x = Type(unit)._clone().as<Unit>();
-        x.childs().push_back(std::move(attrs));
-        return x;
-    }
-
-    /**
-     * Copies an existing unit type, setting its accociated grammar.
-     *
-     * @param unit original unit type
-     * @param g the grammar
-     * @return new type with the grammar associated
-     */
-    static Unit setGrammar(const Unit& unit, std::shared_ptr<spicy::detail::codegen::Grammar> g) {
-        auto x = Type(unit)._clone().as<Unit>();
-        x._grammar = std::move(g);
-        return x;
+    static void setSelf(Node* n) {
+        assert(n->isA<type::Unit>());
+        Expression self = hilti::expression::Keyword(hilti::expression::keyword::Kind::Self,
+                                                     StrongReference(hilti::type::pruneWalk(n->as<Type>())), n->meta());
+        Declaration d =
+            hilti::declaration::Expression("self", std::move(self), declaration::Linkage::Private, n->meta());
+        n->childs()[0] = std::move(d);
     }
 
 private:

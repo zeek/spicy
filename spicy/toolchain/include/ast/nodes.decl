@@ -2,6 +2,7 @@
 trait spicy::type::unit::Item isUnitItem
 
 spicy::Hook : isNode
+spicy::type::bitfield::Bits : isNode
 spicy::type::unit::Item : isNode
 spicy::type::unit::item::switch_::Case : isNode
 

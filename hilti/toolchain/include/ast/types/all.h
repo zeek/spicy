@@ -7,13 +7,11 @@
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/bytes.h>
-#include <hilti/ast/types/computed.h>
 #include <hilti/ast/types/doc-only.h>
 #include <hilti/ast/types/enum.h>
 #include <hilti/ast/types/error.h>
 #include <hilti/ast/types/exception.h>
 #include <hilti/ast/types/function.h>
-#include <hilti/ast/types/id.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/interval.h>
 #include <hilti/ast/types/library.h>
@@ -38,5 +36,6 @@
 #include <hilti/ast/types/type.h>
 #include <hilti/ast/types/union.h>
 #include <hilti/ast/types/unknown.h>
+#include <hilti/ast/types/unresolved-id.h>
 #include <hilti/ast/types/vector.h>
 #include <hilti/ast/types/void.h>

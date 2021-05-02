@@ -17,7 +17,7 @@ namespace detail {
 template<typename T, typename S>
 class IntegerBase : public NodeBase, public hilti::trait::isCtor {
 public:
-    IntegerBase(T v, int w, const Meta& m = Meta()) : NodeBase(m), _value(v), _width(w) {}
+    IntegerBase(T v, int w, const Meta& m = Meta()) : NodeBase(nodes(S(w, m)), m), _value(v), _width(w) {}
 
     auto value() const { return _value; }
     auto width() const { return _width; }
@@ -29,7 +29,7 @@ public:
     /** Implements `Ctor` interface. */
     auto isTemporary() const { return true; }
     /** Implements `Ctor` interface. */
-    auto type() const { return S(_width); }
+    const auto& type() const { return child<Type>(0); }
 
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{{"value", _value}, {"width", _width}}; }

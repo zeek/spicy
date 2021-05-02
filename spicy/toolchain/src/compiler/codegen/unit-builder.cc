@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
+#include <hilti/ast/declarations/field.h>
 #include <hilti/ast/types/bytes.h>
 #include <hilti/ast/types/function.h>
 #include <hilti/ast/types/optional.h>
@@ -29,9 +30,9 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
     FieldBuilder(CodeGen* cg, const spicy::type::Unit& unit) : cg(cg), unit(unit) {}
     CodeGen* cg;
     const spicy::type::Unit& unit;
-    std::vector<hilti::type::struct_::Field> fields;
+    std::vector<Declaration> fields;
 
-    void addField(hilti::type::struct_::Field f) { fields.emplace_back(std::move(f)); }
+    void addField(hilti::declaration::Field f) { fields.emplace_back(std::move(f)); }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {
         if ( ! f.parseType().isA<type::Void>() ) {
@@ -47,9 +48,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
                 // times.
                 attrs = AttributeSet::add(attrs, Attribute("&no-emit"));
 
-            // We set the field's auxiliary type to the parse type, so that
-            // we retain that information.
-            auto nf = hilti::type::struct_::Field(f.id(), f.itemType(), f.parseType(), std::move(attrs), f.meta());
+            auto nf = hilti::declaration::Field(f.id(), f.itemType(), std::move(attrs), f.meta());
             addField(std::move(nf));
         }
 
@@ -57,14 +56,15 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
         auto addHookDeclaration = [&](const auto& f, bool foreach) {
             if ( auto hook_decl = cg->compileHook(unit, f.id(), {f}, foreach, false, {}, {}, {}, f.meta()) ) {
                 auto nf =
-                    hilti::type::struct_::Field(hook_decl->id().local(), hook_decl->function().type(), {}, f.meta());
+                    hilti::declaration::Field(hook_decl->id().local(), hook_decl->function().type(), {}, f.meta());
                 addField(std::move(nf));
             }
         };
 
         auto addHookImplementation = [&](auto& hook) {
-            if ( auto hook_impl = cg->compileHook(unit, ID(*unit.typeID(), f.id()), f, hook.isForEach(), hook.isDebug(),
-                                                  hook.type().parameters(), hook.body(), hook.priority(), hook.meta()) )
+            if ( auto hook_impl =
+                     cg->compileHook(unit, ID(*unit.id(), f.id()), f, hook.isForEach(), hook.isDebug(),
+                                     hook.ftype().parameters().copy(), hook.body(), hook.priority(), hook.meta()) )
                 cg->addDeclaration(*hook_impl);
         };
 
@@ -117,7 +117,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
         if ( f.isOptional() )
             attrs = AttributeSet::add(attrs, Attribute("&optional"));
 
-        auto nf = hilti::type::struct_::Field(f.id(), std::move(ftype), std::move(attrs), f.meta());
+        auto nf = hilti::declaration::Field(f.id(), std::move(ftype), std::move(attrs), f.meta());
         addField(std::move(nf));
     }
 
@@ -126,14 +126,15 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
         AttributeSet attrs({Attribute("&default", builder::new_(std::move(type))), Attribute("&internal"),
                             Attribute("&needed-by-feature", builder::string("supports_sinks"))});
 
-        auto nf = hilti::type::struct_::Field(s.id(), type::Sink(), std::move(attrs), s.meta());
+        auto nf = hilti::declaration::Field(s.id(), type::Sink(), std::move(attrs), s.meta());
         addField(std::move(nf));
     }
 
     void operator()(const spicy::type::unit::item::UnitHook& h, const position_t /* p */) {
         auto hook = h.hook();
-        if ( auto hook_impl = cg->compileHook(unit, ID(*unit.typeID(), h.id()), {}, hook.isForEach(), hook.isDebug(),
-                                              hook.type().parameters(), hook.body(), hook.priority(), h.meta()) )
+        if ( auto hook_impl =
+                 cg->compileHook(unit, ID(*unit.id(), h.id()), {}, hook.isForEach(), hook.isDebug(),
+                                 hook.ftype().parameters().copy(), hook.body(), hook.priority(), h.meta()) )
             cg->addDeclaration(*hook_impl);
     }
 };
@@ -149,24 +150,23 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     auto add_hook = [&](std::string id, std::vector<type::function::Parameter> params) {
         if ( auto hook_decl =
                  compileHook(unit, ID(std::move(id)), {}, false, false, std::move(params), {}, {}, unit.meta()) ) {
-            auto nf =
-                hilti::type::struct_::Field(hook_decl->id().local(), hook_decl->function().type(), {}, unit.meta());
+            auto nf = hilti::declaration::Field(hook_decl->id().local(), hook_decl->function().type(), {}, unit.meta());
             v.addField(std::move(nf));
         }
     };
 
     if ( options().getAuxOption<bool>("spicy.track_offsets", false) ) {
-        v.addField(hilti::type::struct_::Field(ID("__offsets"),
-                                               hilti::type::Vector(hilti::type::Optional(hilti::type::Tuple(
-                                                   {type::UnsignedInteger(64),
-                                                    hilti::type::Optional(type::UnsignedInteger(64))}))),
-                                               AttributeSet({Attribute("&internal"), Attribute("&always-emit")})));
+        v.addField(hilti::declaration::Field(ID("__offsets"),
+                                             hilti::type::Vector(hilti::type::Optional(hilti::type::Tuple(
+                                                 {type::UnsignedInteger(64),
+                                                  hilti::type::Optional(type::UnsignedInteger(64))}))),
+                                             AttributeSet({Attribute("&internal"), Attribute("&always-emit")})));
     }
 
     if ( auto context = unit.contextType() ) {
         auto attrs = AttributeSet({Attribute("&internal")});
         auto ftype = hilti::type::StrongReference(*context);
-        auto f = hilti::type::struct_::Field(ID("__context"), ftype, std::move(attrs), unit.meta());
+        auto f = hilti::declaration::Field(ID("__context"), ftype, std::move(attrs), unit.meta());
         v.addField(std::move(f));
     }
 
@@ -176,20 +176,20 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
 
-    if ( auto typeID = unit.typeID() ) {
-        typeID = hilti::rt::replace(*typeID, ":", "_");
+    if ( unit.id() ) {
+        ID typeID = ID(hilti::rt::replace(*unit.id(), ":", "_"));
 
         if ( unit.isFilter() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", *typeID)), builder::bool_(true)));
+            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(true)));
 
         if ( unit.supportsFilters() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", *typeID)), builder::bool_(true)));
+            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
 
         if ( unit.supportsSinks() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", *typeID)), builder::bool_(true)));
+            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
 
         if ( unit.usesRandomAccess() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", *typeID)), builder::bool_(true)));
+            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true)));
     }
 
     if ( unit.supportsSinks() ) {
@@ -205,13 +205,13 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     if ( unit.usesRandomAccess() ) {
         auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
 
-        auto f1 = hilti::type::struct_::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                              AttributeSet({Attribute("&internal"), attr_random_access}));
-        auto f2 = hilti::type::struct_::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                              AttributeSet({Attribute("&internal"), attr_random_access}));
+        auto f1 = hilti::declaration::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                            AttributeSet({Attribute("&internal"), attr_random_access}));
+        auto f2 = hilti::declaration::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                            AttributeSet({Attribute("&internal"), attr_random_access}));
         auto f3 =
-            hilti::type::struct_::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                        AttributeSet({Attribute("&internal"), attr_random_access}));
+            hilti::declaration::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                      AttributeSet({Attribute("&internal"), attr_random_access}));
         v.addField(std::move(f1));
         v.addField(std::move(f2));
         v.addField(std::move(f3));
@@ -227,7 +227,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
             attrs = AttributeSet::add(std::move(attrs), Attribute("&needed-by-feature", builder::string("is_filter")));
 
         auto parser =
-            hilti::type::struct_::Field(ID("__parser"), builder::typeByID("spicy_rt::Parser"), std::move(attrs));
+            hilti::declaration::Field(ID("__parser"), builder::typeByID("spicy_rt::Parser"), std::move(attrs));
         v.addField(std::move(parser));
     }
 
@@ -241,58 +241,57 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         if ( unit.propertyItem("%mime-type") )
             attrs = AttributeSet::add(attrs, Attribute("&always-emit"));
 
-        auto sink = hilti::type::struct_::Field(ID("__sink"), builder::typeByID("spicy_rt::SinkState"), attrs);
+        auto sink = hilti::declaration::Field(ID("__sink"), builder::typeByID("spicy_rt::SinkState"), attrs);
         v.addField(std::move(sink));
     }
 
     if ( unit.supportsFilters() ) {
-        auto filters = hilti::type::struct_::Field(ID("__filters"),
-                                                   hilti::type::StrongReference(builder::typeByID("spicy_rt::Filters")),
-                                                   AttributeSet({Attribute("&internal"),
-                                                                 Attribute("&needed-by-feature",
-                                                                           builder::string("supports_filters"))}));
+        auto filters = hilti::declaration::Field(ID("__filters"),
+                                                 hilti::type::StrongReference(builder::typeByID("spicy_rt::Filters")),
+                                                 AttributeSet({Attribute("&internal"),
+                                                               Attribute("&needed-by-feature",
+                                                                         builder::string("supports_filters"))}));
         v.addField(std::move(filters));
     }
 
     if ( unit.isFilter() ) {
         auto forward =
-            hilti::type::struct_::Field(ID("__forward"),
-                                        hilti::type::WeakReference(builder::typeByID("spicy_rt::Forward")),
-                                        AttributeSet({Attribute("&internal"),
-                                                      Attribute("&needed-by-feature", builder::string("is_filter"))}));
+            hilti::declaration::Field(ID("__forward"),
+                                      hilti::type::WeakReference(builder::typeByID("spicy_rt::Forward")),
+                                      AttributeSet({Attribute("&internal"),
+                                                    Attribute("&needed-by-feature", builder::string("is_filter"))}));
         v.addField(std::move(forward));
     }
 
     auto ft = _pb.parseMethodFunctionType({}, unit.meta());
-    v.addField(type::struct_::Field(type::struct_::Field("__parse_stage1", std::move(ft))));
+    v.addField(hilti::declaration::Field(hilti::declaration::Field("__parse_stage1", std::move(ft))));
 
     if ( auto convert = AttributeSet::find(unit.attributes(), "&convert") ) {
-        auto expression = *convert->valueAs<Expression>();
-        auto result = type::Auto();
+        auto expression = *convert->valueAsExpression();
+        auto result = type::auto_;
         auto params = std::vector<type::function::Parameter>();
-        auto ftype = type::Function(type::function::Result(std::move(result), expression.meta()), std::move(params),
-                                    hilti::type::function::Flavor::Method, expression.meta());
+        auto ftype = type::Function(type::function::Result(std::move(result), expression.get().meta()),
+                                    std::move(params), hilti::type::function::Flavor::Method, expression.get().meta());
 
         _pb.pushBuilder();
         _pb.builder()->addReturn(expression);
         auto body = _pb.popBuilder();
         auto function = hilti::Function(ID("__convert"), std::move(ftype), body->block());
-        auto convert_ = hilti::type::struct_::Field(ID("__convert"), std::move(function));
+        auto convert_ = hilti::declaration::Field(ID("__convert"), std::move(function));
         v.addField(std::move(convert_));
     }
 
-    assert(unit.typeID());
-    Type s = hilti::type::Struct(unit.parameters(), std::move(v.fields));
-    s = type::setTypeID(s, *unit.typeID());
+    assert(unit.id());
+    Type s = hilti::type::Struct(unit.parameters().copy(), std::move(v.fields));
+    s = type::setTypeID(s, *unit.id());
     s = _pb.addParserMethods(s.as<hilti::type::Struct>(), unit, declare_only, unit.isFilter());
 
     if ( unit.isPublic() || unit.isFilter() ) {
         auto builder = builder::Builder(context());
         auto description = unit.propertyItem("%description");
-        auto mime_types = hilti::util::transform(unit.propertyItems("%mime-type"), [](auto p) {
-            return builder::library_type_value(*p.expression(), "spicy_rt::MIMEType");
-        });
-        auto ports = hilti::util::transform(unit.propertyItems("%port"), [](auto p) {
+        auto mime_types =
+            hilti::node::transform(unit.propertyItems("%mime-type"), [](const auto& p) { return *p.expression(); });
+        auto ports = hilti::node::transform(unit.propertyItems("%port"), [](auto p) {
             auto dir = builder::id("spicy_rt::Direction::Both");
 
             if ( const auto& attrs = p.attributes() ) {
@@ -306,7 +305,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                     dir = builder::id("spicy_rt::Direction::Responder");
             }
 
-            return builder::library_type_value(builder::tuple({*p.expression(), dir}), "spicy_rt::ParserPort");
+            return builder::tuple({*p.expression(), dir});
         });
 
         Expression parse1 = builder::null();
@@ -325,12 +324,12 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
             context_new = _pb.contextNewFunction(unit);
 
         auto parser =
-            builder::struct_({{ID("name"), builder::string(*unit.typeID())},
+            builder::struct_({{ID("name"), builder::string(*unit.id())},
                               {ID("parse1"), parse1},
                               {ID("parse2"), _pb.parseMethodExternalOverload2(unit)},
                               {ID("parse3"), parse3},
                               {ID("context_new"), context_new},
-                              {ID("type_info"), builder::typeinfo(unit)},
+                              {ID("type_info"), builder::typeinfo(builder::id(*unit.id()))},
                               {ID("description"), (description ? *description->expression() : builder::string(""))},
                               {ID("mime_types"),
                                builder::vector(builder::typeByID("spicy_rt::MIMEType"), std::move(mime_types))},
@@ -338,20 +337,18 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                                builder::vector(builder::typeByID("spicy_rt::ParserPort"), std::move(ports))}},
                              unit.meta());
 
-        builder.addAssign(builder::id(ID(*unit.typeID(), "__parser")), parser);
+        builder.addAssign(builder::id(ID(*unit.id(), "__parser")), parser);
 
         if ( unit.isPublic() )
-            builder.addExpression(
-                builder::call("spicy_rt::registerParser",
-                              {builder::id(ID(*unit.typeID(), "__parser")), builder::call("hilti::linker_scope", {}),
-                               builder::strong_reference(unit)}));
+            builder.addExpression(builder::call("spicy_rt::registerParser", {builder::id(ID(*unit.id(), "__parser")),
+                                                                             builder::call("hilti::linker_scope", {}),
+                                                                             builder::strong_reference(unit)}));
 
         auto register_unit =
-            builder::function(ID(fmt("__register_%s", hilti::util::replace(*unit.typeID(), "::", "_"))), type::Void(),
-                              {}, builder.block(), type::function::Flavor::Standard, declaration::Linkage::Init);
+            builder::function(ID(fmt("__register_%s", hilti::util::replace(*unit.id(), "::", "_"))), type::void_, {},
+                              builder.block(), type::function::Flavor::Standard, declaration::Linkage::Init);
         addDeclaration(std::move(register_unit));
     }
 
-    s.setOriginalNode(preserveNode(unit));
     return s;
 }

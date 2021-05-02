@@ -3,5 +3,4 @@
 [error] <...>/errors-method.hlt:16:1: type X does not have a method 'y'
 [error] <...>/errors-method.hlt:17:1: X::s is not a method
 [error] <...>/errors-method.hlt:18:1: method lacks a type namespace
-[error] <...>/errors-method.hlt:20:34: unknown ID 'self'
 [error] hiltic: aborting after errors

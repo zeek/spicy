@@ -3,164 +3,63 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 #include <optional>
+#include <set>
 #include <utility>
 #include <vector>
 
 #include <hilti/ast/attribute.h>
+#include <hilti/ast/declaration.h>
+#include <hilti/ast/declarations/expression.h>
+#include <hilti/ast/declarations/field.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/expressions/grouping.h>
+#include <hilti/ast/expressions/keyword.h>
+#include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/id.h>
+#include <hilti/ast/operators/reference.h>
+#include <hilti/ast/scope.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/function.h>
+#include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/unknown.h>
 
 namespace hilti {
 namespace type {
 
-namespace struct_ {
-/** AST node for a struct field. */
-class Field : public NodeBase {
+/** AST node for a struct type. */
+class Struct : public TypeBase, trait::isAllocable, trait::isParameterized, trait::takesArguments, trait::isMutable {
 public:
-    Field() : NodeBase({ID("<no id>"), type::unknown, node::none, node::none}, Meta()) {}
-    Field(ID id, Type t, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(t), node::none, std::move(attrs), node::none), std::move(m)) {}
-    Field(ID id, Type t, Type aux_type, std::optional<AttributeSet> attrs, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(t), std::move(aux_type), std::move(attrs), node::none),
+    Struct(std::vector<Declaration> fields, Meta m = Meta()) : TypeBase(nodes(node::none, std::move(fields)), m) {}
+
+    Struct(std::vector<type::function::Parameter> params, std::vector<Declaration> fields, Meta m = Meta())
+        : TypeBase(nodes(node::none, std::move(fields),
+                         util::transform(params,
+                                         [](auto p) {
+                                             p.setIsTypeParameter();
+                                             return Declaration(p);
+                                         })),
                    std::move(m)) {}
-    Field(ID id, ::hilti::function::CallingConvention cc, type::Function ft, std::optional<AttributeSet> attrs = {},
-          Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(ft), node::none, std::move(attrs), node::none), std::move(m)),
-          _cc(cc) {}
-    Field(ID id, hilti::Function inline_func, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), node::none, node::none, std::move(attrs), std::move(inline_func)),
-                   std::move(m)),
-          _cc(inline_func.callingConvention()) {}
 
-    const auto& id() const { return child<ID>(0); }
+    Struct(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(nodes(node::none), m), _wildcard(true) {}
 
-    auto callingConvention() const { return _cc; }
-    auto inlineFunction() const { return childs()[4].tryReferenceAs<hilti::Function>(); }
-    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
-
-    Type type() const {
-        if ( ! _cache.type ) {
-            if ( auto func = inlineFunction() )
-                _cache.type = func->type();
-            else
-                _cache.type = type::effectiveType(child<Type>(1));
-        }
-
-        return *_cache.type;
-    }
-
-    /**
-     * Returns the auxiliary type as passed into the corresponding
-     * constructor, if any. The auxiliary type isn't used for anything by
-     * HILTI itself, but it's as a node in aside the AST for use by external
-     * code.
-     */
-    std::optional<Type> auxType() const {
-        if ( auto t = childs()[2].tryAs<Type>() )
-            return type::effectiveType(*t);
+    NodeRef selfRef() const {
+        if ( childs()[0].isA<Declaration>() )
+            return NodeRef(childs()[0]);
         else
             return {};
     }
 
-    std::optional<Expression> default_() const {
-        if ( auto a = AttributeSet::find(attributes(), "&default") )
-            return *a->valueAs<Expression>();
-
-        return {};
-    }
-
-    auto isInternal() const { return AttributeSet::find(attributes(), "&internal").has_value(); }
-    auto isOptional() const { return AttributeSet::find(attributes(), "&optional").has_value(); }
-    auto isStatic() const { return AttributeSet::find(attributes(), "&static").has_value(); }
-    auto isNoEmit() const { return AttributeSet::find(attributes(), "&no-emit").has_value(); }
-
-    /** Internal method for use by builder API only. */
-    auto& _typeNode() { return childs()[1]; }
-
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"cc", to_string(_cc)}}; }
-
-    bool operator==(const Field& other) const {
-        return id() == other.id() && type() == other.type() && attributes() == other.attributes() && _cc == other._cc;
-    }
-
-    /**
-     * Copies an existing field but replaces its attributes.
-     *
-     * @param f original field
-     * @param attrs new attributes
-     * @return new field with attributes replaced
-     */
-    static Field setAttributes(const Field& f, const AttributeSet& attrs) {
-        auto x = Field(f);
-        x.childs()[3] = attrs;
-        return x;
-    }
-
-    void clearCache() { _cache.type.reset(); }
-
-private:
-    ::hilti::function::CallingConvention _cc = ::hilti::function::CallingConvention::Standard;
-
-    mutable struct { std::optional<Type> type; } _cache;
-}; // namespace struct_
-
-inline Node to_node(Field f) { return Node(std::move(f)); }
-
-} // namespace struct_
-
-/** AST node for a struct type. */
-class Struct : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isMutable {
-public:
-    Struct(std::vector<struct_::Field> fields, Meta m = Meta())
-        : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {
-        _state().flags += type::Flag::NoInheritScope;
-    }
-
-    Struct(std::vector<type::function::Parameter> params, std::vector<struct_::Field> fields, Meta m = Meta())
-        : TypeBase(nodes(node::none, std::move(fields),
-                         util::transform(params,
-                                         [](const auto& p) {
-                                             return type::function::Parameter::setIsStructParameter(p);
-                                         })),
-                   std::move(m)) {
-        _state().flags += type::Flag::NoInheritScope;
-    }
-
-    Struct(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(nodes(node::none), std::move(m)), _wildcard(true) {
-        _state().flags += type::Flag::NoInheritScope;
-    }
-
     auto hasFinalizer() const { return field("~finally").has_value(); }
-
     auto parameters() const { return childsOfType<type::function::Parameter>(); }
+    auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
 
-    std::vector<NodeRef> parameterNodes() {
-        std::vector<NodeRef> params;
-        for ( auto& c : childs() ) {
-            if ( c.isA<type::function::Parameter>() )
-                params.emplace_back(NodeRef(c));
-        }
-        return params;
-    }
+    auto fields() const { return childsOfType<declaration::Field>(); }
 
-    auto fields() const { return childsOfType<struct_::Field>(); }
-
-    auto types() const {
-        std::vector<Type> types;
-        for ( auto c = ++childs().begin(); c != childs().end(); c++ )
-            types.push_back(c->as<struct_::Field>().type());
-
-        return types;
-    }
-
-    std::optional<struct_::Field> field(const ID& id) const {
-        for ( auto f : fields() ) {
+    hilti::optional_ref<const declaration::Field> field(const ID& id) const {
+        for ( const auto& f : fields() ) {
             if ( f.id() == id )
                 return f;
         }
@@ -168,34 +67,45 @@ public:
         return {};
     }
 
-    auto fields(const ID& id) const {
-        std::vector<struct_::Field> x;
-
+    hilti::node::Set<const declaration::Field> fields(const ID& id) const {
+        hilti::node::Set<const declaration::Field> x;
         for ( const auto& f : fields() ) {
             if ( f.id() == id )
-                x.push_back(f);
+                x.insert(f);
         }
 
         return x;
     }
 
-    bool operator==(const Struct& other) const {
-        if ( typeID() && other.typeID() )
-            return *typeID() == *other.typeID();
-
-        return fields() == other.fields();
+    void addField(Declaration f) {
+        assert(f.isA<declaration::Field>());
+        addChild(std::move(f));
     }
 
-    /** For internal use by the builder API only. */
-    auto _fieldNodes() { return nodesOfType<struct_::Field>(); }
+    bool operator==(const Struct& other) const { return fields() == other.fields(); }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
+    auto _isResolved(ResolvedState* rstate) const {
+        for ( const auto& c : childs() ) {
+            if ( auto f = c.tryAs<declaration::Field>() ) {
+                if ( ! f->isResolved(rstate) )
+                    return false;
+            }
+            else if ( auto p = c.tryAs<type::function::Parameter>() )
+                if ( ! p->isResolved(rstate) )
+                    return false;
+        }
+
+        return true;
+    }
+
+    /** Implements the `Type` interface. */
     auto typeParameters() const {
         std::vector<Node> params;
-        for ( auto c = ++childs().begin(); c != childs().end(); c++ )
-            params.emplace_back(c->as<struct_::Field>().type());
+        for ( const auto& f : fields() )
+            params.emplace_back(f.type());
         return params;
     }
     /** Implements the `Type` interface. */
@@ -205,16 +115,17 @@ public:
     auto properties() const { return node::Properties{}; }
 
     /**
-     * Copies an existing type and adds a new field to the copy.
-     *
-     * @param s original type
-     * @param f field to add
-     * @return new typed with field added
+     * Given an existing node wrapping a struct type, updates the contained
+     * struct type to have its `self` declaration initialized. The struct
+     * type's constructor cannot do this because we need the `Node` shell for
+     * this.
      */
-    static Struct addField(const Struct& s, struct_::Field f) {
-        auto x = Type(s)._clone().as<Struct>();
-        x.addChild(std::move(f));
-        return x;
+    static void setSelf(Node* n) {
+        assert(n->isA<type::Struct>());
+        Expression self =
+            expression::Keyword(expression::keyword::Kind::Self, type::ValueReference(NodeRef(*n)), n->meta());
+        Declaration d = declaration::Expression("self", std::move(self), declaration::Linkage::Private, n->meta());
+        n->childs()[0] = std::move(d);
     }
 
 private:

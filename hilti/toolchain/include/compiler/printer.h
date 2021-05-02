@@ -16,13 +16,22 @@ class Stream {
 public:
     Stream(std::ostream& s, bool _compact) : _stream(s), _compact(_compact), _nl(_compact ? ' ' : '\n') {}
 
-    void beginLine() { _stream << std::string(_indent * 4, ' '); }
-    void endLine() { _stream << (_compact ? ' ' : '\n'); }
+    void beginLine() {
+        _flush_pending();
+        _stream << std::string(_indent * 4, ' ');
+    }
+    void endLine() {
+        if ( _compact )
+            _pending = ' ';
+        else
+            _stream << '\n';
+    }
+
     void emptyLine() {
         if ( _wrote_nl )
             return;
 
-        _stream << (_compact ? ' ' : '\n');
+        endLine();
         _wrote_nl = true;
     }
 
@@ -58,6 +67,7 @@ public:
 
     template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
     Stream& operator<<(const T& t) {
+        _flush_pending();
         if constexpr ( std::is_base_of<trait::isType, T>::value ) {
             if ( auto id = Type(t).typeID() )
                 _stream << *id;
@@ -71,6 +81,7 @@ public:
     template<typename T, IF_NOT_DERIVED_FROM(T, trait::isNode)>
     Stream& operator<<(const T& t) {
         _wrote_nl = false;
+        _flush_pending();
         _stream << t;
         _expand_subsequent_type = false;
         return *this;
@@ -81,6 +92,8 @@ public:
     Stream& operator<<(std::pair<T, const char*> p) {
         bool first = true;
         for ( auto& i : p.first ) {
+            _flush_pending();
+
             if ( ! first )
                 _stream << p.second;
 
@@ -92,9 +105,15 @@ public:
     }
 
 private:
+    void _flush_pending() {
+        _stream << _pending;
+        _pending.clear();
+    }
+
     std::ostream& _stream;
     bool _compact;
     char _nl;
+    std::string _pending;
     int _indent = 0;
     bool _wrote_nl = false;
     bool _first_in_block = false;

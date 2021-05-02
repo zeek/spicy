@@ -48,7 +48,7 @@ STANDARD_OPERATOR_2(vector, SumAssign, operator_::sameTypeAs(0, "vector<*>"), ty
 BEGIN_METHOD(vector, Assign)
     auto signature() const {
         return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::Void(),
+                         .result = type::void_,
                          .id = "assign",
                          .args = {{.id = "i", .type = type::UnsignedInteger(64)}, {.id = "x", .type = type::Any()}},
                          .doc = R"(
@@ -62,7 +62,7 @@ END_METHOD
 BEGIN_METHOD(vector, PushBack)
     auto signature() const {
         return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::Void(),
+                         .result = type::void_,
                          .id = "push_back",
                          .args = {{.id = "x", .type = type::Any()}},
                          .doc = R"(
@@ -74,7 +74,7 @@ END_METHOD
 BEGIN_METHOD(vector, PopBack)
     auto signature() const {
         return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::Void(),
+                         .result = type::void_,
                          .id = "pop_back",
                          .args = {},
                          .doc = R"(
@@ -113,7 +113,7 @@ END_METHOD
 BEGIN_METHOD(vector, Reserve)
     auto signature() const {
         return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::Void(),
+                         .result = type::void_,
                          .id = "reserve",
                          .args = {{.id = "n", .type = type::constant(type::UnsignedInteger(64))}},
                          .doc = R"(
@@ -127,7 +127,7 @@ END_METHOD
 BEGIN_METHOD(vector, Resize)
     auto signature() const {
         return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::Void(),
+                         .result = type::void_,
                          .id = "resize",
                          .args = {{.id = "n", .type = type::constant(type::UnsignedInteger(64))}},
                          .doc = R"(

@@ -1,24 +1,20 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "hilti/ast/types/tuple.h"
-
 #include <algorithm>
 #include <exception>
+#include <functional>
+
+#include <hilti/ast/types/tuple.h>
 
 using namespace hilti;
 
-std::vector<ID> type::Tuple::ids() const {
-    auto ids = childsOfType<ID>();
-    if ( ! ids.empty() )
-        return ids;
+std::optional<std::pair<int, const type::tuple::Element*>> type::Tuple::elementByID(const ID& id) const {
+    int i = 0;
+    for ( const auto& e : elements() ) {
+        if ( e.id() == id )
+            return std::make_optional(std::make_pair(i, &e));
 
-    return std::vector<ID>(types().size(), ID());
-}
-
-std::optional<std::pair<int, Type>> type::Tuple::elementByID(const ID& id) {
-    for ( const auto&& [i, e] : util::enumerate(elements()) ) {
-        if ( e.first == id )
-            return std::make_pair(i, e.second);
+        i++;
     }
 
     return {};

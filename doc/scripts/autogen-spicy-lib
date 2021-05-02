@@ -25,7 +25,19 @@ awk -v "target=$1" -v "ns=$2" '
             printf(".. rubric:: ``%s::%s``\n\n", ns, label);
             printf("%s\n\n", comment);
             printf(".. spicy-code::\n\n");
-            printf("    type %s = {\n", $3);
+            printf("    type %s = enum {\n", $3);
+        }
+
+        comment = "";
+        next;
+        }
+
+    # Struct
+    /public type .* = struct { *$/ {
+        if ( target == "types" ) {
+            printf(".. _spicy_%s:\n\n", tolower($3));
+            printf(".. rubric:: ``%s::%s``\n\n", ns, $3);
+            printf("%s\n\n", comment);
         }
 
         comment = "";

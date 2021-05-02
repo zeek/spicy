@@ -13,7 +13,7 @@ public type X = struct {
     hook void f3();
 };
 
-method hook void X::f1() {
+hook void X::f1() {
     hilti::print("Foo: f1");
 }
 
@@ -28,11 +28,11 @@ module Bar {
 import hilti;
 import Foo;
 
-method hook void Foo::X::f1() {
+hook void Foo::X::f1() {
     hilti::print("Bar: f1");
 }
 
-method hook void Foo::X::f2() {
+hook void Foo::X::f2() {
     hilti::print("Bar: f2");
 }
 

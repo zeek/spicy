@@ -17,14 +17,14 @@ class Port : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Port;
 
-    Port(const Value& port, Meta m = Meta()) : NodeBase(std::move(m)), _port(port) {}
+    Port(const Value& port, Meta m = Meta()) : NodeBase(nodes(type::Port(m)), m), _port(port) {}
 
     const auto& value() const { return _port; }
 
     bool operator==(const Port& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Port(meta()); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

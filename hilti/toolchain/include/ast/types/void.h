@@ -12,16 +12,27 @@ namespace type {
 /** AST node for a void type. */
 class Void : public TypeBase {
 public:
-    Void(Meta m = Meta()) : TypeBase(std::move(m)) {}
-
     bool operator==(const Void& /* other */) const { return true; }
 
     // Type interface.
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    /** Implements the `Type` interface. */
+    auto _isResolved(ResolvedState* rstate) const { return true; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    /**
+     * Wrapper around constructor so that we can make it private. Don't use
+     * this, use the singleton `type::void_` instead.
+     */
+    static Void create(Meta m = Meta()) { return Void(std::move(m)); }
+
+private:
+    Void(Meta m = Meta()) : TypeBase(std::move(m)) {}
 };
 
+/** Singleton. */
+static const Type void_ = Void::create(Location("<singleton>"));
 } // namespace type
 } // namespace hilti

@@ -5,7 +5,6 @@
 #include <hilti/ast/builder/type.h>
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/address.h>
-#include <hilti/ast/types/computed.h>
 
 namespace hilti {
 namespace operator_ {

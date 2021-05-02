@@ -47,7 +47,7 @@ std::string codegen::production::to_string(const Production& p) {
 
         if ( auto x = f->arguments(); x.size() ) {
             args = hilti::util::fmt(", args: (%s)",
-                                    hilti::util::join(hilti::util::transform(x,
+                                    hilti::util::join(hilti::node::transform(x,
                                                                              [](auto& a) {
                                                                                  return hilti::util::fmt("%s", a);
                                                                              }),
