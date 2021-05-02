@@ -34,7 +34,7 @@ public:
 
     auto expressions() const { return childsOfType<Expression>(); }
     auto items() const { return childsOfType<type::unit::Item>(); }
-    auto itemNodes() { return nodesOfType<type::unit::Item>(); }
+    auto itemRefs() const { return childRefsOfType<type::unit::Item>(); }
 
     /** Returns true if this is the default case. */
     bool isDefault() const { return expressions().empty() && ! _look_ahead; }
@@ -42,11 +42,19 @@ public:
     /** Returns true if this is a look-ahead case. */
     bool isLookAhead() const { return _look_ahead; }
 
+    /** Returns true if all items have been resolved. */
+    bool isResolved() const {
+        for ( const auto& i : items() ) {
+            if ( ! i.isResolved() )
+                return false;
+        }
+
+        return true;
+    }
+
     auto properties() const { return node::Properties{{"default", isDefault()}, {"look-ahead", isLookAhead()}}; }
 
-    bool operator==(const Case& other) const {
-        return expressions() == other.expressions() && items() == other.items();
-    }
+    bool operator==(const Case& other) const;
 
 private:
     bool _look_ahead = false;
@@ -64,20 +72,16 @@ public:
            Meta m = Meta())
         : NodeBase(nodes(std::move(expr), std::move(cond), std::move(attributes), cases, std::move(hooks)),
                    std::move(m)),
-          _engine(e),
-          _cases_start(3),
-          _cases_end(_cases_start + static_cast<int>(cases.size())),
-          _hooks_start(_cases_end),
-          _hooks_end(-1) {}
+          _engine(e) {}
 
-    auto expression() const { return childs()[0].tryReferenceAs<Expression>(); }
     Engine engine() const { return _engine; }
-    auto condition() const { return childs()[1].tryReferenceAs<Expression>(); }
-    auto cases() const { return childs<switch_::Case>(_cases_start, _cases_end); }
-    auto casesNodes() { return nodesOfType<switch_::Case>(); }
-    auto attributes() const { return childs()[2].tryReferenceAs<AttributeSet>(); }
+    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
+    auto cases() const { return childsOfType<switch_::Case>(); }
+    auto condition() const { return childs()[1].tryAs<Expression>(); }
+    auto expression() const { return childs()[0].tryAs<Expression>(); }
+    auto hooks() const { return childsOfType<Hook>(); }
 
-    auto hooks() const { return childs<Hook>(_hooks_start, _hooks_end); }
+    auto itemRefs() const { return childRefsOfType<type::unit::Item>(); }
 
     /** Returns true if there's no field storing information. */
     bool hasNoFields() const;
@@ -87,7 +91,7 @@ public:
      *
      * i: The field.
      */
-    std::optional<switch_::Case> case_(const type::unit::item::Field& x);
+    hilti::optional_ref<const switch_::Case> case_(const type::unit::item::Field& x);
 
     bool operator==(const Switch& other) const {
         return expression() == other.expression() && engine() == other.engine() && condition() == other.condition() &&
@@ -95,7 +99,17 @@ public:
     }
 
     // Unit item interface
-    Type itemType() const { return type::Void(); }
+    const Type& itemType() const { return type::void_; }
+
+    bool isResolved() const {
+        for ( const auto& c : cases() ) {
+            if ( ! c.isResolved() )
+                return false;
+        }
+
+        return true;
+    }
+
     auto isEqual(const Item& other) const { return node::isEqual(this, other); }
 
     // Node interface.
@@ -103,10 +117,6 @@ public:
 
 private:
     Engine _engine;
-    const int _cases_start;
-    const int _cases_end;
-    const int _hooks_start;
-    const int _hooks_end;
 };
 
 } // namespace spicy::type::unit::item

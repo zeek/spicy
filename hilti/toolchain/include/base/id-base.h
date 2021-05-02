@@ -55,8 +55,11 @@ public:
     /** Returns true if the ID's value has length zero. */
     bool empty() const { return _id.empty(); }
 
+    /** Returns the number of namespace components (incl. the local ID0. */
+    auto length() const { return util::split(_id, "::").size(); }
+
     /**
-     * Returns a new ID containing just single component of the path;s of the
+     * Returns a new ID containing just single component of the path's of the
      * ID. Indices are zero-based and, if negative, counted from the end
      * Python-style.
      *

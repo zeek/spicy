@@ -5,9 +5,9 @@ type X = struct {
     hook void implemented();
 };
 
-global auto i = default<optional<int<64>>>();
+global optional<int<64>> i = default<optional<int<64>>>();
 global X x;
-global auto j = default<optional<int<64>>>();
+global optional<int<64>> j = default<optional<int<64>>>();
 
 declare public function hook void global_implemented();
 

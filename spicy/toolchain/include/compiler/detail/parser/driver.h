@@ -71,16 +71,14 @@ struct yystype_spicy {
     std::vector<hilti::type::function::Parameter> function_parameters;
     std::vector<hilti::statement::switch_::Case> switch_cases;
 
-    std::pair<hilti::ID, hilti::Type> tuple_type_elem;
-    std::vector<std::pair<hilti::ID, hilti::Type>> tuple_type_elems;
+    hilti::type::tuple::Element tuple_type_elem;
+    std::vector<hilti::type::tuple::Element> tuple_type_elems;
 
-    hilti::type::struct_::Field struct_field;
     hilti::ctor::struct_::Field struct_elem;
-    std::vector<hilti::type::struct_::Field> struct_fields;
     std::vector<hilti::ctor::struct_::Field> struct_elems;
 
-    hilti::ctor::Map::Element map_elem;
-    std::vector<hilti::ctor::Map::Element> map_elems;
+    hilti::ctor::map::Element map_elem;
+    std::vector<hilti::ctor::map::Element> map_elems;
 
     hilti::type::enum_::Label enum_label;
     std::vector<hilti::type::enum_::Label> enum_labels;

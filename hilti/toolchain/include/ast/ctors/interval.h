@@ -17,14 +17,14 @@ class Interval : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Interval;
 
-    Interval(const Value& interval, Meta m = Meta()) : NodeBase(std::move(m)), _interval(interval) {}
+    Interval(const Value& interval, Meta m = Meta()) : NodeBase(nodes(type::Interval(m)), m), _interval(interval) {}
 
     const auto& value() const { return _interval; }
 
     bool operator==(const Interval& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Interval(meta()); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

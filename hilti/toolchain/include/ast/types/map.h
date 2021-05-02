@@ -22,11 +22,24 @@ class Iterator : public TypeBase,
                  trait::isRuntimeNonTrivial,
                  trait::isParameterized {
 public:
-    Iterator(Type ctype, bool const_, Meta m = Meta()) : TypeBase({std::move(ctype)}, std::move(m)), _const(const_) {}
-    Iterator(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({node::none}, std::move(m)), _wildcard(true) {}
+    Iterator(Type ktype, Type vtype, bool const_, Meta m = Meta())
+        : TypeBase(nodes(type::Tuple({std::move(ktype), std::move(vtype)}, m)), m), _const(const_) {}
+    Iterator(Wildcard /*unused*/, bool const_ = true, Meta m = Meta())
+        : TypeBase(nodes(type::unknown, type::unknown), std::move(m)), _wildcard(true), _const(const_) {}
 
-    /** Returns the type of the container the iterator is working on. */
-    Type containerType() const { return _wildcard ? type::unknown : type::effectiveType(child<Type>(0)); }
+    const Type& keyType() const {
+        if ( auto t = childs()[0].tryAs<type::Tuple>() )
+            return t->elements()[0].type();
+        else
+            return child<Type>(0);
+    }
+
+    const Type& valueType() const {
+        if ( auto t = childs()[0].tryAs<type::Tuple>() )
+            return t->elements()[1].type();
+        else
+            return child<Type>(0);
+    }
 
     /** Returns true if the container elements aren't modifiable. */
     bool isConstant() const { return _const; }
@@ -34,7 +47,9 @@ public:
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type dereferencedType() const;
+    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
+    /** Implements the `Type` interface. */
+    const Type& dereferencedType() const { return child<Type>(0); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Type` interface. */
@@ -42,7 +57,9 @@ public:
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"const", _const}}; }
 
-    bool operator==(const Iterator& other) const { return dereferencedType() == other.dereferencedType(); }
+    bool operator==(const Iterator& other) const {
+        return keyType() == other.keyType() && valueType() == other.valueType();
+    }
 
 private:
     bool _wildcard = false;
@@ -59,17 +76,26 @@ class Map : public TypeBase,
             trait::isRuntimeNonTrivial,
             trait::isParameterized {
 public:
-    Map(Type key, Type value, Meta m = Meta()) : TypeBase({std::move(key), std::move(value)}, std::move(m)) {}
-    Map(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({node::none}, std::move(m)), _wildcard(true) {}
+    Map(Type k, Type v, Meta m = Meta())
+        : TypeBase(nodes(map::Iterator(k, v, true, m), map::Iterator(k, v, false, m)), m) {}
+    Map(Wildcard /*unused*/, Meta m = Meta())
+        : TypeBase(nodes(map::Iterator(Wildcard{}, true, m), map::Iterator(Wildcard{}, false, m)), m),
+          _wildcard(true) {}
 
-    Type keyType() const { return _wildcard ? type::unknown : type::effectiveType(child<Type>(0)); }
+    const Type& keyType() const { return child<map::Iterator>(0).keyType(); }
+    const Type& valueType() const { return child<map::Iterator>(0).valueType(); }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type elementType() const { return _wildcard ? type::unknown : type::effectiveType(child<Type>(1)); }
+    auto _isResolved(ResolvedState* rstate) const {
+        return type::detail::isResolved(iteratorType(true), rstate) &&
+               type::detail::isResolved(iteratorType(false), rstate);
+    }
     /** Implements the `Type` interface. */
-    Type iteratorType(bool const_) const { return map::Iterator(*this, const_, meta()); }
+    const Type& elementType() const { return valueType(); }
+    /** Implements the `Type` interface. */
+    const Type& iteratorType(bool const_) const { return const_ ? child<Type>(0) : child<Type>(1); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Type` interface. */
@@ -77,22 +103,11 @@ public:
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
-    bool operator==(const Map& other) const {
-        return keyType() == other.keyType() && elementType() == other.elementType();
-    }
+    bool operator==(const Map& other) const { return iteratorType(true) == other.iteratorType(true); }
 
 private:
     bool _wildcard = false;
 };
-
-namespace map {
-inline Type Iterator::dereferencedType() const {
-    if ( _wildcard || containerType().isWildcard() )
-        return type::unknown;
-
-    return type::Tuple({containerType().as<type::Map>().keyType(), containerType().elementType()});
-}
-} // namespace map
 
 } // namespace type
 } // namespace hilti

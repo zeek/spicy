@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "hilti/rt/type-info.h"
-
 #include <cinttypes>
 
 #include <hilti/rt/type-info.h>

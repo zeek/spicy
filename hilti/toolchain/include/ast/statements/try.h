@@ -8,6 +8,7 @@
 #include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
+#include <hilti/base/logger.h>
 
 namespace hilti {
 namespace statement {
@@ -27,14 +28,8 @@ public:
     }
     Catch() = default;
 
-    std::optional<hilti::declaration::Parameter> parameter() const {
-        auto d = childs()[0].tryAs<hilti::Declaration>();
-        if ( d )
-            return d->as<hilti::declaration::Parameter>();
-
-        return {};
-    }
-
+    auto parameter() const { return childs()[0].tryAs<declaration::Parameter>(); }
+    auto parameterRef() const { return childs()[0].isA<declaration::Parameter>() ? NodeRef(childs()[0]) : NodeRef(); }
     const auto& body() const { return child<hilti::Statement>(1); }
 
     /** Internal method for use by builder API only. */

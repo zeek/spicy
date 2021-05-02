@@ -1,0 +1,18 @@
+# @TEST-EXEC: spicyc -j %INPUT
+#
+# @TEST-DOC: Checks for succesful compilation of parsing a vector with size derived through `self`.
+#
+# This is a regression test, getting this to compile can be tricky.
+
+module DNS;
+
+public type Message = unit {
+    header:     Header;
+    question:   Question[self.header.qdcount];
+};
+
+type Header = unit {
+    qdcount: uint16;
+};
+
+type Question = unit { };

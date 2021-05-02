@@ -1,0 +1,20 @@
+# @TEST-EXEC: spicyc -D ast-declarations -p %INPUT a.spicy 2>output >/dev/null
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Records internal canonical IDs for an example where we import a unit from another file.
+
+module b;
+
+import a;
+
+on a::X::x { print "from b", $$; }
+
+@TEST-START-FILE a.spicy
+
+module a;
+
+public type X = unit {
+    x: uint8;
+};
+
+@TEST-END-FILE

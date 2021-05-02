@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <list>
 #include <map>
 #include <memory>
@@ -64,8 +65,8 @@ public:
     /** Entry point for generating additional cross-unit C++ code through HILTI's linker. */
     Result<cxx::Unit> linkUnits(const std::vector<cxx::linker::MetaData>& mds);
 
-    std::shared_ptr<Context> context() const { return _context; }
-    const Options& options() const { return _context->options(); }
+    std::shared_ptr<Context> context() const { return _context.lock(); }
+    const Options& options() const { return context()->options(); }
 
     // These must be called only while a module is being compiled.
     std::optional<cxx::declaration::Type> typeDeclaration(const hilti::Type& t);
@@ -79,8 +80,10 @@ public:
                                        function::CallingConvention cc = function::CallingConvention::Standard,
                                        const std::optional<AttributeSet>& fattrs = {},
                                        std::optional<cxx::ID> namespace_ = {});
-    std::vector<cxx::Expression> compileCallArguments(const std::vector<Expression>& args,
-                                                      const std::vector<declaration::Parameter>& params);
+    std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
+                                                      const hilti::node::Set<declaration::Parameter>& params);
+    std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
+                                                      const hilti::node::Range<declaration::Parameter>& params);
     std::optional<cxx::Expression> typeDefaultValue(const hilti::Type& t);
 
     cxx::Expression typeInfo(const hilti::Type& t);
@@ -127,7 +130,7 @@ private:
 
     std::unique_ptr<cxx::Unit> _cxx_unit;
     hilti::Unit* _hilti_unit = nullptr;
-    std::shared_ptr<Context> _context;
+    std::weak_ptr<Context> _context;
     std::vector<detail::cxx::Expression> _selfs = {"__self"};
     std::vector<detail::cxx::Block*> _cxx_blocks;
     std::vector<detail::cxx::declaration::Local> _tmps;

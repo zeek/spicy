@@ -32,7 +32,7 @@
     sink. If data has already been written when a filter is added, an
     error is triggered.
 
-.. spicy:method:: sink::connect_mime_type sink connect_mime_type False void (inout mt: bytes)
+.. spicy:method:: sink::connect_mime_type sink connect_mime_type False void (mt: bytes)
 
     Connects parsing units to a sink for all parsers that support a given
     MIME type. All subsequent write operations to the sink will pass their

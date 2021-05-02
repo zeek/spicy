@@ -1,7 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "hilti/rt/types/bytes.h"
-
+#include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/stream.h>

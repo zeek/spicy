@@ -8,6 +8,7 @@
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/tuple.h>
 #include <hilti/ast/types/unknown.h>
 
@@ -17,29 +18,16 @@ namespace ctor {
 /** AST node for a tuple constructor. */
 class Tuple : public NodeBase, public hilti::trait::isCtor {
 public:
-    Tuple(std::vector<Expression> v, Meta m = Meta()) : NodeBase(nodes(std::move(v)), std::move(m)) {}
+    Tuple(std::vector<Expression> v, Meta m = Meta()) : NodeBase(nodes(_inferType(v), v), std::move(m)) {}
 
-    auto value() const { return childs<Expression>(0, -1); }
+    auto value() const { return childs<Expression>(1, -1); }
+
+    void setElementTypes(std::vector<Type> t) { childs()[0] = Type(type::Tuple(std::move(t), meta())); }
 
     bool operator==(const Tuple& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    Type type() const {
-        auto v1 = value();
-        auto v2 = std::vector<Type>{};
-        bool is_unknown = false;
-        std::transform(v1.begin(), v1.end(), std::back_inserter(v2), [&is_unknown](const Expression& e) {
-            if ( e.type() == type::unknown )
-                is_unknown = true;
-
-            return e.type();
-        });
-
-        if ( is_unknown )
-            return type::unknown;
-        else
-            return type::Tuple(v2, meta());
-    }
+    const auto& type() const { return child<Type>(0); }
 
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
@@ -63,6 +51,20 @@ public:
     auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+private:
+    Type _inferType(const std::vector<Expression>& exprs) {
+        for ( const auto& e : exprs ) {
+            if ( ! expression::isResolved(e) )
+                return type::auto_;
+        }
+
+        std::vector<Type> types;
+        for ( const auto& e : exprs )
+            types.push_back(e.type());
+
+        return type::Tuple(std::move(types));
+    }
 };
 
 } // namespace ctor

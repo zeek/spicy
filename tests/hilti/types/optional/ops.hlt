@@ -7,7 +7,7 @@ import hilti;
 
 global optional<string> o;
 
-assert-exception *o;
+assert-exception *o == "";
 o = "123";
 assert o;
 assert *o == "123";

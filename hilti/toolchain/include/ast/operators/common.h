@@ -54,7 +54,7 @@ private:                                                                        
                                                                                                                        \
     std::string doc() const { return signature().doc; }                                                                \
                                                                                                                        \
-    hilti::Type result(const std::vector<hilti::Expression>& ops) const {                                              \
+    hilti::Type result(const hilti::node::Range<hilti::Expression>& ops) const {                                       \
         return *hilti::operator_::type(signature().result, ops, ops);                                                  \
     }                                                                                                                  \
                                                                                                                        \
@@ -210,8 +210,8 @@ private:                                                                        
 #define END_METHOD                                                                                                     \
     __END_METHOD                                                                                                       \
                                                                                                                        \
-    hilti::Type result(const std::vector<hilti::Expression>& ops) const {                                              \
-        return *hilti::operator_::type(signature().result, ops, ops);                                                  \
+    hilti::Type result(const hilti::node::Range<hilti::Expression>& ops) const {                                       \
+        return *hilti::operator_::type(signature().result, hilti::node::Range(ops), ops);                              \
     }                                                                                                                  \
                                                                                                                        \
     bool isLhs() const { return false; }                                                                               \
@@ -238,13 +238,12 @@ private:                                                                        
 
 #define END_CTOR                                                                                                       \
     std::vector<hilti::operator_::Operand> operands() const {                                                          \
-        return {{.type = type::constant(hilti::type::Type_(ctorType()))},                                              \
-                {.type = hilti::type::OperandList(signature().args)}};                                                 \
+        return {{.type = hilti::type::Type_(ctorType())}, {.type = hilti::type::OperandList(signature().args)}};       \
     }                                                                                                                  \
                                                                                                                        \
     std::string doc() const { return signature().doc; }                                                                \
                                                                                                                        \
-    hilti::Type result(const std::vector<hilti::Expression>& ops) const {                                              \
+    hilti::Type result(const hilti::node::Range<hilti::Expression>& ops) const {                                       \
         if ( ops.size() )                                                                                              \
             return ops[0].type().as<hilti::type::Type_>().typeValue();                                                 \
                                                                                                                        \

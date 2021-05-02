@@ -5,4 +5,4 @@ done, [$xs=b"\x01\x01\x00"]
 error, [$xs=b"\x01\x01\x00"]
 [error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: parsing not done within &max-size bytes (<...>/unit-max-size.spicy:19:3)
 error, [$xs=b"\x01\x01\x01"]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: end-of-data reached before &until-including expression found (<...>/unit-max-size.spicy:15:9)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: end-of-data reached before &until-including expression found (<...>/unit-max-size.spicy:15:32)

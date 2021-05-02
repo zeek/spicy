@@ -11,13 +11,26 @@
 #include <hilti/rt/json.h>
 #include <hilti/rt/libhilti.h>
 
+#include <hilti/ast/declaration.h>
+#include <hilti/ast/detail/visitor.h>
+#include <hilti/compiler/detail/visitors.h>
+#include <hilti/compiler/driver.h>
 #include <hilti/compiler/optimizer.h>
-#include <hilti/hilti.h>
+#include <hilti/compiler/plugin.h>
 
 using namespace hilti;
 using util::fmt;
 
 namespace hilti::logging::debug {
+inline const DebugStream AstCache("ast-cache");
+inline const DebugStream AstCodegen("ast-codegen");
+inline const DebugStream AstDeclarations("ast-declarations");
+inline const DebugStream AstDumpIterations("ast-dump-iterations");
+inline const DebugStream AstFinal("ast-final");
+inline const DebugStream AstOrig("ast-orig");
+inline const DebugStream AstPrintTransformed("ast-print-transformed");
+inline const DebugStream AstResolved("ast-resolved");
+inline const DebugStream AstTransformed("ast-transformed");
 inline const DebugStream Compiler("compiler");
 inline const DebugStream Driver("driver");
 } // namespace hilti::logging::debug
@@ -47,6 +60,13 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"version", no_argument, nullptr, 'v'},
                                               {nullptr, 0, nullptr, 0}};
 
+static auto pluginForUnit(const std::shared_ptr<Unit>& u) {
+    auto p = plugin::registry().pluginForExtension(u->extension());
+    if ( ! p )
+        logger().internalError(util::fmt("no plugin for unit extension %s: %s", u->extension(), p.error()));
+
+    return *p;
+}
 
 Driver::Driver(std::string name) : _name(std::move(name)) { configuration().initLocation(false); }
 
@@ -203,9 +223,9 @@ Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const
 
 void Driver::dumpUnit(const Unit& unit) {
     if ( unit.isCompiledHILTI() ) {
-        auto output_path = util::fmt("dbg.%s.hlt", unit.id());
+        auto output_path = util::fmt("dbg.%s%s", unit.id(), unit.extension().native());
         if ( auto out = openOutput(output_path) ) {
-            HILTI_DEBUG(logging::debug::Driver, fmt("saving HILTI code for module %s to %s", unit.id(), output_path));
+            HILTI_DEBUG(logging::debug::Driver, fmt("saving code for module %s to %s", unit.id(), output_path));
             unit.print(*out);
         }
     }
@@ -303,16 +323,16 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 ++num_output_types;
                 break;
 
-            case 'g': {
-                _driver_options.global_optimizations = false;
-                break;
-            }
-
             case 'j':
                 _driver_options.execute_code = true;
                 _driver_options.include_linker = true;
                 ++num_output_types;
                 break;
+
+            case 'g': {
+                _driver_options.global_optimizations = false;
+                break;
+            }
 
             case 'l':
                 _driver_options.output_linker = true;
@@ -421,20 +441,22 @@ void Driver::setDriverOptions(driver::Options options) {
     _driver_options = std::move(options);
 }
 
-void Driver::_addUnit(Unit unit) {
-    if ( _processed_units.find(unit.id()) != _processed_units.end() )
+void Driver::_addUnit(std::shared_ptr<Unit> unit) {
+    if ( _processed_units.find(unit->id()) != _processed_units.end() )
         return;
 
-    if ( (! unit.path().empty()) && _processed_paths.find(unit.path()) != _processed_paths.end() )
+    if ( ! unit->path().empty() && _processed_paths.find(unit->path()) != _processed_paths.end() )
         return;
 
-    _processed_units.insert(unit.id());
+    _processed_units.insert(unit->id());
 
-    if ( (! unit.path().empty()) )
-        _processed_paths.insert(unit.path());
+    if ( ! unit->path().empty() )
+        _processed_paths.insert(unit->path());
 
-    hookNewASTPreCompilation(unit.id(), unit.path(), unit.module());
-    _pending_units.emplace_back(std::move(unit));
+    if ( std::find(_pending_units.begin(), _pending_units.end(), unit) == _pending_units.end() )
+        _pending_units.push_back(unit);
+
+    hookNewASTPreCompilation(unit);
 }
 
 Result<void*> Driver::_symbol(const std::string& symbol) {
@@ -456,7 +478,7 @@ Result<void*> Driver::_symbol(const std::string& symbol) {
 }
 
 Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
-    if ( path.empty() || _processed_paths.find(path) != _processed_paths.end() )
+    if ( _processed_paths.find(path) != _processed_paths.end() )
         return Nothing();
 
     // Calling hook before stage check so that it can execute initialize()
@@ -473,7 +495,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding source file %s", path));
 
         if ( auto unit = Unit::fromCache(_ctx, path) ) {
-            HILTI_DEBUG(logging::debug::Driver, fmt("reusing previously cached module %s", unit->id()));
+            HILTI_DEBUG(logging::debug::Driver, fmt("reusing previously cached module %s", (*unit)->id()));
             _addUnit(std::move(*unit));
         }
         else {
@@ -497,9 +519,10 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
             // always include when emitting C++.
             std::fstream file(path);
             auto [_, md] = Unit::readLinkerMetaData(file, path);
-            if ( md )
+            if ( md ) {
                 return result::Error(
                     "Loading generated C++ files is not supported with transformations enabled, rerun with '-g'");
+            }
         }
 
         HILTI_DEBUG(logging::debug::Driver, fmt("adding external C++ file %s", path));
@@ -526,16 +549,16 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
     return error("unsupported file type", path);
 }
 
-Result<Nothing> Driver::addInput(hilti::Module&& module, const hilti::rt::filesystem::path& path) {
-    if ( _processed_units.find(module.id()) != _processed_units.end() )
+Result<Nothing> Driver::addInput(std::shared_ptr<Unit> u) {
+    if ( _processed_units.find(u->id()) != _processed_units.end() )
         return Nothing();
 
-    if ( (! path.empty()) && _processed_paths.find(path) != _processed_paths.end() )
+    if ( ! u->path().empty() && _processed_paths.find(u->path()) != _processed_paths.end() )
         return Nothing();
 
     // Calling hook before stage check so that it can execute initialize()
     // just in time if it so desires.
-    hookAddInput(module, path);
+    hookAddInput(u);
 
     if ( _stage == Stage::UNINITIALIZED )
         logger().internalError(" driver must be initialized before inputs can be added");
@@ -543,65 +566,236 @@ Result<Nothing> Driver::addInput(hilti::Module&& module, const hilti::rt::filesy
     if ( _stage != Stage::INITIALIZED )
         logger().internalError("no further inputs can be added after compilation has finished already");
 
-    HILTI_DEBUG(logging::debug::Driver, fmt("adding source AST %s", module.id()));
-    auto unit = Unit::fromModule(_ctx, std::move(module), path);
-    if ( ! unit )
-        return augmentError(unit.error());
-
-    _addUnit(std::move(*unit));
+    _addUnit(std::move(u));
     return Nothing();
 }
 
-Result<Nothing> Driver::_compileUnit(Unit unit) {
+Result<Nothing> Driver::_resolveUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units,
+                                                int& round) {
+    HILTI_DEBUG(logging::debug::Compiler,
+                fmt("resolving units with plugin %s: %s", plugin.component,
+                    util::join(util::transform(units, [](const auto& u) { return u->id(); }), ", ")));
+
     logging::DebugPushIndent _(logging::debug::Compiler);
 
-    HILTI_DEBUG(logging::debug::Driver, fmt("compiling input unit %s", unit.id()));
+    for ( const auto& u : units ) {
+        // Double-check that we only get units for the provided plugin.
+        assert(u->extension() == plugin.extension);
+        _dumpAST(u, logging::debug::AstOrig, plugin, "Original AST", 0);
+        _saveIterationAST(u, plugin, "AST before first iteration", 0);
+    }
 
-    if ( auto x = unit.compile(); ! x )
-        // Specific errors have already been reported.
-        return error("aborting after errors");
+    int extra_rounds = 0; // set to >0 for debugging
 
-    hookNewASTPostCompilation(unit.id(), unit.path(), unit.module());
+    while ( true ) {
+        HILTI_DEBUG(logging::debug::Compiler, fmt("processing ASTs, round %d", round));
+        logging::DebugPushIndent _(logging::debug::Compiler);
+
+        bool modified = false;
+        std::vector<std::shared_ptr<Unit>> dependencies;
+
+        for ( auto&& u : units )
+            u->resetAST();
+
+        for ( auto&& u : units ) {
+            auto rc = u->buildASTScopes(plugin);
+            if ( ! rc )
+                return rc.error();
+        }
+
+        for ( auto&& u : units ) {
+            auto rc = u->resolveAST(plugin);
+            if ( ! rc )
+                return rc.error();
+
+            for ( const auto& d : u->dependencies() ) {
+                if ( std::find(dependencies.begin(), dependencies.end(), d.lock()) == dependencies.end() )
+                    dependencies.push_back(d.lock());
+            }
+
+            _dumpAST(u, logging::debug::AstResolved, plugin, "AST after resolving", round);
+            _saveIterationAST(u, plugin, "AST after resolving", round);
+            modified = modified || (*rc == Unit::Modified);
+        }
+
+        // Check for newly encountered dependencies that we need to compile as well.
+        for ( const auto& d : dependencies ) {
+            if ( d->isResolved() )
+                continue;
+
+            if ( std::find(units.begin(), units.end(), d) == units.end() ) {
+                HILTI_DEBUG(logging::debug::Compiler,
+                            fmt("new dependency to process: %s (%s)", d->id(), d->extension()));
+                units.push_back(d);
+                modified = true;
+            }
+        }
+
+        if ( ! modified && extra_rounds-- == 0 )
+            break;
+
+        if ( ++round >= 50 )
+            logger().internalError("hilti::Unit::compile() didn't terminate, AST keeps changing");
+    }
+
+    for ( const auto& u : units ) {
+        _dumpAST(u, logging::debug::AstFinal, plugin, "Final AST", round);
+        _dumpDeclarations(u, plugin);
+        _saveIterationAST(u, plugin, "Final AST", round);
+
+        if ( _driver_options.dump_code )
+            dumpUnit(*u); // may be overwritten again later after optimization
+    }
+
+    if ( ! options().skip_validation ) {
+        bool have_errors = false;
+        for ( const auto& u : units ) {
+            if ( ! u->validateAST(plugin) )
+                have_errors = true;
+        }
+
+        if ( have_errors || logger().errors() )
+            return result::Error("aborting after errors");
+    }
+
+    for ( const auto& u : units ) {
+        HILTI_DEBUG(logging::debug::Compiler, fmt("finalized module %s", u->id()));
+        u->setResolved(true);
+
+        if ( u->dependencies().size() ) {
+            logging::DebugPushIndent _(logging::debug::Compiler);
+            HILTI_DEBUG(logging::debug::Compiler,
+                        fmt("dependencies: %s",
+                            util::join(util::transform(u->dependencies(), [](const auto& u) { return u.lock()->id(); }),
+                                       ", ")));
+        }
+
+        hookNewASTPostCompilation(u);
+    }
+
+    if ( auto rc = hookCompilationFinished(plugin); ! rc )
+        return augmentError(rc.error());
 
     if ( _driver_options.execute_code && ! _driver_options.skip_dependencies ) {
-        for ( const auto& d : unit.allImported(true) ) {
-            // Compile any implicit dependencies as well. Note that once we run
-            // the completion hook, that may compile further modules and hence in
-            // turn add more dependencies.
-            HILTI_DEBUG(logging::debug::Compiler, fmt("imported module %s needs compilation", d.id));
-
-            if ( auto rc = addInput(d.path); ! rc )
-                return rc.error();
+        // Compile any implicit dependencies as well.
+        for ( const auto& unit : units ) {
+            for ( const auto& d : unit->dependencies() ) {
+                if ( auto rc = addInput(d.lock()); ! rc )
+                    return rc.error();
+            }
         }
     }
 
-    _hlts.push_back(std::move(unit));
     return Nothing();
 }
 
-Result<Nothing> Driver::compileUnits() {
+Result<Nothing> Driver::_transformUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units) {
+    if ( ! plugin.ast_transform )
+        return Nothing();
+
+    HILTI_DEBUG(logging::debug::Compiler,
+                fmt("transforming units with plugin %s: %s", plugin.component,
+                    util::join(util::transform(units, [](const auto& u) { return u->id(); }), ", ")));
+
+    logging::DebugPushIndent _(logging::debug::Compiler);
+
+    for ( const auto& unit : units ) {
+        if ( auto rc = unit->transformAST(plugin); ! rc )
+            return rc;
+
+        unit->setResolved(false);
+        context()->cacheUnit(unit);
+
+        _dumpAST(unit, logging::debug::AstTransformed, plugin, "Transformed AST", 0);
+        _saveIterationAST(unit, plugin, "Transformed AST", 0);
+
+        if ( logger().isEnabled(logging::debug::AstPrintTransformed) )
+            hilti::print(std::cout, *unit->moduleRef());
+
+        if ( logger().errors() )
+            return result::Error("aborting after errors");
+    }
+
+    return Nothing();
+}
+
+/**
+ * Filters a set of units for those associated with a specified plugin
+ * extension. For those matching, includes all their dependencies for the same
+ * extension as well. One can choose to have only fully resolved units
+ * considered.
+ */
+static auto _unitsForPlugin(const std::vector<std::shared_ptr<Unit>>& units, std::string extension,
+                            bool include_resolved) {
+    auto cmp = [](const auto& u1, const auto& u2) { return u1->id().str() < u2->id().str(); };
+    std::set<std::shared_ptr<Unit>, decltype(cmp)> nunits(cmp);
+
+    for ( auto&& u : units ) {
+        if ( u->extension() == extension && (! u->isResolved() || include_resolved) ) {
+            nunits.insert(std::move(u));
+
+            for ( const auto& d_ : u->dependencies() ) {
+                auto d = d_.lock();
+                if ( d->extension() == extension && (! d->isResolved() || include_resolved) )
+                    nunits.insert(d);
+            }
+        }
+    }
+
+    std::vector<std::shared_ptr<Unit>> nunits_vec;
+    nunits_vec.reserve(nunits.size());
+    for ( auto&& u : nunits )
+        nunits_vec.push_back(u);
+
+    return nunits_vec;
+}
+
+Result<Nothing> Driver::_resolveUnits() {
     if ( _stage != Stage::INITIALIZED )
         logger().internalError("unexpected driver stage in compileUnits()");
 
-    while ( _pending_units.size() ) {
-        auto pending_units = std::move(_pending_units);
-        _pending_units.clear();
+    int round = 0;
 
-        for ( auto&& unit : pending_units ) {
-            if ( auto rc = _compileUnit(std::move(unit)); ! rc )
+    auto plugin = plugin::registry().plugins().begin();
+    while ( plugin != plugin::registry().plugins().end() ) {
+        // Get remaining units that are relevant for the current plugin. Note
+        // that the list of pending units may change during this loop if more
+        // input files get added. If that happens, we will process any new ones
+        // that are not associated with plugins that we have already finish
+        // with.
+        if ( auto units = _unitsForPlugin(_pending_units, plugin->extension, false); units.size() ) {
+            if ( auto rc = _resolveUnitsWithPlugin(*plugin, units, round); ! rc )
                 return rc;
         }
+        else {
+            // All done, switch to next plugin, but first perform any pending
+            // transformations.
+            auto all_units = _unitsForPlugin(_pending_units, plugin->extension, true);
+            if ( auto rc = _transformUnitsWithPlugin(*plugin, all_units); ! rc )
+                return rc;
 
-        if ( auto rc = hookCompilationFinished(); ! rc )
-            return augmentError(rc.error());
+            ++plugin;
+
+            context()->dumpUnitCache(logging::debug::AstCache);
+        }
+    }
+
+    for ( const auto& unit : _pending_units ) {
+        // We should have only fully resolved HILTI modules now.
+        if ( unit->extension() != ".hlt" )
+            return result::Error(fmt("module %s was not compiled down to HILTI", unit->id()));
+
+        if ( ! unit->isResolved() )
+            return result::Error(fmt("module %s was not marked as resolved", unit->id()));
+
+        _hlts.push_back(unit);
     }
 
     _stage = Stage::COMPILED;
-
     return Nothing();
 }
 
-Result<Nothing> Driver::codegenUnits() {
+Result<Nothing> Driver::_codegenUnits() {
     if ( _stage != Stage::COMPILED )
         logger().internalError("unexpected driver stage in codegenUnits()");
 
@@ -609,23 +803,66 @@ Result<Nothing> Driver::codegenUnits() {
         // No need to kick off code generation.
         return Nothing();
 
-    HILTI_DEBUG(logging::debug::Driver, "compiling modules to C++");
-    logging::DebugPushIndent _(logging::debug::Driver);
+    logging::DebugPushIndent _(logging::debug::Compiler);
 
     for ( auto& unit : _hlts ) {
-        HILTI_DEBUG(logging::debug::Driver, fmt("codegen for input unit %s", unit.id()));
+        HILTI_DEBUG(logging::debug::Driver, fmt("codegen for input unit %s", unit->id()));
 
-        if ( auto rc = unit.codegen(); ! rc )
+        _dumpAST(unit, logging::debug::AstCodegen, "Before C++ codegen");
+
+        if ( auto rc = unit->codegen(); ! rc )
             return augmentError(rc.error());
 
-        if ( auto md = unit.linkerMetaData() )
+        if ( auto md = unit->linkerMetaData() )
             _mds.push_back(*md);
 
         if ( _driver_options.dump_code )
-            dumpUnit(unit);
+            dumpUnit(*unit);
     }
 
     _stage = Stage::CODEGENED;
+    return Nothing();
+}
+
+Result<Nothing> Driver::_optimizeUnits() {
+    if ( ! _driver_options.global_optimizations )
+        return Nothing();
+
+    HILTI_DEBUG(logging::debug::Driver, "performing global transformations");
+
+    Optimizer opt(_hlts, _ctx);
+    opt.run();
+
+    return Nothing();
+}
+
+Result<Nothing> Driver::compileUnits() {
+    if ( auto rc = _resolveUnits(); ! rc )
+        return error(rc.error());
+
+    if ( auto rc = _optimizeUnits(); ! rc )
+        return rc;
+
+    if ( _driver_options.output_hilti ) {
+        std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
+        auto output = openOutput(output_path, false);
+        if ( ! output )
+            return error(output.error());
+
+        for ( auto& unit : _hlts ) {
+            if ( ! unit->isCompiledHILTI() )
+                continue;
+
+            HILTI_DEBUG(logging::debug::Driver, util::fmt("saving HILTI code for module %s", unit->id()));
+            if ( ! unit->print(*output) )
+                return error(fmt("error print HILTI code for module %s", unit->id()));
+        }
+
+        return Nothing();
+    }
+
+    if ( auto rc = _codegenUnits(); ! rc )
+        return error(rc.error());
 
     return Nothing();
 }
@@ -635,11 +872,11 @@ Result<Nothing> Driver::run() {
 
     for ( const auto& i : _driver_options.inputs ) {
         if ( auto rc = addInput(i); ! rc )
-            return rc.error();
+            return rc;
     }
 
     if ( auto x = compile(); ! x )
-        return x;
+        return x.error();
 
     if ( ! _driver_options.execute_code || ! _driver_options.output_path.empty() )
         return Nothing();
@@ -662,63 +899,29 @@ Result<Nothing> Driver::run() {
         return result::Error(fmt("uncaught exception of type %s: %s", util::demangle(typeid(e).name()), e.what()));
     }
 
-    return Nothing();
-}
+    _ctx = nullptr;
 
-Result<Nothing> Driver::transformUnits() {
-    if ( ! _driver_options.global_optimizations )
-        return Nothing();
-
-    HILTI_DEBUG(logging::debug::Driver, "performing global transformations");
-
-    Optimizer opt(&_hlts, _ctx);
-
-    opt.run();
-
-
-    return Nothing();
+    return {};
 }
 
 Result<Nothing> Driver::compile() {
     if ( auto rc = compileUnits(); ! rc )
         return rc;
 
-    if ( auto rc = transformUnits(); ! rc )
-        return rc;
-
-    if ( _driver_options.output_hilti ) {
-        std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
-        auto output = openOutput(output_path, false);
-        if ( ! output )
-            return output.error();
-
-        for ( auto& unit : _hlts ) {
-            if ( ! unit.isCompiledHILTI() )
-                continue;
-
-            HILTI_DEBUG(logging::debug::Driver, util::fmt("saving HILTI code for module %s", unit.id()));
-            if ( ! unit.print(*output) )
-                return error(fmt("error print HILTI code for module %s", unit.id()));
-        }
-    }
-
-    if ( auto rc = codegenUnits(); ! rc )
-        return rc;
-
     if ( _driver_options.include_linker ) {
         if ( auto rc = linkUnits(); ! rc )
-            return rc;
+            return error(rc.error());
     }
 
     if ( _driver_options.output_hilti )
         return Nothing();
 
     if ( auto rc = outputUnits(); ! rc )
-        return rc;
+        return error(rc.error());
 
     if ( _driver_options.execute_code && ! _driver_options.output_prototypes ) {
         if ( auto rc = jitUnits(); ! rc )
-            return rc;
+            return error(rc.error());
 
         if ( _driver_options.output_path.empty() ) {
             // OK if not available.
@@ -741,12 +944,15 @@ Result<Nothing> Driver::compile() {
         }
     }
 
+    _pending_units.clear();
+    _hlts.clear();
+
     return Nothing();
 }
 
 Result<Nothing> Driver::linkUnits() {
     if ( _stage != Stage::CODEGENED )
-        logger().internalError("unexpected driver stage in linkUnits()");
+        logger().internalError("unexpected driver stage in linkModule()");
 
     _stage = Stage::LINKED;
 
@@ -775,7 +981,6 @@ Result<Nothing> Driver::linkUnits() {
     }
 
     auto linker_unit = Unit::link(_ctx, _mds);
-
     if ( ! linker_unit )
         return error("aborting after linker errors");
 
@@ -787,15 +992,15 @@ Result<Nothing> Driver::linkUnits() {
             return output.error();
 
         HILTI_DEBUG(logging::debug::Driver, fmt("writing linker code to %s", output_path));
-        linker_unit->cxxCode()->save(*output);
+        (*linker_unit)->cxxCode()->save(*output);
         return Nothing(); // All done.
     }
 
     if ( _driver_options.dump_code )
-        dumpUnit(*linker_unit);
+        dumpUnit(**linker_unit);
 
-    if ( linker_unit->cxxCode()->code() && linker_unit->cxxCode()->code()->size() )
-        _hlts.push_back(std::move(*linker_unit));
+    if ( (*linker_unit)->cxxCode()->code() && (*linker_unit)->cxxCode()->code()->size() )
+        _hlts.push_back(*linker_unit);
 
     return Nothing();
 }
@@ -808,7 +1013,7 @@ Result<Nothing> Driver::outputUnits() {
 
     bool append = false;
     for ( auto& unit : _hlts ) {
-        if ( auto cxx = unit.cxxCode() ) {
+        if ( auto cxx = unit->cxxCode() ) {
             if ( _driver_options.output_cxx ) {
                 auto cxx_path = output_path;
 
@@ -827,7 +1032,7 @@ Result<Nothing> Driver::outputUnits() {
                 if ( ! output )
                     return output.error();
 
-                HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", unit.id(), cxx_path));
+                HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", unit->id(), cxx_path));
                 cxx->save(*output);
             }
 
@@ -837,14 +1042,20 @@ Result<Nothing> Driver::outputUnits() {
                     return output.error();
 
                 HILTI_DEBUG(logging::debug::Driver,
-                            fmt("saving C++ prototypes for module %s to %s", unit.id(), output_path));
-                unit.createPrototypes(*output);
+                            fmt("saving C++ prototypes for module %s to %s", unit->id(), output_path));
+                unit->createPrototypes(*output);
             }
 
             if ( _driver_options.output_dependencies != driver::Dependencies::None ) {
-                for ( const auto& [id, path] :
-                      unit.allImported(_driver_options.output_dependencies == driver::Dependencies::Code) )
-                    std::cout << fmt("%s (%s)\n", id, util::normalizePath(path).native());
+                const bool code_only = (_driver_options.output_dependencies == driver::Dependencies::Code);
+
+                for ( const auto& unit_ : context()->lookupDependenciesForUnit(unit->id(), unit->extension()) ) {
+                    auto unit = unit_.lock();
+                    if ( code_only && ! unit->requiresCompilation() )
+                        continue;
+
+                    std::cout << fmt("%s (%s)\n", unit->id(), util::normalizePath(unit->path()).native());
+                }
             }
 
             _generated_cxxs.push_back(std::move(*cxx));
@@ -854,7 +1065,7 @@ Result<Nothing> Driver::outputUnits() {
             append = _driver_options.output_cxx_prefix.empty();
         }
         else
-            return error(fmt("error retrieving C++ code for module %s", unit.id()));
+            return error(fmt("error retrieving C++ code for module %s", unit->id()));
     }
 
     return Nothing();
@@ -982,4 +1193,70 @@ Result<Nothing> Driver::finishRuntime() {
         _jit.reset();
 
     return Nothing();
+}
+
+void Driver::_dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& stream, const Plugin& plugin,
+                      const std::string& prefix, int round) {
+    if ( ! logger().isEnabled(stream) )
+        return;
+
+    std::string r;
+
+    if ( round > 0 )
+        r = fmt(" (round %d)", round);
+
+    HILTI_DEBUG(stream, fmt("# [%s] %s: %s%s", pluginForUnit(unit).get().component, unit->id(), prefix, r));
+    detail::renderNode(*unit->moduleRef(), stream, true);
+}
+
+void Driver::_dumpAST(std::shared_ptr<Unit> unit, std::ostream& stream, const Plugin& plugin, const std::string& prefix,
+                      int round) {
+    std::string r;
+
+    if ( round > 0 )
+        r = fmt(" (round %d)", round);
+
+    stream << fmt("# [%s] %s: %s%s\n", pluginForUnit(unit).get().component, unit->id(), prefix, r);
+    detail::renderNode(unit->module(), stream, true);
+}
+
+void Driver::_dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& stream, const std::string& prefix) {
+    HILTI_DEBUG(stream, fmt("# %s: %s\n", unit->id(), prefix));
+    detail::renderNode(unit->module(), stream, true);
+}
+
+void Driver::_dumpDeclarations(std::shared_ptr<Unit> unit, const Plugin& plugin) {
+    if ( ! logger().isEnabled(logging::debug::AstDeclarations) )
+        return;
+
+    logger().debugSetIndent(logging::debug::AstDeclarations, 0);
+    HILTI_DEBUG(logging::debug::AstDeclarations, fmt("# [%s] %s", pluginForUnit(unit).get().component, unit->id()));
+
+    for ( const auto i : visitor::PreOrder<>().walk(unit->module()) ) {
+        auto decl = i.node.tryAs<Declaration>();
+        if ( ! decl )
+            continue;
+
+        logger().debugSetIndent(logging::debug::AstDeclarations, i.path.size() - 1);
+        HILTI_DEBUG(logging::debug::AstDeclarations,
+                    fmt("- %s \"%s\" (%s)", ID(i.node.typename_()).local(), decl->id(), decl->canonicalID()));
+    }
+}
+
+void Driver::_saveIterationAST(std::shared_ptr<Unit> unit, const Plugin& plugin, const std::string& prefix,
+                               int round = 0) {
+    if ( ! logger().isEnabled(logging::debug::AstDumpIterations) )
+        return;
+
+    std::ofstream out(fmt("ast-%s-%d.tmp", plugin.component, round));
+    _dumpAST(unit, out, plugin, prefix, round);
+}
+
+void Driver::_saveIterationAST(std::shared_ptr<Unit> unit, const Plugin& plugin, const std::string& prefix,
+                               std::string tag) {
+    if ( ! logger().isEnabled(logging::debug::AstDumpIterations) )
+        return;
+
+    std::ofstream out(fmt("ast-%s-%s.tmp", plugin.component, tag));
+    _dumpAST(unit, out, plugin, prefix, 0);
 }

@@ -143,7 +143,7 @@ struct Parser {
           parse2(std::move(parse2)),
           parse3(parse3),
           context_new(context_new),
-          type(type),
+          type_info(type),
           description(std::move(description)),
           mime_types(std::move(mime_types)),
           ports(std::move(ports)) {}
@@ -155,7 +155,7 @@ struct Parser {
           parse1(parse1),
           parse2(std::move(parse2)),
           parse3(parse3),
-          type(type),
+          type_info(type),
           description(std::move(description)),
           mime_types(std::move(mime_types)),
           ports(std::move(ports)) {}
@@ -222,7 +222,7 @@ struct Parser {
      */
     ContextNewFunction context_new = nullptr;
 
-    const hilti::rt::TypeInfo* type;
+    const hilti::rt::TypeInfo* type_info;
 
     /**
      * Human-readable description associated with this parser.

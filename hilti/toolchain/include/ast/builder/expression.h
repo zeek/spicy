@@ -10,7 +10,7 @@
 #include <hilti/ast/builder/declaration.h>
 #include <hilti/ast/ctors/all.h>
 #include <hilti/ast/expressions/all.h>
-#include <hilti/ast/types/id.h>
+#include <hilti/ast/types/unresolved-id.h>
 
 namespace hilti::builder {
 
@@ -45,6 +45,11 @@ inline Expression default_(Type t, const Meta& m = Meta()) {
 inline Expression default_(Type t, std::vector<Expression> type_args, const Meta& m = Meta()) {
     return expression::Ctor(ctor::Default(std::move(t), std::move(type_args), m), m);
 }
+
+inline Expression default_(Type t, hilti::node::Range<Expression> type_args, const Meta& m = Meta()) {
+    return expression::Ctor(ctor::Default(std::move(t), type_args.copy(), m), m);
+}
+
 
 inline Expression exception(Type t, std::string msg, const Meta& m = Meta()) {
     return expression::Ctor(ctor::Exception(std::move(t), builder::string(std::move(msg)), m), m);
@@ -211,10 +216,27 @@ inline Expression member(Expression self, std::string id_, const Meta& m = Meta(
                                           {std::move(self), expression::Member(ID(std::move(id_)), m)}, m);
 }
 
-inline Expression memberCall(Expression self, std::string id_, std::vector<Expression> v, const Meta& m = Meta()) {
+inline Expression hasMember(Expression self, std::string id_, const Meta& m = Meta()) {
+    return expression::UnresolvedOperator(operator_::Kind::HasMember,
+                                          {std::move(self), expression::Member(ID(std::move(id_)), m)}, m);
+}
+
+inline Expression tryMember(Expression self, std::string id_, const Meta& m = Meta()) {
+    return expression::UnresolvedOperator(operator_::Kind::TryMember,
+                                          {std::move(self), expression::Member(ID(std::move(id_)), m)}, m);
+}
+
+inline Expression memberCall(Expression self, std::string id_, std::vector<Expression> args, const Meta& m = Meta()) {
     return expression::UnresolvedOperator(operator_::Kind::MemberCall,
                                           {std::move(self), expression::Member(ID(std::move(id_)), m),
-                                           tuple(std::move(v), m)},
+                                           tuple(std::move(args), m)},
+                                          m);
+}
+
+inline Expression memberCall(Expression self, std::string id_, ctor::Tuple args, const Meta& m = Meta()) {
+    return expression::UnresolvedOperator(operator_::Kind::MemberCall,
+                                          {std::move(self), expression::Member(ID(std::move(id_)), m),
+                                           expression::Ctor(std::move(args))},
                                           m);
 }
 
@@ -264,15 +286,16 @@ inline Expression incrementPrefix(Expression op, const Meta& m = Meta()) {
 
 inline Expression new_(Type t, const Meta& m = Meta()) {
     return expression::UnresolvedOperator(operator_::Kind::New,
-                                          {expression::Type_(std::move(t), m),
-                                           hilti::expression::Ctor(hilti::ctor::Tuple({}, m))},
+                                          std::vector<Expression>{expression::Type_(std::move(t), m),
+                                                                  hilti::expression::Ctor(hilti::ctor::Tuple({}, m))},
                                           m);
 }
 
 inline Expression new_(Type t, std::vector<Expression> args, const Meta& m = Meta()) {
     return expression::UnresolvedOperator(operator_::Kind::New,
-                                          {expression::Type_(std::move(t), m),
-                                           hilti::expression::Ctor(hilti::ctor::Tuple(std::move(args), m))},
+                                          std::vector<Expression>{expression::Type_(std::move(t), m),
+                                                                  hilti::expression::Ctor(
+                                                                      hilti::ctor::Tuple(std::move(args), m))},
                                           m);
 }
 
@@ -294,18 +317,6 @@ inline Expression typeinfo(Type t, Meta m = Meta()) {
 
 inline Expression typeinfo(Expression e, Meta m = Meta()) { return expression::TypeInfo(std::move(e), std::move(m)); }
 
-inline Expression self(NodeRef d, Meta m = Meta()) {
-    return expression::Keyword(hilti::expression::keyword::Kind::Self, std::move(d), std::move(m));
-}
-
-inline Expression dollardollar(Meta m = Meta()) {
-    return expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, std::move(m));
-}
-
-inline Expression dollardollar(Type t, Meta m = Meta()) {
-    return expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, std::move(t), std::move(m));
-}
-
 inline Expression assign(Expression target, Expression src, Meta m = Meta()) {
     return expression::Assign(std::move(target), std::move(src), std::move(m));
 }
@@ -324,27 +335,9 @@ inline Expression max(const Expression& e1, const Expression& e2, const Meta& m 
     return ternary(lowerEqual(e1, e2, m), e2, e1, m);
 }
 
-inline Expression type_wrapped(Expression e, const Meta& m = Meta()) {
-    return expression::TypeWrapped(std::move(e), m);
-}
-
-inline Expression type_wrapped(Expression e, Type t, const Meta& m = Meta()) {
-    return expression::TypeWrapped(std::move(e), std::move(t), m);
-}
-
-inline Expression expect_type(Expression e, Type expected, const Meta& m = Meta()) {
-    return expression::TypeWrapped(e, std::move(expected), expression::TypeWrapped::ValidateTypeMatch(),
-                                   m ? std::move(m) : e.meta());
-}
-
-// Forces interpreting a given expression as a value of a __library_type.
-inline Expression library_type_value(Expression e, ID library_type, const Meta& m = Meta()) {
-    return expression::TypeWrapped(e, hilti::type::UnresolvedID(std::move(library_type), m), m);
-}
-
 inline auto port(Expression port, Expression protocol, const Meta& m = Meta()) {
     return hilti::expression::BuiltinFunction(
-        "port", "hilti::rt::Port", hilti::type::Port(),
+        "port", "::hilti::rt::Port", hilti::type::Port(),
         hilti::builder::parameters(hilti::builder::parameter(hilti::ID("port"), hilti::type::UnsignedInteger(16)),
                                    hilti::builder::parameter(hilti::ID("protocol"),
                                                              hilti::builder::typeByID("hilti::Protocol"))),

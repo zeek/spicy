@@ -48,30 +48,15 @@ inline Node to_node(T t) {
 } // namespace type
 } // namespace spicy
 
-inline bool operator==(const spicy::type::unit::Item& x, const spicy::type::unit::Item& y) {
+namespace spicy::type::unit::detail {
+inline bool operator==(const Item& x, const Item& y) {
     if ( &x == &y )
         return true;
 
     assert(x.isEqual(y) == y.isEqual(x)); // Expected to be symmetric.
     return x.isEqual(y);
 }
-
-// TODO(robin): Not clear why we need this. Without it, vector comparisions dont'
-// seem to find the eleement comparision operator.
-inline bool operator==(const std::vector<spicy::type::unit::Item>& t1, const std::vector<spicy::type::unit::Item>& t2) {
-    if ( &t1 == &t2 )
-        return true;
-
-    if ( t1.size() != t2.size() )
-        return false;
-
-    for ( auto i = std::make_pair(t1.cbegin(), t2.cbegin()); i.first != t1.end() && i.second != t2.end();
-          ++i.first, ++i.second )
-        if ( ! (*i.first == *i.second) )
-            return false;
-
-    return true;
-}
+} // namespace spicy::type::unit::detail
 
 inline bool operator!=(const spicy::type::unit::Item& d1, const spicy::type::unit::Item& d2) { return ! (d1 == d2); }
 

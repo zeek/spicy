@@ -5,27 +5,27 @@ module Foo {
 
 import hilti;
 
-function hook void f1(string s) {
+hook void f1(string s) {
     hilti::print("f1.a %s" % s);
 }
 
-function hook void f1(string s) {
+hook void f1(string s) {
     hilti::print("f1.b %s" % s);
 }
 
-function hook void f1(string s) {
+hook void f1(string s) {
     hilti::print("f1.c %s" % s);
 }
 
-function hook optional<int<64>> f2() {
+hook optional<int<64>> f2() {
     return Null;
 }
 
-function hook optional<int<64>> f2() {
+hook optional<int<64>> f2() {
     return 42;
 }
 
-function hook optional<int<64>> f2() {
+hook optional<int<64>> f2() {
     return Null;
 }
 

@@ -17,6 +17,14 @@ method void X::y(string s) { }
 method void X::s(string s) { }
 method void x(string s) { }
 
+}
+
+@TEST-START-NEXT
+
+module Foo {
+
+import hilti;
+
 function void x() { hilti::print(self); }
 
 }

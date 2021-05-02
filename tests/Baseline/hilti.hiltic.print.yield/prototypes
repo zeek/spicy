@@ -11,7 +11,7 @@ namespace __hlt::Foo {
 }
 
 namespace hlt::Foo {
-    extern auto test(const std::string& x) -> hilti::rt::Resumable;
+    extern auto test(const std::string& x) -> ::hilti::rt::Resumable;
 }
 
 #endif

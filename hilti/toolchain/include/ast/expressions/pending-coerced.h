@@ -28,7 +28,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return expression().isTemporary(); }
     /** Implements `Expression` interface. */
-    Type type() const { return type::effectiveType(child<Type>(1)); }
+    const Type& type() const { return child<Type>(1); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return expression().isConstant(); }
     /** Implements `Expression` interface. */

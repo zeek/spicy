@@ -9,46 +9,26 @@
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/struct.h>
 
-#include <spicy/ast/types/unit-items/unit-hook.h>
+#include <spicy/ast/hook.h>
 
 namespace spicy {
 namespace declaration {
 
 /** AST node for a declaration of an external (i.e., module-level) unit hook. */
-class UnitHook : public hilti::NodeBase, public hilti::trait::isDeclaration {
+class UnitHook : public hilti::DeclarationBase {
 public:
-    UnitHook(ID id, Type unit, const type::unit::Item& hook, Meta m = Meta())
-        : NodeBase(hilti::nodes(std::move(id), std::move(unit), hook), std::move(m)) {
-        if ( ! hook.isA<type::unit::item::UnitHook>() )
-            hilti::logger().internalError("non-unit hook passed into declaration::UnitHook");
+    UnitHook(ID id, const Hook& hook, Meta m = Meta()) : DeclarationBase(hilti::nodes(id, hook), std::move(m)) {
+        childs()[1].as<Hook>().setID(id);
     }
 
-    std::optional<type::Unit> unitType() const {
-        Type t = type::effectiveType(childs()[1].as<Type>());
+    const auto& hook() const { return child<Hook>(1); }
 
-        if ( auto x = t.tryAs<hilti::type::ValueReference>() )
-            t = x->dereferencedType();
-
-        if ( t.isA<type::Unit>() )
-            return t.as<type::Unit>();
-
-        if ( t.isA<type::Struct>() )
-            return t.originalNode()->as<type::Unit>();
-
-        // Not resolved yet.
-        return {};
-    }
-
-    const auto& unitHook() const { return child<type::unit::item::UnitHook>(2); }
-
-    bool operator==(const UnitHook& other) const {
-        return unitType() == other.unitType() && unitHook() == other.unitHook();
-    }
+    bool operator==(const UnitHook& other) const { return id() == other.id() && hook() == other.hook(); }
 
     /** Implements `Declaration` interface. */
     bool isConstant() const { return true; }
     /** Implements `Declaration` interface. */
-    const auto& id() const { return child<ID>(0); }
+    const ID& id() const { return child<ID>(0); }
     /** Implements `Declaration` interface. */
     Linkage linkage() const { return Linkage::Private; }
     /** Implements `Declaration` interface. */

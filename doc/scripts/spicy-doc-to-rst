@@ -76,6 +76,11 @@ Operators = {
         TypedType.sub("\\1", op.operands[1].rst(
             in_operator=True, markup=False)),
         op.operands[0].rst(in_operator=True, markup=False)),
+    "CustomAssign": lambda op: "{} = {}".format(
+        op.operands[0].rst(in_operator=True),
+        op.operands[1].rst(in_operator=True)
+    ),
+
     "Delete": lambda op: "delete <sp> {}[{}]".format(
         op.operands[0].rst(in_operator=True),
         op.operands[1].rst(in_operator=True, markup=False)
@@ -137,8 +142,8 @@ NamespaceMappings = {
 }
 
 TypeMappings = {
-    "hilti::rt::regexp::MatchState": "spicy::MatchState",
-    "hilti::rt::bytes::Side": "spicy::Side",
+    "::hilti::rt::regexp::MatchState": "spicy::MatchState",
+    "::hilti::rt::bytes::Side": "spicy::Side",
 }
 
 LibraryType = re.compile(r'__library_type\("(.*)"\)')

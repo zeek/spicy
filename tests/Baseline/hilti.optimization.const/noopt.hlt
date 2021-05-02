@@ -3,8 +3,8 @@ module Foo {
 
 import hilti;
 
-const  t = True;
-const  f = False;
+const bool t = True;
+const bool f = False;
 
 hilti::print(Foo::t, True);
 hilti::print(Foo::f, True);

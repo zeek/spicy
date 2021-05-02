@@ -47,8 +47,10 @@ public:
 
     bool expectsException() const { return _expects_exception; }
     const auto& expression() const { return child<::hilti::Expression>(0); }
-    auto exception() const { return type::effectiveOptionalType(childs()[1].tryAs<Type>()); }
-    auto message() const { return childs()[2].tryReferenceAs<::hilti::Expression>(); }
+    auto exception() const { return childs()[1].tryAs<Type>(); }
+    auto message() const { return childs()[2].tryAs<::hilti::Expression>(); }
+
+    void setCondition(hilti::Expression c) { childs()[0] = std::move(c); }
 
     bool operator==(const Assert& other) const {
         return _expects_exception == other._expects_exception && expression() == other.expression() &&
@@ -60,19 +62,6 @@ public:
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"expects-exception", _expects_exception}}; }
-
-    /**
-     * Returns a new `assert` statement with the expression replaced.
-     *
-     * @param e original statement
-     * @param c new expresssion
-     * @return new statement that's equal to original one but with the expression replaced
-     */
-    static Statement setCondition(const Assert& e, const hilti::Expression& c) {
-        auto x = Statement(e)._clone().as<Assert>();
-        x.childs()[0] = c;
-        return x;
-    }
 
 private:
     bool _expects_exception = false;

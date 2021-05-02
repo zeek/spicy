@@ -2,61 +2,37 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/type.h>
-#include <hilti/ast/types/unknown.h>
 
 namespace hilti {
 namespace type {
 
 /** AST node for an "auto" type. */
-class Auto : public TypeBase,
-             trait::hasDynamicType,
-             type::trait::isParameterized,
-             type::trait::isViewable,
-             trait::isDereferencable,
-             trait::isIterable {
+class Auto : public TypeBase, type::trait::isAllocable {
 public:
-    Auto(Meta m = Meta())
-        : TypeBase(std::move(m)),
-          _type(std::make_shared<std::shared_ptr<Node>>(std::make_shared<Node>(type::unknown))) {}
-
-    const Type& type() const { return (*_type)->as<Type>(); }
-
-    auto isSet() const { return ! (*_type)->isA<type::Unknown>(); }
-
-    Node& typeNode() const { return **_type; }
-
-    void linkTo(const Auto& other) { *_type = *other._type; }
-
-    bool operator==(const Auto& other) const { return _type.get() == other._type.get(); }
+    bool operator==(const Auto& /* other */) const { return true; }
 
     /** Implements the `Type` interface. */
-    bool isEqual(const Type& other) const { return type() == other; }
+    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type effectiveType() const {
-        if ( isSet() )
-            return type();
-        else
-            return *this; // don't resolve yet
-    }
-
-    std::vector<Node> typeParameters() const { return type().typeParameters(); }
-    bool isWildcard() const { return type().isWildcard(); }
-    Type iteratorType(bool const_) const { return type().iteratorType(const_); }
-    Type viewType() const { return type().viewType(); }
-    Type dereferencedType() const { return type().dereferencedType(); }
-    Type elementType() const { return type().elementType(); }
-
+    auto _isResolved(ResolvedState* rstate) const { return false; }
     /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"resolves-to", Node(**_type).typename_()}}; }
+    auto properties() const { return node::Properties{}; }
+
+    /**
+     * Wrapper around constructor so that we can make it private. Don't use
+     * this, use the singleton `type::auto_` instead.
+     */
+    static Auto create(Meta m = Meta()) { return Auto(std::move(m)); }
 
 private:
-    std::shared_ptr<std::shared_ptr<Node>> _type;
+    Auto(Meta m = Meta()) : TypeBase(std::move(m)) {}
 };
+
+/** Singleton. */
+static const Type auto_ = Auto::create(Location("<singleton>"));
 
 } // namespace type
 } // namespace hilti

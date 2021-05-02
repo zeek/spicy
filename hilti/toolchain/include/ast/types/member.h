@@ -6,7 +6,7 @@
 #include <vector>
 
 #include <hilti/ast/id.h>
-#include <hilti/ast/node_ref.h>
+#include <hilti/ast/node-ref.h>
 #include <hilti/ast/type.h>
 
 namespace hilti {
@@ -24,6 +24,8 @@ public:
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    /** Implements the `Type` interface. */
+    auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Type` interface. */
     auto typeParameters() const { return std::vector<Node>{id()}; }
     /** Implements the `Type` interface. */

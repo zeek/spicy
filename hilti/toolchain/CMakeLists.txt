@@ -43,6 +43,7 @@ autogen_dispatchers(SOURCES_TYPE_ERASED ${AUTOGEN_H}/__dispatchers.h
 set(SOURCES
     src/ast/builder/builder.cc
     src/ast/builder/type.cc
+    src/ast/declarations/imported-module.cc
     src/ast/expression.cc
     src/ast/expressions
     src/ast/expressions/id.cc
@@ -85,13 +86,10 @@ set(SOURCES
     src/compiler/plugin.cc
     src/compiler/unit.cc
     src/compiler/visitors/coercer.cc
-    src/compiler/visitors/apply-coercions.cc
-    src/compiler/visitors/coercer.cc
-    src/compiler/visitors/importer.cc
+    src/compiler/visitors/normalizer.cc
     src/compiler/visitors/printer.cc
     src/compiler/visitors/renderer.cc
-    src/compiler/visitors/id-resolver.cc
-    src/compiler/visitors/operator-resolver.cc
+    src/compiler/visitors/resolver.cc
     src/compiler/visitors/scope-builder.cc
     src/compiler/visitors/validator.cc
     src/global.cc

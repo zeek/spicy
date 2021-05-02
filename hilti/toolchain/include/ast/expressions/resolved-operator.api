@@ -6,28 +6,28 @@ class ResolvedOperator(trait::isResolvedOperator) : trait::isExpression {
     Operator operator_() const;
 
     /** Returns the type of the operator expressions's result. */
-    hilti::Type result() const;
+    const hilti::Type& result() const;
 
     /** Returns the operator expression's operands. */
-    std::vector<Expression> operands() const;
+    hilti::node::Range<Expression> operands() const;
 
     /**
      * Returns the operator expression's 1st operand.
      * @exception `std::out_of_range`` if the expression doesn't have that operand
      */
-    Expression op0() const;
+    const Expression& op0() const;
 
     /**
      * Returns the operator expression's 2nd operand.
      * @exception `std::out_of_range`` if the expression doesn't have that operand
      */
-    Expression op1() const;
+    const Expression& op1() const;
 
     /**
      * Returns the operator expression's 3rd operand
      * @exception `std::out_of_range`` if the expression doesn't have that operand
      */
-    Expression op2() const;
+    const Expression& op2() const;
 
     /** Returns true if the operator expression has at least one operand. */
     bool hasOp0();
@@ -52,7 +52,7 @@ class ResolvedOperator(trait::isResolvedOperator) : trait::isExpression {
     /** Implements `Expression` interface. */
     bool isTemporary() const;
     /** Implements the `Expression` interface. */
-    hilti::Type type() const;
+    const hilti::Type& type() const;
     /** Implements the `Expression` interface. */
     bool isEqual(const Expression& other) const;
     /** Implements the `Expression` interface. */
@@ -69,9 +69,5 @@ class ResolvedOperator(trait::isResolvedOperator) : trait::isExpression {
     /** Implements the `Node` interface. */
     void setMeta(Meta m);
     /** Implements the `Node` interface. */
-    const NodeRef& originalNode() const;
-    /** Implements the `Node` interface. */
-    void setOriginalNode(const NodeRef& n);
-    /** Implements the `Node` interface. */
-    void clearCache();
+    bool pruneWalk() const;
 };

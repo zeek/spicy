@@ -8,6 +8,7 @@
 #include <hilti/ast/ctors/null.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/types/any.h>
+#include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/error.h>
 #include <hilti/ast/types/result.h>
 
@@ -17,42 +18,32 @@ namespace ctor {
 /** AST node for a constructor for a result value. */
 class Result : public NodeBase, public hilti::trait::isCtor {
 public:
-    Result(Expression v, Meta m = Meta()) : NodeBase({std::move(v)}, std::move(m)) {}
+    Result(Expression v, Meta m = Meta()) : NodeBase(nodes(type::Result(type::auto_), std::move(v)), m) {}
 
-    std::optional<Expression> value() const {
-        auto e = child<Expression>(0);
+    hilti::optional_ref<const Expression> value() const {
+        const auto& e = child<Expression>(1);
 
         if ( e.type() != type::Error() )
-            return std::move(e);
+            return e;
 
         return {};
     }
 
-    std::optional<Expression> error() const {
-        auto e = child<Expression>(0);
+    hilti::optional_ref<const Expression> error() const {
+        const auto& e = child<Expression>(1);
 
         if ( e.type() == type::Error() )
-            return std::move(e);
+            return e;
 
         return {};
     }
 
-    std::optional<Type> dereferencedType() const {
-        if ( auto x = value() )
-            return x->type();
+    const Type& dereferencedType() const { return childs()[0].as<type::Result>().dereferencedType(); }
 
-        return {};
-    }
-
-    bool operator==(const Result& other) const { return value() == other.value() && error() == other.error(); }
+    void setDereferencedType(Type x) { childs()[0] = type::Result(std::move(x)); }
 
     /** Implements `Ctor` interface. */
-    Type type() const {
-        if ( auto v = value() )
-            return type::Result(v->type(), meta());
-
-        return type::Result(type::Any(), meta());
-    }
+    const auto& type() const { return child<Type>(0); }
 
     /** Implements `Ctor` interface. */
     bool isConstant() const {
@@ -61,6 +52,8 @@ public:
 
         return true;
     }
+
+    bool operator==(const Result& other) const { return value() == other.value() && error() == other.error(); }
 
     /** Implements `Ctor` interface. */
     auto isLhs() const { return false; }

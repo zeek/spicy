@@ -191,6 +191,11 @@ public:
             _debug_streams[dbg] -= 1;
     }
 
+    void debugSetIndent(const logging::DebugStream& dbg, int indent) {
+        if ( isEnabled(dbg) )
+            _debug_streams[dbg] = indent;
+    }
+
     int errors() const { return _errors; }
     int warnings() const { return _warnings; }
 

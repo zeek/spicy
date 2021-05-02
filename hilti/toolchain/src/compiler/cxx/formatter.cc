@@ -13,7 +13,7 @@ void Formatter::pushNamespace(std::string relative_ns) {
     f.separator();
 
     if ( util::startsWith(relative_ns, "::") )
-        relative_ns = relative_ns.substr(3);
+        relative_ns = relative_ns.substr(2);
 
     if ( util::endsWith(relative_ns, "::") ) {
         assert(relative_ns != "::");

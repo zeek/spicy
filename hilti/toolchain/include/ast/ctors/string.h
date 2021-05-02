@@ -14,14 +14,14 @@ namespace ctor {
 /** AST node for a string constructor. */
 class String : public NodeBase, public hilti::trait::isCtor {
 public:
-    String(std::string v, Meta m = Meta()) : NodeBase(std::move(m)), _value(std::move(v)) {}
+    String(std::string v, Meta m = Meta()) : NodeBase(nodes(type::String(m)), m), _value(std::move(v)) {}
 
     auto value() const { return _value; }
 
     bool operator==(const String& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::String(); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

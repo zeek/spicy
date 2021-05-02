@@ -27,10 +27,17 @@ public:
 
     auto typeArguments() const { return childs<hilti::Expression>(1, -1); }
 
+    void setTypeArguments(std::vector<hilti::Expression> args) {
+        auto& c = childs();
+        c.erase(c.begin() + 1, c.end());
+        for ( auto&& a : args )
+            c.emplace_back(std::move(a));
+    }
+
     bool operator==(const Default& other) const { return type() == other.type(); }
 
     /** Implements `Ctor` interface. */
-    Type type() const { return type::effectiveType(child<Type>(0)); }
+    const Type& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */
@@ -39,25 +46,8 @@ public:
     auto isTemporary() const { return true; }
     /** Implements `Ctor` interface. */
     auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
-
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-    /**
-     * Returns a new local default constructor with the type argument expressions replaced.
-     *
-     * @param d original declaration
-     * @param i new init expresssion
-     * @return new declaration that's equal to original one but with the init expression replaced
-     */
-    static Ctor setTypeArguments(const Default& d, std::vector<hilti::Expression> args) {
-        auto x = Ctor(d)._clone().as<Default>();
-        x.childs() = x.childs<Node>(0, 1);
-        for ( auto&& a : args )
-            x.childs().emplace_back(std::move(a));
-
-        return std::move(x);
-    }
 };
 
 } // namespace ctor

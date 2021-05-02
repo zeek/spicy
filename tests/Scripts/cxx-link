@@ -5,4 +5,4 @@
 cxx=$(hilti-config --cxx)
 ldflags=$(hilti-config --ldflags ${debug})
 
-exec ${cxx} ${ldflags} $@
+exec ${cxx} $@ ${ldflags}

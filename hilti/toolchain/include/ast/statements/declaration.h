@@ -16,6 +16,7 @@ public:
     Declaration(hilti::Declaration d, Meta m = Meta()) : NodeBase({std::move(d)}, std::move(m)) {}
 
     const auto& declaration() const { return child<::hilti::Declaration>(0); }
+    auto declarationRef() const { return NodeRef(childs()[0]); }
 
     bool operator==(const Declaration& other) const { return declaration() == other.declaration(); }
 

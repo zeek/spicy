@@ -19,7 +19,7 @@ type Bar = struct {
     hook optional<string> __str__(); # not implemented
 };
 
-method hook optional<string> Foo::__str__() {
+hook optional<string> Foo::__str__() {
     return self.x + "|" + self.y;
 }
 

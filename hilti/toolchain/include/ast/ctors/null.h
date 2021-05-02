@@ -13,12 +13,12 @@ namespace ctor {
 /** AST node for a null constructor. */
 class Null : public NodeBase, public hilti::trait::isCtor {
 public:
-    Null(Meta m = Meta()) : NodeBase(std::move(m)) {}
+    Null(Meta m = Meta()) : NodeBase(nodes(type::Null(m)), m) {}
 
     bool operator==(const Null& /* other */) const { return true; }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::Null(); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

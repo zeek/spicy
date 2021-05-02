@@ -1,4 +1,3 @@
-
 trait hilti::Declaration isDeclaration
 trait hilti::Node        isNode
 trait hilti::Type        isType
@@ -19,11 +18,10 @@ hilti::Statement : isNode
 hilti::Type : isNode
 hilti::type::function::Result : isNode
 hilti::type::function::Parameter : isNode
-hilti::type::union_::Field : isNode
-hilti::type::struct_::Field : isNode
 hilti::statement::switch_::Case : isNode
 hilti::statement::try_::Catch : isNode
 hilti::type::enum_::Label : isNode
+hilti::type::tuple::Element : isNode
 
 hilti::ctor::Address : isCtor
 hilti::ctor::Bool : isCtor
@@ -35,7 +33,9 @@ hilti::ctor::Error : isCtor
 hilti::ctor::Exception : isCtor
 hilti::ctor::Interval : isCtor
 hilti::ctor::List : isCtor
+hilti::ctor::Library : isCtor
 hilti::ctor::Map : isCtor
+hilti::ctor::map::Element : isNode
 hilti::ctor::Network : isCtor
 hilti::ctor::Null : isCtor
 hilti::ctor::Optional : isCtor
@@ -59,7 +59,7 @@ hilti::ctor::ValueReference : isCtor
 
 hilti::declaration::Constant : isDeclaration
 hilti::declaration::Expression : isDeclaration
-hilti::declaration::Forward : isDeclaration
+hilti::declaration::Field : isDeclaration
 hilti::declaration::Function : isDeclaration
 hilti::declaration::GlobalVariable : isDeclaration
 hilti::declaration::ImportedModule : isDeclaration
@@ -114,7 +114,6 @@ hilti::type::Any : isType
 hilti::type::Auto : isType
 hilti::type::Bool : isType
 hilti::type::Bytes : isType
-hilti::type::Computed : isType
 hilti::type::DocOnly : isType
 hilti::type::Enum : isType
 hilti::type::Error : isType
@@ -133,7 +132,6 @@ hilti::type::Port : isType
 hilti::type::Real : isType
 hilti::type::StrongReference : isType
 hilti::type::RegExp : isType
-hilti::type::ResolvedID : isType
 hilti::type::Result : isType
 hilti::type::Set : isType
 hilti::type::SignedInteger : isType

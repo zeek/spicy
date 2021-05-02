@@ -8,9 +8,9 @@ type X = struct {
     hook optional<int<64>> unimplemented_int64();
 };
 
-global auto i = global_unimplemented_int64();
+global optional<int<64>> i = global_unimplemented_int64();
 global X x;
-global auto j = Foo::x.unimplemented_int64();
+global optional<int<64>> j = Foo::x.unimplemented_int64();
 
 declare public function hook void global_unimplemented_void();
 declare public function hook void global_implemented();

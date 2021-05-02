@@ -13,9 +13,11 @@ namespace expression {
 /** AST node for a logical "not" expression. */
 class LogicalNot : public NodeBase, public trait::isExpression {
 public:
-    LogicalNot(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
+    LogicalNot(Expression e, Meta m = Meta()) : NodeBase(nodes(std::move(e), type::Bool(m)), m) {}
 
     const auto& expression() const { return child<Expression>(0); }
+
+    void setExpression(const Expression op) { childs()[0] = std::move(op); }
 
     bool operator==(const LogicalNot& other) const { return expression() == other.expression(); }
 
@@ -24,7 +26,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    auto type() const { return type::Bool(); }
+    const auto& type() const { return child<Type>(1); }
     /** Implements `Expression` interface. */
     auto isConstant() const { return expression().isConstant(); }
     /** Implements `Expression` interface. */
@@ -32,19 +34,6 @@ public:
 
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-    /**
-     * Returns a new "not" expression with the operand expression replaced.
-     *
-     * @param e original expression
-     * @param op new operand expresssion
-     * @return new expression that's equal to original one but with the operand replaced
-     */
-    static Expression setExpression(const LogicalNot& e, const Expression& op) {
-        auto x = Expression(e)._clone().as<LogicalNot>();
-        x.childs()[0] = op;
-        return x;
-    }
 };
 
 } // namespace expression

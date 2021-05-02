@@ -21,14 +21,6 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     bool lhs;
 
     result_t operator()(const expression::Assign& n) {
-        if ( auto c = n.target().tryAs<expression::Ctor>() ) {
-            if ( c->ctor().type().isA<type::Tuple>() ) {
-                auto t = c->ctor().as<ctor::Tuple>().value();
-                auto l = util::join(util::transform(t, [this](auto& x) { return cg->compile(x, true); }), ", ");
-                return fmt("std::tie(%s) = %s", l, cg->compile(n.source()));
-            }
-        }
-
         return fmt("%s = %s", cg->compile(n.target(), true), cg->compile(n.source()));
     }
 
@@ -41,14 +33,14 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         // not present for certain globals:
         //
         //     auto arguments =
-        //         util::join(util::transform(n.arguments(), [this](auto& x) { return cg->compile(x, true); }), ", ");
+        //         util::join(node::transform(n.arguments(), [this](auto& x) { return cg->compile(x, true); }), ", ");
         //
         //     return fmt("%s(%s)", cxx::ID(n.cxxname()), arguments);
 
         cxx::Block block;
         cg->pushCxxBlock(&block);
         auto arguments =
-            util::join(util::transform(n.arguments(), [this](auto& x) { return cg->compile(x, true); }), ", ");
+            util::join(node::transform(n.arguments(), [this](auto& x) { return cg->compile(x, true); }), ", ");
         cg->popCxxBlock();
 
         block.addStatement(fmt("%s(%s)", cxx::ID(n.cxxname()), arguments));
@@ -77,11 +69,11 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
         if ( n.catchException() )
             return fmt(
-                "hilti::rt::DeferredExpression<%s>([=]() -> %s { try { return %s; } catch ( ... ) { return "
-                "hilti::rt::result::Error(\"n/a\"); } })",
+                "::hilti::rt::DeferredExpression<%s>([=]() -> %s { try { return %s; } catch ( ... ) { return "
+                "::hilti::rt::result::Error(\"n/a\"); } })",
                 type, type, value);
         else
-            return fmt("hilti::rt::DeferredExpression<%s>([=]() -> %s { return %s; })", type, type, value);
+            return fmt("::hilti::rt::DeferredExpression<%s>([=]() -> %s { return %s; })", type, type, value);
     }
 
     result_t operator()(const expression::Grouping& n) { return fmt("(%s)", cg->compile(n.expression())); }
@@ -96,7 +88,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const expression::ListComprehension& n) {
-        auto id = cxx::ID(n.id());
+        auto id = cxx::ID(n.local().id());
         auto input = cg->compile(n.input());
         auto itype = cg->compile(n.input().type().elementType(), codegen::TypeUsage::Storage);
         auto otype = cg->compile(n.output().type(), codegen::TypeUsage::Storage);
@@ -105,7 +97,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         auto allocator = std::string();
 
         if ( auto def = cg->typeDefaultValue(n.output().type()) ) {
-            allocator = fmt("hilti::rt::vector::Allocator<%s, %s>", otype, *def);
+            allocator = fmt("::hilti::rt::vector::Allocator<%s, %s>", otype, *def);
         }
         else {
             allocator = fmt("std::allocator<%s>", otype);
@@ -114,7 +106,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         if ( auto c = n.condition() )
             pred = fmt(", [](auto&& %s) -> bool { return %s; }", id, cg->compile(*c));
 
-        return fmt("hilti::rt::vector::make<%s, %s, %s>(%s, [](auto&& %s) -> %s { return %s; }%s)", allocator, itype,
+        return fmt("::hilti::rt::vector::make<%s, %s, %s>(%s, [](auto&& %s) -> %s { return %s; }%s)", allocator, itype,
                    otype, input, id, otype, output, pred);
     }
 
@@ -171,7 +163,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             }
         }
 
-        if ( auto p = n.declaration().tryAs<declaration::Parameter>(); p && p->isStructParameter() ) {
+        if ( auto p = n.declaration().tryAs<declaration::Parameter>(); p && p->isTypeParameter() ) {
             // Need to adjust here for potential automatic change to a weak reference.
             if ( type::isReferenceType(p->type()) )
                 return cxx::Expression(fmt("%s->__p_%s.derefAsValue()", cg->self(), p->id()));

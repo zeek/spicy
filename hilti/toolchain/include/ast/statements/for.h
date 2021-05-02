@@ -16,20 +16,18 @@ namespace statement {
 class For : public NodeBase, public hilti::trait::isStatement {
 public:
     For(hilti::ID id, hilti::Expression seq, Statement body, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(seq), std::move(body)), std::move(m)) {}
+        : NodeBase(nodes(declaration::LocalVariable(std::move(id), true, id.meta()), std::move(seq), std::move(body)),
+                   std::move(m)) {}
 
-    const auto& id() const { return child<ID>(0); }
+    const auto& local() const { return child<hilti::declaration::LocalVariable>(0); }
+    auto localRef() const { return NodeRef(childs()[0]); }
     const auto& sequence() const { return child<hilti::Expression>(1); }
     const auto& body() const { return child<hilti::Statement>(2); }
 
-    /**
-     * Returns the body's scope. Note that the scope is shared among any
-     * copies of an instance.
-     */
-    IntrusivePtr<Scope> scope() const { return childs()[2].scope(); }
+    void setLocalType(Type t) { childs()[0].as<declaration::LocalVariable>().setType(std::move(t)); }
 
     bool operator==(const For& other) const {
-        return id() == other.id() && sequence() == other.sequence() && body() == other.body();
+        return local() == other.local() && sequence() == other.sequence() && body() == other.body();
     }
 
     /** Internal method for use by builder API only. */

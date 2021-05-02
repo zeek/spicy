@@ -3,8 +3,7 @@
 #include <hilti/rt/util.h>
 
 #include <hilti/base/preprocessor.h>
-
-#include "base/util.h"
+#include <hilti/base/util.h>
 
 using namespace hilti::util;
 

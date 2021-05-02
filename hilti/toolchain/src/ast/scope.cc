@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/declarations/module.h>
@@ -10,16 +11,27 @@
 
 using namespace hilti;
 
-void Scope::insert(const ID& id, NodeRef n) {
+void Scope::insert(ID id, NodeRef&& n) {
+    assert(n && n->isA<Declaration>());
+    const auto& d = n->as<Declaration>();
     auto& nodes = _items[std::string(id)];
+
+    // Filter out duplicates
+    for ( const auto& i : nodes ) {
+        if ( i && i->as<Declaration>() == d )
+            return;
+    }
+
     nodes.push_back(std::move(n));
 }
 
-void Scope::insert(const ID& id, Node&& n) {
-    auto p = std::make_shared<Node>(std::move(n));
-    _nodes.push_back(p);
-    insert(id, NodeRef(*_nodes.back()));
+void Scope::insert(NodeRef&& n) {
+    assert(n && n->isA<Declaration>());
+    const auto& d = n->as<Declaration>();
+    insert(d.id(), std::move(n));
 }
+
+void Scope::insertNotFound(ID id) { _items[std::string(id)] = {NodeRef(node::none)}; }
 
 static auto createRefs(const std::vector<Scope::Referee>& refs, const std::string& ns, bool external) {
     std::vector<Scope::Referee> result;
@@ -34,13 +46,12 @@ static auto createRefs(const std::vector<Scope::Referee>& refs, const std::strin
     return result;
 }
 
-static auto createRefs(std::vector<NodeRef> refs, const std::string& id, bool external) {
+static auto createRefs(const std::vector<NodeRef>& refs, const std::string& id, bool external) {
     std::vector<Scope::Referee> result;
 
     result.reserve(refs.size());
-    for ( auto& n : refs ) {
-        result.push_back(Scope::Referee{.node = std::move(n), .qualified = id, .external = external});
-    }
+    for ( auto& n : refs )
+        result.push_back(Scope::Referee{.node = NodeRef(n), .qualified = id, .external = external});
 
     return result;
 }
@@ -64,7 +75,7 @@ std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, boo
                 return createRefs(i->second, h, external);
 
             for ( const auto& v : (*i).second ) {
-                Scope* scope_ = (*v).scope().get();
+                Scope* scope_ = v->scope().get();
 
                 if ( auto m = v->tryAs<declaration::Module>() )
                     scope_ = m->root().scope().get();
@@ -89,11 +100,18 @@ std::vector<Scope::Referee> Scope::_findID(const ID& id, bool external) const { 
 void Scope::render(std::ostream& out, const std::string& prefix) const {
     for ( const auto& [k, v] : items() ) {
         for ( const auto& x : v ) {
-            auto s = util::fmt("%s%s -> %s", prefix, k, x ? x->render(false) : "<invalid ref>");
+            if ( ! x ) {
+                out << util::fmt("%s%s -> <invalid-ref>\n", prefix, k);
+                continue;
+            }
+
+            auto s = util::fmt("%s%s -> %s", prefix, k, x->render(false));
 
             if ( x ) {
                 if ( auto d = x->tryAs<declaration::Expression>() )
-                    s += util::fmt(" (type: %s)", d->expression().type());
+                    s += util::fmt(" (type: %s @t:%p)", d->expression().type(), d->expression().type().identity());
+                else
+                    s += util::fmt(" ([@d:%p])", x->identity());
             }
 
             out << s << '\n';

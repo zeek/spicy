@@ -1,0 +1,10 @@
+# @TEST-EXEC: spicyc -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+function foo(x: int64) { print "int64", x; }
+function foo(x: string) { print "string", x; }
+
+foo(42);
+foo("foo");

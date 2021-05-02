@@ -1,8 +1,8 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "spicy/rt/base64.h"
-
 #include <hilti/rt/types/bytes.h>
+
+#include <spicy/rt/base64.h>
 
 extern "C" {
 #include <b64/cdecode.h>

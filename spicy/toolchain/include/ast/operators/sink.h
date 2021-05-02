@@ -30,7 +30,7 @@ filters attached, this returns the value after filtering.
 BEGIN_METHOD(sink, Close)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "close",
                                            .args = {},
                                            .doc = R"(
@@ -46,7 +46,7 @@ END_METHOD
 BEGIN_METHOD(sink, Connect)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "connect",
                                            .args = {{.id = "u",
                                                      .type = type::StrongReference(type::Unit(type::Wildcard()))}},
@@ -62,7 +62,7 @@ END_METHOD
 BEGIN_METHOD(sink, ConnectMIMETypeString)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "connect_mime_type",
                                            .args = {{.id = "mt", .type = type::String()}},
                                            .doc = R"(
@@ -77,9 +77,9 @@ END_METHOD
 BEGIN_METHOD(sink, ConnectMIMETypeBytes)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "connect_mime_type",
-                                           .args = {{.id = "mt", .type = type::Bytes()}},
+                                           .args = {{.id = "mt", .type = type::constant(type::Bytes())}},
                                            .doc = R"(
 Connects parsing units to a sink for all parsers that support a given MIME
 type. All subsequent write operations to the sink will pass their data on to
@@ -92,7 +92,7 @@ END_METHOD
 BEGIN_METHOD(sink, ConnectFilter)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = hilti::type::Void(),
+                                           .result = hilti::type::void_,
                                            .id = "connect_filter",
                                            .args = {{.id = "filter",
                                                      .type = hilti::type::StrongReference(
@@ -115,7 +115,7 @@ END_METHOD
 BEGIN_METHOD(sink, Gap)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "gap",
                                            .args = {{.id = "seq", .type = type::UnsignedInteger(64)},
                                                     {.id = "len", .type = type::UnsignedInteger(64)}},
@@ -142,7 +142,7 @@ END_METHOD
 BEGIN_METHOD(sink, SetAutoTrim)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "set_auto_trim",
                                            .args = {{.id = "enable", .type = type::Bool()}},
                                            .doc = R"(
@@ -156,7 +156,7 @@ END_METHOD
 BEGIN_METHOD(sink, SetInitialSequenceNumber)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "set_initial_sequence_number",
                                            .args =
                                                {
@@ -173,7 +173,7 @@ END_METHOD
 BEGIN_METHOD(sink, SetPolicy)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "set_policy",
                                            .args =
                                                {
@@ -194,7 +194,7 @@ END_METHOD
 BEGIN_METHOD(sink, Skip)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "skip",
                                            .args =
                                                {
@@ -214,7 +214,7 @@ END_METHOD
 BEGIN_METHOD(sink, Trim)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "trim",
                                            .args =
                                                {
@@ -236,7 +236,7 @@ END_METHOD
 BEGIN_METHOD(sink, Write)
     auto signature() const {
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
-                                           .result = type::Void(),
+                                           .result = type::void_,
                                            .id = "write",
                                            .args = {{.id = "data", .type = type::Bytes()},
                                                     {.id = "seq", .type = type::UnsignedInteger(64), .optional = true},

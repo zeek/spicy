@@ -6,7 +6,9 @@
 #include <vector>
 
 #include <hilti/ast/attribute.h>
+#include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/type.h>
@@ -26,7 +28,11 @@ class Bits : public hilti::NodeBase {
 public:
     Bits() : NodeBase({ID("<no id>"), hilti::node::none}, Meta()) {}
     Bits(ID id, int lower, int upper, int field_width, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : hilti::NodeBase(nodes(std::move(id), std::move(attrs)), std::move(m)),
+        : hilti::NodeBase(nodes(std::move(id),
+                                hilti::expression::Keyword::createDollarDollarDeclaration(
+                                    hilti::type::UnsignedInteger(field_width)),
+                                hilti::type::auto_, std::move(attrs)),
+                          std::move(m)),
           _lower(lower),
           _upper(upper),
           _field_width(field_width) {}
@@ -34,8 +40,11 @@ public:
     const auto& id() const { return child<ID>(0); }
     auto lower() const { return _lower; }
     auto upper() const { return _upper; }
-    Type type() const;
-    auto attributes() const { return childs()[1].tryReferenceAs<AttributeSet>(); }
+    auto fieldWidth() const { return _field_width; }
+    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
+    const Type& ddType() const { return childs()[1].as<hilti::declaration::Expression>().expression().type(); }
+    NodeRef ddRef() const { return NodeRef(childs()[1]); }
+    const auto& itemType() const { return child<Type>(2); }
 
     /** Implements the `Node` interface. */
     auto properties() const {
@@ -46,28 +55,19 @@ public:
         };
     }
 
+    void setAttributes(AttributeSet attrs) { childs()[3] = std::move(attrs); }
+    void setItemType(Type t) { childs()[2] = std::move(t); }
+
     bool operator==(const Bits& other) const {
         return id() == other.id() && _lower == other._lower && _upper == other._upper &&
-               _field_width == other._field_width && attributes() == other.attributes();
-    }
-
-    /**
-     * Copies an existing bits instance but replaces its attributes.
-     *
-     * @param f original instance
-     * @param attrs new attributes
-     * @return new instances with attributes replaced
-     */
-    static Bits setAttributes(const Bits& f, const AttributeSet& attrs) {
-        auto x = Bits(f);
-        x.childs()[1] = attrs;
-        return x;
+               _field_width == other._field_width && itemType() == other.itemType() &&
+               attributes() == other.attributes();
     }
 
 private:
-    int _lower{0};
-    int _upper{0};
-    int _field_width{0};
+    int _lower = 0;
+    int _upper = 0;
+    int _field_width = 0;
 };
 
 inline hilti::Node to_node(Bits f) { return hilti::Node(std::move(f)); }
@@ -81,41 +81,32 @@ class Bitfield : public hilti::TypeBase,
                  hilti::type::trait::isMutable {
 public:
     Bitfield(int width, std::vector<bitfield::Bits> bits, Meta m = Meta())
-        : TypeBase(nodes(std::move(bits)), std::move(m)), _width(width) {}
-    Bitfield(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({}, std::move(m)), _wildcard(true) {}
+        : TypeBase(nodes(type::UnsignedInteger(width, m), hilti::type::auto_, std::move(bits)), m), _width(width) {}
+    Bitfield(Wildcard /*unused*/, Meta m = Meta())
+        : TypeBase({hilti::type::unknown, hilti::type::unknown}, std::move(m)), _wildcard(true) {}
 
     int width() const { return _width; }
-    auto bits() const { return childsOfType<bitfield::Bits>(); }
-    std::optional<bitfield::Bits> bits(const ID& id) const;
+    auto bits() const { return childs<bitfield::Bits>(2, -1); }
+    hilti::optional_ref<const bitfield::Bits> bits(const ID& id) const;
     std::optional<int> bitsIndex(const ID& id) const;
-    Type type() const;
+    const Type& parseType() const { return child<Type>(0); }
+    const Type& type() const { return child<Type>(1); }
+
+    void addField(bitfield::Bits f) { addChild(std::move(f)); }
+    void setType(Type t) { childs()[1] = std::move(t); }
 
     bool operator==(const Bitfield& other) const { return width() == other.width() && bits() == other.bits(); }
 
-    /** For internal use by the builder API only. */
-    auto _bitsNodes() { return nodesOfType<bitfield::Bits>(); }
-
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    /** Implements the `Type` interface. */
+    auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Type` interface. */
     auto typeParameters() const { return hilti::util::slice(childs(), 1); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-    /**
-     * Copies an existing type and adds a new field to the copy.
-     *
-     * @param s original type
-     * @param f field to add
-     * @return new typed with field added
-     */
-    static Bitfield addField(const Bitfield& s, bitfield::Bits f) {
-        auto x = Type(s)._clone().as<Bitfield>();
-        x.addChild(std::move(f));
-        return x;
-    }
 
 private:
     int _width = 0;

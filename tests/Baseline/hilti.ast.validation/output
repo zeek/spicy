@@ -7,5 +7,5 @@
 [error] <...>/validation.hlt:23:5: cannot coerce expression '42' of type 'uint<64>' to type 'void'
 [error] <...>/validation.hlt:23:5: void function cannot return a value
 [error] <...>/validation.hlt:31:5: cannot coerce expression '("1" == "2")' of type 'bool' to type 'real'
-[error] <...>/validation.hlt:32:10: cannot resolve operator: <string> == <uint<64>>
+[error] <...>/validation.hlt:32:10: unsupported operator: <string> == <uint<64>>
 [error] hiltic: aborting after errors

@@ -71,19 +71,17 @@ struct yystype_hilti {
     std::vector<hilti::statement::switch_::Case> switch_cases;
     std::vector<hilti::statement::try_::Catch> try_catches;
 
-    std::pair<hilti::ID, hilti::Type> tuple_type_elem;
-    std::vector<std::pair<hilti::ID, hilti::Type>> tuple_type_elems;
+    hilti::type::tuple::Element tuple_type_elem;
+    std::vector<hilti::type::tuple::Element> tuple_type_elems;
 
-    hilti::type::struct_::Field struct_field;
     hilti::ctor::struct_::Field struct_elem;
-    std::vector<hilti::type::struct_::Field> struct_fields;
     std::vector<hilti::ctor::struct_::Field> struct_elems;
 
-    hilti::type::union_::Field union_field;
-    std::vector<hilti::type::union_::Field> union_fields;
+    hilti::declaration::Field union_field;
+    std::vector<hilti::declaration::Field> union_fields;
 
-    hilti::ctor::Map::Element map_elem;
-    std::vector<hilti::ctor::Map::Element> map_elems;
+    hilti::ctor::map::Element map_elem;
+    std::vector<hilti::ctor::map::Element> map_elems;
 
     hilti::type::enum_::Label enum_label;
     std::vector<hilti::type::enum_::Label> enum_labels;

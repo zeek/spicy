@@ -1,6 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/autogen/config.h>
+#include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/visitors.h>
 #include <hilti/compiler/plugin.h>
 
@@ -9,12 +10,26 @@ using namespace hilti::detail;
 
 PluginRegistry::PluginRegistry() = default; // Neded here to allow PluginRegistry to be forward declared.
 
-Result<Plugin> PluginRegistry::pluginForExtension(hilti::rt::filesystem::path ext) const {
+Result<std::reference_wrapper<const Plugin>> PluginRegistry::pluginForExtension(hilti::rt::filesystem::path ext) const {
     auto p = std::find_if(_plugins.begin(), _plugins.end(), [&](auto& p) { return p.extension == ext; });
     if ( p != _plugins.end() )
-        return *p;
+        return {*p};
 
     return result::Error(util::fmt("no plugin registered for extension %s", ext));
+}
+
+const Plugin& PluginRegistry::hiltiPlugin() const {
+    static const Plugin* hilti_plugin = nullptr;
+
+    if ( ! hilti_plugin ) {
+        auto p = std::find_if(_plugins.begin(), _plugins.end(), [&](auto& p) { return p.component == "HILTI"; });
+        if ( p == _plugins.end() )
+            logger().fatalError("cannot retrieve HILTI plugin");
+
+        hilti_plugin = &*p;
+    }
+
+    return *hilti_plugin;
 }
 
 PluginRegistry& plugin::registry() {
@@ -31,9 +46,9 @@ void PluginRegistry::register_(const Plugin& p) {
 static Plugin hilti_plugin() {
     return Plugin{
         .component = "HILTI",
+        .order = 10,
         .extension = ".hlt",
         .cxx_includes = {"hilti/rt/libhilti.h"},
-        .order = 1,
 
         .library_paths =
             [](const std::shared_ptr<hilti::Context>& ctx) { return hilti::configuration().hilti_library_paths; },
@@ -46,22 +61,27 @@ static Plugin hilti_plugin() {
         .coerce_type = [](Type t, const Type& dst,
                           bitmask<CoercionStyle> style) { return detail::coerceType(std::move(t), dst, style); },
 
-        .build_scopes = [](const std::shared_ptr<hilti::Context>& ctx, const std::vector<std::pair<ID, NodeRef>>& m,
-                           Unit* u) { buildScopes(m, u); },
+        .ast_build_scopes =
+            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
+                ast::buildScopes(ctx, m, u);
+                return false;
+            },
 
-        .resolve_ids = [](const std::shared_ptr<hilti::Context>& ctx, Node* n, Unit* u) { return resolveIDs(n, u); },
+        .ast_normalize = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
+                            Unit* u) { return ast::normalize(m, u); },
 
-        .resolve_operators = [](const std::shared_ptr<hilti::Context>& ctx, Node* n,
-                                Unit* u) { return resolveOperators(n, u); },
+        .ast_coerce = [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) { return ast::coerce(m, u); },
 
-        .apply_coercions = [](const std::shared_ptr<hilti::Context>& ctx, Node* n,
-                              Unit* u) { return applyCoercions(n, u); },
+        .ast_resolve = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
+                          Unit* u) { return ast::resolve(ctx, m, u); },
 
-        .pre_validate = {},
+        .ast_validate =
+            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
+                ast::validate(m);
+                return false;
+            },
 
-        .post_validate = [](const std::shared_ptr<hilti::Context>& ctx, Node* n, Unit* u) { validateAST(n); },
-
-        .transform = {},
+        .ast_transform = {},
     };
 }
 

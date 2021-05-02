@@ -7,6 +7,8 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
+#include <spicy/ast/aliases.h>
+
 namespace spicy {
 namespace statement {
 

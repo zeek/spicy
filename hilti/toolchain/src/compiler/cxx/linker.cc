@@ -53,7 +53,6 @@ void cxx::Linker::finalize() {
                                         .debug = _codegen->context()->options().debug,
                                         .optimize = _codegen->context()->options().optimize};
 
-    unit.add(cxx::declaration::IncludeFile{"hilti/rt/libhilti.h"});
     for ( const auto& p : plugin::registry().plugins() )
         for ( const auto& i : p.cxx_includes )
             unit.add(cxx::declaration::IncludeFile{i});

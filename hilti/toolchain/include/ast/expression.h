@@ -4,6 +4,7 @@
 
 #include <list>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/node.h>
 #include <hilti/ast/type.h>
@@ -37,6 +38,61 @@ inline bool operator==(const Expression& x, const Expression& y) {
 inline bool operator!=(const Expression& e1, const Expression& e2) { return ! (e1 == e2); }
 
 } // namespace detail
+
+/**
+ * Returns true if the type of an expression has been resolved.
+ *
+ * @param e expression to check
+ * @param rstate internal parameter, leave unset
+ */
+inline bool isResolved(const detail::Expression& e, type::ResolvedState* rstate = nullptr) {
+    return type::detail::isResolved(e.type(), rstate);
+}
+
+/**
+ * Returns true if the types of all expressions in a vector have been resolved.
+ *
+ * @param exprs expressions expressions to check
+ * @param rstate internal parameter, leave unset
+ */
+inline bool isResolved(const std::vector<detail::Expression>& exprs, type::ResolvedState* rstate = nullptr) {
+    for ( const auto& e : exprs ) {
+        if ( ! type::detail::isResolved(e.type(), rstate) )
+            return false;
+    }
+
+    return true;
+}
+
+/**
+ * Returns true if the types of all expressions in a range have been resolved.
+ *
+ * @param exprs expressions expressions to check
+ * @param rstate internal parameter, leave unset
+ */
+inline bool isResolved(const hilti::node::Range<detail::Expression>& exprs, type::ResolvedState* rstate = nullptr) {
+    for ( const auto& e : exprs ) {
+        if ( ! type::detail::isResolved(e.type(), rstate) )
+            return false;
+    }
+
+    return true;
+}
+
+/**
+ * Returns true if the types of all expressions in a set have been resolved.
+ *
+ * @param exprs expressions expressions to check
+ * @param rstate internal parameter, leave unset
+ */
+inline bool isResolved(const hilti::node::Set<detail::Expression>& exprs, type::ResolvedState* rstate = nullptr) {
+    for ( const auto& e : exprs ) {
+        if ( ! type::detail::isResolved(e.type(), rstate) )
+            return false;
+    }
+
+    return true;
+}
 
 } // namespace expression
 

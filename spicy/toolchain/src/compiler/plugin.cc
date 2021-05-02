@@ -1,10 +1,12 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/compiler/plugin.h>
+#include <hilti/compiler/printer.h>
 
 #include <spicy/ast/aliases.h>
 #include <spicy/autogen/config.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
+#include <spicy/compiler/detail/coercion.h>
 #include <spicy/compiler/detail/visitors.h>
 #include <spicy/global.h>
 
@@ -14,9 +16,9 @@ using namespace spicy::detail;
 static hilti::Plugin spicy_plugin() {
     return hilti::Plugin{
         .component = "Spicy",
+        .order = 5, // before HILTI
         .extension = ".spicy",
         .cxx_includes = {"spicy/rt/libspicy.h"},
-        .order = 2,
 
         .library_paths =
             [](const std::shared_ptr<hilti::Context>& /* ctx */) { return spicy::configuration().spicy_library_paths; },
@@ -29,37 +31,33 @@ static hilti::Plugin spicy_plugin() {
         .coerce_type = [](Type t, const Type& dst,
                           bitmask<hilti::CoercionStyle> style) { return detail::coerceType(std::move(t), dst, style); },
 
-        .build_scopes = [](const std::shared_ptr<hilti::Context>& /* ctx */,
-                           const std::vector<std::pair<ID, NodeRef>>& m, hilti::Unit* u) { buildScopes(m, u); },
+        .ast_build_scopes =
+            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
+                ast::buildScopes(ctx, m, u);
+                return false;
+            },
 
-        .resolve_ids = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* n,
-                          hilti::Unit* u) { return resolveIDs(n, u); },
+        .ast_normalize = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
+                            hilti::Unit* u) { return ast::normalize(ctx, m, u); },
 
-        // TODO(bbannier): The following line is inconsistently formatted
-        // between clang-format-10 and clang-format-11. Remove this opt out
-        // once we bump the CI formatting to llvm-11.
-        // clang-format off
-        .resolve_operators = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* /* n */, hilti::Unit *
-                                /* u */) -> bool { return false; },
-        // clang-format on
+        .ast_coerce = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
+                         hilti::Unit* u) { return (*hilti::plugin::registry().hiltiPlugin().ast_coerce)(ctx, m, u); },
 
-        .apply_coercions = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* n,
-                              hilti::Unit* u) { return applyCoercions(n, u); },
+        .ast_resolve = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
+                          hilti::Unit* u) { return ast::resolve(ctx, m, u); },
 
-        .pre_validate = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* n, hilti::Unit* u,
-                           bool* found_errors) { preTransformValidateAST(n, u, found_errors); },
+        .ast_validate =
+            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
+                ast::validate(ctx, m, u);
+                return false;
+            },
 
-        .post_validate = [](const std::shared_ptr<hilti::Context>& /* ctx */, Node* n,
-                            hilti::Unit* u) { postTransformValidateAST(n, u); },
+        .ast_print = [](const Node& root, hilti::printer::Stream& out) { return ast::print(root, out); },
 
-        .preserved_validate = [](const std::shared_ptr<hilti::Context>& /* ctx */, std::vector<Node>* n,
-                                 hilti::Unit* u) { preservedValidateAST(n, u); },
-
-        .transform = [](std::shared_ptr<hilti::Context> ctx, Node* n, bool init, hilti::Unit* u) -> bool {
-            return CodeGen(std::move(ctx)).compileModule(n, init, u);
+        .ast_transform = [](std::shared_ptr<hilti::Context> ctx, Node* n, hilti::Unit* u) -> bool {
+            return CodeGen(std::move(ctx)).compileModule(n, u);
         },
-
-        .print_ast = [](const Node& root, hilti::printer::Stream& out) { return printAST(root, out); }};
+    };
 }
 
 static hilti::plugin::Register _(spicy_plugin());

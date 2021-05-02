@@ -502,7 +502,7 @@ std::string cxx::type::Union::str() const {
         visitor_calls.emplace_back(fmt("_(\"%s\", std::get_if<%d>(&this->value)); ", decl.id, idx + 1));
     }
 
-    auto base = fmt("hilti::rt::Union<%s>", util::join(types, ", "));
+    auto base = fmt("::hilti::rt::Union<%s>", util::join(types, ", "));
     auto header = fmt("    using %s::Union;", base);
     auto visit = fmt("    template<typename F> void __visit(F _) const { %s}", util::join(visitor_calls, ""));
     return fmt("struct %s : public %s {\n%s\n%s\n}", type_name, base, header, visit);

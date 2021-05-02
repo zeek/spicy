@@ -9,7 +9,7 @@
 #include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/operator.h>
-#include <hilti/ast/types/id.h>
+#include <hilti/ast/types/unresolved-id.h>
 
 namespace hilti {
 
@@ -32,21 +32,6 @@ inline std::ostream& operator<<(std::ostream& out, ResolvedOperator i) { return 
 using ResolvedOperator = resolved_operator::detail::ResolvedOperator;
 using resolved_operator::detail::to_node;
 
-namespace detail {
-
-// Generally we want to compute the result type of operators dynamically
-// because updates to their child nodes may lead to changes. For unresolved
-// IDs, however, we need to store the type in the AST for it get to resolved.
-// This function implements that distinction.
-inline Type type_to_store(Type t) {
-    if ( t.isA<type::UnresolvedID>() )
-        return t;
-    else
-        return type::unknown;
-}
-
-} // namespace detail
-
 /**
  * Base class for an AST node for an expression representing a resolved operator usage.
  *
@@ -55,32 +40,17 @@ inline Type type_to_store(Type t) {
 class ResolvedOperatorBase : public NodeBase, public trait::isExpression, public trait::isResolvedOperator {
 public:
     ResolvedOperatorBase(const Operator& op, const std::vector<Expression>& operands, Meta meta = Meta())
-        : NodeBase(nodes(detail::type_to_store(op.result(operands)), operands), std::move(meta)), _operator(op) {}
+        : NodeBase(nodes(node::none, operands), std::move(meta)), _operator(op) {
+        // Must not have instantiated this before we know the result type.
+        childs()[0] = type::pruneWalk(op.result(childs<Expression>(1, -1)));
+    }
 
     const auto& operator_() const { return _operator; }
     auto kind() const { return _operator.kind(); }
 
     // ResolvedOperator interface with common implementation.
-    const auto& operands() const {
-        if ( _cache.operands.empty() )
-            _cache.operands = childs<Expression>(1, -1);
-
-        return _cache.operands;
-    }
-
-    const auto& result() const {
-        if ( _cache.result )
-            return *_cache.result;
-
-        if ( ! childs()[0].isA<type::Unknown>() )
-            _cache.result = child<Type>(0);
-        else
-            // If the result wasn't stored at instantiation time, try again.
-            _cache.result = _operator.result(operands());
-
-        return *_cache.result;
-    }
-
+    auto operands() const { return childs<Expression>(1, -1); }
+    const auto& result() const { return child<Type>(0); }
     const auto& op0() const { return child<Expression>(1); }
     const auto& op1() const { return child<Expression>(2); }
     const auto& op2() const { return child<Expression>(3); }
@@ -100,7 +70,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return isLhs(); }
     /** Implements `Expression` interface. */
-    auto type() const { return type::effectiveType(result()); }
+    const Type& type() const { return result(); }
     /** Implements `Expression` interface. */
     auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
 
@@ -109,19 +79,9 @@ public:
 
     /** Implements `Node` interface. */
     auto properties() const { return node::Properties{{"kind", to_string(_operator.kind())}}; }
-    /** Implements `Node` interface. */
-    void clearCache() {
-        _cache.result.reset();
-        _cache.operands.clear();
-    }
 
 private:
     ::hilti::operator_::detail::Operator _operator;
-
-    mutable struct {
-        std::optional<Type> result;
-        std::vector<Expression> operands;
-    } _cache;
 };
 
 namespace resolved_operator {

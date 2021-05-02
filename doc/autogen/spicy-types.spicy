@@ -6,7 +6,7 @@ Specifies an address' IP family.
 
 .. spicy-code::
 
-    type AddressFamily = {
+    type AddressFamily = enum {
         IPv4, # IP4 address
         IPv6  # IPv6 address
     };
@@ -25,7 +25,7 @@ Specifies the bit order for individual bit ranges inside a bitfield.
 
 .. spicy-code::
 
-    type BitOrder = {
+    type BitOrder = enum {
         LSB0,     # bits are interpreted as lowest-significant-bit coming first
         MSB0      # bits are interpreted as most-significant-bit coming first
     };
@@ -38,11 +38,24 @@ Specifies byte order for data operations.
 
 .. spicy-code::
 
-    type ByteOrder = {
+    type ByteOrder = enum {
         Little,   # data is in little-endian byte order
         Big,      # data is in big-endian byte order
         Network,  # data is in network byte order (same a big endian)
         Host      # data is in byte order of the host we are executing on
+    };
+
+.. _spicy_charset:
+
+.. rubric:: ``spicy::Charset``
+
+Specifies the character set for bytes encoding/decoding.
+
+.. spicy-code::
+
+    type Charset = enum {
+        ASCII,
+        UTF8
     };
 
 .. _spicy_matchstate:
@@ -59,7 +72,7 @@ Specifies a transport-layer protocol.
 
 .. spicy-code::
 
-    type Protocol = {
+    type Protocol = enum {
         TCP,
         UDP,
         ICMP
@@ -73,7 +86,7 @@ Specifies the type of a real value.
 
 .. spicy-code::
 
-    type RealType = {
+    type RealType = enum {
         IEEE754_Single, # single precision in IEEE754 format
         IEEE754_Double  # double precision in IEEE754 format
     };
@@ -86,7 +99,7 @@ Specifies the policy for a sink's reassembler when encountering overlapping data
 
 .. spicy-code::
 
-    type ReassemblerPolicy = {
+    type ReassemblerPolicy = enum {
         First # take the original data & discard the new data
     };
 
@@ -98,7 +111,7 @@ Specifies a side an operation should operate on.
 
 .. spicy-code::
 
-    type Side = {
+    type Side = enum {
         Left,    # operate on left side
         Right,   # operate on right side
         Both     # operate on both sides
@@ -112,7 +125,7 @@ Specifies direction of a search.
 
 .. spicy-code::
 
-    type Direction = {
+    type Direction = enum {
         Forward, # search forward
         Backward, # search backward
     };

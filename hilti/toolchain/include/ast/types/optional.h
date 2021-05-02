@@ -5,6 +5,7 @@
 #include <utility>
 
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/unknown.h>
 
 namespace hilti {
 namespace type {
@@ -12,20 +13,17 @@ namespace type {
 /** AST node for an "optional" type. */
 class Optional : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isDereferencable {
 public:
-    Optional(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({node::none}, std::move(m)), _wildcard(true) {}
+    Optional(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     Optional(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
 
-    Type dereferencedType() const {
-        if ( auto t = childs()[0].tryAs<Type>() )
-            return *t;
-
-        return type::unknown;
-    }
+    const Type& dereferencedType() const { return childs()[0].as<Type>(); }
 
     bool operator==(const Optional& other) const { return dereferencedType() == other.dereferencedType(); }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    /** Implements the `Type` interface. */
+    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
     auto typeParameters() const { return childs(); }
     /** Implements the `Type` interface. */

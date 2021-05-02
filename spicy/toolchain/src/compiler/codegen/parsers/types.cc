@@ -81,16 +81,16 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         std::optional<Expression> byte_order;
 
         if ( const auto& a = AttributeSet::find(meta.field()->attributes(), "&byte-order") )
-            byte_order = *a->valueAs<spicy::Expression>();
+            byte_order = *a->valueAsExpression();
 
         else if ( const auto& a = AttributeSet::find(state().unit.get().attributes(), "&byte-order") )
-            byte_order = *a->valueAs<Expression>();
+            byte_order = *a->valueAsExpression();
 
         else if ( const auto& p = state().unit.get().propertyItem("%byte-order") )
             byte_order = *p->expression();
 
         if ( byte_order )
-            return builder::expect_type(std::move(*byte_order), builder::typeByID("spicy::ByteOrder"));
+            return std::move(*byte_order);
         else
             return builder::id("hilti::ByteOrder::Network");
     }
@@ -98,6 +98,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     result_t operator()(const hilti::type::Address& t) {
         auto v4 = AttributeSet::find(meta.field()->attributes(), "&ipv4");
         auto v6 = AttributeSet::find(meta.field()->attributes(), "&ipv6");
+        (void)v6;
         assert(! (v4 && v6));
 
         if ( v4 )
@@ -112,7 +113,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     }
 
     result_t operator()(const spicy::type::Bitfield& t) {
-        auto itype = hilti::type::UnsignedInteger(t.width(), t.meta());
+        auto itype = t.parseType();
         auto value = builder()->addTmp("bitfield", itype);
         performUnpack(value, itype, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
 
@@ -125,7 +126,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
             auto bit_order = builder::id("spicy_rt::BitOrder::LSB0");
 
             if ( const auto& a = AttributeSet::find(meta.field()->attributes(), "&bit-order") )
-                bit_order = *a->valueAs<spicy::Expression>();
+                bit_order = *a->valueAsExpression();
             else if ( const auto& p = state().unit.get().propertyItem("%bit-order") )
                 bit_order = *p->expression();
 
@@ -135,10 +136,10 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                                                                           builder::integer(b.upper()), bit_order}));
 
             if ( auto a = AttributeSet::find(b.attributes(), "&convert") ) {
-                auto converted = builder()->addTmp(ID("converted"), b.type());
+                auto converted = builder()->addTmp(ID("converted"), b.itemType());
                 auto block = builder()->addBlock();
                 block->addLocal(ID("__dd"), itype, x);
-                block->addAssign(converted, *a->valueAs<Expression>());
+                block->addAssign(converted, *a->valueAsExpression());
                 x = converted;
             }
 
@@ -157,7 +158,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         auto type = AttributeSet::find(meta.field()->attributes(), "&type");
         assert(type);
         return performUnpack(destination(t), type::Real(), 4,
-                             {state().cur, *type->valueAs<Expression>(), fieldByteOrder()}, t.meta(), is_try);
+                             {state().cur, *type->valueAsExpression(), fieldByteOrder()}, t.meta(), is_try);
     }
 
     result_t operator()(const hilti::type::SignedInteger& t) {
@@ -172,7 +173,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         if ( auto size = AttributeSet::find(meta.field()->attributes(), "&size") )
             // Even though we we do not store parsed data, we still need to consume
             // data in the input stream so that `&size` checks can work.
-            pb->advanceInput(*size->valueAs<Expression>());
+            pb->advanceInput(*size->valueAsExpression());
 
         else if ( auto eod = AttributeSet::find(meta.field()->attributes(), "&eod") ) {
             pb->waitForEod();
@@ -180,13 +181,14 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         }
 
         else if ( auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until") ) {
-            Expression until_expr = builder::coerceTo(*until_attr->valueAs<Expression>(), hilti::type::Bytes());
+            Expression until_expr = builder::coerceTo(*until_attr->valueAsExpression(), hilti::type::Bytes());
             auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
             auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
 
             auto body = builder()->addWhile(builder::bool_(true));
             pushBuilder(body, [&]() {
-                pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found", t.meta());
+                pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
+                                 until_attr->meta());
 
                 auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
                 auto found_id = ID("found");
@@ -282,9 +284,9 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         if ( until_attr || until_including_attr ) {
             Expression until_expr;
             if ( until_attr )
-                until_expr = builder::coerceTo(*until_attr->valueAs<Expression>(), hilti::type::Bytes());
+                until_expr = builder::coerceTo(*until_attr->valueAsExpression(), hilti::type::Bytes());
             else
-                until_expr = builder::coerceTo(*until_including_attr->valueAs<Expression>(), hilti::type::Bytes());
+                until_expr = builder::coerceTo(*until_including_attr->valueAsExpression(), hilti::type::Bytes());
 
             auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
             auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
@@ -313,7 +315,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 pb->waitForInput(until_bytes_size_var,
                                  fmt("end-of-data reached before %s expression found",
                                      (until_attr ? "&until" : "&until-including")),
-                                 t.meta());
+                                 until_expr.meta());
 
                 auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
                 auto found_id = ID("found");
@@ -357,7 +359,7 @@ Expression ParserBuilder::_parseType(const Type& t, const production::Meta& meta
                                      bool is_try) {
     assert(! is_try || (t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>()));
 
-    if ( auto e = Visitor(this, meta, dst, is_try).dispatch(type::effectiveType(t)) )
+    if ( auto e = Visitor(this, meta, dst, is_try).dispatch(t) )
         return std::move(*e);
 
     hilti::logger().internalError(fmt("codegen: type parser did not return expression for '%s'", t));

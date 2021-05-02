@@ -24,19 +24,19 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     const std::vector<cxx::Expression>& args;
 
     result_t operator()(const type::Address& n) {
-        return fmt("hilti::rt::address::unpack(%s, %s, %s)", data, args[0], args[1]);
+        return fmt("::hilti::rt::address::unpack(%s, %s, %s)", data, args[0], args[1]);
     }
 
     result_t operator()(const type::UnsignedInteger& n) {
-        return fmt("hilti::rt::integer::unpack<uint%d_t>(%s, %s)", n.width(), data, args[0]);
+        return fmt("::hilti::rt::integer::unpack<uint%d_t>(%s, %s)", n.width(), data, args[0]);
     }
 
     result_t operator()(const type::SignedInteger& n) {
-        return fmt("hilti::rt::integer::unpack<int%d_t>(%s, %s)", n.width(), data, args[0]);
+        return fmt("::hilti::rt::integer::unpack<int%d_t>(%s, %s)", n.width(), data, args[0]);
     }
 
     result_t operator()(const type::Real& n) {
-        return fmt("hilti::rt::real::unpack(%s, %s, %s)", data, args[0], args[1]);
+        return fmt("::hilti::rt::real::unpack(%s, %s, %s)", data, args[0], args[1]);
     }
 };
 

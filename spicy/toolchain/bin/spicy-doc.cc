@@ -33,6 +33,7 @@ static std::string kindToString(hilti::operator_::Kind kind) {
         KIND_TO_STRING(hilti::operator_::Kind::BitXor);
         KIND_TO_STRING(hilti::operator_::Kind::Call);
         KIND_TO_STRING(hilti::operator_::Kind::Cast);
+        KIND_TO_STRING(hilti::operator_::Kind::CustomAssign);
         KIND_TO_STRING(hilti::operator_::Kind::DecrPostfix);
         KIND_TO_STRING(hilti::operator_::Kind::DecrPrefix);
         KIND_TO_STRING(hilti::operator_::Kind::Delete);
@@ -83,10 +84,10 @@ static json operandToJSON(const hilti::operator_::Operand& o) {
 
     hilti::Type t;
 
-    if ( auto f =
-             std::get_if<std::function<std::optional<hilti::Type>(const std::vector<hilti::Expression>&,
-                                                                  const std::vector<hilti::Expression>&)>>(&o.type) )
-        t = *(*f)({}, {});
+    if ( auto f = std::get_if<std::function<std::optional<hilti::Type>(const hilti::node::Range<hilti::Expression>&,
+                                                                       const hilti::node::Range<hilti::Expression>&)>>(
+             &o.type) )
+        t = *(*f)(hilti::node::Range<hilti::Expression>{}, hilti::node::Range<hilti::Expression>{});
     else
         t = std::get<hilti::Type>(o.type);
 
@@ -123,7 +124,7 @@ int main(int argc, char** argv) {
         jop["kind"] = kindToString(op.kind());
         jop["doc"] = op.doc();
         jop["namespace"] = namespace_;
-        jop["rtype"] = formatType(op.result({}));
+        jop["rtype"] = formatType(op.result(hilti::node::Range<hilti::Expression>()));
         jop["commutative"] = hilti::operator_::isCommutative(op.kind());
         jop["operands"] = json();
 

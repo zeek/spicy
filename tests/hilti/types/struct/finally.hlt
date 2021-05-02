@@ -13,11 +13,11 @@ type X = struct(string name) {
     hook void ~finally();
 };
 
-method hook void X::~finally() {
+hook void X::~finally() {
     hilti::print("%s: finally 1!" % name);
 }
 
-method hook void X::~finally() {
+hook void X::~finally() {
     hilti::print("%s: finally 2!" % name);
 }
 

@@ -32,10 +32,10 @@ public:
     CodeGen(std::shared_ptr<hilti::Context> context) : _context(std::move(context)), _gb(this), _pb(this) {}
 
     /** Entry point for transformation from a Spicy AST to a HILTI AST. */
-    bool compileModule(hilti::Node* root, bool init, hilti::Unit* u);
+    bool compileModule(hilti::Node* root, hilti::Unit* u);
 
-    const auto& context() const { return _context; }
-    const auto& options() const { return _context->options(); }
+    auto context() const { return _context.lock(); }
+    const auto& options() const { return context()->options(); }
 
     hilti::Type compileUnit(const type::Unit& unit,
                             bool declare_only = true); // Compiles a Unit type into its HILTI struct representation.
@@ -51,9 +51,6 @@ public:
     codegen::GrammarBuilder* grammarBuilder() { return &_gb; }
     hilti::Unit* hiltiUnit() const;     // will abort if not compiling a module.
     hilti::Module* hiltiModule() const; // will abort if not compiling a module.
-    NodeRef preserveNode(Expression x);
-    NodeRef preserveNode(Statement x);
-    NodeRef preserveNode(Type x);
     auto uniquer() { return &_uniquer; }
 
     const auto& moduleProperties() const { return _properties; }
@@ -68,7 +65,7 @@ public:
 
 
 private:
-    std::shared_ptr<hilti::Context> _context;
+    std::weak_ptr<hilti::Context> _context;
     codegen::GrammarBuilder _gb;
     codegen::ParserBuilder _pb;
 

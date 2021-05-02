@@ -3,6 +3,7 @@
 #pragma once
 
 #include <list>
+#include <set>
 #include <utility>
 
 #include <hilti/ast/id.h>
@@ -16,34 +17,52 @@ namespace trait {
 class isType : public isNode {};
 } // namespace trait
 
+class Type;
+
+namespace declaration {
+class Parameter;
+}
+
 namespace type {
 
+namespace function {
+using Parameter = declaration::Parameter;
+}
+
 namespace trait {
-class hasDynamicType {};
 class isAllocable {};
 class isDereferencable {};
 class isIterable {};
 class isIterator {};
 class isMutable {};
-class isOnHeap {};
 class isParameterized {};
 class isReferenceType {};
 class isRuntimeNonTrivial {};
 class isView {};
 class isViewable {};
 class supportsWildcard {};
+class takesArguments {};
 } // namespace trait
+
+using ResolvedState = std::set<uintptr_t>;
 
 /** Additional flags to associated with types. */
 enum class Flag {
     /** Set to make the type `const`. */
     Constant = (1U << 0U),
 
+    /** Set to make the type `non-const`. */
+    NonConstant = (1U << 1U),
+
     /**
      * Marks the type as having a top-level scope that does not derive scope content
      * from other nodes above it in the AST (except for truely global IDs).
      */
-    NoInheritScope = (1U << 1U),
+    NoInheritScope = (1U << 2U),
+
+    /** When walking over an AST, skip this node's children. This allows to
+     * break cycles. */
+    PruneWalk = (1U << 3U),
 };
 
 /**
@@ -128,30 +147,24 @@ namespace detail {
 struct State {
     std::optional<ID> id;
     std::optional<ID> cxx;
+    std::optional<ID> resolved_id;
     type::Flags flags;
 };
 
 #include <hilti/autogen/__type.h>
-
-/** Creates an AST node representing a `Type`. */
-inline Node to_node(Type t) { return Node(std::move(t)); }
-
-/** Renders a type as HILTI source code. */
-inline std::ostream& operator<<(std::ostream& out, Type t) { return out << to_node(std::move(t)); }
-
 } // namespace detail
+
 } // namespace type
 
-using Type = type::detail::Type;
-
-/**
- * Base class for classes implementing the `Type` interface. This class
- * provides implementations for some interface methods shared that are shared
- * by all types.
- */
-class TypeBase : public NodeBase, public hilti::trait::isType {
+class Type : public type::detail::Type {
 public:
-    using NodeBase::NodeBase;
+    using type::detail::Type::Type;
+
+    std::optional<ID> resolvedID() const { return _state().resolved_id; }
+
+    void setCxxID(ID id) { _state().cxx = std::move(id); }
+    void setTypeID(ID id) { _state().id = std::move(id); }
+    void addFlag(type::Flag f) { _state().flags += f; }
 
     /** Implements the `Type` interface. */
     bool hasFlag(type::Flag f) const { return _state().flags.has(f); }
@@ -167,12 +180,35 @@ public:
     const type::detail::State& _state() const { return _state_; }
     /** Implements the `Type` interface. */
     type::detail::State& _state() { return _state_; }
+    /** Implements the `Node` interface. */
+    bool pruneWalk() const { return hasFlag(type::Flag::PruneWalk); }
+};
 
-private:
-    type::detail::State _state_;
+/** Creates an AST node representing a `Type`. */
+inline Node to_node(Type t) { return Node(std::move(t)); }
+
+/** Renders a type as HILTI source code. */
+inline std::ostream& operator<<(std::ostream& out, Type t) { return out << to_node(std::move(t)); }
+
+/**
+ * Base class for classes implementing the `Type` interface. This class
+ * provides implementations for some interface methods shared that are shared
+ * by all types.
+ */
+class TypeBase : public NodeBase, public hilti::trait::isType {
+public:
+    using NodeBase::NodeBase;
 };
 
 namespace type {
+namespace detail {
+extern void applyPruneWalk(hilti::Type& t);
+} // namespace detail
+
+inline Type pruneWalk(Type t) {
+    detail::applyPruneWalk(t);
+    return t;
+}
 
 /**
  * Copies an existing type, adding additional type flags.
@@ -182,7 +218,7 @@ namespace type {
  * @return new type with the additional flags set
  */
 inline hilti::Type addFlags(const Type& t, const type::Flags& flags) {
-    auto x = t._clone();
+    auto x = Type(t);
     x._state().flags += flags;
     return x;
 }
@@ -195,24 +231,8 @@ inline hilti::Type addFlags(const Type& t, const type::Flags& flags) {
  * @return new type with the flags removed
  */
 inline hilti::Type removeFlags(const Type& t, const type::Flags& flags) {
-    auto x = t._clone();
+    auto x = Type(t);
     x._state().flags -= flags;
-    return x;
-}
-
-/**
- * Copies an existing type, marking the type as one that stores a
- * constant/non-constant value. This has only an effect for mutable types.
- * Non-mutable are always considered const. The default for for mutable *
- * types is non-const.
- *
- * @param t original type
- * @param const_ boolen indicating whether the new type should be const
- * @return new type with the constness changed as requested
- */
-inline hilti::Type setConstant(const Type& t, bool const_) {
-    auto x = t._clone();
-    x._state().flags.set(type::Flag::Constant, const_);
     return x;
 }
 
@@ -224,7 +244,7 @@ inline hilti::Type setConstant(const Type& t, bool const_) {
  * @return new type with the C++ ID set accordindly
  */
 inline hilti::Type setCxxID(const Type& t, ID id) {
-    auto x = t._clone();
+    auto x = Type(t);
     x._state().cxx = std::move(id);
     return x;
 }
@@ -237,7 +257,7 @@ inline hilti::Type setCxxID(const Type& t, ID id) {
  * @return new type with associateed type ID set accordindly
  */
 inline hilti::Type setTypeID(const Type& t, ID id) {
-    auto x = t._clone();
+    auto x = Type(t);
     x._state().id = std::move(id);
     return x;
 }
@@ -248,57 +268,38 @@ inline hilti::Type setTypeID(const Type& t, ID id) {
  */
 class Wildcard {};
 
-/**
- * Fully deferences a type, returning the type it ultimately refers to. For
- * most types, this will return them directly, but types with
- * `trait::hasDynamicProcess` can customize the process (e.g., a resolved
- * type ID will return the type the ID refers to. )
- */
-inline Type effectiveType(Type t) { return t._hasDynamicType() ? t.effectiveType() : std::move(t); }
-
-/**
- * Like `effectiveType`, accepts an optional type. If not set, the returned
- * type will likely remain unset.
- */
-inline std::optional<Type> effectiveOptionalType(std::optional<Type> t) {
-    if ( t )
-        return effectiveType(*t);
-
-    return {};
-}
-
 /** Returns true for HILTI types that can be used to instantiate variables. */
-inline bool isAllocable(const Type& t) { return effectiveType(t)._isAllocable(); }
+inline bool isAllocable(const Type& t) { return t._isAllocable(); }
 
 /** Returns true for HILTI types that one can iterator over. */
-inline bool isDereferencable(const Type& t) { return effectiveType(t)._isDereferencable(); }
+inline bool isDereferencable(const Type& t) { return t._isDereferencable(); }
 
 /** Returns true for HILTI types that one can iterator over. */
-inline bool isIterable(const Type& t) { return effectiveType(t)._isIterable(); }
+inline bool isIterable(const Type& t) { return t._isIterable(); }
 
 /** Returns true for HILTI types that represent iterators. */
-inline bool isIterator(const Type& t) { return effectiveType(t)._isIterator(); }
+inline bool isIterator(const Type& t) { return t._isIterator(); }
 
 /** Returns true for HILTI types that are parameterized with a set of type parameters. */
-inline bool isParameterized(const Type& t) { return effectiveType(t)._isParameterized(); }
+inline bool isParameterized(const Type& t) { return t._isParameterized(); }
 
 /** Returns true for HILTI types that implement a reference to another type. */
-inline bool isReferenceType(const Type& t) { return effectiveType(t)._isReferenceType(); }
+inline bool isReferenceType(const Type& t) { return t._isReferenceType(); }
 
 /** Returns true for HILTI types that can change their value. */
-inline bool isMutable(const Type& t) { return effectiveType(t)._isMutable(); }
+inline bool isMutable(const Type& t) { return t._isMutable(); }
 
 /** Returns true for HILTI types that, when compiled, correspond to non-POD C++ types. */
-inline bool isRuntimeNonTrivial(const Type& t) { return effectiveType(t)._isRuntimeNonTrivial(); }
+inline bool isRuntimeNonTrivial(const Type& t) { return t._isRuntimeNonTrivial(); }
 
 /** Returns true for HILTI types that represent iterators. */
-inline bool isView(const Type& t) { return effectiveType(t)._isView(); }
+inline bool isView(const Type& t) { return t._isView(); }
 
 /** Returns true for HILTI types that one can create a view for. */
-inline bool isViewable(const Type& t) { return effectiveType(t)._isViewable(); }
+inline bool isViewable(const Type& t) { return t._isViewable(); }
 
-/** Returns true for HILTI types that are always to be placed on the heap. */
-inline bool isOnHeap(const Type& t) { return effectiveType(t)._isOnHeap(); }
+/** Returns true for HILTI types that may receive type arguments on instantiations. */
+inline bool takesArguments(const Type& t) { return t._takesArguments(); }
 
 /**
  * Returns true if the type is marked constant.
@@ -307,30 +308,85 @@ inline bool isOnHeap(const Type& t) { return effectiveType(t)._isOnHeap(); }
  * types. Ideally, this would always return true for non-mutable types, but
  * doing so breaks some coercion code currently.
  */
-inline bool isConstant(const Type& t) { return effectiveType(t).flags().has(type::Flag::Constant); }
+inline bool isConstant(const Type& t) {
+    return t.flags().has(type::Flag::Constant) || (! isMutable(t) && ! t.flags().has(type::Flag::NonConstant));
+}
 
 /** Returns a `const` version of a type. */
-inline auto constant(const Type& t) { return setConstant(t, true); }
+inline auto constant(Type t) {
+    t._state().flags -= type::Flag::NonConstant;
+    t._state().flags += type::Flag::Constant;
+    return t;
+}
 
-/** Returns a not `const` version of a type. */
-inline auto nonConstant(const Type& t) { return setConstant(t, false); }
+/**
+ * Returns a not `const` version of a type. If `force` is true, then even
+ * immutable types are marked as non-const. This is usally not what one wants.
+ */
+inline auto nonConstant(Type t, bool force = false) {
+    t._state().flags -= type::Flag::Constant;
 
-/** Sets the constness of type *t* to that of another type *from*. */
-inline auto transferConstness(const Type& t, const Type& from) { return setConstant(t, isConstant(from)); }
+    if ( force )
+        t._state().flags += type::Flag::NonConstant;
+
+    return t;
+}
 
 namespace detail {
+// Internal backends for the `isResolved()`.
+extern bool isResolved(const hilti::Type& t, ResolvedState* rstate);
+
+inline bool isResolved(const std::optional<hilti::Type>& t, ResolvedState* rstate) {
+    return t.has_value() ? isResolved(*t, rstate) : true;
+}
+
+inline bool isResolved(const std::optional<const hilti::Type>& t, ResolvedState* rstate) {
+    return t.has_value() ? isResolved(*t, rstate) : true;
+}
+} // namespace detail
+
+/** Returns true if the type has been fully resolved, including all sub-types it may include. */
+extern bool isResolved(const Type& t);
+
+/** Returns true if the type has been fully resolved, including all sub-types it may include. */
+inline bool isResolved(const std::optional<Type>& t) { return t.has_value() ? isResolved(*t) : true; }
+
+/** Returns true if the type has been fully resolved, including all sub-types it may include. */
+inline bool isResolved(const std::optional<const Type>& t) { return t.has_value() ? isResolved(*t) : true; }
+
+/** Returns true if two types are identical, ignoring for their constnesses. */
+inline bool sameExceptForConstness(const Type& t1, const Type& t2) {
+    if ( &t1 == &t2 )
+        return true;
+
+    if ( t1.typeID() && t2.typeID() )
+        return *t1.typeID() == *t2.typeID();
+
+    if ( t1.cxxID() && t2.cxxID() )
+        return *t1.cxxID() == *t2.cxxID();
+
+    return t1.isEqual(t2) || t2.isEqual(t1);
+}
+
+} // namespace type
+
 inline bool operator==(const Type& t1, const Type& t2) {
     if ( &t1 == &t2 )
         return true;
 
-    if ( type::isConstant(t1) != type::isConstant(t2) )
-        return false;
+    if ( type::isMutable(t1) || type::isMutable(t2) ) {
+        if ( type::isConstant(t1) && ! type::isConstant(t2) )
+            return false;
+
+        if ( type::isConstant(t2) && ! type::isConstant(t1) )
+            return false;
+    }
+
+    if ( t1.typeID() && t2.typeID() )
+        return *t1.typeID() == *t2.typeID();
 
     if ( t1.cxxID() && t2.cxxID() )
-        return t1.cxxID() == t2.cxxID();
-
-    if ( (t1.flags() - type::Flag::Constant) != (t2.flags() - type::Flag::Constant) )
-        return false;
+        return *t1.cxxID() == *t2.cxxID();
 
     // Type comparision is not fully symmetric, it's good enough
     // if one type believes it matches the other one.
@@ -338,24 +394,6 @@ inline bool operator==(const Type& t1, const Type& t2) {
 }
 
 inline bool operator!=(const Type& t1, const Type& t2) { return ! (t1 == t2); }
-
-} // namespace detail
-
-/**
- * Checks if a source type's constness suports promotion to a destination's
- * constness. This ignores the types itself, it just looks at constness.
- */
-inline bool isConstCompatible(const Type& src, const Type& dst) {
-    if ( type::isConstant(dst) )
-        return true;
-
-    return ! type::isConstant(src);
-}
-
-/** Returns true if two types are identical, ignoring for their constnesses. */
-inline bool sameExceptForConstness(const Type& t1, const Type& t2) { return t1.isEqual(t2) || t2.isEqual(t1); }
-
-} // namespace type
 
 /** Constructs an AST node from any class implementing the `Type` interface. */
 template<typename T, typename std::enable_if_t<std::is_base_of<trait::isType, T>::value>* = nullptr>

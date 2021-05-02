@@ -31,12 +31,12 @@ void type_erasure::summary(std::ostream& out) {
     for ( const auto& [k, v] : unordered )
         ordered.insert(std::make_pair(v, k));
 
-    out << "\n=== Top-20 type-erased instances (#max/#min)\n\n";
+    out << "\n=== Top-20 type-erased instances (#max/#current)\n\n";
 
     int count = 20;
     for ( const auto& [v, k] : ordered ) {
         if ( v.max >= 100 )
-            out << fmt("%40s  %10d (%5.2f)  %10d (%5.2f)\n", util::demangle(k), v.max, (100.0 * v.max / total_max),
+            out << fmt("%40s  %10d (%5.2f%%)  %10d (%5.2f%%)\n", util::demangle(k), v.max, (100.0 * v.max / total_max),
                        v.current, (100.0 * v.current / total_current));
 
         if ( --count == 0 )

@@ -28,10 +28,16 @@ public:
     While(hilti::Expression cond, Statement body, std::optional<Statement> else_, Meta m = Meta())
         : NodeBase(nodes(node::none, std::move(cond), std::move(body), std::move(else_)), std::move(m)) {}
 
-    auto init() const { return childs()[0].tryReferenceAs<hilti::Declaration>(); }
-    auto condition() const { return childs()[1].tryReferenceAs<hilti::Expression>(); }
+    auto init() const { return childs()[0].tryAs<hilti::declaration::LocalVariable>(); }
+    auto initRef() const {
+        return childs()[0].isA<hilti::declaration::LocalVariable>() ? NodeRef(childs()[0]) : NodeRef();
+    }
+    auto condition() const { return childs()[1].tryAs<hilti::Expression>(); }
     const auto& body() const { return child<hilti::Statement>(2); }
-    auto else_() const { return childs()[3].tryReferenceAs<Statement>(); }
+    auto else_() const { return childs()[3].tryAs<Statement>(); }
+
+    void setCondition(hilti::Expression c) { childs()[1] = std::move(c); }
+    void setInit(hilti::Expression c) { childs()[0] = std::move(c); }
 
     bool operator==(const While& other) const {
         return init() == other.init() && condition() == other.condition() && body() == other.body() &&
@@ -49,32 +55,6 @@ public:
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-    /**
-     * Returns a new "while" statement with the init expression replaced.
-     *
-     * @param e original statement
-     * @param d new init expresssion
-     * @return new statement that's equal to original one but with the init expression replaced
-     */
-    static Statement setInit(const While& e, const hilti::Declaration& d) {
-        auto x = Statement(e)._clone().as<While>();
-        x.childs()[0] = d;
-        return x;
-    }
-
-    /**
-     * Returns a new "while" statement with the condition expression replaced.
-     *
-     * @param d original statement
-     * @param c new condition expresssion
-     * @return new statement that's equal to original one but with the condition replaced
-     */
-    static Statement setCondition(const While& e, const hilti::Expression& c) {
-        auto x = Statement(e)._clone().as<While>();
-        x.childs()[1] = c;
-        return x;
-    }
 };
 
 } // namespace statement

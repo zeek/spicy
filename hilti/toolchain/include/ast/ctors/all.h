@@ -12,6 +12,7 @@
 #include <hilti/ast/ctors/exception.h>
 #include <hilti/ast/ctors/integer.h>
 #include <hilti/ast/ctors/interval.h>
+#include <hilti/ast/ctors/library.h>
 #include <hilti/ast/ctors/list.h>
 #include <hilti/ast/ctors/map.h>
 #include <hilti/ast/ctors/network.h>

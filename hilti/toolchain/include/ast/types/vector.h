@@ -21,11 +21,10 @@ class Iterator : public TypeBase,
                  trait::isRuntimeNonTrivial,
                  trait::isParameterized {
 public:
-    Iterator(Type ctype, bool const_, Meta m = Meta()) : TypeBase({std::move(ctype)}, std::move(m)), _const(const_) {}
-    Iterator(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({node::none}, std::move(m)), _wildcard(true) {}
-
-    /** Returns the type of the container the iterator is working on. */
-    Type containerType() const { return _wildcard ? type::unknown : type::effectiveType(child<Type>(0)); }
+    Iterator(Type etype, bool const_, Meta m = Meta())
+        : TypeBase(nodes(std::move(etype)), std::move(m)), _const(const_) {}
+    Iterator(Wildcard /*unused*/, bool const_ = true, Meta m = Meta())
+        : TypeBase(nodes(type::unknown), std::move(m)), _wildcard(true), _const(const_) {}
 
     /** Returns true if the container elements aren't modifiable. */
     bool isConstant() const { return _const; }
@@ -33,9 +32,9 @@ public:
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type dereferencedType() const {
-        return (_wildcard || containerType().isWildcard()) ? type::unknown : containerType().elementType();
-    }
+    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
+    /** Implements the `Type` interface. */
+    const Type& dereferencedType() const { return child<Type>(0); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Type` interface. */
@@ -60,15 +59,22 @@ class Vector : public TypeBase,
                trait::isRuntimeNonTrivial,
                trait::isParameterized {
 public:
-    Vector(Type t, Meta m = Meta()) : TypeBase({std::move(t)}, std::move(m)) {}
-    Vector(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({node::none}, std::move(m)), _wildcard(true) {}
+    Vector(Type t, Meta m = Meta()) : TypeBase(nodes(vector::Iterator(t, true, m), vector::Iterator(t, false, m)), m) {}
+    Vector(Wildcard /*unused*/, Meta m = Meta())
+        : TypeBase(nodes(vector::Iterator(Wildcard{}, true, m), vector::Iterator(Wildcard{}, false, m)), m),
+          _wildcard(true) {}
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type elementType() const { return _wildcard ? type::unknown : type::effectiveType(child<Type>(0)); }
+    auto _isResolved(ResolvedState* rstate) const {
+        return type::detail::isResolved(iteratorType(true), rstate) &&
+               type::detail::isResolved(iteratorType(false), rstate);
+    }
     /** Implements the `Type` interface. */
-    Type iteratorType(bool const_) const { return vector::Iterator(*this, const_, meta()); }
+    const Type& elementType() const { return child<vector::Iterator>(0).dereferencedType(); }
+    /** Implements the `Type` interface. */
+    const Type& iteratorType(bool const_) const { return const_ ? child<Type>(0) : child<Type>(1); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Type` interface. */

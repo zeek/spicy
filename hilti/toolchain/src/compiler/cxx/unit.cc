@@ -167,17 +167,17 @@ void Unit::_addModuleInitFunction() {
     };
 
     if ( _init_globals )
-        addInitFunction(_context.get(), _init_globals, "__init_globals");
+        addInitFunction(context().get(), _init_globals, "__init_globals");
 
     if ( _init_module )
-        addInitFunction(_context.get(), _init_module, "__init_module");
+        addInitFunction(context().get(), _init_module, "__init_module");
 
     if ( _preinit_module )
-        addInitFunction(_context.get(), _preinit_module, "__preinit_module");
+        addInitFunction(context().get(), _preinit_module, "__preinit_module");
 
     if ( moduleID() != cxx::ID("__linker__") ) {
         cxx::Block register_;
-        register_.addStatement(fmt("hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s})", moduleID(),
+        register_.addStatement(fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s})", moduleID(),
                                    _init_module ? "&__init_module" : "nullptr",
                                    _uses_globals ? "&__init_globals" : "nullptr",
                                    _uses_globals ? "&__globals_index" : "nullptr"));
@@ -185,7 +185,7 @@ void Unit::_addModuleInitFunction() {
         if ( _preinit_module )
             register_.addStatement(fmt("__preinit_module()"));
 
-        auto id = addInitFunction(_context.get(), register_, "__register_module");
+        auto id = addInitFunction(context().get(), register_, "__register_module");
         add(fmt("HILTI_PRE_INIT(%s)", id));
     }
 }
@@ -228,7 +228,9 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
         // Write out those types first that we have in _types_in_order.
         for ( const auto& id : _types_in_order ) {
             auto i = _types.find(id);
-            assert(i != _types.end());
+            if ( i != _types.end() )
+                continue;
+
             auto& t = i->second;
             if ( t.id.namespace_() == ns && ! t.forward_decl )
                 f << t;
@@ -412,7 +414,7 @@ void Unit::importDeclarations(const Unit& other) {
 }
 
 hilti::detail::cxx::ID Unit::cxxNamespace() const {
-    return cxx::ID(_context->options().cxx_namespace_intern, moduleID());
+    return cxx::ID(context()->options().cxx_namespace_intern, moduleID());
 }
 
 hilti::Result<linker::MetaData> Unit::linkerMetaData() const {

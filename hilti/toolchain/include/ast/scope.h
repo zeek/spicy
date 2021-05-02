@@ -7,50 +7,37 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
-#include <hilti/ast/node_ref.h>
+#include <hilti/ast/node-ref.h>
 #include <hilti/base/intrusive-ptr.h>
 
 namespace hilti {
 
+class Declaration;
 class ID;
 
 /**
- * Identifier scope. A scope maps identifiers to AST nodes (more precisely:
- * to referneces to AST nodes). An identifier can be mapped to more than one
- * node.
+ * Identifier scope. A scope maps identifiers to AST nodes (more precisely: to
+ * references to AST nodes). An identifier can be mapped to more than one node.
  */
 class Scope : public intrusive_ptr::ManagedObject {
 public:
     Scope() = default;
     ~Scope() = default;
 
-    /**
-     * Inserts a new identifier mapping. If a mapping for the ID already
-     * exists, the new one is appended to it.
-     *
-     * @param id id to map
-     * @param n reference to the node that `id` is to be mapped to
-     */
-    void insert(const ID& id, NodeRef n);
+    void insert(NodeRef&& n);
+    void insert(ID id, NodeRef&& n);
+    void insertNotFound(ID id);
 
-    /**
-     * Inserts a new identifier mapping.
-     *
-     * @param id id to map
-     * @param n node to map to; as a scope always maps to *references*,
-     *          this takes ownership of the node and stores it internally
-     */
-    void insert(const ID& id, Node&& n);
-
-    /** Returns true if there's at least one mapping for an ID.  */
+    /** Returns if there's at least one mapping for an ID.  */
     bool has(const ID& id) const { return ! _findID(id).empty(); }
 
     /** Result typer for the lookup methods. */
     struct Referee {
         NodeRef node;          /**< node that ID maps to */
-        std::string qualified; /**< qualified ID with full path used to find it  */
+        std::string qualified; /**< qualified ID with full path used to find it */
         bool external{};       /**< true if found in a different (imported) module  */
     };
 
@@ -72,26 +59,6 @@ public:
     const auto& items() const { return _items; }
 
     /**
-     * Copies the scope's mappings into another one.
-     */
-    void copyInto(Scope* dst) const {
-        for ( const auto& i : _items )
-            dst->_items.insert(i);
-    }
-
-    /**
-     * Moves the scope's mappings into another one. The source scope will be
-     * empty afterwards.
-     */
-    void moveInto(Scope* dst) {
-        // dst->_items.merge(std::move(_items)); // C++17, not supported by libc++ yet it seems
-        for ( const auto& i : _items )
-            dst->_items.insert(i);
-
-        _items.clear();
-    }
-
-    /**
      * Prints out a debugging representation of the scope's content.
      *
      * @param out stream to print to
@@ -111,7 +78,6 @@ private:
     std::vector<Referee> _findID(const Scope* scope, const ID& id, bool external = false) const;
 
     ItemMap _items;
-    std::vector<std::shared_ptr<Node>> _nodes; // Nodes without other owners.
 };
 
 } // namespace hilti

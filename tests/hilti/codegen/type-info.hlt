@@ -2,9 +2,10 @@
 
 module Test {
 
+import hilti;
+
 type Enum = enum { A = 1, B = 2, C = 4 };
 type Exception = exception;
-type MatchState = __library_type("hilti::rt::regexp::MatchState");
 type TypeInfo = __library_type("const hilti::rt::TypeInfo*");
 
 type Struct = struct {
@@ -12,7 +13,12 @@ type Struct = struct {
     int<64> i;
 };
 
-type Union = union {
+# Name the union type with leading 'A' so that the codegen prints out the union
+# first. That ensures that the C++-side order of typedefs works. Normally, we'd
+# declare the union &on-heap instead to make it independent of the order,
+# however, our C++ code in type-info.cc then wouldn't easily be able to
+# distinguish the resulting value_ref<Union> from the value_ref<Struct>.
+type A_Union = union {
     string s,
     int<64> i
 };
@@ -28,7 +34,7 @@ public type TestTypes = struct {
     exception ex;
     # method void test(); # Can't test - won't be included into type info.
     interval in_;
-    MatchState li;
+    hilti::MatchState li;
     map<uint<64>, string> ma;
     iterator<map<uint<64>, string>> mai;
     net ne;
@@ -51,7 +57,7 @@ public type TestTypes = struct {
     Struct stru;
     time ti;
     tuple<a: int<32>, string, c: bool> tu;
-    Union un;
+    A_Union un;
     uint<8> ui8;
     uint<16> ui16;
     uint<32> ui32;
@@ -85,11 +91,11 @@ public function tuple<strong_ref<TestTypes>, strong_ref<TestTypes>, TypeInfo> ma
     S.s = "string";
     S.i = 42;
 
-    local Union U;
+    local A_Union U;
     U.i = 42;
 
     local re = /abc/ &nosub;
-    local MatchState MS = re.token_matcher();
+    local hilti::MatchState MS = re.token_matcher();
     local Exception E;
 
     local TestTypes x = [
@@ -203,12 +209,16 @@ void __check_eq(const T& x, const U& y, std::string loc) {
 // "TypesInit".
 struct VisitorTypesInit {
     std::set<TypeInfo::Tag> seen;
-    static inline const int ExepectedVisitorsSeen = 41; // all (43) minus void and function
+    static inline const int ExepectedVisitorsSeen = 40; // all (43) minus void and function and MatchState (which comes as struct)
 
     // Helper for checking content of a struct of type "S". All our instances
     // of "S" have the same values.
     void testStruct(const type_info::Value& v) {
         auto s = type_info::value::auxType<type_info::Struct>(v)->iterate(v);
+        if ( s.empty() )
+            // We get here for hilti::MatchState
+            return;
+
         auto i = s.begin();
         auto fv = i->second;
         CHECK_EQ(i->first.name, "s");

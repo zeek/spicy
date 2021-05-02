@@ -20,14 +20,16 @@ class Iterator : public TypeBase,
                  trait::isMutable,
                  trait::isRuntimeNonTrivial {
 public:
-    Iterator(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    Iterator(Meta m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8))), std::move(m)) {}
 
     bool operator==(const Iterator& /* other */) const { return true; }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type dereferencedType() const;
+    auto _isResolved(ResolvedState* rstate) const { return true; }
+    /** Implements the `Type` interface. */
+    const Type& dereferencedType() const { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 };
@@ -37,29 +39,22 @@ public:
 /** AST node for a bytes type. */
 class Bytes : public TypeBase, trait::isAllocable, trait::isMutable, trait::isIterable, trait::isRuntimeNonTrivial {
 public:
-    Bytes(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    Bytes(Meta m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8)), Type(bytes::Iterator(m))), m) {}
 
     bool operator==(const Bytes& /* other */) const { return true; }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    Type elementType() const { return type::UnsignedInteger(8); }
+    auto _isResolved(ResolvedState* rstate) const { return true; }
+    /** Implements the `Type` interface. */
+    const Type& elementType() const { return child<Type>(0); }
 
     /** Implements the `Type` interface. */
-    Type iteratorType(bool /* const_ */) const { return bytes::Iterator(meta()); }
+    const Type& iteratorType(bool /* const */) const { return child<Type>(1); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
-
-private:
-    std::optional<Node> _etype;
 };
-
-namespace detail::bytes {
-inline Node element_type = Node(type::UnsignedInteger(8, Location()));
-} // namespace detail::bytes
-
-inline Type bytes::Iterator::dereferencedType() const { return type::UnsignedInteger(8); }
 
 } // namespace type
 

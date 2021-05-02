@@ -19,8 +19,8 @@ namespace detail {
 // Control block for refering to nodes.
 class Control : public hilti::intrusive_ptr::ManagedObject {
 public:
-    Control(Node* n) : _node(n), _rid(++_rid_counter) {}
-    Node* _node;
+    Control(const Node* n) : _node(n), _rid(++_rid_counter) {}
+    const Node* _node;
     uint64_t _rid;
 
     static uint64_t _rid_counter;
@@ -43,7 +43,7 @@ struct Invalid : std::runtime_error {
  */
 class NodeRef {
 public:
-    explicit NodeRef(Node& n); // NOLINT
+    explicit NodeRef(const Node& n);
     explicit NodeRef(const NodeRef& other) = default;
     NodeRef(NodeRef&& other) = default;
     NodeRef& operator=(const NodeRef& other) = default;
@@ -60,12 +60,12 @@ public:
     uint64_t rid() const { return _control ? _control->_rid : 0; }
 
     /**
-     * Returns a string version of the referenced node's unique control ID,
-     * or 0 if the instance isn't referencing anything.
+     * Returns a string version of the referenced node's unique control ID, or
+     * `???` if the instance isn't referencing anything.
      *
      * @note This is primarily for internal usage.
      */
-    std::string renderedRid() const { return rid() ? util::fmt("%%%" PRIu64, rid()) : "%???"; };
+    std::string renderedRid() const { return _control && _control->_node ? util::fmt("%%%" PRIu64, rid()) : "%???"; };
 
     /**
      * Returns a pointer to the the referenced node.
@@ -80,7 +80,7 @@ public:
      *
      * @exception Invalid if the node does not exist anymore
      */
-    Node& operator*() const { return *_node(); }
+    const Node& operator*() const { return *_node(); }
 
     operator const Node&() const { return *_node(); }
 
@@ -88,7 +88,7 @@ public:
     explicit operator bool() const { return _control && _control->_node; }
 
 private:
-    Node* _node() const;
+    const Node* _node() const;
     IntrusivePtr<node_ref::detail::Control> _control;
 };
 

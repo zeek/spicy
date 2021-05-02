@@ -31,54 +31,35 @@ public:
           _cxxname(std::move(cxxname)),
           _num_parameters(parameters.size()) {}
 
-    /** Implements `Expression` interface. */
-    auto type() const { return child<hilti::Type>(0); };
-
-    /** Implements `Expression` interface. */
-    bool isConstant() const { return false; }
-
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
-
-    /** Implements `Expression` interface. */
-    auto isLhs() const { return false; }
-
-    /** Implements `Expression` interface. */
-    auto isTemporary() const { return true; }
-
-    /** Implements `Expression` interface. */
-    auto properties() const { return node::Properties{{"name", _name}}; }
-
+    auto arguments() const { return childs<Expression>(_num_parameters + 1, -1); }
+    const auto parameters() const { return childs<declaration::Parameter>(1, _num_parameters); }
+    const auto& cxxname() const { return _cxxname; }
     const auto& name() const { return _name; }
 
-    const auto& cxxname() const { return _cxxname; }
-
-    auto arguments() const { return childs<Expression>(_num_parameters + 1, -1); }
-
-    const auto parameters() const { return childs<declaration::Parameter>(1, _num_parameters); }
-
-    /**
-     * Returns a new builtin function node with the arguments replaced.
-     *
-     * @param d original builtin function
-     * @param args new arguments
-     * @return new builtin function now that is equal to the original one but with the arguments replaced
-     */
-    static BuiltinFunction setArguments(const BuiltinFunction& d, std::vector<hilti::Expression> args) {
-        auto x = Expression(d)._clone().as<BuiltinFunction>();
-
-        x.childs().clear();
+    void setArguments(std::vector<hilti::Expression> args) {
+        childs().clear();
 
         for ( auto& a : args )
-            x.childs().emplace_back(std::move(a));
-
-        return x;
+            childs().emplace_back(std::move(a));
     }
 
     friend bool operator==(const BuiltinFunction& lhs, const BuiltinFunction& rhs) {
         return lhs._cxxname == rhs._cxxname && lhs.type() == rhs.type() && lhs.parameters() == rhs.parameters() &&
                lhs.arguments() == rhs.arguments();
     }
+
+    /** Implements `Expression` interface. */
+    const Type& type() const { return child<hilti::Type>(0); };
+    /** Implements `Expression` interface. */
+    bool isConstant() const { return false; }
+    /** Implements `Expression` interface. */
+    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+    /** Implements `Expression` interface. */
+    auto isLhs() const { return false; }
+    /** Implements `Expression` interface. */
+    auto isTemporary() const { return true; }
+    /** Implements `Expression` interface. */
+    auto properties() const { return node::Properties{{"name", _name}}; }
 
 private:
     std::string _name;

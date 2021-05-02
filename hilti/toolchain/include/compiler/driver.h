@@ -1,4 +1,5 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+// p
 
 #pragma once
 
@@ -117,29 +118,28 @@ public:
     Result<Nothing> parseOptions(int argc, char** argv);
 
     /**
-     * Schedules a HILTI module for compilation. The unit will take ownership
-     * and compile the module once `compile()` is called. If module of the same ID or
-     * path has been added previously, this will have no effect.
+     * Schedules a unit for compilation. The driver will compile the unit once
+     * `compile()` is called. If a module of the same ID or path has been added
+     * previously, this will have no further effect.
      *
-     * `hookNewASTPreCompilation()` hook will be called immediately for the
-     * new module.
+     * The `hookAddInput()` and `hookNewASTPreCompilation()` hooks will be
+     * called immediately for the new module.
      *
-     * @param m HILTI module to schedule for compilation
-     * @param path path associated with the module, if any
+     * @param u unit to schedule for compilation
      * @return set if successful; otherwise the result provides an error message
      */
-    Result<Nothing> addInput(hilti::Module&& m, const hilti::rt::filesystem::path& path = "");
+    Result<Nothing> addInput(std::shared_ptr<Unit> u);
 
     /**
-     * Schedules a HILTI source file for compilation. The file will be parsed
+     * Schedules a source file for compilation. The file will be parsed
      * immediately, and then compiled later when `compile()` is called. If the
-     * same file/module has been added previously, this method will have no
+     * same source unit has been added previously, this method will have no
      * effect.
      *
-     * `hookNewASTPreCompilation()` hook will be called immediately for the
-     * new module after it has been parsed.
+     * The `hookAddInput()` and `hookNewASTPreCompilation()` hooks will be
+     * called immediately for the new module.
      *
-     * @param input source of HILTI module to compile
+     * @param path source code to compile
      * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> addInput(const hilti::rt::filesystem::path& path);
@@ -188,15 +188,13 @@ public:
     Result<Nothing> compile();
 
     /**
-     * Performs global transformations on the generated code.
-     */
-    Result<Nothing> transformUnits();
-
-    /**
      * Returns the current HILTI context. Valid only once compilation has
      * started, otherwise null.
      */
-    auto context() const { return _ctx; }
+    const auto& context() const { return _ctx; }
+
+    /** Shortcut to return the current context's options. */
+    const auto& options() const { return _ctx->options(); }
 
     /**
      * Initializes HILTI's runtime system to prepare for execution of
@@ -372,42 +370,43 @@ protected:
     virtual std::string hookAugmentUsage() { return ""; }
 
     /**
-     * Hook for derived classes to execute custom code when a new source path
+     * Hook for derived classes to execute custom code when a new unit
      * is being added as an input file.
      */
-    virtual void hookAddInput(const hilti::rt::filesystem::path& path) {}
+    virtual void hookAddInput(std::shared_ptr<Unit> unit) {}
 
     /**
-     * Hook for derived classes to execute custom code when a new AST module
-     * is being added as an input file.
+     * Hook for derived classes to execute custom code when a new source code
+     * file is being added as an input file.
      */
-    virtual void hookAddInput(const hilti::Module& m, const hilti::rt::filesystem::path& path) {}
+    virtual void hookAddInput(const hilti::rt::filesystem::path& path) {}
 
     /**
      * Hook for derived classes to execute custom code when an HILTI AST has
      * been loaded. This hook will run before the AST has been compiled (and
      * hence it'll be fully unprocessed).
      */
-    virtual void hookNewASTPreCompilation(const ID& name, const std::optional<hilti::rt::filesystem::path>& path,
-                                          const Node& root) {}
+    virtual void hookNewASTPreCompilation(std::shared_ptr<Unit> unit) {}
 
     /**
-     * Hook for derived classes to execute custom code when a HILTI AST has
-     * been finalized. This hook will run after the AST has been compiled
-     * (and hence it'll be fully processed).
+     * Hook for derived classes to execute custom code when a code unit has
+     * been finalized. This hook will run after the AST has been be fully
+     * processed by the suitable plugin, but before it's being transformed.
      */
-    virtual void hookNewASTPostCompilation(const ID& name, const std::optional<hilti::rt::filesystem::path>& path,
-                                           const Node& root) {}
+    virtual void hookNewASTPostCompilation(std::shared_ptr<Unit> unit) {}
 
     /**
      * Hook for derived classes to execute custom code when all input files
-     * have been compiled to HILTI & Spicy code (but not yet linked). If the
-     * hook return an error that will abort all further processing. The hook
-     * may add further inputs files through the `add()` methods, which will
-     * then be compiled next. If so, this hook will execute again once all
-     * new inputs have likewise been compiled.
+     * have been fully processes by a plugin. If the hook returns an error that
+     * will abort all further processing. The hook may add further inputs files
+     * through the `add()` methods, which will then be compiled next. This
+     * hook will execute again once all new inputs have likewise been compiled.
+     * The new files, however, must not need processing by any plugin that has
+     * already completed compilation previously.
+     *
+     * @param plugin plugin that has finished now
      */
-    virtual Result<Nothing> hookCompilationFinished() { return Nothing(); }
+    virtual Result<Nothing> hookCompilationFinished(const Plugin& plugin) { return Nothing(); }
 
     /**
      * Hook for derived classes to execute custom code when the HILTI runtime
@@ -426,8 +425,44 @@ private:
     // operation.
     enum Stage { UNINITIALIZED, INITIALIZED, COMPILED, CODEGENED, LINKED, JITTED } _stage = UNINITIALIZED;
 
-    void _addUnit(Unit unit);
-    Result<Nothing> _compileUnit(Unit unit);
+    // Backend for adding a new unit.
+    void _addUnit(std::shared_ptr<Unit> unit);
+
+    // Run a specific plugini's AST passes on all units with the corresponding extension.
+    Result<Nothing> _resolveUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units, int& round);
+
+    // Runs a specific plugin's transform step on a given set of units.
+    Result<Nothing> _transformUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units);
+
+    // Run all plugins on current units, iterating until finished.
+    Result<Nothing> _resolveUnits();
+
+    // Turns all HILTI units into C++.
+    Result<Nothing> _codegenUnits();
+
+    // Performs global transformations on the generated code.
+    Result<Nothing> _optimizeUnits();
+
+    // Sends a debug dump of a unit's AST to the global logger.
+    void _dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& stream, const Plugin& plugin,
+                  const std::string& prefix, int round);
+
+    // Sends a debug dump of a unit's AST to the global logger.
+    void _dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& stream, const std::string& prefix);
+
+    // Sends a debug dump of a unit's AST to an output stream.
+    void _dumpAST(std::shared_ptr<Unit> unit, std::ostream& stream, const Plugin& plugin, const std::string& prefix,
+                  int round);
+
+    // Records a reduced debug dump of a unit's AST limited to just declarations.
+    void _dumpDeclarations(std::shared_ptr<Unit> unit, const Plugin& plugin);
+
+    // Records a debug dump of a unit's AST to disk.
+    void _saveIterationAST(std::shared_ptr<Unit> unit, const Plugin& plugin, const std::string& prefix, int round);
+
+    // Records a debug dump of a unit's AST to disk.
+    void _saveIterationAST(std::shared_ptr<Unit> unit, const Plugin& plugin, const std::string& prefix,
+                           std::string tag);
 
     /**
      * Look up a symbol in the global namespace.
@@ -441,9 +476,8 @@ private:
     driver::Options _driver_options;
     hilti::Options _compiler_options;
 
-    std::vector<Unit> _pending_units;
-
-    std::set<hilti::ID> _processed_units;
+    std::vector<std::shared_ptr<Unit>> _pending_units;
+    std::set<ID> _processed_units;
     std::set<hilti::rt::filesystem::path> _processed_paths;
 
     std::shared_ptr<Context> _ctx;                      // driver's compiler context
@@ -454,7 +488,7 @@ private:
     std::unordered_map<std::string, Library> _libraries;
     std::vector<hilti::rt::filesystem::path> _external_cxxs;
     std::vector<linker::MetaData> _mds;
-    std::vector<Unit> _hlts;
+    std::vector<std::shared_ptr<Unit>> _hlts;
 
     bool _runtime_initialized = false; // true once initRuntime() has succeeded
     std::set<std::string> _tmp_files;  // all tmp files created, so that we can clean them up.

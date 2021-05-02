@@ -18,9 +18,9 @@ namespace ctor {
 class RegExp : public NodeBase, public hilti::trait::isCtor {
 public:
     RegExp(std::vector<std::string> p, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : NodeBase(nodes(std::move(attrs)), std::move(m)), _patterns(std::move(p)) {}
+        : NodeBase(nodes(type::RegExp(m), std::move(attrs)), std::move(m)), _patterns(std::move(p)) {}
 
-    auto attributes() const { return childs()[0].tryReferenceAs<AttributeSet>(); }
+    auto attributes() const { return childs()[1].tryAs<AttributeSet>(); }
     const auto& value() const { return _patterns; }
 
     /**
@@ -31,7 +31,7 @@ public:
     bool operator==(const RegExp& other) const { return value() == other.value(); }
 
     /** Implements `Ctor` interface. */
-    auto type() const { return type::RegExp(meta()); }
+    const auto& type() const { return child<Type>(0); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return true; }
     /** Implements `Ctor` interface. */

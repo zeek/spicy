@@ -47,21 +47,33 @@ namespace operator_ {
 using position_t = visitor::Position<Node&>;
 using const_position_t = visitor::Position<const Node&>;
 
-using OperandType =
-    std::variant<Type,
-                 std::function<std::optional<Type>(const std::vector<Expression>&, const std::vector<Expression>&)>>;
-inline std::optional<Type> type(const OperandType& t, const std::vector<Expression>& orig_ops,
-                                const std::vector<Expression>& resolved_ops) {
-    if ( const auto& f = std::get_if<
-             std::function<std::optional<Type>(const std::vector<Expression>&, const std::vector<Expression>&)>>(&t) )
+using OperandType = std::variant<Type, std::function<std::optional<Type>(const hilti::node::Range<Expression>&,
+                                                                         const hilti::node::Range<Expression>&)>>;
+
+inline std::optional<Type> type(const OperandType& t, const hilti::node::Range<Expression>& orig_ops,
+                                const hilti::node::Range<Expression>& resolved_ops) {
+    if ( const auto& f = std::get_if<std::function<std::optional<Type>(const hilti::node::Range<Expression>&,
+                                                                       const hilti::node::Range<Expression>&)>>(&t) )
         return (*f)(orig_ops, resolved_ops);
 
     return std::get<Type>(t);
 }
 
+inline std::optional<Type> type(const OperandType& t, const hilti::node::Range<Expression>& orig_ops,
+                                const std::vector<Expression>& resolved_ops) {
+    auto resolved_ops_as_nodes = hilti::nodes(resolved_ops);
+    return type(t, orig_ops, hilti::node::Range<Expression>(resolved_ops_as_nodes));
+}
+
+inline std::optional<Type> type(const OperandType& t, const std::vector<Expression>& orig_ops,
+                                const std::vector<Expression>& resolved_ops) {
+    auto orig_ops_as_nodes = hilti::nodes(orig_ops);
+    return type(t, hilti::node::Range<Expression>(orig_ops_as_nodes), resolved_ops);
+}
+
 inline auto operandType(unsigned int op, const char* doc = "<no-doc>") {
-    return [=](const std::vector<Expression>& /* orig_ops */,
-               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
         if ( resolved_ops.empty() )
             return type::DocOnly(doc);
 
@@ -74,8 +86,8 @@ inline auto operandType(unsigned int op, const char* doc = "<no-doc>") {
 }
 
 inline auto elementType(unsigned int op, const char* doc = "<type of element>", bool infer_const = true) {
-    return [=](const std::vector<Expression>& /* orig_ops */,
-               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
         if ( resolved_ops.empty() )
             return type::DocOnly(doc);
 
@@ -93,8 +105,8 @@ inline auto elementType(unsigned int op, const char* doc = "<type of element>", 
 }
 
 inline auto constantElementType(unsigned int op, const char* doc = "<type of element>") {
-    return [=](const std::vector<Expression>& /* orig_ops */,
-               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
         if ( resolved_ops.empty() )
             return type::DocOnly(doc);
 
@@ -110,8 +122,8 @@ inline auto constantElementType(unsigned int op, const char* doc = "<type of ele
 }
 
 inline auto iteratorType(unsigned int op, bool const_, const char* doc = "<iterator>") {
-    return [=](const std::vector<Expression>& /* orig_ops */,
-               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
         if ( resolved_ops.empty() )
             return type::DocOnly(doc);
 
@@ -127,8 +139,8 @@ inline auto iteratorType(unsigned int op, bool const_, const char* doc = "<itera
 }
 
 inline auto dereferencedType(unsigned int op, const char* doc = "<dereferenced type>", bool infer_const = true) {
-    return [=](const std::vector<Expression>& /* orig_ops */,
-               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
         if ( resolved_ops.empty() )
             return type::DocOnly(doc);
 
@@ -139,7 +151,11 @@ inline auto dereferencedType(unsigned int op, const char* doc = "<dereferenced t
 
         if ( type::isDereferencable(resolved_ops[op].type()) ) {
             auto t = resolved_ops[op].type().dereferencedType();
-            return (infer_const && resolved_ops[op].isConstant()) ? type::constant(t) : std::move(t);
+
+            if ( ! infer_const )
+                return std::move(t);
+
+            return resolved_ops[op].isConstant() ? type::constant(t) : type::nonConstant(t);
         }
 
         return {};
@@ -147,8 +163,8 @@ inline auto dereferencedType(unsigned int op, const char* doc = "<dereferenced t
 }
 
 inline auto sameTypeAs(unsigned int op, const char* doc = "<no-doc>") {
-    return [=](const std::vector<Expression>& /* orig_ops */,
-               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
         if ( resolved_ops.empty() )
             return type::DocOnly(doc);
 
@@ -161,8 +177,8 @@ inline auto sameTypeAs(unsigned int op, const char* doc = "<no-doc>") {
 }
 
 inline auto typedType(unsigned int op, const char* doc = "<type>") {
-    return [=](const std::vector<Expression>& /* orig_ops */,
-               const std::vector<Expression>& resolved_ops) -> std::optional<Type> {
+    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
         if ( resolved_ops.empty() )
             return type::DocOnly(doc);
 
@@ -170,7 +186,7 @@ inline auto typedType(unsigned int op, const char* doc = "<type>") {
             logger().internalError(util::fmt("typedType(): index %d out of range, only %" PRIu64 " ops available", op,
                                              resolved_ops.size()));
 
-        return type::effectiveType(resolved_ops[op].type().as<type::Type_>().typeValue());
+        return resolved_ops[op].type().as<type::Type_>().typeValue();
     };
 }
 
@@ -240,6 +256,7 @@ enum class Kind {
     BitXor,
     Call,
     Cast,
+    CustomAssign,
     DecrPostfix,
     DecrPrefix,
     Delete,
@@ -297,6 +314,7 @@ constexpr auto isCommutative(Kind k) {
         case Kind::Begin:
         case Kind::Call:
         case Kind::Cast:
+        case Kind::CustomAssign:
         case Kind::DecrPostfix:
         case Kind::DecrPrefix:
         case Kind::Delete:
@@ -339,53 +357,30 @@ constexpr auto isCommutative(Kind k) {
 }
 
 namespace detail {
-constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Add, "add"},
-                                              {Kind::Begin, "begin"},
-                                              {Kind::BitAnd, "&"},
-                                              {Kind::BitOr, "|"},
-                                              {Kind::BitXor, "^"},
-                                              {Kind::Call, "call"},
-                                              {Kind::Cast, "cast"},
-                                              {Kind::DecrPostfix, "--"},
-                                              {Kind::DecrPrefix, "--"},
-                                              {Kind::Delete, "delete"},
-                                              {Kind::Deref, "*"},
-                                              {Kind::Division, "/"},
-                                              {Kind::DivisionAssign, "/="},
-                                              {Kind::Equal, "=="},
-                                              {Kind::End, "end"},
-                                              {Kind::Greater, ">"},
-                                              {Kind::GreaterEqual, ">="},
-                                              {Kind::HasMember, "?."},
-                                              {Kind::In, "in"},
-                                              {Kind::IncrPostfix, "++"},
-                                              {Kind::IncrPrefix, "++"},
-                                              {Kind::Index, "index"},
-                                              {Kind::IndexAssign, "index_assign"},
-                                              {Kind::Lower, "<"},
-                                              {Kind::LowerEqual, "<="},
-                                              {Kind::Member, "."},
-                                              {Kind::MemberCall, "method call"},
-                                              {Kind::Negate, "~"},
-                                              {Kind::New, "new"},
-                                              {Kind::Difference, "-"},
-                                              {Kind::DifferenceAssign, "-="},
-                                              {Kind::Modulo, "%"},
-                                              {Kind::Multiple, "*"},
-                                              {Kind::MultipleAssign, "*="},
-                                              {Kind::Sum, "+"},
-                                              {Kind::SumAssign, "+="},
-                                              {Kind::Power, "**"},
-                                              {Kind::ShiftLeft, "<<"},
-                                              {Kind::ShiftRight, ">>"},
-                                              {Kind::SignNeg, "-"},
-                                              {Kind::SignPos, "+"},
-                                              {Kind::Size, "size"},
-                                              {Kind::TryMember, ".?"},
-                                              {Kind::Unequal, "!="},
-                                              {Kind::Unknown, "<unknown>"},
-                                              {Kind::Unpack, "unpack"},
-                                              {Kind::Unset, "unset"}};
+constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Add, "add"},           {Kind::Begin, "begin"},
+                                              {Kind::BitAnd, "&"},          {Kind::BitOr, "|"},
+                                              {Kind::BitXor, "^"},          {Kind::Call, "call"},
+                                              {Kind::Cast, "cast"},         {Kind::CustomAssign, "="},
+                                              {Kind::DecrPostfix, "--"},    {Kind::DecrPrefix, "--"},
+                                              {Kind::Delete, "delete"},     {Kind::Deref, "*"},
+                                              {Kind::Division, "/"},        {Kind::DivisionAssign, "/="},
+                                              {Kind::Equal, "=="},          {Kind::End, "end"},
+                                              {Kind::Greater, ">"},         {Kind::GreaterEqual, ">="},
+                                              {Kind::HasMember, "?."},      {Kind::In, "in"},
+                                              {Kind::IncrPostfix, "++"},    {Kind::IncrPrefix, "++"},
+                                              {Kind::Index, "index"},       {Kind::IndexAssign, "index_assign"},
+                                              {Kind::Lower, "<"},           {Kind::LowerEqual, "<="},
+                                              {Kind::Member, "."},          {Kind::MemberCall, "method call"},
+                                              {Kind::Negate, "~"},          {Kind::New, "new"},
+                                              {Kind::Difference, "-"},      {Kind::DifferenceAssign, "-="},
+                                              {Kind::Modulo, "%"},          {Kind::Multiple, "*"},
+                                              {Kind::MultipleAssign, "*="}, {Kind::Sum, "+"},
+                                              {Kind::SumAssign, "+="},      {Kind::Power, "**"},
+                                              {Kind::ShiftLeft, "<<"},      {Kind::ShiftRight, ">>"},
+                                              {Kind::SignNeg, "-"},         {Kind::SignPos, "+"},
+                                              {Kind::Size, "size"},         {Kind::TryMember, ".?"},
+                                              {Kind::Unequal, "!="},        {Kind::Unknown, "<unknown>"},
+                                              {Kind::Unpack, "unpack"},     {Kind::Unset, "unset"}};
 } // namespace detail
 
 /**

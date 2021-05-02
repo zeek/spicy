@@ -12,6 +12,21 @@ type X = struct {
 global X x;
 
 hilti::print(x.DoesNotExist);
+
+}
+
+@TEST-START-NEXT
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    string s;
+};
+
+global X x;
+
 unset x.s;
 
 }

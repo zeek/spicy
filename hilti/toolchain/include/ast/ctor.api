@@ -3,7 +3,7 @@
 /** Interface for HILTI constructors. */
 class Ctor(trait::isCtor) : trait::isNode {
     /** Returns the HILTI `Type` of the constructor's value. */
-    Type type() const;
+    const Type& type() const;
 
     /**
      * Returns true if the constructor's value is a value that will never
@@ -42,11 +42,5 @@ class Ctor(trait::isCtor) : trait::isNode {
     void setMeta(Meta m);
 
     /** Implements the `Node` interface. */
-    const NodeRef& originalNode() const;
-
-    /** Implements the `Node` interface. */
-    void setOriginalNode(const NodeRef& n);
-
-    /** Implements the `Node` interface. */
-    void clearCache();
+    bool pruneWalk() const;
 };

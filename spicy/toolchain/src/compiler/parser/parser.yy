@@ -233,7 +233,8 @@ static int _field_width = 0;
 %token         WHILE
 
 %type <id>                          local_id scoped_id dotted_id unit_hook_id
-%type <declaration>                 local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl
+%type <declaration>                 local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
+%type <declarations>                struct_fields
 %type <decls_and_stmts>             global_scope_items
 %type <type>                        base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
 %type <ctor>                        ctor tuple struct_ regexp list vector map set
@@ -255,8 +256,6 @@ static int _field_width = 0;
 %type <opt_attributes>              opt_attributes opt_unit_hook_attributes
 %type <tuple_type_elem>             tuple_type_elem
 %type <tuple_type_elems>            tuple_type_elems
-%type <struct_field>                struct_field
-%type <struct_fields>               struct_fields
 %type <struct_elems>                struct_elems
 %type <struct_elem>                 struct_elem
 %type <map_elems>                   map_elems opt_map_elems
@@ -340,8 +339,10 @@ global_scope_decl
               | hook_decl                        { $$ = std::move($1); }
 
 type_decl     : opt_linkage TYPE scoped_id '=' type opt_attributes ';' {
-                                                   if ( auto x = $5.tryAs<type::Unit>(); x && $6 && *$6 )
-                                                       $5 = Type(type::Unit::addAttributes(*x, *$6));
+                                                   if ( auto x = $5.isA<type::Unit>(); x && $6 && *$6 ) {
+                                                       $5.as<type::Unit>().setAttributes(*$6);
+                                                       $6 = {}; // don't associate with declaration
+                                                       }
 
                                                    $$ = hilti::declaration::Type(std::move($3), std::move($5), std::move($6), std::move($1), __loc__);
                                                  }
@@ -392,8 +393,7 @@ hook_decl     : ON unit_hook_id unit_hook        { ID unit = $2.namespace_();
                                                    if ( unit.empty() )
                                                       error(@$, "hook requires unit namespace");
 
-                                                   auto hook = spicy::type::unit::item::UnitHook($2.local(), std::move($3), __loc__);
-                                                   $$ = spicy::declaration::UnitHook($2, hilti::type::UnresolvedID(unit), std::move(hook), __loc__);
+                                                   $$ = spicy::declaration::UnitHook(std::move($2), std::move($3), __loc__);
                                                  }
               ;
 
@@ -442,7 +442,7 @@ func_param    : opt_func_param_kind local_id ':' type opt_init_expression
 func_result   : ':' type                         { $$ = hilti::type::function::Result(std::move($2), __loc__); }
 
 opt_func_result : func_result                    { $$ = std::move($1); }
-                | /* empty */                    { $$ = hilti::type::function::Result(hilti::type::Void(__loc__), __loc__); }
+                | /* empty */                    { $$ = hilti::type::function::Result(hilti::type::void_, __loc__); }
 
 opt_func_param_kind
               : INOUT                            { $$ = hilti::declaration::parameter::Kind::InOut; }
@@ -492,7 +492,7 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
               | SWITCH '(' expr ')' '{' switch_cases '}'
                                                  { $$ = hilti::statement::Switch(std::move($3), std::move($6), __loc__); }
               | SWITCH '(' local_init_decl ')' '{' switch_cases '}'
-                                                 { $$ = hilti::statement::Switch($3, hilti::expression::UnresolvedID($3.as<hilti::declaration::LocalVariable>().id()), std::move($6), __loc__); }
+                                                 { $$ = hilti::statement::Switch(std::move($3), std::move($6), __loc__); }
               | WHILE '(' local_init_decl ';' expr ')' block
                                                  { $$ = hilti::statement::While(std::move($3), std::move($5), std::move($7), std::nullopt, __loc__); }
               | WHILE '(' expr ')' block
@@ -558,7 +558,7 @@ base_type_no_ref
               | STREAM                           { $$ = hilti::type::Stream(__loc__); }
               | STRING                           { $$ = hilti::type::String(__loc__); }
               | TIME                             { $$ = hilti::type::Time(__loc__); }
-              | VOID                             { $$ = hilti::type::Void(__loc__); }
+              | VOID                             { $$ = hilti::type::void_; }
 
               | INT8                             { $$ = hilti::type::SignedInteger(8, __loc__); }
               | INT16                            { $$ = hilti::type::SignedInteger(16, __loc__); }
@@ -591,10 +591,10 @@ base_type_no_ref
               ;
 
 /* We split this out from "base_type" because it can lead to ambigitious in some contexts. */
-reference_type: type '&'                         { $$ = hilti::type::StrongReference(std::move($1), true, __loc__); }
+reference_type: type '&'                         { $$ = hilti::type::StrongReference(std::move($1), __loc__); }
 
 base_type     : base_type_no_ref
-                reference_type: type '&'         { $$ = hilti::type::StrongReference(std::move($1), true, __loc__); }
+                reference_type: type '&'         { $$ = hilti::type::StrongReference(std::move($1), __loc__); }
               ;
 
 type          : base_type                        { $$ = std::move($1); }
@@ -618,20 +618,20 @@ tuple_type_elems
               : tuple_type_elems ',' tuple_type_elem
                                                  { $$ = std::move($1); $$.push_back(std::move($3)); }
               | tuple_type_elems ','             { $$ = std::move($1); }
-              | tuple_type_elem                  { $$ = std::vector<std::pair<hilti::ID, hilti::Type>>{ std::move($1) }; }
+              | tuple_type_elem                  { $$ = std::vector<type::tuple::Element>{ std::move($1) }; }
               ;
 
 tuple_type_elem
-              : type                             { $$ = std::make_pair(hilti::ID(), std::move($1)); }
-              | local_id ':' type                { $$ = std::make_pair(std::move($1), std::move($3)); }
+              : type                             { $$ = type::tuple::Element(std::move($1)); }
+              | local_id ':' type                { $$ = type::tuple::Element(std::move($1), std::move($3)); }
               ;
 
 struct_type   : STRUCT '{' struct_fields '}'     { $$ = hilti::type::Struct(std::move($3), __loc__); }
 
 struct_fields : struct_fields struct_field       { $$ = std::move($1); $$.push_back($2); }
-              | /* empty */                      { $$ = std::vector<hilti::type::struct_::Field>{}; }
+              | /* empty */                      { $$ = std::vector<Declaration>{}; }
 
-struct_field  : type local_id opt_attributes ';' { $$ = hilti::type::struct_::Field(std::move($2), std::move($1), std::move($3), __loc__); }
+struct_field  : type local_id opt_attributes ';' { $$ = hilti::declaration::Field(std::move($2), std::move($1), std::move($3), __loc__); }
 
 enum_type     : ENUM '{' enum_labels '}'         { $$ = hilti::type::Enum(std::move($3), __loc__); }
 
@@ -915,7 +915,7 @@ expr_f        : ctor                             { $$ = hilti::expression::Ctor(
 
 expr_g        : '(' expr ')'                     { $$ = hilti::expression::Grouping(std::move($2)); }
               | scoped_id                        { $$ = hilti::expression::UnresolvedID(std::move($1), __loc__); }
-              | DOLLARDOLLAR                     { $$ = hilti::expression::Keyword(hilti::expression::keyword::Kind::DollarDollar, __loc__); }
+              | DOLLARDOLLAR                     { $$ = hilti::expression::UnresolvedID(std::move("__dd"), __loc__);}
               | DOLLAR_NUMBER                    { // $N -> $@[N] (with $@ being available internally only, not exposed to users)
                                                    auto captures = hilti::expression::Keyword(hilti::expression::keyword::Kind::Captures, hilti::builder::typeByID("hilti::Captures"), __loc__);
                                                    auto index = hilti::expression::Ctor(hilti::ctor::UnsignedInteger($1, 64, __loc__), __loc__);
@@ -1038,12 +1038,12 @@ re_pattern_constant
                                                  { $$ = std::move($3); }
 
 opt_map_elems : map_elems                        { $$ = std::move($1); }
-              | /* empty */                      { $$ = std::vector<hilti::ctor::Map::Element>(); }
+              | /* empty */                      { $$ = std::vector<hilti::ctor::map::Element>(); }
 
 map_elems     : map_elems ',' map_elem           { $$ = std::move($1); $$.push_back(std::move($3)); }
-              | map_elem                         { $$ = std::vector<hilti::ctor::Map::Element>(); $$.push_back(std::move($1)); }
+              | map_elem                         { $$ = std::vector<hilti::ctor::map::Element>(); $$.push_back(std::move($1)); }
 
-map_elem      : expr ':' expr                    { $$ = std::make_pair($1, $3); }
+map_elem      : expr ':' expr                    { $$ = hilti::ctor::map::Element($1, $3); }
 
 /* Attributes */
 

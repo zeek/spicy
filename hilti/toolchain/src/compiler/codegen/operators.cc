@@ -37,6 +37,10 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return util::transform(exprs, [&](const auto& e) { return cg->compile(e); });
     }
 
+    auto compileExpressions(const node::Range<Expression>& exprs) {
+        return node::transform(exprs, [&](const auto& e) { return cg->compile(e); });
+    }
+
     auto tupleArguments(const expression::ResolvedOperatorBase& o, const Expression& op) {
         auto ctor = op.as<expression::Ctor>().ctor();
 
@@ -365,10 +369,10 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     /// Real
 
     result_t operator()(const operator_::real::CastToInterval& n) {
-        return fmt("hilti::rt::Interval(%f, hilti::rt::Interval::NanosecondTag())", op0(n));
+        return fmt("::hilti::rt::Interval(%f, hilti::rt::Interval::NanosecondTag())", op0(n));
     }
     result_t operator()(const operator_::real::CastToTime& n) {
-        return fmt("hilti::rt::Time(%f, hilti::rt::Time::SecondTag())", op0(n));
+        return fmt("::hilti::rt::Time(%f, hilti::rt::Time::SecondTag())", op0(n));
     }
     result_t operator()(const operator_::real::Difference& n) { return binary(n, "-"); }
     result_t operator()(const operator_::real::DifferenceAssign& n) { return binary(n, "-="); }
@@ -417,11 +421,11 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::generic::New& n) {
         if ( auto tv = n.op0().type().tryAs<type::Type_>() ) {
             auto args = util::join(tupleArguments(n, n.op1()), ", ");
-            return fmt("hilti::rt::reference::make_strong<%s>(%s)",
+            return fmt("::hilti::rt::reference::make_strong<%s>(%s)",
                        cg->compile(tv->typeValue(), codegen::TypeUsage::Ctor), args);
         }
         else {
-            return fmt("hilti::rt::reference::make_strong<%s>(%s)",
+            return fmt("::hilti::rt::reference::make_strong<%s>(%s)",
                        cg->compile(n.op0().type(), codegen::TypeUsage::Ctor), op0(n));
         }
     }
@@ -437,16 +441,16 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         auto name = op0(n);
 
         if ( auto a = AttributeSet::find(f.function().attributes(), "&cxxname") ) {
-            auto s = a->valueAs<std::string>();
+            auto s = a->valueAsString();
             if ( s )
                 name = *s;
             else
                 logger().error(s, n);
         }
 
-        auto values = n.op1().as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
+        const auto& values = n.op1().as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
         return fmt("%s(%s)", name,
-                   util::join(cg->compileCallArguments(values, f.function().type().parameters()), ", "));
+                   util::join(cg->compileCallArguments(values, f.function().ftype().parameters()), ", "));
     }
 
     result_t operator()(const operator_::regexp::Match& n) {
@@ -481,7 +485,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     // Optional
     result_t operator()(const operator_::optional::Deref& n) {
-        return fmt("hilti::rt::optional::value(%s, \"%s\")", op0(n), n.op0().meta().location().render());
+        return fmt("::hilti::rt::optional::value(%s, \"%s\")", op0(n), n.op0().meta().location().render());
     }
 
     /// Port
@@ -641,19 +645,19 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const operator_::string::Encode& n) {
         auto [self, args] = methodArguments(n);
-        return fmt("hilti::rt::Bytes(%s, %s)", self, args[0]);
+        return fmt("::hilti::rt::Bytes(%s, %s)", self, args[0]);
     }
 
     result_t operator()(const operator_::string::Modulo& n) {
         if ( n.op1().type().isA<type::Tuple>() ) {
             if ( auto ctor = n.op1().tryAs<expression::Ctor>() ) {
                 auto t = ctor->ctor().as<ctor::Tuple>().value();
-                return fmt("hilti::rt::fmt(%s, %s)", op0(n),
-                           util::join(util::transform(t, [this](auto& x) { return cg->compile(x); }), ", "));
+                return fmt("::hilti::rt::fmt(%s, %s)", op0(n),
+                           util::join(node::transform(t, [this](auto& x) { return cg->compile(x); }), ", "));
             }
         }
 
-        return fmt("hilti::rt::fmt(%s, %s)", op0(n), op1(n));
+        return fmt("::hilti::rt::fmt(%s, %s)", op0(n), op1(n));
     }
 
     // Strong reference
@@ -681,15 +685,15 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
             if ( lhs ) {
                 if ( d )
-                    return fmt("hilti::rt::optional::valueOrInit(%s, %s)", attr, cg->compile(*d));
+                    return fmt("::hilti::rt::optional::valueOrInit(%s, %s)", attr, cg->compile(*d));
 
-                return fmt("hilti::rt::optional::valueOrInit(%s)", attr);
+                return fmt("::hilti::rt::optional::valueOrInit(%s)", attr);
             }
 
             if ( d )
                 return fmt("%s.value_or(%s)", attr, cg->compile(*d));
 
-            return fmt("hilti::rt::optional::value(%s, \"%s\")", attr, op0.meta().location().render());
+            return fmt("::hilti::rt::optional::value(%s, \"%s\")", attr, op0.meta().location().render());
         }
 
         return attr;
@@ -702,17 +706,16 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         auto id = n.op1().as<expression::Member>().id();
         auto ft = n.op1().as<expression::Member>().type().as<type::Function>();
         auto args = n.op2().as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
-        auto kinds = util::transform(ft.parameters(), [](auto& x) { return x.kind(); });
-        auto zipped = util::zip2(args, kinds);
+
+        std::vector<std::pair<Expression, bool>> zipped;
+
+        for ( auto i = 0u; i < args.size(); i++ )
+            zipped.emplace_back(args[i], ft.parameters()[i].kind() == declaration::parameter::Kind::InOut);
+
         return memberAccess(n,
                             fmt("%s(%s)", id,
                                 util::join(util::transform(zipped,
-                                                           [this](auto& x) {
-                                                               return cg
-                                                                   ->compile(x.first,
-                                                                             x.second ==
-                                                                                 declaration::parameter::Kind::InOut);
-                                                           }),
+                                                           [this](auto& x) { return cg->compile(x.first, x.second); }),
                                            ", ")),
                             false);
     }
@@ -736,7 +739,8 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             if ( auto d = f->default_() )
                 return memberAccess(n, fmt("value_or(%s)", cg->compile(*d)));
 
-            return fmt("hilti::rt::struct_::value_or_exception(%s, \"%s\")", attr, n.op0().meta().location().render());
+            return fmt("::hilti::rt::struct_::value_or_exception(%s, \"%s\")", attr,
+                       n.op0().meta().location().render());
         }
 
         return structMember(n, n.op1());
@@ -759,16 +763,16 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const operator_::union_::MemberConst& n) {
         auto idx = unionFieldIndex(n.op0(), n.op1());
-        return fmt("hilti::rt::union_::get<%u>(%s)", idx, op0(n));
+        return fmt("::hilti::rt::union_::get<%u>(%s)", idx, op0(n));
     }
 
     result_t operator()(const operator_::union_::MemberNonConst& n) {
         auto idx = unionFieldIndex(n.op0(), n.op1());
 
         if ( lhs )
-            return fmt("hilti::rt::union_::get_proxy<%u>(%s)", idx, op0(n));
+            return fmt("::hilti::rt::union_::get_proxy<%u>(%s)", idx, op0(n));
         else
-            return fmt("hilti::rt::union_::get<%u>(%s)", idx, op0(n));
+            return fmt("::hilti::rt::union_::get<%u>(%s)", idx, op0(n));
     }
 
     result_t operator()(const operator_::union_::HasMember& n) {
@@ -779,7 +783,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     // Signed integer
 
     result_t operator()(const operator_::signed_integer::CastToInterval& n) {
-        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
+        return fmt("::hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
                    ") * 1000000000, hilti::rt::Interval::NanosecondTag())",
                    op0(n));
     }
@@ -806,7 +810,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::signed_integer::Multiple& n) { return fmt("%s * %s", op0(n), op1(n)); }
     result_t operator()(const operator_::signed_integer::MultipleAssign& n) { return fmt("%s *= %s", op0(n), op1(n)); }
     result_t operator()(const operator_::signed_integer::Power& n) {
-        return fmt("hilti::rt::pow(%s, %s)", op0(n), op1(n));
+        return fmt("::hilti::rt::pow(%s, %s)", op0(n), op1(n));
     }
     result_t operator()(const operator_::signed_integer::SignNeg& n) { return fmt("(-%s)", op0(n)); }
     result_t operator()(const operator_::signed_integer::Sum& n) { return fmt("%s + %s", op0(n), op1(n)); }
@@ -844,6 +848,12 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     // Tuple
 
+    result_t operator()(const operator_::tuple::CustomAssign& n) {
+        auto t = n.operands()[0].as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
+        auto l = util::join(node::transform(t, [this](auto& x) { return cg->compile(x, true); }), ", ");
+        return fmt("std::tie(%s) = %s", l, op1(n));
+    }
+
     result_t operator()(const operator_::tuple::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::tuple::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
@@ -869,12 +879,12 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("::hilti::rt::enum_::from_uint<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
     result_t operator()(const operator_::unsigned_integer::CastToInterval& n) {
-        return fmt("hilti::rt::Interval(hilti::rt::integer::safe<uint64_t>(%" PRIu64
+        return fmt("::hilti::rt::Interval(hilti::rt::integer::safe<uint64_t>(%" PRIu64
                    ") * 1000000000, hilti::rt::Interval::NanosecondTag())",
                    op0(n));
     }
     result_t operator()(const operator_::unsigned_integer::CastToTime& n) {
-        return fmt("hilti::rt::Time(hilti::rt::integer::safe<uint64_t>(%" PRIu64
+        return fmt("::hilti::rt::Time(hilti::rt::integer::safe<uint64_t>(%" PRIu64
                    ") * 1'000'000'000, hilti::rt::Time::NanosecondTag())",
                    op0(n));
     }
@@ -902,7 +912,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
     result_t operator()(const operator_::unsigned_integer::Negate& n) { return fmt("~%s", op0(n)); }
     result_t operator()(const operator_::unsigned_integer::Power& n) {
-        return fmt("hilti::rt::pow(%s, %s)", op0(n), op1(n));
+        return fmt("::hilti::rt::pow(%s, %s)", op0(n), op1(n));
     }
     result_t operator()(const operator_::unsigned_integer::ShiftLeft& n) { return fmt("(%s << %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::ShiftRight& n) { return fmt("(%s >> %s)", op0(n), op1(n)); }

@@ -23,7 +23,7 @@ public:
     }
 
     /** Implements `Ctor` interface. */
-    Type type() const { return type::effectiveType(coercedCtor().type()); }
+    const Type& type() const { return coercedCtor().type(); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return coercedCtor().isConstant(); }
     /** Implements `Ctor` interface. */

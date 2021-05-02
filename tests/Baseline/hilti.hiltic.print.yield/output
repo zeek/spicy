@@ -6,42 +6,70 @@
 
 #include <hilti/rt/libhilti.h>
 
+namespace __hlt::type_info { namespace {
+    extern const ::hilti::rt::TypeInfo __ti_hilti_AddressFamily;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_BitOrder;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_ByteOrder;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_Captures;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_Charset;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_Exception;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_MatchState;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_Protocol;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_RealType;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_RuntimeError;
+    extern const ::hilti::rt::TypeInfo __ti_hilti_Side;
+} }
+
 namespace __hlt::Foo {
     extern void __register_module();
     extern auto test(const std::string& x) -> std::string;
 }
 
 namespace hlt::Foo {
-    extern auto test(const std::string& x) -> hilti::rt::Resumable;
+    extern auto test(const std::string& x) -> ::hilti::rt::Resumable;
 }
+
+namespace __hlt::type_info { namespace {
+    const ::hilti::rt::TypeInfo __ti_hilti_AddressFamily = { "hilti::AddressFamily", "hilti::AddressFamily", new ::hilti::rt::type_info::Enum(std::vector<::hilti::rt::type_info::enum_::Label>({::hilti::rt::type_info::enum_::Label{ "IPv4", 0 }, ::hilti::rt::type_info::enum_::Label{ "IPv6", 1 }, ::hilti::rt::type_info::enum_::Label{ "Undef", -1 }})) };
+    const ::hilti::rt::TypeInfo __ti_hilti_BitOrder = { "hilti::BitOrder", "hilti::BitOrder", new ::hilti::rt::type_info::Enum(std::vector<::hilti::rt::type_info::enum_::Label>({::hilti::rt::type_info::enum_::Label{ "LSB0", 0 }, ::hilti::rt::type_info::enum_::Label{ "MSB0", 1 }, ::hilti::rt::type_info::enum_::Label{ "Undef", -1 }})) };
+    const ::hilti::rt::TypeInfo __ti_hilti_ByteOrder = { "hilti::ByteOrder", "hilti::ByteOrder", new ::hilti::rt::type_info::Enum(std::vector<::hilti::rt::type_info::enum_::Label>({::hilti::rt::type_info::enum_::Label{ "Little", 0 }, ::hilti::rt::type_info::enum_::Label{ "Big", 1 }, ::hilti::rt::type_info::enum_::Label{ "Network", 2 }, ::hilti::rt::type_info::enum_::Label{ "Host", 3 }, ::hilti::rt::type_info::enum_::Label{ "Undef", -1 }})) };
+    const ::hilti::rt::TypeInfo __ti_hilti_Captures = { "hilti::Captures", "hilti::Captures", new ::hilti::rt::type_info::Vector(&::hilti::rt::type_info::bytes, ::hilti::rt::type_info::Vector::accessor<::hilti::rt::Bytes>()) };
+    const ::hilti::rt::TypeInfo __ti_hilti_Charset = { "hilti::Charset", "hilti::Charset", new ::hilti::rt::type_info::Enum(std::vector<::hilti::rt::type_info::enum_::Label>({::hilti::rt::type_info::enum_::Label{ "ASCII", 0 }, ::hilti::rt::type_info::enum_::Label{ "UTF8", 1 }, ::hilti::rt::type_info::enum_::Label{ "Undef", -1 }})) };
+    const ::hilti::rt::TypeInfo __ti_hilti_Exception = { "hilti::Exception", "hilti::Exception", new ::hilti::rt::type_info::Exception() };
+    const ::hilti::rt::TypeInfo __ti_hilti_MatchState = { "hilti::MatchState", "hilti::MatchState", new ::hilti::rt::type_info::Struct(std::vector<::hilti::rt::type_info::struct_::Field>({})) };
+    const ::hilti::rt::TypeInfo __ti_hilti_Protocol = { "hilti::Protocol", "hilti::Protocol", new ::hilti::rt::type_info::Enum(std::vector<::hilti::rt::type_info::enum_::Label>({::hilti::rt::type_info::enum_::Label{ "TCP", 0 }, ::hilti::rt::type_info::enum_::Label{ "UDP", 1 }, ::hilti::rt::type_info::enum_::Label{ "ICMP", 2 }, ::hilti::rt::type_info::enum_::Label{ "Undef", -1 }})) };
+    const ::hilti::rt::TypeInfo __ti_hilti_RealType = { "hilti::RealType", "hilti::RealType", new ::hilti::rt::type_info::Enum(std::vector<::hilti::rt::type_info::enum_::Label>({::hilti::rt::type_info::enum_::Label{ "IEEE754_Single", 0 }, ::hilti::rt::type_info::enum_::Label{ "IEEE754_Double", 1 }, ::hilti::rt::type_info::enum_::Label{ "Undef", -1 }})) };
+    const ::hilti::rt::TypeInfo __ti_hilti_RuntimeError = { "hilti::RuntimeError", "hilti::RuntimeError", new ::hilti::rt::type_info::Exception() };
+    const ::hilti::rt::TypeInfo __ti_hilti_Side = { "hilti::Side", "hilti::Side", new ::hilti::rt::type_info::Enum(std::vector<::hilti::rt::type_info::enum_::Label>({::hilti::rt::type_info::enum_::Label{ "Left", 0 }, ::hilti::rt::type_info::enum_::Label{ "Right", 1 }, ::hilti::rt::type_info::enum_::Label{ "Both", 2 }, ::hilti::rt::type_info::enum_::Label{ "Undef", -1 }})) };
+} }
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
-extern void __hlt::Foo::__register_module() { hilti::rt::detail::registerModule({ "Foo", nullptr, nullptr, nullptr}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", nullptr, nullptr, nullptr}); }
 
 extern auto __hlt::Foo::test(const std::string& x) -> std::string {
-    hilti::rt::detail::checkStack();
+    ::hilti::rt::detail::checkStack();
       __location__("<...>/yield.hlt:12:5");
-    hilti::rt::print(std::string("HILTI - 1 - argument: "), hilti::rt::Bool(false));
+    ::hilti::rt::print(std::string("HILTI - 1 - argument: "), ::hilti::rt::Bool(false));
       __location__("<...>/yield.hlt:13:5");
-    hilti::rt::print(x, hilti::rt::Bool(true));
+    ::hilti::rt::print(x, ::hilti::rt::Bool(true));
       __location__("<...>/yield.hlt:15:5");
-    hilti::rt::detail::yield();
+    ::hilti::rt::detail::yield();
       __location__("<...>/yield.hlt:16:5");
-    hilti::rt::print(std::string("HILTI - 2"), hilti::rt::Bool(true));
+    ::hilti::rt::print(std::string("HILTI - 2"), ::hilti::rt::Bool(true));
       __location__("<...>/yield.hlt:17:5");
-    hilti::rt::detail::yield();
+    ::hilti::rt::detail::yield();
       __location__("<...>/yield.hlt:18:5");
-    hilti::rt::print(std::string("HILTI - 3"), hilti::rt::Bool(true));
+    ::hilti::rt::print(std::string("HILTI - 3"), ::hilti::rt::Bool(true));
       __location__("<...>/yield.hlt:19:5");
-    hilti::rt::detail::yield();
+    ::hilti::rt::detail::yield();
       __location__("<...>/yield.hlt:20:5");
-    hilti::rt::print(std::string("HILTI - Done"), hilti::rt::Bool(true));
+    ::hilti::rt::print(std::string("HILTI - Done"), ::hilti::rt::Bool(true));
       __location__("<...>/yield.hlt:22:5");
     return std::string("test-result");
 }
 
-extern auto hlt::Foo::test(const std::string& x) -> hilti::rt::Resumable {
+extern auto hlt::Foo::test(const std::string& x) -> ::hilti::rt::Resumable {
     auto args = std::make_tuple(::hilti::rt::resumable::detail::copyArg(x));
     auto args_on_heap = std::make_shared<decltype(args)>(std::move(args));
     auto cb = [args_on_heap](hilti::rt::resumable::Handle* r) -> hilti::rt::any {

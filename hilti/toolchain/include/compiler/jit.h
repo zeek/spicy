@@ -160,10 +160,10 @@ public:
     Result<std::shared_ptr<const Library>> build();
 
     /** Returns the compiler context in use. */
-    auto context() const { return _context; }
+    auto context() const { return _context.lock(); }
 
     /** Returns the compiler options in use. */
-    auto options() const { return _context->options(); }
+    auto options() const { return context()->options(); }
 
 private:
     // Check if we have a working compiler.
@@ -187,8 +187,8 @@ private:
 
     hilti::rt::filesystem::path _makeTmp(std::string base, std::string ext);
 
-    std::shared_ptr<Context> _context; // global context for options
-    bool _dump_code;                   // save all C++ code for debugging
+    std::weak_ptr<Context> _context; // global context for options
+    bool _dump_code;                 // save all C++ code for debugging
 
     std::vector<hilti::rt::filesystem::path> _files; // all added source files
     std::vector<CxxCode> _codes;                     // all C++ code units to be compiled

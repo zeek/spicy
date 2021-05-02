@@ -10,8 +10,8 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/meta.h>
 #include <hilti/ast/module.h>
+#include <hilti/ast/node-ref.h>
 #include <hilti/ast/node.h>
-#include <hilti/ast/node_ref.h>
 #include <hilti/base/result.h>
 #include <hilti/base/type_erase.h>
 
@@ -19,18 +19,18 @@ namespace hilti {
 namespace declaration {
 
 /** AST node for an AST's top-level module declaration. */
-class Module : public NodeBase, public hilti::trait::isDeclaration {
+class Module : public DeclarationBase {
 public:
     /**
      * Constructor.
      *
      * @param root reference to root node of module's AST; must be a ``Module`` node.
      */
-    Module(NodeRef root, Meta m = Meta()) : NodeBase(std::move(m)), _root(std::move(root)) {
+    Module(NodeRef root, Meta m = Meta()) : DeclarationBase(std::move(m)), _root(std::move(root)) {
         assert(_root && _root->isA<hilti::Module>());
     }
 
-    Node& root() const { return *_root; }
+    const Node& root() const { return *_root; }
 
     bool operator==(const Module& other) const { return id() == other.id(); }
 

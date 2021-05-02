@@ -249,7 +249,7 @@ STANDARD_OPERATOR_2x(stream, SumAssignBytes, SumAssign, type::Stream(), type::St
 
 BEGIN_METHOD(stream, Freeze)
     auto signature() const {
-        return Signature{.self = type::Stream(), .result = type::Void(), .id = "freeze", .args = {}, .doc = R"(
+        return Signature{.self = type::Stream(), .result = type::void_, .id = "freeze", .args = {}, .doc = R"(
 Freezes the stream value. Once frozen, one cannot append any more data to a
 frozen stream value (unless it gets unfrozen first). If the value is
 already frozen, the operation does not change anything.
@@ -259,7 +259,7 @@ END_METHOD
 
 BEGIN_METHOD(stream, Unfreeze)
     auto signature() const {
-        return Signature{.self = type::Stream(), .result = type::Void(), .id = "unfreeze", .args = {}, .doc = R"(
+        return Signature{.self = type::Stream(), .result = type::void_, .id = "unfreeze", .args = {}, .doc = R"(
 Unfreezes the stream value. A unfrozen stream value can be further modified. If
 the value is already unfrozen (which is the default), the operation does not
 change anything.
@@ -294,7 +294,7 @@ END_METHOD
 BEGIN_METHOD(stream, Trim)
     auto signature() const {
         return Signature{.self = type::Stream(),
-                         .result = type::Void(),
+                         .result = type::void_,
                          .id = "trim",
                          .args = {{.id = "i", .type = type::stream::Iterator()}},
                          .doc = R"(

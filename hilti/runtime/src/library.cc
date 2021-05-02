@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "hilti/rt/library.h"
-
 #include <dlfcn.h>
 
 #include <utility>
@@ -10,6 +8,7 @@
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/json.h>
+#include <hilti/rt/library.h>
 #include <hilti/rt/logging.h>
 
 using namespace hilti::rt;
@@ -103,7 +102,7 @@ hilti::rt::Result<void*> hilti::rt::Library::symbol(std::string_view name) const
 
     auto* symbol = ::dlsym(_handle, name.data());
 
-    if ( auto error = ::dlerror() )
+    if ( ::dlerror() )
         return result::Error(fmt("symbol '%s' not found", name));
 
     return symbol;
