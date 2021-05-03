@@ -48,8 +48,8 @@ Type spicy::type::unit::item::Field::parseType() const {
 
 Type spicy::type::unit::item::Field::itemType() const {
     if ( auto convert = convertExpression() ) {
-        return type::Computed(convert->first, [](Node& n) -> Type {
-            auto t = type::effectiveType(n.as<Expression>().type());
+        // Helper to adapt the type of a &convert expression further.
+        const auto adapt_type = [](const Type& t) -> Type {
             if ( t.isA<type::Unknown>() )
                 return t;
 
@@ -59,7 +59,46 @@ Type spicy::type::unit::item::Field::itemType() const {
                 return hilti::type::Vector(x->elementType(), x->meta());
 
             return t;
-        });
+        };
+
+        if ( convert->second ) {
+            // For a unit-level &convert, we derive the type of the expression
+            // from the __convert() function that the code generator creates to
+            // evaluate it. That function has an "auto" return type that will
+            // eventually be resolved to the correct type. (Note there's no
+            // __convert function for field-level attribute.)
+            //
+            // This approach is bit messy, but ensures that "self" inside the
+            // expression gets resolved correctly independent of where the
+            // itemType() that this method returns will be used. (Which
+            // otherwise could be a problem because of our current way of
+            // dynamically computing types. This will become more
+            // straight-forward once we clean up type resolving.)
+            auto& unit = convert->second->as<type::Unit>();
+            auto t = hilti::builder::typeByID(ID(*unit.typeID()));
+            return type::Computed(t, [adapt_type](Node& n) -> Type {
+                auto t = n.as<Type>();
+
+                if ( auto x = t.tryAs<hilti::type::ValueReference>() )
+                    t = x->dereferencedType();
+
+                auto st = t.tryAs<hilti::type::Struct>();
+                if ( ! st )
+                    return type::unknown;
+
+                auto field = st->field("__convert");
+                assert(field);
+
+                auto f = field->type().as<type::Function>();
+                return adapt_type(f.result().type());
+            });
+        }
+        else {
+            return type::Computed(convert->first, [&adapt_type](Node& n) -> Type {
+                auto t = type::effectiveType(n.as<Expression>().type());
+                return adapt_type(t);
+            });
+        }
     }
 
     if ( const auto& i = item(); i && i->isA<unit::item::Field>() )
@@ -82,9 +121,9 @@ Type spicy::type::unit::item::Field::vectorElementTypeThroughSelf(ID id) {
     });
 }
 
-std::optional<std::pair<Expression, bool>> spicy::type::unit::item::Field::convertExpression() const {
+std::optional<std::pair<Expression, std::optional<Type>>> spicy::type::unit::item::Field::convertExpression() const {
     if ( auto convert = AttributeSet::find(attributes(), "&convert") )
-        return std::make_pair(*convert->valueAs<Expression>(), true);
+        return std::make_pair(*convert->valueAs<Expression>(), std::nullopt);
 
     auto t = parseType();
 
@@ -93,7 +132,7 @@ std::optional<std::pair<Expression, bool>> spicy::type::unit::item::Field::conve
 
     if ( auto x = t.tryAs<type::Unit>() ) {
         if ( auto convert = AttributeSet::find(x->attributes(), "&convert") )
-            return std::make_pair(*convert->valueAs<Expression>(), false);
+            return std::make_pair(*convert->valueAs<Expression>(), x);
     }
 
     // The original unit type may have been replaced with the generated struct
@@ -101,7 +140,7 @@ std::optional<std::pair<Expression, bool>> spicy::type::unit::item::Field::conve
     if ( auto x = t.tryAs<type::Struct>(); x && x->originalNode() ) {
         if ( auto y = x->originalNode()->tryAs<type::Unit>() ) {
             if ( auto convert = AttributeSet::find(y->attributes(), "&convert") )
-                return std::make_pair(*convert->valueAs<Expression>(), false);
+                return std::make_pair(*convert->valueAs<Expression>(), y);
         }
     }
 

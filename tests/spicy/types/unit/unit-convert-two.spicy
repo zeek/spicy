@@ -1,0 +1,21 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\776\777' | spicy-dump -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test access to "self" from unit-level convert expressions.
+
+module Test;
+
+public type X = unit {
+    a: Y;
+    b: Z;
+};
+
+type Y = unit {
+    y: uint8;
+} &convert=self.y;
+
+type Z = unit {
+    z: bitfield(8) {
+        all: 0..7;
+    };
+} &convert=self.z.all;

@@ -1,4 +1,11 @@
 
+1.1.0-dev.62 | 2021-05-03 12:29:38 +0000
+
+  * GH-901: Fix type resolution bug in &convert. (Robin Sommer, Corelight)
+
+  * Extend HILTI printer to include IDs into tuple type output. (Robin
+    Sommer, Corelight)
+
 1.1.0-dev.59 | 2021-04-30 14:34:20 +0200
 
   * GH-882: Add Cirrus CI task for opensuse-15.2. (Benjamin Bannier, Corelight)
