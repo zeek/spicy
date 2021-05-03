@@ -2,11 +2,7 @@
 
 cmake_minimum_required(VERSION 3.15.0)
 
-execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR} --store ${CMAKE_SOURCE_DIR}/VERSION
-    OUTPUT_VARIABLE SPICY_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-project(spicy VERSION "${SPICY_VERSION}" LANGUAGES ASM C CXX)
+project(spicy LANGUAGES ASM C CXX)
 
 set(flex_minimum_version "2.6")
 set(bison_minimum_version "3.0")
@@ -183,6 +179,12 @@ endif ()
 
 add_subdirectory(3rdparty)
 
+# Compute project version.
+execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR} --store ${CMAKE_SOURCE_DIR}/VERSION
+    OUTPUT_VARIABLE SPICY_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
+
 ## Print build summary
 string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)
 
@@ -193,7 +195,7 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BuildType}}" cxxflags)
 add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS tests)
 add_custom_target(tests DEPENDS hilti-tests spicy-tests)
 
-execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-version
+execute_process(COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/autogen-version
                 OUTPUT_VARIABLE VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 
