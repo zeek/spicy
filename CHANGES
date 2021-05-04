@@ -1,4 +1,12 @@
 
+1.1.0-dev.66 | 2021-05-04 16:20:50 +0200
+
+  * Specify python3 on cmake invocations for autogen-version. (Eli M)
+
+  * Bump minimum python version to 3.6. (Eli M)
+
+  * Port autogen-version to python3. (Eli M)
+
 1.1.0-dev.62 | 2021-05-03 12:29:38 +0000
 
   * GH-901: Fix type resolution bug in &convert. (Robin Sommer, Corelight)

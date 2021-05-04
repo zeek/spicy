@@ -1,166 +1,178 @@
-#!/bin/sh
-#
+#! /usr/bin/env python3
 # Generates a readable representation of the current version number; with
 # --short a short one. Or alternatively with --header, a version.h file with
 # various constants defined accordingly.
 
-set -e
+import argparse
+import os
+import re
+import shutil
+import subprocess
+import tempfile
 
-usage() {
-    echo "usage $(basename "$0") [--short | --header <file> | --cmake | --store <file>] [--git-root <dir>] [<commit>]"
-}
 
-# Make the top-level git repository the current directory.
-cd "$(dirname "$0")"/..
-
-output=long
-
-while [ $# -ge 1 ]; do
-    if [ "$1" = "--short" ]; then
-        output=short
-        shift
-    elif [ "$1" = "--header" ]; then
-        test $# -lt 2 && usage && exit 1
-        output=header
-        dst=$2
-        shift
-        shift
-    elif [ "$1" = "--cmake" ]; then
-        output=cmake
-        shift
-    elif [ "$1" = "--store" ]; then
-        test $# -lt 2 && usage && exit 1
-        output=store
-        dst=$2
-        shift
-        shift
-    elif [ "$1" = "--git-root" ]; then
-        test $# -lt 2 && usage && exit 1
-        cd "$2" || exit
-        shift
-        shift
-    else
-        break
-    fi
-done
-
-if [ $# != 0 ] && [ $# != 1 ]; then
-    usage
-    exit 1
-fi
-
-get_version() {
-    if git rev-parse --git-dir > /dev/null 2>&1; then
-        ref=HEAD
-        describe_arg="--dirty"
-
-        test -n "$1" && test "$1" != "HEAD" && ref="$1" && describe_arg="$1"
-
-        hash=$(git rev-parse --short "${ref}")
-        branch=$(git symbolic-ref --short "${ref}" 2>/dev/null || echo "${hash}")
-        git_version=$(git describe --always --tags --match "v*" "${describe_arg}" | sed 's/^v//' | sed 's/-\([0-9]*\)-g[0-9a-z]*/.\1/g'
+def get_version(ref):
+    git_tree = subprocess.run(
+        ["git", "rev-parse", "--git-dir"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
-    elif [ -f ./VERSION ]; then
-        # Read information from VERSION file which contains values for `branch`, `hash`, and `git_version`.
-        . ./VERSION
-    else
-        >&2 echo "Cannot extract version information: neither git repository nor VERSION file present"
-        exit 1
-    fi
-}
+    if git_tree.returncode == 0:
+        hash = subprocess.check_output(
+            ["git", "rev-parse", "--short", ref], universal_newlines=True
+        ).strip()
 
-get_version "$@"
+        branch = hash
+        try:
+            branch = subprocess.check_output(
+                ["git", "symbolic-ref", "--short", ref],
+                universal_newlines=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+        except subprocess.CalledProcessError:
+            pass
+
+        describe_arg = ref if ref != "HEAD" else "--dirty"
+        raw_git_version = subprocess.check_output(
+            ["git", "describe", "--always", "--tags", "--match", "v*", describe_arg],
+            universal_newlines=True,
+        )
+        # Strip the 'v' from the version tag,
+        # drop the suffix that includes commit hash if present.
+        # e.g. v1.1.0-dev-61-g02be372e -> v1.1.0-dev
+        git_version = re.sub(
+            r"-([0-9]*)-g[0-9a-z]*", r".\1", re.sub(r"^v", "", raw_git_version)
+        ).strip()
+        return hash, branch, git_version
+    elif os.path.exists("VERSION"):
+        with open("VERSION", "r") as info:
+            hash = info.readline().split("=")[1].strip()
+            branch = info.readline().split("=")[1].strip()
+            git_version = info.readline().split("=")[1].strip()
+            return hash, branch, git_version
+    else:
+        print(
+            "Cannot extract version information: neither git repository nor VERSION file present"
+        )
+        exit(1)
+
+
+parser = argparse.ArgumentParser(
+    description="Generates a readable representation of the current version number"
+)
+output_mode_args = parser.add_mutually_exclusive_group()
+output_mode_args.add_argument(
+    "--short", action="store_true", help="output a short version string"
+)
+output_mode_args.add_argument(
+    "--cmake", action="store_true", help="output version string for use with CMake"
+)
+parser.add_argument(
+    "--header",
+    metavar="file",
+    nargs="?",
+    const="version.h",
+    help="generate a version.h file for compilation",
+)
+parser.add_argument(
+    "--store",
+    metavar="file",
+    nargs="?",
+    const="VERSION",
+    help="generate VERSION file persisting Git information",
+)
+parser.add_argument(
+    "--git-root",
+    metavar="directory",
+    nargs=1,
+    help="path to directory containing .git folder",
+)
+parser.add_argument(
+    "--commit",
+    metavar="COMMIT_HASH",
+    default="HEAD",
+    help="commit to generate version information for",
+)
+options = parser.parse_args()
+
+# Move to the repository root.
+os.chdir(
+    options.git_root[0]
+    if options.git_root
+    else os.path.join(os.path.dirname(__file__), "..")
+)
+chash, branch, git_version = get_version(options.commit)
 
 # When running from CI, for geting the branch name we prefer what
 # might be passed in through environment variables as we may not
 # actually be on a branch.
-test -n "${CI_COMMIT_REF_NAME}" && branch=${CI_COMMIT_REF_NAME} # GitLab
-test -n "${CIRRUS_BRANCH}" && branch=${CIRRUS_BRANCH} # Cirrus CI
+ci_branch = os.getenv(
+    "CI_COMMIT_REF_NAME", os.getenv("CIRRUS_BRANCH")
+)  # GitLab, Cirrus CI
+if ci_branch:
+    branch = ci_branch
 
-version=$(echo "${git_version}" | awk -F - '{print $1}' | sed 's/^v//g')
-commit=$(echo "${git_version}" | awk -F - '{print $2}')
+# On release tags, git describe doesn't emit the usual suffix,
+# therefore the commit field remains empty.
+# To avoid unpacking failures, we set commit to nothing.
+version, commit, *_ = git_version.split('-') if '-' in git_version else (git_version, "")
+dirty = "dirty" if "dirty" in git_version else ""
+if commit and dirty:
+    commit = commit + "." + dirty
 
-dirty=
-echo "${git_version}" | grep -q 'dirty$' && dirty=dirty
+prerelease = ""
+if branch in ["main", "master"]:
+    prerelease = commit
+elif re.match("release.*", branch) or not branch:
+    prerelease = commit
+else:
+    prerelease = "branch"
+    chash = ""
 
-# echo "% ${git_version}"
-# echo version ${version}
-# echo commit ${commit}
-# echo dirty ${dirty}
+on_release_tag = subprocess.run(
+    ["git", "describe", "--tags", "--match", "v*", "--exact-match"],
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL,
+)
+if on_release_tag.returncode == 0:
+    prerelease = ""
 
-test -n "${commit}" -a -n "${dirty}" && commit="${commit}.${dirty}"
+str_prerelease = "-" + prerelease if prerelease else ""
+str_branch = branch + " " if branch and chash else branch
 
-case "${branch}" in
-    main|master)
-        prerelease="${commit}"
-        ;;
-
-    release/*)
-        prerelease="${commit}"
-        ;;
-
-    "")
-        prerelease="${commit}"
-        ;;
-
-    *)
-        prerelease="branch"
-        hash=""
-        ;;
-esac
-
-# If we are exactly on a release tag drop the prelease specifier.
-if git describe --tags --match='v*' --exact-match > /dev/null 2>&1; then
-    prerelease=""
-fi
-
-test -n "${prerelease}" && str_prerelease="-${prerelease}"
-
-str_branch="${branch}"
-test -n "${branch}" -a -n "${hash}" && str_branch="${branch} "
-
-major=$(echo "${version}" | cut -d '.' -f 1)
-minor=$(echo "${version}" | cut -d '.' -f 2)
-patch=$(echo "${version}" | cut -d '.' -f 3)
-
-test -z "${major}" && major=0
-test -z "${minor}" && minor=0
-test -z "${patch}" && patch=0
-
+major, minor, patch, *_ = version.split(".")
 # This must match the computation the Spicy validator does for "%spicy-version".
-version_number=$((major * 10000 + minor * 100 + patch))
+version_number = int(major) * 10000 + int(minor) * 100 + int(patch)
 
-if [ "${output}" = "long" ]; then
-    echo "${version}${str_prerelease} (${str_branch}${hash})"
+if options.short:
+    print(version + str_prerelease)
+elif options.cmake:
+    print(version)
+else:  # long
+    print(f"{version}{str_prerelease} ({str_branch}{chash})")
 
-elif [ "${output}" = "short" ]; then
-    echo "${version}${str_prerelease}"
-
-elif [ "${output}" = "header" ]; then
-    trap "rm -f '${dst}.tmp'" EXIT
-    cat >"${dst}.tmp" <<EOF
+if options.header:
+    header_contents = f"""\
 /* Autogenerated. Do not edit.
-VERSION ${version}${str_prerelease}
+VERSION {version}{str_prerelease}
 */
-#define PROJECT_VERSION_NUMBER       ${version_number}
-#define PROJECT_VERSION_MAJOR        ${major}
-#define PROJECT_VERSION_MINOR        ${minor}
-#define PROJECT_VERSION_PATCH        ${patch}
-#define PROJECT_VERSION_PRERELEASE   "${prerelease}"
-#define PROJECT_VERSION_STRING_SHORT "${version}${str_prerelease}"
-#define PROJECT_VERSION_STRING_LONG  "${version}${str_prerelease} (${str_branch}${hash})"
-EOF
+#define PROJECT_VERSION_NUMBER       {version_number}
+#define PROJECT_VERSION_MAJOR        {major}
+#define PROJECT_VERSION_MINOR        {minor}
+#define PROJECT_VERSION_PATCH        {patch}
+#define PROJECT_VERSION_PRERELEASE   "{prerelease}"
+#define PROJECT_VERSION_STRING_SHORT "{version}{str_prerelease}"
+#define PROJECT_VERSION_STRING_LONG  "{version}{str_prerelease} ({str_branch}{chash})"
+"""
+    with tempfile.NamedTemporaryFile(mode="w") as hdr:
+        hdr.write(header_contents)
+        hdr.flush()
+        shutil.copy(hdr.name, options.header)
 
-    test -e "${dst}" && cmp -s "${dst}.tmp" "${dst}" && exit 0
-    mv "${dst}.tmp" "${dst}"
-
-elif [ "${output}" = "cmake" ]; then
-    echo "${version}"
-
-elif [ "${output}" = "store" ]; then
-    {
-        echo "branch=$branch"
-        echo "hash=$hash"
-        echo "git_version=$git_version"
-    } > VERSION
-fi
+if options.store:
+    with tempfile.NamedTemporaryFile(mode="w") as store:
+        store.write(f"branch={branch}\n")
+        store.write(f"hash={chash}\n")
+        store.write(f"git_version={git_version}\n")
+        store.flush()
+        shutil.copy(store.name, options.store)
