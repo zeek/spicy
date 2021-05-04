@@ -229,11 +229,20 @@ protected:
     void usage();
 
     /**
-     * Main work horse compiling all registered input files to C++ code.
+     * Compiles all registered input files to HILTI code.
      *
      * @return set if successful; otherwise the result provides an error  message
      */
     Result<Nothing> compileUnits();
+
+    /**
+     * Compiles all registered input files to C++ code.
+     *
+     * This function can only be invoked after `compileUnits`.
+     *
+     * @return set if successful; otherwise the result provides an error  message
+     */
+    Result<Nothing> codegenUnits();
 
     /**
      * Runs the HILTI-side linker on all available C++ code.
@@ -401,7 +410,7 @@ protected:
 private:
     // Tracking the state of the compilation pipeline to catch out of order
     // operation.
-    enum Stage { UNINITIALIZED, INITIALIZED, FINALIZED, LINKED, JITTED } _stage = UNINITIALIZED;
+    enum Stage { UNINITIALIZED, INITIALIZED, COMPILED, CODEGENED, LINKED, JITTED } _stage = UNINITIALIZED;
 
     void _addUnit(Unit unit);
     Result<Nothing> _compileUnit(Unit unit);

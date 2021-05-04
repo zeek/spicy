@@ -46,8 +46,8 @@
 [debug/ast-final]         - node::None (basic-module.hlt:9:8)
 [debug/ast-final]         - node::None (basic-module.hlt:5:13-7:15)
 [debug/compiler]   updated cached AST for module Foo (final: yes, requires_compilation: yes, dependencies: (none))
-[debug/compiler]   compiling module Foo to C++
-[debug/compiler]     finalizing module Foo
+[debug/compiler] compiling module Foo to C++
+[debug/compiler]   finalizing module Foo
 // Begin of Foo (from "<...>/basic-module.hlt")
 // Compiled by HILTI version X.X.X
 

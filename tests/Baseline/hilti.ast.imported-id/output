@@ -388,9 +388,9 @@
 [debug/ast-final]         - node::None (foo.hlt:6:1)
 [debug/compiler]   updated cached AST for module Bar (final: yes, requires_compilation: no, dependencies: Foo)
 [debug/compiler]   updated cached AST for module Foo (final: yes, requires_compilation: yes, dependencies: Bar)
-[debug/compiler]   compiling module Foo to C++
-[debug/compiler]     importing declarations from module Bar
-[debug/compiler]     finalizing module Foo
+[debug/compiler] compiling module Foo to C++
+[debug/compiler]   importing declarations from module Bar
+[debug/compiler]   finalizing module Foo
 // Begin of Foo (from "foo.hlt")
 // Compiled by HILTI version X.X.X
 

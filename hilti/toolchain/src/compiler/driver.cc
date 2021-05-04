@@ -532,28 +532,13 @@ Result<Nothing> Driver::addInput(hilti::Module&& module, const hilti::rt::filesy
 Result<Nothing> Driver::_compileUnit(Unit unit) {
     logging::DebugPushIndent _(logging::debug::Compiler);
 
-    HILTI_DEBUG(logging::debug::Driver, fmt("processing input unit %s", unit.id()));
+    HILTI_DEBUG(logging::debug::Driver, fmt("compiling input unit %s", unit.id()));
 
     if ( auto x = unit.compile(); ! x )
         // Specific errors have already been reported.
         return error("aborting after errors");
 
     hookNewASTPostCompilation(unit.id(), unit.path(), unit.module());
-
-    if ( _driver_options.output_hilti && ! _driver_options.include_linker ) {
-        // No need to kick off code generation.
-        _hlts.push_back(std::move(unit));
-        return Nothing();
-    }
-
-    if ( auto rc = unit.codegen(); ! rc )
-        return augmentError(rc.error());
-
-    if ( auto md = unit.linkerMetaData() )
-        _mds.push_back(*md);
-
-    if ( _driver_options.dump_code )
-        dumpUnit(unit);
 
     if ( _driver_options.execute_code && ! _driver_options.skip_dependencies ) {
         for ( const auto& d : unit.allImported(true) ) {
@@ -588,7 +573,7 @@ Result<Nothing> Driver::compileUnits() {
             return augmentError(rc.error());
     }
 
-    _stage = Stage::FINALIZED;
+    _stage = Stage::COMPILED;
 
     if ( _driver_options.output_hilti ) {
         std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
@@ -605,6 +590,35 @@ Result<Nothing> Driver::compileUnits() {
                 return error(fmt("error print HILTI code for module %s", unit.id()));
         }
     }
+
+    return Nothing();
+}
+
+Result<Nothing> Driver::codegenUnits() {
+    if ( _stage != Stage::COMPILED )
+        logger().internalError("unexpected driver stage in codegenUnits()");
+
+    if ( _driver_options.output_hilti && ! _driver_options.include_linker )
+        // No need to kick off code generation.
+        return Nothing();
+
+    HILTI_DEBUG(logging::debug::Driver, "compiling modules to C++");
+    logging::DebugPushIndent _(logging::debug::Driver);
+
+    for ( auto& unit : _hlts ) {
+        HILTI_DEBUG(logging::debug::Driver, fmt("codegen for input unit %s", unit.id()));
+
+        if ( auto rc = unit.codegen(); ! rc )
+            return augmentError(rc.error());
+
+        if ( auto md = unit.linkerMetaData() )
+            _mds.push_back(*md);
+
+        if ( _driver_options.dump_code )
+            dumpUnit(unit);
+    }
+
+    _stage = Stage::CODEGENED;
 
     return Nothing();
 }
@@ -641,11 +655,14 @@ Result<Nothing> Driver::run() {
         return result::Error(fmt("uncaught exception of type %s: %s", util::demangle(typeid(e).name()), e.what()));
     }
 
-    return {};
+    return Nothing();
 }
 
 Result<Nothing> Driver::compile() {
     if ( auto rc = compileUnits(); ! rc )
+        return rc;
+
+    if ( auto rc = codegenUnits(); ! rc )
         return rc;
 
     if ( _driver_options.include_linker ) {
@@ -688,8 +705,8 @@ Result<Nothing> Driver::compile() {
 }
 
 Result<Nothing> Driver::linkUnits() {
-    if ( _stage != Stage::FINALIZED )
-        logger().internalError("unexpected driver stage in linkModule()");
+    if ( _stage != Stage::CODEGENED )
+        logger().internalError("unexpected driver stage in linkUnits()");
 
     _stage = Stage::LINKED;
 
@@ -744,7 +761,7 @@ Result<Nothing> Driver::linkUnits() {
 }
 
 Result<Nothing> Driver::outputUnits() {
-    if ( _stage != Stage::FINALIZED && _stage != Stage::LINKED )
+    if ( _stage != Stage::COMPILED && _stage != Stage::CODEGENED && _stage != Stage::LINKED )
         logger().internalError("unexpected driver stage in outputUnits()");
 
     std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
