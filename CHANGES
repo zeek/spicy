@@ -1,3 +1,6 @@
+1.1.0-dev.70 | 2021-05-05 11:40:32 +0200
+
+  * Lower minimum required Python version to 3.2. (Benjamin Bannier, Corelight)
 
 1.1.0-dev.68 | 2021-05-05 11:40:05 +0200
 
