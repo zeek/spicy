@@ -1,4 +1,8 @@
 
+1.1.0-dev.68 | 2021-05-05 11:40:05 +0200
+
+  * Add rough scaffolding for fuzzing parsers [skip ci]. (Benjamin Bannier, Corelight)
+
 1.1.0-dev.66 | 2021-05-04 16:20:50 +0200
 
   * Specify python3 on cmake invocations for autogen-version. (Eli M)
