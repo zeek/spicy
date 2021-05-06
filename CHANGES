@@ -1,3 +1,13 @@
+
+1.1.0-dev.74 | 2021-05-06 19:11:00 +0200
+
+  * GH-911: Add `encode()` method to strings for conversion to bytes.
+    (Robin Sommer, Corelight)
+
+  * Let CI show any diff from clang-tidy. (Robin Sommer, Corelight)
+
+  * Fix to run-clang-tidy. (Robin Sommer, Corelight)
+
 1.1.0-dev.70 | 2021-05-05 11:40:32 +0200
 
   * Lower minimum required Python version to 3.2. (Benjamin Bannier, Corelight)

@@ -53,7 +53,7 @@ root=$(cd ${build}/.. && pwd)
 shift
 
 for f in $@; do
-    files=$(printf "%s%s\n" ${files} $(abspath ${f}))
+    files=$(printf "%s %s\n" ${files} $(abspath ${f}))
 done
 
 cd ${build}
