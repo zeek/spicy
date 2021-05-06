@@ -327,7 +327,7 @@ function run_test_clang_tidy {
         echo "clang-tidy run passed"
         return 0
     else
-        git diff >${artifacts}/clang-tidy.diff
+        git diff | tee ${artifacts}/clang-tidy.diff
         log_diag "Patch to what can be fixed automatically in 'clang-tidy.diff'"
         log_error "clang-tidy has failed"
         return 1
