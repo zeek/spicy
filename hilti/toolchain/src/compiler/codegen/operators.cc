@@ -638,6 +638,12 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::string::Size& n) { return fmt("%s.size()", op0(n)); }
     result_t operator()(const operator_::string::Equal& n) { return binary(n, "=="); }
     result_t operator()(const operator_::string::Unequal& n) { return binary(n, "!="); }
+
+    result_t operator()(const operator_::string::Encode& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("hilti::rt::Bytes(%s, %s)", self, args[0]);
+    }
+
     result_t operator()(const operator_::string::Modulo& n) {
         if ( n.op1().type().isA<type::Tuple>() ) {
             if ( auto ctor = n.op1().tryAs<expression::Ctor>() ) {

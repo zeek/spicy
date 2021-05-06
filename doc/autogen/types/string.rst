@@ -1,3 +1,10 @@
+.. rubric:: Methods
+
+.. spicy:method:: string::encode string encode False bytes (charset: enum = hilti::Charset::UTF8)
+
+    Converts the string into a binary representation encoded with the
+    given character set.
+
 .. rubric:: Operators
 
 .. spicy:operator:: string::Equal bool t:string <sp> op:== <sp> t:string

@@ -1,0 +1,17 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check character-set aware conversion of string to bytes.
+
+module Foo {
+
+import hilti;
+
+hilti::print("testing".encode(hilti::Charset::ASCII));
+hilti::print("testüng\n".encode(hilti::Charset::ASCII));
+hilti::print("testüng".encode(hilti::Charset::UTF8));
+assert "testüng".encode(hilti::Charset::UTF8) == "testüng".encode(); # Check default
+
+assert b"testüng".decode().encode() == b"testüng"; # Check round-trip.
+
+}
