@@ -417,8 +417,10 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                 else if ( a.hasValue() )
                     error("&chunked cannot have an expression", p);
                 else if ( ! (AttributeSet::has(f->attributes(), "&eod") ||
-                             AttributeSet::has(f->attributes(), "&size")) )
-                    error("&chunked must be used with &eod or &size", p);
+                             AttributeSet::has(f->attributes(), "&size") ||
+                             AttributeSet::has(f->attributes(), "&until") ||
+                             AttributeSet::has(f->attributes(), "&until-including")) )
+                    error("&chunked must be used with &eod, &until, &until-including or &size", p);
             }
         }
 

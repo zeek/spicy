@@ -1000,11 +1000,6 @@ will eventually still consume the same number of bytes overall, but it
 avoids buffering everything in cases where that's either infeasible or
 simply not not needed.
 
-.. note::
-
-    ``&chunked`` can currently not be combined with ``&until`` or
-    ``&until-including``.
-
 Bytes fields support parsing constants: If a ``bytes`` constant is
 specified instead of a field type, parsing will expect to find the
 corresponding value in the input stream.

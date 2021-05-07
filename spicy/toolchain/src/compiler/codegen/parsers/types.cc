@@ -10,6 +10,7 @@
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/parser-builder.h>
+#include "ast/builder/expression.h"
 
 using namespace spicy;
 using namespace spicy::detail;
@@ -250,9 +251,27 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
             auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
             auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
 
+            if ( meta.field() && chunked_attr && ! meta.container() )
+                pb->enableDefaultNewValueForField(false);
+
             builder()->addAssign(target, builder::bytes(""));
             auto body = builder()->addWhile(builder::bool_(true));
             pushBuilder(body, [&]() {
+                // Helper to add a new chunk of data to the field's value,
+                // behaving slightly different depending on whether we have
+                // &chunked or not.
+                auto add_match_data = [&](const Expression& target, const Expression& match) {
+                    if ( chunked_attr ) {
+                        builder()->addAssign(target, match);
+
+                        if ( meta.field() && ! meta.container() )
+                            pb->newValueForField(meta, match, target);
+                    }
+                    else
+                        builder()->addSumAssign(target, match);
+                };
+
+
                 pb->waitForInput(until_bytes_size_var,
                                  fmt("end-of-data reached before %s expression found",
                                      (until_attr ? "&until" : "&until-including")),
@@ -267,20 +286,20 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 builder()->addLocal(it_id, type::stream::Iterator());
                 builder()->addAssign(builder::tuple({found, it}), find);
 
-                Expression match;
+                Expression match = builder::memberCall(state().cur, "sub", {it});
 
-                if ( until_attr )
-                    match = builder::memberCall(state().cur, "sub", {it});
-                else
-                    // until_including
-                    match = builder::memberCall(state().cur, "sub", {builder::sum(it, until_bytes_size_var)});
-
-                builder()->addSumAssign(target, match);
+                auto non_empty_match = builder()->addIf(builder::size(match));
+                pushBuilder(non_empty_match, [&]() { add_match_data(target, match); });
 
                 auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
                 pushBuilder(found_branch, [&]() {
-                    pb->advanceInput(builder::sum(it, until_bytes_size_var));
+                        auto new_it = builder::sum(it, until_bytes_size_var);
+
+                    if ( until_including_attr )
+                        add_match_data(target, builder::memberCall(state().cur, "sub", {it, new_it}));
+
+                    pb->advanceInput(new_it);
                     builder()->addBreak();
                 });
 
