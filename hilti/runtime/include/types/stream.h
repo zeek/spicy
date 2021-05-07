@@ -587,6 +587,9 @@ private:
     }
 
     void _increment(integer::safe<uint64_t> n) {
+        if ( ! _chain )
+            throw InvalidIterator("unbound stream iterator");
+
         _offset += n;
 
         if ( ! (_chain && _chain->isValid()) )
@@ -597,6 +600,9 @@ private:
     }
 
     void _decrement(integer::safe<uint64_t> n) {
+        if ( ! _chain )
+            throw InvalidIterator("unbound stream iterator");
+
         if ( n > _offset )
             throw InvalidIterator("attempt to move before beginning of stream");
 
@@ -1111,7 +1117,7 @@ public:
      */
     std::tuple<bool, SafeConstIterator> find(const Bytes& v, Direction d = Direction::Forward) const {
         _ensureValid();
-        auto i = (d == Direction::Forward ? UnsafeConstIterator() : unsafeEnd());
+        auto i = (d == Direction::Forward ? unsafeBegin() : unsafeEnd());
         auto x = find(v, std::move(i), d);
         return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
     }
@@ -1338,10 +1344,10 @@ private:
             throw InvalidIterator("view has invalid end");
     }
 
-    // common backend for backward searching
+    // Common backend for backward searching.
     std::tuple<bool, UnsafeConstIterator> _findBackward(const Bytes& v, UnsafeConstIterator n) const;
 
-    // common backend for forward searching
+    // Common backend for forward searching.
     std::tuple<bool, UnsafeConstIterator> _findForward(const Bytes& v, UnsafeConstIterator n) const;
 
     SafeConstIterator _begin;

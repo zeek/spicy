@@ -3,6 +3,7 @@
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
+#include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/ctors/tuple.h>
 #include <hilti/ast/declaration.h>
@@ -23,7 +24,6 @@
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/grammar-builder.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
-
 
 using namespace spicy;
 using namespace spicy::detail;
@@ -197,6 +197,16 @@ struct VisitorPassIterate : public hilti::visitor::PreOrder<void, VisitorPassIte
     result_t operator()(const operator_::unit::SetInput& n, position_t p) {
         auto cur = builder::member(n.op0(), ID("__position_update"));
         replaceNode(&p, builder::assign(cur, argument(n.op2(), 0)));
+    }
+
+    result_t operator()(const operator_::unit::Find& n, position_t p) {
+        auto begin = builder::deref(builder::member(n.op0(), ID("__begin")));
+        auto end = builder::deref(builder::member(n.op0(), ID("__position")));
+        auto i = argument(n.op2(), 2, builder::null());
+        auto needle = argument(n.op2(), 0);
+        auto direction = argument(n.op2(), 1, builder::id("spicy::Direction::Forward"));
+        auto x = builder::call("spicy_rt::unit_find", {begin, end, i, needle, direction});
+        replaceNode(&p, std::move(x));
     }
 
     result_t operator()(const operator_::unit::ContextConst& n, position_t p) {

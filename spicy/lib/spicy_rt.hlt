@@ -58,6 +58,7 @@ public type Parser = struct {
 } &cxxname="spicy::rt::Parser";
 
 public type Direction = enum { Originator, Responder, Both } &cxxname="spicy::rt::Direction";
+public type FindDirection = __library_type("hilti::rt::stream::Direction");
 public type MIMEType = __library_type("spicy::rt::MIMEType");
 public type ParserPort = __library_type("spicy::rt::ParserPort");
 
@@ -70,6 +71,8 @@ declare public void waitForInput(inout value_ref<stream> data, view<stream> cur,
 declare public void waitForInput(inout value_ref<stream> data, view<stream> cur, uint<64> n, string error_msg, string location, strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForInput" &have_prototype;
 declare public bool waitForEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForEod" &have_prototype;
 declare public bool atEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::atEod" &have_prototype;
+
+declare public optional<iterator<stream>> unit_find(iterator<stream> begin_, iterator<stream> end_, optional<iterator<stream>> i, bytes needle, FindDirection dir) &cxxname="spicy::rt::detail::unitFind" &have_prototype;
 
 declare public void backtrack() &cxxname="spicy::rt::detail::backtrack" &have_prototype;
 

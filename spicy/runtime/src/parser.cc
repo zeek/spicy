@@ -3,7 +3,9 @@
 #include <limits>
 #include <utility>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/stream.h>
 
 #include <spicy/rt/debug.h>
 #include <spicy/rt/parser.h>
@@ -145,4 +147,20 @@ bool detail::atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hil
     // EOD could still come immediately with the next update of the input
     // stream.
     return ! waitForInputOrEod(data, cur, filters);
+}
+
+std::optional<hilti::rt::stream::SafeConstIterator> detail::unitFind(
+    const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end,
+    const std::optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
+    hilti::rt::stream::Direction d) {
+    std::tuple<bool, hilti::rt::stream::SafeConstIterator> v;
+    if ( i )
+        v = hilti::rt::stream::View(begin, end).find(needle, *i, d);
+    else
+        v = hilti::rt::stream::View(begin, end).find(needle, d);
+
+    if ( std::get<0>(v) )
+        return std::get<1>(v);
+    else
+        return {};
 }

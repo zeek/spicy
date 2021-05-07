@@ -250,7 +250,7 @@ std::tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeC
 }
 
 std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, UnsafeConstIterator i) const {
-    // We can assume that n is inside the needleiew.
+    // We can assume that "i" is inside the view.
 
     // An empty pattern always matches at the current position.
     if ( needle.isEmpty() )
@@ -259,11 +259,14 @@ std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, U
     if ( ! i )
         i = unsafeEnd();
 
-    // If n is pointing beyond the currently available bytes, we abort because
+    // If "i" is pointing beyond the currently available bytes, we abort because
     // we'll have a gap that we don't want to search across. (Note that size()
     // does the right thing here by returning the number of *available* bytes.)
     if ( i.offset() > offset() + size() )
         throw InvalidIterator("iterator pointing beyond available data");
+
+    if ( i.offset() < offset() )
+        throw InvalidIterator("iterator preceeding available data");
 
     // If we don't have enough bytes available to fit the pattern in, we
     // can stop right away.

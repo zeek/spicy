@@ -389,4 +389,19 @@ TEST_CASE("waitForInputOrEod with min") {
     }
 }
 
+TEST_CASE("unitFind") {
+    // We just tests the argument forwarding here, the matching itself is
+    // covered by hilti::rt::stream::View::find().
+
+    auto s = hilti::rt::Stream("0123456789012");
+    auto begin = s.at(1);
+    auto end = s.at(11);
+
+    CHECK_EQ(*detail::unitFind(begin, end, s.at(4), "789"_b, hilti::rt::stream::Direction::Forward), s.at(7));
+    CHECK_EQ(*detail::unitFind(begin, end, s.at(4), "123"_b, hilti::rt::stream::Direction::Backward), s.at(1));
+    CHECK_EQ(*detail::unitFind(begin, end, {}, "1"_b, hilti::rt::stream::Direction::Forward), s.at(1));
+    CHECK_EQ(*detail::unitFind(begin, end, {}, "1"_b, hilti::rt::stream::Direction::Backward), s.at(11));
+    CHECK(! detail::unitFind(begin, end, s.at(4), "XYZ"_b, hilti::rt::stream::Direction::Backward));
+}
+
 TEST_SUITE_END();

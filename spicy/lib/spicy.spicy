@@ -55,6 +55,12 @@ public type Side = enum {
     Both     # operate on both sides
 } &cxxname="hilti::rt::bytes::Side";
 
+## Specifies direction of a search.
+public type Direction = enum {
+    Forward, # search forward
+    Backward, # search backward
+} &cxxname="hilti::rt::stream::Direction";
+
 ## Captures the state of gzip decompression for the corresponding library functions.
 public type ZlibStream = __library_type("spicy::rt::zlib::Stream");
 

@@ -1,0 +1,33 @@
+# @TEST-EXEC:  ${SCRIPTS}/printf '012efg678efg23456' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-GROUP: spicy-core
+
+module Mini;
+
+import spicy;
+
+public type Foo = unit {
+    %random-access;
+
+    : void &eod;
+    : void {
+        local i: optional<iterator<stream>>;
+
+        i = self.find(b"efg");
+        assert i && (*i).offset() == 3;
+
+        i = self.find(b"efg", spicy::Direction::Forward, self.input() + 5);
+        assert i && (*i).offset() == 9;
+
+        i = self.find(b"efg", spicy::Direction::Backward);
+        assert i && (*i).offset() == 9;
+
+        i = self.find(b"efg", spicy::Direction::Backward);
+        self.set_input(*i + 3);
+    }
+
+    data: bytes &eod;
+
+    on %done { print self; }
+};

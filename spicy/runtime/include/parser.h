@@ -368,5 +368,20 @@ extern bool atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilt
  */
 inline void backtrack() { throw Backtrack(); }
 
+/**
+ * Wrapper around hilti::rt::stream::View::find() that's more convinient to
+ * call from Spicy's generated code.
+ *
+ * @param begin start of stream view to search
+ * @param end end of stream view to search
+ * @param i starting position to search from; must be inside the begin/end view
+ * @param needle data to search
+ * @param d direction to search from starting position
+ * @returns position of first byte where needle was found, or unset optional if not found
+ */
+std::optional<hilti::rt::stream::SafeConstIterator> unitFind(
+    const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end,
+    const std::optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
+    hilti::rt::stream::Direction d);
 } // namespace detail
 } // namespace spicy::rt
