@@ -4,6 +4,8 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
 
+#include "exception.h"
+
 using namespace hilti::rt;
 using namespace hilti::rt::stream;
 using namespace hilti::rt::stream::detail;
@@ -215,7 +217,7 @@ std::tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstItera
     }
 }
 
-std::tuple<bool, UnsafeConstIterator> View::find(const Bytes& v, UnsafeConstIterator n) const {
+std::tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeConstIterator n) const {
     if ( ! n )
         n = UnsafeConstIterator(_begin);
 
@@ -244,6 +246,52 @@ std::tuple<bool, UnsafeConstIterator> View::find(const Bytes& v, UnsafeConstIter
             if ( y == v.end() )
                 return std::make_tuple(true, i);
         }
+    }
+}
+
+std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, UnsafeConstIterator i) const {
+    // We can assume that n is inside the needleiew.
+
+    // An empty pattern always matches at the current position.
+    if ( needle.isEmpty() )
+        return std::make_tuple(true, i);
+
+    if ( ! i )
+        i = unsafeEnd();
+
+    // If n is pointing beyond the currently available bytes, we abort because
+    // we'll have a gap that we don't want to search across. (Note that size()
+    // does the right thing here by returning the number of *available* bytes.)
+    if ( i.offset() > offset() + size() )
+        throw InvalidIterator("iterator pointing beyond available data");
+
+    // If we don't have enough bytes available to fit the pattern in, we
+    // can stop right away.
+    if ( needle.size() > (i.offset() - offset()) )
+        return std::make_tuple(false, UnsafeConstIterator());
+
+    i -= (needle.size() - 1); // this is safe now, get us 1st position where initial character may match
+
+    auto first = *needle.begin();
+
+    // The following is not the most efficient way to search backwards, but
+    // it'll do for now.
+    for ( auto j = i; true; --j ) {
+        if ( *j == first ) {
+            auto x = j;
+            auto y = needle.begin();
+
+            for ( ;; ) {
+                if ( *x++ != *y++ )
+                    break;
+
+                if ( y == needle.end() )
+                    return std::make_tuple(true, j);
+            }
+        }
+
+        if ( j == unsafeBegin() )
+            return std::make_tuple(false, j);
     }
 }
 
