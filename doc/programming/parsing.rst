@@ -1227,6 +1227,9 @@ attribute: it then skips all input data until the given deliminator
 sequence of bytes is encountered. The deliminator is extracted from
 the stream before parsing continues.
 
+Finally, a ``void`` field can specify ``&eod`` to consume all data
+until the end of the current input.
+
 ``void`` fields cannot have names.
 
 Controlling Parsing

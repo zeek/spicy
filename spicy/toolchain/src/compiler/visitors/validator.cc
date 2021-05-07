@@ -121,7 +121,7 @@ hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::F
     if ( pt.isA<type::Void>() ) {
         if ( const auto& attrs = f.attributes() )
             for ( const auto& a : attrs->attributes() )
-                if ( a.tag() != "&size" && a.tag() != "&until" )
+                if ( a.tag() != "&size" && a.tag() != "&until" && a.tag() != "&eod" )
                     return hilti::result::Error(fmt("unsupported attribute for field of type void: %s", a));
 
         return hilti::Nothing();
@@ -387,8 +387,10 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
         else if ( a.tag() == "&eod" ) {
             if ( auto f = getAttrField(p) ) {
-                if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>()) || f->ctor() )
-                    error("&eod is only valid for bytes and vector fields", p);
+                if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>() ||
+                        f->parseType().isA<type::Void>()) ||
+                     f->ctor() )
+                    error("&eod is only valid for bytes, vector, and void fields", p);
             }
         }
 

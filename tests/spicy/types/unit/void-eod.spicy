@@ -1,0 +1,18 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf 'abcde' | spicy-dump %INPUT.hlto >> output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test "&eod" attribute with "void" field type.
+
+module Test;
+
+public type X = unit {
+    a: b"a";
+    y: Y &size=3;
+    e: b"e";
+};
+
+type Y = unit {
+    b: b"b";
+    : void &eod;
+};
