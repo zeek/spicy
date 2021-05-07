@@ -4,6 +4,7 @@
 
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include <hilti/rt/exception.h>
@@ -75,6 +76,57 @@ inline std::string to_string(const spicy::rt::ParserPort& x, adl::tag /*unused*/
 } // namespace hilti::rt::detail::adl
 
 namespace spicy::rt {
+
+namespace detail {
+
+// Helper traits to detect whether a parser implements sink hooks.
+
+template<typename P>
+struct has_on_gap {
+    template<typename U>
+    // If `->` gets wrapped to the next line cpplint misdetects this as a C-style cast.
+    // clang-format off
+    static auto test(int) -> decltype(
+        std::declval<U>().__on_0x25_gap(std::declval<uint64_t>(), std::declval<uint64_t>()), std::true_type());
+    // clang-format on
+    template<typename U>
+    static std::false_type test(...);
+    static constexpr bool value = std::is_same_v<decltype(test<P>(0)), std::true_type>;
+};
+
+template<typename P>
+struct has_on_skipped {
+    template<typename U>
+    static auto test(int) -> decltype(std::declval<U>().__on_0x25_skipped(std::declval<uint64_t>()), std::true_type());
+    template<typename U>
+    static std::false_type test(...);
+    static constexpr bool value = std::is_same_v<decltype(test<P>(0)), std::true_type>;
+};
+
+template<typename P>
+struct has_on_overlap {
+    template<typename U>
+    static auto test(int) -> decltype(std::declval<U>().__on_0x25_overlap(std::declval<uint64_t>(),
+                                                                          std::declval<const hilti::rt::Bytes&>(),
+                                                                          std::declval<const hilti::rt::Bytes&>()),
+                                      std::true_type());
+    template<typename U>
+    static std::false_type test(...);
+    static constexpr bool value = std::is_same_v<decltype(test<P>(0)), std::true_type>;
+};
+
+template<typename P>
+struct has_on_undelivered {
+    template<typename U>
+    static auto test(int) -> decltype(std::declval<U>().__on_0x25_undelivered(std::declval<uint64_t>(),
+                                                                              std::declval<const hilti::rt::Bytes&>()),
+                                      std::true_type());
+    template<typename U>
+    static std::false_type test(...);
+    static constexpr bool value = std::is_same_v<decltype(test<P>(0)), std::true_type>;
+};
+
+} // namespace detail
 
 /**
  * Runtime information about an available parser.
@@ -254,17 +306,23 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
 
     using unit_type = typename UnitRef::element_type;
 
-    if constexpr ( sink::detail::supports_sinks<unit_type>::value ) {
-        if constexpr ( ! std::is_base_of<hilti::rt::trait::hasParameters, unit_type>::value )
-            p.__parse_sink = sink::detail::parseFunction<unit_type>();
+    if constexpr ( sink::detail::supports_sinks<unit_type>::value &&
+                   ! std::is_base_of<hilti::rt::trait::hasParameters, unit_type>::value )
+        p.__parse_sink = sink::detail::parseFunction<unit_type>();
 
+    if constexpr ( detail::has_on_gap<unit_type>::value )
         p.__hook_gap = sink::detail::hookFunction<unit_type, &unit_type::__on_0x25_gap, uint64_t, uint64_t>();
+
+    if constexpr ( detail::has_on_skipped<unit_type>::value )
         p.__hook_skipped = sink::detail::hookFunction<unit_type, &unit_type::__on_0x25_skipped, uint64_t>();
+
+    if constexpr ( detail::has_on_overlap<unit_type>::value )
         p.__hook_overlap = sink::detail::hookFunction<unit_type, &unit_type::__on_0x25_overlap, uint64_t,
                                                       const hilti::rt::Bytes&, const hilti::rt::Bytes&>();
+
+    if constexpr ( detail::has_on_undelivered<unit_type>::value )
         p.__hook_undelivered = sink::detail::hookFunction<unit_type, &unit_type::__on_0x25_undelivered, uint64_t,
                                                           const hilti::rt::Bytes&>();
-    }
 }
 
 /**
