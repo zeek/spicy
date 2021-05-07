@@ -10,6 +10,7 @@
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/parser-builder.h>
+
 #include "ast/builder/expression.h"
 
 using namespace spicy;
@@ -168,155 +169,188 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         return performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
     }
 
-    result_t operator()(const hilti::type::Void& /* t */) {
+    result_t operator()(const hilti::type::Void& t) {
         if ( auto size = AttributeSet::find(meta.field()->attributes(), "&size") )
             // Even though we we do not store parsed data, we still need to consume
             // data in the input stream so that `&size` checks can work.
             pb->advanceInput(*size->valueAs<Expression>());
 
-        return hilti::expression::Void();
-    }
+        else if ( auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until") ) {
+                Expression until_expr = builder::coerceTo(*until_attr->valueAs<Expression>(), hilti::type::Bytes());
+                auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
+                auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
 
-    result_t operator()(const hilti::type::Bytes& t) {
-        auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");
-        auto eod_attr = AttributeSet::find(meta.field()->attributes(), "&eod");
-        auto size_attr = AttributeSet::find(meta.field()->attributes(), "&size");
-        auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until");
-        auto until_including_attr = AttributeSet::find(meta.field()->attributes(), "&until-including");
+                auto body = builder()->addWhile(builder::bool_(true));
+                pushBuilder(body, [&]() {
+                    pb->waitForInput(until_bytes_size_var,
+                                     "end-of-data reached before &until expression found",
+                                     t.meta());
 
-        bool to_eod = eod_attr.has_value(); // parse to end of input data
-        bool parse_attr = false;            // do we have a &parse-* attribute
+                    auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
+                    auto found_id = ID("found");
+                    auto it_id = ID("it");
+                    auto found = builder::id(found_id);
+                    auto it = builder::id(it_id);
+                    builder()->addLocal(found_id, type::Bool());
+                    builder()->addLocal(it_id, type::stream::Iterator());
+                    builder()->addAssign(builder::tuple({found, it}), find);
 
-        if ( (AttributeSet::find(meta.field()->attributes(), "&parse-from") ||
-              AttributeSet::find(meta.field()->attributes(), "&parse-at")) &&
-             ! (until_attr || until_including_attr) )
-            parse_attr = true;
+                    auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
-        if ( size_attr ) {
-            // If we have a &size attribute, our input will have been
-            // truncated accordingly. If no other attributes are set, we'll
-            // parse to the end of our (limited) input data.
-            if ( ! (until_attr || until_including_attr || parse_attr) )
-                to_eod = true;
-        }
-
-        auto target = destination(t);
-
-        if ( to_eod || parse_attr ) {
-            if ( meta.field() && chunked_attr && ! meta.container() )
-                pb->enableDefaultNewValueForField(false);
-
-            if ( chunked_attr ) {
-                auto loop = builder()->addWhile(builder::bool_(true));
-                pushBuilder(loop, [&]() {
-                    builder()->addLocal("more_data", pb->waitForInputOrEod(builder::integer(1)));
-
-                    auto have_data = builder()->addIf(builder::size(state().cur));
-                    pushBuilder(have_data, [&]() {
-                        builder()->addAssign(target, state().cur);
-                        pb->advanceInput(builder::size(state().cur));
-                        auto value = pb->applyConvertExpression(*meta.field(), target);
-
-                        if ( meta.field() && ! meta.container() )
-                            pb->newValueForField(meta, value, target);
+                    pushBuilder(found_branch, [&]() {
+                        auto new_it = builder::sum(it, until_bytes_size_var);
+                        pb->advanceInput(new_it);
+                        builder()->addBreak();
                     });
 
-                    auto at_eod = builder()->addIf(builder::not_(builder::id("more_data")));
-                    at_eod->addBreak();
+                    pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
                 });
             }
 
-            else {
-                pb->waitForEod();
-                builder()->addAssign(target, state().cur);
-                pb->advanceInput(builder::size(state().cur));
-            }
-
-            if ( eod_attr && size_attr )
-                // With &eod, it's ok if we don't consume the full amount.
-                // However, the code calling us won't know that, so we simply
-                // pretend that we have processed it all.
-                pb->advanceInput(builder::end(state().cur));
-
-            return target;
+            return hilti::expression::Void();
         }
 
-        if ( until_attr || until_including_attr ) {
-            Expression until_expr;
-            if ( until_attr )
-                until_expr = builder::coerceTo(*until_attr->valueAs<Expression>(), hilti::type::Bytes());
-            else
-                until_expr = builder::coerceTo(*until_including_attr->valueAs<Expression>(), hilti::type::Bytes());
+        result_t operator()(const hilti::type::Bytes& t) {
+            auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");
+            auto eod_attr = AttributeSet::find(meta.field()->attributes(), "&eod");
+            auto size_attr = AttributeSet::find(meta.field()->attributes(), "&size");
+            auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until");
+            auto until_including_attr = AttributeSet::find(meta.field()->attributes(), "&until-including");
 
-            auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
-            auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
+            bool to_eod = eod_attr.has_value(); // parse to end of input data
+            bool parse_attr = false;            // do we have a &parse-* attribute
 
-            if ( meta.field() && chunked_attr && ! meta.container() )
-                pb->enableDefaultNewValueForField(false);
+            if ( (AttributeSet::find(meta.field()->attributes(), "&parse-from") ||
+                  AttributeSet::find(meta.field()->attributes(), "&parse-at")) &&
+                 ! (until_attr || until_including_attr) )
+                parse_attr = true;
 
-            builder()->addAssign(target, builder::bytes(""));
-            auto body = builder()->addWhile(builder::bool_(true));
-            pushBuilder(body, [&]() {
-                // Helper to add a new chunk of data to the field's value,
-                // behaving slightly different depending on whether we have
-                // &chunked or not.
-                auto add_match_data = [&](const Expression& target, const Expression& match) {
-                    if ( chunked_attr ) {
-                        builder()->addAssign(target, match);
+            if ( size_attr ) {
+                // If we have a &size attribute, our input will have been
+                // truncated accordingly. If no other attributes are set, we'll
+                // parse to the end of our (limited) input data.
+                if ( ! (until_attr || until_including_attr || parse_attr) )
+                    to_eod = true;
+            }
 
-                        if ( meta.field() && ! meta.container() )
-                            pb->newValueForField(meta, match, target);
-                    }
-                    else
-                        builder()->addSumAssign(target, match);
-                };
+            auto target = destination(t);
+
+            if ( to_eod || parse_attr ) {
+                if ( meta.field() && chunked_attr && ! meta.container() )
+                    pb->enableDefaultNewValueForField(false);
+
+                if ( chunked_attr ) {
+                    auto loop = builder()->addWhile(builder::bool_(true));
+                    pushBuilder(loop, [&]() {
+                        builder()->addLocal("more_data", pb->waitForInputOrEod(builder::integer(1)));
+
+                        auto have_data = builder()->addIf(builder::size(state().cur));
+                        pushBuilder(have_data, [&]() {
+                            builder()->addAssign(target, state().cur);
+                            pb->advanceInput(builder::size(state().cur));
+                            auto value = pb->applyConvertExpression(*meta.field(), target);
+
+                            if ( meta.field() && ! meta.container() )
+                                pb->newValueForField(meta, value, target);
+                        });
+
+                        auto at_eod = builder()->addIf(builder::not_(builder::id("more_data")));
+                        at_eod->addBreak();
+                    });
+                }
+
+                else {
+                    pb->waitForEod();
+                    builder()->addAssign(target, state().cur);
+                    pb->advanceInput(builder::size(state().cur));
+                }
+
+                if ( eod_attr && size_attr )
+                    // With &eod, it's ok if we don't consume the full amount.
+                    // However, the code calling us won't know that, so we simply
+                    // pretend that we have processed it all.
+                    pb->advanceInput(builder::end(state().cur));
+
+                return target;
+            }
+
+            if ( until_attr || until_including_attr ) {
+                Expression until_expr;
+                if ( until_attr )
+                    until_expr = builder::coerceTo(*until_attr->valueAs<Expression>(), hilti::type::Bytes());
+                else
+                    until_expr = builder::coerceTo(*until_including_attr->valueAs<Expression>(), hilti::type::Bytes());
+
+                auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
+                auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
+
+                if ( meta.field() && chunked_attr && ! meta.container() )
+                    pb->enableDefaultNewValueForField(false);
+
+                builder()->addAssign(target, builder::bytes(""));
+                auto body = builder()->addWhile(builder::bool_(true));
+                pushBuilder(body, [&]() {
+                    // Helper to add a new chunk of data to the field's value,
+                    // behaving slightly different depending on whether we have
+                    // &chunked or not.
+                    auto add_match_data = [&](const Expression& target, const Expression& match) {
+                        if ( chunked_attr ) {
+                            builder()->addAssign(target, match);
+
+                            if ( meta.field() && ! meta.container() )
+                                pb->newValueForField(meta, match, target);
+                        }
+                        else
+                            builder()->addSumAssign(target, match);
+                    };
 
 
-                pb->waitForInput(until_bytes_size_var,
-                                 fmt("end-of-data reached before %s expression found",
-                                     (until_attr ? "&until" : "&until-including")),
-                                 t.meta());
+                    pb->waitForInput(until_bytes_size_var,
+                                     fmt("end-of-data reached before %s expression found",
+                                         (until_attr ? "&until" : "&until-including")),
+                                     t.meta());
 
-                auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
-                auto found_id = ID("found");
-                auto it_id = ID("it");
-                auto found = builder::id(found_id);
-                auto it = builder::id(it_id);
-                builder()->addLocal(found_id, type::Bool());
-                builder()->addLocal(it_id, type::stream::Iterator());
-                builder()->addAssign(builder::tuple({found, it}), find);
+                    auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
+                    auto found_id = ID("found");
+                    auto it_id = ID("it");
+                    auto found = builder::id(found_id);
+                    auto it = builder::id(it_id);
+                    builder()->addLocal(found_id, type::Bool());
+                    builder()->addLocal(it_id, type::stream::Iterator());
+                    builder()->addAssign(builder::tuple({found, it}), find);
 
-                Expression match = builder::memberCall(state().cur, "sub", {it});
+                    Expression match = builder::memberCall(state().cur, "sub", {it});
 
-                auto non_empty_match = builder()->addIf(builder::size(match));
-                pushBuilder(non_empty_match, [&]() { add_match_data(target, match); });
+                    auto non_empty_match = builder()->addIf(builder::size(match));
+                    pushBuilder(non_empty_match, [&]() { add_match_data(target, match); });
 
-                auto [found_branch, not_found_branch] = builder()->addIfElse(found);
+                    auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
-                pushBuilder(found_branch, [&]() {
+                    pushBuilder(found_branch, [&]() {
                         auto new_it = builder::sum(it, until_bytes_size_var);
 
-                    if ( until_including_attr )
-                        add_match_data(target, builder::memberCall(state().cur, "sub", {it, new_it}));
+                        if ( until_including_attr )
+                            add_match_data(target, builder::memberCall(state().cur, "sub", {it, new_it}));
 
-                    pb->advanceInput(new_it);
-                    builder()->addBreak();
+                        pb->advanceInput(new_it);
+                        builder()->addBreak();
+                    });
+
+                    pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
                 });
 
-                pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
-            });
+                return target;
+            }
 
-            return target;
+            return {};
         }
-
-        return {};
-    }
-};
+    };
 
 } // namespace
 
-Expression ParserBuilder::_parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst,
-                                     bool is_try) {
+Expression
+ParserBuilder::_parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst,
+                          bool is_try) {
     assert(! is_try || (t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>()));
 
     if ( auto e = Visitor(this, meta, dst, is_try).dispatch(type::effectiveType(t)) )

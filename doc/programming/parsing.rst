@@ -1222,6 +1222,11 @@ are consumed. This allows skipping over data without storing their result:
     :exec: printf '\01\02\03' | spicy-driver %INPUT
     :show-with: foo.spicy
 
+A ``void`` field can also terminate through an ``&until=<BYTES>``
+attribute: it then skips all input data until the given deliminator
+sequence of bytes is encountered. The deliminator is extracted from
+the stream before parsing continues.
+
 ``void`` fields cannot have names.
 
 Controlling Parsing
