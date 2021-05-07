@@ -12,4 +12,4 @@ Sub:init, 0, <offset=6 data=b"\x07\x08\x09">
 Sub:x, 0, <offset=6 data=b"\x07\x08\x09">
 Sub:y, 2, <offset=8 data=b"\x09">
 Main:Sub, 6, <offset=6 data=b"\x07\x08\x09">
-Main:done, 6, <offset=6 data=b"\x07\x08\x09">
+Main:done, 9, <offset=9 data=b"">
