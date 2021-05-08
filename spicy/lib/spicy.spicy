@@ -87,6 +87,12 @@ public function base64_decode(inout stream_: Base64Stream, data: bytes) : bytes 
 ## Finalizes a base64 stream used for decoding or encoding.
 public function base64_finish(inout stream_: Base64Stream) : bytes &cxxname="spicy::rt::base64::finish" &have_prototype;
 
+## Returns the initialization value for CRC32 computation.
+public function crc32_init() : uint64 &cxxname="spicy::rt::zlib::crc32_init" &have_prototype;
+
+## Computes a running CRC32.
+public function crc32_add(crc: uint64, data: bytes) : uint64 &cxxname="spicy::rt::zlib::crc32_add" &have_prototype;
+
 ## Returns the current wall clock time.
 public function current_time() : time &cxxname="hilti::rt::time::current_time" &have_prototype;
 

@@ -1,0 +1,21 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: printf "ABCDEFGHI" | spicy-driver -i 1 test.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+import spicy;
+
+public type X1 = unit {
+    on %init {
+        self.crc32 = spicy::crc32_init();
+    }
+
+    : bytes &chunked &eod { self.crc32 = spicy::crc32_add(self.crc32, $$); }
+
+    on %done {
+        print "0x%x" % self.crc32;
+    }
+
+    var crc32: uint64;
+};
