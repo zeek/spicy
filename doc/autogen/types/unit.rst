@@ -21,6 +21,21 @@
     Returns a reference to the ``%context`` instance associated with the
     unit.
 
+.. spicy:method:: unit::find unit find False optional<iterator<stream>> (needle: bytes, [ dir: enum ], [ start: iterator<stream> ])
+
+    Searches a *needle* pattern inside the input region defined by where
+    the unit began parsing and its current parsing position. If executed
+    from inside a field hook, the current parasing position will represent
+    the *first* byte that the field has been parsed from. By default, the
+    search will start at the beginning of that region and scan forward. If
+    the direction is ``spicy::Direcction::Backward``, the search will
+    start at the end of the region and scan backward. In either case, a
+    starting position can also be explicitly given, but must lie inside
+    the same region.
+
+    Usage of this method requires the unit to be declared with the
+    ``%random-access`` property.
+
 .. spicy:method:: unit::forward unit forward False void (inout data: bytes)
 
     If the unit is connected as a filter to another one, this method

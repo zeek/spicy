@@ -104,6 +104,19 @@ Specifies a side an operation should operate on.
         Both     # operate on both sides
     };
 
+.. _spicy_direction:
+
+.. rubric:: ``spicy::Direction``
+
+Specifies direction of a search.
+
+.. spicy-code::
+
+    type Direction = {
+        Forward, # search forward
+        Backward, # search backward
+    };
+
 .. _spicy_zlibstream:
 
 .. rubric:: ``spicy::ZlibStream``
