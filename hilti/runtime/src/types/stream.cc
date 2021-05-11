@@ -1,10 +1,9 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
-
-#include "exception.h"
 
 using namespace hilti::rt;
 using namespace hilti::rt::stream;

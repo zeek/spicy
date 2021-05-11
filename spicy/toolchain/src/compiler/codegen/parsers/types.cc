@@ -3,6 +3,7 @@
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
+#include <hilti/ast/builder/expression.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 
@@ -10,8 +11,6 @@
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/parser-builder.h>
-
-#include "ast/builder/expression.h"
 
 using namespace spicy;
 using namespace spicy::detail;
