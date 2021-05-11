@@ -469,6 +469,55 @@ TEST_CASE("iteration") {
         CHECK_EQ(*it, '3');
     }
 
+    SUBCASE("decrement - SafeIterator") {
+        // This test is value-parameterized over `s`.
+        Stream s;
+
+        SUBCASE("single chunk") { s = make_stream({"123"_b}); }
+        SUBCASE("multiple chunks") { s = make_stream({"1"_b, "2"_b, "3"_b}); }
+
+        auto it = s.end();
+        REQUIRE_EQ(*(--it), '3');
+        REQUIRE_EQ(*(--it), '2');
+        REQUIRE_EQ(*(--it), '1');
+        REQUIRE_EQ(it, s.begin());
+
+        CHECK_THROWS_AS(--it, const InvalidIterator&);
+
+        it = s.end() - 2;
+        REQUIRE_EQ(*it, '2');
+
+        it = s.end();
+        it -= 2;
+        REQUIRE_EQ(*it, '2');
+
+        it = s.end();
+        CHECK_THROWS_AS((it -= 100), const InvalidIterator&);
+    }
+
+    SUBCASE("decrement - UnsafeIterator") {
+        // This test is value-parameterized over `s`.
+        Stream s;
+
+        SUBCASE("single chunk") { s = make_stream({"123"_b}); }
+        SUBCASE("multiple chunks") { s = make_stream({"1"_b, "2"_b, "3"_b}); }
+
+        auto it = s.unsafeEnd();
+        REQUIRE_EQ(*(--it), '3');
+        REQUIRE_EQ(*(--it), '2');
+        REQUIRE_EQ(*(--it), '1');
+        REQUIRE_EQ(it, s.unsafeBegin());
+
+        it = s.unsafeEnd() - 2;
+        REQUIRE_EQ(*it, '2');
+
+        it = s.unsafeEnd();
+        it -= 2;
+        REQUIRE_EQ(*it, '2');
+
+        // not testing underflow, won't be caught with unsafe version
+    }
+
     SUBCASE("bool") {
         CHECK_FALSE(stream::SafeConstIterator());
         CHECK(Stream().begin());
@@ -1094,6 +1143,118 @@ TEST_CASE("View") {
             x = v.find(v2c, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
             CHECK_EQ(std::get<0>(x), false);
             CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
+        }
+    }
+
+    SUBCASE("find - backwards") {
+        SUBCASE("bytes - static view") {
+            // This test is value-parameterized over `s`.
+            Stream s;
+            SUBCASE("single chunk") { s = make_stream({"01234567ABCAB34567890"_b}); }
+            SUBCASE("multiple chunks") {
+                s = make_stream({
+                    "01"_b,
+                    "23"_b,
+                    "45"_b,
+                    "67"_b,
+                    "AB"_b,
+                    "CA"_b,
+                    "B3"_b,
+                    "45"_b,
+                    "67"_b,
+                    "89"_b,
+                    "0"_b,
+                });
+            }
+
+            hilti::rt::stream::View v = s.view().sub(s.at(1), s.at(s.size() - 1));
+
+            auto x = v.find("5"_b, v.at(15), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(15));
+
+            x = v.find("6"_b, v.at(15), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(6));
+
+            x = v.find("X"_b, v.at(15), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), false);
+
+            x = v.find("567"_b, v.at(15), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(5));
+
+            x = v.find("12"_b, v.at(8), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(1));
+
+            x = v.find("345"_b, v.at(15), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(13));
+
+            x = v.find("ABC"_b, v.at(15), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(8));
+
+            x = v.find("XYZ"_b, v.at(15), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), false);
+
+            x = v.find("012"_b, v.at(8), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), false);
+
+            x = v.find(""_b, v.at(1), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(1));
+
+            x = v.find("1234"_b, v.at(5), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(1));
+
+            x = v.find("12345"_b, v.at(5), hilti::rt::stream::Direction::Backward); // too long
+            CHECK_EQ(std::get<0>(x), false);
+
+            x = v.find("789"_b, hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(17));
+
+            CHECK_THROWS_AS(v.find("789"_b, v.end() + 1, hilti::rt::stream::Direction::Backward), InvalidIterator);
+            CHECK_THROWS_AS(v.find("789"_b, v.end() + 100, hilti::rt::stream::Direction::Backward), InvalidIterator);
+        }
+
+        SUBCASE("bytes - expanding view") {
+            // This test is value-parameterized over `s`.
+            Stream s;
+
+            SUBCASE("single chunk") { s = make_stream({"012345678901234567890"_b}); }
+            SUBCASE("multiple chunks") {
+                s = make_stream({
+                    "01"_b,
+                    "23"_b,
+                    "45"_b,
+                    "67"_b,
+                    "89"_b,
+                    "01"_b,
+                    "23"_b,
+                    "45"_b,
+                    "67"_b,
+                    "89"_b,
+                    "0"_b,
+                });
+            }
+
+            hilti::rt::stream::View v = s.view(true);
+
+            auto x = v.find("6"_b, v.at(15), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(6));
+
+            auto i = v.end() + 5;
+            CHECK_THROWS_AS(v.find("12345"_b, i, hilti::rt::stream::Direction::Backward), InvalidIterator);
+
+            s.append("12345"_b);
+            x = v.find("12345"_b, i, hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(std::get<0>(x), true);
+            CHECK_EQ(std::get<1>(x), v.at(21));
         }
     }
 }

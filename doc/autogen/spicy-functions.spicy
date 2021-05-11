@@ -39,6 +39,18 @@ Decodes a stream of base64 data back into the clear.
 
 Finalizes a base64 stream used for decoding or encoding.
 
+.. _spicy_crc32_init:
+
+.. rubric:: ``function spicy::crc32_init() : uint64``
+
+Returns the initialization value for CRC32 computation.
+
+.. _spicy_crc32_add:
+
+.. rubric:: ``function spicy::crc32_add(crc: uint64, data: bytes) : uint64``
+
+Computes a running CRC32.
+
 .. _spicy_current_time:
 
 .. rubric:: ``function spicy::current_time() : time``

@@ -13,8 +13,8 @@ type Zlib = unit(window_bits: optional<int64> = Null) {
             self.z = spicy::zlib_init(*window_bits);
     }
 
-    data: bytes &chunked &eod {
-        self.forward(spicy::zlib_decompress(self.z, self.data));
+    : bytes &chunked &eod {
+        self.forward(spicy::zlib_decompress(self.z, $$));
         }
 
     on %done {
@@ -28,8 +28,8 @@ type Zlib = unit(window_bits: optional<int64> = Null) {
 type Base64Decode = unit {
     %filter;
 
-    data: bytes &chunked &eod {
-        self.forward(spicy::base64_decode(self.z, self.data));
+    : bytes &chunked &eod {
+        self.forward(spicy::base64_decode(self.z, $$));
         }
 
     on %done {

@@ -1000,11 +1000,6 @@ will eventually still consume the same number of bytes overall, but it
 avoids buffering everything in cases where that's either infeasible or
 simply not not needed.
 
-.. note::
-
-    ``&chunked`` can currently not be combined with ``&until`` or
-    ``&until-including``.
-
 Bytes fields support parsing constants: If a ``bytes`` constant is
 specified instead of a field type, parsing will expect to find the
 corresponding value in the input stream.
@@ -1226,6 +1221,14 @@ are consumed. This allows skipping over data without storing their result:
 .. spicy-output:: parse-void-size.spicy
     :exec: printf '\01\02\03' | spicy-driver %INPUT
     :show-with: foo.spicy
+
+A ``void`` field can also terminate through an ``&until=<BYTES>``
+attribute: it then skips all input data until the given deliminator
+sequence of bytes is encountered. The deliminator is extracted from
+the stream before parsing continues.
+
+Finally, a ``void`` field can specify ``&eod`` to consume all data
+until the end of the current input.
 
 ``void`` fields cannot have names.
 

@@ -3,6 +3,7 @@
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
+#include <hilti/ast/builder/expression.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 
@@ -167,11 +168,46 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         return performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
     }
 
-    result_t operator()(const hilti::type::Void& /* t */) {
+    result_t operator()(const hilti::type::Void& t) {
         if ( auto size = AttributeSet::find(meta.field()->attributes(), "&size") )
             // Even though we we do not store parsed data, we still need to consume
             // data in the input stream so that `&size` checks can work.
             pb->advanceInput(*size->valueAs<Expression>());
+
+        else if ( auto eod = AttributeSet::find(meta.field()->attributes(), "&eod") ) {
+            pb->waitForEod();
+            pb->advanceInput(builder::size(state().cur));
+        }
+
+        else if ( auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until") ) {
+            Expression until_expr = builder::coerceTo(*until_attr->valueAs<Expression>(), hilti::type::Bytes());
+            auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
+            auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
+
+            auto body = builder()->addWhile(builder::bool_(true));
+            pushBuilder(body, [&]() {
+                pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found", t.meta());
+
+                auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
+                auto found_id = ID("found");
+                auto it_id = ID("it");
+                auto found = builder::id(found_id);
+                auto it = builder::id(it_id);
+                builder()->addLocal(found_id, type::Bool());
+                builder()->addLocal(it_id, type::stream::Iterator());
+                builder()->addAssign(builder::tuple({found, it}), find);
+
+                auto [found_branch, not_found_branch] = builder()->addIfElse(found);
+
+                pushBuilder(found_branch, [&]() {
+                    auto new_it = builder::sum(it, until_bytes_size_var);
+                    pb->advanceInput(new_it);
+                    builder()->addBreak();
+                });
+
+                pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
+            });
+        }
 
         return hilti::expression::Void();
     }
@@ -250,9 +286,27 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
             auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
             auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
 
+            if ( meta.field() && chunked_attr && ! meta.container() )
+                pb->enableDefaultNewValueForField(false);
+
             builder()->addAssign(target, builder::bytes(""));
             auto body = builder()->addWhile(builder::bool_(true));
             pushBuilder(body, [&]() {
+                // Helper to add a new chunk of data to the field's value,
+                // behaving slightly different depending on whether we have
+                // &chunked or not.
+                auto add_match_data = [&](const Expression& target, const Expression& match) {
+                    if ( chunked_attr ) {
+                        builder()->addAssign(target, match);
+
+                        if ( meta.field() && ! meta.container() )
+                            pb->newValueForField(meta, match, target);
+                    }
+                    else
+                        builder()->addSumAssign(target, match);
+                };
+
+
                 pb->waitForInput(until_bytes_size_var,
                                  fmt("end-of-data reached before %s expression found",
                                      (until_attr ? "&until" : "&until-including")),
@@ -267,20 +321,20 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 builder()->addLocal(it_id, type::stream::Iterator());
                 builder()->addAssign(builder::tuple({found, it}), find);
 
-                Expression match;
+                Expression match = builder::memberCall(state().cur, "sub", {it});
 
-                if ( until_attr )
-                    match = builder::memberCall(state().cur, "sub", {it});
-                else
-                    // until_including
-                    match = builder::memberCall(state().cur, "sub", {builder::sum(it, until_bytes_size_var)});
-
-                builder()->addSumAssign(target, match);
+                auto non_empty_match = builder()->addIf(builder::size(match));
+                pushBuilder(non_empty_match, [&]() { add_match_data(target, match); });
 
                 auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
                 pushBuilder(found_branch, [&]() {
-                    pb->advanceInput(builder::sum(it, until_bytes_size_var));
+                    auto new_it = builder::sum(it, until_bytes_size_var);
+
+                    if ( until_including_attr )
+                        add_match_data(target, builder::memberCall(state().cur, "sub", {it, new_it}));
+
+                    pb->advanceInput(new_it);
                     builder()->addBreak();
                 });
 

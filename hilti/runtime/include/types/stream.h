@@ -57,6 +57,9 @@ using Offset = integer::safe<uint64_t>;
 /** Size of a stream instance in number of elements stores. */
 using Size = integer::safe<uint64_t>;
 
+/** Direction of a search. */
+enum class Direction { Forward, Backward };
+
 namespace detail {
 
 class Chain;
@@ -410,13 +413,39 @@ public:
         return *this;
     }
 
+    /** Moves back the iterator by one byte. */
+    auto& operator--() {
+        _decrement(1);
+        return *this;
+    }
+
+    /** Moves back the iterator by one byte. */
+    auto operator--(int) {
+        auto x = *this;
+        _decrement(1);
+        return x;
+    }
+
+    /** Moves back the iterator by a given number of stream. */
+    auto& operator-=(integer::safe<uint64_t> i) {
+        _decrement(i);
+        return *this;
+    }
+
     /** Returns the character at the iterator's position. */
     auto operator*() const { return _dereference(); }
 
-    /** Return a new iterator advanced by a given number of stream. */
+    /** Return a new iterator advanced by a given number of bytes. */
     auto operator+(integer::safe<uint64_t> i) const {
         auto x = *this;
         x._increment(i);
+        return x;
+    }
+
+    /** Returns a new iterator moved back by a given number of bytes. */
+    auto operator-(integer::safe<uint64_t> i) const {
+        auto x = *this;
+        x._decrement(i);
         return x;
     }
 
@@ -558,6 +587,9 @@ private:
     }
 
     void _increment(integer::safe<uint64_t> n) {
+        if ( ! _chain )
+            throw InvalidIterator("unbound stream iterator");
+
         _offset += n;
 
         if ( ! (_chain && _chain->isValid()) )
@@ -565,6 +597,25 @@ private:
 
         _chunk = _chain->findChunk(_offset, chunk());
         // chunk will be null if we're pointing beyond the end.
+    }
+
+    void _decrement(integer::safe<uint64_t> n) {
+        if ( ! _chain )
+            throw InvalidIterator("unbound stream iterator");
+
+        if ( n > _offset )
+            throw InvalidIterator("attempt to move before beginning of stream");
+
+        _offset -= n;
+
+        if ( _chunk && _offset > _chunk->offset() )
+            return; // fast-path, chunk still valid
+
+        if ( ! (_chain && _chain->isValid()) )
+            return; // will be caught when dereferenced
+
+        _chunk = _chain->findChunk(_offset, _chunk);
+        // chunk will be null if we're pointing beyond the beginning.
     }
 
     Byte _dereference() const {
@@ -656,19 +707,39 @@ public:
         return x;
     }
 
-    /** Advances the iterator by a given number of stream. */
-    auto& operator+=(integer::safe<uint64_t> i) {
-        _increment(i);
+    /** Moves back the iterator by one byte. */
+    auto& operator--() {
+        _decrement(1);
+        return *this;
+    }
+
+    /** Moves back the iterator by one byte. */
+    auto operator--(int) {
+        auto x = *this;
+        _decrement(1);
+        return x;
+    }
+
+    /** Moves back the iterator by a given number of stream. */
+    auto& operator-=(integer::safe<uint64_t> i) {
+        _decrement(i);
         return *this;
     }
 
     /** Returns the character at the iterator's position. */
     auto operator*() const { return _dereference(); }
 
-    /** Return a new iterator advanced by a given number of stream. */
+    /** Return a new iterator advanced by a given number of bytes. */
     auto operator+(integer::safe<uint64_t> i) const {
         auto x = *this;
         x._increment(i);
+        return x;
+    }
+
+    /** Return a new iterator moved back by a given number of bytes. */
+    auto operator-(integer::safe<uint64_t> i) const {
+        auto x = *this;
+        x._decrement(i);
         return x;
     }
 
@@ -774,7 +845,16 @@ private:
         _offset += n;
 
         if ( _chunk && _offset < _chunk->endOffset() )
-            return;
+            return; // fast-path, chunk still valid
+
+        _chunk = _chain->findChunk(_offset, _chunk);
+    }
+
+    void _decrement(integer::safe<uint64_t> n) {
+        _offset -= n;
+
+        if ( _chunk && _offset > _chunk->offset() )
+            return; // fast-path, chunk still valid
 
         _chunk = _chain->findChunk(_offset, _chunk);
     }
@@ -1026,48 +1106,59 @@ public:
     std::tuple<bool, UnsafeConstIterator> find(const View& v, UnsafeConstIterator n) const;
 
     /**
-     * Searches for the first occurrence of data.
+     * Searches for the first occurrence of data, either forward or backward.
      *
      * @param v data to search for
+     * @param d direction to search: forward searches from the beginning, backward from the end of the view
      * @return tuple where the 1st element is a boolean indicating whether
      * *v* has been found; if yes, the 2nd element points to the 1st byte;
-     * if no, the 2nd element points to the first byte so that no earlier
-     * position has even a partial match of *v*.
+     * if no, then with forward searching, the 2nd element points to the first byte so that no earlier
+     * position has even a partial match of *v*
      */
-    std::tuple<bool, SafeConstIterator> find(const Bytes& v) const {
+    std::tuple<bool, SafeConstIterator> find(const Bytes& v, Direction d = Direction::Forward) const {
         _ensureValid();
-        auto x = find(v, UnsafeConstIterator());
+        auto i = (d == Direction::Forward ? unsafeBegin() : unsafeEnd());
+        auto x = find(v, std::move(i), d);
         return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
     }
 
     /**
-     * Searches for the first occurrence of data.
+     * Searches for the first occurrence of data, either forward or backward.
      *
      * @param v data to search for
      * @param n starting point, which must be inside this view
+     * @param d direction to search from starting point
      * @return tuple where the 1st element is a boolean indicating whether
      * *v* has been found; if yes, the 2nd element points to the 1st byte;
-     * if no, the 2nd element points to the first byte so that no earlier
-     * position has even a partial match of *v*.
+     * if no, then with forward searching, the 2nd element points to the first byte so that no earlier
+     * position has even a partial match of *v*
      */
-    std::tuple<bool, SafeConstIterator> find(const Bytes& v, const SafeConstIterator& n) const {
+    std::tuple<bool, SafeConstIterator> find(const Bytes& v, const SafeConstIterator& n,
+                                             Direction d = Direction::Forward) const {
         _ensureValid();
         _ensureSameChain(n);
-        auto x = find(v, UnsafeConstIterator(n));
+        auto x = find(v, UnsafeConstIterator(n), d);
         return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
     }
 
     /**
-     * Searches for the first occurrence of data.
+     * Searches for the first occurrence of data, either forward or backward.
      *
      * @param v data to search for
      * @param n starting point, which must be inside this view
+     * @param d direction to search from starting point
      * @return tuple where the 1st element is a boolean indicating whether
      * *v* has been found; if yes, the 2nd element points to the 1st byte;
-     * if no, the 2nd element points to the first byte so that no earlier
-     * position has even a partial match of *v*.
+     * if no, then with forward searching, the 2nd element points to the first byte so that no earlier
+     * position has even a partial match of *v*
      */
-    std::tuple<bool, UnsafeConstIterator> find(const Bytes& v, UnsafeConstIterator n) const;
+    std::tuple<bool, UnsafeConstIterator> find(const Bytes& v, UnsafeConstIterator n,
+                                               Direction d = Direction::Forward) const {
+        if ( d == Direction::Forward )
+            return _findForward(v, std::move(n));
+        else
+            return _findBackward(v, std::move(n));
+    }
 
     /**
      * Advances the view's starting position to a new place.
@@ -1252,6 +1343,12 @@ private:
         if ( _end && ! _end->isValid() )
             throw InvalidIterator("view has invalid end");
     }
+
+    // Common backend for backward searching.
+    std::tuple<bool, UnsafeConstIterator> _findBackward(const Bytes& v, UnsafeConstIterator n) const;
+
+    // Common backend for forward searching.
+    std::tuple<bool, UnsafeConstIterator> _findForward(const Bytes& v, UnsafeConstIterator n) const;
 
     SafeConstIterator _begin;
     std::optional<SafeConstIterator> _end;

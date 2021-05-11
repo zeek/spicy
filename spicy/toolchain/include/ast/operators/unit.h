@@ -90,6 +90,38 @@ property.
     }
 END_METHOD
 
+BEGIN_METHOD(unit, Find)
+    auto signature() const {
+        return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
+                                           .result = hilti::type::Optional(hilti::type::stream::Iterator()),
+                                           .id = "find",
+                                           .args =
+                                               {
+                                                   {.id = "needle", .type = type::constant(hilti::type::Bytes())},
+                                                   {.id = "dir",
+                                                    .type = type::constant(hilti::type::Enum(type::Wildcard())),
+                                                    .optional = true},
+                                                   {.id = "start",
+                                                    .type = type::constant(hilti::type::stream::Iterator()),
+                                                    .optional = true},
+
+                                               },
+                                           .doc = R"(
+Searches a *needle* pattern inside the input region defined by where the unit
+began parsing and its current parsing position. If executed from inside a field
+hook, the current parasing position will represent the *first* byte that the
+field has been parsed from. By default, the search will start at the beginning
+of that region and scan forward. If the direction is
+``spicy::Direcction::Backward``, the search will start at the end of the region
+and scan backward. In either case, a starting position can also be explicitly
+given, but must lie inside the same region.
+
+Usage of this method requires the unit to be declared with the ``%random-access``
+property.
+)"};
+    }
+END_METHOD
+
 BEGIN_METHOD(unit, ConnectFilter)
     auto signature() const {
         return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),

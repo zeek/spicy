@@ -94,4 +94,12 @@ TEST_CASE("decompress") {
 
 TEST_CASE("to_string") { CHECK_EQ(to_string(zlib::Stream()), "<zlib stream>"); }
 
+TEST_CASE("crc32") {
+    auto crc = zlib::crc32_init();
+    crc = zlib::crc32_add(crc, "ABC");
+    crc = zlib::crc32_add(crc, "DEF");
+    crc = zlib::crc32_add(crc, "GHI");
+    CHECK_EQ(crc, 0xc96b9640);
+}
+
 TEST_SUITE_END();

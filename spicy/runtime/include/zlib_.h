@@ -92,6 +92,12 @@ inline hilti::rt::Bytes finish(Stream& stream) // NOLINT(google-runtime-referenc
     return stream.finish();
 }
 
+/** Returns initial seed for CRC32 computation. */
+extern uint64_t crc32_init();
+
+/** Computes rolling CRC32 computation adding another chunk of data. */
+extern uint64_t crc32_add(uint64_t crc, const hilti::rt::Bytes& data);
+
 } // namespace spicy::rt::zlib
 
 namespace hilti::rt::detail::adl {

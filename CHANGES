@@ -1,4 +1,40 @@
 
+1.1.0-dev.85 | 2021-05-11 16:19:12 +0200
+
+  * Add functions for CRC32 computation to Spicy library. (Robin
+    Sommer, Corelight)
+
+  * Add a find() method to units to search within their block of
+    input. (Robin Sommer, Corelight)
+
+  * Add support for searching a stream view backward for bytes. (Robin Sommer, Corelight)
+
+  * Optimize implementation of Spicy's library filters a little bit. (Robin Sommer, Corelight)
+
+  * Fix missing update to input position before running `%done` hook. (Robin Sommer, Corelight)
+
+  * Add support for `&eod` to `void` fields. This skips all data until
+    the end of the current input is encountered. (Robin Sommer,
+    Corelight)
+
+  * Add support for `&until` to `void` fields.
+
+      Example:
+
+        ```
+        public type Foo = unit {
+          : void &until=b"XYZ";
+        }
+        ```
+
+    This skips all data until `XYZ` is encountered. Similar to the
+    `&until` attribute that `bytes` provides, the deliminator is
+    extracted from the stream before continuing. (Robin Sommer,
+    Corelight)
+
+  * Add support for `&chunked` when parsing bytes data with `&until`
+    or `&until_including`. (Robin Sommer, Corelight)
+
 1.1.0-dev.74 | 2021-05-06 19:11:00 +0200
 
   * GH-911: Add `encode()` method to strings for conversion to bytes.

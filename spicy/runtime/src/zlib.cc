@@ -99,3 +99,9 @@ hilti::rt::Bytes Stream::decompress(const hilti::rt::Bytes& data) {
 
     return decoded;
 }
+
+uint64_t zlib::crc32_init() { return ::crc32(0L, Z_NULL, 0); }
+
+uint64_t zlib::crc32_add(uint64_t crc, const hilti::rt::Bytes& data) {
+    return ::crc32(crc, reinterpret_cast<const Bytef*>(data.data()), data.size());
+}

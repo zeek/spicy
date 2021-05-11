@@ -1650,6 +1650,8 @@ void ParserBuilder::initializeUnit(const Location& l) {
 void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     const auto& unit = state().unit.get();
 
+    saveParsePosition();
+
     if ( success ) {
         // We evaluate any "&requires" before running the final "%done" hook
         // so that (1) that one can rely on the condition, and (2) we keep
