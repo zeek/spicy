@@ -253,7 +253,7 @@ public:
 
     using V = std::vector<T, Allocator>;
 
-    using size_type = typename V::size_type;
+    using size_type = uint64_t;
     using reference = T&;
     using const_reference = const T&;
     using iterator = vector::Iterator<T, Allocator>;
@@ -465,6 +465,8 @@ public:
     auto cbegin() const { return const_iterator(0u, _control); }
     auto cend() const { return const_iterator(size(), _control); }
 
+    size_t size() const { return V::size(); }
+
     // Methods of `std::vector`.
     using typename V::value_type;
     using V::at;
@@ -475,7 +477,6 @@ public:
     using V::push_back;
     using V::reserve;
     using V::resize;
-    using V::size;
 
     friend bool operator==(const Vector& a, const Vector& b) {
         return static_cast<const V&>(a) == static_cast<const V&>(b);

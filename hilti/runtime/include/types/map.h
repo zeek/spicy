@@ -176,6 +176,7 @@ public:
 
     using key_type = typename M::key_type;
     using value_type = typename M::value_type;
+    using size_type = uint64_t;
 
     using iterator = typename map::Iterator<K, V>;
     using const_iterator = typename map::ConstIterator<K, V>;
@@ -257,13 +258,12 @@ public:
     auto end() const { return this->cend(); }
 
     auto begin() { return iterator(static_cast<M&>(*this).begin(), _control); }
-
     auto end() { return iterator(static_cast<M&>(*this).end(), _control); }
 
     auto cbegin() const { return const_iterator(static_cast<const M&>(*this).begin(), _control); }
-
     auto cend() const { return const_iterator(static_cast<const M&>(*this).end(), _control); }
 
+    size_type size() const { return M::size(); }
 
     /** Erases all elements from the map.
      *
@@ -291,9 +291,6 @@ public:
 
         return removed;
     }
-
-    // Methods of `std::map`.
-    using M::size;
 
     friend bool operator==(const Map& a, const Map& b) { return static_cast<const M&>(a) == static_cast<const M&>(b); }
     friend bool operator!=(const Map& a, const Map& b) { return ! (a == b); }
