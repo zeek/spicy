@@ -1,3 +1,6 @@
+1.1.0-dev.87 | 2021-05-12 18:38:40 +0200
+
+  * Make sure container sizes are runtime integers. (Benjamin Bannier, Corelight)
 
 1.1.0-dev.85 | 2021-05-11 16:19:12 +0200
 

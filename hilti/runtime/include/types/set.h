@@ -120,7 +120,7 @@ public:
     using key_type = T;
     using value_type = T;
 
-    using size_type = typename V::size_type;
+    using size_type = uint64_t;
 
     Set() = default;
     Set(const Set&) = default;
@@ -140,8 +140,9 @@ public:
     bool contains(const T& t) const { return this->count(t); }
 
     auto begin() const { return iterator(static_cast<const V&>(*this).begin(), empty() ? nullptr : _control); }
-
     auto end() const { return iterator(static_cast<const V&>(*this).end(), empty() ? nullptr : _control); }
+
+    size_type size() const { return V::size(); }
 
     /** Removes an element from the set.
      *
@@ -171,7 +172,6 @@ public:
     // Methods of `std::set`. These methods *must not* cause any iterator invalidation.
     using V::empty;
     using V::insert;
-    using V::size;
 
     friend bool operator==(const Set& a, const Set& b) { return static_cast<const V&>(a) == static_cast<const V&>(b); }
     friend bool operator!=(const Set& a, const Set& b) { return ! (a == b); }
