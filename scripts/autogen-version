@@ -187,12 +187,12 @@ VERSION {version}{str_prerelease}
 if options.store:
     with tempfile.NamedTemporaryFile(mode="w") as store:
         store.write("""\
-                branch={branch}
-                hash={chash}
-                git_version={git_version}
-                """.format(
-                    branch=branch,
-                    chash=chash,
-                    git_version=git_version))
+branch={branch}
+hash={chash}
+git_version={git_version}
+""".format(
+            branch=branch,
+            chash=chash,
+            git_version=git_version))
         store.flush()
         shutil.copy(store.name, options.store)
