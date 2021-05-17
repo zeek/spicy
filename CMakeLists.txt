@@ -201,10 +201,6 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BuildType}}" cxxflags)
 add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS tests)
 add_custom_target(tests DEPENDS hilti-tests spicy-tests)
 
-execute_process(COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/autogen-version
-                OUTPUT_VARIABLE VERSION
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
-
 # Packaging.
 # Check tags the HEAD commit corresponds to.
 execute_process(COMMAND git tag --points-at
@@ -253,7 +249,7 @@ include(CPack)
 message(
     "\n====================|  Spicy Build Summary  |===================="
     "\n"
-    "\nVersion:               ${VERSION}"
+    "\nVersion:               ${CMAKE_PROJECT_VERSION}"
     "\n"
     "\nBuild type:            ${CMAKE_BUILD_TYPE}"
     "\nBuild directory:       ${CMAKE_BINARY_DIR}"
