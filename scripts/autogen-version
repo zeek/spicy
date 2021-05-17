@@ -4,6 +4,7 @@
 # various constants defined accordingly.
 
 import argparse
+import filecmp
 import os
 import re
 import shutil
@@ -56,6 +57,15 @@ def get_version(ref):
             "Cannot extract version information: neither git repository nor VERSION file present"
         )
         exit(1)
+
+
+def write_if_changed(target, txt):
+    """Writes `txt` to `target` but skips the write if `target` would be unchanged"""
+    with tempfile.NamedTemporaryFile(mode="w") as store:
+        store.write(txt)
+        store.flush()
+        if not os.path.exists(target) or not filecmp.cmp(store.name, target, shallow=False):
+            shutil.copy(store.name, target)
 
 
 parser = argparse.ArgumentParser(
@@ -179,20 +189,15 @@ VERSION {version}{str_prerelease}
         str_prerelease=str_prerelease,
         str_branch=str_branch,
         chash=chash)
-    with tempfile.NamedTemporaryFile(mode="w") as hdr:
-        hdr.write(header_contents)
-        hdr.flush()
-        shutil.copy(hdr.name, options.header)
+    write_if_changed(options.header, header_contents)
 
 if options.store:
-    with tempfile.NamedTemporaryFile(mode="w") as store:
-        store.write("""\
+    write_if_changed(options.store, """\
 branch={branch}
 hash={chash}
 git_version={git_version}
 """.format(
-            branch=branch,
-            chash=chash,
-            git_version=git_version))
-        store.flush()
-        shutil.copy(store.name, options.store)
+        branch=branch,
+        chash=chash,
+        git_version=git_version)
+    )
