@@ -1,3 +1,9 @@
+1.1.0 | 2021-05-18 13:26:32 +0200
+
+  * Bump version. (Benjamin Bannier, Corelight)
+
+  * Draft 1.1 release notes. (Robin Sommer, Corelight)
+
 1.1.0-dev.91 | 2021-05-17 14:29:24 +0200
 
   * Remove redundant version computation. (Benjamin Bannier, Corelight)
