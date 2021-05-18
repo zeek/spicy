@@ -1,17 +1,11 @@
+=============
 Release Notes
 =============
 
-.. contents::
-    :local:
-
-
-Change Log
-----------
-
-.. literalinclude:: /../CHANGES
+.. include:: /../NEWS.rst
 
 Migrating from the old prototype
---------------------------------
+================================
 
 Below we summarize language changes in Spicy compared to the `original
 research prototype <https://www.icir.org/hilti>`_. Note that some of
