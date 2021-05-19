@@ -169,14 +169,27 @@ macro(BISON_TARGET_PP Name BisonInput BisonOutput)
     # Name of the preprocessed Bison input.
     string(JOIN "." BisonInputPP "${BisonOutput}" "pp")
 
-    # Preprocess the input file.
-    file(READ ${BisonInput} input)
+    # Preprocess the input file:
+    #
+    # - in versions <bison-3.3.0 `api.parser.name` was called `parser_class_name`
     if (${BISON_VERSION} VERSION_LESS "3.3.0")
-        # In versions <bison-3.3.0 `api.parser.name` was called `parser_class_name`.
-        string(REPLACE "%require \"3.3\"" "%require \"3.0\"" input "${input}")
-        string(REPLACE "api.parser.class" "parser_class_name" input "${input}")
+        add_custom_command(
+            OUTPUT ${BisonInputPP}
+            DEPENDS ${BisonInput}
+            COMMAND sed
+                -e 's/%require\ \"3.3\"/%require\ \"3.0\"/'
+                -e 's/api.parser.class/parser_class_name/'
+            ${BisonInput} > ${BisonInputPP}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+            COMMENT "Preprocessing Bison file ${BisonInput}")
+    else()
+        add_custom_command(
+            OUTPUT ${BisonInputPP}
+            DEPENDS ${BisonInput}
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${BisonInput} ${BisonInputPP}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+            COMMENT "Preprocessing Bison file ${BisonInput}")
     endif()
-    file(WRITE ${BisonInputPP} "${input}")
 
     # Pass preprocessed file to `BISON_TARGET`.
     #
