@@ -54,7 +54,8 @@ struct Options {
     bool skip_dependencies = false;                        /**< do not automatically compile dependencies during JIT */
     bool report_resource_usage = false; /**< print summary of runtime resource usage at termination */
     bool report_times = false;          /**< Report break-down of driver's execution time. */
-    bool dump_code = false;             /**< Record all final HILTI and C++ code to disk for debugging.  */
+    bool dump_code = false;             /**< Record all final HILTI and C++ code to disk for debugging. */
+    bool global_optimizations = true;   /**< whether to run global HILTI optimizations on the generated code. */
     std::vector<hilti::rt::filesystem::path>
         inputs; /**< files to compile; these will be automatically pulled in by ``Driver::run()`` */
     hilti::rt::filesystem::path output_path; /**< file to store output in (default if empty is printing to stdout) */
@@ -177,6 +178,11 @@ public:
      * @return set if successful; otherwise the result provides an error message
      */
     Result<Nothing> compile();
+
+    /**
+     * Performs global transformations on the generated code.
+     */
+    Result<Nothing> transformUnits();
 
     /**
      * Returns the current HILTI context. Valid only once compilation has

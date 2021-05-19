@@ -1,6 +1,6 @@
-// @TEST-EXEC: spicyc -P my-http.spicy >my-http.h
-// @TEST-EXEC: spicyc -c my-http.spicy >my-http.cc
-// @TEST-EXEC: spicyc -l my-http.cc >my-http-linker.cc
+// @TEST-EXEC: spicyc -g -P my-http.spicy >my-http.h
+// @TEST-EXEC: spicyc -g -c my-http.spicy >my-http.cc
+// @TEST-EXEC: spicyc -g -l my-http.cc >my-http-linker.cc
 // @TEST-EXEC: $(spicy-config --cxx) -o my-http my-http.cc my-http-linker.cc %INPUT $(spicy-config --cxxflags --ldflags)
 // @TEST-EXEC: ./my-http "$(cat data)" >output
 // @TEST-EXEC: btest-diff output
@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include <hilti/rt/libhilti.h>
+
 #include <spicy/rt/libspicy.h>
 
 #include "my-http.h"

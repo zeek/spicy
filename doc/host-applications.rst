@@ -50,18 +50,24 @@ C++ application.
 First, we'll use :ref:`spicyc` to generate a C++ parser from the Spicy
 source code::
 
-    # spicyc -c my-http.spicy -o my-http.cc
+    # spicyc -c -g my-http.spicy -o my-http.cc
 
 Option ``-c`` (aka ``--output-c++``) tells ``spicyc`` that we want it
 to generate C++ code (rather than compiling everything down into
 executable code).
 
-We also need `spicyc` to get generate some additional additional
+Option ``-g`` (aka ``--disable-optimizations``) tells ``spicyc`` to not perform
+global optimizations. Optimizations are performed on all modules passed to a
+invocation of ``spicyc`` and can remove e.g., unused code. Since we generate
+output files with multiple invocations, optimizations could lead to incomplete
+code.
+
+We also need ``spicyc`` to get generate some additional additional
 "linker" code implementing internal plumbing necessary for
 cross-module functionality. That's what ``-l`` (aka
-``--output-linker``) does:
+``--output-linker``) does::
 
-    # spicyc -l my-http.cc -o my-http-linker.cc
+    # spicyc -l -g my-http.cc -o my-http-linker.cc
 
 We'll compile this linker code along with the ``my-http.cc``.
 
@@ -69,7 +75,7 @@ Next, ``spicyc`` can also generate C++ prototypes for us that declare
 (1) a set of parsing functions for feeding in data, and (2) a
 ``struct`` type providing access to the parsed fields::
 
-    # spicyc -P my-http.spicy -o my-http.h
+    # spicyc -P -g my-http.spicy -o my-http.h
 
 The output of ``-P`` (aka ``--output-prototypes``) is a bit convoluted
 because it (necessarily) also contains a bunch of Spicy internals.
@@ -176,9 +182,9 @@ Finally, we compile it altogether:
 
 ::
 
-    # spicyc -c my-http.spicy -o my-http.cc
-    # spicyc -l my-http.cc -o my-http-linker.cc
-    # spicyc -P  my-http.spicy -o my-http.h
+    # spicyc -c -g my-http.spicy -o my-http.cc
+    # spicyc -l -g my-http.cc -o my-http-linker.cc
+    # spicyc -P -g my-http.spicy -o my-http.h
     # clang++ -o my-http my-http.cc my-http-linker.cc my-http-callback.cc my-http-host.cc $(spicy-config --cxxflags --ldflags)
     # ./my-http $'GET index.html HTTP/1.0\n'
     In C++ land: GET, index.html, 1.0
@@ -198,10 +204,10 @@ Spicy-generated code into custom host applications:
       you need to link them altogether in a single step. For example,
       if we had ``A.spicy``, ``B.spicy`` and ``C.spicy``, we'd do::
 
-        # spicyc -c A.spicy -o A.cc
-        # spicyc -c B.spicy -o B.cc
-        # spicyc -c C.spicy -o C.cc
-        # spicyc -l A.cc B.cc C.cc -o linker.cc
+        # spicyc -c -g A.spicy -o A.cc
+        # spicyc -c -g B.spicy -o B.cc
+        # spicyc -c -g C.spicy -o C.cc
+        # spicyc -l -g A.cc B.cc C.cc -o linker.cc
         # clang++ A.cc B.cc C.cc linker.cc -o a.out ...
 
     - If your Spicy code is importing any library modules (e.g., the

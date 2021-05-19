@@ -54,6 +54,10 @@ tags. The following choices are available:
     Note that "transformation" here refers to a specific pass in the
     pipeline that's primarily used for Spicy-to-HILTI AST rewriting.
 
+``ast-codegen``
+    Prints out the ASTs used for C++ code generation. These are the final ASTs
+    with possibly additional global optimizations applied to them.
+
 ``compiler``
     Prints out a various progress updates about the compiler's
     internal workings. Note that ``driver`` is often a better
