@@ -4,6 +4,17 @@ releases. For an exhaustive list of all changes, see the `CHANGES
 <https://github.com/zeek/spicy/blob/main/CHANGES>`_ file coming with
 the distribution.
 
+Version 1.2
+===========
+
+.. rubric:: New Functionality
+
+.. rubric:: Changed Functionality
+
+.. rubric:: Bug fixes
+
+.. rubric:: Documentation
+
 Version 1.1
 ===========
 
