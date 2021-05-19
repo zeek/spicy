@@ -1,0 +1,28 @@
+# @TEST-EXEC: hiltic -d -j -D global-optimizer %INPUT > log 2>&1
+# @TEST-EXEC: btest-diff log
+
+# @TEST-EXEC: hiltic -d -j -g %INPUT -D ast-codegen >ast.0 2>&1
+# @TEST-EXEC: hiltic -d -j    %INPUT -D ast-codegen >ast.1 2>&1
+# @TEST-EXEC: spicy-diff.py ast.0 ast.1 >output.diff
+# @TEST-EXEC: btest-diff output.diff
+
+# @TEST-DOC: Tests optimizations removing unimplemented hooks.
+
+module Foo {
+
+type X = struct {
+    hook void implemented();
+    hook void unimplemented();                    # Uncalled, unimplemented hook.
+    hook void unimplemented_void();               # Called, implemented hook.
+    hook optional<int<64>> unimplemented_int64(); # Called, implemented hook.
+};
+
+method hook void X::implemented() {}
+
+global X x;
+
+x.unimplemented_void();
+
+global i = x.unimplemented_int64();
+
+}

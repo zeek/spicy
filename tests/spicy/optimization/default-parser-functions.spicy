@@ -1,0 +1,24 @@
+# @TEST-EXEC: spicyc -p -o /dev/null %INPUT -D global-optimizer >log 2>&1
+# @TEST-EXEC: btest-diff log
+
+# @TEST-EXEC: spicyc -d -j -g %INPUT -D ast-codegen >ast.0 2>&1
+# @TEST-EXEC: spicyc -d -j    %INPUT -D ast-codegen >ast.1 2>&1
+# @TEST-EXEC: spicy-diff.py ast.0 ast.1 >output.diff
+# @TEST-EXEC: btest-diff output.diff
+
+# @TEST-DOC: Tests unit-level global optimizations.
+
+module foo;
+
+type P0 = unit {};
+
+public type P1 = unit {};
+
+public type P2 = unit {
+    %random-access;
+
+    x: uint8;
+    y: uint8 {}
+
+    on %error {}
+};
