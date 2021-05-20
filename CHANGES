@@ -1,3 +1,7 @@
+1.1.0-dev.104 | 2021-05-20 10:32:54 +0200
+
+  * GH-920: Track patching of Bison files through proper dependencies.
+    (Benjamin Bannier, Corelight)
 
 1.1.0-dev.102 | 2021-05-20 10:31:25 +0200
 
