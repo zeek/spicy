@@ -1,10 +1,9 @@
-
-1.2.0-dev.3 | 2021-05-20 09:22:52 +0200
+1.1.0-dev.99 | 2021-05-20 09:22:52 +0200
 
   * Fix missing operator<< for enums when generating debug code.
     (Robin Sommer, Corelight)
 
-1.1.0 | 2021-05-18 13:26:32 +0200
+1.1.0-dev.95 | 2021-05-18 13:26:32 +0200
 
   * Bump version. (Benjamin Bannier, Corelight)
 
