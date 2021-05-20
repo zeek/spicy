@@ -404,7 +404,8 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
             cxx::declaration::Function{.result = "std::ostream&",
                                        .id = cxx::ID{fmt("%s::operator<<", id.namespace_())},
                                        .args = {cxx::declaration::Argument{.id = "o", .type = "std::ostream&"},
-                                                cxx::declaration::Argument{.id = "x", .type = cxx::Type(id.local())}}};
+                                                cxx::declaration::Argument{.id = "x", .type = cxx::Type(id.local())}},
+                                       .linkage = "inline"};
 
         auto render_impl = cxx::Function{.declaration = render_decl, .body = std::move(render_body)};
 
