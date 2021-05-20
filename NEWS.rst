@@ -4,17 +4,6 @@ releases. For an exhaustive list of all changes, see the `CHANGES
 <https://github.com/zeek/spicy/blob/main/CHANGES>`_ file coming with
 the distribution.
 
-Version 1.2
-===========
-
-.. rubric:: New Functionality
-
-.. rubric:: Changed Functionality
-
-.. rubric:: Bug fixes
-
-.. rubric:: Documentation
-
 Version 1.1
 ===========
 
@@ -72,6 +61,8 @@ Version 1.1
 - Fix missing update to input position before running ``%done`` hook.
 - Add validation rejecting ``$$`` in hooks not supporting it.
 - Make sure container sizes are runtime integers.
+- Fix missing operator<< for enums when generating debug code.
+- GH-917: Default-initialize forwarding fields without type arguments.
 
 .. rubric:: Documentation
 
