@@ -1,3 +1,12 @@
+
+1.1.0 | 2021-05-20 11:42:20 +0200
+
+Release 1.1.0
+
+  * Bump spicy-plugin and spicy-analyzer submodules. (Benjamin Bannier, Corelight)
+
+  * Update NEWS. (Benjamin Bannier, Corelight)
+
 1.1.0-dev.104 | 2021-05-20 10:32:54 +0200
 
   * GH-920: Track patching of Bison files through proper dependencies.
