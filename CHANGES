@@ -1,3 +1,9 @@
+
+1.1.0-dev.102 | 2021-05-20 10:31:25 +0200
+
+  * GH-917: Default-initialize forwarding fields without type arguments.
+    (Benjamin Bannier, Corelight)
+
 1.1.0-dev.99 | 2021-05-20 09:22:52 +0200
 
   * Fix missing operator<< for enums when generating debug code.

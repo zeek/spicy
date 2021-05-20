@@ -426,7 +426,7 @@ struct ProductionVisitor
         else if ( field->isForwarding() ) {
             // No need for a new destination, but we need to initialize the one
             // we have.
-            builder()->addAssign(destination(), builder::default_(field->itemType(), field->arguments()));
+            builder()->addAssign(destination(), builder::default_(field->itemType()));
         }
 
         else if ( field->isTransient() ) {
