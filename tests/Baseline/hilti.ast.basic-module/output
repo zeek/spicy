@@ -42,8 +42,8 @@
 [debug/ast-final]           - declaration::Parameter %2 <is_struct_param="false" kind="in"> (basic-module.hlt:9:20)
 [debug/ast-final]             - ID <name="bar"> (basic-module.hlt:9:25)
 [debug/ast-final]             - type::Real (basic-module.hlt:9:20) (non-const)
-[debug/ast-final]             - node::None (basic-module.hlt:9:20)
-[debug/ast-final]         - node::None (basic-module.hlt:9:8)
+[debug/ast-final]             - node::None (basic-module.hlt:5:13-7:15)
+[debug/ast-final]         - node::None (basic-module.hlt:5:13-7:15)
 [debug/ast-final]         - node::None (basic-module.hlt:5:13-7:15)
 [debug/compiler]   updated cached AST for module Foo (final: yes, requires_compilation: yes, dependencies: (none))
 [debug/compiler] compiling module Foo to C++

@@ -479,7 +479,7 @@ private:
 };
 
 /** Singleton. */
-static const Node none = None::create();
+extern const Node none;
 
 } // namespace node
 
