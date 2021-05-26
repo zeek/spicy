@@ -32,10 +32,7 @@ clang9_zeek_ubuntu_debug_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
-  # We currently run the build with sanitizers against clang-10 since clang-11 triggers unfixed diagnostics.
-  #
-  # TODO(bbannier): Switch this job to llvm-11.
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-10 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10` --rpath /usr/lib/llvm-10/lib/clang/10.0.1/lib/linux/ --zeek-ld-preload /usr/lib/llvm-10/lib/clang/10.0.1/lib/linux/libclang_rt.asan-x86_64.so
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-12 --with-zeek /opt/zeek --clang-format `which clang-format-12` --clang-tidy `which clang-tidy-12` --rpath /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/ --zeek-ld-preload /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/libclang_rt.asan-x86_64.so
   build_script:       ./ci/run-ci -b build build
   test_build_script:  ./ci/run-ci -b build test-build
   test_code_script:   ./ci/run-ci -b build test-code
