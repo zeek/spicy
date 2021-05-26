@@ -250,7 +250,10 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                     pushBuilder(have_data, [&]() {
                         builder()->addAssign(target, state().cur);
                         pb->advanceInput(builder::size(state().cur));
-                        auto value = pb->applyConvertExpression(*meta.field(), target);
+
+                        const auto& field = meta.field();
+                        assert(field);
+                        auto value = pb->applyConvertExpression(*field, target);
 
                         if ( meta.field() && ! meta.container() )
                             pb->newValueForField(meta, value, target);
