@@ -276,7 +276,7 @@ inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v, uin
     if ( range == width )
         return v;
 
-    const auto mask = ((1U << range) - 1U) << lower;
+    const auto mask = ((uint64_t(1) << range) - uint64_t(1U)) << lower;
     return (v & mask) >> lower;
 }
 
