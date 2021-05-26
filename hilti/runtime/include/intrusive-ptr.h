@@ -42,7 +42,7 @@ inline void Ref(const T* m) {
 
 template<typename T>
 inline void Unref(const T* m) {
-    if ( m && --m->_references <= 0 )
+    if ( m && --m->_references == 0 )
         delete m;
 }
 
