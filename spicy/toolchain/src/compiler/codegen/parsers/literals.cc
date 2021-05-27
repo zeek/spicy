@@ -130,7 +130,10 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 pstate.self = hilti::expression::UnresolvedID(ID("self"));
                 pstate.cur = builder::id("ncur");
                 pb->pushState(std::move(pstate));
+
+                builder()->addComment("NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)");
                 builder()->addLocal(ID("more_data"), pb->waitForInputOrEod());
+
                 pb->popState();
                 builder()->addContinue();
                 popBuilder();
