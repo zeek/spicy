@@ -36,6 +36,7 @@ jobs:
         context: .
         file: ci/Dockerfile.dockerhub
         push: true
+        build_args: "SPICY_ZKG_PROCESSES=1"
         # TODO(bbannier): Automatically detect whether this is the latest
         # release and in that case also push this to `spicy:latest`.
         tags: |
