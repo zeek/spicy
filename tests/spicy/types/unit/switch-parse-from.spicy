@@ -1,0 +1,24 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\01\02\03' | spicy-dump -p Mini::X %INPUT.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\01\02\03' | spicy-dump -p Mini::Y %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+# @TEST-DOC: Tests handling of unit switch `&parse-at` and `&parse-from` attributes.
+
+module Mini;
+
+public type X = unit {
+    a: bytes &size=1;
+    switch ( self.a ) {
+        * -> b: bytes &eod;
+    } &parse-from=self.a;
+};
+
+public type Y = unit {
+    %random-access;
+
+    a: bytes &size=1;
+    switch ( self.a ) {
+        * -> b: bytes &eod;
+    } &parse-at=self.input();
+};

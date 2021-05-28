@@ -981,8 +981,39 @@ struct ProductionVisitor
     void operator()(const production::Switch& p) {
         builder()->addCall("hilti::debugIndent", {builder::string("spicy")});
 
+        if ( const auto& a = AttributeSet::find(p.attributes(), "&parse-from") ) {
+            // Redirect input to a bytes value.
+            auto pstate = state();
+            pstate.trim = builder::bool_(false);
+            pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
+            pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
+            auto expr = a->valueAs<Expression>();
+
+            auto tmp = builder()->addTmp("parse_from", type::ValueReference(type::Stream()), *expr);
+            pstate.data = tmp;
+            pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
+            pstate.ncur = {};
+            builder()->addMemberCall(tmp, "freeze", {});
+
+            pushState(std::move(pstate));
+        }
+
+        if ( auto a = AttributeSet::find(p.attributes(), "&parse-at") ) {
+            // Redirect input to a stream position.
+            auto pstate = state();
+            pstate.trim = builder::bool_(false);
+            pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
+            pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
+            auto expr = a->valueAs<Expression>();
+
+            auto cur = builder::memberCall(state().cur, "advance", {*expr});
+            pstate.cur = builder()->addTmp("parse_cur", cur);
+            pstate.ncur = {};
+            pushState(std::move(pstate));
+        }
+
         std::optional<Expression> ncur;
-        if ( auto a = AttributeSet::find(p.attributes(), "&size") ) {
+        if ( const auto& a = AttributeSet::find(p.attributes(), "&size") ) {
             // Limit input to the specified length.
             auto length = builder::coerceTo(*a->valueAs<Expression>(), type::UnsignedInteger(64));
             auto limited = builder()->addTmp("limited", builder::memberCall(state().cur, "limit", {length}));
@@ -1022,6 +1053,9 @@ struct ProductionVisitor
             popState();
             builder()->addAssign(state().cur, *ncur);
         }
+
+        if ( AttributeSet::find(p.attributes(), "&parse-from") || AttributeSet::find(p.attributes(), "&parse-at") )
+            popState();
 
         builder()->addCall("hilti::debugDedent", {builder::string("spicy")});
     }

@@ -651,7 +651,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
             for ( const auto& attr : attrs->attributes() ) {
                 const auto& tag = attr.tag();
 
-                if ( tag != "&size" )
+                if ( tag != "&size" && tag != "&parse-at" && tag != "&parse-from" )
                     error(fmt("attribute '%s' is not supported here", tag), p);
             }
         }
