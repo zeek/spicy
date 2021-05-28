@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+# @TEST-DOC: Tests that invalid switch attributes are rejected.
+
+module Mini;
+
+type X = unit {
+    switch ( 1 ) {
+        * -> : void;
+    } &eod &size=1 &until;
+};
