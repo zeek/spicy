@@ -1,3 +1,10 @@
+
+1.2.0-dev.9 | 2021-05-31 12:11:30 +0200
+
+  * GH-913: Add support for unit switch &parse-at and &parse-from attributes. (Benjamin Bannier, Corelight)
+
+  * Add validation of unit switch attributes.  (Benjamin Bannier, Corelight)
+
 1.2.0-dev.5 | 2021-05-31 12:10:44 +0200
 
   * Make only draft releases from automation. (Benjamin Bannier, Corelight)

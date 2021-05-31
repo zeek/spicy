@@ -11,6 +11,7 @@
 #include <hilti/ast/statements/switch.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
+#include <hilti/base/util.h>
 
 #include <spicy/ast/all.h>
 #include <spicy/ast/detail/visitor.h>
@@ -645,6 +646,15 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
 
         if ( defaults > 1 )
             error("more than one default case", p);
+
+        if ( const auto& attrs = s.attributes() ) {
+            for ( const auto& attr : attrs->attributes() ) {
+                const auto& tag = attr.tag();
+
+                if ( tag != "&size" && tag != "&parse-at" && tag != "&parse-from" )
+                    error(fmt("attribute '%s' is not supported here", tag), p);
+            }
+        }
     }
 
     void operator()(const spicy::type::unit::item::Variable& v, position_t p) {

@@ -9,7 +9,14 @@ Version 1.2
 
 .. rubric:: New Functionality
 
+- GH-913: Add support for unit switch &parse-at and &parse-from attributes.
+
 .. rubric:: Changed Functionality
+
+- Add validation of unit switch attributes.
+
+  We previously silently ignored unsupported attributes; now errors are
+  raised.
 
 .. rubric:: Bug fixes
 
