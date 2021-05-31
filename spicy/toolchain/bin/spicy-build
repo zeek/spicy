@@ -7,6 +7,7 @@ usage() {
 $(basename $0) [options] <input files>
 
     -d          Build a debug version.
+    -g          Disable HILTI-side optimizations of the generated code.
     -o <file>   Destination name for the compiled executable; default is "a.out".
     -t          Do not delete tmp files (useful for inspecting, and use with debugger)
     -v          Verbose output, display command lines executing.
@@ -54,11 +55,15 @@ delete_tmps=1
 compile_spicy_driver=1
 out=a.out
 
-while getopts "hdo:Stv" opt; do
+while getopts "ghdo:Stv" opt; do
     case "$opt" in
         d)
            hiltic_flags="${hiltic_flags} -d"
            spicy_config_flags="--debug"
+           ;;
+
+        g)
+           hiltic_flags="${hiltic_flags} -g"
            ;;
 
         o) out=$OPTARG;;
@@ -132,7 +137,7 @@ for i in ${inputs} ${rt_modules}; do
         *)
             # Generate C++ code for HILTI/Spicy source.
             cc=$(mkcc ${out})
-            execute $(${spicy_config} --spicyc) ${hiltic_flags} -c -o ${cc} ${i} || exit 1
+            execute $(${spicy_config} --spicyc) -g ${hiltic_flags} -c -o ${cc} ${i} || exit 1
             ;;
     esac
 
@@ -141,7 +146,7 @@ done
 
 # Generate C++ linker code
 cc=$(mkcc ${out})
-execute $(${spicy_config} --spicyc) ${hiltic_flags} -l -o ${cc} ${cxxs} || exit 1
+execute $(${spicy_config} --spicyc) ${hiltic_flags} -g -l -o ${cc} ${cxxs} || exit 1
 cxxs="${cxxs} ${cc}"
 
 # Compile all C++ code into executable

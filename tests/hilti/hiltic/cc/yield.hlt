@@ -1,7 +1,7 @@
 # @TEST-GROUP: no-jit
-# @TEST-EXEC: ${HILTIC} -P -o Foo.h %INPUT
-# @TEST-EXEC: ${HILTIC} -c -D compiler -o foo.cc %INPUT
-# @TEST-EXEC: ${HILTIC} -l -D compiler -o linker.cc foo.cc
+# @TEST-EXEC: ${HILTIC} -g -P -o Foo.h %INPUT
+# @TEST-EXEC: ${HILTIC} -g -c -D compiler -o foo.cc %INPUT
+# @TEST-EXEC: ${HILTIC} -g -l -D compiler -o linker.cc foo.cc
 # @TEST-EXEC: cxx-compile -c -o foo.o foo.cc
 # @TEST-EXEC: cxx-compile -c -o linker.o linker.cc
 # @TEST-EXEC: cxx-compile -c -o driver.o driver.cc

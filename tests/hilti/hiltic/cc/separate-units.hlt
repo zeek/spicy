@@ -2,13 +2,13 @@
 #
 # Test that links two modules *separately*.
 #
-# @TEST-EXEC: ${HILTIC} -c -o world1.cc world1.hlt
-# @TEST-EXEC: ${HILTIC} -l -o linker1.cc world1.cc
+# @TEST-EXEC: ${HILTIC} -g -c -o world1.cc world1.hlt
+# @TEST-EXEC: ${HILTIC} -g -l -o linker1.cc world1.cc
 # @TEST-EXEC: cxx-compile -c -o world1.o world1.cc
 # @TEST-EXEC: cxx-compile -c -o linker1.o linker1.cc
 #
-# @TEST-EXEC: ${HILTIC} -c -o world2.cc world2.hlt
-# @TEST-EXEC: ${HILTIC} -l -o linker2.cc world2.cc
+# @TEST-EXEC: ${HILTIC} -g -c -o world2.cc world2.hlt
+# @TEST-EXEC: ${HILTIC} -g -l -o linker2.cc world2.cc
 # @TEST-EXEC: cxx-compile -c -o world2.o world2.cc
 # @TEST-EXEC: cxx-compile -c -o linker2.o linker2.cc
 #

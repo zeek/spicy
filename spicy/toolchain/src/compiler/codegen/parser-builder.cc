@@ -905,8 +905,9 @@ struct ProductionVisitor
         auto qualified_id = pb->state().unit_id + id;
 
         auto ftype = pb->parseMethodFunctionType(std::move(addl_param), m);
-        auto func = builder::function(qualified_id, ftype, std::move(body), declaration::Linkage::Struct,
-                                      function::CallingConvention::Standard, {}, m);
+        auto func =
+            builder::function(qualified_id, ftype, std::move(body), declaration::Linkage::Struct,
+                              function::CallingConvention::Standard, AttributeSet({Attribute("&always-emit")}), m);
 
         if ( add_decl )
             new_fields.emplace_back(type::struct_::Field(id, func.function().type()));

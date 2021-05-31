@@ -5,7 +5,7 @@
 # @TEST-EXEC: btest-diff requests
 
 # @TEST-EXEC: cat %DIR/reply-chunked.dat | spicy-driver common.hlto -p HTTP::Replies >>reply-chunked
-# @TEST-EXEC: cat %DIR/reply-chunked.dat | spicy-dump common.hlto -p HTTP::Reply >>requests
+# @TEST-EXEC: cat %DIR/reply-chunked.dat | spicy-dump common.hlto -p HTTP::Reply >>reply-chunked
 # @TEST-EXEC: btest-diff reply-chunked
 
 # @TEST-EXEC: cat %DIR/reply-chunked-trailer.dat | spicy-driver common.hlto -p HTTP::Replies >reply-chunked-trailer

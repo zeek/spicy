@@ -32,7 +32,7 @@ repos:
   - id: check-yaml
   - id: check-added-large-files
 
-- repo: https://gitlab.com/daverona/pre-commit-cpp
+- repo: https://gitlab.com/daverona/pre-commit/cpp
   rev: 0.8.0
   hooks:
   - id: cpplint
@@ -40,7 +40,7 @@ repos:
     args: ["--quiet"]
 
 - repo: https://github.com/jorisroovers/gitlint
-  rev:  v0.15.0
+  rev:  v0.15.1
   hooks:
   - id: gitlint
 

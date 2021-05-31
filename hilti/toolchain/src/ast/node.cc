@@ -9,6 +9,8 @@
 
 using namespace hilti;
 
+const Node node::none = None::create();
+
 std::string Node::render(bool include_location) const {
     auto f = [&](const node::Properties::value_type& x) {
         return util::fmt("%s=%s", x.first, std::quoted(node::detail::to_string(x.second)));

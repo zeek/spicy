@@ -79,6 +79,7 @@ set(SOURCES
     src/compiler/cxx/linker.cc
     src/compiler/cxx/unit.cc
     src/compiler/driver.cc
+    src/compiler/global-optimizer.cc
     src/compiler/jit.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc

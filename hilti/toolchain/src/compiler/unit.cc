@@ -19,6 +19,7 @@ using util::fmt;
 namespace hilti::logging::debug {
 inline const DebugStream Compiler("compiler");
 inline const DebugStream AstFinal("ast-final");
+inline const DebugStream AstCodegen("ast-codegen");
 inline const DebugStream AstOrig("ast-orig");
 inline const DebugStream AstResolved("ast-resolved");
 inline const DebugStream AstScopes("ast-scopes");
@@ -314,6 +315,8 @@ Result<Nothing> Unit::compile() {
 
 Result<Nothing> Unit::codegen() {
     auto& module = imported(_id);
+
+    _dumpASTs(logging::debug::AstCodegen, "AST for codegen");
 
     HILTI_DEBUG(logging::debug::Compiler, fmt("compiling module %s to C++", _id));
     logging::DebugPushIndent _(logging::debug::Compiler);
