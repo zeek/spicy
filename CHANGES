@@ -1,3 +1,14 @@
+
+1.2.0-dev.3 | 2021-05-31 12:08:12 +0200
+
+  * Adjust processes used to build Docker image. (Benjamin Bannier, Corelight)
+
+  * Update NEWS with 1.2.0 placeholder sections. (Benjamin Bannier, Corelight)
+
+  * Bump spicy-plugin and spicy-analyzer submodules. (Benjamin Bannier, Corelight)
+
+  * Update NEWS. (Benjamin Bannier, Corelight)
+
 1.1.0-dev.104 | 2021-05-20 10:32:54 +0200
 
   * GH-920: Track patching of Bison files through proper dependencies.
