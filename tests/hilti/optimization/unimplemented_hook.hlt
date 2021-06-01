@@ -10,6 +10,12 @@
 
 module Foo {
 
+declare public hook void global_unimplemented_void();
+declare public hook void global_implemented();
+declare public hook optional<int<64>> global_unimplemented_int64();
+
+function hook void global_implemented() {}
+
 type X = struct {
     hook void implemented();
     hook void unimplemented();                    # Uncalled, unimplemented hook.
@@ -19,10 +25,15 @@ type X = struct {
 
 method hook void X::implemented() {}
 
+global_implemented();
+
+global_unimplemented_void();
+global i = global_unimplemented_int64();
+
 global X x;
 
+x.implemented();
 x.unimplemented_void();
-
-global i = x.unimplemented_int64();
+global j = x.unimplemented_int64();
 
 }
