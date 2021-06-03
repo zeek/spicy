@@ -7,6 +7,7 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/module.h>
 #include <hilti/ast/scope-lookup.h>
+#include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
@@ -286,8 +287,29 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                                        .forward_decl = true}};
 
             for ( const auto& p : ft.parameters() ) {
-                if ( auto t = cg->typeDeclaration(p.type()) )
-                    aux_types.push_back(std::move(*t));
+                auto type = p.type();
+
+                while ( type::isReferenceType(type) )
+                    type = type.dereferencedType();
+
+                if ( ! type.isA<type::Struct>() )
+                    continue;
+
+                auto tid = type.typeID();
+
+                auto id_module = tid->sub(-2);
+                auto id_class = tid->sub(-1);
+
+                if ( id_class.empty() )
+                    continue;
+
+                if ( id_module.empty() )
+                    id_module = cg->hiltiUnit()->id();
+
+                aux_types.push_back(
+                    cxx::declaration::Type{.id = cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                           .type = fmt("struct %s", id_class),
+                                           .forward_decl = true});
             }
 
             for ( const auto& t : aux_types )
@@ -321,8 +343,29 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             std::list<cxx::declaration::Type> aux_types;
 
             for ( const auto& p : ft.parameters() ) {
-                if ( auto t = cg->typeDeclaration(p.type()) )
-                    aux_types.push_back(std::move(*t));
+                auto type = p.type();
+
+                while ( type::isReferenceType(type) )
+                    type = type.dereferencedType();
+
+                if ( ! type.isA<type::Struct>() )
+                    continue;
+
+                auto tid = type.typeID();
+
+                auto id_module = tid->sub(-2);
+                auto id_class = tid->sub(-1);
+
+                if ( id_class.empty() )
+                    continue;
+
+                if ( id_module.empty() )
+                    id_module = cg->hiltiUnit()->id();
+
+                aux_types.push_back(
+                    cxx::declaration::Type{.id = cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                           .type = fmt("struct %s", id_class),
+                                           .forward_decl = true});
             }
 
             for ( const auto& t : aux_types )
