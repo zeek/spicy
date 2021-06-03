@@ -92,19 +92,6 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
-
-        for ( auto&& [function_id, uses] : *_functions ) {
-            // Linker joins are implemented via functions, so if we remove all
-            // functions data dependencies (e.g., needed for subunits) might
-            // get broken. Leave at least one function in unit so it gets emitted.
-            //
-            // TODO(bbannier): Explicitly express data dependencies in joins,
-            // see https://github.com/zeek/spicy/issues/918.
-            if ( std::get<2>(function_id) == std::string("__str__") ) {
-                uses.defined = true;
-                continue;
-            }
-        }
     }
 
     void prune(Node& node) {

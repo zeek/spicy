@@ -22,6 +22,7 @@
 [debug/global-optimizer] removing field for unused hook foo::P0::__on_0x25_error
 [debug/global-optimizer] removing field for unused hook foo::P0::__on_0x25_finally
 [debug/global-optimizer] removing field for unused hook foo::P0::__on_0x25_init
+[debug/global-optimizer] removing field for unused hook foo::P0::__str__
 [debug/global-optimizer] removing field for unused hook foo::P1::__on_0x25_done
 [debug/global-optimizer] removing field for unused hook foo::P1::__on_0x25_error
 [debug/global-optimizer] removing field for unused hook foo::P1::__on_0x25_finally
@@ -30,6 +31,7 @@
 [debug/global-optimizer] removing field for unused hook foo::P1::__on_0x25_overlap
 [debug/global-optimizer] removing field for unused hook foo::P1::__on_0x25_skipped
 [debug/global-optimizer] removing field for unused hook foo::P1::__on_0x25_undelivered
+[debug/global-optimizer] removing field for unused hook foo::P1::__str__
 [debug/global-optimizer] removing field for unused hook foo::P2::__on_0x25_done
 [debug/global-optimizer] removing field for unused hook foo::P2::__on_0x25_finally
 [debug/global-optimizer] removing field for unused hook foo::P2::__on_0x25_gap
@@ -38,6 +40,7 @@
 [debug/global-optimizer] removing field for unused hook foo::P2::__on_0x25_skipped
 [debug/global-optimizer] removing field for unused hook foo::P2::__on_0x25_undelivered
 [debug/global-optimizer] removing field for unused hook foo::P2::__on_x
+[debug/global-optimizer] removing field for unused hook foo::P2::__str__
 [debug/global-optimizer] replacing call to unimplemented function foo::P0::__on_0x25_done with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::P0::__on_0x25_error with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::P0::__on_0x25_finally with default value
