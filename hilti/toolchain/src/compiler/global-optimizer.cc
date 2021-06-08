@@ -59,9 +59,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
-    }
 
-    void prune(Node& node) {
         for ( auto&& [hook_id, uses] : *_hooks ) {
             // Linker joins are implemented via functions, so if we remove all
             // functions data dependencies (e.g., needed for subunits) might
@@ -74,7 +72,9 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 continue;
             }
         }
+    }
 
+    void prune(Node& node) {
         _stage = Stage::PRUNE_IMPLS;
 
         while ( true ) {
