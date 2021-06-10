@@ -42,7 +42,7 @@ std::optional<std::pair<ModuleID, StructID>> typeID(T&& x) {
 std::pair<ID, ID> declID(const ID& id) { return {id.sub(-2), id.sub(-1)}; }
 
 struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
-    Visitor(GlobalOptimizer::Hooks* hooks) : _hooks(hooks) {}
+    Visitor(GlobalOptimizer::Functions* hooks) : _functions(hooks) {}
 
     template<typename T>
     static void replaceNode(position_t& p, T&& n) {
@@ -52,7 +52,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
     static void removeNode(position_t& p) { replaceNode(p, node::none); }
 
     Stage _stage = Stage::COLLECT;
-    GlobalOptimizer::Hooks* _hooks = nullptr;
+    GlobalOptimizer::Functions* _functions = nullptr;
 
     void collect(Node& node) {
         _stage = Stage::COLLECT;
@@ -60,14 +60,14 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         for ( auto i : this->walk(&node) )
             dispatch(i);
 
-        for ( auto&& [hook_id, uses] : *_hooks ) {
+        for ( auto&& [function_id, uses] : *_functions ) {
             // Linker joins are implemented via functions, so if we remove all
             // functions data dependencies (e.g., needed for subunits) might
             // get broken. Leave at least one function in unit so it gets emitted.
             //
             // TODO(bbannier): Explicitly express data dependencies in joins,
             // see https://github.com/zeek/spicy/issues/918.
-            if ( std::get<2>(hook_id) == std::string("__str__") ) {
+            if ( std::get<2>(function_id) == std::string("__str__") ) {
                 uses.defined = true;
                 continue;
             }
@@ -118,11 +118,11 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         auto type_ = p.findParent<declaration::Type>();
         bool is_cxx = type_ && AttributeSet::find(type_->get().attributes(), "&cxxname");
 
-        auto hook_id = std::make_tuple(module_id, struct_id, field_id);
+        auto function_id = std::make_tuple(module_id, struct_id, field_id);
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& hook = (*_hooks)[hook_id];
+                auto& function = (*_functions)[function_id];
 
                 auto fn = x.childsOfType<Function>();
                 assert(fn.size() <= 1);
@@ -130,20 +130,20 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 bool is_always_emit = ! fn.empty() && AttributeSet::find(fn.front().attributes(), "&always-emit");
 
                 // Record a declaration for this member.
-                hook.declared = true;
+                function.declared = true;
 
                 // If the member declaration is marked `&always-emit` mark it as implemented.
                 if ( is_always_emit )
-                    hook.defined = true;
+                    function.defined = true;
 
                 // If the member declaration includes a body mark it as implemented.
                 if ( ! fn.empty() && fn.front().body() )
-                    hook.defined = true;
+                    function.defined = true;
 
                 // If the unit is wrapped in a type with a `&cxxname`
                 // attribute its members are defined in C++ as well.
                 if ( is_cxx )
-                    hook.defined = true;
+                    function.defined = true;
 
                 break;
             }
@@ -153,10 +153,10 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 break;
 
             case Stage::PRUNE_DECLS: {
-                const auto& hook = _hooks->at(hook_id);
+                const auto& function = _functions->at(function_id);
 
                 // Remove hooks without implementation.
-                if ( ! hook.defined ) {
+                if ( function.hook && ! function.defined ) {
                     HILTI_DEBUG(logging::debug::GlobalOptimizer,
                                 util::fmt("removing field for unused hook %s::%s::%s", module_id, struct_id, field_id));
                     removeNode(p);
@@ -182,24 +182,27 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         auto struct_id = x.id().sub(-2);
         auto field_id = x.id().sub(-1);
 
-        auto hook_id = std::make_tuple(module_id, struct_id, field_id);
+        auto function_id = std::make_tuple(module_id, struct_id, field_id);
 
         switch ( _stage ) {
             case Stage::COLLECT: {
                 // Record this hook as declared if it is not already known.
-                auto& hook = (*_hooks)[hook_id];
-                hook.declared = true;
+                auto& function = (*_functions)[function_id];
+                function.declared = true;
 
-                for ( auto&& fn : x.childsOfType<Function>() ) {
-                    // If the declaration contains a function with a body mark the function as defined.
-                    if ( fn.body() )
-                        hook.defined = true;
+                const auto& fn = x.function();
 
-                    // If the declaration has a `&cxxname` it is defined in C++.
-                    else if ( AttributeSet::find(fn.attributes(), "&cxxname") ) {
-                        hook.defined = true;
-                    }
+                // If the declaration contains a function with a body mark the function as defined.
+                if ( fn.body() )
+                    function.defined = true;
+
+                // If the declaration has a `&cxxname` it is defined in C++.
+                else if ( AttributeSet::find(fn.attributes(), "&cxxname") ) {
+                    function.defined = true;
                 }
+
+                if ( fn.type().flavor() == type::function::Flavor::Hook )
+                    function.hook = true;
 
                 break;
             }
@@ -209,7 +212,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 break;
 
             case Stage::PRUNE_DECLS:
-                const auto& hook = _hooks->at(hook_id);
+                const auto& function = _functions->at(function_id);
 
                 auto module = p.findParent<Module>();
 
@@ -225,7 +228,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
                 assert(module);
 
-                if ( ! hook.defined ) {
+                if ( ! function.defined && ! function.referenced ) {
                     if ( ! struct_id.empty() ) {
                         HILTI_DEBUG(logging::debug::GlobalOptimizer,
                                     util::fmt("removing declaration for unused hook function %s::%s::%s", module_id,
@@ -263,21 +266,21 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         if ( ! member )
             return false;
 
-        auto hook_id = std::make_tuple(module_id, struct_id, member->id());
+        auto function_id = std::make_tuple(module_id, struct_id, member->id());
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& hook = (*_hooks)[hook_id];
+                auto& function = (*_functions)[function_id];
 
-                hook.referenced = true;
+                function.referenced = true;
                 return false;
             }
 
             case Stage::PRUNE_IMPLS: {
-                const auto& hook = _hooks->at(hook_id);
+                const auto& function = _functions->at(function_id);
 
                 // Replace call node referencing unimplemented hook with default value.
-                if ( ! hook.defined ) {
+                if ( function.hook && ! function.defined ) {
                     if ( auto fn = member->memberType()->tryAs<type::Function>() ) {
                         HILTI_DEBUG(logging::debug::GlobalOptimizer,
                                     util::fmt("replacing call to unimplemented function %s::%s::%s with default value",
@@ -314,21 +317,21 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 module_id = module->get().id();
         }
 
-        auto hook_id = std::make_tuple(module_id, "", fn_id);
+        auto function_id = std::make_tuple(module_id, "", fn_id);
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& hook = (*_hooks)[hook_id];
+                auto& function = (*_functions)[function_id];
 
-                hook.referenced = true;
+                function.referenced = true;
                 return false;
             }
 
             case Stage::PRUNE_IMPLS: {
-                const auto& hook = _hooks->at(hook_id);
+                const auto& function = _functions->at(function_id);
 
                 // Replace call node referencing unimplemented hook with default value.
-                if ( ! hook.defined ) {
+                if ( function.hook && ! function.defined ) {
                     if ( auto fn = id.declaration().tryAs<declaration::Function>() ) {
                         HILTI_DEBUG(logging::debug::GlobalOptimizer,
                                     util::fmt("replacing call to unimplemented function %s::%s with default value",
