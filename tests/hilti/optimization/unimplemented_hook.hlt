@@ -17,10 +17,10 @@ declare public hook optional<int<64>> global_unimplemented_int64();
 function hook void global_implemented() {}
 
 type X = struct {
-    hook void implemented();
+    hook void implemented();                      # Called, implemented hook.
     hook void unimplemented();                    # Uncalled, unimplemented hook.
-    hook void unimplemented_void();               # Called, implemented hook.
-    hook optional<int<64>> unimplemented_int64(); # Called, implemented hook.
+    hook void unimplemented_void();               # Called, unimplemented hook.
+    hook optional<int<64>> unimplemented_int64(); # Called, unimplemented hook.
 };
 
 method hook void X::implemented() {}

@@ -2,6 +2,7 @@
 
 #include "hilti/compiler/global-optimizer.h"
 
+#include <algorithm>
 #include <optional>
 #include <tuple>
 #include <unordered_set>
@@ -9,9 +10,11 @@
 
 #include <hilti/ast/ctors/default.h>
 #include <hilti/ast/declarations/function.h>
+#include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
@@ -39,14 +42,44 @@ std::optional<std::pair<ModuleID, StructID>> typeID(T&& x) {
     return {{id->sub(-2), id->sub(-1)}};
 }
 
-std::pair<ID, ID> declID(const ID& id) { return {id.sub(-2), id.sub(-1)}; }
-
 struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
     Visitor(GlobalOptimizer::Functions* hooks) : _functions(hooks) {}
 
     template<typename T>
     static void replaceNode(position_t& p, T&& n) {
         p.node = std::forward<T>(n);
+    }
+
+    static auto function_identifier(const declaration::Function& fn, position_t p) {
+        // A current module should always be exist, but might
+        // not necessarily be the declaration's module.
+        const auto& current_module = p.findParent<Module>();
+        assert(current_module);
+
+        const auto& id = fn.id();
+        const auto local = id.local();
+
+        auto ns = id.namespace_();
+
+        // If the namespace is empty, we are dealing with a global function in the current module.
+        if ( ns.empty() )
+            return std::make_tuple(current_module->get().id(), ID(), local);
+
+        auto ns_ns = ns.namespace_();
+        auto ns_local = ns.local();
+
+        // If the namespace is a single component (i.e., has no namespace itself) we are either dealing
+        // with a global function in another module, or a function for a struct in the current module.
+        if ( ns_ns.empty() ) {
+            if ( auto is_module = scope::lookupID<declaration::ImportedModule>(ns_local, p, "module").hasValue() )
+                return std::make_tuple(ns_local, ID(), local);
+
+            else
+                return std::make_tuple(current_module->get().id(), ns_local, local);
+        }
+
+        // If the namespace has multiple components, we are dealing with a method definition in another module.
+        return std::make_tuple(ns_ns, ns_local, local);
     }
 
     static void removeNode(position_t& p) { replaceNode(p, node::none); }
@@ -145,6 +178,8 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 if ( is_cxx )
                     function.defined = true;
 
+                function.hook = true;
+
                 break;
             }
 
@@ -172,17 +207,8 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
     }
 
     result_t operator()(const declaration::Function& x, position_t p) {
-        auto module_id = x.id().sub(-3);
-        if ( module_id.empty() ) {
-            // HILTI hook functions do not include the name their module in their ID.
-            if ( auto module = p.findParent<Module>() )
-                module_id = module->get().id();
-        }
-
-        auto struct_id = x.id().sub(-2);
-        auto field_id = x.id().sub(-1);
-
-        auto function_id = std::make_tuple(module_id, struct_id, field_id);
+        const auto function_id = function_identifier(x, p);
+        const auto& [module_id, struct_id, field_id] = function_id;
 
         switch ( _stage ) {
             case Stage::COLLECT: {
@@ -214,21 +240,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
             case Stage::PRUNE_DECLS:
                 const auto& function = _functions->at(function_id);
 
-                auto module = p.findParent<Module>();
-
-                if ( ! module ) {
-                    const auto& root = p.parent(p.pathLength() - 1);
-                    for ( auto&& child : root.childs() ) {
-                        if ( auto module_ = child.tryAs<Module>() ) {
-                            module = module_;
-                            break;
-                        }
-                    }
-                }
-
-                assert(module);
-
-                if ( ! function.defined && ! function.referenced ) {
+                if ( function.hook && ! function.defined ) {
                     if ( ! struct_id.empty() ) {
                         HILTI_DEBUG(logging::debug::GlobalOptimizer,
                                     util::fmt("removing declaration for unused hook function %s::%s::%s", module_id,
@@ -273,6 +285,8 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 auto& function = (*_functions)[function_id];
 
                 function.referenced = true;
+                function.hook = true;
+
                 return false;
             }
 
@@ -309,7 +323,8 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
         auto id = call.op0().as<expression::ResolvedID>();
 
-        auto [module_id, fn_id] = declID(id.id());
+        auto module_id = id.id().sub(-2);
+        auto fn_id = id.id().sub(-1);
 
         if ( module_id.empty() ) {
             // Functions declared in this module do not include a module name in their ID.
