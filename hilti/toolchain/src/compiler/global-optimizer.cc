@@ -31,7 +31,7 @@ namespace logging::debug {
 inline const DebugStream GlobalOptimizer("global-optimizer");
 } // namespace logging::debug
 
-enum class Stage { COLLECT, PRUNE_IMPLS, PRUNE_DECLS };
+enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
 
 template<typename T>
 std::optional<std::pair<ModuleID, StructID>> typeID(T&& x) {
@@ -108,7 +108,11 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
     }
 
     void prune(Node& node) {
-        _stage = Stage::PRUNE_IMPLS;
+        switch ( _stage ) {
+            case Stage::PRUNE_DECLS:
+            case Stage::PRUNE_USES: break;
+            case Stage::COLLECT: util::cannot_be_reached();
+        }
 
         while ( true ) {
             bool modified = false;
@@ -117,23 +121,19 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                     modified = modified || *x;
             }
 
-            if ( ! modified ) {
-                switch ( _stage ) {
-                    case Stage::PRUNE_IMPLS: {
-                        // Done pruning impls, continue to prune decls.
-                        _stage = Stage::PRUNE_DECLS;
-                        break;
-                    }
-
-                    case Stage::PRUNE_DECLS: {
-                        // No modifications at this point, stop pruning.
-                        return;
-                    }
-
-                    case Stage::COLLECT: util::cannot_be_reached();
-                }
-            }
+            if ( ! modified )
+                return;
         }
+    }
+
+    void prune_uses(Node& node) {
+        _stage = Stage::PRUNE_USES;
+        prune(node);
+    }
+
+    void prune_decls(Node& node) {
+        _stage = Stage::PRUNE_DECLS;
+        prune(node);
     }
 
     result_t operator()(const type::struct_::Field& x, position_t p) {
@@ -183,7 +183,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 break;
             }
 
-            case Stage::PRUNE_IMPLS:
+            case Stage::PRUNE_USES:
                 // Nothing.
                 break;
 
@@ -233,7 +233,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 break;
             }
 
-            case Stage::PRUNE_IMPLS:
+            case Stage::PRUNE_USES:
                 // Nothing.
                 break;
 
@@ -290,7 +290,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 return false;
             }
 
-            case Stage::PRUNE_IMPLS: {
+            case Stage::PRUNE_USES: {
                 const auto& function = _functions->at(function_id);
 
                 // Replace call node referencing unimplemented hook with default value.
@@ -342,7 +342,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 return false;
             }
 
-            case Stage::PRUNE_IMPLS: {
+            case Stage::PRUNE_USES: {
                 const auto& function = _functions->at(function_id);
 
                 // Replace call node referencing unimplemented hook with default value.
@@ -395,7 +395,10 @@ void GlobalOptimizer::run() {
         Visitor(&_hooks).collect(*unit);
 
     for ( auto& unit : units )
-        Visitor(&_hooks).prune(*unit);
+        Visitor(&_hooks).prune_uses(*unit);
+
+    for ( auto& unit : units )
+        Visitor(&_hooks).prune_decls(*unit);
 }
 
 } // namespace hilti
