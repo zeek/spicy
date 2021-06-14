@@ -222,7 +222,7 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
                 return std::get<Type>(c.operands()[1].type).template as<type::Member>() == member;
             });
 
-            resolved = _resolve(candidates, u.operands(), u.meta());
+            resolved = _resolve(filtered, u.operands(), u.meta());
         }
 
         else
