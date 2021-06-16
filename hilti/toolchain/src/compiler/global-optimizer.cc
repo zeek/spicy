@@ -399,6 +399,13 @@ void GlobalOptimizer::run() {
 
     for ( auto& unit : units )
         Visitor(&_hooks).prune_decls(*unit);
+
+    // After pruning the scopes might contain e.g., references
+    // to now optimized away code so we clear all scopes.
+    for ( auto& unit : units ) {
+        for ( auto i : hilti::visitor::PreOrder<>().walk(&*unit) )
+            i.node.clearScope();
+    }
 }
 
 } // namespace hilti
