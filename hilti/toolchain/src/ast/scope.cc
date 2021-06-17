@@ -91,8 +91,10 @@ void Scope::render(std::ostream& out, const std::string& prefix) const {
         for ( const auto& x : v ) {
             auto s = util::fmt("%s%s -> %s", prefix, k, x ? x->render(false) : "<invalid ref>");
 
-            if ( auto d = x->tryAs<declaration::Expression>() )
-                s += util::fmt(" (type: %s)", d->expression().type());
+            if ( x ) {
+                if ( auto d = x->tryAs<declaration::Expression>() )
+                    s += util::fmt(" (type: %s)", d->expression().type());
+            }
 
             out << s << '\n';
         }

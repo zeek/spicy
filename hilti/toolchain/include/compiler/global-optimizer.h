@@ -21,12 +21,13 @@ public:
     using FieldID = ID;
 
     struct Uses {
+        bool hook = false;
         bool declared = false;
         bool defined = false;
         bool referenced = false;
     };
 
-    using Hooks = std::map<std::tuple<ModuleID, StructID, FieldID>, Uses>;
+    using Functions = std::map<std::tuple<ModuleID, StructID, FieldID>, Uses>;
 
     GlobalOptimizer(std::vector<Unit>* units, const std::shared_ptr<Context> ctx)
         : _units(units), _ctx(std::move(ctx)) {}
@@ -38,7 +39,7 @@ private:
     std::vector<Unit>* _units = nullptr;
     std::shared_ptr<Context> _ctx;
     // Storage for field declaration and their uses.
-    Hooks _hooks;
+    Functions _hooks;
 };
 
 } // namespace hilti

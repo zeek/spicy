@@ -2,15 +2,20 @@
 
 #include "hilti/compiler/global-optimizer.h"
 
+#include <algorithm>
 #include <optional>
+#include <tuple>
 #include <unordered_set>
 #include <utility>
 
 #include <hilti/ast/ctors/default.h>
 #include <hilti/ast/declarations/function.h>
+#include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/scope-lookup.h>
+#include <hilti/ast/statements/block.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
@@ -26,7 +31,7 @@ namespace logging::debug {
 inline const DebugStream GlobalOptimizer("global-optimizer");
 } // namespace logging::debug
 
-enum class Stage { COLLECT, PRUNE };
+enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
 
 template<typename T>
 std::optional<std::pair<ModuleID, StructID>> typeID(T&& x) {
@@ -38,33 +43,75 @@ std::optional<std::pair<ModuleID, StructID>> typeID(T&& x) {
 }
 
 struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
-    Visitor(GlobalOptimizer::Hooks* hooks) : _hooks(hooks) {}
+    Visitor(GlobalOptimizer::Functions* hooks) : _functions(hooks) {}
 
-    static void removeNode(position_t& p) { p.node = node::none; }
+    template<typename T>
+    static void replaceNode(position_t& p, T&& n) {
+        p.node = std::forward<T>(n);
+    }
+
+    static auto function_identifier(const declaration::Function& fn, position_t p) {
+        // A current module should always be exist, but might
+        // not necessarily be the declaration's module.
+        const auto& current_module = p.findParent<Module>();
+        assert(current_module);
+
+        const auto& id = fn.id();
+        const auto local = id.local();
+
+        auto ns = id.namespace_();
+
+        // If the namespace is empty, we are dealing with a global function in the current module.
+        if ( ns.empty() )
+            return std::make_tuple(current_module->get().id(), ID(), local);
+
+        auto ns_ns = ns.namespace_();
+        auto ns_local = ns.local();
+
+        // If the namespace is a single component (i.e., has no namespace itself) we are either dealing
+        // with a global function in another module, or a function for a struct in the current module.
+        if ( ns_ns.empty() ) {
+            if ( auto is_module = scope::lookupID<declaration::ImportedModule>(ns_local, p, "module").hasValue() )
+                return std::make_tuple(ns_local, ID(), local);
+
+            else
+                return std::make_tuple(current_module->get().id(), ns_local, local);
+        }
+
+        // If the namespace has multiple components, we are dealing with a method definition in another module.
+        return std::make_tuple(ns_ns, ns_local, local);
+    }
+
+    static void removeNode(position_t& p) { replaceNode(p, node::none); }
 
     Stage _stage = Stage::COLLECT;
+    GlobalOptimizer::Functions* _functions = nullptr;
 
     void collect(Node& node) {
         _stage = Stage::COLLECT;
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
-    }
 
-    void prune(Node& node) {
-        _stage = Stage::PRUNE;
-
-        for ( auto&& [hook_id, uses] : *_hooks ) {
+        for ( auto&& [function_id, uses] : *_functions ) {
             // Linker joins are implemented via functions, so if we remove all
             // functions data dependencies (e.g., needed for subunits) might
             // get broken. Leave at least one function in unit so it gets emitted.
             //
             // TODO(bbannier): Explicitly express data dependencies in joins,
             // see https://github.com/zeek/spicy/issues/918.
-            if ( std::get<2>(hook_id) == std::string("__str__") ) {
+            if ( std::get<2>(function_id) == std::string("__str__") ) {
                 uses.defined = true;
                 continue;
             }
+        }
+    }
+
+    void prune(Node& node) {
+        switch ( _stage ) {
+            case Stage::PRUNE_DECLS:
+            case Stage::PRUNE_USES: break;
+            case Stage::COLLECT: util::cannot_be_reached();
         }
 
         while ( true ) {
@@ -75,11 +122,19 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
             }
 
             if ( ! modified )
-                break;
+                return;
         }
     }
 
-    // TODO(bbannier): Also collect global hooks (outside of a struct) as well.
+    void prune_uses(Node& node) {
+        _stage = Stage::PRUNE_USES;
+        prune(node);
+    }
+
+    void prune_decls(Node& node) {
+        _stage = Stage::PRUNE_DECLS;
+        prune(node);
+    }
 
     result_t operator()(const type::struct_::Field& x, position_t p) {
         if ( auto type_ = x.type().tryAs<type::Function>(); ! type_ )
@@ -96,37 +151,47 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         auto type_ = p.findParent<declaration::Type>();
         bool is_cxx = type_ && AttributeSet::find(type_->get().attributes(), "&cxxname");
 
-        auto ids = std::make_tuple(module_id, struct_id, field_id);
+        auto function_id = std::make_tuple(module_id, struct_id, field_id);
 
         switch ( _stage ) {
             case Stage::COLLECT: {
+                auto& function = (*_functions)[function_id];
+
                 auto fn = x.childsOfType<Function>();
                 assert(fn.size() <= 1);
 
                 bool is_always_emit = ! fn.empty() && AttributeSet::find(fn.front().attributes(), "&always-emit");
 
                 // Record a declaration for this member.
-                (*_hooks)[ids].declared = true;
+                function.declared = true;
 
                 // If the member declaration is marked `&always-emit` mark it as implemented.
                 if ( is_always_emit )
-                    (*_hooks)[ids].defined = true;
+                    function.defined = true;
 
                 // If the member declaration includes a body mark it as implemented.
                 if ( ! fn.empty() && fn.front().body() )
-                    (*_hooks)[ids].defined = true;
+                    function.defined = true;
 
                 // If the unit is wrapped in a type with a `&cxxname`
                 // attribute its members are defined in C++ as well.
                 if ( is_cxx )
-                    (*_hooks)[ids].defined = true;
+                    function.defined = true;
+
+                function.hook = true;
 
                 break;
             }
 
-            case Stage::PRUNE: {
+            case Stage::PRUNE_USES:
+                // Nothing.
+                break;
+
+            case Stage::PRUNE_DECLS: {
+                const auto& function = _functions->at(function_id);
+
                 // Remove hooks without implementation.
-                if ( auto hook = _hooks->at(ids); ! hook.defined ) {
+                if ( function.hook && ! function.defined ) {
                     HILTI_DEBUG(logging::debug::GlobalOptimizer,
                                 util::fmt("removing field for unused hook %s::%s::%s", module_id, struct_id, field_id));
                     removeNode(p);
@@ -142,30 +207,55 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
     }
 
     result_t operator()(const declaration::Function& x, position_t p) {
+        const auto function_id = function_identifier(x, p);
+        const auto& [module_id, struct_id, field_id] = function_id;
+
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto module_id = x.id().sub(-3);
-                if ( module_id.empty() ) {
-                    // HILTI hook functions do not include the name their module in their ID.
-                    if ( auto module = p.findParent<Module>() )
-                        module_id = module->get().id();
+                // Record this hook as declared if it is not already known.
+                auto& function = (*_functions)[function_id];
+                function.declared = true;
+
+                const auto& fn = x.function();
+
+                // If the declaration contains a function with a body mark the function as defined.
+                if ( fn.body() )
+                    function.defined = true;
+
+                // If the declaration has a `&cxxname` it is defined in C++.
+                else if ( AttributeSet::find(fn.attributes(), "&cxxname") ) {
+                    function.defined = true;
                 }
 
-                auto struct_id = x.id().sub(-2);
-                auto field_id = x.id().sub(-1);
+                if ( fn.type().flavor() == type::function::Flavor::Hook )
+                    function.hook = true;
 
-                if ( module_id.empty() || struct_id.empty() ||
-                     field_id.empty() ) // Declaration does not look like for a member.
-                    return false;
-
-                // Record this hook if it is not already known.
-                auto hook_id = std::make_tuple(std::move(module_id), std::move(struct_id), std::move(field_id));
-                (*_hooks)[hook_id].defined = true;
                 break;
             }
 
-            case Stage::PRUNE:
+            case Stage::PRUNE_USES:
                 // Nothing.
+                break;
+
+            case Stage::PRUNE_DECLS:
+                const auto& function = _functions->at(function_id);
+
+                if ( function.hook && ! function.defined ) {
+                    if ( ! struct_id.empty() ) {
+                        HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                                    util::fmt("removing declaration for unused hook function %s::%s::%s", module_id,
+                                              struct_id, field_id));
+                    }
+                    else {
+                        HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                                    util::fmt("removing declaration for unused hook function %s::%s", module_id,
+                                              field_id));
+                    }
+
+                    removeNode(p);
+                    return true;
+                }
+
                 break;
         }
 
@@ -188,20 +278,26 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         if ( ! member )
             return false;
 
-        auto hook_id = std::make_tuple(module_id, struct_id, member->id());
+        auto function_id = std::make_tuple(module_id, struct_id, member->id());
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                (*_hooks)[hook_id].referenced = true;
+                auto& function = (*_functions)[function_id];
+
+                function.referenced = true;
+                function.hook = true;
+
                 return false;
             }
 
-            case Stage::PRUNE: {
+            case Stage::PRUNE_USES: {
+                const auto& function = _functions->at(function_id);
+
                 // Replace call node referencing unimplemented hook with default value.
-                if ( auto hook = _hooks->at(hook_id); ! hook.defined ) {
+                if ( function.hook && ! function.defined ) {
                     if ( auto fn = member->memberType()->tryAs<type::Function>() ) {
                         HILTI_DEBUG(logging::debug::GlobalOptimizer,
-                                    util::fmt("replacing call to unimplemented hook %s::%s::%s with default value",
+                                    util::fmt("replacing call to unimplemented function %s::%s::%s with default value",
                                               module_id, struct_id, member->id()));
 
                         p.node = Expression(expression::Ctor(ctor::Default(fn->result().type())));
@@ -212,12 +308,66 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
                 break;
             }
+
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
         }
 
         return false;
     }
 
-    GlobalOptimizer::Hooks* _hooks = nullptr;
+    result_t operator()(const operator_::function::Call& call, position_t p) {
+        if ( ! call.hasOp0() )
+            return false;
+
+        auto id = call.op0().as<expression::ResolvedID>();
+
+        auto module_id = id.id().sub(-2);
+        auto fn_id = id.id().sub(-1);
+
+        if ( module_id.empty() ) {
+            // Functions declared in this module do not include a module name in their ID.
+            if ( auto module = p.findParent<Module>() )
+                module_id = module->get().id();
+        }
+
+        auto function_id = std::make_tuple(module_id, "", fn_id);
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto& function = (*_functions)[function_id];
+
+                function.referenced = true;
+                return false;
+            }
+
+            case Stage::PRUNE_USES: {
+                const auto& function = _functions->at(function_id);
+
+                // Replace call node referencing unimplemented hook with default value.
+                if ( function.hook && ! function.defined ) {
+                    if ( auto fn = id.declaration().tryAs<declaration::Function>() ) {
+                        HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                                    util::fmt("replacing call to unimplemented function %s::%s with default value",
+                                              module_id, fn_id));
+
+                        p.node = Expression(expression::Ctor(ctor::Default(fn->function().type().result().type())));
+
+                        return true;
+                    }
+                }
+
+                break;
+            }
+
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
 };
 
 void GlobalOptimizer::run() {
@@ -245,7 +395,17 @@ void GlobalOptimizer::run() {
         Visitor(&_hooks).collect(*unit);
 
     for ( auto& unit : units )
-        Visitor(&_hooks).prune(*unit);
+        Visitor(&_hooks).prune_uses(*unit);
+
+    for ( auto& unit : units )
+        Visitor(&_hooks).prune_decls(*unit);
+
+    // After pruning the scopes might contain e.g., references
+    // to now optimized away code so we clear all scopes.
+    for ( auto& unit : units ) {
+        for ( auto i : hilti::visitor::PreOrder<>().walk(&*unit) )
+            i.node.clearScope();
+    }
 }
 
 } // namespace hilti

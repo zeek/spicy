@@ -31,7 +31,7 @@ public:
     const auto& statements() const { return child<statement::Block>(1); }
     const auto& declarations() const {
         if ( _cache.declarations.empty() )
-            _cache.declarations = childs<Declaration>(2, -1);
+            _cache.declarations = childsOfType<Declaration>();
 
         return _cache.declarations;
     }

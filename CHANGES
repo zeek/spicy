@@ -1,4 +1,20 @@
 
+1.2.0-dev.30 | 2021-06-17 10:52:32 +0200
+
+  * Remove unused variable lookup. (Benjamin Bannier, Corelight)
+
+  * Use prefiltered candidate list when resolving operators. (Benjamin Bannier, Corelight)
+
+  * Make `Module::declarations` more robust. (Benjamin Bannier, Corelight)
+
+  * Fix Scope rendering to not access expired references. (Benjamin Bannier, Corelight)
+
+  * Whitelist stringification functions in optimizer collection phase. (Benjamin Bannier, Corelight)
+
+  * Implement removal of unused global hooks. (Benjamin Bannier, Corelight)
+
+  * Bump spicy-plugin and spicy-analyzer submodules. (Benjamin Bannier, Corelight)
+
 1.2.0-dev.17 | 2021-05-31 12:36:27 +0200
 
   * Add tests for global optimizations. (Benjamin Bannier, Corelight)
