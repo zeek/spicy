@@ -71,7 +71,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         // If the namespace is a single component (i.e., has no namespace itself) we are either dealing
         // with a global function in another module, or a function for a struct in the current module.
         if ( ns_ns.empty() ) {
-            if ( auto is_module = scope::lookupID<declaration::ImportedModule>(ns_local, p, "module").hasValue() )
+            if ( scope::lookupID<declaration::ImportedModule>(ns_local, p, "module").hasValue() )
                 return std::make_tuple(ns_local, ID(), local);
 
             else
