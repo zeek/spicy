@@ -230,6 +230,33 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 if ( fn.type().flavor() == type::function::Flavor::Hook )
                     function.hook = true;
 
+                switch ( fn.callingConvention() ) {
+                    case function::CallingConvention::ExternNoSuspend:
+                    case function::CallingConvention::Extern:
+                        // If the declaration is `extern` it is part of an externally
+                        // visible API and potentially used elsewhere.
+                        function.referenced = true;
+                        break;
+                    case function::CallingConvention::Standard:
+                        // Nothing.
+                        break;
+                }
+
+                switch ( x.linkage() ) {
+                    case declaration::Linkage::PreInit:
+                    case declaration::Linkage::Init:
+                        // If the function is pre-init or init it could get
+                        // invoked by the driver and should not be removed.
+                        function.referenced = true;
+                        break;
+                    case declaration::Linkage::Private:
+                    case declaration::Linkage::Public:
+                    case declaration::Linkage::Struct:
+                        // Nothing.
+                        break;
+                }
+
+
                 break;
             }
 
@@ -251,6 +278,14 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                                     util::fmt("removing declaration for unused hook function %s::%s", module_id,
                                               field_id));
                     }
+
+                    removeNode(p);
+                    return true;
+                }
+
+                if ( ! function.hook && ! function.referenced ) {
+                    HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                                util::fmt("removing declaration for unused function %s::%s", module_id, field_id));
 
                     removeNode(p);
                     return true;
