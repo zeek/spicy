@@ -1,4 +1,4 @@
-# @TEST-EXEC: spicyc -p -o /dev/null %INPUT -D global-optimizer >log 2>&1
+# @TEST-EXEC: spicyc -p -o /dev/null %INPUT -D global-optimizer 2>&1 | sort >log
 # @TEST-EXEC: btest-diff log
 
 # @TEST-EXEC: spicyc -d -j -g %INPUT -D ast-codegen >ast.0 2>&1

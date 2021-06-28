@@ -1,4 +1,8 @@
 
+1.2.0-dev.33 | 2021-06-28 09:23:54 +0200
+
+  * Add optimizer code removing unused function declarations. (Benjamin Bannier, Corelight)
+
 1.2.0-dev.30 | 2021-06-17 10:52:32 +0200
 
   * Remove unused variable lookup. (Benjamin Bannier, Corelight)

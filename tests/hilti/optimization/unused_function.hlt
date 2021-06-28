@@ -1,0 +1,31 @@
+# @TEST-EXEC: hiltic -d -j -D global-optimizer %INPUT > log 2>&1
+# @TEST-EXEC: btest-diff log
+
+# @TEST-EXEC: hiltic -d -j -g %INPUT -D ast-codegen >ast.0 2>&1
+# @TEST-EXEC: hiltic -d -j    %INPUT -D ast-codegen >ast.1 2>&1
+# @TEST-EXEC: spicy-diff.py ast.0 ast.1 >output.diff
+# @TEST-EXEC: btest-diff output.diff
+
+# @TEST-DOC: Tests optimizations removing unused functions.
+
+module Foo {
+
+# Module-level unused functions should get optimized out.
+function bool private_unused() { return False; }
+
+# Module-level used functions should not get optimized out.
+function bool private_used() { return False; }
+global x = private_used();
+
+# Public unused functions should get optimized out.
+public function bool public_unused() { return False; }
+
+# Extern functions should not get optimized out, regardless whether they are public or not.
+public function extern bool extern_unused1() { return False; }
+function extern bool extern_unused2() { return False; }
+
+# Pre-init and init functions are invoked by the driver and should not be removed.
+init function void test_init() {}
+preinit function void test_preinit() { }
+
+}
