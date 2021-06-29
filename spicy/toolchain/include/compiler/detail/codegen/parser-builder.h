@@ -435,6 +435,24 @@ public:
     /** Clean up after potential backtracking via ``&try``. */
     void finishBacktracking();
 
+    /**
+     * Prepare for parsing the body of a loop of "something". Must be followed
+     * by calling `finishLoopBody()` once parsing is done.
+     *
+     * @returns an opaque cookie to pass into `finishLoopBody()`.
+     */
+    Expression initLoopBody();
+
+    /**
+     * Wrap up parsing the the body of loop of "something". Must only be called
+     * after an earlier `initLoopBody()`. This will abort with a parsing error if
+     * the input pointer hasn't moved.
+     *
+     * @param cookie opaque cookie received from `initLoopBody()`
+     * @param l location associated with the loop body
+     */
+    void finishLoopBody(const Expression& cookie, const Location& l);
+
     CodeGen* cg() const { return _cg; }
     const std::shared_ptr<hilti::Context>& context() const;
     const hilti::Options& options() const;

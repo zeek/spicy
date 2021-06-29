@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicyc -dj -o x.hlto %INPUT
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x00\x02\x03' | spicy-driver x.hlto >>output 2>&1
+# @TEST-EXEC:      ${SCRIPTS}/printf '\x02\x02\x03' | spicy-driver x.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that a container loop where the input position doesn't change, lets parsing abort.
+
+module foo;
+
+type Data = unit(size: uint8) {
+    data: bytes &size=size;
+};
+
+public type X = unit {
+    size: uint8;
+    xs: Data(self.size) [] &eod;
+};

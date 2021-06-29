@@ -977,9 +977,11 @@ struct ProductionVisitor
 
         auto body = builder()->addWhile(cond);
         pushBuilder(body);
+        auto cookie = pb->initLoopBody();
         auto stop = parseProduction(p.body());
         auto b = builder()->addIf(stop);
         b->addBreak();
+        pb->finishLoopBody(cookie, p.location());
         popBuilder();
     }
 
@@ -1236,7 +1238,9 @@ struct ProductionVisitor
 
                 pushBuilder(builder_alt2, [&]() {
                     // Parse body.
+                    auto cookie = pb->initLoopBody();
                     parseProduction(p.body());
+                    pb->finishLoopBody(cookie, p.location());
                 });
             });
         };
@@ -1809,4 +1813,13 @@ void ParserBuilder::finishBacktracking() {
     popBuilder();
     popState();
     trimInput();
+}
+
+Expression ParserBuilder::initLoopBody() { return builder()->addTmp("old_begin", builder::begin(state().cur)); }
+
+void ParserBuilder::finishLoopBody(const Expression& cookie, const Location& l) {
+    auto not_moved = builder::and_(builder::equal(builder::begin(state().cur), cookie), builder::not_(atEod()));
+    auto body = builder()->addIf(not_moved);
+    pushBuilder(std::move(body),
+                [&]() { parseError("loop body did not change input position, possible infinite loop", l); });
 }

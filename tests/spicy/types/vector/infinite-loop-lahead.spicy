@@ -1,0 +1,17 @@
+# @TEST-EXEC-FAIL: printf 'XXX' | spicy-driver %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that a look-ahead loop that doesn't change the input position, lets parsing abort.
+
+module foo;
+
+type Data = unit {
+    %random-access;
+    : b"X";
+    on %done { self.set_input(self.input()); }
+};
+
+public type X = unit {
+    xs: Data()[];
+    : b"Y";
+};
