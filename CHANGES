@@ -1,3 +1,7 @@
+1.2.0-dev.38 | 2021-06-29 09:33:19 +0200
+
+  * Avoid name collision when codegen'ing struct element initializers. (Benjamin Bannier, Corelight)
+
 1.2.0-dev.36 | 2021-06-29 09:31:59 +0200
 
   * Prefer VERSION file over git information. (Benjamin Bannier, Corelight)

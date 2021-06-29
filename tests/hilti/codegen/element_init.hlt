@@ -1,0 +1,12 @@
+# @TEST-EXEC: hiltic -j %INPUT
+#
+# @TEST-DOC: Tests for name collisions in codegen of struct element initializers, regression test for #942.
+
+module foo {
+
+public type X = struct {
+    bytes x;
+    uint<8> x_;
+};
+
+}

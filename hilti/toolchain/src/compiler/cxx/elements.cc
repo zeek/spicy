@@ -473,7 +473,7 @@ std::string cxx::type::Struct::inlineCode() const {
         auto ctor_args = util::join(util::transform(locals_user,
                                                     [&](const auto& x) {
                                                         auto& l = std::get<declaration::Local>(x);
-                                                        return fmt("std::optional<%s> %s_", l.type, l.id);
+                                                        return fmt("std::optional<%s> %s", l.type, l.id);
                                                     }),
                                     ", ");
 
@@ -481,7 +481,7 @@ std::string cxx::type::Struct::inlineCode() const {
             util::join(util::transform(locals_user,
                                        [&](const auto& x) {
                                            auto& l = std::get<declaration::Local>(x);
-                                           return fmt("    if ( %s_ ) %s = std::move(*%s_);\n", l.id, l.id, l.id);
+                                           return fmt("    if ( %s ) this->%s = std::move(*%s);\n", l.id, l.id, l.id);
                                        }),
                        "");
 
