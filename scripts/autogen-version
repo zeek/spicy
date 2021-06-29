@@ -13,12 +13,18 @@ import tempfile
 
 
 def get_version(ref):
-    git_tree = subprocess.call(
+    if os.path.exists("VERSION"):
+        with open("VERSION", "r") as info:
+            hash = info.readline().split("=")[1].strip()
+            branch = info.readline().split("=")[1].strip()
+            git_version = info.readline().split("=")[1].strip()
+            return hash, branch, git_version
+
+    if subprocess.call(
         ["git", "rev-parse", "--git-dir"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
-    )
-    if git_tree == 0:
+    ) == 0:
         hash = subprocess.check_output(
             ["git", "rev-parse", "--short", ref], universal_newlines=True
         ).strip()
@@ -46,17 +52,9 @@ def get_version(ref):
             r"-([0-9]*)-g[0-9a-z]*", r".\1", re.sub(r"^v", "", raw_git_version)
         ).strip()
         return hash, branch, git_version
-    elif os.path.exists("VERSION"):
-        with open("VERSION", "r") as info:
-            hash = info.readline().split("=")[1].strip()
-            branch = info.readline().split("=")[1].strip()
-            git_version = info.readline().split("=")[1].strip()
-            return hash, branch, git_version
-    else:
-        print(
-            "Cannot extract version information: neither git repository nor VERSION file present"
-        )
-        exit(1)
+
+    print("Cannot extract version information: neither VERSION file nor git repository present")
+    exit(1)
 
 
 def write_if_changed(target, txt):

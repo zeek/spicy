@@ -1,3 +1,8 @@
+1.2.0-dev.36 | 2021-06-29 09:31:59 +0200
+
+  * Prefer VERSION file over git information. (Benjamin Bannier, Corelight)
+
+  * Introduce top-level `spicy-*/` directory in release tarball. (Benjamin Bannier, Corelight)
 
 1.2.0-dev.33 | 2021-06-28 09:23:54 +0200
 
