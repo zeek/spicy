@@ -6,7 +6,7 @@
 set -o errexit
 set -o nounset
 
-ROOTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)/../.."
+ROOTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)/.."
 BUILDDIR="${ROOTDIR}/build"
 SPICYDOC="${BUILDDIR}/bin/spicy-doc"
 SPICYDTR="${ROOTDIR}/doc/scripts/spicy-doc-to-rst"

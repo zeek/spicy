@@ -704,7 +704,7 @@ The Spicy plugin provides a set of script-level options to tune its
 behavior, similar to what the :ref:`spicy-driver` provides as
 command-line arguments. These all live in the ``Spicy::`` namespace:
 
-.. literalinclude:: /../zeek/spicy-plugin/plugin/scripts/base/spicy/main.zeek
+.. literalinclude:: /../zeek/spicy-plugin/scripts/__preload__.zeek
     :language: zeek
     :start-after: doc-options-start
     :end-before:  doc-options-end
@@ -747,7 +747,7 @@ Functions
 The Spicy plugin also adds the following new built-in functions to
 Zeek, which likewise live in the ``Spicy::`` namespace:
 
-.. literalinclude:: /../zeek/spicy-plugin/plugin/scripts/base/spicy/main.zeek
+.. literalinclude:: /../zeek/spicy-plugin/scripts/Zeek/Spicy/bare.zeek
     :language: zeek
     :start-after: doc-functions-start
     :end-before:  doc-functions-end

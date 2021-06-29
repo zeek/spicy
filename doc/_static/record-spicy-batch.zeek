@@ -1,1 +1,1 @@
-../../zeek/spicy-plugin/plugin/scripts/misc/record-spicy-batch.zeek
+../../zeek/spicy-plugin/scripts/Zeek/Spicy/misc/record-spicy-batch.zeek
