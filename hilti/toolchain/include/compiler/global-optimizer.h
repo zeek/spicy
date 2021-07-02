@@ -5,6 +5,7 @@
 #include <bitset>
 #include <map>
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -27,7 +28,8 @@ public:
         bool referenced = false;
     };
 
-    using Functions = std::map<std::tuple<ModuleID, StructID, FieldID>, Uses>;
+    using Identifier = std::string;
+    using Functions = std::map<Identifier, Uses>;
 
     GlobalOptimizer(std::vector<Unit>* units, const std::shared_ptr<Context> ctx)
         : _units(units), _ctx(std::move(ctx)) {}
@@ -39,7 +41,7 @@ private:
     std::vector<Unit>* _units = nullptr;
     std::shared_ptr<Context> _ctx;
     // Storage for field declaration and their uses.
-    Functions _hooks;
+    Functions _functions;
 };
 
 } // namespace hilti

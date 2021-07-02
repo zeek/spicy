@@ -43,7 +43,7 @@ std::optional<std::pair<ModuleID, StructID>> typeID(T&& x) {
 }
 
 struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
-    Visitor(GlobalOptimizer::Functions* hooks) : _functions(hooks) {}
+    Visitor(GlobalOptimizer::Functions* data) : _data(data) {}
 
     template<typename T>
     static void replaceNode(position_t& p, T&& n) {
@@ -87,10 +87,70 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         return std::make_tuple(ns_ns, ns_local, local);
     }
 
+    static std::optional<GlobalOptimizer::Identifier> getID(const type::struct_::Field& x, position_t p) {
+        auto field_id = x.id();
+
+        auto struct_type = typeID(p.parent().as<type::Struct>());
+        if ( ! struct_type )
+            return {};
+
+        const auto& [module_id, struct_id] = *struct_type;
+
+        return GlobalOptimizer::Identifier(util::join({module_id, struct_id, field_id}, "::"));
+    }
+
+    static std::optional<GlobalOptimizer::Identifier> getID(const declaration::Function& x, position_t p) {
+        auto [a, b, c] = function_identifier(x, p);
+
+        // `x` is a non-member function.
+        if ( b.empty() )
+            return GlobalOptimizer::Identifier(util::join({a, c}, "::"));
+
+        // `x` is a member function.
+        return GlobalOptimizer::Identifier(util::join({a, b, c}, "::"));
+    }
+
+    static std::optional<GlobalOptimizer::Identifier> getID(const operator_::struct_::MemberCall& x, position_t p) {
+        if ( ! x.hasOp1() )
+            return {};
+
+        assert(x.hasOp0());
+
+        auto struct_type = typeID(x.op0().type());
+        if ( ! struct_type )
+            return {};
+
+        const auto& [module_id, struct_id] = *struct_type;
+
+        const auto& member = x.op1().tryAs<expression::Member>();
+        if ( ! member )
+            return {};
+
+        return GlobalOptimizer::Identifier(util::join({module_id, struct_id, member->id()}, "::"));
+    }
+
+    static std::optional<GlobalOptimizer::Identifier> getID(const operator_::function::Call& x, position_t p) {
+        if ( ! x.hasOp0() )
+            return {};
+
+        auto id = x.op0().as<expression::ResolvedID>();
+
+        auto module_id = id.id().sub(-2);
+        auto fn_id = id.id().sub(-1);
+
+        if ( module_id.empty() ) {
+            // Functions declared in this module do not include a module name in their ID.
+            if ( auto module = p.findParent<Module>() )
+                module_id = module->get().id();
+        }
+
+        return GlobalOptimizer::Identifier(util::join({module_id, fn_id}, "::"));
+    }
+
     static void removeNode(position_t& p) { replaceNode(p, node::none); }
 
     Stage _stage = Stage::COLLECT;
-    GlobalOptimizer::Functions* _functions = nullptr;
+    GlobalOptimizer::Functions* _data = nullptr;
 
     void collect(Node& node) {
         _stage = Stage::COLLECT;
@@ -138,22 +198,16 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         if ( auto type_ = x.type().tryAs<type::Function>(); ! type_ )
             return false;
 
-        auto field_id = x.id();
-
-        auto struct_type = typeID(p.parent().as<type::Struct>());
-        if ( ! struct_type )
+        auto function_id = getID(x, p);
+        if ( ! function_id )
             return false;
-
-        auto&& [module_id, struct_id] = *struct_type;
 
         auto type_ = p.findParent<declaration::Type>();
         bool is_cxx = type_ && AttributeSet::find(type_->get().attributes(), "&cxxname");
 
-        auto function_id = std::make_tuple(module_id, struct_id, field_id);
-
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& function = (*_functions)[function_id];
+                auto& function = (*_data)[*function_id];
 
                 auto fn = x.childsOfType<Function>();
                 assert(fn.size() <= 1);
@@ -186,12 +240,12 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 break;
 
             case Stage::PRUNE_DECLS: {
-                const auto& function = _functions->at(function_id);
+                const auto& function = _data->at(*function_id);
 
                 // Remove hooks without implementation.
                 if ( function.hook && ! function.defined ) {
                     HILTI_DEBUG(logging::debug::GlobalOptimizer,
-                                util::fmt("removing field for unused hook %s::%s::%s", module_id, struct_id, field_id));
+                                util::fmt("removing field for unused hook %s", *function_id));
                     removeNode(p);
 
                     return true;
@@ -205,13 +259,14 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
     }
 
     result_t operator()(const declaration::Function& x, position_t p) {
-        const auto function_id = function_identifier(x, p);
-        const auto& [module_id, struct_id, field_id] = function_id;
+        const auto function_id = getID(x, p);
+        if ( ! function_id )
+            return false;
 
         switch ( _stage ) {
             case Stage::COLLECT: {
                 // Record this hook as declared if it is not already known.
-                auto& function = (*_functions)[function_id];
+                auto& function = (*_data)[*function_id];
                 function.declared = true;
 
                 const auto& fn = x.function();
@@ -263,19 +318,11 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 break;
 
             case Stage::PRUNE_DECLS:
-                const auto& function = _functions->at(function_id);
+                const auto& function = _data->at(*function_id);
 
                 if ( function.hook && ! function.defined ) {
-                    if ( ! struct_id.empty() ) {
-                        HILTI_DEBUG(logging::debug::GlobalOptimizer,
-                                    util::fmt("removing declaration for unused hook function %s::%s::%s", module_id,
-                                              struct_id, field_id));
-                    }
-                    else {
-                        HILTI_DEBUG(logging::debug::GlobalOptimizer,
-                                    util::fmt("removing declaration for unused hook function %s::%s", module_id,
-                                              field_id));
-                    }
+                    HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                                util::fmt("removing declaration for unused hook function %s", *function_id));
 
                     removeNode(p);
                     return true;
@@ -283,7 +330,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
                 if ( ! function.hook && ! function.referenced ) {
                     HILTI_DEBUG(logging::debug::GlobalOptimizer,
-                                util::fmt("removing declaration for unused function %s::%s", module_id, field_id));
+                                util::fmt("removing declaration for unused function %s", *function_id));
 
                     removeNode(p);
                     return true;
@@ -296,26 +343,13 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
     }
 
     result_t operator()(const operator_::struct_::MemberCall& x, position_t p) {
-        if ( ! x.hasOp1() )
+        auto function_id = getID(x, p);
+        if ( ! function_id )
             return false;
-
-        assert(x.hasOp0());
-
-        auto struct_type = typeID(x.op0().type());
-        if ( ! struct_type )
-            return false;
-
-        auto&& [module_id, struct_id] = *struct_type;
-
-        auto&& member = x.op1().tryAs<expression::Member>();
-        if ( ! member )
-            return false;
-
-        auto function_id = std::make_tuple(module_id, struct_id, member->id());
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& function = (*_functions)[function_id];
+                auto& function = (*_data)[*function_id];
 
                 function.referenced = true;
                 function.hook = true;
@@ -324,19 +358,20 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
             }
 
             case Stage::PRUNE_USES: {
-                const auto& function = _functions->at(function_id);
+                const auto& function = _data->at(*function_id);
 
                 // Replace call node referencing unimplemented hook with default value.
                 if ( function.hook && ! function.defined ) {
-                    if ( auto fn = member->memberType()->tryAs<type::Function>() ) {
-                        HILTI_DEBUG(logging::debug::GlobalOptimizer,
-                                    util::fmt("replacing call to unimplemented function %s::%s::%s with default value",
-                                              module_id, struct_id, member->id()));
+                    if ( auto member = x.op1().tryAs<expression::Member>() )
+                        if ( auto fn = member->memberType()->tryAs<type::Function>() ) {
+                            HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                                        util::fmt("replacing call to unimplemented function %s with default value",
+                                                  *function_id));
 
-                        p.node = Expression(expression::Ctor(ctor::Default(fn->result().type())));
+                            p.node = Expression(expression::Ctor(ctor::Default(fn->result().type())));
 
-                        return true;
-                    }
+                            return true;
+                        }
                 }
 
                 break;
@@ -351,39 +386,28 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
     }
 
     result_t operator()(const operator_::function::Call& call, position_t p) {
-        if ( ! call.hasOp0() )
+        auto function_id = getID(call, p);
+        if ( ! function_id )
             return false;
-
-        auto id = call.op0().as<expression::ResolvedID>();
-
-        auto module_id = id.id().sub(-2);
-        auto fn_id = id.id().sub(-1);
-
-        if ( module_id.empty() ) {
-            // Functions declared in this module do not include a module name in their ID.
-            if ( auto module = p.findParent<Module>() )
-                module_id = module->get().id();
-        }
-
-        auto function_id = std::make_tuple(module_id, "", fn_id);
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& function = (*_functions)[function_id];
+                auto& function = (*_data)[*function_id];
 
                 function.referenced = true;
                 return false;
             }
 
             case Stage::PRUNE_USES: {
-                const auto& function = _functions->at(function_id);
+                const auto& function = _data->at(*function_id);
 
                 // Replace call node referencing unimplemented hook with default value.
                 if ( function.hook && ! function.defined ) {
+                    auto id = call.op0().as<expression::ResolvedID>();
                     if ( auto fn = id.declaration().tryAs<declaration::Function>() ) {
                         HILTI_DEBUG(logging::debug::GlobalOptimizer,
-                                    util::fmt("replacing call to unimplemented function %s::%s with default value",
-                                              module_id, fn_id));
+                                    util::fmt("replacing call to unimplemented function %s with default value",
+                                              *function_id));
 
                         p.node = Expression(expression::Ctor(ctor::Default(fn->function().type().result().type())));
 
@@ -437,20 +461,20 @@ void GlobalOptimizer::run() {
         bool modified = false;
 
         for ( auto& unit : units )
-            Visitor(&_hooks).collect(*unit);
+            Visitor(&_functions).collect(*unit);
 
         for ( auto& unit : units )
-            modified = modified || Visitor(&_hooks).prune_uses(*unit);
+            modified = modified || Visitor(&_functions).prune_uses(*unit);
 
         for ( auto& unit : units )
-            modified = modified || Visitor(&_hooks).prune_decls(*unit);
+            modified = modified || Visitor(&_functions).prune_decls(*unit);
 
         if ( ! modified )
             break;
 
 
         // Clear stored state for next round.
-        _hooks.clear();
+        _functions.clear();
     }
 }
 
