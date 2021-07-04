@@ -1,10 +1,6 @@
 FROM centos:7
 
-ARG ZEEK_VERSION=4.0.0-3.1
-
 WORKDIR /root
-
-ENV PATH="/opt/zeek/bin:${PATH}"
 
 RUN yum install -y epel-release yum-utils
 RUN yum update -y
@@ -16,7 +12,7 @@ RUN echo ". scl_source enable devtoolset-9" >> /etc/profile
 ENV PATH="/opt/rh/devtoolset-9/root/usr/bin:${PATH}"
 
 # Install development tools.
-RUN yum install -y ccache git make ninja-build python3 python3-pip vim doxygen diffutils m4 bison
+RUN yum install -y ccache git make ninja-build python3 python3-pip vim doxygen diffutils m4 bison openssl-devel zlib-devel
 
 # Need a more recent CMake than available.
 WORKDIR /usr/local/cmake
@@ -32,17 +28,5 @@ RUN cd /opt && curl -L https://github.com/westes/flex/files/981163/flex-2.6.4.ta
 
 # Install rpmdevtools for packaging RPM files.
 RUN yum install -y rpmdevtools
-
-# Install Zeek.
-RUN yum install -y libpcap-devel openssl-devel zlib-devel libmaxminddb \
- && rpm -iv \
-    https://download.zeek.org/binary-packages/CentOS_7/x86_64/zeek-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_7/x86_64/zeek-lts-core-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_7/x86_64/zeekctl-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_7/x86_64/zeek-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_7/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_7/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_7/x86_64/zeek-lts-zkg-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_7/x86_64/zeek-lts-btest-${ZEEK_VERSION}.x86_64.rpm
 
 WORKDIR /root

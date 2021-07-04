@@ -1,9 +1,5 @@
 FROM debian:stretch-slim
 
-# TODO(bbannier): We need to keep this at an older Zeek version as currently no
-# newer packages are published for debian-9.
-ARG ZEEK_VERSION=v3.2.2
-
 ENV DEBIAN_FRONTEND noninteractive
 ENV CCACHE_DIR "/var/spool/ccache"
 ENV CCACHE_COMPRESS 1
@@ -19,7 +15,7 @@ ENV CC "clang-${LLVM_VERSION}"
 ENV CXX "clang++-${LLVM_VERSION}"
 ENV ASM "clang-${LLVM_VERSION}"
 
-ENV PATH "/opt/zeek/bin:${CMAKE_DIR}/bin:${PATH}"
+ENV PATH "${CMAKE_DIR}/bin:${PATH}"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -67,10 +63,5 @@ RUN sed -i "s/stretch main/stretch main contrib non-free/g" /etc/apt/sources.lis
   echo "deb http://httpredir.debian.org/debian unstable main" >> /etc/apt/sources.list && \
     apt-get update && \
     apt-get -y --no-install-recommends install libstdc++-10-dev
-
-# Install Zeek
-RUN mkdir -p /opt/zeek/src \
- && cd /opt/zeek && git clone -b $ZEEK_VERSION --recursive https://github.com/zeek/zeek src \
- && cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek --disable-python && cd build && ninja && ninja install && cd ../.. && rm -rf zeek
 
 WORKDIR /root

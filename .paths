@@ -12,6 +12,3 @@ spicy/toolchain/include                                     spicy/toolchain/src
 spicy/toolchain/include/compiler                            spicy/toolchain/src/compiler
 spicy/toolchain/include/compiler/detail                     spicy/toolchain/src/compiler
 spicy/toolchain/include/compiler/detail/visitors.h          spicy/toolchain/src/compiler/visitors
-
-zeek                                                        zeek
-zeek/plugin/include                                         zeek/plugin/src

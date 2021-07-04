@@ -43,9 +43,3 @@
 [submodule "3rdparty/any"]
 	path = 3rdparty/any
 	url = https://github.com/thelink2012/any.git
-[submodule "zeek/analyzers"]
-	path = zeek/spicy-analyzers
-	url = https://github.com/zeek/spicy-analyzers
-[submodule "zeek/spicy-plugin"]
-	path = zeek/spicy-plugin
-	url = https://github.com/zeek/spicy-plugin

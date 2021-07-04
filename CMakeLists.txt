@@ -178,17 +178,6 @@ add_subdirectory(hilti)
 add_subdirectory(spicy)
 add_subdirectory(scripts)
 add_subdirectory(ci/fuzz)
-
-option(BUILD_ZEEK_PLUGIN "Whether to build Zeek spicy-plugin and spicy-analyzers as submodules. Their preferred installation method is via 'zkg'." OFF)
-
-if ( BUILD_ZEEK_PLUGIN )
-    add_subdirectory(zeek)
-else ()
-    set(HAVE_ZEEK_PLUGIN "no" CACHE BOOL "" FORCE)
-    # Quieten warnings about unused variables.
-    set(_not_used "${SPICY_ZEEK_INSTALL_PLUGIN} ${ZEEK_ROOT_DIR}")
-endif ()
-
 add_subdirectory(3rdparty)
 
 ## Print build summary
@@ -261,7 +250,6 @@ message(
     "\nC++ compiler:          ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})"
     "\n"
     "\nBuilding toolchain:    ${HAVE_TOOLCHAIN}"
-    "\nBuilding Zeek support: ${HAVE_ZEEK_PLUGIN}"
     "\nBuilding fuzzers:      ${USE_FUZZING}"
     "\n"
     "\nUse ccache:            ${USE_CCACHE}"

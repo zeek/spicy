@@ -663,7 +663,7 @@ Spicy grammars can import a provided library module ``zeek`` to gain
 access to Zeek-specific functions that call back into Zeek's
 processing:
 
-.. include:: /autogen/zeek-functions.spicy
+.. include:: /autogen/zeek/zeek-functions.spicy
 
 .. _zeek_dpd:
 
@@ -704,7 +704,7 @@ The Spicy plugin provides a set of script-level options to tune its
 behavior, similar to what the :ref:`spicy-driver` provides as
 command-line arguments. These all live in the ``Spicy::`` namespace:
 
-.. literalinclude:: /../zeek/spicy-plugin/scripts/__preload__.zeek
+.. literalinclude:: /autogen/zeek/__preload__.zeek
     :language: zeek
     :start-after: doc-options-start
     :end-before:  doc-options-end
@@ -747,7 +747,7 @@ Functions
 The Spicy plugin also adds the following new built-in functions to
 Zeek, which likewise live in the ``Spicy::`` namespace:
 
-.. literalinclude:: /../zeek/spicy-plugin/scripts/Zeek/Spicy/bare.zeek
+.. literalinclude:: /autogen/zeek/bare.zeek
     :language: zeek
     :start-after: doc-functions-start
     :end-before:  doc-functions-end

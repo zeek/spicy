@@ -11,7 +11,6 @@ cmake_build_directory="build"
 cmake_build_shared_libs="yes"
 cmake_build_toolchain="yes"
 cmake_build_type="RelWithDebInfo"
-cmake_build_zeek_plugin="no"
 cmake_clang_fuzzer_no_main=""
 cmake_c_compiler=""
 cmake_cxx_compiler=""
@@ -24,8 +23,6 @@ cmake_use_gold="yes"
 cmake_use_precompiled_headers="yes"
 cmake_use_sanitizers=""
 cmake_use_werror="no"
-cmake_zeek_root_dir="/usr/local/zeek"
-cmake_zeek_install_plugin="yes"
 
 display_cmake=0
 cache_entries=""
@@ -57,10 +54,8 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --build-static-libs                Build static libraries instead [default: shared]
     --build-toolchain={yes,no}         Build the Spicy compiler toolchain [default: ${cmake_build_toolchain}]
     --build-type=TYPE                  Set build type (Debug,Release,RelWithDebInfo) [default: ${cmake_build_type}]
-    --build-zeek-plugin={yes,no}       Build the Spicy plugin for Zeek if possible [default: ${cmake_build_zeek_plugin}]
     --disable-gold                     On Linux, do not try to use the gold linker
     --disable-precompiled-headers      Disable use of precompiled headers for developer tests
-    --disable-zeek-plugin-install      Do not copy Zeek plugin into Zeek plugin path on install
     --enable-ccache                    Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
     --enable-debug                     Compile debug version (same as --build-type=Debug) [default: off]
     --enable-fuzzing                   Compile with fuzzing support [default: off]
@@ -72,7 +67,6 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --with-c-compiler=<path>           Set C compiler to use
     --with-cxx-compiler=<path>         Set C++ compiler to use
     --with-flex=<prefix>               Set prefix of Flex installation
-    --with-zeek=PATH                   Path to Zeek installation [default: ${cmake_zeek_root_dir}]
     --with-clang-fuzzer-no-main=PATH   Path to Clang's libclang_rt.fuzzer_no_main*.a for fuzzing [default: ${cmake_clang_fuzzer_no_main}]
 
     --display-cmake                    Don't create build configuration, just output final CMake invocation
@@ -114,10 +108,8 @@ while [ $# -ne 0 ]; do
         --build-static-libs)               cmake_build_shared_libs="no";;
         --build-toolchain=*)               cmake_build_toolchain="${optarg}";;
         --build-type=*)                    cmake_build_type="${optarg}";;
-        --build-zeek-plugin=*)             cmake_build_zeek_plugin="${optarg}";;
         --disable-gold)                    cmake_use_gold="no";;
         --disable-precompiled-headers)     cmake_use_precompiled_headers="no";;
-        --disable-zeek-plugin-install)     cmake_zeek_install_plugin="no";;
         --enable-ccache)                   cmake_use_ccache="yes";;
         --enable-debug)                    cmake_build_type="Debug";;
         --enable-fuzzing)                  cmake_use_fuzzing="yes";;
@@ -138,11 +130,9 @@ while [ $# -ne 0 ]; do
 
         --with-flex=*)                     cmake_flex_root="${optarg}";;
         --with-bison=*)                    cmake_bison_root="${optarg}";;
-        --with-zeek=*)                     cmake_zeek_root_dir="${optarg}";;
         --with-clang-fuzzer-no-main=*)     cmake_clang_fuzzer_no_main="${optarg}";;
         --without-bison=*)                 cmake_bison_root="";;
         --without-flex=*)                  cmake_flex_root="";;
-        --without-zeek)                    cmake_zeek_root_dir="";;
 
         --display-cmake) display_cmake=1;;
 
@@ -156,21 +146,18 @@ done
 append_cache_entry BISON_ROOT                   PATH   "${cmake_bison_root}"
 append_cache_entry BUILD_SHARED_LIBS            BOOL   "${cmake_build_shared_libs}"
 append_cache_entry BUILD_TOOLCHAIN              BOOL   "${cmake_build_toolchain}"
-append_cache_entry BUILD_ZEEK_PLUGIN            BOOL   "${cmake_build_zeek_plugin}"
 append_cache_entry CMAKE_BUILD_TYPE             STRING "${cmake_build_type}"
 append_cache_entry CMAKE_C_COMPILER             PATH   "${cmake_c_compiler}"
 append_cache_entry CMAKE_CXX_COMPILER           PATH   "${cmake_cxx_compiler}"
 append_cache_entry CMAKE_INSTALL_PREFIX         PATH   "${cmake_install_prefix}"
 append_cache_entry CLANG_FUZZER_NO_MAIN         PATH   "${cmake_clang_fuzzer_no_main}"
 append_cache_entry FLEX_ROOT                    PATH   "${cmake_flex_root}"
-append_cache_entry SPICY_ZEEK_INSTALL_PLUGIN    BOOL   "${cmake_zeek_install_plugin}"
 append_cache_entry USE_CCACHE                   BOOL   "${cmake_use_ccache}"
 append_cache_entry USE_GOLD                     BOOL   "${cmake_use_gold}"
 append_cache_entry USE_FUZZING                  BOOL   "${cmake_use_fuzzing}"
 append_cache_entry USE_SANITIZERS               STRING "${cmake_use_sanitizers}"
 append_cache_entry HILTI_DEV_PRECOMPILE_HEADERS BOOL   "${cmake_use_precompiled_headers}"
 append_cache_entry USE_WERROR                   BOOL   "${cmake_use_werror}"
-append_cache_entry ZEEK_ROOT_DIR                PATH   "${cmake_zeek_root_dir}"
 
 if [ -n "${cmake_generator}" ]; then
     cmake="${cmake_exe} -G '${cmake_generator}' ${cmake_cache_entries} ${source_dir}"

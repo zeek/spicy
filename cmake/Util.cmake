@@ -84,7 +84,7 @@ function(require_version name found have need require)
 
             message(STATUS "Warning: Need ${name} version >= ${need}, found ${${have}}")
             set(${found} no PARENT_SCOPE)
-            set(${have} "${${have}} (error: too old, must be at least ${zeek_mininum_version})" PARENT_SCOPE)
+            set(${have} "${${have}} (error: too old, must be at least ${need})" PARENT_SCOPE)
         endif()
     endif()
 endfunction ()

@@ -1,8 +1,6 @@
 FROM centos:8
 
-ARG ZEEK_VERSION=4.0.0-3.1
-
-ENV PATH="/opt/zeek/bin:/opt/rh/gcc-toolset-9/root/bin:${PATH}"
+ENV PATH="/opt/rh/gcc-toolset-9/root/bin:${PATH}"
 
 RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled powertools
 RUN yum install -y gcc-toolset-9-gcc gcc-toolset-9-gcc-c++ git make flex diffutils glibc-langpack-en
@@ -15,16 +13,3 @@ RUN alternatives --set ld /usr/bin/ld.gold
 
 # Need a more recent CMake than available.
 RUN cd /usr/local && curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - && ln -s /usr/local/cmake-3.16.4-Linux-x86_64/bin/cmake /usr/local/bin
-
-# Install Zeek and package manager
-RUN yum install -y libpcap-devel openssl-devel zlib-devel libmaxminddb cmake-filesystem python3 python3-GitPython python3-semantic_version bison \
- && rpm -iv \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-core-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeekctl-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-btest-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-zkg-${ZEEK_VERSION}.x86_64.rpm
-RUN pip3 install zkg && zkg autoconfig

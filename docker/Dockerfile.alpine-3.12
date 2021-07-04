@@ -1,26 +1,14 @@
 FROM alpine:3.12
 
-ARG zeek_version=v3.0.3
-
 WORKDIR /root
-
-ENV PATH="/opt/zeek/bin:${PATH}"
 
 RUN apk update
 
 # Install development tools.
-RUN apk add ccache cmake curl g++ gcc gdb git make ninja python3 vim
+RUN apk add ccache cmake curl g++ gcc gdb git make ninja python3 vim linux-headers openssl-dev zlib-dev
 
 # Install Spicy dependencies.
 RUN apk add bash bison flex flex-dev flex-libs libucontext-dev py3-pip py3-sphinx py3-sphinx_rtd_theme doxygen
 RUN pip3 install "btest>=0.66"
-
-# Install Zeek dependencies.
-RUN apk add fts-dev libpcap-dev linux-headers openssl-dev python3-dev swig zlib-dev
-
-# Install Zeek.
-RUN mkdir -p /opt/zeek/src
-RUN cd /opt/zeek && git clone -b $zeek_version --recursive https://github.com/zeek/zeek src
-RUN cd /opt/zeek/src && ./configure --generator=Ninja --prefix=/opt/zeek && cd build && ninja && ninja install && cd ../.. && rm -rf zeek
 
 WORKDIR /root

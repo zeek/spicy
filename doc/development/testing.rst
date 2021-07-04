@@ -23,9 +23,7 @@ output. We use `BTest <https://github.com/zeek/btest>`_ to drive
 these, very similar to Zeek. ``make test`` from the top-level
 directory will execute these tests. You get the same effect by
 changing into ``tests/`` and running ``btest -j`` there (``-j``
-parallelizes test execution). If your build includes the Zeek  plugin
-(``configure --build-zeek-plugin=yes``), running ``make test-all``
-will include its tests, too (and also the ``spicy-analyzers`` tests).
+parallelizes test execution).
 
 The most important BTest options are:
 

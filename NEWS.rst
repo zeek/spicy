@@ -4,8 +4,8 @@ releases. For an exhaustive list of all changes, see the `CHANGES
 <https://github.com/zeek/spicy/blob/main/CHANGES>`_ file coming with
 the distribution.
 
-Version 1.2
-===========
+Version 1.2 (in progress)
+=========================
 
 .. rubric:: New Functionality
 
@@ -30,6 +30,11 @@ Version 1.2
 
   We previously silently ignored unsupported attributes; now errors are
   raised.
+
+- Remove configure option ``--build-zeek-plugin``. Spicy no longer
+  supports building the Zeek plugin/analyzers in-tree. This used to be
+  available primarily for development purposes, but become challenging
+  to maintain.
 
 .. rubric:: Bug fixes
 
