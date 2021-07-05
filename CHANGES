@@ -1,3 +1,11 @@
+1.2.0-dev.43 | 2021-07-05 09:18:12 +0200
+
+  * GH-918: Remove workaround for #918. (Benjamin Bannier, Corelight)
+
+  * GH-918: GH-949: Use forward declarations in linker metadata. (Benjamin Bannier, Corelight)
+
+  * Add registered cxx_includes to linker outputs. (Benjamin Bannier, Corelight)
+
 1.2.0-dev.38 | 2021-06-29 09:33:19 +0200
 
   * Avoid name collision when codegen'ing struct element initializers. (Benjamin Bannier, Corelight)

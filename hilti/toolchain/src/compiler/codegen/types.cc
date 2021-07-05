@@ -60,12 +60,10 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                 fields.emplace_back(std::move(self));
 
                 cg->enablePrioritizeTypes();
-                cxx::Type type;
-                cxx::Type internal_type;
 
                 for ( const auto& p : n.parameters() ) {
-                    type = cg->compile(p.type(), codegen::TypeUsage::InParameter);
-                    internal_type = cg->compile(p.type(), codegen::TypeUsage::Storage);
+                    cxx::Type type = cg->compile(p.type(), codegen::TypeUsage::InParameter);
+                    cxx::Type internal_type = cg->compile(p.type(), codegen::TypeUsage::Storage);
 
                     if ( type::isReferenceType(p.type()) ) {
                         // We turn reference types into weak references for

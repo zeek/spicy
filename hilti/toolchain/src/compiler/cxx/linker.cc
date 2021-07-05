@@ -6,6 +6,7 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/cxx/linker.h>
+#include <hilti/compiler/plugin.h>
 
 using nlohmann::json;
 
@@ -53,6 +54,10 @@ void cxx::Linker::finalize() {
                                         .optimize = _codegen->context()->options().optimize};
 
     unit.add(cxx::declaration::IncludeFile{"hilti/rt/libhilti.h"});
+    for ( const auto& p : plugin::registry().plugins() )
+        for ( const auto& i : p.cxx_includes )
+            unit.add(cxx::declaration::IncludeFile{i});
+
     unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * __hlto_library_version = R\"(%s)\";", version.toJSON()));
 
     std::string init_modules = "nullptr";
