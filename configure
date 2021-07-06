@@ -11,14 +11,12 @@ cmake_build_directory="build"
 cmake_build_shared_libs="yes"
 cmake_build_toolchain="yes"
 cmake_build_type="RelWithDebInfo"
-cmake_clang_fuzzer_no_main=""
 cmake_c_compiler=""
 cmake_cxx_compiler=""
 cmake_flex_root=""
 cmake_generator=""
 cmake_install_prefix="/usr/local"
 cmake_use_ccache="no"
-cmake_use_fuzzing="no"
 cmake_use_gold="yes"
 cmake_use_precompiled_headers="yes"
 cmake_use_sanitizers=""
@@ -58,7 +56,6 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --disable-precompiled-headers      Disable use of precompiled headers for developer tests
     --enable-ccache                    Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
     --enable-debug                     Compile debug version (same as --build-type=Debug) [default: off]
-    --enable-fuzzing                   Compile with fuzzing support [default: off]
     --enable-sanitizer[=<names>]       Enable sanitizer(s), default if not further specified is \"address\"
     --enable-werror                    Treat compiler warnings as errors [default: ${cmake_use_werror}]
     --generator=<generator>            CMake generator to use (see cmake --help)
@@ -67,7 +64,6 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --with-c-compiler=<path>           Set C compiler to use
     --with-cxx-compiler=<path>         Set C++ compiler to use
     --with-flex=<prefix>               Set prefix of Flex installation
-    --with-clang-fuzzer-no-main=PATH   Path to Clang's libclang_rt.fuzzer_no_main*.a for fuzzing [default: ${cmake_clang_fuzzer_no_main}]
 
     --display-cmake                    Don't create build configuration, just output final CMake invocation
 "
@@ -112,7 +108,6 @@ while [ $# -ne 0 ]; do
         --disable-precompiled-headers)     cmake_use_precompiled_headers="no";;
         --enable-ccache)                   cmake_use_ccache="yes";;
         --enable-debug)                    cmake_build_type="Debug";;
-        --enable-fuzzing)                  cmake_use_fuzzing="yes";;
         --enable-sanitizer)                cmake_use_sanitizers="address";;
         --enable-sanitizer=*)              cmake_use_sanitizers="${optargs}";;
         --enable-werror)                   cmake_use_werror="yes";;
@@ -130,7 +125,6 @@ while [ $# -ne 0 ]; do
 
         --with-flex=*)                     cmake_flex_root="${optarg}";;
         --with-bison=*)                    cmake_bison_root="${optarg}";;
-        --with-clang-fuzzer-no-main=*)     cmake_clang_fuzzer_no_main="${optarg}";;
         --without-bison=*)                 cmake_bison_root="";;
         --without-flex=*)                  cmake_flex_root="";;
 
@@ -150,11 +144,9 @@ append_cache_entry CMAKE_BUILD_TYPE             STRING "${cmake_build_type}"
 append_cache_entry CMAKE_C_COMPILER             PATH   "${cmake_c_compiler}"
 append_cache_entry CMAKE_CXX_COMPILER           PATH   "${cmake_cxx_compiler}"
 append_cache_entry CMAKE_INSTALL_PREFIX         PATH   "${cmake_install_prefix}"
-append_cache_entry CLANG_FUZZER_NO_MAIN         PATH   "${cmake_clang_fuzzer_no_main}"
 append_cache_entry FLEX_ROOT                    PATH   "${cmake_flex_root}"
 append_cache_entry USE_CCACHE                   BOOL   "${cmake_use_ccache}"
 append_cache_entry USE_GOLD                     BOOL   "${cmake_use_gold}"
-append_cache_entry USE_FUZZING                  BOOL   "${cmake_use_fuzzing}"
 append_cache_entry USE_SANITIZERS               STRING "${cmake_use_sanitizers}"
 append_cache_entry HILTI_DEV_PRECOMPILE_HEADERS BOOL   "${cmake_use_precompiled_headers}"
 append_cache_entry USE_WERROR                   BOOL   "${cmake_use_werror}"

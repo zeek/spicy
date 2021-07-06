@@ -1,5 +1,0 @@
-This folder contains cron scripts which perform work against the upstream repo.
-They do not run against the current clone and should be standalone safe to copy
-elsewhere.
-
-See the individual scripts for more documentation.

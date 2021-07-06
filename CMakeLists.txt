@@ -75,11 +75,6 @@ else ()
    set(HILTI_HAVE_SANITIZER "no" CACHE BOOL "Using sanitizer")
 endif()
 
-if ( USE_FUZZING )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=fuzzer-no-link")
-    set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -fsanitize=fuzzer-no-link")
-endif()
-
 if ( USE_WERROR )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")
     set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${werror_flags}")
@@ -177,7 +172,6 @@ set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
 add_subdirectory(hilti)
 add_subdirectory(spicy)
 add_subdirectory(scripts)
-add_subdirectory(ci/fuzz)
 add_subdirectory(3rdparty)
 
 ## Print build summary
@@ -250,7 +244,6 @@ message(
     "\nC++ compiler:          ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})"
     "\n"
     "\nBuilding toolchain:    ${HAVE_TOOLCHAIN}"
-    "\nBuilding fuzzers:      ${USE_FUZZING}"
     "\n"
     "\nUse ccache:            ${USE_CCACHE}"
     "\nUse gold linker:       ${GOLD_FOUND}"
