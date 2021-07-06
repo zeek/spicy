@@ -8,7 +8,7 @@
 
 class Spicyc : public spicy::Driver {
 public:
-    Spicyc(const std::string_view& argv0 = "") : spicy::Driver("spicyc", argv0) {
+    Spicyc() : spicy::Driver("spicyc", hilti::util::currentExecutable()) {
         spicy::Configuration::extendHiltiConfiguration();
     }
 
