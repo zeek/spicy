@@ -1,4 +1,4 @@
-# @TEST-EXEC: hiltic -d -j -D global-optimizer %INPUT > log 2>&1
+# @TEST-EXEC: hiltic -d -j -D global-optimizer %INPUT 2>&1 | sort > log
 # @TEST-EXEC: btest-diff log
 
 # @TEST-EXEC: hiltic -d -j -g %INPUT -D ast-codegen >ast.0 2>&1
@@ -10,8 +10,10 @@
 
 module Foo {
 
-# Module-level unused functions should get optimized out.
+# Module-level unused functions should get optimized out. Removal happens in
+# stages, so functions called by unused functions can also be removed.
 function bool private_unused() { return False; }
+function bool private_unused1() { return private_unused(); }
 
 # Module-level used functions should not get optimized out.
 function bool private_used() { return False; }
