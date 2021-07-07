@@ -891,43 +891,44 @@ freebsd12_task:
     path: build/spicy*.tar.gz
     type: application/gzip
 
-# zeek_plugin_task:
-#   timeout_in: 120m
-#   container:
-#     dockerfile: ci/Dockerfile.zeek
-#     matrix:
-#       - docker_arguments:
-#         - ZEEK_LTS:
-#         - ZEEK_VERSION: 4.0.2-0
-#     cpu: 4
-#     memory: 12G
-#
-#   update_git_script:
-#     - git fetch --tags
-#     - git submodule update --recursive --init
-#
-#   install_spicy_script:
-#     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
-#     - ninja -j4 -C build install
-#
-#   install_plugin_script:
-#     - git clone --branch=${SPICY_PLUGIN_BRANCH} --recurse-submodules https://github.com/zeek/spicy-plugin
-#     - (cd spicy-plugin && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-plugin -G Ninja .. && ninja install)
-#     - rm -rf spicy-plugin/build
-#     - zeek -NN _Zeek::Spicy
-#
-#   install_analyzers_script:
-#     - git clone --branch=${SPICY_PLUGIN_BRANCH} --recurse-submodules https://github.com/zeek/spicy-analyzers
-#     - (cd spicy-analyzers && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-analyzers -G Ninja .. && ninja install)
-#     - rm -rf spicy-analyzers/build
-#     - zeek -NN _Zeek::Spicy
-#     - zeek -NN _Zeek::Spicy | grep -q ANALYZER_SPICY_TFTP
-#
-#   test_plugin_script:
-#     - (PATH=/opt/spicy-plugin/bin:$PATH make -C spicy-plugin/tests test-install)
-#
-#   test_analyzer_script:
-#     - (PATH=/opt/spicy-plugin/bin:$PATH make -C spicy-analyzers/tests test-install)
-#
-#   check_script:
-#     - (cd /tmp && zeek -r ${CIRRUS_WORKING_DIR}/spicy-analyzers/tests/Traces/tftp_rrq.pcap spicy-analyzers && test -e tftp.log && grep rfc1350.txt tftp.log)
+zeek_plugin_task:
+  timeout_in: 120m
+  container:
+    dockerfile: ci/Dockerfile
+    matrix:
+      - docker_arguments:
+        - ZEEK_LTS:
+        - ZEEK_VERSION: 4.0.2-0
+    cpu: 4
+    memory: 12G
+
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  install_spicy_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+    - ninja -j4 -C build install
+    - rm -rf build
+
+  install_plugin_script:
+    - git clone --branch=${SPICY_PLUGIN_BRANCH} --recurse-submodules https://github.com/zeek/spicy-plugin
+    - (cd spicy-plugin && mkdir build && cd build && PATH=/opt/spicy/bin:$PATH cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-plugin -G Ninja .. && ninja install)
+    - rm -rf spicy-plugin/build
+    - zeek -NN _Zeek::Spicy
+
+  install_analyzers_script:
+    - git clone --branch=${SPICY_PLUGIN_BRANCH} --recurse-submodules https://github.com/zeek/spicy-analyzers
+    - (cd spicy-analyzers && mkdir build && cd build && PATH=/opt/spicy/bin:/opt/spicy-plugin/bin:$PATH cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-analyzers -G Ninja .. && ninja install)
+    - rm -rf spicy-analyzers/build
+    - zeek -NN _Zeek::Spicy
+    - zeek -NN _Zeek::Spicy | grep -q ANALYZER_SPICY_TFTP
+
+  test_plugin_script:
+    - (PATH=/opt/spicy-plugin/bin:$PATH make -C spicy-plugin/tests test-install)
+
+  test_analyzer_script:
+    - (PATH=/opt/spicy-plugin/bin:$PATH make -C spicy-analyzers/tests test-install)
+
+  check_script:
+    - (cd /tmp && zeek -r ${CIRRUS_WORKING_DIR}/spicy-analyzers/tests/Traces/tftp_rrq.pcap spicy-analyzers && test -e tftp.log && grep rfc1350.txt tftp.log)
