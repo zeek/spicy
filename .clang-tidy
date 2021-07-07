@@ -9,6 +9,7 @@ Checks: 'bugprone,
          readability,
 
          -cert-err58-cpp,
+         -clang-analyzer-cplusplus.NewDeleteLeaks,
          -clang-diagnostic-c++2a-designator,
          -clang-diagnostic-deprecated-copy,
          -clang-diagnostic-range-loop-analysis,
