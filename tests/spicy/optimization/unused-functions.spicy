@@ -1,0 +1,33 @@
+# @TEST-EXEC: spicyc -p -o /dev/null %INPUT -D global-optimizer 2>&1 | sort >log
+# @TEST-EXEC: btest-diff log
+
+# @TEST-EXEC: spicyc -d -j -g %INPUT -D ast-codegen >ast.0 2>&1
+# @TEST-EXEC: spicyc -d -j    %INPUT -D ast-codegen >ast.1 2>&1
+# @TEST-EXEC: spicy-diff.py ast.0 ast.1 >output.diff
+# @TEST-EXEC: btest-diff output.diff
+
+# @TEST-DOC: Tests that unused methods of units are removed.
+
+module foo;
+
+# Unused private functions should be removed.
+function f1() {}
+
+# Unused public functions should be kept.
+public function f2() {}
+# Unused members of private units should removed.
+type A = unit {};
+
+# For public units we should only removed unimplemented hooks.
+public type B = unit {};
+
+# Any unused members of of used private units should be removed.
+type C = unit {};
+public type D = unit {
+    : C;
+};
+
+# Parsing methods of filters should not be optimized out.
+type F = unit {
+    %filter;
+};

@@ -195,15 +195,12 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
     }
 
     result_t operator()(const type::struct_::Field& x, position_t p) {
-        if ( auto type_ = x.type().tryAs<type::Function>(); ! type_ )
+        if ( ! x.type().isA<type::Function>() )
             return false;
 
         auto function_id = getID(x, p);
         if ( ! function_id )
             return false;
-
-        auto type_ = p.findParent<declaration::Type>();
-        bool is_cxx = type_ && AttributeSet::find(type_->get().attributes(), "&cxxname");
 
         switch ( _stage ) {
             case Stage::COLLECT: {
@@ -212,12 +209,12 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 auto fn = x.childsOfType<Function>();
                 assert(fn.size() <= 1);
 
-                bool is_always_emit = ! fn.empty() && AttributeSet::find(fn.front().attributes(), "&always-emit");
-
                 // Record a declaration for this member.
                 function.declared = true;
 
                 // If the member declaration is marked `&always-emit` mark it as implemented.
+                bool is_always_emit = static_cast<bool>(AttributeSet::find(x.attributes(), "&always-emit"));
+
                 if ( is_always_emit )
                     function.defined = true;
 
@@ -227,10 +224,11 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
                 // If the unit is wrapped in a type with a `&cxxname`
                 // attribute its members are defined in C++ as well.
+                auto type_ = p.findParent<declaration::Type>();
+                bool is_cxx = type_ && AttributeSet::find(type_->get().attributes(), "&cxxname");
+
                 if ( is_cxx )
                     function.defined = true;
-
-                function.hook = true;
 
                 break;
             }
@@ -242,10 +240,10 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
             case Stage::PRUNE_DECLS: {
                 const auto& function = _data->at(*function_id);
 
-                // Remove hooks without implementation.
-                if ( function.hook && ! function.defined ) {
+                // Remove function methods without implementation.
+                if ( ! function.defined ) {
                     HILTI_DEBUG(logging::debug::GlobalOptimizer,
-                                util::fmt("removing field for unused hook %s", *function_id));
+                                util::fmt("removing field for unused method %s", *function_id));
                     removeNode(p);
 
                     return true;
@@ -280,16 +278,31 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                     function.defined = true;
                 }
 
+                // If the function declaration is marked `&always-emit` mark it as referenced.
+                bool is_always_emit = AttributeSet::find(fn.attributes(), "&always-emit").has_value();
+
+                if ( is_always_emit )
+                    function.referenced = true;
+
                 if ( fn.type().flavor() == type::function::Flavor::Hook )
                     function.hook = true;
 
                 switch ( fn.callingConvention() ) {
                     case function::CallingConvention::ExternNoSuspend:
-                    case function::CallingConvention::Extern:
-                        // If the declaration is `extern` it is part of an externally
-                        // visible API and potentially used elsewhere.
-                        function.referenced = true;
+                    case function::CallingConvention::Extern: {
+                        // If the declaration is `extern` and the unit is `public`, the function
+                        // is part of an externally visible API and potentially used elsewhere.
+
+                        if ( auto unit_type = scope::lookupID<declaration::Type>(fn.id().namespace_(), p, "type") ) {
+                            if ( auto unit = unit_type->first->tryAs<declaration::Type>() )
+                                function.referenced =
+                                    function.referenced || unit->linkage() == declaration::Linkage::Public;
+                        }
+                        else
+                            function.referenced = true;
+
                         break;
+                    }
                     case function::CallingConvention::Standard:
                         // Nothing.
                         break;
@@ -352,7 +365,6 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 auto& function = (*_data)[*function_id];
 
                 function.referenced = true;
-                function.hook = true;
 
                 return false;
             }
@@ -360,8 +372,8 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
             case Stage::PRUNE_USES: {
                 const auto& function = _data->at(*function_id);
 
-                // Replace call node referencing unimplemented hook with default value.
-                if ( function.hook && ! function.defined ) {
+                // Replace call node referencing unimplemented member function with default value.
+                if ( ! function.defined ) {
                     if ( auto member = x.op1().tryAs<expression::Member>() )
                         if ( auto fn = member->memberType()->tryAs<type::Function>() ) {
                             HILTI_DEBUG(logging::debug::GlobalOptimizer,
@@ -441,21 +453,12 @@ void GlobalOptimizer::run() {
         for ( auto& unit : *_units ) {
             units.insert(NodeRef(unit.imported(unit.id())));
 
-            for ( auto&& dep : _ctx->lookupDependenciesForModule(unit.id()) )
+            for ( const auto& dep : _ctx->lookupDependenciesForModule(unit.id()) )
                 units.insert(NodeRef(unit.imported(dep.index.id)));
         }
 
         return std::vector<NodeRef>{units.begin(), units.end()};
     }();
-
-    // The edits performed by the optimizer might invalidate scopes which after
-    // optimizations might contain references to now removed data. We
-    // unconditionally clear scopes to make sure to remove any effects from
-    // scopes.
-    for ( auto& unit : units ) {
-        for ( auto i : hilti::visitor::PreOrder<>().walk(&*unit) )
-            i.node.clearScope();
-    }
 
     while ( true ) {
         bool modified = false;
@@ -475,6 +478,15 @@ void GlobalOptimizer::run() {
 
         // Clear stored state for next round.
         _functions.clear();
+    }
+
+    // The edits performed by the optimizer might invalidate scopes which after
+    // optimizations might contain references to now removed data. We
+    // unconditionally clear scopes to make sure to remove any effects from
+    // scopes.
+    for ( auto& unit : units ) {
+        for ( auto i : hilti::visitor::PreOrder<>().walk(&*unit) )
+            i.node.clearScope();
     }
 }
 

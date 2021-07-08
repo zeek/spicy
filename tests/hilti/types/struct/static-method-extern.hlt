@@ -6,7 +6,7 @@ module Foo {
 
 import hilti;
 
-type T = struct {
+public type T = struct {
     method extern int<64> test(int<64> v) &static;
 };
 
