@@ -229,6 +229,10 @@ macos_catalina_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
+  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
+  homebrew_update_script:
+    - brew update
+
   install_dependencies_script:
     - brew install llvm bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache zeek
     - pip3 install "btest>=0.66" sphinx_rtd_theme
@@ -265,6 +269,10 @@ macos_big_sur_task:
   update_git_script:
     - git fetch --tags
     - git submodule update --recursive --init
+
+  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
+  homebrew_update_script:
+    - brew update
 
   install_dependencies_script:
     - brew install bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache zeek
@@ -373,10 +381,14 @@ homebrew_catalina_task:
   osx_instance:
     image: catalina-base
 
+  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
+  homebrew_update_script:
+    - brew update
+
   script:
-  - brew tap zeek/zeek
-  - brew install spicy --HEAD
-  - brew test spicy
+    - brew tap zeek/zeek
+    - brew install spicy --HEAD
+    - brew test spicy
 
 homebrew_big_sur_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
@@ -384,10 +396,14 @@ homebrew_big_sur_task:
   osx_instance:
     image: big-sur-base
 
+  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
+  homebrew_update_script:
+    - brew update
+
   script:
-  - brew tap zeek/zeek
-  - brew install spicy --HEAD
-  - brew test spicy
+    - brew tap zeek/zeek
+    - brew install spicy --HEAD
+    - brew test spicy
 
 docker_alpine_3_12_task:
   container:
