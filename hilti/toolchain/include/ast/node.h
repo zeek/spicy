@@ -101,10 +101,12 @@ public:
     Node(T t) : node::detail::Node(std::move(t)) {}
 
     Node(const Node& other) : node::detail::Node::Node(other), _scope(other._scope) {}
+
     Node(Node&& other) noexcept
         : node::detail::Node::Node(std::move(other)),
           _control_ptr(std::move(other._control_ptr)),
-          _scope(std::move(other._scope)) {
+          _scope(std::move(other._scope)),
+          _errors(std::move(other._errors)) {
         if ( _control_ptr )
             _control_ptr->_node = this;
     }
