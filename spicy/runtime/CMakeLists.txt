@@ -1,9 +1,9 @@
 # Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-set(AUTOGEN_H        "${CMAKE_BINARY_DIR}/include/spicy/rt/autogen")
-set(AUTOGEN_CC       "${CMAKE_BINARY_DIR}/spicy/runtime/src/autogen")
+set(AUTOGEN_H        "${PROJECT_BINARY_DIR}/include/spicy/rt/autogen")
+set(AUTOGEN_CC       "${PROJECT_BINARY_DIR}/spicy/runtime/src/autogen")
 file(MAKE_DIRECTORY  "${AUTOGEN_H}" "${AUTOGEN_CC}")
-file(MAKE_DIRECTORY  "${CMAKE_BINARY_DIR}/bin" "${CMAKE_BINARY_DIR}/lib")
+file(MAKE_DIRECTORY  "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 ##### Runtime libraries
 
@@ -19,8 +19,8 @@ set(SOURCES
     src/util.cc
     src/zlib.cc
 
-    ${CMAKE_SOURCE_DIR}/3rdparty/libb64/src/cdecode.c
-    ${CMAKE_SOURCE_DIR}/3rdparty/libb64/src/cencode.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/libb64/src/cdecode.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/libb64/src/cencode.c
 )
 
 foreach ( lib spicy-rt spicy-rt-debug )
@@ -30,7 +30,7 @@ foreach ( lib spicy-rt spicy-rt-debug )
     target_link_libraries(${lib}-objects PUBLIC ZLIB::ZLIB)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
-    target_include_directories(${lib}-objects BEFORE PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/3rdparty/libb64/include>)
+    target_include_directories(${lib}-objects BEFORE PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/libb64/include>)
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
@@ -61,7 +61,7 @@ configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
 install(TARGETS spicy-rt spicy-rt-debug ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install_headers(include spicy/rt)
-install_headers(${CMAKE_BINARY_DIR}/include/spicy/rt spicy/rt)
+install_headers(${PROJECT_BINARY_DIR}/include/spicy/rt spicy/rt)
 install(CODE "file(REMOVE_RECURSE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/spicy/rt/spicy)") # Get rid of symlink
 
 ##### Tests
@@ -85,4 +85,4 @@ target_compile_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>)
 target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug,spicy-rt> doctest)
-add_test(NAME spicy-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/spicy-rt-tests)
+add_test(NAME spicy-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/spicy-rt-tests)

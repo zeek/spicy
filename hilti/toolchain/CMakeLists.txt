@@ -1,9 +1,9 @@
 # Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-set(AUTOGEN_H        "${CMAKE_BINARY_DIR}/include/hilti/autogen")
-set(AUTOGEN_CC       "${CMAKE_BINARY_DIR}/hilti/src/autogen")
+set(AUTOGEN_H        "${PROJECT_BINARY_DIR}/include/hilti/autogen")
+set(AUTOGEN_CC       "${PROJECT_BINARY_DIR}/hilti/src/autogen")
 file(MAKE_DIRECTORY  "${AUTOGEN_H}" "${AUTOGEN_CC}")
-file(MAKE_DIRECTORY  "${CMAKE_BINARY_DIR}/bin" "${CMAKE_BINARY_DIR}/lib")
+file(MAKE_DIRECTORY  "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 ##### Compiler library
 
@@ -113,7 +113,7 @@ add_dependencies(hilti-objects version)
 target_compile_options(hilti-objects PRIVATE "-Wall")
 target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
+target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
 # Unclear why we need this: Without it, the generated Bison/Flex get a broken
 # include path on some systems. (Seen on Ubuntu 19.10).
@@ -123,7 +123,7 @@ target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-o
 target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
 add_dependencies(hilti-objects reproc++)
-target_include_directories(hilti-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
+target_include_directories(hilti-objects BEFORE PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
 
 add_library(hilti)
 hilti_link_object_libraries_in_tree(hilti PUBLIC)
@@ -137,11 +137,11 @@ if ( APPLE )
 endif ()
 
 # HILTI library directories
-set_config_val(HILTI_CONFIG_LIBRARY_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/hilti !BUILD!${CMAKE_SOURCE_DIR}/hilti/lib")
+set_config_val(HILTI_CONFIG_LIBRARY_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/hilti !BUILD!${PROJECT_SOURCE_DIR}/hilti/lib")
 
 # Include directories
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/hilti/runtime/include !BUILD!${CMAKE_BINARY_DIR}/include")
-set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/hilti/toolchain/include !BUILD!${CMAKE_BINARY_DIR}/include")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include")
+set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include")
 
 # CXX flags
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
@@ -179,7 +179,7 @@ install(TARGETS hiltic RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(TARGETS hilti-config RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install_headers(include hilti)
-install_headers(${CMAKE_BINARY_DIR}/include/hilti hilti)
+install_headers(${PROJECT_BINARY_DIR}/include/hilti hilti)
 install(CODE "file(REMOVE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/hilti)") # Get rid of symlink
 
 ##### Tests
@@ -191,4 +191,4 @@ add_executable(hilti-toolchain-tests
 hilti_link_executable_in_tree(hilti-toolchain-tests PRIVATE)
 target_link_libraries(hilti-toolchain-tests PRIVATE doctest)
 target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")
-add_test(NAME hilti-toolchain-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-toolchain-tests)
+add_test(NAME hilti-toolchain-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-toolchain-tests)
