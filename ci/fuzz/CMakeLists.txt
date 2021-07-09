@@ -3,13 +3,13 @@ function(fuzz_parser SpicyInput)
 
     add_custom_command(
         OUTPUT "${name}.cc"
-        COMMAND ${CMAKE_BINARY_DIR}/bin/spicyc -c -o "${name}.cc" "${SpicyInput}"
+        COMMAND ${PROJECT_BINARY_DIR}/bin/spicyc -c -o "${name}.cc" "${SpicyInput}"
         DEPENDS spicyc
         )
 
     add_custom_command(
         OUTPUT "${name}_link.cc"
-        COMMAND ${CMAKE_BINARY_DIR}/bin/spicyc -l -o "${name}_link.cc" "${SpicyInput}"
+        COMMAND ${PROJECT_BINARY_DIR}/bin/spicyc -l -o "${name}_link.cc" "${SpicyInput}"
         DEPENDS spicyc
         )
 
@@ -24,13 +24,13 @@ function(fuzz_parser SpicyInput)
 endfunction()
 
 if (USE_FUZZING)
-    fuzz_parser(${CMAKE_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/dhcp/dhcp.spicy)
-    fuzz_parser(${CMAKE_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/ipsec/ipsec.spicy)
-    fuzz_parser(${CMAKE_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/openvpn/openvpn.spicy)
-    fuzz_parser(${CMAKE_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/wireguard/wireguard.spicy)
-    fuzz_parser(${CMAKE_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/tftp/tftp.spicy)
-    fuzz_parser(${CMAKE_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/file/pe/pe.spicy)
-    fuzz_parser(${CMAKE_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/file/png/PNG.spicy)
-    fuzz_parser(${CMAKE_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/dns/dns.spicy)
-    fuzz_parser(${CMAKE_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/http/http.spicy)
+    fuzz_parser(${PROJECT_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/dhcp/dhcp.spicy)
+    fuzz_parser(${PROJECT_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/ipsec/ipsec.spicy)
+    fuzz_parser(${PROJECT_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/openvpn/openvpn.spicy)
+    fuzz_parser(${PROJECT_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/wireguard/wireguard.spicy)
+    fuzz_parser(${PROJECT_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/tftp/tftp.spicy)
+    fuzz_parser(${PROJECT_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/file/pe/pe.spicy)
+    fuzz_parser(${PROJECT_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/file/png/PNG.spicy)
+    fuzz_parser(${PROJECT_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/dns/dns.spicy)
+    fuzz_parser(${PROJECT_SOURCE_DIR}/zeek/spicy-analyzers/analyzer/protocol/http/http.spicy)
 endif()

@@ -1,9 +1,9 @@
 # Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-set(AUTOGEN_H        "${CMAKE_BINARY_DIR}/include/hilti/rt/autogen")
-set(AUTOGEN_CC       "${CMAKE_BINARY_DIR}/hilti/runtime/src/autogen")
+set(AUTOGEN_H        "${PROJECT_BINARY_DIR}/include/hilti/rt/autogen")
+set(AUTOGEN_CC       "${PROJECT_BINARY_DIR}/hilti/runtime/src/autogen")
 file(MAKE_DIRECTORY  "${AUTOGEN_H}" "${AUTOGEN_CC}")
-file(MAKE_DIRECTORY  "${CMAKE_BINARY_DIR}/bin" "${CMAKE_BINARY_DIR}/lib")
+file(MAKE_DIRECTORY  "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 ##### Runtime libraries
 
@@ -36,7 +36,7 @@ set(SOURCES
     src/types/time.cc
     src/util.cc
 
-    ${CMAKE_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c
 )
 
 foreach ( lib hilti-rt hilti-rt-debug )
@@ -45,16 +45,16 @@ foreach ( lib hilti-rt hilti-rt-debug )
     target_compile_options(${lib}-objects PRIVATE "-fPIC")
     target_link_libraries(${lib}-objects PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-    target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
-    target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/3rdparty>)
+    target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
+    target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>)
 
     add_dependencies(${lib}-objects jrx-objects)
-    target_include_directories(${lib}-objects BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/justrx/include)
+    target_include_directories(${lib}-objects BEFORE PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/justrx/include)
 
     add_dependencies(${lib}-objects fiber::fiber)
     target_include_directories(${lib}-objects PRIVATE
-        ${CMAKE_SOURCE_DIR}/3rdparty/fiber/include
-        ${CMAKE_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include)
+        ${PROJECT_SOURCE_DIR}/3rdparty/fiber/include
+        ${PROJECT_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include)
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
@@ -94,16 +94,16 @@ configure_file(src/tests/config.h.in ${AUTOGEN_H}/tests/config.h)
 install(TARGETS hilti-rt hilti-rt-debug ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install_headers(include hilti/rt)
-install_headers(${CMAKE_BINARY_DIR}/include/hilti/rt hilti/rt)
+install_headers(${PROJECT_BINARY_DIR}/include/hilti/rt hilti/rt)
 install(CODE "file(REMOVE_RECURSE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilti)") # Get rid of symlink
 
 # Install the 3rdparty headers that we need individually.
-install_headers(${CMAKE_SOURCE_DIR}/3rdparty/ArticleEnumClass-v2 hilti/rt/3rdparty/ArticleEnumClass-v2)
-install_headers(${CMAKE_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt)
-install_headers(${CMAKE_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
-install_headers(${CMAKE_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
-install_headers(${CMAKE_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)
-install_headers(${CMAKE_SOURCE_DIR}/3rdparty/any hilti/rt/3rdparty/any)
+install_headers(${PROJECT_SOURCE_DIR}/3rdparty/ArticleEnumClass-v2 hilti/rt/3rdparty/ArticleEnumClass-v2)
+install_headers(${PROJECT_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt)
+install_headers(${PROJECT_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
+install_headers(${PROJECT_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
+install_headers(${PROJECT_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)
+install_headers(${PROJECT_SOURCE_DIR}/3rdparty/any hilti/rt/3rdparty/any)
 
 ##### Tests
 
@@ -153,14 +153,14 @@ target_compile_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
 add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-library-dummy2)
-add_test(NAME hilti-rt-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-tests)
+add_test(NAME hilti-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-tests)
 
 add_executable(hilti-rt-configuration-tests src/tests/configuration.cc)
 target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")
 target_compile_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-rt-configuration-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
-add_test(NAME hilti-rt-configuration-tests COMMAND ${CMAKE_BINARY_DIR}/bin/hilti-rt-configuration-tests)
+add_test(NAME hilti-rt-configuration-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-configuration-tests)
 
 add_executable(hilti-rt-fiber-benchmark src/benchmarks/fiber.cc)
 target_compile_options(hilti-rt-fiber-benchmark PRIVATE "-Wall")

@@ -2,12 +2,12 @@
 
 ##### Compiler library.
 
-set(AUTOGEN_H        "${CMAKE_BINARY_DIR}/include/spicy/autogen")
-set(AUTOGEN_CC       "${CMAKE_BINARY_DIR}/spicy/src/autogen")
+set(AUTOGEN_H        "${PROJECT_BINARY_DIR}/include/spicy/autogen")
+set(AUTOGEN_CC       "${PROJECT_BINARY_DIR}/spicy/src/autogen")
 file(MAKE_DIRECTORY  "${AUTOGEN_H}" "${AUTOGEN_CC}")
-file(MAKE_DIRECTORY  "${CMAKE_BINARY_DIR}/bin" "${CMAKE_BINARY_DIR}/lib")
+file(MAKE_DIRECTORY  "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
-set(AUTOGEN_H_HILTI  "${CMAKE_BINARY_DIR}/include/hilti/autogen")
+set(AUTOGEN_H_HILTI  "${PROJECT_BINARY_DIR}/include/hilti/autogen")
 
 FLEX_TARGET(scanner_spicy src/compiler/parser/scanner.ll ${AUTOGEN_CC}/__scanner.cc
             DEFINES_FILE ${AUTOGEN_CC}/__scanner.h)
@@ -82,7 +82,7 @@ set_property(TARGET spicy-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_compile_options(spicy-objects PRIVATE "-Wall")
 target_compile_options(spicy-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_include_directories(spicy-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_include_directories(spicy-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
+target_include_directories(spicy-objects BEFORE PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
 # Unclear why we need this: Without it, the generated Bison/Flex get a broken
 # include path on some systems. (Seen on Ubuntu 19.10).
@@ -99,11 +99,11 @@ spicy_link_object_libraries_in_tree(spicy PUBLIC)
 ##### Configuration files
 
 # Spicy library directories
-set_config_val(SPICY_CONFIG_LIBRARY_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/spicy !BUILD!${CMAKE_SOURCE_DIR}/spicy/lib")
+set_config_val(SPICY_CONFIG_LIBRARY_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/spicy !BUILD!${PROJECT_SOURCE_DIR}/spicy/lib")
 
 # Include directories
-set_config_val(SPICY_CONFIG_RUNTIME_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/spicy/runtime/include !BUILD!${CMAKE_BINARY_DIR}/include")
-set_config_val(SPICY_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${CMAKE_SOURCE_DIR}/spicy/toolchain/include !BUILD!${CMAKE_BINARY_DIR}/include")
+set_config_val(SPICY_CONFIG_RUNTIME_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/spicy/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include")
+set_config_val(SPICY_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/spicy/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include")
 
 # CXX flags
 set_config_val(SPICY_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "")
@@ -161,7 +161,7 @@ install(TARGETS   spicyc spicy-config spicy-driver RUNTIME DESTINATION ${CMAKE_I
 install(PROGRAMS  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/spicy-build        DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install_headers(include spicy)
-install_headers(${CMAKE_BINARY_DIR}/include/spicy spicy)
+install_headers(${PROJECT_BINARY_DIR}/include/spicy spicy)
 install(CODE "file(REMOVE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/spicy/spicy)") # Get rid of symlink
 
 ## Tests
@@ -172,4 +172,4 @@ add_executable(spicy-toolchain-tests
 spicy_link_executable_in_tree(spicy-toolchain-tests PRIVATE)
 target_link_libraries(spicy-toolchain-tests PRIVATE doctest)
 target_compile_options(spicy-toolchain-tests PRIVATE "-Wall")
-add_test(NAME spicy-toolchain-tests COMMAND ${CMAKE_BINARY_DIR}/bin/spicy-toolchain-tests)
+add_test(NAME spicy-toolchain-tests COMMAND ${PROJECT_BINARY_DIR}/bin/spicy-toolchain-tests)

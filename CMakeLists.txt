@@ -16,7 +16,7 @@ if ( NOT CMAKE_BUILD_TYPE )
     set(CMAKE_BUILD_TYPE "Debug")
 endif ()
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include(Util)
 
@@ -186,7 +186,7 @@ endif ()
 add_subdirectory(3rdparty)
 
 # Compute project version.
-execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR} --store ${CMAKE_SOURCE_DIR}/VERSION
+execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR} --store ${PROJECT_SOURCE_DIR}/VERSION
     OUTPUT_VARIABLE SPICY_VERSION
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
@@ -252,7 +252,7 @@ message(
     "\nVersion:               ${CMAKE_PROJECT_VERSION}"
     "\n"
     "\nBuild type:            ${CMAKE_BUILD_TYPE}"
-    "\nBuild directory:       ${CMAKE_BINARY_DIR}"
+    "\nBuild directory:       ${PROJECT_BINARY_DIR}"
     "\nInstall prefix:        ${CMAKE_INSTALL_PREFIX}"
     "\nBuild shared libs:     ${BUILD_SHARED_LIBS}"
     "\n"

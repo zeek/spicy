@@ -46,7 +46,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/autogen)
 # Register a Spicy source file for compilation.
 function(zeek_plugin_spicy module)
     set(inputs ${ARGN})
-    list(TRANSFORM inputs PREPEND "${CMAKE_SOURCE_DIR}/")
+    list(TRANSFORM inputs PREPEND "${PROJECT_SOURCE_DIR}/")
 
     list(APPEND _spicy_modules ${module})
     list(APPEND _spicy_inputs "${inputs}")
