@@ -71,7 +71,12 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         // If the namespace is a single component (i.e., has no namespace itself) we are either dealing
         // with a global function in another module, or a function for a struct in the current module.
         if ( ns_ns.empty() ) {
-            if ( scope::lookupID<declaration::ImportedModule>(ns_local, p, "module").hasValue() )
+            const auto imports = current_module->get().childsOfType<declaration::ImportedModule>();
+            if ( std::any_of(imports.begin(), imports.end(), [&](const auto& imported_module) {
+                     if ( const auto& m = imported_module.module() )
+                         return m->id() == ns_local;
+                     return false;
+                 }) )
                 return std::make_tuple(ns_local, ID(), local);
 
             else
@@ -94,12 +99,14 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
             dispatch(i);
     }
 
-    void prune(Node& node) {
+    bool prune(Node& node) {
         switch ( _stage ) {
             case Stage::PRUNE_DECLS:
             case Stage::PRUNE_USES: break;
             case Stage::COLLECT: util::cannot_be_reached();
         }
+
+        bool any_modification = false;
 
         while ( true ) {
             bool modified = false;
@@ -109,18 +116,22 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
             }
 
             if ( ! modified )
-                return;
+                break;
+
+            any_modification = true;
         }
+
+        return any_modification;
     }
 
-    void prune_uses(Node& node) {
+    bool prune_uses(Node& node) {
         _stage = Stage::PRUNE_USES;
-        prune(node);
+        return prune(node);
     }
 
-    void prune_decls(Node& node) {
+    bool prune_decls(Node& node) {
         _stage = Stage::PRUNE_DECLS;
-        prune(node);
+        return prune(node);
     }
 
     result_t operator()(const type::struct_::Field& x, position_t p) {
@@ -413,20 +424,33 @@ void GlobalOptimizer::run() {
         return std::vector<NodeRef>{units.begin(), units.end()};
     }();
 
-    for ( auto& unit : units )
-        Visitor(&_hooks).collect(*unit);
-
-    for ( auto& unit : units )
-        Visitor(&_hooks).prune_uses(*unit);
-
-    for ( auto& unit : units )
-        Visitor(&_hooks).prune_decls(*unit);
-
-    // After pruning the scopes might contain e.g., references
-    // to now optimized away code so we clear all scopes.
+    // The edits performed by the optimizer might invalidate scopes which after
+    // optimizations might contain references to now removed data. We
+    // unconditionally clear scopes to make sure to remove any effects from
+    // scopes.
     for ( auto& unit : units ) {
         for ( auto i : hilti::visitor::PreOrder<>().walk(&*unit) )
             i.node.clearScope();
+    }
+
+    while ( true ) {
+        bool modified = false;
+
+        for ( auto& unit : units )
+            Visitor(&_hooks).collect(*unit);
+
+        for ( auto& unit : units )
+            modified = modified || Visitor(&_hooks).prune_uses(*unit);
+
+        for ( auto& unit : units )
+            modified = modified || Visitor(&_hooks).prune_decls(*unit);
+
+        if ( ! modified )
+            break;
+
+
+        // Clear stored state for next round.
+        _hooks.clear();
     }
 }
 

@@ -1,3 +1,7 @@
+1.2.0-dev.55 | 2021-07-09 08:34:26 +0200
+
+  * Perform optimizations in a loop. (Benjamin Bannier, Corelight)
+
 1.2.0-dev.53 | 2021-07-08 12:36:43 +0200
 
   * Disable clang-tidy `NewDeleteLeaks` check. (Benjamin Bannier, Corelight)
