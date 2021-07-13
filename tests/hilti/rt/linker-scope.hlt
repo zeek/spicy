@@ -1,0 +1,13 @@
+# @TEST-EXEC: hiltic -j %INPUT >1
+# @TEST-EXEC: hiltic -j %INPUT >2
+# @TEST-EXEC-FAIL: cmp 1 2
+#
+# @TEST-DOC: Check that the internal per-link unit scope differs with each HLTO file.
+
+module X {
+
+import hilti;
+
+hilti::print(hilti::linker_scope());
+
+}

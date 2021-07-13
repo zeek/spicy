@@ -8,7 +8,7 @@ environment:
     IMAGE_MACOS_BIG_SUR: big-sur-xcode-12.5
     IMAGE_MACOS_CATALINA: catalina-xcode-12.2
 
-clang9_zeek_ubuntu_debug_task:
+clang12_zeek_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile
     docker_arguments:
@@ -27,7 +27,7 @@ clang9_zeek_ubuntu_debug_task:
   env:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
-    LD_LIBRARY_PATH: /usr/lib/llvm-10/lib/clang/10.0.1/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
   # are needed for `git describe` used in `scripts/autogen-version`. We also

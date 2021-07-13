@@ -135,11 +135,12 @@ TEST_CASE("registerParser") {
         REQUIRE_FALSE(parser.__hook_skipped);
         REQUIRE_FALSE(parser.__hook_undelivered);
 
-        detail::registerParser(parser, UnitRef<int>());
+        detail::registerParser(parser, "xyz", UnitRef<int>());
 
         REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
 
+        CHECK_EQ(parser.linker_scope, "xyz");
         CHECK_FALSE(parser.__parse_sink);
         CHECK_FALSE(parser.__hook_gap);
         CHECK_FALSE(parser.__hook_skipped);
@@ -157,11 +158,12 @@ TEST_CASE("registerParser") {
         REQUIRE_FALSE(parser.__hook_skipped);
         REQUIRE_FALSE(parser.__hook_undelivered);
 
-        detail::registerParser(parser, UnitRef<UnitWithSinkSupport>());
+        detail::registerParser(parser, "xyz", UnitRef<UnitWithSinkSupport>());
 
         REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
 
+        CHECK_EQ(parser.linker_scope, "xyz");
         CHECK(parser.__parse_sink);
         CHECK(parser.__hook_gap);
         CHECK(parser.__hook_skipped);

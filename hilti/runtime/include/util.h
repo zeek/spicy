@@ -35,6 +35,8 @@ void internalError(const std::string& msg) __attribute__((noreturn));
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fmt.h>
 
+extern const char* __hlto_scope; // defined by linker code in HLTO file
+
 namespace hilti::rt {
 
 /** Returns a string identifying the version of the runtime library. */
@@ -45,6 +47,9 @@ extern bool isDebugVersion();
 
 /** Dumps a backtrack to stderr and then aborts execution. */
 extern void abort_with_backtrace() __attribute__((noreturn));
+
+/** Returns the unique scope of the current HLTO module. */
+inline std::string linker_scope() { return __hlto_scope; }
 
 /** Aborts with an internal error saying we should not be where we are. */
 extern void cannot_be_reached() __attribute__((noreturn));

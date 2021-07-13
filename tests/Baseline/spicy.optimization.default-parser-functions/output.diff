@@ -7,18 +7,18 @@
 -[debug/ast-codegen]       | P0 -> declaration::Type %3 (original %8) <linkage="private">
 -[debug/ast-codegen]       | P1 -> declaration::Type %4 (original %11) <linkage="public">
 -[debug/ast-codegen]       | P2 -> declaration::Type %5 (original %16) <linkage="public">
--[debug/ast-codegen]       | __register_foo_P1 -> declaration::Function %264 <linkage="init">
--[debug/ast-codegen]       | __register_foo_P2 -> declaration::Function %265 <linkage="init">
--[debug/ast-codegen]       | foo -> declaration::Module %458 <id="foo">
--[debug/ast-codegen]       | hilti -> declaration::ImportedModule %262 <extension=".hlt" path="" scope="-">
--[debug/ast-codegen]       | spicy_rt -> declaration::ImportedModule %263 <extension=".hlt" path="" scope="-">
+-[debug/ast-codegen]       | __register_foo_P1 -> declaration::Function %265 <linkage="init">
+-[debug/ast-codegen]       | __register_foo_P2 -> declaration::Function %266 <linkage="init">
+-[debug/ast-codegen]       | foo -> declaration::Module %460 <id="foo">
+-[debug/ast-codegen]       | hilti -> declaration::ImportedModule %263 <extension=".hlt" path="" scope="-">
+-[debug/ast-codegen]       | spicy_rt -> declaration::ImportedModule %264 <extension=".hlt" path="" scope="-">
  [debug/ast-codegen]     - ID <name="foo"> (default-parser-functions.spicy:11:8)
  [debug/ast-codegen]     - statement::Block (default-parser-functions.spicy:11:1-24:3)
  [debug/ast-codegen]     - declaration::Type %3 (original %8) <linkage="private"> (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]         | parse1 -> declaration::Function %443 <linkage="private">
--[debug/ast-codegen]         | parse2 -> declaration::Function %444 <linkage="private">
--[debug/ast-codegen]         | parse3 -> declaration::Function %445 <linkage="private">
--[debug/ast-codegen]         | self -> declaration::Expression %442 <linkage="private"> (type: value_ref<foo::P0>)
+-[debug/ast-codegen]         | parse1 -> declaration::Function %445 <linkage="private">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %446 <linkage="private">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %447 <linkage="private">
+-[debug/ast-codegen]         | self -> declaration::Expression %444 <linkage="private"> (type: value_ref<foo::P0>)
  [debug/ast-codegen]       - ID <name="P0"> (default-parser-functions.spicy:13:6)
  [debug/ast-codegen]       - type::Struct %20 (original %7) (default-parser-functions.spicy:11:12-13:19) (non-const) (top-level scope) (type-id: foo::P0)
  [debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -75,11 +75,11 @@
  [debug/ast-codegen]         - Attribute <tag="&on-heap">
  [debug/ast-codegen]           - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Type %4 (original %11) <linkage="public"> (default-parser-functions.spicy:15:1)
--[debug/ast-codegen]         | __parser -> declaration::LocalVariable %447 <const="false">
--[debug/ast-codegen]         | parse1 -> declaration::Function %448 <linkage="public">
--[debug/ast-codegen]         | parse2 -> declaration::Function %449 <linkage="public">
--[debug/ast-codegen]         | parse3 -> declaration::Function %450 <linkage="public">
--[debug/ast-codegen]         | self -> declaration::Expression %446 <linkage="private"> (type: value_ref<foo::P1>)
+-[debug/ast-codegen]         | __parser -> declaration::LocalVariable %449 <const="false">
+-[debug/ast-codegen]         | parse1 -> declaration::Function %450 <linkage="public">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %451 <linkage="public">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %452 <linkage="public">
+-[debug/ast-codegen]         | self -> declaration::Expression %448 <linkage="private"> (type: value_ref<foo::P1>)
  [debug/ast-codegen]       - ID <name="P1"> (default-parser-functions.spicy:15:13)
  [debug/ast-codegen]       - type::Struct %26 (original %10) (default-parser-functions.spicy:15:1) (non-const) (top-level scope) (type-id: foo::P1)
  [debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -204,11 +204,11 @@
  [debug/ast-codegen]         - Attribute <tag="&on-heap">
  [debug/ast-codegen]           - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Type %5 (original %16) <linkage="public"> (default-parser-functions.spicy:17:1-24:3)
--[debug/ast-codegen]         | __parser -> declaration::LocalVariable %452 <const="false">
--[debug/ast-codegen]         | parse1 -> declaration::Function %453 <linkage="public">
--[debug/ast-codegen]         | parse2 -> declaration::Function %454 <linkage="public">
--[debug/ast-codegen]         | parse3 -> declaration::Function %455 <linkage="public">
--[debug/ast-codegen]         | self -> declaration::Expression %451 <linkage="private"> (type: value_ref<foo::P2>)
+-[debug/ast-codegen]         | __parser -> declaration::LocalVariable %454 <const="false">
+-[debug/ast-codegen]         | parse1 -> declaration::Function %455 <linkage="public">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %456 <linkage="public">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %457 <linkage="public">
+-[debug/ast-codegen]         | self -> declaration::Expression %453 <linkage="private"> (type: value_ref<foo::P2>)
  [debug/ast-codegen]       - ID <name="P2"> (default-parser-functions.spicy:17:13)
  [debug/ast-codegen]       - type::Struct %32 (original %15) (default-parser-functions.spicy:17:1-24:3) (non-const) (top-level scope) (type-id: foo::P2)
  [debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -351,75 +351,76 @@
  [debug/ast-codegen]         - type::struct_::Field <cc="<standard>">
  [debug/ast-codegen]           - ID <name="__begin">
  [debug/ast-codegen]           - type::Optional (non-const)
-@@ -909,77 +655,11 @@
+@@ -909,78 +655,11 @@
  [debug/ast-codegen]         - Attribute <tag="&on-heap">
  [debug/ast-codegen]           - node::None (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::ImportedModule %262 <extension=".hlt" path="" scope="-"> (default-parser-functions.spicy:11:1-24:3)
+ [debug/ast-codegen]     - declaration::ImportedModule %263 <extension=".hlt" path="" scope="-"> (default-parser-functions.spicy:11:1-24:3)
 -[debug/ast-codegen]         | AddressFamily -> declaration::Type %155 <linkage="public">
 -[debug/ast-codegen]         | BitOrder -> declaration::Type %140 <linkage="public">
 -[debug/ast-codegen]         | ByteOrder -> declaration::Type %144 <linkage="public">
--[debug/ast-codegen]         | Captures -> declaration::Type %266 <linkage="public">
+-[debug/ast-codegen]         | Captures -> declaration::Type %267 <linkage="public">
 -[debug/ast-codegen]         | Charset -> declaration::Type %168 <linkage="public">
--[debug/ast-codegen]         | Exception -> declaration::Type %275 <linkage="public">
+-[debug/ast-codegen]         | Exception -> declaration::Type %277 <linkage="public">
 -[debug/ast-codegen]         | MatchState -> declaration::Type %172 <linkage="public">
 -[debug/ast-codegen]         | Protocol -> declaration::Type %163 <linkage="public">
 -[debug/ast-codegen]         | RealType -> declaration::Type %159 <linkage="public">
--[debug/ast-codegen]         | RuntimeError -> declaration::Type %276 <linkage="public">
+-[debug/ast-codegen]         | RuntimeError -> declaration::Type %278 <linkage="public">
 -[debug/ast-codegen]         | Side -> declaration::Type %150 <linkage="public">
--[debug/ast-codegen]         | abort -> declaration::Function %274 <linkage="public">
--[debug/ast-codegen]         | current_time -> declaration::Function %272 <linkage="public">
--[debug/ast-codegen]         | debug -> declaration::Function %269 <linkage="public">
--[debug/ast-codegen]         | debugDedent -> declaration::Function %271 <linkage="public">
--[debug/ast-codegen]         | debugIndent -> declaration::Function %270 <linkage="public">
--[debug/ast-codegen]         | hilti -> declaration::Module %485 <id="hilti">
--[debug/ast-codegen]         | mktime -> declaration::Function %273 <linkage="public">
--[debug/ast-codegen]         | print -> declaration::Function %267 <linkage="public">
--[debug/ast-codegen]         | printValues -> declaration::Function %268 <linkage="public">
+-[debug/ast-codegen]         | abort -> declaration::Function %275 <linkage="public">
+-[debug/ast-codegen]         | current_time -> declaration::Function %273 <linkage="public">
+-[debug/ast-codegen]         | debug -> declaration::Function %270 <linkage="public">
+-[debug/ast-codegen]         | debugDedent -> declaration::Function %272 <linkage="public">
+-[debug/ast-codegen]         | debugIndent -> declaration::Function %271 <linkage="public">
+-[debug/ast-codegen]         | hilti -> declaration::Module %487 <id="hilti">
+-[debug/ast-codegen]         | linker_scope -> declaration::Function %276 <linkage="public">
+-[debug/ast-codegen]         | mktime -> declaration::Function %274 <linkage="public">
+-[debug/ast-codegen]         | print -> declaration::Function %268 <linkage="public">
+-[debug/ast-codegen]         | printValues -> declaration::Function %269 <linkage="public">
  [debug/ast-codegen]       - ID <name="hilti"> (default-parser-functions.spicy:11:1-24:3)
- [debug/ast-codegen]     - declaration::ImportedModule %263 <extension=".hlt" path="" scope="-"> (default-parser-functions.spicy:11:1-24:3)
--[debug/ast-codegen]         | Backtrack -> declaration::Type %278 <linkage="public">
--[debug/ast-codegen]         | BitOrder -> declaration::Type %250 <linkage="public">
+ [debug/ast-codegen]     - declaration::ImportedModule %264 <extension=".hlt" path="" scope="-"> (default-parser-functions.spicy:11:1-24:3)
+-[debug/ast-codegen]         | Backtrack -> declaration::Type %280 <linkage="public">
+-[debug/ast-codegen]         | BitOrder -> declaration::Type %251 <linkage="public">
 -[debug/ast-codegen]         | Direction -> declaration::Type %207 <linkage="public">
--[debug/ast-codegen]         | Filters -> declaration::Type %284 <linkage="public">
--[debug/ast-codegen]         | FindDirection -> declaration::Type %294 <linkage="public">
--[debug/ast-codegen]         | Forward -> declaration::Type %285 <linkage="public">
--[debug/ast-codegen]         | HiltiResumable -> declaration::Type %283 <linkage="public">
--[debug/ast-codegen]         | MIMEType -> declaration::Type %295 <linkage="public">
--[debug/ast-codegen]         | ParseError -> declaration::Type %277 <linkage="public">
--[debug/ast-codegen]         | ParsedUnit -> declaration::Type %281 <linkage="public">
+-[debug/ast-codegen]         | Filters -> declaration::Type %286 <linkage="public">
+-[debug/ast-codegen]         | FindDirection -> declaration::Type %296 <linkage="public">
+-[debug/ast-codegen]         | Forward -> declaration::Type %287 <linkage="public">
+-[debug/ast-codegen]         | HiltiResumable -> declaration::Type %285 <linkage="public">
+-[debug/ast-codegen]         | MIMEType -> declaration::Type %297 <linkage="public">
+-[debug/ast-codegen]         | ParseError -> declaration::Type %279 <linkage="public">
+-[debug/ast-codegen]         | ParsedUnit -> declaration::Type %283 <linkage="public">
 -[debug/ast-codegen]         | Parser -> declaration::Type %205 <linkage="public">
--[debug/ast-codegen]         | ParserPort -> declaration::Type %296 <linkage="public">
+-[debug/ast-codegen]         | ParserPort -> declaration::Type %298 <linkage="public">
 -[debug/ast-codegen]         | Sink -> declaration::Type %189 <linkage="public">
--[debug/ast-codegen]         | SinkState -> declaration::Type %280 <linkage="public">
--[debug/ast-codegen]         | TypeInfo -> declaration::Type %282 <linkage="public">
--[debug/ast-codegen]         | UnitAlreadyConnected -> declaration::Type %279 <linkage="public">
--[debug/ast-codegen]         | UnitContext -> declaration::Type %291 <linkage="public">
--[debug/ast-codegen]         | atEod -> declaration::Function %304 <linkage="public">
--[debug/ast-codegen]         | backtrack -> declaration::Function %306 <linkage="public">
--[debug/ast-codegen]         | createContext -> declaration::Function %292 <linkage="public">
--[debug/ast-codegen]         | extractBits -> declaration::Function %307 <linkage="public">
--[debug/ast-codegen]         | filter_connect -> declaration::Function %287 <linkage="public">
--[debug/ast-codegen]         | filter_disconnect -> declaration::Function %288 <linkage="public">
--[debug/ast-codegen]         | filter_forward -> declaration::Function %289 <linkage="public">
--[debug/ast-codegen]         | filter_forward_eod -> declaration::Function %290 <linkage="public">
--[debug/ast-codegen]         | filter_init -> declaration::Function %286 <linkage="public">
--[debug/ast-codegen]         | initializeParsedUnit -> declaration::Function %308 <linkage="public">
--[debug/ast-codegen]         | printParserState -> declaration::Function %298 <linkage="public">
--[debug/ast-codegen]         | registerParser -> declaration::Function %297 <linkage="public">
--[debug/ast-codegen]         | setContext -> declaration::Function %293 <linkage="public">
--[debug/ast-codegen]         | spicy_rt -> declaration::Module %495 <id="spicy_rt">
--[debug/ast-codegen]         | unit_find -> declaration::Function %305 <linkage="public">
--[debug/ast-codegen]         | waitForEod -> declaration::Function %303 <linkage="public">
--[debug/ast-codegen]         | waitForInput -> declaration::Function %301 <linkage="public">
--[debug/ast-codegen]         | waitForInput -> declaration::Function %302 <linkage="public">
--[debug/ast-codegen]         | waitForInputOrEod -> declaration::Function %299 <linkage="public">
--[debug/ast-codegen]         | waitForInputOrEod -> declaration::Function %300 <linkage="public">
+-[debug/ast-codegen]         | SinkState -> declaration::Type %282 <linkage="public">
+-[debug/ast-codegen]         | TypeInfo -> declaration::Type %284 <linkage="public">
+-[debug/ast-codegen]         | UnitAlreadyConnected -> declaration::Type %281 <linkage="public">
+-[debug/ast-codegen]         | UnitContext -> declaration::Type %293 <linkage="public">
+-[debug/ast-codegen]         | atEod -> declaration::Function %306 <linkage="public">
+-[debug/ast-codegen]         | backtrack -> declaration::Function %308 <linkage="public">
+-[debug/ast-codegen]         | createContext -> declaration::Function %294 <linkage="public">
+-[debug/ast-codegen]         | extractBits -> declaration::Function %309 <linkage="public">
+-[debug/ast-codegen]         | filter_connect -> declaration::Function %289 <linkage="public">
+-[debug/ast-codegen]         | filter_disconnect -> declaration::Function %290 <linkage="public">
+-[debug/ast-codegen]         | filter_forward -> declaration::Function %291 <linkage="public">
+-[debug/ast-codegen]         | filter_forward_eod -> declaration::Function %292 <linkage="public">
+-[debug/ast-codegen]         | filter_init -> declaration::Function %288 <linkage="public">
+-[debug/ast-codegen]         | initializeParsedUnit -> declaration::Function %310 <linkage="public">
+-[debug/ast-codegen]         | printParserState -> declaration::Function %300 <linkage="public">
+-[debug/ast-codegen]         | registerParser -> declaration::Function %299 <linkage="public">
+-[debug/ast-codegen]         | setContext -> declaration::Function %295 <linkage="public">
+-[debug/ast-codegen]         | spicy_rt -> declaration::Module %497 <id="spicy_rt">
+-[debug/ast-codegen]         | unit_find -> declaration::Function %307 <linkage="public">
+-[debug/ast-codegen]         | waitForEod -> declaration::Function %305 <linkage="public">
+-[debug/ast-codegen]         | waitForInput -> declaration::Function %303 <linkage="public">
+-[debug/ast-codegen]         | waitForInput -> declaration::Function %304 <linkage="public">
+-[debug/ast-codegen]         | waitForInputOrEod -> declaration::Function %301 <linkage="public">
+-[debug/ast-codegen]         | waitForInputOrEod -> declaration::Function %302 <linkage="public">
  [debug/ast-codegen]       - ID <name="spicy_rt"> (default-parser-functions.spicy:11:1-24:3)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:13:11)
--[debug/ast-codegen]         | parse1 -> declaration::Function %443 <linkage="private">
--[debug/ast-codegen]         | parse2 -> declaration::Function %444 <linkage="private">
--[debug/ast-codegen]         | parse3 -> declaration::Function %445 <linkage="private">
--[debug/ast-codegen]         | self -> declaration::Expression %442 <linkage="private"> (type: value_ref<foo::P0>)
+-[debug/ast-codegen]         | parse1 -> declaration::Function %445 <linkage="private">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %446 <linkage="private">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %447 <linkage="private">
+-[debug/ast-codegen]         | self -> declaration::Expression %444 <linkage="private"> (type: value_ref<foo::P0>)
  [debug/ast-codegen]       - Function <cc="<standard>"> (default-parser-functions.spicy:13:11)
 -[debug/ast-codegen]           | __cur -> declaration::Parameter %37 <is_struct_param="false" kind="copy">
 -[debug/ast-codegen]           | __data -> declaration::Parameter %36 <is_struct_param="false" kind="inout">
@@ -429,7 +430,7 @@
  [debug/ast-codegen]         - ID <name="foo::P0::__parse_stage1"> (default-parser-functions.spicy:13:11)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:13:11) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:13:11)
-@@ -1011,7 +691,6 @@
+@@ -1012,7 +691,6 @@
  [debug/ast-codegen]             - type::stream::Iterator (non-const)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block (default-parser-functions.spicy:13:11)
@@ -437,7 +438,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %41 <const="false">
  [debug/ast-codegen]               - ID <name="__result">
-@@ -1044,37 +723,13 @@
+@@ -1045,37 +723,13 @@
  [debug/ast-codegen]                       - expression::Ctor (const)
  [debug/ast-codegen]                         - ctor::String <value="spicy">
  [debug/ast-codegen]               - statement::Expression (default-parser-functions.spicy:13:11)
@@ -481,7 +482,7 @@
  [debug/ast-codegen]               - statement::Expression
  [debug/ast-codegen]                 - operator_::function::Call <kind="call"> (non-const)
  [debug/ast-codegen]                   - type::Unknown (<singleton>) (non-const)
-@@ -1100,55 +755,19 @@
+@@ -1101,55 +755,19 @@
  [debug/ast-codegen]               - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]               - statement::Block
  [debug/ast-codegen]                 - statement::Expression (default-parser-functions.spicy:13:11)
@@ -546,7 +547,7 @@
  [debug/ast-codegen]           - statement::Return
  [debug/ast-codegen]             - expression::ResolvedID <resolved="%41"> (type: tuple<view<stream>, int<64>, iterator<stream>>) (non-const)
  [debug/ast-codegen]               - ID <name="__result">
-@@ -1157,9 +776,6 @@
+@@ -1158,9 +776,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:13:11)
  [debug/ast-codegen]       - Function <cc="extern"> (default-parser-functions.spicy:13:11)
@@ -556,7 +557,7 @@
  [debug/ast-codegen]         - ID <name="foo::P0::parse1"> (default-parser-functions.spicy:13:11)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:13:11) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:13:11)
-@@ -1186,10 +802,6 @@
+@@ -1187,10 +802,6 @@
  [debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block
@@ -567,7 +568,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %45 <const="false">
  [debug/ast-codegen]               - ID <name="unit">
-@@ -1353,10 +965,6 @@
+@@ -1354,10 +965,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:13:11)
  [debug/ast-codegen]       - Function <cc="extern"> (default-parser-functions.spicy:13:11)
@@ -578,7 +579,7 @@
  [debug/ast-codegen]         - ID <name="foo::P0::parse3"> (default-parser-functions.spicy:13:11)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:13:11) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:13:11)
-@@ -1389,10 +997,6 @@
+@@ -1390,10 +997,6 @@
  [debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block
@@ -589,7 +590,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %53 <const="false">
  [debug/ast-codegen]               - ID <name="unit">
-@@ -1573,10 +1177,6 @@
+@@ -1574,10 +1177,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:13:11)
  [debug/ast-codegen]       - Function <cc="extern"> (default-parser-functions.spicy:13:11)
@@ -600,7 +601,7 @@
  [debug/ast-codegen]         - ID <name="foo::P0::parse2"> (default-parser-functions.spicy:13:11)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:13:11) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:13:11)
-@@ -1609,9 +1209,6 @@
+@@ -1610,9 +1209,6 @@
  [debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block
@@ -610,15 +611,15 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %61 <const="false">
  [debug/ast-codegen]               - ID <name="ncur">
-@@ -1764,17 +1361,7 @@
+@@ -1765,17 +1361,7 @@
  [debug/ast-codegen]           - Attribute <tag="&static">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:15:18)
--[debug/ast-codegen]         | __parser -> declaration::LocalVariable %447 <const="false">
--[debug/ast-codegen]         | parse1 -> declaration::Function %448 <linkage="public">
--[debug/ast-codegen]         | parse2 -> declaration::Function %449 <linkage="public">
--[debug/ast-codegen]         | parse3 -> declaration::Function %450 <linkage="public">
--[debug/ast-codegen]         | self -> declaration::Expression %446 <linkage="private"> (type: value_ref<foo::P1>)
+-[debug/ast-codegen]         | __parser -> declaration::LocalVariable %449 <const="false">
+-[debug/ast-codegen]         | parse1 -> declaration::Function %450 <linkage="public">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %451 <linkage="public">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %452 <linkage="public">
+-[debug/ast-codegen]         | self -> declaration::Expression %448 <linkage="private"> (type: value_ref<foo::P1>)
  [debug/ast-codegen]       - Function <cc="<standard>"> (default-parser-functions.spicy:15:18)
 -[debug/ast-codegen]           | __cur -> declaration::Parameter %65 <is_struct_param="false" kind="copy">
 -[debug/ast-codegen]           | __data -> declaration::Parameter %64 <is_struct_param="false" kind="inout">
@@ -628,7 +629,7 @@
  [debug/ast-codegen]         - ID <name="foo::P1::__parse_stage1"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:15:18) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:15:18)
-@@ -1806,7 +1393,6 @@
+@@ -1807,7 +1393,6 @@
  [debug/ast-codegen]             - type::stream::Iterator (non-const)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block (default-parser-functions.spicy:15:18)
@@ -636,7 +637,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %69 <const="false">
  [debug/ast-codegen]               - ID <name="__result">
-@@ -1839,23 +1425,10 @@
+@@ -1840,23 +1425,10 @@
  [debug/ast-codegen]                       - expression::Ctor (const)
  [debug/ast-codegen]                         - ctor::String <value="spicy">
  [debug/ast-codegen]               - statement::Expression (default-parser-functions.spicy:15:18)
@@ -659,11 +660,11 @@
 +[debug/ast-codegen]                   - ctor::Default
 +[debug/ast-codegen]                     - type::Void (non-const)
  [debug/ast-codegen]               - statement::If %70
--[debug/ast-codegen]                   | filtered -> declaration::Forward %456 <="false">
+-[debug/ast-codegen]                   | filtered -> declaration::Forward %458 <="false">
  [debug/ast-codegen]                 - declaration::LocalVariable <const="false">
  [debug/ast-codegen]                   - ID <name="filtered">
  [debug/ast-codegen]                   - node::None (default-parser-functions.spicy:11:12-13:19)
-@@ -1876,7 +1449,6 @@
+@@ -1877,7 +1449,6 @@
  [debug/ast-codegen]                     - ID <name="filtered">
  [debug/ast-codegen]                   - type::Bool (non-const)
  [debug/ast-codegen]                 - statement::Block
@@ -671,7 +672,7 @@
  [debug/ast-codegen]                   - statement::Declaration
  [debug/ast-codegen]                     - declaration::LocalVariable %72 <const="false">
  [debug/ast-codegen]                       - ID <name="filtered_data">
-@@ -2070,21 +1642,9 @@
+@@ -2071,21 +1642,9 @@
  [debug/ast-codegen]               - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]               - statement::Block
  [debug/ast-codegen]                 - statement::Expression (default-parser-functions.spicy:15:18)
@@ -696,7 +697,7 @@
  [debug/ast-codegen]                 - statement::Expression
  [debug/ast-codegen]                   - operator_::function::Call <kind="call"> (non-const)
  [debug/ast-codegen]                     - type::Unknown (<singleton>) (non-const)
-@@ -2095,39 +1655,15 @@
+@@ -2096,39 +1655,15 @@
  [debug/ast-codegen]                         - expression::ResolvedID <resolved="%24"> (type: value_ref<foo::P1>) (default-parser-functions.spicy:15:18) (non-const)
  [debug/ast-codegen]                           - ID <name="self"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]                 - statement::Expression (default-parser-functions.spicy:15:18)
@@ -742,15 +743,15 @@
  [debug/ast-codegen]           - statement::Return
  [debug/ast-codegen]             - expression::ResolvedID <resolved="%69"> (type: tuple<view<stream>, int<64>, iterator<stream>>) (non-const)
  [debug/ast-codegen]               - ID <name="__result">
-@@ -2135,17 +1671,7 @@
+@@ -2136,17 +1671,7 @@
  [debug/ast-codegen]           - Attribute <tag="&always-emit">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:15:18)
--[debug/ast-codegen]         | __parser -> declaration::LocalVariable %447 <const="false">
--[debug/ast-codegen]         | parse1 -> declaration::Function %448 <linkage="public">
--[debug/ast-codegen]         | parse2 -> declaration::Function %449 <linkage="public">
--[debug/ast-codegen]         | parse3 -> declaration::Function %450 <linkage="public">
--[debug/ast-codegen]         | self -> declaration::Expression %446 <linkage="private"> (type: value_ref<foo::P1>)
+-[debug/ast-codegen]         | __parser -> declaration::LocalVariable %449 <const="false">
+-[debug/ast-codegen]         | parse1 -> declaration::Function %450 <linkage="public">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %451 <linkage="public">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %452 <linkage="public">
+-[debug/ast-codegen]         | self -> declaration::Expression %448 <linkage="private"> (type: value_ref<foo::P1>)
  [debug/ast-codegen]       - Function <cc="<standard>"> (default-parser-functions.spicy:15:18)
 -[debug/ast-codegen]           | __cur -> declaration::Parameter %74 <is_struct_param="false" kind="copy">
 -[debug/ast-codegen]           | __data -> declaration::Parameter %73 <is_struct_param="false" kind="inout">
@@ -760,7 +761,7 @@
  [debug/ast-codegen]         - ID <name="foo::P1::__parse_foo_P1_stage2"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:15:18) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:15:18)
-@@ -2177,7 +1703,6 @@
+@@ -2178,7 +1703,6 @@
  [debug/ast-codegen]             - type::stream::Iterator (non-const)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block (default-parser-functions.spicy:15:18)
@@ -768,7 +769,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %78 <const="false">
  [debug/ast-codegen]               - ID <name="__result">
-@@ -2188,21 +1713,9 @@
+@@ -2189,21 +1713,9 @@
  [debug/ast-codegen]                 - type::stream::Iterator (non-const)
  [debug/ast-codegen]               - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]           - statement::Expression (default-parser-functions.spicy:15:18)
@@ -793,7 +794,7 @@
  [debug/ast-codegen]           - statement::Expression
  [debug/ast-codegen]             - operator_::function::Call <kind="call"> (non-const)
  [debug/ast-codegen]               - type::Unknown (<singleton>) (non-const)
-@@ -2241,9 +1754,6 @@
+@@ -2242,9 +1754,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]       - Function <cc="extern"> (default-parser-functions.spicy:15:18)
@@ -803,7 +804,7 @@
  [debug/ast-codegen]         - ID <name="foo::P1::parse1"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:15:18) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:15:18)
-@@ -2270,10 +1780,6 @@
+@@ -2271,10 +1780,6 @@
  [debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block
@@ -814,7 +815,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %82 <const="false">
  [debug/ast-codegen]               - ID <name="unit">
-@@ -2437,10 +1943,6 @@
+@@ -2438,10 +1943,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]       - Function <cc="extern"> (default-parser-functions.spicy:15:18)
@@ -825,7 +826,7 @@
  [debug/ast-codegen]         - ID <name="foo::P1::parse3"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:15:18) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:15:18)
-@@ -2473,10 +1975,6 @@
+@@ -2474,10 +1975,6 @@
  [debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block
@@ -836,7 +837,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %90 <const="false">
  [debug/ast-codegen]               - ID <name="unit">
-@@ -2657,10 +2155,6 @@
+@@ -2658,10 +2155,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]       - Function <cc="extern"> (default-parser-functions.spicy:15:18)
@@ -847,7 +848,7 @@
  [debug/ast-codegen]         - ID <name="foo::P1::parse2"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:15:18) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:15:18)
-@@ -2693,9 +2187,6 @@
+@@ -2694,9 +2187,6 @@
  [debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block
@@ -857,41 +858,41 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %98 <const="false">
  [debug/ast-codegen]               - ID <name="ncur">
-@@ -3003,13 +2494,7 @@
+@@ -3010,13 +2500,7 @@
  [debug/ast-codegen]                         - ID <name="foo::P1"> (default-parser-functions.spicy:15:18)
  [debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:21:13)
--[debug/ast-codegen]         | __parser -> declaration::LocalVariable %452 <const="false">
--[debug/ast-codegen]         | parse1 -> declaration::Function %453 <linkage="public">
--[debug/ast-codegen]         | parse2 -> declaration::Function %454 <linkage="public">
--[debug/ast-codegen]         | parse3 -> declaration::Function %455 <linkage="public">
--[debug/ast-codegen]         | self -> declaration::Expression %451 <linkage="private"> (type: value_ref<foo::P2>)
+-[debug/ast-codegen]         | __parser -> declaration::LocalVariable %454 <const="false">
+-[debug/ast-codegen]         | parse1 -> declaration::Function %455 <linkage="public">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %456 <linkage="public">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %457 <linkage="public">
+-[debug/ast-codegen]         | self -> declaration::Expression %453 <linkage="private"> (type: value_ref<foo::P2>)
  [debug/ast-codegen]       - Function <cc="<standard>"> (default-parser-functions.spicy:21:13)
 -[debug/ast-codegen]           | __dd -> declaration::Parameter %101 <is_struct_param="false" kind="in">
  [debug/ast-codegen]         - ID <name="foo::P2::__on_y"> (default-parser-functions.spicy:21:13)
  [debug/ast-codegen]         - type::Function <flavor="hook"> (default-parser-functions.spicy:21:13) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:21:13)
-@@ -3021,11 +2506,6 @@
+@@ -3028,11 +2512,6 @@
  [debug/ast-codegen]         - statement::Block (default-parser-functions.spicy:21:14)
  [debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:23:5)
--[debug/ast-codegen]         | __parser -> declaration::LocalVariable %452 <const="false">
--[debug/ast-codegen]         | parse1 -> declaration::Function %453 <linkage="public">
--[debug/ast-codegen]         | parse2 -> declaration::Function %454 <linkage="public">
--[debug/ast-codegen]         | parse3 -> declaration::Function %455 <linkage="public">
--[debug/ast-codegen]         | self -> declaration::Expression %451 <linkage="private"> (type: value_ref<foo::P2>)
+-[debug/ast-codegen]         | __parser -> declaration::LocalVariable %454 <const="false">
+-[debug/ast-codegen]         | parse1 -> declaration::Function %455 <linkage="public">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %456 <linkage="public">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %457 <linkage="public">
+-[debug/ast-codegen]         | self -> declaration::Expression %453 <linkage="private"> (type: value_ref<foo::P2>)
  [debug/ast-codegen]       - Function <cc="<standard>"> (default-parser-functions.spicy:23:5)
  [debug/ast-codegen]         - ID <name="foo::P2::__on_0x25_error"> (default-parser-functions.spicy:23:5)
  [debug/ast-codegen]         - type::Function <flavor="hook"> (default-parser-functions.spicy:23:5) (non-const)
-@@ -3034,17 +2514,7 @@
+@@ -3041,17 +2520,7 @@
  [debug/ast-codegen]         - statement::Block (default-parser-functions.spicy:23:15)
  [debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:17:18-24:2)
--[debug/ast-codegen]         | __parser -> declaration::LocalVariable %452 <const="false">
--[debug/ast-codegen]         | parse1 -> declaration::Function %453 <linkage="public">
--[debug/ast-codegen]         | parse2 -> declaration::Function %454 <linkage="public">
--[debug/ast-codegen]         | parse3 -> declaration::Function %455 <linkage="public">
--[debug/ast-codegen]         | self -> declaration::Expression %451 <linkage="private"> (type: value_ref<foo::P2>)
+-[debug/ast-codegen]         | __parser -> declaration::LocalVariable %454 <const="false">
+-[debug/ast-codegen]         | parse1 -> declaration::Function %455 <linkage="public">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %456 <linkage="public">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %457 <linkage="public">
+-[debug/ast-codegen]         | self -> declaration::Expression %453 <linkage="private"> (type: value_ref<foo::P2>)
  [debug/ast-codegen]       - Function <cc="<standard>"> (default-parser-functions.spicy:17:18-24:2)
 -[debug/ast-codegen]           | __cur -> declaration::Parameter %103 <is_struct_param="false" kind="copy">
 -[debug/ast-codegen]           | __data -> declaration::Parameter %102 <is_struct_param="false" kind="inout">
@@ -901,7 +902,7 @@
  [debug/ast-codegen]         - ID <name="foo::P2::__parse_stage1"> (default-parser-functions.spicy:17:18-24:2)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:17:18-24:2) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:17:18-24:2)
-@@ -3076,7 +2546,6 @@
+@@ -3083,7 +2552,6 @@
  [debug/ast-codegen]             - type::stream::Iterator (non-const)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block (default-parser-functions.spicy:17:18-24:2)
@@ -909,7 +910,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %107 <const="false">
  [debug/ast-codegen]               - ID <name="__result">
-@@ -3168,21 +2637,9 @@
+@@ -3175,21 +2643,9 @@
  [debug/ast-codegen]                     - ctor::Optional
  [debug/ast-codegen]                       - type::stream::Iterator (non-const)
  [debug/ast-codegen]               - statement::Expression (default-parser-functions.spicy:17:18-24:2)
@@ -934,15 +935,15 @@
  [debug/ast-codegen]               - statement::If
  [debug/ast-codegen]                 - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]                 - expression::Coerced (non-const)
-@@ -3248,7 +2705,6 @@
+@@ -3255,7 +2711,6 @@
  [debug/ast-codegen]                           - type::stream::Iterator (non-const)
  [debug/ast-codegen]                 - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]               - statement::If %108
--[debug/ast-codegen]                   | filtered -> declaration::Forward %457 <="false">
+-[debug/ast-codegen]                   | filtered -> declaration::Forward %459 <="false">
  [debug/ast-codegen]                 - declaration::LocalVariable <const="false">
  [debug/ast-codegen]                   - ID <name="filtered">
  [debug/ast-codegen]                   - node::None (default-parser-functions.spicy:11:12-13:19)
-@@ -3269,7 +2725,6 @@
+@@ -3276,7 +2731,6 @@
  [debug/ast-codegen]                     - ID <name="filtered">
  [debug/ast-codegen]                   - type::Bool (non-const)
  [debug/ast-codegen]                 - statement::Block
@@ -950,7 +951,7 @@
  [debug/ast-codegen]                   - statement::Declaration
  [debug/ast-codegen]                     - declaration::LocalVariable %110 <const="false">
  [debug/ast-codegen]                       - ID <name="filtered_data">
-@@ -3526,21 +2981,9 @@
+@@ -3533,21 +2987,9 @@
  [debug/ast-codegen]                       - ctor::Optional
  [debug/ast-codegen]                         - type::stream::Iterator (non-const)
  [debug/ast-codegen]                 - statement::Expression (default-parser-functions.spicy:17:18-24:2)
@@ -975,7 +976,7 @@
  [debug/ast-codegen]                 - statement::If
  [debug/ast-codegen]                   - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]                   - expression::Coerced (non-const)
-@@ -3625,21 +3068,9 @@
+@@ -3632,21 +3074,9 @@
  [debug/ast-codegen]                 - ctor::Optional
  [debug/ast-codegen]                   - type::stream::Iterator (non-const)
  [debug/ast-codegen]           - statement::Expression (default-parser-functions.spicy:17:18-24:2)
@@ -1000,15 +1001,15 @@
  [debug/ast-codegen]           - statement::If
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]             - expression::Coerced (non-const)
-@@ -3711,17 +3142,7 @@
+@@ -3718,17 +3148,7 @@
  [debug/ast-codegen]           - Attribute <tag="&always-emit">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:17:18-24:2)
--[debug/ast-codegen]         | __parser -> declaration::LocalVariable %452 <const="false">
--[debug/ast-codegen]         | parse1 -> declaration::Function %453 <linkage="public">
--[debug/ast-codegen]         | parse2 -> declaration::Function %454 <linkage="public">
--[debug/ast-codegen]         | parse3 -> declaration::Function %455 <linkage="public">
--[debug/ast-codegen]         | self -> declaration::Expression %451 <linkage="private"> (type: value_ref<foo::P2>)
+-[debug/ast-codegen]         | __parser -> declaration::LocalVariable %454 <const="false">
+-[debug/ast-codegen]         | parse1 -> declaration::Function %455 <linkage="public">
+-[debug/ast-codegen]         | parse2 -> declaration::Function %456 <linkage="public">
+-[debug/ast-codegen]         | parse3 -> declaration::Function %457 <linkage="public">
+-[debug/ast-codegen]         | self -> declaration::Expression %453 <linkage="private"> (type: value_ref<foo::P2>)
  [debug/ast-codegen]       - Function <cc="<standard>"> (default-parser-functions.spicy:17:18-24:2)
 -[debug/ast-codegen]           | __cur -> declaration::Parameter %112 <is_struct_param="false" kind="copy">
 -[debug/ast-codegen]           | __data -> declaration::Parameter %111 <is_struct_param="false" kind="inout">
@@ -1018,7 +1019,7 @@
  [debug/ast-codegen]         - ID <name="foo::P2::__parse_foo_P2_stage2"> (default-parser-functions.spicy:17:18-24:2)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:17:18-24:2) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:17:18-24:2)
-@@ -3753,7 +3174,6 @@
+@@ -3760,7 +3180,6 @@
  [debug/ast-codegen]             - type::stream::Iterator (non-const)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block (default-parser-functions.spicy:17:18-24:2)
@@ -1026,11 +1027,11 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %116 <const="false">
  [debug/ast-codegen]               - ID <name="__result">
-@@ -4000,37 +3420,9 @@
+@@ -4007,37 +3426,9 @@
  [debug/ast-codegen]                 - ctor::Optional
  [debug/ast-codegen]                   - type::stream::Iterator (non-const)
  [debug/ast-codegen]           - statement::Expression (default-parser-functions.spicy:20:5)
--[debug/ast-codegen]             - operator_::struct_::MemberCall %440 <kind="method call"> (default-parser-functions.spicy:20:5) (non-const)
+-[debug/ast-codegen]             - operator_::struct_::MemberCall %442 <kind="method call"> (default-parser-functions.spicy:20:5) (non-const)
 -[debug/ast-codegen]               - type::Unknown (<singleton>) (non-const)
 -[debug/ast-codegen]               - operator_::value_reference::Deref <kind="*"> (default-parser-functions.spicy:20:5) (non-const)
 -[debug/ast-codegen]                 - type::Unknown (<singleton>) (non-const)
@@ -1061,13 +1062,13 @@
 -[debug/ast-codegen]                         - ID <name="x">
 -[debug/ast-codegen]                       - type::Member (default-parser-functions.spicy:20:5) (non-const)
 -[debug/ast-codegen]                         - ID <name="x">
-+[debug/ast-codegen]             - expression::Ctor %440 (const)
++[debug/ast-codegen]             - expression::Ctor %442 (const)
 +[debug/ast-codegen]               - ctor::Default
 +[debug/ast-codegen]                 - type::Void (non-const)
  [debug/ast-codegen]           - statement::If
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]             - expression::Coerced (non-const)
-@@ -4466,21 +3858,9 @@
+@@ -4473,21 +3864,9 @@
  [debug/ast-codegen]                 - ctor::Optional
  [debug/ast-codegen]                   - type::stream::Iterator (non-const)
  [debug/ast-codegen]           - statement::Expression (default-parser-functions.spicy:17:18-24:2)
@@ -1092,7 +1093,7 @@
  [debug/ast-codegen]           - statement::If
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]             - expression::Coerced (non-const)
-@@ -4583,9 +3963,6 @@
+@@ -4590,9 +3969,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:17:18-24:2)
  [debug/ast-codegen]       - Function <cc="extern"> (default-parser-functions.spicy:17:18-24:2)
@@ -1102,7 +1103,7 @@
  [debug/ast-codegen]         - ID <name="foo::P2::parse1"> (default-parser-functions.spicy:17:18-24:2)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:17:18-24:2) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:17:18-24:2)
-@@ -4612,10 +3989,6 @@
+@@ -4619,10 +3995,6 @@
  [debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block
@@ -1113,7 +1114,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %120 <const="false">
  [debug/ast-codegen]               - ID <name="unit">
-@@ -4800,10 +4173,6 @@
+@@ -4807,10 +4179,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:17:18-24:2)
  [debug/ast-codegen]       - Function <cc="extern"> (default-parser-functions.spicy:17:18-24:2)
@@ -1124,7 +1125,7 @@
  [debug/ast-codegen]         - ID <name="foo::P2::parse3"> (default-parser-functions.spicy:17:18-24:2)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:17:18-24:2) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:17:18-24:2)
-@@ -4836,10 +4205,6 @@
+@@ -4843,10 +4211,6 @@
  [debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block
@@ -1135,7 +1136,7 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %128 <const="false">
  [debug/ast-codegen]               - ID <name="unit">
-@@ -5041,10 +4406,6 @@
+@@ -5048,10 +4412,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Function <linkage="method"> (default-parser-functions.spicy:17:18-24:2)
  [debug/ast-codegen]       - Function <cc="extern"> (default-parser-functions.spicy:17:18-24:2)
@@ -1146,7 +1147,7 @@
  [debug/ast-codegen]         - ID <name="foo::P2::parse2"> (default-parser-functions.spicy:17:18-24:2)
  [debug/ast-codegen]         - type::Function <flavor="method"> (default-parser-functions.spicy:17:18-24:2) (non-const)
  [debug/ast-codegen]           - type::function::Result (default-parser-functions.spicy:17:18-24:2)
-@@ -5077,9 +4438,6 @@
+@@ -5084,9 +4444,6 @@
  [debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext">
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]         - statement::Block
@@ -1156,116 +1157,117 @@
  [debug/ast-codegen]           - statement::Declaration
  [debug/ast-codegen]             - declaration::LocalVariable %136 <const="false">
  [debug/ast-codegen]               - ID <name="ncur">
-@@ -6397,32 +5755,9 @@
+@@ -6410,33 +5767,9 @@
  [debug/ast-codegen]           - ID <name="lahead_end">
  [debug/ast-codegen] # hilti: AST for codegen
- [debug/ast-codegen]   - Module %17 (hilti.hlt:2:1-36:2)
+ [debug/ast-codegen]   - Module %17 (hilti.hlt:2:1-38:2)
 -[debug/ast-codegen]       | AddressFamily -> declaration::Type %155 <linkage="public">
 -[debug/ast-codegen]       | BitOrder -> declaration::Type %140 <linkage="public">
 -[debug/ast-codegen]       | ByteOrder -> declaration::Type %144 <linkage="public">
--[debug/ast-codegen]       | Captures -> declaration::Type %266 <linkage="public">
+-[debug/ast-codegen]       | Captures -> declaration::Type %267 <linkage="public">
 -[debug/ast-codegen]       | Charset -> declaration::Type %168 <linkage="public">
--[debug/ast-codegen]       | Exception -> declaration::Type %275 <linkage="public">
+-[debug/ast-codegen]       | Exception -> declaration::Type %277 <linkage="public">
 -[debug/ast-codegen]       | MatchState -> declaration::Type %172 <linkage="public">
 -[debug/ast-codegen]       | Protocol -> declaration::Type %163 <linkage="public">
 -[debug/ast-codegen]       | RealType -> declaration::Type %159 <linkage="public">
--[debug/ast-codegen]       | RuntimeError -> declaration::Type %276 <linkage="public">
+-[debug/ast-codegen]       | RuntimeError -> declaration::Type %278 <linkage="public">
 -[debug/ast-codegen]       | Side -> declaration::Type %150 <linkage="public">
--[debug/ast-codegen]       | abort -> declaration::Function %274 <linkage="public">
--[debug/ast-codegen]       | current_time -> declaration::Function %272 <linkage="public">
--[debug/ast-codegen]       | debug -> declaration::Function %269 <linkage="public">
--[debug/ast-codegen]       | debugDedent -> declaration::Function %271 <linkage="public">
--[debug/ast-codegen]       | debugIndent -> declaration::Function %270 <linkage="public">
--[debug/ast-codegen]       | hilti -> declaration::Module %485 <id="hilti">
--[debug/ast-codegen]       | mktime -> declaration::Function %273 <linkage="public">
--[debug/ast-codegen]       | print -> declaration::Function %267 <linkage="public">
--[debug/ast-codegen]       | printValues -> declaration::Function %268 <linkage="public">
+-[debug/ast-codegen]       | abort -> declaration::Function %275 <linkage="public">
+-[debug/ast-codegen]       | current_time -> declaration::Function %273 <linkage="public">
+-[debug/ast-codegen]       | debug -> declaration::Function %270 <linkage="public">
+-[debug/ast-codegen]       | debugDedent -> declaration::Function %272 <linkage="public">
+-[debug/ast-codegen]       | debugIndent -> declaration::Function %271 <linkage="public">
+-[debug/ast-codegen]       | hilti -> declaration::Module %487 <id="hilti">
+-[debug/ast-codegen]       | linker_scope -> declaration::Function %276 <linkage="public">
+-[debug/ast-codegen]       | mktime -> declaration::Function %274 <linkage="public">
+-[debug/ast-codegen]       | print -> declaration::Function %268 <linkage="public">
+-[debug/ast-codegen]       | printValues -> declaration::Function %269 <linkage="public">
  [debug/ast-codegen]     - ID <name="hilti"> (hilti.hlt:2:8)
- [debug/ast-codegen]     - statement::Block (hilti.hlt:2:1-36:2)
+ [debug/ast-codegen]     - statement::Block (hilti.hlt:2:1-38:2)
  [debug/ast-codegen]     - declaration::Type %140 <linkage="public"> (hilti.hlt:4:1)
--[debug/ast-codegen]         | LSB0 -> declaration::Constant %459 <linkage="public">
--[debug/ast-codegen]         | MSB0 -> declaration::Constant %460 <linkage="public">
--[debug/ast-codegen]         | Undef -> declaration::Constant %461 <linkage="public">
+-[debug/ast-codegen]         | LSB0 -> declaration::Constant %461 <linkage="public">
+-[debug/ast-codegen]         | MSB0 -> declaration::Constant %462 <linkage="public">
+-[debug/ast-codegen]         | Undef -> declaration::Constant %463 <linkage="public">
  [debug/ast-codegen]       - ID <name="BitOrder"> (hilti.hlt:4:13)
  [debug/ast-codegen]       - type::Enum (hilti.hlt:4:24) (non-const) (type-id: hilti::BitOrder) (cxx-id: hilti::rt::integer::BitOrder)
  [debug/ast-codegen]         - type::enum_::Label <value="0"> (hilti.hlt:4:31)
-@@ -6436,11 +5771,6 @@
+@@ -6450,11 +5783,6 @@
  [debug/ast-codegen]           - expression::Ctor (hilti.hlt:4:53) (const)
  [debug/ast-codegen]             - ctor::String <value="hilti::rt::integer::BitOrder"> (hilti.hlt:4:53)
  [debug/ast-codegen]     - declaration::Type %144 <linkage="public"> (hilti.hlt:5:1)
--[debug/ast-codegen]         | Big -> declaration::Constant %463 <linkage="public">
--[debug/ast-codegen]         | Host -> declaration::Constant %465 <linkage="public">
--[debug/ast-codegen]         | Little -> declaration::Constant %462 <linkage="public">
--[debug/ast-codegen]         | Network -> declaration::Constant %464 <linkage="public">
--[debug/ast-codegen]         | Undef -> declaration::Constant %466 <linkage="public">
+-[debug/ast-codegen]         | Big -> declaration::Constant %465 <linkage="public">
+-[debug/ast-codegen]         | Host -> declaration::Constant %467 <linkage="public">
+-[debug/ast-codegen]         | Little -> declaration::Constant %464 <linkage="public">
+-[debug/ast-codegen]         | Network -> declaration::Constant %466 <linkage="public">
+-[debug/ast-codegen]         | Undef -> declaration::Constant %468 <linkage="public">
  [debug/ast-codegen]       - ID <name="ByteOrder"> (hilti.hlt:5:13)
  [debug/ast-codegen]       - type::Enum (hilti.hlt:5:25) (non-const) (type-id: hilti::ByteOrder) (cxx-id: hilti::rt::ByteOrder)
  [debug/ast-codegen]         - type::enum_::Label <value="0"> (hilti.hlt:5:32)
-@@ -6458,10 +5788,6 @@
+@@ -6472,10 +5800,6 @@
  [debug/ast-codegen]           - expression::Ctor (hilti.hlt:5:70) (const)
  [debug/ast-codegen]             - ctor::String <value="hilti::rt::ByteOrder"> (hilti.hlt:5:70)
  [debug/ast-codegen]     - declaration::Type %150 <linkage="public"> (hilti.hlt:6:1)
--[debug/ast-codegen]         | Both -> declaration::Constant %469 <linkage="public">
--[debug/ast-codegen]         | Left -> declaration::Constant %467 <linkage="public">
--[debug/ast-codegen]         | Right -> declaration::Constant %468 <linkage="public">
--[debug/ast-codegen]         | Undef -> declaration::Constant %470 <linkage="public">
+-[debug/ast-codegen]         | Both -> declaration::Constant %471 <linkage="public">
+-[debug/ast-codegen]         | Left -> declaration::Constant %469 <linkage="public">
+-[debug/ast-codegen]         | Right -> declaration::Constant %470 <linkage="public">
+-[debug/ast-codegen]         | Undef -> declaration::Constant %472 <linkage="public">
  [debug/ast-codegen]       - ID <name="Side"> (hilti.hlt:6:13)
  [debug/ast-codegen]       - type::Enum (hilti.hlt:6:20) (non-const) (type-id: hilti::Side) (cxx-id: hilti::rt::bytes::Side)
  [debug/ast-codegen]         - type::enum_::Label <value="0"> (hilti.hlt:6:27)
-@@ -6477,9 +5803,6 @@
+@@ -6491,9 +5815,6 @@
  [debug/ast-codegen]           - expression::Ctor (hilti.hlt:6:56) (const)
  [debug/ast-codegen]             - ctor::String <value="hilti::rt::bytes::Side"> (hilti.hlt:6:56)
  [debug/ast-codegen]     - declaration::Type %155 <linkage="public"> (hilti.hlt:7:1)
--[debug/ast-codegen]         | IPv4 -> declaration::Constant %471 <linkage="public">
--[debug/ast-codegen]         | IPv6 -> declaration::Constant %472 <linkage="public">
--[debug/ast-codegen]         | Undef -> declaration::Constant %473 <linkage="public">
+-[debug/ast-codegen]         | IPv4 -> declaration::Constant %473 <linkage="public">
+-[debug/ast-codegen]         | IPv6 -> declaration::Constant %474 <linkage="public">
+-[debug/ast-codegen]         | Undef -> declaration::Constant %475 <linkage="public">
  [debug/ast-codegen]       - ID <name="AddressFamily"> (hilti.hlt:7:13)
  [debug/ast-codegen]       - type::Enum (hilti.hlt:7:29) (non-const) (type-id: hilti::AddressFamily) (cxx-id: hilti::rt::AddressFamily)
  [debug/ast-codegen]         - type::enum_::Label <value="0"> (hilti.hlt:7:36)
-@@ -6493,9 +5816,6 @@
+@@ -6507,9 +5828,6 @@
  [debug/ast-codegen]           - expression::Ctor (hilti.hlt:7:58) (const)
  [debug/ast-codegen]             - ctor::String <value="hilti::rt::AddressFamily"> (hilti.hlt:7:58)
  [debug/ast-codegen]     - declaration::Type %159 <linkage="public"> (hilti.hlt:8:1)
--[debug/ast-codegen]         | IEEE754_Double -> declaration::Constant %475 <linkage="public">
--[debug/ast-codegen]         | IEEE754_Single -> declaration::Constant %474 <linkage="public">
--[debug/ast-codegen]         | Undef -> declaration::Constant %476 <linkage="public">
+-[debug/ast-codegen]         | IEEE754_Double -> declaration::Constant %477 <linkage="public">
+-[debug/ast-codegen]         | IEEE754_Single -> declaration::Constant %476 <linkage="public">
+-[debug/ast-codegen]         | Undef -> declaration::Constant %478 <linkage="public">
  [debug/ast-codegen]       - ID <name="RealType"> (hilti.hlt:8:13)
  [debug/ast-codegen]       - type::Enum (hilti.hlt:8:24) (non-const) (type-id: hilti::RealType) (cxx-id: hilti::rt::real::Type)
  [debug/ast-codegen]         - type::enum_::Label <value="0"> (hilti.hlt:8:31)
-@@ -6509,10 +5829,6 @@
+@@ -6523,10 +5841,6 @@
  [debug/ast-codegen]           - expression::Ctor (hilti.hlt:8:73) (const)
  [debug/ast-codegen]             - ctor::String <value="hilti::rt::real::Type"> (hilti.hlt:8:73)
  [debug/ast-codegen]     - declaration::Type %163 <linkage="public"> (hilti.hlt:9:1)
--[debug/ast-codegen]         | ICMP -> declaration::Constant %479 <linkage="public">
--[debug/ast-codegen]         | TCP -> declaration::Constant %477 <linkage="public">
--[debug/ast-codegen]         | UDP -> declaration::Constant %478 <linkage="public">
--[debug/ast-codegen]         | Undef -> declaration::Constant %480 <linkage="public">
+-[debug/ast-codegen]         | ICMP -> declaration::Constant %481 <linkage="public">
+-[debug/ast-codegen]         | TCP -> declaration::Constant %479 <linkage="public">
+-[debug/ast-codegen]         | UDP -> declaration::Constant %480 <linkage="public">
+-[debug/ast-codegen]         | Undef -> declaration::Constant %482 <linkage="public">
  [debug/ast-codegen]       - ID <name="Protocol"> (hilti.hlt:9:13)
  [debug/ast-codegen]       - type::Enum (hilti.hlt:9:24) (non-const) (type-id: hilti::Protocol) (cxx-id: hilti::rt::Protocol)
  [debug/ast-codegen]         - type::enum_::Label <value="0"> (hilti.hlt:9:31)
-@@ -6528,9 +5844,6 @@
+@@ -6542,9 +5856,6 @@
  [debug/ast-codegen]           - expression::Ctor (hilti.hlt:9:57) (const)
  [debug/ast-codegen]             - ctor::String <value="hilti::rt::Protocol"> (hilti.hlt:9:57)
  [debug/ast-codegen]     - declaration::Type %168 <linkage="public"> (hilti.hlt:10:1)
--[debug/ast-codegen]         | ASCII -> declaration::Constant %481 <linkage="public">
--[debug/ast-codegen]         | UTF8 -> declaration::Constant %482 <linkage="public">
--[debug/ast-codegen]         | Undef -> declaration::Constant %483 <linkage="public">
+-[debug/ast-codegen]         | ASCII -> declaration::Constant %483 <linkage="public">
+-[debug/ast-codegen]         | UTF8 -> declaration::Constant %484 <linkage="public">
+-[debug/ast-codegen]         | Undef -> declaration::Constant %485 <linkage="public">
  [debug/ast-codegen]       - ID <name="Charset"> (hilti.hlt:10:13)
  [debug/ast-codegen]       - type::Enum (hilti.hlt:10:23) (non-const) (type-id: hilti::Charset) (cxx-id: hilti::rt::bytes::Charset)
  [debug/ast-codegen]         - type::enum_::Label <value="0"> (hilti.hlt:10:30)
-@@ -6549,7 +5862,6 @@
+@@ -6563,7 +5874,6 @@
  [debug/ast-codegen]         - type::Bytes (hilti.hlt:11:31) (non-const)
  [debug/ast-codegen]       - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Type %172 <linkage="public"> (hilti.hlt:13:1-15:44)
--[debug/ast-codegen]         | self -> declaration::Expression %484 <linkage="private"> (type: value_ref<hilti::MatchState>)
+-[debug/ast-codegen]         | self -> declaration::Expression %486 <linkage="private"> (type: value_ref<hilti::MatchState>)
  [debug/ast-codegen]       - ID <name="MatchState"> (hilti.hlt:13:13)
  [debug/ast-codegen]       - type::Struct (hilti.hlt:13:26-15:2) (non-const) (top-level scope) (type-id: hilti::MatchState) (cxx-id: hilti::rt::regexp::MatchState)
  [debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
-@@ -6570,58 +5882,10 @@
+@@ -6584,58 +5894,10 @@
  [debug/ast-codegen]         - Attribute <tag="&cxxname"> (hilti.hlt:15:3)
  [debug/ast-codegen]           - expression::Ctor (hilti.hlt:15:12) (const)
  [debug/ast-codegen]             - ctor::String <value="hilti::rt::regexp::MatchState"> (hilti.hlt:15:12)
--[debug/ast-codegen]     - declaration::Function %267 <linkage="public"> (hilti.hlt:17:1)
+-[debug/ast-codegen]     - declaration::Function %268 <linkage="public"> (hilti.hlt:17:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (hilti.hlt:17:15)
 -[debug/ast-codegen]           | newline -> declaration::Parameter %175 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | obj -> declaration::Parameter %174 <is_struct_param="false" kind="in">
@@ -1289,7 +1291,7 @@
 -[debug/ast-codegen]               - ctor::String <value="hilti::rt::print"> (hilti.hlt:17:66)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (hilti.hlt:17:85)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %268 <linkage="public"> (hilti.hlt:18:1)
+-[debug/ast-codegen]     - declaration::Function %269 <linkage="public"> (hilti.hlt:18:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (hilti.hlt:18:15)
 -[debug/ast-codegen]           | newline -> declaration::Parameter %177 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | t -> declaration::Parameter %176 <is_struct_param="false" kind="in">
@@ -1313,36 +1315,36 @@
 -[debug/ast-codegen]               - ctor::String <value="hilti::rt::printValues"> (hilti.hlt:18:75)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (hilti.hlt:18:100)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %267 (default-parser-functions.spicy:11:12-13:19)
 +[debug/ast-codegen]     - node::None %268 (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %269 <linkage="public"> (hilti.hlt:20:1)
++[debug/ast-codegen]     - node::None %269 (default-parser-functions.spicy:11:12-13:19)
+ [debug/ast-codegen]     - declaration::Function %270 <linkage="public"> (hilti.hlt:20:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (hilti.hlt:20:15)
 -[debug/ast-codegen]           | dbg_stream -> declaration::Parameter %178 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | obj -> declaration::Parameter %179 <is_struct_param="false" kind="in">
  [debug/ast-codegen]         - ID <name="debug"> (hilti.hlt:20:21)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (hilti.hlt:20:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (hilti.hlt:20:16)
-@@ -6643,7 +5907,6 @@
+@@ -6657,7 +5919,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %270 <linkage="public"> (hilti.hlt:21:1)
+ [debug/ast-codegen]     - declaration::Function %271 <linkage="public"> (hilti.hlt:21:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (hilti.hlt:21:15)
 -[debug/ast-codegen]           | dbg_stream -> declaration::Parameter %180 <is_struct_param="false" kind="in">
  [debug/ast-codegen]         - ID <name="debugIndent"> (hilti.hlt:21:21)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (hilti.hlt:21:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (hilti.hlt:21:16)
-@@ -6661,7 +5924,6 @@
+@@ -6675,7 +5936,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %271 <linkage="public"> (hilti.hlt:22:1)
+ [debug/ast-codegen]     - declaration::Function %272 <linkage="public"> (hilti.hlt:22:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (hilti.hlt:22:15)
 -[debug/ast-codegen]           | dbg_stream -> declaration::Parameter %181 <is_struct_param="false" kind="in">
  [debug/ast-codegen]         - ID <name="debugDedent"> (hilti.hlt:22:21)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (hilti.hlt:22:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (hilti.hlt:22:16)
-@@ -6677,75 +5939,9 @@
+@@ -6691,75 +5951,9 @@
  [debug/ast-codegen]               - ctor::String <value="hilti::rt::debug::dedent"> (hilti.hlt:22:61)
  [debug/ast-codegen]           - Attribute <tag="&have_prototype"> (hilti.hlt:22:88)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %272 <linkage="public"> (hilti.hlt:24:1)
+-[debug/ast-codegen]     - declaration::Function %273 <linkage="public"> (hilti.hlt:24:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (hilti.hlt:24:15)
 -[debug/ast-codegen]         - ID <name="current_time"> (hilti.hlt:24:21)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (hilti.hlt:24:15) (non-const)
@@ -1355,7 +1357,7 @@
 -[debug/ast-codegen]               - ctor::String <value="hilti::rt::time::current_time"> (hilti.hlt:24:45)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (hilti.hlt:24:77)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %273 <linkage="public"> (hilti.hlt:25:1)
+-[debug/ast-codegen]     - declaration::Function %274 <linkage="public"> (hilti.hlt:25:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (hilti.hlt:25:15)
 -[debug/ast-codegen]           | H -> declaration::Parameter %185 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | M -> declaration::Parameter %186 <is_struct_param="false" kind="in">
@@ -1398,7 +1400,7 @@
 -[debug/ast-codegen]               - ctor::String <value="hilti::rt::time::mktime"> (hilti.hlt:25:109)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (hilti.hlt:25:135)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %274 <linkage="public"> (hilti.hlt:27:1)
+-[debug/ast-codegen]     - declaration::Function %275 <linkage="public"> (hilti.hlt:27:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (hilti.hlt:27:15)
 -[debug/ast-codegen]         - ID <name="abort"> (hilti.hlt:27:21)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (hilti.hlt:27:15) (non-const)
@@ -1411,67 +1413,67 @@
 -[debug/ast-codegen]               - ctor::String <value="hilti::rt::abort_with_backtrace"> (hilti.hlt:27:38)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (hilti.hlt:27:72)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %272 (default-parser-functions.spicy:11:12-13:19)
 +[debug/ast-codegen]     - node::None %273 (default-parser-functions.spicy:11:12-13:19)
 +[debug/ast-codegen]     - node::None %274 (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Type %275 <linkage="public"> (hilti.hlt:30:1)
- [debug/ast-codegen]       - ID <name="Exception"> (hilti.hlt:30:13)
- [debug/ast-codegen]       - type::Exception (hilti.hlt:30:25) (non-const) (type-id: hilti::Exception) (cxx-id: hilti::rt::Exception)
-@@ -6764,43 +5960,6 @@
- [debug/ast-codegen]             - ctor::String <value="hilti::rt::RuntimeError"> (hilti.hlt:34:47)
++[debug/ast-codegen]     - node::None %275 (default-parser-functions.spicy:11:12-13:19)
+ [debug/ast-codegen]     - declaration::Function %276 <linkage="public"> (hilti.hlt:29:1)
+ [debug/ast-codegen]       - Function <cc="<standard>"> (hilti.hlt:29:15)
+ [debug/ast-codegen]         - ID <name="linker_scope"> (hilti.hlt:29:23)
+@@ -6791,43 +5985,6 @@
+ [debug/ast-codegen]             - ctor::String <value="hilti::rt::RuntimeError"> (hilti.hlt:36:47)
  [debug/ast-codegen] # spicy_rt: AST for codegen
  [debug/ast-codegen]   - Module %18 (spicy_rt.hlt:1:1-85:2)
--[debug/ast-codegen]       | Backtrack -> declaration::Type %278 <linkage="public">
--[debug/ast-codegen]       | BitOrder -> declaration::Type %250 <linkage="public">
+-[debug/ast-codegen]       | Backtrack -> declaration::Type %280 <linkage="public">
+-[debug/ast-codegen]       | BitOrder -> declaration::Type %251 <linkage="public">
 -[debug/ast-codegen]       | Direction -> declaration::Type %207 <linkage="public">
--[debug/ast-codegen]       | Filters -> declaration::Type %284 <linkage="public">
--[debug/ast-codegen]       | FindDirection -> declaration::Type %294 <linkage="public">
--[debug/ast-codegen]       | Forward -> declaration::Type %285 <linkage="public">
--[debug/ast-codegen]       | HiltiResumable -> declaration::Type %283 <linkage="public">
--[debug/ast-codegen]       | MIMEType -> declaration::Type %295 <linkage="public">
--[debug/ast-codegen]       | ParseError -> declaration::Type %277 <linkage="public">
--[debug/ast-codegen]       | ParsedUnit -> declaration::Type %281 <linkage="public">
+-[debug/ast-codegen]       | Filters -> declaration::Type %286 <linkage="public">
+-[debug/ast-codegen]       | FindDirection -> declaration::Type %296 <linkage="public">
+-[debug/ast-codegen]       | Forward -> declaration::Type %287 <linkage="public">
+-[debug/ast-codegen]       | HiltiResumable -> declaration::Type %285 <linkage="public">
+-[debug/ast-codegen]       | MIMEType -> declaration::Type %297 <linkage="public">
+-[debug/ast-codegen]       | ParseError -> declaration::Type %279 <linkage="public">
+-[debug/ast-codegen]       | ParsedUnit -> declaration::Type %283 <linkage="public">
 -[debug/ast-codegen]       | Parser -> declaration::Type %205 <linkage="public">
--[debug/ast-codegen]       | ParserPort -> declaration::Type %296 <linkage="public">
+-[debug/ast-codegen]       | ParserPort -> declaration::Type %298 <linkage="public">
 -[debug/ast-codegen]       | Sink -> declaration::Type %189 <linkage="public">
--[debug/ast-codegen]       | SinkState -> declaration::Type %280 <linkage="public">
--[debug/ast-codegen]       | TypeInfo -> declaration::Type %282 <linkage="public">
--[debug/ast-codegen]       | UnitAlreadyConnected -> declaration::Type %279 <linkage="public">
--[debug/ast-codegen]       | UnitContext -> declaration::Type %291 <linkage="public">
--[debug/ast-codegen]       | atEod -> declaration::Function %304 <linkage="public">
--[debug/ast-codegen]       | backtrack -> declaration::Function %306 <linkage="public">
--[debug/ast-codegen]       | createContext -> declaration::Function %292 <linkage="public">
--[debug/ast-codegen]       | extractBits -> declaration::Function %307 <linkage="public">
--[debug/ast-codegen]       | filter_connect -> declaration::Function %287 <linkage="public">
--[debug/ast-codegen]       | filter_disconnect -> declaration::Function %288 <linkage="public">
--[debug/ast-codegen]       | filter_forward -> declaration::Function %289 <linkage="public">
--[debug/ast-codegen]       | filter_forward_eod -> declaration::Function %290 <linkage="public">
--[debug/ast-codegen]       | filter_init -> declaration::Function %286 <linkage="public">
--[debug/ast-codegen]       | initializeParsedUnit -> declaration::Function %308 <linkage="public">
--[debug/ast-codegen]       | printParserState -> declaration::Function %298 <linkage="public">
--[debug/ast-codegen]       | registerParser -> declaration::Function %297 <linkage="public">
--[debug/ast-codegen]       | setContext -> declaration::Function %293 <linkage="public">
--[debug/ast-codegen]       | spicy_rt -> declaration::Module %495 <id="spicy_rt">
--[debug/ast-codegen]       | unit_find -> declaration::Function %305 <linkage="public">
--[debug/ast-codegen]       | waitForEod -> declaration::Function %303 <linkage="public">
--[debug/ast-codegen]       | waitForInput -> declaration::Function %301 <linkage="public">
--[debug/ast-codegen]       | waitForInput -> declaration::Function %302 <linkage="public">
--[debug/ast-codegen]       | waitForInputOrEod -> declaration::Function %299 <linkage="public">
--[debug/ast-codegen]       | waitForInputOrEod -> declaration::Function %300 <linkage="public">
+-[debug/ast-codegen]       | SinkState -> declaration::Type %282 <linkage="public">
+-[debug/ast-codegen]       | TypeInfo -> declaration::Type %284 <linkage="public">
+-[debug/ast-codegen]       | UnitAlreadyConnected -> declaration::Type %281 <linkage="public">
+-[debug/ast-codegen]       | UnitContext -> declaration::Type %293 <linkage="public">
+-[debug/ast-codegen]       | atEod -> declaration::Function %306 <linkage="public">
+-[debug/ast-codegen]       | backtrack -> declaration::Function %308 <linkage="public">
+-[debug/ast-codegen]       | createContext -> declaration::Function %294 <linkage="public">
+-[debug/ast-codegen]       | extractBits -> declaration::Function %309 <linkage="public">
+-[debug/ast-codegen]       | filter_connect -> declaration::Function %289 <linkage="public">
+-[debug/ast-codegen]       | filter_disconnect -> declaration::Function %290 <linkage="public">
+-[debug/ast-codegen]       | filter_forward -> declaration::Function %291 <linkage="public">
+-[debug/ast-codegen]       | filter_forward_eod -> declaration::Function %292 <linkage="public">
+-[debug/ast-codegen]       | filter_init -> declaration::Function %288 <linkage="public">
+-[debug/ast-codegen]       | initializeParsedUnit -> declaration::Function %310 <linkage="public">
+-[debug/ast-codegen]       | printParserState -> declaration::Function %300 <linkage="public">
+-[debug/ast-codegen]       | registerParser -> declaration::Function %299 <linkage="public">
+-[debug/ast-codegen]       | setContext -> declaration::Function %295 <linkage="public">
+-[debug/ast-codegen]       | spicy_rt -> declaration::Module %497 <id="spicy_rt">
+-[debug/ast-codegen]       | unit_find -> declaration::Function %307 <linkage="public">
+-[debug/ast-codegen]       | waitForEod -> declaration::Function %305 <linkage="public">
+-[debug/ast-codegen]       | waitForInput -> declaration::Function %303 <linkage="public">
+-[debug/ast-codegen]       | waitForInput -> declaration::Function %304 <linkage="public">
+-[debug/ast-codegen]       | waitForInputOrEod -> declaration::Function %301 <linkage="public">
+-[debug/ast-codegen]       | waitForInputOrEod -> declaration::Function %302 <linkage="public">
  [debug/ast-codegen]     - ID <name="spicy_rt"> (spicy_rt.hlt:1:8)
  [debug/ast-codegen]     - statement::Block (spicy_rt.hlt:1:1-85:2)
- [debug/ast-codegen]     - declaration::Type %277 <linkage="public"> (spicy_rt.hlt:3:1)
-@@ -6840,7 +5999,6 @@
+ [debug/ast-codegen]     - declaration::Type %279 <linkage="public"> (spicy_rt.hlt:3:1)
+@@ -6867,7 +6024,6 @@
  [debug/ast-codegen]       - type::Library <cxx_name="const hilti::rt::TypeInfo*"> (spicy_rt.hlt:11:24) (non-const) (type-id: spicy_rt::TypeInfo)
  [debug/ast-codegen]       - node::None (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Type %189 <linkage="public"> (spicy_rt.hlt:14:1-29:30)
--[debug/ast-codegen]         | self -> declaration::Expression %486 <linkage="private"> (type: value_ref<spicy_rt::Sink>)
+-[debug/ast-codegen]         | self -> declaration::Expression %488 <linkage="private"> (type: value_ref<spicy_rt::Sink>)
  [debug/ast-codegen]       - ID <name="Sink"> (spicy_rt.hlt:14:13)
  [debug/ast-codegen]       - type::Struct (spicy_rt.hlt:14:20-29:2) (non-const) (top-level scope) (type-id: spicy_rt::Sink) (cxx-id: spicy::rt::Sink)
  [debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
-@@ -7042,9 +6200,6 @@
+@@ -7069,9 +6225,6 @@
  [debug/ast-codegen]       - node::None (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %286 <linkage="public"> (spicy_rt.hlt:36:1)
+ [debug/ast-codegen]     - declaration::Function %288 <linkage="public"> (spicy_rt.hlt:36:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:36:15)
 -[debug/ast-codegen]           | cur -> declaration::Parameter %193 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | data -> declaration::Parameter %192 <is_struct_param="false" kind="inout">
@@ -1479,11 +1481,11 @@
  [debug/ast-codegen]         - ID <name="filter_init"> (spicy_rt.hlt:36:35)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:36:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:36:16)
-@@ -7071,33 +6226,9 @@
+@@ -7098,33 +6251,9 @@
  [debug/ast-codegen]               - ctor::String <value="spicy::rt::filter::init"> (spicy_rt.hlt:36:120)
  [debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:36:146)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %287 <linkage="public"> (spicy_rt.hlt:37:1)
+-[debug/ast-codegen]     - declaration::Function %289 <linkage="public"> (spicy_rt.hlt:37:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:37:15)
 -[debug/ast-codegen]           | filter -> declaration::Parameter %195 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | unit -> declaration::Parameter %194 <is_struct_param="false" kind="inout">
@@ -1507,18 +1509,18 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::filter::connect"> (spicy_rt.hlt:37:83)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:37:112)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %287 (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %288 <linkage="public"> (spicy_rt.hlt:38:1)
++[debug/ast-codegen]     - node::None %289 (default-parser-functions.spicy:11:12-13:19)
+ [debug/ast-codegen]     - declaration::Function %290 <linkage="public"> (spicy_rt.hlt:38:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:38:15)
 -[debug/ast-codegen]           | unit -> declaration::Parameter %196 <is_struct_param="false" kind="inout">
  [debug/ast-codegen]         - ID <name="filter_disconnect"> (spicy_rt.hlt:38:21)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:38:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:38:16)
-@@ -7113,109 +6244,15 @@
+@@ -7140,109 +6269,15 @@
  [debug/ast-codegen]               - ctor::String <value="spicy::rt::filter::disconnect"> (spicy_rt.hlt:38:64)
  [debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:38:96)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %289 <linkage="public"> (spicy_rt.hlt:39:1)
+-[debug/ast-codegen]     - declaration::Function %291 <linkage="public"> (spicy_rt.hlt:39:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:39:15)
 -[debug/ast-codegen]           | b -> declaration::Parameter %198 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | filter -> declaration::Parameter %197 <is_struct_param="false" kind="inout">
@@ -1541,7 +1543,7 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::filter::forward"> (spicy_rt.hlt:39:72)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:39:101)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %290 <linkage="public"> (spicy_rt.hlt:40:1)
+-[debug/ast-codegen]     - declaration::Function %292 <linkage="public"> (spicy_rt.hlt:40:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:40:15)
 -[debug/ast-codegen]           | filter -> declaration::Parameter %199 <is_struct_param="false" kind="inout">
 -[debug/ast-codegen]         - ID <name="filter_forward_eod"> (spicy_rt.hlt:40:21)
@@ -1559,20 +1561,20 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::filter::forward_eod"> (spicy_rt.hlt:40:67)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:40:100)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %289 (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %290 (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Type %291 <linkage="public"> (spicy_rt.hlt:42:1)
++[debug/ast-codegen]     - node::None %291 (default-parser-functions.spicy:11:12-13:19)
++[debug/ast-codegen]     - node::None %292 (default-parser-functions.spicy:11:12-13:19)
+ [debug/ast-codegen]     - declaration::Type %293 <linkage="public"> (spicy_rt.hlt:42:1)
  [debug/ast-codegen]       - ID <name="UnitContext"> (spicy_rt.hlt:42:13)
  [debug/ast-codegen]       - type::Library <cxx_name="spicy::rt::UnitContext"> (spicy_rt.hlt:42:27) (non-const) (type-id: spicy_rt::UnitContext)
  [debug/ast-codegen]       - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %292 <linkage="public"> (spicy_rt.hlt:43:1)
+-[debug/ast-codegen]     - declaration::Function %294 <linkage="public"> (spicy_rt.hlt:43:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:43:15)
 -[debug/ast-codegen]           | ctx -> declaration::Parameter %200 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | ti -> declaration::Parameter %201 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]         - ID <name="createContext"> (spicy_rt.hlt:43:28)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:43:15) (non-const)
 -[debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:43:16)
--[debug/ast-codegen]             - type::ResolvedID <resolved="%291"> (type: spicy_rt::UnitContext) (spicy_rt.hlt:43:16) (non-const)
+-[debug/ast-codegen]             - type::ResolvedID <resolved="%293"> (type: spicy_rt::UnitContext) (spicy_rt.hlt:43:16) (non-const)
 -[debug/ast-codegen]               - ID <name="spicy_rt::UnitContext"> (spicy_rt.hlt:43:16)
 -[debug/ast-codegen]           - declaration::Parameter %200 <is_struct_param="false" kind="in"> (spicy_rt.hlt:43:42)
 -[debug/ast-codegen]             - ID <name="ctx"> (spicy_rt.hlt:43:46)
@@ -1580,7 +1582,7 @@
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
 -[debug/ast-codegen]           - declaration::Parameter %201 <is_struct_param="false" kind="in"> (spicy_rt.hlt:43:50)
 -[debug/ast-codegen]             - ID <name="ti"> (spicy_rt.hlt:43:60)
--[debug/ast-codegen]             - type::ResolvedID <resolved="%282"> (type: spicy_rt::TypeInfo) (spicy_rt.hlt:43:50) (non-const)
+-[debug/ast-codegen]             - type::ResolvedID <resolved="%284"> (type: spicy_rt::TypeInfo) (spicy_rt.hlt:43:50) (non-const)
 -[debug/ast-codegen]               - ID <name="spicy_rt::TypeInfo"> (spicy_rt.hlt:43:50)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
 -[debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -1590,7 +1592,7 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::createContext"> (spicy_rt.hlt:43:73)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:43:108)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %293 <linkage="public"> (spicy_rt.hlt:44:1)
+-[debug/ast-codegen]     - declaration::Function %295 <linkage="public"> (spicy_rt.hlt:44:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:44:15)
 -[debug/ast-codegen]           | ctx -> declaration::Parameter %203 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | ti -> declaration::Parameter %204 <is_struct_param="false" kind="in">
@@ -1606,12 +1608,12 @@
 -[debug/ast-codegen]           - declaration::Parameter %203 <is_struct_param="false" kind="in"> (spicy_rt.hlt:44:47)
 -[debug/ast-codegen]             - ID <name="ctx"> (spicy_rt.hlt:44:70)
 -[debug/ast-codegen]             - type::Optional (spicy_rt.hlt:44:48) (non-const)
--[debug/ast-codegen]               - type::ResolvedID <resolved="%291"> (type: spicy_rt::UnitContext) (spicy_rt.hlt:44:48) (non-const)
+-[debug/ast-codegen]               - type::ResolvedID <resolved="%293"> (type: spicy_rt::UnitContext) (spicy_rt.hlt:44:48) (non-const)
 -[debug/ast-codegen]                 - ID <name="spicy_rt::UnitContext"> (spicy_rt.hlt:44:48)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
 -[debug/ast-codegen]           - declaration::Parameter %204 <is_struct_param="false" kind="in"> (spicy_rt.hlt:44:74)
 -[debug/ast-codegen]             - ID <name="ti"> (spicy_rt.hlt:44:84)
--[debug/ast-codegen]             - type::ResolvedID <resolved="%282"> (type: spicy_rt::TypeInfo) (spicy_rt.hlt:44:74) (non-const)
+-[debug/ast-codegen]             - type::ResolvedID <resolved="%284"> (type: spicy_rt::TypeInfo) (spicy_rt.hlt:44:74) (non-const)
 -[debug/ast-codegen]               - ID <name="spicy_rt::TypeInfo"> (spicy_rt.hlt:44:74)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
 -[debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -1621,74 +1623,75 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::setContext"> (spicy_rt.hlt:44:97)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:44:129)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %292 (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %293 (default-parser-functions.spicy:11:12-13:19)
++[debug/ast-codegen]     - node::None %294 (default-parser-functions.spicy:11:12-13:19)
++[debug/ast-codegen]     - node::None %295 (default-parser-functions.spicy:11:12-13:19)
  [debug/ast-codegen]     - declaration::Type %205 <linkage="public"> (spicy_rt.hlt:48:1-58:32)
--[debug/ast-codegen]         | self -> declaration::Expression %487 <linkage="private"> (type: value_ref<spicy_rt::Parser>)
+-[debug/ast-codegen]         | self -> declaration::Expression %489 <linkage="private"> (type: value_ref<spicy_rt::Parser>)
  [debug/ast-codegen]       - ID <name="Parser"> (spicy_rt.hlt:48:13)
  [debug/ast-codegen]       - type::Struct (spicy_rt.hlt:48:22-58:2) (non-const) (top-level scope) (type-id: spicy_rt::Parser) (cxx-id: spicy::rt::Parser)
  [debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
-@@ -7281,10 +6318,6 @@
+@@ -7308,10 +6343,6 @@
  [debug/ast-codegen]           - expression::Ctor (spicy_rt.hlt:58:12) (const)
  [debug/ast-codegen]             - ctor::String <value="spicy::rt::Parser"> (spicy_rt.hlt:58:12)
  [debug/ast-codegen]     - declaration::Type %207 <linkage="public"> (spicy_rt.hlt:60:1)
--[debug/ast-codegen]         | Both -> declaration::Constant %490 <linkage="public">
--[debug/ast-codegen]         | Originator -> declaration::Constant %488 <linkage="public">
--[debug/ast-codegen]         | Responder -> declaration::Constant %489 <linkage="public">
--[debug/ast-codegen]         | Undef -> declaration::Constant %491 <linkage="public">
+-[debug/ast-codegen]         | Both -> declaration::Constant %492 <linkage="public">
+-[debug/ast-codegen]         | Originator -> declaration::Constant %490 <linkage="public">
+-[debug/ast-codegen]         | Responder -> declaration::Constant %491 <linkage="public">
+-[debug/ast-codegen]         | Undef -> declaration::Constant %493 <linkage="public">
  [debug/ast-codegen]       - ID <name="Direction"> (spicy_rt.hlt:60:13)
  [debug/ast-codegen]       - type::Enum (spicy_rt.hlt:60:25) (non-const) (type-id: spicy_rt::Direction) (cxx-id: spicy::rt::Direction)
  [debug/ast-codegen]         - type::enum_::Label <value="0"> (spicy_rt.hlt:60:32)
-@@ -7313,8 +6346,6 @@
+@@ -7340,9 +6371,6 @@
  [debug/ast-codegen]       - node::None (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %297 <linkage="public"> (spicy_rt.hlt:65:1)
+ [debug/ast-codegen]     - declaration::Function %299 <linkage="public"> (spicy_rt.hlt:65:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:65:15)
--[debug/ast-codegen]           | instance -> declaration::Parameter %213 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | instance -> declaration::Parameter %214 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | linker_scope -> declaration::Parameter %213 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]           | parse_func -> declaration::Parameter %212 <is_struct_param="false" kind="inout">
  [debug/ast-codegen]         - ID <name="registerParser"> (spicy_rt.hlt:65:21)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:65:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:65:16)
-@@ -7337,13 +6368,6 @@
+@@ -7369,13 +6397,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %298 <linkage="public"> (spicy_rt.hlt:66:1)
+ [debug/ast-codegen]     - declaration::Function %300 <linkage="public"> (spicy_rt.hlt:66:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:66:15)
--[debug/ast-codegen]           | cur -> declaration::Parameter %216 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | data -> declaration::Parameter %215 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | lahead -> declaration::Parameter %217 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | lahead_end -> declaration::Parameter %218 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | literal_mode -> declaration::Parameter %219 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | trim -> declaration::Parameter %220 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | unit_id -> declaration::Parameter %214 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | cur -> declaration::Parameter %217 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | data -> declaration::Parameter %216 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | lahead -> declaration::Parameter %218 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | lahead_end -> declaration::Parameter %219 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | literal_mode -> declaration::Parameter %220 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | trim -> declaration::Parameter %221 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | unit_id -> declaration::Parameter %215 <is_struct_param="false" kind="in">
  [debug/ast-codegen]         - ID <name="printParserState"> (spicy_rt.hlt:66:21)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:66:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:66:16)
-@@ -7385,82 +6409,10 @@
+@@ -7417,82 +6438,10 @@
  [debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::printParserState"> (spicy_rt.hlt:66:182)
  [debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:66:220)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %299 <linkage="public"> (spicy_rt.hlt:68:1)
+-[debug/ast-codegen]     - declaration::Function %301 <linkage="public"> (spicy_rt.hlt:68:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:68:15)
--[debug/ast-codegen]           | cur -> declaration::Parameter %222 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | data -> declaration::Parameter %221 <is_struct_param="false" kind="inout">
--[debug/ast-codegen]           | filters -> declaration::Parameter %223 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | cur -> declaration::Parameter %223 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | data -> declaration::Parameter %222 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | filters -> declaration::Parameter %224 <is_struct_param="false" kind="inout">
 -[debug/ast-codegen]         - ID <name="waitForInputOrEod"> (spicy_rt.hlt:68:21)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:68:15) (non-const)
 -[debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:68:16)
 -[debug/ast-codegen]             - type::Bool (spicy_rt.hlt:68:16) (non-const)
--[debug/ast-codegen]           - declaration::Parameter %221 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:68:39)
+-[debug/ast-codegen]           - declaration::Parameter %222 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:68:39)
 -[debug/ast-codegen]             - ID <name="data"> (spicy_rt.hlt:68:63)
 -[debug/ast-codegen]             - type::ValueReference (spicy_rt.hlt:68:45) (non-const)
 -[debug/ast-codegen]               - type::Stream (spicy_rt.hlt:68:55) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %222 <is_struct_param="false" kind="in"> (spicy_rt.hlt:68:68)
+-[debug/ast-codegen]           - declaration::Parameter %223 <is_struct_param="false" kind="in"> (spicy_rt.hlt:68:68)
 -[debug/ast-codegen]             - ID <name="cur"> (spicy_rt.hlt:68:82)
 -[debug/ast-codegen]             - type::stream::View (spicy_rt.hlt:68:74) (non-const)
 -[debug/ast-codegen]               - type::Stream (spicy_rt.hlt:68:74)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %223 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:68:87)
+-[debug/ast-codegen]           - declaration::Parameter %224 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:68:87)
 -[debug/ast-codegen]             - ID <name="filters"> (spicy_rt.hlt:68:113)
 -[debug/ast-codegen]             - type::StrongReference (spicy_rt.hlt:68:93) (non-const)
--[debug/ast-codegen]               - type::ResolvedID <resolved="%284"> (type: spicy_rt::Filters) (spicy_rt.hlt:68:93) (non-const)
+-[debug/ast-codegen]               - type::ResolvedID <resolved="%286"> (type: spicy_rt::Filters) (spicy_rt.hlt:68:93) (non-const)
 -[debug/ast-codegen]                 - ID <name="spicy_rt::Filters"> (spicy_rt.hlt:68:93)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
 -[debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -1698,34 +1701,34 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::waitForInputOrEod"> (spicy_rt.hlt:68:131)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:68:170)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %300 <linkage="public"> (spicy_rt.hlt:69:1)
+-[debug/ast-codegen]     - declaration::Function %302 <linkage="public"> (spicy_rt.hlt:69:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:69:15)
--[debug/ast-codegen]           | cur -> declaration::Parameter %225 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | data -> declaration::Parameter %224 <is_struct_param="false" kind="inout">
--[debug/ast-codegen]           | filters -> declaration::Parameter %227 <is_struct_param="false" kind="inout">
--[debug/ast-codegen]           | n -> declaration::Parameter %226 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | cur -> declaration::Parameter %226 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | data -> declaration::Parameter %225 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | filters -> declaration::Parameter %228 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | n -> declaration::Parameter %227 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]         - ID <name="waitForInputOrEod"> (spicy_rt.hlt:69:21)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:69:15) (non-const)
 -[debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:69:16)
 -[debug/ast-codegen]             - type::Bool (spicy_rt.hlt:69:16) (non-const)
--[debug/ast-codegen]           - declaration::Parameter %224 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:69:39)
+-[debug/ast-codegen]           - declaration::Parameter %225 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:69:39)
 -[debug/ast-codegen]             - ID <name="data"> (spicy_rt.hlt:69:63)
 -[debug/ast-codegen]             - type::ValueReference (spicy_rt.hlt:69:45) (non-const)
 -[debug/ast-codegen]               - type::Stream (spicy_rt.hlt:69:55) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %225 <is_struct_param="false" kind="in"> (spicy_rt.hlt:69:68)
+-[debug/ast-codegen]           - declaration::Parameter %226 <is_struct_param="false" kind="in"> (spicy_rt.hlt:69:68)
 -[debug/ast-codegen]             - ID <name="cur"> (spicy_rt.hlt:69:82)
 -[debug/ast-codegen]             - type::stream::View (spicy_rt.hlt:69:74) (non-const)
 -[debug/ast-codegen]               - type::Stream (spicy_rt.hlt:69:74)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %226 <is_struct_param="false" kind="in"> (spicy_rt.hlt:69:86)
+-[debug/ast-codegen]           - declaration::Parameter %227 <is_struct_param="false" kind="in"> (spicy_rt.hlt:69:86)
 -[debug/ast-codegen]             - ID <name="n"> (spicy_rt.hlt:69:96)
 -[debug/ast-codegen]             - type::UnsignedInteger <width="64"> (spicy_rt.hlt:69:87) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %227 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:69:99)
+-[debug/ast-codegen]           - declaration::Parameter %228 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:69:99)
 -[debug/ast-codegen]             - ID <name="filters"> (spicy_rt.hlt:69:125)
 -[debug/ast-codegen]             - type::StrongReference (spicy_rt.hlt:69:105) (non-const)
--[debug/ast-codegen]               - type::ResolvedID <resolved="%284"> (type: spicy_rt::Filters) (spicy_rt.hlt:69:105) (non-const)
+-[debug/ast-codegen]               - type::ResolvedID <resolved="%286"> (type: spicy_rt::Filters) (spicy_rt.hlt:69:105) (non-const)
 -[debug/ast-codegen]                 - ID <name="spicy_rt::Filters"> (spicy_rt.hlt:69:105)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
 -[debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -1735,58 +1738,58 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::waitForInputOrEod"> (spicy_rt.hlt:69:143)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:69:182)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %299 (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %300 (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %301 <linkage="public"> (spicy_rt.hlt:70:1)
++[debug/ast-codegen]     - node::None %301 (default-parser-functions.spicy:11:12-13:19)
++[debug/ast-codegen]     - node::None %302 (default-parser-functions.spicy:11:12-13:19)
+ [debug/ast-codegen]     - declaration::Function %303 <linkage="public"> (spicy_rt.hlt:70:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:70:15)
--[debug/ast-codegen]           | cur -> declaration::Parameter %229 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | data -> declaration::Parameter %228 <is_struct_param="false" kind="inout">
--[debug/ast-codegen]           | error_msg -> declaration::Parameter %230 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | filters -> declaration::Parameter %232 <is_struct_param="false" kind="inout">
--[debug/ast-codegen]           | location -> declaration::Parameter %231 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | cur -> declaration::Parameter %230 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | data -> declaration::Parameter %229 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | error_msg -> declaration::Parameter %231 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | filters -> declaration::Parameter %233 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | location -> declaration::Parameter %232 <is_struct_param="false" kind="in">
  [debug/ast-codegen]         - ID <name="waitForInput"> (spicy_rt.hlt:70:21)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:70:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:70:16)
-@@ -7498,12 +6450,6 @@
+@@ -7530,12 +6479,6 @@
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %302 <linkage="public"> (spicy_rt.hlt:71:1)
+ [debug/ast-codegen]     - declaration::Function %304 <linkage="public"> (spicy_rt.hlt:71:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:71:15)
--[debug/ast-codegen]           | cur -> declaration::Parameter %234 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | data -> declaration::Parameter %233 <is_struct_param="false" kind="inout">
--[debug/ast-codegen]           | error_msg -> declaration::Parameter %236 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | filters -> declaration::Parameter %238 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | location -> declaration::Parameter %237 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | n -> declaration::Parameter %235 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | cur -> declaration::Parameter %235 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | data -> declaration::Parameter %234 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | error_msg -> declaration::Parameter %237 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | filters -> declaration::Parameter %239 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | location -> declaration::Parameter %238 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | n -> declaration::Parameter %236 <is_struct_param="false" kind="in">
  [debug/ast-codegen]         - ID <name="waitForInput"> (spicy_rt.hlt:71:21)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:71:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:71:16)
-@@ -7543,128 +6489,11 @@
+@@ -7575,128 +6518,11 @@
  [debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::waitForInput"> (spicy_rt.hlt:71:167)
  [debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:71:201)
  [debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %303 <linkage="public"> (spicy_rt.hlt:72:1)
+-[debug/ast-codegen]     - declaration::Function %305 <linkage="public"> (spicy_rt.hlt:72:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:72:15)
--[debug/ast-codegen]           | cur -> declaration::Parameter %240 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | data -> declaration::Parameter %239 <is_struct_param="false" kind="inout">
--[debug/ast-codegen]           | filters -> declaration::Parameter %241 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | cur -> declaration::Parameter %241 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | data -> declaration::Parameter %240 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | filters -> declaration::Parameter %242 <is_struct_param="false" kind="inout">
 -[debug/ast-codegen]         - ID <name="waitForEod"> (spicy_rt.hlt:72:21)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:72:15) (non-const)
 -[debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:72:16)
 -[debug/ast-codegen]             - type::Bool (spicy_rt.hlt:72:16) (non-const)
--[debug/ast-codegen]           - declaration::Parameter %239 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:72:32)
+-[debug/ast-codegen]           - declaration::Parameter %240 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:72:32)
 -[debug/ast-codegen]             - ID <name="data"> (spicy_rt.hlt:72:56)
 -[debug/ast-codegen]             - type::ValueReference (spicy_rt.hlt:72:38) (non-const)
 -[debug/ast-codegen]               - type::Stream (spicy_rt.hlt:72:48) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %240 <is_struct_param="false" kind="in"> (spicy_rt.hlt:72:61)
+-[debug/ast-codegen]           - declaration::Parameter %241 <is_struct_param="false" kind="in"> (spicy_rt.hlt:72:61)
 -[debug/ast-codegen]             - ID <name="cur"> (spicy_rt.hlt:72:75)
 -[debug/ast-codegen]             - type::stream::View (spicy_rt.hlt:72:67) (non-const)
 -[debug/ast-codegen]               - type::Stream (spicy_rt.hlt:72:67)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %241 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:72:80)
+-[debug/ast-codegen]           - declaration::Parameter %242 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:72:80)
 -[debug/ast-codegen]             - ID <name="filters"> (spicy_rt.hlt:72:106)
 -[debug/ast-codegen]             - type::StrongReference (spicy_rt.hlt:72:86) (non-const)
--[debug/ast-codegen]               - type::ResolvedID <resolved="%284"> (type: spicy_rt::Filters) (spicy_rt.hlt:72:86) (non-const)
+-[debug/ast-codegen]               - type::ResolvedID <resolved="%286"> (type: spicy_rt::Filters) (spicy_rt.hlt:72:86) (non-const)
 -[debug/ast-codegen]                 - ID <name="spicy_rt::Filters"> (spicy_rt.hlt:72:86)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
 -[debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -1796,29 +1799,29 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::waitForEod"> (spicy_rt.hlt:72:124)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:72:156)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %304 <linkage="public"> (spicy_rt.hlt:73:1)
+-[debug/ast-codegen]     - declaration::Function %306 <linkage="public"> (spicy_rt.hlt:73:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:73:15)
--[debug/ast-codegen]           | cur -> declaration::Parameter %243 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | data -> declaration::Parameter %242 <is_struct_param="false" kind="inout">
--[debug/ast-codegen]           | filters -> declaration::Parameter %244 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | cur -> declaration::Parameter %244 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | data -> declaration::Parameter %243 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | filters -> declaration::Parameter %245 <is_struct_param="false" kind="inout">
 -[debug/ast-codegen]         - ID <name="atEod"> (spicy_rt.hlt:73:21)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:73:15) (non-const)
 -[debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:73:16)
 -[debug/ast-codegen]             - type::Bool (spicy_rt.hlt:73:16) (non-const)
--[debug/ast-codegen]           - declaration::Parameter %242 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:73:27)
+-[debug/ast-codegen]           - declaration::Parameter %243 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:73:27)
 -[debug/ast-codegen]             - ID <name="data"> (spicy_rt.hlt:73:51)
 -[debug/ast-codegen]             - type::ValueReference (spicy_rt.hlt:73:33) (non-const)
 -[debug/ast-codegen]               - type::Stream (spicy_rt.hlt:73:43) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %243 <is_struct_param="false" kind="in"> (spicy_rt.hlt:73:56)
+-[debug/ast-codegen]           - declaration::Parameter %244 <is_struct_param="false" kind="in"> (spicy_rt.hlt:73:56)
 -[debug/ast-codegen]             - ID <name="cur"> (spicy_rt.hlt:73:70)
 -[debug/ast-codegen]             - type::stream::View (spicy_rt.hlt:73:62) (non-const)
 -[debug/ast-codegen]               - type::Stream (spicy_rt.hlt:73:62)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %244 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:73:75)
+-[debug/ast-codegen]           - declaration::Parameter %245 <is_struct_param="false" kind="inout"> (spicy_rt.hlt:73:75)
 -[debug/ast-codegen]             - ID <name="filters"> (spicy_rt.hlt:73:101)
 -[debug/ast-codegen]             - type::StrongReference (spicy_rt.hlt:73:81) (non-const)
--[debug/ast-codegen]               - type::ResolvedID <resolved="%284"> (type: spicy_rt::Filters) (spicy_rt.hlt:73:81) (non-const)
+-[debug/ast-codegen]               - type::ResolvedID <resolved="%286"> (type: spicy_rt::Filters) (spicy_rt.hlt:73:81) (non-const)
 -[debug/ast-codegen]                 - ID <name="spicy_rt::Filters"> (spicy_rt.hlt:73:81)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
 -[debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -1828,38 +1831,38 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::atEod"> (spicy_rt.hlt:73:119)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:73:146)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %305 <linkage="public"> (spicy_rt.hlt:75:1)
+-[debug/ast-codegen]     - declaration::Function %307 <linkage="public"> (spicy_rt.hlt:75:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:75:15)
--[debug/ast-codegen]           | begin_ -> declaration::Parameter %245 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | dir -> declaration::Parameter %249 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | end_ -> declaration::Parameter %246 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | i -> declaration::Parameter %247 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | needle -> declaration::Parameter %248 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | begin_ -> declaration::Parameter %246 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | dir -> declaration::Parameter %250 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | end_ -> declaration::Parameter %247 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | i -> declaration::Parameter %248 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | needle -> declaration::Parameter %249 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]         - ID <name="unit_find"> (spicy_rt.hlt:75:43)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:75:15) (non-const)
 -[debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:75:16)
 -[debug/ast-codegen]             - type::Optional (spicy_rt.hlt:75:16) (non-const)
 -[debug/ast-codegen]               - type::stream::Iterator (spicy_rt.hlt:75:34) (non-const)
--[debug/ast-codegen]           - declaration::Parameter %245 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:53)
+-[debug/ast-codegen]           - declaration::Parameter %246 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:53)
 -[debug/ast-codegen]             - ID <name="begin_"> (spicy_rt.hlt:75:70)
 -[debug/ast-codegen]             - type::stream::Iterator (spicy_rt.hlt:75:62) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %246 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:77)
+-[debug/ast-codegen]           - declaration::Parameter %247 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:77)
 -[debug/ast-codegen]             - ID <name="end_"> (spicy_rt.hlt:75:95)
 -[debug/ast-codegen]             - type::stream::Iterator (spicy_rt.hlt:75:87) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %247 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:100)
+-[debug/ast-codegen]           - declaration::Parameter %248 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:100)
 -[debug/ast-codegen]             - ID <name="i"> (spicy_rt.hlt:75:128)
 -[debug/ast-codegen]             - type::Optional (spicy_rt.hlt:75:101) (non-const)
 -[debug/ast-codegen]               - type::stream::Iterator (spicy_rt.hlt:75:119) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %248 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:130)
+-[debug/ast-codegen]           - declaration::Parameter %249 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:130)
 -[debug/ast-codegen]             - ID <name="needle"> (spicy_rt.hlt:75:137)
 -[debug/ast-codegen]             - type::Bytes (spicy_rt.hlt:75:131) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %249 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:144)
+-[debug/ast-codegen]           - declaration::Parameter %250 <is_struct_param="false" kind="in"> (spicy_rt.hlt:75:144)
 -[debug/ast-codegen]             - ID <name="dir"> (spicy_rt.hlt:75:159)
--[debug/ast-codegen]             - type::ResolvedID <resolved="%294"> (type: spicy_rt::FindDirection) (spicy_rt.hlt:75:144) (non-const)
+-[debug/ast-codegen]             - type::ResolvedID <resolved="%296"> (type: spicy_rt::FindDirection) (spicy_rt.hlt:75:144) (non-const)
 -[debug/ast-codegen]               - ID <name="spicy_rt::FindDirection"> (spicy_rt.hlt:75:144)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
 -[debug/ast-codegen]         - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -1869,7 +1872,7 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::unitFind"> (spicy_rt.hlt:75:173)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:75:203)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]     - declaration::Function %306 <linkage="public"> (spicy_rt.hlt:77:1)
+-[debug/ast-codegen]     - declaration::Function %308 <linkage="public"> (spicy_rt.hlt:77:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:77:15)
 -[debug/ast-codegen]         - ID <name="backtrack"> (spicy_rt.hlt:77:21)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:77:15) (non-const)
@@ -1882,44 +1885,44 @@
 -[debug/ast-codegen]               - ctor::String <value="spicy::rt::detail::backtrack"> (spicy_rt.hlt:77:42)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:77:73)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %303 (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %304 (default-parser-functions.spicy:11:12-13:19)
 +[debug/ast-codegen]     - node::None %305 (default-parser-functions.spicy:11:12-13:19)
 +[debug/ast-codegen]     - node::None %306 (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Type %250 <linkage="public"> (spicy_rt.hlt:79:1)
--[debug/ast-codegen]         | LSB0 -> declaration::Constant %492 <linkage="public">
--[debug/ast-codegen]         | MSB0 -> declaration::Constant %493 <linkage="public">
--[debug/ast-codegen]         | Undef -> declaration::Constant %494 <linkage="public">
++[debug/ast-codegen]     - node::None %307 (default-parser-functions.spicy:11:12-13:19)
++[debug/ast-codegen]     - node::None %308 (default-parser-functions.spicy:11:12-13:19)
+ [debug/ast-codegen]     - declaration::Type %251 <linkage="public"> (spicy_rt.hlt:79:1)
+-[debug/ast-codegen]         | LSB0 -> declaration::Constant %494 <linkage="public">
+-[debug/ast-codegen]         | MSB0 -> declaration::Constant %495 <linkage="public">
+-[debug/ast-codegen]         | Undef -> declaration::Constant %496 <linkage="public">
  [debug/ast-codegen]       - ID <name="BitOrder"> (spicy_rt.hlt:79:13)
  [debug/ast-codegen]       - type::Enum (spicy_rt.hlt:79:24) (non-const) (type-id: spicy_rt::BitOrder) (cxx-id: hilti::rt::integer::BitOrder)
  [debug/ast-codegen]         - type::enum_::Label <value="0"> (spicy_rt.hlt:79:31)
-@@ -7677,44 +6506,9 @@
+@@ -7709,44 +6535,9 @@
  [debug/ast-codegen]         - Attribute <tag="&cxxname"> (spicy_rt.hlt:79:44)
  [debug/ast-codegen]           - expression::Ctor (spicy_rt.hlt:79:53) (const)
  [debug/ast-codegen]             - ctor::String <value="hilti::rt::integer::BitOrder"> (spicy_rt.hlt:79:53)
--[debug/ast-codegen]     - declaration::Function %307 <linkage="public"> (spicy_rt.hlt:81:1)
+-[debug/ast-codegen]     - declaration::Function %309 <linkage="public"> (spicy_rt.hlt:81:1)
 -[debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:81:15)
--[debug/ast-codegen]           | lower -> declaration::Parameter %255 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | order -> declaration::Parameter %257 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | upper -> declaration::Parameter %256 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | v -> declaration::Parameter %254 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | lower -> declaration::Parameter %256 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | order -> declaration::Parameter %258 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | upper -> declaration::Parameter %257 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | v -> declaration::Parameter %255 <is_struct_param="false" kind="in">
 -[debug/ast-codegen]         - ID <name="extractBits"> (spicy_rt.hlt:81:24)
 -[debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:81:15) (non-const)
 -[debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:81:16)
 -[debug/ast-codegen]             - type::UnsignedInteger <width="0"> (spicy_rt.hlt:81:16) (non-const) (wildcard)
--[debug/ast-codegen]           - declaration::Parameter %254 <is_struct_param="false" kind="in"> (spicy_rt.hlt:81:36)
+-[debug/ast-codegen]           - declaration::Parameter %255 <is_struct_param="false" kind="in"> (spicy_rt.hlt:81:36)
 -[debug/ast-codegen]             - ID <name="v"> (spicy_rt.hlt:81:44)
 -[debug/ast-codegen]             - type::UnsignedInteger <width="0"> (spicy_rt.hlt:81:36) (non-const) (wildcard)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %255 <is_struct_param="false" kind="in"> (spicy_rt.hlt:81:46)
+-[debug/ast-codegen]           - declaration::Parameter %256 <is_struct_param="false" kind="in"> (spicy_rt.hlt:81:46)
 -[debug/ast-codegen]             - ID <name="lower"> (spicy_rt.hlt:81:56)
 -[debug/ast-codegen]             - type::UnsignedInteger <width="64"> (spicy_rt.hlt:81:47) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %256 <is_struct_param="false" kind="in"> (spicy_rt.hlt:81:62)
+-[debug/ast-codegen]           - declaration::Parameter %257 <is_struct_param="false" kind="in"> (spicy_rt.hlt:81:62)
 -[debug/ast-codegen]             - ID <name="upper"> (spicy_rt.hlt:81:72)
 -[debug/ast-codegen]             - type::UnsignedInteger <width="64"> (spicy_rt.hlt:81:63) (non-const)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
--[debug/ast-codegen]           - declaration::Parameter %257 <is_struct_param="false" kind="in"> (spicy_rt.hlt:81:78)
+-[debug/ast-codegen]           - declaration::Parameter %258 <is_struct_param="false" kind="in"> (spicy_rt.hlt:81:78)
 -[debug/ast-codegen]             - ID <name="order"> (spicy_rt.hlt:81:87)
 -[debug/ast-codegen]             - type::Enum (spicy_rt.hlt:81:79) (non-const) (wildcard)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
@@ -1930,12 +1933,12 @@
 -[debug/ast-codegen]               - ctor::String <value="hilti::rt::integer::bits"> (spicy_rt.hlt:81:103)
 -[debug/ast-codegen]           - Attribute <tag="&have_prototype"> (spicy_rt.hlt:81:130)
 -[debug/ast-codegen]             - node::None (default-parser-functions.spicy:11:12-13:19)
-+[debug/ast-codegen]     - node::None %307 (default-parser-functions.spicy:11:12-13:19)
- [debug/ast-codegen]     - declaration::Function %308 <linkage="public"> (spicy_rt.hlt:83:1)
++[debug/ast-codegen]     - node::None %309 (default-parser-functions.spicy:11:12-13:19)
+ [debug/ast-codegen]     - declaration::Function %310 <linkage="public"> (spicy_rt.hlt:83:1)
  [debug/ast-codegen]       - Function <cc="<standard>"> (spicy_rt.hlt:83:15)
--[debug/ast-codegen]           | punit -> declaration::Parameter %258 <is_struct_param="false" kind="inout">
--[debug/ast-codegen]           | ti -> declaration::Parameter %260 <is_struct_param="false" kind="in">
--[debug/ast-codegen]           | unit -> declaration::Parameter %259 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | punit -> declaration::Parameter %259 <is_struct_param="false" kind="inout">
+-[debug/ast-codegen]           | ti -> declaration::Parameter %261 <is_struct_param="false" kind="in">
+-[debug/ast-codegen]           | unit -> declaration::Parameter %260 <is_struct_param="false" kind="in">
  [debug/ast-codegen]         - ID <name="initializeParsedUnit"> (spicy_rt.hlt:83:21)
  [debug/ast-codegen]         - type::Function <flavor="standard"> (spicy_rt.hlt:83:15) (non-const)
  [debug/ast-codegen]           - type::function::Result (spicy_rt.hlt:83:16)
