@@ -4,6 +4,10 @@ environment:
     # Enforce sequential JIT'ing of files for controlled memory usage.
     HILTI_JIT_SEQUENTIAL: 1
 
+    # Images for macOS
+    IMAGE_MACOS_BIG_SUR: big-sur-xcode-12.5
+    IMAGE_MACOS_CATALINA: catalina-xcode-12.2
+
 clang9_zeek_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile
@@ -208,7 +212,7 @@ clang11_zeek_nightly_task:
 
 macos_catalina_task:
   osx_instance:
-    image: catalina-base
+    image: $IMAGE_MACOS_CATALINA
 
   always:
     ccache_cache:
@@ -218,6 +222,10 @@ macos_catalina_task:
   environment:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
+
+  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
+  update_homebrew_script:
+     - brew update
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
   # are needed for `git describe` used in `scripts/autogen-version`. We also
@@ -245,7 +253,7 @@ macos_catalina_task:
 
 macos_big_sur_task:
   osx_instance:
-    image: big-sur-base
+    image: $IMAGE_MACOS_BIG_SUR
 
   always:
     ccache_cache:
@@ -368,18 +376,22 @@ homebrew_catalina_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   osx_instance:
-    image: catalina-base
+    image: $IMAGE_MACOS_CATALINA
+
+  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
+  update_homebrew_script:
+     - brew update
 
   script:
-  - brew tap zeek/zeek
-  - brew install spicy --HEAD
-  - brew test spicy
+    - brew tap zeek/zeek
+    - brew install spicy --HEAD
+    - brew test spicy
 
 homebrew_big_sur_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   osx_instance:
-    image: big-sur-base
+    image: $IMAGE_MACOS_BIG_SUR
 
   script:
   - brew tap zeek/zeek
