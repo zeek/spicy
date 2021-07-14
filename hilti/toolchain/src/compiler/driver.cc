@@ -47,9 +47,11 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"version", no_argument, nullptr, 'v'},
                                               {nullptr, 0, nullptr, 0}};
 
-Driver::Driver(std::string name, const std::string_view& argv0) : _name(std::move(name)) {
-    if ( argv0.size() )
-        configuration().initLocation(argv0);
+
+Driver::Driver(std::string name) : _name(std::move(name)) { configuration().initLocation(false); }
+
+Driver::Driver(std::string name, const hilti::rt::filesystem::path& argv0) : _name(std::move(name)) {
+    configuration().initLocation(argv0);
 }
 
 Driver::~Driver() {

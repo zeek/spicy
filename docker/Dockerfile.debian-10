@@ -1,8 +1,5 @@
 FROM debian:buster-slim
 
-ARG ZEEK_VERSION=4.0.0-0
-ARG ZEEK_LTS=1
-
 ENV DEBIAN_FRONTEND noninteractive
 ENV CCACHE_DIR "/var/spool/ccache"
 ENV CCACHE_COMPRESS 1
@@ -18,7 +15,7 @@ ENV CC "clang-${LLVM_VERSION}"
 ENV CXX "clang++-${LLVM_VERSION}"
 ENV ASM "clang-${LLVM_VERSION}"
 
-ENV PATH "/opt/zeek/bin:${CMAKE_DIR}/bin:${PATH}"
+ENV PATH "${CMAKE_DIR}/bin:${PATH}"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -62,26 +59,5 @@ RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/so
   # recent CMake
   mkdir -p "${CMAKE_DIR}" && \
     curl -sSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" | tar xzf - -C "${CMAKE_DIR}" --strip-components 1
-
-# Install Zeek
-RUN mkdir -p /tmp/zeek-packages \
- && cd /tmp/zeek-packages \
- && if [ -n "${ZEEK_LTS}" ]; then ZEEK_LTS="-lts"; fi && export ZEEK_LTS \
- && curl -L --remote-name-all \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-core-dbgsym_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-core-dev-dbgsym_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-btest_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeek${ZEEK_LTS}-zkg_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeekctl${ZEEK_LTS}-dbgsym_${ZEEK_VERSION}_amd64.deb \
-   https://download.zeek.org/binary-packages/Debian_10/amd64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb  \
- && apt-get install -y libpcap-dev python python3-semantic-version python3-git \
- && dpkg -i *.deb \
- && cd - \
- && rm -rf /tmp/zeek-packages
 
 WORKDIR /root

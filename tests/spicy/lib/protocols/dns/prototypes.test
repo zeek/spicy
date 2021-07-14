@@ -1,5 +1,0 @@
-# @TEST-EXEC: spicyc -P ${SPICY_ANALYZERS}/protocol/dns/dns.spicy -o prototypes.cc
-# @TEST-EXEC: $(spicy-config --cxx) -o a.out prototypes.cc $(spicy-config --cxxflags --ldflags)
-# @TEST-EXEC: test -x a.out
-#
-# Ensure that generated C++ prototypes compile.

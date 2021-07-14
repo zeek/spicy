@@ -17,9 +17,6 @@ doc:
 test:
 	$(MAKE) -C tests test
 
-test-all:
-	$(MAKE) -C tests test-all
-
 format:
 	./scripts/run-clang-format
 

@@ -9,16 +9,6 @@
 
 module Foo;
 
-@if   HAVE_ZEEK
-print "have zeek";
-@else
-print "not have zeek";
-@endif
-
-@if   !   HAVE_ZEEK
-print "not have zeek";
-@endif
-
 @if SPICY_VERSION
 print "have spicy version";
 @endif
@@ -37,22 +27,4 @@ print "not have spicy version >= 4";
 
 @if    UNKNOWiN
 no valid Spicy syntax here.
-@endif
-
-@if HAVE_ZEEK
-    @if ZEEK_VERSION > 10000
-    print "have zeek and zeek version > 1.0";
-    @else
-    print "have zeek but zeek version < 1.0";
-    @endif
-@else
-    print "have not zeek";
-@endif
-
-@if   HAVE_ZEEK
-    @if ZEEK_VERSION < 10000
-    print "have zeek and zeek version < 1.0";
-    @endif
-@else
-    print "have not zeek";
 @endif

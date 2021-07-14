@@ -21,7 +21,7 @@ cd ${DIST}
 ${SCRIPTS}/3rdparty/checkbashisms.pl ${self} >output 2>&1
 
 # Find any direct use of bash.
-dirs="hilti spicy scripts tests ci zeek"
+dirs="hilti spicy scripts tests ci"
 
 # Whitelist: ci/run-ci - We use bash for this one.
 find ${dirs} -type f | grep -v 3rdparty | grep -v '\.tmp/' | grep -v bashisms.sh | grep -v ci/run-ci | while read i; do

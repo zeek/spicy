@@ -221,6 +221,15 @@ hilti::Result<Nothing> JIT::_compile() {
             args.push_back(i);
         }
 
+        if ( auto path = getenv("HILTI_CXX_INCLUDE_DIRS") ) {
+            for ( auto&& dir : hilti::rt::split(path, ":") ) {
+                if ( dir.size() ) {
+                    args.push_back("-I");
+                    args.push_back(std::string(dir));
+                }
+            }
+        }
+
         auto obj = path.stem().native() + std::string(".o");
         args.push_back("-o");
         args.push_back(obj); // will be relative to tmpdir

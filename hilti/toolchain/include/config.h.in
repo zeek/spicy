@@ -22,8 +22,8 @@ namespace hilti {
  */
 struct Configuration {
     /**
-     * Default constructor that initializes all settings relative to the
-     * currently executing binary. To change that, call `initLocation()`.
+     * Default constructor that initializes all settings for execution from the
+     * installation location. To change that, call `initLocation()`.
      */
     Configuration();
 
@@ -43,7 +43,7 @@ struct Configuration {
      *
      * @param argv0 path to current execuable
      */
-    void initLocation(const std::string_view& argv0);
+    void initLocation(const hilti::rt::filesystem::path& argv0);
 
     /**
      * Reconfigures the configuration object to adapt all paths to

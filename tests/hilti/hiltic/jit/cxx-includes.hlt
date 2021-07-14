@@ -1,0 +1,28 @@
+# @TEST-EXEC: HILTI_CXX_INCLUDE_DIRS=$(pwd)/xxx ${HILTIC} -j %INPUT my-test.cc
+#
+# @TEST-DOC: Ensure hiltic honors the environment variable HILTI_CXX_INCLUDE_DIRS
+
+module Test {
+
+declare public int<64> test_cc() &cxxname="test_cc";
+
+assert(test_cc() == 42);
+
+}
+
+@TEST-START-FILE my-test.cc
+
+#include <cstdint>
+#include <my-test.h>
+
+int64_t test_cc() { return test_h(); }
+
+@TEST-END-FILE
+
+@TEST-START-FILE xxx/my-test.h
+
+#include <cstdint>
+
+inline int64_t test_h() { return 42; }
+
+@TEST-END-FILE

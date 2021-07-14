@@ -1,10 +1,8 @@
 FROM centos:8
 
-ARG ZEEK_VERSION=4.0.0-3.1
-
 WORKDIR /root
 
-ENV PATH="/opt/zeek/bin:${PATH}"
+ENV PATH="${PATH}"
 
 RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
  && echo 'LC_ALL="C"' >> /etc/locale.conf \
@@ -13,7 +11,7 @@ RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
 RUN yum install -y epel-release yum-utils && yum-config-manager --set-enabled powertools
 
 # Install development tools.
-RUN yum install -y ccache gdb git make ninja-build python3 python3-pip vim doxygen diffutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++ bison
+RUN yum install -y ccache gdb git make ninja-build python3 python3-pip vim doxygen diffutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++ bison openssl-devel zlib-devel
 ENV PATH=/opt/rh/gcc-toolset-9/root/usr/bin:$PATH
 
 # Need a more recent CMake than available.
@@ -27,20 +25,5 @@ RUN pip3 install "btest>=0.66" sphinx-rtd-theme
 
 # Install rpmdevtools for packaging RPM files.
 RUN yum install -y rpmdevtools
-
-# Install Zeek dependencies.
-RUN yum install -y libpcap-devel openssl-devel python3-devel swig zlib-devel
-
-# Install Zeek.
-RUN yum install -y libpcap-devel openssl-devel zlib-devel libmaxminddb cmake-filesystem python3-GitPython python3-semantic_version \
- && rpm -iv \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-core-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeekctl-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-zkg-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/CentOS_8/x86_64/zeek-lts-btest-${ZEEK_VERSION}.x86_64.rpm
 
 WORKDIR /root

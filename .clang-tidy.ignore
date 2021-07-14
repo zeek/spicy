@@ -8,4 +8,3 @@
 .*3rdparty/
 hilti/src/rt/types/regexp.cc # Too many warnings due to usage of jrx C API.
 tests/
-zeek/ # don't check submodules

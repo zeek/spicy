@@ -51,7 +51,7 @@ ENV PATH="/opt/zeek/bin:/opt/cmake/bin:${PATH}"
 # Install Spicy.
 ADD . /opt/spicy/src
 RUN cd /opt/spicy/src \
- && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --build-zeek-plugin=no \
+ && ./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek \
  && ninja -C build install \
  && rm -rf build
 ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"

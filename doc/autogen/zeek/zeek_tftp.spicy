@@ -1,0 +1,14 @@
+# Copyright (c) 2020 by the Zeek Project. See LICENSE for details.
+
+module Zeek_TFTP;
+
+import zeek;   # Library module provided by the Spicy plugin for Zeek.
+import TFTP;
+
+on TFTP::Request::%done {
+    zeek::confirm_protocol();
+}
+
+on TFTP::Request::%error {
+    zeek::reject_protocol("error while parsing TFTP request");
+}

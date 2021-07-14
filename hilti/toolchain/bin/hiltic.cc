@@ -3,7 +3,7 @@
 #include <hilti/hilti.h>
 
 int main(int argc, char** argv) {
-    hilti::Driver driver("hiltic");
+    hilti::Driver driver("hiltic", hilti::util::currentExecutable());
 
     if ( auto rc = driver.parseOptions(argc, argv); ! rc ) {
         hilti::logger().error(rc.error().description());
