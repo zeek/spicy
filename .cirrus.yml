@@ -5,11 +5,13 @@ environment:
     HILTI_JIT_SEQUENTIAL: 1
 
     # Images for macOS
-    IMAGE_MACOS_BIG_SUR:  big-sur-xcode-12.5
-    IMAGE_MACOS_CATALINA: catalina-xcode-12.2
+    IMAGE_MACOS_BIG_SUR:  big-sur-base
+    IMAGE_MACOS_CATALINA: catalina-base
 
-    # Branch to use for spicy-plugin and spicy-analyzers tests.
-    SPICY_PLUGIN_BRANCH: topic/robin/plugin-reorg
+    # Branches to use for spicy-plugin and spicy-analyzers tests.
+    # TODO: Switch back to main
+    ZEEK_SPICY_BRANCH:      topic/robin/plugin-reorg
+    ZEEK_ANALYZERS_BRANCH:  topic/robin/plugin-reorg
 
 clang12_ubuntu_debug_task:
   container:
@@ -245,6 +247,10 @@ macos_big_sur_task:
   environment:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
+
+  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
+  update_homebrew_script:
+     - brew update
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
   # are needed for `git describe` used in `scripts/autogen-version`. We also
@@ -892,13 +898,16 @@ freebsd12_task:
     type: application/gzip
 
 zeek_plugin_task:
+  # TODO: Remove this once the submodules are fully merged.
+  allow_failures: true
+
   timeout_in: 120m
   container:
     dockerfile: ci/Dockerfile
     matrix:
       - docker_arguments:
         - ZEEK_LTS:
-        - ZEEK_VERSION: 4.0.2-0
+        - ZEEK_VERSION: 4.0.3-0
     cpu: 4
     memory: 12G
 
@@ -912,13 +921,13 @@ zeek_plugin_task:
     - rm -rf build
 
   install_plugin_script:
-    - git clone --branch=${SPICY_PLUGIN_BRANCH} --recurse-submodules https://github.com/zeek/spicy-plugin
+    - git clone --branch=$ZEEK_SPICY_BRANCH --recurse-submodules https://github.com/zeek/spicy-plugin
     - (cd spicy-plugin && mkdir build && cd build && PATH=/opt/spicy/bin:$PATH cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-plugin -G Ninja .. && ninja install)
     - rm -rf spicy-plugin/build
     - zeek -NN _Zeek::Spicy
 
   install_analyzers_script:
-    - git clone --branch=${SPICY_PLUGIN_BRANCH} --recurse-submodules https://github.com/zeek/spicy-analyzers
+    - git clone --branch=$ZEEK_ANALYZERS_BRANCH --recurse-submodules https://github.com/zeek/spicy-analyzers
     - (cd spicy-analyzers && mkdir build && cd build && PATH=/opt/spicy/bin:/opt/spicy-plugin/bin:$PATH cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-analyzers -G Ninja .. && ninja install)
     - rm -rf spicy-analyzers/build
     - zeek -NN _Zeek::Spicy

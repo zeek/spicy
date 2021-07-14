@@ -33,7 +33,7 @@ Version 1.2 (in progress)
 
 - Remove configure option ``--build-zeek-plugin``. Spicy no longer
   supports building the Zeek plugin/analyzers in-tree. This used to be
-  available primarily for development purposes, but become challenging
+  available primarily for development purposes, but became challenging
   to maintain.
 
 .. rubric:: Bug fixes

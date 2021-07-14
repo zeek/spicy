@@ -628,7 +628,7 @@ line, you can also copy them into
 automatically load any ``*.hlto`` object files it finds there. In
 addition, the plugin also scans Zeek's plugin directory for ``*.hlto``
 files. Alternatively, you can override both of those locations by
-setting the environment variable ``SPICY_MODULE_PATH`` to a set of
+setting the environment variable ``ZEEK_SPICY_MODULE_PATH`` to a set of
 colon-separated directories to search instead. The plugin will then
 *only* look there. In all cases, the plugin searches any directories
 recursively, so it will find ``*.hlto`` also if they are nested in
@@ -719,10 +719,10 @@ are fully processed before compilation starts. However, changing
 values from the command-line (via Zeek's ``var=value``) won't be
 processed in time due to intricacies of Zeek's timing. To make it
 easier to change an option from the command-line, the Spicy plugin
-also supports an environment variable ``SPICY_PLUGIN_OPTIONS`` that
+also supports an environment variable ``ZEEK_SPICY_PLUGIN_OPTIONS`` that
 accepts a subset of ``spicy-driver`` command-line options in the form
 of a string. For example, to JIT a debug version of all analyzers,
-set ``SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
+set ``ZEEK_SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
 
 .. code-block:: text
 
@@ -738,7 +738,7 @@ set ``SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
       -V             Don't validate ASTs (for debugging only).
       -X <addl>      Implies -d and adds selected additional instrumentation (comma-separated).
 
-To get that usage message, set ``SPICY_PLUGIN_OPTIONS=-h`` when
+To get that usage message, set ``ZEEK_SPICY_PLUGIN_OPTIONS=-h`` when
 running Zeek.
 
 Functions

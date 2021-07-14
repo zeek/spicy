@@ -3,7 +3,7 @@ FROM ubuntu:focal
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG ZEEK_LTS=1
-ARG ZEEK_VERSION=4.0.2-0
+ARG ZEEK_VERSION=4.0.3-0
 ARG UID=1000
 ARG GID=1000
 
