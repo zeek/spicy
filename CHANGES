@@ -1,3 +1,32 @@
+
+1.2.0-dev.71 | 2021-07-14 11:02:28 +0200
+
+  * Add unique "linker scope" identifier to HLTO files. In Spicy, we
+    use now store this linker scope along with the parsers when they
+    get registered with the runtime. (Robin Sommer, Corelight)
+
+  * GH-952: Switch the Cirrus macOS images to `*-xcode` and (still)
+    update Brew for Catalina. (Robin Sommer, Corelight)
+
+  * Make Spicy version available to subprojects. (Robin Sommer, Corelight)
+
+  * Bump Zeek submodules. (Robin Sommer, Corelight)
+
+  * Fix missing documentation update. (Robin Sommer, Corelight)
+
+  * Perform optimizations in a loop. This patch changes the optimizer
+    to now run a collect/prune loop until no further AST changes are
+    made. (Benjamin Bannier, Corelight)
+
+  * Disable clang-tidy `NewDeleteLeaks` check. (Benjamin Bannier, Corelight)
+
+  * Reduce memory load for clang-tidy CI step. (Benjamin Bannier, Corelight)
+
+  * Use clang-tidy-12 in CI. (Benjamin Bannier, Corelight)
+
+  * Fix accidental truncating conversion in integer code. (Benjamin
+    Bannier, Corelight)
+
 1.2.0-dev.55 | 2021-07-09 08:34:26 +0200
 
   * Perform optimizations in a loop. (Benjamin Bannier, Corelight)
@@ -172,7 +201,7 @@
         ```
         public type Foo = unit {
           : void &until=b"XYZ";
-        }
+}
         ```
 
     This skips all data until `XYZ` is encountered. Similar to the
@@ -2217,7 +2246,9 @@ x:
         }
 
 #echo "GET /index.html HTTP/1.0" | spicy - dump - J my - http.hlto
-        {"method":"GET","uri":"/index.html","version":{"number":"1.0"}}
+        {
+            "method" : "GET", "uri" : "/index.html", "version" : { "number" : "1.0" }
+        }
 
   * GH-56: Add reflection API to libhilti for dynamic, runtime
     inspection of parsed units. This includes:
@@ -2541,10 +2572,10 @@ x:
           with an arrow, e.g.:
 
                switch {
-            ->a : A;
-            ->b : B;
-            ->c : C;
-        };
+      ->a : A;
+      ->b : B;
+      ->c : C;
+  };
 
   * Reduce resources requested from Cirrus. (Robin Sommer, Corelight)
 

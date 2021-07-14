@@ -167,6 +167,12 @@ endif ()
 # Set up testing infrastructure.
 enable_testing()
 
+# Compute project version.
+execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR} --store ${CMAKE_SOURCE_DIR}/VERSION
+    OUTPUT_VARIABLE SPICY_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
+
 # Add subdirectories.
 add_subdirectory(hilti)
 add_subdirectory(spicy)
@@ -184,12 +190,6 @@ else ()
 endif ()
 
 add_subdirectory(3rdparty)
-
-# Compute project version.
-execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR} --store ${CMAKE_SOURCE_DIR}/VERSION
-    OUTPUT_VARIABLE SPICY_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
 
 ## Print build summary
 string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)

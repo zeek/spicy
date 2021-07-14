@@ -301,7 +301,8 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         if ( unit.isPublic() )
             builder.addExpression(
                 builder::call("spicy_rt::registerParser",
-                              {builder::id(ID(*unit.typeID(), "__parser")), builder::strong_reference(unit)}));
+                              {builder::id(ID(*unit.typeID(), "__parser")), builder::call("hilti::linker_scope", {}),
+                               builder::strong_reference(unit)}));
 
         auto register_unit =
             builder::function(ID(fmt("__register_%s", hilti::util::replace(*unit.typeID(), "::", "_"))), type::Void(),
