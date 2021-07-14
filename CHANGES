@@ -1,4 +1,9 @@
 
+1.2.0-dev.75 | 2021-07-14 11:07:14 +0200
+
+  * GH-940: Add runtime check for parsing progress during loops.
+    (Robin Sommer, Corelight)
+
 1.2.0-dev.71 | 2021-07-14 11:02:28 +0200
 
   * Add unique "linker scope" identifier to HLTO files. In Spicy, we

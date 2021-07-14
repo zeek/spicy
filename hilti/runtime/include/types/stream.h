@@ -590,6 +590,9 @@ private:
         if ( ! _chain )
             throw InvalidIterator("unbound stream iterator");
 
+        if ( ! n )
+            return;
+
         _offset += n;
 
         if ( ! (_chain && _chain->isValid()) )
@@ -605,6 +608,9 @@ private:
 
         if ( n > _offset )
             throw InvalidIterator("attempt to move before beginning of stream");
+
+        if ( ! n )
+            return;
 
         _offset -= n;
 
