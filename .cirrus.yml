@@ -209,7 +209,7 @@ macos_catalina_task:
 
   # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
   update_homebrew_script:
-     - brew update
+    - brew update
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
   # are needed for `git describe` used in `scripts/autogen-version`. We also
@@ -250,7 +250,7 @@ macos_big_sur_task:
 
   # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
   update_homebrew_script:
-     - brew update
+    - brew update
 
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
   # are needed for `git describe` used in `scripts/autogen-version`. We also
@@ -365,9 +365,10 @@ homebrew_catalina_task:
 
   # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
   update_homebrew_script:
-     - brew update
+    - brew update
 
   script:
+    - brew tap zeek/zeek
     - brew install spicy --HEAD
     - brew test spicy
 
@@ -377,9 +378,14 @@ homebrew_big_sur_task:
   osx_instance:
     image: $IMAGE_MACOS_BIG_SUR
 
+  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
+  update_homebrew_script:
+    - brew update
+
   script:
-  - brew install spicy --HEAD
-  - brew test spicy
+    - brew tap zeek/zeek
+    - brew install spicy --HEAD
+    - brew test spicy
 
 docker_alpine_3_12_task:
   container:
