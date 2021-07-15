@@ -50,8 +50,6 @@ Configure options:
     --cxx-compiler <path>          Path to C++ compiler to use (default: found by cmake)
     --disable-precompiled-headers  Disable use of precompiled headers for developer tests
     --rpath <path>                 Additional rpaths to use; will end up in LD_LIBRARY_PATH (default: none)
-    --with-zeek <path>             Path to Zeek installation to use (default: none)
-    --zeek-ld-preload <path>       LD_PRELOAD library for Zeek tests (no default; needed for ASAN builds to load runtime)
 
 EOF
 
@@ -93,13 +91,11 @@ function run_configure {
     shift
 
     mkdir -p ${install}
-    configure="./configure --builddir=${build} --prefix=${install} --generator=Ninja --enable-werror --enable-ccache --build-zeek-plugin=yes"
+    configure="./configure --builddir=${build} --prefix=${install} --generator=Ninja --enable-werror --enable-ccache"
 
     clang_format=$(which clang-format 2>/dev/null)
     clang_tidy=$(which clang-tidy 2>/dev/null)
-    zeek_root=""
     rpath=""
-    zeek_ld_preload=""
 
     if [ "${build_type}" == "release" ]; then
         :
@@ -131,26 +127,9 @@ function run_configure {
                 shift 2;
                 ;;
 
-            --with-zeek)
-                test $# -gt 0 || usage
-                # Allow the Zeek root to have a postfix as long as it's non-ambigious (e.g., "-rc").
-                zeek_root=$(echo $2*)
-                test -d "${zeek_root}" || error "cannot determine Zeek root (\"${zeek_root}\")"
-                test -x ${zeek_root}/bin/zeek || error "Zeek not found in $2/bin"
-                configure="${configure} --with-zeek=${zeek_root}"
-                shift 2;
-                ;;
-
             --rpath)
                 test $# -gt 0 || usage
                 rpath="$2"
-                shift 2;
-                ;;
-
-            --zeek-ld-preload)
-                test $# -gt 0 || usage
-                zeek_ld_preload="$2"
-                test -e ${zeek_ld_preload} || error "zeek_ld_preload path not found: $2"
                 shift 2;
                 ;;
 
@@ -197,7 +176,6 @@ function run_configure {
     echo "${clang_format}" >${build}/.clang_format
     echo "${clang_tidy}" >${build}/.clang_tidy
     echo "${rpath}" >${build}/.rpath
-    echo "${zeek_ld_preload}" >${build}/.zeek_ld_preload
 }
 
 function run_build {
@@ -210,10 +188,6 @@ function run_build {
     # do not trigger OOM kills in the Docker environments.
     (cd ${build} && ninja -j4 all) || exit 1
 
-    if cat ${build}/CMakeCache.txt | egrep -iq 'BUILD_TOOLCHAIN.*(yes|on|off)'; then
-            (cd ${build} && ninja -j4 build-spicy-analyzers) || exit 1
-    fi
-
     log_stage "Building docs ..."
     (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc doxygen html) || exit 1
 }
@@ -221,10 +195,6 @@ function run_build {
 function run_install {
     log_stage "Installing code ..."
     (cd ${build} && ninja install) || exit 1
-
-    if cat ${build}/CMakeCache.txt | egrep -iq 'BUILD_TOOLCHAIN.*(yes|on|off)'; then
-        (cd ${build} && ninja install-spicy-analyzers) || exit 1
-    fi
 }
 
 function execute_btest {
@@ -249,7 +219,6 @@ function execute_btest {
     pushd ${cwd} >/dev/null
 
     export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
-    export ZEEK_LD_PRELOAD=$(cat ${build}/.zeek_ld_preload)
 
     eval ${preload} \
         btest -b \
@@ -276,16 +245,6 @@ function execute_btest {
 function run_test_btest {
     alternative="$1"
     execute_btest "Spicy" "tests" "${alternative}"
-}
-
-function run_test_zeek_plugin {
-    alternative="$1"
-    execute_btest "Zeek plugin" "zeek/spicy-plugin/tests" "${alternative}"
-}
-
-function run_test_zeek_analyzers {
-    alternative="$1"
-    execute_btest "Zeek analyzers" "zeek/spicy-analyzers/tests" "${alternative}"
 }
 
 function run_test_clang_format {
@@ -355,13 +314,6 @@ function run_test_common {
     rc=0
 
     run_test_btest "${btest_alternative}" || rc=1
-
-    if cat ${build}/CMakeCache.txt | egrep -iq 'BUILD_TOOLCHAIN.*(yes|on|off)'; then
-        run_test_zeek_plugin "${btest_alternative}" || rc=1
-        run_test_zeek_analyzers "${btest_alternative}" || rc=1
-    else
-        log_warning "skipping Zeek tests, no toolchain"
-    fi
 
     log_stage "Checking docs ..."
     (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc check) || true

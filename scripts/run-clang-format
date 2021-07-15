@@ -54,7 +54,7 @@ if [ ! -e .clang-format ]; then
     error "Must execute in top-level directory."
 fi
 
-cmd="${base}/3rdparty/run-clang-format/run-clang-format.py -ir --clang-format-executable ${CLANG_FORMAT} --exclude '*/3rdparty/*' ${files}"
+cmd="python3 ${base}/3rdparty/run-clang-format/run-clang-format.py -ir --clang-format-executable ${CLANG_FORMAT} --exclude '*/3rdparty/*' ${files}"
 tmp=/tmp/$(basename $0).$$.tmp
 trap "rm -f ${tmp}" EXIT
 eval "${cmd}" >"${tmp}"

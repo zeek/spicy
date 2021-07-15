@@ -1,24 +1,10 @@
 FROM fedora:32
 
-ARG ZEEK_VERSION=4.0.0-3.1
-
 RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
  && echo 'LC_ALL="C"' >> /etc/locale.conf \
- && echo 'LANG="C"' >> /etc/locale.conf
-
-# Install Zeek.
-RUN yum install -y libpcap-devel openssl-devel zlib-devel libmaxminddb cmake-filesystem python3-GitPython python3-semantic_version \
- && rpm -iv \
-    https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeek-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeek-lts-core-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeekctl-lts-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeek-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/Fedora_32/x86_64/libbroker-lts-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeek-lts-libcaf-devel-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeek-lts-btest-${ZEEK_VERSION}.x86_64.rpm \
-    https://download.zeek.org/binary-packages/Fedora_32/x86_64/zeek-lts-zkg-${ZEEK_VERSION}.x86_64.rpm \
-# Install Spicy build dependencies
- && yum install -y ccache git ninja-build flex bison gcc-c++ findutils diffutils python3-pip which \
+ && echo 'LANG="C"' >> /etc/locale.conf \
+ # Install Spicy build dependencies
+ && yum install -y ccache git ninja-build flex bison gcc-c++ findutils diffutils python3-pip which openssl-devel zlib-devel \
  && pip3 install "btest>=0.66" \
  # Install a recent CMake.
  && mkdir -p /opt/cmake \
@@ -26,6 +12,6 @@ RUN yum install -y libpcap-devel openssl-devel zlib-devel libmaxminddb cmake-fil
  # Install rpmdevtools for packaging RPM files.
  && yum install -y rpmdevtools
 
-ENV PATH="/opt/zeek/bin:/opt/cmake/bin:${PATH}"
+ENV PATH="/opt/cmake/bin:${PATH}"
 
 WORKDIR /root

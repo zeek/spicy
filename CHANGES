@@ -1,4 +1,16 @@
 
+1.2.0-dev.83 | 2021-07-15 12:29:16 +0200
+
+  * Remove spicy-plugin and spicy-analyzers submodules, along with the
+    `--build-zeek-plugin` configure option. Spicy no longer support
+    building them in-tree. This comes along with removing almost all
+    Zeek-related pieces from Spicy proper (except for CI testing
+    integration with the external Zeek plugin).
+
+  * Add environment variable `HILTI_CXX_INCLUDE_DIRS` to specify
+    additional C++ include directories when compiling generated code.
+    (Robin Sommer, Corelight)
+
 1.2.0-dev.75 | 2021-07-14 11:07:14 +0200
 
   * GH-940: Add runtime check for parsing progress during loops.

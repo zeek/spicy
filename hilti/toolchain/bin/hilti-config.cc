@@ -83,6 +83,8 @@ int main(int argc, char** argv) {
         options.push_back(opt);
     }
 
+    hilti::configuration().initLocation(hilti::util::currentExecutable());
+
     std::vector<std::string> result;
 
     for ( const auto& opt : options ) {

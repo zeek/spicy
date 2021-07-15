@@ -29,10 +29,18 @@ public:
     /**
      * @param name descriptive name for the tool using the driver, which will
      * be used in usage and error messages.
-     * @param argv0 if given, the current exectuable, which will tune the
-     * path's that the global options insance returns
      */
-    explicit Driver(std::string name, const std::string_view& argv0 = "") : hilti::Driver(name, argv0) {}
+    explicit Driver(std::string name) : hilti::Driver(name) {}
+
+    /**
+     * @param name descriptive name for the tool using the driver, which will
+     * be used in usage and error messages.
+     * @param argv0 the current exectuable, which will change the path's that
+     * the global options instance returns if it's inside Spicy build
+     * directory.
+     */
+    Driver(std::string name, const hilti::rt::filesystem::path& argv0) : hilti::Driver(name, argv0) {}
+
     virtual ~Driver() {}
 
     Driver() = delete;

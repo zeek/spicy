@@ -5,15 +5,17 @@ environment:
     HILTI_JIT_SEQUENTIAL: 1
 
     # Images for macOS
-    IMAGE_MACOS_BIG_SUR: big-sur-xcode-12.5
-    IMAGE_MACOS_CATALINA: catalina-xcode-12.2
+    IMAGE_MACOS_BIG_SUR:  big-sur-base
+    IMAGE_MACOS_CATALINA: catalina-base
 
-clang12_zeek_ubuntu_debug_task:
+    # Branches to use for spicy-plugin and spicy-analyzers tests.
+    # TODO: Switch back to main
+    ZEEK_SPICY_BRANCH:      topic/robin/plugin-reorg
+    ZEEK_ANALYZERS_BRANCH:  topic/robin/plugin-reorg
+
+clang12_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile
-    docker_arguments:
-      - ZEEK_LTS:
-      - ZEEK_VERSION: 4.0.0-0
     cpu: 4
     memory: 12G
 
@@ -36,7 +38,7 @@ clang12_zeek_ubuntu_debug_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-12 --with-zeek /opt/zeek --clang-format `which clang-format-12` --clang-tidy `which clang-tidy-12` --rpath /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/ --zeek-ld-preload /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/libclang_rt.asan-x86_64.so
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-12 --clang-format `which clang-format-12` --clang-tidy `which clang-tidy-12` --rpath /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
   build_script:       ./ci/run-ci -b build build
   test_build_script:  ./ci/run-ci -b build test-build
   test_code_script:   ./ci/run-ci -b build test-code
@@ -58,12 +60,9 @@ clang12_zeek_ubuntu_debug_task:
     clang_artifacts:
         path: build/ci
 
-clang10_zeek_lts_ubuntu_release_task:
+clang10_lts_ubuntu_release_task:
   container:
     dockerfile: ci/Dockerfile
-    docker_arguments:
-      - ZEEK_LTS: 1
-      - ZEEK_VERSION: 4.0.0-0
     cpu: 4
     memory: 8G
 
@@ -85,7 +84,7 @@ clang10_zeek_lts_ubuntu_release_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-10 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10`
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-10 --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10`
   build_script:          ./ci/run-ci -b build build
   test_build_script:     ./ci/run-ci -b build test-build
   install_script:        ./ci/run-ci -b build install
@@ -106,13 +105,9 @@ clang10_zeek_lts_ubuntu_release_task:
       type: text/xml
       format: junit
 
-clang9_zeek_lts_ubuntu_release_static_task:
+clang9_lts_ubuntu_release_static_task:
   container:
     dockerfile: ci/Dockerfile
-    docker_arguments:
-      - ZEEK_LTS: 1
-      # For now we keep this build at the last Zeek LTS release to also test that one somewhere.
-      - ZEEK_VERSION: 3.0.11-0
     cpu: 4
     memory: 8G
 
@@ -134,7 +129,7 @@ clang9_zeek_lts_ubuntu_release_static_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-9 --with-zeek /opt/zeek --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10` --build-static-libs
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-9 --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10` --build-static-libs
   build_script:          ./ci/run-ci -b build build
   install_script:        ./ci/run-ci -b build install
   cleanup_script:        ./ci/run-ci -b build cleanup
@@ -148,7 +143,7 @@ clang9_zeek_lts_ubuntu_release_static_task:
       type: text/xml
       format: junit
 
-clang11_zeek_nightly_task:
+clang11_nightly_task:
   # This task is only executed on main.
   # Failing this task does not fail the build.
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
@@ -156,11 +151,6 @@ clang11_zeek_nightly_task:
 
   container:
     dockerfile: ci/Dockerfile
-    docker_arguments:
-      # We specify these only to pin a certain base image;
-      # we install nightly Zeek packages in a CI step below.
-      - ZEEK_LTS:
-      - ZEEK_VERSION: 4.0.0-0
     cpu: 4
     memory: 8G
 
@@ -183,13 +173,7 @@ clang11_zeek_nightly_task:
     - git fetch --tags
     - git submodule update --recursive --init
 
-  install_zeek_nightly_script:
-    - echo 'deb http://download.opensuse.org/repositories/security:/zeek/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/security:zeek.list
-    - curl -fsSL https://download.opensuse.org/repositories/security:zeek/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/security_zeek.gpg > /dev/null
-    - sudo apt update
-    - sudo DEBIAN_FRONTEND=noninteractive apt install -y zeek-nightly
-
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-11 --with-zeek /opt/zeek-nightly --clang-format `which clang-format-11` --clang-tidy `which clang-tidy-11`
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-11 --clang-format `which clang-format-11` --clang-tidy `which clang-tidy-11`
   build_script:          ./ci/run-ci -b build build
   test_build_script:     ./ci/run-ci -b build test-build
   install_script:        ./ci/run-ci -b build install
@@ -235,7 +219,7 @@ macos_catalina_task:
     - git submodule update --recursive --init
 
   install_dependencies_script:
-    - brew install llvm bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache zeek
+    - brew install llvm bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache
     - pip3 install "btest>=0.66" sphinx_rtd_theme
 
   configure_script:
@@ -264,6 +248,10 @@ macos_big_sur_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
+  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
+  update_homebrew_script:
+     - brew update
+
   # Pull tags as well since by default Cirrus CI does not fetch them, but they
   # are needed for `git describe` used in `scripts/autogen-version`. We also
   # pull submodules here.
@@ -272,7 +260,7 @@ macos_big_sur_task:
     - git submodule update --recursive --init
 
   install_dependencies_script:
-    - brew install bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache zeek
+    - brew install bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache
     - pip3 install btest sphinx_rtd_theme zkg
 
   configure_script:
@@ -291,9 +279,6 @@ macos_big_sur_task:
 no_toolchain_task:
   container:
     dockerfile: ci/Dockerfile
-    docker_arguments:
-      - ZEEK_LTS: 1
-      - ZEEK_VERSION: 4.0.0-0
     cpu: 4
     memory: 12G
 
@@ -366,7 +351,7 @@ validate_release_tarball_task:
     - tar xf spicy*.tar.gz -C /tmp/spicy-tarball
     - cd /tmp/spicy-tarball/spicy-*
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j3 -C build
   test_build_script:
@@ -383,7 +368,6 @@ homebrew_catalina_task:
      - brew update
 
   script:
-    - brew tap zeek/zeek
     - brew install spicy --HEAD
     - brew test spicy
 
@@ -394,7 +378,6 @@ homebrew_big_sur_task:
     image: $IMAGE_MACOS_BIG_SUR
 
   script:
-  - brew tap zeek/zeek
   - brew install spicy --HEAD
   - brew test spicy
 
@@ -423,12 +406,11 @@ docker_alpine_3_12_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror --build-zeek-plugin=yes
+    - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build install
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
-    - zeek -N | grep Spicy
   packaging_script:
     - ninja -C build package
 
@@ -461,7 +443,7 @@ docker_centos_7_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - source scl_source enable devtoolset-9 && LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - source scl_source enable devtoolset-9 && LDFLAGS="-static-libstdc++ -static-libgcc" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - source scl_source enable devtoolset-9 && ninja -j4 -C build check all package
     - cp build/spicy*.rpm .
@@ -501,7 +483,7 @@ docker_centos_8_task:
   configure_script:
     # TODO(bbannier): We do not enable -Werror on centos8 since it ships with
     # flex-2.6.1 which generates code which triggers sign-compare diagnostics.
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.rpm .
@@ -541,7 +523,7 @@ docker_debian9_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.deb .
@@ -581,7 +563,7 @@ docker_debian10_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.deb .
@@ -623,7 +605,7 @@ docker_ubuntu16_task:
   configure_script:
     # TODO(bbannier): We do not enable -Werror on ubuntu16 since there
     # the generated flex scanners trigger null-conversion diagnostics.
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.deb .
@@ -663,7 +645,7 @@ docker_ubuntu18_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.deb .
@@ -703,7 +685,7 @@ docker_ubuntu20_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.deb .
@@ -743,7 +725,7 @@ docker_fedora32_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.rpm .
@@ -783,7 +765,7 @@ docker_fedora33_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.rpm .
@@ -823,7 +805,7 @@ docker_opensuse15_2_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-zeek=/opt/zeek --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.rpm .
@@ -863,11 +845,11 @@ freebsd11_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --with-cxx-compiler=clang++11 --with-c-compiler=clang11 --enable-werror --build-zeek-plugin=yes
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-cxx-compiler=clang++11 --with-c-compiler=clang11 --enable-werror
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build install
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test
   packaging_script:
     - ninja -C build package
 
@@ -903,14 +885,59 @@ freebsd12_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-zeek=/usr/local --enable-werror --build-zeek-plugin=yes
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --enable-werror
   build_script:
-    - ninja -j4 -C build install install-spicy-analyzers
+    - ninja -j4 -C build install
   test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-all-install
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test
   packaging_script:
     - ninja -C build package
 
   packages_artifacts:
     path: build/spicy*.tar.gz
     type: application/gzip
+
+zeek_plugin_task:
+  # TODO: Remove this once the submodules are fully merged.
+  allow_failures: true
+
+  timeout_in: 120m
+  container:
+    dockerfile: ci/Dockerfile
+    matrix:
+      - docker_arguments:
+        - ZEEK_LTS:
+        - ZEEK_VERSION: 4.0.3-0
+    cpu: 4
+    memory: 12G
+
+  update_git_script:
+    - git fetch --tags
+    - git submodule update --recursive --init
+
+  install_spicy_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+    - ninja -j4 -C build install
+    - rm -rf build
+
+  install_plugin_script:
+    - git clone --branch=$ZEEK_SPICY_BRANCH --recurse-submodules https://github.com/zeek/spicy-plugin
+    - (cd spicy-plugin && mkdir build && cd build && PATH=/opt/spicy/bin:$PATH cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-plugin -G Ninja .. && ninja install)
+    - rm -rf spicy-plugin/build
+    - zeek -NN _Zeek::Spicy
+
+  install_analyzers_script:
+    - git clone --branch=$ZEEK_ANALYZERS_BRANCH --recurse-submodules https://github.com/zeek/spicy-analyzers
+    - (cd spicy-analyzers && mkdir build && cd build && PATH=/opt/spicy/bin:/opt/spicy-plugin/bin:$PATH cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-analyzers -G Ninja .. && ninja install)
+    - rm -rf spicy-analyzers/build
+    - zeek -NN _Zeek::Spicy
+    - zeek -NN _Zeek::Spicy | grep -q ANALYZER_SPICY_TFTP
+
+  test_plugin_script:
+    - (PATH=/opt/spicy-plugin/bin:$PATH make -C spicy-plugin/tests test-install)
+
+  test_analyzer_script:
+    - (PATH=/opt/spicy-plugin/bin:$PATH make -C spicy-analyzers/tests test-install)
+
+  check_script:
+    - (cd /tmp && zeek -r ${CIRRUS_WORKING_DIR}/spicy-analyzers/tests/Traces/tftp_rrq.pcap spicy-analyzers && test -e tftp.log && grep rfc1350.txt tftp.log)

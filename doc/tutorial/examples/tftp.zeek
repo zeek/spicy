@@ -1,1 +1,1 @@
-../../../zeek/spicy-analyzers/analyzer/protocol/tftp/tftp.zeek
+../../autogen/zeek/tftp.zeek

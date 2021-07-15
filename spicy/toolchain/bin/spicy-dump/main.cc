@@ -47,7 +47,7 @@ static void fatalError(const std::string& msg) {
 
 class SpicyDump : public spicy::Driver, public spicy::rt::Driver {
 public:
-    SpicyDump(const std::string_view& argv0 = "") : spicy::Driver("spicy-dump", argv0) {
+    SpicyDump() : spicy::Driver("spicy-dump", hilti::util::currentExecutable()) {
         spicy::Configuration::extendHiltiConfiguration();
     }
 

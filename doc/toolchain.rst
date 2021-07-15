@@ -40,6 +40,31 @@ executing it directly through JIT.
 .. spicy-output:: usage-spicyc
     :exec: spicyc -h
 
+``spicyc`` also supports the following environment variables to
+control the compilation process:
+
+	``SPICY_PATH``
+        Replaces the built-in search path for `*.spicy` source files.
+
+    ``SPICY_CACHE``
+        Location for storing precompiled C++ headers. Default is ``~/.cache/spicy/<VERSION>``.
+
+    ``HILTI_CXX``
+        Specifies the path to the C++ compiler to use.
+
+    ``HILTI_CXX_INCLUDE_DIRS``
+        Specified additional, colon-separated C++ include directory to
+        search for header files.
+
+    ``HILTI_JIT_SEQUENTIAL``
+        Set to prevent spawning multiple concurrent C++ compiler instances.
+
+    ``HILTI_PATH``
+        Replaces the built-in search path for `*.hlt` source files.
+
+    ``HILTI_PRINT_SETTINGS``
+        Set to see summary of compilation options.
+
 .. _spicy-driver:
 
 ``spicy-driver``
@@ -51,6 +76,9 @@ parsing from standard input.
 
 .. spicy-output:: usage-spicy-driver
     :exec: spicy-driver -h
+
+``spicy-driver`` supports the same environment variables as
+:ref:`spicyc`.
 
 Specifying the parser to use
 ----------------------------
