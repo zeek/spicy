@@ -9,9 +9,8 @@ environment:
     IMAGE_MACOS_CATALINA: catalina-base
 
     # Branches to use for spicy-plugin and spicy-analyzers tests.
-    # TODO: Switch back to main
-    ZEEK_SPICY_BRANCH:      topic/robin/plugin-reorg
-    ZEEK_ANALYZERS_BRANCH:  topic/robin/plugin-reorg
+    ZEEK_SPICY_BRANCH:      main
+    ZEEK_ANALYZERS_BRANCH:  main
 
 clang12_ubuntu_debug_task:
   container:
@@ -904,9 +903,6 @@ freebsd12_task:
     type: application/gzip
 
 zeek_plugin_task:
-  # TODO: Remove this once the submodules are fully merged.
-  allow_failures: true
-
   timeout_in: 120m
   container:
     dockerfile: ci/Dockerfile
