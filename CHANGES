@@ -1,4 +1,8 @@
 
+1.2.0-dev.94 | 2021-07-19 18:59:32 +0200
+
+  * CI tweaks. (Robin Sommer, Corelight)
+
 1.2.0-dev.92 | 2021-07-19 10:05:36 +0200
 
   * Remove spicy-plugin and spicy-analyzers submodules, along with the

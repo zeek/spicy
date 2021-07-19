@@ -57,7 +57,7 @@ RUN cd /opt/spicy/src \
 ENV PATH="/opt/spicy/bin:/opt/zeek/bin:${PATH}"
 
 # Install Spicy Zeek plugin and analyzers.
-RUN echo Y | zkg install --version main spicy-plugin \
- && echo Y | zkg install --version main spicy-analyzers
+RUN echo Y | zkg -vvv install --version main spicy-plugin
+RUN echo Y | zkg -vvv install --version main spicy-analyzers
 
 WORKDIR /root
