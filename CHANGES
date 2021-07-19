@@ -1,5 +1,5 @@
 
-1.2.0-dev.90 | 2021-07-19 08:12:50 +0200
+1.2.0-dev.92 | 2021-07-19 10:05:36 +0200
 
   * Remove spicy-plugin and spicy-analyzers submodules, along with the
     `--build-zeek-plugin` configure option. Spicy no longer support
