@@ -6,8 +6,8 @@ ENV CCACHE_COMPRESS 1
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN apt -q update && \
-    apt install -y --no-install-recommends \
+RUN apt-get -q update && \
+    apt-get install -y --no-install-recommends \
       binutils \
       bison \
       ccache \
