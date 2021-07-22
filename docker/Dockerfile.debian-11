@@ -14,6 +14,8 @@ RUN apt-get -q update && \
       cmake \
       file \
       flex \
+      gcc \
+      g++ \
       git \
       google-perftools \
       jq \
