@@ -1,4 +1,11 @@
 
+1.2.0-dev.101 | 2021-07-23 16:47:13 +0200
+
+  * Add Debian Bullseye (11) to CI. (Matthias Vallentin)
+
+  * Update plugin docs for build system changes. (Robin Sommer,
+    Corelight)
+
 1.2.0-dev.94 | 2021-07-19 18:59:32 +0200
 
   * CI tweaks. (Robin Sommer, Corelight)
