@@ -82,13 +82,11 @@ the tool show up in your ``PATH``: Either run `\`zkg env\`
 or update your ``PATH`` manually::
 
     # export PATH=$(zkg config bin_dir):$PATH
-    # which spicyz
-    /usr/local/zeek/bin/spicyz
 
 If you are using an older version of *zkg* (including the version
 coming with Zeek 4.0), it's a bit more difficult to find ``spicyz``:
 it will be inside your *zkg* state directory at
-``<state_dir>/clones/package/spicy-plugin/build/plugin/bin/spicyz``.
+``<state_dir>/clones/package/spicy-plugin/build/bin/spicyz``.
 We recommend adding that directory to your ``PATH``. (The state
 directory is usually either ``<zeek-prefix>/var/lib/zkg`` or
 ``~/.zkg``, depending on how you have set up *zkg*.)
@@ -97,21 +95,10 @@ Manual Installation
 -------------------
 
 If you prefer, you can also compile the Zeek plugin yourself, outside
-of the package manager. There are two options for doing so:
-
-    1. You can clone the plugin's GitHub repository and build it
-       through CMake. See the instructions in its `README
-       <https://github.com/zeek/spicy-plugin>`_.
-
-    2. If you are building Spicy from source, you can set up the build
-       to include the plugin as well by adding
-       ``--build-zeek-plugin=yes`` to your ``configure`` command. This
-       will build and install the Zeek plugin along with the Spicy
-       toolchain. You may need to adjust Zeek's plugin search path
-       (``ZEEK_PLUGIN_PATH``) to have it find the plugin code. It
-       will be installed into `<prefix>/lib/spicy/zeek`.
-
-Both of these options will install ``spicyz`` into ``<prefix>/bin``.
+of the package manager by cloning the plugin's GitHub repository and
+building it through CMake. See the instructions in its `README
+<https://github.com/zeek/spicy-plugin>`_. This will install ``spicyz``
+into ``<prefix>/bin``.
 
 .. note::
 
