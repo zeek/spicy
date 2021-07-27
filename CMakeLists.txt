@@ -168,6 +168,11 @@ execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/script
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
 
+# Compute long version string for summary.
+execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --git-root ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE SPICY_VERSION_LONG
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 # Add subdirectories.
 add_subdirectory(hilti)
 add_subdirectory(spicy)
@@ -232,7 +237,7 @@ include(CPack)
 message(
     "\n====================|  Spicy Build Summary  |===================="
     "\n"
-    "\nVersion:               ${CMAKE_PROJECT_VERSION}"
+    "\nVersion:               ${SPICY_VERSION_LONG}"
     "\n"
     "\nBuild type:            ${CMAKE_BUILD_TYPE}"
     "\nBuild directory:       ${CMAKE_BINARY_DIR}"
