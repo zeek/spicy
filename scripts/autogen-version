@@ -137,7 +137,6 @@ elif re.match("release.*", branch) or not branch:
     prerelease = commit
 else:
     prerelease = "branch"
-    chash = ""
 
 on_release_tag = subprocess.call(
     ["git", "describe", "--tags", "--match", "v*", "--exact-match"],
