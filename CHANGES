@@ -1,3 +1,6 @@
+1.2.0-dev.103 | 2021-07-29 09:46:05 +0200
+
+  * Make it possible to build Spicy as a CMake subproject. (Benjamin Bannier, Corelight)
 
 1.2.0-dev.101 | 2021-07-23 16:47:13 +0200
 

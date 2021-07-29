@@ -43,7 +43,7 @@ void hilti::Configuration::initLocation(const char* argv0) { initLocation(std::s
 void hilti::Configuration::initLocation(const hilti::rt::filesystem::path& argv0) {
     try {
         auto exec = hilti::rt::filesystem::canonical(argv0).native();
-        auto prefix = hilti::rt::filesystem::canonical("${CMAKE_BINARY_DIR}").native();
+        auto prefix = hilti::rt::filesystem::canonical("${PROJECT_BINARY_DIR}").native();
         init(util::startsWith(hilti::rt::normalizePath(exec), hilti::rt::normalizePath(prefix)));
     } catch ( const hilti::rt::filesystem::filesystem_error& ) {
         init(false);
@@ -65,9 +65,9 @@ void Configuration::init(bool use_build_directory) {
     else
         cxx = "${CMAKE_CXX_COMPILER}";
 
-    distbase = "${CMAKE_SOURCE_DIR}";
+    distbase = "${PROJECT_SOURCE_DIR}";
     install_prefix = "${CMAKE_INSTALL_PREFIX}";
-    build_directory = "${CMAKE_BINARY_DIR}";
+    build_directory = "${PROJECT_BINARY_DIR}";
     lib_directory = (uses_build_directory ? "${PROJECT_BINARY_DIR}/lib" : "${CMAKE_INSTALL_FULL_LIBDIR}");
     hiltic = (uses_build_directory ? "${PROJECT_BINARY_DIR}/bin/hiltic" : "${CMAKE_INSTALL_PREFIX}/bin/hiltic");
     version_number = PROJECT_VERSION_NUMBER;

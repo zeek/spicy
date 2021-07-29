@@ -20,15 +20,15 @@ if (${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config)
     # e.g., making it harder for ccache to work during development. It also
     # allows us to punt on some trickier cleanups of header files.
     add_custom_command(
-        OUTPUT ${CMAKE_BINARY_DIR}/cache/spicy/precompiled_libhilti.h
+        OUTPUT ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h
         COMMAND
-            ${CMAKE_COMMAND} -E env SPICY_CACHE=${CMAKE_BINARY_DIR}/cache/spicy
-                ${CMAKE_SOURCE_DIR}/scripts/precompile-headers.sh --hilti-config $<TARGET_FILE:hilti-config>
+            ${CMAKE_COMMAND} -E env SPICY_CACHE=${PROJECT_BINARY_DIR}/cache/spicy
+                ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh --hilti-config $<TARGET_FILE:hilti-config>
         DEPENDS
-            ${CMAKE_SOURCE_DIR}/scripts/precompile-headers.sh
+            ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh
             ${CMAKE_CURRENT_SOURCE_DIR}/runtime/include/libhilti.h
             hilti-config)
     add_custom_target(precompiled-headers
         ALL
-        DEPENDS ${CMAKE_BINARY_DIR}/cache/spicy/precompiled_libhilti.h)
+        DEPENDS ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h)
 endif ()
