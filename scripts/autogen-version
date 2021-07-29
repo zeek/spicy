@@ -15,8 +15,8 @@ import tempfile
 def get_version(ref):
     if os.path.exists("VERSION"):
         with open("VERSION", "r") as info:
-            hash = info.readline().split("=")[1].strip()
             branch = info.readline().split("=")[1].strip()
+            hash = info.readline().split("=")[1].strip()
             git_version = info.readline().split("=")[1].strip()
             return hash, branch, git_version
 
