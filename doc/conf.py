@@ -25,7 +25,7 @@ copyright = u'2020 by the Zeek Project'
 author = u'Zeek Project'
 
 version = subprocess.check_output("../scripts/autogen-version").decode("utf8")
-release = "1.1.0"  # most recent release version
+release = "1.2.0"  # most recent release version
 
 # -- General configuration ---------------------------------------------------
 
