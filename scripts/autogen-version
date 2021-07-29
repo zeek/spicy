@@ -12,13 +12,17 @@ import subprocess
 import tempfile
 
 
-def get_version(ref):
+def get_version(ref, prefer_recomputation=False):
+    branch, hash, git_version = None, None, None
+
     if os.path.exists("VERSION"):
         with open("VERSION", "r") as info:
-            hash = info.readline().split("=")[1].strip()
             branch = info.readline().split("=")[1].strip()
+            hash = info.readline().split("=")[1].strip()
             git_version = info.readline().split("=")[1].strip()
-            return hash, branch, git_version
+
+            if not prefer_recomputation:
+                return hash, branch, git_version
 
     if subprocess.call(
         ["git", "rev-parse", "--git-dir"],
@@ -51,10 +55,12 @@ def get_version(ref):
         git_version = re.sub(
             r"-([0-9]*)-g[0-9a-z]*", r".\1", re.sub(r"^v", "", raw_git_version)
         ).strip()
-        return hash, branch, git_version
 
-    print("Cannot extract version information: neither VERSION file nor git repository present")
-    exit(1)
+    if not any([hash, branch, git_version]):
+        print("Cannot extract version information: neither VERSION file nor git repository present")
+        exit(1)
+
+    return hash, branch, git_version
 
 
 def write_if_changed(target, txt):
@@ -110,7 +116,8 @@ os.chdir(
     if options.git_root
     else os.path.join(os.path.dirname(__file__), "..")
 )
-chash, branch, git_version = get_version(options.commit)
+chash, branch, git_version = get_version(
+    ref=options.commit, prefer_recomputation=options.store)
 
 # When running from CI, for geting the branch name we prefer what
 # might be passed in through environment variables as we may not
@@ -137,7 +144,6 @@ elif re.match("release.*", branch) or not branch:
     prerelease = commit
 else:
     prerelease = "branch"
-    chash = ""
 
 on_release_tag = subprocess.call(
     ["git", "describe", "--tags", "--match", "v*", "--exact-match"],
