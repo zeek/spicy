@@ -14,6 +14,7 @@
 #include <cstring>
 
 #include <hilti/rt/backtrace.h>
+#include <hilti/rt/util.h>
 
 #include <hilti/base/logger.h>
 
@@ -159,7 +160,22 @@ hilti::Result<hilti::rt::filesystem::path> util::findInPaths(const hilti::rt::fi
     return hilti::result::Error(fmt("%s not found", file));
 }
 
-hilti::rt::filesystem::path util::currentExecutable() { return normalizePath(PathFind::FindExecutable()); }
+hilti::rt::filesystem::path util::currentExecutable() {
+    const auto exe = PathFind::FindExecutable();
+
+    if ( exe.empty() ) {
+        auto msg = std::string("could not determine path of current executable");
+
+#if defined(__FreeBSD__)
+        if ( ! rt::filesystem::exists("/proc") || rt::filesystem::is_empty("/proc") )
+            msg += ": /proc needs to be mounted";
+#endif
+
+        rt::internalError(msg);
+    }
+
+    return normalizePath(exe);
+}
 
 void util::abort_with_backtrace() {
     std::cerr << "\n--- Aborting" << std::endl;

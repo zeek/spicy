@@ -1,3 +1,7 @@
+1.2.0-dev.105 | 2021-07-29 09:49:24 +0200
+
+  * GH-961: Make detection of current executable more robust. (Benjamin Bannier, Corelight)
+
 1.2.0-dev.103 | 2021-07-29 09:46:05 +0200
 
   * Make it possible to build Spicy as a CMake subproject. (Benjamin Bannier, Corelight)
