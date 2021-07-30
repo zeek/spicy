@@ -4,7 +4,7 @@
 
 <td>
 <table>
-<tr><th></th>              <th>Release v1.1</th> <th>Development</th> </tr>
+<tr><th></th>              <th>Stable</th> <th>Development</th> </tr>
 <tr><td>Documentation</td> <td colspan="2" align="center"><a href="https://docs.zeek.org/projects/spicy">Spicy Manual</a></td></tr>
 <tr><td>Changelog</td>    <td align="center"><a href="https://docs.zeek.org/projects/spicy/en/latest/release-notes.html">Release Notes</td> <td align="center"><a href="/CHANGES">CHANGES</a></td></tr>
 <tr>
