@@ -9,7 +9,7 @@
 <tr><td>Changelog</td>    <td align="center"><a href="https://docs.zeek.org/projects/spicy/en/latest/release-notes.html">Release Notes</td> <td align="center"><a href="/CHANGES">CHANGES</a></td></tr>
 <tr>
   <td>Build status</td>
-  <td><a href="https://cirrus-ci.com/github/zeek/spicy/release/1.1"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg?branch=release/1.1" alt="Build status release"></a></td>
+  <td><a href="https://cirrus-ci.com/github/zeek/spicy/release/1.2"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg?branch=release/1.2" alt="Build status release"></a></td>
   <td><a href="https://cirrus-ci.com/github/zeek/spicy/main"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg" alt="Build status development"></a></td>
 </tr>
 </table>
