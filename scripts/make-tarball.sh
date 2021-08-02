@@ -13,13 +13,9 @@ git archive -o "${TARBALL}" HEAD
 # Add all submodules to archive.
 git submodule foreach --quiet 'cd $toplevel && tar rf '"${TARBALL}"' $sm_path'
 
-# Add a VERSION file to the archive.
-./scripts/autogen-version --store VERSION
-tar rf "${TARBALL}" VERSION
-
 # Introduce a top-level `spicy` directory and compress the tarball.
 SCRATCH=$(mktemp -d)
-VERSION=$(./scripts/autogen-version --short)
+VERSION=$(cat VERSION)
 mkdir "${SCRATCH}/spicy-${VERSION}"
 (
     cd "${SCRATCH}/spicy-${VERSION}" &&

@@ -1,3 +1,7 @@
+1.2.0-1 | 2021-08-02 16:50:13 +0200
+
+  * Directly maintain VERSION file in repo. (Benjamin Bannier, Corelight)
+
 1.2.0 | 2021-07-29 16:05:44 +0200
 
   * Release 1.2.0. (Benjamin Bannier, Corelight)

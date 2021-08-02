@@ -71,10 +71,6 @@ void Configuration::init(bool use_build_directory) {
     lib_directory = (uses_build_directory ? "${PROJECT_BINARY_DIR}/lib" : "${CMAKE_INSTALL_FULL_LIBDIR}");
     hiltic = (uses_build_directory ? "${PROJECT_BINARY_DIR}/bin/hiltic" : "${CMAKE_INSTALL_PREFIX}/bin/hiltic");
     version_number = PROJECT_VERSION_NUMBER;
-    version_major = PROJECT_VERSION_MAJOR;
-    version_minor = PROJECT_VERSION_MINOR;
-    version_patch = PROJECT_VERSION_PATCH;
-    version_prerelease = PROJECT_VERSION_PRERELEASE;
     version_string = PROJECT_VERSION_STRING_SHORT;
     version_string_long = PROJECT_VERSION_STRING_LONG;
 

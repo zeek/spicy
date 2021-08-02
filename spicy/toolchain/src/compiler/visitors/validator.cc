@@ -198,7 +198,7 @@ struct PreTransformVisitor : public hilti::visitor::PreOrder<void, PreTransformV
                         if ( v.size() == 3 )
                             patch = parse_number(v[2]);
 
-                        // This must match the computation in our autogen-version script.
+                        // This must match the computation in the toplevel `CMakeLists.txt` file.
                         int version = major * 10000 + minor * 100 + patch;
                         if ( hilti::configuration().version_number < version )
                             error(fmt("module %s requires at least Spicy version %s (have %s)", m.id(), s->value(),

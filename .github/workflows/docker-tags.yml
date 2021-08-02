@@ -20,7 +20,7 @@ jobs:
       run: git submodule update --init --recursive
     - name: Get Version
       id: version
-      run: echo "::set-output name=RELEASE_VERSION::$(./scripts/autogen-version --short)"
+      run: echo "::set-output name=RELEASE_VERSION::$(cat VERSION)"
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
     - name: Set up Docker Buildx

@@ -72,18 +72,12 @@ struct Configuration {
 
     std::vector<hilti::rt::filesystem::path>
         runtime_cxx_include_paths; /**< C++ include directories for runtime headers */
-    std::vector<hilti::rt::filesystem::path>
-        runtime_cxx_library_paths; /**< C++ library directories for runtime */
+    std::vector<hilti::rt::filesystem::path> runtime_cxx_library_paths; /**< C++ library directories for runtime */
     std::vector<hilti::rt::filesystem::path>
         toolchain_cxx_include_paths; /**< C++ include directories for toolchain headers */
-    std::vector<hilti::rt::filesystem::path>
-        toolchain_cxx_library_paths; /**< C++ library directories for runtime */
+    std::vector<hilti::rt::filesystem::path> toolchain_cxx_library_paths; /**< C++ library directories for runtime */
 
     int version_number;              /**< Single version number encoding major/minor/patch levels */
-    int version_major;               /**< Major number of the HILTI version */
-    int version_minor;               /**< Minor number of the HILTI version */
-    int version_patch;               /**< Patch number of the HILTI version */
-    std::string version_prerelease;  /**< Prelease number of the HILTI version */
     std::string version_string;      /* Readable version string, without git information */
     std::string version_string_long; /* Readable version string, including git information */
 

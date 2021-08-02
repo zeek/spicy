@@ -24,7 +24,7 @@ project = u'Spicy'
 copyright = u'2020 by the Zeek Project'
 author = u'Zeek Project'
 
-version = subprocess.check_output("../scripts/autogen-version").decode("utf8")
+version = open('../VERSION').readline()
 release = "1.2.0"  # most recent release version
 
 # -- General configuration ---------------------------------------------------
@@ -85,9 +85,6 @@ linkcheck_ignore = [
 
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
-    # Fetch complete history if we are build in readthedocs. This is required
-    # for `scripts/autogen-version` to work.
-    subprocess.run(['git', 'fetch', '--unshallow'], shell=True)
     # Generate Doxygen output if we are building in readthedocs. Outside of
     # readthedocs this is done by `docs/Makefile`.
     subprocess.run(['doxygen'], shell=True)
