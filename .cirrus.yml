@@ -30,11 +30,7 @@ clang12_ubuntu_debug_task:
     CCACHE_COMPRESS: 1
     LD_LIBRARY_PATH: /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-12 --clang-format `which clang-format-12` --clang-tidy `which clang-tidy-12` --rpath /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
@@ -76,11 +72,7 @@ clang10_lts_ubuntu_release_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-10 --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10`
@@ -121,11 +113,7 @@ clang9_lts_ubuntu_release_static_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-9 --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10` --build-static-libs
@@ -165,11 +153,7 @@ clang11_nightly_task:
     CCACHE_COMPRESS: 1
     LD_LIBRARY_PATH: /usr/lib/llvm-11/lib/clang/9.0.1/lib/linux/
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-11 --clang-format `which clang-format-11` --clang-tidy `which clang-tidy-11`
@@ -210,11 +194,7 @@ macos_catalina_task:
   update_homebrew_script:
     - brew update
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   install_dependencies_script:
@@ -251,11 +231,7 @@ macos_big_sur_task:
   update_homebrew_script:
     - brew update
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   install_dependencies_script:
@@ -292,11 +268,7 @@ no_toolchain_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:      ./ci/run-ci -b build configure release --build-toolchain no
@@ -336,11 +308,7 @@ validate_release_tarball_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   create_tarball_script:
@@ -403,11 +371,7 @@ docker_alpine_3_12_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -440,11 +404,7 @@ docker_centos_7_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -478,11 +438,7 @@ docker_centos_8_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -520,11 +476,7 @@ docker_debian9_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -560,11 +512,7 @@ docker_debian10_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -600,11 +548,7 @@ docker_debian11_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -640,11 +584,7 @@ docker_ubuntu16_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -682,11 +622,7 @@ docker_ubuntu18_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -722,11 +658,7 @@ docker_ubuntu20_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -762,11 +694,7 @@ docker_fedora32_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -802,11 +730,7 @@ docker_fedora33_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -842,11 +766,7 @@ docker_opensuse15_2_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -882,11 +802,7 @@ freebsd11_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:
@@ -922,11 +838,7 @@ freebsd12_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # Pull tags as well since by default Cirrus CI does not fetch them, but they
-  # are needed for `git describe` used in `scripts/autogen-version`. We also
-  # pull submodules here.
   update_git_script:
-    - git fetch --tags
     - git submodule update --recursive --init
 
   configure_script:

@@ -5,5 +5,4 @@ tmp
 compile_commands.json
 .clangd
 .cache
-VERSION
 *.swp

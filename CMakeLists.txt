@@ -162,16 +162,26 @@ endif ()
 # Set up testing infrastructure.
 enable_testing()
 
-# Compute project version.
-execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --cmake --git-root ${CMAKE_CURRENT_SOURCE_DIR} --store ${PROJECT_SOURCE_DIR}/VERSION
-    OUTPUT_VARIABLE SPICY_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Get project version.
+file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION SPICY_VERSION LIMIT_COUNT 1)
 set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
 
-# Compute long version string for summary.
-execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/autogen-version --git-root ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE SPICY_VERSION_LONG
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Get Spicy commit. If we cannot get the current commit (e.g., no .git
+# directory present for release tarballs), this will leave SPICY_COMMIT unset.
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E env GIT_DIR=${CMAKE_CURRENT_SOURCE_DIR}/.git git rev-parse --short HEAD
+    OUTPUT_VARIABLE SPICY_COMMIT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_VARIABLE ignored)
+
+string(REGEX MATCH "([0-9]*)\.([0-9]*)\.([0-9]*).*" _ ${CMAKE_PROJECT_VERSION})
+math(EXPR SPICY_VERSION_NUMBER "${CMAKE_MATCH_1} * 10000 + ${CMAKE_MATCH_2} * 100 + ${CMAKE_MATCH_3}")
+
+if(NOT "${SPICY_COMMIT}" STREQUAL "")
+    set(SPICY_VERSION_LONG "${SPICY_VERSION} (${SPICY_COMMIT})")
+else()
+    set(SPICY_VERSION_LONG ${SPICY_VERSION})
+endif()
 
 # Add subdirectories.
 add_subdirectory(hilti)
