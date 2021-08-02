@@ -11,7 +11,7 @@ usage() {
 
 test $# = 2 || usage
 
-version=$(../scripts/autogen-version --short)
+version=$(cat ../VERSION)
 cmd=$1
 platform=$2
 

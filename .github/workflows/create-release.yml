@@ -24,7 +24,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-          fetch-depth: 0 # Needed by `scripts/autogen-version`.
       - name: Prepare archive
         run: |
           ./scripts/make-tarball.sh

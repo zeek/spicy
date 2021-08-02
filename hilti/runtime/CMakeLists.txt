@@ -7,10 +7,7 @@ file(MAKE_DIRECTORY  "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 ##### Runtime libraries
 
-add_custom_target(version
-                  ALL
-                  COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/autogen-version --header ${AUTOGEN_H}/version.h --git-root ${PROJECT_SOURCE_DIR}
-                  BYPRODUCTS ${AUTOGEN_H}/version.h)
+configure_file(include/version.h.in ${AUTOGEN_H}/version.h)
 
 set(SOURCES
     src/backtrace.cc
@@ -41,7 +38,6 @@ set(SOURCES
 
 foreach ( lib hilti-rt hilti-rt-debug )
     add_library(${lib}-objects OBJECT ${SOURCES})
-    add_dependencies(${lib}-objects version)
     target_compile_options(${lib}-objects PRIVATE "-fPIC")
     target_link_libraries(${lib}-objects PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
     target_include_directories(${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
