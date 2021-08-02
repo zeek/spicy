@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc -l %INPUT -o foo.cc
+# @TEST-EXEC: $(spicy-config --cxx --cxxflags --debug) -c foo.cc
+#
+# @TEST-DOC: Checks that we emit type defs in the linker glue for vector fields.
+
+# This is a regression test for #966.
+
+module foo;
+
+public type A = unit {
+    bs: B[1] {}
+};
+
+type B = unit {};

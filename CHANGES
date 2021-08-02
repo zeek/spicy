@@ -1,3 +1,7 @@
+1.2.0-2 | 2021-08-03 11:05:08 +0200
+
+  * GH-966: Emit linker glue type definitions for vector fields. (Benjamin Bannier, Corelight)
+
 1.2.0-1 | 2021-08-02 16:50:13 +0200
 
   * Directly maintain VERSION file in repo. (Benjamin Bannier, Corelight)
