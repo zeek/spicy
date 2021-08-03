@@ -7,6 +7,7 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/module.h>
 #include <hilti/ast/scope-lookup.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
@@ -288,6 +289,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
             for ( const auto& p : ft.parameters() ) {
                 auto type = p.type();
+
+                if ( type::isIterable(type) )
+                    type = type.elementType();
 
                 while ( type::isReferenceType(type) )
                     type = type.dereferencedType();
