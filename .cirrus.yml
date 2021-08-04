@@ -316,12 +316,14 @@ validate_release_tarball_task:
   unpack_script:
     - mkdir /tmp/spicy-tarball
     - tar xf spicy*.tar.gz -C /tmp/spicy-tarball
-    - cd /tmp/spicy-tarball/spicy-*
   configure_script:
+    - cd /tmp/spicy-tarball/spicy-*
     - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
+    - cd /tmp/spicy-tarball/spicy-*
     - ninja -j3 -C build
   test_build_script:
+    - cd /tmp/spicy-tarball/spicy-*
     - make -C tests test-build
 
 homebrew_catalina_task:
