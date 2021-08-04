@@ -200,11 +200,14 @@ add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS t
 add_custom_target(tests DEPENDS hilti-tests spicy-tests)
 
 # Packaging.
-# Check tags the HEAD commit corresponds to.
+# Check tags the HEAD commit corresponds to. If we cannot get the current
+# commit (e.g., no .git directory present for release tarballs), this will
+# leave SPICY_TAGS unset which is fine for users working from tarballs.
 execute_process(COMMAND git tag --points-at
-    OUTPUT_VARIABLE GIT_TAGS)
+    OUTPUT_VARIABLE SPICY_TAGS
+    ERROR_VARIABLE ignored)
 
-if ( "${GIT_TAGS}" STREQUAL "" )
+if ( "${SPICY_TAGS}" STREQUAL "" )
     # If the HEAD commit does not correspond to a tag it is not a release. Hide
     # the version number in packaging artifacts so we can e.g., provide stable
     # links to the latest version.
