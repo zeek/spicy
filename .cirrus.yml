@@ -324,7 +324,7 @@ validate_release_tarball_task:
     - ninja -j3 -C build
   test_build_script:
     - cd /tmp/spicy-tarball/spicy-*
-    - make -C tests test-build
+    - make -C tests
 
 homebrew_catalina_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
