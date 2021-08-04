@@ -387,7 +387,7 @@ TEST_CASE("memory_statistics") {
 
     const auto ru0 = resource_usage();
     REQUIRE_GE(ru0.system_time, 0);
-    REQUIRE_GT(ru0.user_time, 0);
+    REQUIRE_GE(ru0.user_time, 0);
     REQUIRE_GT(ru0.memory_heap, 0u);
     REQUIRE_EQ(ru0.num_fibers, 0u);
     REQUIRE_EQ(ru0.max_fibers, 0u);
