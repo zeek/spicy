@@ -244,7 +244,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     assert(unit.typeID());
     Type s = hilti::type::Struct(unit.parameters(), std::move(v.fields));
     s = type::setTypeID(s, *unit.typeID());
-    s = _pb.addParserMethods(s.as<hilti::type::Struct>(), unit, declare_only);
+    s = _pb.addParserMethods(s.as<hilti::type::Struct>(), unit, declare_only, unit.isFilter());
 
     if ( unit.isPublic() || unit.isFilter() ) {
         auto builder = builder::Builder(context());
