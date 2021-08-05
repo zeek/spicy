@@ -241,11 +241,11 @@ We provide the following Docker images:
       - Source
 
     * - Release
-      - `zeekurity/spicy <https://hub.docker.com/repository/docker/zeekurity/spicy>`_
+      - `zeekurity/spicy <https://hub.docker.com/r/zeekurity/spicy>`_
       - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
     * - Development
-      - `zeekurity/spicy-dev <https://hub.docker.com/repository/docker/zeekurity/spicy-dev>`_
+      - `zeekurity/spicy-dev <https://hub.docker.com/r/zeekurity/spicy-dev>`_
       - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
 These images include Zeek, the :ref:`Spicy plugin <zeek_plugin>` for
