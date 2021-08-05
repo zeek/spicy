@@ -203,7 +203,8 @@ public:
      * Adds a unit's external parsing methods to the HILTI struct
      * corresponding to the parse object. Returns the modified type.
      */
-    hilti::type::Struct addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only);
+    hilti::type::Struct addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only,
+                                         bool always_emit);
 
     /** Returns statement builder currently being active. */
     auto builder() { return _builders.back(); }

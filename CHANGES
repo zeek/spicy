@@ -1,3 +1,13 @@
+1.3.0-dev.16 | 2021-08-05 11:24:08 +0200
+
+  * Implement removal of unused member functions in global optimizer. (Benjamin Bannier, Corelight)
+
+  * Explicitly mark parse functions of filters as `&always-emit`. (Benjamin Bannier, Corelight)
+
+  * Factor out functions to compute IDs for global optimizer. (Benjamin Bannier, Corelight)
+
+  * Remove unused function `hilti::type::Struc::ids`. (Benjamin Bannier, Corelight)
+
 1.3.0-dev.11 | 2021-08-05 11:23:24 +0200
 
   * Fix flaky test `util.memory_statistics` in hilti-rt-tests. (Benjamin Bannier, Corelight)

@@ -159,14 +159,6 @@ public:
         return types;
     }
 
-    auto ids() const {
-        std::vector<ID> ids;
-        for ( auto c = ++childs().begin(); c != childs().end(); c++ )
-            ids.push_back(c->as<struct_::Field>().id());
-
-        return ids;
-    }
-
     std::optional<struct_::Field> field(const ID& id) const {
         for ( auto f : fields() ) {
             if ( f.id() == id )

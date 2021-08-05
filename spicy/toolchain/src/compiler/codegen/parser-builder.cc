@@ -367,13 +367,14 @@ struct ProductionVisitor
                 // implemented) by the struct that unit-builder is
                 // declaring.
                 if ( unit && unit->supportsFilters() ) {
-                    addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage1(), addl_param,
+                    addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage1(), true,
+                                   addl_param, p.location());
+                    addParseMethod(true, id_stage2, build_parse_stage12_or_stage2(false), true, addl_param,
                                    p.location());
-                    addParseMethod(true, id_stage2, build_parse_stage12_or_stage2(false), addl_param, p.location());
                 }
                 else
                     addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage12_or_stage2(true),
-                                   addl_param, p.location());
+                                   false, addl_param, p.location());
 
                 return id_stage1;
             });
@@ -900,14 +901,15 @@ struct ProductionVisitor
 
     // Adds a method, and its implementation, to the current parsing struct
     // type that has the standard signature for parse methods.
-    void addParseMethod(bool add_decl, const ID& id, Statement body,
+    void addParseMethod(bool add_decl, const ID& id, Statement body, bool always_emit = false,
                         std::optional<type::function::Parameter> addl_param = {}, const Meta& m = {}) {
         auto qualified_id = pb->state().unit_id + id;
 
+        const auto attributes = always_emit ? AttributeSet({Attribute("&always-emit")}) : AttributeSet();
+
         auto ftype = pb->parseMethodFunctionType(std::move(addl_param), m);
-        auto func =
-            builder::function(qualified_id, ftype, std::move(body), declaration::Linkage::Struct,
-                              function::CallingConvention::Standard, AttributeSet({Attribute("&always-emit")}), m);
+        auto func = builder::function(qualified_id, ftype, std::move(body), declaration::Linkage::Struct,
+                                      function::CallingConvention::Standard, attributes, m);
 
         if ( add_decl )
             new_fields.emplace_back(type::struct_::Field(id, func.function().type()));
@@ -1283,7 +1285,8 @@ std::shared_ptr<hilti::builder::Builder> ParserBuilder::pushBuilder() {
     return _builders.back();
 }
 
-hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only) {
+hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only,
+                                                    bool always_emit) {
     auto [id_ext_overload1, id_ext_overload2, id_ext_overload3, id_ext_context_new] = parseMethodIDs(t);
 
     std::vector<type::function::Parameter> params =
@@ -1294,11 +1297,13 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
     for ( auto p : t.parameters() )
         params.emplace_back(p);
 
+    auto attr_ext_overload = always_emit ? AttributeSet({Attribute("&static"), Attribute("&always-emit")}) :
+                                           AttributeSet({Attribute("&static")});
+
     auto f_ext_overload1_result = type::stream::View();
-    auto f_ext_overload1 =
-        builder::function(id_ext_overload1, f_ext_overload1_result, std::move(params), type::function::Flavor::Method,
-                          declaration::Linkage::Struct, function::CallingConvention::Extern,
-                          AttributeSet({Attribute("&static")}), t.meta());
+    auto f_ext_overload1 = builder::function(id_ext_overload1, f_ext_overload1_result, std::move(params),
+                                             type::function::Flavor::Method, declaration::Linkage::Struct,
+                                             function::CallingConvention::Extern, attr_ext_overload, t.meta());
 
     auto f_ext_overload2_result = type::stream::View();
     auto f_ext_overload2 =
@@ -1311,7 +1316,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
                                               builder::optional(type::stream::View())),
                            builder::parameter("context", type::Optional(builder::typeByID("spicy_rt::UnitContext")))},
                           type::function::Flavor::Method, declaration::Linkage::Struct,
-                          function::CallingConvention::Extern, AttributeSet({Attribute("&static")}), t.meta());
+                          function::CallingConvention::Extern, attr_ext_overload, t.meta());
 
     auto f_ext_overload3_result = type::stream::View();
     auto f_ext_overload3 =
@@ -1324,7 +1329,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
                                               builder::optional(type::stream::View())),
                            builder::parameter("context", type::Optional(builder::typeByID("spicy_rt::UnitContext")))},
                           type::function::Flavor::Method, declaration::Linkage::Struct,
-                          function::CallingConvention::Extern, AttributeSet({Attribute("&static")}), t.meta());
+                          function::CallingConvention::Extern, attr_ext_overload, t.meta());
 
     auto f_ext_context_new_result = builder::typeByID("spicy_rt::UnitContext");
     auto f_ext_context_new =
