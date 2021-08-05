@@ -482,11 +482,16 @@ void GlobalOptimizer::run() {
 
     // The edits performed by the optimizer might invalidate scopes which after
     // optimizations might contain references to now removed data. We
-    // unconditionally clear scopes to make sure to remove any effects from
-    // scopes.
+    // unconditionally clear scopes and any preserved nodes of modules to make
+    // sure to remove any effects from outdated information.
     for ( auto& unit : units ) {
-        for ( auto i : hilti::visitor::PreOrder<>().walk(&*unit) )
+        for ( auto i : hilti::visitor::PreOrder<>().walk(&*unit) ) {
             i.node.clearScope();
+
+            if ( auto module = i.node.tryReferenceAs<hilti::Module>() )
+                // TODO(bbannier): there has to be a better way to mutate the module.
+                const_cast<hilti::Module&>(*module).preserved().clear();
+        }
     }
 }
 
