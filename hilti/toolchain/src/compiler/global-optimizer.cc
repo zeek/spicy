@@ -29,7 +29,7 @@ inline const DebugStream GlobalOptimizer("global-optimizer");
 
 enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
 
-struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
+struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
     using ModuleID = ID;
     using StructID = ID;
     using FieldID = ID;
@@ -472,16 +472,16 @@ void GlobalOptimizer::run() {
     while ( true ) {
         bool modified = false;
 
-        Visitor v;
+        FunctionVisitor function_visitor;
 
         for ( auto& unit : units )
-            v.collect(*unit);
+            function_visitor.collect(*unit);
 
         for ( auto& unit : units )
-            modified = modified || v.prune_uses(*unit);
+            modified = modified || function_visitor.prune_uses(*unit);
 
         for ( auto& unit : units )
-            modified = modified || v.prune_decls(*unit);
+            modified = modified || function_visitor.prune_decls(*unit);
 
         if ( ! modified )
             break;
