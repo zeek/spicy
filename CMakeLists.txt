@@ -203,7 +203,7 @@ add_custom_target(tests DEPENDS hilti-tests spicy-tests)
 # Check tags the HEAD commit corresponds to. If we cannot get the current
 # commit (e.g., no .git directory present for release tarballs), this will
 # leave SPICY_TAGS unset which is fine for users working from tarballs.
-execute_process(COMMAND git tag --points-at
+execute_process(COMMAND git tag --points-at HEAD v*
     OUTPUT_VARIABLE SPICY_TAGS
     ERROR_VARIABLE ignored)
 
