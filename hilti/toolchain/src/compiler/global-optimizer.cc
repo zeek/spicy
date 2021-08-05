@@ -36,7 +36,6 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
 
     struct Uses {
         bool hook = false;
-        bool declared = false;
         bool defined = false;
         bool referenced = false;
     };
@@ -218,9 +217,6 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
                 auto fn = x.childsOfType<Function>();
                 assert(fn.size() <= 1);
 
-                // Record a declaration for this member.
-                function.declared = true;
-
                 // If the member declaration is marked `&always-emit` mark it as implemented.
                 bool is_always_emit = static_cast<bool>(AttributeSet::find(x.attributes(), "&always-emit"));
 
@@ -272,9 +268,8 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                // Record this hook as declared if it is not already known.
+                // Record this function if it is not already known.
                 auto& function = _data[*function_id];
-                function.declared = true;
 
                 const auto& fn = x.function();
 
