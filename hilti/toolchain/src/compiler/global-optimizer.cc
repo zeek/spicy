@@ -23,31 +23,41 @@
 
 namespace hilti {
 
-using ModuleID = GlobalOptimizer::ModuleID;
-using StructID = GlobalOptimizer::StructID;
-using FieldID = GlobalOptimizer::FieldID;
-
 namespace logging::debug {
 inline const DebugStream GlobalOptimizer("global-optimizer");
 } // namespace logging::debug
 
 enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
 
-template<typename T>
-std::optional<std::pair<ModuleID, StructID>> typeID(T&& x) {
-    auto id = x.typeID();
-    if ( ! id )
-        return {};
-
-    return {{id->sub(-2), id->sub(-1)}};
-}
-
 struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
-    Visitor(GlobalOptimizer::Functions* data) : _data(data) {}
+    using ModuleID = ID;
+    using StructID = ID;
+    using FieldID = ID;
+
+    struct Uses {
+        bool hook = false;
+        bool declared = false;
+        bool defined = false;
+        bool referenced = false;
+    };
+
+    using Identifier = std::string;
+    using Functions = std::map<Identifier, Uses>;
+
+    Functions _data;
 
     template<typename T>
     static void replaceNode(position_t& p, T&& n) {
         p.node = std::forward<T>(n);
+    }
+
+    template<typename T>
+    static std::optional<std::pair<ModuleID, StructID>> typeID(T&& x) {
+        auto id = x.typeID();
+        if ( ! id )
+            return {};
+
+        return {{id->sub(-2), id->sub(-1)}};
     }
 
     static auto function_identifier(const declaration::Function& fn, position_t p) {
@@ -87,7 +97,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         return std::make_tuple(ns_ns, ns_local, local);
     }
 
-    static std::optional<GlobalOptimizer::Identifier> getID(const type::struct_::Field& x, position_t p) {
+    static std::optional<Identifier> getID(const type::struct_::Field& x, position_t p) {
         auto field_id = x.id();
 
         auto struct_type = typeID(p.parent().as<type::Struct>());
@@ -96,21 +106,21 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
         const auto& [module_id, struct_id] = *struct_type;
 
-        return GlobalOptimizer::Identifier(util::join({module_id, struct_id, field_id}, "::"));
+        return Identifier(util::join({module_id, struct_id, field_id}, "::"));
     }
 
-    static std::optional<GlobalOptimizer::Identifier> getID(const declaration::Function& x, position_t p) {
+    static std::optional<Identifier> getID(const declaration::Function& x, position_t p) {
         auto [a, b, c] = function_identifier(x, p);
 
         // `x` is a non-member function.
         if ( b.empty() )
-            return GlobalOptimizer::Identifier(util::join({a, c}, "::"));
+            return Identifier(util::join({a, c}, "::"));
 
         // `x` is a member function.
-        return GlobalOptimizer::Identifier(util::join({a, b, c}, "::"));
+        return Identifier(util::join({a, b, c}, "::"));
     }
 
-    static std::optional<GlobalOptimizer::Identifier> getID(const operator_::struct_::MemberCall& x, position_t p) {
+    static std::optional<Identifier> getID(const operator_::struct_::MemberCall& x, position_t p) {
         if ( ! x.hasOp1() )
             return {};
 
@@ -126,10 +136,10 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         if ( ! member )
             return {};
 
-        return GlobalOptimizer::Identifier(util::join({module_id, struct_id, member->id()}, "::"));
+        return Identifier(util::join({module_id, struct_id, member->id()}, "::"));
     }
 
-    static std::optional<GlobalOptimizer::Identifier> getID(const operator_::function::Call& x, position_t p) {
+    static std::optional<Identifier> getID(const operator_::function::Call& x, position_t p) {
         if ( ! x.hasOp0() )
             return {};
 
@@ -144,13 +154,12 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 module_id = module->get().id();
         }
 
-        return GlobalOptimizer::Identifier(util::join({module_id, fn_id}, "::"));
+        return Identifier(util::join({module_id, fn_id}, "::"));
     }
 
     static void removeNode(position_t& p) { replaceNode(p, node::none); }
 
     Stage _stage = Stage::COLLECT;
-    GlobalOptimizer::Functions* _data = nullptr;
 
     void collect(Node& node) {
         _stage = Stage::COLLECT;
@@ -204,7 +213,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& function = (*_data)[*function_id];
+                auto& function = _data[*function_id];
 
                 auto fn = x.childsOfType<Function>();
                 assert(fn.size() <= 1);
@@ -238,7 +247,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 break;
 
             case Stage::PRUNE_DECLS: {
-                const auto& function = _data->at(*function_id);
+                const auto& function = _data.at(*function_id);
 
                 // Remove function methods without implementation.
                 if ( ! function.defined ) {
@@ -264,7 +273,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
         switch ( _stage ) {
             case Stage::COLLECT: {
                 // Record this hook as declared if it is not already known.
-                auto& function = (*_data)[*function_id];
+                auto& function = _data[*function_id];
                 function.declared = true;
 
                 const auto& fn = x.function();
@@ -331,7 +340,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
                 break;
 
             case Stage::PRUNE_DECLS:
-                const auto& function = _data->at(*function_id);
+                const auto& function = _data.at(*function_id);
 
                 if ( function.hook && ! function.defined ) {
                     HILTI_DEBUG(logging::debug::GlobalOptimizer,
@@ -362,7 +371,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& function = (*_data)[*function_id];
+                auto& function = _data[*function_id];
 
                 function.referenced = true;
 
@@ -370,7 +379,7 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
             }
 
             case Stage::PRUNE_USES: {
-                const auto& function = _data->at(*function_id);
+                const auto& function = _data.at(*function_id);
 
                 // Replace call node referencing unimplemented member function with default value.
                 if ( ! function.defined ) {
@@ -404,14 +413,14 @@ struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& function = (*_data)[*function_id];
+                auto& function = _data[*function_id];
 
                 function.referenced = true;
                 return false;
             }
 
             case Stage::PRUNE_USES: {
-                const auto& function = _data->at(*function_id);
+                const auto& function = _data.at(*function_id);
 
                 // Replace call node referencing unimplemented hook with default value.
                 if ( function.hook && ! function.defined ) {
@@ -463,21 +472,19 @@ void GlobalOptimizer::run() {
     while ( true ) {
         bool modified = false;
 
-        for ( auto& unit : units )
-            Visitor(&_functions).collect(*unit);
+        Visitor v;
 
         for ( auto& unit : units )
-            modified = modified || Visitor(&_functions).prune_uses(*unit);
+            v.collect(*unit);
 
         for ( auto& unit : units )
-            modified = modified || Visitor(&_functions).prune_decls(*unit);
+            modified = modified || v.prune_uses(*unit);
+
+        for ( auto& unit : units )
+            modified = modified || v.prune_decls(*unit);
 
         if ( ! modified )
             break;
-
-
-        // Clear stored state for next round.
-        _functions.clear();
     }
 
     // The edits performed by the optimizer might invalidate scopes which after
