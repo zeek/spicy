@@ -1,3 +1,17 @@
+1.2.1 | 2021-08-05 16:23:06 +0200
+
+  * GH-970: Use publicly accessible links to Docker images [skip CI]. (Benjamin Bannier, Corelight)
+
+  * Fix flaky test `util.memory_statistics` in hilti-rt-tests. (Benjamin Bannier, Corelight)
+
+  * Execute correct test target in validate_release_tarball Cirrus CI task. (Benjamin Bannier, Corelight)
+
+  * Fix validate_release_tarball Cirrus CI task. (Benjamin Bannier, Corelight)
+
+  * Only consider typicaly release tags when checking whether we are on a release tag. (Benjamin Bannier, Corelight)
+
+  * GH-960: Swallow Git error messages during CMake if run from tarball. (Benjamin Bannier, Corelight)
+
 1.2.0-2 | 2021-08-03 11:05:08 +0200
 
   * GH-966: Emit linker glue type definitions for vector fields. (Benjamin Bannier, Corelight)
