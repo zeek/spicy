@@ -29,6 +29,11 @@ inline const DebugStream GlobalOptimizer("global-optimizer");
 
 enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
 
+template<typename Position>
+static void removeNode(Position& p) {
+    p.node = node::none;
+}
+
 struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
     using ModuleID = ID;
     using StructID = ID;
@@ -44,11 +49,6 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
     using Functions = std::map<Identifier, Uses>;
 
     Functions _data;
-
-    template<typename T>
-    static void replaceNode(position_t& p, T&& n) {
-        p.node = std::forward<T>(n);
-    }
 
     template<typename T>
     static std::optional<std::pair<ModuleID, StructID>> typeID(T&& x) {
@@ -155,8 +155,6 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
 
         return Identifier(util::join({module_id, fn_id}, "::"));
     }
-
-    static void removeNode(position_t& p) { replaceNode(p, node::none); }
 
     Stage _stage = Stage::COLLECT;
 
