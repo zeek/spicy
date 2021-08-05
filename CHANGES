@@ -1,3 +1,15 @@
+1.3.0-dev.11 | 2021-08-05 11:23:24 +0200
+
+  * Fix flaky test `util.memory_statistics` in hilti-rt-tests. (Benjamin Bannier, Corelight)
+
+  * Execute correct test target in validate_release_tarball Cirrus CI task. (Benjamin Bannier, Corelight)
+
+  * Fix validate_release_tarball Cirrus CI task. (Benjamin Bannier, Corelight)
+
+  * Only consider typicaly release tags when checking whether we are on a release tag. (Benjamin Bannier, Corelight)
+
+  * GH-960: Swallow Git error messages during CMake if run from tarball. (Benjamin Bannier, Corelight)
+
 1.3.0-dev.5 | 2021-08-03 11:04:26 +0200
 
   * GH-966: Emit linker glue type definitions for vector fields. (Benjamin Bannier, Corelight)
