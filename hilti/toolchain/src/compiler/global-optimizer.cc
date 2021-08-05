@@ -441,6 +441,123 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
     }
 };
 
+struct TypeVisitor : visitor::PreOrder<bool, TypeVisitor> {
+    Stage _stage = Stage::COLLECT;
+    std::map<ID, bool> _used;
+
+    void collect(Node& node) {
+        _stage = Stage::COLLECT;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+    }
+
+    bool prune_uses(Node& node) { return false; }
+    bool prune_decls(Node& node) {
+        _stage = Stage::PRUNE_DECLS;
+
+        bool any_modification = false;
+
+        for ( auto i : this->walk(&node) )
+            if ( auto x = dispatch(i) )
+                any_modification = any_modification || *x;
+
+        return any_modification;
+    }
+
+    result_t operator()(const declaration::Type& x, position_t p) {
+        const auto type_id = x.typeID();
+
+        if ( ! type_id )
+            return false;
+
+        switch ( _stage ) {
+            case Stage::COLLECT:
+                // Record the type if not already known. If the type is part of an external API record it as used.
+                _used.insert({*type_id, x.linkage() == declaration::Linkage::Public});
+                break;
+
+            case Stage::PRUNE_USES: break;
+            case Stage::PRUNE_DECLS:
+                if ( ! _used.at(*type_id) ) {
+                    HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("removing unused type '%s'", *type_id));
+                    removeNode(p);
+
+                    return true;
+                }
+
+                break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const type::ResolvedID& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto type_id = x.type().typeID();
+
+                if ( ! type_id )
+                    break;
+
+                // Record this type as used.
+                _used[*type_id] = true;
+                break;
+            }
+
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const expression::ResolvedID& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto type_id = x.type().typeID();
+
+                if ( ! type_id )
+                    break;
+
+                // Record this type as used.
+                _used[*type_id] = true;
+
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const expression::Type_& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto type_id = x.typeValue().typeID();
+
+                if ( ! type_id )
+                    break;
+
+                // Record this type as used.
+                _used[*type_id] = true;
+                break;
+            }
+
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+        return false;
+    }
+};
+
 void GlobalOptimizer::run() {
     util::timing::Collector _("hilti/compiler/global-optimizer");
 
@@ -466,15 +583,22 @@ void GlobalOptimizer::run() {
         bool modified = false;
 
         FunctionVisitor function_visitor;
+        TypeVisitor type_visitor;
 
-        for ( auto& unit : units )
+        for ( auto& unit : units ) {
             function_visitor.collect(*unit);
+            type_visitor.collect(*unit);
+        }
 
-        for ( auto& unit : units )
+        for ( auto& unit : units ) {
             modified = modified || function_visitor.prune_uses(*unit);
+            modified = modified || type_visitor.prune_uses(*unit);
+        }
 
-        for ( auto& unit : units )
+        for ( auto& unit : units ) {
             modified = modified || function_visitor.prune_decls(*unit);
+            modified = modified || type_visitor.prune_decls(*unit);
+        }
 
         if ( ! modified )
             break;
