@@ -49,6 +49,7 @@
 [debug/global-optimizer] removing field for unused method foo::P2::__on_0x25_undelivered
 [debug/global-optimizer] removing field for unused method foo::P2::__on_x
 [debug/global-optimizer] removing field for unused method foo::P2::__str__
+[debug/global-optimizer] removing unused type 'foo::P0'
 [debug/global-optimizer] replacing call to unimplemented function foo::P0::__on_0x25_done with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::P0::__on_0x25_error with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::P0::__on_0x25_finally with default value

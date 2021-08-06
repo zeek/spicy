@@ -6,7 +6,7 @@ module Foo {
 
 import hilti;
 
-type MyException = exception;
+public type MyException = exception;
 
 function extern void test() {
     hilti::print("HILTI - Begin");

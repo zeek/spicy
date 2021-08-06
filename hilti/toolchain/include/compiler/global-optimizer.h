@@ -17,20 +17,6 @@ namespace hilti {
 
 struct GlobalOptimizer {
 public:
-    using ModuleID = ID;
-    using StructID = ID;
-    using FieldID = ID;
-
-    struct Uses {
-        bool hook = false;
-        bool declared = false;
-        bool defined = false;
-        bool referenced = false;
-    };
-
-    using Identifier = std::string;
-    using Functions = std::map<Identifier, Uses>;
-
     GlobalOptimizer(std::vector<Unit>* units, const std::shared_ptr<Context> ctx)
         : _units(units), _ctx(std::move(ctx)) {}
     ~GlobalOptimizer() { _units = nullptr; }
@@ -41,7 +27,6 @@ private:
     std::vector<Unit>* _units = nullptr;
     std::shared_ptr<Context> _ctx;
     // Storage for field declaration and their uses.
-    Functions _functions;
 };
 
 } // namespace hilti

@@ -1,0 +1,44 @@
+# @TEST-EXEC: spicyc -d -p -o /dev/null %INPUT -D global-optimizer 2>&1 | sort >log
+# @TEST-EXEC: btest-diff log
+
+# @TEST-EXEC: spicyc -d -j -g %INPUT -D ast-codegen >ast.0 2>&1
+# @TEST-EXEC: spicyc -d -j    %INPUT -D ast-codegen >ast.1 2>&1
+# @TEST-EXEC: spicy-diff.py ast.0 ast.1 >output.diff
+# @TEST-EXEC: btest-diff output.diff
+
+# @TEST-DOC: Tests that unused types are removed.
+
+module foo;
+
+# Unreferenced private units should be removed.
+type Priv1 = unit {};
+
+# Referenced public units should be kept.
+public type Pub2 = unit {};
+
+# Units referenced only by unreferenced private units should be removed.
+type Priv2 = unit {};
+type Priv3 = unit {};
+type Priv4 = unit {
+    : Priv2;
+    x: Priv3; };
+
+# Units referenced by public units should be kept.
+type Priv5 = unit {};
+type Priv6 = unit {};
+public type Pub3 = unit {
+    : Priv5;
+    x: Priv6;
+};
+
+# Private enum types should be removed.
+type Priv7 = enum { A, B, C };
+
+# Public enum types should be removed.
+public type Pub4 = enum { A, B, C };
+
+# Values of private enums referenced in public types should not be removed.
+type Priv8 = enum { A, B, C };
+public type Priv9 = unit {
+    var en: Priv8 = Priv8::A;
+};
