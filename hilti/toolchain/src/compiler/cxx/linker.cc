@@ -59,7 +59,15 @@ void cxx::Linker::finalize() {
     unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * __hlto_library_version = R\"(%s)\";", version.toJSON()));
 
     // Create a scope string that's likely to be unique to this linker module.
-    auto scope = hilti::rt::fmt("%" PRIx64, hilti::rt::time::current_time().nanoseconds() % 0xffffff);
+    std::size_t hash = 0;
+    for ( const auto& [id, path] : _modules ) {
+        std::ifstream ifs(path);
+        std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+        auto h = std::hash<std::string>()(content);
+        hash = hash ^ (h << 1);
+    }
+
+    auto scope = hilti::rt::fmt("%" PRIx64, hash);
     unit.add(fmt("const char HILTI_WEAK * __hlto_scope = \"%s\";", scope));
 
     std::string init_modules = "nullptr";
