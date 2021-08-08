@@ -1,12 +1,17 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <array>
+#include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <utility>
+#include <vector>
 
 #include <hilti/rt/init.h>
+#include <hilti/rt/logging.h>
 #include <hilti/rt/util.h>
 
+#include <hilti/autogen/config.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
@@ -17,6 +22,40 @@
 #include <reproc++/reproc.hpp>
 
 using namespace hilti;
+
+namespace {
+
+std::string readFile(const hilti::rt::filesystem::path& path) {
+    std::ifstream ifs(path);
+
+    if ( ! ifs )
+        rt::fatalError(util::fmt("could not read file %s", path));
+
+    return {(std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>())};
+}
+
+hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesystem::path& id, std::size_t hash) {
+    const auto cc_hash = code.hash();
+
+    const auto cc = hilti::rt::filesystem::temp_directory_path() /
+                    util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().c_str(), hash, cc_hash);
+
+    std::ofstream out(cc);
+
+    if ( ! out )
+        rt::fatalError(util::fmt("could not open file %s for writing", cc));
+
+    if ( const auto& content = code.code() )
+        out << *content;
+
+    out.close();
+    if ( out.fail() )
+        rt::fatalError(util::fmt("could not write to temporary file %s", cc));
+
+    return cc;
+}
+
+} // namespace
 
 void hilti::JIT::Job::collectOutputs(int events) {
     if ( ! process )
@@ -38,17 +77,6 @@ void hilti::JIT::Job::collectOutputs(int events) {
 namespace hilti::logging::debug {
 inline const DebugStream Driver("driver");
 } // namespace hilti::logging::debug
-
-// Wrapper around ::mkdtemp().
-static hilti::Result<hilti::rt::filesystem::path> _make_tmp_directory() {
-    std::string path = hilti::rt::filesystem::temp_directory_path() / "hilti.XXXXXXXXX";
-    char buffer[path.size() + 1];
-    memcpy(buffer, path.c_str(), path.size() + 1);
-    if ( ::mkdtemp(buffer) )
-        return hilti::rt::filesystem::path(buffer);
-    else
-        return result::Error("cannot create JIT temp directory");
-}
 
 CxxCode::CxxCode(const detail::cxx::Unit& u) {
     std::stringstream buffer;
@@ -78,6 +106,7 @@ bool CxxCode::load(const std::string& id, std::istream& in) {
 
     _id = id;
     _code = std::move(code);
+    _hash = std::hash<std::string>{}(*_code);
     return true;
 }
 
@@ -110,9 +139,6 @@ JIT::~JIT() { _finish(); }
 hilti::Result<std::shared_ptr<const Library>> JIT::build() {
     util::timing::Collector _("hilti/jit");
 
-    if ( auto rc = _initialize(); ! rc )
-        return rc.error();
-
     if ( auto rc = _checkCompiler(); ! rc )
         return rc.error();
 
@@ -122,12 +148,6 @@ hilti::Result<std::shared_ptr<const Library>> JIT::build() {
     auto library = _link();
     _finish(); // clean up no matter if successful
     return library;
-}
-
-hilti::Result<Nothing> JIT::_initialize() {
-    _tmpdir = hilti::rt::TemporaryDirectory();
-    HILTI_DEBUG(logging::debug::Jit, util::fmt("temporary directory %s", _tmpdir->path().native()));
-    return Nothing();
 }
 
 hilti::Result<Nothing> JIT::_checkCompiler() {
@@ -148,6 +168,16 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
 }
 
 void JIT::_finish() {
+    for ( const auto& object : _objects ) {
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", object));
+
+        std::error_code ec;
+        hilti::rt::filesystem::remove(object, ec);
+
+        if ( ec )
+            HILTI_DEBUG(logging::debug::Jit, util::fmt("could not remove temporary file %s", object));
+    }
+
     _objects.clear();
 
     for ( auto&& [id, job] : _jobs ) {
@@ -164,8 +194,6 @@ void JIT::_finish() {
     }
 
     _jobs.clear();
-    _tmp_counters.clear();
-    _tmpdir.reset();
 }
 
 hilti::Result<Nothing> JIT::_compile() {
@@ -176,15 +204,29 @@ hilti::Result<Nothing> JIT::_compile() {
 
     auto cc_files = _files;
 
+    // Remember generated files and remove them on all exit paths.
+    std::shared_ptr<std::vector<hilti::rt::filesystem::path>>
+        cc_files_generated(new std::vector<hilti::rt::filesystem::path>(), [](const auto* cc_files_generated) {
+            for ( const auto& cc : *cc_files_generated ) {
+                std::error_code ec;
+                HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", cc));
+                hilti::rt::filesystem::remove(cc, ec);
+
+                if ( ec )
+                    HILTI_DEBUG(logging::debug::Jit,
+                                util::fmt("could not remove temporary file %s: %s", cc, ec.message()));
+            }
+
+            delete cc_files_generated;
+        });
+
     // Write all in-memory code into temporary files.
     for ( const auto& code : _codes ) {
-        auto id = hilti::rt::filesystem::path(code.id());
+        std::string id = hilti::rt::filesystem::path(code.id());
         if ( id.empty() )
             id = "code"; // dummy name
 
-        auto cc = _makeTmp(id.stem(), "cc");
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("writing temporary code for %s to %s", id, cc.filename().native()));
-        code.save(cc);
+        auto cc = save(code, id, _hash);
 
         if ( _dump_code ) {
             // Logging to driver because that's where all the other "saving to ..." messages go.
@@ -197,11 +239,13 @@ hilti::Result<Nothing> JIT::_compile() {
         }
 
         cc_files.push_back(cc);
+        cc_files_generated->push_back(cc);
     }
 
     bool sequential = hilti::rt::getenv("HILTI_JIT_SEQUENTIAL").has_value();
 
     // Compile all C++ files.
+    std::vector<result::Error> errors;
     for ( const auto& path : cc_files ) {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("compiling %s", path.filename().native()));
 
@@ -230,25 +274,30 @@ hilti::Result<Nothing> JIT::_compile() {
             }
         }
 
-        auto obj = path.stem().native() + std::string(".o");
+        auto obj = hilti::rt::filesystem::canonical(path);
+        obj.replace_extension(".o");
+
         args.push_back("-o");
-        args.push_back(obj); // will be relative to tmpdir
+        args.push_back(obj);
         _objects.push_back(obj);
 
         args.push_back(hilti::rt::filesystem::canonical(path));
 
         if ( auto rc = _spawnJob(hilti::configuration().cxx, std::move(args)); ! rc )
-            return rc.error();
+            errors.push_back(rc.error());
 
         if ( sequential ) {
             if ( auto rc = _waitForJobs(); ! rc )
-                return rc.error();
+                errors.push_back(rc.error());
         }
     }
 
     // Noop if sequential.
     if ( auto rc = _waitForJobs(); ! rc )
-        return rc.error();
+        errors.push_back(rc.error());
+
+    if ( ! errors.empty() )
+        return errors.front();
 
     return Nothing();
 }
@@ -268,15 +317,15 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     else
         args = hilti::configuration().hlto_ld_flags_release;
 
-    auto lib = _makeTmp("__library__", "hlto");
+    auto lib = hilti::rt::filesystem::temp_directory_path() / util::fmt("__library__%" PRIx64 ".hlto", _hash);
     args.push_back("-o");
-    args.push_back(lib.filename());
+    args.push_back(lib);
 
     for ( const auto& path : _objects ) {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("  - %s", path.native()));
 
         // Double check that we really got the file.
-        if ( ! hilti::rt::filesystem::exists(_tmpdir->path() / path) )
+        if ( ! hilti::rt::filesystem::exists(path) )
             return result::Error(
                 util::fmt("missing object file %s, C++ compiler is probably not working", path.native()));
 
@@ -288,8 +337,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
             HILTI_DEBUG(logging::debug::Driver, util::fmt("saving object file to %s", dbg));
 
             std::error_code ec;
-            hilti::rt::filesystem::copy(_tmpdir->path() / path, dbg,
-                                        hilti::rt::filesystem::copy_options::overwrite_existing,
+            hilti::rt::filesystem::copy(path, dbg, hilti::rt::filesystem::copy_options::overwrite_existing,
                                         ec); // will save into current directory; ignore errors
         }
     }
@@ -300,33 +348,12 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     if ( auto rc = _waitForJobs(); ! rc )
         return rc.error();
 
-    // Copy the library to a new location that won't be deleted when JIT has
-    // finished. The library itself will clean up the file when no longer
-    // needed.
-    auto tmp_dir = _make_tmp_directory();
-    if ( ! tmp_dir )
-        return tmp_dir.error();
-
-    auto ext_lib = *tmp_dir / lib.filename();
-
-    try {
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("copying library to %s", ext_lib));
-        hilti::rt::filesystem::create_directory(ext_lib.parent_path());
-        hilti::rt::filesystem::rename(_tmpdir->path() / lib, ext_lib);
-    } catch ( hilti::rt::filesystem::filesystem_error& e ) {
-        return result::Error(e.what());
-    }
-
     // Instantiate the library object from the file on disk, and set it up
     // to delete the file & its directory on destruction.
-    auto library = std::shared_ptr<const Library>(new Library(ext_lib), [ext_lib](const Library* library) {
+    auto library = std::shared_ptr<const Library>(new Library(lib), [](const Library* library) {
         auto remove = library->remove();
         if ( ! remove )
             logger().warning(util::fmt("could not remove JIT library: %s", remove.error()));
-
-        std::error_code ec;
-        if ( ! hilti::rt::filesystem::remove(ext_lib.parent_path(), ec) )
-            logger().warning(util::fmt("could not remove JIT temporary library directory: %s", ec.message()));
 
         delete library;
     });
@@ -354,7 +381,6 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
     job.process = std::make_unique<reproc::process>();
 
     reproc::options options;
-    options.working_directory = _tmpdir->path().c_str();
     options.redirect.in.type = reproc::redirect::discard;
     options.redirect.out.type = reproc::redirect::default_;
     options.redirect.err.type = reproc::redirect::default_;
@@ -382,6 +408,8 @@ Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<s
 Result<Nothing> JIT::_waitForJobs() {
     if ( _jobs.empty() )
         return Nothing();
+
+    std::vector<result::Error> errors;
 
     while ( ! _jobs.empty() ) {
         std::vector<reproc::event::source> sources;
@@ -417,7 +445,7 @@ Result<Nothing> JIT::_waitForJobs() {
 
                 if ( ec ) {
                     _jobs.erase(id);
-                    return result::Error(util::fmt("could not wait for process: %s", ec.message()));
+                    errors.push_back(result::Error(util::fmt("could not wait for process: %s", ec.message())));
                 }
 
                 HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, status));
@@ -433,7 +461,7 @@ Result<Nothing> JIT::_waitForJobs() {
                                                "(no error output)" :
                                                std::string("JIT output: \n") + util::trim(job.stderr_);
                     _jobs.erase(id);
-                    return result::Error("JIT compilation failed", stderr__);
+                    errors.push_back(result::Error("JIT compilation failed", stderr__));
                 }
 
                 _jobs.erase(id);
@@ -441,15 +469,18 @@ Result<Nothing> JIT::_waitForJobs() {
         }
     }
 
+    if ( ! errors.empty() )
+        return errors.front();
+
     return Nothing();
 }
 
-hilti::rt::filesystem::path JIT::_makeTmp(const std::string& base, const std::string& ext) {
-    // Will be used relative to tmpdir.
-    auto& counter = _tmp_counters[base];
+void JIT::add(CxxCode d) {
+    _hash = rt::hashCombine(_hash, d.hash());
+    _codes.push_back(std::move(d));
+}
 
-    if ( ++counter > 1 )
-        return _tmpdir->path() / util::fmt("%s.%u.%s", base, counter, ext);
-    else
-        return _tmpdir->path() / util::fmt("%s.%s", base, ext);
+void JIT::add(const hilti::rt::filesystem::path& p) {
+    _hash = rt::hashCombine(_hash, std::hash<std::string>{}(readFile(p)));
+    _files.push_back(p);
 }
