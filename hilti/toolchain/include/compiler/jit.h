@@ -185,7 +185,7 @@ private:
     Result<JobID> _spawnJob(hilti::rt::filesystem::path cmd, std::vector<std::string> args);
     Result<Nothing> _waitForJobs();
 
-    hilti::rt::filesystem::path _makeTmp(std::string base, std::string ext);
+    hilti::rt::filesystem::path _makeTmp(const std::string& base, const std::string& ext);
 
     std::weak_ptr<Context> _context; // global context for options
     bool _dump_code;                 // save all C++ code for debugging

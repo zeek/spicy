@@ -444,7 +444,7 @@ Result<Nothing> JIT::_waitForJobs() {
     return Nothing();
 }
 
-hilti::rt::filesystem::path JIT::_makeTmp(std::string base, std::string ext) {
+hilti::rt::filesystem::path JIT::_makeTmp(const std::string& base, const std::string& ext) {
     // Will be used relative to tmpdir.
     auto& counter = _tmp_counters[base];
 
