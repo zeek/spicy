@@ -49,7 +49,6 @@ void cxx::Linker::finalize() {
     // Create the HLTO version information.
     auto version = rt::library::Version{.magic = "v1",
                                         .hilti_version = configuration().version_number,
-                                        .created = rt::time::current_time().seconds(),
                                         .debug = _codegen->context()->options().debug,
                                         .optimize = _codegen->context()->options().optimize};
 
