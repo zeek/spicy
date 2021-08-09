@@ -34,24 +34,6 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"version", no_argument, nullptr, 'v'},
                                               {nullptr, 0, nullptr, 0}};
 
-static void fatalError(const std::string& msg) {
-    hilti::logger().error(msg);
-    spicy::rt::done();
-    hilti::rt::done();
-    exit(1);
-}
-
-static void fatalError(const hilti::result::Error& error) {
-    hilti::logger().error(error.description());
-
-    if ( error.context().size() )
-        hilti::logger().error(error.context());
-
-    spicy::rt::done();
-    hilti::rt::done();
-    exit(1);
-}
-
 class SpicyDriver : public spicy::Driver, public spicy::rt::Driver {
 public:
     explicit SpicyDriver() : spicy::Driver("spicy-driver", hilti::util::currentExecutable()) {
@@ -66,6 +48,24 @@ public:
     bool opt_input_is_batch = false;
     std::string opt_file = "/dev/stdin";
     std::string opt_parser;
+
+    void fatalError(const std::string& msg) {
+        hilti::logger().error(msg);
+        spicy::rt::done();
+        finishRuntime();
+        exit(1);
+    }
+
+    void fatalError(const hilti::result::Error& error) {
+        hilti::logger().error(error.description());
+
+        if ( error.context().size() )
+            hilti::logger().error(error.context());
+
+        spicy::rt::done();
+        finishRuntime();
+        exit(1);
+    }
 
 private:
     void hookInitRuntime() override { spicy::rt::init(); }
@@ -237,11 +237,11 @@ int main(int argc, char** argv) {
     driver.parseOptions(argc, argv);
 
     if ( auto x = driver.compile(); ! x )
-        fatalError(x.error());
+        driver.fatalError(x.error());
 
     try {
         if ( auto x = driver.initRuntime(); ! x )
-            fatalError(x.error());
+            driver.fatalError(x.error());
 
         if ( driver.opt_list_parsers )
             driver.listParsers(std::cout);
@@ -250,27 +250,27 @@ int main(int argc, char** argv) {
             std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
 
             if ( ! in.is_open() )
-                fatalError("cannot open input for reading");
+                driver.fatalError("cannot open input for reading");
 
             if ( driver.opt_input_is_batch ) {
                 if ( auto x = driver.processPreBatchedInput(in); ! x )
-                    fatalError(x.error());
+                    driver.fatalError(x.error());
             }
             else {
                 auto parser = driver.lookupParser(driver.opt_parser);
                 if ( ! parser )
-                    fatalError(parser.error());
+                    driver.fatalError(parser.error());
 
                 if ( auto x = driver.processInput(**parser, in, driver.opt_increment); ! x )
-                    fatalError(x.error());
+                    driver.fatalError(x.error());
             }
         }
 
         driver.finishRuntime();
 
     } catch ( const std::exception& e ) {
-        fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
-                                    hilti::util::demangle(typeid(e).name()), e.what()));
+        driver.fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
+                                           hilti::util::demangle(typeid(e).name()), e.what()));
     }
 
     if ( driver.driverOptions().report_times )
