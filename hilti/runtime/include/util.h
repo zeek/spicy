@@ -581,4 +581,7 @@ private:
     hilti::rt::filesystem::path _path;
 };
 
+// Combine two hashes.
+inline std::size_t hashCombine(std::size_t hash1, std::size_t hash2) { return hash1 ^ (hash2 << 1); }
+
 } // namespace hilti::rt
