@@ -52,6 +52,11 @@ control the compilation process:
     ``HILTI_CXX``
         Specifies the path to the C++ compiler to use.
 
+    ``HILTI_CXX_COMPILER_LAUNCHER``
+        Specifies a command to prefix compiler invocations with during JIT.
+        This can e.g., be used to use a compiler cache like
+        `ccache <https://ccache.dev/>`_.
+
     ``HILTI_CXX_INCLUDE_DIRS``
         Specified additional, colon-separated C++ include directory to
         search for header files.

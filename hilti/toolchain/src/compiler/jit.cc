@@ -287,7 +287,13 @@ hilti::Result<Nothing> JIT::_compile() {
 
         args.push_back(hilti::rt::filesystem::canonical(path));
 
-        if ( auto rc = _spawnJob(hilti::configuration().cxx, std::move(args)); ! rc )
+        auto cxx = hilti::configuration().cxx;
+        if ( const auto launcher = rt::getenv("HILTI_CXX_COMPILER_LAUNCHER"); launcher && ! launcher->empty() ) {
+            args.insert(args.begin(), cxx);
+            cxx = *launcher;
+        }
+
+        if ( auto rc = _spawnJob(cxx, std::move(args)); ! rc )
             errors.push_back(rc.error());
 
         if ( sequential ) {
@@ -346,6 +352,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
         }
     }
 
+    // We are using the compiler as a linker here, no need to check for `HILTI_CXX_COMPILER_LAUNCHER`.
     if ( auto rc = _spawnJob(hilti::configuration().cxx, std::move(args)); ! rc )
         return rc.error();
 
