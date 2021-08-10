@@ -20,6 +20,7 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
+#include <hilti/base/visitor.h>
 
 namespace hilti {
 
@@ -27,14 +28,23 @@ namespace logging::debug {
 inline const DebugStream GlobalOptimizer("global-optimizer");
 } // namespace logging::debug
 
-enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
-
 template<typename Position>
 static void removeNode(Position& p) {
     p.node = node::none;
 }
 
-struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
+class OptimizerVisitor {
+public:
+    enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
+    Stage _stage = Stage::COLLECT;
+
+    virtual ~OptimizerVisitor() = default;
+    virtual void collect(Node&) {}
+    virtual bool prune_uses(Node&) { return false; }
+    virtual bool prune_decls(Node&) { return false; }
+};
+
+struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisitor> {
     using ModuleID = ID;
     using StructID = ID;
     using FieldID = ID;
@@ -156,9 +166,7 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
         return Identifier(util::join({module_id, fn_id}, "::"));
     }
 
-    Stage _stage = Stage::COLLECT;
-
-    void collect(Node& node) {
+    void collect(Node& node) override {
         _stage = Stage::COLLECT;
 
         for ( auto i : this->walk(&node) )
@@ -190,12 +198,12 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
         return any_modification;
     }
 
-    bool prune_uses(Node& node) {
+    bool prune_uses(Node& node) override {
         _stage = Stage::PRUNE_USES;
         return prune(node);
     }
 
-    bool prune_decls(Node& node) {
+    bool prune_decls(Node& node) override {
         _stage = Stage::PRUNE_DECLS;
         return prune(node);
     }
@@ -441,19 +449,17 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
     }
 };
 
-struct TypeVisitor : visitor::PreOrder<bool, TypeVisitor> {
-    Stage _stage = Stage::COLLECT;
+struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     std::map<ID, bool> _used;
 
-    void collect(Node& node) {
+    void collect(Node& node) override {
         _stage = Stage::COLLECT;
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
     }
 
-    bool prune_uses(Node& node) { return false; }
-    bool prune_decls(Node& node) {
+    bool prune_decls(Node& node) override {
         _stage = Stage::PRUNE_DECLS;
 
         bool any_modification = false;
@@ -582,23 +588,21 @@ void GlobalOptimizer::run() {
     while ( true ) {
         bool modified = false;
 
-        FunctionVisitor function_visitor;
-        TypeVisitor type_visitor;
+        std::unique_ptr<OptimizerVisitor> vs[] = {
+            std::make_unique<FunctionVisitor>(),
+            std::make_unique<TypeVisitor>(),
+        };
 
-        for ( auto& unit : units ) {
-            function_visitor.collect(*unit);
-            type_visitor.collect(*unit);
-        }
+        for ( auto& v : vs ) {
+            for ( auto& unit : units )
+                v->collect(*unit);
 
-        for ( auto& unit : units ) {
-            modified = modified || function_visitor.prune_uses(*unit);
-            modified = modified || type_visitor.prune_uses(*unit);
-        }
+            for ( auto& unit : units )
+                modified = v->prune_uses(*unit) || modified;
 
-        for ( auto& unit : units ) {
-            modified = modified || function_visitor.prune_decls(*unit);
-            modified = modified || type_visitor.prune_decls(*unit);
-        }
+            for ( auto& unit : units )
+                modified = v->prune_decls(*unit) || modified;
+        };
 
         if ( ! modified )
             break;

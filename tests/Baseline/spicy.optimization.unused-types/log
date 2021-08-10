@@ -44,7 +44,6 @@
 [debug/global-optimizer] removing field for unused method foo::Priv1::__on_0x25_error
 [debug/global-optimizer] removing field for unused method foo::Priv1::__on_0x25_finally
 [debug/global-optimizer] removing field for unused method foo::Priv1::__on_0x25_init
-[debug/global-optimizer] removing field for unused method foo::Priv1::__parse_stage1
 [debug/global-optimizer] removing field for unused method foo::Priv1::__str__
 [debug/global-optimizer] removing field for unused method foo::Priv1::parse1
 [debug/global-optimizer] removing field for unused method foo::Priv1::parse2
@@ -53,7 +52,6 @@
 [debug/global-optimizer] removing field for unused method foo::Priv2::__on_0x25_error
 [debug/global-optimizer] removing field for unused method foo::Priv2::__on_0x25_finally
 [debug/global-optimizer] removing field for unused method foo::Priv2::__on_0x25_init
-[debug/global-optimizer] removing field for unused method foo::Priv2::__parse_stage1
 [debug/global-optimizer] removing field for unused method foo::Priv2::__str__
 [debug/global-optimizer] removing field for unused method foo::Priv2::parse1
 [debug/global-optimizer] removing field for unused method foo::Priv2::parse2
@@ -62,7 +60,6 @@
 [debug/global-optimizer] removing field for unused method foo::Priv3::__on_0x25_error
 [debug/global-optimizer] removing field for unused method foo::Priv3::__on_0x25_finally
 [debug/global-optimizer] removing field for unused method foo::Priv3::__on_0x25_init
-[debug/global-optimizer] removing field for unused method foo::Priv3::__parse_stage1
 [debug/global-optimizer] removing field for unused method foo::Priv3::__str__
 [debug/global-optimizer] removing field for unused method foo::Priv3::parse1
 [debug/global-optimizer] removing field for unused method foo::Priv3::parse2
@@ -72,7 +69,6 @@
 [debug/global-optimizer] removing field for unused method foo::Priv4::__on_0x25_finally
 [debug/global-optimizer] removing field for unused method foo::Priv4::__on_0x25_init
 [debug/global-optimizer] removing field for unused method foo::Priv4::__on_x
-[debug/global-optimizer] removing field for unused method foo::Priv4::__parse_stage1
 [debug/global-optimizer] removing field for unused method foo::Priv4::__str__
 [debug/global-optimizer] removing field for unused method foo::Priv4::parse1
 [debug/global-optimizer] removing field for unused method foo::Priv4::parse2
