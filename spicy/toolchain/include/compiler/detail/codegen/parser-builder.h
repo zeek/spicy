@@ -454,6 +454,17 @@ public:
      */
     void finishLoopBody(const Expression& cookie, const Location& l);
 
+    /**
+     * Add a guard block around feature-dependent unit code. This helper
+     * typically will put feature-dependent code into a conditional which is
+     * only executed if the feature is enabled.
+     *
+     * @param unit unit the code is added for
+     * @param feature identifier of the feature
+     * @param f callback building the feature-dependent code.
+     */
+    void guardFeatureCode(const type::Unit& unit, std::string_view feature, std::function<void()> f);
+
     CodeGen* cg() const { return _cg; }
     const std::shared_ptr<hilti::Context>& context() const;
     const hilti::Options& options() const;

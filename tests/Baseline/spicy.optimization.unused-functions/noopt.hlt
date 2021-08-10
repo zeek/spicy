@@ -79,6 +79,12 @@ type F = struct {
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
 } &on-heap;
 
+global auto __feat%foo__B%supports_filters = True;
+global auto __feat%foo__B%supports_sinks = True;
+global auto __feat%foo__D%supports_filters = True;
+global auto __feat%foo__D%supports_sinks = True;
+global auto __feat%foo__F%is_filter = True;
+
 function void f1() {
 }
 
