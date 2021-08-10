@@ -23,7 +23,7 @@ public:
     }
 
     const auto& id() const { return child<ID>(0); }
-    auto declaration() const {
+    const auto& declaration() const {
         assert(_node);
         return _node->as<Declaration>();
     }
