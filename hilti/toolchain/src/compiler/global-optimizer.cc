@@ -10,6 +10,7 @@
 
 #include <hilti/rt/util.h>
 
+#include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/default.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/imported-module.h>
@@ -18,6 +19,7 @@
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/enum.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/struct.h>
@@ -33,8 +35,13 @@ inline const DebugStream GlobalOptimizer("global-optimizer");
 } // namespace logging::debug
 
 template<typename Position>
+void replaceNode(Position& p, Node replacement) {
+    p.node = std::move(replacement);
+}
+
+template<typename Position>
 static void removeNode(Position& p) {
-    p.node = node::none;
+    replaceNode(p, node::none);
 }
 
 class OptimizerVisitor {
@@ -621,6 +628,122 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     }
 };
 
+struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, ConstantFoldingVisitor> {
+    // TODO(bbannier): Index constants by their canonical ID once it is
+    // available. We should also be able to remove `Node::rid` at that point.
+    std::map<uint64_t, bool> _constants;
+
+    void collect(Node& node) override {
+        _stage = Stage::COLLECT;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+    }
+
+    bool prune_uses(Node& node) override {
+        _stage = Stage::PRUNE_USES;
+
+        bool any_modification = false;
+
+        while ( true ) {
+            bool modified = false;
+            for ( auto i : this->walk(&node) ) {
+                if ( auto x = dispatch(i) )
+                    modified = *x || modified;
+            }
+
+            if ( ! modified )
+                break;
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    bool operator()(const declaration::GlobalVariable& x, position_t p) {
+        // We only work on boolean constants.
+        if ( ! (x.isConstant() || x.type() == type::Bool()) )
+            return false;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto& init = x.init();
+                assert(init);
+
+                if ( auto ctor = init.value().tryAs<expression::Ctor>() )
+                    if ( auto bool_ = ctor->ctor().tryAs<ctor::Bool>() )
+                        _constants[p.node.rid()] = bool_->value();
+
+                break;
+            }
+
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS: break;
+        }
+
+        return false;
+    }
+
+    bool operator()(const expression::ResolvedID& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: return false;
+            case Stage::PRUNE_USES: {
+                auto rid = x.rid();
+
+                if ( const auto& constant = _constants.find(rid); constant != _constants.end() ) {
+                    if ( x.type() == type::Bool() ) {
+                        HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("inlining constant '%s'", x.id()));
+
+                        replaceNode(p, builder::bool_(constant->second));
+
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool operator()(const statement::If& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: return false;
+            case Stage::PRUNE_USES: {
+                if ( auto expression = x.condition()->tryAs<expression::Ctor>() )
+                    if ( auto bool_ = expression->ctor().tryAs<ctor::Bool>() ) {
+                        if ( auto else_ = x.false_() ) {
+                            if ( ! bool_->value() ) {
+                                replaceNode(p, *else_);
+                                return true;
+                            }
+                            else {
+                                replaceNode(p, statement::If::removeElse(x));
+                                return true;
+                            }
+                        }
+                        else {
+                            if ( ! bool_->value() ) {
+                                removeNode(p);
+                                return true;
+                            }
+                            else {
+                                replaceNode(p, x.true_());
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    };
+            }
+        }
+
+        return false;
+    }
+};
+
 void GlobalOptimizer::run() {
     util::timing::Collector _("hilti/compiler/global-optimizer");
 
@@ -649,7 +772,8 @@ void GlobalOptimizer::run() {
                             std::optional<std::set<std::string>>();
 
     const std::map<std::string, std::function<std::unique_ptr<OptimizerVisitor>()>> creators =
-        {{"functions", []() { return std::make_unique<FunctionVisitor>(); }},
+        {{"constant_folding", []() { return std::make_unique<ConstantFoldingVisitor>(); }},
+         {"functions", []() { return std::make_unique<FunctionVisitor>(); }},
          {"types", []() { return std::make_unique<TypeVisitor>(); }}};
 
     // If no user-specified passes are given enable all of them.

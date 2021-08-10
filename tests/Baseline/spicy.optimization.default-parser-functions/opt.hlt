@@ -184,10 +184,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
     (*self).__position = begin(__cur);
     spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:19:8", (*self).__filters);
     ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
-
-    if ( False ) 
-        (*__data).trim(begin(__cur));
-
     # End parsing production: Variable: x   -> uint<8>
 
     (*self).__position_update = Null;
@@ -203,10 +199,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
     (*self).__position = begin(__cur);
     spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:20:8", (*self).__filters);
     ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
-
-    if ( False ) 
-        (*__data).trim(begin(__cur));
-
     # End parsing production: Variable: y   -> uint<8>
 
     (*self).__position_update = Null;
