@@ -58,6 +58,11 @@ struct Configuration {
      */
     void initLocation(const char* argv0);
 
+    /**
+     * Returns a hash of the current configuration.
+     */
+    std::size_t hash() const;
+
     bool uses_build_directory; /**< True if all information pertains to running outside of the build directory. */
 
     std::string compiler_id;                     /**< Identifier of the compiler */

@@ -204,7 +204,7 @@ private:
     JobID _job_counter = 0;
     std::map<JobID, Job> _jobs;
 
-    std::size_t _hash = std::hash<std::string>{}(hilti::rt::filesystem::current_path().string());
+    std::size_t _hash;
 };
 
 } // namespace hilti
