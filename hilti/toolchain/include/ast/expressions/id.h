@@ -29,6 +29,7 @@ public:
     }
 
     bool isValid() const { return static_cast<bool>(_node); }
+    auto rid() const { return _node.rid(); }
 
     bool operator==(const ResolvedID& other) const {
         return id() == other.id() && declaration() == other.declaration();
