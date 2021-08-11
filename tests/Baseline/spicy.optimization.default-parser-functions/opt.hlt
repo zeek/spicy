@@ -7,7 +7,7 @@ import spicy_rt;
 public type P1 = struct {
     spicy_rt::Parser __parser &static &internal;
     spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
     method extern view<stream> parse2(inout value_ref<P1> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
@@ -22,7 +22,7 @@ public type P2 = struct {
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal;
     spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_y(uint<8> __dd);
     hook void __on_0x25_error();
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
@@ -32,9 +32,9 @@ public type P2 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_P2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 
-global auto __feat%foo__P1%supports_filters = False;
+global auto __feat%foo__P1%supports_filters = True;
 global auto __feat%foo__P1%supports_sinks = False;
-global auto __feat%foo__P2%supports_filters = False;
+global auto __feat%foo__P2%supports_filters = True;
 global auto __feat%foo__P2%supports_sinks = False;
 global auto __feat%foo__P2%uses_random_access = False;
 

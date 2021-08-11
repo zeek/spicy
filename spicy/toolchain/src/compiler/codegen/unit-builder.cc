@@ -216,8 +216,13 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     if ( unit.supportsSinks() || unit.isFilter() ) {
-        auto parser = hilti::type::struct_::Field(ID("__parser"), builder::typeByID("spicy_rt::Parser"),
-                                                  AttributeSet({Attribute("&static"), Attribute("&internal")}));
+        auto attrs = AttributeSet({Attribute("&static"), Attribute("&internal")});
+
+        if ( unit.isFilter() )
+            attrs = AttributeSet::add(std::move(attrs), Attribute("&needed-by-feature", builder::string("is_filter")));
+
+        auto parser =
+            hilti::type::struct_::Field(ID("__parser"), builder::typeByID("spicy_rt::Parser"), std::move(attrs));
         v.addField(std::move(parser));
     }
 
@@ -230,14 +235,18 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     if ( unit.supportsFilters() ) {
         auto filters = hilti::type::struct_::Field(ID("__filters"),
                                                    hilti::type::StrongReference(builder::typeByID("spicy_rt::Filters")),
-                                                   AttributeSet({Attribute("&internal")}));
+                                                   AttributeSet({Attribute("&internal"),
+                                                                 Attribute("&needed-by-feature",
+                                                                           builder::string("supports_filters"))}));
         v.addField(std::move(filters));
     }
 
     if ( unit.isFilter() ) {
-        auto forward = hilti::type::struct_::Field(ID("__forward"),
-                                                   hilti::type::WeakReference(builder::typeByID("spicy_rt::Forward")),
-                                                   AttributeSet({Attribute("&internal")}));
+        auto forward =
+            hilti::type::struct_::Field(ID("__forward"),
+                                        hilti::type::WeakReference(builder::typeByID("spicy_rt::Forward")),
+                                        AttributeSet({Attribute("&internal"),
+                                                      Attribute("&needed-by-feature", builder::string("is_filter"))}));
         v.addField(std::move(forward));
     }
 

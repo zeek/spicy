@@ -18,7 +18,7 @@ type P0 = struct {
 public type P1 = struct {
     spicy_rt::Parser __parser &static &internal;
     spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error();
@@ -42,7 +42,7 @@ public type P2 = struct {
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal;
     spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_x(uint<8> __dd);
     hook void __on_y(uint<8> __dd);
     hook void __on_0x25_init();

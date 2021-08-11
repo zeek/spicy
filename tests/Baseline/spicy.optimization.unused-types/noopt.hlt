@@ -18,7 +18,7 @@ type Priv1 = struct {
 public type Pub2 = struct {
     spicy_rt::Parser __parser &static &internal;
     spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error();
@@ -97,7 +97,7 @@ public type Pub3 = struct {
     value_ref<Priv6> x &optional;
     spicy_rt::Parser __parser &static &internal;
     spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_x(value_ref<Priv6> __dd);
     hook void __on_0x25_init();
     hook void __on_0x25_done();
@@ -121,7 +121,7 @@ public type Priv9 = struct {
     Priv8 en &default=Priv8::A;
     spicy_rt::Parser __parser &static &internal;
     spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error();
