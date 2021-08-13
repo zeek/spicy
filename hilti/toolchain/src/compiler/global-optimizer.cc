@@ -487,7 +487,16 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
             case Stage::PRUNE_DECLS:
                 if ( ! _used.at(*type_id) ) {
                     HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("removing unused type '%s'", *type_id));
+
                     removeNode(p);
+
+                    if ( auto module_ = p.findParent<Module>() )
+                        // If this type was declared under a top-level module also clear the module declaration
+                        // cache. The cache will get repopulated the next time the module's declarations are
+                        // requested.
+                        //
+                        // TODO(bbannier): there has to be a better way to mutate the module.
+                        const_cast<Module&>(module_->get()).clearCache();
 
                     return true;
                 }
@@ -608,17 +617,13 @@ void GlobalOptimizer::run() {
             break;
     }
 
-    // The edits performed by the optimizer might invalidate scopes which after
-    // optimizations might contain references to now removed data. We
-    // unconditionally clear scopes and any preserved nodes of modules to make
-    // sure to remove any effects from outdated information.
+    // Clear cached information which might become outdated due to edits.
     for ( auto& unit : units ) {
         for ( auto i : hilti::visitor::PreOrder<>().walk(&*unit) ) {
             i.node.clearScope();
 
-            if ( auto module = i.node.tryReferenceAs<hilti::Module>() )
-                // TODO(bbannier): there has to be a better way to mutate the module.
-                const_cast<hilti::Module&>(*module).preserved().clear();
+            if ( i.node.isA<hilti::Module>() )
+                i.node.as<Module>().preserved().clear();
         }
     }
 }
