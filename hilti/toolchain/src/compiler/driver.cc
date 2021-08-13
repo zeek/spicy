@@ -598,22 +598,6 @@ Result<Nothing> Driver::compileUnits() {
 
     _stage = Stage::COMPILED;
 
-    if ( _driver_options.output_hilti ) {
-        std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
-        auto output = openOutput(output_path, false);
-        if ( ! output )
-            return output.error();
-
-        for ( auto& unit : _hlts ) {
-            if ( ! unit.isCompiledHILTI() )
-                continue;
-
-            HILTI_DEBUG(logging::debug::Driver, util::fmt("saving HILTI code for module %s", unit.id()));
-            if ( ! unit.print(*output) )
-                return error(fmt("error print HILTI code for module %s", unit.id()));
-        }
-    }
-
     return Nothing();
 }
 
@@ -691,6 +675,7 @@ Result<Nothing> Driver::transformUnits() {
 
     opt.run();
 
+
     return Nothing();
 }
 
@@ -700,6 +685,22 @@ Result<Nothing> Driver::compile() {
 
     if ( auto rc = transformUnits(); ! rc )
         return rc;
+
+    if ( _driver_options.output_hilti ) {
+        std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
+        auto output = openOutput(output_path, false);
+        if ( ! output )
+            return output.error();
+
+        for ( auto& unit : _hlts ) {
+            if ( ! unit.isCompiledHILTI() )
+                continue;
+
+            HILTI_DEBUG(logging::debug::Driver, util::fmt("saving HILTI code for module %s", unit.id()));
+            if ( ! unit.print(*output) )
+                return error(fmt("error print HILTI code for module %s", unit.id()));
+        }
+    }
 
     if ( auto rc = codegenUnits(); ! rc )
         return rc;
