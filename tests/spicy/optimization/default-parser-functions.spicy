@@ -1,12 +1,11 @@
-# @TEST-EXEC: spicyc -p -o /dev/null %INPUT -D global-optimizer 2>&1 | sort >log
+# @TEST-EXEC: spicyc %INPUT -p -o noopt.hlt -g
+# @TEST-EXEC: btest-diff noopt.hlt
+
+# @TEST-EXEC: spicyc %INPUT -p -o opt.hlt -D global-optimizer 2>&1 | sort >log
+# @TEST-EXEC: btest-diff opt.hlt
 # @TEST-EXEC: btest-diff log
 
-# @TEST-EXEC: spicyc -d -j -g %INPUT -D ast-codegen >ast.0 2>&1
-# @TEST-EXEC: spicyc -d -j    %INPUT -D ast-codegen >ast.1 2>&1
-# @TEST-EXEC: spicy-diff.py ast.0 ast.1 >output.diff
-# @TEST-EXEC: btest-diff output.diff
-
-# @TEST-DOC: Tests unit-level global optimizations.
+# @TEST-DOC: Tests optimizations performing removal of unused parser functions added by default.
 
 module foo;
 

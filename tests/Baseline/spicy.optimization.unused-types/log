@@ -23,6 +23,7 @@
 [debug/global-optimizer] removing declaration for unused function foo::Priv6::parse3
 [debug/global-optimizer] removing declaration for unused function hilti::abort
 [debug/global-optimizer] removing declaration for unused function hilti::current_time
+[debug/global-optimizer] removing declaration for unused function hilti::debug
 [debug/global-optimizer] removing declaration for unused function hilti::mktime
 [debug/global-optimizer] removing declaration for unused function hilti::print
 [debug/global-optimizer] removing declaration for unused function hilti::printValues
@@ -33,6 +34,7 @@
 [debug/global-optimizer] removing declaration for unused function spicy_rt::filter_connect
 [debug/global-optimizer] removing declaration for unused function spicy_rt::filter_forward
 [debug/global-optimizer] removing declaration for unused function spicy_rt::filter_forward_eod
+[debug/global-optimizer] removing declaration for unused function spicy_rt::printParserState
 [debug/global-optimizer] removing declaration for unused function spicy_rt::setContext
 [debug/global-optimizer] removing declaration for unused function spicy_rt::unit_find
 [debug/global-optimizer] removing declaration for unused function spicy_rt::waitForEod
