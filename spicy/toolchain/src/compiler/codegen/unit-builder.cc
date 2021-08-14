@@ -201,13 +201,15 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     if ( unit.usesRandomAccess() ) {
+        auto attr_random_access = Attribute("&requires-type-feature", builder::string("uses_random_access"));
+
         auto f1 = hilti::type::struct_::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                              AttributeSet({Attribute("&internal")}));
+                                              AttributeSet({Attribute("&internal"), attr_random_access}));
         auto f2 = hilti::type::struct_::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                              AttributeSet({Attribute("&internal")}));
+                                              AttributeSet({Attribute("&internal"), attr_random_access}));
         auto f3 =
             hilti::type::struct_::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                        AttributeSet({Attribute("&internal")}));
+                                        AttributeSet({Attribute("&internal"), attr_random_access}));
         v.addField(std::move(f1));
         v.addField(std::move(f2));
         v.addField(std::move(f3));

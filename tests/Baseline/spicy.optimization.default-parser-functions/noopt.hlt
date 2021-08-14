@@ -37,9 +37,9 @@ public type P1 = struct {
 public type P2 = struct {
     uint<8> x &optional;
     uint<8> y &optional;
-    optional<iterator<stream>> __begin &internal;
-    optional<iterator<stream>> __position &internal;
-    optional<iterator<stream>> __position_update &internal;
+    optional<iterator<stream>> __begin &internal &requires-type-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &requires-type-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &requires-type-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal;
     spicy_rt::SinkState __sink &internal;
     strong_ref<spicy_rt::Filters> __filters &internal;
