@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include <hilti/ast/attribute.h>
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/id.h>
@@ -44,12 +45,14 @@ constexpr auto from_string(const std::string_view& s) { return util::enum_::from
 /** AST node for a declaration of a function parameter. */
 class Parameter : public NodeBase, public hilti::trait::isDeclaration {
 public:
-    Parameter(ID id, hilti::Type type, parameter::Kind kind, std::optional<hilti::Expression> default_, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(type), std::move(default_)), std::move(m)), _kind(kind) {}
+    Parameter(ID id, hilti::Type type, parameter::Kind kind, std::optional<hilti::Expression> default_,
+              std::optional<AttributeSet> attrs, Meta m = Meta())
+        : NodeBase(nodes(std::move(id), std::move(type), std::move(default_), std::move(attrs)), std::move(m)),
+          _kind(kind) {}
 
     Parameter(ID id, hilti::Type type, parameter::Kind kind, std::optional<hilti::Expression> default_,
-              bool is_struct_param, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(type), std::move(default_)), std::move(m)),
+              bool is_struct_param, std::optional<AttributeSet> attrs, Meta m = Meta())
+        : NodeBase(nodes(std::move(id), std::move(type), std::move(default_), std::move(attrs)), std::move(m)),
           _kind(kind),
           _is_struct_param(is_struct_param) {}
 
@@ -57,6 +60,7 @@ public:
 
     auto type() const { return type::effectiveType(child<hilti::Type>(1)); }
 
+    auto attributes() const { return childs()[3].tryReferenceAs<AttributeSet>(); }
     auto default_() const { return childs()[2].tryReferenceAs<hilti::Expression>(); }
     auto kind() const { return _kind; }
     auto isStructParameter() const { return _is_struct_param; }

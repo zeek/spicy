@@ -321,14 +321,18 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
                 case declaration::parameter::Kind::In: return "";
                 case declaration::parameter::Kind::InOut: return "inout ";
                 case declaration::parameter::Kind::Unknown: logger().internalError("parameter kind not set");
-                default: util::cannot_be_reached();
             }
+
+            util::cannot_be_reached();
         };
 
         out << kind(n.kind()) << n.type() << ' ' << n.id();
 
         if ( n.default_() )
             out << " = " << *n.default_();
+
+        if ( const auto attrs = n.attributes(); attrs && ! attrs->attributes().empty() )
+            out << ' ' << *attrs;
     }
 
     void operator()(const declaration::Function& n) {

@@ -134,6 +134,17 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                           p);
             }
         }
+
+        if ( auto attrs = n.attributes() )
+            for ( auto attr : attrs->attributes() ) {
+                if ( attr.tag() != "&requires-type-feature" )
+                    error(fmt("invalid attribute '%s' for function parameter", attr.tag()), p);
+
+                else {
+                    if ( auto x = attr.valueAs<std::string>(); ! x )
+                        error(x.error(), p);
+                }
+            }
     }
 
     void operator()(const declaration::GlobalVariable& n, position_t p) {

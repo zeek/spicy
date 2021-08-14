@@ -1,0 +1,11 @@
+# @TEST-EXEC: hiltic -g -p -o output %INPUT
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Tests parsing support for function parameter attributes.
+
+module Foo {
+
+function void f1(string s="" &requires-type-feature="is_struct") {}
+function void f2(string s &requires-type-feature="is_struct" &requires-type-feature="is_value") {}
+
+}

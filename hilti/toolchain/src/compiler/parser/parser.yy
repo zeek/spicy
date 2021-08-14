@@ -420,10 +420,10 @@ opt_func_params : func_params                    { $$ = std::move($1); }
 func_params : func_params ',' func_param { $$ = std::move($1); $$.push_back($3); }
                 | func_param                     { $$ = std::vector<hilti::type::function::Parameter>{$1}; }
 
-func_param      : opt_func_param_kind type local_id opt_func_default_expr
-                                                 { $$ = hilti::type::function::Parameter($3, $2, $1, $4, __loc__); }
-                | opt_func_param_kind AUTO local_id opt_func_default_expr
-                                                 { $$ = hilti::type::function::Parameter($3, type::Auto(__loc__), $1, $4, __loc__); }
+func_param      : opt_func_param_kind type local_id opt_func_default_expr opt_attributes
+                                                 { $$ = hilti::type::function::Parameter($3, $2, $1, $4, $5, __loc__); }
+                | opt_func_param_kind AUTO local_id opt_func_default_expr opt_attributes
+                                                 { $$ = hilti::type::function::Parameter($3, type::Auto(__loc__), $1, $4, $5, __loc__); }
 
 func_result   : type                             { $$ = hilti::type::function::Result(std::move($1), __loc__); }
 
