@@ -755,6 +755,166 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
     }
 };
 
+// This visitor collects requirement attributes in the AST and toggles unused features.
+struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsVisitor> {
+    // Lookup table for feature name -> required.
+    using Features = std::map<std::string, bool>;
+
+    // Lookup table for typename -> features.
+    std::map<ID, Features> _features;
+
+    enum class Stage { COLLECT, TRANSFORM };
+    Stage _stage = Stage::COLLECT;
+
+    void collect(Node& node) {
+        _stage = Stage::COLLECT;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+    }
+
+    void transform(Node& node) {
+        _stage = Stage::TRANSFORM;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+    }
+
+    void operator()(const declaration::GlobalVariable& x, position_t p) {
+        const auto& id = x.id();
+
+        // We only work on feature flags named `__feat*`.
+        if ( ! util::startsWith(id, "__feat") )
+            return;
+
+        const auto& tokens = util::split(id, "%");
+        assert(tokens.size() == 3);
+
+        // The type name is encoded in the variable name with `::` replaced by `__`.
+        const auto& typeID = ID(util::replace(tokens[1], "__", "::"));
+        const auto& feature = tokens[2];
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                // Record the feature as unused for the type if it was not already recorded.
+                _features[typeID].insert({feature, false});
+                break;
+            }
+
+            case Stage::TRANSFORM: {
+                const auto required = _features.at(typeID).at(feature);
+                const auto value = x.init().value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
+
+                if ( required != value ) {
+                    HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                                util::fmt("disabling feature '%s' of type '%s' since it is not used", feature, typeID));
+
+                    auto new_x = declaration::GlobalVariable::setInit(x, builder::bool_(false));
+                    replaceNode(p, new_x);
+
+                    if ( auto module_ = p.findParent<Module>() )
+                        // If this global was declared under a top-level module also clear the module declaration
+                        // cache. The cache will get repopulated the next time the module's declarations are
+                        // requested.
+                        //
+                        // TODO(bbannier): there has to be a better way to mutate the module.
+                        const_cast<Module&>(module_->get()).clearCache();
+                }
+
+                break;
+            }
+        }
+    }
+
+    // Helper function to compute the set of feature flags wrapping the given position.
+    static std::map<ID, std::set<std::string>> conditionalFeatures(position_t p) {
+        // Compute a list of features this use does not activate.
+        // Generated feature-dependent code is always under
+        // conditionals `if (__feat%XYZ%FEATURE) ...` so get all
+        // `FEATURE` for all parents which match this pattern.
+        std::map<ID, std::set<std::string>> result;
+
+        for ( const auto& parent : p.path ) {
+            if ( ! parent.node.isA<statement::If>() )
+                continue;
+
+            const auto& if_ = parent.node.as<statement::If>();
+            const auto condition = if_.condition();
+            if ( ! condition )
+                continue;
+
+            auto rid = condition->tryAs<expression::ResolvedID>();
+            if ( ! rid )
+                continue;
+
+            // Split away the module part of the resolved ID.
+            auto id = util::split1(rid->id(), "::").second;
+
+            if ( ! util::startsWith(id, "__feat") )
+                continue;
+
+            const auto& tokens = util::split(id, "%");
+            assert(tokens.size() == 3);
+
+            const auto type_id = ID(util::replace(tokens[1], "__", "::"));
+            const auto& feature = tokens[2];
+
+            result[std::move(type_id)].insert(feature);
+        }
+
+        return result;
+    }
+
+    void handleMemberAccess(const expression::ResolvedOperator& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto type_ = x.op0().type();
+                while ( type::isReferenceType(type_) )
+                    type_ = type_.dereferencedType();
+
+                auto typeID = type_.typeID();
+                if ( ! typeID )
+                    return;
+
+                auto member = x.op1().template tryAs<expression::Member>();
+                if ( ! member )
+                    return;
+
+                auto lookup = scope::lookupID<declaration::Type>(*typeID, p, "type");
+                if ( ! lookup )
+                    return;
+
+                auto type = lookup->first->template as<declaration::Type>();
+                auto struct_ = type.type().template tryAs<type::Struct>();
+                if ( ! struct_ )
+                    return;
+
+                auto field = struct_->field(member->id());
+                if ( ! field )
+                    return;
+
+                const auto ignored_features = conditionalFeatures(p);
+
+                for ( const auto& requirement : AttributeSet::findAll(field->attributes(), "&requires-type-feature") ) {
+                    const auto feature = *requirement.template valueAs<std::string>();
+
+                    // Enable the required feature if it is not ignored here.
+                    if ( ! ignored_features.count(*typeID) || ! ignored_features.at(*typeID).count(feature) )
+                        _features[*typeID][feature] = true;
+                }
+
+                break;
+            }
+            case Stage::TRANSFORM:
+                // Nothing.
+                break;
+        }
+    }
+
+    void operator()(const operator_::struct_::MemberConst& x, position_t p) { return handleMemberAccess(x, p); }
+    void operator()(const operator_::struct_::MemberNonConst& x, position_t p) { return handleMemberAccess(x, p); }
+};
+
 void GlobalOptimizer::run() {
     util::timing::Collector _("hilti/compiler/global-optimizer");
 
@@ -781,6 +941,18 @@ void GlobalOptimizer::run() {
         passes__ ? std::optional(util::split(*passes__, ":")) : std::optional<std::vector<std::string>>();
     auto passes = passes_ ? std::optional(std::set<std::string>(passes_->begin(), passes_->end())) :
                             std::optional<std::set<std::string>>();
+
+    if ( ! passes || passes->count("feature_requirements") ) {
+        // The `FeatureRequirementsVisitor` enables or disables code
+        // paths and needs to be run before all other passes since
+        // it needs to see the code before any optimization edits.
+        FeatureRequirementsVisitor v;
+        for ( auto& unit : units )
+            v.collect(*unit);
+
+        for ( auto& unit : units )
+            v.transform(*unit);
+    }
 
     const std::map<std::string, std::function<std::unique_ptr<OptimizerVisitor>()>> creators =
         {{"constant_folding", []() { return std::make_unique<ConstantFoldingVisitor>(); }},

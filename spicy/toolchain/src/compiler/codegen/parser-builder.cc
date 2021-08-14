@@ -1844,10 +1844,11 @@ void ParserBuilder::finishLoopBody(const Expression& cookie, const Location& l) 
 }
 
 void ParserBuilder::guardFeatureCode(const type::Unit& unit, std::string_view feature, std::function<void()> f) {
-    // TODO(bbannier): Currently we do not support optimizing away any of these
-    // generated conditonals so we do not create them for now.
-    f();
-    return;
+    // TODO(bbannier): Only handling for the `uses_random_access` feature flags is currently implemented.
+    if ( feature != "uses_random_access" ) {
+        f();
+        return;
+    }
 
     const auto& typeID = unit.typeID();
 

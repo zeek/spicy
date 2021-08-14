@@ -1,0 +1,21 @@
+# @TEST-EXEC: spicyc %INPUT -p -o noopt.hlt -g
+# @TEST-EXEC: btest-diff noopt.hlt
+
+# @TEST-EXEC: spicyc %INPUT -p -o opt.hlt -D global-optimizer 2>&1 | sort >log
+# @TEST-EXEC: btest-diff opt.hlt
+# @TEST-EXEC: btest-diff log
+
+# @TEST-DOC: Tests that unused filter features are removed.
+
+module foo;
+
+# Use of random-access dependent code is recognized.
+type X1 = unit {
+    %random-access;
+    on %init { self.offset(); }
+};
+
+# Unused random-access-dependent code should be removed.
+type X2 = unit {
+    %random-access;
+};
