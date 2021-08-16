@@ -18,6 +18,8 @@
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/types/enum.h>
+#include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
@@ -474,6 +476,12 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     }
 
     result_t operator()(const declaration::Type& x, position_t p) {
+        // We currently only handle type declarations for struct types or enum types.
+        //
+        // TODO(bbannier): Handle type aliases.
+        if ( const auto& type = x.type(); ! (type.isA<type::Struct>() || type.isA<type::Enum>()) )
+            return false;
+
         const auto type_id = x.typeID();
 
         if ( ! type_id )
@@ -512,7 +520,15 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     result_t operator()(const type::ResolvedID& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                const auto type_id = x.type().typeID();
+                auto type = x.type();
+
+                while ( type::isReferenceType(type) )
+                    type = type.dereferencedType();
+
+                while ( type::isIterable(type) )
+                    type = type.elementType();
+
+                const auto type_id = type.typeID();
 
                 if ( ! type_id )
                     break;
@@ -534,7 +550,15 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     result_t operator()(const expression::ResolvedID& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                const auto type_id = x.type().typeID();
+                auto type = x.type();
+
+                while ( type::isReferenceType(type) )
+                    type = type.dereferencedType();
+
+                while ( type::isIterable(type) )
+                    type = type.elementType();
+
+                const auto type_id = type.typeID();
 
                 if ( ! type_id )
                     break;
@@ -571,6 +595,28 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
                 // Nothing.
                 break;
         }
+
+        return false;
+    }
+
+    result_t operator()(const type::ValueReference& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto& type_id = x.typeID();
+
+                if ( ! type_id )
+                    break;
+
+                // Record this type as used.
+                _used[*type_id] = true;
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
         return false;
     }
 };
