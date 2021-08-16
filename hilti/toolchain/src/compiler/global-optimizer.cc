@@ -4,9 +4,11 @@
 
 #include <algorithm>
 #include <optional>
+#include <string>
 #include <tuple>
-#include <unordered_set>
 #include <utility>
+
+#include <hilti/rt/util.h>
 
 #include <hilti/ast/ctors/default.h>
 #include <hilti/ast/declarations/function.h>
@@ -594,13 +596,32 @@ void GlobalOptimizer::run() {
         return std::vector<NodeRef>{units.begin(), units.end()};
     }();
 
+    const auto passes__ = rt::getenv("HILTI_OPTIMIZER_PASSES");
+    const auto passes_ =
+        passes__ ? std::optional(util::split(*passes__, ":")) : std::optional<std::vector<std::string>>();
+    auto passes = passes_ ? std::optional(std::set<std::string>(passes_->begin(), passes_->end())) :
+                            std::optional<std::set<std::string>>();
+
+    const std::map<std::string, std::function<std::unique_ptr<OptimizerVisitor>()>> creators =
+        {{"functions", []() { return std::make_unique<FunctionVisitor>(); }},
+         {"types", []() { return std::make_unique<TypeVisitor>(); }}};
+
+    // If no user-specified passes are given enable all of them.
+    if ( ! passes ) {
+        passes = std::set<std::string>();
+        for ( const auto& [pass, _] : creators )
+            passes->insert(pass);
+    }
+
     while ( true ) {
         bool modified = false;
 
-        std::unique_ptr<OptimizerVisitor> vs[] = {
-            std::make_unique<FunctionVisitor>(),
-            std::make_unique<TypeVisitor>(),
-        };
+        // NOTE: We do not use `util::transform` here to guarantee a consistent order of the visitors.
+        std::vector<std::unique_ptr<OptimizerVisitor>> vs;
+        vs.reserve(passes->size());
+        for ( const auto& pass : *passes )
+            if ( creators.count(pass) )
+                vs.push_back(creators.at(pass)());
 
         for ( auto& v : vs ) {
             for ( auto& unit : units )
