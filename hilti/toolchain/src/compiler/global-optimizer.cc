@@ -308,13 +308,15 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 if ( fn.type().flavor() == type::function::Flavor::Hook )
                     function.hook = true;
 
+                auto unit_type = scope::lookupID<declaration::Type>(fn.id().namespace_(), p, "type");
+
                 switch ( fn.callingConvention() ) {
                     case function::CallingConvention::ExternNoSuspend:
                     case function::CallingConvention::Extern: {
                         // If the declaration is `extern` and the unit is `public`, the function
                         // is part of an externally visible API and potentially used elsewhere.
 
-                        if ( auto unit_type = scope::lookupID<declaration::Type>(fn.id().namespace_(), p, "type") ) {
+                        if ( unit_type ) {
                             if ( auto unit = unit_type->first->tryAs<declaration::Type>() )
                                 function.referenced =
                                     function.referenced || unit->linkage() == declaration::Linkage::Public;
@@ -338,11 +340,20 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                         break;
                     case declaration::Linkage::Private:
                     case declaration::Linkage::Public:
-                    case declaration::Linkage::Struct:
                         // Nothing.
                         break;
-                }
+                    case declaration::Linkage::Struct: {
+                        // If this is a method declaration check whether the type it referred
+                        // to is still around; if not mark the function as an unreferenced
+                        // non-hook so it gets removed for both plain methods and hooks.
+                        if ( ! unit_type ) {
+                            function.referenced = false;
+                            function.hook = false;
+                        }
 
+                        break;
+                    }
+                }
 
                 break;
             }
