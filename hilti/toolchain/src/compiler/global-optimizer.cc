@@ -1052,6 +1052,181 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
     void operator()(const operator_::struct_::MemberNonConst& x, position_t p) { return handleMemberAccess(x, p); }
 };
 
+struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> {
+    // Map tracking wether a member is used in the code.
+    std::map<std::string, bool> _used;
+
+    // Map tracking for each type which features are enabled.
+    std::map<ID, std::map<std::string, bool>> _features;
+
+    void collect(Node& node) override {
+        _stage = Stage::COLLECT;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+    }
+
+    bool prune_decls(Node& node) override {
+        _stage = Stage::PRUNE_DECLS;
+
+        bool any_modification = false;
+
+        while ( true ) {
+            bool modified = false;
+            for ( auto i : this->walk(&node) ) {
+                if ( auto x = dispatch(i) )
+                    modified = *x || modified;
+            }
+
+            if ( ! modified )
+                break;
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    result_t operator()(const type::struct_::Field& x, position_t p) {
+        auto type_id = p.parent().as<type::Struct>().typeID();
+        if ( ! type_id )
+            return false;
+
+        // We never remove member marked `&always-emit`.
+        if ( AttributeSet::find(x.attributes(), "&always-emit") )
+            return false;
+
+        // We only remove member marked `&internal`.
+        if ( ! AttributeSet::find(x.attributes(), "&internal") )
+            return false;
+
+        auto member_id = util::join({*type_id, x.id()}, "::");
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                // Record the member if it is not yet known.
+                _used.insert({member_id, false});
+                break;
+            }
+
+            case Stage::PRUNE_DECLS: {
+                if ( ! _used.at(member_id) ) {
+                    // Check whether the field depends on an active feature in which case we do not remove the field.
+                    if ( _features.count(*type_id) ) {
+                        const auto& features = _features.at(*type_id);
+
+                        auto dependent_features =
+                            util::transform(AttributeSet::findAll(x.attributes(), "&needed-by-feature"),
+                                            [](const Attribute& attr) { return *attr.valueAs<std::string>(); });
+
+                        for ( const auto& dependent_feature_ :
+                              AttributeSet::findAll(x.attributes(), "&needed-by-feature") ) {
+                            auto dependent_feature = *dependent_feature_.valueAs<std::string>();
+
+                            // The feature flag is known and the feature is active.
+                            if ( features.count(dependent_feature) && features.at(dependent_feature) )
+                                return false; // Use `return` instead of `break` here to break out of `switch`.
+                        }
+                    }
+
+                    HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("removing unused member '%s'", member_id));
+
+                    removeNode(p);
+
+                    return true;
+                }
+            }
+            case Stage::PRUNE_USES:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const expression::Member& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto expr = p.parent().childs()[1].tryAs<Expression>();
+                if ( ! expr )
+                    break;
+
+                const auto type = innermostType(expr->type());
+
+                auto struct_ = type.tryAs<type::Struct>();
+                if ( ! struct_ )
+                    break;
+
+                auto type_id = struct_->typeID();
+                if ( ! type_id )
+                    break;
+
+                auto member_id = util::join({*type_id, x.id()}, "::");
+
+                // Record the member as used.
+                _used[member_id] = true;
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS: break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const expression::ResolvedID& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto tokens = util::split(x.id(), "::");
+
+                // TODO(bbannier): Revisit this one we have the AST refactoring
+                // in place. All we need to do here is detect whether this is a
+                // member.
+                if ( tokens.size() != 3 )
+                    // Does not look like a member.
+                    break;
+
+                // Record the member as used.
+                _used[x.id()] = true;
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const declaration::GlobalVariable& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                // Check whether the feature flag matches the type of the field.
+                if ( ! util::startsWith(x.id(), "__feat%") )
+                    break;
+
+                auto tokens = util::split(x.id(), "%");
+                assert(tokens.size() == 3);
+
+                auto type_id = ID(util::replace(tokens[1], "__", "::"));
+                auto feature = tokens[2];
+                auto is_active = x.init().value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
+
+                _features[std::move(type_id)][std::move(feature)] = is_active;
+
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+};
+
 void GlobalOptimizer::run() {
     util::timing::Collector _("hilti/compiler/global-optimizer");
 
@@ -1094,6 +1269,7 @@ void GlobalOptimizer::run() {
     const std::map<std::string, std::function<std::unique_ptr<OptimizerVisitor>()>> creators =
         {{"constant_folding", []() { return std::make_unique<ConstantFoldingVisitor>(); }},
          {"functions", []() { return std::make_unique<FunctionVisitor>(); }},
+         {"members", []() { return std::make_unique<MemberVisitor>(); }},
          {"types", []() { return std::make_unique<TypeVisitor>(); }}};
 
     // If no user-specified passes are given enable all of them.

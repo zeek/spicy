@@ -110,6 +110,11 @@
 [debug/global-optimizer] removing field for unused method foo::X6::parse1
 [debug/global-optimizer] removing field for unused method foo::X6::parse2
 [debug/global-optimizer] removing field for unused method foo::X6::parse3
+[debug/global-optimizer] removing unused member 'foo::X2::__begin'
+[debug/global-optimizer] removing unused member 'foo::X2::__position'
+[debug/global-optimizer] removing unused member 'foo::X2::__position_update'
+[debug/global-optimizer] removing unused member 'foo::X3::__forward'
+[debug/global-optimizer] removing unused member 'foo::X5::__sink'
 [debug/global-optimizer] removing unused type 'foo::X2'
 [debug/global-optimizer] replacing call to unimplemented function foo::X1::__on_0x25_done with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::X1::__on_0x25_error with default value

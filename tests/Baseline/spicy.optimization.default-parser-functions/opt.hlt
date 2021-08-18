@@ -6,8 +6,6 @@ import spicy_rt;
 
 public type P1 = struct {
     spicy_rt::Parser __parser &static &internal &always-emit;
-    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
-    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
     method extern view<stream> parse2(inout value_ref<P1> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
@@ -17,11 +15,7 @@ public type P1 = struct {
 public type P2 = struct {
     uint<8> x &optional;
     uint<8> y &optional;
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &always-emit;
-    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_y(uint<8> __dd);
     hook void __on_0x25_error();

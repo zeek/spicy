@@ -83,6 +83,11 @@
 [debug/global-optimizer] removing field for unused method foo::F::__on_0x25_finally
 [debug/global-optimizer] removing field for unused method foo::F::__on_0x25_init
 [debug/global-optimizer] removing field for unused method foo::F::__str__
+[debug/global-optimizer] removing unused member 'foo::B::__filters'
+[debug/global-optimizer] removing unused member 'foo::B::__sink'
+[debug/global-optimizer] removing unused member 'foo::D::__filters'
+[debug/global-optimizer] removing unused member 'foo::D::__sink'
+[debug/global-optimizer] removing unused member 'foo::F::__forward'
 [debug/global-optimizer] removing unused type 'foo::A'
 [debug/global-optimizer] replacing call to unimplemented function foo::A::__on_0x25_done with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::A::__on_0x25_error with default value

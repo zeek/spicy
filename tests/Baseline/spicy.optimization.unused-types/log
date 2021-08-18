@@ -136,6 +136,12 @@
 [debug/global-optimizer] removing field for unused method foo::Pub3::__on_0x25_undelivered
 [debug/global-optimizer] removing field for unused method foo::Pub3::__on_x
 [debug/global-optimizer] removing field for unused method foo::Pub3::__str__
+[debug/global-optimizer] removing unused member 'foo::Priv9::__filters'
+[debug/global-optimizer] removing unused member 'foo::Priv9::__sink'
+[debug/global-optimizer] removing unused member 'foo::Pub2::__filters'
+[debug/global-optimizer] removing unused member 'foo::Pub2::__sink'
+[debug/global-optimizer] removing unused member 'foo::Pub3::__filters'
+[debug/global-optimizer] removing unused member 'foo::Pub3::__sink'
 [debug/global-optimizer] removing unused type 'foo::Priv1'
 [debug/global-optimizer] removing unused type 'foo::Priv2'
 [debug/global-optimizer] removing unused type 'foo::Priv3'
