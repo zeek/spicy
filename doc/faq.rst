@@ -61,3 +61,26 @@ The Zeek plugin by default disables the output of Spicy-side ``print``
 statements. To enable them, add ``Spicy::enable_print=T`` to the Zeek
 command line (or ``redef Spicy::enable_print=T;`` to a Zeek script
 that you are loading).
+
+.. rubric:: My analyzer recognizes only one or two TCP packets even though there are more in the input.
+
+The Zeek Spicy plugin parses the sending and receiving sides of a TCP
+connection each according to the given Spicy grammar. This means that
+if more than one message can be sent per side the grammar needs to
+allow for that. For example, if the grammar parses messages of the
+protocol as ``Message``, the top-level parsing unit given in the EVT
+file needs to be able to parse a list of messages ``Message[]``.
+
+A simple way to accomplish this is to introduce a parser which wraps
+messages of the protocol:
+
+.. code-block:: spicy
+
+   type Message = unit {
+     # Fields for messages of the protocol.
+   };
+
+   # Parser used e.g., in EVT file.
+   public type Messages = unit {
+     messages: Message[];
+   };
