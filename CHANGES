@@ -1,3 +1,7 @@
+1.3.0-dev.28 | 2021-08-19 10:38:45 +0200
+
+  * Add FAQ item for parsing TCP conversations. (Benjamin Bannier, Corelight)
+
 1.3.0-dev.26 | 2021-08-06 14:52:54 +0200
 
   * Make test type public to prevent it being optimized out. (Benjamin Bannier, Corelight)
