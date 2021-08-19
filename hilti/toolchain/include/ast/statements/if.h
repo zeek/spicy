@@ -72,6 +72,18 @@ public:
         x.childs()[1] = c;
         return x;
     }
+
+    /**
+     * Returns a new "if" statement with the false branch removed.
+     *
+     * @param e original statement
+     * @return new statement that's equal to original one but with the false branch removed.
+     */
+    static Statement removeElse(const If& e) {
+        auto x = Statement(e)._clone().as<If>();
+        x.childs()[3] = node::none;
+        return x;
+    }
 };
 
 } // namespace statement
