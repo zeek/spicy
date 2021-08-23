@@ -37,5 +37,5 @@ jobs:
         push: true
         build-args: "SPICY_ZKG_PROCESSES=1"
         tags: |
-          ${{ secrets.DOCKER_USERNAME }}/spicy-dev:latest
-          ${{ secrets.DOCKER_USERNAME }}/spicy-dev:${{ steps.version.outputs.RELEASE_VERSION }}
+          zeekurity/spicy-dev:latest
+          zeekurity/spicy-dev:${{ steps.version.outputs.RELEASE_VERSION }}

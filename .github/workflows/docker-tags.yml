@@ -40,4 +40,4 @@ jobs:
         # TODO(bbannier): Automatically detect whether this is the latest
         # release and in that case also push this to `spicy:latest`.
         tags: |
-          ${{ secrets.DOCKER_USERNAME }}/spicy:${{ steps.version.outputs.RELEASE_VERSION }}
+          zeekurity/spicy:${{ steps.version.outputs.RELEASE_VERSION }}
