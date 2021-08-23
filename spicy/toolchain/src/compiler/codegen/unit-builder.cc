@@ -159,7 +159,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                                                hilti::type::Vector(hilti::type::Optional(hilti::type::Tuple(
                                                    {type::UnsignedInteger(64),
                                                     hilti::type::Optional(type::UnsignedInteger(64))}))),
-                                               AttributeSet({Attribute("&internal")})));
+                                               AttributeSet({Attribute("&internal"), Attribute("&always-emit")})));
     }
 
     if ( auto context = unit.contextType() ) {
