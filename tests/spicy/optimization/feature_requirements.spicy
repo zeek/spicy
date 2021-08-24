@@ -5,19 +5,17 @@
 # @TEST-EXEC: btest-diff opt.hlt
 # @TEST-EXEC: btest-diff log
 
-# @TEST-DOC: Tests optimizations performing removal of unused parser functions added by default.
+# @TEST-DOC: Tests that unused filter features are removed.
 
 module foo;
 
-type P0 = unit {};
-
-public type P1 = unit {};
-
-public type P2 = unit {
+# Use of random-access dependent code is recognized.
+type X1 = unit {
     %random-access;
+    on %init { self.offset(); }
+};
 
-    x: uint8;
-    y: uint8 {}
-
-    on %error {}
+# Unused random-access-dependent code should be removed.
+type X2 = unit {
+    %random-access;
 };

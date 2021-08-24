@@ -1,5 +1,5 @@
 # @TEST-GROUP: no-jit
-# @TEST-EXEC: ${HILTIC} -p -D ast-final %INPUT >output 2>&1
+# @TEST-EXEC: ${HILTIC} -g -p -D ast-final %INPUT >output 2>&1
 # @TEST-EXEC: btest-diff output
 
 module Foo {

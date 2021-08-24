@@ -59,6 +59,10 @@ control the compilation process:
     ``HILTI_JIT_SEQUENTIAL``
         Set to prevent spawning multiple concurrent C++ compiler instances.
 
+    ``HILTI_OPTIMIZER_PASSES``
+        Colon-separated list of optimizer passes to activate. If unset uses the
+        default-enabled set.
+
     ``HILTI_PATH``
         Replaces the built-in search path for `*.hlt` source files.
 

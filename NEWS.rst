@@ -9,6 +9,20 @@ Version 1.3 (in progress)
 
 .. rubric:: New Functionality
 
+- Add new optimizer passes performing basic constant folding and removal of unused ``%random-access`` functionality
+
+  If a unit has a ``%random-access`` attribute was declaredSpicy emits
+  additional code to track and update offsets. If the ``%random-access``
+  functionality is not used this leads to unneeded code being emitted which
+  causes unneeded overhead, both during JIT and during execution.
+
+  We now emit such code under a feature flag (effectively a global boolean)
+  which is by default *on*. Additionally, we added an optimizer pass which
+  detects whether a feature is used and can disable unused feature
+  functionality (switching the feature flag to *off*), and can then remove
+  unreachable code behind such disabled feature flags by performing basic
+  constant folding.
+
 .. rubric:: Changed Functionality
 
 .. rubric:: Bug fixes

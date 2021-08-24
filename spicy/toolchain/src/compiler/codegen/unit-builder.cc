@@ -174,6 +174,22 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
 
+    if ( auto typeID = unit.typeID() ) {
+        typeID = hilti::rt::replace(*typeID, ":", "_");
+
+        if ( unit.isFilter() )
+            addDeclaration(builder::global(ID(fmt("__feat%%%s%%is_filter", *typeID)), builder::bool_(true)));
+
+        if ( unit.supportsFilters() )
+            addDeclaration(builder::global(ID(fmt("__feat%%%s%%supports_filters", *typeID)), builder::bool_(true)));
+
+        if ( unit.supportsSinks() )
+            addDeclaration(builder::global(ID(fmt("__feat%%%s%%supports_sinks", *typeID)), builder::bool_(true)));
+
+        if ( unit.usesRandomAccess() )
+            addDeclaration(builder::global(ID(fmt("__feat%%%s%%uses_random_access", *typeID)), builder::bool_(true)));
+    }
+
     if ( unit.supportsSinks() ) {
         add_hook("0x25_gap", {builder::parameter("seq", type::UnsignedInteger(64)),
                               builder::parameter("len", type::UnsignedInteger(64))});
@@ -185,13 +201,15 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     if ( unit.usesRandomAccess() ) {
+        auto attr_random_access = Attribute("&requires-type-feature", builder::string("uses_random_access"));
+
         auto f1 = hilti::type::struct_::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                              AttributeSet({Attribute("&internal")}));
+                                              AttributeSet({Attribute("&internal"), attr_random_access}));
         auto f2 = hilti::type::struct_::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                              AttributeSet({Attribute("&internal")}));
+                                              AttributeSet({Attribute("&internal"), attr_random_access}));
         auto f3 =
             hilti::type::struct_::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                        AttributeSet({Attribute("&internal")}));
+                                        AttributeSet({Attribute("&internal"), attr_random_access}));
         v.addField(std::move(f1));
         v.addField(std::move(f2));
         v.addField(std::move(f3));

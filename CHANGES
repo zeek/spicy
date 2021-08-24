@@ -1,3 +1,39 @@
+1.3.0-dev.48 | 2021-08-24 15:22:43 +0200
+
+  * Add optimizer pass removing unused `%random-access` features. (Benjamin Bannier, Corelight)
+
+  * Annotate parser fields related to `%random-access`. (Benjamin Bannier, Corelight)
+
+  * Annotate generated parser code with feature flags. (Benjamin Bannier, Corelight)
+
+  * Add function optimizer pass removing orphaned method implementations. (Benjamin Bannier, Corelight)
+
+  * Add an optimizer pass performing basic constant folding. (Benjamin Bannier, Corelight)
+
+  * Add mutator for `statement::If` removing `else` branch. (Benjamin Bannier, Corelight)
+
+  * Prepare `statement::Block` for optimizer edits. (Benjamin Bannier, Corelight)
+
+  * Add accessor for resolved IDs of expressions. (Benjamin Bannier, Corelight)
+
+  * Fix type visitor to properly handle wrapped types. (Benjamin Bannier, Corelight)
+
+  * Check environment variable `HILTI_OPTIMIZER_PASSES` for optimizer passes to enable. (Benjamin Bannier, Corelight)
+
+  * Change optimizer tests to compare HILTI code instead of ASTs. (Benjamin Bannier, Corelight)
+
+  * Change `-p` to print source after optimizations. (Benjamin Bannier, Corelight)
+
+  * Clear module declaration cache after optimizations. (Benjamin Bannier, Corelight)
+
+  * Add a visitor base class for the global optimizer. (Benjamin Bannier, Corelight)
+
+  * Change return type of `AttributeSet::add` so it always returns some set. (Benjamin Bannier, Corelight)
+
+  * Remove outdated TODO. (Benjamin Bannier, Corelight)
+
+  * Prevent unneeded copy of return value. (Benjamin Bannier, Corelight)
+
 1.3.0-dev.30 | 2021-08-23 09:36:24 +0200
 
   * Hardcode DockerHub org we publish images for in GH workflow. (Benjamin Bannier, Corelight)

@@ -23,12 +23,13 @@ public:
     }
 
     const auto& id() const { return child<ID>(0); }
-    auto declaration() const {
+    const auto& declaration() const {
         assert(_node);
         return _node->as<Declaration>();
     }
 
     bool isValid() const { return static_cast<bool>(_node); }
+    auto rid() const { return _node.rid(); }
 
     bool operator==(const ResolvedID& other) const {
         return id() == other.id() && declaration() == other.declaration();

@@ -4,10 +4,13 @@
 
 #include <algorithm>
 #include <optional>
+#include <string>
 #include <tuple>
-#include <unordered_set>
 #include <utility>
 
+#include <hilti/rt/util.h>
+
+#include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/default.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/imported-module.h>
@@ -16,10 +19,14 @@
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/types/bool.h>
+#include <hilti/ast/types/enum.h>
+#include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
+#include <hilti/base/visitor.h>
 
 namespace hilti {
 
@@ -27,14 +34,28 @@ namespace logging::debug {
 inline const DebugStream GlobalOptimizer("global-optimizer");
 } // namespace logging::debug
 
-enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
+template<typename Position>
+void replaceNode(Position& p, Node replacement) {
+    p.node = std::move(replacement);
+}
 
 template<typename Position>
 static void removeNode(Position& p) {
-    p.node = node::none;
+    replaceNode(p, node::none);
 }
 
-struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
+class OptimizerVisitor {
+public:
+    enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
+    Stage _stage = Stage::COLLECT;
+
+    virtual ~OptimizerVisitor() = default;
+    virtual void collect(Node&) {}
+    virtual bool prune_uses(Node&) { return false; }
+    virtual bool prune_decls(Node&) { return false; }
+};
+
+struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisitor> {
     using ModuleID = ID;
     using StructID = ID;
     using FieldID = ID;
@@ -156,9 +177,7 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
         return Identifier(util::join({module_id, fn_id}, "::"));
     }
 
-    Stage _stage = Stage::COLLECT;
-
-    void collect(Node& node) {
+    void collect(Node& node) override {
         _stage = Stage::COLLECT;
 
         for ( auto i : this->walk(&node) )
@@ -190,12 +209,12 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
         return any_modification;
     }
 
-    bool prune_uses(Node& node) {
+    bool prune_uses(Node& node) override {
         _stage = Stage::PRUNE_USES;
         return prune(node);
     }
 
-    bool prune_decls(Node& node) {
+    bool prune_decls(Node& node) override {
         _stage = Stage::PRUNE_DECLS;
         return prune(node);
     }
@@ -289,13 +308,15 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
                 if ( fn.type().flavor() == type::function::Flavor::Hook )
                     function.hook = true;
 
+                auto unit_type = scope::lookupID<declaration::Type>(fn.id().namespace_(), p, "type");
+
                 switch ( fn.callingConvention() ) {
                     case function::CallingConvention::ExternNoSuspend:
                     case function::CallingConvention::Extern: {
                         // If the declaration is `extern` and the unit is `public`, the function
                         // is part of an externally visible API and potentially used elsewhere.
 
-                        if ( auto unit_type = scope::lookupID<declaration::Type>(fn.id().namespace_(), p, "type") ) {
+                        if ( unit_type ) {
                             if ( auto unit = unit_type->first->tryAs<declaration::Type>() )
                                 function.referenced =
                                     function.referenced || unit->linkage() == declaration::Linkage::Public;
@@ -319,11 +340,20 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
                         break;
                     case declaration::Linkage::Private:
                     case declaration::Linkage::Public:
-                    case declaration::Linkage::Struct:
                         // Nothing.
                         break;
-                }
+                    case declaration::Linkage::Struct: {
+                        // If this is a method declaration check whether the type it referred
+                        // to is still around; if not mark the function as an unreferenced
+                        // non-hook so it gets removed for both plain methods and hooks.
+                        if ( ! unit_type ) {
+                            function.referenced = false;
+                            function.hook = false;
+                        }
 
+                        break;
+                    }
+                }
 
                 break;
             }
@@ -441,19 +471,17 @@ struct FunctionVisitor : visitor::PreOrder<bool, FunctionVisitor> {
     }
 };
 
-struct TypeVisitor : visitor::PreOrder<bool, TypeVisitor> {
-    Stage _stage = Stage::COLLECT;
+struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     std::map<ID, bool> _used;
 
-    void collect(Node& node) {
+    void collect(Node& node) override {
         _stage = Stage::COLLECT;
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
     }
 
-    bool prune_uses(Node& node) { return false; }
-    bool prune_decls(Node& node) {
+    bool prune_decls(Node& node) override {
         _stage = Stage::PRUNE_DECLS;
 
         bool any_modification = false;
@@ -466,6 +494,12 @@ struct TypeVisitor : visitor::PreOrder<bool, TypeVisitor> {
     }
 
     result_t operator()(const declaration::Type& x, position_t p) {
+        // We currently only handle type declarations for struct types or enum types.
+        //
+        // TODO(bbannier): Handle type aliases.
+        if ( const auto& type = x.type(); ! (type.isA<type::Struct>() || type.isA<type::Enum>()) )
+            return false;
+
         const auto type_id = x.typeID();
 
         if ( ! type_id )
@@ -481,7 +515,16 @@ struct TypeVisitor : visitor::PreOrder<bool, TypeVisitor> {
             case Stage::PRUNE_DECLS:
                 if ( ! _used.at(*type_id) ) {
                     HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("removing unused type '%s'", *type_id));
+
                     removeNode(p);
+
+                    if ( auto module_ = p.findParent<Module>() )
+                        // If this type was declared under a top-level module also clear the module declaration
+                        // cache. The cache will get repopulated the next time the module's declarations are
+                        // requested.
+                        //
+                        // TODO(bbannier): there has to be a better way to mutate the module.
+                        const_cast<Module&>(module_->get()).clearCache();
 
                     return true;
                 }
@@ -495,7 +538,15 @@ struct TypeVisitor : visitor::PreOrder<bool, TypeVisitor> {
     result_t operator()(const type::ResolvedID& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                const auto type_id = x.type().typeID();
+                auto type = x.type();
+
+                while ( type::isReferenceType(type) )
+                    type = type.dereferencedType();
+
+                while ( type::isIterable(type) )
+                    type = type.elementType();
+
+                const auto type_id = type.typeID();
 
                 if ( ! type_id )
                     break;
@@ -517,7 +568,15 @@ struct TypeVisitor : visitor::PreOrder<bool, TypeVisitor> {
     result_t operator()(const expression::ResolvedID& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                const auto type_id = x.type().typeID();
+                auto type = x.type();
+
+                while ( type::isReferenceType(type) )
+                    type = type.dereferencedType();
+
+                while ( type::isIterable(type) )
+                    type = type.elementType();
+
+                const auto type_id = type.typeID();
 
                 if ( ! type_id )
                     break;
@@ -554,8 +613,306 @@ struct TypeVisitor : visitor::PreOrder<bool, TypeVisitor> {
                 // Nothing.
                 break;
         }
+
         return false;
     }
+
+    result_t operator()(const type::ValueReference& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto& type_id = x.typeID();
+
+                if ( ! type_id )
+                    break;
+
+                // Record this type as used.
+                _used[*type_id] = true;
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+};
+
+struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, ConstantFoldingVisitor> {
+    // TODO(bbannier): Index constants by their canonical ID once it is
+    // available. We should also be able to remove `Node::rid` at that point.
+    std::map<uint64_t, bool> _constants;
+
+    void collect(Node& node) override {
+        _stage = Stage::COLLECT;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+    }
+
+    bool prune_uses(Node& node) override {
+        _stage = Stage::PRUNE_USES;
+
+        bool any_modification = false;
+
+        while ( true ) {
+            bool modified = false;
+            for ( auto i : this->walk(&node) ) {
+                if ( auto x = dispatch(i) )
+                    modified = *x || modified;
+            }
+
+            if ( ! modified )
+                break;
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    bool operator()(const declaration::GlobalVariable& x, position_t p) {
+        // We only work on boolean constants.
+        if ( ! (x.isConstant() || x.type() == type::Bool()) )
+            return false;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto& init = x.init();
+                assert(init);
+
+                if ( auto ctor = init.value().tryAs<expression::Ctor>() )
+                    if ( auto bool_ = ctor->ctor().tryAs<ctor::Bool>() )
+                        _constants[p.node.rid()] = bool_->value();
+
+                break;
+            }
+
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS: break;
+        }
+
+        return false;
+    }
+
+    bool operator()(const expression::ResolvedID& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: return false;
+            case Stage::PRUNE_USES: {
+                auto rid = x.rid();
+
+                if ( const auto& constant = _constants.find(rid); constant != _constants.end() ) {
+                    if ( x.type() == type::Bool() ) {
+                        HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("inlining constant '%s'", x.id()));
+
+                        replaceNode(p, builder::bool_(constant->second));
+
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool operator()(const statement::If& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: return false;
+            case Stage::PRUNE_USES: {
+                if ( auto expression = x.condition()->tryAs<expression::Ctor>() )
+                    if ( auto bool_ = expression->ctor().tryAs<ctor::Bool>() ) {
+                        if ( auto else_ = x.false_() ) {
+                            if ( ! bool_->value() ) {
+                                replaceNode(p, *else_);
+                                return true;
+                            }
+                            else {
+                                replaceNode(p, statement::If::removeElse(x));
+                                return true;
+                            }
+                        }
+                        else {
+                            if ( ! bool_->value() ) {
+                                removeNode(p);
+                                return true;
+                            }
+                            else {
+                                replaceNode(p, x.true_());
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    };
+            }
+        }
+
+        return false;
+    }
+};
+
+// This visitor collects requirement attributes in the AST and toggles unused features.
+struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsVisitor> {
+    // Lookup table for feature name -> required.
+    using Features = std::map<std::string, bool>;
+
+    // Lookup table for typename -> features.
+    std::map<ID, Features> _features;
+
+    enum class Stage { COLLECT, TRANSFORM };
+    Stage _stage = Stage::COLLECT;
+
+    void collect(Node& node) {
+        _stage = Stage::COLLECT;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+    }
+
+    void transform(Node& node) {
+        _stage = Stage::TRANSFORM;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+    }
+
+    void operator()(const declaration::GlobalVariable& x, position_t p) {
+        const auto& id = x.id();
+
+        // We only work on feature flags named `__feat*`.
+        if ( ! util::startsWith(id, "__feat") )
+            return;
+
+        const auto& tokens = util::split(id, "%");
+        assert(tokens.size() == 3);
+
+        // The type name is encoded in the variable name with `::` replaced by `__`.
+        const auto& typeID = ID(util::replace(tokens[1], "__", "::"));
+        const auto& feature = tokens[2];
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                // Record the feature as unused for the type if it was not already recorded.
+                _features[typeID].insert({feature, false});
+                break;
+            }
+
+            case Stage::TRANSFORM: {
+                const auto required = _features.at(typeID).at(feature);
+                const auto value = x.init().value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
+
+                if ( required != value ) {
+                    HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                                util::fmt("disabling feature '%s' of type '%s' since it is not used", feature, typeID));
+
+                    auto new_x = declaration::GlobalVariable::setInit(x, builder::bool_(false));
+                    replaceNode(p, new_x);
+
+                    if ( auto module_ = p.findParent<Module>() )
+                        // If this global was declared under a top-level module also clear the module declaration
+                        // cache. The cache will get repopulated the next time the module's declarations are
+                        // requested.
+                        //
+                        // TODO(bbannier): there has to be a better way to mutate the module.
+                        const_cast<Module&>(module_->get()).clearCache();
+                }
+
+                break;
+            }
+        }
+    }
+
+    // Helper function to compute the set of feature flags wrapping the given position.
+    static std::map<ID, std::set<std::string>> conditionalFeatures(position_t p) {
+        // Compute a list of features this use does not activate.
+        // Generated feature-dependent code is always under
+        // conditionals `if (__feat%XYZ%FEATURE) ...` so get all
+        // `FEATURE` for all parents which match this pattern.
+        std::map<ID, std::set<std::string>> result;
+
+        for ( const auto& parent : p.path ) {
+            if ( ! parent.node.isA<statement::If>() )
+                continue;
+
+            const auto& if_ = parent.node.as<statement::If>();
+            const auto condition = if_.condition();
+            if ( ! condition )
+                continue;
+
+            auto rid = condition->tryAs<expression::ResolvedID>();
+            if ( ! rid )
+                continue;
+
+            // Split away the module part of the resolved ID.
+            auto id = util::split1(rid->id(), "::").second;
+
+            if ( ! util::startsWith(id, "__feat") )
+                continue;
+
+            const auto& tokens = util::split(id, "%");
+            assert(tokens.size() == 3);
+
+            const auto type_id = ID(util::replace(tokens[1], "__", "::"));
+            const auto& feature = tokens[2];
+
+            result[std::move(type_id)].insert(feature);
+        }
+
+        return result;
+    }
+
+    void handleMemberAccess(const expression::ResolvedOperator& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto type_ = x.op0().type();
+                while ( type::isReferenceType(type_) )
+                    type_ = type_.dereferencedType();
+
+                auto typeID = type_.typeID();
+                if ( ! typeID )
+                    return;
+
+                auto member = x.op1().template tryAs<expression::Member>();
+                if ( ! member )
+                    return;
+
+                auto lookup = scope::lookupID<declaration::Type>(*typeID, p, "type");
+                if ( ! lookup )
+                    return;
+
+                auto type = lookup->first->template as<declaration::Type>();
+                auto struct_ = type.type().template tryAs<type::Struct>();
+                if ( ! struct_ )
+                    return;
+
+                auto field = struct_->field(member->id());
+                if ( ! field )
+                    return;
+
+                const auto ignored_features = conditionalFeatures(p);
+
+                for ( const auto& requirement : AttributeSet::findAll(field->attributes(), "&requires-type-feature") ) {
+                    const auto feature = *requirement.template valueAs<std::string>();
+
+                    // Enable the required feature if it is not ignored here.
+                    if ( ! ignored_features.count(*typeID) || ! ignored_features.at(*typeID).count(feature) )
+                        _features[*typeID][feature] = true;
+                }
+
+                break;
+            }
+            case Stage::TRANSFORM:
+                // Nothing.
+                break;
+        }
+    }
+
+    void operator()(const operator_::struct_::MemberConst& x, position_t p) { return handleMemberAccess(x, p); }
+    void operator()(const operator_::struct_::MemberNonConst& x, position_t p) { return handleMemberAccess(x, p); }
 };
 
 void GlobalOptimizer::run() {
@@ -579,42 +936,68 @@ void GlobalOptimizer::run() {
         return std::vector<NodeRef>{units.begin(), units.end()};
     }();
 
+    const auto passes__ = rt::getenv("HILTI_OPTIMIZER_PASSES");
+    const auto passes_ =
+        passes__ ? std::optional(util::split(*passes__, ":")) : std::optional<std::vector<std::string>>();
+    auto passes = passes_ ? std::optional(std::set<std::string>(passes_->begin(), passes_->end())) :
+                            std::optional<std::set<std::string>>();
+
+    if ( ! passes || passes->count("feature_requirements") ) {
+        // The `FeatureRequirementsVisitor` enables or disables code
+        // paths and needs to be run before all other passes since
+        // it needs to see the code before any optimization edits.
+        FeatureRequirementsVisitor v;
+        for ( auto& unit : units )
+            v.collect(*unit);
+
+        for ( auto& unit : units )
+            v.transform(*unit);
+    }
+
+    const std::map<std::string, std::function<std::unique_ptr<OptimizerVisitor>()>> creators =
+        {{"constant_folding", []() { return std::make_unique<ConstantFoldingVisitor>(); }},
+         {"functions", []() { return std::make_unique<FunctionVisitor>(); }},
+         {"types", []() { return std::make_unique<TypeVisitor>(); }}};
+
+    // If no user-specified passes are given enable all of them.
+    if ( ! passes ) {
+        passes = std::set<std::string>();
+        for ( const auto& [pass, _] : creators )
+            passes->insert(pass);
+    }
+
     while ( true ) {
         bool modified = false;
 
-        FunctionVisitor function_visitor;
-        TypeVisitor type_visitor;
+        // NOTE: We do not use `util::transform` here to guarantee a consistent order of the visitors.
+        std::vector<std::unique_ptr<OptimizerVisitor>> vs;
+        vs.reserve(passes->size());
+        for ( const auto& pass : *passes )
+            if ( creators.count(pass) )
+                vs.push_back(creators.at(pass)());
 
-        for ( auto& unit : units ) {
-            function_visitor.collect(*unit);
-            type_visitor.collect(*unit);
-        }
+        for ( auto& v : vs ) {
+            for ( auto& unit : units )
+                v->collect(*unit);
 
-        for ( auto& unit : units ) {
-            modified = modified || function_visitor.prune_uses(*unit);
-            modified = modified || type_visitor.prune_uses(*unit);
-        }
+            for ( auto& unit : units )
+                modified = v->prune_uses(*unit) || modified;
 
-        for ( auto& unit : units ) {
-            modified = modified || function_visitor.prune_decls(*unit);
-            modified = modified || type_visitor.prune_decls(*unit);
-        }
+            for ( auto& unit : units )
+                modified = v->prune_decls(*unit) || modified;
+        };
 
         if ( ! modified )
             break;
     }
 
-    // The edits performed by the optimizer might invalidate scopes which after
-    // optimizations might contain references to now removed data. We
-    // unconditionally clear scopes and any preserved nodes of modules to make
-    // sure to remove any effects from outdated information.
+    // Clear cached information which might become outdated due to edits.
     for ( auto& unit : units ) {
         for ( auto i : hilti::visitor::PreOrder<>().walk(&*unit) ) {
             i.node.clearScope();
 
-            if ( auto module = i.node.tryReferenceAs<hilti::Module>() )
-                // TODO(bbannier): there has to be a better way to mutate the module.
-                const_cast<hilti::Module&>(*module).preserved().clear();
+            if ( i.node.isA<hilti::Module>() )
+                i.node.as<Module>().preserved().clear();
         }
     }
 }

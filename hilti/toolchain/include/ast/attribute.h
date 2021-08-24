@@ -276,12 +276,12 @@ public:
      * @param a element to add.
      * @return `s` with `a' added
      */
-    static std::optional<AttributeSet> add(std::optional<AttributeSet> s, Attribute a) {
+    static AttributeSet add(std::optional<AttributeSet> s, Attribute a) {
         if ( ! s )
             s = AttributeSet({}, a.meta());
 
         s->addChild(std::move(a));
-        return s;
+        return *s;
     }
 
     /**

@@ -209,7 +209,6 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
 
         std::vector<Node> resolved;
 
-        // TODO(robin): This was meant to be "const auto&", but that crashes. Why?
         auto candidates = operator_::registry().allOfKind(u.kind());
 
         if ( u.kind() == operator_::Kind::MemberCall && u.operands().size() >= 2 ) {

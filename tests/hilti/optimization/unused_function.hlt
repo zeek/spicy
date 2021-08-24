@@ -1,10 +1,9 @@
-# @TEST-EXEC: hiltic -d -j -D global-optimizer %INPUT 2>&1 | sort > log
+# @TEST-EXEC: hiltic %INPUT -p -o noopt.hlt -g
+# @TEST-EXEC: btest-diff noopt.hlt
+#
+# @TEST-EXEC: hiltic %INPUT -p -o opt.hlt -D global-optimizer 2>&1 | sort > log
+# @TEST-EXEC: btest-diff opt.hlt
 # @TEST-EXEC: btest-diff log
-
-# @TEST-EXEC: hiltic -d -j -g %INPUT -D ast-codegen >ast.0 2>&1
-# @TEST-EXEC: hiltic -d -j    %INPUT -D ast-codegen >ast.1 2>&1
-# @TEST-EXEC: spicy-diff.py ast.0 ast.1 >output.diff
-# @TEST-EXEC: btest-diff output.diff
 
 # @TEST-DOC: Tests optimizations removing unused functions.
 

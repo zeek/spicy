@@ -251,39 +251,40 @@ struct ProductionVisitor
                     if ( addl_param )
                         args.push_back(builder::id(addl_param->id()));
 
-                    if ( unit && unit->supportsFilters() ) {
-                        // If we have a filter attached, we initialize it and change to parse from its output.
-                        auto filtered =
-                            builder::local("filtered", builder::call("spicy_rt::filter_init",
-                                                                     {state().self, state().data, state().cur}));
+                    if ( unit && unit->supportsFilters() )
+                        pb->guardFeatureCode(*unit, "supports_filters", [&]() {
+                            // If we have a filter attached, we initialize it and change to parse from its output.
+                            auto filtered =
+                                builder::local("filtered", builder::call("spicy_rt::filter_init",
+                                                                         {state().self, state().data, state().cur}));
 
-                        auto [have_filter, not_have_filter] = builder()->addIfElse(filtered);
-                        pushBuilder(have_filter);
+                            auto [have_filter, not_have_filter] = builder()->addIfElse(filtered);
+                            pushBuilder(have_filter);
 
-                        auto args2 = args;
-                        builder()->addLocal("filtered_data", type::ValueReference(type::Stream()),
-                                            builder::id("filtered"));
-                        args2[0] = builder::id("filtered_data");
-                        args2[1] = builder::deref(args2[0]);
-                        builder()->addExpression(builder::memberCall(state().self, id_stage2, std::move(args2)));
+                            auto args2 = args;
+                            builder()->addLocal("filtered_data", type::ValueReference(type::Stream()),
+                                                builder::id("filtered"));
+                            args2[0] = builder::id("filtered_data");
+                            args2[1] = builder::deref(args2[0]);
+                            builder()->addExpression(builder::memberCall(state().self, id_stage2, std::move(args2)));
 
-                        // Assume the filter consumed the full input.
-                        pb->advanceInput(builder::size(state().cur));
+                            // Assume the filter consumed the full input.
+                            pb->advanceInput(builder::size(state().cur));
 
-                        auto result = builder::tuple({
-                            state().cur,
-                            state().lahead,
-                            state().lahead_end,
+                            auto result = builder::tuple({
+                                state().cur,
+                                state().lahead,
+                                state().lahead_end,
+                            });
+
+                            builder()->addAssign(store_result, result);
+                            popBuilder();
+
+                            pushBuilder(not_have_filter);
+                            builder()->addAssign(store_result,
+                                                 builder::memberCall(state().self, id_stage2, std::move(args)));
+                            popBuilder();
                         });
-
-                        builder()->addAssign(store_result, result);
-                        popBuilder();
-
-                        pushBuilder(not_have_filter);
-                        builder()->addAssign(store_result,
-                                             builder::memberCall(state().self, id_stage2, std::move(args)));
-                        popBuilder();
-                    }
                     else {
                         builder()->addAssign(store_result,
                                              builder::memberCall(state().self, id_stage2, std::move(args)));
@@ -1662,9 +1663,11 @@ void ParserBuilder::initializeUnit(const Location& l) {
     const auto& unit = state().unit.get();
 
     if ( unit.usesRandomAccess() ) {
-        // Save the current input offset for the raw access methods.
-        builder()->addAssign(builder::member(state().self, ID("__begin")), builder::begin(state().cur));
-        builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
+        guardFeatureCode(unit, "uses_random_access", [&]() {
+            // Save the current input offset for the raw access methods.
+            builder()->addAssign(builder::member(state().self, ID("__begin")), builder::begin(state().cur));
+            builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
+        });
     }
 
     beforeHook();
@@ -1696,10 +1699,12 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         builder()->addMemberCall(state().self, "__on_0x25_error", {}, l);
 
     if ( unit.supportsFilters() )
-        builder()->addCall("spicy_rt::filter_disconnect", {state().self});
+        guardFeatureCode(unit, "supports_filters",
+                         [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
 
     if ( unit.isFilter() )
-        builder()->addCall("spicy_rt::filter_forward_eod", {state().self});
+        guardFeatureCode(unit, "is_filter",
+                         [&]() { builder()->addCall("spicy_rt::filter_forward_eod", {state().self}); });
 
     for ( const auto& s : unit.items<type::unit::item::Sink>() )
         builder()->addMemberCall(builder::member(state().self, s.id()), "close", {}, l);
@@ -1764,32 +1769,41 @@ void ParserBuilder::advanceInput(const Expression& i) {
 void ParserBuilder::setInput(const Expression& i) { builder()->addAssign(state().cur, i); }
 
 void ParserBuilder::beforeHook() {
-    if ( state().unit.get().usesRandomAccess() )
-        builder()->addAssign(builder::member(state().self, ID("__position_update")),
-                             builder::optional(hilti::type::stream::Iterator()));
+    const auto& unit = state().unit.get();
+
+    if ( unit.usesRandomAccess() )
+        guardFeatureCode(unit, "uses_random_access", [&]() {
+            builder()->addAssign(builder::member(state().self, ID("__position_update")),
+                                 builder::optional(hilti::type::stream::Iterator()));
+        });
 }
 
 void ParserBuilder::afterHook() {
-    if ( state().unit.get().usesRandomAccess() ) {
-        auto position_update = builder::member(state().self, ID("__position_update"));
-        auto advance = builder()->addIf(position_update);
-        auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
+    const auto& unit = state().unit.get();
 
-        if ( state().ncur )
-            advance->addAssign(*state().ncur, ncur);
-        else
-            advance->addAssign(state().cur, ncur);
+    if ( unit.usesRandomAccess() ) {
+        guardFeatureCode(unit, "uses_random_access", [&]() {
+            auto position_update = builder::member(state().self, ID("__position_update"));
+            auto advance = builder()->addIf(position_update);
+            auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
 
-        advance->addAssign(builder::member(state().self, ID("__position_update")),
-                           builder::optional(hilti::type::stream::Iterator()));
+            if ( state().ncur )
+                advance->addAssign(*state().ncur, ncur);
+            else
+                advance->addAssign(state().cur, ncur);
+
+            advance->addAssign(builder::member(state().self, ID("__position_update")),
+                               builder::optional(hilti::type::stream::Iterator()));
+        });
     }
 }
 
 void ParserBuilder::saveParsePosition() {
-    if ( ! state().unit.get().usesRandomAccess() )
-        return;
-
-    builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
+    const auto& unit = state().unit.get();
+    if ( unit.usesRandomAccess() )
+        guardFeatureCode(unit, "uses_random_access", [&]() {
+            builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
+        });
 }
 
 void ParserBuilder::consumeLookAhead(std::optional<Expression> dst) {
@@ -1827,4 +1841,27 @@ void ParserBuilder::finishLoopBody(const Expression& cookie, const Location& l) 
     auto body = builder()->addIf(not_moved);
     pushBuilder(std::move(body),
                 [&]() { parseError("loop body did not change input position, possible infinite loop", l); });
+}
+
+void ParserBuilder::guardFeatureCode(const type::Unit& unit, std::string_view feature, std::function<void()> f) {
+    // TODO(bbannier): Only handling for the `uses_random_access` feature flags is currently implemented.
+    if ( feature != "uses_random_access" ) {
+        f();
+        return;
+    }
+
+    const auto& typeID = unit.typeID();
+
+    if ( ! typeID ) {
+        f();
+        return;
+    }
+
+    const auto id = hilti::util::replace(*typeID, ":", "_");
+    const auto flag = ID(hilti::rt::fmt("__feat%%%s%%%s", id, feature));
+
+    auto if_ = builder()->addIf(builder::id(std::move(flag)));
+    pushBuilder(if_);
+    f();
+    popBuilder();
 }
