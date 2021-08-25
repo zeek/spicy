@@ -36,3 +36,9 @@ public type X5 = unit {
         self.connect_filter(new X4);
     }
 };
+
+# Used sink functionality should not be removed (but be removed if unused in units above).
+type X6 = unit {
+    sink data;
+    on %init { self.data.write(b""); }
+};

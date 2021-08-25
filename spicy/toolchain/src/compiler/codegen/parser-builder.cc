@@ -1845,7 +1845,8 @@ void ParserBuilder::finishLoopBody(const Expression& cookie, const Location& l) 
 void ParserBuilder::guardFeatureCode(const type::Unit& unit, std::string_view feature, std::function<void()> f) {
     // TODO(bbannier): Only handling for the `is_filter`, `supports_filters`,
     // and `uses_random_access` feature flags is currently implemented.
-    if ( feature != "is_filter" && feature != "supports_filters" && feature != "uses_random_access" ) {
+    if ( feature != "is_filter" && feature != "supports_filters" && feature != "uses_random_access" &&
+         feature != "supports_sinks" ) {
         f();
         return;
     }

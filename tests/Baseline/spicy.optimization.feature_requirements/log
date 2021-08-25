@@ -45,6 +45,10 @@
 [debug/global-optimizer] removing declaration for unused function foo::X2::parse1
 [debug/global-optimizer] removing declaration for unused function foo::X2::parse2
 [debug/global-optimizer] removing declaration for unused function foo::X2::parse3
+[debug/global-optimizer] removing declaration for unused function foo::X6::__parse_stage1
+[debug/global-optimizer] removing declaration for unused function foo::X6::parse1
+[debug/global-optimizer] removing declaration for unused function foo::X6::parse2
+[debug/global-optimizer] removing declaration for unused function foo::X6::parse3
 [debug/global-optimizer] removing declaration for unused function hilti::abort
 [debug/global-optimizer] removing declaration for unused function hilti::current_time
 [debug/global-optimizer] removing declaration for unused function hilti::debug
@@ -98,6 +102,14 @@
 [debug/global-optimizer] removing field for unused method foo::X5::__on_0x25_skipped
 [debug/global-optimizer] removing field for unused method foo::X5::__on_0x25_undelivered
 [debug/global-optimizer] removing field for unused method foo::X5::__str__
+[debug/global-optimizer] removing field for unused method foo::X6::__on_0x25_done
+[debug/global-optimizer] removing field for unused method foo::X6::__on_0x25_error
+[debug/global-optimizer] removing field for unused method foo::X6::__on_0x25_finally
+[debug/global-optimizer] removing field for unused method foo::X6::__parse_stage1
+[debug/global-optimizer] removing field for unused method foo::X6::__str__
+[debug/global-optimizer] removing field for unused method foo::X6::parse1
+[debug/global-optimizer] removing field for unused method foo::X6::parse2
+[debug/global-optimizer] removing field for unused method foo::X6::parse3
 [debug/global-optimizer] removing unused type 'foo::X2'
 [debug/global-optimizer] replacing call to unimplemented function foo::X1::__on_0x25_done with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::X1::__on_0x25_error with default value
@@ -122,3 +134,7 @@
 [debug/global-optimizer] replacing call to unimplemented function foo::X5::__on_0x25_error with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::X5::__on_0x25_finally with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::X5::__on_0x25_finally with default value
+[debug/global-optimizer] replacing call to unimplemented function foo::X6::__on_0x25_done with default value
+[debug/global-optimizer] replacing call to unimplemented function foo::X6::__on_0x25_error with default value
+[debug/global-optimizer] replacing call to unimplemented function foo::X6::__on_0x25_finally with default value
+[debug/global-optimizer] replacing call to unimplemented function foo::X6::__on_0x25_finally with default value

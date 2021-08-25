@@ -37,6 +37,10 @@ public type X5 = struct {
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_X5_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
+type X6 = struct {
+    strong_ref<spicy_rt::Sink> data &default=new spicy_rt::Sink() &internal &needed-by-feature="supports_sinks";
+    hook void __on_0x25_init();
+} &on-heap;
 
 global auto __feat%foo__X1%uses_random_access = True;
 global auto __feat%foo__X2%uses_random_access = False;
@@ -274,6 +278,10 @@ method extern method view<stream> foo::X5::parse2(inout value_ref<X5> unit, inou
 init function void __register_foo_X5() {
     foo::X5::__parser = [$name="foo::X5", $parse1=foo::X5::parse1, $parse2=foo::X5::parse2, $parse3=foo::X5::parse3, $context_new=Null, $type_info=typeinfo(X5), $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::X5::__parser, hilti::linker_scope(), Null);
+}
+
+method hook void foo::X6::__on_0x25_init() {
+    (*(*self).data).write(b"", Null, Null);
 }
 
 }
