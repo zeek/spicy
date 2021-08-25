@@ -19,6 +19,7 @@
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/enum.h>
 #include <hilti/ast/types/reference.h>
@@ -822,6 +823,143 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
                 break;
             }
+        }
+    }
+
+    void operator()(const operator_::function::Call& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                // Collect parameter requirements from the declaration of the called function.
+                std::vector<std::set<std::string>> requirements;
+
+                auto rid = x.op0().tryAs<expression::ResolvedID>();
+                if ( ! rid )
+                    return;
+
+                const auto& fn = rid->declaration().tryAs<declaration::Function>();
+                if ( ! fn )
+                    return;
+
+                for ( const auto& parameter : fn->function().type().parameters() ) {
+                    // The requirements of this parameter.
+                    std::set<std::string> reqs;
+
+                    for ( const auto& requirement :
+                          AttributeSet::findAll(parameter.attributes(), "&requires-type-feature") ) {
+                        auto feature = *requirement.valueAs<std::string>();
+                        reqs.insert(std::move(feature));
+                    }
+
+                    requirements.push_back(std::move(reqs));
+                }
+
+                const auto ignored_features = conditionalFeatures(p);
+
+                // Collect the types of parameters from the actual arguments.
+                // We cannot get this information from the declaration since it
+                // might use `any` types. Correlate this with the requirement
+                // information collected previously and update the global list
+                // of feature requirements.
+                std::size_t i = 0;
+                for ( const auto& arg : x.op1().as<expression::Ctor>().ctor().as<ctor::Tuple>().value() ) {
+                    // Instead of applying the type requirement only to the
+                    // potentially unref'd passed value's type, we also apply
+                    // it to the element type of list args. Since this
+                    // optimizer pass removes code worst case this could lead
+                    // to us optimizing less.
+                    auto type = innermostType(arg.type());
+
+                    // Ignore arguments types without type ID (e.g., builtin types).
+                    const auto& typeID = type.typeID();
+                    if ( ! typeID ) {
+                        ++i;
+                        continue;
+                    }
+
+                    for ( const auto& requirement : requirements[i] ) {
+                        if ( ! ignored_features.count(*typeID) || ! ignored_features.at(*typeID).count(requirement) )
+                            // Enable the required feature.
+                            _features[*typeID][requirement] = true;
+                    }
+
+                    ++i;
+                }
+            }
+
+            case Stage::TRANSFORM: {
+                // Nothing.
+                break;
+            }
+        }
+    }
+
+    void operator()(const operator_::struct_::MemberCall& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto type = x.op0().type();
+                while ( type::isReferenceType(type) )
+                    type = type.dereferencedType();
+
+                const auto struct_ = type.tryAs<type::Struct>();
+                if ( ! struct_ )
+                    break;
+
+                const auto& member = x.op1().as<expression::Member>();
+
+                const auto field = struct_->field(member.id());
+                if ( ! field )
+                    break;
+
+                const auto ignored_features = conditionalFeatures(p);
+
+                // Check if access to the field has type requirements.
+                if ( auto type_id = type.typeID() )
+                    for ( auto requirement : AttributeSet::findAll(field->attributes(), "&needed-by-feature") ) {
+                        const auto feature = *requirement.template valueAs<std::string>();
+                        if ( ! ignored_features.count(*type_id) || ! ignored_features.at(*type_id).count(feature) )
+                            // Enable the required feature.
+                            _features[*type_id][*requirement.valueAs<std::string>()] = true;
+                    }
+
+                // Check if call imposes requirements on any of the types of the arguments.
+                if ( auto fn = member.memberType()->tryAs<type::Function>() ) {
+                    const auto parameters = fn->parameters();
+                    if ( parameters.empty() )
+                        break;
+
+                    const auto& args = x.op2().as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
+
+                    for ( size_t i = 0; i < parameters.size(); ++i ) {
+                        // Since the declaration might use `any` types, get the
+                        // type of the parameter from the passed argument.
+
+                        // Instead of applying the type requirement only to the
+                        // potentially unref'd passed value's type, we also apply
+                        // it to the element type of list args. Since this
+                        // optimizer pass removes code worst case this could lead
+                        // to us optimizing less.
+                        const auto type = innermostType(args[i].type());
+
+                        const auto& param = parameters[i];
+
+                        if ( auto type_id = type.typeID() )
+                            for ( auto requirement :
+                                  AttributeSet::findAll(param.attributes(), "&requires-type-feature") ) {
+                                const auto feature = *requirement.template valueAs<std::string>();
+                                if ( ! ignored_features.count(*type_id) ||
+                                     ! ignored_features.at(*type_id).count(feature) ) {
+                                    // Enable the required feature.
+                                    _features[*type_id][feature] = true;
+                                }
+                            }
+                    }
+                }
+
+                break;
+            }
+            case Stage::TRANSFORM:
+                // Nothing.
+                break;
         }
     }
 
