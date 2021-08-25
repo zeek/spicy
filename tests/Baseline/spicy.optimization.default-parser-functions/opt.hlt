@@ -43,8 +43,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P1::__parse_st
     try {
         hilti::debugIndent("spicy");
         default<void>();
+        local auto filtered = Null;
 
-        if ( local auto filtered = spicy_rt::filter_init(self, __data, __cur); filtered ) {
+        if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
             local value_ref<stream> filtered_data = filtered;
             (*self).__parse_foo_P1_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe);
             __cur = __cur.advance(|__cur|);
@@ -54,7 +55,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P1::__parse_st
 
             __result = (__cur, __lah, __lahe);
         }
-        else 
+
+
+        if ( ! filtered ) 
             __result = (*self).__parse_foo_P1_stage2(__data, __cur, __trim, __lah, __lahe);
 
     }
@@ -133,8 +136,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_st
     try {
         hilti::debugIndent("spicy");
         default<void>();
+        local auto filtered = Null;
 
-        if ( local auto filtered = spicy_rt::filter_init(self, __data, __cur); filtered ) {
+        if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
             local value_ref<stream> filtered_data = filtered;
             (*self).__parse_foo_P2_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe);
             __cur = __cur.advance(|__cur|);
@@ -144,7 +148,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_st
 
             __result = (__cur, __lah, __lahe);
         }
-        else 
+
+
+        if ( ! filtered ) 
             __result = (*self).__parse_foo_P2_stage2(__data, __cur, __trim, __lah, __lahe);
 
     }

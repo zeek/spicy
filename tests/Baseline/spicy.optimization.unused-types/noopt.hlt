@@ -208,8 +208,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_
     try {
         hilti::debugIndent("spicy");
         (*self).__on_0x25_init();
+        local auto filtered = Null;
 
-        if ( local auto filtered = spicy_rt::filter_init(self, __data, __cur); filtered ) {
+        if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
             local value_ref<stream> filtered_data = filtered;
             (*self).__parse_foo_Pub2_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe);
             __cur = __cur.advance(|__cur|);
@@ -219,7 +220,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_
 
             __result = (__cur, __lah, __lahe);
         }
-        else 
+
+
+        if ( ! filtered ) 
             __result = (*self).__parse_foo_Pub2_stage2(__data, __cur, __trim, __lah, __lahe);
 
     }
@@ -595,8 +598,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_
     try {
         hilti::debugIndent("spicy");
         (*self).__on_0x25_init();
+        local auto filtered = Null;
 
-        if ( local auto filtered = spicy_rt::filter_init(self, __data, __cur); filtered ) {
+        if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
             local value_ref<stream> filtered_data = filtered;
             (*self).__parse_foo_Pub3_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe);
             __cur = __cur.advance(|__cur|);
@@ -606,7 +610,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_
 
             __result = (__cur, __lah, __lahe);
         }
-        else 
+
+
+        if ( ! filtered ) 
             __result = (*self).__parse_foo_Pub3_stage2(__data, __cur, __trim, __lah, __lahe);
 
     }
@@ -692,8 +698,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv9::__parse
     try {
         hilti::debugIndent("spicy");
         (*self).__on_0x25_init();
+        local auto filtered = Null;
 
-        if ( local auto filtered = spicy_rt::filter_init(self, __data, __cur); filtered ) {
+        if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
             local value_ref<stream> filtered_data = filtered;
             (*self).__parse_foo_Priv9_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe);
             __cur = __cur.advance(|__cur|);
@@ -703,7 +710,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv9::__parse
 
             __result = (__cur, __lah, __lahe);
         }
-        else 
+
+
+        if ( ! filtered ) 
             __result = (*self).__parse_foo_Priv9_stage2(__data, __cur, __trim, __lah, __lahe);
 
     }

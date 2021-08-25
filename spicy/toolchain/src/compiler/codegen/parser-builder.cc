@@ -251,14 +251,16 @@ struct ProductionVisitor
                     if ( addl_param )
                         args.push_back(builder::id(addl_param->id()));
 
-                    if ( unit && unit->supportsFilters() )
+                    builder()->addLocal("filtered", hilti::builder::strong_reference(type::Stream()));
+
+                    if ( unit && unit->supportsFilters() ) {
                         pb->guardFeatureCode(*unit, "supports_filters", [&]() {
                             // If we have a filter attached, we initialize it and change to parse from its output.
-                            auto filtered =
-                                builder::local("filtered", builder::call("spicy_rt::filter_init",
-                                                                         {state().self, state().data, state().cur}));
+                            auto filtered = builder::assign(builder::id("filtered"),
+                                                            builder::call("spicy_rt::filter_init",
+                                                                          {state().self, state().data, state().cur}));
 
-                            auto [have_filter, not_have_filter] = builder()->addIfElse(filtered);
+                            auto have_filter = builder()->addIf(filtered);
                             pushBuilder(have_filter);
 
                             auto args2 = args;
@@ -279,16 +281,13 @@ struct ProductionVisitor
 
                             builder()->addAssign(store_result, result);
                             popBuilder();
-
-                            pushBuilder(not_have_filter);
-                            builder()->addAssign(store_result,
-                                                 builder::memberCall(state().self, id_stage2, std::move(args)));
-                            popBuilder();
                         });
-                    else {
-                        builder()->addAssign(store_result,
-                                             builder::memberCall(state().self, id_stage2, std::move(args)));
                     }
+
+                    auto not_have_filter = builder()->addIf(builder::not_(builder::id("filtered")));
+                    pushBuilder(not_have_filter);
+                    builder()->addAssign(store_result, builder::memberCall(state().self, id_stage2, std::move(args)));
+                    popBuilder();
 
                     end_try(try_);
                     run_finally();
