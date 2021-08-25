@@ -17,7 +17,7 @@ type Priv1 = struct {
 } &on-heap;
 public type Pub2 = struct {
     spicy_rt::Parser __parser &static &internal &always-emit;
-    spicy_rt::SinkState __sink &internal &requires-type-feature="supports_sinks";
+    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
     hook void __on_0x25_done();
@@ -96,7 +96,7 @@ public type Pub3 = struct {
     value_ref<Priv5> anon_2 &optional &no-emit;
     value_ref<Priv6> x &optional;
     spicy_rt::Parser __parser &static &internal &always-emit;
-    spicy_rt::SinkState __sink &internal &requires-type-feature="supports_sinks";
+    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_x(value_ref<Priv6> __dd);
     hook void __on_0x25_init();
@@ -120,7 +120,7 @@ type Priv8 = enum { A = 0, B = 1, C = 2 };
 public type Priv9 = struct {
     Priv8 en &default=Priv8::A;
     spicy_rt::Parser __parser &static &internal &always-emit;
-    spicy_rt::SinkState __sink &internal &requires-type-feature="supports_sinks";
+    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
     hook void __on_0x25_done();

@@ -231,10 +231,16 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     if ( unit.supportsSinks() ) {
-        auto sink = hilti::type::struct_::Field(ID("__sink"), builder::typeByID("spicy_rt::SinkState"),
-                                                AttributeSet({Attribute("&internal"),
-                                                              Attribute("&requires-type-feature",
-                                                                        builder::string("supports_sinks"))}));
+        auto attrs =
+            AttributeSet({Attribute("&internal"), Attribute("&needed-by-feature", builder::string("supports_sinks"))});
+
+        // If the unit has a `%mime-type` property consumers can connect to it via
+        // MIME type with `connect_mime_type`. In that case we need to always emit
+        // the field since we cannot detect use of this type later on.
+        if ( unit.propertyItem("%mime-type") )
+            attrs = AttributeSet::add(attrs, Attribute("&always-emit"));
+
+        auto sink = hilti::type::struct_::Field(ID("__sink"), builder::typeByID("spicy_rt::SinkState"), attrs);
         v.addField(std::move(sink));
     }
 

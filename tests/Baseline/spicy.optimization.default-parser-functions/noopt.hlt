@@ -17,7 +17,7 @@ type P0 = struct {
 } &on-heap;
 public type P1 = struct {
     spicy_rt::Parser __parser &static &internal &always-emit;
-    spicy_rt::SinkState __sink &internal &requires-type-feature="supports_sinks";
+    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
     hook void __on_0x25_done();
@@ -41,7 +41,7 @@ public type P2 = struct {
     optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &always-emit;
-    spicy_rt::SinkState __sink &internal &requires-type-feature="supports_sinks";
+    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_x(uint<8> __dd);
     hook void __on_y(uint<8> __dd);
