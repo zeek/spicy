@@ -59,8 +59,8 @@ type X4 = struct {
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
 } &on-heap;
 public type X5 = struct {
-    spicy_rt::Parser __parser &static &internal;
-    spicy_rt::SinkState __sink &internal;
+    spicy_rt::Parser __parser &static &internal &always-emit;
+    spicy_rt::SinkState __sink &internal &requires-type-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
     hook void __on_0x25_done();

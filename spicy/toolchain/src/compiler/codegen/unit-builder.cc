@@ -122,7 +122,8 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
     void operator()(const spicy::type::unit::item::Sink& s) {
         auto type = builder::typeByID("spicy_rt::Sink", s.meta());
-        AttributeSet attrs({Attribute("&default", builder::new_(std::move(type))), Attribute("&internal")});
+        AttributeSet attrs({Attribute("&default", builder::new_(std::move(type))), Attribute("&internal"),
+                            Attribute("&needed-by-feature", builder::string("supports_sinks"))});
 
         auto nf = hilti::type::struct_::Field(s.id(), type::Sink(), std::move(attrs), s.meta());
         addField(std::move(nf));
@@ -218,6 +219,9 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     if ( unit.supportsSinks() || unit.isFilter() ) {
         auto attrs = AttributeSet({Attribute("&static"), Attribute("&internal")});
 
+        if ( unit.supportsSinks() )
+            attrs = AttributeSet::add(std::move(attrs), Attribute("&always-emit"));
+
         if ( unit.isFilter() )
             attrs = AttributeSet::add(std::move(attrs), Attribute("&needed-by-feature", builder::string("is_filter")));
 
@@ -228,7 +232,9 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
 
     if ( unit.supportsSinks() ) {
         auto sink = hilti::type::struct_::Field(ID("__sink"), builder::typeByID("spicy_rt::SinkState"),
-                                                AttributeSet({Attribute("&internal")}));
+                                                AttributeSet({Attribute("&internal"),
+                                                              Attribute("&requires-type-feature",
+                                                                        builder::string("supports_sinks"))}));
         v.addField(std::move(sink));
     }
 

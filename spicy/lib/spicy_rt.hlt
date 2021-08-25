@@ -13,8 +13,8 @@ public type TypeInfo = __library_type("const hilti::rt::TypeInfo*");
 # Type for a Sink instance. When adding methods here, extend the C++-side spicy::rt::Sink type as well.
 public type Sink = struct {
     method void close();
-    method void connect(strong_ref<*> unit);
-    method void connect_filter(strong_ref<*> unit);
+    method void connect(strong_ref<*> unit &requires-type-feature="supports_sinks");
+    method void connect_filter(strong_ref<*> unit &requires-type-feature="is_filter");
     method void connect_mime_type(string mime_type);
     method void connect_mime_type(bytes mime_type);
     method void gap(uint<64> seq, uint<64> len);
