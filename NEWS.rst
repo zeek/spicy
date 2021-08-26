@@ -9,7 +9,8 @@ Version 1.3 (in progress)
 
 .. rubric:: New Functionality
 
-- Add new optimizer passes performing basic constant folding and removal of unused ``%random-access`` functionality
+- Add new optimizer passes performing basic constant folding and removal of
+  unused ``%random-access`` functionality
 
   If a unit has a ``%random-access`` attribute was declaredSpicy emits
   additional code to track and update offsets. If the ``%random-access``
