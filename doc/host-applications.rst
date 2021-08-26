@@ -115,7 +115,7 @@ Let's start by using ``parse1()``:
 
 .. literalinclude:: examples/my-http-host-parse1.cc
    :caption: my-http-host.cc
-   :lines: 10-34
+   :lines: 10-36
    :language: c++
 
 This code first instantiates a stream from data giving on the command
@@ -141,7 +141,7 @@ If we want that, we can use ``parse2()`` instead and provide it with a
 
 .. literalinclude:: examples/my-http-host-parse2.cc
    :caption: my-http-host.cc
-   :lines: 10-44
+   :lines: 10-45
    :emphasize-lines: 19-28
    :language: c++
 
@@ -239,7 +239,7 @@ prints out our one available parser:
 
 .. literalinclude:: examples/my-http-host-driver.cc
    :caption: my-http-host.cc
-   :lines:   9-13,31-42,57-63
+   :lines:   9-12,31-42,57-64
    :language: c++
 
 ::
@@ -273,7 +273,7 @@ section. To access the parsed fields, there's a visitor API to iterate
 generically over HILTI types like this unit:
 
 .. literalinclude:: examples/my-http-host-driver.cc
-   :lines: 15-29
+   :lines: 15-30
    :language: c++
 
 Adding ``print(unit->value()`` after the call to ``processInput()``
@@ -300,7 +300,7 @@ taking the file to load from the command line:
 
 .. literalinclude:: examples/my-http-host-driver-hlto.cc
     :caption: my-driver
-    :lines: 31-69
+    :lines: 31-70
     :emphasize-lines: 5-8
     :language: c++
 
