@@ -5,9 +5,9 @@ import hilti;
 import spicy_rt;
 
 type X1 = struct {
-    optional<iterator<stream>> __begin &internal &requires-type-feature="uses_random_access";
-    optional<iterator<stream>> __position &internal &requires-type-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &requires-type-feature="uses_random_access";
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error();
@@ -19,9 +19,9 @@ type X1 = struct {
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
 } &on-heap;
 type X2 = struct {
-    optional<iterator<stream>> __begin &internal &requires-type-feature="uses_random_access";
-    optional<iterator<stream>> __position &internal &requires-type-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &requires-type-feature="uses_random_access";
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error();

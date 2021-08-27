@@ -5,9 +5,9 @@ import hilti;
 import spicy_rt;
 
 type X1 = struct {
-    optional<iterator<stream>> __begin &internal &requires-type-feature="uses_random_access";
-    optional<iterator<stream>> __position &internal &requires-type-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &requires-type-feature="uses_random_access";
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     hook void __on_0x25_init();
 } &on-heap;
 

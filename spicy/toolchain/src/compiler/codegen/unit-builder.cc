@@ -201,7 +201,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     if ( unit.usesRandomAccess() ) {
-        auto attr_random_access = Attribute("&requires-type-feature", builder::string("uses_random_access"));
+        auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
 
         auto f1 = hilti::type::struct_::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
                                               AttributeSet({Attribute("&internal"), attr_random_access}));

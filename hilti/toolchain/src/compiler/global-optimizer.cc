@@ -894,7 +894,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
                 const auto ignored_features = conditionalFeatures(p);
 
-                for ( const auto& requirement : AttributeSet::findAll(field->attributes(), "&requires-type-feature") ) {
+                for ( const auto& requirement : AttributeSet::findAll(field->attributes(), "&needed-by-feature") ) {
                     const auto feature = *requirement.template valueAs<std::string>();
 
                     // Enable the required feature if it is not ignored here.
