@@ -44,6 +44,17 @@ static void removeNode(Position& p) {
     replaceNode(p, node::none);
 }
 
+// Helper function to extract innermost type, removing any wrapping in reference or container types.
+Type innermostType(Type type) {
+    if ( type::isReferenceType(type) )
+        return innermostType(type.dereferencedType());
+
+    if ( type::isIterable(type) )
+        return innermostType(type.elementType());
+
+    return type;
+}
+
 class OptimizerVisitor {
 public:
     enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
@@ -538,13 +549,7 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     result_t operator()(const type::ResolvedID& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto type = x.type();
-
-                while ( type::isReferenceType(type) )
-                    type = type.dereferencedType();
-
-                while ( type::isIterable(type) )
-                    type = type.elementType();
+                const auto type = innermostType(x.type());
 
                 const auto type_id = type.typeID();
 
@@ -568,13 +573,7 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     result_t operator()(const expression::ResolvedID& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto type = x.type();
-
-                while ( type::isReferenceType(type) )
-                    type = type.dereferencedType();
-
-                while ( type::isIterable(type) )
-                    type = type.elementType();
+                const auto type = innermostType(x.type());
 
                 const auto type_id = type.typeID();
 
