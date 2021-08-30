@@ -19,3 +19,26 @@ type X1 = unit {
 type X2 = unit {
     %random-access;
 };
+
+# Filter-dependent code in unused non-public units should be removed.
+type X3 = unit {
+    %filter;
+};
+
+# Filter-dependent code in public units should be kept.
+
+type X4 = unit {
+    %filter;
+};
+
+public type X5 = unit {
+    on %init {
+        self.connect_filter(new X4);
+    }
+};
+
+# Used sink functionality should not be removed (but be removed if unused in units above).
+type X6 = unit {
+    sink data;
+    on %init { self.data.write(b""); }
+};

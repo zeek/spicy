@@ -5,6 +5,15 @@
 [debug/global-optimizer] disabling feature 'supports_sinks' of type 'foo::Priv9' since it is not used
 [debug/global-optimizer] disabling feature 'supports_sinks' of type 'foo::Pub2' since it is not used
 [debug/global-optimizer] disabling feature 'supports_sinks' of type 'foo::Pub3' since it is not used
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__Priv9%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__Priv9%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__Priv9%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__Pub2%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__Pub2%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__Pub2%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__Pub3%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__Pub3%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__Pub3%supports_filters'
 [debug/global-optimizer] removing declaration for unused function foo::Priv1::__parse_stage1
 [debug/global-optimizer] removing declaration for unused function foo::Priv1::parse1
 [debug/global-optimizer] removing declaration for unused function foo::Priv1::parse2
@@ -38,8 +47,10 @@
 [debug/global-optimizer] removing declaration for unused function spicy_rt::createContext
 [debug/global-optimizer] removing declaration for unused function spicy_rt::extractBits
 [debug/global-optimizer] removing declaration for unused function spicy_rt::filter_connect
+[debug/global-optimizer] removing declaration for unused function spicy_rt::filter_disconnect
 [debug/global-optimizer] removing declaration for unused function spicy_rt::filter_forward
 [debug/global-optimizer] removing declaration for unused function spicy_rt::filter_forward_eod
+[debug/global-optimizer] removing declaration for unused function spicy_rt::filter_init
 [debug/global-optimizer] removing declaration for unused function spicy_rt::printParserState
 [debug/global-optimizer] removing declaration for unused function spicy_rt::setContext
 [debug/global-optimizer] removing declaration for unused function spicy_rt::unit_find
@@ -125,6 +136,12 @@
 [debug/global-optimizer] removing field for unused method foo::Pub3::__on_0x25_undelivered
 [debug/global-optimizer] removing field for unused method foo::Pub3::__on_x
 [debug/global-optimizer] removing field for unused method foo::Pub3::__str__
+[debug/global-optimizer] removing unused member 'foo::Priv9::__filters'
+[debug/global-optimizer] removing unused member 'foo::Priv9::__sink'
+[debug/global-optimizer] removing unused member 'foo::Pub2::__filters'
+[debug/global-optimizer] removing unused member 'foo::Pub2::__sink'
+[debug/global-optimizer] removing unused member 'foo::Pub3::__filters'
+[debug/global-optimizer] removing unused member 'foo::Pub3::__sink'
 [debug/global-optimizer] removing unused type 'foo::Priv1'
 [debug/global-optimizer] removing unused type 'foo::Priv2'
 [debug/global-optimizer] removing unused type 'foo::Priv3'

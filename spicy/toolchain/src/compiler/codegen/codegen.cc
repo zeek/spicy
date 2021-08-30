@@ -440,11 +440,11 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
     }
 
     if ( foreach ) {
-        params.push_back({ID("__dd"), hilti::type::Auto(), hilti::type::function::parameter::Kind::In, {}});
-        params.push_back({ID("__stop"), type::Bool(), hilti::type::function::parameter::Kind::InOut, {}});
+        params.push_back({ID("__dd"), hilti::type::Auto(), hilti::type::function::parameter::Kind::In, {}, {}});
+        params.push_back({ID("__stop"), type::Bool(), hilti::type::function::parameter::Kind::InOut, {}, {}});
     }
     else if ( original_field_type ) {
-        params.push_back({ID("__dd"), hilti::type::Auto(), hilti::type::function::parameter::Kind::In, {}});
+        params.push_back({ID("__dd"), hilti::type::Auto(), hilti::type::function::parameter::Kind::In, {}, {}});
 
         // Pass on captures for fields of type regexp, which are the only
         // ones they have it (for vector of regexps, it wouldn't be clear what
@@ -453,6 +453,7 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
             params.push_back({ID("__captures"),
                               builder::typeByID("hilti::Captures"),
                               hilti::type::function::parameter::Kind::In,
+                              {},
                               {}});
     }
 

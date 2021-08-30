@@ -122,7 +122,8 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
     void operator()(const spicy::type::unit::item::Sink& s) {
         auto type = builder::typeByID("spicy_rt::Sink", s.meta());
-        AttributeSet attrs({Attribute("&default", builder::new_(std::move(type))), Attribute("&internal")});
+        AttributeSet attrs({Attribute("&default", builder::new_(std::move(type))), Attribute("&internal"),
+                            Attribute("&needed-by-feature", builder::string("supports_sinks"))});
 
         auto nf = hilti::type::struct_::Field(s.id(), type::Sink(), std::move(attrs), s.meta());
         addField(std::move(nf));
@@ -158,7 +159,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                                                hilti::type::Vector(hilti::type::Optional(hilti::type::Tuple(
                                                    {type::UnsignedInteger(64),
                                                     hilti::type::Optional(type::UnsignedInteger(64))}))),
-                                               AttributeSet({Attribute("&internal")})));
+                                               AttributeSet({Attribute("&internal"), Attribute("&always-emit")})));
     }
 
     if ( auto context = unit.contextType() ) {
@@ -201,7 +202,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     if ( unit.usesRandomAccess() ) {
-        auto attr_random_access = Attribute("&requires-type-feature", builder::string("uses_random_access"));
+        auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
 
         auto f1 = hilti::type::struct_::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
                                               AttributeSet({Attribute("&internal"), attr_random_access}));
@@ -216,28 +217,48 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     if ( unit.supportsSinks() || unit.isFilter() ) {
-        auto parser = hilti::type::struct_::Field(ID("__parser"), builder::typeByID("spicy_rt::Parser"),
-                                                  AttributeSet({Attribute("&static"), Attribute("&internal")}));
+        auto attrs = AttributeSet({Attribute("&static"), Attribute("&internal")});
+
+        if ( unit.supportsSinks() )
+            attrs = AttributeSet::add(std::move(attrs), Attribute("&always-emit"));
+
+        if ( unit.isFilter() )
+            attrs = AttributeSet::add(std::move(attrs), Attribute("&needed-by-feature", builder::string("is_filter")));
+
+        auto parser =
+            hilti::type::struct_::Field(ID("__parser"), builder::typeByID("spicy_rt::Parser"), std::move(attrs));
         v.addField(std::move(parser));
     }
 
     if ( unit.supportsSinks() ) {
-        auto sink = hilti::type::struct_::Field(ID("__sink"), builder::typeByID("spicy_rt::SinkState"),
-                                                AttributeSet({Attribute("&internal")}));
+        auto attrs =
+            AttributeSet({Attribute("&internal"), Attribute("&needed-by-feature", builder::string("supports_sinks"))});
+
+        // If the unit has a `%mime-type` property consumers can connect to it via
+        // MIME type with `connect_mime_type`. In that case we need to always emit
+        // the field since we cannot detect use of this type later on.
+        if ( unit.propertyItem("%mime-type") )
+            attrs = AttributeSet::add(attrs, Attribute("&always-emit"));
+
+        auto sink = hilti::type::struct_::Field(ID("__sink"), builder::typeByID("spicy_rt::SinkState"), attrs);
         v.addField(std::move(sink));
     }
 
     if ( unit.supportsFilters() ) {
         auto filters = hilti::type::struct_::Field(ID("__filters"),
                                                    hilti::type::StrongReference(builder::typeByID("spicy_rt::Filters")),
-                                                   AttributeSet({Attribute("&internal")}));
+                                                   AttributeSet({Attribute("&internal"),
+                                                                 Attribute("&needed-by-feature",
+                                                                           builder::string("supports_filters"))}));
         v.addField(std::move(filters));
     }
 
     if ( unit.isFilter() ) {
-        auto forward = hilti::type::struct_::Field(ID("__forward"),
-                                                   hilti::type::WeakReference(builder::typeByID("spicy_rt::Forward")),
-                                                   AttributeSet({Attribute("&internal")}));
+        auto forward =
+            hilti::type::struct_::Field(ID("__forward"),
+                                        hilti::type::WeakReference(builder::typeByID("spicy_rt::Forward")),
+                                        AttributeSet({Attribute("&internal"),
+                                                      Attribute("&needed-by-feature", builder::string("is_filter"))}));
         v.addField(std::move(forward));
     }
 

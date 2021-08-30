@@ -19,6 +19,7 @@
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/enum.h>
 #include <hilti/ast/types/reference.h>
@@ -42,6 +43,17 @@ void replaceNode(Position& p, Node replacement) {
 template<typename Position>
 static void removeNode(Position& p) {
     replaceNode(p, node::none);
+}
+
+// Helper function to extract innermost type, removing any wrapping in reference or container types.
+Type innermostType(Type type) {
+    if ( type::isReferenceType(type) )
+        return innermostType(type.dereferencedType());
+
+    if ( type::isIterable(type) )
+        return innermostType(type.elementType());
+
+    return type;
 }
 
 class OptimizerVisitor {
@@ -538,13 +550,7 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     result_t operator()(const type::ResolvedID& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto type = x.type();
-
-                while ( type::isReferenceType(type) )
-                    type = type.dereferencedType();
-
-                while ( type::isIterable(type) )
-                    type = type.elementType();
+                const auto type = innermostType(x.type());
 
                 const auto type_id = type.typeID();
 
@@ -568,13 +574,7 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
     result_t operator()(const expression::ResolvedID& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto type = x.type();
-
-                while ( type::isReferenceType(type) )
-                    type = type.dereferencedType();
-
-                while ( type::isIterable(type) )
-                    type = type.elementType();
+                const auto type = innermostType(x.type());
 
                 const auto type_id = type.typeID();
 
@@ -826,6 +826,143 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
         }
     }
 
+    void operator()(const operator_::function::Call& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                // Collect parameter requirements from the declaration of the called function.
+                std::vector<std::set<std::string>> requirements;
+
+                auto rid = x.op0().tryAs<expression::ResolvedID>();
+                if ( ! rid )
+                    return;
+
+                const auto& fn = rid->declaration().tryAs<declaration::Function>();
+                if ( ! fn )
+                    return;
+
+                for ( const auto& parameter : fn->function().type().parameters() ) {
+                    // The requirements of this parameter.
+                    std::set<std::string> reqs;
+
+                    for ( const auto& requirement :
+                          AttributeSet::findAll(parameter.attributes(), "&requires-type-feature") ) {
+                        auto feature = *requirement.valueAs<std::string>();
+                        reqs.insert(std::move(feature));
+                    }
+
+                    requirements.push_back(std::move(reqs));
+                }
+
+                const auto ignored_features = conditionalFeatures(p);
+
+                // Collect the types of parameters from the actual arguments.
+                // We cannot get this information from the declaration since it
+                // might use `any` types. Correlate this with the requirement
+                // information collected previously and update the global list
+                // of feature requirements.
+                std::size_t i = 0;
+                for ( const auto& arg : x.op1().as<expression::Ctor>().ctor().as<ctor::Tuple>().value() ) {
+                    // Instead of applying the type requirement only to the
+                    // potentially unref'd passed value's type, we also apply
+                    // it to the element type of list args. Since this
+                    // optimizer pass removes code worst case this could lead
+                    // to us optimizing less.
+                    auto type = innermostType(arg.type());
+
+                    // Ignore arguments types without type ID (e.g., builtin types).
+                    const auto& typeID = type.typeID();
+                    if ( ! typeID ) {
+                        ++i;
+                        continue;
+                    }
+
+                    for ( const auto& requirement : requirements[i] ) {
+                        if ( ! ignored_features.count(*typeID) || ! ignored_features.at(*typeID).count(requirement) )
+                            // Enable the required feature.
+                            _features[*typeID][requirement] = true;
+                    }
+
+                    ++i;
+                }
+            }
+
+            case Stage::TRANSFORM: {
+                // Nothing.
+                break;
+            }
+        }
+    }
+
+    void operator()(const operator_::struct_::MemberCall& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto type = x.op0().type();
+                while ( type::isReferenceType(type) )
+                    type = type.dereferencedType();
+
+                const auto struct_ = type.tryAs<type::Struct>();
+                if ( ! struct_ )
+                    break;
+
+                const auto& member = x.op1().as<expression::Member>();
+
+                const auto field = struct_->field(member.id());
+                if ( ! field )
+                    break;
+
+                const auto ignored_features = conditionalFeatures(p);
+
+                // Check if access to the field has type requirements.
+                if ( auto type_id = type.typeID() )
+                    for ( auto requirement : AttributeSet::findAll(field->attributes(), "&needed-by-feature") ) {
+                        const auto feature = *requirement.template valueAs<std::string>();
+                        if ( ! ignored_features.count(*type_id) || ! ignored_features.at(*type_id).count(feature) )
+                            // Enable the required feature.
+                            _features[*type_id][*requirement.valueAs<std::string>()] = true;
+                    }
+
+                // Check if call imposes requirements on any of the types of the arguments.
+                if ( auto fn = member.memberType()->tryAs<type::Function>() ) {
+                    const auto parameters = fn->parameters();
+                    if ( parameters.empty() )
+                        break;
+
+                    const auto& args = x.op2().as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
+
+                    for ( size_t i = 0; i < parameters.size(); ++i ) {
+                        // Since the declaration might use `any` types, get the
+                        // type of the parameter from the passed argument.
+
+                        // Instead of applying the type requirement only to the
+                        // potentially unref'd passed value's type, we also apply
+                        // it to the element type of list args. Since this
+                        // optimizer pass removes code worst case this could lead
+                        // to us optimizing less.
+                        const auto type = innermostType(args[i].type());
+
+                        const auto& param = parameters[i];
+
+                        if ( auto type_id = type.typeID() )
+                            for ( auto requirement :
+                                  AttributeSet::findAll(param.attributes(), "&requires-type-feature") ) {
+                                const auto feature = *requirement.template valueAs<std::string>();
+                                if ( ! ignored_features.count(*type_id) ||
+                                     ! ignored_features.at(*type_id).count(feature) ) {
+                                    // Enable the required feature.
+                                    _features[*type_id][feature] = true;
+                                }
+                            }
+                    }
+                }
+
+                break;
+            }
+            case Stage::TRANSFORM:
+                // Nothing.
+                break;
+        }
+    }
+
     // Helper function to compute the set of feature flags wrapping the given position.
     static std::map<ID, std::set<std::string>> conditionalFeatures(position_t p) {
         // Compute a list of features this use does not activate.
@@ -895,7 +1032,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
                 const auto ignored_features = conditionalFeatures(p);
 
-                for ( const auto& requirement : AttributeSet::findAll(field->attributes(), "&requires-type-feature") ) {
+                for ( const auto& requirement : AttributeSet::findAll(field->attributes(), "&needed-by-feature") ) {
                     const auto feature = *requirement.template valueAs<std::string>();
 
                     // Enable the required feature if it is not ignored here.
@@ -913,6 +1050,181 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
     void operator()(const operator_::struct_::MemberConst& x, position_t p) { return handleMemberAccess(x, p); }
     void operator()(const operator_::struct_::MemberNonConst& x, position_t p) { return handleMemberAccess(x, p); }
+};
+
+struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> {
+    // Map tracking wether a member is used in the code.
+    std::map<std::string, bool> _used;
+
+    // Map tracking for each type which features are enabled.
+    std::map<ID, std::map<std::string, bool>> _features;
+
+    void collect(Node& node) override {
+        _stage = Stage::COLLECT;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+    }
+
+    bool prune_decls(Node& node) override {
+        _stage = Stage::PRUNE_DECLS;
+
+        bool any_modification = false;
+
+        while ( true ) {
+            bool modified = false;
+            for ( auto i : this->walk(&node) ) {
+                if ( auto x = dispatch(i) )
+                    modified = *x || modified;
+            }
+
+            if ( ! modified )
+                break;
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    result_t operator()(const type::struct_::Field& x, position_t p) {
+        auto type_id = p.parent().as<type::Struct>().typeID();
+        if ( ! type_id )
+            return false;
+
+        // We never remove member marked `&always-emit`.
+        if ( AttributeSet::find(x.attributes(), "&always-emit") )
+            return false;
+
+        // We only remove member marked `&internal`.
+        if ( ! AttributeSet::find(x.attributes(), "&internal") )
+            return false;
+
+        auto member_id = util::join({*type_id, x.id()}, "::");
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                // Record the member if it is not yet known.
+                _used.insert({member_id, false});
+                break;
+            }
+
+            case Stage::PRUNE_DECLS: {
+                if ( ! _used.at(member_id) ) {
+                    // Check whether the field depends on an active feature in which case we do not remove the field.
+                    if ( _features.count(*type_id) ) {
+                        const auto& features = _features.at(*type_id);
+
+                        auto dependent_features =
+                            util::transform(AttributeSet::findAll(x.attributes(), "&needed-by-feature"),
+                                            [](const Attribute& attr) { return *attr.valueAs<std::string>(); });
+
+                        for ( const auto& dependent_feature_ :
+                              AttributeSet::findAll(x.attributes(), "&needed-by-feature") ) {
+                            auto dependent_feature = *dependent_feature_.valueAs<std::string>();
+
+                            // The feature flag is known and the feature is active.
+                            if ( features.count(dependent_feature) && features.at(dependent_feature) )
+                                return false; // Use `return` instead of `break` here to break out of `switch`.
+                        }
+                    }
+
+                    HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("removing unused member '%s'", member_id));
+
+                    removeNode(p);
+
+                    return true;
+                }
+            }
+            case Stage::PRUNE_USES:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const expression::Member& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto expr = p.parent().childs()[1].tryAs<Expression>();
+                if ( ! expr )
+                    break;
+
+                const auto type = innermostType(expr->type());
+
+                auto struct_ = type.tryAs<type::Struct>();
+                if ( ! struct_ )
+                    break;
+
+                auto type_id = struct_->typeID();
+                if ( ! type_id )
+                    break;
+
+                auto member_id = util::join({*type_id, x.id()}, "::");
+
+                // Record the member as used.
+                _used[member_id] = true;
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS: break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const expression::ResolvedID& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto tokens = util::split(x.id(), "::");
+
+                // TODO(bbannier): Revisit this one we have the AST refactoring
+                // in place. All we need to do here is detect whether this is a
+                // member.
+                if ( tokens.size() != 3 )
+                    // Does not look like a member.
+                    break;
+
+                // Record the member as used.
+                _used[x.id()] = true;
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const declaration::GlobalVariable& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                // Check whether the feature flag matches the type of the field.
+                if ( ! util::startsWith(x.id(), "__feat%") )
+                    break;
+
+                auto tokens = util::split(x.id(), "%");
+                assert(tokens.size() == 3);
+
+                auto type_id = ID(util::replace(tokens[1], "__", "::"));
+                auto feature = tokens[2];
+                auto is_active = x.init().value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
+
+                _features[std::move(type_id)][std::move(feature)] = is_active;
+
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
 };
 
 void GlobalOptimizer::run() {
@@ -957,6 +1269,7 @@ void GlobalOptimizer::run() {
     const std::map<std::string, std::function<std::unique_ptr<OptimizerVisitor>()>> creators =
         {{"constant_folding", []() { return std::make_unique<ConstantFoldingVisitor>(); }},
          {"functions", []() { return std::make_unique<FunctionVisitor>(); }},
+         {"members", []() { return std::make_unique<MemberVisitor>(); }},
          {"types", []() { return std::make_unique<TypeVisitor>(); }}};
 
     // If no user-specified passes are given enable all of them.

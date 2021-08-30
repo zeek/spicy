@@ -1,3 +1,29 @@
+1.3.0-dev.64 | 2021-08-30 16:23:13 +0200
+
+  * Add optimizer pass removing unused members. (Benjamin Bannier, Corelight)
+
+  * Always emit `__sink` field for units with `%mime-type`. (Benjamin Bannier, Corelight)
+
+  * Mark unit field `__offsets` as `&always-emit`. (Benjamin Bannier, Corelight)
+
+  * Optimize away unused sink functionality. (Benjamin Bannier, Corelight)
+
+  * Add annotations for sink functionality. (Benjamin Bannier, Corelight)
+
+  * Optimize away unused filter functionality. (Benjamin Bannier, Corelight)
+
+  * Add annotations for filter functionality. (Benjamin Bannier, Corelight)
+
+  * Collect feature requirements from function call parameters. (Benjamin Bannier, Corelight)
+
+  * Add support for HILTI function parameter attributes. (Benjamin Bannier, Corelight)
+
+  * Use `&needed-by-feature` to annotate feature-dependent fields. (Benjamin Bannier, Corelight)
+
+  * Add an optimizer helper function to get the innermost type. (Benjamin Bannier, Corelight)
+
+  * Fix generated code to always invoke parsing of subunits. (Benjamin Bannier, Corelight)
+
 1.3.0-dev.51 | 2021-08-26 15:34:35 +0200
 
   * Wrap long line in NEWS file. (Benjamin Bannier, Corelight)

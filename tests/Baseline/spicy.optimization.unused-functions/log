@@ -4,6 +4,14 @@
 [debug/global-optimizer] disabling feature 'supports_filters' of type 'foo::D' since it is not used
 [debug/global-optimizer] disabling feature 'supports_sinks' of type 'foo::B' since it is not used
 [debug/global-optimizer] disabling feature 'supports_sinks' of type 'foo::D' since it is not used
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__B%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__B%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__B%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__D%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__D%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__D%supports_filters'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__F%is_filter'
+[debug/global-optimizer] inlining constant 'foo::__feat%foo__F%is_filter'
 [debug/global-optimizer] removing declaration for unused function foo::A::__parse_stage1
 [debug/global-optimizer] removing declaration for unused function foo::A::parse1
 [debug/global-optimizer] removing declaration for unused function foo::A::parse2
@@ -24,7 +32,10 @@
 [debug/global-optimizer] removing declaration for unused function spicy_rt::createContext
 [debug/global-optimizer] removing declaration for unused function spicy_rt::extractBits
 [debug/global-optimizer] removing declaration for unused function spicy_rt::filter_connect
+[debug/global-optimizer] removing declaration for unused function spicy_rt::filter_disconnect
 [debug/global-optimizer] removing declaration for unused function spicy_rt::filter_forward
+[debug/global-optimizer] removing declaration for unused function spicy_rt::filter_forward_eod
+[debug/global-optimizer] removing declaration for unused function spicy_rt::filter_init
 [debug/global-optimizer] removing declaration for unused function spicy_rt::printParserState
 [debug/global-optimizer] removing declaration for unused function spicy_rt::setContext
 [debug/global-optimizer] removing declaration for unused function spicy_rt::unit_find
@@ -72,6 +83,11 @@
 [debug/global-optimizer] removing field for unused method foo::F::__on_0x25_finally
 [debug/global-optimizer] removing field for unused method foo::F::__on_0x25_init
 [debug/global-optimizer] removing field for unused method foo::F::__str__
+[debug/global-optimizer] removing unused member 'foo::B::__filters'
+[debug/global-optimizer] removing unused member 'foo::B::__sink'
+[debug/global-optimizer] removing unused member 'foo::D::__filters'
+[debug/global-optimizer] removing unused member 'foo::D::__sink'
+[debug/global-optimizer] removing unused member 'foo::F::__forward'
 [debug/global-optimizer] removing unused type 'foo::A'
 [debug/global-optimizer] replacing call to unimplemented function foo::A::__on_0x25_done with default value
 [debug/global-optimizer] replacing call to unimplemented function foo::A::__on_0x25_error with default value

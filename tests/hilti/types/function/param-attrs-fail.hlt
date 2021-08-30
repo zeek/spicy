@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: hiltic -p -o /dev/null %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Tests validation of function parameter attributes.
+
+module Foo {
+
+function void f1(string s &bogus_attr) {}
+function void f2(string s &requires-type-feature) {}
+function void f3(string s &requires-type-feature=1) {}
+
+}

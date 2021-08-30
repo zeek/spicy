@@ -13,8 +13,8 @@ public type TypeInfo = __library_type("const hilti::rt::TypeInfo*");
 # Type for a Sink instance. When adding methods here, extend the C++-side spicy::rt::Sink type as well.
 public type Sink = struct {
     method void close();
-    method void connect(strong_ref<*> unit);
-    method void connect_filter(strong_ref<*> unit);
+    method void connect(strong_ref<*> unit &requires-type-feature="supports_sinks");
+    method void connect_filter(strong_ref<*> unit &requires-type-feature="is_filter");
     method void connect_mime_type(string mime_type);
     method void connect_mime_type(bytes mime_type);
     method void gap(uint<64> seq, uint<64> len);
@@ -33,11 +33,11 @@ public type HiltiResumable = __library_type("hilti::rt::Resumable");
 public type Filters = __library_type("spicy::rt::filter::detail::Filters");
 public type Forward = __library_type("spicy::rt::filter::detail::Forward");
 
-declare public strong_ref<stream> filter_init(inout any unit, inout value_ref<stream> data, view<stream> cur) &cxxname="spicy::rt::filter::init" &have_prototype;
-declare public void filter_connect(inout any unit, strong_ref<*> filter) &cxxname="spicy::rt::filter::connect" &have_prototype;
-declare public void filter_disconnect(inout any unit) &cxxname="spicy::rt::filter::disconnect" &have_prototype;
-declare public void filter_forward(inout any filter, bytes b) &cxxname="spicy::rt::filter::forward" &have_prototype;
-declare public void filter_forward_eod(inout any filter) &cxxname="spicy::rt::filter::forward_eod" &have_prototype;
+declare public strong_ref<stream> filter_init(inout any unit &requires-type-feature="supports_filters", inout value_ref<stream> data, view<stream> cur) &cxxname="spicy::rt::filter::init" &have_prototype;
+declare public void filter_connect(inout any unit &requires-type-feature="supports_filters", strong_ref<*> filter &requires-type-feature="is_filter") &cxxname="spicy::rt::filter::connect" &have_prototype;
+declare public void filter_disconnect(inout any unit &requires-type-feature="supports_filters") &cxxname="spicy::rt::filter::disconnect" &have_prototype;
+declare public void filter_forward(inout any filter &requires-type-feature="is_filter", bytes b) &cxxname="spicy::rt::filter::forward" &have_prototype;
+declare public void filter_forward_eod(inout any filter &requires-type-feature="is_filter") &cxxname="spicy::rt::filter::forward_eod" &have_prototype;
 
 public type UnitContext = __library_type("spicy::rt::UnitContext");
 declare public UnitContext createContext(any ctx, TypeInfo ti) &cxxname="spicy::rt::detail::createContext" &have_prototype;

@@ -5,9 +5,7 @@ import hilti;
 import spicy_rt;
 
 public type Pub2 = struct {
-    spicy_rt::Parser __parser &static &internal;
-    spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    spicy_rt::Parser __parser &static &internal &always-emit;
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
     method extern view<stream> parse2(inout value_ref<Pub2> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
@@ -23,9 +21,7 @@ type Priv6 = struct {
 public type Pub3 = struct {
     value_ref<Priv5> anon_2 &optional &no-emit;
     value_ref<Priv6> x &optional;
-    spicy_rt::Parser __parser &static &internal;
-    spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    spicy_rt::Parser __parser &static &internal &always-emit;
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
     method extern view<stream> parse2(inout value_ref<Pub3> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
@@ -36,9 +32,7 @@ public type Pub4 = enum { A = 0, B = 1, C = 2 };
 type Priv8 = enum { A = 0, B = 1, C = 2 };
 public type Priv9 = struct {
     Priv8 en &default=Priv8::A;
-    spicy_rt::Parser __parser &static &internal;
-    spicy_rt::SinkState __sink &internal;
-    strong_ref<spicy_rt::Filters> __filters &internal;
+    spicy_rt::Parser __parser &static &internal &always-emit;
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
     method extern view<stream> parse2(inout value_ref<Priv9> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
@@ -58,24 +52,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_
     try {
         hilti::debugIndent("spicy");
         default<void>();
+        local auto filtered = Null;
 
-        if ( local auto filtered = spicy_rt::filter_init(self, __data, __cur); filtered ) {
-            local value_ref<stream> filtered_data = filtered;
-            (*self).__parse_foo_Pub2_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe);
-            __cur = __cur.advance(|__cur|);
-
-            if ( __trim ) 
-                (*__data).trim(begin(__cur));
-
-            __result = (__cur, __lah, __lahe);
-        }
-        else 
+        if ( ! filtered ) 
             __result = (*self).__parse_foo_Pub2_stage2(__data, __cur, __trim, __lah, __lahe);
 
     }
     catch {
         default<void>();
-        spicy_rt::filter_disconnect(self);
         default<void>();
         throw;
     }
@@ -87,7 +71,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_foo_Pub2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     default<void>();
-    spicy_rt::filter_disconnect(self);
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe);
     return __result;
@@ -180,24 +163,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_
     try {
         hilti::debugIndent("spicy");
         default<void>();
+        local auto filtered = Null;
 
-        if ( local auto filtered = spicy_rt::filter_init(self, __data, __cur); filtered ) {
-            local value_ref<stream> filtered_data = filtered;
-            (*self).__parse_foo_Pub3_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe);
-            __cur = __cur.advance(|__cur|);
-
-            if ( __trim ) 
-                (*__data).trim(begin(__cur));
-
-            __result = (__cur, __lah, __lahe);
-        }
-        else 
+        if ( ! filtered ) 
             __result = (*self).__parse_foo_Pub3_stage2(__data, __cur, __trim, __lah, __lahe);
 
     }
     catch {
         default<void>();
-        spicy_rt::filter_disconnect(self);
         default<void>();
         throw;
     }
@@ -222,7 +195,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_
 
     default<void>();
     default<void>();
-    spicy_rt::filter_disconnect(self);
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe);
     return __result;
@@ -277,24 +249,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv9::__parse
     try {
         hilti::debugIndent("spicy");
         default<void>();
+        local auto filtered = Null;
 
-        if ( local auto filtered = spicy_rt::filter_init(self, __data, __cur); filtered ) {
-            local value_ref<stream> filtered_data = filtered;
-            (*self).__parse_foo_Priv9_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe);
-            __cur = __cur.advance(|__cur|);
-
-            if ( __trim ) 
-                (*__data).trim(begin(__cur));
-
-            __result = (__cur, __lah, __lahe);
-        }
-        else 
+        if ( ! filtered ) 
             __result = (*self).__parse_foo_Priv9_stage2(__data, __cur, __trim, __lah, __lahe);
 
     }
     catch {
         default<void>();
-        spicy_rt::filter_disconnect(self);
         default<void>();
         throw;
     }
@@ -306,7 +268,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv9::__parse
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv9::__parse_foo_Priv9_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     default<void>();
-    spicy_rt::filter_disconnect(self);
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe);
     return __result;

@@ -9,20 +9,27 @@ Version 1.3 (in progress)
 
 .. rubric:: New Functionality
 
-- Add new optimizer passes performing basic constant folding and removal of
-  unused ``%random-access`` functionality
+- Add optimizer removing unused ``%random-access`` or ``%filter`` functionality
 
-  If a unit has a ``%random-access`` attribute was declaredSpicy emits
-  additional code to track and update offsets. If the ``%random-access``
-  functionality is not used this leads to unneeded code being emitted which
-  causes unneeded overhead, both during JIT and during execution.
+  If a unit has e.g., a ``%random-access`` attribute Spicy emits additional
+  code to track and update offsets. If the ``%random-access`` functionality is
+  not used this leads to unneeded code being emitted which causes unneeded
+  overhead, both during JIT and during execution.
 
-  We now emit such code under a feature flag (effectively a global boolean)
-  which is by default *on*. Additionally, we added an optimizer pass which
-  detects whether a feature is used and can disable unused feature
-  functionality (switching the feature flag to *off*), and can then remove
-  unreachable code behind such disabled feature flags by performing basic
-  constant folding.
+  We now emit such feature-dependent code under a feature flag (effectively a
+  global boolean constant) which is by default *on*. Additionally, we added an
+  optimizer pass which detects whether a feature is used and can disable unused
+  feature functionality (switching the feature flag to *off*), and can then
+  remove unreachable code behind such disabled feature flags by performing
+  basic constant folding.
+
+- Add optimizer pass removing unused sink functionality
+
+  By default any unit declared ``public`` can be used as a sink. To support
+  sink behavior additional code is emitted and invoked at runtime, regardless
+  of whether the unit is used as a sink or not.
+
+  We now detect unused sink functionality and avoid emitting it.
 
 .. rubric:: Changed Functionality
 
