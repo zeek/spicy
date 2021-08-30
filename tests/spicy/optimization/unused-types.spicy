@@ -20,7 +20,8 @@ type Priv2 = unit {};
 type Priv3 = unit {};
 type Priv4 = unit {
     : Priv2;
-    x: Priv3; };
+    x: Priv3;
+};
 
 # Units referenced by public units should be kept.
 type Priv5 = unit {};
@@ -33,11 +34,20 @@ public type Pub3 = unit {
 # Private enum types should be removed.
 type Priv7 = enum { A, B, C };
 
-# Public enum types should be removed.
+# Public enum types should be kept.
 public type Pub4 = enum { A, B, C };
 
 # Values of private enums referenced in public types should not be removed.
 type Priv8 = enum { A, B, C };
-public type Priv9 = unit {
+type Priv9 = enum { A, B, C };
+public type Priv10 = unit {
     var en: Priv8 = Priv8::A;
+    var em: Priv9;
 };
+
+# Values of private enums used in globals should not be removed.
+type Priv11 = enum { A, B, C };
+global en: Priv11;
+
+type Priv12 = enum { A, B, C };
+global em: Priv12 = Priv12::A;
