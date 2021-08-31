@@ -637,6 +637,28 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
 
         return false;
     }
+
+    result_t operator()(const type::struct_::Field& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto type_id = x.type().typeID();
+
+                if ( ! type_id )
+                    break;
+
+                // Record this type as used.
+                _used[*type_id] = true;
+
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
 };
 
 struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, ConstantFoldingVisitor> {
