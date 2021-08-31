@@ -3,8 +3,8 @@ module Foo {
 
 import hilti;
 
-global auto t = True;
-global auto f = False;
+global auto feat________t = True;
+global auto feat________f = False;
 
 hilti::print(True, True);
 hilti::print(False, True);
@@ -12,10 +12,10 @@ hilti::print(False, True);
     0;
 }
 {
-    1;
+    3;
 }
 {
-    2;
+    4;
 }
 
 }

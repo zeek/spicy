@@ -695,8 +695,12 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
     }
 
     bool operator()(const declaration::GlobalVariable& x, position_t p) {
-        // We only work on boolean constants.
-        if ( ! (x.isConstant() || x.type() == type::Bool()) )
+        // We only work on feature constants for now, see
+        // https://github.com/zeek/spicy/issues/982. Since the identifiers we
+        // use for feature constants are not available to users we allow names
+        // starting with `feat________` as an alternative for testing.
+        if ( ! ((util::startsWith(x.id(), "__feat") || util::startsWith(x.id(), "feat________")) &&
+                x.type() == type::Bool()) )
             return false;
 
         switch ( _stage ) {

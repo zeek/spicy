@@ -1,0 +1,48 @@
+# @TEST-EXEC: hiltic %INPUT -p -o noopt.hlt -g
+# @TEST-EXEC: btest-diff noopt.hlt
+#
+# @TEST-EXEC: hiltic %INPUT -p -o opt.hlt -D global-optimizer 2>&1 | sort > log
+# @TEST-EXEC: btest-diff opt.hlt
+# @TEST-EXEC: btest-diff log
+#
+# @TEST-DOC: Tests optimizations performing constant folding.
+
+# TODO(bbannier): We currently only support folding for Spicy feature
+# constants. Once https://github.com/zeek/spicy/issues/982 is fixed we should
+# generalize this test to all supported constants and move the test into the
+# HILTI test suite.
+
+module Foo {
+import hilti;
+
+# Spicy internally uses names like `__feat%XYZ%feature` for feature constants.
+# Identifiers starting with `__` are not available to users, but for testing
+# allow names starting with `feat________` as an alternative marker for feature
+# constants.
+global auto feat________t = True;
+global auto feat________f = False;
+
+hilti::print(feat________t);
+hilti::print(feat________f);
+
+if (feat________t) {
+    0;
+} else {
+    1;
+}
+
+if (feat________f) {
+    2;
+} else {
+    3;
+}
+
+if (feat________t) {
+    4;
+}
+
+if (feat________f) {
+    5;
+}
+
+}
