@@ -132,6 +132,11 @@ method extern method view<stream> foo::P0::parse2(inout value_ref<P0> unit, inou
     return ncur;
 }
 
+init function void __register_foo_P0() {
+    foo::P0::__parser = [$name="foo::P0", $is_public=False, $parse1=foo::P0::parse1, $parse2=foo::P0::parse2, $parse3=foo::P0::parse3, $context_new=Null, $type_info=typeinfo(P0), $description="", $mime_types=vector(), $ports=vector()];
+    spicy_rt::registerParser(foo::P0::__parser, hilti::linker_scope(), Null);
+}
+
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::P1::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
@@ -224,7 +229,7 @@ method extern method view<stream> foo::P1::parse2(inout value_ref<P1> unit, inou
 }
 
 init function void __register_foo_P1() {
-    foo::P1::__parser = [$name="foo::P1", $parse1=foo::P1::parse1, $parse2=foo::P1::parse2, $parse3=foo::P1::parse3, $context_new=Null, $type_info=typeinfo(P1), $description="", $mime_types=vector(), $ports=vector()];
+    foo::P1::__parser = [$name="foo::P1", $is_public=True, $parse1=foo::P1::parse1, $parse2=foo::P1::parse2, $parse3=foo::P1::parse3, $context_new=Null, $type_info=typeinfo(P1), $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::P1::__parser, hilti::linker_scope(), Null);
 }
 
@@ -458,7 +463,7 @@ method extern method view<stream> foo::P2::parse2(inout value_ref<P2> unit, inou
 }
 
 init function void __register_foo_P2() {
-    foo::P2::__parser = [$name="foo::P2", $parse1=foo::P2::parse1, $parse2=foo::P2::parse2, $parse3=foo::P2::parse3, $context_new=Null, $type_info=typeinfo(P2), $description="", $mime_types=vector(), $ports=vector()];
+    foo::P2::__parser = [$name="foo::P2", $is_public=True, $parse1=foo::P2::parse1, $parse2=foo::P2::parse2, $parse3=foo::P2::parse3, $context_new=Null, $type_info=typeinfo(P2), $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::P2::__parser, hilti::linker_scope(), Null);
 }
 

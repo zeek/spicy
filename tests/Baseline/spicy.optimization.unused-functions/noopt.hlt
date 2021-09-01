@@ -169,6 +169,11 @@ method extern method view<stream> foo::A::parse2(inout value_ref<A> unit, inout 
     return ncur;
 }
 
+init function void __register_foo_A() {
+    foo::A::__parser = [$name="foo::A", $is_public=False, $parse1=foo::A::parse1, $parse2=foo::A::parse2, $parse3=foo::A::parse3, $context_new=Null, $type_info=typeinfo(A), $description="", $mime_types=vector(), $ports=vector()];
+    spicy_rt::registerParser(foo::A::__parser, hilti::linker_scope(), Null);
+}
+
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
@@ -261,7 +266,7 @@ method extern method view<stream> foo::B::parse2(inout value_ref<B> unit, inout 
 }
 
 init function void __register_foo_B() {
-    foo::B::__parser = [$name="foo::B", $parse1=foo::B::parse1, $parse2=foo::B::parse2, $parse3=foo::B::parse3, $context_new=Null, $type_info=typeinfo(B), $description="", $mime_types=vector(), $ports=vector()];
+    foo::B::__parser = [$name="foo::B", $is_public=True, $parse1=foo::B::parse1, $parse2=foo::B::parse2, $parse3=foo::B::parse3, $context_new=Null, $type_info=typeinfo(B), $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::B::__parser, hilti::linker_scope(), Null);
 }
 
@@ -321,6 +326,11 @@ method extern method view<stream> foo::C::parse2(inout value_ref<C> unit, inout 
     # End parsing production: Unit: foo_C ->
 
     return ncur;
+}
+
+init function void __register_foo_C() {
+    foo::C::__parser = [$name="foo::C", $is_public=False, $parse1=foo::C::parse1, $parse2=foo::C::parse2, $parse3=foo::C::parse3, $context_new=Null, $type_info=typeinfo(C), $description="", $mime_types=vector(), $ports=vector()];
+    spicy_rt::registerParser(foo::C::__parser, hilti::linker_scope(), Null);
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
@@ -422,7 +432,7 @@ method extern method view<stream> foo::D::parse2(inout value_ref<D> unit, inout 
 }
 
 init function void __register_foo_D() {
-    foo::D::__parser = [$name="foo::D", $parse1=foo::D::parse1, $parse2=foo::D::parse2, $parse3=foo::D::parse3, $context_new=Null, $type_info=typeinfo(D), $description="", $mime_types=vector(), $ports=vector()];
+    foo::D::__parser = [$name="foo::D", $is_public=True, $parse1=foo::D::parse1, $parse2=foo::D::parse2, $parse3=foo::D::parse3, $context_new=Null, $type_info=typeinfo(D), $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::D::__parser, hilti::linker_scope(), Null);
 }
 
@@ -493,7 +503,8 @@ method extern method view<stream> foo::F::parse2(inout value_ref<F> unit, inout 
 }
 
 init function void __register_foo_F() {
-    foo::F::__parser = [$name="foo::F", $parse1=foo::F::parse1, $parse2=foo::F::parse2, $parse3=foo::F::parse3, $context_new=Null, $type_info=typeinfo(F), $description="", $mime_types=vector(), $ports=vector()];
+    foo::F::__parser = [$name="foo::F", $is_public=False, $parse1=foo::F::parse1, $parse2=foo::F::parse2, $parse3=foo::F::parse3, $context_new=Null, $type_info=typeinfo(F), $description="", $mime_types=vector(), $ports=vector()];
+    spicy_rt::registerParser(foo::F::__parser, hilti::linker_scope(), Null);
 }
 
 }

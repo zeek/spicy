@@ -169,6 +169,19 @@ TEST_CASE("registerParser") {
         CHECK(parser.__hook_skipped);
         CHECK(parser.__hook_undelivered);
     }
+
+    SUBCASE("private parser") {
+        done(); // Ensure no parsers are registered, yet.
+        REQUIRE(detail::globalState()->parsers.empty());
+
+        Parser parser;
+        parser.mime_types = {MIMEType("foo/bar"), MIMEType("foo/*")};
+
+        detail::registerParser(parser, "xyz", UnitRef<UnitWithSinkSupport>());
+
+        REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
+        CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
+    }
 }
 
 TEST_CASE("waitForEod") {

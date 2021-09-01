@@ -76,13 +76,15 @@
 [debug/optimizer] removing field for unused method foo::P2::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::P2::__on_x
 [debug/optimizer] removing field for unused method foo::P2::__str__
-[debug/optimizer] removing field for unused method foo::__register_foo_P1::<anon-struct-5>::parse1
-[debug/optimizer] removing field for unused method foo::__register_foo_P1::<anon-struct-5>::parse2
-[debug/optimizer] removing field for unused method foo::__register_foo_P1::<anon-struct-5>::parse3
-[debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-8>::parse1
-[debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-8>::parse2
-[debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-8>::parse3
-[debug/optimizer] removing unused member 'foo::P0::__parser'
+[debug/optimizer] removing field for unused method foo::__register_foo_P0::<anon-struct-3>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_P0::<anon-struct-3>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_P0::<anon-struct-3>::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_P1::<anon-struct-6>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_P1::<anon-struct-6>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_P1::<anon-struct-6>::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-9>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-9>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-9>::parse3
 [debug/optimizer] removing unused member 'foo::P0::__sink'
 [debug/optimizer] removing unused member 'foo::P1::__filters'
 [debug/optimizer] removing unused member 'foo::P1::__sink'

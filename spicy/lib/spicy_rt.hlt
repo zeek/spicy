@@ -47,6 +47,7 @@ declare public void setContext(inout any unit, optional<UnitContext> ctx, TypeIn
 # spicy::rt::Parser as well.
 public type Parser = struct {
     string name;
+    bool is_public;
     any parse1;
     any parse2;
     any parse3;
