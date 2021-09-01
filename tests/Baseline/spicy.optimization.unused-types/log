@@ -2,7 +2,13 @@
 [debug/optimizer] disabling feature 'supports_filters' of type 'foo::Priv10' since it is not used
 [debug/optimizer] disabling feature 'supports_filters' of type 'foo::Pub2' since it is not used
 [debug/optimizer] disabling feature 'supports_filters' of type 'foo::Pub3' since it is not used
+[debug/optimizer] disabling feature 'supports_sinks' of type 'foo::Priv1' since it is not used
 [debug/optimizer] disabling feature 'supports_sinks' of type 'foo::Priv10' since it is not used
+[debug/optimizer] disabling feature 'supports_sinks' of type 'foo::Priv2' since it is not used
+[debug/optimizer] disabling feature 'supports_sinks' of type 'foo::Priv3' since it is not used
+[debug/optimizer] disabling feature 'supports_sinks' of type 'foo::Priv4' since it is not used
+[debug/optimizer] disabling feature 'supports_sinks' of type 'foo::Priv5' since it is not used
+[debug/optimizer] disabling feature 'supports_sinks' of type 'foo::Priv6' since it is not used
 [debug/optimizer] disabling feature 'supports_sinks' of type 'foo::Pub2' since it is not used
 [debug/optimizer] disabling feature 'supports_sinks' of type 'foo::Pub3' since it is not used
 [debug/optimizer] inlining constant 'foo::__feat%foo__Priv10%supports_filters'
@@ -14,28 +20,6 @@
 [debug/optimizer] inlining constant 'foo::__feat%foo__Pub3%supports_filters'
 [debug/optimizer] inlining constant 'foo::__feat%foo__Pub3%supports_filters'
 [debug/optimizer] inlining constant 'foo::__feat%foo__Pub3%supports_filters'
-[debug/optimizer] removing declaration for unused function foo::Priv1::__parse_stage1
-[debug/optimizer] removing declaration for unused function foo::Priv1::parse1
-[debug/optimizer] removing declaration for unused function foo::Priv1::parse2
-[debug/optimizer] removing declaration for unused function foo::Priv1::parse3
-[debug/optimizer] removing declaration for unused function foo::Priv2::__parse_stage1
-[debug/optimizer] removing declaration for unused function foo::Priv2::parse1
-[debug/optimizer] removing declaration for unused function foo::Priv2::parse2
-[debug/optimizer] removing declaration for unused function foo::Priv2::parse3
-[debug/optimizer] removing declaration for unused function foo::Priv3::__parse_stage1
-[debug/optimizer] removing declaration for unused function foo::Priv3::parse1
-[debug/optimizer] removing declaration for unused function foo::Priv3::parse2
-[debug/optimizer] removing declaration for unused function foo::Priv3::parse3
-[debug/optimizer] removing declaration for unused function foo::Priv4::__parse_stage1
-[debug/optimizer] removing declaration for unused function foo::Priv4::parse1
-[debug/optimizer] removing declaration for unused function foo::Priv4::parse2
-[debug/optimizer] removing declaration for unused function foo::Priv4::parse3
-[debug/optimizer] removing declaration for unused function foo::Priv5::parse1
-[debug/optimizer] removing declaration for unused function foo::Priv5::parse2
-[debug/optimizer] removing declaration for unused function foo::Priv5::parse3
-[debug/optimizer] removing declaration for unused function foo::Priv6::parse1
-[debug/optimizer] removing declaration for unused function foo::Priv6::parse2
-[debug/optimizer] removing declaration for unused function foo::Priv6::parse3
 [debug/optimizer] removing declaration for unused function hilti::abort
 [debug/optimizer] removing declaration for unused function hilti::current_time
 [debug/optimizer] removing declaration for unused function hilti::debug
@@ -71,52 +55,58 @@
 [debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_finally
+[debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_init
+[debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Priv1::__str__
-[debug/optimizer] removing field for unused method foo::Priv1::parse1
-[debug/optimizer] removing field for unused method foo::Priv1::parse2
-[debug/optimizer] removing field for unused method foo::Priv1::parse3
 [debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_finally
+[debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_init
+[debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Priv2::__str__
-[debug/optimizer] removing field for unused method foo::Priv2::parse1
-[debug/optimizer] removing field for unused method foo::Priv2::parse2
-[debug/optimizer] removing field for unused method foo::Priv2::parse3
 [debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_finally
+[debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_init
+[debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Priv3::__str__
-[debug/optimizer] removing field for unused method foo::Priv3::parse1
-[debug/optimizer] removing field for unused method foo::Priv3::parse2
-[debug/optimizer] removing field for unused method foo::Priv3::parse3
 [debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_finally
+[debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_init
+[debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Priv4::__on_x
 [debug/optimizer] removing field for unused method foo::Priv4::__str__
-[debug/optimizer] removing field for unused method foo::Priv4::parse1
-[debug/optimizer] removing field for unused method foo::Priv4::parse2
-[debug/optimizer] removing field for unused method foo::Priv4::parse3
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_finally
+[debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_init
+[debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Priv5::__str__
-[debug/optimizer] removing field for unused method foo::Priv5::parse1
-[debug/optimizer] removing field for unused method foo::Priv5::parse2
-[debug/optimizer] removing field for unused method foo::Priv5::parse3
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_finally
+[debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_init
+[debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Priv6::__str__
-[debug/optimizer] removing field for unused method foo::Priv6::parse1
-[debug/optimizer] removing field for unused method foo::Priv6::parse2
-[debug/optimizer] removing field for unused method foo::Priv6::parse3
 [debug/optimizer] removing field for unused method foo::Pub2::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Pub2::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::Pub2::__on_0x25_finally
@@ -147,14 +137,22 @@
 [debug/optimizer] removing field for unused method foo::__register_foo_Pub3::<anon-struct-22>::parse3
 [debug/optimizer] removing unused member 'foo::Priv10::__filters'
 [debug/optimizer] removing unused member 'foo::Priv10::__sink'
+[debug/optimizer] removing unused member 'foo::Priv1::__parser'
+[debug/optimizer] removing unused member 'foo::Priv1::__sink'
+[debug/optimizer] removing unused member 'foo::Priv2::__parser'
+[debug/optimizer] removing unused member 'foo::Priv2::__sink'
+[debug/optimizer] removing unused member 'foo::Priv3::__parser'
+[debug/optimizer] removing unused member 'foo::Priv3::__sink'
+[debug/optimizer] removing unused member 'foo::Priv4::__parser'
+[debug/optimizer] removing unused member 'foo::Priv4::__sink'
+[debug/optimizer] removing unused member 'foo::Priv5::__parser'
+[debug/optimizer] removing unused member 'foo::Priv5::__sink'
+[debug/optimizer] removing unused member 'foo::Priv6::__parser'
+[debug/optimizer] removing unused member 'foo::Priv6::__sink'
 [debug/optimizer] removing unused member 'foo::Pub2::__filters'
 [debug/optimizer] removing unused member 'foo::Pub2::__sink'
 [debug/optimizer] removing unused member 'foo::Pub3::__filters'
 [debug/optimizer] removing unused member 'foo::Pub3::__sink'
-[debug/optimizer] removing unused type 'foo::Priv1'
-[debug/optimizer] removing unused type 'foo::Priv2'
-[debug/optimizer] removing unused type 'foo::Priv3'
-[debug/optimizer] removing unused type 'foo::Priv4'
 [debug/optimizer] removing unused type 'foo::Priv7'
 [debug/optimizer] replacing call to unimplemented function foo::Priv10::__on_0x25_done with default value
 [debug/optimizer] replacing call to unimplemented function foo::Priv10::__on_0x25_error with default value

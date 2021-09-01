@@ -5,18 +5,24 @@ import spicy_rt;
 import hilti;
 
 type P0 = struct {
+    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_sinks";
+    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error();
     hook optional<string> __str__();
     hook void __on_0x25_finally();
+    hook void __on_0x25_gap(uint<64> seq, uint<64> len);
+    hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
+    hook void __on_0x25_skipped(uint<64> seq);
+    hook void __on_0x25_undelivered(uint<64> seq, bytes data);
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
-    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
-    method extern view<stream> parse2(inout value_ref<P0> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
-    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
+    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
+    method extern view<stream> parse2(inout value_ref<P0> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
+    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
 } &on-heap;
 public type P1 = struct {
-    spicy_rt::Parser __parser &static &internal &always-emit;
+    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
@@ -29,9 +35,9 @@ public type P1 = struct {
     hook void __on_0x25_skipped(uint<64> seq);
     hook void __on_0x25_undelivered(uint<64> seq, bytes data);
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
-    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
-    method extern view<stream> parse2(inout value_ref<P1> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
-    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
+    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
+    method extern view<stream> parse2(inout value_ref<P1> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
+    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_P1_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 public type P2 = struct {
@@ -40,7 +46,7 @@ public type P2 = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
-    spicy_rt::Parser __parser &static &internal &always-emit;
+    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_x(uint<8> __dd);
@@ -55,19 +61,20 @@ public type P2 = struct {
     hook void __on_0x25_skipped(uint<64> seq);
     hook void __on_0x25_undelivered(uint<64> seq, bytes data);
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
-    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
-    method extern view<stream> parse2(inout value_ref<P2> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
-    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
+    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
+    method extern view<stream> parse2(inout value_ref<P2> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
+    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_P2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 
+const bool __feat%foo__P0%supports_sinks = True;
 const bool __feat%foo__P1%supports_filters = True;
 const bool __feat%foo__P1%supports_sinks = True;
 const bool __feat%foo__P2%supports_filters = True;
 const bool __feat%foo__P2%supports_sinks = True;
 const bool __feat%foo__P2%uses_random_access = True;
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::P0::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe)  {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::P0::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -86,7 +93,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P0::__parse_st
     return __result;
 }
 
-method extern method view<stream> foo::P0::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::P0::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
     local value_ref<P0> unit = value_ref(default<P0>())value_ref(default<P0>());
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
@@ -99,7 +106,7 @@ method extern method view<stream> foo::P0::parse1(inout value_ref<stream> data, 
     return ncur;
 }
 
-method extern method view<stream> foo::P0::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::P0::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
     local value_ref<P0> unit = value_ref(default<P0>())value_ref(default<P0>());
     spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(foo::P0));
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
@@ -113,7 +120,7 @@ method extern method view<stream> foo::P0::parse3(inout value_ref<spicy_rt::Pars
     return ncur;
 }
 
-method extern method view<stream> foo::P0::parse2(inout value_ref<P0> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::P0::parse2(inout value_ref<P0> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
@@ -177,7 +184,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P1::__parse_fo
     return __result;
 }
 
-method extern method view<stream> foo::P1::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::P1::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
     local value_ref<P1> unit = value_ref(default<P1>())value_ref(default<P1>());
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
@@ -190,7 +197,7 @@ method extern method view<stream> foo::P1::parse1(inout value_ref<stream> data, 
     return ncur;
 }
 
-method extern method view<stream> foo::P1::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::P1::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
     local value_ref<P1> unit = value_ref(default<P1>())value_ref(default<P1>());
     spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(foo::P1));
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
@@ -204,7 +211,7 @@ method extern method view<stream> foo::P1::parse3(inout value_ref<spicy_rt::Pars
     return ncur;
 }
 
-method extern method view<stream> foo::P1::parse2(inout value_ref<P1> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::P1::parse2(inout value_ref<P1> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
@@ -399,7 +406,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
     return __result;
 }
 
-method extern method view<stream> foo::P2::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::P2::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
     local value_ref<P2> unit = value_ref(default<P2>())value_ref(default<P2>());
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
@@ -416,7 +423,7 @@ method extern method view<stream> foo::P2::parse1(inout value_ref<stream> data, 
     return ncur;
 }
 
-method extern method view<stream> foo::P2::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::P2::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
     local value_ref<P2> unit = value_ref(default<P2>())value_ref(default<P2>());
     spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(foo::P2));
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
@@ -434,7 +441,7 @@ method extern method view<stream> foo::P2::parse3(inout value_ref<spicy_rt::Pars
     return ncur;
 }
 
-method extern method view<stream> foo::P2::parse2(inout value_ref<P2> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::P2::parse2(inout value_ref<P2> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;

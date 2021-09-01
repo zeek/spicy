@@ -185,22 +185,19 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         if ( unit.supportsFilters() )
             addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
 
-        if ( unit.supportsSinks() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
 
         if ( unit.usesRandomAccess() )
             addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true)));
     }
 
-    if ( unit.supportsSinks() ) {
-        add_hook("0x25_gap", {builder::parameter("seq", type::UnsignedInteger(64)),
-                              builder::parameter("len", type::UnsignedInteger(64))});
-        add_hook("0x25_overlap", {builder::parameter("seq", type::UnsignedInteger(64)),
-                                  builder::parameter("old", type::Bytes()), builder::parameter("new_", type::Bytes())});
-        add_hook("0x25_skipped", {builder::parameter("seq", type::UnsignedInteger(64))});
-        add_hook("0x25_undelivered",
-                 {builder::parameter("seq", type::UnsignedInteger(64)), builder::parameter("data", type::Bytes())});
-    }
+    add_hook("0x25_gap", {builder::parameter("seq", type::UnsignedInteger(64)),
+                          builder::parameter("len", type::UnsignedInteger(64))});
+    add_hook("0x25_overlap", {builder::parameter("seq", type::UnsignedInteger(64)),
+                              builder::parameter("old", type::Bytes()), builder::parameter("new_", type::Bytes())});
+    add_hook("0x25_skipped", {builder::parameter("seq", type::UnsignedInteger(64))});
+    add_hook("0x25_undelivered",
+             {builder::parameter("seq", type::UnsignedInteger(64)), builder::parameter("data", type::Bytes())});
 
     if ( unit.usesRandomAccess() ) {
         auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
@@ -217,11 +214,9 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         v.addField(std::move(f3));
     }
 
-    if ( unit.supportsSinks() || unit.isFilter() ) {
-        auto attrs = AttributeSet({Attribute("&static"), Attribute("&internal")});
-
-        if ( unit.supportsSinks() )
-            attrs = AttributeSet::add(std::move(attrs), Attribute("&always-emit"));
+    {
+        auto attrs = AttributeSet({Attribute("&static"), Attribute("&internal"),
+                                   Attribute("&needed-by-feature", builder::string("supports_sinks"))});
 
         if ( unit.isFilter() )
             attrs = AttributeSet::add(std::move(attrs), Attribute("&needed-by-feature", builder::string("is_filter")));
@@ -231,7 +226,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         v.addField(std::move(parser));
     }
 
-    if ( unit.supportsSinks() ) {
+    {
         auto attrs =
             AttributeSet({Attribute("&internal"), Attribute("&needed-by-feature", builder::string("supports_sinks"))});
 
@@ -239,7 +234,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         // MIME type with `connect_mime_type`. In that case we need to always emit
         // the field since we cannot detect use of this type later on.
         if ( unit.propertyItem("%mime-type") )
-            attrs = AttributeSet::add(attrs, Attribute("&always-emit"));
+            attrs = AttributeSet::add(std::move(attrs), Attribute("&always-emit"));
 
         auto sink = hilti::declaration::Field(ID("__sink"), builder::typeByID("spicy_rt::SinkState"), attrs);
         v.addField(std::move(sink));
@@ -284,7 +279,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     assert(unit.id());
     Type s = hilti::type::Struct(unit.parameters().copy(), std::move(v.fields));
     s = type::setTypeID(s, *unit.id());
-    s = _pb.addParserMethods(s.as<hilti::type::Struct>(), unit, declare_only, unit.isFilter());
+    s = _pb.addParserMethods(s.as<hilti::type::Struct>(), unit, declare_only);
 
     if ( unit.isPublic() || unit.isFilter() ) {
         auto builder = builder::Builder(context());

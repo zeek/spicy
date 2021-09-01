@@ -2,8 +2,11 @@
 [debug/optimizer] disabling feature 'is_filter' of type 'foo::F' since it is not used
 [debug/optimizer] disabling feature 'supports_filters' of type 'foo::B' since it is not used
 [debug/optimizer] disabling feature 'supports_filters' of type 'foo::D' since it is not used
+[debug/optimizer] disabling feature 'supports_sinks' of type 'foo::A' since it is not used
 [debug/optimizer] disabling feature 'supports_sinks' of type 'foo::B' since it is not used
+[debug/optimizer] disabling feature 'supports_sinks' of type 'foo::C' since it is not used
 [debug/optimizer] disabling feature 'supports_sinks' of type 'foo::D' since it is not used
+[debug/optimizer] disabling feature 'supports_sinks' of type 'foo::F' since it is not used
 [debug/optimizer] inlining constant 'foo::__feat%foo__B%supports_filters'
 [debug/optimizer] inlining constant 'foo::__feat%foo__B%supports_filters'
 [debug/optimizer] inlining constant 'foo::__feat%foo__B%supports_filters'
@@ -12,13 +15,6 @@
 [debug/optimizer] inlining constant 'foo::__feat%foo__D%supports_filters'
 [debug/optimizer] inlining constant 'foo::__feat%foo__F%is_filter'
 [debug/optimizer] inlining constant 'foo::__feat%foo__F%is_filter'
-[debug/optimizer] removing declaration for unused function foo::A::__parse_stage1
-[debug/optimizer] removing declaration for unused function foo::A::parse1
-[debug/optimizer] removing declaration for unused function foo::A::parse2
-[debug/optimizer] removing declaration for unused function foo::A::parse3
-[debug/optimizer] removing declaration for unused function foo::C::parse1
-[debug/optimizer] removing declaration for unused function foo::C::parse2
-[debug/optimizer] removing declaration for unused function foo::C::parse3
 [debug/optimizer] removing declaration for unused function foo::f1
 [debug/optimizer] removing declaration for unused function foo::f2
 [debug/optimizer] removing declaration for unused function hilti::abort
@@ -47,11 +43,12 @@
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_finally
+[debug/optimizer] removing field for unused method foo::A::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_init
+[debug/optimizer] removing field for unused method foo::A::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::A::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::A::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::A::__str__
-[debug/optimizer] removing field for unused method foo::A::parse1
-[debug/optimizer] removing field for unused method foo::A::parse2
-[debug/optimizer] removing field for unused method foo::A::parse3
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_finally
@@ -64,11 +61,12 @@
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_finally
+[debug/optimizer] removing field for unused method foo::C::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_init
+[debug/optimizer] removing field for unused method foo::C::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::C::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::C::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::C::__str__
-[debug/optimizer] removing field for unused method foo::C::parse1
-[debug/optimizer] removing field for unused method foo::C::parse2
-[debug/optimizer] removing field for unused method foo::C::parse3
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_finally
@@ -81,7 +79,11 @@
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_finally
+[debug/optimizer] removing field for unused method foo::F::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_init
+[debug/optimizer] removing field for unused method foo::F::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::F::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::F::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::F::__str__
 [debug/optimizer] removing field for unused method foo::__register_foo_B::<anon-struct-5>::parse1
 [debug/optimizer] removing field for unused method foo::__register_foo_B::<anon-struct-5>::parse2
@@ -92,12 +94,16 @@
 [debug/optimizer] removing field for unused method foo::__register_foo_F::<anon-struct-14>::parse1
 [debug/optimizer] removing field for unused method foo::__register_foo_F::<anon-struct-14>::parse2
 [debug/optimizer] removing field for unused method foo::__register_foo_F::<anon-struct-14>::parse3
+[debug/optimizer] removing unused member 'foo::A::__parser'
+[debug/optimizer] removing unused member 'foo::A::__sink'
 [debug/optimizer] removing unused member 'foo::B::__filters'
 [debug/optimizer] removing unused member 'foo::B::__sink'
+[debug/optimizer] removing unused member 'foo::C::__parser'
+[debug/optimizer] removing unused member 'foo::C::__sink'
 [debug/optimizer] removing unused member 'foo::D::__filters'
 [debug/optimizer] removing unused member 'foo::D::__sink'
 [debug/optimizer] removing unused member 'foo::F::__forward'
-[debug/optimizer] removing unused type 'foo::A'
+[debug/optimizer] removing unused member 'foo::F::__sink'
 [debug/optimizer] replacing call to unimplemented function foo::A::__on_0x25_done with default value
 [debug/optimizer] replacing call to unimplemented function foo::A::__on_0x25_error with default value
 [debug/optimizer] replacing call to unimplemented function foo::A::__on_0x25_finally with default value
