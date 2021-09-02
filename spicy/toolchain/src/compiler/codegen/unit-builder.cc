@@ -182,13 +182,11 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         if ( unit.isFilter() )
             addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(true)));
 
-        if ( unit.supportsFilters() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
-
-        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
-
         if ( unit.usesRandomAccess() )
             addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true)));
+
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
     }
 
     add_hook("0x25_gap", {builder::parameter("seq", type::UnsignedInteger(64)),
@@ -240,14 +238,11 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         v.addField(std::move(sink));
     }
 
-    if ( unit.supportsFilters() ) {
-        auto filters = hilti::declaration::Field(ID("__filters"),
-                                                 hilti::type::StrongReference(builder::typeByID("spicy_rt::Filters")),
-                                                 AttributeSet({Attribute("&internal"),
-                                                               Attribute("&needed-by-feature",
-                                                                         builder::string("supports_filters"))}));
-        v.addField(std::move(filters));
-    }
+    auto filters =
+        hilti::declaration::Field(ID("__filters"), hilti::type::StrongReference(builder::typeByID("spicy_rt::Filters")),
+                                  AttributeSet({Attribute("&internal"),
+                                                Attribute("&needed-by-feature", builder::string("supports_filters"))}));
+    v.addField(std::move(filters));
 
     if ( unit.isFilter() ) {
         auto forward =

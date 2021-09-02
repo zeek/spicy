@@ -7,6 +7,7 @@ import hilti;
 type P0 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
+    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error();
@@ -20,6 +21,7 @@ type P0 = struct {
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
     method extern view<stream> parse2(inout value_ref<P0> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
+    method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_P0_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 public type P1 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_sinks";
@@ -67,29 +69,63 @@ public type P2 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_P2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 
+const bool __feat%foo__P0%supports_filters = True;
 const bool __feat%foo__P0%supports_sinks = True;
 const bool __feat%foo__P1%supports_filters = True;
 const bool __feat%foo__P1%supports_sinks = True;
+const bool __feat%foo__P2%uses_random_access = True;
 const bool __feat%foo__P2%supports_filters = True;
 const bool __feat%foo__P2%supports_sinks = True;
-const bool __feat%foo__P2%uses_random_access = True;
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::P0::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
         (*self).__on_0x25_init();
-        (*self).__on_0x25_done();
-        hilti::debugDedent("spicy");
-        __result = (__cur, __lah, __lahe);
+        local strong_ref<stream> filtered = Null;
+
+        if ( __feat%foo__P0%supports_filters ) 
+
+            if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
+                local value_ref<stream> filtered_data = filtered;
+                (*self).__parse_foo_P0_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe);
+                __cur = __cur.advance(|__cur|);
+
+                if ( __trim ) 
+                    (*__data).trim(begin(__cur));
+
+                __result = (__cur, __lah, __lahe);
+            }
+
+
+
+        if ( ! filtered ) 
+            __result = (*self).__parse_foo_P0_stage2(__data, __cur, __trim, __lah, __lahe);
+
     }
     catch {
         (*self).__on_0x25_error();
+
+        if ( __feat%foo__P0%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
+
         (*self).__on_0x25_finally();
         throw;
     }
 
     (*self).__on_0x25_finally();
+    return __result;
+}
+
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::P0::__parse_foo_P0_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+    (*self).__on_0x25_done();
+
+    if ( __feat%foo__P0%supports_filters ) 
+        spicy_rt::filter_disconnect(self);
+
+    hilti::debugDedent("spicy");
+    __result = (__cur, __lah, __lahe);
     return __result;
 }
 

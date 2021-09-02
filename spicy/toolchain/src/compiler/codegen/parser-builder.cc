@@ -260,7 +260,7 @@ struct ProductionVisitor
 
                     builder()->addLocal("filtered", hilti::builder::strong_reference(type::Stream()));
 
-                    if ( unit && unit->supportsFilters() ) {
+                    if ( unit ) {
                         pb->guardFeatureCode(*unit, "supports_filters", [&]() {
                             // If we have a filter attached, we initialize it and change to parse from its output.
                             auto filtered = builder::assign(builder::id("filtered"),
@@ -377,7 +377,7 @@ struct ProductionVisitor
                 // stage1 method is already declared (but not
                 // implemented) by the struct that unit-builder is
                 // declaring.
-                if ( unit && unit->supportsFilters() ) {
+                if ( unit ) {
                     addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage1(), addl_param,
                                    p.location());
                     addParseMethod(true, id_stage2, build_parse_stage12_or_stage2(false), addl_param, p.location());
@@ -1724,9 +1724,8 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     else
         builder()->addMemberCall(state().self, "__on_0x25_error", {}, l);
 
-    if ( unit.supportsFilters() )
-        guardFeatureCode(unit, "supports_filters",
-                         [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
+    guardFeatureCode(unit, "supports_filters",
+                     [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
 
     if ( unit.isFilter() )
         guardFeatureCode(unit, "is_filter",
@@ -1736,14 +1735,7 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         builder()->addMemberCall(builder::member(state().self, s.id()), "close", {}, l);
 }
 
-static Expression _filters(const ParserState& state) {
-    hilti::Expression filters;
-
-    if ( state.unit.get().supportsFilters() )
-        return builder::member(state.self, ID("__filters"));
-
-    return builder::null();
-}
+static Expression _filters(const ParserState& state) { return builder::member(state.self, ID("__filters")); }
 
 Expression ParserBuilder::waitForInputOrEod() {
     return builder::call("spicy_rt::waitForInputOrEod", {state().data, state().cur, _filters(state())});
