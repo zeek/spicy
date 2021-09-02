@@ -249,7 +249,7 @@ std::pair<char*, char*> detail::StackBuffer::activeRegion() const {
     // The direction in which the stack grows is platform-specific. It's
     // probably gong to be growing downwards pretty much everywhere, but to be
     // safe we whitelist platforms that we have confirmed to do so.
-#if __x86_64__ || (__APPLE__ && __arm64__)
+#if __x86_64__ || __arm64__
     auto lower = reinterpret_cast<char*>(_fiber->regs.sp);
     auto upper = reinterpret_cast<char*>(_fiber->regs.sp) + fiber_stack_used_size(_fiber);
 #else
