@@ -165,6 +165,8 @@
 [debug/optimizer] removing unused member 'foo::Pub2::__sink'
 [debug/optimizer] removing unused member 'foo::Pub3::__filters'
 [debug/optimizer] removing unused member 'foo::Pub3::__sink'
+[debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
+[debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
 [debug/optimizer] removing unused type 'foo::Priv7'
 [debug/optimizer] replacing call to unimplemented function foo::Priv10::__on_0x25_done with default value
 [debug/optimizer] replacing call to unimplemented function foo::Priv10::__on_0x25_error with default value

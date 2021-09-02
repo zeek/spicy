@@ -92,6 +92,8 @@
 [debug/optimizer] removing unused member 'foo::P2::__position'
 [debug/optimizer] removing unused member 'foo::P2::__position_update'
 [debug/optimizer] removing unused member 'foo::P2::__sink'
+[debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
+[debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
 [debug/optimizer] replacing call to unimplemented function foo::P0::__on_0x25_done with default value
 [debug/optimizer] replacing call to unimplemented function foo::P0::__on_0x25_error with default value
 [debug/optimizer] replacing call to unimplemented function foo::P0::__on_0x25_finally with default value

@@ -1,5 +1,7 @@
 module spicy_rt {
 
+import hilti;
+
 public type ParseError = exception &cxxname="::spicy::rt::ParseError";
 public type Backtrack = exception &cxxname="::spicy::rt::Backtrack";
 public type UnitAlreadyConnected = exception &cxxname="::spicy::rt::UnitAlreadyConnected";
@@ -17,6 +19,8 @@ public type Sink = struct {
     method void connect_filter(strong_ref<*> unit &requires-type-feature="is_filter");
     method void connect_mime_type(string mime_type);
     method void connect_mime_type(bytes mime_type);
+    method void connect_mime_type(string mime_type, string scope) &internal;
+    method void connect_mime_type(bytes mime_type, string scope) &internal;
     method void gap(uint<64> seq, uint<64> len);
     method uint<64> sequence_number();
     method void set_auto_trim(bool enable);

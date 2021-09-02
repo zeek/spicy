@@ -1,0 +1,58 @@
+# @TEST-DOC: Validates that when connecting a sink by MIME type only public units or units in the same module are considered.
+#
+# @TEST-EXEC: spicyc -dj -o foobar.hlto foo.spicy bar.spicy
+# @TEST-EXEC: spicyc -dj -o foo.hlto foo.spicy
+# @TEST-EXEC: spicyc -dj -o bar.hlto bar.spicy
+#
+# @TEST-EXEC: echo "### 'foo::Foo' can always see 'foo::Priv'" >> output
+# @TEST-EXEC: ${SCRIPTS}/printf 'via Foo' | HILTI_DEBUG= spicy-driver -p foo::Foo foo.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'via Foo' | HILTI_DEBUG= spicy-driver -p foo::Foo foobar.hlto >>output 2>&1
+#
+# @TEST-EXEC: echo "### 'bar::Bar1' can see 'foo::Priv' if from the same HLTO" >> output
+# @TEST-EXEC: ${SCRIPTS}/printf 'via Bar1' | HILTI_DEBUG= spicy-driver -p bar::Bar1 foobar.hlto >>output 2>&1
+
+# @TEST-EXEC: echo "### 'bar::Bar1' cannot see 'foo::Priv' if not from the same HLTO" >> output
+# @TEST-EXEC: ${SCRIPTS}/printf 'via Bar1' | HILTI_DEBUG= spicy-driver -p bar::Bar1 foo.hlto bar.hlto >>output 2>&1
+#
+# @TEST-EXEC: echo "### 'bar::Bar2' can always see 'foo::Foo' which in turn can see 'foo::Priv'" >> output
+# @TEST-EXEC: ${SCRIPTS}/printf 'via Bar2' | HILTI_DEBUG= spicy-driver -p bar::Bar2 foo.hlto bar.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'via Bar2' | HILTI_DEBUG= spicy-driver -p bar::Bar2 foobar.hlto >>output 2>&1
+#
+# @TEST-EXEC: btest-diff output
+
+# @TEST-START-FILE foo.spicy
+module foo;
+
+public type Foo = unit {
+    %mime-type = "foo/public";
+    : bytes &eod -> self.data;
+    sink data;
+
+    on %init { self.data.connect_mime_type("foo/private"); }
+    on %done { print "foo::Foo", self; }
+};
+
+type Priv = unit {
+    %mime-type = "foo/private";
+    x: bytes &eod;
+
+    on %done { print "foo::Priv", self; }
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE bar.spicy
+module bar;
+
+public type Bar1 = unit {
+    : bytes &eod -> self.data;
+    sink data;
+    on %init { self.data.connect_mime_type("foo/private"); }
+};
+
+public type Bar2 = unit {
+    : bytes &eod -> self.data;
+    sink data;
+    on %init { self.data.connect_mime_type("foo/public"); }
+};
+
+# @TEST-END-FILE

@@ -108,6 +108,8 @@
 [debug/optimizer] removing unused member 'foo::D::__sink'
 [debug/optimizer] removing unused member 'foo::F::__forward'
 [debug/optimizer] removing unused member 'foo::F::__sink'
+[debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
+[debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
 [debug/optimizer] replacing call to unimplemented function foo::A::__on_0x25_done with default value
 [debug/optimizer] replacing call to unimplemented function foo::A::__on_0x25_error with default value
 [debug/optimizer] replacing call to unimplemented function foo::A::__on_0x25_finally with default value
