@@ -1,7 +1,7 @@
 # @TEST-EXEC: spicyc %INPUT -p -o noopt.hlt -g
 # @TEST-EXEC: btest-diff noopt.hlt
 #
-# @TEST-EXEC: spicyc %INPUT -p -o opt.hlt -D global-optimizer 2>&1 | sort >log
+# @TEST-EXEC: spicyc %INPUT -p -o opt.hlt -D optimizer 2>&1 | sort >log
 # @TEST-EXEC: btest-diff opt.hlt
 # @TEST-EXEC: btest-diff log
 

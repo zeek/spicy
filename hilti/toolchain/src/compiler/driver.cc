@@ -11,7 +11,7 @@
 #include <hilti/rt/json.h>
 #include <hilti/rt/libhilti.h>
 
-#include <hilti/compiler/global-optimizer.h>
+#include <hilti/compiler/optimizer.h>
 #include <hilti/hilti.h>
 
 using namespace hilti;
@@ -671,7 +671,7 @@ Result<Nothing> Driver::transformUnits() {
 
     HILTI_DEBUG(logging::debug::Driver, "performing global transformations");
 
-    GlobalOptimizer opt(&_hlts, _ctx);
+    Optimizer opt(&_hlts, _ctx);
 
     opt.run();
 
