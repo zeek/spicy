@@ -31,6 +31,7 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/iterator.h>
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/vector_fwd.h>
 #include <hilti/rt/util.h>
 
@@ -253,7 +254,7 @@ public:
 
     using V = std::vector<T, Allocator>;
 
-    using size_type = uint64_t;
+    using size_type = integer::safe<uint64_t>;
     using reference = T&;
     using const_reference = const T&;
     using iterator = vector::Iterator<T, Allocator>;
@@ -465,7 +466,7 @@ public:
     auto cbegin() const { return const_iterator(0u, _control); }
     auto cend() const { return const_iterator(size(), _control); }
 
-    size_t size() const { return V::size(); }
+    size_type size() const { return V::size(); }
 
     // Methods of `std::vector`.
     using typename V::value_type;
