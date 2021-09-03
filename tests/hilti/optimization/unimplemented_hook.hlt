@@ -1,7 +1,7 @@
 # @TEST-EXEC: hiltic %INPUT -p -o noopt.hlt -g
 # @TEST-EXEC: btest-diff noopt.hlt
 #
-# @TEST-EXEC: hiltic %INPUT -p -o opt.hlt -D global-optimizer > log 2>&1
+# @TEST-EXEC: hiltic %INPUT -p -o opt.hlt -D optimizer > log 2>&1
 # @TEST-EXEC: btest-diff opt.hlt
 # @TEST-EXEC: btest-diff log
 

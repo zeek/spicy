@@ -11,18 +11,16 @@
 
 namespace hilti {
 
-struct GlobalOptimizer {
+struct Optimizer {
 public:
-    GlobalOptimizer(std::vector<Unit>* units, const std::shared_ptr<Context> ctx)
-        : _units(units), _ctx(std::move(ctx)) {}
-    ~GlobalOptimizer() { _units = nullptr; }
+    Optimizer(std::vector<Unit>* units, const std::shared_ptr<Context> ctx) : _units(units), _ctx(std::move(ctx)) {}
+    ~Optimizer() { _units = nullptr; }
 
     void run();
 
 private:
     std::vector<Unit>* _units = nullptr;
     std::shared_ptr<Context> _ctx;
-    // Storage for field declaration and their uses.
 };
 
 } // namespace hilti

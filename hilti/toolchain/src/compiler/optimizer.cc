@@ -1,6 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include "hilti/compiler/global-optimizer.h"
+#include "hilti/compiler/optimizer.h"
 
 #include <algorithm>
 #include <optional>
@@ -32,7 +32,8 @@
 namespace hilti {
 
 namespace logging::debug {
-inline const DebugStream GlobalOptimizer("global-optimizer");
+inline const DebugStream Optimizer("optimizer");
+inline const DebugStream OptimizerCollect("optimizer-collect");
 } // namespace logging::debug
 
 template<typename Position>
@@ -194,6 +195,13 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
+
+        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
+            HILTI_DEBUG(logging::debug::OptimizerCollect, "functions:");
+            for ( const auto& [id, uses] : _data )
+                HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("    %s: defined=%d referenced=%d hook=%d", id,
+                                                                        uses.defined, uses.referenced, uses.hook));
+        }
     }
 
     bool prune(Node& node) {
@@ -276,7 +284,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
 
                 // Remove function methods without implementation.
                 if ( ! function.defined ) {
-                    HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                    HILTI_DEBUG(logging::debug::Optimizer,
                                 util::fmt("removing field for unused method %s", *function_id));
                     removeNode(p);
 
@@ -378,7 +386,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 const auto& function = _data.at(*function_id);
 
                 if ( function.hook && ! function.defined ) {
-                    HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                    HILTI_DEBUG(logging::debug::Optimizer,
                                 util::fmt("removing declaration for unused hook function %s", *function_id));
 
                     removeNode(p);
@@ -386,7 +394,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 }
 
                 if ( ! function.hook && ! function.referenced ) {
-                    HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                    HILTI_DEBUG(logging::debug::Optimizer,
                                 util::fmt("removing declaration for unused function %s", *function_id));
 
                     removeNode(p);
@@ -420,7 +428,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 if ( ! function.defined ) {
                     if ( auto member = x.op1().tryAs<expression::Member>() )
                         if ( auto fn = member->memberType()->tryAs<type::Function>() ) {
-                            HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                            HILTI_DEBUG(logging::debug::Optimizer,
                                         util::fmt("replacing call to unimplemented function %s with default value",
                                                   *function_id));
 
@@ -461,7 +469,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 if ( function.hook && ! function.defined ) {
                     auto id = call.op0().as<expression::ResolvedID>();
                     if ( auto fn = id.declaration().tryAs<declaration::Function>() ) {
-                        HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                        HILTI_DEBUG(logging::debug::Optimizer,
                                     util::fmt("replacing call to unimplemented function %s with default value",
                                               *function_id));
 
@@ -491,6 +499,12 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
+
+        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
+            HILTI_DEBUG(logging::debug::OptimizerCollect, "types:");
+            for ( const auto& [id, used] : _used )
+                HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("    %s: used=%d", id, used));
+        }
     }
 
     bool prune_decls(Node& node) override {
@@ -526,7 +540,7 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
             case Stage::PRUNE_USES: break;
             case Stage::PRUNE_DECLS:
                 if ( ! _used.at(*type_id) ) {
-                    HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("removing unused type '%s'", *type_id));
+                    HILTI_DEBUG(logging::debug::Optimizer, util::fmt("removing unused type '%s'", *type_id));
 
                     removeNode(p);
 
@@ -671,6 +685,13 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
+
+        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
+            HILTI_DEBUG(logging::debug::OptimizerCollect, "constants:");
+            std::vector<std::string> xs;
+            for ( const auto& [id, value] : _constants )
+                HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("    %s: value=%d", id, value));
+        }
     }
 
     bool prune_uses(Node& node) override {
@@ -731,7 +752,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
 
                 if ( const auto& constant = _constants.find(rid); constant != _constants.end() ) {
                     if ( x.type() == type::Bool() ) {
-                        HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("inlining constant '%s'", x.id()));
+                        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("inlining constant '%s'", x.id()));
 
                         replaceNode(p, builder::bool_(constant->second));
 
@@ -797,6 +818,17 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
+
+        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
+            HILTI_DEBUG(logging::debug::OptimizerCollect, "feature requirements:");
+            for ( const auto& [id, features] : _features ) {
+                std::stringstream ss;
+                ss << "    " << id << ':';
+                for ( const auto& [feature, enabled] : features )
+                    ss << util::fmt(" %s=%d", feature, enabled);
+                HILTI_DEBUG(logging::debug::OptimizerCollect, ss.str());
+            }
+        }
     }
 
     void transform(Node& node) {
@@ -832,7 +864,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
                 const auto value = x.init().value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
 
                 if ( required != value ) {
-                    HILTI_DEBUG(logging::debug::GlobalOptimizer,
+                    HILTI_DEBUG(logging::debug::Optimizer,
                                 util::fmt("disabling feature '%s' of type '%s' since it is not used", feature, typeID));
 
                     auto new_x = declaration::GlobalVariable::setInit(x, builder::bool_(false));
@@ -1090,6 +1122,22 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
 
         for ( auto i : this->walk(&node) )
             dispatch(i);
+
+        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
+            HILTI_DEBUG(logging::debug::OptimizerCollect, "members:");
+
+            HILTI_DEBUG(logging::debug::OptimizerCollect, "    feature status:");
+            for ( const auto& [id, features] : _features ) {
+                std::stringstream ss;
+                ss << "        " << id << ':';
+                for ( const auto& [feature, enabled] : features )
+                    ss << util::fmt(" %s=%d", feature, enabled);
+                HILTI_DEBUG(logging::debug::OptimizerCollect, ss.str());
+            }
+
+            for ( const auto& [id, used] : _used )
+                HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("    %s used=%d", id, used));
+        }
     }
 
     bool prune_decls(Node& node) override {
@@ -1137,7 +1185,8 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
 
             case Stage::PRUNE_DECLS: {
                 if ( ! _used.at(member_id) ) {
-                    // Check whether the field depends on an active feature in which case we do not remove the field.
+                    // Check whether the field depends on an active feature in which case we do not remove the
+                    // field.
                     if ( _features.count(*type_id) ) {
                         const auto& features = _features.at(*type_id);
 
@@ -1155,7 +1204,7 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
                         }
                     }
 
-                    HILTI_DEBUG(logging::debug::GlobalOptimizer, util::fmt("removing unused member '%s'", member_id));
+                    HILTI_DEBUG(logging::debug::Optimizer, util::fmt("removing unused member '%s'", member_id));
 
                     removeNode(p);
 
@@ -1253,8 +1302,8 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
     }
 };
 
-void GlobalOptimizer::run() {
-    util::timing::Collector _("hilti/compiler/global-optimizer");
+void Optimizer::run() {
+    util::timing::Collector _("hilti/compiler/optimizer");
 
     // Create a full list of units to run on. This includes both the units
     // explicitly passed on construction as well as their dependencies.
@@ -1305,6 +1354,7 @@ void GlobalOptimizer::run() {
             passes->insert(pass);
     }
 
+    size_t round = 0;
     while ( true ) {
         bool modified = false;
 
@@ -1316,8 +1366,11 @@ void GlobalOptimizer::run() {
                 vs.push_back(creators.at(pass)());
 
         for ( auto& v : vs ) {
-            for ( auto& unit : units )
+            for ( auto& unit : units ) {
+                HILTI_DEBUG(logging::debug::OptimizerCollect,
+                            util::fmt("processing %s round=%d", unit->location().file(), round));
                 v->collect(*unit);
+            }
 
             for ( auto& unit : units )
                 modified = v->prune_uses(*unit) || modified;
@@ -1328,6 +1381,8 @@ void GlobalOptimizer::run() {
 
         if ( ! modified )
             break;
+
+        ++round;
     }
 
     // Clear cached information which might become outdated due to edits.
