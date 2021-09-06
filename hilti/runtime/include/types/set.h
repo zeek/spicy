@@ -20,6 +20,7 @@
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/vector_fwd.h>
 #include <hilti/rt/util.h>
@@ -120,7 +121,7 @@ public:
     using key_type = T;
     using value_type = T;
 
-    using size_type = uint64_t;
+    using size_type = integer::safe<uint64_t>;
 
     Set() = default;
     Set(const Set&) = default;

@@ -22,6 +22,7 @@
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -176,7 +177,7 @@ public:
 
     using key_type = typename M::key_type;
     using value_type = typename M::value_type;
-    using size_type = uint64_t;
+    using size_type = integer::safe<uint64_t>;
 
     using iterator = typename map::Iterator<K, V>;
     using const_iterator = typename map::ConstIterator<K, V>;

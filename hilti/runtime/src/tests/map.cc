@@ -41,7 +41,7 @@ TEST_CASE("subscript") {
         CHECK_THROWS_WITH_AS(m[99], "key is unset", const IndexError&);
         // Proxy objects only invalidate iterators if an element was actually inserted.
         m = Map<int, int>{{1, 11}};
-        REQUIRE(m.size());
+        REQUIRE_EQ(m.size(), 1u);
         auto begin = m.begin();
         REQUIRE_EQ(begin->first, 1);
         REQUIRE_EQ(begin->second, 11);
@@ -148,7 +148,7 @@ TEST_CASE("Iterator") {
 TEST_CASE("index_assign") {
     // Modifying an existing element does not invalidate iterators.
     auto m = Map<int, int>{{1, 11}};
-    REQUIRE(m.size());
+    REQUIRE_EQ(m.size(), 1u);
     auto begin = m.begin();
     REQUIRE_EQ(begin->first, 1);
     REQUIRE_EQ(begin->second, 11);
