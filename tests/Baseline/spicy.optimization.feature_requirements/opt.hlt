@@ -40,12 +40,12 @@ type X6 = struct {
     hook void __on_0x25_init();
 } &on-heap;
 
-global auto __feat%foo__X1%uses_random_access = True;
-global auto __feat%foo__X2%uses_random_access = False;
-global auto __feat%foo__X3%is_filter = False;
-global auto __feat%foo__X4%is_filter = True;
-global auto __feat%foo__X5%supports_filters = True;
-global auto __feat%foo__X5%supports_sinks = False;
+const  __feat%foo__X1%uses_random_access = True;
+const  __feat%foo__X2%uses_random_access = False;
+const  __feat%foo__X3%is_filter = False;
+const  __feat%foo__X4%is_filter = True;
+const  __feat%foo__X5%supports_filters = True;
+const  __feat%foo__X5%supports_sinks = False;
 
 method hook void foo::X1::__on_0x25_init() {
     cast<uint<64>>((*(*self).__position) - (*(*self).__begin));
