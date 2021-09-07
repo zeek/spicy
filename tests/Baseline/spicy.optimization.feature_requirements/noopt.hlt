@@ -90,12 +90,12 @@ type X6 = struct {
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
 } &on-heap;
 
-global auto __feat%foo__X1%uses_random_access = True;
-global auto __feat%foo__X2%uses_random_access = True;
-global auto __feat%foo__X3%is_filter = True;
-global auto __feat%foo__X4%is_filter = True;
-global auto __feat%foo__X5%supports_filters = True;
-global auto __feat%foo__X5%supports_sinks = True;
+const  __feat%foo__X1%uses_random_access = True;
+const  __feat%foo__X2%uses_random_access = True;
+const  __feat%foo__X3%is_filter = True;
+const  __feat%foo__X4%is_filter = True;
+const  __feat%foo__X5%supports_filters = True;
+const  __feat%foo__X5%supports_sinks = True;
 
 method hook void foo::X1::__on_0x25_init() {
     cast<uint<64>>((*(*self).__position) - (*(*self).__begin));

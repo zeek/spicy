@@ -715,21 +715,13 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
         return any_modification;
     }
 
-    bool operator()(const declaration::GlobalVariable& x, position_t p) {
-        // We only work on feature constants for now, see
-        // https://github.com/zeek/spicy/issues/982. Since the identifiers we
-        // use for feature constants are not available to users we allow names
-        // starting with `feat________` as an alternative for testing.
-        if ( ! ((util::startsWith(x.id(), "__feat") || util::startsWith(x.id(), "feat________")) &&
-                x.type() == type::Bool()) )
+    bool operator()(const declaration::Constant& x, position_t p) {
+        if ( x.type() != type::Bool() )
             return false;
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                const auto& init = x.init();
-                assert(init);
-
-                if ( auto ctor = init.value().tryAs<expression::Ctor>() )
+                if ( auto ctor = x.value().tryAs<expression::Ctor>() )
                     if ( auto bool_ = ctor->ctor().tryAs<ctor::Bool>() )
                         _constants[p.node.rid()] = bool_->value();
 
@@ -838,7 +830,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
             dispatch(i);
     }
 
-    void operator()(const declaration::GlobalVariable& x, position_t p) {
+    void operator()(const declaration::Constant& x, position_t p) {
         const auto& id = x.id();
 
         // We only work on feature flags named `__feat*`.
@@ -861,13 +853,13 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
             case Stage::TRANSFORM: {
                 const auto required = _features.at(typeID).at(feature);
-                const auto value = x.init().value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
+                const auto value = x.value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
 
                 if ( required != value ) {
                     HILTI_DEBUG(logging::debug::Optimizer,
                                 util::fmt("disabling feature '%s' of type '%s' since it is not used", feature, typeID));
 
-                    auto new_x = declaration::GlobalVariable::setInit(x, builder::bool_(false));
+                    auto new_x = declaration::Constant::setValue(x, builder::bool_(false));
                     replaceNode(p, new_x);
 
                     if ( auto module_ = p.findParent<Module>() )
@@ -1274,7 +1266,7 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
         return false;
     }
 
-    result_t operator()(const declaration::GlobalVariable& x, position_t p) {
+    result_t operator()(const declaration::Constant& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
                 // Check whether the feature flag matches the type of the field.
@@ -1286,7 +1278,7 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
 
                 auto type_id = ID(util::replace(tokens[1], "__", "::"));
                 auto feature = tokens[2];
-                auto is_active = x.init().value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
+                auto is_active = x.value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
 
                 _features[std::move(type_id)][std::move(feature)] = is_active;
 

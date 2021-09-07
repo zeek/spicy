@@ -1,0 +1,39 @@
+# @TEST-EXEC: hiltic %INPUT -p -o noopt.hlt -g
+# @TEST-EXEC: btest-diff noopt.hlt
+#
+# @TEST-EXEC: hiltic %INPUT -p -o opt.hlt -D optimizer 2>&1 | sort > log
+# @TEST-EXEC: btest-diff opt.hlt
+# @TEST-EXEC: btest-diff log
+#
+# @TEST-DOC: Tests optimizations performing constant folding.
+
+module Foo {
+import hilti;
+
+const t = True;
+const f = False;
+
+hilti::print(t);
+hilti::print(f);
+
+if (t) {
+    0;
+} else {
+    1;
+}
+
+if (f) {
+    2;
+} else {
+    3;
+}
+
+if (t) {
+    4;
+}
+
+if (f) {
+    5;
+}
+
+}
