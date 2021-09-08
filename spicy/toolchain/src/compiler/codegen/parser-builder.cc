@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <optional>
 #include <utility>
 
@@ -1294,9 +1295,6 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
          builder::parameter("cur", type::Optional(type::stream::View()), builder::optional(type::stream::View())),
          builder::parameter("context", type::Optional(builder::typeByID("spicy_rt::UnitContext")))};
 
-    for ( auto p : t.parameters() )
-        params.emplace_back(p);
-
     auto attr_ext_overload = always_emit ? AttributeSet({Attribute("&static"), Attribute("&always-emit")}) :
                                            AttributeSet({Attribute("&static")});
 
@@ -1387,13 +1385,15 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
         auto grammar = cg()->grammarBuilder()->grammar(t);
         auto visitor = ProductionVisitor(this, grammar);
 
-        if ( t.parameters().empty() ) {
+        const auto& parameters = t.parameters();
+        // Only create `parse1` and `parse3` body if the unit can be default constructed.
+        if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p.default_(); }) ) {
             // Create parse1() body.
             pushBuilder();
             builder()->addLocal("unit", builder::value_reference(
                                             builder::default_(builder::typeByID(*t.typeID()),
-                                                              hilti::util::transform(t.parameters(), [](const auto& p) {
-                                                                  return builder::id(p.id());
+                                                              hilti::util::transform(parameters, [](const auto& p) {
+                                                                  return *p.default_();
                                                               }))));
             builder()->addLocal("ncur", type::stream::View(),
                                 builder::ternary(builder::id("cur"), builder::deref(builder::id("cur")),
@@ -1424,8 +1424,8 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             pushBuilder();
             builder()->addLocal("unit", builder::value_reference(
                                             builder::default_(builder::typeByID(*t.typeID()),
-                                                              hilti::util::transform(t.parameters(), [](const auto& p) {
-                                                                  return builder::id(p.id());
+                                                              hilti::util::transform(parameters, [](const auto& p) {
+                                                                  return *p.default_();
                                                               }))));
 
             builder()->addCall(ID("spicy_rt::initializeParsedUnit"),
