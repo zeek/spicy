@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <hilti/rt/libhilti.h>
+
 #include <spicy/rt/autogen/config.h>
 #include <spicy/rt/base64.h>
 #include <spicy/rt/debug.h>
