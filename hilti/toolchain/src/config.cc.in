@@ -25,7 +25,7 @@ std::optional<hilti::rt::filesystem::path> precompiled_libhilti(const Configurat
 #endif
 
     if ( auto&& cache = util::cacheDirectory(configuration) ) {
-        const rt::filesystem::path file_name = rt::fmt("precompiled_libhilti%s.h.pch", (debug ? "_debug" : ""));
+        const rt::filesystem::path file_name = rt::fmt("precompiled_libhilti%s.h.gch", (debug ? "_debug" : ""));
 
         std::error_code ec;
         if ( auto pch = (*cache) / file_name; rt::filesystem::exists(pch, ec) )
