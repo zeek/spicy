@@ -1,3 +1,10 @@
+1.3.0-dev.77 | 2021-09-08 10:46:32 +0200
+
+  * Make it possible to build on arm64. (Benjamin Bannier, Corelight)
+
+    Since we currently do not test on arm64 we do not advertize it as a
+    supported platform.
+
 1.3.0-dev.75 | 2021-09-07 08:39:58 +0200
 
   * GH-982: Model feature constants with actual constants. (Benjamin Bannier, Corelight)
