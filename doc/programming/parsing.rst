@@ -598,7 +598,7 @@ variables to a unit type to store arbitrary state:
 Here, we assign a string value to ``a`` once we have parsed ``x``. The
 final ``print`` shows the expected value. As you can also see, before
 we assign anything, the variable's value is just empty: Spicy
-initializes instances variables with well-defined defaults. If you
+initializes unit variables with well-defined defaults. If you
 would rather leave a variable unset by default, you can add
 `&optional`:
 
@@ -620,6 +620,25 @@ would rather leave a variable unset by default, you can add
 
 You can use the ``?.`` unit operator to test if an optional unit
 variable remains unset.
+
+Unit variables can also be initialized with custom expressions when being
+defined. The initialization is performed just before the containing unit starts
+parsing (implying that the expressions cannot access parse results
+of the unit itself yet)
+
+.. spicy-code:: unit-vars-init.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        x: int8;
+        var a: int8 = 123;
+        on %done { print self; }
+    };
+
+.. spicy-output:: unit-vars-init.spicy
+    :exec: printf \05 | spicy-driver %INPUT
+    :show-with: foo.spicy
 
 .. _unit_parameters:
 

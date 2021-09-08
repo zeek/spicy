@@ -1,0 +1,8 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Foo = unit {
+    x: int8;
+    var a: int8 = 123;
+    on %done { print self; }
+};
