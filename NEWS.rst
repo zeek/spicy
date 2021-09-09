@@ -35,6 +35,8 @@ Version 1.3 (in progress)
 
 - GH-941: Allow use of units with all defaulted parameters as entry points.
 
+- We added precompilation support for `libspicy.h`.
+
 .. rubric:: Bug fixes
 
 - Correctly handle lookups for NULL library symbols.

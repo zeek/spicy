@@ -195,6 +195,41 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)
 string(STRIP "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${BuildType}}" cflags)
 string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BuildType}}" cxxflags)
 
+# Precompiled headers.
+
+option("HILTI_DEV_PRECOMPILE_HEADERS" "Precompile headers for developer tests" ON)
+
+if (${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config AND TARGET spicy-config)
+    # Precompile libhilti for use in JIT during development.
+    #
+    # We only use precompiled headers during JIT, but e.g., not to during
+    # compilation of Spicy itself. This gives us the benefits of JIT without
+    # e.g., making it harder for ccache to work during development. It also
+    # allows us to punt on some trickier cleanups of header files.
+    add_custom_command(
+        COMMENT "Generating precompiled headers"
+        OUTPUT ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h
+        OUTPUT ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h.pch
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h.pch
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h.pch
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h.pch
+        COMMAND
+            ${CMAKE_COMMAND} -E env SPICY_CACHE=${PROJECT_BINARY_DIR}/cache/spicy
+            ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh --bindir ${CMAKE_BINARY_DIR}/bin
+        DEPENDS
+            ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/hilti/runtime/include/libhilti.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/spicy/runtime/include/libspicy.h
+            hilti-config
+            spicy-config)
+    add_custom_target(precompiled-headers
+        ALL
+        DEPENDS ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h)
+endif ()
+
 # Global test target
 add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS tests)
 add_custom_target(tests DEPENDS hilti-tests spicy-tests)

@@ -12,6 +12,40 @@ using namespace spicy;
 const auto flatten = hilti::util::flattenParts;
 const auto prefix = hilti::util::prefixParts;
 
+namespace {
+std::optional<hilti::rt::filesystem::path> precompiled_libspicy(const hilti::Configuration& config, bool debug) {
+    // We disable use of precompiled headers for sanitizers builds since the
+    // sanitizer flags are not exposed on the config level.
+    //
+    // TODO(bbannier): Allow using of precompiled headers for sanitizer builds.
+#ifdef HILTI_HAVE_SANITIZER
+    return {};
+#endif
+
+    if ( const auto& cache = hilti::util::cacheDirectory(config) ) {
+        const hilti::rt::filesystem::path file_name =
+            hilti::rt::fmt("precompiled_libspicy%s.h.gch", (debug ? "_debug" : ""));
+
+        if ( auto pch = (*cache) / file_name; hilti::rt::filesystem::exists(pch) )
+            return pch.replace_extension();
+    }
+
+    return {};
+}
+
+// Helper function to ensure exactly one precompile header is used.
+void set_precompiled_header(const hilti::Configuration& config, bool debug, std::vector<std::string>& cxxflags) {
+    auto header = precompiled_libspicy(config, debug);
+    if ( ! header )
+        return;
+
+    for ( auto& flag : cxxflags )
+        if ( flag.find("precompiled_libhilti") != std::string::npos )
+            flag = hilti::rt::fmt("-include%s", header->c_str());
+}
+
+} // namespace
+
 template<class T>
 inline auto join(const std::vector<T>& v1, const std::vector<T>& v2) {
     std::vector<T> n;
@@ -33,8 +67,12 @@ void Configuration::extendHiltiConfiguration() {
     spcy.init(hlt.uses_build_directory);
 
     hlt.hilti_library_paths = join(spcy.spicy_library_paths, hlt.hilti_library_paths);
+
     hlt.runtime_cxx_flags_debug = join(spcy.runtime_cxx_flags_debug, hlt.runtime_cxx_flags_debug);
     hlt.runtime_cxx_flags_release = join(spcy.runtime_cxx_flags_release, hlt.runtime_cxx_flags_release);
+    set_precompiled_header(hlt, true, hlt.runtime_cxx_flags_debug);
+    set_precompiled_header(hlt, false, hlt.runtime_cxx_flags_release);
+
     hlt.runtime_cxx_include_paths = join(spcy.runtime_cxx_include_paths, hlt.runtime_cxx_include_paths);
     hlt.runtime_cxx_library_paths = join(spcy.runtime_cxx_library_paths, hlt.runtime_cxx_library_paths);
     hlt.runtime_ld_flags_debug = join(spcy.runtime_ld_flags_debug, hlt.runtime_ld_flags_debug);
@@ -67,20 +105,24 @@ void Configuration::init(bool use_build_directory) {
     spicy_library_paths = hilti::util::transform(library_paths, [](auto s) { return hilti::rt::filesystem::path(s); });
 
     runtime_cxx_include_paths =
-        hilti::util::transform(hilti::util::split(prefix("${SPICY_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "", installation_tag)),
-                        [](auto s) { return hilti::rt::filesystem::path(s); });
+        hilti::util::transform(hilti::util::split(
+                                   prefix("${SPICY_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "", installation_tag)),
+                               [](auto s) { return hilti::rt::filesystem::path(s); });
 
     runtime_cxx_library_paths =
-        hilti::util::transform(hilti::util::split(prefix("${SPICY_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "", installation_tag)),
-                        [](auto s) { return hilti::rt::filesystem::path(s); });
+        hilti::util::transform(hilti::util::split(
+                                   prefix("${SPICY_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "", installation_tag)),
+                               [](auto s) { return hilti::rt::filesystem::path(s); });
 
     toolchain_cxx_include_paths =
-        hilti::util::transform(hilti::util::split(prefix("${SPICY_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS}", "", installation_tag)),
-                        [](auto s) { return hilti::rt::filesystem::path(s); });
+        hilti::util::transform(hilti::util::split(
+                                   prefix("${SPICY_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS}", "", installation_tag)),
+                               [](auto s) { return hilti::rt::filesystem::path(s); });
 
     toolchain_cxx_library_paths =
-        hilti::util::transform(hilti::util::split(prefix("${SPICY_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS}", "", installation_tag)),
-                        [](auto s) { return hilti::rt::filesystem::path(s); });
+        hilti::util::transform(hilti::util::split(
+                                   prefix("${SPICY_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS}", "", installation_tag)),
+                               [](auto s) { return hilti::rt::filesystem::path(s); });
 
     runtime_cxx_flags_debug = flatten({prefix("${SPICY_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
                                        prefix("${SPICY_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
