@@ -35,6 +35,8 @@ Version 1.3 (in progress)
 
 .. rubric:: Bug fixes
 
+- Correctly handle lookups for NULL library symbols.
+
 .. rubric:: Documentation
 
 Version 1.2

@@ -1,10 +1,12 @@
 // @TEST-REQUIRES: have-sanitizer
+// @TEST-REQUIRES: test -z "${ASAN_OPTIONS}"
 // @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
 // @TEST-EXEC: grep -q 'detected memory leaks' output
 //
 // If we have compiled with address/leak sanitizer, make sure it's active.
 
 #include <stdio.h>
+
 #include <hilti/rt/libhilti.h>
 
 extern "C" {

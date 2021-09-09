@@ -1,4 +1,5 @@
 // @TEST-REQUIRES: have-sanitizer
+// @TEST-REQUIRES: test -z "${ASAN_OPTIONS}"
 // @TEST-GROUP: no-jit
 // @TEST-EXEC: cxx-compile-and-link %INPUT
 //
