@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
@@ -311,7 +312,9 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         Expression parse1 = builder::null();
         Expression parse3 = builder::null();
 
-        if ( unit.parameters().empty() ) {
+        // Only create `parse1` and `parse3` if the unit can be default constructed.
+        const auto& parameters = unit.parameters();
+        if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p.default_(); }) ) {
             parse1 = _pb.parseMethodExternalOverload1(unit);
             parse3 = _pb.parseMethodExternalOverload3(unit);
         }

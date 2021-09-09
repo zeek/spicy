@@ -33,6 +33,8 @@ Version 1.3 (in progress)
 
 .. rubric:: Changed Functionality
 
+- GH-941: Allow use of units with all defaulted parameters as entry points.
+
 .. rubric:: Bug fixes
 
 - Correctly handle lookups for NULL library symbols.

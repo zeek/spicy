@@ -1,0 +1,11 @@
+# @TEST-EXEC: printf '\07' | spicy-dump -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Validates that a unit with all parameters with defaults can be used as a parser.
+
+module foo;
+
+public type X = unit(a: bool = False) {
+    var v: bool = a;
+    x: uint8;
+};
