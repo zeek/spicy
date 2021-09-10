@@ -81,36 +81,7 @@ std::string fmt(const char* fmt, const Args&... args) {
     return tfm::format(fmt, args...);
 }
 
-/** Applies a function to each element of a vector. */
-template<typename X, typename F>
-auto transform(const std::vector<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
-    std::vector<Y> y;
-    y.reserve(x.size());
-    for ( const auto& i : x )
-        y.emplace_back(f(i));
-    return y;
-}
-
-/** Applies a function to each element of a set. */
-template<typename X, typename F>
-auto transform(const std::set<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
-    std::set<Y> y;
-    for ( const auto& i : x )
-        y.insert(f(i));
-    return y;
-}
-
-/** Applies a function to each element of an initializer_list. */
-template<typename X, typename F>
-auto transform(const std::initializer_list<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
-    std::vector<Y> y;
-    for ( const auto& i : x )
-        y.emplace_back(f(i));
-    return y;
-}
+using hilti::rt::transform;
 
 /** Applies a function to each element of a set, returning a vector with the results. */
 template<typename X, typename F>
@@ -123,24 +94,11 @@ auto transform_to_vector(const std::set<X>& x, F f) {
     return y;
 }
 
-/** Filters a vector through a boolean predicate. */
-template<typename X, typename F>
-auto filter(const std::vector<X>& x, F f) {
-    std::vector<X> y;
-    y.reserve(x.size());
-    for ( const auto& i : x )
-        if ( f(i) )
-            y.emplace_back(i);
-    return y;
-}
-
-/** Filters a set through a boolean predicate. */
-template<typename X, typename F>
-auto filter(const std::set<X>& x, F f) {
-    std::set<X> y;
-    for ( const auto& i : x )
-        if ( f(i) )
-            y.insert(i);
+/** Filters a container through a boolean predicate. */
+template<typename C, typename F>
+auto filter(const C& x, F f) {
+    C y;
+    std::copy_if(std::begin(x), std::end(x), std::inserter(y, std::end(y)), f);
     return y;
 }
 

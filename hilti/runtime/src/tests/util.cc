@@ -628,11 +628,6 @@ TEST_CASE("systemByteOrder") {
 }
 
 TEST_CASE("transform") {
-    SUBCASE("list") {
-        CHECK_EQ(transform(std::list<int>(), [](auto&& x) { return x + x; }), std::vector<int>());
-        CHECK_EQ(transform(std::list({1, 2, 3}), [](auto&& x) { return x + x; }), std::vector({2, 4, 6}));
-    }
-
     SUBCASE("set") {
         CHECK_EQ(transform(std::set<int>(), [](auto&& x) { return x + x; }), std::set<int>());
         CHECK_EQ(transform(std::set({1, 2, 3}), [](auto&& x) { return x + x; }), std::set({2, 4, 6}));

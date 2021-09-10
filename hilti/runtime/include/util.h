@@ -292,60 +292,48 @@ std::string join(const T& l, const std::string& delim = "") {
     return result;
 }
 
-/** Applies a function to each element of a vector, returning a new
-    vector with the results.
- */
-template<typename X, typename F>
-auto transform(const std::vector<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
-    std::vector<Y> y;
-    y.reserve(x.size());
-    for ( const auto& i : x )
-        y.emplace_back(f(i));
-    return y;
+namespace detail {
+
+/** Helper template to detect whether a type is a `Vector`. */
+template<typename T>
+struct is_Vector : std::false_type {};
+
+template<typename T, typename Allocator>
+struct is_Vector<Vector<T, Allocator>> : std::true_type {};
+
+/** Helper which given some container `C` of `X` returns a default constructed
+ * container of the same type class as `C` but with element type `Y`. */
+template<typename C, typename Y>
+constexpr auto transform_result_value(const C&) {
+    using X = typename C::value_type;
+
+    if constexpr ( std::is_same_v<C, std::vector<X>> ) {
+        return std::vector<Y>();
+    }
+    else if constexpr ( std::is_same_v<C, std::set<X>> ) {
+        return std::set<Y>();
+    }
+    else if constexpr ( is_Vector<C>::value ) {
+        // We do not preserve the allocator since a proper custom one could depend on `Y`.
+        return Vector<Y>();
+    }
+    else if constexpr ( std::is_same_v<C, Set<X>> ) {
+        return Set<Y>();
+    }
+
+    // No default value defined for type.
 }
 
-/** Applies a function to each element of a list, returning a new
-    vector with the results.
- */
-template<typename X, typename F>
-auto transform(const std::list<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
-    std::vector<Y> y;
-    y.reserve(x.size());
-    for ( const auto& i : x )
-        y.emplace_back(f(i));
-    return y;
-}
+} // namespace detail
 
-/** Applies a function to each element of a set, returning a new
-    vector with the results.
- */
-template<typename X, typename F>
-auto transform(const std::set<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
-    std::set<Y> y;
-    for ( const auto& i : x )
-        y.insert(f(i));
-    return y;
-}
+/** Applies a function to each element of container. */
+template<typename C, typename F>
+auto transform(const C& x, F f) {
+    using Y = typename std::result_of_t<F(typename C::value_type&)>;
 
-/** Applies a function to each element of a `rt::Set`. */
-template<typename X, typename F>
-auto transform(const Set<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
-    hilti::rt::Set<Y> y;
-    for ( const auto& i : x )
-        y.insert(f(i));
-    return y;
-}
+    auto y = detail::transform_result_value<C, Y>(x);
+    std::transform(std::begin(x), std::end(x), std::inserter(y, std::end(y)), f);
 
-/** Applies a function to each element of a `rt::Vector`. */
-template<typename X, typename Allocator, typename F>
-auto transform(const Vector<X, Allocator>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
-    Vector<Y> y;
-    std::transform(x.begin(), x.end(), std::back_inserter(y), [&](const auto& value) { return f(value); });
     return y;
 }
 
