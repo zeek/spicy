@@ -83,6 +83,7 @@ bool operator!=(Allocator<T, D1> const&, Allocator<U, D2> const&) noexcept {
 template<typename T, typename Allocator>
 class Iterator {
     using V = Vector<T, Allocator>;
+    friend V;
 
     std::weak_ptr<V*> _control;
     typename V::size_type _index = 0;
@@ -455,6 +456,21 @@ public:
     Vector& operator+=(const Vector& other) {
         V::insert(V::end(), other.V::begin(), other.V::end());
         return *this;
+    }
+
+    /** Inserts value before a given position.
+     *
+     * @param pos iterator to the position preceeding the inserted value
+     * @parm value value to insert
+     * @return iterator pointing to the inserted element
+     * */
+    iterator insert(iterator pos, const T& value) {
+        const auto index = pos._index;
+        if ( index > size() )
+            throw InvalidIterator(fmt("index %s out of bounds", index));
+
+        V::insert(V::begin() + index.Ref(), value);
+        return pos;
     }
 
     auto begin() { return iterator(0u, _control); }

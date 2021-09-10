@@ -170,6 +170,17 @@ public:
         return static_cast<V&>(*this).clear();
     }
 
+    /** Inserts value in the position as close as possible to hint.
+     *
+     * @param hint hint for the insertion position
+     * @param value value to insert
+     * @return iterator pointing to the inserted element
+     * */
+    iterator insert(iterator hint, const T& value) {
+        auto it = V::insert(hint._iterator, value);
+        return iterator(it, _control);
+    }
+
     // Methods of `std::set`. These methods *must not* cause any iterator invalidation.
     using V::empty;
     using V::insert;

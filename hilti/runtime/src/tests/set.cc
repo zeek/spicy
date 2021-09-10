@@ -53,6 +53,22 @@ TEST_CASE("insert") {
         REQUIRE_THROWS_WITH_AS(++begin, "iterator is invalid", const IndexError&);
         REQUIRE_THROWS_WITH_AS(begin++, "iterator is invalid", const IndexError&);
     }
+
+    SUBCASE("hint") {
+        Set<int> s;
+        auto hint = s.begin();
+
+        auto it1 = s.insert(hint, 1);
+
+        // For an empty `Set`, `begin` is not a dereferencable iterator, and it
+        // does not become valid when an element backing it is added to the `Set`.
+        REQUIRE_THROWS_WITH_AS(*hint, "iterator is invalid", const IndexError&);
+
+        CHECK_EQ(*it1, 1);
+
+        auto it2 = s.insert(hint, 2);
+        CHECK_EQ(*it2, 2);
+    }
 }
 
 TEST_CASE("erase") {
