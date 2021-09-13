@@ -1,3 +1,9 @@
+1.3.0-dev.89 | 2021-09-13 15:13:00 +0200
+
+  * GH-999: Unify `transform` and `filter` functions. (Benjamin Bannier, Corelight)
+
+  * Add `insert` with hint to `Vector` and `Set`. (Benjamin Bannier, Corelight)
+
 1.3.0-dev.86 | 2021-09-09 10:38:22 +0200
 
   * Precompile `libspicy.h`. (Benjamin Bannier, Corelight)

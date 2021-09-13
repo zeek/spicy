@@ -317,4 +317,18 @@ TEST_CASE("vector of bool") {
     }
 }
 
+TEST_CASE("insert") {
+    Vector<int> xs{1, 2, 3, 4, 5};
+
+    SUBCASE("at begin") {
+        CHECK_EQ(*xs.insert(xs.begin(), 0), 0);
+        CHECK_EQ(xs, Vector<int>{0, 1, 2, 3, 4, 5});
+    }
+
+    SUBCASE("at end") {
+        CHECK_EQ(*xs.insert(xs.end(), 0), 0);
+        CHECK_EQ(xs, Vector<int>{1, 2, 3, 4, 5, 0});
+    }
+}
+
 TEST_SUITE_END();

@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/base/util.h>
 
@@ -39,8 +40,8 @@ public:
     explicit IDBase(const T&... s) : _id((util::join<std::string>({N(s)...}, "::"))) {}
 
     /** Concatenates multiple strings into a single ID, separating them with `::`. */
-    IDBase(const std::initializer_list<std::string>& x)
-        : _id(util::join(util::transform(x, [](auto i) { return N(i); }), "::")) {}
+    IDBase(std::initializer_list<std::string> x)
+        : _id(util::join(util::transform(std::vector(std::move(x)), [](auto i) { return N(i); }), "::")) {}
 
     /** Returns the ID's full name as a string. */
     const auto& str() const { return _id; }
