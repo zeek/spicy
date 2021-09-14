@@ -28,6 +28,7 @@ namespace spicy { namespace detail { class Parser; } }
 %define api.namespace {spicy::detail::parser}
 %define api.parser.class {Parser}
 %define parse.error verbose
+%define api.value.type {yystype_spicy}
 
 %debug
 %verbose
@@ -36,7 +37,6 @@ namespace spicy { namespace detail { class Parser; } }
 %expect 131
 %expect-rr 157
 
-%union {}
 %{
 
 #include <spicy/compiler/detail/parser/scanner.h>

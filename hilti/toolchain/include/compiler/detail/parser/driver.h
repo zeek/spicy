@@ -25,8 +25,6 @@
                                         hilti::detail::parser::location* yylloc,                                       \
                                         hilti::detail::parser::Driver* driver)
 
-#define YYSTYPE yystype_hilti
-
 #ifndef __FLEX_LEXER_H
 #define yyFlexLexer HiltiFlexLexer
 #include <FlexLexer.h>
