@@ -28,8 +28,6 @@
                                         spicy::detail::parser::location* yylloc,                                       \
                                         spicy::detail::parser::Driver* driver)
 
-#define YYSTYPE yystype_spicy
-
 #ifndef __FLEX_LEXER_H
 #define yyFlexLexer SpicyFlexLexer
 #include <FlexLexer.h>

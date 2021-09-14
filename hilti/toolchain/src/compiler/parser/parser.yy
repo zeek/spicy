@@ -27,6 +27,7 @@ namespace hilti { namespace detail { class Parser; } }
 %define api.namespace {hilti::detail::parser}
 %define api.parser.class {Parser}
 %define parse.error verbose
+%define api.value.type {yystype_hilti}
 
 %debug
 %verbose
@@ -35,7 +36,6 @@ namespace hilti { namespace detail { class Parser; } }
 %expect 120
 %expect-rr 185
 
-%union {}
 %{
 
 #include <hilti/compiler/detail/parser/scanner.h>
