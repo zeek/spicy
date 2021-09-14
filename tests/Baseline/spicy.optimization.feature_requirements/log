@@ -110,6 +110,15 @@
 [debug/optimizer] removing field for unused method foo::X6::parse1
 [debug/optimizer] removing field for unused method foo::X6::parse2
 [debug/optimizer] removing field for unused method foo::X6::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_X3::<anon-struct-7>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_X3::<anon-struct-7>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_X3::<anon-struct-7>::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_X4::<anon-struct-10>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_X4::<anon-struct-10>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_X4::<anon-struct-10>::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_X5::<anon-struct-13>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_X5::<anon-struct-13>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_X5::<anon-struct-13>::parse3
 [debug/optimizer] removing unused member 'foo::X2::__begin'
 [debug/optimizer] removing unused member 'foo::X2::__position'
 [debug/optimizer] removing unused member 'foo::X2::__position_update'

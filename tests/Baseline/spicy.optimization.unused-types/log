@@ -136,6 +136,15 @@
 [debug/optimizer] removing field for unused method foo::Pub3::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Pub3::__on_x
 [debug/optimizer] removing field for unused method foo::Pub3::__str__
+[debug/optimizer] removing field for unused method foo::__register_foo_Priv10::<anon-struct-25>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_Priv10::<anon-struct-25>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_Priv10::<anon-struct-25>::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_Pub2::<anon-struct-5>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_Pub2::<anon-struct-5>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_Pub2::<anon-struct-5>::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_Pub3::<anon-struct-22>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_Pub3::<anon-struct-22>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_Pub3::<anon-struct-22>::parse3
 [debug/optimizer] removing unused member 'foo::Priv10::__filters'
 [debug/optimizer] removing unused member 'foo::Priv10::__sink'
 [debug/optimizer] removing unused member 'foo::Pub2::__filters'

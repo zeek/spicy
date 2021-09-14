@@ -83,6 +83,15 @@
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_finally
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_init
 [debug/optimizer] removing field for unused method foo::F::__str__
+[debug/optimizer] removing field for unused method foo::__register_foo_B::<anon-struct-5>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_B::<anon-struct-5>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_B::<anon-struct-5>::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_D::<anon-struct-11>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_D::<anon-struct-11>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_D::<anon-struct-11>::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_F::<anon-struct-14>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_F::<anon-struct-14>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_F::<anon-struct-14>::parse3
 [debug/optimizer] removing unused member 'foo::B::__filters'
 [debug/optimizer] removing unused member 'foo::B::__sink'
 [debug/optimizer] removing unused member 'foo::D::__filters'
