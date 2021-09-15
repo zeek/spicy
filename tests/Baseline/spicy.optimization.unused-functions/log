@@ -33,12 +33,16 @@
 [debug/optimizer] inlining constant 'foo::__feat%foo__F%supports_filters'
 [debug/optimizer] inlining constant 'foo::__feat%foo__F%supports_filters'
 [debug/optimizer] inlining constant 'foo::__feat%foo__F%supports_sinks'
+[debug/optimizer] removing declaration for unused function foo::A::__parse_foo_A_stage2
+[debug/optimizer] removing declaration for unused function foo::A::__parse_stage1
 [debug/optimizer] removing declaration for unused function foo::A::parse1
 [debug/optimizer] removing declaration for unused function foo::A::parse2
 [debug/optimizer] removing declaration for unused function foo::A::parse3
 [debug/optimizer] removing declaration for unused function foo::C::parse1
 [debug/optimizer] removing declaration for unused function foo::C::parse2
 [debug/optimizer] removing declaration for unused function foo::C::parse3
+[debug/optimizer] removing declaration for unused function foo::F::__parse_foo_F_stage2
+[debug/optimizer] removing declaration for unused function foo::F::__parse_stage1
 [debug/optimizer] removing declaration for unused function foo::F::parse1
 [debug/optimizer] removing declaration for unused function foo::F::parse2
 [debug/optimizer] removing declaration for unused function foo::F::parse3
@@ -75,6 +79,7 @@
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_overlap
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_skipped
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_undelivered
+[debug/optimizer] removing field for unused method foo::A::__parse_stage1
 [debug/optimizer] removing field for unused method foo::A::__str__
 [debug/optimizer] removing field for unused method foo::A::parse1
 [debug/optimizer] removing field for unused method foo::A::parse2
@@ -117,6 +122,7 @@
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_overlap
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_skipped
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_undelivered
+[debug/optimizer] removing field for unused method foo::F::__parse_stage1
 [debug/optimizer] removing field for unused method foo::F::__str__
 [debug/optimizer] removing field for unused method foo::F::parse1
 [debug/optimizer] removing field for unused method foo::F::parse2
@@ -143,6 +149,8 @@
 [debug/optimizer] removing unused member 'foo::F::__sink'
 [debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
 [debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
+[debug/optimizer] removing unused type 'foo::A'
+[debug/optimizer] removing unused type 'foo::F'
 [debug/optimizer] replacing call to unimplemented function foo::A::__on_0x25_done with default value
 [debug/optimizer] replacing call to unimplemented function foo::A::__on_0x25_error with default value
 [debug/optimizer] replacing call to unimplemented function foo::A::__on_0x25_finally with default value

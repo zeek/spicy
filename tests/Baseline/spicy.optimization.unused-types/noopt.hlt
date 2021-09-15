@@ -221,7 +221,7 @@ const bool __feat%foo__Priv10%supports_sinks = True;
 global Priv11 en;
 global Priv12 em = Priv12::A;
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv1::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv1::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -261,7 +261,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv1::__parse
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv1::__parse_foo_Priv1_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv1::__parse_foo_Priv1_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     (*self).__on_0x25_done();
 
@@ -321,7 +321,7 @@ init function void __register_foo_Priv1() {
 
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -361,7 +361,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_foo_Pub2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_foo_Pub2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     (*self).__on_0x25_done();
 
@@ -417,7 +417,7 @@ init function void __register_foo_Pub2() {
     spicy_rt::registerParser(foo::Pub2::__parser, hilti::linker_scope(), Null);
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv2::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv2::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -457,7 +457,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv2::__parse
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv2::__parse_foo_Priv2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv2::__parse_foo_Priv2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     (*self).__on_0x25_done();
 
@@ -517,7 +517,7 @@ init function void __register_foo_Priv2() {
 
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv3::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv3::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -557,7 +557,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv3::__parse
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv3::__parse_foo_Priv3_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv3::__parse_foo_Priv3_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     (*self).__on_0x25_done();
 
@@ -617,7 +617,7 @@ init function void __register_foo_Priv3() {
 
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv4::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv4::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -657,7 +657,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv4::__parse
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv4::__parse_foo_Priv4_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv4::__parse_foo_Priv4_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     local value_ref<Priv2> __transient_anon;
 
@@ -730,7 +730,7 @@ init function void __register_foo_Priv4() {
 
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv5::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv5::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -770,7 +770,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv5::__parse
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv5::__parse_foo_Priv5_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv5::__parse_foo_Priv5_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     (*self).__on_0x25_done();
 
@@ -830,7 +830,7 @@ init function void __register_foo_Priv5() {
 
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv6::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv6::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -870,7 +870,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv6::__parse
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv6::__parse_foo_Priv6_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv6::__parse_foo_Priv6_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     (*self).__on_0x25_done();
 
@@ -930,7 +930,7 @@ init function void __register_foo_Priv6() {
 
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -970,7 +970,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_foo_Pub3_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_foo_Pub3_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     local value_ref<Priv5> __transient_anon_2;
 
@@ -1039,7 +1039,7 @@ init function void __register_foo_Pub3() {
     spicy_rt::registerParser(foo::Pub3::__parser, hilti::linker_scope(), Null);
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv10::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv10::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -1079,7 +1079,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv10::__pars
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv10::__parse_foo_Priv10_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv10::__parse_foo_Priv10_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     (*self).__on_0x25_done();
 

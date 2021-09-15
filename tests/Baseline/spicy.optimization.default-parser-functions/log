@@ -36,6 +36,8 @@
 [debug/optimizer] inlining constant 'foo::__feat%foo__P2%uses_random_access'
 [debug/optimizer] inlining constant 'foo::__feat%foo__P2%uses_random_access'
 [debug/optimizer] inlining constant 'foo::__feat%foo__P2%uses_random_access'
+[debug/optimizer] removing declaration for unused function foo::P0::__parse_foo_P0_stage2
+[debug/optimizer] removing declaration for unused function foo::P0::__parse_stage1
 [debug/optimizer] removing declaration for unused function foo::P0::parse1
 [debug/optimizer] removing declaration for unused function foo::P0::parse2
 [debug/optimizer] removing declaration for unused function foo::P0::parse3
@@ -66,6 +68,7 @@
 [debug/optimizer] removing field for unused method foo::P0::__on_0x25_overlap
 [debug/optimizer] removing field for unused method foo::P0::__on_0x25_skipped
 [debug/optimizer] removing field for unused method foo::P0::__on_0x25_undelivered
+[debug/optimizer] removing field for unused method foo::P0::__parse_stage1
 [debug/optimizer] removing field for unused method foo::P0::__str__
 [debug/optimizer] removing field for unused method foo::P0::parse1
 [debug/optimizer] removing field for unused method foo::P0::parse2
@@ -105,6 +108,7 @@
 [debug/optimizer] removing unused member 'foo::P2::__sink'
 [debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
 [debug/optimizer] removing unused member 'spicy_rt::Sink::connect_mime_type'
+[debug/optimizer] removing unused type 'foo::P0'
 [debug/optimizer] replacing call to unimplemented function foo::P0::__on_0x25_done with default value
 [debug/optimizer] replacing call to unimplemented function foo::P0::__on_0x25_error with default value
 [debug/optimizer] replacing call to unimplemented function foo::P0::__on_0x25_finally with default value

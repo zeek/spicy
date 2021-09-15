@@ -918,17 +918,9 @@ struct ProductionVisitor
                         std::optional<type::function::Parameter> addl_param = {}, const Meta& m = {}) {
         auto qualified_id = pb->state().unit_id + id;
 
-        // References to parser methods can end up in e.g., `ComputeNode`s. Due
-        // to that the optimizer cannot see all uses of them and might remove
-        // them incorrectly as unused Prevent that by forcing them to always be
-        // emitted.
-        //
-        // TODO(bbannier): After #984 is merged we should be able to remove this attribute.
-        const auto attributes = AttributeSet({Attribute("&always-emit")});
-
         auto ftype = pb->parseMethodFunctionType(std::move(addl_param), m);
         auto func = builder::function(qualified_id, ftype, std::move(body), declaration::Linkage::Struct,
-                                      function::CallingConvention::Standard, attributes, m);
+                                      function::CallingConvention::Standard, {}, m);
 
         if ( add_decl )
             new_fields.emplace_back(hilti::declaration::Field(id, func.function().type()));
