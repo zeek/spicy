@@ -1,3 +1,15 @@
+1.3.0-dev.95 | 2021-09-15 11:46:16 +0200
+
+  * More fixes for building on ARM64. (Benjamin Bannier, Corelight)
+
+    In 89d3295f1363d8d07eda5c711740b18f31483d88 we adjusted some
+    preprocessor code to enable building on arm64. That patch missed an
+    update of another instance to the same conditional which we fix with
+    this patch.
+
+    Some ARM64 platforms do not seem to reliably set the `__arm64__` define,
+    but instead `__aarch64__`. We now allow that as an alternative.
+
 1.3.0-dev.93 | 2021-09-15 11:45:50 +0200
 
   * Fix example links for recent reorg in zeek/spicy-analyzers. (Benjamin Bannier, Corelight)
