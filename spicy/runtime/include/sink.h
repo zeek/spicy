@@ -11,6 +11,7 @@
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/stream.h>
 
@@ -226,7 +227,7 @@ public:
     /**
      * Returns the number of bytes written into the sink so far.
      */
-    uint64_t size() const { return _size; }
+    hilti::rt::integer::safe<uint64_t> size() const { return _size; }
 
     /**
      * Skips ahead in the input stream.
