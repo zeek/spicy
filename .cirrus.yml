@@ -79,8 +79,6 @@ macos_big_sur_task:
     type: application/gzip
 
 homebrew_catalina_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
   osx_instance:
     image: $IMAGE_MACOS_CATALINA
 
@@ -90,8 +88,6 @@ homebrew_catalina_task:
     - brew test spicy
 
 homebrew_big_sur_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
   osx_instance:
     image: $IMAGE_MACOS_BIG_SUR
 
