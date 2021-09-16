@@ -1320,13 +1320,9 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
          builder::parameter("cur", type::Optional(type::stream::View()), builder::optional(type::stream::View())),
          builder::parameter("context", type::Optional(builder::typeByID("spicy_rt::UnitContext")))};
 
-    // References to parser methods can end up in e.g., `ComputeNode`s. Due
-    // to that the optimizer cannot see all uses of them and might remove
-    // them incorrectly as unused Prevent that by forcing them to always be
-    // emitted.
-    //
-    // TODO(bbannier): After #984 is merged we should be able to remove this attribute.
-    auto attr_ext_overload = AttributeSet({Attribute("&static"), Attribute("&always-emit")});
+    auto attr_ext_overload =
+        AttributeSet({Attribute("&needed-by-feature", builder::string("is_filter")),
+                      Attribute("&needed-by-feature", builder::string("supports_sinks")), Attribute("&static")});
 
     auto f_ext_overload1_result = type::stream::View();
     auto f_ext_overload1 = builder::function(id_ext_overload1, f_ext_overload1_result, std::move(params),
