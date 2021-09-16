@@ -459,10 +459,11 @@ public:
      * only executed if the feature is enabled.
      *
      * @param unit unit the code is added for
-     * @param feature identifier of the feature
+     * @param features identifiers of the feature, will be combined with OR.
      * @param f callback building the feature-dependent code.
      */
-    void guardFeatureCode(const type::Unit& unit, std::string_view feature, std::function<void()> f);
+    void guardFeatureCode(const type::Unit& unit, const std::vector<std::string_view>& features,
+                          std::function<void()> f);
 
     CodeGen* cg() const { return _cg; }
     std::shared_ptr<hilti::Context> context() const;

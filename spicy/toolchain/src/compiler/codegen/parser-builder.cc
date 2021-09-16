@@ -1,6 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <algorithm>
+#include <numeric>
 #include <optional>
 #include <utility>
 
@@ -10,6 +11,7 @@
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/id.h>
+#include <hilti/ast/expressions/logical-or.h>
 #include <hilti/ast/expressions/type-wrapped.h>
 #include <hilti/ast/expressions/void.h>
 #include <hilti/ast/statements/declaration.h>
@@ -18,6 +20,7 @@
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/cache.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/context.h>
 
 #include <spicy/ast/types/bitfield.h>
@@ -261,7 +264,7 @@ struct ProductionVisitor
                     builder()->addLocal("filtered", hilti::builder::strong_reference(type::Stream()));
 
                     if ( unit ) {
-                        pb->guardFeatureCode(*unit, "supports_filters", [&]() {
+                        pb->guardFeatureCode(*unit, {"supports_filters"}, [&]() {
                             // If we have a filter attached, we initialize it and change to parse from its output.
                             auto filtered = builder::assign(builder::id("filtered"),
                                                             builder::call("spicy_rt::filter_init",
@@ -1688,7 +1691,7 @@ void ParserBuilder::initializeUnit(const Location& l) {
     const auto& unit = state().unit.get();
 
     if ( unit.usesRandomAccess() ) {
-        guardFeatureCode(unit, "uses_random_access", [&]() {
+        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
             // Save the current input offset for the raw access methods.
             builder()->addAssign(builder::member(state().self, ID("__begin")), builder::begin(state().cur));
             builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
@@ -1724,11 +1727,11 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     else
         builder()->addMemberCall(state().self, "__on_0x25_error", {}, l);
 
-    guardFeatureCode(unit, "supports_filters",
+    guardFeatureCode(unit, {"supports_filters"},
                      [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
 
     if ( unit.isFilter() )
-        guardFeatureCode(unit, "is_filter",
+        guardFeatureCode(unit, {"is_filter"},
                          [&]() { builder()->addCall("spicy_rt::filter_forward_eod", {state().self}); });
 
     for ( const auto& s : unit.items<type::unit::item::Sink>() )
@@ -1790,7 +1793,7 @@ void ParserBuilder::beforeHook() {
     const auto& unit = state().unit.get();
 
     if ( unit.usesRandomAccess() )
-        guardFeatureCode(unit, "uses_random_access", [&]() {
+        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
             builder()->addAssign(builder::member(state().self, ID("__position_update")),
                                  builder::optional(hilti::type::stream::Iterator()));
         });
@@ -1800,7 +1803,7 @@ void ParserBuilder::afterHook() {
     const auto& unit = state().unit.get();
 
     if ( unit.usesRandomAccess() ) {
-        guardFeatureCode(unit, "uses_random_access", [&]() {
+        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
             auto position_update = builder::member(state().self, ID("__position_update"));
             auto advance = builder()->addIf(position_update);
             auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
@@ -1819,7 +1822,7 @@ void ParserBuilder::afterHook() {
 void ParserBuilder::saveParsePosition() {
     const auto& unit = state().unit.get();
     if ( unit.usesRandomAccess() )
-        guardFeatureCode(unit, "uses_random_access", [&]() {
+        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
             builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
         });
 }
@@ -1861,26 +1864,23 @@ void ParserBuilder::finishLoopBody(const Expression& cookie, const Location& l) 
                 [&]() { parseError("loop body did not change input position, possible infinite loop", l); });
 }
 
-void ParserBuilder::guardFeatureCode(const type::Unit& unit, std::string_view feature, std::function<void()> f) {
-    // TODO(bbannier): Only handling for the `is_filter`, `supports_filters`,
-    // and `uses_random_access` feature flags is currently implemented.
-    if ( feature != "is_filter" && feature != "supports_filters" && feature != "uses_random_access" &&
-         feature != "supports_sinks" ) {
-        f();
-        return;
-    }
-
+void ParserBuilder::guardFeatureCode(const type::Unit& unit, const std::vector<std::string_view>& features,
+                                     std::function<void()> f) {
     const auto& typeID = unit.id();
-
-    if ( ! typeID ) {
+    if ( ! typeID || features.empty() ) {
         f();
         return;
     }
 
     const auto id = hilti::util::replace(*typeID, ":", "_");
-    const auto flag = ID(hilti::rt::fmt("__feat%%%s%%%s", id, feature));
+    auto flags = hilti::util::transform(features, [&](const auto& feature) {
+        return builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, feature)));
+    });
 
-    auto if_ = builder()->addIf(builder::id(std::move(flag)));
+    auto cond = std::accumulate(++flags.begin(), flags.end(), flags.front(),
+                                [](const auto& a, const auto& b) { return hilti::expression::LogicalOr(a, b); });
+
+    auto if_ = builder()->addIf(std::move(cond));
     pushBuilder(if_);
     f();
     popBuilder();
