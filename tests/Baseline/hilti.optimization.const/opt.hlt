@@ -12,13 +12,20 @@ hilti::print(False, True);
     0;
 }
 {
-    2;
+    3;
 }
 {
     4;
 }
-{
-    5;
-}
+True;
+True;
+True;
+False;
+True;
+False;
+False;
+False;
+False;
+True;
 
 }

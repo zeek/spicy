@@ -16,6 +16,9 @@
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/logical-and.h>
+#include <hilti/ast/expressions/logical-not.h>
+#include <hilti/ast/expressions/logical-or.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
@@ -686,9 +689,9 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
             case Stage::COLLECT:
             case Stage::PRUNE_DECLS: return false;
             case Stage::PRUNE_USES: {
-                if ( auto value = tryAsBoolLiteral(x.condition().value()) ) {
+                if ( auto bool_ = tryAsBoolLiteral(x.condition().value()) ) {
                     if ( auto else_ = x.false_() ) {
-                        if ( ! value ) {
+                        if ( ! bool_.value() ) {
                             replaceNode(p, *else_);
                             return true;
                         }
@@ -698,7 +701,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
                         }
                     }
                     else {
-                        if ( ! value ) {
+                        if ( ! bool_.value() ) {
                             removeNode(p);
                             return true;
                         }
@@ -712,6 +715,57 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
                 };
             }
         }
+
+        return false;
+    }
+
+    bool operator()(const expression::LogicalOr& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: break;
+            case Stage::PRUNE_USES: {
+                auto lhs = tryAsBoolLiteral(x.op0());
+                auto rhs = tryAsBoolLiteral(x.op1());
+
+                if ( lhs && rhs ) {
+                    replaceNode(p, builder::bool_(lhs.value() || rhs.value()));
+                    return true;
+                }
+            }
+        };
+
+        return false;
+    }
+
+    bool operator()(const expression::LogicalAnd& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: break;
+            case Stage::PRUNE_USES: {
+                auto lhs = tryAsBoolLiteral(x.op0());
+                auto rhs = tryAsBoolLiteral(x.op1());
+
+                if ( lhs && rhs ) {
+                    replaceNode(p, builder::bool_(lhs.value() && rhs.value()));
+                    return true;
+                }
+            }
+        };
+
+        return false;
+    }
+
+    bool operator()(const expression::LogicalNot& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: break;
+            case Stage::PRUNE_USES: {
+                if ( auto op = tryAsBoolLiteral(x.expression()) ) {
+                    replaceNode(p, builder::bool_(! op.value()));
+                    return true;
+                }
+            }
+        };
 
         return false;
     }
