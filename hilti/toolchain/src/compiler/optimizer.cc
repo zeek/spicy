@@ -673,36 +673,43 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
         return false;
     }
 
+    std::optional<bool> tryAsBoolLiteral(const Expression& x) {
+        if ( auto expression = x.tryAs<expression::Ctor>() )
+            if ( auto bool_ = expression->ctor().tryAs<ctor::Bool>() )
+                return {bool_->value()};
+
+        return {};
+    }
+
     bool operator()(const statement::If& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT:
             case Stage::PRUNE_DECLS: return false;
             case Stage::PRUNE_USES: {
-                if ( auto expression = x.condition()->tryAs<expression::Ctor>() )
-                    if ( auto bool_ = expression->ctor().tryAs<ctor::Bool>() ) {
-                        if ( auto else_ = x.false_() ) {
-                            if ( ! bool_->value() ) {
-                                replaceNode(p, *else_);
-                                return true;
-                            }
-                            else {
-                                p.node.as<statement::If>().removeFalse();
-                                return true;
-                            }
+                if ( auto value = tryAsBoolLiteral(x.condition().value()) ) {
+                    if ( auto else_ = x.false_() ) {
+                        if ( ! value ) {
+                            replaceNode(p, *else_);
+                            return true;
                         }
                         else {
-                            if ( ! bool_->value() ) {
-                                removeNode(p);
-                                return true;
-                            }
-                            else {
-                                replaceNode(p, x.true_());
-                                return true;
-                            }
+                            p.node.as<statement::If>().removeFalse();
+                            return true;
                         }
+                    }
+                    else {
+                        if ( ! value ) {
+                            removeNode(p);
+                            return true;
+                        }
+                        else {
+                            replaceNode(p, x.true_());
+                            return true;
+                        }
+                    }
 
-                        return false;
-                    };
+                    return false;
+                };
             }
         }
 

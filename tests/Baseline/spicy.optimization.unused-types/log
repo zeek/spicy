@@ -55,10 +55,8 @@
 [debug/optimizer] removing declaration for unused function spicy_rt::createContext
 [debug/optimizer] removing declaration for unused function spicy_rt::extractBits
 [debug/optimizer] removing declaration for unused function spicy_rt::filter_connect
-[debug/optimizer] removing declaration for unused function spicy_rt::filter_disconnect
 [debug/optimizer] removing declaration for unused function spicy_rt::filter_forward
 [debug/optimizer] removing declaration for unused function spicy_rt::filter_forward_eod
-[debug/optimizer] removing declaration for unused function spicy_rt::filter_init
 [debug/optimizer] removing declaration for unused function spicy_rt::printParserState
 [debug/optimizer] removing declaration for unused function spicy_rt::setContext
 [debug/optimizer] removing declaration for unused function spicy_rt::unit_find

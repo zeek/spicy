@@ -151,10 +151,7 @@
 [debug/optimizer] removing field for unused method foo::__register_foo_X6::<anon-struct-18>::parse3
 [debug/optimizer] removing unused member 'foo::X1::__filters'
 [debug/optimizer] removing unused member 'foo::X1::__sink'
-[debug/optimizer] removing unused member 'foo::X2::__begin'
 [debug/optimizer] removing unused member 'foo::X2::__filters'
-[debug/optimizer] removing unused member 'foo::X2::__position'
-[debug/optimizer] removing unused member 'foo::X2::__position_update'
 [debug/optimizer] removing unused member 'foo::X2::__sink'
 [debug/optimizer] removing unused member 'foo::X3::__filters'
 [debug/optimizer] removing unused member 'foo::X3::__forward'
