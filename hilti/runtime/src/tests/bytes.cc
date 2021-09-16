@@ -493,7 +493,7 @@ TEST_CASE("Iterator") {
 
     SUBCASE("distance") {
         CHECK_EQ(b.end() - b.begin(), b.size());
-        CHECK_EQ(b.begin() - b.end(), -b.size());
+        CHECK_THROWS_WITH_AS(b.begin() - b.end(), "integer overflow", const RuntimeError&);
         CHECK_EQ(b.end() - b.end(), 0);
         CHECK_EQ(b.begin() - b.begin(), 0);
 

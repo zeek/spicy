@@ -73,6 +73,10 @@ TEST_CASE("match") {
 }
 
 TEST_CASE("find") {
+    SUBCASE("empty needle") {
+        CHECK_EQ(RegExp("abc", regexp::Flags{.no_sub = 1}).find(""_b), std::make_tuple(-1, ""_b));
+    }
+
     SUBCASE("min-matcher") {
         CHECK_EQ(RegExp("abc", regexp::Flags{.no_sub = 1}).find("abc"_b), std::make_tuple(1, "abc"_b));
         CHECK_EQ(RegExp("abc", regexp::Flags{.no_sub = 1}).find(" abc"_b), std::make_tuple(1, "abc"_b));

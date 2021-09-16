@@ -315,7 +315,7 @@ std::tuple<int32_t, Bytes> RegExp::find(const Bytes& data) const {
     assert(_jrx() && "regexp not compiled");
 
     const auto startp = data.data();
-    const auto endp = startp + data.size();
+    const auto endp = startp + data.size().Ref();
 
     int cur_rc = 0;
     jrx_offset cur_so = -1;

@@ -272,7 +272,7 @@ std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, U
     if ( needle.size() > (i.offset() - offset()) )
         return std::make_tuple(false, UnsafeConstIterator());
 
-    i -= (needle.size() - 1); // this is safe now, get us 1st position where initial character may match
+    i -= (needle.size() - 1).Ref(); // this is safe now, get us 1st position where initial character may match
 
     auto first = *needle.begin();
 

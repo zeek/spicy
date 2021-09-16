@@ -506,7 +506,7 @@ struct Empty {
     auto begin() const& { return this; }
     auto end() const& { return this; }
     auto empty() const { return true; }
-    auto size() const { return 0u; }
+    auto size() const { return integer::safe<uint64_t>(0); }
 };
 
 template<typename T, typename Allocator>

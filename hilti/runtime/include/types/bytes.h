@@ -11,6 +11,7 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/result.h>
+#include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/string.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
@@ -42,7 +43,7 @@ class Iterator {
     using difference_type = B::const_iterator::difference_type;
 
     std::weak_ptr<B*> _control;
-    typename B::size_type _index = 0;
+    typename integer::safe<std::uint64_t> _index = 0;
 
 public:
     Iterator() = default;
@@ -157,6 +158,7 @@ public:
     using Base::const_reference;
     using Base::reference;
     using Offset = uint64_t;
+    using size_type = integer::safe<uint64_t>;
 
     using Base::Base;
     using Base::data;
@@ -226,7 +228,7 @@ public:
     bool isEmpty() const { return empty(); }
 
     /** Returns the size of instance in bytes. */
-    int64_t size() const { return static_cast<int64_t>(std::string::size()); }
+    size_type size() const { return static_cast<int64_t>(std::string::size()); }
 
     /**
      * Returns the position of the first occurence of a byte.
