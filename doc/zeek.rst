@@ -77,8 +77,8 @@ plugin. If you want to install the current development version, use
 If you want to develop your own Spicy analyzers for Zeek, you will
 need a tool that comes with the plugin's installation: ``spicyz``. If
 you are using a recent version of *zkg* (>= 2.8.0), it's easy to make
-the tool show up in your ``PATH``: Either run `\`zkg env\`
-<https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html?highlight=zkg%20env#advanced-configuration>`_
+the tool show up in your ``PATH``: Either run ``zkg env`` (see `this configuration advice
+<https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html?highlight=zkg%20env#advanced-configuration>`_)
 or update your ``PATH`` manually::
 
     # export PATH=$(zkg config bin_dir):$PATH
@@ -271,8 +271,8 @@ registered with Zeek inside a ``zeek_init`` event handler; see the
 for more. You will need to use the
 `PacketAnalyzer::try_register_packet_analyzer_by_name
 <https://docs.zeek.org/en/master/scripts/base/bif/packet_analysis.bif.zeek.html#id-PacketAnalyzer::try_register_packet_analyzer_by_name>`_
-for registering Spicy analyzers (not `register_packet_analyzer`), with
-the name of the new Spicy analyzer being ``ANALYZER_NAME``. `zeek -NN`
+for registering Spicy analyzers (not ``register_packet_analyzer``), with
+the name of the new Spicy analyzer being ``ANALYZER_NAME``. ``zeek -NN``
 shows the names of existing analyzers. For example:
 
 .. code-block:: zeek
@@ -611,7 +611,7 @@ something changes, starting up Zeek now executes quickly.
 
 Instead of providing the precompiled analyzer on the Zeek command
 line, you can also copy them into
-`${prefix}/lib/spicy/Zeek_Spicy/modules`. The Spicy plugin will
+``${prefix}/lib/spicy/Zeek_Spicy/modules``. The Spicy plugin will
 automatically load any ``*.hlto`` object files it finds there. In
 addition, the plugin also scans Zeek's plugin directory for ``*.hlto``
 files. Alternatively, you can override both of those locations by
@@ -697,7 +697,7 @@ command-line arguments. These all live in the ``Spicy::`` namespace:
     :end-before:  doc-options-end
 
 Note, however, that most of those options affect code generation. It's
-usually easier to set them through `spicyz` when precompiling an
+usually easier to set them through ``spicyz`` when precompiling an
 analyzer. If you are using Zeek itself to compile an analyzer
 just-in-time, keep in mind that any code generation options need to be
 in effect at the time the Spicy plugin kicks of the compilation

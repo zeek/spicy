@@ -67,7 +67,7 @@ Changes:
   conditions.
 
 - Units using any of the random access methods (e.g., ``input()``),
-  now need to explicitly add a unit property `%random-access`.
+  now need to explicitly add a unit property ``%random-access``.
 
 - Filters can now be implemented in Spicy itself. The pre-built
   ``filter::Base64Decode`` and ``filter::Zlib`` provide the base64 and

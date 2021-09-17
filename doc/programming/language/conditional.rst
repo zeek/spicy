@@ -9,7 +9,7 @@ Spicy scripts offer a basic form of conditional compilation through
 ``@if``/``@else``/``@endif`` blocks, similar to a C preprocessor. For
 now, this supports only a couple types of conditions that are useful
 for feature and version testing. For example, the following
-`@if`/`@else` block branches to different code based on the Spicy
+``@if``/``@else`` block branches to different code based on the Spicy
 version:
 
 .. spicy-code::

@@ -98,7 +98,7 @@ binary if they aren't in your ``PATH``.
 
 
 CI also runs `pre-commit <https://pre-commit.com>`_ with a
-configuration pre-configured in `.pre-commit-config.yaml`. To run that
+configuration pre-configured in ``.pre-commit-config.yaml``. To run that
 locally on every commit, install pre-commit and then put its git hook
 in place through executing ``pre-commit install``; see the
 `installation instructions <https://pre-commit.com/#install>`_ for
