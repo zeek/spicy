@@ -79,9 +79,9 @@ standard analyzers. The following summarizes how to use that script.
 
 .. rubric: Profiling
 
-The `run-benchmark` script leaves its precompiled code in a
-subdirectory `./benchmark`. In particular, you will find static
-binaries there that you can profile. For example, with `perf` on
+The ``run-benchmark`` script leaves its precompiled code in a
+subdirectory ``./benchmark``. In particular, you will find static
+binaries there that you can profile. For example, with ``perf`` on
 Linux::
 
     # perf record  --call-graph dwarf -g ./benchmark/http-opt -U -F spicy-benchmark-m57/long/spicy-http.dat

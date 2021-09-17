@@ -50,7 +50,7 @@ This will print:
 
 Fields are initially unset, and attempting to read an unset field will
 trigger a :ref:`runtime exception <exceptions>`. You may, however,
-provide a default value by adding a `&default` *attribute* to the
+provide a default value by adding a ``&default`` *attribute* to the
 field, in which case that will be returned on access if no value has
 been explicitly assigned:
 
@@ -600,7 +600,7 @@ final ``print`` shows the expected value. As you can also see, before
 we assign anything, the variable's value is just empty: Spicy
 initializes unit variables with well-defined defaults. If you
 would rather leave a variable unset by default, you can add
-`&optional`:
+``&optional``:
 
 .. spicy-code:: unit-vars-optional.spicy
 
@@ -1672,7 +1672,7 @@ use case for this is stripping off a data encoding, such as
 compression or Base64.
 
 A filter is itself just a ``unit`` that comes with an additional property
-`%filter` marking it as such. The filter unit's input represents the
+``%filter`` marking it as such. The filter unit's input represents the
 original input to be transformed. The filter calls an internally
 provided unit method :spicy:method:`unit::forward` to pass any
 transformed data on to the main unit that it's attached to. The filter
@@ -1813,7 +1813,7 @@ port. An SSL unit would then declare ``%mime-type = "x-port/443``, and
 the connection would be established through the equivalent of
 ``connect_mime_type("x-port/%d" % resp_port_of_connection)``.
 
-.. todo:
+.. todo::
 
     For this specific example, there's a better solution: We also have
     the ``%port`` property and should just build up a table index on

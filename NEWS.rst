@@ -35,7 +35,7 @@ Version 1.3 (in progress)
 
 - GH-941: Allow use of units with all defaulted parameters as entry points.
 
-- We added precompilation support for `libspicy.h`.
+- We added precompilation support for ``libspicy.h``.
 
 .. rubric:: Bug fixes
 
@@ -72,7 +72,7 @@ Version 1.2
   available primarily for development purposes, but became challenging
   to maintain.
 
-- Add environment variable `HILTI_CXX_INCLUDE_DIRS` to specify
+- Add environment variable ``HILTI_CXX_INCLUDE_DIRS`` to specify
   additional C++ include directories when compiling generated code.
 
 - GH-940: Add runtime check for parsing progress during loops.
