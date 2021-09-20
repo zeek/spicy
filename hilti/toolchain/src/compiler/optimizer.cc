@@ -637,6 +637,25 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
         return false;
     }
 
+    result_t operator()(const declaration::Function& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( auto parent = x.parent() ) {
+                    // If this type is referenced by a function declaration it is used.
+                    _used[parent->canonicalID()] = true;
+                    break;
+                }
+            }
+
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+
     result_t operator()(const expression::Type_& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
