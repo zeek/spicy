@@ -34,7 +34,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 115
-%expect-rr 258
+%expect-rr 187
 
 %{
 
@@ -357,7 +357,6 @@ opt_type_arguments
 
 function_decl : opt_linkage FUNCTION function_with_body
                                                  { $$ = hilti::declaration::Function($3, $1, __loc__); }
-              | METHOD method_with_body          { $$ = hilti::declaration::Function($2, hilti::declaration::Linkage::Struct, __loc__); }
               | opt_linkage HOOK hook_with_body              { $$ = hilti::declaration::Function($3, $1, __loc__); }
 
 
