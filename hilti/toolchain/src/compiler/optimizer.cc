@@ -141,7 +141,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
         if ( ! p.parent().isA<type::Struct>() )
             return {};
 
-        auto function_id = x.canonicalID();
+        const auto& function_id = x.canonicalID();
         assert(function_id);
 
         switch ( _stage ) {
@@ -196,7 +196,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
     }
 
     result_t operator()(const declaration::Function& x, position_t p) {
-        const auto function_id = x.canonicalID();
+        const auto& function_id = x.canonicalID();
         assert(function_id);
 
         switch ( _stage ) {
@@ -631,7 +631,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
         if ( x.type() != type::Bool() )
             return false;
 
-        auto id = x.canonicalID();
+        const auto& id = x.canonicalID();
         assert(id);
 
         switch ( _stage ) {
@@ -871,7 +871,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
                 // Check if access to the field has type requirements.
                 if ( auto type_id = type.typeID() )
-                    for ( auto requirement : AttributeSet::findAll(field->attributes(), "&needed-by-feature") ) {
+                    for ( const auto& requirement : AttributeSet::findAll(field->attributes(), "&needed-by-feature") ) {
                         const auto feature = *requirement.valueAsString();
                         if ( ! ignored_features.count(*type_id) || ! ignored_features.at(*type_id).count(feature) )
                             // Enable the required feature.
@@ -900,7 +900,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
                         const auto& param = parameters[i];
 
                         if ( auto type_id = type.typeID() )
-                            for ( auto requirement :
+                            for ( const auto& requirement :
                                   AttributeSet::findAll(param.attributes(), "&requires-type-feature") ) {
                                 const auto feature = *requirement.valueAsString();
                                 if ( ! ignored_features.count(*type_id) ||
@@ -950,7 +950,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
             const auto& tokens = util::split(id, "%");
             assert(tokens.size() == 3);
 
-            const auto type_id = ID(util::replace(tokens[1], "__", "::"));
+            auto type_id = ID(util::replace(tokens[1], "__", "::"));
             const auto& feature = tokens[2];
 
             result[std::move(type_id)].insert(feature);
