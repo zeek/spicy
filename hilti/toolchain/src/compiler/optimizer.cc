@@ -72,129 +72,13 @@ public:
 };
 
 struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisitor> {
-    using ModuleID = ID;
-    using StructID = ID;
-    using FieldID = ID;
-
     struct Uses {
         bool hook = false;
         bool defined = false;
         bool referenced = false;
     };
 
-    using Identifier = std::string;
-    using Functions = std::map<Identifier, Uses>;
-
-    Functions _data;
-
-    static std::optional<std::pair<ModuleID, StructID>> typeID(const Type& x) {
-        auto id = x.typeID();
-        if ( ! id )
-            return {};
-
-        return {{id->sub(-2), id->sub(-1)}};
-    }
-
-    static auto function_identifier(const declaration::Function& fn, position_t p) {
-        // A current module should always be exist, but might
-        // not necessarily be the declaration's module.
-        //
-        // TODO: Move into visitor so that we can _current_module.
-        const auto& current_module = p.findParent<Module>();
-        assert(current_module);
-
-        const auto& id = fn.id();
-        const auto local = id.local();
-
-        auto ns = id.namespace_();
-
-        // If the namespace is empty, we are dealing with a global function in the current module.
-        if ( ns.empty() )
-            return std::make_tuple(current_module->get().id(), ID(), local);
-
-        auto ns_ns = ns.namespace_();
-        auto ns_local = ns.local();
-
-        // If the namespace is a single component (i.e., has no namespace itself) we are either dealing
-        // with a global function in another module, or a function for a struct in the current module.
-        if ( ns_ns.empty() ) {
-            const auto imports = current_module->get().childsOfType<declaration::ImportedModule>();
-            if ( std::any_of(imports.begin(), imports.end(), [&](const auto& imported_module) {
-                     if ( const auto& u = imported_module.unit() )
-                         return u->id() == ns_local;
-                     return false;
-                 }) )
-                return std::make_tuple(ns_local, ID(), local);
-
-            else
-                return std::make_tuple(current_module->get().id(), ns_local, local);
-        }
-
-        // If the namespace has multiple components, we are dealing with a method definition in another module.
-        return std::make_tuple(ns_ns, ns_local, local);
-    }
-
-    static std::optional<Identifier> getID(const declaration::Field& x, position_t p) {
-        auto parent = p.parent().tryAs<Type>();
-        if ( ! (parent && parent->isA<type::Struct>()) )
-            return {};
-
-        auto struct_type = typeID(*parent);
-        if ( ! struct_type )
-            return {};
-
-        const auto& [module_id, struct_id] = *struct_type;
-
-        return Identifier(util::join({module_id, struct_id, x.id()}, "::"));
-    }
-
-    static std::optional<Identifier> getID(const declaration::Function& x, position_t p) {
-        auto [a, b, c] = function_identifier(x, p);
-
-        // `x` is a non-member function.
-        if ( b.empty() )
-            return Identifier(util::join({a, c}, "::"));
-
-        // `x` is a member function.
-        return Identifier(util::join({a, b, c}, "::"));
-    }
-
-    static std::optional<Identifier> getID(const operator_::struct_::MemberCall& x, position_t p) {
-        if ( ! x.hasOp1() )
-            return {};
-
-        assert(x.hasOp0());
-
-        auto struct_type = typeID(x.op0().type());
-        if ( ! struct_type )
-            return {};
-
-        const auto& [module_id, struct_id] = *struct_type;
-
-        const auto& member = x.op1().tryAs<expression::Member>();
-        if ( ! member )
-            return {};
-
-        return Identifier(util::join({module_id, struct_id, member->id()}, "::"));
-    }
-
-    static std::optional<Identifier> getID(const operator_::function::Call& x, position_t p) {
-        if ( ! x.hasOp0() )
-            return {};
-
-        auto id = x.op0().as<expression::ResolvedID>();
-
-        auto module_id = id.id().sub(-2);
-        auto fn_id = id.id().sub(-1);
-
-        if ( module_id.empty() ) {
-            // Functions declared in this module do not include a module name in their ID.
-            if ( auto module = p.findParent<Module>() )
-                module_id = module->get().id();
-        }
-
-        return Identifier(util::join({module_id, fn_id}, "::"));
-    }
+    std::map<ID, Uses> _data;
 
     void collect(Node& node) override {
         _stage = Stage::COLLECT;
@@ -254,13 +138,15 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
         if ( ! x.type().isA<type::Function>() )
             return false;
 
-        auto function_id = getID(x, p);
-        if ( ! function_id )
-            return false;
+        if ( ! p.parent().isA<type::Struct>() )
+            return {};
+
+        const auto& function_id = x.canonicalID();
+        assert(function_id);
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& function = _data[*function_id];
+                auto& function = _data[function_id];
 
                 auto fn = x.childsOfType<Function>();
                 assert(fn.size() <= 1);
@@ -291,12 +177,12 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 break;
 
             case Stage::PRUNE_DECLS: {
-                const auto& function = _data.at(*function_id);
+                const auto& function = _data.at(function_id);
 
                 // Remove function methods without implementation.
                 if ( ! function.defined ) {
                     HILTI_DEBUG(logging::debug::Optimizer,
-                                util::fmt("removing field for unused method %s", *function_id));
+                                util::fmt("removing field for unused method %s", function_id));
                     removeNode(p);
 
                     return true;
@@ -310,14 +196,13 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
     }
 
     result_t operator()(const declaration::Function& x, position_t p) {
-        const auto function_id = getID(x, p);
-        if ( ! function_id )
-            return false;
+        const auto& function_id = x.canonicalID();
+        assert(function_id);
 
         switch ( _stage ) {
             case Stage::COLLECT: {
                 // Record this function if it is not already known.
-                auto& function = _data[*function_id];
+                auto& function = _data[function_id];
 
                 const auto& fn = x.function();
 
@@ -339,7 +224,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 if ( fn.ftype().flavor() == type::function::Flavor::Hook )
                     function.hook = true;
 
-                auto unit_type = scope::lookupID<declaration::Type>(fn.id().namespace_(), p, "type");
+                const auto parent = x.parent();
 
                 switch ( fn.callingConvention() ) {
                     case function::CallingConvention::ExternNoSuspend:
@@ -347,11 +232,9 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                         // If the declaration is `extern` and the unit is `public`, the function
                         // is part of an externally visible API and potentially used elsewhere.
 
-                        if ( unit_type ) {
-                            if ( auto unit = unit_type->first->tryAs<declaration::Type>() )
-                                function.referenced =
-                                    function.referenced || unit->linkage() == declaration::Linkage::Public;
-                        }
+                        if ( parent )
+                            function.referenced =
+                                function.referenced || parent->linkage() == declaration::Linkage::Public;
                         else
                             function.referenced = true;
 
@@ -377,7 +260,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                         // If this is a method declaration check whether the type it referred
                         // to is still around; if not mark the function as an unreferenced
                         // non-hook so it gets removed for both plain methods and hooks.
-                        if ( ! unit_type ) {
+                        if ( ! parent ) {
                             function.referenced = false;
                             function.hook = false;
                         }
@@ -394,11 +277,11 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 break;
 
             case Stage::PRUNE_DECLS:
-                const auto& function = _data.at(*function_id);
+                const auto& function = _data.at(function_id);
 
                 if ( function.hook && ! function.defined ) {
                     HILTI_DEBUG(logging::debug::Optimizer,
-                                util::fmt("removing declaration for unused hook function %s", *function_id));
+                                util::fmt("removing declaration for unused hook function %s", function_id));
 
                     removeNode(p);
                     return true;
@@ -406,7 +289,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
 
                 if ( ! function.hook && ! function.referenced ) {
                     HILTI_DEBUG(logging::debug::Optimizer,
-                                util::fmt("removing declaration for unused function %s", *function_id));
+                                util::fmt("removing declaration for unused function %s", function_id));
 
                     /// return false; // XXX
 
@@ -421,13 +304,33 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
     }
 
     result_t operator()(const operator_::struct_::MemberCall& x, position_t p) {
-        auto function_id = getID(x, p);
+        if ( ! x.hasOp1() )
+            return false;
+
+        assert(x.hasOp0());
+
+        auto type = x.op0().type();
+
+        auto struct_ = type.tryAs<type::Struct>();
+        if ( ! struct_ )
+            return false;
+
+        const auto& member = x.op1().tryAs<expression::Member>();
+        if ( ! member )
+            return false;
+
+        auto field = struct_->field(member->id());
+        if ( ! field )
+            return false;
+
+        const auto& function_id = field->canonicalID();
+
         if ( ! function_id )
             return false;
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& function = _data[*function_id];
+                auto& function = _data[function_id];
 
                 function.referenced = true;
 
@@ -435,7 +338,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
             }
 
             case Stage::PRUNE_USES: {
-                const auto& function = _data.at(*function_id);
+                const auto& function = _data.at(function_id);
 
                 // Replace call node referencing unimplemented member function with default value.
                 if ( ! function.defined ) {
@@ -443,7 +346,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                         if ( auto fn = member->type().tryAs<type::Function>() ) {
                             HILTI_DEBUG(logging::debug::Optimizer,
                                         util::fmt("replacing call to unimplemented function %s with default value",
-                                                  *function_id));
+                                                  function_id));
 
                             p.node = Expression(expression::Ctor(ctor::Default(fn->result().type())));
 
@@ -463,20 +366,22 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
     }
 
     result_t operator()(const operator_::function::Call& call, position_t p) {
-        auto function_id = getID(call, p);
-        if ( ! function_id )
-            return false;
+        if ( ! call.hasOp0() )
+            return {};
+
+        auto function_id = call.op0().as<expression::ResolvedID>().declaration().canonicalID();
+        assert(function_id);
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto& function = _data[*function_id];
+                auto& function = _data[function_id];
 
                 function.referenced = true;
                 return false;
             }
 
             case Stage::PRUNE_USES: {
-                const auto& function = _data.at(*function_id);
+                const auto& function = _data.at(function_id);
 
                 // Replace call node referencing unimplemented hook with default value.
                 if ( function.hook && ! function.defined ) {
@@ -484,7 +389,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                     if ( auto fn = id.declaration().tryAs<declaration::Function>() ) {
                         HILTI_DEBUG(logging::debug::Optimizer,
                                     util::fmt("replacing call to unimplemented function %s with default value",
-                                              *function_id));
+                                              function_id));
 
                         p.node = Expression(expression::Ctor(ctor::Default(fn->function().ftype().result().type())));
 
@@ -637,6 +542,25 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
         return false;
     }
 
+    result_t operator()(const declaration::Function& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( auto parent = x.parent() ) {
+                    // If this type is referenced by a function declaration it is used.
+                    _used[parent->canonicalID()] = true;
+                    break;
+                }
+            }
+
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+
+        return false;
+    }
+
     result_t operator()(const expression::Type_& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
@@ -661,9 +585,7 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
 };
 
 struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, ConstantFoldingVisitor> {
-    // TODO(bbannier): Index constants by their canonical ID once it is
-    // available. We should also be able to remove `Node::rid` at that point.
-    std::map<uint64_t, bool> _constants;
+    std::map<ID, bool> _constants;
 
     void collect(Node& node) override {
         _stage = Stage::COLLECT;
@@ -709,11 +631,14 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
         if ( x.type() != type::Bool() )
             return false;
 
+        const auto& id = x.canonicalID();
+        assert(id);
+
         switch ( _stage ) {
             case Stage::COLLECT: {
                 if ( auto ctor = x.value().tryAs<expression::Ctor>() )
                     if ( auto bool_ = ctor->ctor().tryAs<ctor::Bool>() )
-                        _constants[p.node.rid()] = bool_->value();
+                        _constants[id] = bool_->value();
 
                 break;
             }
@@ -730,9 +655,10 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
             case Stage::COLLECT:
             case Stage::PRUNE_DECLS: return false;
             case Stage::PRUNE_USES: {
-                auto rid = x.declarationRef().rid();
+                auto id = x.declaration().canonicalID();
+                assert(id);
 
-                if ( const auto& constant = _constants.find(rid); constant != _constants.end() ) {
+                if ( const auto& constant = _constants.find(id); constant != _constants.end() ) {
                     if ( x.type() == type::Bool() ) {
                         HILTI_DEBUG(logging::debug::Optimizer, util::fmt("inlining constant '%s'", x.id()));
 
@@ -945,7 +871,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
                 // Check if access to the field has type requirements.
                 if ( auto type_id = type.typeID() )
-                    for ( auto requirement : AttributeSet::findAll(field->attributes(), "&needed-by-feature") ) {
+                    for ( const auto& requirement : AttributeSet::findAll(field->attributes(), "&needed-by-feature") ) {
                         const auto feature = *requirement.valueAsString();
                         if ( ! ignored_features.count(*type_id) || ! ignored_features.at(*type_id).count(feature) )
                             // Enable the required feature.
@@ -974,7 +900,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
                         const auto& param = parameters[i];
 
                         if ( auto type_id = type.typeID() )
-                            for ( auto requirement :
+                            for ( const auto& requirement :
                                   AttributeSet::findAll(param.attributes(), "&requires-type-feature") ) {
                                 const auto feature = *requirement.valueAsString();
                                 if ( ! ignored_features.count(*type_id) ||
@@ -1024,7 +950,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
             const auto& tokens = util::split(id, "%");
             assert(tokens.size() == 3);
 
-            const auto type_id = ID(util::replace(tokens[1], "__", "::"));
+            auto type_id = ID(util::replace(tokens[1], "__", "::"));
             const auto& feature = tokens[2];
 
             result[std::move(type_id)].insert(feature);
@@ -1230,14 +1156,8 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
     result_t operator()(const expression::ResolvedID& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto tokens = util::split(x.id(), "::");
-
-                // TODO(bbannier): Revisit this one we have the AST refactoring
-                // in place. All we need to do here is detect whether this is a
-                // member.
-                if ( tokens.size() != 3 )
-                    // Does not look like a member.
-                    break;
+                if ( ! x.declaration().isA<declaration::Field>() )
+                    return false;
 
                 // Record the member as used.
                 _used[x.id()] = true;

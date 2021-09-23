@@ -15,9 +15,9 @@ public type test = unit {
            b"\x02" -> x: uint32;
            };
 
-       on x { print "in x:1", $$; }
+       on x priority=100 { print "in x:1", $$; }
 
        on %done { print self; }
 };
 
-on test::x { print "in x:2", $$; }
+on test::x priority=10 { print "in x:2", $$; }

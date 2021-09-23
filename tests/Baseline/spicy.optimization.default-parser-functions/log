@@ -78,6 +78,12 @@
 [debug/optimizer] removing field for unused method foo::P2::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::P2::__on_x
 [debug/optimizer] removing field for unused method foo::P2::__str__
+[debug/optimizer] removing field for unused method foo::__register_foo_P1::<anon-struct-5>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_P1::<anon-struct-5>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_P1::<anon-struct-5>::parse3
+[debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-8>::parse1
+[debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-8>::parse2
+[debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-8>::parse3
 [debug/optimizer] removing unused member 'foo::P1::__filters'
 [debug/optimizer] removing unused member 'foo::P1::__sink'
 [debug/optimizer] removing unused member 'foo::P2::__begin'
