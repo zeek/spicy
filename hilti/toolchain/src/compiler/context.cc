@@ -144,6 +144,9 @@ std::vector<std::weak_ptr<Unit>> Context::lookupDependenciesForUnit(const ID& id
 }
 
 void Context::dumpUnitCache(const hilti::logging::DebugStream& stream) {
+    if ( logger().isEnabled(stream) )
+        return;
+
     HILTI_DEBUG(stream, "### Unit cache");
     HILTI_DEBUG(stream, "");
 
