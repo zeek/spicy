@@ -310,8 +310,6 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
         assert(x.hasOp0());
 
         auto type = x.op0().type();
-        while ( type::isReferenceType(type) )
-            type = type.dereferencedType();
 
         auto struct_ = type.tryAs<type::Struct>();
         if ( ! struct_ )
