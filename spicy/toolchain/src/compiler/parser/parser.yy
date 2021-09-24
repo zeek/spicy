@@ -28,7 +28,7 @@ namespace spicy { namespace detail { class Parser; } }
 %define api.namespace {spicy::detail::parser}
 %define api.parser.class {Parser}
 %define parse.error verbose
-%define api.value.type {yystype_spicy}
+%define api.value.type variant
 
 %debug
 %verbose
@@ -91,196 +91,198 @@ static int _field_width = 0;
 
 %}
 
-%token <str>       IDENT          "identifier"
-%token <str>       SCOPED_IDENT   "scoped identifier"
-%token <str>       DOTTED_IDENT   "dotted identifier"
-%token <str>       HOOK_IDENT     "hook identifier"
-%token <str>       DOLLAR_IDENT   "$-identifier"
-%token <str>       ATTRIBUTE      "attribute"
-%token <str>       PROPERTY       "property"
-%token <str>       PREPROCESSOR   "preprocessor directive"
+%token <std::string> IDENT          "identifier"
+%token <std::string> SCOPED_IDENT   "scoped identifier"
+%token <std::string> DOTTED_IDENT   "dotted identifier"
+%token <std::string> HOOK_IDENT     "hook identifier"
+%token <std::string> DOLLAR_IDENT   "$-identifier"
+%token <std::string> ATTRIBUTE      "attribute"
+%token <std::string> PROPERTY       "property"
+%token <std::string> PREPROCESSOR   "preprocessor directive"
+%token <std::string> CSTRING        "string value"
+%token <std::string> CBYTES         "bytes value"
+%token <std::string> CREGEXP        "regular expression value"
+%token <std::string> CADDRESS       "address value"
+%token <std::string> CPORT          "port value"
 
-%token <str>       CSTRING        "string value"
-%token <str>       CBYTES         "bytes value"
-%token <str>       CREGEXP        "regular expression value"
-%token <str>       CADDRESS       "address value"
-%token <str>       CPORT          "port value"
-%token <real>      CUREAL         "real value"
-%token <uint>      CUINTEGER      "unsigned integer value"
-%token <uint>      DOLLAR_NUMBER  "$<N>"
-%token <bool_>     CBOOL          "bool value"
+%token <double>    CUREAL         "real value"
+%token <uint64_t>  CUINTEGER      "unsigned integer value"
+%token <uint64_t>  DOLLAR_NUMBER  "$<N>"
+%token <bool>      CBOOL          "bool value"
 %token             CNULL          "null value"
 
-%token         EOD 0            "<end of input>"
+%token EOD 0            "<end of input>"
+%token ASSERT           "assert"
+%token ASSERT_EXCEPTION "assert-exception"
+%token ADD
+%token ADDRESS
+%token AND
+%token ANY
+%token ARROW
+%token AUTO
+%token BITFIELD
+%token BEGIN_
+%token BOOL
+%token BREAK
+%token BYTES
+%token CADDR
+%token CASE
+%token CAST
+%token CATCH
+%token CONST
+%token CONSTANT
+%token CONTINUE
+%token DEBUG_
+%token DECLARE
+%token DEFAULT
+%token DELETE
+%token DIVIDEASSIGN
+%token DOLLARDOLLAR
+%token DOTDOT
+%token REAL
+%token ELSE
+%token END_
+%token ENUM
+%token EQ
+%token EXCEPTION
+%token EXPORT
+%token FILE
+%token FOR
+%token FOREACH
+%token FROM
+%token FUNCTION
+%token GEQ
+%token GLOBAL
+%token HASATTR
+%token HOOK_COMPOSE
+%token HOOK_PARSE
+%token IF
+%token IMPORT
+%token IN
+%token INOUT
+%token INT
+%token INT16
+%token INT32
+%token INT64
+%token INT8
+%token INTERVAL
+%token INTERVAL_NS
+%token ITERATOR
+%token CONST_ITERATOR
+%token LEQ
+%token LIBRARY_TYPE     "library type"
+%token LIST
+%token LOCAL
+%token MAP
+%token MARK
+%token CAPTURES
+%token MINUSASSIGN
+%token MINUSMINUS
+%token MOD
+%token MODULE
+%token NEQ
+%token NET
+%token NETWORK
+%token NEW
+%token NONE
+%token NOT_IN
+%token OBJECT
+%token ON
+%token OPTIONAL
+%token OR
+%token PLUSASSIGN
+%token PLUSPLUS
+%token PORT
+%token POW
+%token PRINT
+%token PRIORITY
+%token PRIVATE
+%token PUBLIC
+%token REGEXP
+%token RETURN
+%token SET
+%token SHIFTLEFT
+%token SHIFTRIGHT
+%token SINK
+%token STOP
+%token STREAM           "stream"
+%token STRING
+%token STRUCT
+%token SWITCH
+%token THROW
+%token TIME
+%token TIME_NS
+%token TIMER
+%token TIMESASSIGN
+%token TRY
+%token TRYATTR
+%token TUPLE
+%token TYPE
+%token UINT
+%token UINT16
+%token UINT32
+%token UINT64
+%token UINT8
+%token UNIT
+%token UNSET
+%token VAR
+%token VECTOR
+%token VIEW
+%token VOID
+%token WHILE
 
-%token         ASSERT           "assert"
-%token         ASSERT_EXCEPTION "assert-exception"
-%token         ADD
-%token         ADDRESS
-%token         AND
-%token         ANY
-%token         ARROW
-%token         AUTO
-%token         BITFIELD
-%token         BEGIN_
-%token         BOOL
-%token         BREAK
-%token         BYTES
-%token         CADDR
-%token         CASE
-%token         CAST
-%token         CATCH
-%token         CONST
-%token         CONSTANT
-%token         CONTINUE
-%token         DEBUG_
-%token         DECLARE
-%token         DEFAULT
-%token         DELETE
-%token         DIVIDEASSIGN
-%token         DOLLARDOLLAR
-%token         DOTDOT
-%token         REAL
-%token         ELSE
-%token         END_
-%token         ENUM
-%token         EQ
-%token         EXCEPTION
-%token         EXPORT
-%token         FILE
-%token         FOR
-%token         FOREACH
-%token         FROM
-%token         FUNCTION
-%token         GEQ
-%token         GLOBAL
-%token         HASATTR
-%token         HOOK_COMPOSE
-%token         HOOK_PARSE
-%token         IF
-%token         IMPORT
-%token         IN
-%token         INOUT
-%token         INT
-%token         INT16
-%token         INT32
-%token         INT64
-%token         INT8
-%token         INTERVAL
-%token         INTERVAL_NS
-%token         ITERATOR
-%token         CONST_ITERATOR
-%token         LEQ
-%token         LIBRARY_TYPE   "library type"
-%token         LIST
-%token         LOCAL
-%token         MAP
-%token         MARK
-%token         CAPTURES
-%token         MINUSASSIGN
-%token         MINUSMINUS
-%token         MOD
-%token         MODULE
-%token         NEQ
-%token         NET
-%token         NETWORK
-%token         NEW
-%token         NONE
-%token         NOT_IN
-%token         OBJECT
-%token         ON
-%token         OPTIONAL
-%token         OR
-%token         PLUSASSIGN
-%token         PLUSPLUS
-%token         PORT
-%token         POW
-%token         PRINT
-%token         PRIORITY
-%token         PRIVATE
-%token         PUBLIC
-%token         REGEXP
-%token         RETURN
-%token         SET
-%token         SHIFTLEFT
-%token         SHIFTRIGHT
-%token         SINK
-%token         STOP
-%token         STREAM         "stream"
-%token         STRING
-%token         STRUCT
-%token         SWITCH
-%token         THROW
-%token         TIME
-%token         TIME_NS
-%token         TIMER
-%token         TIMESASSIGN
-%token         TRY
-%token         TRYATTR
-%token         TUPLE
-%token         TYPE
-%token         UINT
-%token         UINT16
-%token         UINT32
-%token         UINT64
-%token         UINT8
-%token         UNIT
-%token         UNSET
-%token         VAR
-%token         VECTOR
-%token         VIEW
-%token         VOID
-%token         WHILE
+%type <hilti::ID>                                    local_id scoped_id dotted_id unit_hook_id
+%type <hilti::Declaration>                           local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
+%type <std::vector<hilti::Declaration>>              struct_fields
+%type <hilti::Type>                                  base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
+%type <hilti::Ctor>                                  ctor tuple struct_ regexp list vector map set
+%type <hilti::Expression>                            expr tuple_elem member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
+%type <std::vector<hilti::Expression>>               opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
+%type <std::optional<hilti::Statement>>              opt_else_block
+%type <std::optional<hilti::Expression>>             opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr
+%type <hilti::Function>                              function_with_body function_without_body
+%type <hilti::type::function::Parameter>             func_param
+%type <hilti::declaration::parameter::Kind>          opt_func_param_kind
+%type <hilti::type::function::Result>                func_result opt_func_result
+%type <hilti::type::function::Flavor>                opt_func_flavor
+%type <hilti::function::CallingConvention>           opt_func_cc
+%type <hilti::declaration::Linkage>                  opt_linkage
+%type <std::vector<hilti::type::function::Parameter>>func_params opt_func_params opt_unit_params opt_unit_hook_params
+%type <hilti::Statement>                             stmt stmt_decl stmt_expr block braced_block
+%type <std::vector<hilti::Statement>>                stmts opt_stmts
+%type <hilti::Attribute>                             attribute unit_hook_attribute
+%type <std::optional<hilti::AttributeSet>>           opt_attributes opt_unit_hook_attributes
+%type <hilti::type::tuple::Element>                  tuple_type_elem
+%type <std::vector<hilti::type::tuple::Element>>     tuple_type_elems
+%type <std::vector<hilti::ctor::struct_::Field>>     struct_elems
+%type <hilti::ctor::struct_::Field>                   struct_elem
+%type <std::vector<hilti::ctor::map::Element>>        map_elems opt_map_elems
+%type <hilti::ctor::map::Element>                     map_elem
+%type <hilti::type::enum_::Label>                     enum_label
+%type <std::vector<hilti::type::enum_::Label>>        enum_labels
+%type <std::vector<spicy::type::bitfield::Bits>>      bitfield_bits opt_bitfield_bits
+%type <spicy::type::bitfield::Bits>                   bitfield_bits_spec
+%type <std::vector<std::string>>                      re_patterns
+%type <std::string>                                   re_pattern_constant
+%type <hilti::statement::switch_::Case>               switch_case
+%type <std::vector<hilti::statement::switch_::Case>>  switch_cases
 
-%type <id>                          local_id scoped_id dotted_id unit_hook_id
-%type <declaration>                 local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
-%type <declarations>                struct_fields
-%type <decls_and_stmts>             global_scope_items
-%type <type>                        base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
-%type <ctor>                        ctor tuple struct_ regexp list vector map set
-%type <expression>                  expr tuple_elem member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
-%type <expressions>                 opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
-%type <opt_statement>               opt_else_block
-%type <opt_expression>              opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr
-%type <function>                    function_with_body function_without_body
-%type <function_parameter>          func_param
-%type <function_parameter_kind>     opt_func_param_kind
-%type <function_result>             func_result opt_func_result
-%type <function_flavor>             opt_func_flavor
-%type <function_calling_convention> opt_func_cc
-%type <linkage>                     opt_linkage
-%type <function_parameters>         func_params opt_func_params opt_unit_params opt_unit_hook_params
-%type <statement>                   stmt stmt_decl stmt_expr block braced_block
-%type <statements>                  stmts opt_stmts
-%type <attribute>                   attribute unit_hook_attribute
-%type <opt_attributes>              opt_attributes opt_unit_hook_attributes
-%type <tuple_type_elem>             tuple_type_elem
-%type <tuple_type_elems>            tuple_type_elems
-%type <struct_elems>                struct_elems
-%type <struct_elem>                 struct_elem
-%type <map_elems>                   map_elems opt_map_elems
-%type <map_elem>                    map_elem
-%type <enum_label>                  enum_label
-%type <enum_labels>                 enum_labels
-%type <bitfield_bits>               bitfield_bits opt_bitfield_bits
-%type <bitfield_bits_spec>          bitfield_bits_spec
-%type <strings>                     re_patterns
-%type <str>                         re_pattern_constant
-%type <switch_case>                 switch_case
-%type <switch_cases>                switch_cases
-%type <real>                        const_real
-%type <uint>                        const_uint
-%type <sint>                        const_sint
+%type <std::pair<std::vector<hilti::Declaration>, std::vector<hilti::Statement>>> global_scope_items
+
+%type <double>   const_real
+%type <uint64_t> const_uint
+%type <int64_t>  const_sint
+
 
 // Spicy-only
-%type <opt_id>                      opt_unit_field_id
-%type <engine>                      opt_unit_field_engine opt_hook_engine
-%type <hook>                        unit_hook
-%type <hooks>                       opt_unit_item_hooks unit_hooks
-%type <unit_item>                   unit_item unit_variable unit_field unit_field_in_container unit_wide_hook unit_property unit_switch unit_sink
-%type <unit_items>                  unit_items opt_unit_items
-%type <unit_switch_case>            unit_switch_case
-%type <unit_switch_cases>           unit_switch_cases
+%type <std::optional<hilti::ID>>                            opt_unit_field_id
+%type <spicy::Engine>                                       opt_unit_field_engine opt_hook_engine
+%type <spicy::Hook>                                         unit_hook
+%type <std::vector<spicy::Hook>>                            opt_unit_item_hooks unit_hooks
+%type <spicy::type::unit::Item>                             unit_item unit_variable unit_field unit_field_in_container unit_wide_hook unit_property unit_switch unit_sink
+%type <std::vector<spicy::type::unit::Item>>                unit_items opt_unit_items
+%type <spicy::type::unit::item::switch_::Case>              unit_switch_case
+%type <std::vector<spicy::type::unit::item::switch_::Case>> unit_switch_cases
 
 %%
 

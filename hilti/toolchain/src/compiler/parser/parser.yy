@@ -27,7 +27,7 @@ namespace hilti { namespace detail { class Parser; } }
 %define api.namespace {hilti::detail::parser}
 %define api.parser.class {Parser}
 %define parse.error verbose
-%define api.value.type {yystype_hilti}
+%define api.value.type variant;
 
 %debug
 %verbose
@@ -89,23 +89,23 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 
 %}
 
-%token <str>       IDENT          "identifier"
-%token <str>       SCOPED_IDENT   "scoped identifier"
-%token <str>       SCOPED_FINALIZE "scoped ~finally"
-%token <str>       DOTTED_IDENT   "dotted identifier"
-%token <str>       ATTRIBUTE      "attribute"
-%token <str>       PROPERTY       "property"
+%token <std::string> IDENT          "identifier"
+%token <std::string> SCOPED_IDENT   "scoped identifier"
+%token <std::string> SCOPED_FINALIZE "scoped ~finally"
+%token <std::string> DOTTED_IDENT   "dotted identifier"
+%token <std::string> ATTRIBUTE      "attribute"
+%token <std::string> PROPERTY       "property"
 
-%token <str>       CSTRING        "string value"
-%token <str>       CBYTES         "bytes value"
-%token <str>       CREGEXP        "regular expression value"
-%token <str>       CADDRESS       "address value"
-%token <str>       CPORT          "port value"
-%token <real>      CUREAL         "real value"
-%token <uint>      CUINTEGER      "unsigned integer value"
-%token <bool_>     CBOOL          "bool value"
+%token <std::string> CSTRING        "string value"
+%token <std::string> CBYTES         "bytes value"
+%token <std::string> CREGEXP        "regular expression value"
+%token <std::string> CADDRESS       "address value"
+%token <std::string> CPORT          "port value"
+%token <double>      CUREAL         "real value"
+%token <uint64_t>    CUINTEGER      "unsigned integer value"
+%token <bool>        CBOOL          "bool value"
 
-%token             EOD 0            "<end of input>"
+%token EOD 0 "<end of input>"
 
 %token ADD "add"
 %token ASSERT "assert"
@@ -229,46 +229,48 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token WEAK_REF "weak_ref"
 %token YIELD "yield"
 
-%type <id>                          local_id scoped_id dotted_id function_id scoped_function_id
-%type <declaration>                 local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
-%type <declarations>                struct_fields union_fields opt_union_fields
-%type <decls_and_stmts>             global_scope_items
-%type <type>                        base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type
-%type <ctor>                        ctor tuple struct_ list regexp map set
-%type <expression>                  expr tuple_elem tuple_expr member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
-%type <expressions>                 opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments
-%type <opt_expression>              opt_func_default_expr
-%type <function>                    function_with_body method_with_body hook_with_body function_without_body
-%type <function_parameter>          func_param
-%type <function_parameter_kind>     opt_func_param_kind
-%type <function_result>             func_result
-%type <function_flavor>             func_flavor opt_func_flavor
-%type <function_calling_convention> opt_func_cc
-%type <linkage>                     opt_linkage
-%type <function_parameters>         func_params opt_func_params opt_struct_params
-%type <statement>                   stmt stmt_decl stmt_expr block braced_block
-%type <statements>                  stmts opt_stmts
-%type <opt_statement>               opt_else_block
-%type <attribute>                   attribute
-%type <opt_attributes>              opt_attributes
-%type <tuple_type_elem>             tuple_type_elem
-%type <tuple_type_elems>            tuple_type_elems
-%type <struct_elems>                struct_elems
-%type <struct_elem>                 struct_elem
-%type <map_elems>                   map_elems opt_map_elems
-%type <map_elem>                    map_elem
-%type <enum_label>                  enum_label
-%type <enum_labels>                 enum_labels
-%type <strings>                     re_patterns
-%type <str>                         re_pattern_constant
-%type <switch_case>                 switch_case
-%type <switch_cases>                switch_cases opt_switch_cases
-%type <try_catch>                   try_catch
-%type <try_catches>                 try_catches
-%type <type_flags>                  opt_type_flags /* type_flag */
-%type <real>                        const_real
-%type <sint>                        const_sint
-%type <uint>                        const_uint
+%type <hilti::ID>                                     local_id scoped_id dotted_id function_id scoped_function_id
+%type <hilti::Declaration>                            local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
+%type <std::vector<hilti::Declaration>>               struct_fields union_fields opt_union_fields
+%type <hilti::Type>                                   base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type
+%type <hilti::Ctor>                                   ctor tuple struct_ list regexp map set
+%type <hilti::Expression>                             expr tuple_elem tuple_expr member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
+%type <std::vector<hilti::Expression>>                opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments
+%type <std::optional<hilti::Expression>>              opt_func_default_expr
+%type <hilti::Function>                               function_with_body method_with_body hook_with_body function_without_body
+%type <hilti::type::function::Parameter>              func_param
+%type <hilti::declaration::parameter::Kind>           opt_func_param_kind
+%type <hilti::type::function::Result>                 func_result
+%type <hilti::type::function::Flavor>                 func_flavor opt_func_flavor
+%type <hilti::function::CallingConvention>            opt_func_cc
+%type <hilti::declaration::Linkage>                   opt_linkage
+%type <std::vector<hilti::type::function::Parameter>> func_params opt_func_params opt_struct_params
+%type <hilti::Statement>                              stmt stmt_decl stmt_expr block braced_block
+%type <std::vector<hilti::Statement>>                 stmts opt_stmts
+%type <std::optional<hilti::Statement>>               opt_else_block
+%type <hilti::Attribute>                              attribute
+%type <std::optional<hilti::AttributeSet>>            opt_attributes
+%type <hilti::type::tuple::Element>                   tuple_type_elem
+%type <std::vector<hilti::type::tuple::Element>>      tuple_type_elems
+%type <std::vector<hilti::ctor::struct_::Field>>      struct_elems
+%type <hilti::ctor::struct_::Field>                   struct_elem
+%type <std::vector<hilti::ctor::map::Element>>        map_elems opt_map_elems
+%type <hilti::ctor::map::Element>                     map_elem
+%type <hilti::type::enum_::Label>                     enum_label
+%type <std::vector<hilti::type::enum_::Label>>        enum_labels
+%type <std::vector<std::string>>                      re_patterns
+%type <std::string>                                   re_pattern_constant
+%type <hilti::statement::switch_::Case>               switch_case
+%type <std::vector<hilti::statement::switch_::Case>>  switch_cases opt_switch_cases
+%type <hilti::statement::try_::Catch>                 try_catch
+%type <std::vector<hilti::statement::try_::Catch>>    try_catches
+%type <hilti::type::Flags>                            opt_type_flags /* type_flag */
+
+%type <std::pair<std::vector<hilti::Declaration>, std::vector<hilti::Statement>>> global_scope_items
+
+%type <double>   const_real
+%type <int64_t>  const_sint
+%type <uint64_t> const_uint
 
 %%
 

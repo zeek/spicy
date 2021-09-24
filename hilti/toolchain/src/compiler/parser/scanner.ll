@@ -181,38 +181,38 @@ yield                 return token::YIELD;
 <EXPRESSION>\>\>      return token::SHIFTRIGHT;
 
 
-\"C-HILTI\"           yylval->str = std::string(yytext, 1, strlen(yytext) - 2); return token::CSTRING;
-\"C\"                 yylval->str = std::string(yytext, 1, strlen(yytext) - 2); return token::CSTRING;
+\"C-HILTI\"           yylval->emplace<std::string>(yytext, 1, strlen(yytext) - 2); return token::CSTRING;
+\"C\"                 yylval->emplace<std::string>(yytext, 1, strlen(yytext) - 2); return token::CSTRING;
 
 Null                  return token::CNULL;
 
-False                 yylval->bool_ = false; return token::CBOOL;
-True                  yylval->bool_ = true; return token::CBOOL;
+False                 yylval->emplace<bool>(false); return token::CBOOL;
+True                  yylval->emplace<bool>(true); return token::CBOOL;
 
-{digits}|0x{hexs}     yylval->uint = hilti::util::chars_to_uint64(yytext, 0, range_error_int); return token::CUINTEGER;
-'.'                   yylval->uint = *(yytext +1); return token::CUINTEGER;
+{digits}|0x{hexs}     yylval->emplace<uint64_t>(hilti::util::chars_to_uint64(yytext, 0, range_error_int)); return token::CUINTEGER;
+'.'                   yylval->emplace<uint64_t>(*(yytext +1)); return token::CUINTEGER;
 
-{decfloat}|{hexfloat} yylval->real = hilti::util::chars_to_double(yytext, range_error_real); return token::CUREAL;
-{string}              yylval->str = expandEscapes(driver, std::string(yytext, 1, strlen(yytext) - 2), *yylloc); return token::CSTRING;
-b{string}             yylval->str = expandEscapes(driver, std::string(yytext, 2, strlen(yytext) - 3), *yylloc); return token::CBYTES;
-{digits}\/(tcp|udp)   yylval->str = yytext; return token::CPORT;
-{address4}            yylval->str = yytext; return token::CADDRESS;
-{address6}            yylval->str = std::string(yytext, 1, strlen(yytext) - 2); return token::CADDRESS;
+{decfloat}|{hexfloat} yylval->emplace<double>(hilti::util::chars_to_double(yytext, range_error_real)); return token::CUREAL;
+{string}              yylval->emplace<str>(expandEscapes(driver, std::string(yytext, 1, strlen(yytext) - 2), *yylloc)); return token::CSTRING;
+b{string}             yylval->emplace<str>(expandEscapes(driver, std::string(yytext, 2, strlen(yytext) - 3), *yylloc)); return token::CBYTES;
+{digits}\/(tcp|udp)   yylval->emplace<str>(yytext); return token::CPORT;
+{address4}            yylval->emplace<str>(yytext); return token::CADDRESS;
+{address6}            yylval->emplace<str>(yytext, 1, strlen(yytext) - 2); return token::CADDRESS;
 
-{id}                  yylval->str = yytext; return token::IDENT;
-{attribute}           yylval->str = yytext; return token::ATTRIBUTE;
-{property}            yylval->str = yytext; return token::PROPERTY;
-{id}(::{id}){1,}      yylval->str = yytext; return token::SCOPED_IDENT;
-{id}(::~finally)      yylval->str = yytext; return token::SCOPED_FINALIZE;
+{id}                  yylval->emplace<str>(yytext); return token::IDENT;
+{attribute}           yylval->emplace<str>(yytext); return token::ATTRIBUTE;
+{property}            yylval->emplace<str>(yytext); return token::PROPERTY;
+{id}(::{id}){1,}      yylval->emplace<str>(yytext); return token::SCOPED_IDENT;
+{id}(::~finally)      yylval->emplace<str>(yytext); return token::SCOPED_FINALIZE;
 
 [][!$?.,=:;<>(){}/|*/&^%!+~-] return (token_type) yytext[0];
 
 .                     driver->error("invalid character", toMeta(*yylloc));
 
-<RE>(\\.|[^\\\/])*    yylval->str = hilti::util::replace(yytext, "\\/", "/"); return token::CREGEXP;
+<RE>(\\.|[^\\\/])*    yylval->emplace<str>(hilti::util::replace(yytext, "\\/", "/")); return token::CREGEXP;
 <RE>[/\\\n]           return (token_type) yytext[0];
 
-<DOTTED_ID>{id}(\.{id})*  yylval->str = yytext; return token::DOTTED_IDENT;
+<DOTTED_ID>{id}(\.{id})*  yylval->emplace<str>(yytext); return token::DOTTED_IDENT;
 <DOTTED_ID>{blank}+       yylloc->step();
 <DOTTED_ID>[\n]+          yylloc->lines(yyleng); yylloc->step();
 
