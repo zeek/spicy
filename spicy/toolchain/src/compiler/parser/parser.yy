@@ -328,7 +328,7 @@ global_scope_items
                                                  { $$ = std::move($1); $$.first.push_back($2); }
               | global_scope_items stmt
                                                  { $$ = std::move($1); $$.second.push_back($2); }
-              | /* empty */                      { }
+              | /* empty */                      { $$ = {}; }
               ;
 
 global_scope_decl
@@ -595,7 +595,7 @@ base_type_no_ref
 /* We split this out from "base_type" because it can lead to ambigitious in some contexts. */
 reference_type: type '&'                         { $$ = hilti::type::StrongReference(std::move($1), __loc__); }
 
-base_type     : base_type_no_ref
+base_type     : base_type_no_ref                 { $$ = std::move($1); }
                 reference_type: type '&'         { $$ = hilti::type::StrongReference(std::move($1), __loc__); }
               ;
 
@@ -828,7 +828,7 @@ opt_exprs     : exprs                            { $$ = std::move($1); }
 exprs         : exprs ',' expr                   { $$ = std::move($1); $$.push_back(std::move($3)); }
               | expr                             { $$ = std::vector<Expression>{std::move($1)}; }
 
-expr_0        : expr_1
+expr_0        : expr_1                           { $$ = std::move($1); }
               ;
 
 expr_1        : expr_2 '=' expr_1                { $$ = hilti::expression::Assign(std::move($1), std::move($3), __loc__); }
@@ -913,7 +913,7 @@ expr_f        : ctor                             { $$ = hilti::expression::Ctor(
                                                  { $$ = hilti::expression::ListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
               | '[' expr FOR local_id IN expr IF expr ']'
                                                  { $$ = hilti::expression::ListComprehension(std::move($6), std::move($2), std::move($4), std::move($8),  __loc__); }
-              | expr_g
+              | expr_g                           { $$ = std::move($1); }
 
 expr_g        : '(' expr ')'                     { $$ = hilti::expression::Grouping(std::move($2)); }
               | scoped_id                        { $$ = hilti::expression::UnresolvedID(std::move($1), __loc__); }
