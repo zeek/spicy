@@ -35,6 +35,9 @@ bool print(const hilti::Node& root, hilti::printer::Stream& out);
 bool resolve(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void validate(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
+void validate_pre(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
+
+/** Implements the corresponding functionality for the Spicy compiler plugin. */
+void validate_post(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 
 } // namespace spicy::detail::ast

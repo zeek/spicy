@@ -211,13 +211,24 @@ Result<Unit::ASTState> Unit::resolveAST(const Plugin& plugin) {
     return modified ? Modified : NotModified;
 }
 
-bool Unit::validateAST(const Plugin& plugin) {
+bool Unit::validateASTPre(const Plugin& plugin) {
     if ( ! _module )
         return true;
 
     bool modified = false; // not used
-    runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_validate, fmt("validating module %s", id()),
-            context(), &*_module, this);
+    runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_validate_pre,
+            fmt("validating module %s (pre)", id()), context(), &*_module, this);
+
+    return _collectErrors();
+}
+
+bool Unit::validateASTPost(const Plugin& plugin) {
+    if ( ! _module )
+        return true;
+
+    bool modified = false; // not used
+    runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_validate_post,
+            fmt("validating module %s (post)", id()), context(), &*_module, this);
 
     return _collectErrors();
 }

@@ -75,9 +75,15 @@ static Plugin hilti_plugin() {
         .ast_resolve = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
                           Unit* u) { return ast::resolve(ctx, m, u); },
 
-        .ast_validate =
+        .ast_validate_pre =
             [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
-                ast::validate(m);
+                ast::validate_pre(m);
+                return false;
+            },
+
+        .ast_validate_post =
+            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
+                ast::validate_post(m);
                 return false;
             },
 

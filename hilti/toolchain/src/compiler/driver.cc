@@ -585,6 +585,17 @@ Result<Nothing> Driver::_resolveUnitsWithPlugin(const Plugin& plugin, std::vecto
         _saveIterationAST(u, plugin, "AST before first iteration", 0);
     }
 
+    if ( ! options().skip_validation ) {
+        bool have_errors = false;
+        for ( const auto& u : units ) {
+            if ( ! u->validateASTPre(plugin) )
+                have_errors = true;
+        }
+
+        if ( have_errors || logger().errors() )
+            return result::Error("aborting after errors");
+    }
+
     int extra_rounds = 0; // set to >0 for debugging
 
     while ( true ) {
@@ -650,7 +661,7 @@ Result<Nothing> Driver::_resolveUnitsWithPlugin(const Plugin& plugin, std::vecto
     if ( ! options().skip_validation ) {
         bool have_errors = false;
         for ( const auto& u : units ) {
-            if ( ! u->validateAST(plugin) )
+            if ( ! u->validateASTPost(plugin) )
                 have_errors = true;
         }
 

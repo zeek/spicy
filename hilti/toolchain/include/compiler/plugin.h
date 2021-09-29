@@ -163,6 +163,17 @@ struct Plugin {
     Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_resolve;
 
     /**
+     * Hook called to validate correctness of an AST before resolving starts
+     * (to the degree it can at that time). Any errors must be reported by
+     * setting the nodes' error information.
+     *
+     * @param arg1 compiler context that's in use
+     * @param arg2 root node of AST; the hook may not modify the AST
+     * @param arg3 current unit being compiled
+     */
+    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_validate_pre;
+
+    /**
      * Hook called to validate correctness of an AST once fully resolved. Any
      * errors must be reported by setting the nodes' error information.
      *
@@ -170,7 +181,7 @@ struct Plugin {
      * @param arg2 root node of AST; the hook may not modify the AST
      * @param arg3 current unit being compiled
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_validate;
+    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_validate_post;
 
     /**
      * Hook called to print an AST back as source code. The hook gets to choose
