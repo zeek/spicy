@@ -307,6 +307,9 @@ bool Unit::addDependency(std::shared_ptr<Unit> unit) {
 }
 
 bool Unit::requiresCompilation() {
+    if ( _requires_compilation )
+        return true;
+
     // Visitor that goes over an AST and flags whether any node provides
     // code that needs compilation.
     struct Visitor : hilti::visitor::PreOrder<bool, Visitor> {
