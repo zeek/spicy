@@ -68,7 +68,9 @@ bool coerce(Node* root, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 bool resolve(const std::shared_ptr<hilti::Context>& ctx, Node* root, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-void validate(Node* root);
+void validate_pre(Node* root);
+/** Implements the corresponding functionality for the default HILTI compiler plugin. */
+void validate_post(Node* root);
 } // namespace ast
 } // namespace detail
 } // namespace hilti

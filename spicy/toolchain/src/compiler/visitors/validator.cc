@@ -147,9 +147,9 @@ hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::F
     return hilti::result::Error(fmt("not a parseable type (%s)", pt));
 }
 
-
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
+struct VisitorBase {
     int errors = 0;
+
     // Record error at location of current node.
     void error(std::string msg, position_t& p,
                hilti::node::ErrorPriority priority = hilti::node::ErrorPriority::Normal) {
@@ -192,7 +192,11 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 
         hilti::util::cannot_be_reached();
     }
+};
 
+struct VisitorPre : public hilti::visitor::PreOrder<void, VisitorPre>, public VisitorBase {};
+
+struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public VisitorBase {
     void operator()(const hilti::Module& m, position_t p) {
         if ( auto version = m.moduleProperty("%spicy-version") ) {
             if ( ! version->expression() ) {
@@ -850,14 +854,28 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 
 } // anonymous namespace
 
-void spicy::detail::ast::validate(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit) {
+void spicy::detail::ast::validate_pre(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root,
+                                      hilti::Unit* unit) {
     {
-        auto v = Visitor();
+        auto v = VisitorPre();
         hilti::util::timing::Collector _("spicy/compiler/validator");
 
         for ( auto i : v.walk(root) )
             v.dispatch(i);
     }
 
-    (*hilti::plugin::registry().hiltiPlugin().ast_validate)(ctx, root, unit);
+    (*hilti::plugin::registry().hiltiPlugin().ast_validate_pre)(ctx, root, unit);
+}
+
+void spicy::detail::ast::validate_post(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root,
+                                       hilti::Unit* unit) {
+    {
+        auto v = VisitorPost();
+        hilti::util::timing::Collector _("spicy/compiler/validator");
+
+        for ( auto i : v.walk(root) )
+            v.dispatch(i);
+    }
+
+    (*hilti::plugin::registry().hiltiPlugin().ast_validate_post)(ctx, root, unit);
 }

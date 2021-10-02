@@ -114,12 +114,20 @@ public:
     Result<ASTState> resolveAST(const Plugin& plugin);
 
     /**
-     * Runs a plugin's validation phase on the unit's AST.
+     * Runs a plugin's validation phase on the unit's AST before resolving.
      *
      * @param plugin plugin to execute
      * @returns true if the AST does not contain any errors
      */
-    bool validateAST(const Plugin& plugin);
+    bool validateASTPre(const Plugin& plugin);
+
+    /**
+     * Runs a plugin's validation phase on the unit's AST after resolving.
+     *
+     * @param plugin plugin to execute
+     * @returns true if the AST does not contain any errors
+     */
+    bool validateASTPost(const Plugin& plugin);
 
     /**
      * Runs a plugin's tranformation phase on the unit's AST.

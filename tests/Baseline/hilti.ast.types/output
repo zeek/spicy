@@ -2,6 +2,7 @@
 [debug/compiler] parsing file "<...>/types.hlt" as HILTI code
 [debug/compiler] registering ".hlt" AST for module Foo ("<...>//types.hlt")
 [debug/compiler] resolving units with plugin HILTI: Foo
+[debug/compiler]   [HILTI] validating module Foo (pre)
 [debug/compiler]   processing ASTs, round 0
 [debug/compiler]     resetting nodes for module Foo
 [debug/compiler]     [HILTI] building scopes for module Foo
@@ -42,7 +43,7 @@
 [debug/ast-final]           - expression::Ctor (types.hlt:8:17) (const) (resolved) [@e:XXX]
 [debug/ast-final]             - ctor::UnsignedInteger <value="2" width="64"> (types.hlt:8:17) [@c:XXX]
 [debug/ast-final]               - type::UnsignedInteger <width="64"> (types.hlt:8:17) (const) (resolved) [@t:XXX]
-[debug/compiler]   [HILTI] validating module Foo
+[debug/compiler]   [HILTI] validating module Foo (post)
 [debug/compiler]   finalized module Foo
 module Foo {
 

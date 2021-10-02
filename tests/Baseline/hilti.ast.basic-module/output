@@ -2,6 +2,7 @@
 [debug/compiler] parsing file "<...>/basic-module.hlt" as HILTI code
 [debug/compiler] registering ".hlt" AST for module Foo ("<...>//basic-module.hlt")
 [debug/compiler] resolving units with plugin HILTI: Foo
+[debug/compiler]   [HILTI] validating module Foo (pre)
 [debug/compiler]   processing ASTs, round 0
 [debug/compiler]     resetting nodes for module Foo
 [debug/compiler]     [HILTI] building scopes for module Foo
@@ -40,7 +41,7 @@
 [debug/ast-final]             - node::None (basic-module.hlt:5:13-7:15) [@n:XXX]
 [debug/ast-final]         - node::None (basic-module.hlt:5:13-7:15) [@n:XXX]
 [debug/ast-final]         - node::None (basic-module.hlt:5:13-7:15) [@n:XXX]
-[debug/compiler]   [HILTI] validating module Foo
+[debug/compiler]   [HILTI] validating module Foo (post)
 [debug/compiler]   finalized module Foo
 [debug/compiler]   compiling module Foo to C++
 [debug/compiler]     finalizing module Foo

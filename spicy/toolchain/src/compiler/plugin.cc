@@ -46,9 +46,15 @@ static hilti::Plugin spicy_plugin() {
         .ast_resolve = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
                           hilti::Unit* u) { return ast::resolve(ctx, m, u); },
 
-        .ast_validate =
+        .ast_validate_pre =
             [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
-                ast::validate(ctx, m, u);
+                ast::validate_pre(ctx, m, u);
+                return false;
+            },
+
+        .ast_validate_post =
+            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
+                ast::validate_post(ctx, m, u);
                 return false;
             },
 

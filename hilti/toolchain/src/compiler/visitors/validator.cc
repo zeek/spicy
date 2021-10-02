@@ -16,28 +16,34 @@ using util::fmt;
 
 namespace {
 
-struct Visitor : public visitor::PostOrder<void, Visitor> {
+struct VisitorBase {
     // Record error at location of current node.
-    void error(std::string msg, position_t& p, node::ErrorPriority priority = node::ErrorPriority::Normal) {
+    void error(std::string msg, const visitor::Position<Node&>& p,
+               node::ErrorPriority priority = node::ErrorPriority::Normal) {
         p.node.addError(msg, p.node.location(), priority);
         ++errors;
     }
 
     // Record error with current node, but report with another node's location.
-    void error(std::string msg, position_t& p, const Node& n,
+    void error(std::string msg, const visitor::Position<Node&>& p, const Node& n,
                node::ErrorPriority priority = node::ErrorPriority::Normal) {
         p.node.addError(msg, n.location(), priority);
         ++errors;
     }
 
     // Record error with current node, but report with a custom location.
-    void error(std::string msg, position_t& p, Location l, node::ErrorPriority priority = node::ErrorPriority::Normal) {
+    void error(std::string msg, const visitor::Position<Node&>& p, Location l,
+               node::ErrorPriority priority = node::ErrorPriority::Normal) {
         p.node.addError(msg, std::move(l), priority);
         ++errors;
     }
 
     int errors = 0;
+};
 
+struct VisitorPre : public hilti::visitor::PreOrder<void, VisitorPre>, public VisitorBase {};
+
+struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public VisitorBase {
     void preDispatch(const Node& n, int level) override {
         // Validate that identifier names are not reused.
         for ( const auto& [id, nodes] : n.scope()->items() ) {
@@ -570,10 +576,18 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
 } // anonymous namespace
 
-void hilti::detail::ast::validate(Node* root) {
+void hilti::detail::ast::validate_pre(Node* root) {
     util::timing::Collector _("hilti/compiler/ast/validator");
 
-    auto v = Visitor();
+    auto v = VisitorPre();
+    for ( auto i : v.walk(root) )
+        v.dispatch(i);
+}
+
+void hilti::detail::ast::validate_post(Node* root) {
+    util::timing::Collector _("hilti/compiler/ast/validator");
+
+    auto v = VisitorPost();
     for ( auto i : v.walk(root) )
         v.dispatch(i);
 }
