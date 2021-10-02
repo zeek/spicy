@@ -36,7 +36,6 @@ struct CxxTypes {
     std::optional<cxx::Type> param_inout;
     std::optional<cxx::Type> ctor;
     std::optional<cxx::Expression> default_;
-    std::optional<cxx::Expression> type_info;
 };
 
 /** Structure capturing runtime type information for a specific type. */

@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -43,7 +43,7 @@ public:
     explicit operator bool() const { return _location || _comments.size(); }
 
 private:
-    std::set<Location>* _cache();
+    std::unordered_set<Location>* _cache();
 
     const Location* _location = nullptr;
     Comments _comments;

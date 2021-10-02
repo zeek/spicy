@@ -65,6 +65,11 @@ public:
                std::tie(other._file, other._from_line, other._from_character, other._to_line, other._to_character);
     }
 
+    bool operator==(const Location& other) const {
+        return std::tie(_file, _from_line, _from_character, _to_line, _to_character) ==
+               std::tie(other._file, other._from_line, other._from_character, other._to_line, other._to_character);
+    }
+
 private:
     hilti::rt::filesystem::path _file;
     int _from_line = -1;
@@ -72,6 +77,8 @@ private:
 
     int _from_character = -1;
     int _to_character = -1;
+
+    friend struct std::hash<Location>;
 };
 
 /** Forwards to `Location::render()`. */
@@ -89,3 +96,18 @@ extern const Location None;
 } // namespace location
 
 } // namespace hilti
+
+namespace std {
+template<>
+struct hash<hilti::Location> {
+    size_t operator()(const hilti::Location& x) const {
+        auto hash = std::hash<const char*>()(x._file.c_str());
+        hash = hilti::rt::hashCombine(hash, x._from_line);
+        hash = hilti::rt::hashCombine(hash, x._to_line);
+        hash = hilti::rt::hashCombine(hash, x._from_character);
+        hash = hilti::rt::hashCombine(hash, x._to_character);
+
+        return hash;
+    }
+};
+} // namespace std
