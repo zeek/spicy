@@ -496,6 +496,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
 
         if ( auto unit = Unit::fromCache(_ctx, path) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("reusing previously cached module %s", (*unit)->id()));
+            (*unit)->setRequiresCompilation();
             _addUnit(std::move(*unit));
         }
         else {
@@ -504,6 +505,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
             if ( ! unit )
                 return augmentError(unit.error());
 
+            (*unit)->setRequiresCompilation();
             _addUnit(std::move(*unit));
         }
 
@@ -799,7 +801,8 @@ Result<Nothing> Driver::_resolveUnits() {
         if ( ! unit->isResolved() )
             return result::Error(fmt("module %s was not marked as resolved", unit->id()));
 
-        _hlts.push_back(unit);
+        if ( unit->requiresCompilation() )
+            _hlts.push_back(unit);
     }
 
     _stage = Stage::COMPILED;

@@ -213,6 +213,12 @@ public:
     bool requiresCompilation();
 
     /**
+     * Explicily marks the unit as requiring compilation down to C++, overiding
+     * any automatic determination.
+     */
+    void setRequiresCompilation() { _requires_compilation = true; }
+
+    /**
      * Returns true if the unit has been marked as fully resolved, so that no further AST processing is needed.
      */
     bool isResolved() { return _resolved; }
@@ -390,6 +396,7 @@ private:
     std::weak_ptr<Context> _context;                // global context
     std::optional<detail::cxx::Unit> _cxx_unit;     // compiled C++ code for this unit, once available
     bool _resolved = false;                         // state of resolving the AST
+    bool _requires_compilation = false;             // mark explicitly as requiring compilation to C++
 };
 
 } // namespace hilti
