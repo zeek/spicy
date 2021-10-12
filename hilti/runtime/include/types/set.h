@@ -245,10 +245,11 @@ inline std::ostream& operator<<(std::ostream& out, const set::Empty& x) {
     return out;
 }
 
+namespace set {
 template<typename T>
-inline std::ostream& operator<<(std::ostream& out, const set::Iterator<T>& x) {
+inline std::ostream& operator<<(std::ostream& out, const Iterator<T>& x) {
     out << to_string(x);
     return out;
 }
-
+} // namespace set
 } // namespace hilti::rt
