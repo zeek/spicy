@@ -81,19 +81,34 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
         bool referenced = false;
     };
 
+    // Lookup table for feature name -> required.
+    using Features = std::map<std::string, bool>;
+
+    // Lookup table for typename -> features.
+    std::map<ID, Features> _features;
+
     std::map<ID, Uses> _data;
 
     void collect(Node& node) override {
         _stage = Stage::COLLECT;
 
-        for ( auto i : this->walk(&node) )
-            dispatch(i);
+        bool collect_again = false;
 
-        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
-            HILTI_DEBUG(logging::debug::OptimizerCollect, "functions:");
-            for ( const auto& [id, uses] : _data )
-                HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("    %s: defined=%d referenced=%d hook=%d", id,
-                                                                        uses.defined, uses.referenced, uses.hook));
+        while ( true ) {
+            for ( auto i : this->walk(&node) )
+                if ( auto x = dispatch(i) )
+                    collect_again = collect_again || *x;
+
+            if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
+                HILTI_DEBUG(logging::debug::OptimizerCollect, "functions:");
+                for ( const auto& [id, uses] : _data )
+                    HILTI_DEBUG(logging::debug::OptimizerCollect,
+                                util::fmt("    %s: defined=%d referenced=%d hook=%d", id, uses.defined, uses.referenced,
+                                          uses.hook));
+            }
+
+            if ( ! collect_again )
+                break;
         }
     }
 
@@ -223,6 +238,28 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
 
                 if ( is_always_emit )
                     function.referenced = true;
+
+                // For implementation of methods check whether the method
+                // should only be emitted when certain features are active.
+                if ( auto parent = x.parent() )
+                    for ( const auto& requirement : AttributeSet::findAll(fn.attributes(), "&needed-by-feature") ) {
+                        auto feature = *requirement.valueAsString();
+
+                        // If no feature constants were collected yet, reschedule us for the next collection pass.
+                        //
+                        // NOTE: If we emit a `&needed-by-feature` attribute we also always emit a matching feature
+                        // constant, so eventually at this point we will see at least on feature constant.
+                        if ( _features.empty() )
+                            return true;
+
+                        auto it = _features.find(parent->canonicalID());
+                        if ( it == _features.end() )
+                            // No feature requirements known for type.
+                            continue;
+
+                        // Mark the function as referenced if it is needed by an active feature.
+                        function.referenced = function.referenced || it->second.at(feature);
+                    }
 
                 if ( fn.ftype().flavor() == type::function::Flavor::Hook )
                     function.hook = true;
@@ -406,6 +443,41 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
             case Stage::PRUNE_DECLS:
                 // Nothing.
                 break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const declaration::Constant& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                std::optional<bool> value;
+                if ( auto ctor = x.value().tryAs<expression::Ctor>() )
+                    if ( auto bool_ = ctor->ctor().tryAs<ctor::Bool>() )
+                        value = bool_->value();
+
+                if ( ! value )
+                    break;
+
+                const auto& id = x.id();
+
+                // We only work on feature flags named `__feat*`.
+                if ( ! util::startsWith(id, "__feat") )
+                    break;
+
+                const auto& tokens = util::split(id, "%");
+                assert(tokens.size() == 3);
+
+                // The type name is encoded in the variable name with `::` replaced by `__`.
+                const auto& typeID = ID(util::replace(tokens[1], "__", "::"));
+                const auto& feature = tokens[2];
+
+                _features[typeID].insert({feature, *value});
+                break;
+            }
+
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS: break;
         }
 
         return false;
