@@ -1,4 +1,6 @@
-# @TEST-EXEC: echo AaBbffff | spicy-dump -d %INPUT >output
+# @TEST-EXEC: spicyc -jd %INPUT -o test.hlto
+# @TEST-EXEC: echo AaBbffff | spicy-dump -d -p Mini::Test  test.hlto >>output
+# @TEST-EXEC: echo AaBbffff | spicy-dump -d -p Mini::Test2 test.hlto >>output
 # @TEST-EXEC: btest-diff output
 
 module Mini;
@@ -12,4 +14,13 @@ public type Test = unit {
 type Foo = unit(len: uint64) { } &convert="";
 type Bar = unit {
   x: Foo(42);
+};
+
+# Validate that we can use `$$` in place of `self` in unit convert attributes.
+type Baz = unit {
+    a: bytes &until=b"\n";
+} &convert=|$$.a|;
+
+public type Test2 = unit {
+    a: Baz;
 };

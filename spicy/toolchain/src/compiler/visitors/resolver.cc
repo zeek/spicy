@@ -326,6 +326,29 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         else
             hilti::logger().internalError("no known type for unresolved field", p.node.location());
     }
+
+    void operator()(const hilti::expression::UnresolvedID& x, position_t p) {
+        // Allow `$$` as an alias for `self` in unit convert attributes for symmetry with field convert attributes.
+        if ( x.id() == ID("__dd") ) {
+            // The following loop searches for `&convert` attribute nodes directly under `Unit` nodes.
+            for ( size_t parent_nr = 1; parent_nr < p.pathLength(); ++parent_nr ) {
+                auto attr = p.parent(parent_nr).tryAs<Attribute>();
+
+                if ( ! attr )
+                    continue;
+
+                if ( attr->tag() != "&convert" )
+                    return;
+
+                // The direct parent of the attribute set containing the attribute should be the unit.
+                if ( ! p.parent(parent_nr + 2).isA<type::Unit>() )
+                    return;
+
+                p.node = hilti::builder::id("self");
+                modified = true;
+            }
+        }
+    }
 };
 
 } // anonymous namespace
