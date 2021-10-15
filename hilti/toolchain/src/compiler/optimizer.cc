@@ -1053,14 +1053,43 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
         }
     }
 
+    // Helper function to compute all feature flags participating in an `if`
+    // condition. Feature flags are always combined with logical `or`.
+    static void featureFlagsFromIfCondition(const Expression& condition, std::map<ID, std::set<std::string>>& result) {
+        // Helper to extract `(ID, feature)` from a feature constant.
+        auto idFeatureFromConstant = [](const ID& featureConstant) -> std::optional<std::pair<ID, std::string>> {
+            // Split away the module part of the resolved ID.
+            auto id = util::split1(featureConstant, "::").second;
+
+            if ( ! util::startsWith(id, "__feat") )
+                return {};
+
+            const auto& tokens = util::split(id, "%");
+            assert(tokens.size() == 3);
+
+            auto type_id = ID(util::replace(tokens[1], "__", "::"));
+            const auto& feature = tokens[2];
+
+            return {{type_id, feature}};
+        };
+
+        if ( auto rid = condition.tryAs<expression::ResolvedID>() ) {
+            if ( auto id_feature = idFeatureFromConstant(rid->id()) )
+                result[std::move(id_feature->first)].insert(std::move(id_feature->second));
+        }
+        // If we did not find a feature constant in the conditional, we
+        // could also be dealing with a `OR` of feature constants.
+        else if ( auto or_ = condition.tryAs<expression::LogicalOr>() ) {
+            featureFlagsFromIfCondition(or_->op0(), result);
+            featureFlagsFromIfCondition(or_->op1(), result);
+        }
+    }
+
     // Helper function to compute the set of feature flags wrapping the given position.
     static std::map<ID, std::set<std::string>> conditionalFeatures(position_t p) {
-        // Compute a list of features this use does not activate.
-        // Generated feature-dependent code is always under
-        // conditionals `if (__feat%XYZ%FEATURE) ...` so get all
-        // `FEATURE` for all parents which match this pattern.
         std::map<ID, std::set<std::string>> result;
 
+        // We walk up the full path to discover all feature conditionals wrapping this position.
         for ( const auto& parent : p.path ) {
             if ( ! parent.node.isA<statement::If>() )
                 continue;
@@ -1070,23 +1099,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
             if ( ! condition )
                 continue;
 
-            auto rid = condition->tryAs<expression::ResolvedID>();
-            if ( ! rid )
-                continue;
-
-            // Split away the module part of the resolved ID.
-            auto id = util::split1(rid->id(), "::").second;
-
-            if ( ! util::startsWith(id, "__feat") )
-                continue;
-
-            const auto& tokens = util::split(id, "%");
-            assert(tokens.size() == 3);
-
-            auto type_id = ID(util::replace(tokens[1], "__", "::"));
-            const auto& feature = tokens[2];
-
-            result[std::move(type_id)].insert(feature);
+            featureFlagsFromIfCondition(*condition, result);
         }
 
         return result;
