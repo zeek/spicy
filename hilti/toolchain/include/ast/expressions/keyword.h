@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <ostream>
 #include <utility>
 
 #include <hilti/ast/declaration.h>
@@ -69,6 +70,16 @@ public:
 private:
     keyword::Kind _kind;
 };
+
+inline std::ostream& operator<<(std::ostream& stream, const Keyword& keyword) {
+    switch ( keyword.kind() ) {
+        case keyword::Kind::Self: return stream << "<self>";
+        case keyword::Kind::DollarDollar: return stream << "<$$>";
+        case keyword::Kind::Captures: return stream << "<captures>";
+    }
+
+    return stream;
+}
 
 } // namespace expression
 } // namespace hilti

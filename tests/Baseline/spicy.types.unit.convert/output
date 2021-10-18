@@ -3,3 +3,6 @@ Mini::Test {
   a: aabb
   b: 65535
 }
+Mini::Test2 {
+  a: 8
+}

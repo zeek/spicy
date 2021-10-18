@@ -31,6 +31,8 @@ Version 1.3 (in progress)
 
   We now detect unused sink functionality and avoid emitting it.
 
+- GH-934: Allow ``$$`` in place of ``self`` in unit convert attributes.
+
 .. rubric:: Changed Functionality
 
 - GH-941: Allow use of units with all defaulted parameters as entry points.
