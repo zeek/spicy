@@ -4,8 +4,8 @@ releases. For an exhaustive list of all changes, see the `CHANGES
 <https://github.com/zeek/spicy/blob/main/CHANGES>`_ file coming with
 the distribution.
 
-Version 1.3 (in progress)
-=========================
+Version 1.3
+===========
 
 .. rubric:: New Functionality
 
@@ -39,9 +39,17 @@ Version 1.3 (in progress)
 
 - We added precompilation support for ``libspicy.h``.
 
+- Drop support for end-of-life Fedora 32, and add support for Fedora 34.
+
 .. rubric:: Bug fixes
 
 - Correctly handle lookups for NULL library symbols.
+
+- Use safe integers for ``size`` functions in the runtime library.
+
+- Make it possible to build on ARM64.
+
+- Fix building with gcc-11.
 
 .. rubric:: Documentation
 
