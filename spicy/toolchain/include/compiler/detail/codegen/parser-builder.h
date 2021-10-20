@@ -203,8 +203,7 @@ public:
      * Adds a unit's external parsing methods to the HILTI struct
      * corresponding to the parse object. Returns the modified type.
      */
-    hilti::type::Struct addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only,
-                                         bool always_emit);
+    hilti::type::Struct addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only);
 
     /** Returns statement builder currently being active. */
     auto builder() { return _builders.back(); }
@@ -460,10 +459,11 @@ public:
      * only executed if the feature is enabled.
      *
      * @param unit unit the code is added for
-     * @param feature identifier of the feature
+     * @param features identifiers of the feature, will be combined with OR.
      * @param f callback building the feature-dependent code.
      */
-    void guardFeatureCode(const type::Unit& unit, std::string_view feature, std::function<void()> f);
+    void guardFeatureCode(const type::Unit& unit, const std::vector<std::string_view>& features,
+                          std::function<void()> f);
 
     CodeGen* cg() const { return _cg; }
     std::shared_ptr<hilti::Context> context() const;

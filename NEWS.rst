@@ -9,6 +9,8 @@ Version 1.4 (in progress)
 
 .. rubric:: New Functionality
 
+- Remove restriction that units used as sinks need to be ``public``
+
 .. rubric:: Changed Functionality
 
 .. rubric:: Bug fixes

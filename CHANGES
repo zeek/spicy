@@ -1,3 +1,27 @@
+1.4.0-dev.15 | 2021-10-20 11:37:36 +0200
+
+  * Fix computation of dependent features if multiple features are involved. (Benjamin Bannier, Corelight)
+
+  * Remove workaround always emitting parser functions. (Benjamin Bannier, Corelight)
+
+  * Register parsers depending on feature. (Benjamin Bannier, Corelight)
+
+  * Do not remove unused functions if they are required by type features. (Benjamin Bannier, Corelight)
+
+  * Allow to guard on a list of features. (Benjamin Bannier, Corelight)
+
+  * Constant fold logical operations on booleans. (Benjamin Bannier, Corelight)
+
+  * Factor out getting of bool literals in optimizer. (Benjamin Bannier, Corelight)
+
+  * Always emit filter functionality. (Benjamin Bannier, Corelight)
+
+  * Change `connect_mime_type` to consider public units and same linker scope units. (Benjamin Bannier, Corelight)
+
+  * Allow registration of non-public parsers. (Benjamin Bannier, Corelight)
+
+  * Enable sink support for non-public units as well. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.3 | 2021-10-20 08:10:39 +0200
 
   * Fix internal link in docs. (Benjamin Bannier, Corelight)

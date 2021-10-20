@@ -1,6 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <algorithm>
+#include <numeric>
 #include <optional>
 #include <utility>
 
@@ -10,6 +11,7 @@
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/id.h>
+#include <hilti/ast/expressions/logical-or.h>
 #include <hilti/ast/expressions/type-wrapped.h>
 #include <hilti/ast/expressions/void.h>
 #include <hilti/ast/statements/declaration.h>
@@ -18,6 +20,7 @@
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/cache.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/context.h>
 
 #include <spicy/ast/types/bitfield.h>
@@ -260,8 +263,8 @@ struct ProductionVisitor
 
                     builder()->addLocal("filtered", hilti::builder::strong_reference(type::Stream()));
 
-                    if ( unit && unit->supportsFilters() ) {
-                        pb->guardFeatureCode(*unit, "supports_filters", [&]() {
+                    if ( unit ) {
+                        pb->guardFeatureCode(*unit, {"supports_filters"}, [&]() {
                             // If we have a filter attached, we initialize it and change to parse from its output.
                             auto filtered = builder::assign(builder::id("filtered"),
                                                             builder::call("spicy_rt::filter_init",
@@ -377,15 +380,14 @@ struct ProductionVisitor
                 // stage1 method is already declared (but not
                 // implemented) by the struct that unit-builder is
                 // declaring.
-                if ( unit && unit->supportsFilters() ) {
-                    addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage1(), true,
-                                   addl_param, p.location());
-                    addParseMethod(true, id_stage2, build_parse_stage12_or_stage2(false), true, addl_param,
+                if ( unit ) {
+                    addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage1(), addl_param,
                                    p.location());
+                    addParseMethod(true, id_stage2, build_parse_stage12_or_stage2(false), addl_param, p.location());
                 }
                 else
                     addParseMethod(id_stage1.str() != "__parse_stage1", id_stage1, build_parse_stage12_or_stage2(true),
-                                   false, addl_param, p.location());
+                                   addl_param, p.location());
 
                 return id_stage1;
             });
@@ -912,15 +914,13 @@ struct ProductionVisitor
 
     // Adds a method, and its implementation, to the current parsing struct
     // type that has the standard signature for parse methods.
-    void addParseMethod(bool add_decl, const ID& id, Statement body, bool always_emit = false,
+    void addParseMethod(bool add_decl, const ID& id, Statement body,
                         std::optional<type::function::Parameter> addl_param = {}, const Meta& m = {}) {
         auto qualified_id = pb->state().unit_id + id;
 
-        const auto attributes = always_emit ? AttributeSet({Attribute("&always-emit")}) : AttributeSet();
-
         auto ftype = pb->parseMethodFunctionType(std::move(addl_param), m);
         auto func = builder::function(qualified_id, ftype, std::move(body), declaration::Linkage::Struct,
-                                      function::CallingConvention::Standard, attributes, m);
+                                      function::CallingConvention::Standard, {}, m);
 
         if ( add_decl )
             new_fields.emplace_back(hilti::declaration::Field(id, func.function().type()));
@@ -1304,8 +1304,7 @@ hilti::declaration::Function _setBody(const hilti::declaration::Function& d, Sta
     return x;
 }
 
-hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only,
-                                                    bool always_emit) {
+hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only) {
     auto [id_ext_overload1, id_ext_overload2, id_ext_overload3, id_ext_context_new] = parseMethodIDs(t);
 
     std::vector<type::function::Parameter> params =
@@ -1313,8 +1312,9 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
          builder::parameter("cur", type::Optional(type::stream::View()), builder::optional(type::stream::View())),
          builder::parameter("context", type::Optional(builder::typeByID("spicy_rt::UnitContext")))};
 
-    auto attr_ext_overload = always_emit ? AttributeSet({Attribute("&static"), Attribute("&always-emit")}) :
-                                           AttributeSet({Attribute("&static")});
+    auto attr_ext_overload =
+        AttributeSet({Attribute("&needed-by-feature", builder::string("is_filter")),
+                      Attribute("&needed-by-feature", builder::string("supports_sinks")), Attribute("&static")});
 
     auto f_ext_overload1_result = type::stream::View();
     auto f_ext_overload1 = builder::function(id_ext_overload1, f_ext_overload1_result, std::move(params),
@@ -1679,7 +1679,7 @@ void ParserBuilder::initializeUnit(const Location& l) {
     const auto& unit = state().unit.get();
 
     if ( unit.usesRandomAccess() ) {
-        guardFeatureCode(unit, "uses_random_access", [&]() {
+        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
             // Save the current input offset for the raw access methods.
             builder()->addAssign(builder::member(state().self, ID("__begin")), builder::begin(state().cur));
             builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
@@ -1715,26 +1715,18 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     else
         builder()->addMemberCall(state().self, "__on_0x25_error", {}, l);
 
-    if ( unit.supportsFilters() )
-        guardFeatureCode(unit, "supports_filters",
-                         [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
+    guardFeatureCode(unit, {"supports_filters"},
+                     [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
 
     if ( unit.isFilter() )
-        guardFeatureCode(unit, "is_filter",
+        guardFeatureCode(unit, {"is_filter"},
                          [&]() { builder()->addCall("spicy_rt::filter_forward_eod", {state().self}); });
 
     for ( const auto& s : unit.items<type::unit::item::Sink>() )
         builder()->addMemberCall(builder::member(state().self, s.id()), "close", {}, l);
 }
 
-static Expression _filters(const ParserState& state) {
-    hilti::Expression filters;
-
-    if ( state.unit.get().supportsFilters() )
-        return builder::member(state.self, ID("__filters"));
-
-    return builder::null();
-}
+static Expression _filters(const ParserState& state) { return builder::member(state.self, ID("__filters")); }
 
 Expression ParserBuilder::waitForInputOrEod() {
     return builder::call("spicy_rt::waitForInputOrEod", {state().data, state().cur, _filters(state())});
@@ -1789,7 +1781,7 @@ void ParserBuilder::beforeHook() {
     const auto& unit = state().unit.get();
 
     if ( unit.usesRandomAccess() )
-        guardFeatureCode(unit, "uses_random_access", [&]() {
+        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
             builder()->addAssign(builder::member(state().self, ID("__position_update")),
                                  builder::optional(hilti::type::stream::Iterator()));
         });
@@ -1799,7 +1791,7 @@ void ParserBuilder::afterHook() {
     const auto& unit = state().unit.get();
 
     if ( unit.usesRandomAccess() ) {
-        guardFeatureCode(unit, "uses_random_access", [&]() {
+        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
             auto position_update = builder::member(state().self, ID("__position_update"));
             auto advance = builder()->addIf(position_update);
             auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
@@ -1818,7 +1810,7 @@ void ParserBuilder::afterHook() {
 void ParserBuilder::saveParsePosition() {
     const auto& unit = state().unit.get();
     if ( unit.usesRandomAccess() )
-        guardFeatureCode(unit, "uses_random_access", [&]() {
+        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
             builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
         });
 }
@@ -1860,26 +1852,23 @@ void ParserBuilder::finishLoopBody(const Expression& cookie, const Location& l) 
                 [&]() { parseError("loop body did not change input position, possible infinite loop", l); });
 }
 
-void ParserBuilder::guardFeatureCode(const type::Unit& unit, std::string_view feature, std::function<void()> f) {
-    // TODO(bbannier): Only handling for the `is_filter`, `supports_filters`,
-    // and `uses_random_access` feature flags is currently implemented.
-    if ( feature != "is_filter" && feature != "supports_filters" && feature != "uses_random_access" &&
-         feature != "supports_sinks" ) {
-        f();
-        return;
-    }
-
+void ParserBuilder::guardFeatureCode(const type::Unit& unit, const std::vector<std::string_view>& features,
+                                     std::function<void()> f) {
     const auto& typeID = unit.id();
-
-    if ( ! typeID ) {
+    if ( ! typeID || features.empty() ) {
         f();
         return;
     }
 
     const auto id = hilti::util::replace(*typeID, ":", "_");
-    const auto flag = ID(hilti::rt::fmt("__feat%%%s%%%s", id, feature));
+    auto flags = hilti::util::transform(features, [&](const auto& feature) {
+        return builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, feature)));
+    });
 
-    auto if_ = builder()->addIf(builder::id(std::move(flag)));
+    auto cond = std::accumulate(++flags.begin(), flags.end(), flags.front(),
+                                [](const auto& a, const auto& b) { return hilti::expression::LogicalOr(a, b); });
+
+    auto if_ = builder()->addIf(std::move(cond));
     pushBuilder(if_);
     f();
     popBuilder();

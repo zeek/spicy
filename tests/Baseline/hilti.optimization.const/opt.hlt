@@ -17,5 +17,15 @@ hilti::print(False, True);
 {
     4;
 }
+True;
+True;
+True;
+False;
+True;
+False;
+False;
+False;
+False;
+True;
 
 }

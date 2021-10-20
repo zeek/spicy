@@ -161,31 +161,40 @@ public:
 
     /**
      * Connects new instances of all units to the sink that support a given
-     * MIME type. The units will then all receive any data written into the
-     * think.
+     * MIME type. The lookup will consider all `public` units as well as units
+     * with the same scope. The units will then all receive any data written
+     * into the sink.
      *
      * @param mt MIME type to connect units for
+     * @param scope identifier for the desired scope
      */
-    void connect_mime_type(const MIMEType& mt);
+    void connect_mime_type(const MIMEType& mt, const std::string& scope);
 
     /**
      * Connects new instances of all units to the sink that support a given
-     * MIME type. The units will then all receive any data written into the
-     * think.
+     * MIME type. The lookup will consider all `public` units as well as units
+     * with the same scope. The units will then all receive any data written
+     * into the sink.
      *
      * @param mt MIME type to connect units for
+     * @param scope identifier for the desired scope
      * @throws ``mime::InvalidType`` if the type cannot be parsed
      */
-    void connect_mime_type(const std::string& mt) { connect_mime_type(MIMEType(mt)); }
+    void connect_mime_type(const std::string& mt, const std::string& scope) { connect_mime_type(MIMEType(mt), scope); }
 
     /**
-     * Connets instances of all units to the sink that support a given MIME
-     * type. The units will then all receive any data written into the think.
+     * Connects new instances of all units to the sink that support a given
+     * MIME type. The lookup will consider all `public` units as well as units
+     * with the same scope. The units will then all receive any data written
+     * into the sink.
      *
      * @param mt MIME type to connect units for
+     * @param scope identifier for the desired scope
      * @throws ``mime::InvalidType`` if the type cannot be parsed
      */
-    void connect_mime_type(const hilti::rt::Bytes& mt) { connect_mime_type(MIMEType(mt.str())); }
+    void connect_mime_type(const hilti::rt::Bytes& mt, const std::string& scope) {
+        connect_mime_type(MIMEType(mt.str()), scope);
+    }
 
     /**
      * Reports a gap in the input stream.

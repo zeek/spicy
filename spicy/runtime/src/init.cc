@@ -24,12 +24,16 @@ void spicy::rt::init() {
 
     auto& parsers = globalState()->parsers;
 
-    if ( parsers.size() == 1 )
-        globalState()->default_parser = parsers.front();
-    else
-        globalState()->default_parser = std::nullopt;
+    std::optional<const Parser*> default_parser;
 
     for ( const auto& p : parsers ) {
+        if ( p->is_public ) {
+            if ( ! default_parser.has_value() )
+                default_parser = p;
+            else
+                default_parser = std::nullopt;
+        }
+
         globalState()->parsers_by_name[p->name].emplace_back(p);
 
         for ( const auto& x : p->ports ) {
@@ -57,6 +61,11 @@ void spicy::rt::init() {
             globalState()->parsers_by_mime_type[mt.asKey()].push_back(p);
         }
     }
+
+    if ( default_parser )
+        globalState()->default_parser = *default_parser;
+    else
+        globalState()->default_parser = std::nullopt;
 
     HILTI_RT_DEBUG("libspicy", "registered parsers (w/ aliases):");
     for ( const auto& i : globalState()->parsers_by_name ) {

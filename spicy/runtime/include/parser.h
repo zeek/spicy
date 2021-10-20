@@ -2,10 +2,12 @@
 
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
@@ -135,10 +137,11 @@ struct has_on_undelivered {
  * as well.
  */
 struct Parser {
-    Parser(std::string name, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
+    Parser(std::string name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            ContextNewFunction context_new, const hilti::rt::TypeInfo* type, std::string description,
            hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
         : name(std::move(name)),
+          is_public(is_public),
           parse1(parse1),
           parse2(std::move(parse2)),
           parse3(parse3),
@@ -148,10 +151,11 @@ struct Parser {
           mime_types(std::move(mime_types)),
           ports(std::move(ports)) {}
 
-    Parser(std::string name, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
+    Parser(std::string name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type, std::string description,
            hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
         : name(std::move(name)),
+          is_public(is_public),
           parse1(parse1),
           parse2(std::move(parse2)),
           parse3(parse3),
@@ -160,10 +164,10 @@ struct Parser {
           mime_types(std::move(mime_types)),
           ports(std::move(ports)) {}
 
-    Parser(std::string name, hilti::rt::Null /* null */, hilti::rt::any parse2, hilti::rt::Null /* null */,
-           hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type, std::string description,
-           hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : Parser(std::move(name), nullptr, parse2, nullptr, nullptr, type, std::move(description),
+    Parser(std::string name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
+           hilti::rt::Null /* null */, hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type,
+           std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
+        : Parser(std::move(name), is_public, nullptr, parse2, nullptr, nullptr, type, std::move(description),
                  std::move(mime_types), std::move(ports)) {}
 
     Parser(const Parser&) = default;
@@ -187,6 +191,9 @@ struct Parser {
 
     /** Short descriptive name. */
     std::string name;
+
+    /** Whether this parser is public. */
+    bool is_public;
 
     /**
      * Linker scope of the unit registering the parser. This can be used for
@@ -261,8 +268,17 @@ struct Parser {
         __hook_undelivered;
 };
 
-/** Returns all available parsers. */
-inline const auto& parsers() { return detail::globalState()->parsers; }
+/** Returns all available public parsers. */
+inline auto parsers() {
+    const auto& parsers = detail::globalState()->parsers;
+
+    std::vector<const Parser*> public_parsers;
+    std::copy_if(parsers.begin(), parsers.end(), std::back_inserter(public_parsers),
+                 [](const auto& p) { return p->is_public; });
+
+    return public_parsers;
+}
+
 
 /**
  * Exception thrown by generated parser code when an parsing failed.

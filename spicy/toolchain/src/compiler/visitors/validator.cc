@@ -786,16 +786,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         }
     }
 
-    void operator()(const operator_::sink::Connect& n, position_t p) {
-        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->supportsSinks() )
-            error("unit type does not support sinks", p);
-    }
-
     void operator()(const operator_::sink::ConnectMIMETypeBytes& n, position_t p) {
         if ( auto x = n.op0().type().tryAs<type::Unit>() ) {
-            if ( ! x->supportsSinks() )
-                error("unit type does not support sinks", p);
-
             if ( x->parameters().size() )
                 error("unit types with parameters cannot be connected through MIME type", p);
         }
@@ -803,18 +795,12 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
     void operator()(const operator_::sink::ConnectMIMETypeString& n, position_t p) {
         if ( auto x = n.op0().type().tryAs<type::Unit>() ) {
-            if ( ! x->supportsSinks() )
-                error("unit type does not support sinks", p);
-
             if ( x->parameters().size() )
                 error("unit types with parameters cannot be connected through MIME type", p);
         }
     }
 
     void operator()(const operator_::unit::ConnectFilter& n, position_t p) {
-        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->supportsFilters() )
-            error("unit type does not support filters", p);
-
         if ( const auto& y =
                  methodArgument(n, 0).type().as<type::StrongReference>().dereferencedType().as<type::Unit>();
              ! y.isFilter() )

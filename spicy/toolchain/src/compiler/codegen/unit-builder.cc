@@ -179,28 +179,21 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     if ( unit.id() ) {
         ID typeID = ID(hilti::rt::replace(*unit.id(), ":", "_"));
 
-        if ( unit.isFilter() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(true)));
-
-        if ( unit.supportsFilters() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
-
-        if ( unit.supportsSinks() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
-
         if ( unit.usesRandomAccess() )
             addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true)));
+
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(unit.isFilter())));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
     }
 
-    if ( unit.supportsSinks() ) {
-        add_hook("0x25_gap", {builder::parameter("seq", type::UnsignedInteger(64)),
-                              builder::parameter("len", type::UnsignedInteger(64))});
-        add_hook("0x25_overlap", {builder::parameter("seq", type::UnsignedInteger(64)),
-                                  builder::parameter("old", type::Bytes()), builder::parameter("new_", type::Bytes())});
-        add_hook("0x25_skipped", {builder::parameter("seq", type::UnsignedInteger(64))});
-        add_hook("0x25_undelivered",
-                 {builder::parameter("seq", type::UnsignedInteger(64)), builder::parameter("data", type::Bytes())});
-    }
+    add_hook("0x25_gap", {builder::parameter("seq", type::UnsignedInteger(64)),
+                          builder::parameter("len", type::UnsignedInteger(64))});
+    add_hook("0x25_overlap", {builder::parameter("seq", type::UnsignedInteger(64)),
+                              builder::parameter("old", type::Bytes()), builder::parameter("new_", type::Bytes())});
+    add_hook("0x25_skipped", {builder::parameter("seq", type::UnsignedInteger(64))});
+    add_hook("0x25_undelivered",
+             {builder::parameter("seq", type::UnsignedInteger(64)), builder::parameter("data", type::Bytes())});
 
     if ( unit.usesRandomAccess() ) {
         auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
@@ -217,21 +210,26 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         v.addField(std::move(f3));
     }
 
-    if ( unit.supportsSinks() || unit.isFilter() ) {
-        auto attrs = AttributeSet({Attribute("&static"), Attribute("&internal")});
+    {
+        auto attrs = AttributeSet({Attribute("&static"), Attribute("&internal"),
+                                   Attribute("&needed-by-feature", builder::string("supports_filters"))});
 
-        if ( unit.supportsSinks() )
+        if ( unit.isPublic() )
             attrs = AttributeSet::add(std::move(attrs), Attribute("&always-emit"));
+        else
+            attrs =
+                AttributeSet::add(std::move(attrs), Attribute("&needed-by-feature", builder::string("supports_sinks")));
 
         if ( unit.isFilter() )
             attrs = AttributeSet::add(std::move(attrs), Attribute("&needed-by-feature", builder::string("is_filter")));
 
         auto parser =
             hilti::declaration::Field(ID("__parser"), builder::typeByID("spicy_rt::Parser"), std::move(attrs));
+
         v.addField(std::move(parser));
     }
 
-    if ( unit.supportsSinks() ) {
+    {
         auto attrs =
             AttributeSet({Attribute("&internal"), Attribute("&needed-by-feature", builder::string("supports_sinks"))});
 
@@ -239,20 +237,17 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         // MIME type with `connect_mime_type`. In that case we need to always emit
         // the field since we cannot detect use of this type later on.
         if ( unit.propertyItem("%mime-type") )
-            attrs = AttributeSet::add(attrs, Attribute("&always-emit"));
+            attrs = AttributeSet::add(std::move(attrs), Attribute("&always-emit"));
 
         auto sink = hilti::declaration::Field(ID("__sink"), builder::typeByID("spicy_rt::SinkState"), attrs);
         v.addField(std::move(sink));
     }
 
-    if ( unit.supportsFilters() ) {
-        auto filters = hilti::declaration::Field(ID("__filters"),
-                                                 hilti::type::StrongReference(builder::typeByID("spicy_rt::Filters")),
-                                                 AttributeSet({Attribute("&internal"),
-                                                               Attribute("&needed-by-feature",
-                                                                         builder::string("supports_filters"))}));
-        v.addField(std::move(filters));
-    }
+    auto filters =
+        hilti::declaration::Field(ID("__filters"), hilti::type::StrongReference(builder::typeByID("spicy_rt::Filters")),
+                                  AttributeSet({Attribute("&internal"),
+                                                Attribute("&needed-by-feature", builder::string("supports_filters"))}));
+    v.addField(std::move(filters));
 
     if ( unit.isFilter() ) {
         auto forward =
@@ -284,47 +279,55 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     assert(unit.id());
     Type s = hilti::type::Struct(unit.parameters().copy(), std::move(v.fields));
     s = type::setTypeID(s, *unit.id());
-    s = _pb.addParserMethods(s.as<hilti::type::Struct>(), unit, declare_only, unit.isFilter());
+    s = _pb.addParserMethods(s.as<hilti::type::Struct>(), unit, declare_only);
 
-    if ( unit.isPublic() || unit.isFilter() ) {
-        auto builder = builder::Builder(context());
-        auto description = unit.propertyItem("%description");
-        auto mime_types =
-            hilti::node::transform(unit.propertyItems("%mime-type"), [](const auto& p) { return *p.expression(); });
-        auto ports = hilti::node::transform(unit.propertyItems("%port"), [](auto p) {
-            auto dir = builder::id("spicy_rt::Direction::Both");
+    auto description = unit.propertyItem("%description");
+    auto mime_types =
+        hilti::node::transform(unit.propertyItems("%mime-type"), [](const auto& p) { return *p.expression(); });
+    auto ports = hilti::node::transform(unit.propertyItems("%port"), [](auto p) {
+        auto dir = builder::id("spicy_rt::Direction::Both");
 
-            if ( const auto& attrs = p.attributes() ) {
-                auto orig = attrs->find("&originator");
-                auto resp = attrs->find("&responder");
+        if ( const auto& attrs = p.attributes() ) {
+            auto orig = attrs->find("&originator");
+            auto resp = attrs->find("&responder");
 
-                if ( orig && ! resp )
-                    dir = builder::id("spicy_rt::Direction::Originator");
+            if ( orig && ! resp )
+                dir = builder::id("spicy_rt::Direction::Originator");
 
-                else if ( resp && ! orig )
-                    dir = builder::id("spicy_rt::Direction::Responder");
-            }
-
-            return builder::tuple({*p.expression(), dir});
-        });
-
-        Expression parse1 = builder::null();
-        Expression parse3 = builder::null();
-
-        // Only create `parse1` and `parse3` if the unit can be default constructed.
-        const auto& parameters = unit.parameters();
-        if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p.default_(); }) ) {
-            parse1 = _pb.parseMethodExternalOverload1(unit);
-            parse3 = _pb.parseMethodExternalOverload3(unit);
+            else if ( resp && ! orig )
+                dir = builder::id("spicy_rt::Direction::Responder");
         }
 
-        Expression context_new = builder::null();
+        return builder::tuple({*p.expression(), dir});
+    });
 
-        if ( unit.contextType() )
-            context_new = _pb.contextNewFunction(unit);
+    Expression parse1 = builder::null();
+    Expression parse3 = builder::null();
 
+    // Only create `parse1` and `parse3` if the unit can be default constructed.
+    const auto& parameters = unit.parameters();
+    if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p.default_(); }) ) {
+        parse1 = _pb.parseMethodExternalOverload1(unit);
+        parse3 = _pb.parseMethodExternalOverload3(unit);
+    }
+
+    Expression context_new = builder::null();
+
+    if ( unit.contextType() )
+        context_new = _pb.contextNewFunction(unit);
+
+    _pb.pushBuilder();
+
+    // Register the parser if the `is_filter` or `supports_sinks` features are
+    // active; `public` units we always register (by passing an empty list of
+    // features to the feature guard).
+    const auto dependentFeatureFlags = unit.isPublic() ? std::vector<std::string_view>{} :
+                                                         std::vector<std::string_view>({"is_filter", "supports_sinks"});
+
+    _pb.guardFeatureCode(unit, dependentFeatureFlags, [&]() {
         auto parser =
             builder::struct_({{ID("name"), builder::string(*unit.id())},
+                              {ID("is_public"), builder::bool_(unit.isPublic())},
                               {ID("parse1"), parse1},
                               {ID("parse2"), _pb.parseMethodExternalOverload2(unit)},
                               {ID("parse3"), parse3},
@@ -337,18 +340,20 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                                builder::vector(builder::typeByID("spicy_rt::ParserPort"), std::move(ports))}},
                              unit.meta());
 
-        builder.addAssign(builder::id(ID(*unit.id(), "__parser")), parser);
+        _pb.builder()->addAssign(builder::id(ID(*unit.id(), "__parser")), parser);
 
-        if ( unit.isPublic() )
-            builder.addExpression(builder::call("spicy_rt::registerParser", {builder::id(ID(*unit.id(), "__parser")),
-                                                                             builder::call("hilti::linker_scope", {}),
-                                                                             builder::strong_reference(unit)}));
+        _pb.builder()->addExpression(
+            builder::call("spicy_rt::registerParser",
+                          {builder::id(ID(*unit.id(), "__parser")), builder::call("hilti::linker_scope", {}),
+                           builder::strong_reference(unit)}));
+    });
 
-        auto register_unit =
-            builder::function(ID(fmt("__register_%s", hilti::util::replace(*unit.id(), "::", "_"))), type::void_, {},
-                              builder.block(), type::function::Flavor::Standard, declaration::Linkage::Init);
-        addDeclaration(std::move(register_unit));
-    }
+    auto block = _pb.popBuilder()->block();
+
+    auto register_unit =
+        builder::function(ID(fmt("__register_%s", hilti::util::replace(*unit.id(), "::", "_"))), type::void_, {},
+                          std::move(block), type::function::Flavor::Standard, declaration::Linkage::Init);
+    addDeclaration(std::move(register_unit));
 
     return s;
 }

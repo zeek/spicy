@@ -1754,9 +1754,6 @@ Here's a basic example of two units types chained through a sink:
     :exec: printf '\13GET /a/b/c\n' | spicy-driver -p Test::A %INPUT
     :show-with: foo.spicy
 
-.. note:: Sinks must be declared ``public`` currently. That's a
-   restriction that we may eventually remove.
-
 Let's see what's going on here. First, there's ``sink b`` inside the
 declaration of ``A``. That's the connector, kept as state inside
 ``A``. When parsing for ``A`` is about to begin, the ``%init`` hook

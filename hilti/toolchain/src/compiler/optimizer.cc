@@ -16,6 +16,9 @@
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/logical-and.h>
+#include <hilti/ast/expressions/logical-not.h>
+#include <hilti/ast/expressions/logical-or.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
@@ -78,19 +81,34 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
         bool referenced = false;
     };
 
+    // Lookup table for feature name -> required.
+    using Features = std::map<std::string, bool>;
+
+    // Lookup table for typename -> features.
+    std::map<ID, Features> _features;
+
     std::map<ID, Uses> _data;
 
     void collect(Node& node) override {
         _stage = Stage::COLLECT;
 
-        for ( auto i : this->walk(&node) )
-            dispatch(i);
+        bool collect_again = false;
 
-        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
-            HILTI_DEBUG(logging::debug::OptimizerCollect, "functions:");
-            for ( const auto& [id, uses] : _data )
-                HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("    %s: defined=%d referenced=%d hook=%d", id,
-                                                                        uses.defined, uses.referenced, uses.hook));
+        while ( true ) {
+            for ( auto i : this->walk(&node) )
+                if ( auto x = dispatch(i) )
+                    collect_again = collect_again || *x;
+
+            if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
+                HILTI_DEBUG(logging::debug::OptimizerCollect, "functions:");
+                for ( const auto& [id, uses] : _data )
+                    HILTI_DEBUG(logging::debug::OptimizerCollect,
+                                util::fmt("    %s: defined=%d referenced=%d hook=%d", id, uses.defined, uses.referenced,
+                                          uses.hook));
+            }
+
+            if ( ! collect_again )
+                break;
         }
     }
 
@@ -220,6 +238,28 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
 
                 if ( is_always_emit )
                     function.referenced = true;
+
+                // For implementation of methods check whether the method
+                // should only be emitted when certain features are active.
+                if ( auto parent = x.parent() )
+                    for ( const auto& requirement : AttributeSet::findAll(fn.attributes(), "&needed-by-feature") ) {
+                        auto feature = *requirement.valueAsString();
+
+                        // If no feature constants were collected yet, reschedule us for the next collection pass.
+                        //
+                        // NOTE: If we emit a `&needed-by-feature` attribute we also always emit a matching feature
+                        // constant, so eventually at this point we will see at least on feature constant.
+                        if ( _features.empty() )
+                            return true;
+
+                        auto it = _features.find(parent->canonicalID());
+                        if ( it == _features.end() )
+                            // No feature requirements known for type.
+                            continue;
+
+                        // Mark the function as referenced if it is needed by an active feature.
+                        function.referenced = function.referenced || it->second.at(feature);
+                    }
 
                 if ( fn.ftype().flavor() == type::function::Flavor::Hook )
                     function.hook = true;
@@ -403,6 +443,41 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
             case Stage::PRUNE_DECLS:
                 // Nothing.
                 break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const declaration::Constant& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                std::optional<bool> value;
+                if ( auto ctor = x.value().tryAs<expression::Ctor>() )
+                    if ( auto bool_ = ctor->ctor().tryAs<ctor::Bool>() )
+                        value = bool_->value();
+
+                if ( ! value )
+                    break;
+
+                const auto& id = x.id();
+
+                // We only work on feature flags named `__feat*`.
+                if ( ! util::startsWith(id, "__feat") )
+                    break;
+
+                const auto& tokens = util::split(id, "%");
+                assert(tokens.size() == 3);
+
+                // The type name is encoded in the variable name with `::` replaced by `__`.
+                const auto& typeID = ID(util::replace(tokens[1], "__", "::"));
+                const auto& feature = tokens[2];
+
+                _features[typeID].insert({feature, *value});
+                break;
+            }
+
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS: break;
         }
 
         return false;
@@ -673,38 +748,96 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
         return false;
     }
 
+    std::optional<bool> tryAsBoolLiteral(const Expression& x) {
+        if ( auto expression = x.tryAs<expression::Ctor>() )
+            if ( auto bool_ = expression->ctor().tryAs<ctor::Bool>() )
+                return {bool_->value()};
+
+        return {};
+    }
+
     bool operator()(const statement::If& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT:
             case Stage::PRUNE_DECLS: return false;
             case Stage::PRUNE_USES: {
-                if ( auto expression = x.condition()->tryAs<expression::Ctor>() )
-                    if ( auto bool_ = expression->ctor().tryAs<ctor::Bool>() ) {
-                        if ( auto else_ = x.false_() ) {
-                            if ( ! bool_->value() ) {
-                                replaceNode(p, *else_);
-                                return true;
-                            }
-                            else {
-                                p.node.as<statement::If>().removeFalse();
-                                return true;
-                            }
+                if ( auto bool_ = tryAsBoolLiteral(x.condition().value()) ) {
+                    if ( auto else_ = x.false_() ) {
+                        if ( ! bool_.value() ) {
+                            replaceNode(p, *else_);
+                            return true;
                         }
                         else {
-                            if ( ! bool_->value() ) {
-                                removeNode(p);
-                                return true;
-                            }
-                            else {
-                                replaceNode(p, x.true_());
-                                return true;
-                            }
+                            p.node.as<statement::If>().removeFalse();
+                            return true;
                         }
+                    }
+                    else {
+                        if ( ! bool_.value() ) {
+                            removeNode(p);
+                            return true;
+                        }
+                        else {
+                            replaceNode(p, x.true_());
+                            return true;
+                        }
+                    }
 
-                        return false;
-                    };
+                    return false;
+                };
             }
         }
+
+        return false;
+    }
+
+    bool operator()(const expression::LogicalOr& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: break;
+            case Stage::PRUNE_USES: {
+                auto lhs = tryAsBoolLiteral(x.op0());
+                auto rhs = tryAsBoolLiteral(x.op1());
+
+                if ( lhs && rhs ) {
+                    replaceNode(p, builder::bool_(lhs.value() || rhs.value()));
+                    return true;
+                }
+            }
+        };
+
+        return false;
+    }
+
+    bool operator()(const expression::LogicalAnd& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: break;
+            case Stage::PRUNE_USES: {
+                auto lhs = tryAsBoolLiteral(x.op0());
+                auto rhs = tryAsBoolLiteral(x.op1());
+
+                if ( lhs && rhs ) {
+                    replaceNode(p, builder::bool_(lhs.value() && rhs.value()));
+                    return true;
+                }
+            }
+        };
+
+        return false;
+    }
+
+    bool operator()(const expression::LogicalNot& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: break;
+            case Stage::PRUNE_USES: {
+                if ( auto op = tryAsBoolLiteral(x.expression()) ) {
+                    replaceNode(p, builder::bool_(! op.value()));
+                    return true;
+                }
+            }
+        };
 
         return false;
     }
@@ -920,14 +1053,43 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
         }
     }
 
+    // Helper function to compute all feature flags participating in an `if`
+    // condition. Feature flags are always combined with logical `or`.
+    static void featureFlagsFromIfCondition(const Expression& condition, std::map<ID, std::set<std::string>>& result) {
+        // Helper to extract `(ID, feature)` from a feature constant.
+        auto idFeatureFromConstant = [](const ID& featureConstant) -> std::optional<std::pair<ID, std::string>> {
+            // Split away the module part of the resolved ID.
+            auto id = util::split1(featureConstant, "::").second;
+
+            if ( ! util::startsWith(id, "__feat") )
+                return {};
+
+            const auto& tokens = util::split(id, "%");
+            assert(tokens.size() == 3);
+
+            auto type_id = ID(util::replace(tokens[1], "__", "::"));
+            const auto& feature = tokens[2];
+
+            return {{type_id, feature}};
+        };
+
+        if ( auto rid = condition.tryAs<expression::ResolvedID>() ) {
+            if ( auto id_feature = idFeatureFromConstant(rid->id()) )
+                result[std::move(id_feature->first)].insert(std::move(id_feature->second));
+        }
+        // If we did not find a feature constant in the conditional, we
+        // could also be dealing with a `OR` of feature constants.
+        else if ( auto or_ = condition.tryAs<expression::LogicalOr>() ) {
+            featureFlagsFromIfCondition(or_->op0(), result);
+            featureFlagsFromIfCondition(or_->op1(), result);
+        }
+    }
+
     // Helper function to compute the set of feature flags wrapping the given position.
     static std::map<ID, std::set<std::string>> conditionalFeatures(position_t p) {
-        // Compute a list of features this use does not activate.
-        // Generated feature-dependent code is always under
-        // conditionals `if (__feat%XYZ%FEATURE) ...` so get all
-        // `FEATURE` for all parents which match this pattern.
         std::map<ID, std::set<std::string>> result;
 
+        // We walk up the full path to discover all feature conditionals wrapping this position.
         for ( const auto& parent : p.path ) {
             if ( ! parent.node.isA<statement::If>() )
                 continue;
@@ -937,23 +1099,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
             if ( ! condition )
                 continue;
 
-            auto rid = condition->tryAs<expression::ResolvedID>();
-            if ( ! rid )
-                continue;
-
-            // Split away the module part of the resolved ID.
-            auto id = util::split1(rid->id(), "::").second;
-
-            if ( ! util::startsWith(id, "__feat") )
-                continue;
-
-            const auto& tokens = util::split(id, "%");
-            assert(tokens.size() == 3);
-
-            auto type_id = ID(util::replace(tokens[1], "__", "::"));
-            const auto& feature = tokens[2];
-
-            result[std::move(type_id)].insert(feature);
+            featureFlagsFromIfCondition(*condition, result);
         }
 
         return result;

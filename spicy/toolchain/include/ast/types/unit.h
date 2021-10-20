@@ -156,24 +156,6 @@ public:
     bool usesRandomAccess() const { return propertyItem("%random-access").has_value(); }
 
     /**
-     * Returns true if this unit type supports connecting to a sink.
-     *
-     * \todo Currently we tie this capability to unit types being public,
-     * which is just a hack until we get something better. Eventually we
-     * should support this automatically as needed, through static analysis.
-     */
-    bool supportsSinks() const { return isPublic(); }
-
-    /**
-     * Returns true if this unit type supports connecting a filter.
-     *
-     * \todo Currently we tie this capability to unit types being public,
-     * which is just a hack until we get something better. Eventually we
-     * should support this automatically as needed, through static analysis.
-     */
-    bool supportsFilters() const { return isPublic(); }
-
-    /**
      * Returns true if this unit type can act as a filter.
      *
      * \todo Currently we tie this capability to unit types being public,

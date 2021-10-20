@@ -10,120 +10,81 @@ type X1 = struct {
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     hook void __on_0x25_init();
 } &on-heap;
-type X3 = struct {
-    spicy_rt::Parser __parser &static &internal &needed-by-feature="is_filter";
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
-    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
-    method extern view<stream> parse2(inout value_ref<X3> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
-    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
-} &on-heap;
 type X4 = struct {
-    spicy_rt::Parser __parser &static &internal &needed-by-feature="is_filter";
+    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks" &needed-by-feature="is_filter";
     weak_ref<spicy_rt::Forward> __forward &internal &needed-by-feature="is_filter";
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
-    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
-    method extern view<stream> parse2(inout value_ref<X4> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
-    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit;
+    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
+    method extern view<stream> parse2(inout value_ref<X4> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
+    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
+    method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_X4_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 public type X5 = struct {
-    spicy_rt::Parser __parser &static &internal &always-emit;
+    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     hook void __on_0x25_init();
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
-    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
-    method extern view<stream> parse2(inout value_ref<X5> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
-    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static;
+    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
+    method extern view<stream> parse2(inout value_ref<X5> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
+    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_X5_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 type X6 = struct {
     strong_ref<spicy_rt::Sink> data &default=new spicy_rt::Sink() &internal &needed-by-feature="supports_sinks";
+    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
+    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     hook void __on_0x25_init();
+    method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
+    method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
+    method extern view<stream> parse2(inout value_ref<X6> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
+    method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
+    method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_X6_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 
 const bool __feat%foo__X1%uses_random_access = True;
+const bool __feat%foo__X1%is_filter = False;
+const bool __feat%foo__X1%supports_filters = False;
+const bool __feat%foo__X1%supports_sinks = False;
 const bool __feat%foo__X2%uses_random_access = False;
+const bool __feat%foo__X2%is_filter = False;
+const bool __feat%foo__X2%supports_filters = False;
+const bool __feat%foo__X2%supports_sinks = False;
 const bool __feat%foo__X3%is_filter = False;
+const bool __feat%foo__X3%supports_filters = False;
+const bool __feat%foo__X3%supports_sinks = False;
 const bool __feat%foo__X4%is_filter = True;
+const bool __feat%foo__X4%supports_filters = False;
+const bool __feat%foo__X4%supports_sinks = False;
+const bool __feat%foo__X5%is_filter = False;
 const bool __feat%foo__X5%supports_filters = True;
 const bool __feat%foo__X5%supports_sinks = False;
+const bool __feat%foo__X6%is_filter = False;
+const bool __feat%foo__X6%supports_filters = False;
+const bool __feat%foo__X6%supports_sinks = True;
 
 method hook void foo::X1::__on_0x25_init() {
     cast<uint<64>>((*(*self).__position) - (*(*self).__begin));
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::X3::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe)  {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    try {
-        hilti::debugIndent("spicy");
-        default<void>();
-        default<void>();
-        hilti::debugDedent("spicy");
-        __result = (__cur, __lah, __lahe);
-    }
-    catch {
-        default<void>();
-        default<void>();
-        throw;
-    }
-
-    default<void>();
-    return __result;
+init function void __register_foo_X1() {
 }
 
-method extern method view<stream> foo::X3::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
-    local value_ref<X3> unit = value_ref(default<X3>())value_ref(default<X3>());
-    local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
-    local int<64> lahead = 0;
-    local iterator<stream> lahead_end;
-
-    # Begin parsing production: Unit: foo_X3 ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_X3 ->
-
-    return ncur;
-}
-
-method extern method view<stream> foo::X3::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
-    local value_ref<X3> unit = value_ref(default<X3>())value_ref(default<X3>());
-    spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(foo::X3));
-    local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
-    local int<64> lahead = 0;
-    local iterator<stream> lahead_end;
-
-    # Begin parsing production: Unit: foo_X3 ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_X3 ->
-
-    return ncur;
-}
-
-method extern method view<stream> foo::X3::parse2(inout value_ref<X3> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
-    local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
-    local int<64> lahead = 0;
-    local iterator<stream> lahead_end;
-
-    # Begin parsing production: Unit: foo_X3 ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_X3 ->
-
-    return ncur;
+init function void __register_foo_X2() {
 }
 
 init function void __register_foo_X3() {
-    foo::X3::__parser = [$name="foo::X3", $parse1=foo::X3::parse1, $parse2=foo::X3::parse2, $parse3=foo::X3::parse3, $context_new=Null, $type_info=typeinfo(X3), $description="", $mime_types=vector(), $ports=vector()];
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::X4::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe)  {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::X4::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
         default<void>();
-        default<void>();
-        
-            spicy_rt::filter_forward_eod(self);
+        local strong_ref<stream> filtered = Null;
 
-        hilti::debugDedent("spicy");
-        __result = (__cur, __lah, __lahe);
+        if ( ! filtered ) 
+            __result = (*self).__parse_foo_X4_stage2(__data, __cur, __trim, __lah, __lahe);
+
     }
     catch {
         default<void>();
@@ -138,7 +99,18 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::X4::__parse_st
     return __result;
 }
 
-method extern method view<stream> foo::X4::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::X4::__parse_foo_X4_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
+    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+    default<void>();
+    
+        spicy_rt::filter_forward_eod(self);
+
+    hilti::debugDedent("spicy");
+    __result = (__cur, __lah, __lahe);
+    return __result;
+}
+
+method extern method view<stream> foo::X4::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     local value_ref<X4> unit = value_ref(default<X4>())value_ref(default<X4>());
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
@@ -151,7 +123,7 @@ method extern method view<stream> foo::X4::parse1(inout value_ref<stream> data, 
     return ncur;
 }
 
-method extern method view<stream> foo::X4::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
+method extern method view<stream> foo::X4::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     local value_ref<X4> unit = value_ref(default<X4>())value_ref(default<X4>());
     spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(foo::X4));
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
@@ -165,7 +137,7 @@ method extern method view<stream> foo::X4::parse3(inout value_ref<spicy_rt::Pars
     return ncur;
 }
 
-method extern method view<stream> foo::X4::parse2(inout value_ref<X4> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static &always-emit {
+method extern method view<stream> foo::X4::parse2(inout value_ref<X4> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
@@ -178,14 +150,18 @@ method extern method view<stream> foo::X4::parse2(inout value_ref<X4> unit, inou
 }
 
 init function void __register_foo_X4() {
-    foo::X4::__parser = [$name="foo::X4", $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_info=typeinfo(X4), $description="", $mime_types=vector(), $ports=vector()];
+    {
+        foo::X4::__parser = [$name="foo::X4", $is_public=False, $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_info=typeinfo(X4), $description="", $mime_types=vector(), $ports=vector()];
+        spicy_rt::registerParser(foo::X4::__parser, hilti::linker_scope(), Null);
+    }
+
 }
 
 method hook void foo::X5::__on_0x25_init() {
     spicy_rt::filter_connect((*self), new foo::X4());
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::X5::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::X5::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -223,7 +199,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::X5::__parse_st
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::X5::__parse_foo_X5_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) &always-emit {
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::X5::__parse_foo_X5_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     default<void>();
     
@@ -234,7 +210,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::X5::__parse_fo
     return __result;
 }
 
-method extern method view<stream> foo::X5::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::X5::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     local value_ref<X5> unit = value_ref(default<X5>())value_ref(default<X5>());
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
@@ -247,7 +223,7 @@ method extern method view<stream> foo::X5::parse1(inout value_ref<stream> data, 
     return ncur;
 }
 
-method extern method view<stream> foo::X5::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::X5::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     local value_ref<X5> unit = value_ref(default<X5>())value_ref(default<X5>());
     spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(foo::X5));
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
@@ -261,7 +237,7 @@ method extern method view<stream> foo::X5::parse3(inout value_ref<spicy_rt::Pars
     return ncur;
 }
 
-method extern method view<stream> foo::X5::parse2(inout value_ref<X5> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &static {
+method extern method view<stream> foo::X5::parse2(inout value_ref<X5> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
@@ -274,12 +250,90 @@ method extern method view<stream> foo::X5::parse2(inout value_ref<X5> unit, inou
 }
 
 init function void __register_foo_X5() {
-    foo::X5::__parser = [$name="foo::X5", $parse1=foo::X5::parse1, $parse2=foo::X5::parse2, $parse3=foo::X5::parse3, $context_new=Null, $type_info=typeinfo(X5), $description="", $mime_types=vector(), $ports=vector()];
+    foo::X5::__parser = [$name="foo::X5", $is_public=True, $parse1=foo::X5::parse1, $parse2=foo::X5::parse2, $parse3=foo::X5::parse3, $context_new=Null, $type_info=typeinfo(X5), $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::X5::__parser, hilti::linker_scope(), Null);
 }
 
 method hook void foo::X6::__on_0x25_init() {
-    (*self).data.write(b"", Null, Null);
+    (*(*self).data).write(b"", Null, Null);
+}
+
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::X6::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
+    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+    try {
+        hilti::debugIndent("spicy");
+        (*self).__on_0x25_init();
+        local strong_ref<stream> filtered = Null;
+
+        if ( ! filtered ) 
+            __result = (*self).__parse_foo_X6_stage2(__data, __cur, __trim, __lah, __lahe);
+
+    }
+    catch {
+        default<void>();
+        (*(*self).data).close();
+        default<void>();
+        throw;
+    }
+
+    default<void>();
+    return __result;
+}
+
+method method tuple<view<stream>, int<64>, iterator<stream>> foo::X6::__parse_foo_X6_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
+    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+    default<void>();
+    (*(*self).data).close();
+    hilti::debugDedent("spicy");
+    __result = (__cur, __lah, __lahe);
+    return __result;
+}
+
+method extern method view<stream> foo::X6::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+    local value_ref<X6> unit = value_ref(default<X6>())value_ref(default<X6>());
+    local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
+    local int<64> lahead = 0;
+    local iterator<stream> lahead_end;
+
+    # Begin parsing production: Unit: foo_X6 ->
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_X6 ->
+
+    return ncur;
+}
+
+method extern method view<stream> foo::X6::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+    local value_ref<X6> unit = value_ref(default<X6>())value_ref(default<X6>());
+    spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(foo::X6));
+    local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
+    local int<64> lahead = 0;
+    local iterator<stream> lahead_end;
+
+    # Begin parsing production: Unit: foo_X6 ->
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_X6 ->
+
+    return ncur;
+}
+
+method extern method view<stream> foo::X6::parse2(inout value_ref<X6> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+    local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
+    local int<64> lahead = 0;
+    local iterator<stream> lahead_end;
+
+    # Begin parsing production: Unit: foo_X6 ->
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_X6 ->
+
+    return ncur;
+}
+
+init function void __register_foo_X6() {
+    {
+        foo::X6::__parser = [$name="foo::X6", $is_public=False, $parse1=foo::X6::parse1, $parse2=foo::X6::parse2, $parse3=foo::X6::parse3, $context_new=Null, $type_info=typeinfo(X6), $description="", $mime_types=vector(), $ports=vector()];
+        spicy_rt::registerParser(foo::X6::__parser, hilti::linker_scope(), Null);
+    }
+
 }
 
 }

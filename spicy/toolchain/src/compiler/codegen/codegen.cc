@@ -265,12 +265,14 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
     }
 
     result_t operator()(const operator_::sink::ConnectMIMETypeBytes& n, position_t p) {
-        auto x = builder::memberCall(n.op0(), "connect_mime_type", {argument(n.op2(), 0)});
+        auto x = builder::memberCall(n.op0(), "connect_mime_type",
+                                     {argument(n.op2(), 0), builder::call("hilti::linker_scope", {})});
         replaceNode(&p, std::move(x));
     }
 
     result_t operator()(const operator_::sink::ConnectMIMETypeString& n, position_t p) {
-        auto x = builder::memberCall(n.op0(), "connect_mime_type", {argument(n.op2(), 0)});
+        auto x = builder::memberCall(n.op0(), "connect_mime_type",
+                                     {argument(n.op2(), 0), builder::call("hilti::linker_scope", {})});
         replaceNode(&p, std::move(x));
     }
 

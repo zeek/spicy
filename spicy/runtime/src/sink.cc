@@ -352,11 +352,15 @@ void Sink::_debugReassemblerBuffer(const std::string& msg) const {
         _debugReassembler(fmt("  * chunk %d:", i), c.data, c.rseq, (c.rupper - c.rseq));
 }
 
-void Sink::connect_mime_type(const MIMEType& mt) {
+void Sink::connect_mime_type(const MIMEType& mt, const std::string& scope) {
     auto connect_matching = [&](auto mt) {
         if ( const auto& x = detail::globalState()->parsers_by_mime_type.find(mt.asKey());
              x != detail::globalState()->parsers_by_mime_type.end() ) {
             for ( const auto& p : x->second ) {
+                // We only connect to public parsers or parsers in the same linker scope.
+                if ( ! p->is_public && p->linker_scope != scope )
+                    continue;
+
                 auto m = (*p->__parse_sink)(); // using a structured binding here triggers what seems to be a clang-tidy
                                                // false positive
 
