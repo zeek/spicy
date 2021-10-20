@@ -42,7 +42,7 @@ extern void __hlt::Foo::__init_module() {
     }
 }
 
-extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", &__init_module, &__init_globals, &__globals_index}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlto_scope, &__init_module, &__init_globals, &__globals_index}); }
 
 /* __HILTI_LINKER_V1__
 {"module":"Foo","namespace":"__hlt::Foo","path":"<...>/nops.hlt","version":1}

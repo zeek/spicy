@@ -49,3 +49,25 @@ TEST_CASE("isInitialized") {
 }
 
 TEST_SUITE_END();
+
+TEST_CASE("registerModule") {
+    const auto initial_size = detail::globalState()->hilti_modules.size();
+
+    SUBCASE("IDs of registered modules are unique") {
+        detail::registerModule({.name = "foo", .id = "1"});
+        CHECK_EQ(detail::globalState()->hilti_modules.size(), initial_size + 1);
+
+        detail::registerModule({.name = "foo", .id = "1"});
+        CHECK_EQ(detail::globalState()->hilti_modules.size(), initial_size + 1);
+
+        detail::registerModule({.name = "foo", .id = "2"});
+        CHECK_EQ(detail::globalState()->hilti_modules.size(), initial_size + 2);
+    }
+
+    SUBCASE("can register multiple modules from same linker scope") {
+        detail::registerModule({.name = "foo", .id = "4"});
+        detail::registerModule({.name = "bar", .id = "4"});
+
+        CHECK_EQ(detail::globalState()->hilti_modules.size(), initial_size + 2);
+    }
+}
