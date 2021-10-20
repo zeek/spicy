@@ -172,15 +172,16 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
 }
 
 void JIT::_finish() {
-    for ( const auto& object : _objects ) {
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", object));
+    if ( ! options().keep_tmps )
+        for ( const auto& object : _objects ) {
+            HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", object));
 
-        std::error_code ec;
-        hilti::rt::filesystem::remove(object, ec);
+            std::error_code ec;
+            hilti::rt::filesystem::remove(object, ec);
 
-        if ( ec )
-            HILTI_DEBUG(logging::debug::Jit, util::fmt("could not remove temporary file %s", object));
-    }
+            if ( ec )
+                HILTI_DEBUG(logging::debug::Jit, util::fmt("could not remove temporary file %s", object));
+        }
 
     _objects.clear();
 
@@ -209,17 +210,19 @@ hilti::Result<Nothing> JIT::_compile() {
     auto cc_files = _files;
 
     // Remember generated files and remove them on all exit paths.
+    bool keep_tmps = options().keep_tmps;
     std::shared_ptr<std::vector<hilti::rt::filesystem::path>>
-        cc_files_generated(new std::vector<hilti::rt::filesystem::path>(), [](const auto* cc_files_generated) {
-            for ( const auto& cc : *cc_files_generated ) {
-                std::error_code ec;
-                HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", cc));
-                hilti::rt::filesystem::remove(cc, ec);
+        cc_files_generated(new std::vector<hilti::rt::filesystem::path>(), [keep_tmps](const auto* cc_files_generated) {
+            if ( ! keep_tmps )
+                for ( const auto& cc : *cc_files_generated ) {
+                    std::error_code ec;
+                    HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", cc));
+                    hilti::rt::filesystem::remove(cc, ec);
 
-                if ( ec )
-                    HILTI_DEBUG(logging::debug::Jit,
-                                util::fmt("could not remove temporary file %s: %s", cc, ec.message()));
-            }
+                    if ( ec )
+                        HILTI_DEBUG(logging::debug::Jit,
+                                    util::fmt("could not remove temporary file %s: %s", cc, ec.message()));
+                }
 
             delete cc_files_generated;
         });
@@ -361,10 +364,13 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
 
     // Instantiate the library object from the file on disk, and set it up
     // to delete the file & its directory on destruction.
-    auto library = std::shared_ptr<const Library>(new Library(lib), [](const Library* library) {
-        auto remove = library->remove();
-        if ( ! remove )
-            logger().warning(util::fmt("could not remove JIT library: %s", remove.error()));
+    bool keep_tmps = options().keep_tmps;
+    auto library = std::shared_ptr<const Library>(new Library(lib), [keep_tmps](const Library* library) {
+        if ( ! keep_tmps ) {
+            auto remove = library->remove();
+            if ( ! remove )
+                logger().warning(util::fmt("could not remove JIT library: %s", remove.error()));
+        }
 
         delete library;
     });

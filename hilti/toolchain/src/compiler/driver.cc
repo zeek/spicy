@@ -360,7 +360,10 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
             case 'S': _driver_options.skip_dependencies = true; break;
 
-            case 'T': _driver_options.keep_tmps = true; break;
+            case 'T':
+                _driver_options.keep_tmps = true;
+                _compiler_options.keep_tmps = true;
+                break;
 
             case 'U': _driver_options.report_resource_usage = true; break;
 

@@ -1,0 +1,6 @@
+# @TEST-EXEC: TMPDIR=$PWD hiltic -j -T %INPUT
+# @TEST-EXEC: ls Foo*.cc Foo*.o __linker__*.cc __linker__*.o *.hlto
+#
+# @TEST-DOC: Validates that if instructed the driver leaves temporary files around.
+
+module Foo {}

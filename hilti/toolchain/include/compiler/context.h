@@ -37,7 +37,7 @@ struct Options {
     bool debug_flow = false; /**< if true, generate code to log function calls and returns to debug stream "hilti-flow"
                                 (requires *debug*, too) */
     bool track_location = true;   /**< if true, generate code to record current source code location during execution */
-    bool skip_validation = false; /**< if true, skip AST validation; for debugging only, things will may downhiull
+    bool skip_validation = false; /**< if true, skip AST validation; for debugging only, things may go downhill
                                      quickly if an AST is not well-formed  */
     bool optimize = false;        /**< generated optimized code */
     std::vector<hilti::rt::filesystem::path> library_paths; /**< additional directories to search for imported files */
@@ -45,7 +45,8 @@ struct Options {
         "hlt"; /**< CXX namespace for generated C++ code accessible to the host application */
     std::string cxx_namespace_intern = "__hlt"; /**< CXX namespace for generated internal C++ code */
     std::vector<hilti::rt::filesystem::path>
-        cxx_include_paths; /**< additional C++ directories to search for #include files. */
+        cxx_include_paths;  /**< additional C++ directories to search for #include files */
+    bool keep_tmps = false; /**< if true, do not remove generated files on exit */
 
     /**
      * Retrieves the value for an auxiliary option.
