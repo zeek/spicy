@@ -1466,7 +1466,7 @@ once you have subunits that are recognizable by how they start:
 
 You can limit the input any field in a unit switch receives by attaching an
 optional ``&size=EXPR`` attribute that specifies the number of raw bytes to
-make available. This is analog to the `field size attribute <attribute_size>`_
+make available. This is analog to the :ref:`field size attribute <attribute_size>`
 and especially useful to remove duplication when each case is subject to the
 same constraint.
 
