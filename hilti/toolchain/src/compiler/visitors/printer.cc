@@ -405,6 +405,8 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const declaration::Type& n) {
         out.beginLine();
+        for ( const auto& comment : n.meta().comments() )
+            out << "# " << comment << '\n';
         out << linkage(n.linkage()) << "type " << n.id() << " = ";
         out.setExpandSubsequentType(true);
         out << n.type();

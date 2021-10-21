@@ -1153,6 +1153,35 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
     void operator()(const operator_::struct_::MemberConst& x, position_t p) { return handleMemberAccess(x, p); }
     void operator()(const operator_::struct_::MemberNonConst& x, position_t p) { return handleMemberAccess(x, p); }
+
+    void operator()(const declaration::Type& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+                // Nothing.
+                break;
+
+            case Stage::TRANSFORM: {
+                if ( ! _features.count(x.canonicalID()) )
+                    break;
+
+                // Add type comment documenting enabled features.
+                auto meta = x.meta();
+                auto comments = meta.comments();
+
+                if ( auto enabled_features = util::filter(_features.at(x.canonicalID()),
+                                                          [](const auto& feature) { return feature.second; });
+                     ! enabled_features.empty() ) {
+                    comments.push_back(util::fmt("Type %s supports the following features:", x.id()));
+                    for ( const auto& feature : enabled_features )
+                        comments.push_back(util::fmt("    - %s", feature.first));
+                }
+
+                meta.setComments(std::move(comments));
+                p.node.as<declaration::Type>().setMeta(std::move(meta));
+                break;
+            }
+        }
+    }
 };
 
 struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> {
