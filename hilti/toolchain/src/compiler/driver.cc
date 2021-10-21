@@ -813,16 +813,18 @@ Result<Nothing> Driver::_codegenUnits() {
     if ( _stage != Stage::COMPILED )
         logger().internalError("unexpected driver stage in codegenUnits()");
 
-    if ( _driver_options.output_hilti && ! _driver_options.include_linker )
+    for ( auto& unit : _hlts )
+        _dumpAST(unit, logging::debug::AstCodegen, "Before C++ codegen");
+
+    if ( _driver_options.output_hilti && ! _driver_options.include_linker ) {
         // No need to kick off code generation.
         return Nothing();
+    }
 
     logging::DebugPushIndent _(logging::debug::Compiler);
 
     for ( auto& unit : _hlts ) {
         HILTI_DEBUG(logging::debug::Driver, fmt("codegen for input unit %s", unit->id()));
-
-        _dumpAST(unit, logging::debug::AstCodegen, "Before C++ codegen");
 
         if ( auto rc = unit->codegen(); ! rc )
             return augmentError(rc.error());
@@ -871,8 +873,6 @@ Result<Nothing> Driver::compileUnits() {
             if ( ! unit->print(*output) )
                 return error(fmt("error print HILTI code for module %s", unit->id()));
         }
-
-        return Nothing();
     }
 
     if ( auto rc = _codegenUnits(); ! rc )
