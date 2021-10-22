@@ -1,3 +1,7 @@
+1.4.0-dev.20 | 2021-10-22 11:40:46 +0200
+
+  * Make `-D ast-codegen` work even without `-j`. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.18 | 2021-10-22 11:39:45 +0200
 
   * Set `HILTI_DEBUG` to known value for tests. (Benjamin Bannier, Corelight)
