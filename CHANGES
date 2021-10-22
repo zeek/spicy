@@ -1,3 +1,9 @@
+1.4.0-dev.18 | 2021-10-22 11:39:45 +0200
+
+  * Set `HILTI_DEBUG` to known value for tests. (Benjamin Bannier, Corelight)
+
+  * GH-981: Emit comments for enabled features. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.15 | 2021-10-20 11:37:36 +0200
 
   * Fix computation of dependent features if multiple features are involved. (Benjamin Bannier, Corelight)
