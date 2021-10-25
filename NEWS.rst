@@ -15,6 +15,8 @@ Version 1.4 (in progress)
 
 .. rubric:: Bug fixes
 
+- Prevent exception if cache directory is not readable.
+
 - Propagate failure from ``cmake`` up to ``./configure``.
 
 .. rubric:: Documentation

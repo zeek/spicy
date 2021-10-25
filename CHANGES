@@ -1,3 +1,7 @@
+1.4.0-dev.25 | 2021-10-25 16:30:35 +0200
+
+  * Prevent exception if cache directory is not readable. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.23 | 2021-10-25 16:29:53 +0200
 
   * Fix issues flagged by shellcheck in `./configure`. (Benjamin Bannier, Corelight)
