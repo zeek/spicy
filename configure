@@ -1,9 +1,11 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Convenience wrapper for easily viewing/setting options that
 # the project's CMake scripts will recognize
 #
 # Adapted from Zeek's wrapper.
+
+set -e
 
 # Defaults
 cmake_bison_root=""
@@ -23,7 +25,7 @@ cmake_use_sanitizers=""
 cmake_use_werror="no"
 
 display_cmake=0
-cache_entries=""
+cmake_cache_entries=""
 
 set -e
 command="$0 $*"
@@ -36,7 +38,7 @@ for i in cmake cmake3; do
     fi
 done
 
-type ${cmake_exe} > /dev/null 2>&1 || {
+type "${cmake_exe}" > /dev/null 2>&1 || {
     echo "\
 This package requires CMake, please install it first, then you may
 use this configure script to access CMake equivalent functionality.\
@@ -95,7 +97,7 @@ append_cache_entry () {
 # parse arguments
 while [ $# -ne 0 ]; do
     case "$1" in
-        -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+        -*=*) optarg=$(echo "$1" | sed 's/[-_a-zA-Z0-9]*=//') ;;
         *) optarg= ;;
     esac
 
@@ -109,7 +111,7 @@ while [ $# -ne 0 ]; do
         --enable-ccache)                   cmake_use_ccache="yes";;
         --enable-debug)                    cmake_build_type="Debug";;
         --enable-sanitizer)                cmake_use_sanitizers="address";;
-        --enable-sanitizer=*)              cmake_use_sanitizers="${optargs}";;
+        --enable-sanitizer=*)              cmake_use_sanitizers="${optarg}";;
         --enable-werror)                   cmake_use_werror="yes";;
         --generator=*)                     cmake_generator="${optarg}";;
         --prefix=*)                        cmake_install_prefix="${optarg}";;
@@ -162,19 +164,20 @@ if [ "${display_cmake}" = 1 ]; then
     exit 0
 fi
 
-if [ ! -d ${cmake_build_directory} ]; then
+if [ ! -d "${cmake_build_directory}" ]; then
     # Create build directory
-    mkdir -p ${cmake_build_directory}
+    mkdir -p "${cmake_build_directory}"
 else
     # If build directory already exists, remove any pre-existing
     # CMake cache so that this configuration is not tainted by a
     # previous one
-    rm -f ${cmake_build_directory}/CMakeCache.txt
+    rm -f "${cmake_build_directory}"/CMakeCache.txt
 fi
 
-cd ${cmake_build_directory}
-eval ${cmake} 2>&1 | tee config.log
+cd "${cmake_build_directory}"
+eval "${cmake}" > config.log 2>&1
+cat config.log
 
 echo "# This is the command used to configure this build" > config.status
-echo ${command} >> config.status
+echo "${command}" >> config.status
 chmod u+x config.status

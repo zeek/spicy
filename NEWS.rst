@@ -15,6 +15,8 @@ Version 1.4 (in progress)
 
 .. rubric:: Bug fixes
 
+- Propagate failure from ``cmake`` up to ``./configure``.
+
 .. rubric:: Documentation
 
 Version 1.3
