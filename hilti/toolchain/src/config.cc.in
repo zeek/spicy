@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <system_error>
 
 #include <hilti/rt/autogen/version.h>
 
@@ -26,7 +27,8 @@ std::optional<hilti::rt::filesystem::path> precompiled_libhilti(const Configurat
     if ( auto&& cache = util::cacheDirectory(configuration) ) {
         const rt::filesystem::path file_name = rt::fmt("precompiled_libhilti%s.h.pch", (debug ? "_debug" : ""));
 
-        if ( auto pch = (*cache) / file_name; rt::filesystem::exists(pch) )
+        std::error_code ec;
+        if ( auto pch = (*cache) / file_name; rt::filesystem::exists(pch, ec) )
             return pch.replace_extension();
     }
 
