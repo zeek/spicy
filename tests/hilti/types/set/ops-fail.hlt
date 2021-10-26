@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: hiltic -d -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks validators for set operators.
+
+module foo {
+
+b"" in set(1, 2, 3);
+
+}

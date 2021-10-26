@@ -1,3 +1,7 @@
+1.4.0-dev.27 | 2021-10-26 15:43:54 +0200
+
+  * GH-994: Model types in `set` and `map` `in` operators. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.25 | 2021-10-25 16:30:35 +0200
 
   * Prevent exception if cache directory is not readable. (Benjamin Bannier, Corelight)

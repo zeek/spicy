@@ -324,6 +324,30 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         }
     }
 
+    // TODO(bbannier): Ideally instead of inserting this coercion we would
+    // define the operator to take some `keyType` derived from the type of the
+    // passed `map` and perform the coercion automatically when resolving the
+    // function call.
+    void operator()(const operator_::map::In& n, position_t p) {
+        if ( auto x = coerceTo(&p.node, n.op0(), n.op1().type().as<type::Map>().keyType(), true, false) ) {
+            logChange(p.node, *x, "call argument");
+            p.node.as<operator_::map::In>().setOp0(std::move(*x));
+            modified = true;
+        }
+    }
+
+    // TODO(bbannier): Ideally instead of inserting this coercion we would
+    // define the operator to take some `elementType` derived from the type of the
+    // passed `set` and perform the coercion automatically when resolving the
+    // function call.
+    void operator()(const operator_::set::In& n, position_t p) {
+        if ( auto x = coerceTo(&p.node, n.op0(), n.op1().type().as<type::Set>().elementType(), true, false) ) {
+            logChange(p.node, *x, "call argument");
+            p.node.as<operator_::set::In>().setOp0(std::move(*x));
+            modified = true;
+        }
+    }
+
     void operator()(const operator_::vector::PushBack& n, position_t p) {
         if ( ! (expression::isResolved(n.op0()) && expression::isResolved(n.op2())) )
             return;
