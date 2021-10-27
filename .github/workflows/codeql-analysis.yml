@@ -56,11 +56,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install -y git ninja-build bison flex llvm-9-dev clang-9 libclang-9-dev libc++1 libc++abi1 libc++abi-dev curl
-        sudo mkdir $HOME/cmake && curl -L https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-Linux-x86_64.tar.gz | tar xzvf - -C $HOME/cmake --strip-components 1
-        export PATH=$HOME/cmake/bin:$PATH
-        export CXX=clang++-9
-        export CC=clang-9
-        export ASM=clang-9
+        curl -L https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-Linux-x86_64.tar.gz | sudo tar xzvf - -C /usr/local --strip-components 1
+        update-alternatives  --install /usr/bin/cc cc /usr/bin/clang-9 100
+        update-alternatives  --install /usr/bin/c++ c++ /usr/bin/clang++-9 100
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
