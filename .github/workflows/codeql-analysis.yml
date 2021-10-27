@@ -60,11 +60,21 @@ jobs:
         sudo update-alternatives  --install /usr/bin/cc cc /usr/bin/clang-9 100
         sudo update-alternatives  --install /usr/bin/c++ c++ /usr/bin/clang++-9 100
 
-    - name: Build project
-      run: |
-        ls -l
-        ./configure --generator=Ninja
-        ninja -C build
+    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
+    # If this step fails, then you should remove it and run the build manually (see below)
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
+
+    # ℹ️ Command-line programs to run using the OS shell.
+    # 📚 https://git.io/JvXDl
+
+    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
+    #    and modify them (or add more) to build your code if your project
+    #    uses a compiled language
+
+    #- run: |
+    #   make bootstrap
+    #   make release
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
