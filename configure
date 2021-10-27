@@ -6,6 +6,7 @@
 # Adapted from Zeek's wrapper.
 
 set -e
+set -x
 
 # Defaults
 cmake_bison_root=""
