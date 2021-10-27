@@ -53,11 +53,19 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    # FIXME(bbannier): Do we actually need to build anything?
-    # # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # # If this step fails, then you should remove it and run the build manually (see below)
-    # - name: Autobuild
-    #   uses: github/codeql-action/autobuild@v1
+    - name: Install dependencies
+      run: |
+        apt-get install -y git ninja-build bison flex llvm-9-dev clang-9 libclang-9-dev libc++1 libc++abi1 libc++abi1-dev curl
+        mkdir $HOME/cmake && curl -L https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-Linux-x86_64.tar.gz | tar xzvf - -C $HOME/cmake --strip-components 1
+        export PATH=$HOME/cmake/bin:$PATH
+        export CXX=clang++-9
+        export CC=clang-9
+        export ASM=clang-9
+
+    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
+    # If this step fails, then you should remove it and run the build manually (see below)
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
