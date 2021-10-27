@@ -176,8 +176,7 @@ else
 fi
 
 cd "${cmake_build_directory}"
-eval "${cmake}" > config.log 2>&1
-cat config.log
+eval "${cmake}"
 
 echo "# This is the command used to configure this build" > config.status
 echo "${command}" >> config.status
