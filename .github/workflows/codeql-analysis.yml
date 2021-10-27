@@ -74,7 +74,7 @@ jobs:
 
     - name: Build project
       run: |
-        ls /usr/local/bin/cmake # FIXME(bbannier): remove this
+        ls -l /usr/local/bin/cmake # FIXME(bbannier): remove this
         ./configure --generator=Ninja
         ninja -C build
 
