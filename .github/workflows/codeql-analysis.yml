@@ -72,9 +72,11 @@ jobs:
     #    and modify them (or add more) to build your code if your project
     #    uses a compiled language
 
-    - run: |
-       ./configure --generator=Ninja
-       ninja -C build
+    - name: Build project
+      run: |
+        ls /usr/local/bin/cmake # FIXME(bbannier): remove this
+        ./configure --generator=Ninja
+        ninja -C build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
