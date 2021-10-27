@@ -62,8 +62,8 @@ jobs:
 
     - name: Build project
       run: |
-       ./configure --generator=Ninja
-       ninja -C build
+        ./configure --generator=Ninja
+        ninja -C build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
