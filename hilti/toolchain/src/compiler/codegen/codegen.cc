@@ -49,9 +49,6 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
         for ( const auto& i : module.childs() )
             v.dispatch(i);
 
-        if ( v.globals.empty() && v.constants.empty() )
-            return;
-
         auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
 
         for ( const auto& c : v.constants )
@@ -83,7 +80,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
             unit->add(body_decl);
         }
 
-        if ( include_implementation ) {
+        if ( ! v.globals.empty() && include_implementation ) {
             // Create the initGlobals() function.
             auto id = cxx::ID{ns, "__init_globals"};
 
