@@ -146,8 +146,12 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
     void operator()(const declaration::Type& n, position_t p) {
         assert(n.typeID());
         cg->compile(n.type(), codegen::TypeUsage::Storage);
-        if ( include_implementation )
+        if ( include_implementation ) {
             cg->addTypeInfoDefinition(n.type());
+
+            if ( const auto& dt = cg->typeDeclaration(n.type()) )
+                cg->unit()->prioritizeType(dt->id);
+        }
     }
 };
 
