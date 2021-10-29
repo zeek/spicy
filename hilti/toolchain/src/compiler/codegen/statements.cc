@@ -37,11 +37,11 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         std::string throw_;
 
         if ( n.message() )
-            throw_ = fmt("throw hilti::rt::AssertionFailure(hilti::rt::to_string_for_print(%s), \"%s\")",
+            throw_ = fmt("throw ::hilti::rt::AssertionFailure(hilti::rt::to_string_for_print(%s), \"%s\")",
                          cg->compile(*n.message()), n.meta().location());
         else {
             auto msg = std::string(to_node(n.expression()));
-            throw_ = fmt(R"(throw hilti::rt::AssertionFailure("failed expression '%s'", "%s"))",
+            throw_ = fmt(R"(throw ::hilti::rt::AssertionFailure("failed expression '%s'", "%s"))",
                          util::escapeUTF8(msg, true), n.meta().location());
         }
 

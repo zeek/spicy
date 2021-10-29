@@ -67,7 +67,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
             unit->add(t);
 
             auto body = cxx::Block();
-            body.addStatement("return hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index)");
+            body.addStatement("return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index)");
 
             auto body_decl = cxx::declaration::Function{
                 .result = "auto",

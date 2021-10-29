@@ -395,8 +395,8 @@ std::string cxx::type::Struct::str() const {
     if ( args.size() )
         has_params = ", hilti::rt::trait::hasParameters";
 
-    return fmt("struct %s : hilti::rt::trait::isStruct%s, hilti::rt::Controllable<%s> {\n%s\n}", type_name, has_params,
-               type_name, struct_fields_as_str);
+    return fmt("struct %s : ::hilti::rt::trait::isStruct%s, ::hilti::rt::Controllable<%s> {\n%s\n}", type_name,
+               has_params, type_name, struct_fields_as_str);
 }
 
 std::string cxx::type::Struct::inlineCode() const {

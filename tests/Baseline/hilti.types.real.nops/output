@@ -15,14 +15,14 @@ assert 0x1.999999999999ap-4 == 0x1.999999999999ap-4;
 #include <hilti/rt/libhilti.h>
 
 namespace __hlt::Foo {
-    struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+    struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
         double d{};
         double r{};
         template<typename F> void __visit(F _) const { _("d", d); _("r", r); }
     };
 
     inline unsigned int __globals_index;
-    static inline auto __globals() { return hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
+    static inline auto __globals() { return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
     extern void __register_module();
@@ -38,7 +38,7 @@ extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/nops.hlt:11:1");
     if ( ! (0x1.999999999999ap-4 == 0x1.999999999999ap-4) ) {
-        throw hilti::rt::AssertionFailure("failed expression '0x1.999999999999ap-4 == 0x1.999999999999ap-4'", "<...>/nops.hlt:11:1");
+        throw ::hilti::rt::AssertionFailure("failed expression '0x1.999999999999ap-4 == 0x1.999999999999ap-4'", "<...>/nops.hlt:11:1");
     }
 }
 
