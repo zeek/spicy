@@ -836,6 +836,11 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
             error("use of 'find()' requires unit type to have property `%random-access`", p);
     }
+
+    void operator()(const hilti::declaration::Type& n, position_t p) {
+        if ( n.type().isA<type::Bitfield>() )
+            error("cannot declare a type for a bitfield", p);
+    }
 };
 
 } // anonymous namespace
