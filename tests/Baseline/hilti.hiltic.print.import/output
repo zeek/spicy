@@ -7,24 +7,24 @@
 #include <hilti/rt/libhilti.h>
 
 namespace __hlt::Bar {
-    struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+    struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
         std::string bar{};
         template<typename F> void __visit(F _) const { _("bar", bar); }
     };
 
     inline unsigned int __globals_index;
-    static inline auto __globals() { return hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
+    static inline auto __globals() { return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
 }
 
 namespace __hlt::Foo {
-    struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+    struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
         std::string foo{};
         template<typename F> void __visit(F _) const { _("foo", foo); }
     };
 
     inline unsigned int __globals_index;
     static inline auto __globals() {
-        return hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index);
+        return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index);
     }
 
     extern void __init_globals(::hilti::rt::Context* ctx);
@@ -62,27 +62,27 @@ extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModul
 #include <hilti/rt/libhilti.h>
 
 namespace __hlt::Bar {
-    struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+    struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
         std::string bar{};
         template<typename F> void __visit(F _) const { _("bar", bar); }
     };
 
     inline unsigned int __globals_index;
-    static inline auto __globals() { return hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
+    static inline auto __globals() { return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
     extern void __register_module();
 }
 
 namespace __hlt::Foo {
-    struct __globals_t : hilti::rt::trait::isStruct, hilti::rt::Controllable<__globals_t> {
+    struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
         std::string foo{};
         template<typename F> void __visit(F _) const { _("foo", foo); }
     };
 
     inline unsigned int __globals_index;
     static inline auto __globals() {
-        return hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index);
+        return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index);
     }
 
 }

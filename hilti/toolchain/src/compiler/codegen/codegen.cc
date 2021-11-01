@@ -49,9 +49,6 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
         for ( const auto& i : module.childs() )
             v.dispatch(i);
 
-        if ( v.globals.empty() && v.constants.empty() )
-            return;
-
         auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
 
         for ( const auto& c : v.constants )
@@ -70,7 +67,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
             unit->add(t);
 
             auto body = cxx::Block();
-            body.addStatement("return hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index)");
+            body.addStatement("return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index)");
 
             auto body_decl = cxx::declaration::Function{
                 .result = "auto",
@@ -83,7 +80,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
             unit->add(body_decl);
         }
 
-        if ( include_implementation ) {
+        if ( ! v.globals.empty() && include_implementation ) {
             // Create the initGlobals() function.
             auto id = cxx::ID{ns, "__init_globals"};
 
@@ -149,8 +146,12 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
     void operator()(const declaration::Type& n, position_t p) {
         assert(n.typeID());
         cg->compile(n.type(), codegen::TypeUsage::Storage);
-        if ( include_implementation )
+        if ( include_implementation ) {
             cg->addTypeInfoDefinition(n.type());
+
+            if ( const auto& dt = cg->typeDeclaration(n.type()) )
+                cg->unit()->prioritizeType(dt->id);
+        }
     }
 };
 

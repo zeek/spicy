@@ -54,7 +54,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                 std::vector<cxx::type::struct_::Member> fields;
 
                 cxx::Block self_body;
-                self_body.addStatement(util::fmt("return hilti::rt::ValueReference<%s>::self(this)", id));
+                self_body.addStatement(util::fmt("return ::hilti::rt::ValueReference<%s>::self(this)", id));
 
                 auto self = cxx::declaration::Function{.result = "auto",
                                                        .id = "__self",
@@ -334,7 +334,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         if ( sid.namespace_() )
             scope = scope.namespace_();
 
-        std::string base_ns = "hilti::rt";
+        std::string base_ns = "::hilti::rt";
         std::string base_cls = "UserException";
 
         if ( auto b = n.baseType() ) {
@@ -422,7 +422,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
         // Add tailored operator<<.
         auto render_body = cxx::Block();
-        render_body.addStatement("o << hilti::rt::to_string(x); return o");
+        render_body.addStatement("o << ::hilti::rt::to_string(x); return o");
 
         auto render_decl =
             cxx::declaration::Function{.result = "std::ostream&",
@@ -586,7 +586,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
             sid, [&]() { return CxxTypes{.base_type = std::string(sid)}; },
             [&](auto& cxx_types) {
                 auto render_body = cxx::Block();
-                render_body.addStatement("o << hilti::rt::to_string(x); return o");
+                render_body.addStatement("o << ::hilti::rt::to_string(x); return o");
 
                 auto render_decl =
                     cxx::declaration::Function{.result = "std::ostream&",
@@ -698,7 +698,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
             sid, [&]() { return CxxTypes{.base_type = std::string(sid)}; },
             [&](auto& cxx_types) {
                 auto render_body = cxx::Block();
-                render_body.addStatement("o << hilti::rt::to_string(x); return o");
+                render_body.addStatement("o << ::hilti::rt::to_string(x); return o");
 
                 auto render_decl =
                     cxx::declaration::Function{.result = "std::ostream&",

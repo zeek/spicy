@@ -1,3 +1,13 @@
+1.4.0-dev.32 | 2021-11-01 13:19:49 +0100
+
+  * GH-1030: Make sure types required for globals are declared before being used. (Benjamin Bannier, Corelight)
+
+  * Fix bug in emission of prioritized types. (Benjamin Bannier, Corelight)
+
+  * Fully qualify some identifiers when emitting C++. (Benjamin Bannier, Corelight)
+
+  * Do not emit `__init_globals` if there are no globals. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.27 | 2021-10-26 15:43:54 +0200
 
   * GH-994: Model types in `set` and `map` `in` operators. (Benjamin Bannier, Corelight)

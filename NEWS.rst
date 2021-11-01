@@ -19,6 +19,8 @@ Version 1.4 (in progress)
 
 - Propagate failure from ``cmake`` up to ``./configure``.
 
+- GH-1030: Make sure types required for globals are declared before being used.
+
 .. rubric:: Documentation
 
 Version 1.3

@@ -1,0 +1,11 @@
+# @TEST-EXEC: hiltic -j %INPUT
+#
+# @TEST-DOC: This is a regression test for https://github.com/zeek/spicy/issues/1030.
+
+module c {
+
+public type a = struct {};
+
+global a x;
+
+}
