@@ -1,4 +1,4 @@
-# @TEST-EXEC: spicyc -j %INPUT >output 2>&1
+# @TEST-EXEC: spicyc -j -d %INPUT >output 2>&1
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: Checks basic functionality of `struct`s.
@@ -25,5 +25,8 @@ function f() {
 
     bar.x = 45;
     print("Is deep copy: %s vs %s" % (bar, foo));
+
+    local baz : Foo = [$x = 1, $y = 0.5];
+    print("Supports struct initialization: %s" % baz);
 }
 f();

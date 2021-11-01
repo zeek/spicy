@@ -1027,7 +1027,7 @@ struct_       : '[' struct_elems ']'             { $$ = hilti::ctor::Struct(std:
 struct_elems  : struct_elems ',' struct_elem     { $$ = std::move($1); $$.push_back($3); }
               | struct_elem                      { $$ = std::vector<hilti::ctor::struct_::Field>{ std::move($1) }; }
 
-struct_elem   : '$' local_id  '=' expr           { $$ = hilti::ctor::struct_::Field(std::move($2), std::move($4)); }
+struct_elem   : DOLLAR_IDENT '=' expr            { $$ = hilti::ctor::struct_::Field(hilti::ID(std::move($1)), std::move($3)); }
 
 regexp        : re_patterns                      { $$ = hilti::ctor::RegExp(std::move($1), {}, __loc__); }
 
