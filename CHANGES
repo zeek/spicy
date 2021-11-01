@@ -1,3 +1,7 @@
+1.4.0-dev.34 | 2021-11-01 16:32:40 +0100
+
+  * GH-1028: Add TODO to docs on unit initialization via list coercion. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.32 | 2021-11-01 13:19:49 +0100
 
   * GH-1030: Make sure types required for globals are declared before being used. (Benjamin Bannier, Corelight)
