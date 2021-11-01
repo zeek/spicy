@@ -1,0 +1,29 @@
+# @TEST-EXEC: spicyc -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks basic functionality of `struct`s.
+
+module test;
+
+type Foo = struct {
+    int32 x;
+    real y;
+};
+
+# NOTE: We perform these tests at local scope as a workaround for #1035.
+function f() {
+    local foo: Foo;
+
+    print("Default-initalized fields: %s" % foo);
+
+    foo.x = 42;
+    foo.y = 12.5;
+    print("Fields can be set: %s" % foo);
+
+    local bar = foo;
+    print("Performs copy: %s from %s" % (bar, foo));
+
+    bar.x = 45;
+    print("Is deep copy: %s vs %s" % (bar, foo));
+}
+f();

@@ -1,0 +1,14 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Validates that a `struct` is not a parseable type.
+
+module test;
+
+type Foo = struct {
+    uint32 x;
+};
+
+type Bar = unit {
+    foo: Foo;
+};
