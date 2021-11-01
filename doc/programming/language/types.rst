@@ -501,6 +501,8 @@ Unit
   [$FIELD_1 = X_1, $FIELD_N = X_N, ...]`` where ``FIELD_I`` is the
   label of a corresponding field in ``my_unit``'s type.
 
+  .. todo:: This isn't available in Spicy yet (:issue:`1036`).
+
 .. include:: /autogen/types/unit.rst
 
 .. _type_vector:
