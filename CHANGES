@@ -1,3 +1,7 @@
+1.4.0-dev.36 | 2021-11-02 13:07:00 +0100
+
+  * Show diff if pre-commit fails in CI. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.34 | 2021-11-01 16:32:40 +0100
 
   * GH-1028: Add TODO to docs on unit initialization via list coercion. (Benjamin Bannier, Corelight)
