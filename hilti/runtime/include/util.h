@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <list>
 #include <memory>
+#include <numeric>
 #include <optional>
 #include <set>
 #include <string>
@@ -581,7 +582,15 @@ private:
     hilti::rt::filesystem::path _path;
 };
 
-// Combine two hashes.
-inline std::size_t hashCombine(std::size_t hash1, std::size_t hash2) { return hash1 ^ (hash2 << 1); }
+// Combine two or more hashes.
+template<typename... Hashes>
+constexpr std::size_t hashCombine(std::size_t hash1, std::size_t hash2, Hashes... hashes) {
+    auto result = hash1 ^ (hash2 << 1);
+
+    if constexpr ( sizeof...(hashes) > 0 )
+        return hashCombine(result, hashes...);
+    else
+        return result;
+}
 
 } // namespace hilti::rt
