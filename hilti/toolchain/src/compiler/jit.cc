@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <unistd.h>
+
 #include <array>
 #include <cstdio>
 #include <cstring>
@@ -37,22 +39,41 @@ std::string readFile(const hilti::rt::filesystem::path& path) {
 hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesystem::path& id, std::size_t hash) {
     const auto cc_hash = code.hash();
 
-    const auto cc = hilti::rt::filesystem::temp_directory_path() /
-                    util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().c_str(), hash, cc_hash);
+    // Create a random temporary file owned only by us so we are not racing
+    // with other processes attempting to create the same output file.
+    //
+    // We create this file in the same location as the final file so we can
+    // perform an atomic move below.
+    std::string cc0 = hilti::rt::filesystem::temp_directory_path() / "spicy-jit-cc-XXXXXXXXXXXX";
+    if ( auto fd = ::mkstemp(cc0.data()); fd == -1 )
+        rt::fatalError(util::fmt("could not create temporary file: %s", strerror(errno)));
+    else
+        ::close(fd);
 
-    std::ofstream out(cc);
+    const auto cc1 = hilti::rt::filesystem::temp_directory_path() /
+                     util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().c_str(), hash, cc_hash);
+
+    std::ofstream out(cc0);
 
     if ( ! out )
-        rt::fatalError(util::fmt("could not open file %s for writing", cc));
+        rt::fatalError(util::fmt("could not open file %s for writing", cc1));
 
     if ( const auto& content = code.code() )
         out << *content;
 
     out.close();
     if ( out.fail() )
-        rt::fatalError(util::fmt("could not write to temporary file %s", cc));
+        rt::fatalError(util::fmt("could not write to temporary file %s", cc1));
 
-    return cc;
+    // Atomically move the temprorary file to its final location. With that
+    // even with concurrent saves to the same final path other processes should
+    // always see a consistent version of the contents of that file.
+    std::error_code ec;
+    hilti::rt::filesystem::rename(cc0, cc1, ec);
+    if ( ec )
+        rt::fatalError(util::fmt("could not move file %s to final location %s: %s", cc0, cc1, ec.message()));
+
+    return cc1;
 }
 
 // An RAII helper which removes all files added to it on destruction.
@@ -338,9 +359,19 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     else
         args = hilti::configuration().hlto_ld_flags_release;
 
-    auto lib = hilti::rt::filesystem::temp_directory_path() / util::fmt("__library__%" PRIx64 ".hlto", _hash);
+    // Create a random temporary file owned only by us so we are not racing
+    // with other processes attempting to create the same output file.
+    //
+    // We create this file in the same location as the final file so we can
+    // perform an atomic move below.
+    std::string lib0 = hilti::rt::filesystem::temp_directory_path() / "spicy-jit-hlto-XXXXXXXXXXXX";
+    if ( auto fd = ::mkstemp(lib0.data()); fd == -1 )
+        rt::fatalError(util::fmt("could not create temporary file: %s", strerror(errno)));
+    else
+        ::close(fd);
+
     args.push_back("-o");
-    args.push_back(lib);
+    args.push_back(lib0);
 
     for ( const auto& path : _objects ) {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("  - %s", path.native()));
@@ -364,11 +395,21 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     }
 
     // We are using the compiler as a linker here, no need to check for `HILTI_CXX_COMPILER_LAUNCHER`.
+    // Since we are writing to a random temporary file non of this would cache anyway.
     if ( auto rc = _spawnJob(hilti::configuration().cxx, std::move(args)); ! rc )
         return rc.error();
 
     if ( auto rc = _waitForJobs(); ! rc )
         return rc.error();
+
+    // Atomically move the temprorary file to its final location. With that
+    // even with concurrent saves to the same final path other processes should
+    // always see a consistent version of the contents of that file.
+    auto lib = hilti::rt::filesystem::temp_directory_path() / util::fmt("__library__%" PRIx64 ".hlto", _hash);
+    std::error_code ec;
+    hilti::rt::filesystem::rename(lib0, lib, ec);
+    if ( ec )
+        rt::fatalError(util::fmt("could not move file %s to final location %s: %s", lib0, lib, ec.message()));
 
     // Instantiate the library object from the file on disk, and set it up
     // to delete the file & its directory on destruction.
