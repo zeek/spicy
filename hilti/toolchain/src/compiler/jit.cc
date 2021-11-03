@@ -55,6 +55,27 @@ hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesyste
     return cc;
 }
 
+// An RAII helper which removes all files added to it on destruction.
+class FileGuard {
+public:
+    void add(hilti::rt::filesystem::path path) { _paths.emplace_back(std::move(path)); }
+
+    ~FileGuard() {
+        for ( const auto& cc : _paths ) {
+            HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", cc));
+
+            std::error_code ec;
+            hilti::rt::filesystem::remove(cc, ec);
+
+            if ( ec )
+                HILTI_DEBUG(logging::debug::Jit, util::fmt("could not remove temporary file %s: %s", cc, ec.message()));
+        }
+    }
+
+private:
+    std::vector<hilti::rt::filesystem::path> _paths;
+};
+
 } // namespace
 
 void hilti::JIT::Job::collectOutputs(int events) {
@@ -211,21 +232,7 @@ hilti::Result<Nothing> JIT::_compile() {
 
     // Remember generated files and remove them on all exit paths.
     bool keep_tmps = options().keep_tmps;
-    std::shared_ptr<std::vector<hilti::rt::filesystem::path>>
-        cc_files_generated(new std::vector<hilti::rt::filesystem::path>(), [keep_tmps](const auto* cc_files_generated) {
-            if ( ! keep_tmps )
-                for ( const auto& cc : *cc_files_generated ) {
-                    std::error_code ec;
-                    HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", cc));
-                    hilti::rt::filesystem::remove(cc, ec);
-
-                    if ( ec )
-                        HILTI_DEBUG(logging::debug::Jit,
-                                    util::fmt("could not remove temporary file %s: %s", cc, ec.message()));
-                }
-
-            delete cc_files_generated;
-        });
+    FileGuard cc_files_generated;
 
     // Write all in-memory code into temporary files.
     for ( const auto& code : _codes ) {
@@ -246,7 +253,8 @@ hilti::Result<Nothing> JIT::_compile() {
         }
 
         cc_files.push_back(cc);
-        cc_files_generated->push_back(cc);
+        if ( ! keep_tmps )
+            cc_files_generated.add(cc);
     }
 
     bool sequential = hilti::rt::getenv("HILTI_JIT_SEQUENTIAL").has_value();
