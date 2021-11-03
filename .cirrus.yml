@@ -4,9 +4,6 @@ environment:
     # Enforce sequential JIT'ing of files for controlled memory usage.
     HILTI_JIT_SEQUENTIAL: 1
 
-    # Try to cache JIT results.
-    HILTI_CXX_COMPILER_LAUNCHER: ccache
-
     # Images for macOS
     IMAGE_MACOS_BIG_SUR:  big-sur-base
     IMAGE_MACOS_CATALINA: catalina-base

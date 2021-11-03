@@ -24,6 +24,7 @@ Available options:
     --build                  Prints "debug" or "release", depending on the build configuration.
     --cmake-path             Prints the path to Spicy-provided CMake modules
     --cxx                    Print the path to the C++ compiler used to build Spicy
+    --cxx-launcher           Print the full path to the compiler launcher used to compile HILTI.
     --cxxflags               Print flags for C++ compiler when compiling generated code statically
     --cxxflags-hlto          Print flags for C++ compiler when building precompiled HLTO libraries
     --debug                  Output flags for working with debugging versions.
@@ -135,6 +136,13 @@ int main(int argc, char** argv) {
 
         if ( opt == "--cxx" ) {
             result.emplace_back(hilti::configuration().cxx);
+            continue;
+        }
+
+        if ( opt == "--cxx-launcher" ) {
+            if ( auto cxx_launcher = hilti::configuration().cxx_launcher )
+                result.emplace_back(*cxx_launcher);
+
             continue;
         }
 

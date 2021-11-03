@@ -320,7 +320,7 @@ hilti::Result<Nothing> JIT::_compile() {
         args.push_back(hilti::rt::filesystem::canonical(path));
 
         auto cxx = hilti::configuration().cxx;
-        if ( const auto launcher = rt::getenv("HILTI_CXX_COMPILER_LAUNCHER"); launcher && ! launcher->empty() ) {
+        if ( const auto launcher = hilti::configuration().cxx_launcher; launcher && ! launcher->empty() ) {
             args.insert(args.begin(), cxx);
             cxx = *launcher;
         }
@@ -394,7 +394,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
         }
     }
 
-    // We are using the compiler as a linker here, no need to check for `HILTI_CXX_COMPILER_LAUNCHER`.
+    // We are using the compiler as a linker here, no need to use a compiler launcher.
     // Since we are writing to a random temporary file non of this would cache anyway.
     if ( auto rc = _spawnJob(hilti::configuration().cxx, std::move(args)); ! rc )
         return rc.error();
