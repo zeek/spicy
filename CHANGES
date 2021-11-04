@@ -1,3 +1,7 @@
+1.4.0-dev.38 | 2021-11-04 12:35:22 +0100
+
+  * Make Spicy prefix visible for CI jobs testing spicy-[plugin|analyzers]. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.36 | 2021-11-02 13:07:00 +0100
 
   * Show diff if pre-commit fails in CI. (Benjamin Bannier, Corelight)

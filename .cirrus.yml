@@ -890,10 +890,10 @@ zeek_plugin_task:
     - zeek -NN _Zeek::Spicy | grep -q ANALYZER_SPICY_TFTP
 
   test_plugin_script:
-    - (PATH=/opt/spicy-plugin/bin:$PATH make -C spicy-plugin/tests test-install)
+    - (PATH=/opt/spicy/bin:/opt/spicy-plugin/bin:$PATH make -C spicy-plugin/tests test-install)
 
   test_analyzer_script:
-    - (PATH=/opt/spicy-plugin/bin:$PATH make -C spicy-analyzers/tests test-install)
+    - (PATH=/opt/spicy/bin:/opt/spicy-plugin/bin:$PATH make -C spicy-analyzers/tests test-install)
 
   check_script:
     - (cd /tmp && zeek -r ${CIRRUS_WORKING_DIR}/spicy-analyzers/tests/Traces/tftp_rrq.pcap spicy-analyzers && test -e tftp.log && grep rfc1350.txt tftp.log)
