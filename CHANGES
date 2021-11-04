@@ -1,3 +1,7 @@
+1.4.0-dev.40 | 2021-11-04 13:03:09 +0100
+
+  * Fix build for RTD. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.38 | 2021-11-04 12:35:22 +0100
 
   * Make Spicy prefix visible for CI jobs testing spicy-[plugin|analyzers]. (Benjamin Bannier, Corelight)
