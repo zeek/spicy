@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstring>
 #include <system_error>
 
 #include <hilti/rt/autogen/version.h>
@@ -25,7 +26,7 @@ std::optional<hilti::rt::filesystem::path> precompiled_libhilti(const Configurat
 #endif
 
     if ( auto&& cache = util::cacheDirectory(configuration) ) {
-        const rt::filesystem::path file_name = rt::fmt("precompiled_libhilti%s.h.pch", (debug ? "_debug" : ""));
+        const rt::filesystem::path file_name = rt::fmt("precompiled_libhilti%s.h.gch", (debug ? "_debug" : ""));
 
         std::error_code ec;
         if ( auto pch = (*cache) / file_name; rt::filesystem::exists(pch, ec) )
@@ -60,12 +61,30 @@ void Configuration::init(bool use_build_directory) {
     std::transform(compiler_id.begin(), compiler_id.end(), compiler_id.begin(),
                    [](auto& c) { return std::tolower(c); });
 
-    // Allow to set a compiler wrapper through environment.
-    auto hilti_cxx = getenv("HILTI_CXX");
-    if ( hilti_cxx && *hilti_cxx )
+    // Allow to set a compiler wrapper through the environment.
+    if ( auto hilti_cxx = getenv("HILTI_CXX"); hilti_cxx && *hilti_cxx )
         cxx = hilti_cxx;
     else
         cxx = "${CMAKE_CXX_COMPILER}";
+
+    // Allow to set the compiler launcher through the environment variable `HILTI_CXX_COMPILER_LAUNCHER`.
+    //
+    // - if the environment variable is set it overrides any automatism. If it
+    //   contains a value we assume this to be an executable; if the environment
+    //   variable is empty no launcher will be used.
+    // - next we check whether any compiler launcher was set during the build and reuse it
+    // - else we disable use of a compiler launcher.
+    if ( auto hilti_cxx_launcher = getenv("HILTI_CXX_COMPILER_LAUNCHER"); hilti_cxx_launcher ) {
+        if ( std::strlen(hilti_cxx_launcher) == 0 ) {
+            cxx_launcher = {};
+        }
+        else
+            cxx_launcher = hilti_cxx_launcher;
+    }
+    else if ( std::string cmake_cxx_launcher = "${CMAKE_CXX_COMPILER_LAUNCHER}"; ! cmake_cxx_launcher.empty() )
+        cxx_launcher = cmake_cxx_launcher;
+    else
+        cxx_launcher = {};
 
     distbase = "${PROJECT_SOURCE_DIR}";
     install_prefix = "${CMAKE_INSTALL_PREFIX}";
@@ -170,3 +189,53 @@ Configuration& hilti::configuration() {
     static Configuration singleton;
     return singleton;
 }
+
+namespace std {
+
+template<>
+struct hash<hilti::rt::filesystem::path> {
+    std::size_t operator()(const hilti::rt::filesystem::path& x) const { return hilti::rt::filesystem::hash_value(x); }
+};
+
+template<typename T>
+struct hash<std::vector<T>> {
+    std::size_t operator()(const std::vector<T>& xs) const {
+        std::hash<T> hasher;
+
+        std::size_t result = 0;
+
+        for ( const auto& x : xs )
+            result = rt::hashCombine(result, hasher(x));
+
+        return result;
+    }
+};
+
+template<>
+struct hash<hilti::Configuration> {
+    std::size_t operator()(const hilti::Configuration& config) const {
+        std::hash<std::string> hasher_string;
+        std::hash<std::vector<hilti::rt::filesystem::path>> hasher_vect_p;
+        std::hash<std::vector<std::string>> hasher_vect_s;
+
+        return rt::hashCombine(hasher_string(config.build_directory), hasher_string(config.compiler_id),
+                               hasher_string(config.cxx), hasher_string(config.distbase),
+                               hasher_vect_p(config.hilti_library_paths), hasher_string(config.hiltic),
+                               hasher_vect_s(config.hlto_cxx_flags_debug), hasher_vect_s(config.hlto_cxx_flags_release),
+                               hasher_vect_s(config.hlto_ld_flags_debug), hasher_vect_s(config.hlto_ld_flags_release),
+                               hasher_string(config.install_prefix), hasher_string(config.lib_directory),
+                               hasher_vect_s(config.runtime_cxx_flags_debug),
+                               hasher_vect_s(config.runtime_cxx_flags_release),
+                               hasher_vect_p(config.runtime_cxx_include_paths),
+                               hasher_vect_p(config.runtime_cxx_library_paths),
+                               hasher_vect_s(config.runtime_ld_flags_debug),
+                               hasher_vect_s(config.runtime_ld_flags_release),
+                               hasher_vect_p(config.toolchain_cxx_include_paths),
+                               hasher_vect_p(config.toolchain_cxx_library_paths), config.uses_build_directory,
+                               config.version_number, hasher_string(config.version_string),
+                               hasher_string(config.version_string_long));
+    }
+};
+} // namespace std
+
+std::size_t Configuration::hash() const { return std::hash<hilti::Configuration>{}(*this); }

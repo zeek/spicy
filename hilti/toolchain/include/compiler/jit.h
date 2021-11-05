@@ -84,6 +84,9 @@ public:
      */
     const std::string& id() const { return _id; }
 
+    /** Obtain hash for this code. */
+    std::size_t hash() const { return _hash; }
+
 protected:
     /**
      * Loads C++ code from a file.
@@ -105,6 +108,7 @@ protected:
 private:
     std::string _id;
     std::optional<std::string> _code;
+    std::size_t _hash = 0;
 };
 
 using hilti::rt::Library;
@@ -136,7 +140,7 @@ public:
      *
      * @param d C++ code
      */
-    void add(CxxCode d) { _codes.push_back(std::move(d)); }
+    void add(CxxCode d);
 
     /**
      * Schedules C++ for just-in-time compilation. This must be called only
@@ -144,7 +148,7 @@ public:
      *
      * @param d file to read C++ code from
      */
-    void add(const hilti::rt::filesystem::path& p) { _files.push_back(p); }
+    void add(const hilti::rt::filesystem::path& p);
 
     /**
      * Returns true if any source files have been added that need to be
@@ -169,9 +173,6 @@ private:
     // Check if we have a working compiler.
     hilti::Result<Nothing> _checkCompiler();
 
-    // Prepare for compilation.
-    hilti::Result<Nothing> _initialize();
-
     // Compile C++ to object files.
     hilti::Result<Nothing> _compile();
 
@@ -185,16 +186,12 @@ private:
     Result<JobID> _spawnJob(hilti::rt::filesystem::path cmd, std::vector<std::string> args);
     Result<Nothing> _waitForJobs();
 
-    hilti::rt::filesystem::path _makeTmp(std::string base, std::string ext);
-
     std::weak_ptr<Context> _context; // global context for options
     bool _dump_code;                 // save all C++ code for debugging
 
     std::vector<hilti::rt::filesystem::path> _files; // all added source files
     std::vector<CxxCode> _codes;                     // all C++ code units to be compiled
     std::vector<hilti::rt::filesystem::path> _objects;
-
-    std::optional<hilti::rt::TemporaryDirectory> _tmpdir;
 
     struct Job {
         std::unique_ptr<reproc::process> process;
@@ -207,7 +204,7 @@ private:
     JobID _job_counter = 0;
     std::map<JobID, Job> _jobs;
 
-    std::map<std::string, unsigned int> _tmp_counters;
+    std::size_t _hash;
 };
 
 } // namespace hilti

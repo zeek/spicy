@@ -42,7 +42,7 @@ TEST_CASE("initModuleGlobals/hiltiGlobals/moduleGlobals") {
 
     unsigned int idx = -1; // Controlled use of overflow below.
 
-    detail::registerModule(detail::HiltiModule());
+    detail::registerModule({.name = "1", .id = "1"});
     detail::initModuleGlobals<int>(++idx);
 
     REQUIRE_EQ(detail::hiltiGlobals().size(), 1u);
@@ -51,7 +51,7 @@ TEST_CASE("initModuleGlobals/hiltiGlobals/moduleGlobals") {
     REQUIRE(detail::moduleGlobals<int>(idx));
     CHECK_EQ(*detail::moduleGlobals<int>(idx), 0u);
 
-    detail::registerModule(detail::HiltiModule());
+    detail::registerModule({.name = "2", .id = "2"});
     detail::initModuleGlobals<int>(++idx);
 
     REQUIRE_EQ(detail::hiltiGlobals().size(), 2u);

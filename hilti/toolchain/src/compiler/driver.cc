@@ -360,7 +360,10 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
             case 'S': _driver_options.skip_dependencies = true; break;
 
-            case 'T': _driver_options.keep_tmps = true; break;
+            case 'T':
+                _driver_options.keep_tmps = true;
+                _compiler_options.keep_tmps = true;
+                break;
 
             case 'U': _driver_options.report_resource_usage = true; break;
 
@@ -1151,12 +1154,12 @@ Result<Nothing> Driver::initRuntime() {
     } catch ( const hilti::rt::Exception& e ) {
         printHiltiException(e);
         hookFinishRuntime();
-        rt::done();
+        finishRuntime();
         exit(1);
     } catch ( const std::runtime_error& e ) {
         std::cerr << fmt("uncaught C++ exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
         hookFinishRuntime();
-        rt::done();
+        finishRuntime();
         exit(1);
     }
 
@@ -1203,8 +1206,8 @@ Result<Nothing> Driver::finishRuntime() {
         _runtime_initialized = false;
     }
 
-    if ( _jit )
-        _jit.reset();
+    _jit.reset();
+    _library.reset();
 
     return Nothing();
 }

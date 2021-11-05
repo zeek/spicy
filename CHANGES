@@ -1,3 +1,35 @@
+1.4.0-dev.56 | 2021-11-05 14:55:09 +0100
+
+  * Use compiler launcher from ccache if one was used there. (Benjamin Bannier, Corelight)
+
+  * Use atomic operations to create temporary files during JIT. (Benjamin Bannier, Corelight)
+
+  * Use explicit guard controlling deletion of temporary files in JIT. (Benjamin Bannier, Corelight)
+
+  * Explicitly enforce that a module is only registered once. (Benjamin Bannier, Corelight)
+
+  * Do not delete temporary files if requested. (Benjamin Bannier, Corelight)
+
+  * Fix extension of precompiled headers. (Benjamin Bannier, Corelight)
+
+  * Cache JIT results in CI. (Benjamin Bannier, Corelight)
+
+  * Allow use of ccache during JIT. (Benjamin Bannier, Corelight)
+
+  * Include HILTI config in JIT hash. (Benjamin Bannier, Corelight)
+
+  * Extend hashCombine so it can combine more than two hashes. (Benjamin Bannier, Corelight)
+
+  * Use deterministic locations for files created during JIT. (Benjamin Bannier, Corelight)
+
+  * Avoid unneeded parameter copy. (Benjamin Bannier, Corelight)
+
+  * Ensure cleanup of temporary driver HLTO files on errors. (Benjamin Bannier, Corelight)
+
+  * Compute module linker scope variable from module contents. (Benjamin Bannier, Corelight)
+
+  * Remove unused `created` field in linker version. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.40 | 2021-11-04 13:03:09 +0100
 
   * Fix build for RTD. (Benjamin Bannier, Corelight)

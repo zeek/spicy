@@ -3,8 +3,10 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <cinttypes>
 #include <clocale>
+#include <cstring>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
@@ -75,6 +77,16 @@ void hilti::rt::done() {
 bool hilti::rt::isInitialized() { return __global_state && __global_state->runtime_is_initialized; }
 
 void hilti::rt::detail::registerModule(HiltiModule module) {
+    // Check whether the module was previously registered.
+    for ( const auto& m : globalState()->hilti_modules ) {
+        if ( std::strcmp(m.name, module.name) == 0 && std::strcmp(m.id, module.id) == 0 ) {
+            HILTI_RT_DEBUG("libhilti",
+                           fmt("skipping registration of module %s since the module was registered previously",
+                               module.name));
+            return;
+        }
+    }
+
     HILTI_RT_DEBUG("libhilti", fmt("registering module %s", module.name));
 
     if ( module.globals_idx )

@@ -27,6 +27,7 @@ namespace detail {
  * for every module it compiles. */
 struct HiltiModule {
     const char* name{};              /**< name of the HILTI module; for informational purposes */
+    const char* id = nullptr;        /**< unique identifier for the module */
     void (*init_module)() = nullptr; /**< callback for executing any top-level module code when the runtime library is
                                 being initialized */
     void (*init_globals)(hilti::rt::Context* ctx) =

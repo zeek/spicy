@@ -18,7 +18,6 @@ namespace hilti::rt::library {
 struct Version {
     std::string magic; /**< magic string for identification */
     int hilti_version; /**< HILTI project version */
-    double created;    /**< time library was compiled in seconds since epoch */
     bool debug;        /**< true if compiled in debug mode */
     bool optimize;     /**< true if compiled with optimizations enabled */
 
@@ -42,8 +41,8 @@ struct Version {
     void checkCompatibility() const;
 
     friend bool operator==(const Version& a, const Version& b) {
-        return a.magic == b.magic && a.hilti_version == b.hilti_version && a.created == b.created &&
-               a.debug == b.debug && a.optimize == b.optimize;
+        return a.magic == b.magic && a.hilti_version == b.hilti_version && a.debug == b.debug &&
+               a.optimize == b.optimize;
     }
 
     friend bool operator!=(const Version& a, const Version& b) { return ! (a == b); }

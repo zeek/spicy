@@ -312,6 +312,10 @@ TEST_CASE("hashCombine") {
     CHECK_EQ(hashCombine(1, 0), 1);
     CHECK_EQ(hashCombine(0, 1), 2);
     CHECK_EQ(hashCombine(1, 1), 3);
+
+    CHECK_EQ(hashCombine(0, 0, 1), 2);
+    CHECK_EQ(hashCombine(0, 0, 0, 1), 2);
+    CHECK_EQ(hashCombine(0, 0, 0, 0, 1), 2);
 }
 
 TEST_CASE("isDebugVersion") {

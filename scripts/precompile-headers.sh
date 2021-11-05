@@ -59,13 +59,14 @@ mkdir -p "${CACHE}"
 # NOTE: The compiler invocations here should be kept in sync
 # with what we do in `CMakeLists.txt`.
 cp "${LIBHILTI}" "${CACHE}/precompiled_libhilti_debug.h"
-$("${HILTI_CONFIG}" --cxx --cxxflags --debug) -x c++-header "${LIBHILTI}" -o "${CACHE}/precompiled_libhilti_debug.h.pch"
+$("${HILTI_CONFIG}" --cxx --cxxflags --debug) -x c++-header "${LIBHILTI}" -o "${CACHE}/precompiled_libhilti_debug.h.gch"
 
 cp "${LIBHILTI}" "${CACHE}/precompiled_libhilti.h"
-$("${HILTI_CONFIG}" --cxx --cxxflags) -x c++-header "${LIBHILTI}" -o "${CACHE}/precompiled_libhilti.h.pch"
+
+$("${HILTI_CONFIG}" --cxx --cxxflags) -x c++-header "${LIBHILTI}" -o "${CACHE}/precompiled_libhilti.h.gch"
 
 cp "${LIBSPICY}" "${CACHE}/precompiled_libspicy_debug.h"
-$("${SPICY_CONFIG}" --cxx --cxxflags --debug) -x c++-header "${LIBSPICY}" -o "${CACHE}/precompiled_libspicy_debug.h.pch"
+$("${SPICY_CONFIG}" --cxx --cxxflags --debug) -x c++-header "${LIBSPICY}" -o "${CACHE}/precompiled_libspicy_debug.h.gch"
 
 cp "${LIBSPICY}" "${CACHE}/precompiled_libspicy.h"
-$("${SPICY_CONFIG}" --cxx --cxxflags) -x c++-header "${LIBSPICY}" -o "${CACHE}/precompiled_libspicy.h.pch"
+$("${SPICY_CONFIG}" --cxx --cxxflags) -x c++-header "${LIBSPICY}" -o "${CACHE}/precompiled_libspicy.h.gch"

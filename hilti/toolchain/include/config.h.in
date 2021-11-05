@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -58,13 +59,19 @@ struct Configuration {
      */
     void initLocation(const char* argv0);
 
+    /**
+     * Returns a hash of the current configuration.
+     */
+    std::size_t hash() const;
+
     bool uses_build_directory; /**< True if all information pertains to running outside of the build directory. */
 
-    std::string compiler_id;                     /**< Identifier of the compiler */
-    hilti::rt::filesystem::path cxx;             /**< Full path to C++ compiler */
-    hilti::rt::filesystem::path distbase;        /**< base directory of HILTI source distribution */
-    hilti::rt::filesystem::path hiltic;          /**< Full path to `hiltic` binary */
-    hilti::rt::filesystem::path install_prefix;  /**< HILTI install prefix */
+    std::string compiler_id;                                 /**< Identifier of the compiler */
+    hilti::rt::filesystem::path cxx;                         /**< Full path to C++ compiler */
+    std::optional<hilti::rt::filesystem::path> cxx_launcher; /**< Full path to C++ compiler launcher */
+    hilti::rt::filesystem::path distbase;                    /**< base directory of HILTI source distribution */
+    hilti::rt::filesystem::path hiltic;                      /**< Full path to `hiltic` binary */
+    hilti::rt::filesystem::path install_prefix;              /**< HILTI install prefix */
     hilti::rt::filesystem::path lib_directory;   /**< Full path to directory where HILTI libraries are stored  */
     hilti::rt::filesystem::path build_directory; /**< Full path to directory where HILTI was built */
     std::vector<hilti::rt::filesystem::path>

@@ -11,6 +11,17 @@ Version 1.4 (in progress)
 
 - Remove restriction that units used as sinks need to be ``public``
 
+-  Uses ``ccache`` for C++ compilation during JIT if Spicy itself was configured to use ``ccache``
+
+  Spicy spends a considerable amount of JIT time compiling generated C++ code.
+  This work can be cached if neither inputs nor any of the used flags have
+  changed so that subsequent JIT runs can complete much faster.
+
+  We now automatically cache many C++ compilation artifacts with ``ccache`` if
+  Spicy itself was configured to use ``ccache``. This behavior can be
+  controlled or disabled via the ``HILTI_CXX_COMPILER_LAUNCHER`` environment
+  variable.
+
 .. rubric:: Changed Functionality
 
 .. rubric:: Bug fixes

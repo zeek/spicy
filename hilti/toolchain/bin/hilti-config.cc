@@ -23,6 +23,7 @@ Available options:
 
     --build                  Prints "debug" or "release", depending on the build configuration.
     --cxx                    Print the full path to the compiler used to compile HILTI.
+    --cxx-launcher           Print the full path to the compiler launcher used to compile HILTI.
     --cxxflags               Print C++ flags when compiling generated code statically
     --cxxflags-hlto          Print C++ flags when building precompiled HLTO libraries
     --debug                  Output flags for working with debugging versions.
@@ -123,6 +124,13 @@ int main(int argc, char** argv) {
 
         if ( opt == "--cxx" ) {
             result.emplace_back(hilti::configuration().cxx);
+            continue;
+        }
+
+        if ( opt == "--cxx-launcher" ) {
+            if ( auto cxx_launcher = hilti::configuration().cxx_launcher )
+                result.emplace_back(*cxx_launcher);
+
             continue;
         }
 

@@ -1,5 +1,7 @@
-# @TEST-EXEC: hiltic -j %INPUT >1
-# @TEST-EXEC: hiltic -j %INPUT >2
+# @TEST-EXEC: cat %INPUT | sed 's/GLOBAL/1/g' > 1.hlt
+# @TEST-EXEC: cat %INPUT | sed 's/GLOBAL/2/g' > 2.hlt
+# @TEST-EXEC: hiltic -j 1.hlt >1
+# @TEST-EXEC: hiltic -j 2.hlt >2
 # @TEST-EXEC-FAIL: cmp 1 2
 #
 # @TEST-DOC: Check that the internal per-link unit scope differs with each HLTO file.
@@ -7,6 +9,7 @@
 module X {
 
 import hilti;
+global x = GLOBAL;
 
 hilti::print(hilti::linker_scope());
 
