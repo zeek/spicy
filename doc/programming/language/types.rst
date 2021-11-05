@@ -439,6 +439,29 @@ set. Internally, Spicy stores them as UTF-8.
 
 .. include:: /autogen/types/string.rst
 
+.. _type_struct:
+
+Struct
+------
+
+A struct is a heterogeneous container of an ordered set of named values similar
+to a :ref:`type_tuple`. In contrast to ``tuple`` elements, ``struct`` fields
+are mutable.
+
+.. rubric:: Type
+
+- ``struct { TYPE_1: IDENTIFIER_1; ...; TYPE_N: IDENTIFIER_N }``
+
+.. rubric:: Constants
+
+.. _struct_initializer:
+
+- Structs can be initialized with a ``struct`` initializer,
+  ``local my_struct: MyStruct = [$FIELD_1 = X_1, ..., $FIELD_N = X_N]`` where
+  ``FIELD_I`` is the label of the corresponding field in ``MyStruct``'s type.
+
+.. include:: /autogen/types/struct.rst
+
 .. _type_time:
 
 Time
@@ -470,7 +493,7 @@ Tuple
 
 Tuples are heterogeneous containers of a fixed, ordered set of types.
 Tuple elements may optionally be declared and addressed with custom
-identifier names.
+identifier names. Tuple elements are immutable.
 
 .. rubric:: Type
 
@@ -497,11 +520,10 @@ Unit
 .. rubric:: Constants
 
 - Spicy doesn't support unit constants, but you can initialize unit
-  instances through coercion from a list expression: ``my_unit =
-  [$FIELD_1 = X_1, $FIELD_N = X_N, ...]`` where ``FIELD_I`` is the
-  label of a corresponding field in ``my_unit``'s type.
+  instances through coercion from a ``struct`` initializer, see
+  :ref:`type_struct`.
 
-  .. todo:: This isn't available in Spicy yet (:issue:`1036`).
+  .. todo:: This initialization isn't actually available in Spicy yet (:issue:`1036`).
 
 .. include:: /autogen/types/unit.rst
 
