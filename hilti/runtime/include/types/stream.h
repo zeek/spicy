@@ -896,7 +896,9 @@ private:
 };
 
 inline UnsafeConstIterator::UnsafeConstIterator(const SafeConstIterator& i)
-    : _chain(i._chain.get()), _offset(i._offset), _chunk(i._chain ? i._chain->findChunk(_offset, i._chunk) : nullptr) {}
+    : _chain(i._chain.get()),
+      _offset(i._offset),
+      _chunk(i._chain ? i._chain->findChunk(_offset, i.chunk()) : nullptr) {}
 
 inline std::ostream& operator<<(std::ostream& out, const UnsafeConstIterator& x) {
     out << to_string(x);
