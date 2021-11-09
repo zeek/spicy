@@ -1,3 +1,7 @@
+1.4.0-dev.62 | 2021-11-09 10:21:28 +0100
+
+  * Fix potentially use-after-free in stringification of `stream::View`. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.60 | 2021-11-09 10:19:53 +0100
 
   * Document structs. (Benjamin Bannier, Corelight)

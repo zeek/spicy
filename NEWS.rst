@@ -34,6 +34,8 @@ Version 1.4 (in progress)
 
 - GH-1030: Make sure types required for globals are declared before being used.
 
+- Fix potentially use-after-free in stringification of ``stream::View``.
+
 .. rubric:: Documentation
 
 Version 1.3
