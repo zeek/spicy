@@ -22,6 +22,8 @@ Version 1.4 (in progress)
   controlled or disabled via the ``HILTI_CXX_COMPILER_LAUNCHER`` environment
   variable.
 
+- GH-842: Add Spicy support for struct initialization.
+
 .. rubric:: Changed Functionality
 
 .. rubric:: Bug fixes

@@ -1,3 +1,11 @@
+1.4.0-dev.60 | 2021-11-09 10:19:53 +0100
+
+  * Document structs. (Benjamin Bannier, Corelight)
+
+  * GH-842: Add Spicy support for struct initialization. (Benjamin Bannier, Corelight)
+
+  * Add basic tests for Spicy `struct` types. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.56 | 2021-11-05 14:55:09 +0100
 
   * Use compiler launcher from ccache if one was used there. (Benjamin Bannier, Corelight)
