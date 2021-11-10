@@ -62,19 +62,13 @@ Commit Messages
 Formatting
 ----------
 
-Spicy comes with a ``clang-format`` configuration that enforces a
-canonical style. We require ``clang-format`` version >= 10 because we
-need a style option that wasn't available earlier. There's a
-``format`` target in the top-level ``Makefile`` that checks all
-relevant source files for conformance with our style. A second target
-``format-fixit`` reformats Spicy's code where it doesn't confirm.
+Spicy comes with a ``clang-format`` configuration that enforces a canonical
+style. We require ``clang-format`` version >= 10 because we need a style option
+that wasn't available earlier. Formatting is checked by a ``clang-format``
+linter which automatically pulls in a suitable ``clang-format`` binary, see the
+:ref:`tooling` section.
 
-To ensure the right ``clang-format`` version is being used, either
-have it in your ``PATH`` or set the environment variable
-``CLANG_FORMAT`` to the full path of the binary before running either
-of these targets.
-
-Spicy's CI runs ``make format`` as part of its code checks and will
+Spicy's CI runs ``pre-commit run clang-format`` as part of its code checks and will
 abort if there's anything not formatted as expected.
 
 .. _clang_tidy:

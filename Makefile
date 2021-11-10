@@ -17,17 +17,10 @@ doc:
 test:
 	$(MAKE) -C tests test
 
-format:
-	./scripts/run-clang-format
-
-format-fixit:
-	./scripts/run-clang-format --fixit
-
 tidy:
 	./scripts/run-clang-tidy -j 10 build
 
 tidy-fixit:
 	./scripts/run-clang-tidy -j 10 --fixit build
-	./scripts/run-clang-format --fixit
 
 check: test format tidy
