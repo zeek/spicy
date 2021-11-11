@@ -42,4 +42,4 @@ fi
 cp ${plugin}/scripts/__preload__.zeek ${AUTOGEN_FINAL}/zeek/ || exit 1
 cp ${plugin}/scripts/Zeek/Spicy/bare.zeek ${AUTOGEN_FINAL}/zeek/ || exit 1
 cp ${plugin}/scripts/Zeek/Spicy/misc/record-spicy-batch.zeek ${AUTOGEN_FINAL}/zeek/ || exit 1
-cp ${analyzers}/analyzer/protocol/tftp/{tftp.zeek,tftp.spicy,tftp.evt,zeek_tftp.spicy}  ${AUTOGEN_FINAL}/zeek/ || exit 1
+cp ${analyzers}/analyzer/tftp/{tftp.zeek,tftp.spicy,tftp.evt,zeek_tftp.spicy}  ${AUTOGEN_FINAL}/zeek/ || exit 1
