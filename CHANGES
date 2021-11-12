@@ -1,3 +1,7 @@
+1.4.0-dev.70 | 2021-11-12 09:36:24 +0100
+
+  * GH-106: Bump zkg in published Docker images. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.68 | 2021-11-12 09:35:59 +0100
 
   * Refresh package docs with `doc/scripts/autogen-zeek-docs` [skip ci]. (Benjamin Bannier, Corelight)
