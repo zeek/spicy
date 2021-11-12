@@ -1,4 +1,4 @@
-
+@load base/frameworks/notice
 @load base/misc/version
 
 # doc-common-start
@@ -47,6 +47,8 @@ export {
     global disable_file_analyzer: function(tag: Files::Tag) : bool;
 @endif
 # doc-functions-end
+
+    redef enum Notice::Type += { Spicy_Max_File_Depth_Exceeded };
 }
 
 event spicy_analyzer_for_mime_type(a: Files::Tag, mt: string)
@@ -75,3 +77,11 @@ function disable_file_analyzer(tag: Files::Tag) : bool
     return Spicy::__toggle_analyzer(tag, F);
     }
 @endif
+
+event max_file_depth_exceeded(f: fa_file, args: Files::AnalyzerArgs, limit: count)
+    {
+    NOTICE([
+            $note=Spicy::Spicy_Max_File_Depth_Exceeded,
+            $msg=fmt("Maximum file depth exceeded for file %s", f$id)
+    ]);
+    }

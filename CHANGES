@@ -1,3 +1,11 @@
+1.4.0-dev.68 | 2021-11-12 09:35:59 +0100
+
+  * Refresh package docs with `doc/scripts/autogen-zeek-docs` [skip ci]. (Benjamin Bannier, Corelight)
+
+  * Fix lints in `doc/scripts/autogen-zeek-docs.` (Benjamin Bannier, Corelight)
+
+  * Fix `doc/scripts/autogen-zeek-docs` for changed layout of spicy-analyzers repo. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.64 | 2021-11-12 09:35:38 +0100
 
   * Use clang-format pre-commit hook which installs its own `clang-format` binary. (Benjamin Bannier, Corelight)

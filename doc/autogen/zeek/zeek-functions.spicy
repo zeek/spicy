@@ -85,3 +85,9 @@ Signals the end of a file to Zeek's file analysis.
 Inside a packet analyzer, forwards what data remains after parsing the top-level unit
 on to another analyzer. The index specifies the target, per the current dispatcher table.
 
+.. _spicy_network_time:
+
+.. rubric:: ``function zeek::network_time() : time``
+
+
+
