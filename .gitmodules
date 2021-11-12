@@ -25,9 +25,6 @@
 [submodule "3rdparty/justrx"]
 	path = 3rdparty/justrx
 	url = https://github.com/rsmmr/justrx.git
-[submodule "3rdparty/run-clang-format"]
-	path = 3rdparty/run-clang-format
-	url = https://github.com/Sarcasm/run-clang-format
 [submodule "3rdparty/filesystem"]
 	path = 3rdparty/filesystem
 	url = https://github.com/gulrak/filesystem.git

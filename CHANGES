@@ -1,3 +1,7 @@
+1.4.0-dev.64 | 2021-11-12 09:35:38 +0100
+
+  * Use clang-format pre-commit hook which installs its own `clang-format` binary. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.62 | 2021-11-09 10:21:28 +0100
 
   * Fix potentially use-after-free in stringification of `stream::View`. (Benjamin Bannier, Corelight)

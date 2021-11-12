@@ -247,29 +247,6 @@ function run_test_btest {
     execute_btest "Spicy" "tests" "${alternative}"
 }
 
-function run_test_clang_format {
-    clang_format=$(cat ${build}/.clang_format 2>/dev/null)
-
-    if [ ! -x ${clang_format} ]; then
-        log_warning "clang-format not available, skipping"
-        return 0
-    fi
-
-    log_stage "Running clang-format ..."
-
-    export CLANG_FORMAT=${clang_format}
-
-    if ${root}/scripts/run-clang-format; then
-        echo "clang-format run passed"
-        return 0
-    else
-        ${root}/scripts/run-clang-format >${artifacts}/clang-format.diff
-        log_diag "Patch to fix in 'clang-format.diff'"
-        log_error "clang-format has failed"
-        return 1
-    fi
-}
-
 function run_test_clang_tidy {
     clang_tidy=$(cat ${build}/.clang_tidy 2>/dev/null)
 
@@ -296,11 +273,7 @@ function run_test_clang_tidy {
 function run_test_code {
     rc=0
 
-    SKIP=clang-format pre-commit run -a --show-diff-on-failure || rc=1
-
-    pushd $(pwd) >/dev/null
-    run_test_clang_format || rc=1
-    popd >/dev/null
+    pre-commit run -a --show-diff-on-failure || rc=1
 
     pushd $(pwd) >/dev/null
     run_test_clang_tidy || rc=1
