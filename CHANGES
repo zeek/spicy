@@ -1,3 +1,10 @@
+1.4.0-dev.72 | 2021-11-16 16:56:18 +0100
+
+  * Fix potentially use-after-free in stringification of `stream::View`. (Benjamin Bannier, Corelight)
+
+    This is a fixup commit for dbc4c6e0d8e where we missed a couple
+    potential use-after-frees.
+
 1.4.0-dev.70 | 2021-11-12 09:36:24 +0100
 
   * GH-106: Bump zkg in published Docker images. (Benjamin Bannier, Corelight)
