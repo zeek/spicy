@@ -1,0 +1,28 @@
+# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
+#
+# @TEST-EXEC: printf 'ABCDE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: printf '111ABCDE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'ACDE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'BCDE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'ADE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf 'AE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf 'A' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '123' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
+#
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: FIXME(bbannier)
+
+module test;
+
+public type A = unit {
+    a : /A/;
+    # FIXME(bbannier): remove old attribute, add new one `&synchronized`.
+    b: /B/ &synchronize;
+    c: /C/;
+    d: /D/ &synchronize;
+    e: /E/;
+
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};

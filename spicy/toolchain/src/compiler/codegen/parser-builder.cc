@@ -1027,7 +1027,7 @@ struct ProductionVisitor
         auto body = builder()->addWhile(cond);
         pushBuilder(body);
         auto cookie = pb->initLoopBody();
-        auto stop = parseProduction(p.body());
+        auto stop = parseProduction(p.body()); // x?
         auto b = builder()->addIf(stop);
         b->addBreak();
         pb->finishLoopBody(cookie, p.location());
@@ -1132,11 +1132,85 @@ struct ProductionVisitor
         if ( const auto& skip = p.unitType().propertyItem("%skip") )
             skipRegExp(*skip->expression());
 
-        for ( const auto& i : p.fields() ) {
-            parseProduction(i);
+        // Counter for the next field we will parse.
+        const auto next_field = builder()->addTmp("next_field", builder::integer(0));
 
-            if ( const auto& skip = p.unitType().propertyItem("%skip") )
-                skipRegExp(*skip->expression());
+        for ( const auto xs : hilti::util::enumerate(p.fields()) ) {
+            const uint64_t fieldCounter = std::get<0>(xs);
+            const auto& fieldProduction = std::get<1>(xs);
+
+            // Check if there would be a synchronization point in this unit if parsing of this field failed.
+            std::optional<uint64_t> nextSyncPoint;
+            for ( auto candidateCounter = fieldCounter + 1; candidateCounter < p.fields().size(); ++candidateCounter ) {
+                if ( auto candidate = p.fields()[candidateCounter].meta().field();
+                     candidate && AttributeSet::find(candidate->attributes(), "&synchronize") ) {
+                    nextSyncPoint = candidateCounter;
+                    break;
+                }
+            }
+
+            const auto field = fieldProduction.meta().field();
+
+            // Only parse this field if it matches the next field to be extracted.
+            pushBuilder(builder()->addIf(builder::equal(builder::integer(fieldCounter), next_field)), [&]() {
+                auto parseField = [&]() {
+                    parseProduction(fieldProduction);
+                    builder()->addExpression(builder::incrementPrefix(next_field));
+
+                    if ( const auto& skip = p.unitType().propertyItem("%skip") )
+                        skipRegExp(*skip->expression());
+
+                    // FIXME(bbannier): invoke %synced hook.
+                };
+
+                // If there is no sync point for this field just try to parse it and potentially bubble any errors
+                // up.
+                if ( ! nextSyncPoint )
+                    parseField();
+
+                // There is a sync point for this field set up a try/catch block and attempt synchronization.
+                else {
+                    assert(nextSyncPoint);
+                    auto try_ = builder()->addTry();
+
+                    pushBuilder(try_.first, [&]() { parseField(); });
+                    pushBuilder(try_.second.addCatch(
+                                    builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
+                                [&]() {
+                                    // There is a sync point for this field, run its production w/o
+                                    // consuming input until parsing succeeds or we run out of data.
+                                    if ( field )
+                                        builder()
+                                            ->addDebugMsg("spicy",
+                                                          fmt("failed to parse '%s', will try to synchronize at '%s'",
+                                                              field->id(),
+                                                              p.fields()[*nextSyncPoint].meta().field()->id()));
+
+                                    builder()->addComment("Loop on the sync field until parsing succeeds");
+                                    auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
+                                    pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
+                                        auto syncProduction = p.fields()[*nextSyncPoint];
+                                        auto try_ = builder()->addTry();
+                                        pushBuilder(try_.first, [&]() {
+                                            parseProduction(syncProduction);
+                                            builder()->addAssign(next_field, builder::integer(*nextSyncPoint + 1));
+                                            builder()->addDebugMsg("spicy", "successfully synchronized after %d bytes",
+                                                                   {skippedBytes});
+                                            builder()->addBreak();
+                                        });
+                                        pushBuilder(try_.second.addCatch(
+                                                        builder::parameter(ID("e"),
+                                                                           builder::typeByID("spicy_rt::ParseError"))),
+                                                    [&]() {
+                                                        pb->advanceInput(builder::integer(1));
+                                                        builder()->addExpression(
+                                                            builder::incrementPrefix(skippedBytes));
+                                                    });
+                                        pushBuilder(builder()->addIf(pb->atEod()), [&]() { builder()->addRethrow(); });
+                                    });
+                                });
+                }
+            });
         }
 
         if ( const auto& skipPost = p.unitType().propertyItem("%skip-post") )
@@ -1609,7 +1683,6 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
             builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), std::move(args),
                                      field->meta());
 
-
         afterHook();
     }
 }
@@ -1736,8 +1809,13 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         builder()->addMemberCall(state().self, "__on_0x25_done", {}, l);
         afterHook();
     }
-    else
+    else {
         builder()->addMemberCall(state().self, "__on_0x25_error", {}, l);
+
+        // FIXME(bbannier): for explicit confirmation, invoke rejected hook here.
+        // pushBuilder(builder()->addIf(builder::member(state().self, "sync_mode")),
+        //             [&]() { builder()->addComment("FIXME(bbannier): invoke %rejected hook"); });
+    }
 
     guardFeatureCode(unit, {"supports_filters"},
                      [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
