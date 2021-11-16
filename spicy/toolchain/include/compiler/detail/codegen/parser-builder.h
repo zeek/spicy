@@ -77,7 +77,7 @@ extern const hilti::Expression Eod;
  * Maintains access to parser state during code generation. The generated
  * parsing code needs to carry various pieces of state through the logic
  * (e.g., the current input data). This struct records the expressions that
- * arte holding the current state variables. To change same state (e.g., to
+ * are holding the current state variables. To change same state (e.g., to
  * temporarily parse different input) one typically creates a copy of the
  * current struct instance and then pushed that onto parser generator's state
  * stack. To change it back, one pops that struct from the stack.
@@ -101,7 +101,7 @@ struct ParserState {
     /** Unit type that's currently being compiled. */
     std::reference_wrapper<const type::Unit> unit;
 
-    /** Type name of unit type that's currently being compiled. */
+    /** Type name of unit type that is currently being compiled. */
     ID unit_id;
 
     /** True if the current grammar needs look-ahead tracking. */
