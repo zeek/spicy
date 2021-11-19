@@ -1,3 +1,9 @@
+
+1.4.0-dev.74 | 2021-11-19 17:31:51 +0100
+
+  * Update documentation for the Zeek plugin's new `$packet` feature.
+    (Robin Sommer, Corelight)
+
 1.4.0-dev.72 | 2021-11-16 16:56:18 +0100
 
   * Fix potentially use-after-free in stringification of `stream::View`. (Benjamin Bannier, Corelight)

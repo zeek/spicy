@@ -456,6 +456,16 @@ the pieces going into such an event definition:
             Zeek type ``fa_file``. This ID can be used only with file
             analyzers.
 
+        ``$packet``
+            Refers to the packet that's currently being processed by
+            Zeek. On the Zeek-side this will turn into a parameter of
+            Zeek type ``raw_pkt_hdr``, with any fields filled in that
+            have already been parsed by Zeek's built-in analyzers.
+            This ID can be used only with packet analyzers. (Note that
+            instantiation of ``raw_pkt_hdr`` values can be relatively
+            expensive on the Zeek side, so best to limit usage of this
+            ID to a small part of the overall traffic.)
+
         ``$is_orig``
             A boolean indicating if the data currently being processed
             is coming from the originator (``True``) or responder
