@@ -175,6 +175,9 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_error", {});
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
+    add_hook("0x25_confirmed", {});
+    add_hook("0x25_rejected", {});
+    add_hook("0x25_synced", {});
 
     if ( unit.id() ) {
         ID typeID = ID(hilti::rt::replace(*unit.id(), ":", "_"));

@@ -16,6 +16,9 @@ type A = struct {
     hook void __on_0x25_error();
     hook optional<string> __str__();
     hook void __on_0x25_finally();
+    hook void __on_0x25_confirmed();
+    hook void __on_0x25_rejected();
+    hook void __on_0x25_synced();
     hook void __on_0x25_gap(uint<64> seq, uint<64> len);
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
     hook void __on_0x25_skipped(uint<64> seq);
@@ -38,6 +41,9 @@ public type B = struct {
     hook void __on_0x25_error();
     hook optional<string> __str__();
     hook void __on_0x25_finally();
+    hook void __on_0x25_confirmed();
+    hook void __on_0x25_rejected();
+    hook void __on_0x25_synced();
     hook void __on_0x25_gap(uint<64> seq, uint<64> len);
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
     hook void __on_0x25_skipped(uint<64> seq);
@@ -60,6 +66,9 @@ type C = struct {
     hook void __on_0x25_error();
     hook optional<string> __str__();
     hook void __on_0x25_finally();
+    hook void __on_0x25_confirmed();
+    hook void __on_0x25_rejected();
+    hook void __on_0x25_synced();
     hook void __on_0x25_gap(uint<64> seq, uint<64> len);
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
     hook void __on_0x25_skipped(uint<64> seq);
@@ -83,6 +92,9 @@ public type D = struct {
     hook void __on_0x25_error();
     hook optional<string> __str__();
     hook void __on_0x25_finally();
+    hook void __on_0x25_confirmed();
+    hook void __on_0x25_rejected();
+    hook void __on_0x25_synced();
     hook void __on_0x25_gap(uint<64> seq, uint<64> len);
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
     hook void __on_0x25_skipped(uint<64> seq);
@@ -106,6 +118,9 @@ type F = struct {
     hook void __on_0x25_error();
     hook optional<string> __str__();
     hook void __on_0x25_finally();
+    hook void __on_0x25_confirmed();
+    hook void __on_0x25_rejected();
+    hook void __on_0x25_synced();
     hook void __on_0x25_gap(uint<64> seq, uint<64> len);
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
     hook void __on_0x25_skipped(uint<64> seq);
