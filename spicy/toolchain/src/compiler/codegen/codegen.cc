@@ -239,6 +239,16 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
         replaceNode(&p, std::move(x));
     }
 
+    result_t operator()(const operator_::unit::Confirm& n, position_t p) {
+        assert(n.hasOp0());
+        replaceNode(&p, builder::call("spicy_rt::confirm", {n.op0()}));
+    }
+
+    result_t operator()(const operator_::unit::Reject& n, position_t p) {
+        assert(n.hasOp0());
+        replaceNode(&p, builder::call("spicy_rt::reject", {n.op0()}));
+    }
+
     result_t operator()(const operator_::unit::ConnectFilter& n, position_t p) {
         auto x = builder::call("spicy_rt::filter_connect", {n.op0(), argument(n.op2(), 0)});
         replaceNode(&p, std::move(x));

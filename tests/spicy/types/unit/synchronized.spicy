@@ -1,17 +1,25 @@
 # @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
 #
-# @TEST-EXEC: printf 'ABCDE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC: printf '111ABCDE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC: printf 'ACDE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC: printf 'BCDE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC: printf 'ADE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf 'AE' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf 'A' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf '123' | HILTI_DEBUG=spicy spicy-driver -d test.hlto >>output 2>&1
+# Parsing a unit with synchronization.
+# @TEST-EXEC: printf 'ABCDE' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC: printf '111ABCDE' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'ACDE' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'BCDE' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'ADE' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf 'AE' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf 'A' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '123' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
+#
+# Effects of `confirm`/`reject` outside of synchronization.
+# @TEST-EXEC: printf '1' | HILTI_DEBUG=spicy spicy-driver -d -p test::B test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '1' | HILTI_DEBUG=spicy spicy-driver -d -p test::C test.hlto >>output 2>&1
+#
+# Synchronization hooks are not invoked for normal parsing.
+# @TEST-EXEC: printf '1' | HILTI_DEBUG=spicy spicy-driver -d -p test::D test.hlto >>output 2>&1
 #
 # @TEST-EXEC: btest-diff output
 #
-# @TEST-DOC: FIXME(bbannier)
+# @TEST-DOC: Tests synchronization on the unit level.
 
 module test;
 
@@ -23,7 +31,34 @@ public type A = unit {
     d: /D/ &synchronize;
     e: /E/;
 
-    on %synced { print "Synced: %s" % self; }
+    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};
+
+public type B = unit {
+    x: uint8 { self.confirm(); }
+    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};
+
+public type C = unit {
+    x: uint8 { self.reject(); }
+    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};
+
+public type D = unit {
+    x: uint8 {}
+    on %synced { print "Synced: %s" % self; self.confirm(); }
     on %confirmed { print "Confirmed: %s" % self; }
     on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }
