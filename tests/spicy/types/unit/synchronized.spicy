@@ -23,6 +23,9 @@ public type A = unit {
     d: /D/ &synchronize;
     e: /E/;
 
+    on %synced { print "Synced: %s" % self; }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }
     on %error { print "Error: %s" % self; }
 };
