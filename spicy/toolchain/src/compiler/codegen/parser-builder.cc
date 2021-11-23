@@ -1159,8 +1159,6 @@ struct ProductionVisitor
 
                     if ( const auto& skip = p.unitType().propertyItem("%skip") )
                         skipRegExp(*skip->expression());
-
-                    // FIXME(bbannier): invoke %synced hook.
                 };
 
                 // If there is no sync point for this field just try to parse it and potentially bubble any errors
@@ -1174,41 +1172,56 @@ struct ProductionVisitor
                     auto try_ = builder()->addTry();
 
                     pushBuilder(try_.first, [&]() { parseField(); });
-                    pushBuilder(try_.second.addCatch(
-                                    builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
-                                [&]() {
-                                    // There is a sync point for this field, run its production w/o
-                                    // consuming input until parsing succeeds or we run out of data.
-                                    if ( field )
-                                        builder()
-                                            ->addDebugMsg("spicy",
-                                                          fmt("failed to parse '%s', will try to synchronize at '%s'",
-                                                              field->id(),
-                                                              p.fields()[*nextSyncPoint].meta().field()->id()));
+                    pushBuilder(
+                        try_.second.addCatch(builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
+                        [&]() {
+                            // There is a sync point for this field, run its production w/o
+                            // consuming input until parsing succeeds or we run out of data.
+                            if ( field )
+                                builder()->addDebugMsg("spicy",
+                                                       fmt("failed to parse '%s', will try to synchronize at '%s'",
+                                                           field->id(),
+                                                           p.fields()[*nextSyncPoint].meta().field()->id()));
 
-                                    builder()->addComment("Loop on the sync field until parsing succeeds");
-                                    auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
-                                    pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
-                                        auto syncProduction = p.fields()[*nextSyncPoint];
-                                        auto try_ = builder()->addTry();
-                                        pushBuilder(try_.first, [&]() {
-                                            parseProduction(syncProduction);
-                                            builder()->addAssign(next_field, builder::integer(*nextSyncPoint + 1));
-                                            builder()->addDebugMsg("spicy", "successfully synchronized after %d bytes",
-                                                                   {skippedBytes});
-                                            builder()->addBreak();
-                                        });
-                                        pushBuilder(try_.second.addCatch(
-                                                        builder::parameter(ID("e"),
-                                                                           builder::typeByID("spicy_rt::ParseError"))),
-                                                    [&]() {
-                                                        pb->advanceInput(builder::integer(1));
-                                                        builder()->addExpression(
-                                                            builder::incrementPrefix(skippedBytes));
-                                                    });
-                                        pushBuilder(builder()->addIf(pb->atEod()), [&]() { builder()->addRethrow(); });
-                                    });
+                            // Remember the original parse error so we can report it in case the sync failed.
+                            builder()->addAssign(builder::member(state().self, "__try_mode"), builder::id("e"));
+
+                            builder()->addComment("Loop on the sync field until parsing succeeds");
+                            auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
+                            pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
+                                auto syncProduction = p.fields()[*nextSyncPoint];
+                                auto try_ = builder()->addTry();
+                                pushBuilder(try_.first, [&]() {
+                                    // Invoke full parsing logic including hooks for the sync field so that users can
+                                    // see the final field value in any hooks, but do not consume input on success. This
+                                    // allows users to see sensible values in e.g., `synced` hooks so they could invoke
+                                    // `confirm` there, but still ensures intuitive ordering in the execution of
+                                    // subsequently called field hooks.
+                                    auto pstate = state();
+                                    pstate.cur = builder()->addTmp("sync", state().cur);
+                                    pushState(std::move(pstate));
+                                    parseProduction(syncProduction);
+                                    popState();
+
+                                    builder()->addAssign(next_field, builder::integer(*nextSyncPoint));
+                                    builder()
+                                        ->addDebugMsg("spicy",
+                                                      "successfully synchronized after %d bytes, entering try mode",
+                                                      {skippedBytes});
+
+                                    builder()->addMemberCall(state().self, "__on_0x25_synced", {});
+
+                                    builder()->addBreak();
                                 });
+                                pushBuilder(try_.second.addCatch(
+                                                builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
+                                            [&]() {
+                                                pb->advanceInput(builder::integer(1));
+                                                builder()->addExpression(builder::incrementPrefix(skippedBytes));
+                                            });
+                                pushBuilder(builder()->addIf(pb->atEod()), [&]() { builder()->addRethrow(); });
+                            });
+                        });
                 }
             });
         }
@@ -1618,6 +1631,10 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             s.addField(std::move(f));
     }
 
+    s.addField(hilti::declaration::Field(ID("__try_mode"),
+                                         hilti::type::Optional(builder::typeByID("spicy_rt::ParseError")),
+                                         AttributeSet({Attribute("&always-emit"), Attribute("&internal")})));
+
     return s;
 }
 
@@ -1808,13 +1825,22 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         beforeHook();
         builder()->addMemberCall(state().self, "__on_0x25_done", {}, l);
         afterHook();
+
+        // If the unit can synchronize check that it has left try mode at this point.
+        for ( const auto& item : unit.items() )
+            if ( const auto& field = item.tryAs<spicy::type::unit::item::Field>();
+                 field && AttributeSet::find(field->attributes(), "&synchronize") ) {
+                auto try_mode = builder::member(state().self, "__try_mode");
+                pushBuilder(builder()->addIf(try_mode), [&]() {
+                    builder()->addDebugMsg("spicy", "successful sync never confirmed, failing unit");
+                    builder()->addThrow(builder::deref(try_mode));
+                });
+
+                break;
+            }
     }
     else {
         builder()->addMemberCall(state().self, "__on_0x25_error", {}, l);
-
-        // FIXME(bbannier): for explicit confirmation, invoke rejected hook here.
-        // pushBuilder(builder()->addIf(builder::member(state().self, "sync_mode")),
-        //             [&]() { builder()->addComment("FIXME(bbannier): invoke %rejected hook"); });
     }
 
     guardFeatureCode(unit, {"supports_filters"},

@@ -6,6 +6,12 @@
     recent ``&try`` attribute. Turns into a parse error if there's no
     ``&try`` in scope.
 
+.. spicy:method:: unit::confirm unit confirm False void ()
+
+    For a unit it try mode confirm that the unit is successfully
+    synchronized to the input; the unit is then put into regular parsing
+    mode again. If the unit is not in try mode ``confirm`` has no effect.
+
 .. spicy:method:: unit::connect_filter unit connect_filter False void (filter: strong_ref<unit>)
 
     Connects a separate filter unit to transform the unit's input
@@ -69,6 +75,13 @@
     represent the first byte that the field has been parsed from. If this
     method is called before the unit's parsing has begun, it will throw a
     runtime exception.
+
+.. spicy:method:: unit::reject unit reject False void ()
+
+    Reject a unit in try mode; this immediately fails parsing of the unit
+    and raises the parse error which cause the unit to be put into try
+    mode. If the unit is not in try mode this triggers a generic parse
+    error.
 
 .. spicy:method:: unit::set_input unit set_input False void (i: iterator<stream>)
 

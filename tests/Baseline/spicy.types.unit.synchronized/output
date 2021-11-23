@@ -9,7 +9,10 @@ Done: [$a=b"A", $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   failed to parse 'a', will try to synchronize at 'b'
 [spicy]   b = B
-[spicy]   successfully synchronized after 4 bytes
+[spicy]   successfully synchronized after 4 bytes, entering try mode
+Synced: [$a=(not set), $b=b"B", $c=(not set), $d=(not set), $e=(not set)]
+Confirmed: [$a=(not set), $b=b"B", $c=(not set), $d=(not set), $e=(not set)]
+[spicy]   b = B
 [spicy]   c = C
 [spicy]   d = D
 [spicy]   e = E
@@ -18,13 +21,19 @@ Done: [$a=(not set), $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy]   a = A
 [spicy]   failed to parse 'b', will try to synchronize at 'd'
 [spicy]   d = D
-[spicy]   successfully synchronized after 1 bytes
+[spicy]   successfully synchronized after 1 bytes, entering try mode
+Synced: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=(not set)]
+Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=(not set)]
+[spicy]   d = D
 [spicy]   e = E
 Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   failed to parse 'a', will try to synchronize at 'b'
 [spicy]   b = B
-[spicy]   successfully synchronized after 0 bytes
+[spicy]   successfully synchronized after 0 bytes, entering try mode
+Synced: [$a=(not set), $b=b"B", $c=(not set), $d=(not set), $e=(not set)]
+Confirmed: [$a=(not set), $b=b"B", $c=(not set), $d=(not set), $e=(not set)]
+[spicy]   b = B
 [spicy]   c = C
 [spicy]   d = D
 [spicy]   e = E
@@ -33,20 +42,35 @@ Done: [$a=(not set), $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy]   a = A
 [spicy]   failed to parse 'b', will try to synchronize at 'd'
 [spicy]   d = D
-[spicy]   successfully synchronized after 0 bytes
+[spicy]   successfully synchronized after 0 bytes, entering try mode
+Synced: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=(not set)]
+Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=(not set)]
+[spicy]   d = D
 [spicy]   e = E
 Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   a = A
 [spicy]   failed to parse 'b', will try to synchronize at 'd'
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:21:8)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:29:8)
 [spicy] test::A
 [spicy]   a = A
 [spicy]   failed to parse 'b', will try to synchronize at 'd'
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:21:8)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:29:8)
 [spicy] test::A
 [spicy]   failed to parse 'a', will try to synchronize at 'b'
 Error: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:19:9)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:27:9)
+[spicy] test::B
+[spicy]   x = 49
+Confirmed: [$x=49]
+Done: [$x=49]
+[spicy] test::C
+[spicy]   x = 49
+Rejected: [$x=49]
+Error: [$x=49]
+[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: unit rejected outside of try mode ()
+[spicy] test::D
+[spicy]   x = 49
+Done: [$x=49]
