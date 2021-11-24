@@ -47,20 +47,21 @@ namespace detail {
 using PropertyValue = std::variant<bool, const char*, double, int, int64_t, unsigned int, uint64_t, std::string>;
 
 /** Renders a property value into a string for display. */
-inline std::string to_string(PropertyValue v) {
-    struct Visitor {
-        auto operator()(bool s) { return std::string(s ? "true" : "false"); }
-        auto operator()(const char* s) { return util::escapeUTF8(s); }
-        auto operator()(double d) { return util::fmt("%.6f", d); }
-        auto operator()(int i) { return util::fmt("%d", i); }
-        auto operator()(int64_t i) { return util::fmt("%" PRId64, i); }
-        auto operator()(std::string s) { return util::escapeUTF8(s); }
-        auto operator()(unsigned int u) { return util::fmt("%u", u); }
-        auto operator()(uint64_t u) { return util::fmt("%" PRIu64, u); }
-    };
-
-    return std::visit(Visitor(), v);
+struct ToStringVisitor {
+    auto operator()(bool s) { return std::string(s ? "true" : "false"); }
+    auto operator()(const char* s) { return util::escapeUTF8(s); }
+    auto operator()(double d) { return util::fmt("%.6f", d); }
+    auto operator()(int i) { return util::fmt("%d", i); }
+    auto operator()(int64_t i) { return util::fmt("%" PRId64, i); }
+    auto operator()(std::string s) { return util::escapeUTF8(s); }
+    auto operator()(unsigned int u) { return util::fmt("%u", u); }
+    auto operator()(uint64_t u) { return util::fmt("%" PRIu64, u); }
+    template<typename T>
+    auto operator()(T&&) {
+        hilti::rt::cannot_be_reached();
+    }
 };
+inline std::string to_string(PropertyValue v) { return std::visit(ToStringVisitor(), v); };
 
 } // namespace detail
 
