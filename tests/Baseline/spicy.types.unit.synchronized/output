@@ -8,10 +8,9 @@
 Done: [$a=b"A", $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   failed to parse 'a', will try to synchronize at 'b'
-[spicy]   b = B
 [spicy]   successfully synchronized after 4 bytes, entering try mode
-Synced: [$a=(not set), $b=b"B", $c=(not set), $d=(not set), $e=(not set)]
-Confirmed: [$a=(not set), $b=b"B", $c=(not set), $d=(not set), $e=(not set)]
+Synced: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
+Confirmed: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy]   b = B
 [spicy]   c = C
 [spicy]   d = D
@@ -20,19 +19,17 @@ Done: [$a=(not set), $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   a = A
 [spicy]   failed to parse 'b', will try to synchronize at 'd'
-[spicy]   d = D
 [spicy]   successfully synchronized after 1 bytes, entering try mode
-Synced: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=(not set)]
-Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=(not set)]
+Synced: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
+Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy]   d = D
 [spicy]   e = E
 Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   failed to parse 'a', will try to synchronize at 'b'
-[spicy]   b = B
 [spicy]   successfully synchronized after 0 bytes, entering try mode
-Synced: [$a=(not set), $b=b"B", $c=(not set), $d=(not set), $e=(not set)]
-Confirmed: [$a=(not set), $b=b"B", $c=(not set), $d=(not set), $e=(not set)]
+Synced: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
+Confirmed: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy]   b = B
 [spicy]   c = C
 [spicy]   d = D
@@ -41,10 +38,9 @@ Done: [$a=(not set), $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   a = A
 [spicy]   failed to parse 'b', will try to synchronize at 'd'
-[spicy]   d = D
 [spicy]   successfully synchronized after 0 bytes, entering try mode
-Synced: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=(not set)]
-Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=(not set)]
+Synced: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
+Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy]   d = D
 [spicy]   e = E
 Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
