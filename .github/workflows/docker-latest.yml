@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BUILD_ARGS: "SPICY_ZKG_PROCESSES=1"
     steps:
     - uses: actions/checkout@master
     - name: Checkout repository
@@ -26,7 +28,7 @@ jobs:
         context: ./
         file: ci/Dockerfile.dockerhub
         load: true
-        build-args: "SPICY_ZKG_PROCESSES=1"
+        build-args: ${{ env.BUILD_ARGS }}
         tags: |
           zeekurity/spicy-dev:latest
           zeekurity/spicy-dev:${{ steps.version.outputs.RELEASE_VERSION }}
@@ -45,7 +47,7 @@ jobs:
         context: ./
         file: ci/Dockerfile.dockerhub
         push: true
-        build-args: "SPICY_ZKG_PROCESSES=1"
+        build-args: ${{ env.BUILD_ARGS }}
         tags: |
           zeekurity/spicy-dev:latest
           zeekurity/spicy-dev:${{ steps.version.outputs.RELEASE_VERSION }}
