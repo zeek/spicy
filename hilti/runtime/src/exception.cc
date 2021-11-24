@@ -67,7 +67,7 @@ Exception::Exception(const std::string& desc)
                 debug::location() ? debug::location() : "") {}
 
 Exception::Exception(std::string_view desc, std::string_view location)
-    : Exception(fmt("%s (%s)", desc, location), desc, location) {}
+    : Exception(! location.empty() ? fmt("%s (%s)", desc, location) : fmt("%s", desc), desc, location) {}
 
 Exception::~Exception() = default;
 

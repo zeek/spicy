@@ -70,7 +70,7 @@ Done: [$x=49]
 [spicy]   x = 49
 Rejected: [$x=49]
 Error: [$x=49]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: unit rejected outside of try mode ()
+[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: unit rejected outside of try mode
 [spicy] test::D
 [spicy]   x = 49
 Done: [$x=49]
