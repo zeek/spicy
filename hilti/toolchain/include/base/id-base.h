@@ -162,7 +162,8 @@ public:
     bool operator<(const Derived& other) const { return _id < other._id; };
 
     explicit operator bool() const { return ! empty(); }
-    operator std::string() const { return _id; }
+    operator std::string() const& { return _id; }
+    operator std::string() && { return std::move(_id); }
 
 private:
     std::string _id;

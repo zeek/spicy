@@ -14,7 +14,7 @@ using namespace hilti;
 void Scope::insert(ID id, NodeRef&& n) {
     assert(n && n->isA<Declaration>());
     const auto& d = n->as<Declaration>();
-    auto& nodes = _items[std::string(id)];
+    auto& nodes = _items[std::move(id)];
 
     // Filter out duplicates
     for ( const auto& i : nodes ) {
@@ -31,7 +31,7 @@ void Scope::insert(NodeRef&& n) {
     insert(d.id(), std::move(n));
 }
 
-void Scope::insertNotFound(ID id) { _items[std::string(id)] = {NodeRef(node::none)}; }
+void Scope::insertNotFound(ID id) { _items[std::move(id)] = {NodeRef(node::none)}; }
 
 static auto createRefs(const std::vector<Scope::Referee>& refs, const std::string& ns, bool external) {
     std::vector<Scope::Referee> result;
