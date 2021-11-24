@@ -1198,8 +1198,15 @@ struct ProductionVisitor
                                     // subsequently called field hooks.
                                     auto pstate = state();
                                     pstate.cur = builder()->addTmp("sync", state().cur);
+                                    pstate.literal_mode = LiteralMode::Try;
                                     pushState(std::move(pstate));
-                                    parseProduction(syncProduction);
+
+                                    builder()->addComment(fmt("Begin sync production: %s",
+                                                              hilti::util::trim((std::string(syncProduction)))));
+                                    pb->parseLiteral(syncProduction, {});
+                                    builder()->addComment(fmt("End sync production: %s",
+                                                              hilti::util::trim((std::string(syncProduction)))));
+
                                     popState();
 
                                     builder()->addAssign(next_field, builder::integer(*nextSyncPoint));
