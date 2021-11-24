@@ -21,7 +21,8 @@ public:
     Vector(std::vector<Expression> e, Meta m = Meta())
         : NodeBase(nodes(type::Vector(e.size() ? Type(type::auto_) : Type(type::Bool())), e), m) {
     } // Bool is just an arbitrary place-holder type for empty values
-    Vector(Type t, std::vector<Expression> e, Meta m = Meta()) : NodeBase(nodes(type::Vector(t, m), std::move(e)), m) {}
+    Vector(Type t, std::vector<Expression> e, Meta m = Meta())
+        : NodeBase(nodes(type::Vector(std::move(t), m), std::move(e)), m) {}
 
     const auto& elementType() const { return childs()[0].as<type::Vector>().elementType(); }
     auto value() const { return childs<Expression>(1, -1); }

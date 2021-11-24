@@ -21,7 +21,8 @@ public:
     Set(std::vector<Expression> e, Meta m = Meta())
         : NodeBase(nodes(type::Set(e.size() ? Type(type::auto_) : Type(type::Bool())), e), m) {
     } // Bool is just an arbitrary place-holder type for empty values
-    Set(Type t, std::vector<Expression> e, Meta m = Meta()) : NodeBase(nodes(type::Set(t, m), std::move(e)), m) {}
+    Set(Type t, std::vector<Expression> e, Meta m = Meta())
+        : NodeBase(nodes(type::Set(std::move(t), m), std::move(e)), m) {}
 
     const auto& elementType() const { return childs()[0].as<type::Set>().elementType(); }
     auto value() const { return childs<Expression>(1, -1); }

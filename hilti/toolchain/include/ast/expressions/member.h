@@ -19,7 +19,8 @@ namespace expression {
 class Member : public NodeBase, hilti::trait::isExpression {
 public:
     Member(ID id, Meta m = Meta()) : NodeBase({id, Type(type::Member(std::move(id)))}, std::move(m)) {}
-    Member(ID id, Type member_type, Meta m = Meta()) : NodeBase({id, std::move(member_type)}, std::move(m)) {}
+    Member(ID id, Type member_type, Meta m = Meta())
+        : NodeBase({std::move(id), std::move(member_type)}, std::move(m)) {}
 
     const auto& id() const { return child<ID>(0); }
 

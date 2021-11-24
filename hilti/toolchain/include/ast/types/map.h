@@ -77,7 +77,7 @@ class Map : public TypeBase,
             trait::isParameterized {
 public:
     Map(Type k, Type v, Meta m = Meta())
-        : TypeBase(nodes(map::Iterator(k, v, true, m), map::Iterator(k, v, false, m)), m) {}
+        : TypeBase(nodes(map::Iterator(k, v, true, m), map::Iterator(std::move(k), std::move(v), false, m)), m) {}
     Map(Wildcard /*unused*/, Meta m = Meta())
         : TypeBase(nodes(map::Iterator(Wildcard{}, true, m), map::Iterator(Wildcard{}, false, m)), m),
           _wildcard(true) {}

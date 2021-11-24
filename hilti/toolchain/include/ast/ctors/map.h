@@ -41,7 +41,7 @@ public:
     Map(const std::vector<map::Element>& e, const Meta& m = Meta())
         : NodeBase(nodes(e.size() ? Type(type::auto_) : Type(type::Bool()), std::move(e)), m) {}
     Map(Type key, Type value, const std::vector<map::Element>& e, Meta m = Meta())
-        : NodeBase(nodes(type::Map(key, value, m), std::move(e)), m) {}
+        : NodeBase(nodes(type::Map(std::move(key), std::move(value), m), std::move(e)), m) {}
 
     const auto& keyType() const {
         if ( auto t = childs()[0].tryAs<type::Map>() )

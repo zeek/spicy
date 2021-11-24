@@ -362,14 +362,14 @@ private:
     // `from*()` factory functions instead to instantiate a unit.
     Unit(std::shared_ptr<Context> context, ID id, hilti::rt::filesystem::path path,
          hilti::rt::filesystem::path extension, Node&& module)
-        : _index(id, util::normalizePath(path)),
+        : _index(std::move(id), util::normalizePath(path)),
           _extension(extension),
           _module(std::move(module)),
           _context(std::move(context)) {}
 
     Unit(std::shared_ptr<Context> context, ID id, hilti::rt::filesystem::path path,
          hilti::rt::filesystem::path extension, std::optional<detail::cxx::Unit> cxx_unit = {})
-        : _index(id, util::normalizePath(path)),
+        : _index(std::move(id), util::normalizePath(path)),
           _extension(extension),
           _context(std::move(context)),
           _cxx_unit(std::move(cxx_unit)) {}

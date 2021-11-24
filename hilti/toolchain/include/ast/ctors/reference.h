@@ -18,7 +18,7 @@ namespace ctor {
 class StrongReference : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a null value of type `t`. */
-    StrongReference(Type t, Meta m = Meta()) : NodeBase(nodes(t, type::StrongReference(t, m)), m) {}
+    StrongReference(Type t, Meta m = Meta()) : NodeBase(nodes(t, type::StrongReference(std::move(t), m)), m) {}
 
     const Type& dereferencedType() const { return child<Type>(0); }
 
@@ -45,7 +45,7 @@ public:
 class WeakReference : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a null value of type `t`. */
-    WeakReference(Type t, Meta m = Meta()) : NodeBase(nodes(t, type::WeakReference(t, m)), m) {}
+    WeakReference(Type t, Meta m = Meta()) : NodeBase(nodes(t, type::WeakReference(std::move(t), m)), m) {}
 
     const Type& dereferencedType() const { return child<Type>(0); }
 

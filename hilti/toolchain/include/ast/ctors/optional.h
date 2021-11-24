@@ -20,7 +20,7 @@ public:
     Optional(Expression e, Meta m = Meta()) : NodeBase(nodes(type::Optional(type::auto_), e), m) {}
 
     /** Constructs an unset value of type `t`. */
-    Optional(Type t, Meta m = Meta()) : NodeBase(nodes(type::Optional(t, m), node::none), m) {}
+    Optional(Type t, Meta m = Meta()) : NodeBase(nodes(type::Optional(std::move(t), m), node::none), m) {}
 
     const Type& dereferencedType() const { return childs()[0].as<type::Optional>().dereferencedType(); }
     hilti::optional_ref<const Expression> value() const { return childs()[1].tryAs<Expression>(); }

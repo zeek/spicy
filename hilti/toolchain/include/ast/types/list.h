@@ -59,7 +59,8 @@ class List : public TypeBase,
              trait::isRuntimeNonTrivial,
              trait::isParameterized {
 public:
-    List(Type t, Meta m = Meta()) : TypeBase(nodes(list::Iterator(t, true, m), list::Iterator(t, false, m)), m) {}
+    List(Type t, Meta m = Meta())
+        : TypeBase(nodes(list::Iterator(t, true, m), list::Iterator(std::move(t), false, m)), m) {}
     List(Wildcard /*unused*/, Meta m = Meta())
         : TypeBase(nodes(list::Iterator(Wildcard{}, true, m), list::Iterator(Wildcard{}, false, m)), m),
           _wildcard(true) {}

@@ -159,10 +159,10 @@ struct CoercedExpression {
      * @param src the original source expression's type
      * @param coerced the resulting expression that *src* was coerced to
      */
-    CoercedExpression(Type src, Expression coerced)
-        : coerced(coerced),
-          nexpr(coerced),
-          consider_type_changed(std::move(src).typename_() != coerced.type().typename_()) {}
+    CoercedExpression(Type src, Expression _coerced)
+        : coerced(std::move(_coerced)),
+          nexpr(*coerced),
+          consider_type_changed(std::move(src).typename_() != coerced->type().typename_()) {}
 
     /** Represents an unsuccessful coercion. */
     CoercedExpression() = default;
