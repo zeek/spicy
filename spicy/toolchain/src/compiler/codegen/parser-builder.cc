@@ -1143,6 +1143,7 @@ struct ProductionVisitor
             for ( auto candidateCounter = fieldCounter + 1; candidateCounter < p.fields().size(); ++candidateCounter ) {
                 if ( auto candidate = p.fields()[candidateCounter].meta().field();
                      candidate && AttributeSet::find(candidate->attributes(), "&synchronize") ) {
+                    // FIXME(bbannier): reject sync fields in e.g., switch statements or similar.
                     nextSyncPoint = candidateCounter;
                     break;
                 }

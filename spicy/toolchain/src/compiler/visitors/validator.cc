@@ -21,6 +21,7 @@
 #include <spicy/ast/all.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/hook.h>
+#include <spicy/ast/types.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/visitors.h>
 
@@ -605,10 +606,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
         if ( const auto& c = f.ctor() ) {
             // Check that constants are of a supported type.
-            const auto& t = c->type();
-
-            if ( ! (t.isA<type::Bytes>() || t.isA<type::RegExp>() || t.isA<type::SignedInteger>() ||
-                    t.isA<type::UnsignedInteger>()) )
+            if ( ! type::supportsLiterals(c->type()) )
                 error(fmt("not a parseable constant (%s)", *c), p);
         }
 
@@ -630,6 +628,9 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 }
             }
         }
+
+        if ( AttributeSet::find(f.attributes(), "&synchronize") && ! type::supportsLiterals(f.originalType()) )
+            error("&synchronize can only be used on basic types", p);
     }
 
     void operator()(const spicy::type::unit::item::UnresolvedField& u, position_t p) {
