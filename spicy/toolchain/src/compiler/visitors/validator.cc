@@ -601,12 +601,14 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( f.parseType().isA<type::Void>() && ! f.isTransient() )
             error("void fields never store a value and cannot be named", p);
 
+        auto isBasicType = [](const Type& t) {
+            return t.isA<type::Bytes>() || t.isA<type::RegExp>() || t.isA<type::SignedInteger>() ||
+                   t.isA<type::UnsignedInteger>();
+        };
+
         if ( const auto& c = f.ctor() ) {
             // Check that constants are of a supported type.
-            const auto& t = c->type();
-
-            if ( ! (t.isA<type::Bytes>() || t.isA<type::RegExp>() || t.isA<type::SignedInteger>() ||
-                    t.isA<type::UnsignedInteger>()) )
+            if ( ! isBasicType(c->type()) )
                 error(fmt("not a parseable constant (%s)", *c), p);
         }
 
@@ -628,6 +630,9 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 }
             }
         }
+
+        if ( AttributeSet::find(f.attributes(), "&synchronize") && ! isBasicType(f.originalType()) )
+            error("&synchronize can only be used on basic types", p);
     }
 
     void operator()(const spicy::type::unit::item::UnresolvedField& u, position_t p) {
