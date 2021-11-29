@@ -1143,7 +1143,7 @@ struct ProductionVisitor
             std::optional<uint64_t> nextSyncPoint;
             for ( auto candidateCounter = fieldCounter + 1; candidateCounter < p.fields().size(); ++candidateCounter ) {
                 if ( auto candidate = p.fields()[candidateCounter].meta().field();
-                     candidate && AttributeSet::find(candidate->attributes(), "&synchronize") ) {
+                     candidate && AttributeSet::find(candidate->attributes(), "&synchronized") ) {
                     // FIXME(bbannier): reject sync fields in e.g., switch statements or similar.
                     nextSyncPoint = candidateCounter;
                     break;
@@ -1837,7 +1837,7 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         // If the unit can synchronize check that it has left try mode at this point.
         for ( const auto& item : unit.items() )
             if ( const auto& field = item.tryAs<spicy::type::unit::item::Field>();
-                 field && AttributeSet::find(field->attributes(), "&synchronize") ) {
+                 field && AttributeSet::find(field->attributes(), "&synchronized") ) {
                 auto try_mode = builder::member(state().self, "__try_mode");
                 pushBuilder(builder()->addIf(try_mode), [&]() {
                     builder()->addDebugMsg("spicy", "successful sync never confirmed, failing unit");

@@ -631,8 +631,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             }
         }
 
-        if ( AttributeSet::find(f.attributes(), "&synchronize") && ! isBasicType(f.originalType()) )
-            error("&synchronize can only be used on basic types", p);
+        if ( AttributeSet::find(f.attributes(), "&synchronized") && ! isBasicType(f.originalType()) )
+            error("&synchronized can only be used on basic types", p);
     }
 
     void operator()(const spicy::type::unit::item::UnresolvedField& u, position_t p) {
