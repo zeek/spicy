@@ -31,12 +31,6 @@ std::string codegen::production::to_string(const Production& p) {
     std::string field;
     std::string container;
 
-    bool have_sync = p.meta().field() && AttributeSet::find(p.meta().field()->attributes(), "&synchronize");
-
-    if ( p.maySynchronize() || p.supportsSynchronize() || have_sync )
-        can_sync = hilti::util::fmt(" (sync %c/%c/%c)", p.maySynchronize() ? '+' : '-',
-                                    p.supportsSynchronize() ? '+' : '-', have_sync ? '+' : '-');
-
     std::string id = "n/a";
 
     if ( p.isLiteral() )

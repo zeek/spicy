@@ -23,7 +23,6 @@ public:
     bool nullable() const { return false; }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return true; }
-    bool supportsSynchronize() const { return hasSize() && maySynchronize(); }
     int64_t tokenID() const { return production::tokenID(hilti::util::fmt("%s|%s", _ctor, _ctor.type())); }
     std::string render() const { return hilti::util::fmt("%s (%s)", _ctor, _ctor.type()); }
 

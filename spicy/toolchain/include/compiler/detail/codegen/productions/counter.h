@@ -29,7 +29,6 @@ public:
     bool nullable() const { return production::nullable(rhss()); }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return false; }
-    bool supportsSynchronize() const { return hasSize(); }
     std::string render() const { return hilti::util::fmt("counter(%s): %s", _expression, _body.symbol()); }
 
 private:
