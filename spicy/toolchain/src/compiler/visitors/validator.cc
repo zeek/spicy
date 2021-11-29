@@ -629,7 +629,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             }
         }
 
-        if ( AttributeSet::find(f.attributes(), "&synchronize") && ! type::supportsLiterals(f.originalType()) )
+        if ( AttributeSet::find(f.attributes(), "&synchronized") && ! type::supportsLiterals(f.originalType()) )
             error("&synchronize can only be used on basic types", p);
     }
 

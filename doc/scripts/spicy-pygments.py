@@ -56,7 +56,7 @@ class SpicyLexer(RegexLexer):
                     'cxxname', 'default', 'eod', 'internal', 'ipv4', 'ipv6',
                     'length', 'no-emit', 'nosub', 'on-heap', 'optional',
                     'originator', 'parse-at', 'parse-from', 'priority',
-                    'requires', 'responder', 'size', 'static', 'synchronize',
+                    'requires', 'responder', 'size', 'static', 'synchronized',
                     'transient', 'try', 'type', 'until', 'until-including',
                     'while', 'have_prototype'),
                 prefix=r'&', suffix=r'\b'),

@@ -25,10 +25,9 @@ module test;
 
 public type A = unit {
     a : /A/;
-    # FIXME(bbannier): remove old attribute, add new one `&synchronized`.
-    b: /B/ &synchronize;
+    b: /B/ &synchronized;
     c: /C/;
-    d: /D/ &synchronize;
+    d: /D/ &synchronized;
     e: /E/;
 
     on %synced { print "Synced: %s" % self; self.confirm(); }

@@ -1,4 +1,4 @@
-# @TEST-DOC: Checks validation of &synchronize attributes.
+# @TEST-DOC: Checks validation of &synchronized attributes.
 #
 # @TEST-EXEC-FAIL: spicyc -d -p %INPUT >>output 2>&1
 # @TEST-EXEC: btest-diff output
@@ -6,9 +6,9 @@
 module test;
 
 type X = unit {
-    a : uint8 &synchronize;
+    a : uint8 &synchronized;
 };
 
 type Y = unit {
-    x: X &synchronize;
+    x: X &synchronized;
 };
