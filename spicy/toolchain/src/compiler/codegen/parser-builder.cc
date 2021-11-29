@@ -1190,6 +1190,33 @@ struct ProductionVisitor
                             auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
                             pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
                                 auto syncProduction = p.fields()[*nextSyncPoint];
+
+                                // If the sync production produces a list sync on its element production.
+                                if ( auto loop = syncProduction.tryAs<production::While>() ) {
+                                    auto [alt1, alt2] = loop->lookAheadProduction().alternatives();
+
+                                    if ( auto p = alt1.tryAs<production::Resolved>() )
+                                        syncProduction = grammar.resolved(*p);
+                                    else if ( auto p = alt2.tryAs<production::Resolved>() )
+                                        syncProduction = grammar.resolved(*p);
+                                    else
+                                        hilti::rt::internalError("cannot compute inner production for loop");
+
+                                    auto sequence = syncProduction.as<production::Sequence>();
+                                    assert(! sequence.sequence().empty());
+                                    syncProduction = sequence.sequence().front();
+
+                                    // FIXME(bbannier): also test with vectors over non-unit types.
+                                    if ( auto p = syncProduction.tryAs<production::Resolved>() )
+                                        syncProduction = grammar.resolved(*p);
+
+                                    // If the element production produces a unit, sync on the unit's first field.
+                                    if ( auto unit = syncProduction.tryAs<production::Unit>() ) {
+                                        assert(! unit->fields().empty());
+                                        syncProduction = unit->fields().front();
+                                    }
+                                }
+
                                 auto try_ = builder()->addTry();
                                 pushBuilder(try_.first, [&]() {
                                     // Invoke full parsing logic including hooks for the sync field so that users can
@@ -1204,6 +1231,7 @@ struct ProductionVisitor
 
                                     builder()->addComment(fmt("Begin sync production: %s",
                                                               hilti::util::trim((std::string(syncProduction)))));
+                                    assert(syncProduction.isLiteral());
                                     pb->parseLiteral(syncProduction, {});
                                     builder()->addComment(fmt("End sync production: %s",
                                                               hilti::util::trim((std::string(syncProduction)))));
