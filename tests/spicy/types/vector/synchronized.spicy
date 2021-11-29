@@ -1,0 +1,29 @@
+# @TEST-DOC: Check external an internal sync of `&synchronized` vector fields.
+
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00ABABAB' | spicy-driver -d test.hlto >>output
+
+# External sync.
+# @TEST-EXEC: ${SCRIPTS}/printf 'ABAB' | spicy-driver -d test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '1ABAB' | spicy-driver -d test.hlto >>output
+
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+type X = unit {
+    a: /A/;
+    b: /B/;
+} &convert="AB";
+
+public type Y = unit {
+    a: uint8(0);
+    xs: X[] &synchronized foreach { print "Foreach: %s" % $$; }
+
+    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};
