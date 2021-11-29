@@ -35,10 +35,6 @@ public:
     bool nullable() const { return production::nullable(rhss()); }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return false; }
-    bool supportsSynchronize() const {
-        return hasSize() || (rhss().front().size() && rhss().front().front().supportsSynchronize()) ||
-               _type.propertyItem("synchronize-after") || _type.propertyItem("synchronize-before");
-    }
     std::string render() const {
         return hilti::util::join(hilti::util::transform(_fields, [](const auto& p) { return p.symbol(); }), " ");
     }

@@ -25,7 +25,6 @@ public:
     bool nullable() const { return production::nullable(rhss()); }
     bool eodOk() const { return _eod_ok ? _eod_ok : nullable(); }
     bool atomic() const { return false; }
-    bool supportsSynchronize() const { return hasSize() || _body.supportsSynchronize(); }
     std::string render() const { return hilti::util::fmt("foreach: %s", _body.symbol()); }
 
 private:

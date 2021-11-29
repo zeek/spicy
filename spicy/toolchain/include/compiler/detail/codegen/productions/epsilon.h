@@ -17,7 +17,6 @@ public:
     bool nullable() const { return true; }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return true; }
-    bool supportsSynchronize() const { return false; }
     std::optional<spicy::Type> type() const { return {}; }
     std::string render() const { return "()"; }
 };

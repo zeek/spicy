@@ -58,7 +58,6 @@ public:
     bool nullable() const { return production::nullable(rhss()); }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return false; }
-    bool supportsSynchronize() const;
     std::string render() const;
 
 private:
