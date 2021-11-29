@@ -29,7 +29,6 @@ public:
     bool nullable() const { return production::nullable(rhss()); }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return false; }
-    bool supportsSynchronize() const { return hasSize() || _child.supportsSynchronize(); }
     std::string render() const { return _child.symbol(); }
 
 public:

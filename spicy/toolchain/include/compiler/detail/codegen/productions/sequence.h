@@ -33,7 +33,6 @@ public:
     bool nullable() const { return production::nullable(rhss()); }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return false; }
-    bool supportsSynchronize() const { return hasSize() || (_prods.size() && _prods.front().supportsSynchronize()); }
     std::string render() const {
         return hilti::util::join(hilti::util::transform(_prods, [](const auto& p) { return p.symbol(); }), " ");
     }

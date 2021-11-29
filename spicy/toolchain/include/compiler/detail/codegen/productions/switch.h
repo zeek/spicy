@@ -42,7 +42,6 @@ public:
         return false;
     }
     bool atomic() const { return false; }
-    bool supportsSynchronize() const { return hasSize(); }
     std::string render() const;
 
 private:

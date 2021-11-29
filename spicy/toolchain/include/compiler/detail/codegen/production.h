@@ -185,11 +185,6 @@ public:
     bool hasSize() const { return meta().field() && AttributeSet::find(meta().field()->attributes(), "&size"); }
 
     /** Implements the `Production` interface. */
-    bool maySynchronize() const {
-        return meta().field() && AttributeSet::find(meta().field()->attributes(), "&synchronize");
-    }
-
-    /** Implements the `Production` interface. */
     const Location& location() const { return _location; }
 
     /** Implements the `Production` interface. */
