@@ -665,12 +665,6 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
             out.endLine();
         }
 
-        if ( auto c = n.default_() ) {
-            out.beginLine();
-            out << "default: " << c->body();
-            out.endLine();
-        }
-
         out.decrementIndent();
         out.beginLine();
         out << "}";
