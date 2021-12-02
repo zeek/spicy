@@ -170,6 +170,12 @@ struct Parser {
         : Parser(std::move(name), is_public, nullptr, parse2, nullptr, nullptr, type, std::move(description),
                  std::move(mime_types), std::move(ports)) {}
 
+    Parser(std::string name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
+           hilti::rt::Null /* null */, ContextNewFunction context_new, const hilti::rt::TypeInfo* type,
+           std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
+        : Parser(std::move(name), is_public, nullptr, parse2, nullptr, context_new, type, std::move(description),
+                 std::move(mime_types), std::move(ports)) {}
+
     Parser(const Parser&) = default;
 
     Parser() = default;
