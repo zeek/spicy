@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
+
 #include <spicy/rt/mime.h>
 
 #include <hilti/ast/ctors/string.h>
@@ -631,9 +633,34 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             }
         }
 
-        if ( AttributeSet::find(f.attributes(), "&synchronized") && ! isBasicType(f.originalType()) &&
-             ! f.parseType().isA<type::Vector>() )
-            error("&synchronized can only be used on basic or vector types", p);
+        if ( AttributeSet::find(f.attributes(), "&synchronized") ) {
+            if ( const auto& v = f.parseType().tryAs<type::Vector>() ) {
+                // TODO(bbannier): This doesn't catch vectors where a unit gets convert to another unit or non-unit type
+                // via `&convert`. We should really look at the parsed element type instead of the final type.
+                if ( auto unit = v->elementType().tryAs<type::Unit>() ) {
+                    const auto& items = unit->itemRefs();
+                    auto it = std::find_if(items.begin(), items.end(),
+                                           [](const NodeRef& i) { return i->isA<spicy::type::unit::item::Field>(); });
+
+                    if ( it == items.end() ) {
+                        error("&synchronized cannot be used on vector field over unit with no fields", p);
+                    }
+
+                    if ( auto type = (*it)->as<spicy::type::unit::item::Field>().itemType(); ! isBasicType(type) ) {
+                        error(fmt("&synchronized cannot be used on vector field over unit with first field a %s", type),
+                              p);
+                    }
+                }
+                else {
+                    // We might end up here if the directly contains basic types, or if contains units converted to
+                    // literals. Since we might have parsed unit vector elements we cannot validate element type
+                    // further.
+                }
+            }
+            else if ( const auto& type = f.originalType(); ! isBasicType(type) ) {
+                error(fmt("&synchronized cannot be used on field of type %s", type), p);
+            }
+        }
     }
 
     void operator()(const spicy::type::unit::item::UnresolvedField& u, position_t p) {
