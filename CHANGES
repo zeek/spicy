@@ -1,3 +1,24 @@
+1.4.0-dev.85 | 2021-12-02 12:22:48 +0100
+
+  * Do not by default run Docker workflow for PRs. (Benjamin Bannier, Corelight)
+
+  * Bump published container to zeek-4.0.4. (Benjamin Bannier, Corelight)
+
+  * Use releases instead of HEAD for packages in published container image. (Benjamin Bannier, Corelight)
+
+  * Also push container image to ECR. (Benjamin Bannier, Corelight)
+
+  * Unify Docker build jobs for tags and for latest. (Benjamin Bannier, Corelight)
+
+  * Use variable to store Docker GH action build args. (Benjamin Bannier, Corelight)
+
+  * Also build Docker image in PR, but do not publish it. (Benjamin Bannier, Corelight)
+
+  * Split build and push step for Docker GH action. (Benjamin Bannier, Corelight)
+
+  * Simplify GH action Docker build pipeline. (Benjamin Bannier, Corelight)
+
+  * Checkout submodules via normal checkout action. (Benjamin Bannier, Corelight)
 
 1.4.0-dev.74 | 2021-11-19 17:31:51 +0100
 
