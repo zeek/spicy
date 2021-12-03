@@ -44,31 +44,6 @@ using hilti::util::fmt;
 
 namespace builder = hilti::builder;
 
-namespace {
-// Helper function which given a production computes a production for synchronization.
-std::optional<Production> computeSyncProduction(const Production& production, const Grammar& grammar) {
-    if ( production.isLiteral() )
-        return production;
-
-    if ( production.isA<production::Epsilon>() || production.isA<production::Variable>() )
-        return {};
-
-    auto rhss = std::optional<std::vector<std::vector<Production>>>();
-    if ( const auto resolved = production.tryAs<production::Resolved>() )
-        rhss = grammar.resolved(*resolved).rhss();
-    else
-        rhss = production.rhss();
-
-    for ( const auto& xs : *rhss )
-        for ( const auto& x : xs ) {
-            if ( auto result = computeSyncProduction(x, grammar) )
-                return result;
-        }
-
-    return {};
-}
-} // namespace
-
 namespace spicy::logging::debug {
 inline const hilti::logging::DebugStream ParserBuilder("parser-builder");
 } // namespace spicy::logging::debug
@@ -847,6 +822,12 @@ struct ProductionVisitor
     // found, including `EOD` if `cur` is the end-of-data, and `None` if no
     // expected look-ahead token is found.
     void getLookAhead(const production::LookAhead& lp) {
+        const auto& [lah1, lah2] = lp.lookAheads();
+        auto productions = hilti::util::set_union(lah1, lah2);
+        getLookAhead(productions, lp.symbol(), lp.location());
+    }
+
+    void getLookAhead(const std::set<Production>& tokens, const std::string& symbol, const Location& location) {
         // If we're at EOD, return that directly.
         auto [true_, false_] = builder()->addIfElse(pb->atEod());
         true_->addAssign(state().lahead, look_ahead::Eod);
@@ -854,9 +835,6 @@ struct ProductionVisitor
         pushBuilder(false_);
 
         // Collect all expected terminals.
-        auto& lahs = lp.lookAheads();
-        auto tokens = hilti::util::set_union(lahs.first, lahs.second);
-
         auto regexps = std::vector<Production>();
         auto other = std::vector<Production>();
         std::partition_copy(tokens.begin(), tokens.end(), std::back_inserter(regexps), std::back_inserter(other),
@@ -884,7 +862,7 @@ struct ProductionVisitor
                     flattened.push_back(hilti::util::fmt("%s{#%" PRId64 "}", r, p.second));
             }
 
-            auto re = hilti::ID(fmt("__re_%" PRId64, lp.symbol()));
+            auto re = hilti::ID(fmt("__re_%" PRId64, symbol));
             auto d = builder::constant(re, builder::regexp(flattened,
                                                            AttributeSet({Attribute("&nosub"), Attribute("&anchor")})));
             pb->cg()->addDeclaration(d);
@@ -900,10 +878,9 @@ struct ProductionVisitor
             builder()->addLocal(ID("rc"), hilti::type::SignedInteger(32));
 
             builder()->addAssign(builder::tuple({builder::id("rc"), builder::id("ncur")}),
-                                 builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}),
-                                 lp.location());
+                                 builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}), location);
 
-            auto switch_ = builder()->addSwitch(builder::id("rc"), lp.location());
+            auto switch_ = builder()->addSwitch(builder::id("rc"), location);
 
             auto no_match_try_again = switch_.addCase(builder::integer(-1));
             pushBuilder(no_match_try_again);
@@ -962,7 +939,7 @@ struct ProductionVisitor
                 auto ambiguous = true_->addIf(builder::and_(builder::unequal(state().lahead, look_ahead::None),
                                                             builder::equal(builder::id("i"), state().lahead_end)));
                 pushBuilder(ambiguous);
-                pb->parseError("ambiguous look-ahead token match", lp.location());
+                pb->parseError("ambiguous look-ahead token match", location);
                 popBuilder();
 
                 true_->addAssign(state().lahead, builder::integer(p.tokenID()));
@@ -971,6 +948,59 @@ struct ProductionVisitor
         }
 
         popBuilder();
+    }
+
+    void getSyncProduction(const Production& p) {
+        std::set<Production> tokens;
+
+        if ( p.isLiteral() )
+            tokens.insert(p);
+
+        else if ( auto loop = p.tryAs<production::While>() )
+            tokens = std::get<1>(loop->lookAheadProduction().lookAheads());
+
+        else if ( p.isNonTerminal() ) {
+            auto rhss = std::vector<std::vector<Production>>();
+
+            if ( const auto resolved = p.tryAs<production::Resolved>() )
+                rhss = grammar.resolved(*resolved).rhss();
+            else
+                rhss = p.rhss();
+
+            for ( const auto& rs : rhss )
+                for ( const auto& r : rs )
+                    if ( r.isLiteral() )
+                        tokens.insert(r);
+        }
+
+        if ( tokens.empty() ) {
+            hilti::logger().error("&synchronized cannot be used on field", p.location());
+            return;
+        }
+
+        auto pstate = state();
+        pstate.lahead = state().lahead;
+        pstate.lahead_end = state().lahead_end;
+        pushState(pstate);
+
+        auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
+
+        pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
+            pushBuilder(builder()->addIf(pb->atEod()), [&]() { builder()->addRethrow(); });
+
+            state().printDebug(builder());
+            getLookAhead(tokens, p.symbol(), p.location());
+
+            auto [if_, else_] = builder()->addIfElse(state().lahead);
+            pushBuilder(if_, [&]() { builder()->addBreak(); });
+            pushBuilder(else_, [&]() {
+                pb->advanceInput(builder::integer(1));
+                builder()->addExpression(builder::incrementPrefix(skippedBytes));
+            });
+        });
+        builder()->addDebugMsg("spicy", "successfully synchronized after %d bytes, entering try mode", {skippedBytes});
+        builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
+        popState();
     }
 
     // Adds a method, and its implementation, to the current parsing struct
@@ -1230,51 +1260,7 @@ struct ProductionVisitor
                                 builder()->addAssign(builder::member(state().self, "__try_mode"), builder::id("e"));
 
                                 builder()->addComment("Loop on the sync field until parsing succeeds");
-                                auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
-                                pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
-                                    auto syncProduction = computeSyncProduction(p.fields()[*syncPoint], grammar);
-                                    if ( ! syncProduction )
-                                        hilti::logger().internalError("unable to compute field to synchronize on");
-
-                                    auto try_ = builder()->addTry();
-                                    pushBuilder(try_.first, [&]() {
-                                        // Invoke full parsing logic including hooks for the sync field so that users
-                                        // can see the final field value in any hooks, but do not consume input on
-                                        // success. This allows users to see sensible values in e.g., `synced` hooks so
-                                        // they could invoke `confirm` there, but still ensures intuitive ordering in
-                                        // the execution of subsequently called field hooks.
-                                        auto pstate = state();
-                                        pstate.cur = builder()->addTmp("sync", state().cur);
-                                        pstate.literal_mode = LiteralMode::Try;
-                                        pushState(std::move(pstate));
-
-                                        builder()->addComment(fmt("Begin sync production: %s",
-                                                                  hilti::util::trim((std::string(*syncProduction)))));
-                                        assert(syncProduction->isLiteral());
-                                        pb->parseLiteral(*syncProduction, {});
-                                        builder()->addComment(fmt("End sync production: %s",
-                                                                  hilti::util::trim((std::string(*syncProduction)))));
-
-                                        popState();
-
-                                        builder()
-                                            ->addDebugMsg("spicy",
-                                                          "successfully synchronized after %d bytes, entering try mode",
-                                                          {skippedBytes});
-
-                                        builder()->addMemberCall(state().self, "__on_0x25_synced", {});
-
-                                        builder()->addBreak();
-                                    });
-                                    pushBuilder(try_.second.addCatch(
-                                                    builder::parameter(ID("e"),
-                                                                       builder::typeByID("spicy_rt::ParseError"))),
-                                                [&]() {
-                                                    pb->advanceInput(builder::integer(1));
-                                                    builder()->addExpression(builder::incrementPrefix(skippedBytes));
-                                                });
-                                    pushBuilder(builder()->addIf(pb->atEod()), [&]() { builder()->addRethrow(); });
-                                });
+                                getSyncProduction(p.fields()[*syncPoint]);
                             });
             }
         }
