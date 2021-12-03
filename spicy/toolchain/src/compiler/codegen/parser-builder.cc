@@ -44,6 +44,31 @@ using hilti::util::fmt;
 
 namespace builder = hilti::builder;
 
+namespace {
+// Helper function which given a production computes a production for synchronization.
+std::optional<Production> computeSyncProduction(const Production& production, const Grammar& grammar) {
+    if ( production.isLiteral() )
+        return production;
+
+    if ( production.isA<production::Epsilon>() || production.isA<production::Variable>() )
+        return {};
+
+    auto rhss = std::optional<std::vector<std::vector<Production>>>();
+    if ( const auto resolved = production.tryAs<production::Resolved>() )
+        rhss = grammar.resolved(*resolved).rhss();
+    else
+        rhss = production.rhss();
+
+    for ( const auto& xs : *rhss )
+        for ( const auto& x : xs ) {
+            if ( auto result = computeSyncProduction(x, grammar) )
+                return result;
+        }
+
+    return {};
+}
+} // namespace
+
 namespace spicy::logging::debug {
 inline const hilti::logging::DebugStream ParserBuilder("parser-builder");
 } // namespace spicy::logging::debug
@@ -1190,33 +1215,9 @@ struct ProductionVisitor
                             builder()->addComment("Loop on the sync field until parsing succeeds");
                             auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
                             pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
-                                auto syncProduction = p.fields()[*nextSyncPoint];
-
-                                // If the sync production produces a list sync on its element production.
-                                if ( auto loop = syncProduction.tryAs<production::While>() ) {
-                                    auto [alt1, alt2] = loop->lookAheadProduction().alternatives();
-
-                                    if ( auto p = alt1.tryAs<production::Resolved>() )
-                                        syncProduction = grammar.resolved(*p);
-                                    else if ( auto p = alt2.tryAs<production::Resolved>() )
-                                        syncProduction = grammar.resolved(*p);
-                                    else
-                                        hilti::rt::internalError("cannot compute inner production for loop");
-
-                                    auto sequence = syncProduction.as<production::Sequence>();
-                                    assert(! sequence.sequence().empty());
-                                    syncProduction = sequence.sequence().front();
-
-                                    // FIXME(bbannier): also test with vectors over non-unit types.
-                                    if ( auto p = syncProduction.tryAs<production::Resolved>() )
-                                        syncProduction = grammar.resolved(*p);
-
-                                    // If the element production produces a unit, sync on the unit's first field.
-                                    if ( auto unit = syncProduction.tryAs<production::Unit>() ) {
-                                        assert(! unit->fields().empty());
-                                        syncProduction = unit->fields().front();
-                                    }
-                                }
+                                auto syncProduction = computeSyncProduction(p.fields()[*nextSyncPoint], grammar);
+                                if ( ! syncProduction )
+                                    hilti::logger().internalError("unable to compute field to synchronize on");
 
                                 auto try_ = builder()->addTry();
                                 pushBuilder(try_.first, [&]() {
@@ -1231,11 +1232,11 @@ struct ProductionVisitor
                                     pushState(std::move(pstate));
 
                                     builder()->addComment(fmt("Begin sync production: %s",
-                                                              hilti::util::trim((std::string(syncProduction)))));
-                                    assert(syncProduction.isLiteral());
-                                    pb->parseLiteral(syncProduction, {});
+                                                              hilti::util::trim((std::string(*syncProduction)))));
+                                    assert(syncProduction->isLiteral());
+                                    pb->parseLiteral(*syncProduction, {});
                                     builder()->addComment(fmt("End sync production: %s",
-                                                              hilti::util::trim((std::string(syncProduction)))));
+                                                              hilti::util::trim((std::string(*syncProduction)))));
 
                                     popState();
 
