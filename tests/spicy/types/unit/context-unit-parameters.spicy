@@ -1,0 +1,21 @@
+# @TEST-EXEC: spicyc -d -j %INPUT -o test.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01' | spicy-dump -d -p test::X test.hlto >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Validates that unit contexts can be used in units with parameters.
+
+# This is a regression test for #1059.
+
+module test;
+
+type Context = int32;
+
+public type P = unit(p: uint8) {
+    %context = Context;
+
+    x: uint8 &requires=$$==1 &convert=p;
+};
+
+public type X = unit() {
+    p: P(42);
+};

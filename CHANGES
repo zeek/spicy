@@ -1,3 +1,13 @@
+1.4.0-dev.90 | 2021-12-03 08:43:55 +0100
+
+  * GH-1059: Allow to use unit contexts in units with parameters. (Benjamin Bannier, Corelight)
+
+  * Bump 3rdparty/filesystem to v1.5.10. (Benjamin Bannier, Corelight)
+
+  * Bump gitlint pre-commit hooks to v0.17.0. (Benjamin Bannier, Corelight)
+
+  * Bump 3rdparty/benchmark to v1.6.0. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.85 | 2021-12-02 12:22:48 +0100
 
   * Do not by default run Docker workflow for PRs. (Benjamin Bannier, Corelight)
