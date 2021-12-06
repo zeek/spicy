@@ -562,7 +562,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 if ( have[i].type() == want[i].type() )
                     continue;
 
-                if ( type::sameExceptForConstness(have[i].type(), want[i].type()) && type::isConstant(want[i].type()) )
+                if ( type::sameExceptForConstness(have[i].type(), want[i].type()) && want[i].isConstant() )
                     continue;
 
                 error(fmt("type expects %s for parameter %u, but receives %s", want[i].type(), i + 1, have[i].type()),

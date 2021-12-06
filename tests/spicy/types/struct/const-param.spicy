@@ -1,0 +1,16 @@
+# @TEST-EXEC: spicyc -j -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test for #1056: const struct argument
+
+module test;
+
+type X = unit {
+    x: bytes &size = 8;
+};
+
+type Y = unit(msg: bytes) {};
+
+type Z = unit(x: X) {
+    y: Y(x.x);
+};
