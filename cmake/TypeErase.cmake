@@ -15,10 +15,12 @@ macro (autogen_type_erased outputs api is_constant)
     endif ()
 
     add_custom_command(
+        OUTPUT ${_output}
+        COMMENT "Generating ${_output}"
         COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-type-erased ${_const_arg} --output ${_output}
                 ${CMAKE_CURRENT_SOURCE_DIR}/${api}
-        DEPENDS ${PROJECT_SOURCE_DIR}/scripts/autogen-type-erased ${CMAKE_CURRENT_SOURCE_DIR}/${api}
-        OUTPUT ${_output})
+        DEPENDS ${PROJECT_SOURCE_DIR}/scripts/autogen-type-erased
+                ${CMAKE_CURRENT_SOURCE_DIR}/${api})
 
     set_source_files_properties(${_output} PROPERTIES GENERATED TRUE)
     list(APPEND ${outputs} ${_output})
@@ -28,9 +30,11 @@ endmacro ()
 macro (autogen_dispatchers outputs dst all_hdr)
     set(_output "${dst}")
     add_custom_command(
+        OUTPUT ${_output}
+        COMMENT "Generating ${_output}"
         COMMAND ${PROJECT_SOURCE_DIR}/scripts/autogen-dispatchers --header=${all_hdr}
                 --output=${_output} ${ARGN}
-        DEPENDS ${PROJECT_SOURCE_DIR}/scripts/autogen-dispatchers ${ARGN} OUTPUT ${_output})
+        DEPENDS ${PROJECT_SOURCE_DIR}/scripts/autogen-dispatchers ${ARGN})
 
     set_source_files_properties(${_output} PROPERTIES GENERATED TRUE)
     list(APPEND ${outputs} ${_output})

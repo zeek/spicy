@@ -214,7 +214,6 @@ if (${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config AND TARGET spicy-con
     # e.g., making it harder for ccache to work during development. It also
     # allows us to punt on some trickier cleanups of header files.
     add_custom_command(
-        COMMENT "Generating precompiled headers"
         OUTPUT ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h.gch
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h
@@ -223,6 +222,7 @@ if (${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config AND TARGET spicy-con
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h.gch
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h.gch
+        COMMENT "Generating precompiled headers"
         COMMAND ${CMAKE_COMMAND} -E env SPICY_CACHE=${PROJECT_BINARY_DIR}/cache/spicy
                 ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh --bindir ${CMAKE_BINARY_DIR}/bin
         DEPENDS ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh
@@ -230,13 +230,17 @@ if (${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config AND TARGET spicy-con
                 ${CMAKE_CURRENT_SOURCE_DIR}/spicy/runtime/include/libspicy.h
                 hilti-config
                 spicy-config)
-    add_custom_target(precompiled-headers ALL
+    add_custom_target(precompiled-headers ALL COMMENT "Generating precompiled headers"
                       DEPENDS ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h)
 endif ()
 
 # Global test target
-add_custom_target(check COMMAND ctest --output-on-failure -C $<CONFIG> DEPENDS tests)
-add_custom_target(tests DEPENDS hilti-tests spicy-tests)
+add_custom_target(
+    check
+    COMMAND ctest --output-on-failure -C $<CONFIG>
+    DEPENDS tests
+    COMMENT "Running unit tests")
+add_custom_target(tests DEPENDS hilti-tests spicy-tests COMMENT "Running unit tests")
 
 # Packaging.
 # Check tags the HEAD commit corresponds to. If we cannot get the current
@@ -285,6 +289,11 @@ include(CPack)
 
 # Emit configuration summary.
 
+set(SPICY_HOST_SYSTEM "${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSION} (${CMAKE_SYSTEM_PROCESSOR})")
+set(SPICY_C_COMPILER "${CMAKE_C_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
+set(SPICY_CXX_COMPILER
+    "${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
+
 message(
     "\n====================|  Spicy Build Summary  |===================="
     "\n"
@@ -295,9 +304,9 @@ message(
     "\nInstall prefix:        ${CMAKE_INSTALL_PREFIX}"
     "\nBuild shared libs:     ${BUILD_SHARED_LIBS}"
     "\n"
-    "\nHost system:           ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSION} (${CMAKE_SYSTEM_PROCESSOR})"
-    "\nC compiler:            ${CMAKE_C_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})"
-    "\nC++ compiler:          ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})"
+    "\nHost system:           ${SPICY_HOST_SYSTEM}"
+    "\nC compiler:            ${SPICY_C_COMPILER}"
+    "\nC++ compiler:          ${SPICY_CXX_COMPILER}"
     "\n"
     "\nBuilding toolchain:    ${HAVE_TOOLCHAIN}"
     "\n"

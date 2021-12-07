@@ -21,6 +21,6 @@
     "enable_markup": false
   },
   "lint": {
-      "disabled_codes": ["C0103"]
+      "disabled_codes": ["C0103", "C0301"]
   }
 }

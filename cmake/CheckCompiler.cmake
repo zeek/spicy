@@ -14,6 +14,7 @@ set(gcc_minimum_version "9.0")
 
 include(CheckCXXSourceCompiles)
 
+# Checks whether the set C++ compiler sufficiently supports C++17.
 macro (cxx17_compile_test)
     check_cxx_source_compiles(
         "

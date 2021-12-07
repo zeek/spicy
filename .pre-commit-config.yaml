@@ -53,5 +53,6 @@ repos:
   rev: v0.6.13
   hooks:
   - id: cmake-format
+  - id: cmake-lint
 
 exclude: 3rdparty/|doc/.*examples/|/Baseline/|(\.svg$)|(\.dat$)

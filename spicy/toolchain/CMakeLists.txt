@@ -155,11 +155,12 @@ spicy_link_executable_in_tree(spicy-batch-extract PRIVATE)
 
 add_subdirectory(bin/spicy-dump)
 
-add_custom_target(spicy-build ALL DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/spicy-build)
+add_custom_target(spicy-build ALL DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/spicy-build
+                  COMMENT "Generating spicy-build")
 add_custom_command(
-    POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                       ${CMAKE_CURRENT_SOURCE_DIR}/bin/spicy-build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/spicy-build)
+    OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/spicy-build POST_BUILD COMMENT "Copying spicy-build"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/bin/spicy-build
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 ## Installation
 

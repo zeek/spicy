@@ -57,6 +57,7 @@ function (set_config_val dst val)
     endif ()
 endfunction ()
 
+# Sets an appropriate RPATH for the system.
 function (make_install_rpath dst relative_from relative_to)
     # The following is from "Professional CMake" to set target's RPATH relative to their location.
     if (APPLE)
