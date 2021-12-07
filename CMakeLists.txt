@@ -209,13 +209,13 @@ if (${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config AND TARGET spicy-con
     add_custom_command(
         COMMENT "Generating precompiled headers"
         OUTPUT ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h
-        OUTPUT ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h.pch
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h.gch
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h.pch
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h.gch
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h.pch
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h.gch
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h.pch
+               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h.gch
         COMMAND
             ${CMAKE_COMMAND} -E env SPICY_CACHE=${PROJECT_BINARY_DIR}/cache/spicy
             ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh --bindir ${CMAKE_BINARY_DIR}/bin
