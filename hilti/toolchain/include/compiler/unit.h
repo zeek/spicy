@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -172,8 +173,13 @@ public:
      */
     Result<CxxCode> cxxCode() const;
 
-    /** Returns the list of dependencies registered for the unit so far. */
-    const auto& dependencies() { return _dependencies; }
+    /**
+     * Returns the list of dependencies registered for the unit so far.
+     *
+     * @param recursive if true, return the transitive closure of all
+     * dependent units, vs just direct dependencies of the current unit
+     */
+    std::vector<std::weak_ptr<Unit>> dependencies(bool recursive = false) const;
 
     /** Removes any dependencies registered for the unit so far. */
     void clearDependencies() { _dependencies.clear(); };
@@ -384,6 +390,9 @@ private:
 
     // Recursively destroys the module's AST.
     void _destroyModule();
+
+    // Helper for depencencies() to recurse.
+    void _recursiveDependencies(std::vector<std::weak_ptr<Unit>>* dst, std::unordered_set<const Unit*>* seen) const;
 
     // Parses a source file with the appropriate plugin.
     static Result<hilti::Module> _parse(const std::shared_ptr<Context>& context,

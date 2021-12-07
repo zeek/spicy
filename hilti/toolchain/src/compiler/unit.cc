@@ -266,7 +266,7 @@ Result<Nothing> Unit::codegen() {
     //
     // TODO(robin): Would be nice if we had a "cheap" compilation mode that
     // only generated declarations.
-    for ( const auto& unit : dependencies() ) {
+    for ( const auto& unit : dependencies(true) ) {
         HILTI_DEBUG(logging::debug::Compiler, fmt("importing declarations from module %s", unit.lock()->id()));
         auto other = detail::CodeGen(context()).compileModule(unit.lock()->module(), unit.lock().get(), false);
         c->importDeclarations(*other);
@@ -305,6 +305,32 @@ Result<CxxCode> Unit::cxxCode() const {
         return result::Error("errors during prototype creation");
 
     return CxxCode{_cxx_unit->moduleID(), cxx};
+}
+
+void Unit::_recursiveDependencies(std::vector<std::weak_ptr<Unit>>* dst, std::unordered_set<const Unit*>* seen) const {
+    // This uses two vectors because the weak_ptr are a bit tough to work with,
+    // in particular they can't be compared through std::find().
+
+    for ( const auto& d : _dependencies ) {
+        auto dptr = d.lock().get();
+
+        if ( seen->find(dptr) != seen->end() )
+            continue;
+
+        dst->push_back(d);
+        seen->insert(dptr);
+        dptr->_recursiveDependencies(dst, seen);
+    }
+}
+
+std::vector<std::weak_ptr<Unit>> Unit::dependencies(bool recursive) const {
+    if ( ! recursive )
+        return _dependencies;
+
+    std::vector<std::weak_ptr<Unit>> deps;
+    std::unordered_set<const Unit*> seen;
+    _recursiveDependencies(&deps, &seen);
+    return deps;
 }
 
 bool Unit::addDependency(std::shared_ptr<Unit> unit) {
