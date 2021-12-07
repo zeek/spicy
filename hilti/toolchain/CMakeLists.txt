@@ -1,17 +1,16 @@
 # Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-set(AUTOGEN_H        "${PROJECT_BINARY_DIR}/include/hilti/autogen")
-set(AUTOGEN_CC       "${PROJECT_BINARY_DIR}/hilti/src/autogen")
-file(MAKE_DIRECTORY  "${AUTOGEN_H}" "${AUTOGEN_CC}")
-file(MAKE_DIRECTORY  "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
+set(AUTOGEN_H "${PROJECT_BINARY_DIR}/include/hilti/autogen")
+set(AUTOGEN_CC "${PROJECT_BINARY_DIR}/hilti/src/autogen")
+file(MAKE_DIRECTORY "${AUTOGEN_H}" "${AUTOGEN_CC}")
+file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 ##### Compiler library
 
-FLEX_TARGET(scanner_hilti src/compiler/parser/scanner.ll ${AUTOGEN_CC}/__scanner.cc
+flex_target(scanner_hilti src/compiler/parser/scanner.ll ${AUTOGEN_CC}/__scanner.cc
             DEFINES_FILE ${AUTOGEN_CC}/__scanner.h)
-BISON_TARGET_PP(parser_hilti src/compiler/parser/parser.yy ${AUTOGEN_CC}/__parser.cc
-            DEFINES_FILE ${AUTOGEN_CC}/__parser.h
-)
+bison_target_pp(parser_hilti src/compiler/parser/parser.yy ${AUTOGEN_CC}/__parser.cc DEFINES_FILE
+                ${AUTOGEN_CC}/__parser.h)
 
 bison_source(src/compiler/parser/driver.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__scanner.cc ${AUTOGEN_CC})
@@ -28,17 +27,12 @@ autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/statement.api YES)
 autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/type.api YES)
 
 include(ASTOperators)
-autogen_operators(SOURCES_OPERATORS
-                  hilti
-                  include/hilti/ast/operators
-                  ${AUTOGEN_H}/operators.decl
-                  ${AUTOGEN_CC}/operators-implementations.cc
-)
+autogen_operators(SOURCES_OPERATORS hilti include/hilti/ast/operators ${AUTOGEN_H}/operators.decl
+                  ${AUTOGEN_CC}/operators-implementations.cc)
 
-autogen_dispatchers(SOURCES_TYPE_ERASED ${AUTOGEN_H}/__dispatchers.h
-                                        "hilti/ast/all.h"
-                                        ${CMAKE_CURRENT_SOURCE_DIR}/include/hilti/ast/nodes.decl
-                                        ${AUTOGEN_H}/operators.decl)
+autogen_dispatchers(
+    SOURCES_TYPE_ERASED ${AUTOGEN_H}/__dispatchers.h "hilti/ast/all.h"
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hilti/ast/nodes.decl ${AUTOGEN_H}/operators.decl)
 
 set(SOURCES
     src/ast/builder/builder.cc
@@ -93,34 +87,34 @@ set(SOURCES
     src/compiler/visitors/scope-builder.cc
     src/compiler/visitors/validator.cc
     src/global.cc
-
     # Already included in hilti-rt, which we pull in.
     # src/3rdparty/utf8proc/utf8proc.c
-
     ${SOURCES_TYPE_ERASED}
     ${SOURCES_OPERATORS}
-
     ${AUTOGEN_CC}/config.cc
     ${BISON_parser_hilti_OUTPUTS}
-    ${FLEX_scanner_hilti_OUTPUTS}
-    )
+    ${FLEX_scanner_hilti_OUTPUTS})
 
 add_library(hilti-objects OBJECT ${SOURCES})
 set_property(TARGET hilti-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_compile_options(hilti-objects PRIVATE "-Wall")
 target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_include_directories(hilti-objects BEFORE PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
+target_include_directories(hilti-objects BEFORE
+                           PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(hilti-objects BEFORE
+                           PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
 # Unclear why we need this: Without it, the generated Bison/Flex get a broken
 # include path on some systems. (Seen on Ubuntu 19.10).
 set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 
-target_link_libraries(hilti-objects PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+target_link_libraries(hilti-objects
+                      PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
 add_dependencies(hilti-objects reproc++)
-target_include_directories(hilti-objects BEFORE PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
+target_include_directories(hilti-objects BEFORE
+                           PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
 
 add_library(hilti)
 hilti_link_object_libraries_in_tree(hilti PUBLIC)
@@ -128,33 +122,47 @@ hilti_link_object_libraries_in_tree(hilti PUBLIC)
 ##### Configuration files
 
 # Additional flags
-if ( APPLE )
+if (APPLE)
     set(addl_cxx_flags "-isysroot ${CMAKE_OSX_SYSROOT}")
     set(addl_ld_flags "-isysroot ${CMAKE_OSX_SYSROOT}")
 endif ()
 
 # HILTI library directories
-set_config_val(HILTI_CONFIG_LIBRARY_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/hilti !BUILD!${PROJECT_SOURCE_DIR}/hilti/lib")
+set_config_val(
+    HILTI_CONFIG_LIBRARY_DIRS
+    "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/hilti !BUILD!${PROJECT_SOURCE_DIR}/hilti/lib")
 
 # Include directories
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS   "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include")
-set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include")
+set_config_val(
+    HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
+    "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
+)
+set_config_val(
+    HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS
+    "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include"
+)
 
 # CXX flags
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG   "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG
+               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE
+               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # Libraries
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG      "hilti-rt-debug")
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE    "hilti-rt")
+set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG "hilti-rt-debug")
+set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE "hilti-rt")
 
 # Library directories
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS     "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
-set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS   "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
+set_config_val(HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS
+               "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
+set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS
+               "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
 
 # LD flags
-set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG   "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
-set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
+set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG
+               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
+set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE
+               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
 
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
 configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
@@ -181,10 +189,7 @@ install(CODE "file(REMOVE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/hilti)") # Get 
 
 ##### Tests
 
-add_executable(hilti-toolchain-tests
-               tests/main.cc
-               tests/visitor.cc
-               tests/util.cc)
+add_executable(hilti-toolchain-tests tests/main.cc tests/visitor.cc tests/util.cc)
 hilti_link_executable_in_tree(hilti-toolchain-tests PRIVATE)
 target_link_libraries(hilti-toolchain-tests PRIVATE doctest)
 target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")

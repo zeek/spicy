@@ -11,7 +11,7 @@ set(macos_minimum_version "19.0.0") # macOS 10.15.0 (Catalina)
 
 ## Initialize defaults & global options
 
-if ( NOT CMAKE_BUILD_TYPE )
+if (NOT CMAKE_BUILD_TYPE)
     # CMake doesn't set build type by default.
     set(CMAKE_BUILD_TYPE "Debug")
 endif ()
@@ -31,51 +31,53 @@ string(REPLACE "-O2" "-O3" CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELW
 include(CheckCompiler)
 
 include(GNUInstallDirs)
-if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY )
+if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 endif ()
 
-if( NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY )
+if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 endif ()
 
-if ( NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY )
+if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 endif ()
 
 make_install_rpath(rpath ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_LIBDIR})
 set(CMAKE_INSTALL_RPATH "${rpath}")
 
-if ( USE_CCACHE )
+if (USE_CCACHE)
     find_program(CCACHE_PROGRAM ccache)
-    if( CCACHE_PROGRAM )
+    if (CCACHE_PROGRAM)
         set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
         set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
     else ()
         set(USE_CCACHE "no (error: could not find ccache)")
-    endif()
+    endif ()
 else ()
     set(USE_CCACHE "no")
 endif ()
 
-if ( USE_SANITIZERS )
+if (USE_SANITIZERS)
     # Recommended flags per https://github.com/google/sanitizers/wiki/AddressSanitizer
-    set(sanitizer_cxx_flags "-fsanitize=${USE_SANITIZERS} -fno-omit-frame-pointer -fno-optimize-sibling-calls -O1 -shared-libsan")
-    set(sanitizer_ld_flags  "-fsanitize=${USE_SANITIZERS} -frtlib-add-rpath -shared-libsan")
+    set(sanitizer_cxx_flags
+        "-fsanitize=${USE_SANITIZERS} -fno-omit-frame-pointer -fno-optimize-sibling-calls -O1 -shared-libsan"
+    )
+    set(sanitizer_ld_flags "-fsanitize=${USE_SANITIZERS} -frtlib-add-rpath -shared-libsan")
 
-   set(HILTI_HAVE_SANITIZER "yes" CACHE BOOL "Using sanitizer")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${sanitizer_cxx_flags}")
-   set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${sanitizer_cxx_flags}")
-   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${sanitizer_ld_flags}")
-   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${sanitizer_ld_flags}")
-   set(EXTRA_LD_FLAGS "${EXTRA_LD_FLAGS} ${sanitizer_ld_flags}")
+    set(HILTI_HAVE_SANITIZER "yes" CACHE BOOL "Using sanitizer")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${sanitizer_cxx_flags}")
+    set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${sanitizer_cxx_flags}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${sanitizer_ld_flags}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${sanitizer_ld_flags}")
+    set(EXTRA_LD_FLAGS "${EXTRA_LD_FLAGS} ${sanitizer_ld_flags}")
 
-   set(HILTI_DEV_PRECOMPILE_HEADERS "no")
+    set(HILTI_DEV_PRECOMPILE_HEADERS "no")
 else ()
-   set(HILTI_HAVE_SANITIZER "no" CACHE BOOL "Using sanitizer")
-endif()
+    set(HILTI_HAVE_SANITIZER "no" CACHE BOOL "Using sanitizer")
+endif ()
 
-if ( USE_WERROR )
+if (USE_WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")
     set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${werror_flags}")
 endif ()
@@ -91,30 +93,33 @@ endif ()
 # for the artifacts with `NO_DEFAULT_PATH` and then later trigger the upstream
 # `find_package` logic. With that any user-specified prefix takes precedence
 # over what could be found in the default search locations.
-if ( FLEX_ROOT )
-    find_program(FLEX_EXECUTABLE
-                 NAMES flex win_flex
-                 PATHS ${FLEX_ROOT}
-                 PATH_SUFFIXES bin
-                 NO_DEFAULT_PATH)
-    find_library(FL_LIBRARY
-                 NAMES fl
-                 PATHS ${FLEX_ROOT}
-                 PATH_SUFFIXES lib
-                 NO_DEFAULT_PATH)
-    find_path(FLEX_INCLUDE_DIR
-              FlexLexer.h
-              PATHS ${FLEX_ROOT}
-              PATH_SUFFIXES include
-              NO_DEFAULT_PATH)
+if (FLEX_ROOT)
+    find_program(
+        FLEX_EXECUTABLE
+        NAMES flex win_flex
+        PATHS ${FLEX_ROOT}
+        PATH_SUFFIXES bin
+        NO_DEFAULT_PATH)
+    find_library(
+        FL_LIBRARY
+        NAMES fl
+        PATHS ${FLEX_ROOT}
+        PATH_SUFFIXES lib
+        NO_DEFAULT_PATH)
+    find_path(
+        FLEX_INCLUDE_DIR FlexLexer.h
+        PATHS ${FLEX_ROOT}
+        PATH_SUFFIXES include
+        NO_DEFAULT_PATH)
 endif ()
 
-if ( BISON_ROOT)
-    find_program(BISON_EXECUTABLE
-                 NAMES bison win_bison
-                 PATHS ${BISON_ROOT}
-                 PATH_SUFFIXES bin
-                 NO_DEFAULT_PATH)
+if (BISON_ROOT)
+    find_program(
+        BISON_EXECUTABLE
+        NAMES bison win_bison
+        PATHS ${BISON_ROOT}
+        PATH_SUFFIXES bin
+        NO_DEFAULT_PATH)
 endif ()
 
 find_package(Python3)
@@ -123,26 +128,26 @@ find_package(BISON REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(Backtrace)
 
-if ( Backtrace_FOUND AND NOT APPLE )
+if (Backtrace_FOUND AND NOT APPLE)
     # On systems other than MacOS there's a libexecinfo that's not working for us:
     # it seems to break when compiling without frame pointers so we disable it.
-    if ( "${Backtrace_LIBRARY}" MATCHES "libexecinfo" )
+    if ("${Backtrace_LIBRARY}" MATCHES "libexecinfo")
         message(STATUS "Disabling backtrace because we found libexecinfo")
         set(Backtrace_FOUND "no")
     endif ()
 endif ()
 
 # Prettify output
-if ( Backtrace_FOUND )
+if (Backtrace_FOUND)
     set(HILTI_HAVE_BACKTRACE "yes")
 else ()
     set(HILTI_HAVE_BACKTRACE "no")
 endif ()
 
-if ( APPLE )
+if (APPLE)
     set(MACOS_FOUND "yes")
     require_version("maccOS" MACOS_FOUND ${CMAKE_SYSTEM_VERSION} "${macos_minimum_version}" true)
-endif()
+endif ()
 
 require_version("Python" Python3_FOUND Python3_VERSION "${python_minimum_version}" true)
 require_version("Flex" FLEX_FOUND FLEX_VERSION "${flex_minimum_version}" true)
@@ -153,7 +158,7 @@ find_package(Threads)
 
 option(BUILD_TOOLCHAIN "Build the Spicy compiler toolchain" ON)
 
-if ( BUILD_TOOLCHAIN )
+if (BUILD_TOOLCHAIN)
     set(HAVE_TOOLCHAIN yes)
 else ()
     set(HAVE_TOOLCHAIN no)
@@ -169,19 +174,21 @@ set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
 # Get Spicy commit. If we cannot get the current commit (e.g., no .git
 # directory present for release tarballs), this will leave SPICY_COMMIT unset.
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E env GIT_DIR=${CMAKE_CURRENT_SOURCE_DIR}/.git git rev-parse --short HEAD
+    COMMAND ${CMAKE_COMMAND} -E env GIT_DIR=${CMAKE_CURRENT_SOURCE_DIR}/.git git rev-parse --short
+            HEAD
     OUTPUT_VARIABLE SPICY_COMMIT
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_VARIABLE ignored)
 
 string(REGEX MATCH "([0-9]*)\.([0-9]*)\.([0-9]*).*" _ ${CMAKE_PROJECT_VERSION})
-math(EXPR SPICY_VERSION_NUMBER "${CMAKE_MATCH_1} * 10000 + ${CMAKE_MATCH_2} * 100 + ${CMAKE_MATCH_3}")
+math(EXPR SPICY_VERSION_NUMBER
+     "${CMAKE_MATCH_1} * 10000 + ${CMAKE_MATCH_2} * 100 + ${CMAKE_MATCH_3}")
 
-if(NOT "${SPICY_COMMIT}" STREQUAL "")
+if (NOT "${SPICY_COMMIT}" STREQUAL "")
     set(SPICY_VERSION_LONG "${SPICY_VERSION} (${SPICY_COMMIT})")
-else()
+else ()
     set(SPICY_VERSION_LONG ${SPICY_VERSION})
-endif()
+endif ()
 
 # Add subdirectories.
 add_subdirectory(hilti)
@@ -216,18 +223,15 @@ if (${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config AND TARGET spicy-con
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h.gch
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h
                ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h.gch
-        COMMAND
-            ${CMAKE_COMMAND} -E env SPICY_CACHE=${PROJECT_BINARY_DIR}/cache/spicy
-            ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh --bindir ${CMAKE_BINARY_DIR}/bin
-        DEPENDS
-            ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh
-            ${CMAKE_CURRENT_SOURCE_DIR}/hilti/runtime/include/libhilti.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/spicy/runtime/include/libspicy.h
-            hilti-config
-            spicy-config)
-    add_custom_target(precompiled-headers
-        ALL
-        DEPENDS ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h)
+        COMMAND ${CMAKE_COMMAND} -E env SPICY_CACHE=${PROJECT_BINARY_DIR}/cache/spicy
+                ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh --bindir ${CMAKE_BINARY_DIR}/bin
+        DEPENDS ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh
+                ${CMAKE_CURRENT_SOURCE_DIR}/hilti/runtime/include/libhilti.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/spicy/runtime/include/libspicy.h
+                hilti-config
+                spicy-config)
+    add_custom_target(precompiled-headers ALL
+                      DEPENDS ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h)
 endif ()
 
 # Global test target
@@ -238,11 +242,10 @@ add_custom_target(tests DEPENDS hilti-tests spicy-tests)
 # Check tags the HEAD commit corresponds to. If we cannot get the current
 # commit (e.g., no .git directory present for release tarballs), this will
 # leave SPICY_TAGS unset which is fine for users working from tarballs.
-execute_process(COMMAND git tag --points-at HEAD v*
-    OUTPUT_VARIABLE SPICY_TAGS
-    ERROR_VARIABLE ignored)
+execute_process(COMMAND git tag --points-at HEAD v* OUTPUT_VARIABLE SPICY_TAGS
+                ERROR_VARIABLE ignored)
 
-if ( "${SPICY_TAGS}" STREQUAL "" )
+if ("${SPICY_TAGS}" STREQUAL "")
     # If the HEAD commit does not correspond to a tag it is not a release. Hide
     # the version number in packaging artifacts so we can e.g., provide stable
     # links to the latest version.
@@ -312,5 +315,4 @@ message(
     "\nPython version:        ${Python3_VERSION}"
     "\nzlib version:          ${ZLIB_VERSION_STRING}"
     "\n"
-    "\n================================================================\n"
-)
+    "\n================================================================\n")

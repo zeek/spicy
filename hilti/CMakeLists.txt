@@ -3,9 +3,10 @@
 add_subdirectory(lib)
 add_subdirectory(runtime)
 
-if ( HAVE_TOOLCHAIN )
+if (HAVE_TOOLCHAIN)
     add_subdirectory(toolchain)
-    add_custom_target(hilti-tests DEPENDS hilti-toolchain-tests hilti-rt-tests hilti-rt-configuration-tests)
+    add_custom_target(hilti-tests DEPENDS hilti-toolchain-tests hilti-rt-tests
+                                          hilti-rt-configuration-tests)
 else ()
     add_custom_target(hilti-tests DEPENDS hilti-rt-tests hilti-rt-configuration-tests)
 endif ()

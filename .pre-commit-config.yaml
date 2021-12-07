@@ -49,4 +49,9 @@ repos:
   - id: rst-directive-colons
   - id: rst-inline-touching-normal
 
+- repo: https://github.com/cheshirekow/cmake-format-precommit
+  rev: v0.6.13
+  hooks:
+  - id: cmake-format
+
 exclude: 3rdparty/|doc/.*examples/|/Baseline/|(\.svg$)|(\.dat$)
