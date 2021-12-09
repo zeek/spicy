@@ -1,3 +1,8 @@
+1.4.0-dev.102 | 2021-12-09 11:24:39 +0100
+
+  * Avoid calculating AST dump if we do not output it. (Benjamin Bannier, Corelight)
+
+  * Fix accidental calculation of immediately discarded debug output. (Benjamin Bannier, Corelight)
 
 1.4.0-dev.99 | 2021-12-09 09:30:35 +0100
 

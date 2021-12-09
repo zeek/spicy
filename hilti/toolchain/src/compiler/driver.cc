@@ -1238,6 +1238,9 @@ void Driver::_dumpAST(std::shared_ptr<Unit> unit, std::ostream& stream, const Pl
 }
 
 void Driver::_dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& stream, const std::string& prefix) {
+    if ( ! logger().isEnabled(stream) )
+        return;
+
     HILTI_DEBUG(stream, fmt("# %s: %s\n", unit->id(), prefix));
     detail::renderNode(unit->module(), stream, true);
 }
