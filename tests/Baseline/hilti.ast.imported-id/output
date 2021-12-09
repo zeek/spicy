@@ -144,6 +144,7 @@
 [debug/compiler]     dependencies: Foo
 [debug/compiler]   compiling module Foo to C++
 [debug/compiler]     importing declarations from module Bar
+[debug/compiler]     importing declarations from module Foo
 [debug/compiler]     finalizing module Foo
 // Begin of Foo (from "foo.hlt")
 // Compiled by HILTI version X.X.X
