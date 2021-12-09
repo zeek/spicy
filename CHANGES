@@ -1,3 +1,12 @@
+
+1.4.0-dev.99 | 2021-12-09 09:30:35 +0100
+
+  * GH-1056: Fix constness check for struct parameters. (Robin Sommer,
+    Corelight)
+
+  * GH-1057: Fix code generator to emit types correctly for transitive
+    dependencies. (Robin Sommer, Corelight)
+
 1.4.0-dev.95 | 2021-12-07 11:23:17 +0100
 
   * Fix dependency tracking of spicy-build CMake target. (Benjamin Bannier, Corelight)
