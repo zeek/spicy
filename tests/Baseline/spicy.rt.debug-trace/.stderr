@@ -22,8 +22,6 @@
 [hilti-trace] :  if ( ! filtered ) {     __result = (*self).__parse_Mini_Test_stage2(__data, __cur, __trim, __lah, __lahe); }
 [hilti-trace] : __result = (*self).__parse_Mini_Test_stage2(__data, __cur, __trim, __lah, __lahe);
 [hilti-trace] : local tuple<view<stream>, int<64>, iterator<stream>> __result;
-[hilti-trace] : local int<64> __next_field = 0;
-[hilti-trace] :  if ( 0 == __next_field ) {     # Begin parsing production: Variable: f1  -> uint<32>     spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim);     hilti::debug("spicy-verbose", "- parsing production: Variable: f1  -> uint<32>");     hilti::debugIndent("spicy-verbose");     spicy_rt::waitForInput(__data, __cur, 4, "expecting 4 bytes for unpacking value", "<...>/debug-trace.spicy:10:9", (*self).__filters);     ((*self).f1, __cur) = (*unpack<uint<32>>((__cur, hilti::ByteOrder::Network)));      if ( __trim ) {         hilti::debug("spicy-verbose", "- trimming input");         (*__data).trim(begin(__cur));     }     hilti::debugDedent("spicy-verbose");     # End parsing production: Variable: f1  -> uint<32>     hilti::debug("spicy", "f1 = %s" % (*self).f1);     hilti::debug("spicy-verbose", "- setting field 'f1' to '%s'" % (*self).f1);     (*self).__on_f1((*self).f1);     ++__next_field; }
 [hilti-trace] :  # Begin parsing production: Variable: f1  -> uint<32>
 [hilti-trace] : spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim);
 [hilti-trace] : hilti::debug("spicy-verbose", "- parsing production: Variable: f1  -> uint<32>");
@@ -39,8 +37,6 @@
 [hilti-trace] : hilti::debug("spicy-verbose", "- setting field 'f1' to '%s'" % (*self).f1);
 [hilti-trace] <...>/debug-trace.spicy:10:5: (*self).__on_f1((*self).f1);
 [hilti-trace] <...>/debug-trace.spicy:10:18: hilti::print((*self).f1, True);
-[hilti-trace] : ++__next_field;
-[hilti-trace] :  if ( 1 == __next_field ) {     # Begin parsing production: Variable: f2  -> uint<8>     spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim);     hilti::debug("spicy-verbose", "- parsing production: Variable: f2  -> uint<8>");     hilti::debugIndent("spicy-verbose");     spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/debug-trace.spicy:11:9", (*self).__filters);     ((*self).f2, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));      if ( __trim ) {         hilti::debug("spicy-verbose", "- trimming input");         (*__data).trim(begin(__cur));     }     hilti::debugDedent("spicy-verbose");     # End parsing production: Variable: f2  -> uint<8>     hilti::debug("spicy", "f2 = %s" % (*self).f2);     hilti::debug("spicy-verbose", "- setting field 'f2' to '%s'" % (*self).f2);     (*self).__on_f2((*self).f2);     ++__next_field; }
 [hilti-trace] :  # Begin parsing production: Variable: f2  -> uint<8>
 [hilti-trace] : spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim);
 [hilti-trace] : hilti::debug("spicy-verbose", "- parsing production: Variable: f2  -> uint<8>");
@@ -56,7 +52,6 @@
 [hilti-trace] : hilti::debug("spicy-verbose", "- setting field 'f2' to '%s'" % (*self).f2);
 [hilti-trace] <...>/debug-trace.spicy:11:5: (*self).__on_f2((*self).f2);
 [hilti-trace] <...>/debug-trace.spicy:11:18: hilti::print((*self).f2, True);
-[hilti-trace] : ++__next_field;
 [hilti-trace] <...>/debug-trace.spicy:8:20-13:2: (*self).__on_0x25_done();
 [hilti-trace] <...>/debug-trace.spicy:12:18: hilti::print(self, True);
 [hilti-trace] : spicy_rt::filter_disconnect(self);
