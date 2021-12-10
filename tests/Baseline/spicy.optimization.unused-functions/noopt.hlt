@@ -259,7 +259,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_sta
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_foo_A_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__A%uses_random_access ) 
         (*self).__position = begin(__cur);
@@ -439,7 +438,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_sta
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_foo_B_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__B%uses_random_access ) 
         (*self).__position = begin(__cur);
@@ -615,7 +613,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_sta
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_foo_C_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__C%uses_random_access ) 
         (*self).__position = begin(__cur);
@@ -795,21 +792,15 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_sta
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_foo_D_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
+    local value_ref<C> __transient_anon;
 
-    if ( 0 == __next_field ) {
-        local value_ref<C> __transient_anon;
+    # Begin parsing production: Unit: foo_C_2 ->
+    __transient_anon = default<C>();
+    (__cur, __lah, __lahe) = (*__transient_anon).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
+    # End parsing production: Unit: foo_C_2 ->
 
-        # Begin parsing production: Unit: foo_C_2 ->
-        __transient_anon = default<C>();
-        (__cur, __lah, __lahe) = (*__transient_anon).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
-        # End parsing production: Unit: foo_C_2 ->
-
-        if ( __feat%foo__D%uses_random_access ) 
-            (*self).__position = begin(__cur);
-
-        ++__next_field;
-    }
+    if ( __feat%foo__D%uses_random_access ) 
+        (*self).__position = begin(__cur);
 
 
     if ( __feat%foo__D%uses_random_access ) 
@@ -990,7 +981,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_sta
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_foo_F_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__F%uses_random_access ) 
         (*self).__position = begin(__cur);
