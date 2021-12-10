@@ -388,7 +388,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv1::__parse
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv1::__parse_foo_Priv1_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__Priv1%uses_random_access ) 
         (*self).__position = begin(__cur);
@@ -568,7 +567,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_foo_Pub2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__Pub2%uses_random_access ) 
         (*self).__position = begin(__cur);
@@ -744,7 +742,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv2::__parse
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv2::__parse_foo_Priv2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__Priv2%uses_random_access ) 
         (*self).__position = begin(__cur);
@@ -924,7 +921,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv3::__parse
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv3::__parse_foo_Priv3_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__Priv3%uses_random_access ) 
         (*self).__position = begin(__cur);
@@ -1104,48 +1100,38 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv4::__parse
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv4::__parse_foo_Priv4_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
+    local value_ref<Priv2> __transient_anon;
 
-    if ( 0 == __next_field ) {
-        local value_ref<Priv2> __transient_anon;
+    # Begin parsing production: Unit: foo_Priv2_2 ->
+    __transient_anon = default<Priv2>();
+    (__cur, __lah, __lahe) = (*__transient_anon).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
+    # End parsing production: Unit: foo_Priv2_2 ->
 
-        # Begin parsing production: Unit: foo_Priv2_2 ->
-        __transient_anon = default<Priv2>();
-        (__cur, __lah, __lahe) = (*__transient_anon).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
-        # End parsing production: Unit: foo_Priv2_2 ->
-
-        if ( __feat%foo__Priv4%uses_random_access ) 
-            (*self).__position = begin(__cur);
-
-        ++__next_field;
-    }
+    if ( __feat%foo__Priv4%uses_random_access ) 
+        (*self).__position = begin(__cur);
 
 
-    if ( 1 == __next_field ) {
-        # Begin parsing production: Unit: foo_Priv3_2 ->
-        (*self).x = default<Priv3>();
-        (__cur, __lah, __lahe) = (*(*self).x).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
-        # End parsing production: Unit: foo_Priv3_2 ->
+    # Begin parsing production: Unit: foo_Priv3_2 ->
+    (*self).x = default<Priv3>();
+    (__cur, __lah, __lahe) = (*(*self).x).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
+    # End parsing production: Unit: foo_Priv3_2 ->
 
-        if ( __feat%foo__Priv4%uses_random_access ) 
+    if ( __feat%foo__Priv4%uses_random_access ) 
+        (*self).__position_update = Null;
+
+    (*self).__on_x((*self).x);
+
+    if ( __feat%foo__Priv4%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
             (*self).__position_update = Null;
-
-        (*self).__on_x((*self).x);
-
-        if ( __feat%foo__Priv4%uses_random_access ) 
-
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
-            }
+        }
 
 
 
-        if ( __feat%foo__Priv4%uses_random_access ) 
-            (*self).__position = begin(__cur);
-
-        ++__next_field;
-    }
+    if ( __feat%foo__Priv4%uses_random_access ) 
+        (*self).__position = begin(__cur);
 
 
     if ( __feat%foo__Priv4%uses_random_access ) 
@@ -1326,7 +1312,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv5::__parse
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv5::__parse_foo_Priv5_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__Priv5%uses_random_access ) 
         (*self).__position = begin(__cur);
@@ -1506,7 +1491,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv6::__parse
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv6::__parse_foo_Priv6_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__Priv6%uses_random_access ) 
         (*self).__position = begin(__cur);
@@ -1686,48 +1670,38 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_foo_Pub3_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
+    local value_ref<Priv5> __transient_anon_2;
 
-    if ( 0 == __next_field ) {
-        local value_ref<Priv5> __transient_anon_2;
+    # Begin parsing production: Unit: foo_Priv5_2 ->
+    __transient_anon_2 = default<Priv5>();
+    (__cur, __lah, __lahe) = (*__transient_anon_2).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
+    # End parsing production: Unit: foo_Priv5_2 ->
 
-        # Begin parsing production: Unit: foo_Priv5_2 ->
-        __transient_anon_2 = default<Priv5>();
-        (__cur, __lah, __lahe) = (*__transient_anon_2).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
-        # End parsing production: Unit: foo_Priv5_2 ->
-
-        if ( __feat%foo__Pub3%uses_random_access ) 
-            (*self).__position = begin(__cur);
-
-        ++__next_field;
-    }
+    if ( __feat%foo__Pub3%uses_random_access ) 
+        (*self).__position = begin(__cur);
 
 
-    if ( 1 == __next_field ) {
-        # Begin parsing production: Unit: foo_Priv6_2 ->
-        (*self).x = default<Priv6>();
-        (__cur, __lah, __lahe) = (*(*self).x).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
-        # End parsing production: Unit: foo_Priv6_2 ->
+    # Begin parsing production: Unit: foo_Priv6_2 ->
+    (*self).x = default<Priv6>();
+    (__cur, __lah, __lahe) = (*(*self).x).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
+    # End parsing production: Unit: foo_Priv6_2 ->
 
-        if ( __feat%foo__Pub3%uses_random_access ) 
+    if ( __feat%foo__Pub3%uses_random_access ) 
+        (*self).__position_update = Null;
+
+    (*self).__on_x((*self).x);
+
+    if ( __feat%foo__Pub3%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
             (*self).__position_update = Null;
-
-        (*self).__on_x((*self).x);
-
-        if ( __feat%foo__Pub3%uses_random_access ) 
-
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
-            }
+        }
 
 
 
-        if ( __feat%foo__Pub3%uses_random_access ) 
-            (*self).__position = begin(__cur);
-
-        ++__next_field;
-    }
+    if ( __feat%foo__Pub3%uses_random_access ) 
+        (*self).__position = begin(__cur);
 
 
     if ( __feat%foo__Pub3%uses_random_access ) 
@@ -1904,7 +1878,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv10::__pars
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv10::__parse_foo_Priv10_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
-    local int<64> __next_field = 0;
 
     if ( __feat%foo__Priv10%uses_random_access ) 
         (*self).__position = begin(__cur);

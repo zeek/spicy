@@ -1156,110 +1156,125 @@ struct ProductionVisitor
         if ( const auto& skip = p.unitType().propertyItem("%skip") )
             skipRegExp(*skip->expression());
 
-        // Counter for the next field we will parse.
-        const auto next_field = builder()->addTmp("next_field", builder::integer(0));
-
+        // Precompute sync points for each field.
+        auto sync_points = std::vector<std::optional<uint64_t>>();
+        sync_points.reserve(p.fields().size());
         for ( const auto xs : hilti::util::enumerate(p.fields()) ) {
-            const uint64_t fieldCounter = std::get<0>(xs);
-            const auto& fieldProduction = std::get<1>(xs);
+            const uint64_t field_counter = std::get<0>(xs);
 
-            // Check if there would be a synchronization point in this unit if parsing of this field failed.
-            std::optional<uint64_t> nextSyncPoint;
-            for ( auto candidateCounter = fieldCounter + 1; candidateCounter < p.fields().size(); ++candidateCounter ) {
-                if ( auto candidate = p.fields()[candidateCounter].meta().field();
+            bool found_sync_point = false;
+
+            for ( auto candidate_counter = field_counter + 1; candidate_counter < p.fields().size();
+                  ++candidate_counter )
+                if ( auto candidate = p.fields()[candidate_counter].meta().field();
                      candidate && AttributeSet::find(candidate->attributes(), "&synchronized") ) {
-                    // FIXME(bbannier): reject sync fields in e.g., switch statements or similar.
-                    nextSyncPoint = candidateCounter;
+                    sync_points.emplace_back(candidate_counter);
+                    found_sync_point = true;
                     break;
                 }
-            }
 
-            const auto field = fieldProduction.meta().field();
+            // If no sync point was found for this field store a None for it.
+            if ( ! found_sync_point )
+                sync_points.emplace_back();
+        }
 
-            // Only parse this field if it matches the next field to be extracted.
-            pushBuilder(builder()->addIf(builder::equal(builder::integer(fieldCounter), next_field)), [&]() {
-                auto parseField = [&]() {
-                    parseProduction(fieldProduction);
-                    builder()->addExpression(builder::incrementPrefix(next_field));
+        // Group adjecent fields with same sync point.
+        std::vector<std::pair<std::vector<uint64_t>, std::optional<uint64_t>>> groups;
+        for ( uint64_t i = 0; i < sync_points.size(); ++i ) {
+            const auto& sync_point = sync_points[i];
+            if ( ! groups.empty() && groups.back().second == sync_point )
+                groups.back().first.push_back(i);
+            else
+                groups.push_back({{i}, sync_point});
+        }
 
-                    if ( const auto& skip = p.unitType().propertyItem("%skip") )
-                        skipRegExp(*skip->expression());
-                };
+        auto parseField = [&](const auto& fieldProduction) {
+            parseProduction(fieldProduction);
 
-                // If there is no sync point for this field just try to parse it and potentially bubble any errors
-                // up.
-                if ( ! nextSyncPoint )
-                    parseField();
+            if ( const auto& skip = p.unitType().propertyItem("%skip") )
+                skipRegExp(*skip->expression());
+        };
 
-                // There is a sync point for this field set up a try/catch block and attempt synchronization.
-                else {
-                    assert(nextSyncPoint);
-                    auto try_ = builder()->addTry();
+        // Process fields in groups of same sync point.
+        for ( const auto& group : groups ) {
+            const auto& fields = group.first;
+            const auto& sync_point = group.second;
 
-                    pushBuilder(try_.first, [&]() { parseField(); });
-                    pushBuilder(
-                        try_.second.addCatch(builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
-                        [&]() {
-                            // There is a sync point for this field, run its production w/o
-                            // consuming input until parsing succeeds or we run out of data.
-                            if ( field )
-                                builder()->addDebugMsg("spicy",
-                                                       fmt("failed to parse '%s', will try to synchronize at '%s'",
-                                                           field->id(),
-                                                           p.fields()[*nextSyncPoint].meta().field()->id()));
+            assert(! fields.empty());
 
-                            // Remember the original parse error so we can report it in case the sync failed.
-                            builder()->addAssign(builder::member(state().self, "__try_mode"), builder::id("e"));
+            auto maybe_try = std::optional<decltype(std::declval<builder::Builder>().addTry())>();
 
-                            builder()->addComment("Loop on the sync field until parsing succeeds");
-                            auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
-                            pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
-                                auto syncProduction = computeSyncProduction(p.fields()[*nextSyncPoint], grammar);
-                                if ( ! syncProduction )
-                                    hilti::logger().internalError("unable to compute field to synchronize on");
+            if ( ! sync_point )
+                for ( auto field : fields )
+                    parseField(p.fields()[field]);
 
-                                auto try_ = builder()->addTry();
-                                pushBuilder(try_.first, [&]() {
-                                    // Invoke full parsing logic including hooks for the sync field so that users can
-                                    // see the final field value in any hooks, but do not consume input on success. This
-                                    // allows users to see sensible values in e.g., `synced` hooks so they could invoke
-                                    // `confirm` there, but still ensures intuitive ordering in the execution of
-                                    // subsequently called field hooks.
-                                    auto pstate = state();
-                                    pstate.cur = builder()->addTmp("sync", state().cur);
-                                    pstate.literal_mode = LiteralMode::Try;
-                                    pushState(std::move(pstate));
+            else {
+                auto try_ = builder()->addTry();
 
-                                    builder()->addComment(fmt("Begin sync production: %s",
-                                                              hilti::util::trim((std::string(*syncProduction)))));
-                                    assert(syncProduction->isLiteral());
-                                    pb->parseLiteral(*syncProduction, {});
-                                    builder()->addComment(fmt("End sync production: %s",
-                                                              hilti::util::trim((std::string(*syncProduction)))));
+                pushBuilder(try_.first, [&]() {
+                    for ( auto field : fields )
+                        parseField(p.fields()[field]);
+                });
 
-                                    popState();
+                pushBuilder(try_.second.addCatch(
+                                builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
+                            [&]() {
+                                // There is a sync point; run its production w/o consuming input until parsing succeeds
+                                // or we run out of data.
+                                builder()->addDebugMsg("spicy", fmt("failed to parse, will try to synchronize at '%s'",
+                                                                    p.fields()[*sync_point].meta().field()->id()));
 
-                                    builder()->addAssign(next_field, builder::integer(*nextSyncPoint));
-                                    builder()
-                                        ->addDebugMsg("spicy",
-                                                      "successfully synchronized after %d bytes, entering try mode",
-                                                      {skippedBytes});
+                                // Remember the original parse error so we can report it in case the sync failed.
+                                builder()->addAssign(builder::member(state().self, "__trial_mode"), builder::id("e"));
 
-                                    builder()->addMemberCall(state().self, "__on_0x25_synced", {});
+                                builder()->addComment("Loop on the sync field until parsing succeeds");
+                                auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
+                                pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
+                                    auto syncProduction = computeSyncProduction(p.fields()[*sync_point], grammar);
+                                    if ( ! syncProduction )
+                                        hilti::logger().internalError("unable to compute field to synchronize on");
 
-                                    builder()->addBreak();
+                                    auto try_ = builder()->addTry();
+                                    pushBuilder(try_.first, [&]() {
+                                        // Invoke full parsing logic including hooks for the sync field so that users
+                                        // can see the final field value in any hooks, but do not consume input on
+                                        // success. This allows users to see sensible values in e.g., `synced` hooks so
+                                        // they could invoke `confirm` there, but still ensures intuitive ordering in
+                                        // the execution of subsequently called field hooks.
+                                        auto pstate = state();
+                                        pstate.cur = builder()->addTmp("sync", state().cur);
+                                        pstate.literal_mode = LiteralMode::Try;
+                                        pushState(std::move(pstate));
+
+                                        builder()->addComment(fmt("Begin sync production: %s",
+                                                                  hilti::util::trim((std::string(*syncProduction)))));
+                                        assert(syncProduction->isLiteral());
+                                        pb->parseLiteral(*syncProduction, {});
+                                        builder()->addComment(fmt("End sync production: %s",
+                                                                  hilti::util::trim((std::string(*syncProduction)))));
+
+                                        popState();
+
+                                        builder()
+                                            ->addDebugMsg("spicy",
+                                                          "successfully synchronized after %d bytes, entering try mode",
+                                                          {skippedBytes});
+
+                                        builder()->addMemberCall(state().self, "__on_0x25_synced", {});
+
+                                        builder()->addBreak();
+                                    });
+                                    pushBuilder(try_.second.addCatch(
+                                                    builder::parameter(ID("e"),
+                                                                       builder::typeByID("spicy_rt::ParseError"))),
+                                                [&]() {
+                                                    pb->advanceInput(builder::integer(1));
+                                                    builder()->addExpression(builder::incrementPrefix(skippedBytes));
+                                                });
+                                    pushBuilder(builder()->addIf(pb->atEod()), [&]() { builder()->addRethrow(); });
                                 });
-                                pushBuilder(try_.second.addCatch(
-                                                builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
-                                            [&]() {
-                                                pb->advanceInput(builder::integer(1));
-                                                builder()->addExpression(builder::incrementPrefix(skippedBytes));
-                                            });
-                                pushBuilder(builder()->addIf(pb->atEod()), [&]() { builder()->addRethrow(); });
                             });
-                        });
-                }
-            });
+            }
         }
 
         if ( const auto& skipPost = p.unitType().propertyItem("%skip-post") )
