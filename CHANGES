@@ -1,3 +1,9 @@
+1.4.0-dev.105 | 2021-12-10 09:50:54 +0100
+
+  * Fix lints from cmake-lint. (Benjamin Bannier, Corelight)
+
+  * Reformat CMake files with cmake-format. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.102 | 2021-12-09 11:24:39 +0100
 
   * Avoid calculating AST dump if we do not output it. (Benjamin Bannier, Corelight)

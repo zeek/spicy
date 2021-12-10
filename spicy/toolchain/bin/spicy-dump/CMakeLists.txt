@@ -1,4 +1,3 @@
-
 add_executable(spicy-dump main.cc printer-text.cc printer-json.cc)
 target_compile_options(spicy-dump PRIVATE "-Wall")
 spicy_link_executable_in_tree(spicy-dump PRIVATE)
