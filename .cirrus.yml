@@ -867,6 +867,15 @@ zeek_plugin_task:
     cpu: 4
     memory: 12G
 
+  env:
+    CCACHE_DIR: /tmp/ccache
+    PATH: /opt/spicy/bin:$PATH
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
   update_git_script:
     - git fetch --tags
     - git submodule update --recursive --init
@@ -877,23 +886,11 @@ zeek_plugin_task:
     - rm -rf build
 
   install_plugin_script:
-    - git clone --branch=$ZEEK_SPICY_BRANCH --recurse-submodules https://github.com/zeek/spicy-plugin
-    - (cd spicy-plugin && mkdir build && cd build && PATH=/opt/spicy/bin:$PATH cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-plugin -G Ninja .. && ninja install)
-    - rm -rf spicy-plugin/build
-    - zeek -NN _Zeek::Spicy
+    - zkg -vvvvv install zeek/spicy-plugin --force --version=$ZEEK_SPICY_BRANCH
 
   install_analyzers_script:
-    - git clone --branch=$ZEEK_ANALYZERS_BRANCH --recurse-submodules https://github.com/zeek/spicy-analyzers
-    - (cd spicy-analyzers && mkdir build && cd build && PATH=/opt/spicy/bin:/opt/spicy-plugin/bin:$PATH cmake -DCMAKE_INSTALL_PREFIX=/opt/spicy-analyzers -G Ninja .. && ninja install)
-    - rm -rf spicy-analyzers/build
-    - zeek -NN _Zeek::Spicy
-    - zeek -NN _Zeek::Spicy | grep -q ANALYZER_SPICY_TFTP
+    - echo Y | zkg -vvvvv install zeek/spicy-analyzers --version=$ZEEK_ANALYZERS_BRANCH
 
-  test_plugin_script:
-    - (PATH=/opt/spicy/bin:/opt/spicy-plugin/bin:$PATH make -C spicy-plugin/tests test-install)
-
-  test_analyzer_script:
-    - (PATH=/opt/spicy/bin:/opt/spicy-plugin/bin:$PATH make -C spicy-analyzers/tests test-install)
-
-  check_script:
-    - (cd /tmp && zeek -r ${CIRRUS_WORKING_DIR}/spicy-analyzers/tests/Traces/tftp_rrq.pcap spicy-analyzers && test -e tftp.log && grep rfc1350.txt tftp.log)
+  on_failure:
+    show_logs_script:
+      - tail -n 1000000 $(zkg config state_dir)/logs/*.log
