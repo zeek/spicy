@@ -1674,13 +1674,11 @@ void ParserBuilder::trimInput(bool force) {
 void ParserBuilder::initializeUnit(const Location& l) {
     const auto& unit = state().unit.get();
 
-    if ( unit.usesRandomAccess() ) {
-        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
-            // Save the current input offset for the raw access methods.
-            builder()->addAssign(builder::member(state().self, ID("__begin")), builder::begin(state().cur));
-            builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
-        });
-    }
+    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+        // Save the current input offset for the raw access methods.
+        builder()->addAssign(builder::member(state().self, ID("__begin")), builder::begin(state().cur));
+        builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
+    });
 
     beforeHook();
     builder()->addMemberCall(state().self, "__on_0x25_init", {}, l);
@@ -1776,39 +1774,35 @@ void ParserBuilder::setInput(const Expression& i) { builder()->addAssign(state()
 void ParserBuilder::beforeHook() {
     const auto& unit = state().unit.get();
 
-    if ( unit.usesRandomAccess() )
-        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
-            builder()->addAssign(builder::member(state().self, ID("__position_update")),
-                                 builder::optional(hilti::type::stream::Iterator()));
-        });
+    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+        builder()->addAssign(builder::member(state().self, ID("__position_update")),
+                             builder::optional(hilti::type::stream::Iterator()));
+    });
 }
 
 void ParserBuilder::afterHook() {
     const auto& unit = state().unit.get();
 
-    if ( unit.usesRandomAccess() ) {
-        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
-            auto position_update = builder::member(state().self, ID("__position_update"));
-            auto advance = builder()->addIf(position_update);
-            auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
+    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+        auto position_update = builder::member(state().self, ID("__position_update"));
+        auto advance = builder()->addIf(position_update);
+        auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
 
-            if ( state().ncur )
-                advance->addAssign(*state().ncur, ncur);
-            else
-                advance->addAssign(state().cur, ncur);
+        if ( state().ncur )
+            advance->addAssign(*state().ncur, ncur);
+        else
+            advance->addAssign(state().cur, ncur);
 
-            advance->addAssign(builder::member(state().self, ID("__position_update")),
-                               builder::optional(hilti::type::stream::Iterator()));
-        });
-    }
+        advance->addAssign(builder::member(state().self, ID("__position_update")),
+                           builder::optional(hilti::type::stream::Iterator()));
+    });
 }
 
 void ParserBuilder::saveParsePosition() {
     const auto& unit = state().unit.get();
-    if ( unit.usesRandomAccess() )
-        guardFeatureCode(unit, {"uses_random_access"}, [&]() {
-            builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
-        });
+    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+        builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
+    });
 }
 
 void ParserBuilder::consumeLookAhead(std::optional<Expression> dst) {

@@ -179,9 +179,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     if ( unit.id() ) {
         ID typeID = ID(hilti::rt::replace(*unit.id(), ":", "_"));
 
-        if ( unit.usesRandomAccess() )
-            addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true)));
-
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true)));
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(unit.isFilter())));
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
@@ -195,20 +193,17 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_undelivered",
              {builder::parameter("seq", type::UnsignedInteger(64)), builder::parameter("data", type::Bytes())});
 
-    if ( unit.usesRandomAccess() ) {
-        auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
-
-        auto f1 = hilti::declaration::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                            AttributeSet({Attribute("&internal"), attr_random_access}));
-        auto f2 = hilti::declaration::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                            AttributeSet({Attribute("&internal"), attr_random_access}));
-        auto f3 =
-            hilti::declaration::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                      AttributeSet({Attribute("&internal"), attr_random_access}));
-        v.addField(std::move(f1));
-        v.addField(std::move(f2));
-        v.addField(std::move(f3));
-    }
+    // Fields releated to random-access functionality.
+    auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
+    auto f1 = hilti::declaration::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                        AttributeSet({Attribute("&internal"), attr_random_access}));
+    auto f2 = hilti::declaration::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                        AttributeSet({Attribute("&internal"), attr_random_access}));
+    auto f3 = hilti::declaration::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
+                                        AttributeSet({Attribute("&internal"), attr_random_access}));
+    v.addField(std::move(f1));
+    v.addField(std::move(f2));
+    v.addField(std::move(f3));
 
     {
         auto attrs = AttributeSet({Attribute("&static"), Attribute("&internal"),
