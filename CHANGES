@@ -1,3 +1,7 @@
+1.4.0-dev.110 | 2021-12-13 10:46:04 +0100
+
+  * Show log for configure failures. (Benjamin Bannier)
+
 1.4.0-dev.108 | 2021-12-13 10:43:52 +0100
 
   * Refresh package docs with `doc/scripts/autogen-zeek-docs` [skip ci]. (Benjamin Bannier, Corelight)
