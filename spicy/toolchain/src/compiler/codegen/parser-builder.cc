@@ -252,6 +252,10 @@ struct ProductionVisitor
 
                     pushState(std::move(pstate));
 
+                    // Disable trimming for random-access units.
+                    pushBuilder(builder()->addIf(builder::bool_(unit->usesRandomAccess())),
+                                [&]() { builder()->addAssign(state().trim, builder::bool_(false)); });
+
                     build_parse_stage1_logic();
 
                     // Call stage 2.
@@ -1060,12 +1064,6 @@ struct ProductionVisitor
     void operator()(const production::Unit& p) {
         auto pstate = pb->state();
         pstate.self = destination();
-
-        if ( p.unitType().usesRandomAccess() ) {
-            // Disable trimming.
-            pstate.trim = builder::bool_(false);
-        }
-
         pushState(std::move(pstate));
 
         // `&size` and `&max-size` share the same underlying infrastructure

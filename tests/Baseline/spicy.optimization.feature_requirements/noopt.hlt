@@ -172,6 +172,10 @@ method hook void foo::X1::__on_0x25_init() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::X1::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( True ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__X1%uses_random_access ) {
@@ -350,6 +354,10 @@ init function void __register_foo_X1() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::X2::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( True ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__X2%uses_random_access ) {
@@ -528,6 +536,10 @@ init function void __register_foo_X2() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::X3::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__X3%uses_random_access ) {
@@ -714,6 +726,10 @@ init function void __register_foo_X3() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::X4::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__X4%uses_random_access ) {
@@ -904,6 +920,10 @@ method hook void foo::X5::__on_0x25_init() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::X5::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__X5%uses_random_access ) {
@@ -1082,6 +1102,10 @@ method hook void foo::X6::__on_0x25_init() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::X6::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__X6%uses_random_access ) {

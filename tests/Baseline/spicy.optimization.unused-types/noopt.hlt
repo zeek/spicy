@@ -260,6 +260,10 @@ global Priv12 em = Priv12::A;
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv1::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__Priv1%uses_random_access ) {
@@ -438,6 +442,10 @@ init function void __register_foo_Priv1() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__Pub2%uses_random_access ) {
@@ -612,6 +620,10 @@ init function void __register_foo_Pub2() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv2::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__Priv2%uses_random_access ) {
@@ -790,6 +802,10 @@ init function void __register_foo_Priv2() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv3::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__Priv3%uses_random_access ) {
@@ -968,6 +984,10 @@ init function void __register_foo_Priv3() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv4::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__Priv4%uses_random_access ) {
@@ -1179,6 +1199,10 @@ init function void __register_foo_Priv4() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv5::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__Priv5%uses_random_access ) {
@@ -1357,6 +1381,10 @@ init function void __register_foo_Priv5() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv6::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__Priv6%uses_random_access ) {
@@ -1535,6 +1563,10 @@ init function void __register_foo_Priv6() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__Pub3%uses_random_access ) {
@@ -1742,6 +1774,10 @@ init function void __register_foo_Pub3() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv10::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__Priv10%uses_random_access ) {

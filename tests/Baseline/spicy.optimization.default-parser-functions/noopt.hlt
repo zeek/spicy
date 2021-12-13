@@ -91,6 +91,10 @@ const bool __feat%foo__P2%supports_sinks = True;
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::P0::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__P0%uses_random_access ) {
@@ -269,6 +273,10 @@ init function void __register_foo_P0() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::P1::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( False ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__P1%uses_random_access ) {
@@ -449,6 +457,10 @@ method hook void foo::P2::__on_0x25_error() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( True ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
 
         if ( __feat%foo__P2%uses_random_access ) {
@@ -546,7 +558,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
     spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:19:8", (*self).__filters);
     ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 
-    if ( False ) 
+    if ( __trim ) 
         (*__data).trim(begin(__cur));
 
     # End parsing production: Variable: x   -> uint<8>
@@ -573,7 +585,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
     spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:20:8", (*self).__filters);
     ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 
-    if ( False ) 
+    if ( __trim ) 
         (*__data).trim(begin(__cur));
 
     # End parsing production: Variable: y   -> uint<8>
