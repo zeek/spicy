@@ -34,6 +34,49 @@ Instructs Zeek to flip the directionality of the current connection.
 
 Returns the number of packets seen so far on the current side of the current connection.
 
+.. _spicy_protocol_begin:
+
+.. rubric:: ``function zeek::protocol_begin(analyzer: optional<string> = Null) : &cxxname="spicy``
+
+Adds a Zeek-side child protocol analyzer to the current connection.
+
+analyzer: type of analyzer to instantiate, specified through its Zeek-side
+name (similar to what Zeek's signature action `enable` takes); if not
+specified, Zeek will perform its usual dynamic protocol detection to figure
+out how to parse the data (the latter will work only for TCP protocols, though.)
+
+.. _spicy_protocol_data_in:
+
+.. rubric:: ``function zeek::protocol_data_in(is_orig: bool, data: bytes)``
+
+Forwards protocol data to all previously instantiated Zeek-side child protocol analyzers.
+
+is_orig: true to feed the data to the child's originator side, false for the responder
+data: chunk of data to forward to child analyzer
+
+Note that due to Zeek limitations, any data passed through this function will always
+be forwarded to *all* currently active child analyzers.
+
+.. _spicy_protocol_gap:
+
+.. rubric:: ``function zeek::protocol_gap(is_orig: bool, offset: uint64, len: uint64)``
+
+Signals a gap in input data to all previously instantiated Zeek-side child protocol analyzers.
+
+is_orig: true to signal gap to the child's originator side, false for the responder
+offset: start offset of gap in input stream
+len: size of gap
+
+Note that due to Zeek limitations, any gaps signaled through this function will always
+be forwarded to *all* currently active child analyzers.
+
+.. _spicy_protocol_end:
+
+.. rubric:: ``function zeek::protocol_end()``
+
+Signals end-of-data to all previously instantiated Zeek-side child protocol
+analyzers and removes them.
+
 .. _spicy_file_begin:
 
 .. rubric:: ``function zeek::file_begin(mime_type: optional<string> = Null) : string``
@@ -41,6 +84,12 @@ Returns the number of packets seen so far on the current side of the current con
 Signals the beginning of a file to Zeek's file analysis, associating it with the current connection.
 Optionally, a mime type can be provided. It will be passed on to Zeek's file analysis framework.
 Returns the Zeek-side file ID of the new file.
+
+.. _spicy_file_end:
+
+.. rubric:: ``function zeek::file_end()``
+
+Signals the end of a file to Zeek's file analysis.
 
 .. _spicy_fuid:
 
@@ -71,12 +120,6 @@ Passes file content at a specific offset on to Zeek's file analysis.
 .. rubric:: ``function zeek::file_gap(offset: uint64, len: uint64)``
 
 Signals a gap in a file to Zeek's file analysis.
-
-.. _spicy_file_end:
-
-.. rubric:: ``function zeek::file_end()``
-
-Signals the end of a file to Zeek's file analysis.
 
 .. _spicy_forward_packet:
 
