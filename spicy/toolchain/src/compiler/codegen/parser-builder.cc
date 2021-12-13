@@ -1060,14 +1060,13 @@ struct ProductionVisitor
     void operator()(const production::Unit& p) {
         auto pstate = pb->state();
         pstate.self = destination();
-        pushState(std::move(pstate));
 
         if ( p.unitType().usesRandomAccess() ) {
             // Disable trimming.
-            auto pstate = state();
             pstate.trim = builder::bool_(false);
-            pushState(std::move(pstate));
         }
+
+        pushState(std::move(pstate));
 
         // `&size` and `&max-size` share the same underlying infrastructure
         // so try to extract both of them and compute the ultimate value. We
@@ -1139,9 +1138,6 @@ struct ProductionVisitor
             popState();
             builder()->addAssign(state().cur, *ncur);
         }
-
-        if ( p.unitType().usesRandomAccess() )
-            popState();
 
         popState();
     }
