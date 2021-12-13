@@ -1,3 +1,7 @@
+1.4.0-dev.112 | 2021-12-13 10:46:37 +0100
+
+  * Fix zeek_plugin CI task for broken apart zeek/spicy-analyzers. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.110 | 2021-12-13 10:46:04 +0100
 
   * Show log for configure failures. (Benjamin Bannier)
