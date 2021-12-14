@@ -243,9 +243,6 @@ the first byte that the field has been parsed from. If this method is called
 before the unit's parsing has begun, it will throw a runtime exception. Once
 parsing has started, the offset will remain available for the unit's entire
 life time.
-
-Usage of this method requires the unit to be declared with the ``%random-access``
-property.
 )"};
     }
 END_METHOD
@@ -261,9 +258,6 @@ Returns an iterator to the current position in the unit's input stream. If
 executed from inside a field hook, the position will represent the first byte
 that the field has been parsed from. If this method is called before the unit's
 parsing has begun, it will throw a runtime exception.
-
-Usage of this method requires the unit to be declared with the ``%random-access``
-property.
 )"};
     }
 END_METHOD
@@ -280,9 +274,6 @@ Returns an iterator referring to the input location where the current unit has
 begun parsing. If this method is called before the units parsing has begun, it
 will throw a runtime exception. Once available, the input position will remain
 accessible for the unit's entire life time.
-
-Usage of this method requires the unit to be declared with the ``%random-access``
-property.
 )"};
     }
 END_METHOD
@@ -297,9 +288,6 @@ BEGIN_METHOD(unit, SetInput)
                                            .doc = R"(
 Moves the current parsing position to *i*. The iterator *i* must be into the
 input of the current unit, or the method will throw a runtime execption.
-
-Usage of this method requires the unit to be declared with the ``%random-access``
-property.
 )"};
     }
 END_METHOD
@@ -329,9 +317,6 @@ of that region and scan forward. If the direction is
 ``spicy::Direcction::Backward``, the search will start at the end of the region
 and scan backward. In either case, a starting position can also be explicitly
 given, but must lie inside the same region.
-
-Usage of this method requires the unit to be declared with the ``%random-access``
-property.
 )"};
     }
 END_METHOD

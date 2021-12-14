@@ -253,7 +253,9 @@ struct ProductionVisitor
                     pushState(std::move(pstate));
 
                     // Disable trimming for random-access units.
-                    pushBuilder(builder()->addIf(builder::bool_(unit->usesRandomAccess())),
+                    const auto id = hilti::util::replace(*unit->id(), ":", "_");
+                    pushBuilder(builder()->addIf(
+                                    builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, "uses_random_access")))),
                                 [&]() { builder()->addAssign(state().trim, builder::bool_(false)); });
 
                     build_parse_stage1_logic();

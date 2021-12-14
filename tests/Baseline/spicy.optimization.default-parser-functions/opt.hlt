@@ -126,9 +126,6 @@ method hook void foo::P2::__on_0x25_error() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
-        
-            __trim = False;
-
         hilti::debugIndent("spicy");
         default<void>();
         local strong_ref<stream> filtered = Null;

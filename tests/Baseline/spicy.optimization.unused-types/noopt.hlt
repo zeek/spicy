@@ -261,7 +261,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv1::__parse
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
 
-        if ( False ) 
+        if ( __feat%foo__Priv1%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
@@ -443,7 +443,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub2::__parse_
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
 
-        if ( False ) 
+        if ( __feat%foo__Pub2%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
@@ -621,7 +621,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv2::__parse
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
 
-        if ( False ) 
+        if ( __feat%foo__Priv2%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
@@ -803,7 +803,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv3::__parse
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
 
-        if ( False ) 
+        if ( __feat%foo__Priv3%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
@@ -985,7 +985,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv4::__parse
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
 
-        if ( False ) 
+        if ( __feat%foo__Priv4%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
@@ -1200,7 +1200,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv5::__parse
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
 
-        if ( False ) 
+        if ( __feat%foo__Priv5%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
@@ -1382,7 +1382,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv6::__parse
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
 
-        if ( False ) 
+        if ( __feat%foo__Priv6%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
@@ -1564,7 +1564,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Pub3::__parse_
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
 
-        if ( False ) 
+        if ( __feat%foo__Pub3%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
@@ -1775,7 +1775,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::Priv10::__pars
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
 
-        if ( False ) 
+        if ( __feat%foo__Priv10%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
