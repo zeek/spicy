@@ -6,7 +6,6 @@
 module foo;
 
 type Data = unit {
-    %random-access;
     : b"X";
     on %done { self.set_input(self.input()); }
 };

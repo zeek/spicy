@@ -121,6 +121,7 @@ public:
 
     void info(const std::string& msg, const Location& l = location::None);
     void warning(const std::string& msg, const Location& l = location::None);
+    void deprecated(const std::string& msg, const Location& l = location::None);
     void error(const std::string& msg, const Location& l = location::None);
     void error(const std::string& msg, const std::vector<std::string>& context, const Location& l = location::None);
     void fatalError(const std::string& msg, const Location& l = location::None) __attribute__((noreturn));

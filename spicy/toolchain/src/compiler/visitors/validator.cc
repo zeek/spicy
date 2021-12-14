@@ -286,6 +286,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( i.id().str() == "%random-access" ) {
             if ( i.expression() )
                 error("%random-access does not accept an argument", p);
+
+            hilti::logger().deprecated("%random-access is no longer needed and deprecated", i.meta().location());
         }
 
         else if ( i.id().str() == "%filter" ) {

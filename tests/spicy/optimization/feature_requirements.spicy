@@ -11,14 +11,11 @@ module foo;
 
 # Use of random-access dependent code is recognized.
 type X1 = unit {
-    %random-access;
     on %init { self.offset(); }
 };
 
 # Unused random-access-dependent code should be removed.
-type X2 = unit {
-    %random-access;
-};
+type X2 = unit {};
 
 # Filter-dependent code in unused non-public units should be removed.
 type X3 = unit {
