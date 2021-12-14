@@ -8,10 +8,6 @@ module Mini;
 import spicy;
 
 public type Main = unit {
-    # Disable trimming, as that means the subunit will get the full data
-    # instances and must pay attention to its current view.
-    %random-access;
-
     a: bytes &size=5;
     b: Sub;
 

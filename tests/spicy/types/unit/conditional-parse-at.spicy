@@ -4,7 +4,6 @@
 module Test;
 
 public type Foo = unit {
-    %random-access;
     on %init { self.x = self.input(); }
     b1: Bar &parse-at=self.x if ( True );
     b2: Bar &parse-at=self.x if ( False );

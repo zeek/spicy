@@ -1591,9 +1591,8 @@ parsed from the data starting at that location.
 
 While a unit is being parsed, you may revert the current input
 position backwards to any location between the first byte the unit has
-seen and the current position. To enable this functionality, the
-unit needs to be declared with the ``%random-access`` property. You
-can use a set of built-in unit methods to control the current position:
+seen and the current position. You can use a set of built-in unit methods to
+control the current position:
 
 :spicy:method:`unit::input`
     Returns a stream iterator pointing to the current input position.
@@ -1625,8 +1624,6 @@ Here's an example that parses input data twice with different sub units:
     module Test;
 
     public type Foo = unit {
-        %random-access;
-
         on %init() { self.start = self.input(); }
 
         a: A { self.set_input(self.start); }

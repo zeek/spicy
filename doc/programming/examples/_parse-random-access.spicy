@@ -2,8 +2,6 @@
 module Test;
 
 public type Foo = unit {
-    %random-access;
-
     on %init() { self.start = self.input(); }
 
     a: A { self.set_input(self.start); }

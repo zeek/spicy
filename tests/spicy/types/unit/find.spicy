@@ -8,8 +8,6 @@ module Mini;
 import spicy;
 
 public type Foo = unit {
-    %random-access;
-
     : void &eod;
     : void {
         local i: optional<iterator<stream>>;
