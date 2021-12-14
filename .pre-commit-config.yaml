@@ -7,7 +7,7 @@ repos:
     name: Check for bashisms in /bin/sh scripts
     entry: ./tests/Scripts/3rdparty/checkbashisms.pl
     language: script
-    files: '.*\.sh'
+    types: ["sh"]
 
   - id: autogen-docs
     name: Check that generated documentation is up-to-date
