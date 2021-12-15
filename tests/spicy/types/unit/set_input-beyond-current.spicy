@@ -4,7 +4,6 @@
 module Mini;
 
 public type Foo = unit {
-    %random-access;
     : uint8;
     a: uint8 {
         # Skip forward beyond current position.

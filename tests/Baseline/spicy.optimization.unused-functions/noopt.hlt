@@ -5,6 +5,9 @@ import spicy_rt;
 import hilti;
 
 type A = struct {
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
@@ -24,6 +27,9 @@ type A = struct {
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_A_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 public type B = struct {
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
@@ -43,6 +49,9 @@ public type B = struct {
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_B_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 type C = struct {
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
@@ -63,6 +72,9 @@ type C = struct {
 } &on-heap;
 public type D = struct {
     value_ref<C> anon &optional &no-emit;
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
@@ -82,6 +94,9 @@ public type D = struct {
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_D_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 type F = struct {
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks" &needed-by-feature="is_filter";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
@@ -102,18 +117,23 @@ type F = struct {
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_F_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 
+const bool __feat%foo__A%uses_random_access = True;
 const bool __feat%foo__A%is_filter = False;
 const bool __feat%foo__A%supports_filters = True;
 const bool __feat%foo__A%supports_sinks = True;
+const bool __feat%foo__B%uses_random_access = True;
 const bool __feat%foo__B%is_filter = False;
 const bool __feat%foo__B%supports_filters = True;
 const bool __feat%foo__B%supports_sinks = True;
+const bool __feat%foo__C%uses_random_access = True;
 const bool __feat%foo__C%is_filter = False;
 const bool __feat%foo__C%supports_filters = True;
 const bool __feat%foo__C%supports_sinks = True;
+const bool __feat%foo__D%uses_random_access = True;
 const bool __feat%foo__D%is_filter = False;
 const bool __feat%foo__D%supports_filters = True;
 const bool __feat%foo__D%supports_sinks = True;
+const bool __feat%foo__F%uses_random_access = True;
 const bool __feat%foo__F%is_filter = True;
 const bool __feat%foo__F%supports_filters = True;
 const bool __feat%foo__F%supports_sinks = True;
@@ -127,8 +147,31 @@ public function void f2() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( __feat%foo__A%uses_random_access ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
+
+        if ( __feat%foo__A%uses_random_access ) {
+            (*self).__begin = begin(__cur);
+            (*self).__position = begin(__cur);
+        }
+
+
+        if ( __feat%foo__A%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_init();
+
+        if ( __feat%foo__A%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__A%supports_filters ) 
@@ -151,22 +194,69 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_sta
 
     }
     catch {
+
+        if ( __feat%foo__A%uses_random_access ) 
+            (*self).__position = begin(__cur);
+
         (*self).__on_0x25_error();
 
         if ( __feat%foo__A%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo__A%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_finally();
+
+        if ( __feat%foo__A%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         throw;
     }
 
+
+    if ( __feat%foo__A%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_finally();
+
+    if ( __feat%foo__A%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
     return __result;
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_foo_A_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
+
+    if ( __feat%foo__A%uses_random_access ) 
+        (*self).__position = begin(__cur);
+
+
+    if ( __feat%foo__A%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_done();
+
+    if ( __feat%foo__A%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
 
     if ( __feat%foo__A%supports_filters ) 
         spicy_rt::filter_disconnect(self);
@@ -183,6 +273,10 @@ method extern method view<stream> foo::A::parse1(inout value_ref<stream> data, o
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_A ->
+
+    if ( __feat%foo__A%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_A ->
 
@@ -197,6 +291,10 @@ method extern method view<stream> foo::A::parse3(inout value_ref<spicy_rt::Parse
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_A ->
+
+    if ( __feat%foo__A%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_A ->
 
@@ -209,6 +307,10 @@ method extern method view<stream> foo::A::parse2(inout value_ref<A> unit, inout 
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_A ->
+
+    if ( __feat%foo__A%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_A ->
 
@@ -227,8 +329,31 @@ init function void __register_foo_A() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( __feat%foo__B%uses_random_access ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
+
+        if ( __feat%foo__B%uses_random_access ) {
+            (*self).__begin = begin(__cur);
+            (*self).__position = begin(__cur);
+        }
+
+
+        if ( __feat%foo__B%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_init();
+
+        if ( __feat%foo__B%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__B%supports_filters ) 
@@ -251,22 +376,69 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_sta
 
     }
     catch {
+
+        if ( __feat%foo__B%uses_random_access ) 
+            (*self).__position = begin(__cur);
+
         (*self).__on_0x25_error();
 
         if ( __feat%foo__B%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo__B%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_finally();
+
+        if ( __feat%foo__B%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         throw;
     }
 
+
+    if ( __feat%foo__B%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_finally();
+
+    if ( __feat%foo__B%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
     return __result;
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_foo_B_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
+
+    if ( __feat%foo__B%uses_random_access ) 
+        (*self).__position = begin(__cur);
+
+
+    if ( __feat%foo__B%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_done();
+
+    if ( __feat%foo__B%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
 
     if ( __feat%foo__B%supports_filters ) 
         spicy_rt::filter_disconnect(self);
@@ -283,6 +455,10 @@ method extern method view<stream> foo::B::parse1(inout value_ref<stream> data, o
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_B ->
+
+    if ( __feat%foo__B%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_B ->
 
@@ -297,6 +473,10 @@ method extern method view<stream> foo::B::parse3(inout value_ref<spicy_rt::Parse
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_B ->
+
+    if ( __feat%foo__B%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_B ->
 
@@ -309,6 +489,10 @@ method extern method view<stream> foo::B::parse2(inout value_ref<B> unit, inout 
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_B ->
+
+    if ( __feat%foo__B%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_B ->
 
@@ -323,8 +507,31 @@ init function void __register_foo_B() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( __feat%foo__C%uses_random_access ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
+
+        if ( __feat%foo__C%uses_random_access ) {
+            (*self).__begin = begin(__cur);
+            (*self).__position = begin(__cur);
+        }
+
+
+        if ( __feat%foo__C%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_init();
+
+        if ( __feat%foo__C%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__C%supports_filters ) 
@@ -347,22 +554,69 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_sta
 
     }
     catch {
+
+        if ( __feat%foo__C%uses_random_access ) 
+            (*self).__position = begin(__cur);
+
         (*self).__on_0x25_error();
 
         if ( __feat%foo__C%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo__C%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_finally();
+
+        if ( __feat%foo__C%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         throw;
     }
 
+
+    if ( __feat%foo__C%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_finally();
+
+    if ( __feat%foo__C%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
     return __result;
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_foo_C_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
+
+    if ( __feat%foo__C%uses_random_access ) 
+        (*self).__position = begin(__cur);
+
+
+    if ( __feat%foo__C%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_done();
+
+    if ( __feat%foo__C%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
 
     if ( __feat%foo__C%supports_filters ) 
         spicy_rt::filter_disconnect(self);
@@ -379,6 +633,10 @@ method extern method view<stream> foo::C::parse1(inout value_ref<stream> data, o
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_C ->
+
+    if ( __feat%foo__C%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_C ->
 
@@ -393,6 +651,10 @@ method extern method view<stream> foo::C::parse3(inout value_ref<spicy_rt::Parse
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_C ->
+
+    if ( __feat%foo__C%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_C ->
 
@@ -405,6 +667,10 @@ method extern method view<stream> foo::C::parse2(inout value_ref<C> unit, inout 
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_C ->
+
+    if ( __feat%foo__C%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_C ->
 
@@ -423,8 +689,31 @@ init function void __register_foo_C() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( __feat%foo__D%uses_random_access ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
+
+        if ( __feat%foo__D%uses_random_access ) {
+            (*self).__begin = begin(__cur);
+            (*self).__position = begin(__cur);
+        }
+
+
+        if ( __feat%foo__D%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_init();
+
+        if ( __feat%foo__D%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__D%supports_filters ) 
@@ -447,16 +736,46 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_sta
 
     }
     catch {
+
+        if ( __feat%foo__D%uses_random_access ) 
+            (*self).__position = begin(__cur);
+
         (*self).__on_0x25_error();
 
         if ( __feat%foo__D%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo__D%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_finally();
+
+        if ( __feat%foo__D%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         throw;
     }
 
+
+    if ( __feat%foo__D%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_finally();
+
+    if ( __feat%foo__D%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
     return __result;
 }
 
@@ -465,11 +784,31 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_foo
     local value_ref<C> __transient_anon;
 
     # Begin parsing production: Unit: foo_C_2 ->
+
+    if ( __feat%foo__D%uses_random_access ) 
+        (*self).__position = begin(__cur);
+
     __transient_anon = default<C>();
     (__cur, __lah, __lahe) = (*__transient_anon).__parse_stage1(__data, __cur, __trim, __lah, __lahe);
     # End parsing production: Unit: foo_C_2 ->
 
+    if ( __feat%foo__D%uses_random_access ) 
+        (*self).__position = begin(__cur);
+
+
+    if ( __feat%foo__D%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_done();
+
+    if ( __feat%foo__D%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
 
     if ( __feat%foo__D%supports_filters ) 
         spicy_rt::filter_disconnect(self);
@@ -486,6 +825,10 @@ method extern method view<stream> foo::D::parse1(inout value_ref<stream> data, o
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
+
+    if ( __feat%foo__D%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_D -> foo_C_2
 
@@ -500,6 +843,10 @@ method extern method view<stream> foo::D::parse3(inout value_ref<spicy_rt::Parse
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
+
+    if ( __feat%foo__D%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_D -> foo_C_2
 
@@ -512,6 +859,10 @@ method extern method view<stream> foo::D::parse2(inout value_ref<D> unit, inout 
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
+
+    if ( __feat%foo__D%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_D -> foo_C_2
 
@@ -526,8 +877,31 @@ init function void __register_foo_D() {
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
     try {
+
+        if ( __feat%foo__F%uses_random_access ) 
+            __trim = False;
+
         hilti::debugIndent("spicy");
+
+        if ( __feat%foo__F%uses_random_access ) {
+            (*self).__begin = begin(__cur);
+            (*self).__position = begin(__cur);
+        }
+
+
+        if ( __feat%foo__F%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_init();
+
+        if ( __feat%foo__F%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__F%supports_filters ) 
@@ -550,6 +924,10 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_sta
 
     }
     catch {
+
+        if ( __feat%foo__F%uses_random_access ) 
+            (*self).__position = begin(__cur);
+
         (*self).__on_0x25_error();
 
         if ( __feat%foo__F%supports_filters ) 
@@ -559,17 +937,60 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_sta
         if ( __feat%foo__F%is_filter ) 
             spicy_rt::filter_forward_eod(self);
 
+
+        if ( __feat%foo__F%uses_random_access ) 
+            (*self).__position_update = Null;
+
         (*self).__on_0x25_finally();
+
+        if ( __feat%foo__F%uses_random_access ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
         throw;
     }
 
+
+    if ( __feat%foo__F%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_finally();
+
+    if ( __feat%foo__F%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
     return __result;
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_foo_F_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe) {
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
+
+    if ( __feat%foo__F%uses_random_access ) 
+        (*self).__position = begin(__cur);
+
+
+    if ( __feat%foo__F%uses_random_access ) 
+        (*self).__position_update = Null;
+
     (*self).__on_0x25_done();
+
+    if ( __feat%foo__F%uses_random_access ) 
+
+        if ( (*self).__position_update ) {
+            __cur = __cur.advance((*(*self).__position_update));
+            (*self).__position_update = Null;
+        }
+
+
 
     if ( __feat%foo__F%supports_filters ) 
         spicy_rt::filter_disconnect(self);
@@ -590,6 +1011,10 @@ method extern method view<stream> foo::F::parse1(inout value_ref<stream> data, o
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_F ->
+
+    if ( __feat%foo__F%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_F ->
 
@@ -604,6 +1029,10 @@ method extern method view<stream> foo::F::parse3(inout value_ref<spicy_rt::Parse
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_F ->
+
+    if ( __feat%foo__F%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_F ->
 
@@ -616,6 +1045,10 @@ method extern method view<stream> foo::F::parse2(inout value_ref<F> unit, inout 
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_F ->
+
+    if ( __feat%foo__F%uses_random_access ) 
+        (*unit).__position = begin(ncur);
+
     (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
     # End parsing production: Unit: foo_F ->
 

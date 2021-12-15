@@ -28,9 +28,11 @@ public type P2 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_P2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe);
 } &on-heap;
 
+const bool __feat%foo__P0%uses_random_access = False;
 const bool __feat%foo__P0%is_filter = False;
 const bool __feat%foo__P0%supports_filters = False;
 const bool __feat%foo__P0%supports_sinks = False;
+const bool __feat%foo__P1%uses_random_access = False;
 const bool __feat%foo__P1%is_filter = False;
 const bool __feat%foo__P1%supports_filters = False;
 const bool __feat%foo__P1%supports_sinks = False;
@@ -163,15 +165,23 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
 
     # Begin parsing production: Variable: x   -> uint<8>
-    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:19:8", (*self).__filters);
+    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8", (*self).__filters);
     ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
+
+    if ( __trim ) 
+        (*__data).trim(begin(__cur));
+
     # End parsing production: Variable: x   -> uint<8>
 
     default<void>();
 
     # Begin parsing production: Variable: y   -> uint<8>
-    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:20:8", (*self).__filters);
+    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8", (*self).__filters);
     ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
+
+    if ( __trim ) 
+        (*__data).trim(begin(__cur));
+
     # End parsing production: Variable: y   -> uint<8>
 
     (*self).__on_y((*self).y);

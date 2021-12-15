@@ -6,15 +6,11 @@ module Mini;
 import spicy;
 
 type Sub = unit {
-    %random-access;
-
     x: uint16;
     y: uint8;
 };
 
 public type Test = unit {
-    %random-access;
-
     x: Sub[3] foreach { if ( $$.y == 5 ) self.set_input($$.input()); }
     on %done { print self; }
 };

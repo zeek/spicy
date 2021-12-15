@@ -1,3 +1,13 @@
+1.4.0-dev.124 | 2021-12-15 16:54:10 +0100
+
+  * Remove unneeded `%random-access` in tests and docs. (Benjamin Bannier, Corelight)
+
+  * Add validation catching use of deprecated `%random-access`. (Benjamin Bannier, Corelight)
+
+  * Enable random-access by default. (Benjamin Bannier, Corelight)
+
+  * Generate branch for `%random-access`-dependent trimming. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.117 | 2021-12-15 16:13:53 +0100
 
   * GH-1068: Fix syntax for Spicy `struct` declaration. (Benjamin Bannier, Corelight)

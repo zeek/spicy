@@ -10,8 +10,6 @@ public type Testing = unit {
 };
 
 type Sub = unit(length: uint32) {
-    %random-access;
-
     a: bytes &size=2;
     : bytes &size=0;
     z: bytes &size=length-cast<uint32>(self.offset());

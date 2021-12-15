@@ -13,6 +13,5 @@ public type Testing = unit {
 };
 
 type Sub = unit(length: uint32) {
-  %random-access;
   la: bytes &size=length-self.offset();
 };

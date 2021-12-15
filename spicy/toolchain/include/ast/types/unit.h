@@ -145,17 +145,6 @@ public:
     auto isPublic() const { return _public; };
 
     /**
-     * Returns true if for this unit the parser generator needs to generate
-     * code facilitating random access within the data that an instance is
-     * being parsed from.
-     *
-     * \todo Currently this feature gets enabled through an attribute
-     * (`%random-access`). Eventually we should enable this automatically as
-     * needed, through static analysis.
-     */
-    bool usesRandomAccess() const { return propertyItem("%random-access").has_value(); }
-
-    /**
      * Returns true if this unit type can act as a filter.
      *
      * \todo Currently we tie this capability to unit types being public,

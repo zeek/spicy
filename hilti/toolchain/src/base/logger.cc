@@ -110,6 +110,8 @@ void Logger::warning(const std::string& msg, const Location& l) {
     ++_warnings;
 }
 
+void Logger::deprecated(const std::string& msg, const Location& l) { warning(msg, l); }
+
 void Logger::error(const std::string& msg, const Location& l) { error(msg, {}, l); }
 
 void Logger::error(const std::string& msg, const std::vector<std::string>& context, const Location& l) {

@@ -14,8 +14,6 @@ type P0 = unit {};
 public type P1 = unit {};
 
 public type P2 = unit {
-    %random-access;
-
     x: uint8;
     y: uint8 {}
 

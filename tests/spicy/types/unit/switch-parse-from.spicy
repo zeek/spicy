@@ -15,8 +15,6 @@ public type X = unit {
 };
 
 public type Y = unit {
-    %random-access;
-
     a: bytes &size=1;
     switch ( self.a ) {
         * -> b: bytes &eod;

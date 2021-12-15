@@ -286,6 +286,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( i.id().str() == "%random-access" ) {
             if ( i.expression() )
                 error("%random-access does not accept an argument", p);
+
+            hilti::logger().deprecated("%random-access is no longer needed and deprecated", i.meta().location());
         }
 
         else if ( i.id().str() == "%filter" ) {
@@ -815,26 +817,6 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
     void operator()(const operator_::unit::ForwardEod& n, position_t p) {
         if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->isFilter() )
             error("unit type cannot be a filter, %filter missing", p);
-    }
-
-    void operator()(const operator_::unit::Input& n, position_t p) {
-        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
-            error("use of 'input()' requires unit type to have property `%random-access`", p);
-    }
-
-    void operator()(const operator_::unit::Offset& n, position_t p) {
-        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
-            error("use of 'offset()' requires unit type to have property `%random-access`", p);
-    }
-
-    void operator()(const operator_::unit::SetInput& n, position_t p) {
-        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
-            error("use of 'set_input()' requires unit type to have property `%random-access`", p);
-    }
-
-    void operator()(const operator_::unit::Find& n, position_t p) {
-        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->usesRandomAccess() )
-            error("use of 'find()' requires unit type to have property `%random-access`", p);
     }
 };
 

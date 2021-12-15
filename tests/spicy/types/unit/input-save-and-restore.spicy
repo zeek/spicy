@@ -4,7 +4,6 @@
 module Mini;
 
 type Foo = unit {
-    %random-access;
     a:   bytes &size=5 {
             self.saved = self.input();
             self.set_input(self.saved);
@@ -14,7 +13,6 @@ type Foo = unit {
 };
 
 public type test = unit {
-    %random-access;
     a: bytes &size=5;
     f: Foo;
     b: bytes &size=5 {

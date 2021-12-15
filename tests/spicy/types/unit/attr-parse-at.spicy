@@ -12,8 +12,6 @@ type Bar = unit {
 };
 
 public type test = unit {
-    %random-access;
-
     a: bytes &size=4;
     b: bytes &size=4;
 
