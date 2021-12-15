@@ -12,8 +12,8 @@ keyword::
 
 This defines a global variable called ``NAME`` with type ``TYPE``. If the
 variable is declared with ``public`` visibility other modules can reference it.
-If a default is giving, Spicy initialized the global accordingly before any
-code executes. Otherwise, the global received a type-specific default,
+If a default is given, Spicy initializes the global accordingly before any
+code executes. Otherwise, the global receives a type-specific default,
 typically the type's notion of a null value. As a result, globals are always
 initialized to a well-defined value.
 
