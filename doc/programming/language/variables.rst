@@ -8,16 +8,17 @@ Variables and Constants
 At the global module level, we declare variables with the ``global``
 keyword::
 
-    global NAME: TYPE [= DEFAULT];
+    [public] global NAME: TYPE [= DEFAULT];
 
-This defines a global variable called ``NAME`` with type ``TYPE``. If
-a default is giving, Spicy initialized the global accordingly before
-any code executes. Otherwise, the global received a type-specific
-default, typically the type's notion of a null value. As a result,
-globals are always initialized to a well-defined value.
+This defines a global variable called ``NAME`` with type ``TYPE``. If the
+variable is declared with ``public`` visibility other modules can reference it.
+If a default is giving, Spicy initialized the global accordingly before any
+code executes. Otherwise, the global received a type-specific default,
+typically the type's notion of a null value. As a result, globals are always
+initialized to a well-defined value.
 
 As a shortcut, you can skip ``: TYPE`` if the global comes with a
-default.Spicy then just applies the expression's type to the global.
+default. Spicy then just applies the expression's type to the global.
 
 We define global constants in a similar way, just replacing ``global``
 with ``const``:
