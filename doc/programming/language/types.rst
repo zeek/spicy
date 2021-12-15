@@ -450,7 +450,7 @@ are mutable.
 
 .. rubric:: Type
 
-- ``struct { TYPE_1: IDENTIFIER_1; ...; TYPE_N: IDENTIFIER_N }``
+- ``struct { IDENTIFIER_1: TYPE_1; ...; IDENTIFIER_N: TYPE_N;  }``
 
 .. rubric:: Constants
 

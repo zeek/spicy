@@ -6,8 +6,8 @@
 module test;
 
 type Foo = struct {
-    int32 x;
-    real y;
+    x: int32;
+    y: real;
 };
 
 # NOTE: We perform these tests at local scope as a workaround for #1035.

@@ -35,7 +35,7 @@ namespace spicy { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 131
-%expect-rr 157
+%expect-rr 156
 
 %{
 
@@ -633,7 +633,7 @@ struct_type   : STRUCT '{' struct_fields '}'     { $$ = hilti::type::Struct(std:
 struct_fields : struct_fields struct_field       { $$ = std::move($1); $$.push_back($2); }
               | /* empty */                      { $$ = std::vector<Declaration>{}; }
 
-struct_field  : type local_id opt_attributes ';' { $$ = hilti::declaration::Field(std::move($2), std::move($1), std::move($3), __loc__); }
+struct_field  : local_id ':' type opt_attributes ';' { $$ = hilti::declaration::Field(std::move($1), std::move($3), std::move($4), __loc__); }
 
 enum_type     : ENUM '{' enum_labels '}'         { $$ = hilti::type::Enum(std::move($3), __loc__); }
 

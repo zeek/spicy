@@ -1,3 +1,7 @@
+1.4.0-dev.117 | 2021-12-15 16:13:53 +0100
+
+  * GH-1068: Fix syntax for Spicy `struct` declaration. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.115 | 2021-12-15 15:51:26 +0100
 
   * Fix typos in variable documentation. (Robin Sommer, Corelight)
