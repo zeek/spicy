@@ -50,24 +50,25 @@ usage="\
 Usage: $0 [OPTION]... [VAR=VALUE]...
 
   Build Options:
-    --build-dir=DIR                    Place build files in directory [default: ${cmake_build_directory}]
-    --build-static-libs                Build static libraries instead [default: shared]
-    --build-toolchain={yes,no}         Build the Spicy compiler toolchain [default: ${cmake_build_toolchain}]
-    --build-type=TYPE                  Set build type (Debug,Release,RelWithDebInfo) [default: ${cmake_build_type}]
-    --disable-gold                     On Linux, do not try to use the gold linker
-    --disable-precompiled-headers      Disable use of precompiled headers for developer tests
-    --enable-ccache                    Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
-    --enable-debug                     Compile debug version (same as --build-type=Debug) [default: off]
-    --enable-sanitizer[=<names>]       Enable sanitizer(s), default if not further specified is \"address\"
-    --enable-werror                    Treat compiler warnings as errors [default: ${cmake_use_werror}]
-    --generator=<generator>            CMake generator to use (see cmake --help)
-    --prefix=PATH                      Installation prefix [default: ${cmake_install_prefix}]
-    --with-bison=<prefix>              Set prefix of Bison installation
-    --with-c-compiler=<path>           Set C compiler to use
-    --with-cxx-compiler=<path>         Set C++ compiler to use
-    --with-flex=<prefix>               Set prefix of Flex installation
+    --build-dir=DIR                       Place build files in directory [default: ${cmake_build_directory}]
+    --build-static-libs                   Build static libraries instead [default: shared]
+    --build-toolchain={yes,no}            Build the Spicy compiler toolchain [default: ${cmake_build_toolchain}]
+    --build-type=TYPE                     Set build type (Debug,Release,RelWithDebInfo) [default: ${cmake_build_type}]
+    --disable-gold                        On Linux, do not try to use the gold linker
+    --disable-precompiled-headers         Disable use of precompiled headers for developer tests
+    --enable-ccache                       Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
+    --enable-debug                        Compile debug version (same as --build-type=Debug) [default: off]
+    --enable-sanitizer[=<names>]          Enable sanitizer(s), default if not further specified is \"address\"
+    --enable-werror                       Treat compiler warnings as errors [default: ${cmake_use_werror}]
+    --generator=<generator>               CMake generator to use (see cmake --help)
+    --prefix=PATH                         Installation prefix [default: ${cmake_install_prefix}]
+    --with-bison=<prefix>                 Set prefix of Bison installation
+    --with-c-compiler=<path>              Set C compiler to use
+    --with-cxx-compiler=<path>            Set C++ compiler to use
+    --with-hilti-compiler-launcher=<cmd>  Set compiler launcher to use during JIT, e.g., ccache.
+    --with-flex=<prefix>                  Set prefix of Flex installation
 
-    --display-cmake                    Don't create build configuration, just output final CMake invocation
+    --display-cmake                       Don't create build configuration, just output final CMake invocation
 "
 source_dir="$(cd "$(dirname "$0")" && pwd)"
 
@@ -125,6 +126,8 @@ while [ $# -ne 0 ]; do
             fi
             ;;
 
+        --with-hilti-compiler-launcher=*)  hilti_compiler_launcher="${optarg}";;
+
         --with-flex=*)                     cmake_flex_root="${optarg}";;
         --with-bison=*)                    cmake_bison_root="${optarg}";;
         --without-bison=*)                 cmake_bison_root="";;
@@ -146,6 +149,7 @@ append_cache_entry CMAKE_BUILD_TYPE             STRING "${cmake_build_type}"
 append_cache_entry CMAKE_C_COMPILER             PATH   "${cmake_c_compiler}"
 append_cache_entry CMAKE_CXX_COMPILER           PATH   "${cmake_cxx_compiler}"
 append_cache_entry CMAKE_INSTALL_PREFIX         PATH   "${cmake_install_prefix}"
+append_cache_entry HILTI_COMPILER_LAUNCHER      STRING "${hilti_compiler_launcher}"
 append_cache_entry FLEX_ROOT                    PATH   "${cmake_flex_root}"
 append_cache_entry USE_CCACHE                   BOOL   "${cmake_use_ccache}"
 append_cache_entry USE_GOLD                     BOOL   "${cmake_use_gold}"

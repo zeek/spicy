@@ -81,7 +81,7 @@ void Configuration::init(bool use_build_directory) {
         else
             cxx_launcher = hilti_cxx_launcher;
     }
-    else if ( std::string cmake_cxx_launcher = "${CMAKE_CXX_COMPILER_LAUNCHER}"; ! cmake_cxx_launcher.empty() )
+    else if ( std::string cmake_cxx_launcher = "${HILTI_COMPILER_LAUNCHER}"; ! cmake_cxx_launcher.empty() )
         cxx_launcher = cmake_cxx_launcher;
     else
         cxx_launcher = {};

@@ -164,6 +164,8 @@ else ()
     set(HAVE_TOOLCHAIN no)
 endif ()
 
+set(HILTI_COMPILER_LAUNCHER "" CACHE STRING "C++ compiler launcher to use by default during JIT")
+
 # Set up testing infrastructure.
 enable_testing()
 
