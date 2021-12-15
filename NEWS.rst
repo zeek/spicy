@@ -26,6 +26,9 @@ Version 1.4 (in progress)
 
 .. rubric:: Changed Functionality
 
+- GH-1074: ``%random-access`` is now derived automatically from uses and
+  declaring it explicitly has been deprecated.
+
 .. rubric:: Bug fixes
 
 - Prevent exception if cache directory is not readable.
