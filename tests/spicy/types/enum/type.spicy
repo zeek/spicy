@@ -14,9 +14,9 @@ type Y = enum {
 };
 
 type Z = struct {
-    X x1;
-    X x2 &optional;
-    Y y1 &optional &default=Y::B1;
+    x1: X;
+    x2: X &optional;
+    y1: Y &optional &default=Y::B1;
 };
 
 global x: X = X::A1;
