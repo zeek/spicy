@@ -1,3 +1,9 @@
+1.4.0-dev.115 | 2021-12-15 15:51:26 +0100
+
+  * Fix typos in variable documentation. (Robin Sommer, Corelight)
+
+  * Document visibility for globals [skip CI]. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.112 | 2021-12-13 10:46:37 +0100
 
   * Fix zeek_plugin CI task for broken apart zeek/spicy-analyzers. (Benjamin Bannier, Corelight)
