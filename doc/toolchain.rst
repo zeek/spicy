@@ -55,10 +55,11 @@ control the compilation process:
     ``HILTI_CXX_COMPILER_LAUNCHER``
         Specifies a command to prefix compiler invocations with during JIT.
         This can e.g., be used to use a compiler cache like
-        `ccache <https://ccache.dev/>`_. If ``ccache`` was used during the
-        build ``ccache`` will automatically be used during JIT as well. Setting
-        this variable to an empty value disables use of ``ccache`` in that
-        case.
+        `ccache <https://ccache.dev/>`_. If Spicy was configured with e.g.,
+        ``--with-hilti-compiler-launcher=ccache`` (the equivalent CMake option
+        is ``HILTI_COMPILER_LAUNCHER``) ``ccache`` would automatically be used
+        during JIT. Setting this variable to an empty value disables use of
+        ``ccache`` in that case.
 
     ``HILTI_CXX_INCLUDE_DIRS``
         Specified additional, colon-separated C++ include directory to

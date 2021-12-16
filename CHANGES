@@ -1,3 +1,7 @@
+1.4.0-dev.127 | 2021-12-16 11:46:32 +0100
+
+  * GH-1045: Decouple whether Spicy was build with ccache from ccache use during JIT. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.124 | 2021-12-15 16:54:10 +0100
 
   * Remove unneeded `%random-access` in tests and docs. (Benjamin Bannier, Corelight)

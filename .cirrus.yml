@@ -318,7 +318,7 @@ validate_release_tarball_task:
     - tar xf spicy*.tar.gz -C /tmp/spicy-tarball
   configure_script:
     - cd /tmp/spicy-tarball/spicy-*
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror --with-hilti-compiler-launcher=ccache
   build_script:
     - cd /tmp/spicy-tarball/spicy-*
     - ninja -j3 -C build

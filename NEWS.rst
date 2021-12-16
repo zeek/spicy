@@ -18,9 +18,9 @@ Version 1.4 (in progress)
   changed so that subsequent JIT runs can complete much faster.
 
   We now automatically cache many C++ compilation artifacts with ``ccache`` if
-  Spicy itself was configured to use ``ccache``. This behavior can be
-  controlled or disabled via the ``HILTI_CXX_COMPILER_LAUNCHER`` environment
-  variable.
+  Spicy itself was configured with e.g.,
+  ``--with-hilti-compiler-launcher=ccache``. This behavior can be controlled or
+  disabled via the ``HILTI_CXX_COMPILER_LAUNCHER`` environment variable.
 
 - GH-842: Add Spicy support for struct initialization.
 
