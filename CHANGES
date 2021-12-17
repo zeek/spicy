@@ -1,3 +1,7 @@
+1.4.0-dev.129 | 2021-12-17 12:30:33 +0100
+
+  * GH-1087: Make `offset` return correct value even before parsing of field. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.127 | 2021-12-16 11:46:32 +0100
 
   * GH-1045: Decouple whether Spicy was build with ccache from ccache use during JIT. (Benjamin Bannier, Corelight)

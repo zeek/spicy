@@ -119,8 +119,6 @@ struct ProductionVisitor
             builder()->addDebugMsg("spicy-verbose", fmt("- parsing production: %s", hilti::util::trim(std::string(p))));
             builder()->addCall("hilti::debugIndent", {builder::string("spicy-verbose")});
         }
-
-        pb->saveParsePosition();
     }
 
     void endProduction(const Production& p) {
@@ -543,6 +541,8 @@ struct ProductionVisitor
 
         else
             popDestination();
+
+        pb->saveParsePosition();
 
         return stop;
     }

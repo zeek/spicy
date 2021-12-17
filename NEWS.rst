@@ -39,6 +39,8 @@ Version 1.4 (in progress)
 
 - Fix potentially use-after-free in stringification of ``stream::View``.
 
+- GH-1087: Make ``offset`` return correct value even before parsing of field.
+
 .. rubric:: Documentation
 
 Version 1.3
