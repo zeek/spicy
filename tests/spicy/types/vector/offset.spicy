@@ -1,0 +1,19 @@
+# @TEST-DOC: Validates that offset has correct semantics when used with lists. This is a regression test for #1088.
+#
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x01\x02\x03' | spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public type X = unit {
+    x0: uint8 { print "x0=%s at %d" % ($$, self.offset()); }
+    xs: uint8[3]
+        foreach {
+            print "xs[i]=%d at %d" % ($$, self.offset());
+        }
+        {
+            print "xs=%d at %d" % ($$, self.offset());
+        }
+
+    y: uint8 { print "y=%s at %d" % ($$, self.offset()); }
+};
