@@ -6,16 +6,16 @@
 module Test;
 
 public type Testing = unit {
-    la: Sub(4);
+    la: Sub(6);
 };
 
 type Sub = unit(length: uint32) {
     a: bytes &size=2;
-    : bytes &size=0;
-    z: bytes &size=length-cast<uint32>(self.offset());
+    : uint8[2]; # Check with list, see #1087.
+    z: bytes &size=length-cast<uint32>(self.offset()) &requires=self.offset()==4;
 
     on z {
-        assert self.offset() == 2;
+        assert self.offset() == 4;
     }
 
     on %done {

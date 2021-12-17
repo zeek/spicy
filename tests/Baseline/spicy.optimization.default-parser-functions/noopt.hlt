@@ -217,12 +217,11 @@ method extern method view<stream> foo::P0::parse1(inout value_ref<stream> data, 
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_P0 ->
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_P0 ->
 
     if ( __feat%foo__P0%uses_random_access ) 
         (*unit).__position = begin(ncur);
-
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_P0 ->
 
     return ncur;
 }
@@ -235,12 +234,11 @@ method extern method view<stream> foo::P0::parse3(inout value_ref<spicy_rt::Pars
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_P0 ->
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_P0 ->
 
     if ( __feat%foo__P0%uses_random_access ) 
         (*unit).__position = begin(ncur);
-
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_P0 ->
 
     return ncur;
 }
@@ -251,12 +249,11 @@ method extern method view<stream> foo::P0::parse2(inout value_ref<P0> unit, inou
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_P0 ->
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_P0 ->
 
     if ( __feat%foo__P0%uses_random_access ) 
         (*unit).__position = begin(ncur);
-
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_P0 ->
 
     return ncur;
 }
@@ -399,12 +396,11 @@ method extern method view<stream> foo::P1::parse1(inout value_ref<stream> data, 
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_P1 ->
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_P1 ->
 
     if ( __feat%foo__P1%uses_random_access ) 
         (*unit).__position = begin(ncur);
-
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_P1 ->
 
     return ncur;
 }
@@ -417,12 +413,11 @@ method extern method view<stream> foo::P1::parse3(inout value_ref<spicy_rt::Pars
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_P1 ->
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_P1 ->
 
     if ( __feat%foo__P1%uses_random_access ) 
         (*unit).__position = begin(ncur);
-
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_P1 ->
 
     return ncur;
 }
@@ -433,12 +428,11 @@ method extern method view<stream> foo::P1::parse2(inout value_ref<P1> unit, inou
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_P1 ->
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_P1 ->
 
     if ( __feat%foo__P1%uses_random_access ) 
         (*unit).__position = begin(ncur);
-
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_P1 ->
 
     return ncur;
 }
@@ -551,10 +545,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
     local tuple<view<stream>, int<64>, iterator<stream>> __result;
 
     # Begin parsing production: Variable: x   -> uint<8>
-
-    if ( __feat%foo__P2%uses_random_access ) 
-        (*self).__position = begin(__cur);
-
     spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8", (*self).__filters);
     ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 
@@ -577,11 +567,11 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
 
 
 
-    # Begin parsing production: Variable: y   -> uint<8>
-
     if ( __feat%foo__P2%uses_random_access ) 
         (*self).__position = begin(__cur);
 
+
+    # Begin parsing production: Variable: y   -> uint<8>
     spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8", (*self).__filters);
     ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 
@@ -602,6 +592,10 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
             (*self).__position_update = Null;
         }
 
+
+
+    if ( __feat%foo__P2%uses_random_access ) 
+        (*self).__position = begin(__cur);
 
 
     if ( __feat%foo__P2%uses_random_access ) 
@@ -637,12 +631,11 @@ method extern method view<stream> foo::P2::parse1(inout value_ref<stream> data, 
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_P2 -> x y
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_P2 -> x y
 
     if ( __feat%foo__P2%uses_random_access ) 
         (*unit).__position = begin(ncur);
-
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_P2 -> x y
 
     return ncur;
 }
@@ -655,12 +648,11 @@ method extern method view<stream> foo::P2::parse3(inout value_ref<spicy_rt::Pars
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_P2 -> x y
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_P2 -> x y
 
     if ( __feat%foo__P2%uses_random_access ) 
         (*unit).__position = begin(ncur);
-
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_P2 -> x y
 
     return ncur;
 }
@@ -671,12 +663,11 @@ method extern method view<stream> foo::P2::parse2(inout value_ref<P2> unit, inou
     local iterator<stream> lahead_end;
 
     # Begin parsing production: Unit: foo_P2 -> x y
+    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
+    # End parsing production: Unit: foo_P2 -> x y
 
     if ( __feat%foo__P2%uses_random_access ) 
         (*unit).__position = begin(ncur);
-
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end);
-    # End parsing production: Unit: foo_P2 -> x y
 
     return ncur;
 }
