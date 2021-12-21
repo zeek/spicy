@@ -7,12 +7,18 @@ repos:
     name: Check for bashisms in /bin/sh scripts
     entry: ./tests/Scripts/3rdparty/checkbashisms.pl
     language: script
-    files: '.*\.sh'
+    types: ["sh"]
 
   - id: autogen-docs
     name: Check that generated documentation is up-to-date
     entry: ./doc/scripts/autogen-docs
     language: script
+    pass_filenames: false
+
+  - id: stray_baselines
+    name: Check for stray BTest baselines
+    entry: ./tests/Scripts/stray_baselines.py
+    language: python
     pass_filenames: false
 
 - repo: https://github.com/pre-commit/mirrors-clang-format

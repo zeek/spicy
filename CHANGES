@@ -1,3 +1,11 @@
+1.4.0-dev.133 | 2021-12-21 11:45:51 +0100
+
+  * GH-1088: Ensure that field hooks for lists see correct offset. (Benjamin Bannier, Corelight)
+
+  * Remove stray baselines. (Benjamin Bannier, Corelight)
+
+  * Lint all sh scripts with checkbashisms. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.129 | 2021-12-17 12:30:33 +0100
 
   * GH-1087: Make `offset` return correct value even before parsing of field. (Benjamin Bannier, Corelight)

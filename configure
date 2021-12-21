@@ -32,13 +32,13 @@ command="$0 $*"
 
 cmake_exe="<no cmake>"
 for i in cmake cmake3; do
-    if command -v $i >/dev/null; then
-        $i --version | grep -q "cmake.*version 3" && cmake_exe=$(command -v $i)
+    if which $i >/dev/null; then
+        $i --version | grep -q "cmake.*version 3" && cmake_exe=$(which $i)
         break
     fi
 done
 
-type "${cmake_exe}" > /dev/null 2>&1 || {
+which "${cmake_exe}" > /dev/null 2>&1 || {
     echo "\
 This package requires CMake, please install it first, then you may
 use this configure script to access CMake equivalent functionality.\
@@ -122,7 +122,7 @@ while [ $# -ne 0 ]; do
 
             if [ -z "${cmake_c_compiler}" ]; then
               try_c_compiler=$(echo "${cmake_cxx_compiler}" | sed 's/++//g')
-              command -v "${try_c_compiler}" >/dev/null && cmake_c_compiler="${try_c_compiler}"
+              which "${try_c_compiler}" >/dev/null && cmake_c_compiler="${try_c_compiler}"
             fi
             ;;
 
