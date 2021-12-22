@@ -345,18 +345,18 @@ public:
     StrongReference() : Base() {}
 
     /**
+     * Instantiates a reference pointing to the value referred to be an
+     * existing `ValueReference`. This does not copy the value, it will be
+     * shared (and managed jointly) afterwards.
+     */
+    StrongReference(const ValueReference<T>& t) : Base(t.asSharedPtr()) {}
+
+    /**
      * Instantiates a reference pointing to a newly allocated value.
      *
      * @param t initialization value
      */
     explicit StrongReference(T t) : Base(std::make_shared<T>(std::move(t))) {}
-
-    /**
-     * Instantiates a reference pointing to the value referred to be an
-     * existing `ValueReference`. This does not copy the value, it will be
-     * shared (and managed jointly) afterwards.
-     */
-    explicit StrongReference(const ValueReference<T>& t) : Base(t.asSharedPtr()) {}
 
     /** Instantiate an unset reference. */
     explicit StrongReference(std::nullptr_t) {}
