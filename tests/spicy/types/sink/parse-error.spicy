@@ -1,0 +1,38 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: printf 'AXX' | spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: echo >>output
+# @TEST-EXEC: printf '1XX' | spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: echo >>output
+# @TEST-EXEC: printf '1!!' | spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that parse errors of units connected to sinks aren't propagated back to the writer (#1076)
+
+module test;
+
+type S1 = unit {
+    x1 : /A/;
+    x2: /XX/ &size=2;
+    on %error { print "error in S1"; }
+    on %done { print self; }
+};
+
+type S2 = unit {
+    y1 : /./;
+    y2: /XX/ &size=2;
+    on %error { print "error in S2"; }
+    on %done { print self; }
+};
+
+public type X = unit {
+    # Do separate writes so that we check if further deliver is aborted after the 1st error.
+    : bytes &size=1 { self.s.write($$); }
+    : bytes &size=1 { self.s.write($$); }
+    : bytes &size=1 { self.s.write($$); }
+    sink s;
+
+    on %init {
+        self.s.connect(new S1);
+        self.s.connect(new S2);
+    }
+};

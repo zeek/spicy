@@ -138,11 +138,26 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
     _size += data->size();
 
     for ( auto s : _states ) {
+        if ( s->skip_delivery )
+            continue;
+
         if ( s->resumable )
             throw ParseError("more data after sink's unit has already completed parsing");
 
         s->data->append(*data);
-        s->resumable.resume();
+        try {
+            // Sinks are operating independently from the writer, so we
+            // don't forward errors on.
+            s->resumable.resume();
+        } catch ( const ParseError& err ) {
+            SPICY_RT_DEBUG_VERBOSE(
+                fmt("parse error in connected unit %s, aborting delivery (%s)", s->parser->name, err.what()));
+            s->skip_delivery = true;
+        } catch ( const hilti::rt::RuntimeError& err ) {
+            SPICY_RT_DEBUG_VERBOSE(
+                fmt("error in connected unit %s, aborting delivery (%s)", s->parser->name, err.what()));
+            s->skip_delivery = true;
+        }
     }
 
     _cur_rseq = rupper;
@@ -388,10 +403,21 @@ void Sink::_close(bool orderly) {
         for ( auto s : _states ) {
             if ( ! s->resumable ) {
                 s->data->freeze();
-                if ( orderly )
-                    s->resumable.resume();
-                else
-                    s->resumable.abort();
+
+                try {
+                    // Sinks are operating independently from the writer, so we
+                    // don't forward errors on.
+                    if ( orderly && ! s->skip_delivery )
+                        s->resumable.resume();
+                    else
+                        s->resumable.abort();
+                } catch ( const ParseError& err ) {
+                    SPICY_RT_DEBUG_VERBOSE(
+                        fmt("parse error in connected unit %s during close (%s)", s->parser->name, err.what()));
+                } catch ( const hilti::rt::RuntimeError& err ) {
+                    SPICY_RT_DEBUG_VERBOSE(
+                        fmt("error in connected unit %s during close (%s)", s->parser->name, err.what()));
+                }
 
                 assert(s->resumable); // must have conluded after freezing/aborting
             }
