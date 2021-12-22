@@ -560,8 +560,9 @@ codegen::TypeUsage CodeGen::parameterKindToTypeUsage(declaration::parameter::Kin
         case declaration::parameter::Kind::In: return codegen::TypeUsage::InParameter;
         case declaration::parameter::Kind::InOut: return codegen::TypeUsage::InOutParameter;
         case declaration::parameter::Kind::Unknown: logger().internalError("parameter kind not set");
-        default: util::cannot_be_reached();
     }
+
+    util::cannot_be_reached();
 }
 
 cxx::declaration::Function CodeGen::compile(const ID& id, type::Function ft, declaration::Linkage linkage,

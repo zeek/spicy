@@ -253,6 +253,18 @@ public:
     }
 
     /**
+     * Assigns from an existing `std::shared_ptr` to a value of type `T`. This
+     * does *not* copy the pointer's target value; we will store a pointer to
+     * the same value.
+     */
+    ValueReference& operator=(std::shared_ptr<T> other) noexcept {
+        if ( _get() != other.get() )
+            _ptr = std::move(other);
+
+        return *this;
+    }
+
+    /**
      * Shortcut to create a new instance referring to an existing value of
      * type `T`. `T` must be derived from `Controllable<T>`.
      *

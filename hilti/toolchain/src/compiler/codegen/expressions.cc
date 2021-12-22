@@ -3,6 +3,7 @@
 #include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/all.h>
+#include <hilti/ast/types/reference.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
@@ -164,9 +165,22 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         }
 
         if ( auto p = n.declaration().tryAs<declaration::Parameter>(); p && p->isTypeParameter() ) {
-            // Need to adjust here for potential automatic change to a weak reference.
-            if ( type::isReferenceType(p->type()) )
-                return cxx::Expression(fmt("%s->__p_%s.derefAsValue()", cg->self(), p->id()));
+            if ( type::isReferenceType(p->type()) ) {
+                // Need to adjust here for potential automatic change to a weak reference.
+                auto result = fmt("%s->__p_%s.derefAsValue()", cg->self(), p->id());
+
+                if ( p->kind() == declaration::parameter::Kind::InOut && p->type().isA<type::ValueReference>() &&
+                     cg->cxxBlock() ) {
+                    // Need a LHS to pass by reference. Not pretty, but can't
+                    // add an assignment statement here. Note that when
+                    // creating the LHS, we need to avoid copying the value,
+                    // hence going through a shared ptr.
+                    auto lhs = cg->addTmp(fmt("self_%s", p->id()), cg->compile(p->type(), codegen::TypeUsage::Storage));
+                    return cxx::Expression(fmt("(%s = (%s).asSharedPtr())", lhs, result));
+                }
+                else
+                    return cxx::Expression(result);
+            }
             else
                 return cxx::Expression(fmt("%s->__p_%s", cg->self(), p->id()));
         }
