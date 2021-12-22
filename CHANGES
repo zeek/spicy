@@ -1,3 +1,8 @@
+1.4.0-dev.135 | 2021-12-22 11:04:51 +0100
+
+  * Update docs for Zeek plugin functions with recent changes. (Robin
+    Sommer, Corelight)
+
 1.4.0-dev.133 | 2021-12-21 11:45:51 +0100
 
   * GH-1088: Ensure that field hooks for lists see correct offset. (Benjamin Bannier, Corelight)
