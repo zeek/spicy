@@ -554,6 +554,16 @@ hilti::Unit* CodeGen::hiltiUnit() const {
     return _hilti_unit;
 }
 
+codegen::TypeUsage CodeGen::parameterKindToTypeUsage(declaration::parameter::Kind k) {
+    switch ( k ) {
+        case declaration::parameter::Kind::Copy: return codegen::TypeUsage::CopyParameter;
+        case declaration::parameter::Kind::In: return codegen::TypeUsage::InParameter;
+        case declaration::parameter::Kind::InOut: return codegen::TypeUsage::InOutParameter;
+        case declaration::parameter::Kind::Unknown: logger().internalError("parameter kind not set");
+        default: util::cannot_be_reached();
+    }
+}
+
 cxx::declaration::Function CodeGen::compile(const ID& id, type::Function ft, declaration::Linkage linkage,
                                             function::CallingConvention cc, const std::optional<AttributeSet>& fattrs,
                                             std::optional<cxx::ID> namespace_) {
@@ -568,18 +578,8 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function ft, dec
         }
     };
 
-    auto usage_ = [&](auto k) {
-        switch ( k ) {
-            case declaration::parameter::Kind::Copy: return codegen::TypeUsage::CopyParameter;
-            case declaration::parameter::Kind::In: return codegen::TypeUsage::InParameter;
-            case declaration::parameter::Kind::InOut: return codegen::TypeUsage::InOutParameter;
-            case declaration::parameter::Kind::Unknown: logger().internalError("parameter kind not set");
-            default: util::cannot_be_reached();
-        }
-    };
-
     auto param_ = [&](auto p) {
-        auto t = compile(p.type(), usage_(p.kind()));
+        auto t = compile(p.type(), parameterKindToTypeUsage(p.kind()));
         return cxx::declaration::Argument{.id = cxx::ID(p.id()), .type = std::move(t)};
     };
 

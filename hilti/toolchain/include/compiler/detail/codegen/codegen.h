@@ -84,6 +84,7 @@ public:
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
                                                       const hilti::node::Range<declaration::Parameter>& params);
     std::optional<cxx::Expression> typeDefaultValue(const hilti::Type& t);
+    codegen::TypeUsage parameterKindToTypeUsage(declaration::parameter::Kind);
 
     cxx::Expression typeInfo(const hilti::Type& t);
     void addTypeInfoDefinition(const hilti::Type& t);
