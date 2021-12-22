@@ -85,12 +85,6 @@ Signals the beginning of a file to Zeek's file analysis, associating it with the
 Optionally, a mime type can be provided. It will be passed on to Zeek's file analysis framework.
 Returns the Zeek-side file ID of the new file.
 
-.. _spicy_file_end:
-
-.. rubric:: ``function zeek::file_end()``
-
-Signals the end of a file to Zeek's file analysis.
-
 .. _spicy_fuid:
 
 .. rubric:: ``function zeek::fuid() : string``
@@ -99,27 +93,49 @@ Returns the current file's FUID.
 
 .. _spicy_file_set_size:
 
-.. rubric:: ``function zeek::file_set_size(size: uint64)``
+.. rubric:: ``function zeek::file_set_size(size: uint64, fid: optional<string> = Null)``
 
 Signals the expected size of a file to Zeek's file analysis.
 
+size: expected size of file
+fid: Zeek-side ID of the file to operate on; if not given, the file started by the most recent file_begin() will be used
+
 .. _spicy_file_data_in:
 
-.. rubric:: ``function zeek::file_data_in(data: bytes)``
+.. rubric:: ``function zeek::file_data_in(data: bytes, fid: optional<string> = Null)``
 
 Passes file content on to Zeek's file analysis.
 
+data: chunk of raw data to pass into analysis
+fid: Zeek-side ID of the file to operate on; if not given, the file started by the most recent file_begin() will be used
+
 .. _spicy_file_data_in_at_offset:
 
-.. rubric:: ``function zeek::file_data_in_at_offset(data: bytes, offset: uint64)``
+.. rubric:: ``function zeek::file_data_in_at_offset(data: bytes, offset: uint64, fid: optional<string> = Null)``
 
 Passes file content at a specific offset on to Zeek's file analysis.
 
+data: chunk of raw data to pass into analysis
+offset: position in file where data starts
+fid: Zeek-side ID of the file to operate on; if not given, the file started by the most recent file_begin() will be used
+
 .. _spicy_file_gap:
 
-.. rubric:: ``function zeek::file_gap(offset: uint64, len: uint64)``
+.. rubric:: ``function zeek::file_gap(offset: uint64, len: uint64, fid: optional<string> = Null)``
 
 Signals a gap in a file to Zeek's file analysis.
+
+offset: position in file where gap starts
+len: size of gap
+fid: Zeek-side ID of the file to operate on; if not given, the file started by the most recent file_begin() will be used
+
+.. _spicy_file_end:
+
+.. rubric:: ``function zeek::file_end(fid: optional<string> = Null)``
+
+Signals the end of a file to Zeek's file analysis.
+
+fid: Zeek-side ID of the file to operate on; if not given, the file started by the most recent file_begin() will be used
 
 .. _spicy_forward_packet:
 
@@ -132,5 +148,5 @@ on to another analyzer. The index specifies the target, per the current dispatch
 
 .. rubric:: ``function zeek::network_time() : time``
 
-
+Gets the network time from Zeek.
 
