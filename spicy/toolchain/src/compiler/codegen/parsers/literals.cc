@@ -77,11 +77,10 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 return builder::expression(c);
             }
 
+            case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try:
                 return builder::ternary(builder::and_(pb->waitForInputOrEod(len), cond),
                                         builder::sum(builder::begin(state().cur), len), builder::begin(state().cur));
-
-            default: hilti::util::cannot_be_reached();
         }
     }
 
@@ -163,6 +162,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 return dst;
             }
 
+            case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try: {
                 auto result = builder()->addTmp("result", state().cur);
 
@@ -268,6 +268,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 return expected;
             }
 
+            case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try: {
                 auto old_cur = builder()->addTmp("ocur", state().cur);
                 auto x = pb->parseTypeTry(type, production.meta(), {});
@@ -279,8 +280,6 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                                                             builder::equal(builder::deref(x), expected)));
                 return builder::begin(builder::ternary(match, new_cur, old_cur));
             }
-
-            default: hilti::util::cannot_be_reached();
         }
     }
 
@@ -296,8 +295,61 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 } // namespace
 
 Expression ParserBuilder::parseLiteral(const Production& p, const std::optional<Expression>& dst) {
-    if ( auto e = Visitor(this, p, dst).dispatch(p.expression()) )
-        return std::move(*e);
+    switch ( state().literal_mode ) {
+        case LiteralMode::Default:
+        case LiteralMode::Try: {
+            if ( auto e = Visitor(this, p, dst).dispatch(p.expression()) )
+                return std::move(*e);
 
-    hilti::logger().internalError(fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
+            hilti::logger().internalError(
+                fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
+
+            hilti::util::cannot_be_reached();
+        }
+
+        case LiteralMode::Search: break;
+    }
+
+    // The following code handles search mode.
+    assert(state().literal_mode == LiteralMode::Search);
+
+    // Set up return value.
+    auto result = builder()->addTmp("result", builder::default_(type::Optional(type::stream::Iterator())));
+
+    // Add a loop for search mode.
+    pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
+        auto e = Visitor(this, p, dst).dispatch(p.expression());
+
+        if ( ! e )
+            hilti::logger().internalError(
+                fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
+        builder()->addAssign(result, *e);
+
+        switch ( state().literal_mode ) {
+            case LiteralMode::Default:
+            case LiteralMode::Try: {
+                builder()->addBreak();
+                break;
+            }
+
+            case LiteralMode::Search: {
+                {
+                    state().printDebug(builder());
+
+                    pushBuilder(builder()->addIf(atEod()), [&]() { builder()->addBreak(); });
+
+                    auto [if_, else_] = builder()->addIfElse(builder::unequal(*e, builder::begin(state().cur)));
+                    pushBuilder(if_, [&]() { builder()->addBreak(); });
+                    pushBuilder(else_, [&]() { advanceInput(builder::integer(1)); });
+                };
+
+                break;
+            }
+        }
+    });
+
+    if ( dst )
+        builder()->addAssign(*dst, builder::deref(result));
+
+    return builder::deref(result);
 }
