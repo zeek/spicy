@@ -826,7 +826,10 @@ struct ProductionVisitor
         getLookAhead(productions, lp.symbol(), lp.location());
     }
 
-    void getLookAhead(const std::set<Production>& tokens, const std::string& symbol, const Location& location) {
+    void getLookAhead(const std::set<Production>& tokens, const std::string& symbol, const Location& location,
+                      LiteralMode mode = LiteralMode::Try) {
+        assert(mode != LiteralMode::Default);
+
         // If we're at EOD, return that directly.
         auto [true_, false_] = builder()->addIfElse(pb->atEod());
         true_->addAssign(state().lahead, look_ahead::Eod);
@@ -870,41 +873,67 @@ struct ProductionVisitor
             builder()->addLocal(ID("ncur"), state().cur);
             auto ms = builder::local("ms", builder::memberCall(builder::id(re), "token_matcher", {}));
 
-            // Create the loop around the incremental matching.
-            auto body = builder()->addWhile(ms, builder::bool_(true));
-            pushBuilder(body);
+            auto incremental_matching = [&]() {
+                // Create loop for incremental matching.
+                pushBuilder(builder()->addWhile(ms, builder::bool_(true)), [&]() {
+                    builder()->addLocal(ID("rc"), hilti::type::SignedInteger(32));
 
-            builder()->addLocal(ID("rc"), hilti::type::SignedInteger(32));
+                    builder()->addAssign(builder::tuple({builder::id("rc"), builder::id("ncur")}),
+                                         builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}),
+                                         location);
 
-            builder()->addAssign(builder::tuple({builder::id("rc"), builder::id("ncur")}),
-                                 builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}), location);
+                    auto switch_ = builder()->addSwitch(builder::id("rc"), location);
 
-            auto switch_ = builder()->addSwitch(builder::id("rc"), location);
+                    // No match, try again.
+                    pushBuilder(switch_.addCase(builder::integer(-1)), [&]() {
+                        auto ok = builder()->addIf(pb->waitForInputOrEod());
+                        ok->addContinue();
+                        builder()->addAssign(state().lahead, look_ahead::Eod);
+                        builder()->addAssign(state().lahead_end, builder::begin(state().cur));
+                        builder()->addBreak();
+                    });
 
-            auto no_match_try_again = switch_.addCase(builder::integer(-1));
-            pushBuilder(no_match_try_again);
-            auto ok = builder()->addIf(pb->waitForInputOrEod());
-            ok->addContinue();
-            builder()->addAssign(state().lahead, look_ahead::Eod);
-            builder()->addAssign(state().lahead_end, builder::begin(state().cur));
-            builder()->addBreak();
-            popBuilder();
+                    // No match, error.
+                    pushBuilder(switch_.addCase(builder::integer(0)), [&]() {
+                        pb->state().printDebug(builder());
+                        builder()->addAssign(state().lahead, look_ahead::None);
+                        builder()->addAssign(state().lahead_end, builder::begin(state().cur));
+                        builder()->addBreak();
+                    });
 
-            auto no_match_error = switch_.addCase(builder::integer(0));
-            pushBuilder(no_match_error);
-            builder()->addAssign(state().lahead, look_ahead::None);
-            builder()->addAssign(state().lahead_end, builder::begin(state().cur));
-            builder()->addBreak();
-            popBuilder();
+                    pushBuilder(switch_.addDefault(), [&]() {
+                        builder()->addAssign(state().lahead, builder::id("rc"));
+                        builder()->addAssign(state().lahead_end, builder::begin(builder::id("ncur")));
+                        builder()->addBreak();
+                    });
+                });
 
-            auto match = switch_.addDefault();
-            pushBuilder(match);
-            builder()->addAssign(state().lahead, builder::id("rc"));
-            builder()->addAssign(state().lahead_end, builder::begin(builder::id("ncur")));
-            builder()->addBreak();
-            popBuilder();
+                pb->state().printDebug(builder());
+            };
 
-            popBuilder(); // End of switch body
+            switch ( mode ) {
+                case LiteralMode::Default: hilti::util::cannot_be_reached();
+                case LiteralMode::Try: {
+                    incremental_matching();
+                    break;
+                }
+
+                case LiteralMode::Search: {
+                    // Create a loop for search mode.
+                    pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
+                        incremental_matching();
+
+                        auto [if_, else_] = builder()->addIfElse(builder::or_(pb->atEod(), state().lahead));
+                        pushBuilder(if_, [&]() { builder()->addBreak(); });
+                        pushBuilder(else_, [&]() {
+                            pb->advanceInput(builder::integer(1));
+                            builder()->addAssign(builder::id("ncur"), state().cur);
+                        });
+                    });
+
+                    break;
+                }
+            }
         }
 
         // Parse non-regexps successively.
@@ -913,7 +942,7 @@ struct ProductionVisitor
                 continue;
 
             auto pstate = pb->state();
-            pstate.literal_mode = LiteralMode::Try;
+            pstate.literal_mode = mode;
             pushState(std::move(pstate));
             auto match = pb->parseLiteral(p, {});
             popState();
@@ -980,22 +1009,12 @@ struct ProductionVisitor
             return;
         }
 
-        auto skippedBytes = builder()->addTmp("skipped_bytes", builder::integer(0u));
+        state().printDebug(builder());
+        getLookAhead(tokens, p.symbol(), p.location(), LiteralMode::Search);
 
-        pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
-            pushBuilder(builder()->addIf(pb->atEod()), [&]() { builder()->addRethrow(); });
+        pushBuilder(builder()->addIf(builder::or_(pb->atEod(), builder::not_(state().lahead))),
+                    [&]() { builder()->addRethrow(); });
 
-            state().printDebug(builder());
-            getLookAhead(tokens, p.symbol(), p.location());
-
-            auto [if_, else_] = builder()->addIfElse(state().lahead);
-            pushBuilder(if_, [&]() { builder()->addBreak(); });
-            pushBuilder(else_, [&]() {
-                pb->advanceInput(builder::integer(1));
-                builder()->addExpression(builder::incrementPrefix(skippedBytes));
-            });
-        });
-        builder()->addDebugMsg("spicy", "successfully synchronized after %d bytes, entering try mode", {skippedBytes});
         builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
     }
 
