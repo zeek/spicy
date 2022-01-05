@@ -44,11 +44,18 @@ enum class LiteralMode {
      * it works, move cur as normal; if it fails, set cur to end.
      */
     Try,
+
+    /**
+     * Search for the field in the input. If a match is found, move cur as
+     * normal; if it fails, set cur to end.
+     */
+    Search,
 };
 
 namespace detail {
 constexpr hilti::util::enum_::Value<LiteralMode> literal_modes[] = {{LiteralMode::Default, "default"},
-                                                                    {LiteralMode::Try, "try"}};
+                                                                    {LiteralMode::Try, "try"},
+                                                                    {LiteralMode::Search, "search"}};
 } // namespace detail
 
 constexpr auto to_string(LiteralMode cc) { return hilti::util::enum_::to_string(cc, detail::literal_modes); }
@@ -261,12 +268,18 @@ public:
 
     /**
      * Generates code that parses an instance of a specific literal, meaning
-     * it matches the value against the input. In literal mode `Default`,
-     * returns the parsed value and advances `cur`, consuming the current
-     * look-ahead symbol if any, and throwing a parse error if it couldn't
-     * parse it. In literal mode `Try`, returns an iterator pointing right
+     * it matches the value against the input.
+     *
+     * In literal mode `Default`, returns the parsed value and advances `cur`,
+     * consuming the current look-ahead symbol if any, and throwing a parse
+     * error if it couldn't parse it.
+     *
+     * In literal mode `Try`, returns an iterator pointing right
      * after the parsed literal, with an iterator equal to `begin(cur)`
      * meaning no match (and does not advance `cur`).
+     *
+     * Literal mode `Search` behaves like `Try`, but will advance the input
+     * until a match has been found or EOD is reached.
      */
     Expression parseLiteral(const Production& p, const std::optional<Expression>& dst);
 
