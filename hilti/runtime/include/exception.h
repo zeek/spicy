@@ -89,7 +89,7 @@ HILTI_EXCEPTION(AssertionFailure, RuntimeError)
 
 /*
  * Exception triggered y the ".?" operator to signal to host applications that
- * a struct attribbute isn't set.
+ * a struct attribute isn't set.
  */
 HILTI_EXCEPTION(AttributeNotSet, Exception)
 
@@ -127,7 +127,7 @@ HILTI_EXCEPTION(InvalidValue, RuntimeError);
 /** Exception indicating illegal reuse of MatchState. **/
 HILTI_EXCEPTION(MatchStateReuse, RuntimeError)
 
-/** Exception indicating use of unsupport matching capabilities. */
+/** Exception indicating use of unsupported matching capabilities. */
 HILTI_EXCEPTION(NotSupported, RuntimeError)
 
 /** Exception indicating access to an unset (null) reference. **/

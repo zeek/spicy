@@ -63,7 +63,7 @@ extern const Configuration& get();
  * Sets new configuration values. Usually one first retrieves the current
  * configuration with `get()` to then apply any desired changes to it.
  *
- * @param cfg complete set of new confifuration values
+ * @param cfg complete set of new configuration values
  */
 extern void set(Configuration cfg);
 

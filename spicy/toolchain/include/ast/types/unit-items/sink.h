@@ -21,7 +21,7 @@ public:
         : NodeBase(nodes(std::move(id), std::move(attrs), type::Sink(m)), m) {}
 
     const auto& id() const { return child<ID>(0); }
-    auto attributes() const { return childs()[1].tryAs<AttributeSet>(); }
+    auto attributes() const { return children()[1].tryAs<AttributeSet>(); }
 
     bool operator==(const Sink& other) const { return id() == other.id() && attributes() == other.attributes(); }
 

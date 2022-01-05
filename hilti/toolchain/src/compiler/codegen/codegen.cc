@@ -46,7 +46,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
 
         v.dispatch(module);
 
-        for ( const auto& i : module.childs() )
+        for ( const auto& i : module.children() )
             v.dispatch(i);
 
         auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
@@ -654,7 +654,7 @@ Result<cxx::Unit> CodeGen::compileModule(Node& root, hilti::Unit* hilti_unit, bo
 
     v.dispatch(root);
 
-    for ( auto i : root.childs() )
+    for ( auto i : root.children() )
         v.dispatch(i);
 
     GlobalsVisitor::addDeclarations(this, root, ID(std::string(_cxx_unit->moduleID())), _cxx_unit.get(),

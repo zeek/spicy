@@ -6,10 +6,10 @@ class Node(trait::isNode) {
     hilti::node::Properties properties() const;
 
     /** Returns the node's childrens. */
-    const std::vector<hilti::Node>& childs() const;
+    const std::vector<hilti::Node>& children() const;
 
     /** Returns the node's childrens. */
-    std::vector<hilti::Node>& childs();
+    std::vector<hilti::Node>& children();
 
     /** Returns the node's meta data. */
     const Meta& meta() const;

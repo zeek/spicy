@@ -73,21 +73,21 @@ public:
           _sinks_start(_args_end),
           _sinks_end(_sinks_start + static_cast<int>(sinks.size())) {}
 
-    auto fieldID() const { return childs()[2].tryAs<ID>(); }
-    auto unresolvedID() const { return childs()[0].tryAs<ID>(); }
+    auto fieldID() const { return children()[2].tryAs<ID>(); }
+    auto unresolvedID() const { return children()[0].tryAs<ID>(); }
     const auto& index() const { return _index; }
 
     // Only one of these will have return value.
-    auto ctor() const { return childs()[1].tryAs<Ctor>(); }
-    auto item() const { return childs()[1].tryAs<Item>(); }
-    auto type() const { return childs()[1].tryAs<Type>(); }
+    auto ctor() const { return children()[1].tryAs<Ctor>(); }
+    auto item() const { return children()[1].tryAs<Item>(); }
+    auto type() const { return children()[1].tryAs<Type>(); }
 
-    auto repeatCount() const { return childs()[3].tryAs<Expression>(); }
-    auto attributes() const { return childs()[4].tryAs<AttributeSet>(); }
-    auto condition() const { return childs()[5].tryAs<Expression>(); }
-    auto arguments() const { return childs<Expression>(_args_start, _args_end); }
-    auto sinks() const { return childs<Expression>(_sinks_start, _sinks_end); }
-    auto hooks() const { return childs<Hook>(_sinks_end, -1); }
+    auto repeatCount() const { return children()[3].tryAs<Expression>(); }
+    auto attributes() const { return children()[4].tryAs<AttributeSet>(); }
+    auto condition() const { return children()[5].tryAs<Expression>(); }
+    auto arguments() const { return children<Expression>(_args_start, _args_end); }
+    auto sinks() const { return children<Expression>(_sinks_start, _sinks_end); }
+    auto hooks() const { return children<Hook>(_sinks_end, -1); }
     Engine engine() const { return _engine; }
 
     void setIndex(uint64_t index) { _index = index; }

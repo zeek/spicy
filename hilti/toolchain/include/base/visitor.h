@@ -157,20 +157,20 @@ private:
 
         assert(p.child >= 0);
 
-        if ( p.child < static_cast<int>(p.node.childs().size()) ) {
-            _path.emplace_back(p.node.childs()[p.child], -2);
+        if ( p.child < static_cast<int>(p.node.children().size()) ) {
+            _path.emplace_back(p.node.children()[p.child], -2);
             next();
             return;
         }
 
-        if ( p.child == static_cast<int>(p.node.childs().size()) ) {
+        if ( p.child == static_cast<int>(p.node.children().size()) ) {
             if constexpr ( order == Order::Post )
                 return;
 
             p.child += 1;
         }
 
-        if ( p.child > static_cast<int>(p.node.childs().size()) ) {
+        if ( p.child > static_cast<int>(p.node.children().size()) ) {
             _path.pop_back();
             next();
             return;
@@ -186,11 +186,11 @@ private:
         if ( p.child < 0 ) // pre order
             return Position{.node = p.node, .path = _path};
 
-        if ( p.child == static_cast<int>(p.node.childs().size()) ) // post order
+        if ( p.child == static_cast<int>(p.node.children().size()) ) // post order
             return Position{.node = p.node, .path = _path};
 
-        assert(p.child < static_cast<int>(p.node.childs().size()));
-        return Position{.node = p.node.childs()[p.child], .path = _path};
+        assert(p.child < static_cast<int>(p.node.children().size()));
+        return Position{.node = p.node.children()[p.child], .path = _path};
     }
 
     std::vector<Location> _path;
@@ -240,7 +240,7 @@ private:
  * AST visitor.
  *
  * @tparam Result type the dispatch methods (and hence the visitor) returns
- * @tparam Dispatcher class definining dispatch methods
+ * @tparam Dispatcher class defining dispatch methods
  * @tparam Erased type-erased class to dispatch on
  * @tparam order order of iteration
  */
@@ -315,7 +315,7 @@ public:
      * This method operates on a constant AST, and the dispatcher cannot
      * modify any nodes.
      *
-     * @note The returned view operates on referneces to the the AST passed
+     * @note The returned view operates on references to the the AST passed
      * in, so make sure that stays around as long as necessary.
      */
     auto walk(const Erased& root) { return ConstView<Visitor>(root); }
@@ -326,7 +326,7 @@ public:
      * This method operates on a non-constant AST, and the dispatcher may
      * modify nodes.
      *
-     * @note The returned view operates on referneces to the the AST passed
+     * @note The returned view operates on references to the the AST passed
      * in, so make sure that stays around as long as necessary.
      */
     auto walk(Erased* root) { return NonConstView<Visitor>(*root); }

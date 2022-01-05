@@ -392,7 +392,7 @@ TEST_CASE("waitForInputOrEod with min") {
 
             // We trigger waiting for input with not enough data available and
             // resume later as `waitForInputOrEod` would short-circuit were
-            // enough data available initally.
+            // enough data available initially.
             auto res = waitForInputOrEod();
             data->append("\x01\x02\x03"_b);
             res.resume(); // XX

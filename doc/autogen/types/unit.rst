@@ -74,7 +74,7 @@
 
     Moves the current parsing position to *i*. The iterator *i* must be
     into the input of the current unit, or the method will throw a runtime
-    execption.
+    exception.
 
 .. rubric:: Operators
 

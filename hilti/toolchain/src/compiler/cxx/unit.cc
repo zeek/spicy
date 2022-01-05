@@ -268,14 +268,14 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
             if ( i.second.id.namespace_() != ns )
                 continue;
 
-            auto seperator = (i.second.inline_body && i.second.inline_body->size() > 1);
+            auto needs_separator = (i.second.inline_body && i.second.inline_body->size() > 1);
 
-            if ( seperator )
+            if ( needs_separator )
                 f << separator();
 
             f << i.second;
 
-            if ( seperator )
+            if ( needs_separator )
                 f << separator();
         }
     }

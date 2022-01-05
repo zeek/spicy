@@ -16,7 +16,7 @@ class Node;
 namespace node_ref {
 namespace detail {
 
-// Control block for refering to nodes.
+// Control block for referring to nodes.
 class Control : public hilti::intrusive_ptr::ManagedObject {
 public:
     Control(const Node* n) : _node(n), _rid(++_rid_counter) {}

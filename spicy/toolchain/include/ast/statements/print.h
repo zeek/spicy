@@ -18,7 +18,7 @@ public:
     Print(std::vector<hilti::Expression> e, Meta m = Meta())
         : hilti::NodeBase(hilti::nodes(std::move(e)), std::move(m)) {}
 
-    auto expressions() const { return childs<hilti::Expression>(0, -1); }
+    auto expressions() const { return children<hilti::Expression>(0, -1); }
 
     bool operator==(const Print& /* other */) const {
         // return expressions() == other.expressions(); FIXME

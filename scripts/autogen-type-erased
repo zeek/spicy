@@ -208,7 +208,7 @@ parser.add_argument("api", metavar="file", action="store",
 parser.add_argument("--output", dest="output", action="store",
                     default=None, required=False, help="Output file (default is stdout)")
 parser.add_argument("--constant", dest="constant", action="store_true",
-                    required=False, help="Assume instaces of class are non-mutable")
+                    required=False, help="Assume instances of class are non-mutable")
 
 args = parser.parse_args()
 methods = []

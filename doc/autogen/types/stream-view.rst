@@ -20,7 +20,7 @@
 
     Searches *needle* inside the view's content. Returns a tuple of a
     boolean and an iterator. If *needle* was found, the boolean will be
-    true and the iterator will point to its first occurance. If *needle*
+    true and the iterator will point to its first occurrence. If *needle*
     was not found, the boolean will be false and the iterator will point
     to the last position so that everything before that is guaranteed to
     not contain even a partial match of *needle* (in other words: one can
@@ -64,7 +64,7 @@
 
 .. spicy:operator:: stream::view::Equal bool t:view<stream> <sp> op:== <sp> t:bytes $commutative$
 
-    Compares a stream view and a bytes intances lexicographically.
+    Compares a stream view and a bytes instance lexicographically.
 
 .. spicy:operator:: stream::view::Equal bool t:view<stream> <sp> op:== <sp> t:view<stream>
 

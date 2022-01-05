@@ -44,7 +44,7 @@ public:
         return _parent->as<declaration::Type>().type().tryAs<type::Struct>();
     }
 
-    void setFunction(::hilti::Function f) { childs()[0] = std::move(f); }
+    void setFunction(::hilti::Function f) { children()[0] = std::move(f); }
     void setLinkage(Linkage x) { _linkage = x; }
     void setParentRef(NodeRef p) {
         assert(p && p->isA<Declaration>());

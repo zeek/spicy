@@ -25,10 +25,10 @@ public:
     Default(Type t, std::vector<Expression> type_args, Meta m = Meta())
         : NodeBase(nodes(std::move(t), std::move(type_args)), std::move(m)) {}
 
-    auto typeArguments() const { return childs<hilti::Expression>(1, -1); }
+    auto typeArguments() const { return children<hilti::Expression>(1, -1); }
 
     void setTypeArguments(std::vector<hilti::Expression> args) {
-        auto& c = childs();
+        auto& c = children();
         c.erase(c.begin() + 1, c.end());
         for ( auto&& a : args )
             c.emplace_back(std::move(a));

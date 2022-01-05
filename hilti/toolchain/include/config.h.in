@@ -42,7 +42,7 @@ struct Configuration {
      * decision on the path of the current executable: if it's inside the
      * source directory, we're assuming we're running out of build directory.
      *
-     * @param argv0 path to current execuable
+     * @param argv0 path to current executable
      */
     void initLocation(const hilti::rt::filesystem::path& argv0);
 
@@ -55,7 +55,7 @@ struct Configuration {
      * \note We need this overload as otherwise the boolean version
      * would be picked for C strings.
      *
-     * @param argv0 path to current execuable
+     * @param argv0 path to current executable
      */
     void initLocation(const char* argv0);
 

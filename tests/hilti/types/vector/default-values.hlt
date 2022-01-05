@@ -17,7 +17,7 @@ global X x;
 
 v.assign(1, X::A1);
 
-# TODO: Activate once we have enum comparision operators.
+# TODO: Activate once we have enum comparison operators.
 #assert v[0] == X::Undef;
 #assert v[1] == X::A1;
 

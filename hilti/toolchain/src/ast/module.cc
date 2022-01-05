@@ -11,12 +11,12 @@ void Module::clear() {
 
     // We fully walk the AST here in order to break any reference cycles it may
     // contain. Start at child 1 to leave ID in place.
-    for ( size_t i = 1; i < childs().size(); i++ ) {
-        for ( auto j : v.walk(&childs()[i]) )
+    for ( size_t i = 1; i < children().size(); i++ ) {
+        for ( auto j : v.walk(&children()[i]) )
             j.node = node::none;
     }
 
-    childs()[1] = statement::Block({}, meta());
+    children()[1] = statement::Block({}, meta());
 }
 
 hilti::optional_ref<const declaration::Property> Module::moduleProperty(const ID& id) const {
@@ -45,7 +45,7 @@ node::Set<declaration::Property> Module::moduleProperties(const std::optional<ID
 
 void Module::destroyPreservedNodes() {
     for ( auto& n : _preserved )
-        n.destroyChilds();
+        n.destroyChildren();
 
     _preserved.clear();
 }

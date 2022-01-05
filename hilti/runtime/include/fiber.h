@@ -124,7 +124,7 @@ inline std::ostream& operator<<(std::ostream& out, const StackBuffer& s) {
 /**
  * A fiber implements a co-routine that can at any time yield control back to
  * its caller, to be resumed later. This is the internal class implementing the
- * main functionalty. It's used by `Resumable`, which provides the external
+ * main functionality. It's used by `Resumable`, which provides the external
  * interface.
  */
 class Fiber {
@@ -134,7 +134,7 @@ public:
         IndividualStack, /**< Fiver using a dedicated local stack (needs more memory, but switching is fast) */
         SharedStack,     /**< Fiber sharing a global stack (needs less memory, but switching costs extra) */
 
-        Main,             /**< Pseudo-fiber for the top-level process; for internaly use only */
+        Main,             /**< Pseudo-fiber for the top-level process; for internally use only */
         SwitchTrampoline, /**< Fiber representing a trampoline for stack switching; for internal use only */
     };
 

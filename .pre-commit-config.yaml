@@ -61,4 +61,10 @@ repos:
   - id: cmake-format
   - id: cmake-lint
 
+- repo: https://github.com/crate-ci/typos
+  rev: v1.3.3
+  hooks:
+  - id: typos
+    exclude: 'tests/.*/regexp/.*'
+
 exclude: 3rdparty/|doc/.*examples/|/Baseline/|(\.svg$)|(\.dat$)

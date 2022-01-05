@@ -1,4 +1,4 @@
-- Generally, keep global state to a mininum and add it to
+- Generally, keep global state to a minimum and add it to
   hilti::rt::detail::GlobalState instead of creating actual globals.
   This applies to static class members, too.
 

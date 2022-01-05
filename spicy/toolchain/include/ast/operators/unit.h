@@ -287,7 +287,7 @@ BEGIN_METHOD(unit, SetInput)
                                                      .type = type::constant(hilti::type::stream::Iterator())}},
                                            .doc = R"(
 Moves the current parsing position to *i*. The iterator *i* must be into the
-input of the current unit, or the method will throw a runtime execption.
+input of the current unit, or the method will throw a runtime exception.
 )"};
     }
 END_METHOD

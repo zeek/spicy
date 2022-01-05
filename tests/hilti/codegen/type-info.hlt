@@ -209,7 +209,7 @@ void __check_eq(const T& x, const U& y, std::string loc) {
 // "TypesInit".
 struct VisitorTypesInit {
     std::set<TypeInfo::Tag> seen;
-    static inline const int ExepectedVisitorsSeen = 40; // all (43) minus void and function and MatchState (which comes as struct)
+    static inline const int ExpectedVisitorsSeen = 40; // all (43) minus void and function and MatchState (which comes as struct)
 
     // Helper for checking content of a struct of type "S". All our instances
     // of "S" have the same values.
@@ -519,7 +519,7 @@ struct VisitorTypesInit {
 // "TypesInit".
 struct VisitorTypesDefault {
     std::set<TypeInfo::Tag> seen;
-    static inline const int ExepectedVisitorsSeen = 5;
+    static inline const int ExpectedVisitorsSeen = 5;
 
     void visit(const hilti::rt::type_info::Value& v) {
         const auto& type = v.type();
@@ -603,7 +603,7 @@ int main(int argc, char** argv) {
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_init)->iterate(v_init) )
         visitor_init.visit(f.second);
 
-    CHECK_EQ(visitor_init.seen.size(), VisitorTypesInit::ExepectedVisitorsSeen);
+    CHECK_EQ(visitor_init.seen.size(), VisitorTypesInit::ExpectedVisitorsSeen);
 
     // Test instance of TestTypes that has been initialized with default values.
     VisitorTypesDefault visitor_default;
@@ -612,7 +612,7 @@ int main(int argc, char** argv) {
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_default)->iterate(v_default) )
         visitor_default.visit(f.second);
 
-    CHECK_EQ(visitor_default.seen.size(), VisitorTypesDefault::ExepectedVisitorsSeen);
+    CHECK_EQ(visitor_default.seen.size(), VisitorTypesDefault::ExpectedVisitorsSeen);
 
     // Test instances of TestOptions in which one optional has been set.
     VisitorOptionals visitor2;

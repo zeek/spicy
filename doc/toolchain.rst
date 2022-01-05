@@ -214,7 +214,7 @@ following commands are supported:
 ==============
 
 ``spicy-dump`` is a standalone Spicy host application that compiles
-and executes Spicy parsers on the fly, feeds them data for proessing,
+and executes Spicy parsers on the fly, feeds them data for processing,
 and then at the end prints out the parsed information in either a
 readable, custom ASCII format, or as JSON (``--json`` or ``-J``). By
 default, ``spicy-dump`` disables showing the output of Spicy ``print``

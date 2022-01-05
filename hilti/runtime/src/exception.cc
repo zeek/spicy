@@ -55,7 +55,7 @@ Exception::Exception(const std::string& what, std::string_view desc, std::string
     : std::runtime_error(what), _description(desc), _location(location) {
     if ( configuration::get().abort_on_exceptions && ! detail::globalState()->disable_abort_on_exceptions ) {
         // TODO(robin): This will print the name of the base class (Exception), not
-        // the derived exception, because we're in the construtor. Is there
+        // the derived exception, because we're in the constructor. Is there
         // another way to get the final name?
         printException("Aborting on exception", *this, std::cerr);
         abort();

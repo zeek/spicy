@@ -8,7 +8,7 @@
 using namespace hilti;
 using namespace hilti::detail;
 
-PluginRegistry::PluginRegistry() = default; // Neded here to allow PluginRegistry to be forward declared.
+PluginRegistry::PluginRegistry() = default; // Needed here to allow PluginRegistry to be forward declared.
 
 Result<std::reference_wrapper<const Plugin>> PluginRegistry::pluginForExtension(hilti::rt::filesystem::path ext) const {
     auto p = std::find_if(_plugins.begin(), _plugins.end(), [&](auto& p) { return p.extension == ext; });

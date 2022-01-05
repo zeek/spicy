@@ -25,8 +25,8 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     /** Returns the type of an view for this type. */
     const hilti::Type& viewType() const if hilti::type::trait::isViewable;
 
-    /** Returns the type of elements the iterator traveres. */
-    const hilti::Type& dereferencedType() const if hilti::type::trait::isDereferencable;
+    /** Returns the type of elements the iterator traverse. */
+    const hilti::Type& dereferencedType() const if hilti::type::trait::isDereferenceable;
 
     /** Returns the type of elements the container stores. */
     const hilti::Type& elementType() const if hilti::type::trait::isIterable;
@@ -37,8 +37,8 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     /** For internal use. Use ``type::isAllocable` instead. */
     trait _isAllocable() from hilti::type::trait::isAllocable;
 
-    /** For internal use. Use ``type::isDereferencable` instead. */
-    trait _isDereferencable() from hilti::type::trait::isDereferencable;
+    /** For internal use. Use ``type::isDereferenceable` instead. */
+    trait _isDereferenceable() from hilti::type::trait::isDereferenceable;
 
     /** For internal use. Use ``type::isIterable` instead. */
     trait _isIterable() from hilti::type::trait::isIterable;
@@ -77,10 +77,10 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     hilti::node::Properties properties() const;
 
     /** Implements the `Node` interface. */
-    const std::vector<hilti::Node>& childs() const;
+    const std::vector<hilti::Node>& children() const;
 
     /** Implements the `Node` interface. */
-    std::vector<hilti::Node>& childs();
+    std::vector<hilti::Node>& children();
 
     /** Implements the `Node` interface. */
     const Meta& meta() const;

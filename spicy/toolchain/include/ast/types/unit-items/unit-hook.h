@@ -14,12 +14,12 @@ namespace spicy::type::unit::item {
 class UnitHook : public hilti::NodeBase, public spicy::trait::isUnitItem {
 public:
     UnitHook(ID id, Hook hook, Meta m = Meta()) : NodeBase(nodes(id, std::move(hook)), std::move(m)) {
-        childs()[1].as<Hook>().setID(id);
+        children()[1].as<Hook>().setID(id);
     }
 
     const auto& id() const { return child<ID>(0); }
     const auto& hook() const { return child<Hook>(1); }
-    const auto& location() const { return childs()[0].location(); }
+    const auto& location() const { return children()[0].location(); }
 
     bool operator==(const UnitHook& other) const { return id() == other.id() && hook() == other.hook(); }
 

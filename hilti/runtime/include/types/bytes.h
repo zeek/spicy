@@ -231,7 +231,7 @@ public:
     size_type size() const { return static_cast<int64_t>(std::string::size()); }
 
     /**
-     * Returns the position of the first occurence of a byte.
+     * Returns the position of the first occurrence of a byte.
      *
      * @param b byte to search
      * @param n optional starting point, which must be inside the same instance
@@ -244,7 +244,7 @@ public:
     }
 
     /**
-     * Returns the position of the first occurence of a range of bytes
+     * Returns the position of the first occurrence of a range of bytes
      *
      * @param v bytes to search
      * @param n optional starting point, which must be inside the same instance
@@ -372,7 +372,7 @@ public:
         return std::make_tuple(p.first, p.second);
     }
 
-    /** Splits the data at occurences of a separator, returning the parts. */
+    /** Splits the data at occurrences of a separator, returning the parts. */
     Vector<Bytes> split(const Bytes& sep) const {
         Vector<Bytes> x;
         for ( auto& v : hilti::rt::split(*this, sep) )
@@ -381,7 +381,7 @@ public:
     }
 
     /**
-     * Splits the data (only) at the first occurance of a separator,
+     * Splits the data (only) at the first occurrence of a separator,
      * returning the two parts.
      *
      * @param sep `Bytes` sequence to split at
@@ -471,7 +471,7 @@ public:
     }
 
     /**
-     * Matchs the data against a regular expression.
+     * Matches the data against a regular expression.
      *
      * @param re compiled regular expression
      * @param group capture group to return

@@ -41,9 +41,9 @@ public:
     auto lower() const { return _lower; }
     auto upper() const { return _upper; }
     auto fieldWidth() const { return _field_width; }
-    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
-    const Type& ddType() const { return childs()[1].as<hilti::declaration::Expression>().expression().type(); }
-    NodeRef ddRef() const { return NodeRef(childs()[1]); }
+    auto attributes() const { return children()[3].tryAs<AttributeSet>(); }
+    const Type& ddType() const { return children()[1].as<hilti::declaration::Expression>().expression().type(); }
+    NodeRef ddRef() const { return NodeRef(children()[1]); }
     const auto& itemType() const { return child<Type>(2); }
 
     /** Implements the `Node` interface. */
@@ -55,8 +55,8 @@ public:
         };
     }
 
-    void setAttributes(AttributeSet attrs) { childs()[3] = std::move(attrs); }
-    void setItemType(Type t) { childs()[2] = std::move(t); }
+    void setAttributes(AttributeSet attrs) { children()[3] = std::move(attrs); }
+    void setItemType(Type t) { children()[2] = std::move(t); }
 
     bool operator==(const Bits& other) const {
         return id() == other.id() && _lower == other._lower && _upper == other._upper &&
@@ -86,14 +86,14 @@ public:
         : TypeBase({hilti::type::unknown, hilti::type::unknown}, std::move(m)), _wildcard(true) {}
 
     int width() const { return _width; }
-    auto bits() const { return childs<bitfield::Bits>(2, -1); }
+    auto bits() const { return children<bitfield::Bits>(2, -1); }
     hilti::optional_ref<const bitfield::Bits> bits(const ID& id) const;
     std::optional<int> bitsIndex(const ID& id) const;
     const Type& parseType() const { return child<Type>(0); }
     const Type& type() const { return child<Type>(1); }
 
     void addField(bitfield::Bits f) { addChild(std::move(f)); }
-    void setType(Type t) { childs()[1] = std::move(t); }
+    void setType(Type t) { children()[1] = std::move(t); }
 
     bool operator==(const Bitfield& other) const { return width() == other.width() && bits() == other.bits(); }
 
@@ -102,7 +102,7 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return hilti::util::slice(childs(), 1); }
+    auto typeParameters() const { return hilti::util::slice(children(), 1); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Node` interface. */

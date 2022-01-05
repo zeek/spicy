@@ -403,7 +403,7 @@ extern void waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NO
  * @param error_msg message to report with parse error if end-of-data is been reached
  * @param location location associated with the situation
  * @param filter filter state associated with current unit instance (which may be null)
- * @return true if mininum number of bytes are available; false if end-of-data
+ * @return true if minimum number of bytes are available; false if end-of-data
  * has been reached
  */
 extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
@@ -458,7 +458,7 @@ extern bool atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilt
 inline void backtrack() { throw Backtrack(); }
 
 /**
- * Wrapper around hilti::rt::stream::View::find() that's more convinient to
+ * Wrapper around hilti::rt::stream::View::find() that's more convenient to
  * call from Spicy's generated code.
  *
  * @param begin start of stream view to search

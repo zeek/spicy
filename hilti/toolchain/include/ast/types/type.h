@@ -25,7 +25,7 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(typeValue(), rstate); }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Node` interface. */

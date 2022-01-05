@@ -64,7 +64,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                           (node->typeid_() == firstNode->typeid_() || firstNode->isA<declaration::Module>()) )
                     continue;
 
-                // TODO: Should make preDispatch() recevie a non-const node
+                // TODO: Should make preDispatch() receive a non-const node
                 // so that we can set errors here.
                 logger().error(fmt("redefinition of '%s' defined in %s", id, firstNode->location()), node->location());
             }
@@ -372,7 +372,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         }
 
         if ( defaults > 1 )
-            error("'try` statement cannot have more than one defaullt `catch`", p);
+            error("'try` statement cannot have more than one default `catch`", p);
     }
 
     void operator()(const statement::While& n, position_t p) {

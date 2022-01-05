@@ -257,7 +257,7 @@ public:
      * Recursively clears all child nodes and then deletes them from this node.
      * This helps to break reference cycles.
      */
-    void destroyChilds();
+    void destroyChildren();
 
     /**
      * Returns an internal string representation of the node and all its
@@ -367,11 +367,11 @@ public:
     /**
      * Constructor registering child nodes.
      *
-     * @param childs children of this node
+     * @param children children of this node
      * @param meta meta information to associate with the node
      */
-    NodeBase(std::vector<Node> childs, Meta meta) : _meta(std::move(meta)) {
-        for ( auto& c : childs )
+    NodeBase(std::vector<Node> children, Meta meta) : _meta(std::move(meta)) {
+        for ( auto& c : children )
             addChild(std::move(c));
     }
 
@@ -386,7 +386,7 @@ public:
      */
     template<typename T>
     const T& child(int i) const {
-        return _childs[i].as<T>();
+        return _children[i].as<T>();
     }
 
     /**
@@ -397,7 +397,7 @@ public:
      */
     template<typename T>
     void assertChildIsA(int i) {
-        _childs[i].template assertIsA<T>();
+        _children[i].template assertIsA<T>();
     }
 
     /**
@@ -407,12 +407,12 @@ public:
      * @tparam T type that the child nodes are assumed to (and must) have
      * @param begin index of first child to include; a negative index counts Python-style from end of list
      * @param end index of one beyond last child to include; a negative index counts Python-style from end of list
-     * @return range containing childs from `start` to `end`
+     * @return range containing children from `start` to `end`
      */
     template<typename T>
-    auto childs(int begin, int end) const {
-        auto end_ = (end < 0) ? _childs.end() : _childs.begin() + end;
-        return hilti::node::Range<T>(_childs.begin() + begin, end_);
+    auto children(int begin, int end) const {
+        auto end_ = (end < 0) ? _children.end() : _children.begin() + end;
+        return hilti::node::Range<T>(_children.begin() + begin, end_);
     }
 
     /**
@@ -424,10 +424,10 @@ public:
      * @return vector containing child references from `start` to `end`
      */
     auto childRefs(int begin, int end) {
-        auto end_ = (end < 0) ? _childs.end() : _childs.begin() + end;
+        auto end_ = (end < 0) ? _children.end() : _children.begin() + end;
 
         std::vector<NodeRef> refs;
-        for ( auto c = _childs.begin(); c != end_; c = std::next(c) )
+        for ( auto c = _children.begin(); c != end_; c = std::next(c) )
             refs.push_back(NodeRef(*c));
 
         return refs;
@@ -437,17 +437,17 @@ public:
      * Returns a subset of children selected by their type.
      *
      * @tparam T type of children to return
-     * @return set of all childs that have type `T`
+     * @return set of all children that have type `T`
      */
     template<typename T>
-    hilti::node::Set<T> childsOfType() const;
+    hilti::node::Set<T> childrenOfType() const;
 
     /**
      * Returns a vector of references to a subset of children selected by their
      * type.
      *
      * @tparam T type of children to return
-     * @return set of all childs that have type `T`
+     * @return set of all children that have type `T`
      */
     template<typename T>
     std::vector<NodeRef> childRefsOfType() const;
@@ -463,13 +463,13 @@ public:
             n.setMeta(std::move(m));
         }
 
-        _childs.push_back(std::move(n));
+        _children.push_back(std::move(n));
     }
 
     /** Implements the `Node` interface. */
-    const auto& childs() const { return _childs; }
+    const auto& children() const { return _children; }
     /** Implements the `Node` interface. */
-    auto& childs() { return _childs; }
+    auto& children() { return _children; }
     /** Implements the `Node` interface. */
     auto& meta() const { return _meta; }
     /** Implements the `Node` interface. */
@@ -478,7 +478,7 @@ public:
     bool pruneWalk() const { return false; }
 
 private:
-    std::vector<::hilti::Node> _childs;
+    std::vector<::hilti::Node> _children;
     Meta _meta;
     NodeRef _orig;
 };
@@ -924,9 +924,9 @@ inline std::ostream& operator<<(std::ostream& out, const Node& n) {
 }
 
 template<typename T>
-hilti::node::Set<T> NodeBase::childsOfType() const {
+hilti::node::Set<T> NodeBase::childrenOfType() const {
     typename hilti::node::Set<T> n;
-    for ( auto c = _childs.begin(); c != _childs.end(); c = std::next(c) ) {
+    for ( auto c = _children.begin(); c != _children.end(); c = std::next(c) ) {
         if ( auto t = c->tryAs<T>() )
             n.insert(*t);
     }
@@ -937,7 +937,7 @@ hilti::node::Set<T> NodeBase::childsOfType() const {
 template<typename T>
 std::vector<NodeRef> NodeBase::childRefsOfType() const {
     typename std::vector<NodeRef> n;
-    for ( auto c = _childs.begin(); c != _childs.end(); c = std::next(c) ) {
+    for ( auto c = _children.begin(); c != _children.end(); c = std::next(c) ) {
         if ( c->isA<T>() )
             n.push_back(NodeRef(*c));
     }
@@ -947,17 +947,17 @@ std::vector<NodeRef> NodeBase::childRefsOfType() const {
 
 namespace node {
 namespace detail {
-// Backend to NodeBase::flattenedChilds.
-void flattenedChilds(const hilti::Node& n, node::Set<const hilti::Node>* dst);
+// Backend to NodeBase::flattenedChildren.
+void flattenedChildren(const hilti::Node& n, node::Set<const hilti::Node>* dst);
 } // namespace detail
 
 /**
- * Returns a list of all childs of specific type, descending recursively
+ * Returns a list of all children of specific type, descending recursively
  * to find instance anywhere below this node.
  */
-inline node::Set<const Node> flattenedChilds(const Node& n) {
+inline node::Set<const Node> flattenedChildren(const Node& n) {
     node::Set<const Node> dst;
-    detail::flattenedChilds(n, &dst);
+    detail::flattenedChildren(n, &dst);
     return dst;
 }
 

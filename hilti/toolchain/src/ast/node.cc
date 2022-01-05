@@ -120,24 +120,24 @@ node::Properties operator+(const node::Properties& p1, const node::Properties& p
     return p;
 }
 
-void node::detail::flattenedChilds(const hilti::Node& n, node::Set<const hilti::Node>* dst) {
-    const auto& childs = n.childs();
-    for ( auto i = 0u; i < childs.size(); i++ ) {
-        dst->insert(childs[i]);
-        flattenedChilds(childs[i], dst);
+void node::detail::flattenedChildren(const hilti::Node& n, node::Set<const hilti::Node>* dst) {
+    const auto& children = n.children();
+    for ( auto i = 0u; i < children.size(); i++ ) {
+        dst->insert(children[i]);
+        flattenedChildren(children[i], dst);
     }
 }
 
-static void _destroyChildsRecursively(Node* n) {
-    for ( auto& c : n->childs() ) {
+static void _destroyChildrenRecursively(Node* n) {
+    for ( auto& c : n->children() ) {
         if ( ! c.pruneWalk() )
-            _destroyChildsRecursively(&c);
+            _destroyChildrenRecursively(&c);
     }
 
-    n->childs().clear();
+    n->children().clear();
 }
 
-void Node::destroyChilds() {
-    _destroyChildsRecursively(this);
-    childs().clear();
+void Node::destroyChildren() {
+    _destroyChildrenRecursively(this);
+    children().clear();
 }

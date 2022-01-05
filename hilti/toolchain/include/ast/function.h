@@ -52,10 +52,10 @@ public:
 
     const auto& id() const { return child<ID>(0); }
     const auto& type() const { return child<Type>(1).as<Type>(); }
-    NodeRef typeRef() { return NodeRef(childs()[1]); }
+    NodeRef typeRef() { return NodeRef(children()[1]); }
     const auto& ftype() const { return child<Type>(1).as<type::Function>(); }
-    auto body() const { return childs()[2].tryAs<Statement>(); }
-    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
+    auto body() const { return children()[2].tryAs<Statement>(); }
+    auto attributes() const { return children()[3].tryAs<AttributeSet>(); }
     auto callingConvention() const { return _cc; }
     bool isStatic() const { return AttributeSet::find(attributes(), "&static").has_value(); }
 
@@ -64,12 +64,12 @@ public:
                attributes() == other.attributes() && callingConvention() == other.callingConvention();
     }
 
-    void setBody(Statement b) { childs()[2] = std::move(b); }
-    void setID(ID id) { childs()[0] = std::move(id); }
-    void setResultType(Type t) { childs()[1].as<type::Function>().setResultType(std::move(t)); }
+    void setBody(Statement b) { children()[2] = std::move(b); }
+    void setID(ID id) { children()[0] = std::move(id); }
+    void setResultType(Type t) { children()[1].as<type::Function>().setResultType(std::move(t)); }
 
     /** Internal method for use by builder API only. */
-    Node& _typeNode() { return childs()[1]; }
+    Node& _typeNode() { return children()[1]; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"cc", to_string(_cc)}}; }

@@ -18,7 +18,7 @@ namespace declaration {
 class UnitHook : public hilti::DeclarationBase {
 public:
     UnitHook(ID id, const Hook& hook, Meta m = Meta()) : DeclarationBase(hilti::nodes(id, hook), std::move(m)) {
-        childs()[1].as<Hook>().setID(id);
+        children()[1].as<Hook>().setID(id);
     }
 
     const auto& hook() const { return child<Hook>(1); }

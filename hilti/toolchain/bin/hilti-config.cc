@@ -43,7 +43,7 @@ Available options:
     --version                Print HILTI version.
 
     --using-build-dir        Returns true when hilti-config's output is referring to the build directory;
-                             and false when refering to the installation
+                             and false when referring to the installation
 )";
 }
 

@@ -23,15 +23,15 @@ public:
     } // Bool is just an arbitrary place-holder type for empty values
     Vector(Type t, std::vector<Expression> e, Meta m = Meta()) : NodeBase(nodes(type::Vector(t, m), std::move(e)), m) {}
 
-    const auto& elementType() const { return childs()[0].as<type::Vector>().elementType(); }
-    auto value() const { return childs<Expression>(1, -1); }
+    const auto& elementType() const { return children()[0].as<type::Vector>().elementType(); }
+    auto value() const { return children<Expression>(1, -1); }
 
-    void setElementType(Type t) { childs()[0] = type::Vector(std::move(t), meta()); }
+    void setElementType(Type t) { children()[0] = type::Vector(std::move(t), meta()); }
 
     void setValue(std::vector<Expression> elems) {
-        childs().erase(childs().begin() + 1, childs().end());
+        children().erase(children().begin() + 1, children().end());
         for ( auto&& e : elems )
-            childs().push_back(e);
+            children().push_back(e);
     }
 
     bool operator==(const Vector& other) const {

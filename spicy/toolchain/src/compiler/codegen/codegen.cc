@@ -83,8 +83,8 @@ struct VisitorPass1 : public hilti::visitor::PreOrder<void, VisitorPass1> {
 
         auto ns = cg->compileUnit(*u, false);
         auto attrs = AttributeSet({Attribute("&on-heap")});
-        auto nd = hilti::declaration::Type(t.id(), ns, attrs, t.linkage(), t.meta());
-        replaceNode(&p, nd);
+        auto new_t = hilti::declaration::Type(t.id(), ns, attrs, t.linkage(), t.meta());
+        replaceNode(&p, new_t);
     }
 };
 

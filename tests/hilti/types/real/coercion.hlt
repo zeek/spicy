@@ -49,10 +49,10 @@ assert i64_bo  == -0x20000000000000;
 
 ##### Real to Integer casts:  #####
 
-global realy = 4e9;         # Deduce real lhs from real rhs
-assert realy == 4000000000; # Compare real variable with coerced integer constant:
+global really = 4e9;         # Deduce real lhs from real rhs
+assert really == 4000000000; # Compare real variable with coerced integer constant:
 
-global uint<64> uinty = cast<uint<64>>(realy); # Can't coerce real variable to integer; have to cast
+global uint<64> uinty = cast<uint<64>>(really); # Can't coerce real variable to integer; have to cast
 
 # 355/113 approximates pi as 3.141592920353982520964564...
 

@@ -23,7 +23,7 @@ public:
         : DeclarationBase(nodes(std::move(id), std::move(e), std::move(attrs)), std::move(m)), _linkage(linkage) {}
 
     const auto& expression() const { return child<hilti::Expression>(1); }
-    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
+    auto attributes() const { return children()[2].tryAs<AttributeSet>(); }
 
     bool operator==(const Expression& other) const { return id() == other.id() && expression() == other.expression(); }
 

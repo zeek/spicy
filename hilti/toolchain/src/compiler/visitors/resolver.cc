@@ -917,8 +917,8 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
         // Some operators may not be able to determine their type before the
         // resolver had a chance to provife the information needed. They will
         // return "auto" in that case (specficially, that's the case for Spicy
-        // unit member acccess). Note we can't check if type::isResolved() here
-        // because operators may legitimatley return other unresolved types
+        // unit member access). Note we can't check if type::isResolved() here
+        // because operators may legitimately return other unresolved types
         // (e.g., IDs that still need to be looked up).
         if ( r.type() == type::auto_ )
             return {};

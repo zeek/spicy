@@ -75,18 +75,18 @@ public:
     Unit(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(std::move(m)), _wildcard(true) {}
 
     NodeRef selfRef() const {
-        if ( childs()[0].isA<Declaration>() )
-            return NodeRef(childs()[0]);
+        if ( children()[0].isA<Declaration>() )
+            return NodeRef(children()[0]);
         else
             return {};
     }
 
-    auto id() const { return childs()[1].tryAs<ID>(); }
-    auto parameters() const { return childsOfType<type::function::Parameter>(); }
+    auto id() const { return children()[1].tryAs<ID>(); }
+    auto parameters() const { return childrenOfType<type::function::Parameter>(); }
     auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
-    auto items() const { return childsOfType<unit::Item>(); }
+    auto items() const { return childrenOfType<unit::Item>(); }
     auto itemRefs() const { return childRefsOfType<unit::Item>(); }
-    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
+    auto attributes() const { return children()[2].tryAs<AttributeSet>(); }
 
     /** Returns the type set through ``%context`, if available. */
     hilti::optional_ref<const Type> contextType() const {
@@ -98,7 +98,7 @@ public:
 
     /**
      * Returns the item of a given name if it exists. This descends
-     * recursively into childs as well.
+     * recursively into children as well.
      */
     hilti::optional_ref<const type::unit::Item> itemByName(const ID& id) const;
 
@@ -110,7 +110,7 @@ public:
      **/
     template<typename T>
     auto items() const {
-        return childsOfType<T>();
+        return childrenOfType<T>();
     }
 
     /**
@@ -165,17 +165,17 @@ public:
         auto new_items = assignIndices(items);
 
         for ( auto i : new_items )
-            childs().emplace_back(std::move(i));
+            children().emplace_back(std::move(i));
     }
 
-    void setAttributes(AttributeSet attrs) { childs()[2] = std::move(attrs); }
+    void setAttributes(AttributeSet attrs) { children()[2] = std::move(attrs); }
     void setGrammar(std::shared_ptr<spicy::detail::codegen::Grammar> g) { _grammar = std::move(g); }
-    void setID(ID id) { childs()[1] = std::move(id); }
+    void setID(ID id) { children()[1] = std::move(id); }
     void setPublic(bool p) { _public = p; }
 
     bool operator==(const Unit& other) const {
         // We treat units as equal (only) if their type IDs match. That's
-        // checked upstream in the Type's comparision operator.
+        // checked upstream in the Type's comparison operator.
         return false;
     }
 
@@ -192,7 +192,7 @@ public:
     }
 
     // type::trait::Parameterized interface.
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     auto isWildcard() const { return _wildcard; }
 
     // Node interface.
@@ -210,7 +210,7 @@ public:
                                                      StrongReference(hilti::type::pruneWalk(n->as<Type>())), n->meta());
         Declaration d =
             hilti::declaration::Expression("self", std::move(self), declaration::Linkage::Private, n->meta());
-        n->childs()[0] = std::move(d);
+        n->children()[0] = std::move(d);
     }
 
 private:

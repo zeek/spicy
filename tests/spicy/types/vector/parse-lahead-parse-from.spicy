@@ -2,7 +2,7 @@
 # @TEST-EXEC:  btest-diff output
 #
 # This tests that look-ahead is not applied to fields with &parse-from.
-# If it were, the grammar would be ambigious.
+# If it were, the grammar would be ambiguous.
 
 module Test;
 

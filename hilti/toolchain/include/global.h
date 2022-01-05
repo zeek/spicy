@@ -53,7 +53,7 @@ extern void render(logging::DebugStream stream, const Node& node, bool include_s
  *
  * @note Usually, this function should be used on an AST's root node (i.e.,
  * the module). The function accepts other nodes, but may not always produce
- * currect code for them.
+ * correct code for them.
  *
  * @param out stream to print to
  * @param node the node

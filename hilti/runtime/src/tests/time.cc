@@ -36,7 +36,7 @@ TEST_CASE("mktime") {
 
 TEST_SUITE_BEGIN("Time");
 
-TEST_CASE("comparisions") {
+TEST_CASE("comparisons") {
     const auto t0 = Time(0, Time::NanosecondTag{});
     const auto t1 = Time(1, Time::NanosecondTag{});
 

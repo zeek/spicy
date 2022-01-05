@@ -61,11 +61,11 @@ TEST_CASE("Single-shot, result, constant node") {
     REQUIRE(x);
     REQUIRE(*x == "(mo)");
 
-    x = v.dispatch(root.childs()[0]);
+    x = v.dispatch(root.children()[0]);
     REQUIRE(x);
     REQUIRE(*x == "(id)");
 
-    x = v.dispatch(root.childs()[1]);
+    x = v.dispatch(root.children()[1]);
     REQUIRE(! x);
 }
 

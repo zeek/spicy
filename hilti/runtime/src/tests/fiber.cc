@@ -287,7 +287,7 @@ TEST_CASE("prime-cache") {
 TEST_CASE("copy-arg") {
     hilti::rt::init();
 
-    // This mimics how the HILTI codegen generater moves fiber arguments to the heap.
+    // This mimics how the HILTI codegen generator moves fiber arguments to the heap.
     auto s1 = std::string("string1");
     auto s2 = hilti::rt::ValueReference<std::string>("string2");
 

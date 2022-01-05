@@ -96,7 +96,7 @@ protected:
  *     rt::Set<int> set;
  *     auto it = set.begin(); // Valid iterator which cannot be dereferenced.
  *
- *     // Mutating the set invalidates not dereferencable iterators.
+ *     // Mutating the set invalidates not dereferenceable iterators.
  *     set.insert(1);
  *
  *     *it; // Iterator now invalid, throws.

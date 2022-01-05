@@ -42,24 +42,24 @@ public:
     ResolvedOperatorBase(const Operator& op, const std::vector<Expression>& operands, Meta meta = Meta())
         : NodeBase(nodes(node::none, operands), std::move(meta)), _operator(op) {
         // Must not have instantiated this before we know the result type.
-        childs()[0] = type::pruneWalk(op.result(childs<Expression>(1, -1)));
+        children()[0] = type::pruneWalk(op.result(children<Expression>(1, -1)));
     }
 
     const auto& operator_() const { return _operator; }
     auto kind() const { return _operator.kind(); }
 
     // ResolvedOperator interface with common implementation.
-    auto operands() const { return childs<Expression>(1, -1); }
+    auto operands() const { return children<Expression>(1, -1); }
     const auto& result() const { return child<Type>(0); }
     const auto& op0() const { return child<Expression>(1); }
     const auto& op1() const { return child<Expression>(2); }
     const auto& op2() const { return child<Expression>(3); }
-    auto hasOp0() const { return ! childs().empty(); }
-    auto hasOp1() const { return childs().size() >= 3; }
-    auto hasOp2() const { return childs().size() >= 4; }
-    void setOp0(const Expression& e) { childs()[1] = e; }
-    void setOp1(const Expression& e) { childs()[2] = e; }
-    void setOp2(const Expression& e) { childs()[3] = e; }
+    auto hasOp0() const { return ! children().empty(); }
+    auto hasOp1() const { return children().size() >= 3; }
+    auto hasOp2() const { return children().size() >= 4; }
+    void setOp0(const Expression& e) { children()[1] = e; }
+    void setOp1(const Expression& e) { children()[2] = e; }
+    void setOp2(const Expression& e) { children()[3] = e; }
 
     bool operator==(const ResolvedOperator& other) const {
         return operator_() == other.operator_() && operands() == other.operands();

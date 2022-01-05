@@ -60,7 +60,7 @@ static auto createRefs(const std::vector<NodeRef>& refs, const std::string& id, 
 std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, bool external) const {
     // Try all subpaths.
     //
-    // TOOD: This method needs a cleanup, pretty ugly.
+    // TODO: This method needs a cleanup, pretty ugly.
     std::string h = id;
     std::string t = "$ $"; // non-empty, illegal-ID dummy
 

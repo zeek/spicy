@@ -78,7 +78,7 @@ public:
     const Type& dereferencedType() const { return child<type::ValueReference>(0).dereferencedType(); }
     const Expression& expression() const { return child<Expression>(1); }
 
-    void setDereferencedType(Type x) { childs()[0] = type::ValueReference(std::move(x)); }
+    void setDereferencedType(Type x) { children()[0] = type::ValueReference(std::move(x)); }
 
     bool operator==(const ValueReference& other) const { return dereferencedType() == other.dereferencedType(); }
 

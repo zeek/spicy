@@ -16,7 +16,7 @@ namespace map {
 /** AST node for a map iterator type. */
 class Iterator : public TypeBase,
                  trait::isIterator,
-                 trait::isDereferencable,
+                 trait::isDereferenceable,
                  trait::isAllocable,
                  trait::isMutable,
                  trait::isRuntimeNonTrivial,
@@ -28,14 +28,14 @@ public:
         : TypeBase(nodes(type::unknown, type::unknown), std::move(m)), _wildcard(true), _const(const_) {}
 
     const Type& keyType() const {
-        if ( auto t = childs()[0].tryAs<type::Tuple>() )
+        if ( auto t = children()[0].tryAs<type::Tuple>() )
             return t->elements()[0].type();
         else
             return child<Type>(0);
     }
 
     const Type& valueType() const {
-        if ( auto t = childs()[0].tryAs<type::Tuple>() )
+        if ( auto t = children()[0].tryAs<type::Tuple>() )
             return t->elements()[1].type();
         else
             return child<Type>(0);
@@ -53,7 +53,7 @@ public:
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"const", _const}}; }
 
@@ -99,7 +99,7 @@ public:
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 

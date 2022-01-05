@@ -16,7 +16,7 @@ namespace type {
 class StrongReference : public TypeBase,
                         trait::isAllocable,
                         trait::isParameterized,
-                        trait::isDereferencable,
+                        trait::isDereferenceable,
                         trait::isReferenceType {
 public:
     StrongReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
@@ -27,7 +27,7 @@ public:
         if ( _type )
             return _type->as<Type>();
         else
-            return childs()[0].as<Type>();
+            return children()[0].as<Type>();
     }
 
     bool operator==(const StrongReference& other) const { return dereferencedType() == other.dereferencedType(); }
@@ -37,7 +37,7 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
 
@@ -53,13 +53,13 @@ private:
 class WeakReference : public TypeBase,
                       trait::isAllocable,
                       trait::isParameterized,
-                      trait::isDereferencable,
+                      trait::isDereferenceable,
                       trait::isReferenceType {
 public:
     WeakReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     WeakReference(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
 
-    const Type& dereferencedType() const { return childs()[0].as<Type>(); }
+    const Type& dereferencedType() const { return children()[0].as<Type>(); }
 
     bool operator==(const WeakReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
@@ -68,7 +68,7 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
 
@@ -83,7 +83,7 @@ private:
 class ValueReference : public TypeBase,
                        trait::isAllocable,
                        trait::isParameterized,
-                       trait::isDereferencable,
+                       trait::isDereferenceable,
                        trait::isReferenceType {
 public:
     ValueReference(Wildcard /*unused*/, Meta m = Meta())
@@ -95,7 +95,7 @@ public:
         if ( _node )
             return _node->as<Type>();
         else
-            return childs()[0].as<Type>();
+            return children()[0].as<Type>();
     }
 
     bool operator==(const ValueReference& other) const { return dereferencedType() == other.dereferencedType(); }
@@ -105,7 +105,7 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
 

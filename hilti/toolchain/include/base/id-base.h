@@ -18,7 +18,7 @@ inline std::string identity_normalizer(std::string s) { return s; }
 /**
  * Base class for representing scoped language IDs. It provides a number of
  * standard accesasorsd and manipulators to support operations on/with
- * namespaces. This class assumes that namespaces are seperated with `::`.
+ * namespaces. This class assumes that namespaces are separated with `::`.
  *
  * @tparam Derived name of the class deriving from this one (CRTP).
  * @tparam N a function that may preprocess/normalize all ID components before storing them
@@ -117,14 +117,14 @@ public:
         return Derived(_id.substr(root._id.size() + 2), AlreadyNormalized());
     }
 
-    /** Concantenates two IDs, separating them wiht `::`. */
+    /** Concantenates two IDs, separating them with `::`. */
     Derived operator+(const std::string& other) const {
         Derived n(_id, AlreadyNormalized());
         n += N(other);
         return n;
     }
 
-    /** Concantenates two IDs, separating them wiht `::`. */
+    /** Concantenates two IDs, separating them with `::`. */
     Derived operator+(const Derived& other) const {
         Derived n(_id, AlreadyNormalized());
         n += other;

@@ -14,7 +14,7 @@ type Foo = struct {
 function f() {
     local foo: Foo;
 
-    print("Default-initalized fields: %s" % foo);
+    print("Default-initialized fields: %s" % foo);
 
     foo.x = 42;
     foo.y = 12.5;

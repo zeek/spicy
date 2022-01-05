@@ -28,12 +28,14 @@ public:
     }
     Catch() = default;
 
-    auto parameter() const { return childs()[0].tryAs<declaration::Parameter>(); }
-    auto parameterRef() const { return childs()[0].isA<declaration::Parameter>() ? NodeRef(childs()[0]) : NodeRef(); }
+    auto parameter() const { return children()[0].tryAs<declaration::Parameter>(); }
+    auto parameterRef() const {
+        return children()[0].isA<declaration::Parameter>() ? NodeRef(children()[0]) : NodeRef();
+    }
     const auto& body() const { return child<hilti::Statement>(1); }
 
     /** Internal method for use by builder API only. */
-    auto& _bodyNode() { return childs()[1]; }
+    auto& _bodyNode() { return children()[1]; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
@@ -50,15 +52,15 @@ public:
         : NodeBase(nodes(std::move(body), std::move(catches)), std::move(m)) {}
 
     const auto& body() const { return child<hilti::Statement>(0); }
-    auto catches() const { return childs<try_::Catch>(1, -1); }
+    auto catches() const { return children<try_::Catch>(1, -1); }
 
     bool operator==(const Try& other) const { return body() == other.body() && catches() == other.catches(); }
 
     /** Internal method for use by builder API only. */
-    auto& _bodyNode() { return childs()[0]; }
+    auto& _bodyNode() { return children()[0]; }
 
     /** Internal method for use by builder API only. */
-    auto& _lastCatchNode() { return childs().back(); }
+    auto& _lastCatchNode() { return children().back(); }
 
     /** Internal method for use by builder API only. */
     void _addCatch(try_::Catch catch_) { addChild(std::move(catch_)); }

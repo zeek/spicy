@@ -24,7 +24,7 @@ TEST_CASE("contains") {
     CHECK_FALSE(s.contains(99));
 }
 
-// `insert` does not invalidate dereferencable iterators.
+// `insert` does not invalidate dereferenceable iterators.
 TEST_CASE("insert") {
     SUBCASE("valid element") {
         Set<int> s({1});
@@ -39,7 +39,7 @@ TEST_CASE("insert") {
         CHECK_EQ(*begin, 2);
     }
 
-    // For an empty `Set`, `begin` is not a dereferencable iterator, and it
+    // For an empty `Set`, `begin` is not a dereferenceable iterator, and it
     // does not become valid when an element backing it is added to the `Set`.
     SUBCASE("begin") {
         Set<int> s;
@@ -60,7 +60,7 @@ TEST_CASE("insert") {
 
         auto it1 = s.insert(hint, 1);
 
-        // For an empty `Set`, `begin` is not a dereferencable iterator, and it
+        // For an empty `Set`, `begin` is not a dereferenceable iterator, and it
         // does not become valid when an element backing it is added to the `Set`.
         REQUIRE_THROWS_WITH_AS(*hint, "iterator is invalid", const IndexError&);
 

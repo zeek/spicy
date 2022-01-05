@@ -2,11 +2,11 @@
 [$a=b"1", $b=b"2", $c=b"345", $d=(not set), $e=(not set), $f=(not set)]
 2
 345
-noe_d
-noe_e
-noe_f
+bar_d
+bar_e
+bar_f
 2
 345
-nope_d
-nope_e
-nope_f
+foo_d
+foo_e
+foo_f

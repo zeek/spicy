@@ -1,6 +1,6 @@
 # @TEST-EXEC: spicyc -j %INPUT
 #
-# @TEST-DOC: Checks for succesful compilation of a cycle unit relationship.
+# @TEST-DOC: Checks for successful compilation of a cycle unit relationship.
 #
 # This is a regression test, getting this to compile can be tricky.
 

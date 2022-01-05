@@ -44,7 +44,7 @@ function (install_symlink filepath sympath)
 endfunction (install_symlink)
 
 # Initialize a variable that'll go into a {hilti,spicy}/config.cc
-# file. This performans some normalization: turn lists into
+# file. This performs some normalization: turn lists into
 # space-separated strings and strip/reduce whitespace.
 function (set_config_val dst val)
     if (NOT "${val}" STREQUAL "")

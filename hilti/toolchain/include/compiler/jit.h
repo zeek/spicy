@@ -59,7 +59,7 @@ public:
      * Saves C++ code into a file.
      *
      * @param p file to write to
-     * @return true if succesful
+     * @return true if successful
      */
     bool save(const hilti::rt::filesystem::path& p) const;
 
@@ -67,7 +67,7 @@ public:
      * Writes C++ code into an output stream.
      *
      * @param out stream to write to
-     * @return true if succesful
+     * @return true if successful
      */
     bool save(std::ostream& out) const;
 
@@ -79,7 +79,7 @@ public:
 
     /**
      * Returns a name associated with the instance's C++ code. If the code
-     * has been read from a file, that's the path; otherwise the ID specifed
+     * has been read from a file, that's the path; otherwise the ID specified
      * when initialized.
      */
     const std::string& id() const { return _id; }
@@ -92,7 +92,7 @@ protected:
      * Loads C++ code from a file.
      *
      * @param path file to read from
-     * @return true if succesful
+     * @return true if successful
      */
     bool load(const hilti::rt::filesystem::path& path);
 
@@ -101,7 +101,7 @@ protected:
      *
      * @param id name to associate with the input for logging and error messages.
      * @param path stream to read from
-     * @return true if succesful
+     * @return true if successful
      */
     bool load(const std::string& id, std::istream& in);
 

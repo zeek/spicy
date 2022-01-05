@@ -77,7 +77,7 @@ class Production_(trait::isProduction) {
      */
     const Location& location() const;
 
-    /** Returns the symbol asssociated with the production. This is
+    /** Returns the symbol associated with the production. This is
     implemented for all productions in `ProductionBase`. */
     const std::string& symbol() const;
 

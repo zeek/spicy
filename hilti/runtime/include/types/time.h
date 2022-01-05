@@ -56,7 +56,7 @@ public:
     Time& operator=(const Time&) = default;
     Time& operator=(Time&&) noexcept = default;
 
-    /** Returns a UNIX timestmap. */
+    /** Returns a UNIX timestamp. */
     double seconds() const { return _nsecs.Ref() / 1e9; }
 
     /** Returns nanoseconds since epoch. */

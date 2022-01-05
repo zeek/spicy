@@ -52,7 +52,7 @@ public:
 
     const auto& type() const { return child<Type>(0); }
 
-    void setType(Type x) { childs()[0] = std::move(x); }
+    void setType(Type x) { children()[0] = std::move(x); }
 
     bool operator==(const Result& other) const { return type() == other.type(); }
 
@@ -79,11 +79,11 @@ public:
           _flavor(flavor) {}
 
     const auto& result() const { return child<function::Result>(0); }
-    auto parameters() const { return childs<function::Parameter>(1, -1); }
+    auto parameters() const { return children<function::Parameter>(1, -1); }
     auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
     auto flavor() const { return _flavor; }
 
-    void setResultType(Type t) { childs()[0].as<function::Result>().setType(std::move(t)); }
+    void setResultType(Type t) { children()[0].as<function::Result>().setType(std::move(t)); }
 
     bool operator==(const Function& other) const {
         return result() == other.result() && parameters() == other.parameters();
@@ -103,7 +103,7 @@ public:
         if ( ! type::detail::isResolved(result().type(), rstate) )
             return false;
 
-        for ( auto p = childs().begin() + 1; p != childs().end(); p++ ) {
+        for ( auto p = children().begin() + 1; p != children().end(); p++ ) {
             if ( ! p->as<function::Parameter>().isResolved(rstate) )
                 return false;
         }
@@ -112,7 +112,7 @@ public:
     }
 
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
 

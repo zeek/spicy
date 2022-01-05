@@ -16,9 +16,9 @@ public:
     Return(Meta m = Meta()) : NodeBase({node::none}, std::move(m)) {}
     Return(hilti::Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
 
-    auto expression() const { return childs()[0].tryAs<hilti::Expression>(); }
+    auto expression() const { return children()[0].tryAs<hilti::Expression>(); }
 
-    void setExpression(hilti::Expression c) { childs()[0] = std::move(c); }
+    void setExpression(hilti::Expression c) { children()[0] = std::move(c); }
 
     bool operator==(const Return& other) const { return expression() == other.expression(); }
 

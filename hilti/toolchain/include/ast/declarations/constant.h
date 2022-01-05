@@ -26,13 +26,13 @@ public:
     const auto& value() const { return child<hilti::Expression>(2); }
 
     const auto& type() const {
-        if ( auto t = childs()[1].tryAs<hilti::Type>() )
+        if ( auto t = children()[1].tryAs<hilti::Type>() )
             return *t;
         else
             return value().type();
     }
 
-    void setValue(hilti::Expression i) { childs()[2] = std::move(i); }
+    void setValue(hilti::Expression i) { children()[2] = std::move(i); }
 
     bool operator==(const Constant& other) const { return id() == other.id() && value() == other.value(); }
 

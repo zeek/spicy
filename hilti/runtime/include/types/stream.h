@@ -658,7 +658,7 @@ private:
     // This chunk pointer is only valid for access if (1) *_chain* is set and
     // valid; and (2) _offset is inside the chain's valid range. It will then
     // point to a chunk from which _offset is *reachable*. (If these two are
-    // not satisified, the chunk may be pointing into freed memory!)
+    // not satisfied, the chunk may be pointing into freed memory!)
     const Chunk* _chunk = nullptr;
 };
 
@@ -891,7 +891,7 @@ private:
 
     // The chunk containing the current offset, or null if offset is out of
     // bounds. This a raw, non-owning pointer that assumes the chunk will
-    // stick aroud as long as needed.
+    // stick around as long as needed.
     const Chunk* _chunk = nullptr;
 };
 
@@ -1003,7 +1003,7 @@ public:
 
     /**
      * Constructor for an expanding view that will always reflect a range up
-     * to the curent end of the underlying stream object, including when that
+     * to the current end of the underlying stream object, including when that
      * expands.
      */
     explicit View(SafeConstIterator begin) : _begin(std::move(begin)) {}
@@ -1016,7 +1016,7 @@ public:
 
     /**
      * Returns the number of actual bytes available inside the view. If the
-     * view's end position is beyong the current end offset of the underlying
+     * view's end position is beyond the current end offset of the underlying
      * stream, those missing bytes are not counted.
      */
     Size size() const;
@@ -1029,7 +1029,7 @@ public:
 
     /**
      * Returns true if the view was constructed without a fixed end offset,
-     * meaning it will expand as more data gets addedd to the underlying
+     * meaning it will expand as more data gets added to the underlying
      * stream.
      */
     bool isOpenEnded() const { return ! _end.has_value(); }

@@ -86,7 +86,7 @@ public:
     /**
      * Save this library under a different path.
      *
-     * @parm path the path where this library should be stored
+     * @param path the path where this library should be stored
      * @return nothing or an error
      */
     hilti::rt::Result<Nothing> save(const hilti::rt::filesystem::path& path) const;

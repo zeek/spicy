@@ -13,8 +13,8 @@ namespace type {
 /**
  * AST node for a generic type defined just by the runtime library. A library
  * type remains mostly opaque to the HILTI language and can't be access
- * directly from a HILTI program. Usally, there'll be HILTI-side typedef
- * making it accessibile in the `hilti::*` namespace. HILTI assumes the
+ * directly from a HILTI program. Usually, there'll be HILTI-side typedef
+ * making it accessible in the `hilti::*` namespace. HILTI assumes the
  * library type to be mutable.
  */
 class Library : public TypeBase, trait::isAllocable, trait::isMutable {

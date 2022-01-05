@@ -28,16 +28,16 @@ public:
     While(hilti::Expression cond, Statement body, std::optional<Statement> else_, Meta m = Meta())
         : NodeBase(nodes(node::none, std::move(cond), std::move(body), std::move(else_)), std::move(m)) {}
 
-    auto init() const { return childs()[0].tryAs<hilti::declaration::LocalVariable>(); }
+    auto init() const { return children()[0].tryAs<hilti::declaration::LocalVariable>(); }
     auto initRef() const {
-        return childs()[0].isA<hilti::declaration::LocalVariable>() ? NodeRef(childs()[0]) : NodeRef();
+        return children()[0].isA<hilti::declaration::LocalVariable>() ? NodeRef(children()[0]) : NodeRef();
     }
-    auto condition() const { return childs()[1].tryAs<hilti::Expression>(); }
+    auto condition() const { return children()[1].tryAs<hilti::Expression>(); }
     const auto& body() const { return child<hilti::Statement>(2); }
-    auto else_() const { return childs()[3].tryAs<Statement>(); }
+    auto else_() const { return children()[3].tryAs<Statement>(); }
 
-    void setCondition(hilti::Expression c) { childs()[1] = std::move(c); }
-    void setInit(hilti::Expression c) { childs()[0] = std::move(c); }
+    void setCondition(hilti::Expression c) { children()[1] = std::move(c); }
+    void setInit(hilti::Expression c) { children()[0] = std::move(c); }
 
     bool operator==(const While& other) const {
         return init() == other.init() && condition() == other.condition() && body() == other.body() &&
@@ -45,10 +45,10 @@ public:
     }
 
     /** Internal method for use by builder API only. */
-    auto& _bodyNode() { return childs()[2]; }
+    auto& _bodyNode() { return children()[2]; }
 
     /** Internal method for use by builder API only. */
-    auto& _elseNode() { return childs()[3]; }
+    auto& _elseNode() { return children()[3]; }
 
     /** Implements the `Statement` interface. */
     auto isEqual(const Statement& other) const { return node::isEqual(this, other); }

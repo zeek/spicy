@@ -41,7 +41,7 @@ std::vector<Declaration> type::Enum::_normalizeLabels(std::vector<type::enum_::L
 std::vector<std::reference_wrapper<const type::enum_::Label>> type::Enum::labels() const {
     std::vector<std::reference_wrapper<const enum_::Label>> labels;
 
-    for ( const auto& c : childs() ) {
+    for ( const auto& c : children() ) {
         const auto& label =
             c.as<declaration::Constant>().value().as<expression::Ctor>().ctor().as<ctor::Enum>().value();
         labels.push_back(label);
@@ -74,7 +74,7 @@ void type::Enum::initLabelTypes(Node* n) {
         nlabels.push_back(std::move(d));
     }
 
-    n->childs() = std::move(nlabels);
+    n->children() = std::move(nlabels);
 
     etype._initialized = true;
 }

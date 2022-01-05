@@ -25,17 +25,17 @@ public:
     const auto& input() const { return child<Expression>(0); }
     const auto& output() const { return child<Expression>(1); }
     const auto& local() const { return child<declaration::LocalVariable>(2); }
-    auto localRef() const { return NodeRef(childs()[2]); }
-    auto condition() const { return childs()[3].tryAs<Expression>(); }
+    auto localRef() const { return NodeRef(children()[2]); }
+    auto condition() const { return children()[3].tryAs<Expression>(); }
 
     /**
      * Returns the output expressions's scope. Note that the scope is shared
      * among any copies of an instance.
      */
-    IntrusivePtr<Scope> scope() const { return childs()[1].scope(); }
+    IntrusivePtr<Scope> scope() const { return children()[1].scope(); }
 
-    void setLocalType(Type t) { childs()[2].as<declaration::LocalVariable>().setType(std::move(t)); }
-    void setElementType(const Type x) { childs()[4] = type::List(std::move(x)); }
+    void setLocalType(Type t) { children()[2].as<declaration::LocalVariable>().setType(std::move(t)); }
+    void setElementType(const Type x) { children()[4] = type::List(std::move(x)); }
 
     bool operator==(const ListComprehension& other) const {
         return input() == other.input() && output() == other.output() && local() == other.local() &&
@@ -47,7 +47,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return true; }
     /** Implements `Expression` interface. */
-    const Type& type() const { return childs()[4].as<Type>(); }
+    const Type& type() const { return children()[4].as<Type>(); }
 
     /** Implements `Expression` interface. */
     auto isConstant() const { return input().isConstant(); }

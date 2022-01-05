@@ -38,9 +38,9 @@ public:
         return {};
     }
 
-    const Type& dereferencedType() const { return childs()[0].as<type::Result>().dereferencedType(); }
+    const Type& dereferencedType() const { return children()[0].as<type::Result>().dereferencedType(); }
 
-    void setDereferencedType(Type x) { childs()[0] = type::Result(std::move(x)); }
+    void setDereferencedType(Type x) { children()[0] = type::Result(std::move(x)); }
 
     /** Implements `Ctor` interface. */
     const auto& type() const { return child<Type>(0); }

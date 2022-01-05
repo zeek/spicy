@@ -63,16 +63,16 @@ public:
 
     Parameter() : DeclarationBase({node::none, type::unknown, node::none, node::none}, Meta()) {}
 
-    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
-    auto default_() const { return childs()[2].tryAs<hilti::Expression>(); }
+    auto attributes() const { return children()[3].tryAs<AttributeSet>(); }
+    auto default_() const { return children()[2].tryAs<hilti::Expression>(); }
     auto kind() const { return _kind; }
     const auto& type() const { return child<hilti::Type>(1); }
     auto isTypeParameter() const { return _is_type_param; }
     auto isResolved(type::ResolvedState* rstate) const { return type::detail::isResolved(type(), rstate); }
 
-    void setDefault(hilti::Expression e) { childs()[2] = std::move(e); }
+    void setDefault(hilti::Expression e) { children()[2] = std::move(e); }
     void setIsTypeParameter() { _is_type_param = true; }
-    void setType(hilti::Type t) { childs()[1] = std::move(t); }
+    void setType(hilti::Type t) { children()[1] = std::move(t); }
 
     bool operator==(const Parameter& other) const {
         return id() == other.id() && type() == other.type() && kind() == other.kind() && default_() == other.default_();

@@ -376,7 +376,7 @@ static node::ErrorPriority _recursiveValidateAST(const Node& n, Location closest
 
     if ( ! n.pruneWalk() ) {
         auto oprio = prio;
-        for ( const auto& c : n.childs() )
+        for ( const auto& c : n.children() )
             prio = std::max(prio, _recursiveValidateAST(c, closest_location, oprio, level + 1, errors));
     }
 
@@ -434,7 +434,7 @@ void Unit::_destroyModule() {
         return;
 
     _module->as<Module>().destroyPreservedNodes();
-    _module->destroyChilds();
+    _module->destroyChildren();
     _module = {};
 }
 

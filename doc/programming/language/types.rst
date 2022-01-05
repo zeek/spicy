@@ -231,7 +231,7 @@ return value of a function that may fail.
   ``EXPR``.
 
 More commonly, however, optional values are initialized through
-assigment:
+assignment:
 
 - Assigning an instance of ``TYPE`` to an ``optional<TYPE>`` sets it
   to the instance's value.
@@ -290,7 +290,7 @@ Spicy provides POSIX-style regular expressions.
 
 .. rubric:: Constants
 
-- ``/Foo*ba?r/``, ``/X(..)(..)(..)Y/``
+- ``/Foo*bar?/``, ``/X(..)(..)(..)Y/``
 
 Regular expressions use the extended POSIX syntax, with a few smaller
 differences and extensions:

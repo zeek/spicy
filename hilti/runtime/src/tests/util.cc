@@ -490,9 +490,9 @@ TEST_CASE("replace") {
 TEST_CASE("rtrim") {
     CHECK_EQ(rtrim("", ""), "");
     CHECK_EQ(rtrim("", "abc"), "");
-    CHECK_EQ(rtrim("4d3c2b1a", "abc"), "4d3c2b1");
-    CHECK_EQ(rtrim("4d3c2b1ba", "abc"), "4d3c2b1");
-    CHECK_EQ(rtrim("4d3c2b1cba", "abc"), "4d3c2b1");
+    CHECK_EQ(rtrim("4d3c2b1c", "abc"), "4d3c2b1");
+    CHECK_EQ(rtrim("4d3c2b1bc", "abc"), "4d3c2b1");
+    CHECK_EQ(rtrim("4d3c2b1abc", "abc"), "4d3c2b1");
 
     const auto null = std::string(1u, '\0');
     CHECK_EQ(rtrim("cba" + null + null, "a" + null), "cb");

@@ -70,7 +70,7 @@ private:
 
 /**
  * Class representing a HILTI value generically through a pair of (1) a raw
- * pointer refering the value's storage, and (2) type information describing
+ * pointer referring the value's storage, and (2) type information describing
  * how to interpret the raw pointer. An instance may be in an invalid state
  * if there's no underlying value available (e.g., when dereferencing an
  * unset `optional`).
@@ -159,7 +159,7 @@ public:
  * Base class for auxiliary type information pertaining to types that
  * contain a single element of another type.
  */
-class DereferencableType {
+class DereferenceableType {
 public:
     /**
      * Type of a function that, given the outer value, returns a pointer to
@@ -173,7 +173,7 @@ public:
      * @param vtype type of the contained elements
      * @param accessor function retrieving a pointer to the contained element
      */
-    DereferencableType(const TypeInfo* vtype, Accessor accessor) : _vtype(vtype), _accessor(accessor) {}
+    DereferenceableType(const TypeInfo* vtype, Accessor accessor) : _vtype(vtype), _accessor(accessor) {}
 
     /**
      * Returns the contained value.
@@ -290,7 +290,7 @@ public:
      *
      * 2. ``next`: Given a previously created iterator of the internal type,
      * moves the iterator forward to point to the next element; or returns a
-     * unset optional if the iterator is already refering to the final
+     * unset optional if the iterator is already referring to the final
      * location.
      *
      * 3. `deref`:: Given a previously created iterator of the internal type,
@@ -705,9 +705,9 @@ private:
 class Network : public detail::AtomicType<hilti::rt::Network> {};
 
 /** Auxiliary type information for type ``optional<T>`. */
-class Optional : public detail::DereferencableType {
+class Optional : public detail::DereferenceableType {
 public:
-    using detail::DereferencableType::DereferencableType;
+    using detail::DereferenceableType::DereferenceableType;
 
     template<typename T>
     static auto accessor() { // deref()
@@ -728,9 +728,9 @@ class Real : public detail::AtomicType<double> {};
 class RegExp : public detail::AtomicType<hilti::rt::RegExp> {};
 
 /** Auxiliary type information for type ``result<T>`. */
-class Result : public detail::DereferencableType {
+class Result : public detail::DereferenceableType {
 public:
-    using detail::DereferencableType::DereferencableType;
+    using detail::DereferenceableType::DereferenceableType;
 
     template<typename T>
     static auto accessor() { // deref()
@@ -778,9 +778,9 @@ public:
 };
 
 /** Auxiliary type information for type ``iterator<set>`. */
-class SetIterator : public detail::DereferencableType {
+class SetIterator : public detail::DereferenceableType {
 public:
-    using detail::DereferencableType::DereferencableType;
+    using detail::DereferenceableType::DereferenceableType;
 
     template<typename T>
     static auto accessor() { // deref()
@@ -807,9 +807,9 @@ class StreamView : public detail::AtomicType<hilti::rt::stream::View> {};
 class String : public detail::AtomicType<std::string> {};
 
 /** Auxiliary type information for type ``strong_ref<T>`. */
-class StrongReference : public detail::DereferencableType {
+class StrongReference : public detail::DereferenceableType {
 public:
-    using detail::DereferencableType::DereferencableType;
+    using detail::DereferenceableType::DereferenceableType;
 
     template<typename T>
     static auto accessor() { // deref()
@@ -1056,9 +1056,9 @@ template<typename Width>
 class UnsignedInteger : public detail::AtomicType<Width> {};
 
 /** Auxiliary type information for type ``value_ref<T>`. */
-class ValueReference : public detail::DereferencableType {
+class ValueReference : public detail::DereferenceableType {
 public:
-    using detail::DereferencableType::DereferencableType;
+    using detail::DereferenceableType::DereferenceableType;
 
     template<typename T>
     static auto accessor() { // deref()
@@ -1103,9 +1103,9 @@ public:
 };
 
 /** Auxiliary type information for type ``iterator<vector>`. */
-class VectorIterator : public detail::DereferencableType {
+class VectorIterator : public detail::DereferenceableType {
 public:
-    using detail::DereferencableType::DereferencableType;
+    using detail::DereferenceableType::DereferenceableType;
 
     template<typename T, typename Allocator = std::allocator<T>>
     static auto accessor() { // deref()
@@ -1119,9 +1119,9 @@ public:
 class Void : public detail::ValueLessType {};
 
 /** Auxiliary type information for type ``weak_ref<T>`. */
-class WeakReference : public detail::DereferencableType {
+class WeakReference : public detail::DereferenceableType {
 public:
-    using detail::DereferencableType::DereferencableType;
+    using detail::DereferenceableType::DereferenceableType;
 
     template<typename T>
     static auto accessor() { // deref()

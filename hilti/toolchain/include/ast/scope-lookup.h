@@ -30,7 +30,7 @@ std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, const Nod
  * @param id id to look up
  * @param p AST position where to start the lookup; we'll traverse up the AST from there
  * @param what textual description of what we're looking for (i.e., of *D*); used in error messages
- * @return node if resolved, or an appropiate error if not
+ * @return node if resolved, or an appropriate error if not
  */
 template<typename D>
 Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<Node&>& p, const std::string_view& what) {

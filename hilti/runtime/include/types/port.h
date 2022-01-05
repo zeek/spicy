@@ -13,7 +13,7 @@
 
 namespace hilti::rt {
 
-/** Protocols that can be asociated with a `Port`. */
+/** Protocols that can be associated with a `Port`. */
 enum class Protocol { Undef = 0, TCP, UDP, ICMP };
 
 /**

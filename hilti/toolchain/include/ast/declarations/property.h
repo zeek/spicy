@@ -20,7 +20,7 @@ public:
     Property(ID id, hilti::Expression attr, Meta m = Meta())
         : DeclarationBase(nodes(std::move(id), std::move(attr)), std::move(m)) {}
 
-    auto expression() const { return childs()[1].tryAs<hilti::Expression>(); }
+    auto expression() const { return children()[1].tryAs<hilti::Expression>(); }
 
     bool operator==(const Property& other) const { return id() == other.id() && expression() == other.expression(); }
 

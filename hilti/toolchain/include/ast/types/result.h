@@ -11,12 +11,12 @@ namespace hilti {
 namespace type {
 
 /** AST node for a "result" type. */
-class Result : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isDereferencable {
+class Result : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isDereferenceable {
 public:
     Result(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     Result(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
 
-    const Type& dereferencedType() const { return childs()[0].as<Type>(); }
+    const Type& dereferencedType() const { return children()[0].as<Type>(); }
 
     bool operator==(const Result& other) const { return dereferencedType() == other.dereferencedType(); }
 
@@ -25,7 +25,7 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
 

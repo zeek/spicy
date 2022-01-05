@@ -56,11 +56,11 @@ public:
     bool isForEach() const { return AttributeSet::find(function().attributes(), "foreach").has_value(); }
     bool isDebug() const { return AttributeSet::find(function().attributes(), "%debug").has_value(); }
 
-    void setID(ID id) { childs()[0].as<Function>().setID(std::move(id)); }
+    void setID(ID id) { children()[0].as<Function>().setID(std::move(id)); }
     void setUnitTypeRef(NodeRef p) { _unit_type = std::move(p); }
     void setFieldRef(NodeRef p) { _unit_field = std::move(p); }
-    void setDDType(Type t) { childs()[1] = hilti::expression::Keyword::createDollarDollarDeclaration(t); }
-    void setResultType(Type t) { childs()[0].as<Function>().setResultType(std::move(t)); }
+    void setDDType(Type t) { children()[1] = hilti::expression::Keyword::createDollarDollarDeclaration(t); }
+    void setResultType(Type t) { children()[0].as<Function>().setResultType(std::move(t)); }
 
     bool operator==(const Hook& other) const { return function() == other.function() && _engine == other._engine; }
 

@@ -94,7 +94,7 @@ STANDARD_OPERATOR_2x(stream::view, InView, In, type::Bool(), type::constant(type
 STANDARD_OPERATOR_2x(stream::view, EqualView, Equal, type::Bool(), type::constant(type::stream::View()),
                      type::constant(type::stream::View()), "Compares the views lexicographically.");
 STANDARD_OPERATOR_2x(stream::view, EqualBytes, Equal, type::Bool(), type::constant(type::stream::View()),
-                     type::constant(type::Bytes()), "Compares a stream view and a bytes intances lexicographically.");
+                     type::constant(type::Bytes()), "Compares a stream view and a bytes instance lexicographically.");
 STANDARD_OPERATOR_2x(stream::view, UnequalView, Unequal, type::Bool(), type::constant(type::stream::View()),
                      type::constant(type::stream::View()), "Compares two views lexicographically.");
 STANDARD_OPERATOR_2x(stream::view, UnequalBytes, Unequal, type::Bool(), type::constant(type::stream::View()),
@@ -161,7 +161,7 @@ BEGIN_METHOD(stream::view, Find)
                          .doc = R"(
 Searches *needle* inside the view's content. Returns a tuple of a boolean and an
 iterator. If *needle* was found, the boolean will be true and the iterator will point
-to its first occurance. If *needle* was not found, the boolean will be false and
+to its first occurrence. If *needle* was not found, the boolean will be false and
 the iterator will point to the last position so that everything before that is
 guaranteed to not contain even a partial match of *needle* (in other words: one can
 trim until that position and then restart the search from there if more data

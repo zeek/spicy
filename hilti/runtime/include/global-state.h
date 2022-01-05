@@ -30,7 +30,7 @@ class DebugLogger;
 
 namespace hilti::rt::detail {
 
-/** Struct capturing all truely global runtime state. */
+/** Struct capturing all truly global runtime state. */
 struct GlobalState {
     GlobalState() = default;
     ~GlobalState();

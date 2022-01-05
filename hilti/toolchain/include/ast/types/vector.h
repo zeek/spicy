@@ -15,7 +15,7 @@ namespace vector {
 /** AST node for a vector iterator type. */
 class Iterator : public TypeBase,
                  trait::isIterator,
-                 trait::isDereferencable,
+                 trait::isDereferenceable,
                  trait::isAllocable,
                  trait::isMutable,
                  trait::isRuntimeNonTrivial,
@@ -38,7 +38,7 @@ public:
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"const", _const}}; }
 
@@ -78,7 +78,7 @@ public:
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 

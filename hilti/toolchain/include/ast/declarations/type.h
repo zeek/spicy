@@ -23,8 +23,8 @@ public:
         : DeclarationBase(nodes(std::move(id), std::move(type), std::move(attrs)), std::move(m)), _linkage(linkage) {}
 
     const auto& type() const { return child<hilti::Type>(1); }
-    NodeRef typeRef() const { return NodeRef(childs()[1]); }
-    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
+    NodeRef typeRef() const { return NodeRef(children()[1]); }
+    auto attributes() const { return children()[2].tryAs<AttributeSet>(); }
 
     bool isOnHeap() const {
         if ( auto x = attributes() )
@@ -34,20 +34,20 @@ public:
     }
 
     /** Shortcut to `type::typeID()` for the declared type. */
-    auto typeID() const { return childs()[1].as<hilti::Type>().typeID(); }
+    auto typeID() const { return children()[1].as<hilti::Type>().typeID(); }
 
     /** Shortcut to `type::cxxID()` for the declared type. */
-    auto cxxID() const { return childs()[1].as<hilti::Type>().cxxID(); }
+    auto cxxID() const { return children()[1].as<hilti::Type>().cxxID(); }
 
     /** Shortcut to `type::resolvedID()` for the declared type. */
-    auto resolvedID() const { return childs()[1].as<hilti::Type>().resolvedID(); }
+    auto resolvedID() const { return children()[1].as<hilti::Type>().resolvedID(); }
 
-    void setType(::hilti::Type t) { childs()[1] = std::move(t); }
+    void setType(::hilti::Type t) { children()[1] = std::move(t); }
 
     bool operator==(const Type& other) const { return id() == other.id() && type() == other.type(); }
 
     /** Internal method for use by builder API only. */
-    // auto& _typeNode() { return childs()[1]; }
+    // auto& _typeNode() { return children()[1]; }
 
     /** Implements `Declaration` interface. */
     bool isConstant() const { return true; }

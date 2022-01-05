@@ -76,7 +76,7 @@ extern const hilti::Expression Eod;
 /**
  * Maintains access to parser state during code generation. The generated
  * parsing code needs to carry various pieces of state through the logic
- * (e.g., the curren input data). This struct records the expressions that
+ * (e.g., the current input data). This struct records the expressions that
  * arte holding the current state variables. To change same state (e.g., to
  * temporarily parse different input) one typically creates a copy of the
  * current struct instance and then pushed that onto parser generator's state
@@ -101,7 +101,7 @@ struct ParserState {
     /** Unit type that's currently being compiled. */
     std::reference_wrapper<const type::Unit> unit;
 
-    /** Type name of unit type tha's currently being compiled. */
+    /** Type name of unit type that's currently being compiled. */
     ID unit_id;
 
     /** True if the current grammar needs look-ahead tracking. */
@@ -116,7 +116,7 @@ struct ParserState {
     /**< Expression referencing the current view inside 'data'. */
     Expression cur;
 
-    /**< If set, expression referencing a new `cur` to set after parsin the current rule. */
+    /**< If set, expression referencing a new `cur` to set after parsing the current rule. */
     std::optional<Expression> ncur;
 
     /**
@@ -168,7 +168,7 @@ public:
     ParserState state() const { return _states.back(); }
 
     /**
-     * Returns an expression referencing the 1st version of a publically
+     * Returns an expression referencing the 1st version of a publicly
      * visible method that implements a unit's parsing logic, to be called
      * from a host application. This version returns just the data remaining
      * after parsing the unit.
@@ -176,7 +176,7 @@ public:
     Expression parseMethodExternalOverload1(const type::Unit& t);
 
     /**
-     * Returns an expression referencing the 2nd version of a publically
+     * Returns an expression referencing the 2nd version of a publicly
      * visible method that implements a unit's parsing logic, to be called
      * from a host application. This version returns the parsed object
      * plus the data remaining after parsing the unit.
@@ -184,7 +184,7 @@ public:
     Expression parseMethodExternalOverload2(const type::Unit& t);
 
     /**
-     * Returns an expression referencing the 3rd version of a publically
+     * Returns an expression referencing the 3rd version of a publicly
      * visible method that implements a unit's parsing logic, to be called
      * from a host application. This version returns a *generic* parse
      * object of type `spicy::rt::ParsedUnit`, plus the data remaining after
@@ -193,7 +193,7 @@ public:
     Expression parseMethodExternalOverload3(const type::Unit& t);
 
     /**
-     * Returns an expression referencing a publically visible function
+     * Returns an expression referencing a publicly visible function
      * instantiating a unit's `%context` type. If the unit does not set
      * `%context`, the returned expression will evaluate to null at runtime.
      */
@@ -271,7 +271,7 @@ public:
     Expression parseLiteral(const Production& p, const std::optional<Expression>& dst);
 
     /**
-     * Generates code that ensures that a mininum amount of data is available
+     * Generates code that ensures that a minimum amount of data is available
      * for parsing. The generated code will wait until enough data becomes
      * available before proceeding. It will abort parsing if end-of-data is
      * reached before that.
@@ -279,12 +279,12 @@ public:
      * @param min unsigned integer expression specifying the requited number
      * of bytes.
      * @param error_msg message to report with parse error if end-of-data is reached
-     * @param location location assocated with the operation.
+     * @param location location associated with the operation.
      */
     void waitForInput(const Expression& min, const std::string& error_msg, const Meta& location);
 
     /**
-     * Generates code that ensures that either a mininum amount of data is
+     * Generates code that ensures that either a minimum amount of data is
      * available for parsing, or end-of-data is reached. The generated code
      * will wait until either happens.
      *
@@ -405,7 +405,7 @@ public:
 
     /**
      * Trims the input's beginning to the current parsing position,
-     * discarding all data preceeding it. By default, this does not do
+     * discarding all data preceding it. By default, this does not do
      * anything if the current parsing state does not allow trimming.
      *
      * @param force always trim, independent of the parsing state's trimming state
@@ -416,7 +416,7 @@ public:
      * Generates code that initializes a unit instance just before parsing
      * begins.
      *
-     * @param l location to assocatiate with the generated code
+     * @param l location to associate with the generated code
      */
     void initializeUnit(const Location& l);
 
@@ -424,8 +424,8 @@ public:
      * Generates code that cleans up a unit instances after parsing has
      * finished, normally or abnormally.
      *
-     * @param success true if parsing was succesful, false if an error occured.
-     * @param l location to assocatiate with the generated code
+     * @param success true if parsing was successful, false if an error occurred.
+     * @param l location to associate with the generated code
      */
     void finalizeUnit(bool success, const Location& l);
 
@@ -444,7 +444,7 @@ public:
     Expression initLoopBody();
 
     /**
-     * Wrap up parsing the the body of loop of "something". Must only be called
+     * Wrap up parsing the body of loop of "something". Must only be called
      * after an earlier `initLoopBody()`. This will abort with a parsing error if
      * the input pointer hasn't moved.
      *

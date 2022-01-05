@@ -16,5 +16,5 @@ git ls-files \
     | egrep -v '^\.$' \
     | egrep '\.(h|c|cc|py|sh|api|ll|yy|h.in|cc.in|c.in|txt|evt|hilti|spicy)$' \
     | while read i; do
-        grep -q "Copyright.*Zeek" $i || echo "No appropiate copyright header in '$i'" >&2
+        grep -q "Copyright.*Zeek" $i || echo "No appropriate copyright header in '$i'" >&2
 done

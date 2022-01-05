@@ -14,10 +14,10 @@ class Item(trait::isUnitItem) : hilti::trait::isNode {
     hilti::node::Properties properties() const;
 
     /** Implements the `Node` interface. */
-    const std::vector<hilti::Node>& childs() const;
+    const std::vector<hilti::Node>& children() const;
 
     /** Implements the `Node` interface. */
-    std::vector<hilti::Node>& childs();
+    std::vector<hilti::Node>& children();
 
     /** Implements the `Node` interface. */
     const Meta& meta() const;

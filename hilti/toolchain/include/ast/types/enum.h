@@ -74,7 +74,9 @@ public:
 
     auto labelDeclarationRefs() { return childRefs(0, -1); }
 
-    bool operator==(const Enum& other) const { return childs<Declaration>(0, -1) == other.childs<Declaration>(0, -1); }
+    bool operator==(const Enum& other) const {
+        return children<Declaration>(0, -1) == other.children<Declaration>(0, -1);
+    }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
