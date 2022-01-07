@@ -17,7 +17,7 @@ class Enum : public NodeBase, public hilti::trait::isCtor {
 public:
     Enum(type::enum_::Label v, Meta m = Meta()) : NodeBase(nodes(std::move(v)), std::move(m)) {}
 
-    const auto& value() const { return childs()[0].as<type::enum_::Label>(); }
+    const auto& value() const { return children()[0].as<type::enum_::Label>(); }
 
     bool operator==(const Enum& other) const { return value() == other.value(); }
 

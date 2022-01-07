@@ -8,8 +8,8 @@ import hilti;
 global int<64> a = 1;
 
 # Checks that we limit type changes to one per expression.
-# Othwerwise this would match "<bool> == <bool>" as well
-# and become ambigious.
+# Otherwise this would match "<bool> == <bool>" as well
+# and become ambiguous.
 assert a == 1;
 
 }

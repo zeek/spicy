@@ -2,7 +2,7 @@
 
 module Foo;
 
-# Note: double ctor lex doesn't error on precison loss
+# Note: double ctor lex doesn't error on precision loss
 assert 0x20000000000000p0 == 0x20000000000001p0;
 
 assert 0x20000000000000 == 0x20000000000000p0;

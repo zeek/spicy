@@ -16,7 +16,7 @@ class Block : public NodeBase, public hilti::trait::isStatement {
 public:
     Block(std::vector<Statement> stmts = {}, Meta m = Meta()) : NodeBase(nodes(std::move(stmts)), std::move(m)) {}
 
-    auto statements() const { return childsOfType<Statement>(); }
+    auto statements() const { return childrenOfType<Statement>(); }
 
     bool operator==(const Block& /* other */) const {
         // return statements() == other.statements();
@@ -27,7 +27,7 @@ public:
     void _add(Statement s) { addChild(std::move(s)); }
 
     /** Internal method for use by builder API only. */
-    auto& _lastStatementNode() { return childs().back(); }
+    auto& _lastStatementNode() { return children().back(); }
 
     /** Implements the `Statement` interface. */
     auto isEqual(const Statement& other) const { return node::isEqual(this, other); }

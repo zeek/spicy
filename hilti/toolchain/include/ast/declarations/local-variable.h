@@ -36,10 +36,10 @@ public:
     LocalVariable(ID id, bool const_ = false, Meta m = Meta())
         : DeclarationBase(nodes(std::move(id), type::auto_, node::none), std::move(m)), _const(const_) {}
 
-    auto init() const { return childs()[2].tryAs<hilti::Expression>(); }
+    auto init() const { return children()[2].tryAs<hilti::Expression>(); }
 
     const auto& type() const {
-        if ( auto t = childs()[1].tryAs<hilti::Type>() )
+        if ( auto t = children()[1].tryAs<hilti::Type>() )
             return *t;
         else {
             assert(init());
@@ -47,12 +47,12 @@ public:
         }
     }
 
-    auto typeArguments() const { return childs<hilti::Expression>(3, -1); }
+    auto typeArguments() const { return children<hilti::Expression>(3, -1); }
 
-    void setInit(hilti::Expression i) { childs()[2] = std::move(i); }
-    void setType(hilti::Type t) { childs()[1] = std::move(t); }
+    void setInit(hilti::Expression i) { children()[2] = std::move(i); }
+    void setType(hilti::Type t) { children()[1] = std::move(t); }
     void setTypeArguments(std::vector<hilti::Expression> args) {
-        auto& c = childs();
+        auto& c = children();
         c.erase(c.begin() + 3, c.end());
         for ( auto&& a : args )
             c.emplace_back(std::move(a));

@@ -15,7 +15,7 @@ namespace bytes {
 /** AST node for a list iterator type. */
 class Iterator : public TypeBase,
                  trait::isIterator,
-                 trait::isDereferencable,
+                 trait::isDereferenceable,
                  trait::isAllocable,
                  trait::isMutable,
                  trait::isRuntimeNonTrivial {

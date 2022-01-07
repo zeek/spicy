@@ -16,10 +16,10 @@ namespace real {
 /** Available formats for unpacking a binary floating point value. */
 enum class Type { Undef, IEEE754_Single, IEEE754_Double };
 
-/** Unpacks a floatingpoint value from a binary represenation, following the protocol for `unpack` operator. */
+/** Unpacks a floatingpoint value from a binary representation, following the protocol for `unpack` operator. */
 extern Result<std::tuple<double, Bytes>> unpack(const Bytes& data, Type type, ByteOrder fmt);
 
-/** Unpacks a floatingpoint value from a binary represenation, following the protocol for `unpack` operator. */
+/** Unpacks a floatingpoint value from a binary representation, following the protocol for `unpack` operator. */
 extern Result<std::tuple<double, stream::View>> unpack(const stream::View& data, Type type, ByteOrder fmt);
 
 } // namespace real

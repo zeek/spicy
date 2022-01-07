@@ -21,10 +21,10 @@ public:
      * will match `location::None`.
      *
      * @param file file name/path associated with the location; empty if unknown.
-     * @param from_line first line number of the described range; -1 if not availabl.
-     * @param to_line last line number of the described range; -1 if not availabl.
-     * @param from_character first character number of the described range; -1 if not availabl.
-     * @param to_character first character number of the described range; -1 if not availabl.
+     * @param from_line first line number of the described range; -1 if not available.
+     * @param to_line last line number of the described range; -1 if not available.
+     * @param from_character first character number of the described range; -1 if not available.
+     * @param to_character first character number of the described range; -1 if not available.
      */
     Location(hilti::rt::filesystem::path file = "", int from_line = -1, int to_line = -1, int from_character = -1,
              int to_character = -1)

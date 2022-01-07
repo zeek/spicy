@@ -55,7 +55,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     /**
      * Coerces an expression to a given type, return the new value if it's
      * changed from the the old one. Records an error with the node if coercion
-     * is not possible. Will indicate no-chage if expression or type hasn't
+     * is not possible. Will indicate no-change if expression or type hasn't
      * been resolved.
      **/
     std::optional<Expression> coerceTo(Node* n, const Expression& e, const Type& t, bool contextual, bool assignment) {

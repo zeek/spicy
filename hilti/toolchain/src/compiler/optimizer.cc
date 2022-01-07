@@ -166,7 +166,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
             case Stage::COLLECT: {
                 auto& function = _data[function_id];
 
-                auto fn = x.childsOfType<Function>();
+                auto fn = x.childrenOfType<Function>();
                 assert(fn.size() <= 1);
 
                 // If the member declaration is marked `&always-emit` mark it as implemented.
@@ -1301,7 +1301,7 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
     result_t operator()(const expression::Member& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto expr = p.parent().childs()[1].tryAs<Expression>();
+                auto expr = p.parent().children()[1].tryAs<Expression>();
                 if ( ! expr )
                     break;
 

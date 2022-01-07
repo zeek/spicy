@@ -28,8 +28,8 @@ std::optional<Expression> Hook::priority() const {
 }
 
 NodeRef Hook::ddRef() const {
-    if ( childs()[1].isA<Declaration>() )
-        return NodeRef(childs()[1]);
+    if ( children()[1].isA<Declaration>() )
+        return NodeRef(children()[1]);
     else
         return {};
 }

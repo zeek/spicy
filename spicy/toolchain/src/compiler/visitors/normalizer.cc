@@ -171,7 +171,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 
     void operator()(const hilti::expression::Assign& assign, position_t p) {
         // Rewrite assignments involving unit fields to use the non-const member operator.
-        if ( auto member_const = assign.childs().front().tryAs<operator_::unit::MemberConst>() ) {
+        if ( auto member_const = assign.children().front().tryAs<operator_::unit::MemberConst>() ) {
             auto new_lhs = operator_::unit::MemberNonConst::Operator().instantiate(member_const->operands().copy(),
                                                                                    member_const->meta());
             Expression n = hilti::expression::Assign(new_lhs, assign.source(), assign.meta());

@@ -13,7 +13,7 @@ namespace expression {
 
 /**
  * AST node for an expression for which evaluation is deferred at runtime to
- * a later point when explicity requested by the runtime system. Optionally,
+ * a later point when explicitly requested by the runtime system. Optionally,
  * that later evaluation can catch any exceptions and return a corresponding
  * ``result<T>``.
  */
@@ -28,9 +28,9 @@ public:
 
     void setType(Type t) {
         if ( _catch_exception )
-            childs()[1] = type::Result(std::move(t));
+            children()[1] = type::Result(std::move(t));
         else
-            childs()[1] = std::move(t);
+            children()[1] = std::move(t);
     }
 
     bool operator==(const Deferred& other) const {

@@ -20,9 +20,9 @@ class Tuple : public NodeBase, public hilti::trait::isCtor {
 public:
     Tuple(std::vector<Expression> v, Meta m = Meta()) : NodeBase(nodes(_inferType(v), v), std::move(m)) {}
 
-    auto value() const { return childs<Expression>(1, -1); }
+    auto value() const { return children<Expression>(1, -1); }
 
-    void setElementTypes(std::vector<Type> t) { childs()[0] = Type(type::Tuple(std::move(t), meta())); }
+    void setElementTypes(std::vector<Type> t) { children()[0] = Type(type::Tuple(std::move(t), meta())); }
 
     bool operator==(const Tuple& other) const { return value() == other.value(); }
 

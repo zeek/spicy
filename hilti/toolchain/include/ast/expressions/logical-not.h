@@ -17,7 +17,7 @@ public:
 
     const auto& expression() const { return child<Expression>(0); }
 
-    void setExpression(const Expression op) { childs()[0] = std::move(op); }
+    void setExpression(const Expression op) { children()[0] = std::move(op); }
 
     bool operator==(const LogicalNot& other) const { return expression() == other.expression(); }
 

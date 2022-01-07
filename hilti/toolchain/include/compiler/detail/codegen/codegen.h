@@ -106,12 +106,12 @@ public:
      */
     cxx::ID uniqueID(const std::string& prefix, const Node& n);
 
-    cxx::Expression self() const { return _selfs.back(); }
+    cxx::Expression self() const { return _self.back(); }
     cxx::Expression dollardollar() const {
         return "__dd";
     } // TODO(robin): We hardcode the currently; need a stack, too?
-    void pushSelf(detail::cxx::Expression e) { _selfs.push_back(std::move(e)); }
-    void popSelf() { _selfs.pop_back(); }
+    void pushSelf(detail::cxx::Expression e) { _self.push_back(std::move(e)); }
+    void popSelf() { _self.pop_back(); }
 
     auto cxxBlock() const { return ! _cxx_blocks.empty() ? _cxx_blocks.back() : nullptr; }
     void pushCxxBlock(cxx::Block* b) { _cxx_blocks.push_back(b); }
@@ -130,7 +130,7 @@ private:
     std::unique_ptr<cxx::Unit> _cxx_unit;
     hilti::Unit* _hilti_unit = nullptr;
     std::weak_ptr<Context> _context;
-    std::vector<detail::cxx::Expression> _selfs = {"__self"};
+    std::vector<detail::cxx::Expression> _self = {"__self"};
     std::vector<detail::cxx::Block*> _cxx_blocks;
     std::vector<detail::cxx::declaration::Local> _tmps;
     std::map<std::string, int> _tmp_counters;

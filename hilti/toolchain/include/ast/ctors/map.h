@@ -44,27 +44,27 @@ public:
         : NodeBase(nodes(type::Map(key, value, m), std::move(e)), m) {}
 
     const auto& keyType() const {
-        if ( auto t = childs()[0].tryAs<type::Map>() )
+        if ( auto t = children()[0].tryAs<type::Map>() )
             return t->keyType();
         else
-            return childs()[0].as<Type>();
+            return children()[0].as<Type>();
     }
 
     const auto& valueType() const {
-        if ( auto t = childs()[0].tryAs<type::Map>() )
+        if ( auto t = children()[0].tryAs<type::Map>() )
             return t->valueType();
         else
-            return childs()[0].as<Type>();
+            return children()[0].as<Type>();
     }
 
-    auto value() const { return childs<const map::Element>(1, -1); }
+    auto value() const { return children<const map::Element>(1, -1); }
 
-    void setElementType(Type k, Type v) { childs()[0] = type::Map(std::move(k), std::move(v), meta()); }
+    void setElementType(Type k, Type v) { children()[0] = type::Map(std::move(k), std::move(v), meta()); }
 
     void setValue(std::vector<map::Element> elems) {
-        childs().erase(childs().begin() + 1, childs().end());
+        children().erase(children().begin() + 1, children().end());
         for ( auto&& e : elems )
-            childs().push_back(e);
+            children().push_back(e);
     }
 
     bool operator==(const Map& other) const {
@@ -72,7 +72,7 @@ public:
     }
 
     /** Implements `Ctor` interface. */
-    const auto& type() const { return childs()[0].as<Type>(); }
+    const auto& type() const { return children()[0].as<Type>(); }
     /** Implements `Ctor` interface. */
     bool isConstant() const { return false; }
     /** Implements `Ctor` interface. */

@@ -64,7 +64,7 @@ void SpicyDriver::usage(const std::string& prog) {
            "  -f | --file <path>              Read input from <path> instead of stdin.\n"
            "  -i | --increment <i>            Feed data incrementenally in chunks of size n.\n"
            "  -l | --list-parsers             List available parsers and exit.\n"
-           "  -p | --parser <name>            Use parser <name> to process input. Only neeeded if more than one parser "
+           "  -p | --parser <name>            Use parser <name> to process input. Only needed if more than one parser "
            "is available.\n"
            "  -v | --version                  Print version information.\n"
            "  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI "

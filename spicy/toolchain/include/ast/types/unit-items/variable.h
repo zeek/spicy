@@ -15,7 +15,7 @@ namespace spicy::type::unit::item {
  * AST node for a unit variable.
  *
  * @note We don't support hooks for variables because we can't reliably
- * identify assigments in the generated code. To do that, we'd need to trap
+ * identify assignments in the generated code. To do that, we'd need to trap
  * struct field assignments at the C++ level.
  */
 class Variable : public hilti::NodeBase, public spicy::trait::isUnitItem {
@@ -25,8 +25,8 @@ public:
         : NodeBase(nodes(std::move(id), std::move(type), default_, std::move(attrs)), std::move(m)) {}
 
     const auto& id() const { return child<ID>(0); }
-    auto default_() const { return childs()[2].tryAs<Expression>(); }
-    auto attributes() const { return childs()[3].tryAs<AttributeSet>(); }
+    auto default_() const { return children()[2].tryAs<Expression>(); }
+    auto attributes() const { return children()[3].tryAs<AttributeSet>(); }
 
     bool isOptional() const { return AttributeSet::find(attributes(), "&optional").has_value(); }
 

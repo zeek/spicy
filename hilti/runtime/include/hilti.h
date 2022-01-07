@@ -49,7 +49,7 @@ void printValues(const T& t, bool newline = true) {
         cout.flush();
 }
 
-// Just for testing: Declaring a function that's not implementd.
+// Just for testing: Declaring a function that's not implemented.
 extern void __does_not_exist();
 
 }; // namespace hilti::rt

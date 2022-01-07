@@ -73,12 +73,12 @@ TEST_CASE("constructs from an `::in6_addr`") {
     CHECK_EQ(std::string(Address(*make_in6_addr("::4996:2d2:0:0:4996:2d2"))), "::4996:2d2:0:0:4996:2d2");
 }
 
-TEST_CASE("constructs from binary represenation of an IPv4 address") {
+TEST_CASE("constructs from binary representation of an IPv4 address") {
     CHECK_EQ(Address(1234567890).family(), AddressFamily::IPv4);
     CHECK_EQ(std::string(Address(1234567890)), "73.150.2.210");
 }
 
-TEST_CASE("constructs from binary represenation of an IPv6 address") {
+TEST_CASE("constructs from binary representation of an IPv6 address") {
     CHECK_EQ(Address(1234567890, 1234567890).family(), AddressFamily::IPv6);
     CHECK_EQ(std::string(Address(1234567890, 1234567890)), "::4996:2d2:0:0:4996:2d2");
 }

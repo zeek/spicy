@@ -25,7 +25,7 @@ std::pair<bool, Result<std::pair<NodeRef, ID>>> hilti::scope::detail::lookupID(c
         }
 
         if ( r.node->isA<node::None>() ) {
-            // Explict stop of scope traversal.
+            // Explicit stop of scope traversal.
             auto err = result::Error(util::fmt("unknown ID '%s'", id));
             return std::make_pair(true, std::move(err));
         }

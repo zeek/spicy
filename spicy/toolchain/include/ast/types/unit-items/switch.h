@@ -32,8 +32,8 @@ public:
 
     Case() = default;
 
-    auto expressions() const { return childsOfType<Expression>(); }
-    auto items() const { return childsOfType<type::unit::Item>(); }
+    auto expressions() const { return childrenOfType<Expression>(); }
+    auto items() const { return childrenOfType<type::unit::Item>(); }
     auto itemRefs() const { return childRefsOfType<type::unit::Item>(); }
 
     /** Returns true if this is the default case. */
@@ -75,11 +75,11 @@ public:
           _engine(e) {}
 
     Engine engine() const { return _engine; }
-    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
-    auto cases() const { return childsOfType<switch_::Case>(); }
-    auto condition() const { return childs()[1].tryAs<Expression>(); }
-    auto expression() const { return childs()[0].tryAs<Expression>(); }
-    auto hooks() const { return childsOfType<Hook>(); }
+    auto attributes() const { return children()[2].tryAs<AttributeSet>(); }
+    auto cases() const { return childrenOfType<switch_::Case>(); }
+    auto condition() const { return children()[1].tryAs<Expression>(); }
+    auto expression() const { return children()[0].tryAs<Expression>(); }
+    auto hooks() const { return childrenOfType<Hook>(); }
 
     auto itemRefs() const { return childRefsOfType<type::unit::Item>(); }
 

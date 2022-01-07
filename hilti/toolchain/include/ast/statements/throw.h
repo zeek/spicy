@@ -16,7 +16,7 @@ public:
     Throw(Meta m = Meta()) : NodeBase({node::none}, std::move(m)) {}
     Throw(hilti::Expression excpt, Meta m = Meta()) : NodeBase({std::move(excpt)}, std::move(m)) {}
 
-    auto expression() const { return childs()[0].tryAs<hilti::Expression>(); }
+    auto expression() const { return children()[0].tryAs<hilti::Expression>(); }
 
     bool operator==(const Throw& other) const { return expression() == other.expression(); }
 

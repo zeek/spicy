@@ -104,7 +104,7 @@ public:
 private:
     std::pair<int32_t, uint64_t> _advance(const stream::View& data, bool is_final);
 
-    // PIMPLing here means we have to alllocate dynamic memory, which
+    // PIMPLing here means we have to allocate dynamic memory, which
     // isn't great for this class. However, without PIMPL we get a new dependency on
     // 'jrx.h', which isn't great either, so we go with this.
     class Pimpl;

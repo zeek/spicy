@@ -19,17 +19,17 @@ public type X = unit {
        a: bytes &size=1;
 
        switch ( self.a ) {
-           b"1"       -> b1: bytes &eod &default=b"nope";
-           b"2", b"3" -> b2: bytes &eod &default=b"nope";
-           *          -> b3: bytes &eod &default=b"nope";
+           b"1"       -> b1: bytes &eod &default=b"foo";
+           b"2", b"3" -> b2: bytes &eod &default=b"foo";
+           *          -> b3: bytes &eod &default=b"foo";
            } &size=4;
 
        c: bytes &size=5 {
            print self;
 
-           print self?.b1 ? self.b1 : b"noe";
-           print self?.b2 ? self.b2 : b"noe";
-           print self?.b3 ? self.b3 : b"noe";
+           print self?.b1 ? self.b1 : b"bar";
+           print self?.b2 ? self.b2 : b"bar";
+           print self?.b3 ? self.b3 : b"bar";
 
            print self.b1;
            print self.b2;

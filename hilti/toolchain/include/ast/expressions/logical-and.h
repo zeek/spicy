@@ -19,8 +19,8 @@ public:
     const auto& op0() const { return child<Expression>(0); }
     const auto& op1() const { return child<Expression>(1); }
 
-    void setOp0(const Expression& op) { childs()[0] = std::move(op); }
-    void setOp1(const Expression& op) { childs()[1] = std::move(op); }
+    void setOp0(const Expression& op) { children()[0] = std::move(op); }
+    void setOp1(const Expression& op) { children()[1] = std::move(op); }
 
     bool operator==(const LogicalAnd& other) const { return op0() == other.op0() && op1() == other.op1(); }
 

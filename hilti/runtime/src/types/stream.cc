@@ -265,7 +265,7 @@ std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, U
         throw InvalidIterator("iterator pointing beyond available data");
 
     if ( i.offset() < offset() )
-        throw InvalidIterator("iterator preceeding available data");
+        throw InvalidIterator("iterator preceding available data");
 
     // If we don't have enough bytes available to fit the pattern in, we
     // can stop right away.

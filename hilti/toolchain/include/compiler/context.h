@@ -99,9 +99,9 @@ private:
 namespace context {
 
 /**
- * Index into the context's cache of already proceesed modules. Note that we
+ * Index into the context's cache of already processed modules. Note that we
  * use ID and path interchangeably, a module can be accessed by *either*,
- * meaning that the mapping from path to ID must be consisten throughout all
+ * meaning that the mapping from path to ID must be consistent throughout all
  * processing.
  */
 struct CacheIndex {

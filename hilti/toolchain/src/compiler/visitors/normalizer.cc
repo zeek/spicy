@@ -63,7 +63,7 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
 
     void operator()(const expression::Assign& assign, position_t p) {
         // Rewrite assignments to map elements to use the `index_assign` operator.
-        auto& lhs = assign.childs().front();
+        auto& lhs = assign.children().front();
         if ( auto index_non_const = lhs.tryAs<operator_::map::IndexNonConst>() ) {
             const auto& map = index_non_const->op0();
             const auto& map_type = map.type().as<type::Map>();
@@ -157,7 +157,7 @@ struct VisitorClearCanonicalIDs : public visitor::PreOrder<void, VisitorClearCan
 
 // Visitor computing canonical IDs.
 struct VisitorComputeCanonicalIDs : public visitor::PreOrder<ID, VisitorComputeCanonicalIDs> {
-    // This visitor runs twice, with slightly differnet behaviour by pass.
+    // This visitor runs twice, with slightly different behaviour by pass.
     VisitorComputeCanonicalIDs(int pass) : pass(pass) { assert(pass == 1 || pass == 2); }
 
     int pass;
@@ -201,7 +201,7 @@ struct VisitorComputeCanonicalIDs : public visitor::PreOrder<ID, VisitorComputeC
             p.node.as<Declaration>().setCanonicalID(id);
 
         // During the 1st pass, we also prefer shorter IDs over longer ones to
-        // avoid ambigious if we have multiple paths reaching the node.
+        // avoid ambiguous if we have multiple paths reaching the node.
         else if ( pass == 1 && id.length() < d.canonicalID().length() )
             p.node.as<Declaration>().setCanonicalID(id);
 
@@ -220,7 +220,7 @@ struct VisitorComputeCanonicalIDs : public visitor::PreOrder<ID, VisitorComputeC
         // Create a fake current ID and then restart ID computation below the
         // current node.
         auto id = ID(util::fmt("%s::<anon-struct-%d>", parent_id, ++ctor_struct_count));
-        _computeCanonicalIDs(this, const_cast<Node*>(&d.childs()[0]), std::move(id));
+        _computeCanonicalIDs(this, const_cast<Node*>(&d.children()[0]), std::move(id));
         return {};
     }
 };
@@ -248,7 +248,7 @@ static void _computeCanonicalIDs(VisitorComputeCanonicalIDs* v, Node* node, ID c
         // ambiguities with multiple paths reaching the same node.
         return;
 
-    for ( auto& c : node->childs() )
+    for ( auto& c : node->children() )
         _computeCanonicalIDs(v, &c, current);
 }
 

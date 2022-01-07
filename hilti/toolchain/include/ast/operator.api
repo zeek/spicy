@@ -12,7 +12,7 @@ class Operator(trait::isOperator) {
     hilti::operator_::Kind kind() const;
 
     /**
-     * Returns a documentation string associated with the operatior. This
+     * Returns a documentation string associated with the operator. This
      * goes into automatically generated HILTI reference documentation.
      */
     std::string doc() const;

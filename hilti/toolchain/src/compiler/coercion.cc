@@ -919,7 +919,7 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
         if ( ! c )
             RETURN(CoercedExpression());
 
-        // TOOD(robin): Why do we need this block? We do a separate operand
+        // TODO(robin): Why do we need this block? We do a separate operand
         // matching afterwards, too.
 
         if ( auto t = c->ctor().template tryAs<hilti::ctor::Tuple>() ) {

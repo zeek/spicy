@@ -24,7 +24,7 @@ public:
     auto kind() const { return _kind; }
 
     bool areOperandsResolved() const {
-        for ( auto op : childs<Expression>(1, -1) ) {
+        for ( auto op : children<Expression>(1, -1) ) {
             if ( ! type::isResolved(op.type()) )
                 return false;
         }
@@ -36,8 +36,8 @@ public:
         return kind() == other.kind() && operands() == other.operands();
     }
 
-    /** Implements interfave for use with `OverloadRegistry`. */
-    hilti::node::Range<Expression> operands() const { return childs<Expression>(1, -1); }
+    /** Implements interface for use with `OverloadRegistry`. */
+    hilti::node::Range<Expression> operands() const { return children<Expression>(1, -1); }
 
     // Dummy implementations as the node will be rejected in validation anyway.
 

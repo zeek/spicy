@@ -83,7 +83,7 @@ public:
     }
 
     /**
-     * Returns a closure of all the grammar's productions startin with the
+     * Returns a closure of all the grammar's productions starting with the
      * root. The result maps each production's symbol to the production
      * itself. Productions without symbols are not included.
      *

@@ -26,7 +26,7 @@ using Default = struct {};
  *
  * Note that internally, we store the expressions in a preprocessed matter:
  * `E` turns into `<id> == E`, where ID is selected to match the code
- * generator's output. Doing this allows coercion for the comparision to
+ * generator's output. Doing this allows coercion for the comparison to
  * proceed normally. The preprocessing happens at the time the `Case` gets
  * added to a `Switch` statement, and the new versions are stored separately
  * from the original expressions.
@@ -36,19 +36,19 @@ public:
     Case(hilti::Expression expr, Statement body, Meta m = Meta())
         : NodeBase(nodes(std::move(body), std::move(expr)), std::move(m)), _end_exprs(2) {}
     Case(std::vector<hilti::Expression> exprs, Statement body, Meta m = Meta())
-        : NodeBase(nodes(std::move(body), std::move(exprs)), std::move(m)), _end_exprs(childs().size()) {}
+        : NodeBase(nodes(std::move(body), std::move(exprs)), std::move(m)), _end_exprs(children().size()) {}
     Case(Default /*unused*/, Statement body, Meta m = Meta())
         : NodeBase(nodes(std::move(body)), std::move(m)), _end_exprs(1) {}
     Case() = default;
 
-    auto expressions() const { return childs<hilti::Expression>(1, _end_exprs); }
-    auto preprocessedExpressions() const { return childs<hilti::Expression>(_end_exprs, -1); }
+    auto expressions() const { return children<hilti::Expression>(1, _end_exprs); }
+    auto preprocessedExpressions() const { return children<hilti::Expression>(_end_exprs, -1); }
     const auto& body() const { return child<Statement>(0); }
 
     bool isDefault() const { return expressions().empty(); }
 
     /** Internal method for use by builder API only. */
-    auto& _bodyNode() { return childs()[0]; }
+    auto& _bodyNode() { return children()[0]; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
@@ -59,14 +59,14 @@ private:
     friend class hilti::statement::Switch;
 
     void _preprocessExpressions(const std::string& id) {
-        childs().erase(childs().begin() + _end_exprs, childs().end());
-        childs().reserve(_end_exprs * 2); // avoid resizing/invalidation below on emplace
+        children().erase(children().begin() + _end_exprs, children().end());
+        children().reserve(_end_exprs * 2); // avoid resizing/invalidation below on emplace
 
         for ( const auto& e : expressions() ) {
             hilti::Expression n =
                 expression::UnresolvedOperator(operator_::Kind::Equal, {expression::UnresolvedID(ID(id)), e}, e.meta());
 
-            childs().emplace_back(std::move(n));
+            children().emplace_back(std::move(n));
         }
     }
 
@@ -89,12 +89,12 @@ public:
             logger().internalError("initialization for 'switch' must be a local declaration");
     }
 
-    const auto& condition() const { return childs()[0].as<hilti::declaration::LocalVariable>(); }
-    auto conditionRef() const { return NodeRef(childs()[0]); }
-    auto cases() const { return childs<switch_::Case>(1, -1); }
+    const auto& condition() const { return children()[0].as<hilti::declaration::LocalVariable>(); }
+    auto conditionRef() const { return NodeRef(children()[0]); }
+    auto cases() const { return children<switch_::Case>(1, -1); }
 
     hilti::optional_ref<const switch_::Case> default_() const {
-        for ( const auto& c : childs<switch_::Case>(1, -1) ) {
+        for ( const auto& c : children<switch_::Case>(1, -1) ) {
             if ( c.isDefault() )
                 return c;
         }
@@ -105,7 +105,7 @@ public:
         if ( _preprocessed )
             return;
 
-        for ( auto c = childs().begin() + 1; c != childs().end(); c++ )
+        for ( auto c = children().begin() + 1; c != children().end(); c++ )
             c->as<switch_::Case>()._preprocessExpressions(condition().id());
 
         _preprocessed = true;
@@ -116,7 +116,7 @@ public:
     }
 
     /** Internal method for use by builder API only. */
-    auto& _lastCaseNode() { return childs().back(); }
+    auto& _lastCaseNode() { return children().back(); }
 
     /** Internal method for use by builder API only. */
     void _addCase(switch_::Case case_) {

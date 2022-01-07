@@ -15,7 +15,7 @@ namespace stream {
 /** AST node for a stream iterator type. */
 class Iterator : public TypeBase,
                  trait::isIterator,
-                 trait::isDereferencable,
+                 trait::isDereferenceable,
                  trait::isAllocable,
                  trait::isMutable,
                  trait::isRuntimeNonTrivial {

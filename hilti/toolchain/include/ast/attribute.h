@@ -51,14 +51,14 @@ public:
     const auto& tag() const { return _tag; }
 
     /** Returns true if an argument is associated with the attribute. */
-    bool hasValue() const { return ! childs()[0].isA<node::None>(); }
+    bool hasValue() const { return ! children()[0].isA<node::None>(); }
 
     /**
      * Returns the attribute associated with the node.
      *
      * @exception `std::out_of_range` if the attribute does not have an argument
      */
-    const Node& value() const { return childs()[0]; }
+    const Node& value() const { return children()[0]; }
 
     /**
      * Returns the attributes argument as type `T`. `T` must be either an
@@ -160,7 +160,7 @@ public:
     AttributeSet(Meta m = Meta()) : NodeBase({}, std::move(m)) {}
 
     /** Returns the set's attributes. */
-    auto attributes() const { return childs<Attribute>(0, -1); }
+    auto attributes() const { return children<Attribute>(0, -1); }
 
     /**
      * Retrieves an attribute with a given name from the set. If multiple
@@ -204,7 +204,7 @@ public:
         if ( ! type::isResolved(dst) )
             return false;
 
-        for ( auto& n : childs() ) {
+        for ( auto& n : children() ) {
             auto a = n.as<Attribute>();
             if ( a.tag() != tag )
                 continue;
@@ -239,7 +239,7 @@ public:
     bool operator==(const AttributeSet& other) const { return attributes() == other.attributes(); };
 
     /** Returns true if the set has at least one element. */
-    operator bool() const { return ! childs().empty(); }
+    operator bool() const { return ! children().empty(); }
 
     /**
      * Returns a new attribute set that adds one element.

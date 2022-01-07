@@ -25,7 +25,7 @@ public:
         : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {}
     Union(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(nodes(node::none), std::move(m)), _wildcard(true) {}
 
-    auto fields() const { return childsOfType<declaration::Field>(); }
+    auto fields() const { return childrenOfType<declaration::Field>(); }
 
     hilti::optional_ref<const declaration::Field> field(const ID& id) const {
         for ( const auto& f : fields() ) {
@@ -52,7 +52,7 @@ public:
 
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const {
-        for ( auto c = ++childs().begin(); c != childs().end(); c++ ) {
+        for ( auto c = ++children().begin(); c != children().end(); c++ ) {
             if ( ! c->as<declaration::Field>().isResolved(rstate) )
                 return false;
         }
@@ -63,7 +63,7 @@ public:
     /** Implements the `Type` interface. */
     auto typeParameters() const {
         std::vector<Node> params;
-        for ( auto c = ++childs().begin(); c != childs().end(); c++ )
+        for ( auto c = ++children().begin(); c != children().end(); c++ )
             params.emplace_back(c->as<declaration::Field>().type());
         return params;
     }

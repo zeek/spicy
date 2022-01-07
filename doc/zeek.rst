@@ -839,11 +839,11 @@ through the ``HILTI_DEBUG`` environment variable::
     [zeek] [SPICY_MYHTTP/7/orig] -> event MyHTTP::request_line($conn, GET, /index.html, 1.0)
     [zeek] [SPICY_MYHTTP/7/orig] done with parsing
     [zeek] [SPICY_MYHTTP/7/orig] parsing finished, skipping further originator payload
-    [zeek] [SPICY_MYHTTP/7/resp] no unit specificed for parsing
+    [zeek] [SPICY_MYHTTP/7/resp] no unit specified for parsing
     [zeek] [SPICY_MYHTTP/7/orig] skipping end-of-data delivery
-    [zeek] [SPICY_MYHTTP/7/resp] no unit specificed for parsing
+    [zeek] [SPICY_MYHTTP/7/resp] no unit specified for parsing
     [zeek] [SPICY_MYHTTP/7/orig] skipping end-of-data delivery
-    [zeek] [SPICY_MYHTTP/7/resp] no unit specificed for parsing
+    [zeek] [SPICY_MYHTTP/7/resp] no unit specified for parsing
 
 After the initial initialization, you see the data arriving and the
 event being generated for Zeek. The plugin also reports that we didn't

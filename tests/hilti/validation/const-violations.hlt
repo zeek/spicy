@@ -20,7 +20,7 @@ function void p(vector<uint<64>> v) {
     local string x;
     local vector<uint<64>> v2;
     v.push_back(2);  # v is const
-    v = v2; # v is const, we also don't allow assigment then
+    v = v2; # v is const, we also don't allow assignment then
     v[5] = 1;        # v is const
     (x, v) = ("X", v); # v is const
     p2(v);           # v is const, but p2::v is not.

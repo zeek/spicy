@@ -91,7 +91,7 @@ public:
     /**
      * @param name descriptive name for the tool using the driver, which will
      * be used in usage and error messages.
-     * @param argv0 the current exectuable, which will change the path's that
+     * @param argv0 the current executable, which will change the path's that
      * the global options instance returns if it's inside HILTI build
      * directory.
      */
@@ -107,7 +107,7 @@ public:
 
     /**
      * Frontend for parsing command line options into `driver::Options` and
-     * `hilti::Options``. See the outout of `hiltic --help` for a list.
+     * `hilti::Options``. See the output of `hiltic --help` for a list.
      *
      * `setDriverOptions()` and `setCompilerOptions()` provide alternative
      * ways to set the options directly.
@@ -289,7 +289,7 @@ protected:
 
     /**
      * Helper function to augment an `result::Error` with a message that
-     * includig driver name and, optionally, a file the error refers to.
+     * including driver name and, optionally, a file the error refers to.
      *
      * @param msg error message
      * @param p file to associate with the error, empty for none

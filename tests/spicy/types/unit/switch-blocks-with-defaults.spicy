@@ -9,26 +9,26 @@ public type test = unit {
 
        switch ( self.a ) {
            b"1" ->  {
-                       b: bytes &size=1 &default=b"nope_b";
-                       c: bytes &size=3 &default=b"nope_c";
+                       b: bytes &size=1 &default=b"foo_b";
+                       c: bytes &size=3 &default=b"foo_c";
                     }
            b"2" ->  {
-                       d: bytes &size=1 &default=b"nope_d";
-                       e: bytes &size=3 &default=b"nope_e";
+                       d: bytes &size=1 &default=b"foo_d";
+                       e: bytes &size=3 &default=b"foo_e";
                     }
 
-           *    -> f: bytes &size=4 &default=b"nope_f";
+           *    -> f: bytes &size=4 &default=b"foo_f";
            };
 
 
        on %done {
           print self;
 
-          print self?.b ? self.b : b"noe_b";
-          print self?.c ? self.c : b"noe_c";
-          print self?.d ? self.d : b"noe_d";
-          print self?.e ? self.e : b"noe_e";
-          print self?.f ? self.f : b"noe_f";
+          print self?.b ? self.b : b"bar_b";
+          print self?.c ? self.c : b"bar_c";
+          print self?.d ? self.d : b"bar_d";
+          print self?.e ? self.e : b"bar_e";
+          print self?.f ? self.f : b"bar_f";
 
           print self.b;
           print self.c;

@@ -31,16 +31,16 @@ public:
           _cxxname(std::move(cxxname)),
           _num_parameters(parameters.size()) {}
 
-    auto arguments() const { return childs<Expression>(_num_parameters + 1, -1); }
-    const auto parameters() const { return childs<declaration::Parameter>(1, _num_parameters); }
+    auto arguments() const { return children<Expression>(_num_parameters + 1, -1); }
+    const auto parameters() const { return children<declaration::Parameter>(1, _num_parameters); }
     const auto& cxxname() const { return _cxxname; }
     const auto& name() const { return _name; }
 
     void setArguments(std::vector<hilti::Expression> args) {
-        childs().clear();
+        children().clear();
 
         for ( auto& a : args )
-            childs().emplace_back(std::move(a));
+            children().emplace_back(std::move(a));
     }
 
     friend bool operator==(const BuiltinFunction& lhs, const BuiltinFunction& rhs) {

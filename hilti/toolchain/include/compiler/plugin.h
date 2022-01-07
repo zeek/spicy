@@ -40,7 +40,7 @@ class Stream;
  * before it gets to the HILTI plugin. That way, an external plugin can
  * implement support for new language using HILTI as its codegen backend by (1)
  * reading its representation into an AST using its own set of nodes (which may
- * include reusing existing HILTI AST nodes where convinient), (2) implementing
+ * include reusing existing HILTI AST nodes where convenient), (2) implementing
  * the resolution passes to fully resolve that AST (reusing HILTI passes
  * internally where convenient), and (3) finally transforming that AST into a
  * pure HILTI AST consisting only of the HILT nodes.

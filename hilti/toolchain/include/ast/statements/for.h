@@ -20,21 +20,21 @@ public:
                    std::move(m)) {}
 
     const auto& local() const { return child<hilti::declaration::LocalVariable>(0); }
-    auto localRef() const { return NodeRef(childs()[0]); }
+    auto localRef() const { return NodeRef(children()[0]); }
     const auto& sequence() const { return child<hilti::Expression>(1); }
     const auto& body() const { return child<hilti::Statement>(2); }
 
-    void setLocalType(Type t) { childs()[0].as<declaration::LocalVariable>().setType(std::move(t)); }
+    void setLocalType(Type t) { children()[0].as<declaration::LocalVariable>().setType(std::move(t)); }
 
     bool operator==(const For& other) const {
         return local() == other.local() && sequence() == other.sequence() && body() == other.body();
     }
 
     /** Internal method for use by builder API only. */
-    auto& _sequenceNode() { return childs()[1]; }
+    auto& _sequenceNode() { return children()[1]; }
 
     /** Internal method for use by builder API only. */
-    auto& _bodyNode() { return childs()[2]; }
+    auto& _bodyNode() { return children()[2]; }
 
     /** Implements the `Statement` interface. */
     auto isEqual(const Statement& other) const { return node::isEqual(this, other); }

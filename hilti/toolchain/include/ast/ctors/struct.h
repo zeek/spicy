@@ -42,7 +42,7 @@ public:
         : NodeBase(nodes(std::move(t), std::move(f)), std::move(m)) {}
 
     /** Returns all fields that the constructors initialized. */
-    auto fields() const { return childs<struct_::Field>(1, -1); }
+    auto fields() const { return children<struct_::Field>(1, -1); }
 
     auto stype() const { return child<type::Struct>(0); }
 
@@ -56,7 +56,7 @@ public:
         return {};
     }
 
-    void setType(type::Struct x) { childs()[0] = std::move(x); }
+    void setType(type::Struct x) { children()[0] = std::move(x); }
 
     bool operator==(const Struct& other) const { return fields() == other.fields(); }
 

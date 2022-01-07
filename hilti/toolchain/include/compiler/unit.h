@@ -101,7 +101,7 @@ public:
      * Runs a plugin's scope-building phase on the unit's AST.
      *
      * @param plugin plugin to execute
-     * @returns success if no error occurred, and an appropiate error otherwise
+     * @returns success if no error occurred, and an appropriate error otherwise
      */
     Result<Nothing> buildASTScopes(const Plugin& plugin);
 
@@ -110,7 +110,7 @@ public:
      *
      * @param plugin plugin to execute
      * @returns flag indicating whether the AST was modified or not; or an
-     * appropiate error if a failure occurred
+     * appropriate error if a failure occurred
      */
     Result<ASTState> resolveAST(const Plugin& plugin);
 
@@ -131,17 +131,17 @@ public:
     bool validateASTPost(const Plugin& plugin);
 
     /**
-     * Runs a plugin's tranformation phase on the unit's AST.
+     * Runs a plugin's transformation phase on the unit's AST.
      *
      * @param plugin plugin to execute
-     * @returns success if no error occurred, and an appropiate error otherwise
+     * @returns success if no error occurred, and an appropriate error otherwise
      */
     Result<Nothing> transformAST(const Plugin& plugin);
 
     /**
      * Triggers generation of C++ code from the compiled AST.
      *
-     * @returns success if no error occurred, and an appropiate error otherwise
+     * @returns success if no error occurred, and an appropriate error otherwise
      */
     Result<Nothing> codegen();
 
@@ -219,7 +219,7 @@ public:
     bool requiresCompilation();
 
     /**
-     * Explicily marks the unit as requiring compilation down to C++, overiding
+     * Explicily marks the unit as requiring compilation down to C++, overriding
      * any automatic determination.
      */
     void setRequiresCompilation() { _requires_compilation = true; }
@@ -287,7 +287,7 @@ public:
      * @param id ID of the module to be imported
      * @param parse_extension file extension indicating how to parse the module's source file
      * @param ast_extension extension indicating which plugin to use for
-     * processing the AST; this will usually match `parse_extesion`, but
+     * processing the AST; this will usually match `parse_extension`, but
      * doesn't need to.
      * @return instantiated unit, or an appropriate error result if operation failed
      */
@@ -391,7 +391,7 @@ private:
     // Recursively destroys the module's AST.
     void _destroyModule();
 
-    // Helper for depencencies() to recurse.
+    // Helper for dependencies() to recurse.
     void _recursiveDependencies(std::vector<std::weak_ptr<Unit>>* dst, std::unordered_set<const Unit*>* seen) const;
 
     // Parses a source file with the appropriate plugin.

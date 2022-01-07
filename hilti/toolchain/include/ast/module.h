@@ -32,12 +32,12 @@ public:
 
     const auto& id() const { return child<ID>(0); }
     const auto& statements() const { return child<statement::Block>(1); }
-    auto declarations() const { return childsOfType<Declaration>(); }
+    auto declarations() const { return childrenOfType<Declaration>(); }
     auto declarationRefs() const { return childRefsOfType<Declaration>(); }
 
     bool isEmpty() const {
-        // We always have an ID and a block as childs.
-        return childs().size() <= 2 && statements().statements().empty();
+        // We always have an ID and a block as children.
+        return children().size() <= 2 && statements().statements().empty();
     }
 
     /**
@@ -83,7 +83,7 @@ public:
      * reflected in all copies of this instance.
      *
      */
-    void add(Statement s) { childs()[1].as<statement::Block>()._add(std::move(s)); }
+    void add(Statement s) { children()[1].as<statement::Block>()._add(std::move(s)); }
 
     /**
      * Adds a top-level expression to the module. It will be appended to the
@@ -102,7 +102,7 @@ public:
      * allows keeping references to the node's sub-AST valid while not making
      * the node itself part of the AST. That's especially useful when
      * transforming nodes from one representation to another while other parts
-     * of the AST are still refering to the original once.
+     * of the AST are still referring to the original once.
      *
      * @param n node to retain with all of its children
      * @returns a reference to the internally stored node

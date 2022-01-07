@@ -35,7 +35,7 @@ constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::kind
 
 } // namespace keyword
 
-/** AST node for an expression representing a reservered keyword. */
+/** AST node for an expression representing a reserved keyword. */
 class Keyword : public NodeBase, public hilti::trait::isExpression {
 public:
     Keyword(keyword::Kind kind, Meta m = Meta()) : NodeBase(nodes(type::auto_), std::move(m)), _kind(kind) {}
@@ -50,7 +50,7 @@ public:
     /** Implements `Expression` interface. */
     bool isTemporary() const { return false; }
     /** Implements `Expression` interface. */
-    const Type& type() const { return childs()[0].as<Type>(); }
+    const Type& type() const { return children()[0].as<Type>(); }
 
     /** Implements `Expression` interface. */
     auto isConstant() const { return false; }

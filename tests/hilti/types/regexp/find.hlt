@@ -31,7 +31,7 @@ assert reX.match(b"Hello Nobody!") == -1;
 
 global auto reY = /.*(Foo|Bar!!!)/;
 assert reY.match(b"Bar") == -1;
-assert reY.match(b"Fo") == -1;
+assert reY.match(b"F") == -1;
 assert reY.match(b"Bar!!!") == 1;
 
 }

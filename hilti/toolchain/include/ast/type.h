@@ -31,7 +31,7 @@ using Parameter = declaration::Parameter;
 
 namespace trait {
 class isAllocable {};
-class isDereferencable {};
+class isDereferenceable {};
 class isIterable {};
 class isIterator {};
 class isMutable {};
@@ -56,7 +56,7 @@ enum class Flag {
 
     /**
      * Marks the type as having a top-level scope that does not derive scope content
-     * from other nodes above it in the AST (except for truely global IDs).
+     * from other nodes above it in the AST (except for truly global IDs).
      */
     NoInheritScope = (1U << 2U),
 
@@ -250,7 +250,7 @@ inline hilti::Type setCxxID(const Type& t, ID id) {
 }
 
 /**
- * Copies an existing type, setting its asssociated type ID.
+ * Copies an existing type, setting its associated type ID.
  *
  * @param t original type
  * @param id new type ID
@@ -272,7 +272,7 @@ class Wildcard {};
 inline bool isAllocable(const Type& t) { return t._isAllocable(); }
 
 /** Returns true for HILTI types that one can iterator over. */
-inline bool isDereferencable(const Type& t) { return t._isDereferencable(); }
+inline bool isDereferenceable(const Type& t) { return t._isDereferenceable(); }
 
 /** Returns true for HILTI types that one can iterator over. */
 inline bool isIterable(const Type& t) { return t._isIterable(); }
@@ -321,7 +321,7 @@ inline auto constant(Type t) {
 
 /**
  * Returns a not `const` version of a type. If `force` is true, then even
- * immutable types are marked as non-const. This is usally not what one wants.
+ * immutable types are marked as non-const. This is usually not what one wants.
  */
 inline auto nonConstant(Type t, bool force = false) {
     t._state().flags -= type::Flag::Constant;
@@ -388,7 +388,7 @@ inline bool operator==(const Type& t1, const Type& t2) {
     if ( t1.cxxID() && t2.cxxID() )
         return *t1.cxxID() == *t2.cxxID();
 
-    // Type comparision is not fully symmetric, it's good enough
+    // Type comparison is not fully symmetric, it's good enough
     // if one type believes it matches the other one.
     return t1.isEqual(t2) || t2.isEqual(t1);
 }

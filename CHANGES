@@ -1,3 +1,7 @@
+1.4.0-dev.137 | 2022-01-07 10:41:29 +0100
+
+  * Fix typos in the source and docs. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.135 | 2021-12-22 11:04:51 +0100
 
   * Update docs for Zeek plugin functions with recent changes. (Robin
@@ -522,7 +526,7 @@
 
   * Factor out functions to compute IDs for global optimizer. (Benjamin Bannier, Corelight)
 
-  * Remove unused function `hilti::type::Struc::ids`. (Benjamin Bannier, Corelight)
+  * Remove unused function `hilti::type::Struct::ids`. (Benjamin Bannier, Corelight)
 
 1.3.0-dev.11 | 2021-08-05 11:23:24 +0200
 
@@ -532,7 +536,7 @@
 
   * Fix validate_release_tarball Cirrus CI task. (Benjamin Bannier, Corelight)
 
-  * Only consider typicaly release tags when checking whether we are on a release tag. (Benjamin Bannier, Corelight)
+  * Only consider typical release tags when checking whether we are on a release tag. (Benjamin Bannier, Corelight)
 
   * GH-960: Swallow Git error messages during CMake if run from tarball. (Benjamin Bannier, Corelight)
 
@@ -855,7 +859,7 @@
 1.1.0-dev.45 | 2021-04-27 08:51:29 +0000
 
   * Provide mktime() library function. This allows creating a `time`
-    value from individual compenents, similar to mktime(3). (Robin
+    value from individual components, similar to mktime(3). (Robin
     Sommer, Corelight)
 
 1.1.0-dev.43 | 2021-04-26 15:32:25 +0000

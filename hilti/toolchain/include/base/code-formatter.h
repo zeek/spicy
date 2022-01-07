@@ -43,7 +43,7 @@ public:
     /**< Signals the end of a statement. This will insert both a semicolon and a newline. */
     void eos();
 
-    /** Surrounds a string with quotation mark and escapes it appropiately. */
+    /** Surrounds a string with quotation mark and escapes it appropriately. */
     void quoted(const std::string& s);
 
     /** Inserts a comment line, prefixing it with the comment prefix. */

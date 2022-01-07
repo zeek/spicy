@@ -23,7 +23,7 @@ namespace element {
 enum class Type { Expression, Type, Linkage, Attribute };
 } // namespace element
 
-/** An element of type `T` in the compiler's intemediary C++ representation. */
+/** An element of type `T` in the compiler's intermediary C++ representation. */
 template<element::Type T>
 class Element {
 public:

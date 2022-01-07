@@ -159,7 +159,7 @@ private:
  *     rt::Map<int, int> map;
  *     auto it = map.begin(); // Valid iterator which cannot be dereferenced.
  *
- *     // Mutating the map invalidates not dereferencable iterators.
+ *     // Mutating the map invalidates not dereferenceable iterators.
  *     map.insert({1, 1});
  *
  *     *it; // Iterator now invalid, throws.

@@ -99,17 +99,17 @@ public:
     Field(Field&& other) = default;
     ~Field() = default;
 
-    const auto& id() const { return childs()[0].as<ID>(); }
+    const auto& id() const { return children()[0].as<ID>(); }
     auto index() const { return _index; }
-    auto ctor() const { return childs()[5].tryAs<Ctor>(); }
-    auto item() const { return childs()[5].tryAs<Item>(); }
+    auto ctor() const { return children()[5].tryAs<Ctor>(); }
+    auto item() const { return children()[5].tryAs<Item>(); }
 
-    auto repeatCount() const { return childs()[6].tryAs<Expression>(); }
-    auto attributes() const { return childs()[7].tryAs<AttributeSet>(); }
-    auto condition() const { return childs()[8].tryAs<Expression>(); }
-    auto arguments() const { return childs<Expression>(_args_start, _args_end); }
-    auto sinks() const { return childs<Expression>(_sinks_start, _sinks_end); }
-    auto hooks() const { return childs<Hook>(_hooks_start, _hooks_end); }
+    auto repeatCount() const { return children()[6].tryAs<Expression>(); }
+    auto attributes() const { return children()[7].tryAs<AttributeSet>(); }
+    auto condition() const { return children()[8].tryAs<Expression>(); }
+    auto arguments() const { return children<Expression>(_args_start, _args_end); }
+    auto sinks() const { return children<Expression>(_sinks_start, _sinks_end); }
+    auto hooks() const { return children<Hook>(_hooks_start, _hooks_end); }
     Engine engine() const { return _engine; }
 
     bool isContainer() const { return repeatCount().has_value(); }
@@ -121,7 +121,7 @@ public:
         if ( _type )
             return (*_type)->as<hilti::declaration::Type>().type();
 
-        if ( auto t = childs()[1].tryAs<Type>() )
+        if ( auto t = children()[1].tryAs<Type>() )
             return *t;
 
         if ( auto c = ctor() )
@@ -133,34 +133,34 @@ public:
         hilti::util::cannot_be_reached();
     }
 
-    const Type& parseType() const { return childs()[2].as<Type>(); }
-    NodeRef parseTypeRef() const { return NodeRef(childs()[2]); }
-    const Type& itemType() const { return childs()[4].as<Type>(); }
+    const Type& parseType() const { return children()[2].as<Type>(); }
+    NodeRef parseTypeRef() const { return NodeRef(children()[2]); }
+    const Type& itemType() const { return children()[4].as<Type>(); }
 
     const Type& ddType() const {
-        if ( auto x = childs()[3].tryAs<hilti::declaration::Expression>() )
+        if ( auto x = children()[3].tryAs<hilti::declaration::Expression>() )
             return x->expression().type();
         else
             return hilti::type::auto_;
     }
 
     NodeRef ddRef() const {
-        if ( childs()[3].isA<Declaration>() )
-            return NodeRef(childs()[3]);
+        if ( children()[3].isA<Declaration>() )
+            return NodeRef(children()[3]);
         else
             return {};
     }
 
-    auto itemRef() { return NodeRef(childs()[5]); }
+    auto itemRef() { return NodeRef(children()[5]); }
 
     // Get the `&convert` expression, if any.
     std::optional<std::pair<const Expression, std::optional<const Type>>> convertExpression() const;
 
     void setForwarding(bool is_forwarding) { _is_forwarding = is_forwarding; }
-    void setDDType(Type t) { childs()[3] = hilti::expression::Keyword::createDollarDollarDeclaration(std::move(t)); }
+    void setDDType(Type t) { children()[3] = hilti::expression::Keyword::createDollarDollarDeclaration(std::move(t)); }
     void setIndex(uint64_t index) { _index = index; }
-    void setItemType(Type t) { childs()[4] = hilti::type::pruneWalk(std::move(t)); }
-    void setParseType(Type t) { childs()[2] = hilti::type::pruneWalk(std::move(t)); }
+    void setItemType(Type t) { children()[4] = hilti::type::pruneWalk(std::move(t)); }
+    void setParseType(Type t) { children()[2] = hilti::type::pruneWalk(std::move(t)); }
 
     bool operator==(const Field& other) const {
         return _engine == other._engine && id() == other.id() && originalType() == other.originalType() &&

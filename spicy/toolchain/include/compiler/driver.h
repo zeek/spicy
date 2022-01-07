@@ -35,7 +35,7 @@ public:
     /**
      * @param name descriptive name for the tool using the driver, which will
      * be used in usage and error messages.
-     * @param argv0 the current exectuable, which will change the path's that
+     * @param argv0 the current executable, which will change the path's that
      * the global options instance returns if it's inside Spicy build
      * directory.
      */

@@ -33,7 +33,7 @@ void type::detail::applyPruneWalk(hilti::Type& t) {
         return;
     }
 
-    for ( auto&& c : t.childs() ) {
+    for ( auto&& c : t.children() ) {
         if ( auto x = c.tryAs<hilti::Type>() )
             applyPruneWalk(const_cast<hilti::Type&>(*x));
     }

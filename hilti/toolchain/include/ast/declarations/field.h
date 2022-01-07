@@ -33,10 +33,10 @@ public:
     const auto& id() const { return child<ID>(0); }
 
     auto callingConvention() const { return _cc; }
-    auto inlineFunction() const { return childs()[3].tryAs<hilti::Function>(); }
-    auto attributes() const { return childs()[2].tryAs<AttributeSet>(); }
+    auto inlineFunction() const { return children()[3].tryAs<hilti::Function>(); }
+    auto attributes() const { return children()[2].tryAs<AttributeSet>(); }
     bool isResolved(type::ResolvedState* rstate) const {
-        if ( childs()[1].isA<type::Function>() )
+        if ( children()[1].isA<type::Function>() )
             return true;
 
         if ( auto func = inlineFunction() )
@@ -54,9 +54,9 @@ public:
 
     NodeRef typeRef() {
         if ( inlineFunction() )
-            return childs()[3].as<hilti::Function>().typeRef();
+            return children()[3].as<hilti::Function>().typeRef();
         else
-            return NodeRef(childs()[1]);
+            return NodeRef(children()[1]);
     }
 
     hilti::optional_ref<const hilti::Expression> default_() const {
@@ -80,10 +80,10 @@ public:
         if ( auto func = inlineFunction() )
             return const_cast<::hilti::Function&>(*func)._typeNode();
         else
-            return childs()[1];
+            return children()[1];
     }
 
-    void setAttributes(AttributeSet attrs) { childs()[2] = std::move(attrs); }
+    void setAttributes(AttributeSet attrs) { children()[2] = std::move(attrs); }
 
     bool operator==(const Field& other) const {
         return id() == other.id() && type() == other.type() && attributes() == other.attributes() && _cc == other._cc;

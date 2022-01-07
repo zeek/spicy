@@ -33,10 +33,10 @@ public:
         : DeclarationBase(nodes(std::move(id), std::move(type), std::move(init), std::move(args)), std::move(m)),
           _linkage(linkage) {}
 
-    auto init() const { return childs()[2].tryAs<hilti::Expression>(); }
+    auto init() const { return children()[2].tryAs<hilti::Expression>(); }
 
     const auto& type() const {
-        if ( auto t = childs()[1].tryAs<hilti::Type>() )
+        if ( auto t = children()[1].tryAs<hilti::Type>() )
             return *t;
         else {
             assert(init());
@@ -44,11 +44,11 @@ public:
         }
     }
 
-    auto typeArguments() const { return childs<hilti::Expression>(3, -1); }
+    auto typeArguments() const { return children<hilti::Expression>(3, -1); }
 
-    void setInit(hilti::Expression i) { childs()[2] = std::move(i); }
+    void setInit(hilti::Expression i) { children()[2] = std::move(i); }
     void setTypeArguments(std::vector<hilti::Expression> args) {
-        auto& c = childs();
+        auto& c = children();
         c.erase(c.begin() + 3, c.end());
         for ( auto&& a : args )
             c.emplace_back(std::move(a));

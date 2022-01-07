@@ -35,7 +35,7 @@ Stages
     test-code                                         Run code & formatting checks
     test-build                                        Run the test suite on the built version
     test-install                                      Run the test suite on the installed version
-    cleanup                                           Delete all build artifcats.
+    cleanup                                           Delete all build artifacts.
 
 Global options:
 
@@ -183,7 +183,7 @@ function run_build {
 
     log_stage "Building code ..."
 
-    # The level of parallelism choosen here is tuned for what's configured
+    # The level of parallelism chosen here is tuned for what's configured
     # in `.cirrus.yml` so that (1) we align with number of CPUs, and (2) we
     # do not trigger OOM kills in the Docker environments.
     (cd ${build} && ninja -j4 all) || exit 1
@@ -308,7 +308,7 @@ function run_test_install {
 
 function run_deploy {
     # log_stage "Deploying docs ..."
-    log_stage "Deploying docs NOT implemeneted ..."
+    log_stage "Deploying docs NOT implemented ..."
     # TODO: RTD integration
 }
 

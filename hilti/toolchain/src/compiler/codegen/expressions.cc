@@ -150,7 +150,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         }
 
         if ( auto f = n.declaration().tryAs<declaration::Function>() ) {
-            // If we're refering to, but not calling, an "external" function
+            // If we're referring to, but not calling, an "external" function
             // or static method, bind to the externally visible name.
             if ( (f->function().callingConvention() == function::CallingConvention::Extern ||
                   f->function().callingConvention() == function::CallingConvention::ExternNoSuspend) &&

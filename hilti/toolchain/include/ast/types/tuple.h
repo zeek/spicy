@@ -22,7 +22,7 @@ public:
         : NodeBase(nodes(id ? std::move(id) : node::none, std::move(t)), std::move(m)) {}
     Element(Meta m = Meta()) : NodeBase(nodes(node::none, node::none), std::move(m)) {}
 
-    auto id() const { return childs()[0].tryAs<ID>(); }
+    auto id() const { return children()[0].tryAs<ID>(); }
     const auto& type() const { return child<Type>(1); }
 
     /** Implements the `Node` interface. */
@@ -42,7 +42,7 @@ public:
     Tuple(std::vector<tuple::Element> e, Meta m = Meta()) : TypeBase(nodes(std::move(e)), std::move(m)) {}
     Tuple(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(std::move(m)), _wildcard(true) {}
 
-    auto elements() const { return childs<tuple::Element>(0, -1); }
+    auto elements() const { return children<tuple::Element>(0, -1); }
     std::optional<std::pair<int, const type::tuple::Element*>> elementByID(const ID& id) const;
 
     bool operator==(const Tuple& other) const {
@@ -56,7 +56,7 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const {
-        for ( const auto& c : childs() ) {
+        for ( const auto& c : children() ) {
             if ( auto t = c.tryAs<Type>(); t && ! type::detail::isResolved(*t, rstate) )
                 return false;
         }
@@ -65,7 +65,7 @@ public:
     }
 
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return childs(); }
+    auto typeParameters() const { return children(); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
 

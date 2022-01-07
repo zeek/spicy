@@ -46,17 +46,17 @@ public:
     Struct(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(nodes(node::none), m), _wildcard(true) {}
 
     NodeRef selfRef() const {
-        if ( childs()[0].isA<Declaration>() )
-            return NodeRef(childs()[0]);
+        if ( children()[0].isA<Declaration>() )
+            return NodeRef(children()[0]);
         else
             return {};
     }
 
     auto hasFinalizer() const { return field("~finally").has_value(); }
-    auto parameters() const { return childsOfType<type::function::Parameter>(); }
+    auto parameters() const { return childrenOfType<type::function::Parameter>(); }
     auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
 
-    auto fields() const { return childsOfType<declaration::Field>(); }
+    auto fields() const { return childrenOfType<declaration::Field>(); }
 
     hilti::optional_ref<const declaration::Field> field(const ID& id) const {
         for ( const auto& f : fields() ) {
@@ -88,7 +88,7 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const {
-        for ( const auto& c : childs() ) {
+        for ( const auto& c : children() ) {
             if ( auto f = c.tryAs<declaration::Field>() ) {
                 if ( ! f->isResolved(rstate) )
                     return false;
@@ -125,7 +125,7 @@ public:
         Expression self =
             expression::Keyword(expression::keyword::Kind::Self, type::ValueReference(NodeRef(*n)), n->meta());
         Declaration d = declaration::Expression("self", std::move(self), declaration::Linkage::Private, n->meta());
-        n->childs()[0] = std::move(d);
+        n->children()[0] = std::move(d);
     }
 
 private:
