@@ -1,0 +1,18 @@
+# @TEST-EXEC: printf x | spicy-dump -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that unit "inout" parameters work when forwarding to another inout; regression test for #1069.
+
+module Test;
+
+public type Body = unit() {
+    b: Chunks(self);
+};
+
+type Chunks = unit(inout body: Body) {
+    cs: Chunk(body);
+};
+
+type Chunk = unit(inout body: Body) {
+    c: uint8;
+};

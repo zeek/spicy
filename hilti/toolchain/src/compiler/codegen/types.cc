@@ -67,7 +67,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                 cg->enablePrioritizeTypes();
 
                 for ( const auto& p : n.parameters() ) {
-                    cxx::Type type = cg->compile(p.type(), codegen::TypeUsage::InParameter);
+                    cxx::Type type = cg->compile(p.type(), cg->parameterKindToTypeUsage(p.kind()));
                     cxx::Type internal_type = cg->compile(p.type(), codegen::TypeUsage::Storage);
 
                     if ( type::isReferenceType(p.type()) ) {

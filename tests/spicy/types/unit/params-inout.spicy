@@ -1,0 +1,26 @@
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+#
+# @TEST-DOC: Check that unit "inout" parameters compile; regression test for #1077.
+
+module test;
+
+type Y = unit(inout ctx: uint32&) {
+    z: Z(ctx);
+};
+
+type Z = unit(inout ctx: uint32&) {};
+
+###
+
+public type Ctx = uint32;
+
+public type A = unit {
+    %context = Ctx;
+    v: B(self.context());
+};
+
+type B = unit(inout ctx: Ctx&) {
+    c: C(ctx);
+};
+
+type C = unit(inout ctx: Ctx&) {};
