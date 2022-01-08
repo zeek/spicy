@@ -1718,8 +1718,8 @@ Sinks
 
 Sinks provide a powerful mechanism to chain multiple units together
 into a layered stack, each processing the output of its predecessor. A
-sink is the connector here that links to unit instances, with one side
-writing and one side reading like a Unix pipe. As additional
+sink is the connector here that links two unit instances: one side
+writing and one side reading, like a Unix pipe. As additional
 functionality, the sink can internally reassemble data chunks that are
 arriving out of order before passing anything on.
 
@@ -1772,6 +1772,13 @@ sink: ``data: bytes &size=self.length -> self.b``.
 Sinks have a number of further methods, see :ref:`type_sink` for the
 complete reference. Most of them we will also encounter in the
 following when discussing additional functionality that sinks provide.
+
+.. note::
+
+   Because sinks are meant to decouple processing between two units, a
+   unit connected to a sink will *not* pass any parse errors back up
+   to the sink's parent. If you want to catch them, install an
+   :ref:`%error <on_error>` hook inside the connected unit.
 
 Using Filters
 ^^^^^^^^^^^^^

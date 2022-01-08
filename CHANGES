@@ -1,3 +1,15 @@
+1.4.0-dev.146 | 2022-01-08 10:02:10 +0100
+
+  * GH-1076: Do not pass errors inside sink units back up to parent.
+    (Robin Sommer, Corelight)
+
+  * GH-1077: Fix self-recursive units. (Robin Sommer, Corelight)
+
+  * GH-1069: Allow implicit C++ conversion from value reference to
+    strong reference. (Robin Sommer, Corelight)
+
+  * Fix typos in the source and docs. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.137 | 2022-01-07 10:41:29 +0100
 
   * Fix typos in the source and docs. (Benjamin Bannier, Corelight)

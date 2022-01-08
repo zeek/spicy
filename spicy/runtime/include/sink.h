@@ -49,7 +49,11 @@ struct State {
     /** Resumable parse function. */
     hilti::rt::Resumable resumable;
 
+    /** Parser for the connected unit. */
     Parser* parser;
+
+    /** If true, no further data will be delivered to unit. */
+    bool skip_delivery = false;
 };
 
 /**
