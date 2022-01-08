@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00' | spicy-dump test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x00' | spicy-dump test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x01\x00' | spicy-dump test.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test for #1077.
+
+
+module foo;
+
+public type X = unit {
+    has_field: uint8 &convert=cast<bool>($$);
+    x: X if (self.has_field);
+};

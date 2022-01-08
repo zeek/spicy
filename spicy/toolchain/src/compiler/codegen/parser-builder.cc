@@ -408,7 +408,7 @@ struct ProductionVisitor
     }
 
     // Returns a boolean expression that's 'true' if a 'stop' was encountered.
-    Expression _parseProduction(const Production& p, const production::Meta& meta) {
+    Expression _parseProduction(const Production& p, bool top_level, const production::Meta& meta) {
         const auto is_field_owner = (meta.field() && meta.isFieldProduction() && ! p.isA<production::Resolved>());
 
         auto field = meta.field();
@@ -424,7 +424,7 @@ struct ProductionVisitor
 
         if ( const auto& r = p.tryAs<production::Resolved>() )
             // Directly forward, without going through any of the remaining machinery.
-            return _parseProduction(grammar.resolved(*r), r->meta());
+            return _parseProduction(grammar.resolved(*r), false, r->meta());
 
         // Push destination for parsed value onto stack.
 
@@ -479,7 +479,7 @@ struct ProductionVisitor
                 hilti::logger().internalError(
                     fmt("ParserBuilder: atomic production %s not handled (%s)", p.typename_(), p));
         }
-        else if ( auto unit = p.tryAs<production::Unit>(); unit && *unit->unitType().id() != state().unit_id ) {
+        else if ( auto unit = p.tryAs<production::Unit>(); unit && ! top_level ) {
             // Parsing a different unit type. We call the other unit's parse
             // function, but don't have to create it here.
             std::vector<Expression> args = {pb->state().data, pb->state().cur, pb->state().trim, pb->state().lahead,
@@ -744,8 +744,13 @@ struct ProductionVisitor
             popBuilder();
     }
 
+    // top_level: true if we're called directly for the grammar's root unit, and
+    // don't need to create a function wrapper first.
+    //
     // Returns a boolean expression that's 'true' if a 'stop' was encountered.
-    Expression parseProduction(const Production& p) { return _parseProduction(p, p.meta()); }
+    Expression parseProduction(const Production& p, bool top_level = false) {
+        return _parseProduction(p, top_level, p.meta());
+    }
 
     // Inject parser code to skip a certain regexp pattern in the input. We
     // expect the passed expression to contain a ctor for a RegExp; else this
@@ -1451,7 +1456,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             pstate.lahead_end = builder::id("lahead_end");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
-            visitor.parseProduction(*grammar.root());
+            visitor.parseProduction(*grammar.root(), true);
             builder()->addReturn(state().cur);
             popState();
 
@@ -1486,7 +1491,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             pstate.lahead_end = builder::id("lahead_end");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
-            visitor.parseProduction(*grammar.root());
+            visitor.parseProduction(*grammar.root(), true);
             builder()->addReturn(state().cur);
 
             popState();
@@ -1514,7 +1519,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
         pstate.lahead_end = builder::id("lahead_end");
         pushState(pstate);
         visitor.pushDestination(pstate.self);
-        visitor.parseProduction(*grammar.root());
+        visitor.parseProduction(*grammar.root(), true);
         builder()->addReturn(state().cur);
         popState();
 
