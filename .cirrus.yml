@@ -482,7 +482,7 @@ docker_debian9_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+    - CXXFLAGS=-stdlib=libc++ LDFLAGS=-stdlib=libc++ ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.deb .
