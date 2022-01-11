@@ -24,8 +24,8 @@
 module test;
 
 public type A = unit {
-    a : /A/;
-    b: /B/ &synchronized;
+    a: /A/;
+    b: b"B" &synchronized;
     c: /C/;
     d: /D/ &synchronized;
     e: /E/;

@@ -48,16 +48,16 @@ Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy]   a = A
 [spicy]   failed to parse, will try to synchronize at 'd'
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:28:8)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: expecting 'B' (<...>/synchronized.spicy:28:8)
 [spicy] test::A
 [spicy]   a = A
 [spicy]   failed to parse, will try to synchronize at 'd'
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:28:8)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: expecting 'B' (<...>/synchronized.spicy:28:8)
 [spicy] test::A
 [spicy]   failed to parse, will try to synchronize at 'b'
 Error: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:27:9)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:27:8)
 [spicy] test::B
 [spicy]   x = 49
 Confirmed: [$x=49]
