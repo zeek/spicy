@@ -1,3 +1,12 @@
+1.4.0-dev.151 | 2022-01-13 08:18:29 +0100
+
+  * GH-1092: Strip installation artifacts. (Benjamin Bannier, Corelight)
+
+    This removes debug symbols from installation artifacts. This leads to a
+    marked reduction in their size.
+
+  * Switch configure to use Release mode by default. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.148 | 2022-01-13 08:17:53 +0100
 
   * Use libc++ instead of libstdc++ on debian-9. (Benjamin Bannier, Corelight)
