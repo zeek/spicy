@@ -1,3 +1,19 @@
+1.4.0-dev.148 | 2022-01-13 08:17:53 +0100
+
+  * Use libc++ instead of libstdc++ on debian-9. (Benjamin Bannier, Corelight)
+
+    In libstdc++-10-dev-10.3.0-13 Debian includes the upstream GCC patch
+    2b2d97fc545 without also including at least 4f032929ac9. This leads to
+    errors e.g., triggered from nlohmann/json were `&noexcept` attributes
+    are used inconsistently.
+
+    Since debian-9 should only receive security updates at this point it is
+    unclear to me how such a feature change ended up being backported. At
+    this point it is not clear to me whether it will see another patch
+    release. For these reasons we switch the build over to use libc++
+    instead which comes from the LLVM repo and should still receive reliable
+    updates.
+
 1.4.0-dev.146 | 2022-01-08 10:02:10 +0100
 
   * GH-1076: Do not pass errors inside sink units back up to parent.
