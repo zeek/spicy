@@ -1,3 +1,7 @@
+1.4.0-dev.153 | 2022-01-13 17:12:31 +0100
+
+  * Remove support for EOL centos releases, add centos-stream-8. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.151 | 2022-01-13 08:18:29 +0100
 
   * GH-1092: Strip installation artifacts. (Benjamin Bannier, Corelight)

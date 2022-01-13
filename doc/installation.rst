@@ -74,15 +74,10 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-tgz:`TAR <docker_alpine_3_12>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-7>`
 
-    * - CentOS 7
-      - :package-release-rpm:`RPM <linux_centos_7>`
-      - :package-dev-rpm:`RPM <docker_centos_7>`
-      - :repo:`Dockerfile <docker/Dockerfile.centos-7>`
-
-    * - CentOS 8
-      - :package-release-rpm:`RPM <linux_centos_8>`
-      - :package-dev-rpm:`RPM <docker_centos_8>`
-      - :repo:`Dockerfile <docker/Dockerfile.centos-8>`
+    * - CentOS Stream 8
+      - :package-release-rpm:`RPM <linux_centos_stream_8>`
+      - :package-dev-rpm:`RPM <docker_centos_stream_8>`
+      - :repo:`Dockerfile <docker/Dockerfile.centos-stream-8>`
 
     * - Debian 9
       - :package-release-deb:`DEB <linux_debian9>`
