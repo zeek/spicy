@@ -1247,7 +1247,7 @@ struct ProductionVisitor
         // Process fields in groups of same sync point.
         for ( const auto& group : groups ) {
             const auto& fields = group.first;
-            const auto& syncPoint = group.second;
+            const auto& sync_point = group.second;
 
             assert(! fields.empty());
 
