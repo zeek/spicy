@@ -603,7 +603,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( f.parseType().isA<type::Void>() && ! f.isTransient() )
             error("void fields never store a value and cannot be named", p);
 
-        auto isBasicType = [](const Type& t) {
+        auto is_basic_type = [](const Type& t) {
             return t.isA<type::Bytes>() || t.isA<type::RegExp>() || t.isA<type::SignedInteger>() ||
                    t.isA<type::UnsignedInteger>();
         };
