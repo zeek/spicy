@@ -36,17 +36,21 @@ get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::r
 /** Confirm a unit in trial mode. */
 template<typename U>
 inline void confirm(U& p) {
-    p.__trial_mode.reset();
-    p.__on_0x25_confirmed();
+    // If we are not in trial mode `confirm` is a no-op.
+    if ( p.__trial_mode ) {
+        p.__trial_mode.reset();
+        p.__on_0x25_confirmed();
+    }
 }
 
 /** Reject a unit in trial or any other mode. */
 template<typename U>
 inline void reject(U& p) {
-    p.__on_0x25_rejected();
-
-    if ( const auto& trial_mode = p.__trial_mode )
+    // Only invoke hook if we were actually in trial mode.
+    if ( const auto& trial_mode = p.__trial_mode ) {
+        p.__on_0x25_rejected();
         throw *trial_mode;
+    }
     else
         throw spicy::rt::ParseError("unit rejected outside of trial mode");
 }
