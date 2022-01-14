@@ -1895,9 +1895,8 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
                 break;
             }
     }
-    else {
+    else
         builder()->addMemberCall(state().self, "__on_0x25_error", {}, l);
-    }
 
     guardFeatureCode(unit, {"supports_filters"},
                      [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
