@@ -1208,7 +1208,7 @@ struct ProductionVisitor
         auto sync_points = std::vector<std::optional<uint64_t>>();
         sync_points.reserve(p.fields().size());
         for ( const auto xs : hilti::util::enumerate(p.fields()) ) {
-            const uint64_t fieldCounter = std::get<0>(xs);
+            const uint64_t field_counter = std::get<0>(xs);
 
             bool foundSyncPoint = false;
 
