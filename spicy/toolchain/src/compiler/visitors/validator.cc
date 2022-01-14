@@ -610,7 +610,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
         if ( const auto& c = f.ctor() ) {
             // Check that constants are of a supported type.
-            if ( ! isBasicType(c->type()) )
+            if ( ! is_basic_type(c->type()) )
                 error(fmt("not a parseable constant (%s)", *c), p);
         }
 
