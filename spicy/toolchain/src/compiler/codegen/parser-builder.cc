@@ -1003,7 +1003,7 @@ struct ProductionVisitor
         }
 
         if ( tokens.empty() ) {
-            hilti::logger().error("&synchronized cannot be used on field", p.location());
+            hilti::logger().error("&synchronized cannot be used on field, no lookahead tokens found", p.location());
             return;
         }
 
