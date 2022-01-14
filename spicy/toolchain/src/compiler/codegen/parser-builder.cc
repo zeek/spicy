@@ -1886,10 +1886,10 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         for ( const auto& item : unit.items() )
             if ( const auto& field = item.tryAs<spicy::type::unit::item::Field>();
                  field && AttributeSet::find(field->attributes(), "&synchronized") ) {
-                auto try_mode = builder::member(state().self, "__try_mode");
-                pushBuilder(builder()->addIf(try_mode), [&]() {
+                auto trial_mode = builder::member(state().self, "__trial_mode");
+                pushBuilder(builder()->addIf(trial_mode), [&]() {
                     builder()->addDebugMsg("spicy", "successful sync never confirmed, failing unit");
-                    builder()->addThrow(builder::deref(try_mode));
+                    builder()->addThrow(builder::deref(trial_mode));
                 });
 
                 break;
