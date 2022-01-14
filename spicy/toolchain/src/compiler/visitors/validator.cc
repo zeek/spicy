@@ -655,9 +655,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                     // further.
                 }
             }
-            else if ( const auto& type = f.originalType(); ! isBasicType(type) ) {
+            else if ( const auto& type = f.originalType(); ! isBasicType(type) )
                 error(fmt("&synchronized cannot be used on field of type %s", type), p);
-            }
         }
     }
 
