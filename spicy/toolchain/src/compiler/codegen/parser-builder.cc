@@ -1882,7 +1882,7 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         builder()->addMemberCall(state().self, "__on_0x25_done", {}, l);
         afterHook();
 
-        // If the unit can synchronize check that it has left try mode at this point.
+        // If the unit can synchronize check that it has left trial mode at this point.
         for ( const auto& item : unit.items() )
             if ( const auto& field = item.tryAs<spicy::type::unit::item::Field>();
                  field && AttributeSet::find(field->attributes(), "&synchronized") ) {

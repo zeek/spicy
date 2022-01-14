@@ -33,14 +33,14 @@ extern const hilti::rt::Vector<
     std::optional<std::tuple<hilti::rt::integer::safe<uint64_t>, std::optional<hilti::rt::integer::safe<uint64_t>>>>>*
 get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::rt::type_info::Value& value);
 
-/** Confirm a unit in try mode. */
+/** Confirm a unit in trial mode. */
 template<typename U>
 inline void confirm(U& p) {
     p.__try_mode.reset();
     p.__on_0x25_confirmed();
 }
 
-/** Reject a unit in try or any other mode. */
+/** Reject a unit in trial or any other mode. */
 template<typename U>
 inline void reject(U& p) {
     p.__on_0x25_rejected();
@@ -48,7 +48,7 @@ inline void reject(U& p) {
     if ( const auto& try_mode = p.__try_mode )
         throw *try_mode;
     else
-        throw spicy::rt::ParseError("unit rejected outside of try mode");
+        throw spicy::rt::ParseError("unit rejected outside of trial mode");
 }
 
 } // namespace spicy::rt

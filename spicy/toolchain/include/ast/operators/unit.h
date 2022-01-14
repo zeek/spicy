@@ -388,9 +388,9 @@ BEGIN_METHOD(unit, Confirm)
                                            .id = "confirm",
                                            .args = {},
                                            .doc = R"(
-For a unit it try mode confirm that the unit is successfully synchronized to
+For a unit it trial mode confirm that the unit is successfully synchronized to
 the input; the unit is then put into regular parsing mode again. If the unit is
-not in try mode ``confirm`` has no effect.
+not in trial mode ``confirm`` has no effect.
 )"};
     }
 END_METHOD
@@ -402,9 +402,9 @@ BEGIN_METHOD(unit, Reject)
                                            .id = "reject",
                                            .args = {},
                                            .doc = R"(
-Reject a unit in try mode; this immediately fails parsing of the unit and raises
-the parse error which cause the unit to be put into try mode. If the unit is
-not in try mode this triggers a generic parse error.
+Reject a unit in trial mode; this immediately fails parsing of the unit and raises
+the parse error which causes the unit to be put into trial mode. If the unit is
+not in trial mode this triggers a generic parse error.
 )"};
     }
 END_METHOD
