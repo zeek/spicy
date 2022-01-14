@@ -11,7 +11,7 @@ type A = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -37,7 +37,7 @@ public type B = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -63,7 +63,7 @@ type C = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -90,7 +90,7 @@ public type D = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -117,7 +117,7 @@ type F = struct {
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     weak_ref<spicy_rt::Forward> __forward &internal &needed-by-feature="is_filter";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;

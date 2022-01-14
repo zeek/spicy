@@ -11,7 +11,7 @@ type Priv1 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -37,7 +37,7 @@ public type Pub2 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -63,7 +63,7 @@ type Priv2 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -89,7 +89,7 @@ type Priv3 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -117,7 +117,7 @@ type Priv4 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_x(value_ref<Priv3> __dd);
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
@@ -144,7 +144,7 @@ type Priv5 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -170,7 +170,7 @@ type Priv6 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
@@ -198,7 +198,7 @@ public type Pub3 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_x(value_ref<Priv6> __dd);
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
@@ -231,7 +231,7 @@ public type Priv10 = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<spicy_rt::ParseError> __try_mode &always-emit &internal;
+    optional<spicy_rt::ParseError> __trial_mode &always-emit &internal;
     hook void __on_0x25_init() ;
     hook void __on_0x25_done() ;
     hook void __on_0x25_error() ;
