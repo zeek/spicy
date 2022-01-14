@@ -1103,7 +1103,7 @@ struct ProductionVisitor
         auto body = builder()->addWhile(cond);
         pushBuilder(body);
         auto cookie = pb->initLoopBody();
-        auto stop = parseProduction(p.body()); // x?
+        auto stop = parseProduction(p.body());
         auto b = builder()->addIf(stop);
         b->addBreak();
         pb->finishLoopBody(cookie, p.location());
