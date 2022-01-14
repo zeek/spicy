@@ -82,6 +82,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 return builder::ternary(builder::and_(pb->waitForInputOrEod(len), cond),
                                         builder::sum(builder::begin(state().cur), len), builder::begin(state().cur));
         }
+
+        hilti::util::cannot_be_reached();
     }
 
     result_t operator()(const hilti::ctor::RegExp& c) {
