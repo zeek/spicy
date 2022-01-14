@@ -325,25 +325,13 @@ Expression ParserBuilder::parseLiteral(const Production& p, const std::optional<
                 fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
         builder()->addAssign(result, *e);
 
-        switch ( state().literal_mode ) {
-            case LiteralMode::Default:
-            case LiteralMode::Try: {
-                builder()->addBreak();
-                break;
-            }
+        state().printDebug(builder());
 
-            case LiteralMode::Search: {
-                state().printDebug(builder());
+        pushBuilder(builder()->addIf(atEod()), [&]() { builder()->addBreak(); });
 
-                pushBuilder(builder()->addIf(atEod()), [&]() { builder()->addBreak(); });
-
-                auto [if_, else_] = builder()->addIfElse(builder::unequal(*e, builder::begin(state().cur)));
-                pushBuilder(if_, [&]() { builder()->addBreak(); });
-                pushBuilder(else_, [&]() { advanceInput(builder::integer(1)); });
-
-                break;
-            }
-        }
+        auto [if_, else_] = builder()->addIfElse(builder::unequal(*e, builder::begin(state().cur)));
+        pushBuilder(if_, [&]() { builder()->addBreak(); });
+        pushBuilder(else_, [&]() { advanceInput(builder::integer(1)); });
     });
 
     if ( dst )
