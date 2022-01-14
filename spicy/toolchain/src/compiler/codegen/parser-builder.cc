@@ -1271,7 +1271,7 @@ struct ProductionVisitor
                                 // There is a sync point; run its production w/o consuming input until parsing succeeds
                                 // or we run out of data.
                                 builder()->addDebugMsg("spicy", fmt("failed to parse, will try to synchronize at '%s'",
-                                                                    p.fields()[*syncPoint].meta().field()->id()));
+                                                                    p.fields()[*sync_point].meta().field()->id()));
 
                                 // Remember the original parse error so we can report it in case the sync failed.
                                 builder()->addAssign(builder::member(state().self, "__try_mode"), builder::id("e"));
