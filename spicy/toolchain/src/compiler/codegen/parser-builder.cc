@@ -1234,7 +1234,7 @@ struct ProductionVisitor
             if ( ! groups.empty() && groups.back().second == sync_point )
                 groups.back().first.push_back(i);
             else
-                groups.push_back({{i}, syncPoint});
+                groups.push_back({{i}, sync_point});
         }
 
         auto parseField = [&](const auto& fieldProduction) {
