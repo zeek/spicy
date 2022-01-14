@@ -301,39 +301,37 @@ Expression ParserBuilder::parseLiteral(const Production& p, const std::optional<
             if ( auto e = Visitor(this, p, dst).dispatch(p.expression()) )
                 return std::move(*e);
 
-            hilti::logger().internalError(
-                fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
+            break;
         }
 
-        case LiteralMode::Search: break;
+        case LiteralMode::Search: {
+            // Set up return value.
+            auto result = builder()->addTmp("result", builder::default_(type::Optional(type::stream::Iterator())));
+
+            // Add a loop for search mode.
+            pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
+                auto e = Visitor(this, p, dst).dispatch(p.expression());
+
+                if ( ! e )
+                    hilti::logger().internalError(
+                        fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
+                builder()->addAssign(result, *e);
+
+                state().printDebug(builder());
+
+                pushBuilder(builder()->addIf(atEod()), [&]() { builder()->addBreak(); });
+
+                auto [if_, else_] = builder()->addIfElse(builder::unequal(*e, builder::begin(state().cur)));
+                pushBuilder(if_, [&]() { builder()->addBreak(); });
+                pushBuilder(else_, [&]() { advanceInput(builder::integer(1)); });
+            });
+
+            if ( dst )
+                builder()->addAssign(*dst, builder::deref(result));
+
+            return builder::deref(result);
+        }
     }
 
-    // The following code handles search mode.
-    assert(state().literal_mode == LiteralMode::Search);
-
-    // Set up return value.
-    auto result = builder()->addTmp("result", builder::default_(type::Optional(type::stream::Iterator())));
-
-    // Add a loop for search mode.
-    pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
-        auto e = Visitor(this, p, dst).dispatch(p.expression());
-
-        if ( ! e )
-            hilti::logger().internalError(
-                fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
-        builder()->addAssign(result, *e);
-
-        state().printDebug(builder());
-
-        pushBuilder(builder()->addIf(atEod()), [&]() { builder()->addBreak(); });
-
-        auto [if_, else_] = builder()->addIfElse(builder::unequal(*e, builder::begin(state().cur)));
-        pushBuilder(if_, [&]() { builder()->addBreak(); });
-        pushBuilder(else_, [&]() { advanceInput(builder::integer(1)); });
-    });
-
-    if ( dst )
-        builder()->addAssign(*dst, builder::deref(result));
-
-    return builder::deref(result);
+    hilti::logger().internalError(fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
 }
