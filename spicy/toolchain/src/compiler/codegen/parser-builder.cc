@@ -1687,7 +1687,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             s.addField(std::move(f));
     }
 
-    s.addField(hilti::declaration::Field(ID("__try_mode"),
+    s.addField(hilti::declaration::Field(ID("__trial_mode"),
                                          hilti::type::Optional(builder::typeByID("spicy_rt::ParseError")),
                                          AttributeSet({Attribute("&always-emit"), Attribute("&internal")})));
 
