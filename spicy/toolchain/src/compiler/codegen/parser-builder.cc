@@ -1277,7 +1277,7 @@ struct ProductionVisitor
                                 builder()->addAssign(builder::member(state().self, "__try_mode"), builder::id("e"));
 
                                 builder()->addComment("Loop on the sync field until parsing succeeds");
-                                syncProduction(p.fields()[*syncPoint]);
+                                syncProduction(p.fields()[*sync_point]);
                             });
             }
         }
