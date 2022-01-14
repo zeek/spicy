@@ -642,9 +642,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                     auto it = std::find_if(items.begin(), items.end(),
                                            [](const NodeRef& i) { return i->isA<spicy::type::unit::item::Field>(); });
 
-                    if ( it == items.end() ) {
+                    if ( it == items.end() )
                         error("&synchronized cannot be used on vector field over unit with no fields", p);
-                    }
 
                     if ( auto type = (*it)->as<spicy::type::unit::item::Field>().itemType(); ! isBasicType(type) ) {
                         error(fmt("&synchronized cannot be used on vector field over unit with first field a %s", type),
