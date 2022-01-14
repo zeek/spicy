@@ -979,6 +979,9 @@ struct ProductionVisitor
         popBuilder();
     }
 
+    // Generate code to synchronize on the given production. We assume that the
+    // given production supports some form of lookahead; if the production is
+    // not supported a runtime error will be generated.
     void syncProduction(const Production& p) {
         std::set<Production> tokens;
 
