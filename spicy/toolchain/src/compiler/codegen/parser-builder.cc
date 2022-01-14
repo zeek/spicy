@@ -1251,7 +1251,7 @@ struct ProductionVisitor
 
             assert(! fields.empty());
 
-            auto maybeTry = std::optional<decltype(std::declval<builder::Builder>().addTry())>();
+            auto maybe_try = std::optional<decltype(std::declval<builder::Builder>().addTry())>();
 
             if ( ! syncPoint )
                 for ( auto field : fields )
