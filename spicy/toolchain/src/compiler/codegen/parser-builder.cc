@@ -1229,9 +1229,9 @@ struct ProductionVisitor
 
         // Group adjecent fields with same sync point.
         std::vector<std::pair<std::vector<uint64_t>, std::optional<uint64_t>>> groups;
-        for ( uint64_t i = 0; i < syncPoints.size(); ++i ) {
-            const auto& syncPoint = syncPoints[i];
-            if ( ! groups.empty() && groups.back().second == syncPoint )
+        for ( uint64_t i = 0; i < sync_points.size(); ++i ) {
+            const auto& sync_point = sync_points[i];
+            if ( ! groups.empty() && groups.back().second == sync_point )
                 groups.back().first.push_back(i);
             else
                 groups.push_back({{i}, syncPoint});
