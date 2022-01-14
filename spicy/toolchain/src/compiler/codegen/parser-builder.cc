@@ -1252,10 +1252,9 @@ struct ProductionVisitor
 
             auto maybeTry = std::optional<decltype(std::declval<builder::Builder>().addTry())>();
 
-            if ( ! syncPoint ) {
+            if ( ! syncPoint )
                 for ( auto field : fields )
                     parseField(p.fields()[field]);
-            }
 
             else {
                 auto try_ = builder()->addTry();
