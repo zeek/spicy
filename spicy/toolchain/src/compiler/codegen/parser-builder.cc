@@ -1205,8 +1205,8 @@ struct ProductionVisitor
             skipRegExp(*skip->expression());
 
         // Precompute sync points for each field.
-        auto syncPoints = std::vector<std::optional<uint64_t>>();
-        syncPoints.reserve(p.fields().size());
+        auto sync_points = std::vector<std::optional<uint64_t>>();
+        sync_points.reserve(p.fields().size());
         for ( const auto xs : hilti::util::enumerate(p.fields()) ) {
             const uint64_t fieldCounter = std::get<0>(xs);
 
