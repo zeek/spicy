@@ -645,7 +645,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                     if ( it == items.end() )
                         error("&synchronized cannot be used on vector field over unit with no fields", p);
 
-                    if ( auto type = (*it)->as<spicy::type::unit::item::Field>().itemType(); ! isBasicType(type) )
+                    if ( auto type = (*it)->as<spicy::type::unit::item::Field>().itemType(); ! is_basic_type(type) )
                         error(fmt("&synchronized cannot be used on vector field over unit with first field a %s", type),
                               p);
                 }
