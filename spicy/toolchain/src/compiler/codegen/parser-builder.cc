@@ -1223,8 +1223,8 @@ struct ProductionVisitor
 
 
             // If no sync point was found for this field store a None for it.
-            if ( ! foundSyncPoint )
-                syncPoints.push_back({});
+            if ( ! found_sync_point )
+                sync_points.push_back({});
         }
 
         // Group adjecent fields with same sync point.
