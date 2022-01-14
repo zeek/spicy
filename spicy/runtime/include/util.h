@@ -36,7 +36,7 @@ get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::r
 /** Confirm a unit in trial mode. */
 template<typename U>
 inline void confirm(U& p) {
-    p.__try_mode.reset();
+    p.__trial_mode.reset();
     p.__on_0x25_confirmed();
 }
 
@@ -45,8 +45,8 @@ template<typename U>
 inline void reject(U& p) {
     p.__on_0x25_rejected();
 
-    if ( const auto& try_mode = p.__try_mode )
-        throw *try_mode;
+    if ( const auto& trial_mode = p.__trial_mode )
+        throw *trial_mode;
     else
         throw spicy::rt::ParseError("unit rejected outside of trial mode");
 }
