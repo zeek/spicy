@@ -283,6 +283,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 return builder::begin(builder::ternary(match, new_cur, old_cur));
             }
         }
+
+        hilti::util::cannot_be_reached();
     }
 
     result_t operator()(const hilti::ctor::UnsignedInteger& c) {
