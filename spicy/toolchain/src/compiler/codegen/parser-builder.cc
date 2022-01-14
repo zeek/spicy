@@ -1212,8 +1212,9 @@ struct ProductionVisitor
 
             bool found_sync_point = false;
 
-            for ( auto candidateCounter = fieldCounter + 1; candidateCounter < p.fields().size(); ++candidateCounter )
-                if ( auto candidate = p.fields()[candidateCounter].meta().field();
+            for ( auto candidate_counter = field_counter + 1; candidate_counter < p.fields().size();
+                  ++candidate_counter )
+                if ( auto candidate = p.fields()[candidate_counter].meta().field();
                      candidate && AttributeSet::find(candidate->attributes(), "&synchronized") ) {
                     syncPoints.push_back(candidateCounter);
                     foundSyncPoint = true;
