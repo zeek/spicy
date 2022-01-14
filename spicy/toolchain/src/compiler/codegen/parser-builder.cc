@@ -979,7 +979,7 @@ struct ProductionVisitor
         popBuilder();
     }
 
-    void getSyncProduction(const Production& p) {
+    void syncProduction(const Production& p) {
         std::set<Production> tokens;
 
         if ( p.isLiteral() )
@@ -1274,7 +1274,7 @@ struct ProductionVisitor
                                 builder()->addAssign(builder::member(state().self, "__try_mode"), builder::id("e"));
 
                                 builder()->addComment("Loop on the sync field until parsing succeeds");
-                                getSyncProduction(p.fields()[*syncPoint]);
+                                syncProduction(p.fields()[*syncPoint]);
                             });
             }
         }
