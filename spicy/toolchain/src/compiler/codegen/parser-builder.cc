@@ -1007,11 +1007,6 @@ struct ProductionVisitor
             return;
         }
 
-        auto pstate = state();
-        pstate.lahead = state().lahead;
-        pstate.lahead_end = state().lahead_end;
-        pushState(pstate);
-
         pushBuilder(builder()->addIf(pb->atEod()), [&]() { builder()->addRethrow(); });
 
         state().printDebug(builder());
@@ -1020,8 +1015,6 @@ struct ProductionVisitor
         pushBuilder(builder()->addIf(builder::not_(state().lahead)), [&]() { builder()->addRethrow(); });
 
         builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
-
-        popState();
     }
 
     // Adds a method, and its implementation, to the current parsing struct
