@@ -1210,7 +1210,7 @@ struct ProductionVisitor
         for ( const auto xs : hilti::util::enumerate(p.fields()) ) {
             const uint64_t field_counter = std::get<0>(xs);
 
-            bool foundSyncPoint = false;
+            bool found_sync_point = false;
 
             for ( auto candidateCounter = fieldCounter + 1; candidateCounter < p.fields().size(); ++candidateCounter )
                 if ( auto candidate = p.fields()[candidateCounter].meta().field();
