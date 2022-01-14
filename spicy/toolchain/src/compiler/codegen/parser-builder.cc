@@ -1274,7 +1274,7 @@ struct ProductionVisitor
                                                                     p.fields()[*sync_point].meta().field()->id()));
 
                                 // Remember the original parse error so we can report it in case the sync failed.
-                                builder()->addAssign(builder::member(state().self, "__try_mode"), builder::id("e"));
+                                builder()->addAssign(builder::member(state().self, "__trial_mode"), builder::id("e"));
 
                                 builder()->addComment("Loop on the sync field until parsing succeeds");
                                 syncProduction(p.fields()[*sync_point]);
