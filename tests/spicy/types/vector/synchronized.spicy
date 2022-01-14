@@ -2,18 +2,16 @@
 
 # @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
 
-# @_TEST-EXEC: ${SCRIPTS}/printf '\x00ABAB' | spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00ABABAB' | spicy-driver -d test.hlto >>output
 
 # External sync.
-# @_TEST-EXEC: ${SCRIPTS}/printf 'ABAB' | spicy-driver -d test.hlto >>output 2>&1
-# @_TEST-EXEC: ${SCRIPTS}/printf '1ABAB' | spicy-driver -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'ABAB' | spicy-driver -d test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '1ABAB' | spicy-driver -d test.hlto >>output
 
 # Internal sync.
-# @_TEST-EXEC: ${SCRIPTS}/printf '\x00\x01ABAB' | HILTI_DEBUG=spicy-verbose spicy-driver -d test.hlto >>output 2>&1
-# @_TEST-EXEC: ${SCRIPTS}/printf '\x00\x01' | HILTI_DEBUG=spicy-verbose spicy-driver -d test.hlto >>output 2>&1
-# @_TEST-EXEC: ${SCRIPTS}/printf '\x00AB_AB' | HILTI_DEBUG=spicy-verbose spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC: ${SCRIPTS}/printf 'ABAAB' | HILTI_DEBUG=spicy-verbose spicy-driver -d test.hlto >>output 2>&1
-# @_TEST-EXEC: ${SCRIPTS}/printf 'ABAAB____AB' | HILTI_DEBUG=spicy-verbose spicy-driver -d test.hlto >>output 2>&1
+# FIXME(bbannier): implement this.
+# @_TEST-EXEC: ${SCRIPTS}/printf '\x00\x01ABABAB' | spicy-driver -d test.hlto >>output
+# @_TEST-EXEC: ${SCRIPTS}/printf 'ABAAB____AB' | spicy-driver -d test.hlto >>output
 
 # @TEST-EXEC: btest-diff output
 

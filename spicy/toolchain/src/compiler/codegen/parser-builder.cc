@@ -821,10 +821,10 @@ struct ProductionVisitor
     // has executed, the parsing state will reflect what look-ahead has been
     // found, including `EOD` if `cur` is the end-of-data, and `None` if no
     // expected look-ahead token is found.
-    void getLookAhead(const production::LookAhead& lp, LiteralMode mode = LiteralMode::Try) {
+    void getLookAhead(const production::LookAhead& lp) {
         const auto& [lah1, lah2] = lp.lookAheads();
         auto productions = hilti::util::set_union(lah1, lah2);
-        getLookAhead(productions, lp.symbol(), lp.location(), mode);
+        getLookAhead(productions, lp.symbol(), lp.location());
     }
 
     void getLookAhead(const std::set<Production>& tokens, const std::string& symbol, const Location& location,
@@ -1443,44 +1443,20 @@ struct ProductionVisitor
                 // we might get an EOD next, in which case we need to abort the loop.
                 builder()->addExpression(pb->waitForInputOrEod(builder::integer(1)));
 
-                auto lookahead = [&]() {
-                    auto lah_prod = p.lookAheadProduction();
-                    auto [builder_alt1, builder_alt2] = parseLookAhead(lah_prod);
+                auto lah_prod = p.lookAheadProduction();
+                auto [builder_alt1, builder_alt2] = parseLookAhead(lah_prod);
 
-                    pushBuilder(builder_alt1, [&]() {
-                        // Terminate loop.
-                        builder()->addBreak();
-                    });
+                pushBuilder(builder_alt1, [&]() {
+                    // Terminate loop.
+                    builder()->addBreak();
+                });
 
-                    pushBuilder(builder_alt2, [&]() {
-                        // Parse body.
-                        auto cookie = pb->initLoopBody();
-                        parseProduction(p.body());
-                        pb->finishLoopBody(cookie, p.location());
-                    });
-                };
-
-                if ( auto field = p.meta().field();
-                     field && AttributeSet::find(field->attributes(), "&synchronized") ) {
-                    auto [body, try_] = builder()->addTry();
-                    pushBuilder(body, lookahead);
-
-                    pushBuilder(try_.addCatch(builder::parameter("e", builder::typeByID("spicy_rt::ParseError"))),
-                                [&]() {
-                                    // Search the next lookahead token.
-                                    builder()->addDebugMsg(
-                                        "spicy",
-                                        fmt("failed to parse %s element, will try to synchronize at next element",
-                                            field->id()));
-
-                                    getLookAhead(p.lookAheadProduction(), LiteralMode::Search);
-
-                                    if ( auto ncur = state().ncur )
-                                        builder()->addExpression(*ncur);
-                                });
-                }
-                else
-                    lookahead();
+                pushBuilder(builder_alt2, [&]() {
+                    // Parse body.
+                    auto cookie = pb->initLoopBody();
+                    parseProduction(p.body());
+                    pb->finishLoopBody(cookie, p.location());
+                });
             });
         };
     }
