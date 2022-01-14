@@ -303,8 +303,6 @@ Expression ParserBuilder::parseLiteral(const Production& p, const std::optional<
 
             hilti::logger().internalError(
                 fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
-
-            hilti::util::cannot_be_reached();
         }
 
         case LiteralMode::Search: break;
