@@ -99,138 +99,85 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
             pb->cg()->addDeclaration(d);
         }
 
+        auto parse = [&](std::optional<Expression> result) -> Expression {
+            auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
+            if ( ! result )
+                result = destination(type::Bytes());
+
+            pushBuilder(have_lah);
+            builder()->addAssert(builder::equal(state().lahead, builder::integer(production.tokenID())),
+                                 "unexpected token to consume");
+            pb->consumeLookAhead(*result);
+            popBuilder();
+
+            pushBuilder(no_lah);
+
+            builder()->addLocal(ID("ncur"), state().cur);
+            auto ms = builder::local("ms", builder::memberCall(builder::id(re), "token_matcher", {}));
+            auto body = builder()->addWhile(ms, builder::bool_(true));
+            pushBuilder(body);
+
+            builder()->addLocal(ID("rc"), hilti::type::SignedInteger(32));
+
+            builder()->addAssign(builder::tuple({builder::id("rc"), builder::id("ncur")}),
+                                 builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}), c.meta());
+
+            auto switch_ = builder()->addSwitch(builder::id("rc"), c.meta());
+
+            auto no_match_try_again = switch_.addCase(builder::integer(-1));
+            pushBuilder(no_match_try_again);
+            auto pstate = pb->state();
+            pstate.self = hilti::expression::UnresolvedID(ID("self"));
+            pstate.cur = builder::id("ncur");
+            pb->pushState(std::move(pstate));
+
+            builder()->addComment("NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)");
+            builder()->addLocal(ID("more_data"), pb->waitForInputOrEod());
+
+            pb->popState();
+            builder()->addContinue();
+            popBuilder();
+
+            auto no_match_error = switch_.addCase(builder::integer(0));
+            pushBuilder(no_match_error);
+            pb->parseError("failed to match regular expression", c.meta());
+            popBuilder();
+
+            auto match = switch_.addDefault();
+            pushBuilder(match);
+
+            if ( state().captures )
+                builder()->addAssign(*state().captures,
+                                     builder::memberCall(builder::id("ms"), "captures", {state().data}));
+
+            builder()->addAssign(*result,
+                                 builder::memberCall(state().cur, "sub", {builder::begin(builder::id("ncur"))}));
+            pb->setInput(builder::id("ncur"));
+            builder()->addBreak();
+            popBuilder();
+
+            popBuilder();
+
+            popBuilder();
+
+            return *result;
+        };
+
+        std::optional<Expression> result;
+
         switch ( state().literal_mode ) {
             case LiteralMode::Default: {
-                auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
-                auto dst = destination(type::Bytes());
-
-                pushBuilder(have_lah);
-                builder()->addAssert(builder::equal(state().lahead, builder::integer(production.tokenID())),
-                                     "unexpected token to consume");
-                pb->consumeLookAhead(dst);
-                popBuilder();
-
-                pushBuilder(no_lah);
-
-                builder()->addLocal(ID("ncur"), state().cur);
-                auto ms = builder::local("ms", builder::memberCall(builder::id(re), "token_matcher", {}));
-                auto body = builder()->addWhile(ms, builder::bool_(true));
-                pushBuilder(body);
-
-                builder()->addLocal(ID("rc"), hilti::type::SignedInteger(32));
-
-                builder()->addAssign(builder::tuple({builder::id("rc"), builder::id("ncur")}),
-                                     builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}),
-                                     c.meta());
-
-                auto switch_ = builder()->addSwitch(builder::id("rc"), c.meta());
-
-                auto no_match_try_again = switch_.addCase(builder::integer(-1));
-                pushBuilder(no_match_try_again);
-                auto pstate = pb->state();
-                pstate.self = hilti::expression::UnresolvedID(ID("self"));
-                pstate.cur = builder::id("ncur");
-                pb->pushState(std::move(pstate));
-
-                builder()->addComment("NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)");
-                builder()->addLocal(ID("more_data"), pb->waitForInputOrEod());
-
-                pb->popState();
-                builder()->addContinue();
-                popBuilder();
-
-                auto no_match_error = switch_.addCase(builder::integer(0));
-                pushBuilder(no_match_error);
-                pb->parseError("failed to match regular expression", c.meta());
-                popBuilder();
-
-                auto match = switch_.addDefault();
-                pushBuilder(match);
-
-                if ( state().captures )
-                    builder()->addAssign(*state().captures,
-                                         builder::memberCall(builder::id("ms"), "captures", {state().data}));
-
-                builder()->addAssign(dst,
-                                     builder::memberCall(state().cur, "sub", {builder::begin(builder::id("ncur"))}));
-                pb->setInput(builder::id("ncur"));
-                builder()->addBreak();
-                popBuilder();
-
-                popBuilder();
-
-                popBuilder();
-
-                return dst;
+                return parse(result);
             }
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try: {
-                auto result = builder()->addTmp("result", state().cur);
-
-                auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
-
-                pushBuilder(have_lah);
-                builder()->addAssert(builder::equal(state().lahead, builder::integer(production.tokenID())),
-                                     "unexpected token to consume");
-                pb->consumeLookAhead();
-                builder()->addAssign(result, state().cur);
-
-                popBuilder();
-
-                pushBuilder(no_lah);
-
-                builder()->addLocal(ID("ncur"), state().cur);
-                auto ms = builder::local("ms", builder::memberCall(builder::id(re), "token_matcher", {}));
-                auto body = builder()->addWhile(ms, builder::bool_(true));
-                pushBuilder(body);
-
-                builder()->addLocal(ID("rc"), hilti::type::SignedInteger(32));
-
-                builder()->addAssign(builder::tuple({builder::id("rc"), builder::id("ncur")}),
-                                     builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}),
-                                     c.meta());
-
-                auto switch_ = builder()->addSwitch(builder::id("rc"), c.meta());
-
-                auto no_match_try_again = switch_.addCase(builder::integer(-1));
-                pushBuilder(no_match_try_again);
-                auto pstate = pb->state();
-                pstate.self = hilti::expression::UnresolvedID(ID("self"));
-                pstate.cur = builder::id("ncur");
-                pb->pushState(std::move(pstate));
-
-                builder()->addComment("NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)");
-                builder()->addLocal(ID("more_data"), pb->waitForInputOrEod());
-
-                pb->popState();
-                builder()->addContinue();
-                popBuilder();
-
-                auto no_match_error = switch_.addCase(builder::integer(0));
-                pushBuilder(no_match_error);
-                pb->parseError("failed to match regular expression", c.meta());
-                popBuilder();
-
-                auto match = switch_.addDefault();
-                pushBuilder(match);
-
-                if ( state().captures )
-                    builder()->addAssign(*state().captures,
-                                         builder::memberCall(builder::id("ms"), "captures", {state().data}));
-
-                pb->setInput(builder::id("ncur"));
-                builder()->addAssign(result, state().cur);
-                builder()->addBreak();
-                popBuilder();
-
-                popBuilder();
-
-                popBuilder();
-
-                return result;
+                result = builder()->addTmp("result", state().cur);
+                return parse(result);
             }
         }
+
+        hilti::util::cannot_be_reached();
     }
 
     result_t operator()(const hilti::expression::Ctor& c) { return *dispatch(c.ctor()); }
