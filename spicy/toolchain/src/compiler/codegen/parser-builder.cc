@@ -978,39 +978,71 @@ struct ProductionVisitor
         popBuilder();
     }
 
-    // Generate code to synchronize on the given production. We assume that the
-    // given production supports some form of lookahead; if the production is
-    // not supported a runtime error will be generated.
-    void syncProduction(const Production& p) {
-        std::set<Production> tokens;
+    // Get productions for lookaheads of a given production. If the passed
+    // production is non-terminal this function recurses until it finds
+    // lookaheads.
+    Result<std::set<Production>> getLookaheadProductions(const Production& p) {
+        // Validation.
+        if ( auto while_ = p.tryAs<production::While>(); while_ && while_->expression() )
+            return hilti::result::Error("&synchronized cannot be used on while loops with conditions");
 
+        std::set<Production> result;
+
+        // TODO(bbannier): We should fix the implementation here by generalizing Grammar
+        // code, see https://github.com/zeek/spicy/pull/1054#discussion_r791674006.
+
+        // Bottom cases for recursion.
         if ( p.isLiteral() )
-            tokens.insert(p);
-
-        else if ( auto loop = p.tryAs<production::While>() )
-            tokens = std::get<1>(loop->lookAheadProduction().lookAheads());
-
-        else if ( p.isNonTerminal() ) {
-            auto rhss = std::vector<std::vector<Production>>();
-
-            if ( const auto resolved = p.tryAs<production::Resolved>() )
-                rhss = grammar.resolved(*resolved).rhss();
-            else
-                rhss = p.rhss();
-
-            for ( const auto& rs : rhss )
-                for ( const auto& r : rs )
-                    if ( r.isLiteral() )
-                        tokens.insert(r);
+            result.insert(p);
+        else if ( auto lahead = p.tryAs<production::LookAhead>() ) {
+            auto [alt1, alt2] = lahead->lookAheads();
+            for ( const auto& alt : {alt1, alt2} )
+                result.insert(alt.begin(), alt.end());
         }
 
-        if ( tokens.empty() ) {
+        // Otherwise recurse.
+        else if ( auto resolved = p.tryAs<production::Resolved>(); resolved || p.isNonTerminal() ) {
+            auto rhss = resolved ? grammar.resolved(*resolved).rhss() : p.rhss();
+
+            for ( const auto& rs : rhss )
+                for ( const auto& r : rs ) {
+                    auto tokens = getLookaheadProductions(r);
+
+                    if ( ! tokens )
+                        return tokens.error();
+
+                    for ( const auto& token : *tokens ) {
+                        auto productions = getLookaheadProductions(token);
+
+                        if ( ! productions )
+                            return hilti::result::Error(productions.error());
+
+                        for ( auto p : *productions )
+                            result.insert(p);
+                    }
+                }
+        }
+        return result;
+    }
+
+    // Generate code to synchronize on the given production. We assume that the
+    // given production supports some form of lookahead; if the production is
+    // not supported an error will be generated.
+    void syncProduction(const Production& p) {
+        auto tokens = getLookaheadProductions(p);
+
+        if ( ! tokens ) {
+            hilti::logger().error(tokens.error(), p.location());
+            return;
+        }
+
+        if ( tokens->empty() ) {
             hilti::logger().error("&synchronized cannot be used on field, no lookahead tokens found", p.location());
             return;
         }
 
         state().printDebug(builder());
-        getLookAhead(tokens, p.symbol(), p.location(), LiteralMode::Search);
+        getLookAhead(*tokens, p.symbol(), p.location(), LiteralMode::Search);
 
         pushBuilder(builder()->addIf(builder::or_(pb->atEod(), builder::not_(state().lahead))),
                     [&]() { builder()->addRethrow(); });
@@ -1265,8 +1297,8 @@ struct ProductionVisitor
                 pushBuilder(try_.second.addCatch(
                                 builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
                             [&]() {
-                                // There is a sync point; run its production w/o consuming input until parsing succeeds
-                                // or we run out of data.
+                                // There is a sync point; run its production w/o consuming input until parsing
+                                // succeeds or we run out of data.
                                 builder()->addDebugMsg("spicy", fmt("failed to parse, will try to synchronize at '%s'",
                                                                     p.fields()[*sync_point].meta().field()->id()));
 
@@ -1424,7 +1456,7 @@ struct ProductionVisitor
             });
         };
     }
-};
+}; // namespace spicy::detail::codegen
 
 } // namespace spicy::detail::codegen
 

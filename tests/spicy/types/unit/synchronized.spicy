@@ -9,6 +9,11 @@
 # @TEST-EXEC-FAIL: printf 'AE' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
 # @TEST-EXEC-FAIL: printf 'A' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
 # @TEST-EXEC-FAIL: printf '123' | HILTI_DEBUG=spicy spicy-driver -d -p test::A test.hlto >>output 2>&1
+
+# @TEST-EXEC: printf 'BEGIN123END' | HILTI_DEBUG=spicy spicy-driver -d -p test::E test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'BEGINabcEND' | HILTI_DEBUG=spicy spicy-driver -d -p test::E test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'abcEND' | HILTI_DEBUG=spicy spicy-driver -d -p test::E test.hlto >>output 2>&1
+# @TEST-EXEC: printf '123END' | HILTI_DEBUG=spicy spicy-driver -d -p test::E test.hlto >>output 2>&1
 #
 # Effects of `confirm`/`reject` outside of synchronization.
 # @TEST-EXEC: printf '1' | HILTI_DEBUG=spicy spicy-driver -d -p test::B test.hlto >>output 2>&1
@@ -62,4 +67,32 @@ public type D = unit {
     on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }
     on %error { print "Error: %s" % self; }
+};
+
+# Type for testing lookahead from switch.
+public type E = unit {
+     : b"BEGIN";
+    a: E_A &synchronized;
+     : b"END";
+
+    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};
+
+type E_A = unit {
+    switch {
+        -> x: E_X;
+        -> y: E_Y;
+    };
+};
+
+type E_X = unit {
+    x: /123/;
+};
+
+type E_Y = unit {
+    y: /abc/;
 };
