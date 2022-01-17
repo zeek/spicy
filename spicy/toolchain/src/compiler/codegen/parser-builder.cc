@@ -994,7 +994,6 @@ struct ProductionVisitor
             result.insert(p);
         else if ( auto lahead = p.tryAs<production::LookAhead>() ) {
             auto [alt1, alt2] = lahead->lookAheads();
-            // for ( const auto& alt : {alt2} ) // FIXME(bbannier)
             for ( const auto& alt : {alt1, alt2} )
                 result.insert(alt.begin(), alt.end());
         }
