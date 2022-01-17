@@ -56,11 +56,9 @@ Error: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (<...>/synchronized.spicy:27:8)
 [spicy] test::B
 [spicy]   x = 49
-Confirmed: [$x=49]
 Done: [$x=49]
 [spicy] test::C
 [spicy]   x = 49
-Rejected: [$x=49]
 Error: [$x=49]
 [error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: unit rejected outside of trial mode
 [spicy] test::D
