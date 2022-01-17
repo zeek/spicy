@@ -1152,7 +1152,7 @@ struct ProductionVisitor
         if ( const auto& a = AttributeSet::find(p.attributes(), "&size") ) {
             // Limit input to the specified length.
             auto length = builder::coerceTo(*a->valueAsExpression(), type::UnsignedInteger(64));
-            auto limited = builder()->addTmp("limited_", builder::memberCall(state().cur, "limit", {length}));
+            auto limited = builder()->addTmp("limited_field", builder::memberCall(state().cur, "limit", {length}));
 
             // Establish limited view, remembering position to continue at.
             auto pstate = state();
