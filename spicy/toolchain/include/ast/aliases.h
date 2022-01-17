@@ -69,6 +69,11 @@ using Flavor = hilti::type::function::Flavor;
 }
 #endif
 
+namespace type {
+// Returns whether the passed type is a basic type so that it can e.g., support lookahead parsing.
+bool isBasicType(const Type& t);
+} // namespace type
+
 namespace node {
 
 using None = hilti::node::None;

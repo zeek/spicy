@@ -603,14 +603,9 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( f.parseType().isA<type::Void>() && ! f.isTransient() )
             error("void fields never store a value and cannot be named", p);
 
-        auto is_basic_type = [](const Type& t) {
-            return t.isA<type::Bytes>() || t.isA<type::RegExp>() || t.isA<type::SignedInteger>() ||
-                   t.isA<type::UnsignedInteger>();
-        };
-
         if ( const auto& c = f.ctor() ) {
             // Check that constants are of a supported type.
-            if ( ! is_basic_type(c->type()) )
+            if ( ! type::isBasicType(c->type()) )
                 error(fmt("not a parseable constant (%s)", *c), p);
         }
 
@@ -645,7 +640,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                     if ( it == items.end() )
                         error("&synchronized cannot be used on vector field over unit with no fields", p);
 
-                    if ( auto type = (*it)->as<spicy::type::unit::item::Field>().itemType(); ! is_basic_type(type) )
+                    if ( auto type = (*it)->as<spicy::type::unit::item::Field>().itemType(); ! type::isBasicType(type) )
                         error(fmt("&synchronized cannot be used on vector field over unit with first field a %s", type),
                               p);
                 }
@@ -655,7 +650,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                     // further.
                 }
             }
-            else if ( const auto& type = f.originalType(); ! is_basic_type(type) ) {
+            else if ( const auto& type = f.originalType(); ! type::isBasicType(type) ) {
                 // TODO(bbannier): Validate that a unit type can be used to synchronize,
                 // i.e., it is suitable for lookahead parsing.
             }

@@ -40,6 +40,7 @@ autogen_dispatchers(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/compiler/detail/codegen/productions.decl)
 
 set(SOURCES_COMPILER
+    src/ast/aliases.cc
     src/ast/hook.cc
     src/ast/types/bitfield.cc
     src/ast/types/unit.cc
