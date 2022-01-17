@@ -913,7 +913,7 @@ struct ProductionVisitor
             };
 
             switch ( mode ) {
-                case LiteralMode::Default:
+                case LiteralMode::Default: hilti::util::cannot_be_reached();
                 case LiteralMode::Try: {
                     incremental_matching();
                     break;
