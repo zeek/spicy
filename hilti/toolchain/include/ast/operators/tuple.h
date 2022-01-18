@@ -43,6 +43,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, Index)
     }
 
     bool isLhs() const { return true; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Tuple(type::Wildcard())}, {.type = type::UnsignedInteger(64)}};
@@ -80,6 +81,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
     }
 
     bool isLhs() const { return true; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Tuple(type::Wildcard())}, {.type = type::Member(type::Wildcard()), .doc = "<id>"}};
@@ -105,6 +107,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, CustomAssign)
     }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         // The operator gets instantiated only through the normalizer, but this is used for documentation.

@@ -54,6 +54,7 @@ BEGIN_OPERATOR_CUSTOM(struct_, Unset)
     Type result(const hilti::node::Range<Expression>& ops) const { return type::void_; }
 
     bool isLhs() const { return true; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Struct(type::Wildcard()), .doc = "struct"},
@@ -80,6 +81,7 @@ BEGIN_OPERATOR_CUSTOM_x(struct_, MemberNonConst, Member)
     }
 
     bool isLhs() const { return true; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Struct(type::Wildcard()), .doc = "struct"},
@@ -108,6 +110,7 @@ BEGIN_OPERATOR_CUSTOM_x(struct_, MemberConst, Member)
     }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::constant(type::Struct(type::Wildcard())), .doc = "struct"},
@@ -136,6 +139,7 @@ BEGIN_OPERATOR_CUSTOM(struct_, TryMember)
     }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Struct(type::Wildcard()), .doc = "struct"},
@@ -162,6 +166,7 @@ BEGIN_OPERATOR_CUSTOM(struct_, HasMember)
     Type result(const hilti::node::Range<Expression>& /* ops */) const { return type::Bool(); }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::constant(type::Struct(type::Wildcard())), .doc = "struct"},
@@ -200,6 +205,7 @@ public:
         std::vector<operator_::Operand> operands() const { return _operands; }
         Type result(const hilti::node::Range<Expression>& /* ops */) const { return _result; }
         bool isLhs() const { return false; }
+        auto priority() const { return hilti::operator_::Priority::Normal; }
         void validate(const expression::ResolvedOperator& /* i */, operator_::position_t p) const {}
         std::string doc() const { return "<dynamic - no doc>"; }
         std::string docNamespace() const { return "<dynamic - no ns>"; }

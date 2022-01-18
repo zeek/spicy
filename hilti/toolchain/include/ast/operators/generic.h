@@ -28,6 +28,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
     }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Type_(type::Wildcard())}, {.type = type::Tuple(type::Wildcard())}};
@@ -52,6 +53,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Begin)
     }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {
@@ -76,6 +78,7 @@ BEGIN_OPERATOR_CUSTOM(generic, End)
     }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {
@@ -105,6 +108,7 @@ BEGIN_OPERATOR_CUSTOM(generic, New)
     }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {
@@ -154,6 +158,7 @@ public:
             return ops[1].as<expression::Type_>().typeValue();
         }
         bool isLhs() const { return false; }
+        auto priority() const { return hilti::operator_::Priority::Normal; }
         void validate(const expression::ResolvedOperator& /* i */, operator_::position_t /* p */) const {}
         std::string doc() const { return "<dynamic - no doc>"; }
         std::string docNamespace() const { return "<dynamic - no ns>"; }

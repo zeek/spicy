@@ -55,6 +55,7 @@ BEGIN_OPERATOR_CUSTOM(bitfield, Member)
     }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<hilti::operator_::Operand> operands() const {
         return {{.type = type::constant(type::Bitfield(type::Wildcard())), .doc = "bitfield"},
