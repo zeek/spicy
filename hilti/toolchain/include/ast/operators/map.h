@@ -57,18 +57,21 @@ STANDARD_OPERATOR_2(map, Unequal, type::Bool(), type::constant(type::Map(type::W
                     operator_::sameTypeAs(0, "map<*>"), "Compares two maps element-wise.");
 STANDARD_OPERATOR_2(map, In, type::Bool(), type::Any(), type::constant(type::Map(type::Wildcard())),
                     "Returns true if an element is part of the map.");
-STANDARD_OPERATOR_2(map, Delete, type::void_, type::Map(type::Wildcard()), detail::constantKeyType(0, "element"),
+STANDARD_OPERATOR_2(map, Delete, type::void_, type::Map(type::Wildcard()), detail::constantKeyType(0, "key"),
                     "Removes an element from the map.")
 
-STANDARD_OPERATOR_2x(map, IndexConst, Index, operator_::constantElementType(0),
-                     type::constant(type::Map(type::Wildcard())), type::Any(),
-                     "Returns the map's element for the given key. The key must exist, otherwise the operation "
-                     "will throw a runtime error.");
-STANDARD_OPERATOR_2x_lhs(map, IndexNonConst, Index, operator_::elementType(0), type::Map(type::Wildcard()), type::Any(),
+STANDARD_OPERATOR_2x_low_prio(
+    map, IndexConst, Index, operator_::constantElementType(0), type::constant(type::Map(type::Wildcard())),
+    detail::constantKeyType(0, "key"),
+    "Returns the map's element for the given key. The key must exist, otherwise the operation "
+    "will throw a runtime error.");
+STANDARD_OPERATOR_2x_lhs(map, IndexNonConst, Index, operator_::elementType(0), type::Map(type::Wildcard()),
+                         detail::constantKeyType(0, "key"),
                          "Returns the map's element for the given key. The key must exist, otherwise the operation "
                          "will throw a runtime error.");
 
-STANDARD_OPERATOR_3(map, IndexAssign, type::void_, type::Map(type::Wildcard()), type::Any(), type::Any(),
+STANDARD_OPERATOR_3(map, IndexAssign, type::void_, type::Map(type::Wildcard()), detail::constantKeyType(0, "key"),
+                    type::Any(),
                     "Updates the map value for a given key. If the key does not exist a new element is inserted.");
 
 BEGIN_METHOD(map, Get)

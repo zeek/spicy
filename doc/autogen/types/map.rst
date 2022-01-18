@@ -16,7 +16,7 @@
 
     Returns an iterator to the beginning of the container's content.
 
-.. spicy:operator:: map::Delete void delete <sp> t:map[element]
+.. spicy:operator:: map::Delete void delete <sp> t:map[key]
 
     Removes an element from the map.
 
@@ -36,12 +36,12 @@
 
     Performs the inverse of the corresponding ``in`` operation.
 
-.. spicy:operator:: map::Index <type~of~element> t:map[<any>]
+.. spicy:operator:: map::Index <type~of~element> t:map[key]
 
     Returns the map's element for the given key. The key must exist,
     otherwise the operation will throw a runtime error.
 
-.. spicy:operator:: map::IndexAssign void t:map[<any>] = <any>
+.. spicy:operator:: map::IndexAssign void t:map[key] = <any>
 
     Updates the map value for a given key. If the key does not exist a new
     element is inserted.

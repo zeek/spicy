@@ -59,6 +59,7 @@ private:                                                                        
     }                                                                                                                  \
                                                                                                                        \
     bool isLhs() const { return signature().lhs; }                                                                     \
+    hilti::operator_::Priority priority() const { return signature().priority; }                                       \
                                                                                                                        \
     void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::position_t /* p */) const {}   \
                                                                                                                        \
@@ -152,6 +153,19 @@ private:                                                                        
     END_OPERATOR
 
 /**
+ * Shortcut version for defining a low priority operator with 2 operands.
+ */
+#define STANDARD_OPERATOR_2x_low_prio(ns, cls, op, result_, ty_op1, ty_op2, doc_)                                      \
+    __BEGIN_OPERATOR_CUSTOM(ns, op, cls)                                                                               \
+    auto signature() const {                                                                                           \
+        return hilti::operator_::Signature{.priority = operator_::Priority::Low,                                       \
+                                           .result = result_,                                                          \
+                                           .args = {{.id = "op0", .type = ty_op1}, {.id = "op1", .type = ty_op2}},     \
+                                           .doc = doc_};                                                               \
+    }                                                                                                                  \
+    END_OPERATOR
+
+/**
  * Shortcut version for defining a straight-forward LHS operator with 2 operands.
  */
 #define STANDARD_OPERATOR_2x_lhs(ns, cls, op, result_, ty_op1, ty_op2, doc_)                                           \
@@ -215,6 +229,7 @@ private:                                                                        
     }                                                                                                                  \
                                                                                                                        \
     bool isLhs() const { return false; }                                                                               \
+    hilti::operator_::Priority priority() const { return signature().priority; }                                       \
                                                                                                                        \
     void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::position_t /* p */) const {}   \
                                                                                                                        \
@@ -251,6 +266,7 @@ private:                                                                        
     }                                                                                                                  \
                                                                                                                        \
     bool isLhs() const { return false; }                                                                               \
+    hilti::operator_::Priority priority() const { return signature().priority; }                                       \
                                                                                                                        \
     void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::position_t /* p */) const {}   \
                                                                                                                        \
