@@ -6,7 +6,7 @@
 
 using namespace hilti;
 
-bool spicy::type::isBasicType(const Type& t) {
+bool spicy::type::supportsLiterals(const Type& t) {
     return t.isA<type::Bytes>() || t.isA<type::RegExp>() || t.isA<type::SignedInteger>() ||
            t.isA<type::UnsignedInteger>();
 }

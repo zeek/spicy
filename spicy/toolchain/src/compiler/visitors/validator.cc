@@ -605,7 +605,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
         if ( const auto& c = f.ctor() ) {
             // Check that constants are of a supported type.
-            if ( ! type::isBasicType(c->type()) )
+            if ( ! type::supportsLiterals(c->type()) )
                 error(fmt("not a parseable constant (%s)", *c), p);
         }
 
@@ -640,7 +640,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                     if ( it == items.end() )
                         error("&synchronized cannot be used on vector field over unit with no fields", p);
 
-                    if ( auto type = (*it)->as<spicy::type::unit::item::Field>().itemType(); ! type::isBasicType(type) )
+                    if ( auto type = (*it)->as<spicy::type::unit::item::Field>().itemType();
+                         ! type::supportsLiterals(type) )
                         error(fmt("&synchronized cannot be used on vector field over unit with first field a %s", type),
                               p);
                 }
@@ -650,7 +651,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                     // further.
                 }
             }
-            else if ( const auto& type = f.originalType(); ! type::isBasicType(type) ) {
+            else if ( const auto& type = f.originalType(); ! type::supportsLiterals(type) ) {
                 // TODO(bbannier): Validate that a unit type can be used to synchronize,
                 // i.e., it is suitable for lookahead parsing.
             }
