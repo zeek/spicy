@@ -1,0 +1,25 @@
+# @TEST-DOC: Exercises literal types we can synchronize on.
+
+# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
+#
+# @TEST-EXEC: ${SCRIPTS}/printf 'A\x06CD' | spicy-dump -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '\x06CD' | spicy-dump -d test.hlto >>output 2>&1
+#
+# @TEST-EXEC: ${SCRIPTS}/printf 'ACD' | spicy-dump -d test.hlto >>output 2>&1
+#
+# @TEST-EXEC: ${SCRIPTS}/printf 'A\x06D' | spicy-dump -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'A\x06AD' | spicy-dump -d test.hlto >>output 2>&1
+#
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type X = unit {
+    a: b"A";
+    b: uint8(6) &synchronized;
+    c: b"C" &synchronized;
+    d: /D/ &synchronized;
+
+    on %synced { self.confirm(); }
+    on %error { print self; }
+};
