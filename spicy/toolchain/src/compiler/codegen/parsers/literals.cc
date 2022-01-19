@@ -257,7 +257,8 @@ Expression ParserBuilder::parseLiteral(const Production& p, const std::optional<
 
         case LiteralMode::Search: {
             // Set up return value.
-            auto result = builder()->addTmp("result", builder::default_(type::Optional(type::stream::Iterator())));
+            auto result =
+                builder()->addTmp("search_result", builder::default_(type::Optional(type::stream::Iterator())));
 
             // Add a loop for search mode.
             pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
