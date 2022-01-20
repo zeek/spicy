@@ -38,7 +38,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
     bool include_implementation;
 
     std::vector<cxx::declaration::Global> globals;
-    std::vector<cxx::declaration::Global> constants;
+    std::vector<cxx::declaration::Constant> constants;
 
     static void addDeclarations(CodeGen* cg, const Node& module, const ID& module_id, cxx::Unit* unit,
                                 bool include_implementation) {
@@ -135,10 +135,9 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
     }
 
     void operator()(const declaration::Constant& n, position_t p) {
-        auto x = cxx::declaration::Global{.id = {cg->unit()->cxxNamespace(), n.id()},
-                                          .type = cg->compile(n.type(), codegen::TypeUsage::Storage),
-                                          .init = cg->compile(n.value()),
-                                          .linkage = "const"};
+        auto x = cxx::declaration::Constant{.id = {cg->unit()->cxxNamespace(), n.id()},
+                                            .type = cg->compile(n.type(), codegen::TypeUsage::Storage),
+                                            .init = cg->compile(n.value())};
 
         constants.push_back(x);
     }

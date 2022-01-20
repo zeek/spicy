@@ -1,0 +1,16 @@
+# @TEST-EXEC: hiltic -j %INPUT
+# @TEST-DOC: Check usage imported constants. Regression test for #1079.
+
+module B {
+
+import A;
+
+assert A::x == 64;
+
+}
+
+@TEST-START-FILE a.hlt
+module A {
+public const uint<32> x = 64;
+}
+@TEST-END-FILE
