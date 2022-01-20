@@ -62,7 +62,7 @@ public:
         return *this;
     }
 
-    Iterator operator++(int) {
+    const Iterator operator++(int) {
         auto ret = *this;
         ++(*this);
         return ret;
@@ -117,7 +117,7 @@ public:
         return *this;
     }
 
-    ConstIterator operator++(int) {
+    const ConstIterator operator++(int) {
         auto ret = *this;
         ++(*this);
         return ret;
