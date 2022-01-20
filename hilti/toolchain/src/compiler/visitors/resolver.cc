@@ -928,36 +928,57 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
         return r;
     };
 
-    for ( auto style : styles ) {
-        if ( disallow_type_changes )
-            style |= CoercionStyle::DisallowTypeChanges;
+    auto try_all_candidates = [&](std::vector<Node>* resolved, std::set<operator_::Kind>* kinds_resolved,
+                                  operator_::Priority priority) {
+        for ( auto style : styles ) {
+            if ( disallow_type_changes )
+                style |= CoercionStyle::DisallowTypeChanges;
 
-        HILTI_DEBUG(logging::debug::Operator, util::fmt("style: %s", to_string(style)));
-        logging::DebugPushIndent _(logging::debug::Operator);
-
-        std::vector<Node> resolved;
-
-        for ( const auto& c : candidates ) {
-            HILTI_DEBUG(logging::debug::Operator, util::fmt("candidate: %s", c.typename_()));
+            HILTI_DEBUG(logging::debug::Operator, util::fmt("style: %s", to_string(style)));
             logging::DebugPushIndent _(logging::debug::Operator);
 
-            if ( auto r = try_candidate(c, operands, style, "candidate matches") )
-                resolved.emplace_back(std::move(*r));
-            else {
-                // Try to swap the operators for commutative operators.
-                if ( operator_::isCommutative(c.kind()) && operands.size() == 2 ) {
-                    if ( auto r = try_candidate(c, node::Range<Expression>({operands[1], operands[0]}), style,
-                                                "candidate matches with operands swapped") )
-                        resolved.emplace_back(std::move(*r));
+            for ( const auto& c : candidates ) {
+                if ( priority != c.priority() )
+                    // Not looking at operators of this priority right now.
+                    continue;
+
+                if ( priority == operator_::Priority::Low && kinds_resolved->find(c.kind()) != kinds_resolved->end() )
+                    // Already have a higher priority match for this operator kind.
+                    continue;
+
+                HILTI_DEBUG(logging::debug::Operator, util::fmt("candidate: %s", c.typename_()));
+                logging::DebugPushIndent _(logging::debug::Operator);
+
+                if ( auto r = try_candidate(c, operands, style, "candidate matches") ) {
+                    kinds_resolved->insert(c.kind());
+                    resolved->emplace_back(std::move(*r));
+                }
+                else {
+                    // Try to swap the operators for commutative operators.
+                    if ( operator_::isCommutative(c.kind()) && operands.size() == 2 ) {
+                        if ( auto r = try_candidate(c, node::Range<Expression>({operands[1], operands[0]}), style,
+                                                    "candidate matches with operands swapped") ) {
+                            kinds_resolved->insert(c.kind());
+                            resolved->emplace_back(std::move(*r));
+                        }
+                    }
                 }
             }
+
+            if ( resolved->size() )
+                return;
         }
+    };
 
-        if ( resolved.size() )
-            return resolved;
-    }
+    std::set<operator_::Kind> kinds_resolved;
+    std::vector<Node> resolved;
 
-    return {};
+    try_all_candidates(&resolved, &kinds_resolved, operator_::Priority::Normal);
+    if ( resolved.size() )
+        return resolved;
+
+    try_all_candidates(&resolved, &kinds_resolved, operator_::Priority::Low);
+    return resolved;
 }
 
 } // anonymous namespace

@@ -32,9 +32,9 @@ STANDARD_OPERATOR_1(vector, Size, type::UnsignedInteger(64), type::constant(type
                     "Returns the number of elements a vector contains.");
 STANDARD_OPERATOR_2(vector, Equal, type::Bool(), type::constant(type::Vector(type::Wildcard())),
                     operator_::sameTypeAs(0, "vector<*>"), "Compares two vectors element-wise.");
-STANDARD_OPERATOR_2x(vector, IndexConst, Index, operator_::constantElementType(0),
-                     type::constant(type::Vector(type::Wildcard())), type::UnsignedInteger(64),
-                     "Returns the vector element at the given index.");
+STANDARD_OPERATOR_2x_low_prio(vector, IndexConst, Index, operator_::constantElementType(0),
+                              type::constant(type::Vector(type::Wildcard())), type::UnsignedInteger(64),
+                              "Returns the vector element at the given index.");
 STANDARD_OPERATOR_2x_lhs(vector, IndexNonConst, Index, operator_::elementType(0), type::Vector(type::Wildcard()),
                          type::UnsignedInteger(64), "Returns the vector element at the given index.");
 STANDARD_OPERATOR_2(vector, Unequal, type::Bool(), type::constant(type::Vector(type::Wildcard())),

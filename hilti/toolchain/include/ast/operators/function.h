@@ -35,6 +35,7 @@ public:
         std::vector<operator_::Operand> operands() const { return _operands; }
         Type result(const hilti::node::Range<Expression>& /* ops */) const { return _result; }
         bool isLhs() const { return false; }
+        auto priority() const { return hilti::operator_::Priority::Normal; }
         void validate(const expression::ResolvedOperator& /* i */, operator_::position_t /* p */) const {}
         std::string doc() const { return "<dynamic - no doc>"; }
         std::string docNamespace() const { return "<dynamic - no ns>"; }

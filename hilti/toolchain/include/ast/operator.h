@@ -229,6 +229,9 @@ inline std::ostream& operator<<(std::ostream& out, const Operand& op) {
 
 using ResultType = OperandType;
 
+/** Operator priority during resolving relative to others of the same kind. */
+enum Priority { Low, Normal };
+
 /**
  * Describes the signature of an operator method.
  *
@@ -240,7 +243,8 @@ using ResultType = OperandType;
 struct Signature {
     Type self; /**< type the method operates on */
     bool const_ = true;
-    bool lhs = false;          /**< true if operator's result can be assigned to */
+    bool lhs = false;                  /**< true if operator's result can be assigned to */
+    Priority priority = Priority::Low; /**< operator priority */
     ResultType result;         /**< result of the method; skipped if using `{BEGIN/END}_METHOD_CUSTOM_RESULT}` */
     ID id;                     /**< name of the method */
     std::vector<Operand> args; /**< operands the method receives */

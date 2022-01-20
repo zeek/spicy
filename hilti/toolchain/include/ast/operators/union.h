@@ -67,6 +67,7 @@ BEGIN_OPERATOR_CUSTOM_x(union_, MemberConst, Member)
     }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::constant(type::Union(type::Wildcard())), .doc = "union"},
@@ -94,6 +95,7 @@ BEGIN_OPERATOR_CUSTOM_x(union_, MemberNonConst, Member)
     }
 
     bool isLhs() const { return true; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Union(type::Wildcard()), .doc = "union"},
@@ -116,6 +118,7 @@ BEGIN_OPERATOR_CUSTOM(union_, HasMember)
     Type result(const hilti::node::Range<Expression>& /* ops */) const { return type::Bool(); }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
         return {{.type = type::Union(type::Wildcard()), .doc = "union"},

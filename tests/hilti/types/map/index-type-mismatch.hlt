@@ -1,0 +1,11 @@
+# @TEST-EXEC-FAIL: hiltic -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that the index operator typechecks the key. Regression test for #1084.
+
+module foo {
+
+global map<tuple<uint<64>, uint<64>>, uint<64>> m;
+m[0];
+
+}

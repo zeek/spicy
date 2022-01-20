@@ -42,6 +42,7 @@ BEGIN_OPERATOR_CUSTOM(string, Modulo)
     Type result(const hilti::node::Range<Expression>& /* ops */) const { return type::String(); }
 
     bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const { return {{.type = type::String()}, {.type = type::Any()}}; }
 

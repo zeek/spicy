@@ -53,6 +53,9 @@ class Operator(trait::isOperator) {
     /** True if operator's result can be assigned to. */
     bool isLhs() const;
 
+    /** Returns the operators resolver priority relative to others of the same kind. */
+    hilti::operator_::Priority priority() const;
+
     /**
      * Describes the operands that the operator accepts, such as their types
      * and default values.

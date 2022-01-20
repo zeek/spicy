@@ -1,3 +1,10 @@
+1.4.0-dev.159 | 2022-01-20 09:38:49 +0100
+
+  * GH-1084: Fix typing of map/vector index operators. (Robin Sommer,
+    Corelight)
+
+  * GH-1079: Fix import of global constants. (Robin Sommer, Corelight)
+
 1.4.0-dev.153 | 2022-01-13 17:12:31 +0100
 
   * Remove support for EOL centos releases, add centos-stream-8. (Benjamin Bannier, Corelight)
