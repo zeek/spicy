@@ -92,7 +92,7 @@ TEST_CASE("unpack") {
         using Result = Result<std::tuple<double, stream::View>>;
 
         const auto s1 = Stream("\x3f\x40\x00\x00\x01\x02\x03\x04"_b);
-        const auto s2 = Stream("\x3f\x40"_b);
+        const auto s2 = Stream(R"(?@)");
 
         const auto r1 = real::unpack(s1.view(expanding), real::Type::IEEE754_Single, ByteOrder::Big);
         CHECK_EQ(r1, Result(std::make_tuple(0.75, Stream("\x01\x02\x03\x04").view(! expanding))));

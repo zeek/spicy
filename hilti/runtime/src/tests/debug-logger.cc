@@ -48,12 +48,12 @@ TEST_CASE("indent") {
     logger.enable("FOO");
     logger.indent("FOO");
     logger.print("FOO", "foo");
-    lines.push_back("[FOO]   foo"); // Indent is a multiple of 2.
+    lines.emplace_back("[FOO]   foo"); // Indent is a multiple of 2.
     CHECK_EQ(output.lines(), lines);
 
     logger.enable("BAR");
     logger.print("BAR", "bar");
-    lines.push_back("[BAR] bar"); // Line was not indented.
+    lines.emplace_back("[BAR] bar"); // Line was not indented.
     CHECK_EQ(output.lines(), lines);
 }
 
@@ -71,18 +71,18 @@ TEST_CASE("dedent") {
     logger.enable("FOO");
     logger.dedent("FOO"); // Dedent of unindented line has no effect.
     logger.print("FOO", "foo");
-    lines.push_back("[FOO] foo");
+    lines.emplace_back("[FOO] foo");
     CHECK_EQ(output.lines(), lines);
 
     logger.enable("BAR");
     logger.indent("BAR");
     logger.print("BAR", "bar");
-    lines.push_back("[BAR]   bar"); // Indent is a multiple of 2.
+    lines.emplace_back("[BAR]   bar"); // Indent is a multiple of 2.
     CHECK_EQ(output.lines(), lines);
 
     logger.dedent("BAR");
     logger.print("BAR", "bar");
-    lines.push_back("[BAR]  bar");
+    lines.emplace_back("[BAR]  bar");
 }
 
 TEST_CASE("print") {

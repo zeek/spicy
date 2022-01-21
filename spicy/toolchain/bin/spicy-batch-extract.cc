@@ -1,7 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include <stdlib.h>
-
+#include <cstdlib>
 #include <iostream>
 #include <string>
 

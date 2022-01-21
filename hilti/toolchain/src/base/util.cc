@@ -1,6 +1,5 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include <errno.h>
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -8,6 +7,7 @@
 #include <utf8proc/utf8proc.h>
 
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 
@@ -290,7 +290,7 @@ std::optional<hilti::rt::filesystem::path> util::cacheDirectory(const hilti::Con
 
     const char* homedir;
 
-    if ( (homedir = getenv("HOME")) == NULL ) {
+    if ( (homedir = getenv("HOME")) == nullptr ) {
         auto pwuid = getpwuid(getuid());
         if ( ! pwuid )
             return {};

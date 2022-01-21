@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <memory>
 #include <string>
 
 #include <hilti/rt/doctest.h>
@@ -72,7 +73,7 @@ TEST_CASE("assign") {
         REQUIRE_EQ(u.index(), 2u);
 
         // Not changing field.
-        u = std::unique_ptr<double>(new double(1e42));
+        u = std::make_unique<double>(1e42);
         CHECK_EQ(u.index(), 2u);
 
         // Changing field.

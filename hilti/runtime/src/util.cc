@@ -1,12 +1,12 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include <limits.h>
-#include <stdlib.h>
 #include <sys/resource.h>
 #include <unistd.h>
 #include <utf8proc/utf8proc.h>
 
 #include <cerrno>
+#include <climits>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 
@@ -130,7 +130,7 @@ std::vector<std::string_view> hilti::rt::split(std::string_view s, std::string_v
     } while ( ! s.empty() );
 
     if ( ends_in_delim )
-        l.push_back("");
+        l.emplace_back("");
 
     return l;
 }

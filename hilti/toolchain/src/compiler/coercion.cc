@@ -743,7 +743,7 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const nod
         if ( i >= exprs.size() ) {
             // Running out of operands, must have a default or be optional.
             if ( op.default_ ) {
-                transformed.push_back(*op.default_);
+                transformed.emplace_back(*op.default_);
                 changed = true;
             }
             else if ( op.optional ) {
@@ -780,7 +780,7 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const nod
              ! (style & CoercionStyle::FunctionCall) )
             return result::Error("no valid coercion found");
 
-        transformed.push_back(*result.coerced);
+        transformed.emplace_back(*result.coerced);
 
         if ( result.nexpr )
             changed = true;

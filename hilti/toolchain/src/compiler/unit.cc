@@ -382,14 +382,14 @@ static node::ErrorPriority _recursiveValidateAST(const Node& n, Location closest
 
     auto errs = n.errors();
     auto nprio = prio;
-    for ( auto e = errs.begin(); e != errs.end(); e++ ) {
-        if ( ! e->location && closest_location )
-            e->location = closest_location;
+    for ( auto& err : errs ) {
+        if ( ! err.location && closest_location )
+            err.location = closest_location;
 
-        if ( e->priority > prio )
-            errors->push_back(*e);
+        if ( err.priority > prio )
+            errors->push_back(err);
 
-        nprio = std::max(nprio, e->priority);
+        nprio = std::max(nprio, err.priority);
     }
 
     return nprio;

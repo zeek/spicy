@@ -2,6 +2,7 @@
 #include <functional>
 #include <optional>
 #include <sstream>
+#include <utility>
 
 #include <hilti/ast/ctors/reference.h>
 #include <hilti/ast/declaration.h>
@@ -40,8 +41,8 @@ inline const hilti::logging::DebugStream Operator("operator");
 namespace {
 
 struct Visitor : public visitor::PostOrder<void, Visitor> {
-    Visitor(const std::shared_ptr<hilti::Context>& ctx, Node* module, Unit* unit)
-        : visitor::PostOrder<void, Visitor>(), _context(ctx), unit(unit), _module(module->as<Module>()) {}
+    Visitor(std::shared_ptr<hilti::Context> ctx, Node* module, Unit* unit)
+        : visitor::PostOrder<void, Visitor>(), _context(std::move(ctx)), unit(unit), _module(module->as<Module>()) {}
 
     std::shared_ptr<hilti::Context> _context;
     Unit* unit;
@@ -890,7 +891,7 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
         std::vector<Node> nops;
 
         for ( const auto& op : ops )
-            nops.push_back(derefOperand(op));
+            nops.emplace_back(derefOperand(op));
 
         return nops;
     };

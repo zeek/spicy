@@ -1,7 +1,8 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <benchmark/benchmark.h>
-#include <stdlib.h>
+
+#include <cstdlib>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/fiber.h>
@@ -109,11 +110,11 @@ static void execute_many(benchmark::State& state) {
         std::vector<hilti::rt::Resumable> rs;
 
         for ( int i = 0; i < num_fibers; ++i ) {
-            rs.push_back(hilti::rt::Resumable([addl_stack_usage](hilti::rt::resumable::Handle* h) {
+            rs.emplace_back([addl_stack_usage](hilti::rt::resumable::Handle* h) {
                 auto* xs = reinterpret_cast<char*>(alloca(addl_stack_usage));
                 benchmark::DoNotOptimize(xs[addl_stack_usage - 1]);
                 return hilti::rt::Nothing();
-            }));
+            });
         }
 
         state.ResumeTiming();
@@ -140,12 +141,12 @@ static void execute_many_resume(benchmark::State& state) {
         std::vector<hilti::rt::Resumable> rs;
 
         for ( int i = 0; i < num_fibers; ++i ) {
-            rs.push_back(hilti::rt::Resumable([addl_stack_usage](hilti::rt::resumable::Handle* h) {
+            rs.emplace_back([addl_stack_usage](hilti::rt::resumable::Handle* h) {
                 auto* xs = reinterpret_cast<char*>(alloca(addl_stack_usage));
                 benchmark::DoNotOptimize(xs[addl_stack_usage - 1]);
                 h->yield();
                 return hilti::rt::Nothing();
-            }));
+            });
         }
 
         state.ResumeTiming();

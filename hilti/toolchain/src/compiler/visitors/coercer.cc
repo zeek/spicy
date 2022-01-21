@@ -535,7 +535,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
                 new_elems.push_back(std::move(*x));
             }
             else
-                new_elems.push_back(std::move(rhs_elem));
+                new_elems.emplace_back(std::move(rhs_elem));
         }
 
         if ( changed ) {
