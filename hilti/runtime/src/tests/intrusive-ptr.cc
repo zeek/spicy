@@ -137,7 +137,7 @@ TEST_CASE("copy ctr") {
     IntrusivePtr<TestObject> x1(intrusive_ptr::NewRef{}, &obj);
     REQUIRE_EQ(TestObject::instances, 1);
 
-    IntrusivePtr<TestObject> x2(x1);
+    const IntrusivePtr<TestObject>& x2(x1);
     CHECK_EQ(TestObject::instances, 1);
 
     CHECK_EQ(x1.get(), x2.get());
@@ -153,7 +153,7 @@ TEST_CASE("conversion") {
 
     static_assert(std::is_convertible_v<TestObject2*, TestObject*>);
 
-    IntrusivePtr<TestObject> x(x2);
+    const IntrusivePtr<TestObject>& x(x2);
 
     // The new ptr refers to the same object.
     CHECK_EQ(TestObject::instances, 1);

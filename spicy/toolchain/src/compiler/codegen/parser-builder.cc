@@ -493,8 +493,7 @@ struct ProductionVisitor
                 type_args = meta.field()->arguments();
             }
 
-            Expression default_ =
-                builder::default_(builder::typeByID(*unit->unitType().id()), std::move(type_args), location);
+            Expression default_ = builder::default_(builder::typeByID(*unit->unitType().id()), type_args, location);
             builder()->addAssign(destination(), std::move(default_));
 
             auto call = builder::memberCall(destination(), "__parse_stage1", std::move(args));
@@ -1343,7 +1342,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
                       Attribute("&needed-by-feature", builder::string("supports_sinks")), Attribute("&static")});
 
     auto f_ext_overload1_result = type::stream::View();
-    auto f_ext_overload1 = builder::function(id_ext_overload1, f_ext_overload1_result, std::move(params),
+    auto f_ext_overload1 = builder::function(id_ext_overload1, f_ext_overload1_result, params,
                                              type::function::Flavor::Method, declaration::Linkage::Struct,
                                              function::CallingConvention::Extern, attr_ext_overload, t.meta());
 
@@ -1593,7 +1592,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
     if ( field->emitHook() ) {
         beforeHook();
 
-        std::vector<Expression> args = {std::move(value)};
+        std::vector<Expression> args = {value};
 
         if ( field->originalType().isA<type::RegExp>() && ! field->isContainer() ) {
             if ( state().captures )
@@ -1724,7 +1723,7 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         // We evaluate any "&requires" before running the final "%done" hook
         // so that (1) that one can rely on the condition, and (2) we keep
         // running either "%done" or "%error".
-        for ( auto attr : AttributeSet::findAll(unit.attributes(), "&requires") ) {
+        for ( const auto& attr : AttributeSet::findAll(unit.attributes(), "&requires") ) {
             auto cond = *attr.valueAsExpression();
             pushBuilder(builder()->addIf(builder::not_(cond)),
                         [&]() { parseError("&requires failed", cond.get().meta()); });
@@ -1873,7 +1872,7 @@ void ParserBuilder::finishLoopBody(const Expression& cookie, const Location& l) 
 }
 
 void ParserBuilder::guardFeatureCode(const type::Unit& unit, const std::vector<std::string_view>& features,
-                                     std::function<void()> f) {
+                                     const std::function<void()>& f) {
     const auto& typeID = unit.id();
     if ( ! typeID || features.empty() ) {
         f();

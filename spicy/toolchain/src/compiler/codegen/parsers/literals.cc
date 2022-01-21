@@ -174,7 +174,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     result_t operator()(const hilti::expression::Ctor& c) { return *dispatch(c.ctor()); }
 
     result_t parseInteger(const Type& type, const Expression& expected, const Meta& meta) {
-        auto offset = [](Expression view) { return builder::memberCall(view, "offset", {}); };
+        auto offset = [](Expression view) { return builder::memberCall(std::move(view), "offset", {}); };
 
         switch ( state().literal_mode ) {
             case LiteralMode::Default: {

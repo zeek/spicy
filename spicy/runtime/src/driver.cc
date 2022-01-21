@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
@@ -353,7 +354,8 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( ! context )
                 context = (*parser)->createContext();
 
-            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, cid, context, this));
+            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, std::move(cid),
+                                                                              context, this));
             if ( x.second )
                 _total_flows++;
 

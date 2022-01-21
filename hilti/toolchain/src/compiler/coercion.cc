@@ -787,6 +787,7 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const nod
     }
 
     std::vector<Expression> x;
+    x.reserve(transformed.size());
     for ( const auto& n : transformed )
         x.push_back(n.as<Expression>());
 

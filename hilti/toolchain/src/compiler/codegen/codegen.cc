@@ -227,10 +227,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
              AttributeSet::find(n.function().attributes(), "&have_prototype") )
             return;
 
-        auto f = n.function();
-        auto ft = f.ftype();
+        const auto& f = n.function();
+        const auto& ft = f.ftype();
         auto ns = unit->cxxNamespace();
-        auto id = n.id();
+        const auto& id = n.id();
         auto linkage = n.linkage();
         auto is_hook = (n.function().ftype().flavor() == type::function::Flavor::Hook);
 
@@ -626,6 +626,7 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     auto kinds = node::transform(params, [](auto& x) { return x.kind(); });
 
     std::vector<cxx::Expression> x;
+    x.reserve(args.size());
     for ( auto i = 0u; i < args.size(); i++ )
         x.emplace_back(compile(args[i], params[i].kind() == declaration::parameter::Kind::InOut));
 
@@ -639,6 +640,7 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     auto kinds = node::transform(params, [](auto& x) { return x.kind(); });
 
     std::vector<cxx::Expression> x;
+    x.reserve(args.size());
     for ( auto i = 0u; i < args.size(); i++ )
         x.emplace_back(compile(args[i], params[i].kind() == declaration::parameter::Kind::InOut));
 
@@ -654,7 +656,7 @@ Result<cxx::Unit> CodeGen::compileModule(Node& root, hilti::Unit* hilti_unit, bo
 
     v.dispatch(root);
 
-    for ( auto i : root.children() )
+    for ( const auto& i : root.children() )
         v.dispatch(i);
 
     GlobalsVisitor::addDeclarations(this, root, ID(std::string(_cxx_unit->moduleID())), _cxx_unit.get(),

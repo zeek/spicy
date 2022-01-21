@@ -109,7 +109,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
         // Create struct field.
         if ( auto x = f.default_() ) {
-            Node d = std::move(*x);
+            Node d = *x;
             d.setScope(p.node.scope());
             attrs = AttributeSet::add(attrs, Attribute("&default", std::move(d)));
         }
@@ -131,7 +131,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
     }
 
     void operator()(const spicy::type::unit::item::UnitHook& h, const position_t /* p */) {
-        auto hook = h.hook();
+        const auto& hook = h.hook();
         if ( auto hook_impl =
                  cg->compileHook(unit, ID(*unit.id(), h.id()), {}, hook.isForEach(), hook.isDebug(),
                                  hook.ftype().parameters().copy(), hook.body(), hook.priority(), h.meta()) )
@@ -260,8 +260,8 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         auto expression = *convert->valueAsExpression();
         auto result = type::auto_;
         auto params = std::vector<type::function::Parameter>();
-        auto ftype = type::Function(type::function::Result(std::move(result), expression.get().meta()),
-                                    std::move(params), hilti::type::function::Flavor::Method, expression.get().meta());
+        auto ftype = type::Function(type::function::Result(std::move(result), expression.get().meta()), params,
+                                    hilti::type::function::Flavor::Method, expression.get().meta());
 
         _pb.pushBuilder();
         _pb.builder()->addReturn(expression);

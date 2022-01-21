@@ -237,12 +237,12 @@ TEST_CASE("append") {
     }
 
     SUBCASE("rvalue Bytes") {
-        s.append(std::move(empty));
+        s.append(empty);
         CHECK_EQ(s, "123"_b);
         CHECK_EQ(s.size(), 3);
         CHECK_EQ(s.numberOfChunks(), 1);
 
-        s.append(std::move(xs));
+        s.append(xs);
         CHECK_EQ(s, "123456"_b);
         CHECK_EQ(s.size(), 6);
         CHECK_EQ(s.numberOfChunks(), 2);

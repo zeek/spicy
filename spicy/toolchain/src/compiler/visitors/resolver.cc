@@ -1,5 +1,7 @@
 // Copyrights (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <utility>
+
 #include <hilti/ast/builder/all.h>
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/constant.h>
@@ -85,7 +87,7 @@ static std::optional<Type> _fieldType(const type::unit::item::Field& f, const Ty
         return {};
 
     if ( is_container )
-        return type::Vector(std::move(nt), meta);
+        return type::Vector(std::move(nt), std::move(meta));
     else
         return nt;
 }
@@ -259,9 +261,9 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         }
     }
 
-    void replaceField(position_t* p, type::unit::Item i) {
+    void replaceField(position_t* p, const type::unit::Item& i) {
         logChange(p->node, i);
-        p->node = std::move(i);
+        p->node = i;
         modified = true;
     }
 

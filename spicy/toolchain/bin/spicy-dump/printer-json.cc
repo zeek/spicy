@@ -117,7 +117,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
         case TypeInfo::Tuple: {
             auto j = json::array();
 
-            for ( auto i : type.tuple->iterate(v) )
+            for ( const auto& i : type.tuple->iterate(v) )
                 j.push_back(convert(i.second));
 
             return j;

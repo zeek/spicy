@@ -60,7 +60,7 @@ TEST_CASE("subscript") {
     CHECK_THROWS_WITH_AS(Vector<int>()[47], "vector index 47 out of range", const IndexError&);
     CHECK_EQ(xs.size(), 0u);
 
-    const auto ys = xs;
+    const auto& ys = xs;
     CHECK_THROWS_WITH_AS(ys[47], "vector index 47 out of range", const IndexError&);
 
     const Vector<int> zs({0, 1, 2, 3, 4, 5});

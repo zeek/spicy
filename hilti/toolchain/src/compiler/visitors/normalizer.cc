@@ -84,11 +84,10 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
 
             Expression index_assign =
                 hilti::expression::UnresolvedOperator(hilti::operator_::Kind::IndexAssign,
-                                                      {std::move(map), std::move(key), std::move(value)},
-                                                      assign.meta());
+                                                      {map, std::move(key), std::move(value)}, assign.meta());
 
             logChange(p.node, index_assign);
-            p.node = std::move(index_assign);
+            p.node = index_assign;
             modified = true;
             return;
         }
@@ -99,7 +98,7 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
                                                                                       member_const->meta());
             Expression n = expression::Assign(new_lhs, assign.source(), assign.meta());
             logChange(p.node, n);
-            p.node = std::move(n);
+            p.node = n;
             modified = true;
             return;
         }
@@ -113,7 +112,7 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
                 auto n = operator_::tuple::CustomAssign::Operator().instantiate({assign.target(), assign.source()},
                                                                                 assign.meta());
                 logChange(p.node, n);
-                p.node = std::move(n);
+                p.node = n;
                 modified = true;
                 return;
             }

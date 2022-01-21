@@ -109,6 +109,7 @@ TEST_CASE_TEMPLATE("construct", U, int, T) {
     SUBCASE("copy") {
         SUBCASE("other initialized") {
             const ValueReference<U> ref1(x);
+            // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
             const ValueReference<U> ref2(ref1);
             CHECK_EQ(*ref1, *ref2);
             CHECK_NE(ref1.get(), ref2.get());
@@ -120,7 +121,7 @@ TEST_CASE_TEMPLATE("construct", U, int, T) {
                 const auto ref1 = ValueReference<U>::self(nullptr);
                 REQUIRE_EQ(ref1.get(), nullptr);
 
-                const ValueReference<U> ref2(ref1);
+                const ValueReference<U>& ref2(ref1);
                 CHECK_EQ(ref2.get(), nullptr);
             }
         }
@@ -534,7 +535,7 @@ TEST_CASE("construct") {
 
     SUBCASE("copy") {
         const auto wref1 = WeakReference<int>(ref);
-        const auto wref2(wref1);
+        const auto& wref2(wref1);
 
         CHECK_EQ(*wref2, *wref1);
     }

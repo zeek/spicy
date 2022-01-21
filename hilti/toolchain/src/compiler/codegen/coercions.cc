@@ -30,7 +30,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const type::Enum& src, position_t p) {
         if ( auto t = dst.tryAs<type::Bool>() ) {
             auto etype = p.node.as<Type>(); // preserve type ID
-            auto id = cg->compile(std::move(etype), codegen::TypeUsage::Storage);
+            auto id = cg->compile(etype, codegen::TypeUsage::Storage);
             return fmt("(%s != %s::Undef)", expr, id);
         }
 
@@ -143,7 +143,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const type::Union& src, position_t p) {
         if ( auto t = dst.tryAs<type::Bool>() ) {
             auto utype = p.node.as<Type>(); // preserve type ID
-            auto id = cg->compile(std::move(utype), codegen::TypeUsage::Storage);
+            auto id = cg->compile(utype, codegen::TypeUsage::Storage);
             return fmt("(%s.index() > 0)", expr);
         }
 

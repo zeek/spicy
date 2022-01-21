@@ -444,7 +444,7 @@ void Driver::setDriverOptions(driver::Options options) {
     _driver_options = std::move(options);
 }
 
-void Driver::_addUnit(std::shared_ptr<Unit> unit) {
+void Driver::_addUnit(const std::shared_ptr<Unit>& unit) {
     if ( _processed_units.find(unit->id()) != _processed_units.end() )
         return;
 
@@ -468,6 +468,7 @@ Result<void*> Driver::_symbol(const std::string& symbol) {
     // can drive its state explicitly.
 
     ::dlerror(); // Resets error state.
+    // NOLINTNEXTLINE(performance-no-int-to-ptr)
     auto sym = ::dlsym(RTLD_DEFAULT, symbol.c_str());
 
     // We return an error if the symbol could not be looked up, or if the
@@ -500,7 +501,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
         if ( auto unit = Unit::fromCache(_ctx, path) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("reusing previously cached module %s", (*unit)->id()));
             (*unit)->setRequiresCompilation();
-            _addUnit(std::move(*unit));
+            _addUnit(*unit);
         }
         else {
             HILTI_DEBUG(logging::debug::Driver, fmt("parsing input file %s", path));
@@ -509,7 +510,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
                 return augmentError(unit.error());
 
             (*unit)->setRequiresCompilation();
-            _addUnit(std::move(*unit));
+            _addUnit(*unit);
         }
 
         return Nothing();
@@ -554,7 +555,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
     return error("unsupported file type", path);
 }
 
-Result<Nothing> Driver::addInput(std::shared_ptr<Unit> u) {
+Result<Nothing> Driver::addInput(const std::shared_ptr<Unit>& u) {
     if ( _processed_units.find(u->id()) != _processed_units.end() )
         return Nothing();
 
@@ -571,7 +572,7 @@ Result<Nothing> Driver::addInput(std::shared_ptr<Unit> u) {
     if ( _stage != Stage::INITIALIZED )
         logger().internalError("no further inputs can be added after compilation has finished already");
 
-    _addUnit(std::move(u));
+    _addUnit(u);
     return Nothing();
 }
 
@@ -705,7 +706,8 @@ Result<Nothing> Driver::_resolveUnitsWithPlugin(const Plugin& plugin, std::vecto
     return Nothing();
 }
 
-Result<Nothing> Driver::_transformUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units) {
+Result<Nothing> Driver::_transformUnitsWithPlugin(const Plugin& plugin,
+                                                  const std::vector<std::shared_ptr<Unit>>& units) {
     if ( ! plugin.ast_transform )
         return Nothing();
 
@@ -741,14 +743,14 @@ Result<Nothing> Driver::_transformUnitsWithPlugin(const Plugin& plugin, std::vec
  * extension as well. One can choose to have only fully resolved units
  * considered.
  */
-static auto _unitsForPlugin(const std::vector<std::shared_ptr<Unit>>& units, std::string extension,
+static auto _unitsForPlugin(const std::vector<std::shared_ptr<Unit>>& units, const std::string& extension,
                             bool include_resolved) {
     auto cmp = [](const auto& u1, const auto& u2) { return u1->id().str() < u2->id().str(); };
     std::set<std::shared_ptr<Unit>, decltype(cmp)> nunits(cmp);
 
     for ( auto&& u : units ) {
         if ( u->extension() == extension && (! u->isResolved() || include_resolved) ) {
-            nunits.insert(std::move(u));
+            nunits.insert(u);
 
             for ( const auto& d_ : u->dependencies() ) {
                 auto d = d_.lock();
@@ -1212,7 +1214,7 @@ Result<Nothing> Driver::finishRuntime() {
     return Nothing();
 }
 
-void Driver::_dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& stream, const Plugin& plugin,
+void Driver::_dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream, const Plugin& plugin,
                       const std::string& prefix, int round) {
     if ( ! logger().isEnabled(stream) )
         return;
@@ -1226,8 +1228,8 @@ void Driver::_dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& st
     detail::renderNode(*unit->moduleRef(), stream, true);
 }
 
-void Driver::_dumpAST(std::shared_ptr<Unit> unit, std::ostream& stream, const Plugin& plugin, const std::string& prefix,
-                      int round) {
+void Driver::_dumpAST(const std::shared_ptr<Unit>& unit, std::ostream& stream, const Plugin& plugin,
+                      const std::string& prefix, int round) {
     std::string r;
 
     if ( round > 0 )
@@ -1237,7 +1239,8 @@ void Driver::_dumpAST(std::shared_ptr<Unit> unit, std::ostream& stream, const Pl
     detail::renderNode(unit->module(), stream, true);
 }
 
-void Driver::_dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& stream, const std::string& prefix) {
+void Driver::_dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream,
+                      const std::string& prefix) {
     if ( ! logger().isEnabled(stream) )
         return;
 
@@ -1245,7 +1248,7 @@ void Driver::_dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& st
     detail::renderNode(unit->module(), stream, true);
 }
 
-void Driver::_dumpDeclarations(std::shared_ptr<Unit> unit, const Plugin& plugin) {
+void Driver::_dumpDeclarations(const std::shared_ptr<Unit>& unit, const Plugin& plugin) {
     if ( ! logger().isEnabled(logging::debug::AstDeclarations) )
         return;
 
@@ -1263,7 +1266,7 @@ void Driver::_dumpDeclarations(std::shared_ptr<Unit> unit, const Plugin& plugin)
     }
 }
 
-void Driver::_saveIterationAST(std::shared_ptr<Unit> unit, const Plugin& plugin, const std::string& prefix,
+void Driver::_saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
                                int round = 0) {
     if ( ! logger().isEnabled(logging::debug::AstDumpIterations) )
         return;
@@ -1272,8 +1275,8 @@ void Driver::_saveIterationAST(std::shared_ptr<Unit> unit, const Plugin& plugin,
     _dumpAST(unit, out, plugin, prefix, round);
 }
 
-void Driver::_saveIterationAST(std::shared_ptr<Unit> unit, const Plugin& plugin, const std::string& prefix,
-                               std::string tag) {
+void Driver::_saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
+                               const std::string& tag) {
     if ( ! logger().isEnabled(logging::debug::AstDumpIterations) )
         return;
 

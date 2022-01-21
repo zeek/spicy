@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include <hilti/rt/util.h>
 
@@ -20,7 +21,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
 
     out << magic << std::endl;
 
-    std::set<std::string> needles = {needle};
+    std::set<std::string> needles = {std::move(needle)};
     auto is_needle = [&](const std::string& n) { return needles.find(n) != needles.end(); };
 
     while ( in.good() && ! in.eof() ) {

@@ -50,8 +50,8 @@ hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesyste
     else
         ::close(fd);
 
-    const auto cc1 = hilti::rt::filesystem::temp_directory_path() /
-                     util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().c_str(), hash, cc_hash);
+    auto cc1 = hilti::rt::filesystem::temp_directory_path() /
+               util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().c_str(), hash, cc_hash);
 
     std::ofstream out(cc0);
 
@@ -174,8 +174,8 @@ bool CxxCode::save(std::ostream& out) const {
     return ! out.fail();
 }
 
-JIT::JIT(std::shared_ptr<Context> context, bool dump_code)
-    : _context(std::move(context)),
+JIT::JIT(const std::shared_ptr<Context>& context, bool dump_code)
+    : _context(context),
       _dump_code(dump_code),
       _hash(rt::hashCombine(hilti::configuration().hash(),
                             std::hash<std::string>{}(hilti::rt::filesystem::current_path().string()))) {}
@@ -434,7 +434,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     return library;
 }
 
-Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<std::string> args) {
+Result<JIT::JobID> JIT::_spawnJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args) {
     std::vector<std::string> cmdline = {cmd.native()};
 
     for ( auto&& a : args )

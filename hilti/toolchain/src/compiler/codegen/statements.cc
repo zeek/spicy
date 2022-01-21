@@ -212,7 +212,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         std::string cxx_type;
         std::string cxx_init;
 
-        auto cond = n.condition();
+        const auto& cond = n.condition();
         cxx_type = cg->compile(cond.type(), codegen::TypeUsage::Storage);
         cxx_id = cxx::ID(cond.id());
         cxx_init = cg->compile(*cond.init());

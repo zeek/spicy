@@ -450,7 +450,7 @@ extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // 
  * @return true if end-of-data has been reached
  */
 extern bool atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                  hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters);
+                  const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
 
 /**
  * Manually trigger a backtrack operation, reverting back to the most revent &try.

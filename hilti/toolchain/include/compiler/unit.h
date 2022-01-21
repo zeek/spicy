@@ -190,7 +190,7 @@ public:
      * @param unit the unit this one depends on
      * @returns true if this is a new dependency that had not been previously added
      */
-    bool addDependency(std::shared_ptr<Unit> unit);
+    bool addDependency(const std::shared_ptr<Unit>& unit);
 
     /**
      * Returns the unit's meta data for the internal HILTI linker.

@@ -67,7 +67,7 @@ extern void from_json(const nlohmann::json& j, Join& x); // NOLINT
 /** One C++ code unit. */
 class Unit {
 public:
-    Unit(std::shared_ptr<Context> context);
+    Unit(const std::shared_ptr<Context>& context);
 
     void setModule(const hilti::Module& m);
     cxx::ID moduleID() const { return _module_id; }
@@ -111,8 +111,8 @@ public:
 
 protected:
     friend class Linker;
-    Unit(std::shared_ptr<Context> context, cxx::ID module_id);
-    Unit(std::shared_ptr<Context> context, cxx::ID module_id, const std::string& cxx_code);
+    Unit(const std::shared_ptr<Context>& context, cxx::ID module_id);
+    Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code);
 
 private:
     void _generateCode(Formatter& f, bool prototypes_only);

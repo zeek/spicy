@@ -57,10 +57,10 @@ public:
     Module* _current_module = nullptr;
 
     template<typename Position>
-    void replaceNode(Position& p, Node replacement) {
+    void replaceNode(Position& p, const Node& replacement) {
         assert(_current_module);
         _current_module->preserve(p.node);
-        p.node = std::move(replacement);
+        p.node = replacement;
     }
 
     template<typename Position>

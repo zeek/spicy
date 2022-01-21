@@ -109,6 +109,7 @@ static void execute_many(benchmark::State& state) {
 
         std::vector<hilti::rt::Resumable> rs;
 
+        rs.reserve(num_fibers);
         for ( int i = 0; i < num_fibers; ++i ) {
             rs.emplace_back([addl_stack_usage](hilti::rt::resumable::Handle* h) {
                 auto* xs = reinterpret_cast<char*>(alloca(addl_stack_usage));
@@ -140,6 +141,7 @@ static void execute_many_resume(benchmark::State& state) {
 
         std::vector<hilti::rt::Resumable> rs;
 
+        rs.reserve(num_fibers);
         for ( int i = 0; i < num_fibers; ++i ) {
             rs.emplace_back([addl_stack_usage](hilti::rt::resumable::Handle* h) {
                 auto* xs = reinterpret_cast<char*>(alloca(addl_stack_usage));

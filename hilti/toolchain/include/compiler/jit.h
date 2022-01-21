@@ -125,7 +125,7 @@ public:
      * @param context compiler context to use
      * @param dump_code if true, save all C++ code into files `dbg.*` for debugging
      */
-    explicit JIT(std::shared_ptr<Context> context, bool dump_code = false);
+    explicit JIT(const std::shared_ptr<Context>& context, bool dump_code = false);
     ~JIT();
 
     JIT() = delete;
@@ -183,7 +183,7 @@ private:
     void _finish();
 
     using JobID = uint64_t;
-    Result<JobID> _spawnJob(hilti::rt::filesystem::path cmd, std::vector<std::string> args);
+    Result<JobID> _spawnJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args);
     Result<Nothing> _waitForJobs();
 
     std::weak_ptr<Context> _context; // global context for options
