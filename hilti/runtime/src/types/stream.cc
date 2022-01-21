@@ -304,6 +304,10 @@ bool View::startsWith(const Bytes& b) const {
     auto s2 = b.begin();
     auto e2 = b.end();
 
+    // If the iterator has no data in it, we cannot dereference it.
+    if ( isEmpty() )
+        return b.isEmpty();
+
     while ( s1 != e1 && s2 != e2 ) {
         if ( *s1++ != *s2++ )
             return false;
