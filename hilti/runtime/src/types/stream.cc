@@ -304,6 +304,14 @@ bool View::startsWith(const Bytes& b) const {
     auto s2 = b.begin();
     auto e2 = b.end();
 
+    // If the iterator has not chunk it is not save to dereference.
+    //
+    // TODO(bbannier): This seems to be the wrong place to enforce this
+    // invariant. We cannot enforce this invariant in e.g., view's constructor
+    // since we need to be able to construct views without data.
+    if ( ! s1.chunk() )
+        return b.isEmpty();
+
     while ( s1 != e1 && s2 != e2 ) {
         if ( *s1++ != *s2++ )
             return false;
