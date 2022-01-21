@@ -164,7 +164,8 @@ static void execute_many_resume(benchmark::State& state) {
     hilti::rt::done();
 }
 
-const auto addl_stack_usage = static_cast<size_t>(hilti::rt::configuration::get().fiber_min_stack_size * 0.9);
+const auto addl_stack_usage =
+    static_cast<int64_t>(static_cast<double>(hilti::rt::configuration::get().fiber_min_stack_size) * 0.9);
 
 BENCHMARK(execute_one)->ArgName("addl_stack_usage")->Range(1, addl_stack_usage);
 BENCHMARK(execute_one_yield)->ArgName("addl_stack_usage")->Range(1, addl_stack_usage);

@@ -36,7 +36,7 @@ hilti::rt::Bytes Stream::encode(const hilti::rt::Bytes& data) {
         throw Base64Error("encoding already finished");
 
     char buf[static_cast<uint64_t>(data.size() * 2)];
-    int len = base64_encode_block(data.data(), static_cast<int>(data.size()), buf, &_state->estate);
+    auto len = base64_encode_block(data.data(), static_cast<int>(data.size()), buf, &_state->estate);
     return hilti::rt::Bytes(buf, len);
 }
 
@@ -48,8 +48,8 @@ hilti::rt::Bytes Stream::encode(const hilti::rt::stream::View& data) {
 
     for ( auto block = data.firstBlock(); block; block = data.nextBlock(block) ) {
         char buf[static_cast<uint64_t>(block->size * 2)];
-        int len = base64_encode_block(reinterpret_cast<const char*>(block->start), static_cast<int>(block->size), buf,
-                                      &_state->estate);
+        auto len = base64_encode_block(reinterpret_cast<const char*>(block->start), static_cast<int>(block->size), buf,
+                                       &_state->estate);
         encoded.append(hilti::rt::Bytes(buf, len));
     }
 
@@ -61,8 +61,8 @@ hilti::rt::Bytes Stream::decode(const hilti::rt::Bytes& data) {
         throw Base64Error("decoding already finished");
 
     char buf[static_cast<uint64_t>(data.size() * 2)];
-    int len = base64_decode_block(reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size()), buf,
-                                  &_state->dstate);
+    auto len = base64_decode_block(reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size()), buf,
+                                   &_state->dstate);
 
     return hilti::rt::Bytes(buf, len);
 }
@@ -75,8 +75,8 @@ hilti::rt::Bytes Stream::decode(const hilti::rt::stream::View& data) {
 
     for ( auto block = data.firstBlock(); block; block = data.nextBlock(block) ) {
         char buf[static_cast<uint64_t>(block->size * 2)];
-        int len = base64_decode_block(reinterpret_cast<const char*>(block->start), static_cast<int>(block->size), buf,
-                                      &_state->dstate);
+        auto len = base64_decode_block(reinterpret_cast<const char*>(block->start), static_cast<int>(block->size), buf,
+                                       &_state->dstate);
         decoded.append(hilti::rt::Bytes(buf, len));
     }
 
@@ -92,7 +92,7 @@ hilti::rt::Bytes Stream::finish() {
     hilti::rt::Bytes b;
     char buf[4];
 
-    int len = base64_encode_blockend(buf, &_state->estate);
+    auto len = base64_encode_blockend(buf, &_state->estate);
     b.append(hilti::rt::Bytes(buf, len));
 
     _state = nullptr;

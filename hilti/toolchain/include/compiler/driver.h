@@ -361,7 +361,7 @@ protected:
     virtual std::string hookAddCommandLineOptions() { return ""; }
 
     /** Hook for derived classes for parsing additional options. */
-    virtual bool hookProcessCommandLineOption(char opt, const char* optarg) { return false; }
+    virtual bool hookProcessCommandLineOption(int opt, const char* optarg) { return false; }
 
     /**
      * Hook for derived classes for adding content to the driver's usage

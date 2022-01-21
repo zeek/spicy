@@ -192,7 +192,7 @@ public:
             _debug_streams[dbg] -= 1;
     }
 
-    void debugSetIndent(const logging::DebugStream& dbg, int indent) {
+    void debugSetIndent(const logging::DebugStream& dbg, size_t indent) {
         if ( isEnabled(dbg) )
             _debug_streams[dbg] = indent;
     }
@@ -203,8 +203,8 @@ public:
     void reset() { _errors = _warnings = 0; }
 
 protected:
-    void report(std::ostream& output, logging::Level level, int indent, const std::string& addl, const std::string& msg,
-                const Location& l) const;
+    void report(std::ostream& output, logging::Level level, size_t indent, const std::string& addl,
+                const std::string& msg, const Location& l) const;
 
 private:
     friend Logger& logger();                                                  // NOLINT
@@ -216,7 +216,7 @@ private:
     int _warnings = 0;
     int _errors = 0;
 
-    std::map<logging::DebugStream, int> _debug_streams;
+    std::map<logging::DebugStream, size_t> _debug_streams;
 
     static std::unique_ptr<Logger> _singleton;
 };

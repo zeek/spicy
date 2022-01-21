@@ -60,7 +60,7 @@ int logging::Stream::Buffer::sync() {
 
 int logging::Stream::Buffer::overflow(int ch) {
     if ( ch != traits_type::eof() ) {
-        _buffer.push_back(ch);
+        _buffer.push_back(static_cast<std::string::value_type>(ch));
 
         if ( ch == '\n' )
             sync();
@@ -138,7 +138,7 @@ void Logger::_debug(const logging::DebugStream& dbg, const std::string& msg, con
         report(_output_debug, logging::Level::Debug, i->second, dbg.name(), msg, l);
 }
 
-void Logger::report(std::ostream& output, logging::Level level, int indent, const std::string& addl,
+void Logger::report(std::ostream& output, logging::Level level, size_t indent, const std::string& addl,
                     const std::string& msg, const Location& l) const {
     std::string level_str = logging::to_string(level);
     std::string indent_str = std::string(static_cast<std::string::size_type>(indent) * 2, ' ');

@@ -11,7 +11,7 @@ using namespace hilti::rt;
 Backtrace::Backtrace() {
 #ifdef HILTI_HAVE_BACKTRACE
     _callstack = std::make_shared<Callstack>(); // allocate on heap to save stack space
-    _frames = ::backtrace(_callstack->begin(), _callstack->size());
+    _frames = ::backtrace(_callstack->begin(), static_cast<int>(_callstack->size()));
 #endif
 }
 

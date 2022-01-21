@@ -68,7 +68,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
             auto size = std::stoul(std::string(m[2]));
 
             char data[size];
-            in.read(data, size);
+            in.read(data, static_cast<std::streamsize>(size));
             in.get(); // Eat newline.
 
             if ( in.eof() || in.fail() )
@@ -76,7 +76,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
 
             if ( is_needle(id) ) {
                 out << cmd << std::endl;
-                out.write(data, size);
+                out.write(data, static_cast<std::streamsize>(size));
                 out.put('\n');
             }
         }

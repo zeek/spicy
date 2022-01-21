@@ -113,6 +113,7 @@ struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
     std::function<void(uint64_t, const Bytes&, const Bytes&)> __on_0x25_overlap = nullptr;
     std::function<void(uint64_t, const Bytes&)> __on_0x25_undelivered = nullptr;
 
+    // NOLINTNEXTLINE(bugprone-unhandled-self-assignment, cert-oop54-cpp)
     UnitWithSinkSupport& operator=(const UnitWithSinkSupport&) {
         // Not implemented.
         return *this;

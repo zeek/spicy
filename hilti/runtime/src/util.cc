@@ -230,7 +230,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
                     throw UnicodeError("cannot decode character");
 
                 uint8_t tmp[4];
-                int len = utf8proc_encode_char(val, tmp);
+                auto len = utf8proc_encode_char(val, tmp);
 
                 if ( ! len )
                     throw UnicodeError("cannot encode unicode code point");
@@ -250,7 +250,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
                     throw UnicodeError("cannot decode character");
 
                 uint8_t tmp[4];
-                int len = utf8proc_encode_char(val, tmp);
+                auto len = utf8proc_encode_char(val, tmp);
 
                 if ( ! len )
                     throw UnicodeError("cannot encode unicode code point");
@@ -282,9 +282,7 @@ std::string hilti::rt::expandEscapes(std::string s) {
 }
 
 std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool escape_control, bool keep_hex) {
-    auto escapeControl = [escape_control](unsigned char c, const char* s) {
-        return escape_control ? s : std::string(1, c);
-    };
+    auto escapeControl = [escape_control](auto c, const char* s) { return escape_control ? s : std::string(1, c); };
 
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
@@ -456,5 +454,5 @@ hilti::rt::Time hilti::rt::strptime(const std::string& buf, const std::string& f
     if ( secs == -1 )
         throw OutOfRange(hilti::rt::fmt("value cannot be represented as a time: %s", std::strerror(errno)));
 
-    return hilti::rt::Time(secs, hilti::rt::Time::SecondTag{});
+    return hilti::rt::Time(static_cast<double>(secs), hilti::rt::Time::SecondTag{});
 }

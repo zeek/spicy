@@ -61,7 +61,7 @@ public:
 
 protected:
     std::string hookAddCommandLineOptions() override;
-    bool hookProcessCommandLineOption(char opt, const char* optarg) override;
+    bool hookProcessCommandLineOption(int opt, const char* optarg) override;
     std::string hookAugmentUsage() override;
 
 private:

@@ -215,7 +215,7 @@ std::string util::toIdentifier(const std::string& s, bool ensure_non_keyword) {
 
     std::string ns;
 
-    for ( unsigned char c : normalized ) {
+    for ( auto c : normalized ) {
         if ( isalnum(c) || c == '_' ) {
             ns += c;
             continue;

@@ -217,15 +217,15 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                         };
 
                         ok = true;
-                        int major = parse_number(v[0]);
-                        int minor = parse_number(v[1]);
-                        int patch = 0;
+                        auto major = parse_number(v[0]);
+                        auto minor = parse_number(v[1]);
+                        auto patch = 0ULL;
 
                         if ( v.size() == 3 )
                             patch = parse_number(v[2]);
 
                         // This must match the computation in the toplevel `CMakeLists.txt` file.
-                        int version = major * 10000 + minor * 100 + patch;
+                        auto version = major * 10000 + minor * 100 + patch;
                         if ( hilti::configuration().version_number < version )
                             error(fmt("module %s requires at least Spicy version %s (have %s)", m.id(), s->value(),
                                       hilti::configuration().version_string),

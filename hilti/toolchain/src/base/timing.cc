@@ -26,8 +26,8 @@ static std::string prettyTime(Duration d) {
         return "0s";
 
     for ( const auto& [unit, factor] : units ) {
-        if ( x.count() >= factor )
-            return fmt("%.2f%s", x.count() / factor, unit);
+        if ( static_cast<double>(x.count()) >= factor )
+            return fmt("%.2f%s", static_cast<double>(x.count()) / factor, unit);
     }
 
     cannot_be_reached();
@@ -35,7 +35,7 @@ static std::string prettyTime(Duration d) {
 
 static std::string prettyTimeForUnit(Duration d, double factor, const std::string& unit) {
     auto x = std::chrono::duration_cast<std::chrono::nanoseconds>(d);
-    return fmt("%.2f%s", x.count() / factor, unit);
+    return fmt("%.2f%s", static_cast<double>(x.count()) / factor, unit);
 }
 
 std::shared_ptr<Manager> Manager::singleton() {
@@ -89,7 +89,8 @@ void Manager::summary(std::ostream& out) {
     out << "\n=== Execution Time Summary ===\n\n";
 
     for ( auto ledger : sorted_ledgers )
-        out << fmt("%7.2f%%  ", (100.0 * ledger->_time_used.count() / total_time.count()))
+        out << fmt("%7.2f%%  ",
+                   (100 * static_cast<double>(ledger->_time_used.count()) / static_cast<double>(total_time.count())))
             << fmt("%8s", prettyTimeForUnit(ledger->_time_used, 1e9, "s")) << "   " << ledger->_name << " "
             << fmt("(#%" PRIu64 ")", ledger->_num_completed) << "\n";
 

@@ -282,7 +282,7 @@ TEST_CASE("iteration") {
 
         std::string s;
         for ( auto i : x )
-            s += i;
+            s += static_cast<std::string::value_type>(i);
 
         CHECK_EQ(s, "12345");
     }
@@ -296,7 +296,7 @@ TEST_CASE("iteration") {
 
         std::string s;
         for ( auto i : x )
-            s += i;
+            s += static_cast<std::string::value_type>(i);
 
         CHECK_EQ(s, "123451234567890123456789012345678901234567890");
     }
