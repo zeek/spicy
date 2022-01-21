@@ -133,6 +133,7 @@ TEST_CASE_TEMPLATE("construct", U, int, T) {
 
         const ValueReference<U> ref2(std::move(ref1));
         CHECK_EQ(*ref2, x);
+        // NOLINTNEXTLINE(bugprone-use-after-move)
         CHECK_EQ(ref1.asSharedPtr(), nullptr);
     }
 }

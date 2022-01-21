@@ -52,6 +52,7 @@ void join(std::vector<U>& a, const std::vector<V>& b) {
     a.insert(a.end(), b.begin(), b.end());
 }
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {
     bool want_debug = false;
     bool want_dynamic_linking = false;

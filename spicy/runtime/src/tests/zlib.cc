@@ -43,12 +43,15 @@ TEST_CASE("decompress") {
         }
 
         SUBCASE("error") {
+            // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
             CHECK_THROWS_WITH_AS(zlib::decompress(stream, "\x01\x02\x03"_b), "inflate failed", const zlib::ZlibError&);
         }
 
         SUBCASE("reused stream") {
+            // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
             CHECK_THROWS_WITH_AS(zlib::decompress(stream, "invalid data"_b), "inflate failed", const zlib::ZlibError&);
 
+            // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
             CHECK_THROWS_WITH_AS(zlib::decompress(stream, "x\x01\x01\x03\x00\xfc\xff\x00\x01\x02\x00\x07\x00\x04"_b),
                                  "error'ed zlib stream cannot be reused", const zlib::ZlibError&);
             CHECK_EQ(zlib::finish(stream), ""_b);
@@ -78,14 +81,17 @@ TEST_CASE("decompress") {
 
         SUBCASE("error") {
             data.append("\x01\x02\x03"_b);
+            // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
             CHECK_THROWS_WITH_AS(zlib::decompress(stream, data.view()), "inflate failed", const zlib::ZlibError&);
         }
 
         SUBCASE("reused stream") {
+            // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
             CHECK_THROWS_WITH_AS(zlib::decompress(stream, "invalid data"), "inflate failed", const zlib::ZlibError&);
 
             data.append("x\x01\x01\x03\x00\xfc\xff\x00\x01\x02\x00\x07\x00\x04"_b);
 
+            // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
             CHECK_THROWS_WITH_AS(zlib::decompress(stream, data.view()), "error'ed zlib stream cannot be reused",
                                  const zlib::ZlibError&);
         }

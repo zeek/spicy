@@ -99,6 +99,7 @@ struct TestUnion : Union<int, std::string> {
     TestUnion() = default;
 
     template<typename T>
+    // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
     TestUnion(T&& x) : Union(std::forward<T>(x)) {}
 
     template<typename F>

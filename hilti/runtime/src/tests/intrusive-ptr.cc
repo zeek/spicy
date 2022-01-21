@@ -126,6 +126,7 @@ TEST_CASE("move ctr") {
     IntrusivePtr<TestObject> x2(std::move(x1));
     CHECK_EQ(TestObject::instances, 1);
 
+    // NOLINTNEXTLINE(bugprone-use-after-move)
     CHECK_FALSE(x1.get());
     CHECK(x2.get());
 }

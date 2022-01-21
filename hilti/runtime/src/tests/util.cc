@@ -135,8 +135,9 @@ TEST_CASE("createTemporaryFile") {
         struct Cleanup {
             Cleanup(hilti::rt::filesystem::path& tmp) : _tmp(tmp) {}
             ~Cleanup() {
-                if ( hilti::rt::filesystem::exists(_tmp) )
-                    hilti::rt::filesystem::remove(_tmp);
+                std::error_code ec;
+                if ( hilti::rt::filesystem::exists(_tmp, ec) )
+                    hilti::rt::filesystem::remove(_tmp, ec);
             }
 
             hilti::rt::filesystem::path& _tmp;
@@ -373,7 +374,7 @@ TEST_CASE("map_tuple") {
     CHECK_EQ(map_tuple(std::make_tuple(), [](auto&& x) { return decltype(x){}; }), std::make_tuple());
     CHECK_EQ(map_tuple(std::make_tuple(1U, 1L, std::string("a")), [](auto&& x) { return decltype(x){}; }),
              std::make_tuple(0U, 0L, std::string()));
-    CHECK_EQ(map_tuple(std::make_tuple(1U, 1L, std::string("a")), [](auto&& x) { return std::move(x); }),
+    CHECK_EQ(map_tuple(std::make_tuple(1U, 1L, std::string("a")), [](auto x) { return std::move(x); }),
              std::make_tuple(1U, 1L, std::string("a")));
 
     auto input = std::make_tuple(1U, 1L, std::string("a"));

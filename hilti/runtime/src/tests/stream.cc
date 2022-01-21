@@ -164,6 +164,7 @@ TEST_CASE("assign") {
         CHECK_EQ(s, Stream("123"_b));
 
         *&s = std::move(s); // Assign through a pointer to not trigger compiler warnings about self-assignments.
+        // NOLINTNEXTLINE(bugprone-use-after-move)
         CHECK_EQ(s, Stream("123"_b));
     }
 }

@@ -56,7 +56,6 @@ hilti::rt::Bytes Stream::decompress(const hilti::rt::stream::View& data) {
                 decoded.append(hilti::rt::Bytes(buf, static_cast<int>(len)));
 
             if ( zip_status == Z_STREAM_END ) {
-                finish();
                 break;
             }
 
@@ -91,7 +90,6 @@ hilti::rt::Bytes Stream::decompress(const hilti::rt::Bytes& data) {
             decoded.append(hilti::rt::Bytes(buf, static_cast<int>(len)));
 
         if ( zip_status == Z_STREAM_END ) {
-            finish();
             break;
         }
 

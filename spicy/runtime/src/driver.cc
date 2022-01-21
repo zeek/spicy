@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <map>
 #include <string>
@@ -34,9 +35,9 @@ using namespace spicy::rt;
 HILTI_EXCEPTION_IMPL(InvalidUnitType);
 
 inline static auto pretty_print_number(uint64_t n) {
-    if ( n > 1024 * 1024 * 1024 )
+    if ( n > 1024ULL * 1024 * 1024 )
         return fmt("%" PRIu64 "G", n / 1024 / 1024 / 1024);
-    if ( n > 1024 * 1024 )
+    if ( n > 1024ULL * 1024 )
         return fmt("%" PRIu64 "M", n / 1024 / 1024);
     if ( n > 1024 )
         return fmt("%" PRIu64 "K", n / 1024);
@@ -164,7 +165,7 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
     while ( in.good() && ! in.eof() ) {
         auto len = (increment > 0 ? increment : sizeof(buffer));
 
-        in.read(buffer, len);
+        in.read(buffer, static_cast<std::streamsize>(len));
 
         if ( auto n = in.gcount() )
             data->append(hilti::rt::Bytes(buffer, n));
@@ -458,7 +459,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             auto size = std::stoul(std::string(m[2]));
 
             char data[size];
-            in.read(data, size);
+            in.read(data, static_cast<std::streamsize>(size));
             in.get(); // Eat newline.
 
             if ( in.eof() || in.fail() )
