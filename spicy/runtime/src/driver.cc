@@ -28,8 +28,12 @@ using namespace spicy::rt;
 #define DRIVER_DEBUG(...) debug(__VA_ARGS__)
 #define DRIVER_DEBUG_STATS(...) _debugStats(__VA_ARGS__)
 #else
-#define DRIVER_DEBUG(...)
-#define DRIVER_DEBUG_STATS(...)
+#define DRIVER_DEBUG(...)                                                                                              \
+    do {                                                                                                               \
+    } while ( false )
+#define DRIVER_DEBUG_STATS(...)                                                                                        \
+    do {                                                                                                               \
+    } while ( false )
 #endif
 
 HILTI_EXCEPTION_IMPL(InvalidUnitType);
