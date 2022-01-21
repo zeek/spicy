@@ -78,7 +78,7 @@ TEST_CASE("erase") {
     REQUIRE_EQ(*it1, 1);
     REQUIRE_EQ(*it2, 2);
 
-    REQUIRE_EQ(s.erase(1), 1u);
+    REQUIRE_EQ(s.erase(1), 1U);
 
     // In contrast to a `std::set`, removing elements from a `Set` invalidates
     // _all iterators_, not just iterators to the removed element.

@@ -351,8 +351,8 @@ TEST_CASE("toInt") {
 
 TEST_CASE("toUInt") {
     SUBCASE("with base") {
-        CHECK_EQ("100"_b.toUInt(), 100u);
-        CHECK_EQ("100"_b.toUInt(2), 4u);
+        CHECK_EQ("100"_b.toUInt(), 100U);
+        CHECK_EQ("100"_b.toUInt(2), 4U);
         CHECK_THROWS_WITH_AS("-100"_b.toUInt(2), "integer overflow", const RuntimeError&);
 
         CHECK_THROWS_WITH_AS("12a"_b.toUInt(), "cannot parse bytes as unsigned integer", const RuntimeError&);

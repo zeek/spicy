@@ -9,7 +9,7 @@ TEST_SUITE_BEGIN("Port");
 
 TEST_CASE("construct") {
     SUBCASE("default") {
-        CHECK_EQ(Port().port(), 0u);
+        CHECK_EQ(Port().port(), 0U);
         CHECK_EQ(Port().protocol(), Protocol::Undef);
     }
 

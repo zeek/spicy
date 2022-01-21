@@ -627,7 +627,7 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
 
     std::vector<cxx::Expression> x;
     x.reserve(args.size());
-    for ( auto i = 0u; i < args.size(); i++ )
+    for ( auto i = 0U; i < args.size(); i++ )
         x.emplace_back(compile(args[i], params[i].kind() == declaration::parameter::Kind::InOut));
 
     return x;
@@ -641,7 +641,7 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
 
     std::vector<cxx::Expression> x;
     x.reserve(args.size());
-    for ( auto i = 0u; i < args.size(); i++ )
+    for ( auto i = 0U; i < args.size(); i++ )
         x.emplace_back(compile(args[i], params[i].kind() == declaration::parameter::Kind::InOut));
 
     return x;

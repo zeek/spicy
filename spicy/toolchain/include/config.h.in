@@ -27,12 +27,10 @@ struct Configuration {
 
     std::vector<hilti::rt::filesystem::path>
         runtime_cxx_include_paths; /**< C++ include directories for runtime headers */
-    std::vector<hilti::rt::filesystem::path>
-        runtime_cxx_library_paths; /**< C++ library directories for runtime */
+    std::vector<hilti::rt::filesystem::path> runtime_cxx_library_paths; /**< C++ library directories for runtime */
     std::vector<hilti::rt::filesystem::path>
         toolchain_cxx_include_paths; /**< C++ include directories for toolchain headers */
-    std::vector<hilti::rt::filesystem::path>
-        toolchain_cxx_library_paths; /**< C++ library directories for runtime */
+    std::vector<hilti::rt::filesystem::path> toolchain_cxx_library_paths; /**< C++ library directories for runtime */
 
     std::vector<std::string> compiler_cxx_flags_debug; /**< C++ compiler flags when compiling custom code in debug mode
                                                           that uses the HILTI compiler */
@@ -74,7 +72,7 @@ struct Configuration {
     static void extendHiltiConfiguration();
 
 private:
-    void init(bool use_build_location);
+    void init(bool use_build_directory);
 };
 
 /**

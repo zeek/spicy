@@ -75,8 +75,8 @@ struct FieldTypeVisitor : public hilti::visitor::PreOrder<Type, FieldTypeVisitor
 };
 
 // Helper function to compute one of several kinds of a field's types.
-static std::optional<Type> _fieldType(const type::unit::item::Field& f, const Type& type, FieldType ft,
-                                      bool is_container, Meta meta) {
+std::optional<Type> _fieldType(const type::unit::item::Field& f, const Type& type, FieldType ft, bool is_container,
+                               Meta meta) {
     Type nt;
     if ( auto e = FieldTypeVisitor(ft).dispatch(type) )
         nt = std::move(*e);

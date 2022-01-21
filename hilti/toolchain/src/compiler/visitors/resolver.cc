@@ -42,7 +42,7 @@ namespace {
 
 struct Visitor : public visitor::PostOrder<void, Visitor> {
     Visitor(std::shared_ptr<hilti::Context> ctx, Node* module, Unit* unit)
-        : visitor::PostOrder<void, Visitor>(), _context(std::move(ctx)), unit(unit), _module(module->as<Module>()) {}
+        : _context(std::move(ctx)), unit(unit), _module(module->as<Module>()) {}
 
     std::shared_ptr<hilti::Context> _context;
     Unit* unit;

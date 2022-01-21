@@ -137,7 +137,7 @@ TEST_CASE("registerParser") {
 
         detail::registerParser(parser, "xyz", UnitRef<int>());
 
-        REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
+        REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
 
         CHECK_EQ(parser.linker_scope, "xyz");
@@ -160,7 +160,7 @@ TEST_CASE("registerParser") {
 
         detail::registerParser(parser, "xyz", UnitRef<UnitWithSinkSupport>());
 
-        REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
+        REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
 
         CHECK_EQ(parser.linker_scope, "xyz");
@@ -179,7 +179,7 @@ TEST_CASE("registerParser") {
 
         detail::registerParser(parser, "xyz", UnitRef<UnitWithSinkSupport>());
 
-        REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
+        REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
     }
 }

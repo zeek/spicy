@@ -169,7 +169,8 @@ TEST_CASE("dtr") {
 }
 
 TEST_CASE("swap") {
-    TestObject obj1, obj2;
+    TestObject obj1;
+    TestObject obj2;
 
     IntrusivePtr<TestObject> x1(intrusive_ptr::NewRef{}, &obj1);
     IntrusivePtr<TestObject> x2(intrusive_ptr::NewRef{}, &obj2);

@@ -44,10 +44,7 @@ bool runHook(bool* modified, const Plugin& plugin, const Node* module, const std
         HILTI_DEBUG(logging::debug::Compiler, "  -> modified");
     }
 
-    if ( logger().errors() )
-        return false;
-
-    return true;
+    return logger().errors() == 0;
 }
 
 Unit::~Unit() { _destroyModule(); }

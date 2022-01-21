@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
     }
 
     hilti::configuration().initLocation(hilti::util::currentExecutable());
-    spicy::configuration().extendHiltiConfiguration();
+    spicy::Configuration::extendHiltiConfiguration();
 
     std::vector<std::string> result;
 

@@ -15,7 +15,7 @@ TEST_CASE("backtrace") {
 #ifdef HILTI_HAVE_BACKTRACE
     // As the exact format of the backtrace depends on the particular platform we can only check general properties.
     CHECK(std::none_of(bt->begin(), bt->end(), [](auto& x) { return x.empty(); }));
-    CHECK_GT(bt->size(), 1u); // Distinguish from case without backtrace support below.
+    CHECK_GT(bt->size(), 1U); // Distinguish from case without backtrace support below.
 #else
     REQUIRE_EQ(bt->size(), 1u);
     CHECK_EQ(*bt->begin(), "# <support for stack backtraces not available>");

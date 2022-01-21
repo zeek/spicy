@@ -162,7 +162,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
             std::vector<cxx::Expression> exprs;
 
             assert(src.elements().size() == t->elements().size());
-            for ( auto i = 0u; i < src.elements().size(); i++ )
+            for ( auto i = 0U; i < src.elements().size(); i++ )
                 exprs.push_back(
                     cg->coerce(fmt("std::get<%d>(%s)", i, expr), src.elements()[i].type(), t->elements()[i].type()));
 

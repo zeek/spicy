@@ -18,7 +18,7 @@ TEST_CASE("front") {
 
     xs.push_back(1);
     CHECK_EQ(xs.front(), 1);
-    CHECK_EQ(xs.size(), 1u);
+    CHECK_EQ(xs.size(), 1U);
 }
 
 TEST_CASE("back") {
@@ -27,7 +27,7 @@ TEST_CASE("back") {
 
     xs.push_back(1);
     CHECK_EQ(xs.back(), 1);
-    CHECK_EQ(xs.size(), 1u);
+    CHECK_EQ(xs.size(), 1U);
 }
 
 TEST_CASE("pop_back") {
@@ -36,11 +36,11 @@ TEST_CASE("pop_back") {
 
     xs.push_back(1);
     xs.push_back(2);
-    CHECK_EQ(xs.size(), 2u);
+    CHECK_EQ(xs.size(), 2U);
     xs.pop_back();
-    CHECK_EQ(xs.size(), 1u);
+    CHECK_EQ(xs.size(), 1U);
     xs.pop_back();
-    CHECK_EQ(xs.size(), 0u);
+    CHECK_EQ(xs.size(), 0U);
 }
 
 TEST_CASE("concat") {
@@ -56,9 +56,9 @@ TEST_CASE("subscript") {
     CHECK_THROWS_WITH_AS(Vector<int>()[47], "vector index 47 out of range", const IndexError&);
 
     Vector<int> xs;
-    REQUIRE_EQ(xs.size(), 0u);
+    REQUIRE_EQ(xs.size(), 0U);
     CHECK_THROWS_WITH_AS(Vector<int>()[47], "vector index 47 out of range", const IndexError&);
-    CHECK_EQ(xs.size(), 0u);
+    CHECK_EQ(xs.size(), 0U);
 
     const auto& ys = xs;
     CHECK_THROWS_WITH_AS(ys[47], "vector index 47 out of range", const IndexError&);
@@ -71,11 +71,11 @@ TEST_CASE("subscript") {
 
 TEST_CASE("assign") {
     Vector<int> xs({1});
-    REQUIRE_EQ(xs.size(), 1u);
+    REQUIRE_EQ(xs.size(), 1U);
 
     SUBCASE("") {
         xs.assign(0, 42);
-        CHECK_EQ(xs.size(), 1u);
+        CHECK_EQ(xs.size(), 1U);
         CHECK_EQ(xs[0], 42);
     }
 
@@ -294,7 +294,7 @@ TEST_CASE("ConstIterator") {
 TEST_CASE("vector of bool") {
     SUBCASE("default allocator") {
         const auto xs = Vector<Bool>({true, false});
-        REQUIRE_EQ(xs.size(), 2u);
+        REQUIRE_EQ(xs.size(), 2U);
 
         CHECK_EQ(xs.front(), Bool(true));
         CHECK_EQ(xs.back(), Bool(false));

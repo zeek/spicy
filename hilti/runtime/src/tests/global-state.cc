@@ -45,16 +45,16 @@ TEST_CASE("initModuleGlobals/hiltiGlobals/moduleGlobals") {
     detail::registerModule({.name = "1", .id = "1"});
     detail::initModuleGlobals<int>(++idx);
 
-    REQUIRE_EQ(detail::hiltiGlobals().size(), 1u);
+    REQUIRE_EQ(detail::hiltiGlobals().size(), 1U);
     CHECK_NE(detail::hiltiGlobals().back(), nullptr);
     CHECK_EQ(detail::hiltiGlobals().back(), detail::moduleGlobals<int>(idx));
     REQUIRE(detail::moduleGlobals<int>(idx));
-    CHECK_EQ(*detail::moduleGlobals<int>(idx), 0u);
+    CHECK_EQ(*detail::moduleGlobals<int>(idx), 0U);
 
     detail::registerModule({.name = "2", .id = "2"});
     detail::initModuleGlobals<int>(++idx);
 
-    REQUIRE_EQ(detail::hiltiGlobals().size(), 2u);
+    REQUIRE_EQ(detail::hiltiGlobals().size(), 2U);
     REQUIRE_NE(detail::hiltiGlobals().back(), nullptr);
     CHECK_EQ(detail::hiltiGlobals().back(), detail::moduleGlobals<int>(idx));
     CHECK_NE(detail::moduleGlobals<int>(idx - 1), detail::moduleGlobals<int>(idx));

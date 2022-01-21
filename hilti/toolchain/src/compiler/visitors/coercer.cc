@@ -522,7 +522,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         bool changed = false;
         std::vector<Expression> new_elems;
 
-        for ( auto i = 0u; i < lhs_type.elements().size(); i++ ) {
+        for ( auto i = 0U; i < lhs_type.elements().size(); i++ ) {
             const auto& lhs_elem_type = lhs_type.elements()[i].type();
             auto rhs_elem_type = rhs_type->elements()[i].type();
             auto rhs_elem =

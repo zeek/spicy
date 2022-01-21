@@ -1351,7 +1351,7 @@ private:
     }
 
     // Common backend for backward searching.
-    std::tuple<bool, UnsafeConstIterator> _findBackward(const Bytes& v, UnsafeConstIterator n) const;
+    std::tuple<bool, UnsafeConstIterator> _findBackward(const Bytes& needle, UnsafeConstIterator i) const;
 
     // Common backend for forward searching.
     std::tuple<bool, UnsafeConstIterator> _findForward(const Bytes& v, UnsafeConstIterator n) const;

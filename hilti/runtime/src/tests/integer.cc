@@ -169,8 +169,8 @@ TEST_CASE("bits") {
 
     // Extracting all bits should reproduce the input.
     CHECK_EQ(hilti::rt::integer::bits(hilti::rt::integer::safe<uint64_t>(72623859790382848),
-                                      hilti::rt::integer::safe<std::uint64_t>{0u},
-                                      hilti::rt::integer::safe<std::uint64_t>{63u}, hilti::rt::integer::BitOrder::LSB0),
+                                      hilti::rt::integer::safe<std::uint64_t>{0U},
+                                      hilti::rt::integer::safe<std::uint64_t>{63U}, hilti::rt::integer::BitOrder::LSB0),
              72623859790382848);
 }
 

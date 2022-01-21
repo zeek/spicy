@@ -45,7 +45,7 @@ TEST_CASE("get_proxy") {
 
     // We can change which field is set.
     union_::get_proxy<1>(u) = 42;
-    CHECK_EQ(u.index(), 1u);
+    CHECK_EQ(u.index(), 1U);
     CHECK_EQ(union_::get<1>(u), 42);
 }
 
@@ -56,29 +56,29 @@ TEST_SUITE_BEGIN("Union");
 TEST_CASE("assign") {
     SUBCASE("lvalue") {
         Union<int, std::string> u("abc");
-        REQUIRE_EQ(u.index(), 2u);
+        REQUIRE_EQ(u.index(), 2U);
 
         // Not changing field.
         const std::string s = "def";
         u = s;
-        CHECK_EQ(u.index(), 2u);
+        CHECK_EQ(u.index(), 2U);
 
         // Changing field.
         u = 42;
-        CHECK_EQ(u.index(), 1u);
+        CHECK_EQ(u.index(), 1U);
     }
 
     SUBCASE("rvalue") {
         Union<int, std::unique_ptr<double>> u(nullptr);
-        REQUIRE_EQ(u.index(), 2u);
+        REQUIRE_EQ(u.index(), 2U);
 
         // Not changing field.
         u = std::make_unique<double>(1e42);
-        CHECK_EQ(u.index(), 2u);
+        CHECK_EQ(u.index(), 2U);
 
         // Changing field.
         u = 42;
-        CHECK_EQ(u.index(), 1u);
+        CHECK_EQ(u.index(), 1U);
     }
 }
 
@@ -90,9 +90,9 @@ TEST_CASE("construct") {
 }
 
 TEST_CASE("index") {
-    CHECK_EQ(Union<int, std::string>().index(), 0u);
-    CHECK_EQ(Union<int, std::string>(42).index(), 1u);
-    CHECK_EQ(Union<int, std::string>("abc").index(), 2u);
+    CHECK_EQ(Union<int, std::string>().index(), 0U);
+    CHECK_EQ(Union<int, std::string>(42).index(), 1U);
+    CHECK_EQ(Union<int, std::string>("abc").index(), 2U);
 }
 
 struct TestUnion : Union<int, std::string> {

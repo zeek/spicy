@@ -25,9 +25,9 @@ auto make_stream(std::initializer_list<Bytes> xs) {
 }
 
 TEST_CASE("size") {
-    CHECK_EQ(make_stream({}).size(), 0u);
-    CHECK_EQ(make_stream({"123\x00"_b}).size(), 4u);
-    CHECK_EQ(make_stream({"12"_b, "3\x00"_b}).size(), 4u);
+    CHECK_EQ(make_stream({}).size(), 0U);
+    CHECK_EQ(make_stream({"123\x00"_b}).size(), 4U);
+    CHECK_EQ(make_stream({"12"_b, "3\x00"_b}).size(), 4U);
 }
 
 TEST_CASE("isEmpty") {
