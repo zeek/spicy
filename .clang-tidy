@@ -32,7 +32,7 @@ Checks: 'bugprone,
          -readability-qualified-auto,
          '
 
-HeaderFilterRegex: '(/include/(hilti|spicy)/[^3].*/[^_][^_][^/]*$)|(^3rdparty.*)'
+HeaderFilterRegex: '.*(/include/(hilti|spicy)/(^3).*/[^_][^_][^/]*$)|(^3rdparty.*)'
 WarningsAsErrors: '*'
 
 CheckOptions:
