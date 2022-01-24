@@ -28,9 +28,6 @@
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
 [hilti-trace] : spicy_rt::waitForInput(__data, __cur, 4, "expecting 4 bytes for unpacking value", "<...>/debug-trace.spicy:10:9", (*self).__filters);
 [hilti-trace] : ((*self).f1, __cur) = (*unpack<uint<32>>((__cur, hilti::ByteOrder::Network)));
-[hilti-trace] :  if ( __trim ) {     hilti::debug("spicy-verbose", "- trimming input");     (*__data).trim(begin(__cur)); }
-[hilti-trace] : hilti::debug("spicy-verbose", "- trimming input");
-[hilti-trace] : (*__data).trim(begin(__cur));
 [hilti-trace] : hilti::debugDedent("spicy-verbose");
 [hilti-trace] : # End parsing production: Variable: f1  -> uint<32>
 [hilti-trace] : hilti::debug("spicy", "f1 = %s" % (*self).f1);
@@ -43,9 +40,6 @@
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
 [hilti-trace] : spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/debug-trace.spicy:11:9", (*self).__filters);
 [hilti-trace] : ((*self).f2, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
-[hilti-trace] :  if ( __trim ) {     hilti::debug("spicy-verbose", "- trimming input");     (*__data).trim(begin(__cur)); }
-[hilti-trace] : hilti::debug("spicy-verbose", "- trimming input");
-[hilti-trace] : (*__data).trim(begin(__cur));
 [hilti-trace] : hilti::debugDedent("spicy-verbose");
 [hilti-trace] : # End parsing production: Variable: f2  -> uint<8>
 [hilti-trace] : hilti::debug("spicy", "f2 = %s" % (*self).f2);
