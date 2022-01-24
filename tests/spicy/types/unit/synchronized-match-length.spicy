@@ -1,0 +1,52 @@
+# @TEST-DOC: Checks that we always synchronize on the shortest possible match.
+
+# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
+#
+# During normal parsing we prefer the longest possible match, but synchronize
+# on the shortest match.
+# @TEST-EXEC: ${SCRIPTS}/printf xABC | spicy-driver -d test.hlto -p test::A >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf ABC | spicy-driver -d test.hlto -p test::A >>output 2>&1
+
+# @TEST-EXEC: ${SCRIPTS}/printf xABC | spicy-driver -d test.hlto -p test::B >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf ABC | spicy-driver -d test.hlto -p test::B >>output 2>&1
+#
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type A = unit {
+    a: b"x";
+    y: X &synchronized;
+    s: bytes &eod;
+    on %synced {
+        print "Synced at offset=%d" % self.offset();
+        self.confirm();
+    }
+    on %done { print "Done A=%s" % self; }
+};
+
+type X = unit {
+    switch {
+        -> a1: b"A";
+        -> a2: /A.*/;
+    };
+};
+
+public type B = unit {
+    a: b"x";
+    z: Y &synchronized;
+    s: bytes &eod;
+    on %synced {
+        print "Synced at offset=%d" % self.offset();
+        self.confirm();
+    }
+    on %done { print "Done B=%s" % self; }
+};
+
+# This unit is like `X` but has its field order reversed.
+type Y = unit {
+    switch {
+        -> a1: b"ABC";
+        -> a2: /A/;
+    };
+};
