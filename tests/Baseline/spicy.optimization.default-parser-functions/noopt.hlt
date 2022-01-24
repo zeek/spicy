@@ -17,9 +17,9 @@ type P0 = struct {
     hook void __on_0x25_error() ;
     hook optional<string> __str__() ;
     hook void __on_0x25_finally() ;
-    hook void __on_0x25_confirmed() ;
-    hook void __on_0x25_rejected() ;
-    hook void __on_0x25_synced() ;
+    hook void __on_0x25_confirmed() &always-emit;
+    hook void __on_0x25_rejected() &always-emit;
+    hook void __on_0x25_synced() &always-emit;
     hook void __on_0x25_gap(uint<64> seq, uint<64> len) ;
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_) ;
     hook void __on_0x25_skipped(uint<64> seq) ;
@@ -43,9 +43,9 @@ public type P1 = struct {
     hook void __on_0x25_error() ;
     hook optional<string> __str__() ;
     hook void __on_0x25_finally() ;
-    hook void __on_0x25_confirmed() ;
-    hook void __on_0x25_rejected() ;
-    hook void __on_0x25_synced() ;
+    hook void __on_0x25_confirmed() &always-emit;
+    hook void __on_0x25_rejected() &always-emit;
+    hook void __on_0x25_synced() &always-emit;
     hook void __on_0x25_gap(uint<64> seq, uint<64> len) ;
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_) ;
     hook void __on_0x25_skipped(uint<64> seq) ;
@@ -73,9 +73,9 @@ public type P2 = struct {
     hook void __on_0x25_error() ;
     hook optional<string> __str__() ;
     hook void __on_0x25_finally() ;
-    hook void __on_0x25_confirmed() ;
-    hook void __on_0x25_rejected() ;
-    hook void __on_0x25_synced() ;
+    hook void __on_0x25_confirmed() &always-emit;
+    hook void __on_0x25_rejected() &always-emit;
+    hook void __on_0x25_synced() &always-emit;
     hook void __on_0x25_gap(uint<64> seq, uint<64> len) ;
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_) ;
     hook void __on_0x25_skipped(uint<64> seq) ;
@@ -559,10 +559,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
     # Begin parsing production: Variable: x   -> uint<8>
     spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8", (*self).__filters);
     ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
-
-    if ( __trim ) 
-        (*__data).trim(begin(__cur));
-
     # End parsing production: Variable: x   -> uint<8>
 
     if ( __feat%foo__P2%uses_random_access ) 
@@ -586,10 +582,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::P2::__parse_fo
     # Begin parsing production: Variable: y   -> uint<8>
     spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8", (*self).__filters);
     ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
-
-    if ( __trim ) 
-        (*__data).trim(begin(__cur));
-
     # End parsing production: Variable: y   -> uint<8>
 
     if ( __feat%foo__P2%uses_random_access ) 
