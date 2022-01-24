@@ -842,38 +842,39 @@ struct ProductionVisitor
         std::partition_copy(tokens.begin(), tokens.end(), std::back_inserter(regexps), std::back_inserter(other),
                             [](auto& p) { return p.type()->template isA<hilti::type::RegExp>(); });
 
-        bool first_token = true;
+        auto parse = [&]() {
+            bool first_token = true;
 
-        // Parse regexps in parallel.
-        if ( ! regexps.empty() ) {
-            first_token = false;
+            // Parse regexps in parallel.
+            if ( ! regexps.empty() ) {
+                first_token = false;
 
-            // Create the joint regular expression. The token IDs become the regexps' IDs.
-            auto patterns = hilti::util::transform(regexps, [](const auto& c) {
-                return std::make_pair(c.template as<production::Ctor>()
-                                          .ctor()
-                                          .template as<hilti::ctor::RegExp>()
-                                          .value(),
-                                      c.tokenID());
-            });
+                // Create the joint regular expression. The token IDs become the regexps' IDs.
+                auto patterns = hilti::util::transform(regexps, [](const auto& c) {
+                    return std::make_pair(c.template as<production::Ctor>()
+                                              .ctor()
+                                              .template as<hilti::ctor::RegExp>()
+                                              .value(),
+                                          c.tokenID());
+                });
 
-            auto flattened = std::vector<std::string>();
+                auto flattened = std::vector<std::string>();
 
-            for ( const auto& p : patterns ) {
-                for ( const auto& r : p.first )
-                    flattened.push_back(hilti::util::fmt("%s{#%" PRId64 "}", r, p.second));
-            }
+                for ( const auto& p : patterns ) {
+                    for ( const auto& r : p.first )
+                        flattened.push_back(hilti::util::fmt("%s{#%" PRId64 "}", r, p.second));
+                }
 
-            auto re = hilti::ID(fmt("__re_%" PRId64, symbol));
-            auto d = builder::constant(re, builder::regexp(flattened,
-                                                           AttributeSet({Attribute("&nosub"), Attribute("&anchor")})));
-            pb->cg()->addDeclaration(d);
+                auto re = hilti::ID(fmt("__re_%" PRId64, symbol));
+                auto d =
+                    builder::constant(re, builder::regexp(flattened,
+                                                          AttributeSet({Attribute("&nosub"), Attribute("&anchor")})));
+                pb->cg()->addDeclaration(d);
 
-            // Create the token matcher state.
-            builder()->addLocal(ID("ncur"), state().cur);
-            auto ms = builder::local("ms", builder::memberCall(builder::id(re), "token_matcher", {}));
+                // Create the token matcher state.
+                builder()->addLocal(ID("ncur"), state().cur);
+                auto ms = builder::local("ms", builder::memberCall(builder::id(re), "token_matcher", {}));
 
-            auto incremental_matching = [&]() {
                 // Create loop for incremental matching.
                 pushBuilder(builder()->addWhile(ms, builder::bool_(true)), [&]() {
                     builder()->addLocal(ID("rc"), hilti::type::SignedInteger(32));
@@ -909,69 +910,66 @@ struct ProductionVisitor
                 });
 
                 pb->state().printDebug(builder());
+            }
+
+            // Parse non-regexps successively.
+            for ( auto& p : other ) {
+                if ( ! p.isLiteral() )
+                    continue;
+
+                auto pstate = pb->state();
+                pstate.literal_mode = mode;
+                pushState(std::move(pstate));
+                auto match = pb->parseLiteral(p, {});
+                popState();
+
+                if ( first_token ) {
+                    // Simplified version, no previous match possible that we
+                    // would need to compare against.
+                    first_token = false;
+                    auto true_ = builder()->addIf(builder::unequal(match, builder::begin(state().cur)));
+                    true_->addAssign(state().lahead, builder::integer(p.tokenID()));
+                    true_->addAssign(state().lahead_end, match);
+                }
+                else {
+                    // If the length is larger than any token we have found so
+                    // far, we take it. If length is the same as previous one,
+                    // it's ambiguous and we bail out.
+                    auto true_ =
+                        builder()->addIf(builder::local("i", match),
+                                         builder::and_(builder::unequal(builder::id("i"), builder::begin(state().cur)),
+                                                       builder::greaterEqual(builder::id("i"), state().lahead_end)));
+
+                    auto ambiguous = true_->addIf(builder::and_(builder::unequal(state().lahead, look_ahead::None),
+                                                                builder::equal(builder::id("i"), state().lahead_end)));
+                    pushBuilder(ambiguous);
+                    pb->parseError("ambiguous look-ahead token match", location);
+                    popBuilder();
+
+                    true_->addAssign(state().lahead, builder::integer(p.tokenID()));
+                    true_->addAssign(state().lahead_end, builder::id("i"));
+                }
             };
+        };
 
-            switch ( mode ) {
-                case LiteralMode::Default: hilti::util::cannot_be_reached();
-                case LiteralMode::Try: {
-                    incremental_matching();
-                    break;
-                }
-
-                case LiteralMode::Search: {
-                    // Create a loop for search mode.
-                    pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
-                        incremental_matching();
-
-                        auto [if_, else_] = builder()->addIfElse(builder::or_(pb->atEod(), state().lahead));
-                        pushBuilder(if_, [&]() { builder()->addBreak(); });
-                        pushBuilder(else_, [&]() {
-                            pb->advanceInput(builder::integer(1));
-                            builder()->addAssign(builder::id("ncur"), state().cur);
-                        });
-                    });
-
-                    break;
-                }
+        switch ( mode ) {
+            case LiteralMode::Default:
+            case LiteralMode::Try: {
+                parse();
+                break;
             }
-        }
 
-        // Parse non-regexps successively.
-        for ( auto& p : other ) {
-            if ( ! p.isLiteral() )
-                continue;
+            case LiteralMode::Search: {
+                // Create a loop for search mode.
+                pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
+                    parse();
 
-            auto pstate = pb->state();
-            pstate.literal_mode = mode;
-            pushState(std::move(pstate));
-            auto match = pb->parseLiteral(p, {});
-            popState();
+                    auto [if_, else_] = builder()->addIfElse(builder::or_(pb->atEod(), state().lahead));
+                    pushBuilder(if_, [&]() { builder()->addBreak(); });
+                    pushBuilder(else_, [&]() { pb->advanceInput(builder::integer(1)); });
+                });
 
-            if ( first_token ) {
-                // Simplified version, no previous match possible that we
-                // would need to compare against.
-                first_token = false;
-                auto true_ = builder()->addIf(builder::unequal(match, builder::begin(state().cur)));
-                true_->addAssign(state().lahead, builder::integer(p.tokenID()));
-                true_->addAssign(state().lahead_end, match);
-            }
-            else {
-                // If the length is larger than any token we have found so
-                // far, we take it. If length is the same as previous one,
-                // it's ambiguous and we bail out.
-                auto true_ =
-                    builder()->addIf(builder::local("i", match),
-                                     builder::and_(builder::unequal(builder::id("i"), builder::begin(state().cur)),
-                                                   builder::greaterEqual(builder::id("i"), state().lahead_end)));
-
-                auto ambiguous = true_->addIf(builder::and_(builder::unequal(state().lahead, look_ahead::None),
-                                                            builder::equal(builder::id("i"), state().lahead_end)));
-                pushBuilder(ambiguous);
-                pb->parseError("ambiguous look-ahead token match", location);
-                popBuilder();
-
-                true_->addAssign(state().lahead, builder::integer(p.tokenID()));
-                true_->addAssign(state().lahead_end, builder::id("i"));
+                break;
             }
         }
 
