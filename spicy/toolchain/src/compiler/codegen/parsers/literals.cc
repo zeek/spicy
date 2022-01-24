@@ -246,45 +246,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 } // namespace
 
 Expression ParserBuilder::parseLiteral(const Production& p, const std::optional<Expression>& dst) {
-    switch ( state().literal_mode ) {
-        case LiteralMode::Default:
-        case LiteralMode::Try: {
-            if ( auto e = Visitor(this, p, dst).dispatch(p.expression()) )
-                return std::move(*e);
-
-            break;
-        }
-
-        case LiteralMode::Search: {
-            // Set up return value.
-            auto result =
-                builder()->addTmp("search_result", builder::default_(type::Optional(type::stream::Iterator())));
-
-            // Add a loop for search mode.
-            pushBuilder(builder()->addWhile(builder::bool_(true)), [&]() {
-                auto e = Visitor(this, p, dst).dispatch(p.expression());
-
-                if ( ! e )
-                    hilti::logger().internalError(
-                        fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
-
-                builder()->addAssign(result, *e);
-
-                state().printDebug(builder());
-
-                pushBuilder(builder()->addIf(atEod()), [&]() { builder()->addBreak(); });
-
-                auto [if_, else_] = builder()->addIfElse(builder::unequal(*e, builder::begin(state().cur)));
-                pushBuilder(if_, [&]() { builder()->addBreak(); });
-                pushBuilder(else_, [&]() { advanceInput(builder::integer(1)); });
-            });
-
-            if ( dst )
-                builder()->addAssign(*dst, builder::deref(result));
-
-            return builder::deref(result);
-        }
-    }
+    if ( auto e = Visitor(this, p, dst).dispatch(p.expression()) )
+        return std::move(*e);
 
     hilti::logger().internalError(fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
 }
