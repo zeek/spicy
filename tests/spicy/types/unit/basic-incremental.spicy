@@ -1,7 +1,7 @@
 # @TEST-EXEC:  ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | HILTI_DEBUG=spicy:spicy-driver spicy-driver -d -i 1 %INPUT >output
 # @TEST-EXEC:  btest-diff output
 # @TEST-EXEC:  test "$BUILD" != "debug" || (cat .stderr | grep "\[spicy\] " >debug.log && btest-diff debug.log)
-# @TEST-EXEC:  test "$BUILD" != "debug" || (cat .stderr | grep -q "\[spicy-driver\] input.*chunks-cur=0 offset-head=4 offset-tail=4")
+# @TEST-EXEC:  test "$BUILD" != "debug" || (cat .stderr | grep -q "\[spicy-driver\] input.*chunks-cur=4 offset-head=0 offset-tail=4")
 #
 # @TEST-GROUP: spicy-core
 #
