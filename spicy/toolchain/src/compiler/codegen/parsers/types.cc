@@ -57,7 +57,6 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
             auto unpacked = builder::unpack(t, std::move(unpack_args));
             builder()->addAssign(builder::tuple({target, state().cur}), builder::deref(unpacked));
-            pb->trimInput();
             return target;
         }
         else {

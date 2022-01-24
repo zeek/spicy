@@ -1346,7 +1346,10 @@ struct ProductionVisitor
         popState();
     }
 
-    void operator()(const production::Ctor& p) { pb->parseLiteral(p, destination()); }
+    void operator()(const production::Ctor& p) {
+        pb->parseLiteral(p, destination());
+        pb->trimInput();
+    }
 
     auto parseLookAhead(const production::LookAhead& p) {
         assert(state().needs_look_ahead);
