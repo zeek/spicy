@@ -72,10 +72,10 @@ the ``Dockerfile`` for the respective platform for what's needed.
     * - Alpine 3.12
       - :package-release-tgz:`TAR <linux_alpine_3_12>`
       - :package-dev-tgz:`TAR <docker_alpine_3_12>`
-      - :repo:`Dockerfile <docker/Dockerfile.centos-7>`
+      - :repo:`Dockerfile <docker/Dockerfile.alpine-3.12>`
 
     * - CentOS Stream 8
-      - :package-release-rpm:`RPM <linux_centos_stream_8>`
+      -
       - :package-dev-rpm:`RPM <docker_centos_stream_8>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-stream-8>`
 
@@ -283,8 +283,7 @@ To build an image, go into Spicy's ``docker`` directory and run
     Available platforms:
 
         alpine-3.12
-        centos-7
-        centos-8
+        centos-8-stream
         debian-10
         [...]
 
