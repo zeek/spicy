@@ -1,3 +1,12 @@
+1.4.0-dev.162 | 2022-01-25 12:22:48 +0100
+
+  * Fix documentation link to TFTP sample capture files. (Benjamin Bannier, Corelight)
+
+  * Update documentation for removed centos releases. (Benjamin Bannier, Corelight)
+
+    This is a documentation fixup commit for 55d7775de25c8 where we removed
+    supported for EOL centos releases.
+
 1.4.0-dev.159 | 2022-01-20 09:38:49 +0100
 
   * GH-1084: Fix typing of map/vector index operators. (Robin Sommer,

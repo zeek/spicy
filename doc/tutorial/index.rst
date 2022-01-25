@@ -150,7 +150,7 @@ with small traces only ...).
 Let's use the UDP script with :download:`tftp_rrq.pcap
 <examples/tftp_rrq.pcap>`, a tiny TFTP trace containing a single file
 download from `Wireshark's pcap archive
-<https://wiki.wireshark.org/SampleCaptures#TFTP>`_. ``tcpdump`` shows
+<https://wiki.wireshark.org/SampleCaptures#tftp>`_. ``tcpdump`` shows
 us that the first packet indeed contains a Read Request:
 
 .. code::
