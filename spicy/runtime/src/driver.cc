@@ -4,10 +4,12 @@
 
 #include <algorithm>
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
@@ -26,16 +28,20 @@ using namespace spicy::rt;
 #define DRIVER_DEBUG(...) debug(__VA_ARGS__)
 #define DRIVER_DEBUG_STATS(...) _debugStats(__VA_ARGS__)
 #else
-#define DRIVER_DEBUG(...)
-#define DRIVER_DEBUG_STATS(...)
+#define DRIVER_DEBUG(...)                                                                                              \
+    do {                                                                                                               \
+    } while ( false )
+#define DRIVER_DEBUG_STATS(...)                                                                                        \
+    do {                                                                                                               \
+    } while ( false )
 #endif
 
 HILTI_EXCEPTION_IMPL(InvalidUnitType);
 
 inline static auto pretty_print_number(uint64_t n) {
-    if ( n > 1024 * 1024 * 1024 )
+    if ( n > 1024ULL * 1024 * 1024 )
         return fmt("%" PRIu64 "G", n / 1024 / 1024 / 1024);
-    if ( n > 1024 * 1024 )
+    if ( n > 1024ULL * 1024 )
         return fmt("%" PRIu64 "M", n / 1024 / 1024);
     if ( n > 1024 )
         return fmt("%" PRIu64 "K", n / 1024);
@@ -163,7 +169,7 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
     while ( in.good() && ! in.eof() ) {
         auto len = (increment > 0 ? increment : sizeof(buffer));
 
-        in.read(buffer, len);
+        in.read(buffer, static_cast<std::streamsize>(len));
 
         if ( auto n = in.gcount() )
             data->append(hilti::rt::Bytes(buffer, n));
@@ -353,7 +359,8 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( ! context )
                 context = (*parser)->createContext();
 
-            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, cid, context, this));
+            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, std::move(cid),
+                                                                              context, this));
             if ( x.second )
                 _total_flows++;
 
@@ -456,7 +463,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             auto size = std::stoul(std::string(m[2]));
 
             char data[size];
-            in.read(data, size);
+            in.read(data, static_cast<std::streamsize>(size));
             in.get(); // Eat newline.
 
             if ( in.eof() || in.fail() )

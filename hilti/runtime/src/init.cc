@@ -92,5 +92,5 @@ void hilti::rt::detail::registerModule(HiltiModule module) {
     if ( module.globals_idx )
         *module.globals_idx = globalState()->hilti_modules.size();
 
-    globalState()->hilti_modules.emplace_back(std::move(module));
+    globalState()->hilti_modules.emplace_back(module);
 }

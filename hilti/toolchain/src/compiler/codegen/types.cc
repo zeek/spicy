@@ -143,7 +143,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
                             auto id_module = tid->sub(-2);
                             auto id_class = tid->sub(-1);
-                            auto id_local = f.id();
+                            const auto& id_local = f.id();
 
                             if ( id_module.empty() )
                                 id_module = cg->hiltiUnit()->id();
@@ -352,7 +352,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                                                .args = {},
                                                .linkage = "inline"};
         auto func = cxx::Function{.declaration = std::move(decl), .body = cxx::Block()};
-        cg->unit()->add(std::move(func));
+        cg->unit()->add(func);
 
         return cxx::declaration::Type{.id = id,
                                       .type = fmt("HILTI_EXCEPTION_NS(%s, %s, %s)", id.local(), base_ns, base_cls),
@@ -647,7 +647,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::Optional& n) {
         std::string t;
 
-        if ( auto ct = n.dereferencedType(); ! ct.isWildcard() )
+        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() )
             t = fmt("std::optional<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
         else
             t = "*";
@@ -658,7 +658,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::StrongReference& n) {
         std::string t;
 
-        if ( auto ct = n.dereferencedType(); ! ct.isWildcard() )
+        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() )
             t = fmt("::hilti::rt::StrongReference<%s>", cg->compile(ct, codegen::TypeUsage::Ctor)); // XXX
         else
             t = "*";
@@ -671,7 +671,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::Result& n) {
         std::string t;
 
-        if ( auto ct = n.dereferencedType(); ! ct.isWildcard() )
+        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() )
             t = fmt("::hilti::rt::Result<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
         else
             t = "*";
@@ -739,7 +739,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::WeakReference& n) {
         std::string t;
 
-        if ( auto ct = n.dereferencedType(); ! ct.isWildcard() )
+        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() )
             t = fmt("::hilti::rt::WeakReference<%s>", cg->compile(ct, codegen::TypeUsage::Ctor));
         else
             t = "*";
@@ -750,7 +750,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::ValueReference& n) {
         std::string t;
 
-        if ( auto ct = n.dereferencedType(); ! ct.isWildcard() ) {
+        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() ) {
             auto element_type = cg->compile(ct, codegen::TypeUsage::Ctor);
             return CxxTypes{.base_type = fmt("::hilti::rt::ValueReference<%s>", element_type), .ctor = element_type};
         }

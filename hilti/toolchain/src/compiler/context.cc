@@ -74,7 +74,7 @@ Context::~Context() {
         u.second->unit = nullptr;
 }
 
-void Context::cacheUnit(std::shared_ptr<Unit> unit) {
+void Context::cacheUnit(const std::shared_ptr<Unit>& unit) {
     auto entry = std::make_shared<CacheEntry>(unit);
     auto idx = unit->cacheIndex();
 
@@ -117,7 +117,7 @@ std::optional<CacheEntry> Context::lookupUnit(const hilti::rt::filesystem::path&
 }
 
 
-static void _dependencies(std::weak_ptr<Unit> u, std::vector<std::weak_ptr<Unit>>* seen) {
+static void _dependencies(const std::weak_ptr<Unit>& u, std::vector<std::weak_ptr<Unit>>* seen) {
     auto unit = u.lock();
 
     for ( const auto& d : *seen ) {

@@ -20,7 +20,7 @@ void Driver::setSpicyCompilerOptions(const spicy::Options& options) {
 
 std::string Driver::hookAddCommandLineOptions() { return "Q"; }
 
-bool Driver::hookProcessCommandLineOption(char opt, const char* optarg) {
+bool Driver::hookProcessCommandLineOption(int opt, const char* optarg) {
     auto hilti_options = hiltiOptions();
 
     switch ( opt ) {

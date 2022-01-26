@@ -363,7 +363,7 @@ class OutOfRange;
  *     extraction.
  */
 template<class Iter, typename Result>
-inline Iter atoi_n(Iter s, Iter e, int base, Result* result) {
+inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result) {
     if ( base < 2 || base > 36 )
         throw OutOfRange("base for numerical conversion must be between 2 and 36");
 

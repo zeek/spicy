@@ -136,7 +136,7 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, co
 }
 
 bool detail::atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                   hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters) {
+                   const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( cur.size() > 0 )
         return false;
 

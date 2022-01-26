@@ -215,7 +215,7 @@ public:
     Iterator& operator++();
 
     /** Advances the iterator forward. */
-    Iterator operator++(int);
+    const Iterator operator++(int);
 
     /**
      * Dereferences the iterator, returning the contained value.
@@ -343,7 +343,7 @@ inline Iterator& Iterator::operator++() {
     return *this;
 }
 
-inline Iterator Iterator::operator++(int) {
+inline const Iterator Iterator::operator++(int) {
     auto x = *this;
 
     if ( _cur.has_value() )
@@ -485,7 +485,7 @@ public:
     Iterator& operator++();
 
     /** Advances the iterator forward. */
-    Iterator operator++(int);
+    const Iterator operator++(int);
 
     /**
      * Dereferences the iterator, returning the contained value.
@@ -629,7 +629,7 @@ inline Iterator& Iterator::operator++() {
     return *this;
 }
 
-inline Iterator Iterator::operator++(int) {
+inline const Iterator Iterator::operator++(int) {
     auto x = *this;
 
     if ( _cur.has_value() )

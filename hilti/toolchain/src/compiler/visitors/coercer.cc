@@ -318,7 +318,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             if ( auto coerced = coerceCallArguments(args, etype->typeValue().parameters()); coerced && *coerced ) {
                 Expression ntuple = expression::Ctor(ctor::Tuple(**coerced), n.op1().meta());
                 logChange(p.node, ntuple, "type arguments");
-                p.node.as<operator_::generic::New>().setOp1(std::move(ntuple));
+                p.node.as<operator_::generic::New>().setOp1(ntuple);
                 modified = true;
             }
         }
@@ -331,7 +331,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     void operator()(const operator_::map::In& n, position_t p) {
         if ( auto x = coerceTo(&p.node, n.op0(), n.op1().type().as<type::Map>().keyType(), true, false) ) {
             logChange(p.node, *x, "call argument");
-            p.node.as<operator_::map::In>().setOp0(std::move(*x));
+            p.node.as<operator_::map::In>().setOp0(*x);
             modified = true;
         }
     }
@@ -343,7 +343,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     void operator()(const operator_::set::In& n, position_t p) {
         if ( auto x = coerceTo(&p.node, n.op0(), n.op1().type().as<type::Set>().elementType(), true, false) ) {
             logChange(p.node, *x, "call argument");
-            p.node.as<operator_::set::In>().setOp0(std::move(*x));
+            p.node.as<operator_::set::In>().setOp0(*x);
             modified = true;
         }
     }
@@ -359,7 +359,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
 
         if ( auto x = coerceTo(&p.node, n.op2(), type::Tuple({etype}), false, true) ) {
             logChange(p.node, *x, "element type");
-            p.node.as<operator_::vector::PushBack>().setOp2(std::move(*x));
+            p.node.as<operator_::vector::PushBack>().setOp2(*x);
             modified = true;
         }
     }
@@ -453,13 +453,13 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     void operator()(const expression::LogicalAnd& n, position_t p) {
         if ( auto x = coerceTo(&p.node, n.op0(), type::Bool(), true, false) ) {
             logChange(p.node, *x, "op0");
-            p.node.as<expression::LogicalAnd>().setOp0(std::move(*x));
+            p.node.as<expression::LogicalAnd>().setOp0(*x);
             modified = true;
         }
 
         if ( auto x = coerceTo(&p.node, n.op1(), type::Bool(), true, false) ) {
             logChange(p.node, *x, "op1");
-            p.node.as<expression::LogicalAnd>().setOp1(std::move(*x));
+            p.node.as<expression::LogicalAnd>().setOp1(*x);
             modified = true;
         }
     }
@@ -475,13 +475,13 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     void operator()(const expression::LogicalOr& n, position_t p) {
         if ( auto x = coerceTo(&p.node, n.op0(), type::Bool(), true, false) ) {
             logChange(p.node, *x, "op0");
-            p.node.as<expression::LogicalOr>().setOp0(std::move(*x));
+            p.node.as<expression::LogicalOr>().setOp0(*x);
             modified = true;
         }
 
         if ( auto x = coerceTo(&p.node, n.op1(), type::Bool(), true, false) ) {
             logChange(p.node, *x, "op1");
-            p.node.as<expression::LogicalOr>().setOp1(std::move(*x));
+            p.node.as<expression::LogicalOr>().setOp1(*x);
             modified = true;
         }
     }
@@ -522,7 +522,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         bool changed = false;
         std::vector<Expression> new_elems;
 
-        for ( auto i = 0u; i < lhs_type.elements().size(); i++ ) {
+        for ( auto i = 0U; i < lhs_type.elements().size(); i++ ) {
             const auto& lhs_elem_type = lhs_type.elements()[i].type();
             auto rhs_elem_type = rhs_type->elements()[i].type();
             auto rhs_elem =
@@ -535,13 +535,13 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
                 new_elems.push_back(std::move(*x));
             }
             else
-                new_elems.push_back(std::move(rhs_elem));
+                new_elems.emplace_back(std::move(rhs_elem));
         }
 
         if ( changed ) {
             auto new_rhs = builder::tuple(std::move(new_elems));
             logChange(p.node, new_rhs, "tuple assign");
-            p.node.as<operator_::tuple::CustomAssign>().setOp1(std::move(new_rhs));
+            p.node.as<operator_::tuple::CustomAssign>().setOp1(new_rhs);
             modified = true;
         }
     }

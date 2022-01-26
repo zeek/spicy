@@ -16,13 +16,13 @@ using namespace hilti::detail::cxx::formatter;
 using hilti::util::fmt;
 using nlohmann::json;
 
-Unit::Unit(std::shared_ptr<Context> context) : _context(std::move(context)) {}
+Unit::Unit(const std::shared_ptr<Context>& context) : _context(context) {}
 
-Unit::Unit(std::shared_ptr<Context> context, cxx::ID module_id, const std::string& cxx_code)
-    : _context(std::move(context)), _module_id(std::move(module_id)), _no_linker_meta_data(true), _cxx_code(cxx_code) {}
+Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code)
+    : _context(context), _module_id(std::move(module_id)), _no_linker_meta_data(true), _cxx_code(cxx_code) {}
 
-Unit::Unit(std::shared_ptr<Context> context, cxx::ID module_id)
-    : _context(std::move(context)), _module_id(std::move(module_id)), _no_linker_meta_data(true) {}
+Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id)
+    : _context(context), _module_id(std::move(module_id)), _no_linker_meta_data(true) {}
 
 void Unit::setModule(const hilti::Module& m) {
     _module_id = cxx::ID(m.id());

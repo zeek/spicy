@@ -46,6 +46,7 @@ TEST_CASE("construct") {
     CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::UTF8).str(), "\xF0\x9F\x98\x85");
     CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII).str(), "????");
 
+    // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS(Bytes("123", bytes::Charset::Undef), "unknown character set for encoding",
                          const RuntimeError&);
 }
@@ -78,9 +79,11 @@ TEST_CASE("extract") {
 
     SUBCASE("insufficient data") {
         unsigned char dst1[3] = {0};
+        // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
         CHECK_THROWS_WITH_AS(""_b.extract(dst1), "insufficient data in source", const InvalidArgument&);
 
         unsigned char dst2[1] = {0};
+        // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
         CHECK_THROWS_WITH_AS(""_b.extract(dst2), "insufficient data in source", const InvalidArgument&);
     }
 }
@@ -188,6 +191,7 @@ TEST_CASE("lower") {
     CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::UTF8).str(), "gänsefüßchen");
     CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::ASCII).str(), "g??????nsef????????????chen");
 
+    // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS("123"_b.lower(bytes::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
 }
@@ -316,6 +320,7 @@ TEST_CASE("sub") {
         CHECK_EQ(b.sub(b.begin(), b.begin()), ""_b);
 
         const auto bb = "123"_b;
+        // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
         CHECK_THROWS_WITH_AS(b.sub(b.begin(), bb.begin()),
                              "cannot perform arithmetic with iterators into different bytes", const InvalidArgument&);
     }
@@ -351,8 +356,8 @@ TEST_CASE("toInt") {
 
 TEST_CASE("toUInt") {
     SUBCASE("with base") {
-        CHECK_EQ("100"_b.toUInt(), 100u);
-        CHECK_EQ("100"_b.toUInt(2), 4u);
+        CHECK_EQ("100"_b.toUInt(), 100U);
+        CHECK_EQ("100"_b.toUInt(2), 4U);
         CHECK_THROWS_WITH_AS("-100"_b.toUInt(2), "integer overflow", const RuntimeError&);
 
         CHECK_THROWS_WITH_AS("12a"_b.toUInt(), "cannot parse bytes as unsigned integer", const RuntimeError&);
@@ -394,6 +399,7 @@ TEST_CASE("upper") {
     CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::UTF8).str(), "GÄNSEFÜẞCHEN");
     CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::ASCII).str(), "G??????NSEF????????????CHEN");
 
+    // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS("123"_b.upper(bytes::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
 }

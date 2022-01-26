@@ -33,6 +33,7 @@ TEST_CASE("flip16") {
 
     const auto max = std::numeric_limits<uint16_t>::max();
 
+    // NOLINTNEXTLINE(bugprone-integer-division)
     CHECK_EQ(integer::flip16(max / 2), std::pow(256, 2) - 256 / 2 - 1);
 
     CHECK_EQ(integer::flip16(max - 3), std::pow(256, 2) - 256 * 3 - 1);
@@ -49,6 +50,7 @@ TEST_CASE("flip32") {
 
     const auto max = std::numeric_limits<uint32_t>::max();
 
+    // NOLINTNEXTLINE(bugprone-integer-division)
     CHECK_EQ(integer::flip32(max / 2), std::pow(uint64_t(256), 4) - 256 / 2 - 1);
 
     CHECK_EQ(integer::flip32(max - 3), std::pow(uint64_t(256), 4) - std::pow(256, 3) * 3 - 1);
@@ -169,8 +171,8 @@ TEST_CASE("bits") {
 
     // Extracting all bits should reproduce the input.
     CHECK_EQ(hilti::rt::integer::bits(hilti::rt::integer::safe<uint64_t>(72623859790382848),
-                                      hilti::rt::integer::safe<std::uint64_t>{0u},
-                                      hilti::rt::integer::safe<std::uint64_t>{63u}, hilti::rt::integer::BitOrder::LSB0),
+                                      hilti::rt::integer::safe<std::uint64_t>{0U},
+                                      hilti::rt::integer::safe<std::uint64_t>{63U}, hilti::rt::integer::BitOrder::LSB0),
              72623859790382848);
 }
 

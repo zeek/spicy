@@ -115,11 +115,12 @@ static json operandToJSON(const hilti::operator_::Operand& o) {
     return op;
 }
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {
     json all_operators;
 
     // Helper function adding one operator to all_operators.
-    auto add_operator = [&](std::string namespace_, const hilti::Operator& op) {
+    auto add_operator = [&](const std::string& namespace_, const hilti::Operator& op) {
         json jop;
         jop["kind"] = kindToString(op.kind());
         jop["doc"] = op.doc();

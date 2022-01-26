@@ -113,7 +113,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     }
 
     result_t operator()(const spicy::type::Bitfield& t) {
-        auto itype = t.parseType();
+        const auto& itype = t.parseType();
         auto value = builder()->addTmp("bitfield", itype);
         performUnpack(value, itype, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
 

@@ -236,8 +236,8 @@ TEST_CASE("advance") {
         CHECK_THROWS_WITH_AS(regexp::MatchState().advance(Stream("123"_b).view()),
                              "no regular expression associated with match state", const PatternError&);
 
-        const auto re_std = RegExp("a(b+)c(d.f)g", regexp::Flags{.use_std = 1});
-        const auto re_no_sub = RegExp("a(b+)c(d.f)g", regexp::Flags{.no_sub = 1});
+        const auto re_std = RegExp("a(b+)c(d.f)g", regexp::Flags{.use_std = true});
+        const auto re_no_sub = RegExp("a(b+)c(d.f)g", regexp::Flags{.no_sub = true});
 
         {
             auto ms_std_1 = re_std.tokenMatcher();
@@ -272,19 +272,19 @@ TEST_CASE("advance") {
         }
 
         // Check that patterns stop when current match cannot be possible expanded anymore.
-        auto http_re_std = RegExp("[ \\t]+", regexp::Flags{.use_std = 1});
+        auto http_re_std = RegExp("[ \\t]+", regexp::Flags{.use_std = true});
         auto http_ms_std = http_re_std.tokenMatcher();
         CHECK_EQ(http_ms_std.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
 
-        auto http_re_std_sub = RegExp("[ \\t]+", regexp::Flags{.no_sub = 1});
+        auto http_re_std_sub = RegExp("[ \\t]+", regexp::Flags{.no_sub = true});
         auto http_ms_std_sub = http_re_std_sub.tokenMatcher();
         CHECK_EQ(http_ms_std_sub.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
     }
 
     SUBCASE("on set") {
         const auto patterns = std::vector<std::string>({"a(b+cx){#10}", "a(b+cy){#20}"});
-        const auto re_std = RegExp(patterns, regexp::Flags{.use_std = 1});
-        const auto re_no_sub = RegExp(patterns, regexp::Flags{.no_sub = 1});
+        const auto re_std = RegExp(patterns, regexp::Flags{.use_std = true});
+        const auto re_no_sub = RegExp(patterns, regexp::Flags{.no_sub = true});
 
         {
             auto ms_std_1 = re_std.tokenMatcher();
@@ -380,7 +380,7 @@ TEST_CASE("reassign") {
     }
 
     SUBCASE("no copy from REG_STD_MATCHER regexp") {
-        const auto re = RegExp("123", regexp::Flags({.no_sub = 0}));
+        const auto re = RegExp("123", regexp::Flags({.no_sub = false}));
         const auto ms1 = re.tokenMatcher();
 
         CHECK_THROWS_WITH_AS(regexp::MatchState{ms1}, "cannot copy match state of regexp with sub-expressions support",
@@ -392,7 +392,7 @@ TEST_CASE("reassign") {
     }
 
     SUBCASE("copy from non-REG_STD_MATCHER regexp") {
-        const auto re = RegExp("123", regexp::Flags({.no_sub = 1}));
+        const auto re = RegExp("123", regexp::Flags({.no_sub = true}));
         const auto ms1 = re.tokenMatcher();
 
         CHECK_NOTHROW(regexp::MatchState{ms1});

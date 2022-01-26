@@ -50,8 +50,8 @@ hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesyste
     else
         ::close(fd);
 
-    const auto cc1 = hilti::rt::filesystem::temp_directory_path() /
-                     util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().c_str(), hash, cc_hash);
+    auto cc1 = hilti::rt::filesystem::temp_directory_path() /
+               util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().c_str(), hash, cc_hash);
 
     std::ofstream out(cc0);
 
@@ -174,8 +174,8 @@ bool CxxCode::save(std::ostream& out) const {
     return ! out.fail();
 }
 
-JIT::JIT(std::shared_ptr<Context> context, bool dump_code)
-    : _context(std::move(context)),
+JIT::JIT(const std::shared_ptr<Context>& context, bool dump_code)
+    : _context(context),
       _dump_code(dump_code),
       _hash(rt::hashCombine(hilti::configuration().hash(),
                             std::hash<std::string>{}(hilti::rt::filesystem::current_path().string()))) {}
@@ -297,15 +297,15 @@ hilti::Result<Nothing> JIT::_compile() {
         // args.push_back("-###");
 
         for ( const auto& i : options().cxx_include_paths ) {
-            args.push_back("-I");
+            args.emplace_back("-I");
             args.push_back(i);
         }
 
         if ( auto path = getenv("HILTI_CXX_INCLUDE_DIRS") ) {
             for ( auto&& dir : hilti::rt::split(path, ":") ) {
                 if ( dir.size() ) {
-                    args.push_back("-I");
-                    args.push_back(std::string(dir));
+                    args.emplace_back("-I");
+                    args.emplace_back(dir);
                 }
             }
         }
@@ -313,7 +313,7 @@ hilti::Result<Nothing> JIT::_compile() {
         auto obj = hilti::rt::filesystem::canonical(path);
         obj.replace_extension(".o");
 
-        args.push_back("-o");
+        args.emplace_back("-o");
         args.push_back(obj);
         _objects.push_back(obj);
 
@@ -370,7 +370,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     else
         ::close(fd);
 
-    args.push_back("-o");
+    args.emplace_back("-o");
     args.push_back(lib0);
 
     for ( const auto& path : _objects ) {
@@ -434,7 +434,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     return library;
 }
 
-Result<JIT::JobID> JIT::_spawnJob(hilti::rt::filesystem::path cmd, std::vector<std::string> args) {
+Result<JIT::JobID> JIT::_spawnJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args) {
     std::vector<std::string> cmdline = {cmd.native()};
 
     for ( auto&& a : args )
@@ -511,7 +511,7 @@ Result<Nothing> JIT::_waitForJobs() {
 
                 if ( ec ) {
                     _jobs.erase(id);
-                    errors.push_back(result::Error(util::fmt("could not wait for process: %s", ec.message())));
+                    errors.emplace_back(util::fmt("could not wait for process: %s", ec.message()));
                 }
 
                 HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, status));
@@ -527,7 +527,7 @@ Result<Nothing> JIT::_waitForJobs() {
                                                "(no error output)" :
                                                std::string("JIT output: \n") + util::trim(job.stderr_);
                     _jobs.erase(id);
-                    errors.push_back(result::Error("JIT compilation failed", stderr__));
+                    errors.emplace_back("JIT compilation failed", stderr__);
                 }
 
                 _jobs.erase(id);

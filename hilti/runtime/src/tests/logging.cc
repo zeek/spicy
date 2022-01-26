@@ -58,17 +58,17 @@ TEST_CASE("debug::dedent") {
 
     debug::dedent("foo");
     HILTI_RT_DEBUG("foo", "test1");
-    expected.push_back("[foo] test1");
+    expected.emplace_back("[foo] test1");
     CHECK_EQ(log.lines(), expected);
 
     debug::indent("foo");
     HILTI_RT_DEBUG("foo", "test1");
-    expected.push_back("[foo]   test1");
+    expected.emplace_back("[foo]   test1");
     CHECK_EQ(log.lines(), expected);
 
     debug::dedent("foo");
     HILTI_RT_DEBUG("foo", "test1");
-    expected.push_back("[foo] test1");
+    expected.emplace_back("[foo] test1");
     CHECK_EQ(log.lines(), expected);
 }
 
@@ -80,12 +80,12 @@ TEST_CASE("debug::indent") {
 
     debug::indent("foo");
     HILTI_RT_DEBUG("foo", "test1");
-    expected.push_back("[foo]   test1");
+    expected.emplace_back("[foo]   test1");
     CHECK_EQ(log.lines(), expected);
 
     debug::indent("foo");
     HILTI_RT_DEBUG("foo", "test1");
-    expected.push_back("[foo]     test1");
+    expected.emplace_back("[foo]     test1");
     CHECK_EQ(log.lines(), expected);
 }
 
@@ -125,7 +125,7 @@ TEST_CASE("HILTI_RT_DEBUG") {
 
     detail::globalState()->debug_logger->enable("foo");
     HILTI_RT_DEBUG("foo", "test2");
-    expected.push_back("[foo] test2");
+    expected.emplace_back("[foo] test2");
     CHECK_EQ(log.lines(), expected);
 }
 

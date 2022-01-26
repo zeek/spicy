@@ -130,9 +130,9 @@ int64_t Bytes::toInt(ByteOrder byte_order) const {
 
     if ( i & (1U << (size_ * 8 - 1)) ) {
         if ( size() == 8 )
-            return -(~i + 1);
+            return static_cast<int64_t>(-(~i + 1));
 
-        return -(i ^ ((1U << (size_ * 8)) - 1)) - 1;
+        return static_cast<int64_t>(-(i ^ ((1U << (size_ * 8)) - 1)) - 1);
     }
 
     return static_cast<int64_t>(i);
@@ -152,7 +152,7 @@ uint64_t Bytes::toUInt(ByteOrder byte_order) const {
 
     uint64_t i = 0;
 
-    for ( char c : *this )
+    for ( auto c : *this )
         i = (i << 8U) | static_cast<uint8_t>(c);
 
     if ( byte_order == hilti::rt::ByteOrder::Little )

@@ -12,7 +12,7 @@ TEST_SUITE_BEGIN("GlobalState");
 
 class TestState {
 public:
-    TestState() : _prev(nullptr) { std::exchange(_prev, detail::__global_state); }
+    TestState() { std::exchange(_prev, detail::__global_state); }
 
     ~TestState() {
         delete detail::__global_state;
@@ -20,7 +20,7 @@ public:
     }
 
 private:
-    detail::GlobalState* _prev;
+    detail::GlobalState* _prev{nullptr};
 };
 
 TEST_CASE("createGlobalState") {

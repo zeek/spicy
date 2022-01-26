@@ -60,7 +60,7 @@ void renderNode(const Node& n, logging::DebugStream stream, bool include_scopes 
 
 namespace ast {
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-void buildScopes(const std::shared_ptr<hilti::Context>& context, Node* root, Unit* unit);
+void buildScopes(const std::shared_ptr<hilti::Context>& ctx, Node* root, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 bool normalize(Node* root, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */

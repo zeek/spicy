@@ -136,7 +136,7 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
 
     if ( data.isEmpty() ) {
         if ( is_final && _pimpl->_acc <= 0 )
-            _pimpl->_acc = jrx_current_accept(&_pimpl->_ms);
+            _pimpl->_acc = static_cast<jrx_accept_id>(jrx_current_accept(&_pimpl->_ms));
 
         return std::make_pair(is_final ? _pimpl->_acc : -1, 0);
     }
@@ -157,11 +157,13 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
 #endif
 
         if ( use_std_matcher )
-            rc = jrx_regexec_partial_std(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size,
-                                         first, last, &_pimpl->_ms, final_block);
+            rc = static_cast<jrx_accept_id>(
+                jrx_regexec_partial_std(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size,
+                                        first, last, &_pimpl->_ms, final_block));
         else
-            rc = jrx_regexec_partial_min(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size,
-                                         first, last, &_pimpl->_ms, final_block);
+            rc = static_cast<jrx_accept_id>(
+                jrx_regexec_partial_min(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size,
+                                        first, last, &_pimpl->_ms, final_block));
 
             // Note: The JRX match_state initializes offsets with 1.
 
@@ -330,8 +332,8 @@ std::tuple<int32_t, Bytes> RegExp::find(const Bytes& data) const {
             assert(so >= 0 && eo >= 0);
             auto nlen = (eo - so);
             auto olen = (cur_eo - cur_so);
-            so += (cur - startp);
-            eo += (cur - startp);
+            so += static_cast<jrx_offset>(cur - startp);
+            eo += static_cast<jrx_offset>(cur - startp);
 
             // Pick longest match, or left-most if same length.
             if ( nlen >= olen && (nlen > olen || so < cur_so || cur_so < 0) ) {
@@ -381,9 +383,9 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const char* data, siz
 #endif
 
     if ( use_std_matcher )
-        rc = jrx_regexec_partial_std(_jrx(), data, len, first, last, ms, true);
+        rc = static_cast<jrx_accept_id>(jrx_regexec_partial_std(_jrx(), data, len, first, last, ms, true));
     else
-        rc = jrx_regexec_partial_min(_jrx(), data, len, first, last, ms, true);
+        rc = static_cast<jrx_accept_id>(jrx_regexec_partial_min(_jrx(), data, len, first, last, ms, true));
 
 #ifdef _DEBUG_MATCHING
     std::cerr << fmt("-> rc=%d ms->offset=%d\n", rc, ms->offset);

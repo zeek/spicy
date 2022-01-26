@@ -644,7 +644,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         out.beginLine();
         out << "switch ( ";
 
-        if ( auto cond = n.condition(); cond.id().str() != "__x" )
+        if ( const auto& cond = n.condition(); cond.id().str() != "__x" )
             out << cond;
         else
             out << *cond.init();

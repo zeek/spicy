@@ -106,7 +106,7 @@ extern std::string to_string(const Production& p);
  * Returns a unique (and stable) token ID for a given string
  * representations of a production.
  */
-extern int64_t tokenID(const std::string& p);
+extern uint64_t tokenID(const std::string& p);
 
 } // namespace production
 

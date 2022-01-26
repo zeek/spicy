@@ -16,7 +16,7 @@ TEST_CASE("copy context") {
     auto c1 = UnitContext(std::move(b), &hilti::rt::type_info::bytes);
 
     // Copy context by reference
-    UnitContext c2 = c1;
+    const UnitContext& c2 = c1;
 
     // Modify value
     auto b1 = c1.as<hilti::rt::Bytes>(&hilti::rt::type_info::bytes);

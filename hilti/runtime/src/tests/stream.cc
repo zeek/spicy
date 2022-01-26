@@ -25,9 +25,9 @@ auto make_stream(std::initializer_list<Bytes> xs) {
 }
 
 TEST_CASE("size") {
-    CHECK_EQ(make_stream({}).size(), 0u);
-    CHECK_EQ(make_stream({"123\x00"_b}).size(), 4u);
-    CHECK_EQ(make_stream({"12"_b, "3\x00"_b}).size(), 4u);
+    CHECK_EQ(make_stream({}).size(), 0U);
+    CHECK_EQ(make_stream({"123\x00"_b}).size(), 4U);
+    CHECK_EQ(make_stream({"12"_b, "3\x00"_b}).size(), 4U);
 }
 
 TEST_CASE("isEmpty") {
@@ -164,6 +164,7 @@ TEST_CASE("assign") {
         CHECK_EQ(s, Stream("123"_b));
 
         *&s = std::move(s); // Assign through a pointer to not trigger compiler warnings about self-assignments.
+        // NOLINTNEXTLINE(bugprone-use-after-move)
         CHECK_EQ(s, Stream("123"_b));
     }
 }
@@ -237,12 +238,12 @@ TEST_CASE("append") {
     }
 
     SUBCASE("rvalue Bytes") {
-        s.append(std::move(empty));
+        s.append(empty);
         CHECK_EQ(s, "123"_b);
         CHECK_EQ(s.size(), 3);
         CHECK_EQ(s.numberOfChunks(), 1);
 
-        s.append(std::move(xs));
+        s.append(xs);
         CHECK_EQ(s, "123456"_b);
         CHECK_EQ(s.size(), 6);
         CHECK_EQ(s.numberOfChunks(), 2);
@@ -281,7 +282,7 @@ TEST_CASE("iteration") {
 
         std::string s;
         for ( auto i : x )
-            s += i;
+            s += static_cast<std::string::value_type>(i);
 
         CHECK_EQ(s, "12345");
     }
@@ -295,7 +296,7 @@ TEST_CASE("iteration") {
 
         std::string s;
         for ( auto i : x )
-            s += i;
+            s += static_cast<std::string::value_type>(i);
 
         CHECK_EQ(s, "123451234567890123456789012345678901234567890");
     }

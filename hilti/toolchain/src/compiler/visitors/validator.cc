@@ -1,6 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <unordered_set>
+#include <utility>
 
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/module.h>
@@ -20,21 +21,21 @@ struct VisitorBase {
     // Record error at location of current node.
     void error(std::string msg, const visitor::Position<Node&>& p,
                node::ErrorPriority priority = node::ErrorPriority::Normal) {
-        p.node.addError(msg, p.node.location(), priority);
+        p.node.addError(std::move(msg), p.node.location(), priority);
         ++errors;
     }
 
     // Record error with current node, but report with another node's location.
     void error(std::string msg, const visitor::Position<Node&>& p, const Node& n,
                node::ErrorPriority priority = node::ErrorPriority::Normal) {
-        p.node.addError(msg, n.location(), priority);
+        p.node.addError(std::move(msg), n.location(), priority);
         ++errors;
     }
 
     // Record error with current node, but report with a custom location.
     void error(std::string msg, const visitor::Position<Node&>& p, Location l,
                node::ErrorPriority priority = node::ErrorPriority::Normal) {
-        p.node.addError(msg, std::move(l), priority);
+        p.node.addError(std::move(msg), std::move(l), priority);
         ++errors;
     }
 
@@ -154,7 +155,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         }
 
         if ( auto attrs = n.attributes() )
-            for ( auto attr : attrs->attributes() ) {
+            for ( const auto& attr : attrs->attributes() ) {
                 if ( attr.tag() != "&requires-type-feature" )
                     error(fmt("invalid attribute '%s' for function parameter", attr.tag()), p);
 
@@ -429,7 +430,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( n.isWildcard() )
             return;
 
-        if ( auto t = n.dereferencedType(); ! type::isAllocable(t) )
+        if ( const auto& t = n.dereferencedType(); ! type::isAllocable(t) )
             error(fmt("type %s cannot be used inside optional", t), p);
     }
 
@@ -437,7 +438,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( n.isWildcard() )
             return;
 
-        if ( auto t = n.dereferencedType(); ! type::isAllocable(t) )
+        if ( const auto& t = n.dereferencedType(); ! type::isAllocable(t) )
             error(fmt("type %s is not allocable and can thus not be used with references", t), p);
     }
 
@@ -445,7 +446,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( n.isWildcard() )
             return;
 
-        if ( auto t = n.dereferencedType(); ! type::isAllocable(t) )
+        if ( const auto& t = n.dereferencedType(); ! type::isAllocable(t) )
             error(fmt("type %s cannot be used inside result", t), p);
     }
 
@@ -526,7 +527,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( n.isWildcard() )
             return;
 
-        if ( auto t = n.dereferencedType(); ! type::isAllocable(t) )
+        if ( const auto& t = n.dereferencedType(); ! type::isAllocable(t) )
             error(fmt("type %s is not allocable and can thus not be used with weak references", t), p);
     }
 

@@ -23,12 +23,12 @@ Time time::mktime(uint64_t y, uint64_t m, uint64_t d, uint64_t H, uint64_t M, ui
         throw InvalidValue("value out of range");
 
     struct tm t;
-    t.tm_sec = S;
-    t.tm_min = M;
-    t.tm_hour = H;
-    t.tm_mday = d;
-    t.tm_mon = m - 1;
-    t.tm_year = y - 1900;
+    t.tm_sec = static_cast<int>(S);
+    t.tm_min = static_cast<int>(M);
+    t.tm_hour = static_cast<int>(H);
+    t.tm_mday = static_cast<int>(d);
+    t.tm_mon = static_cast<int>(m) - 1;
+    t.tm_year = static_cast<int>(y) - 1900;
     t.tm_isdst = -1;
 
     time_t teatime = mktime(&t);
@@ -36,15 +36,16 @@ Time time::mktime(uint64_t y, uint64_t m, uint64_t d, uint64_t H, uint64_t M, ui
     if ( teatime < 0 )
         throw InvalidValue("cannot create time value");
 
-    return Time(teatime, Time::SecondTag());
+    return Time(static_cast<double>(teatime), Time::SecondTag());
 }
 
 Time::operator std::string() const {
     if ( _nsecs == 0 )
         return "<not set>";
 
-    // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+    // _NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
     double frac = (_nsecs.Ref() % 1000000000) / 1e9;
+    // _NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
     time_t secs = _nsecs.Ref() / 1000000000;
 
     char buffer[60];

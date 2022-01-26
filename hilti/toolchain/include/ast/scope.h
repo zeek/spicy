@@ -28,8 +28,8 @@ public:
     ~Scope() = default;
 
     void insert(NodeRef&& n);
-    void insert(ID id, NodeRef&& n);
-    void insertNotFound(ID id);
+    void insert(const ID& id, NodeRef&& n);
+    void insertNotFound(const ID& id);
 
     /** Returns if there's at least one mapping for an ID.  */
     bool has(const ID& id) const { return ! _findID(id).empty(); }

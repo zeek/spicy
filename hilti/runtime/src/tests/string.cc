@@ -15,8 +15,8 @@ TEST_CASE("lower") {
 }
 
 TEST_CASE("size") {
-    CHECK_EQ(string::size(""), 0u);
-    CHECK_EQ(string::size("123Abc"), 6u);
+    CHECK_EQ(string::size(""), 0U);
+    CHECK_EQ(string::size("123Abc"), 6U);
     CHECK_EQ(string::size("Gänsefüßchen"), 12);
     CHECK_THROWS_WITH_AS(string::size("\xc3\x28"), "illegal UTF8 sequence in string", const RuntimeError&);
 }

@@ -52,6 +52,7 @@ void join(std::vector<U>& a, const std::vector<V>& b) {
     a.insert(a.end(), b.begin(), b.end());
 }
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {
     bool want_debug = false;
     bool want_dynamic_linking = false;
@@ -185,10 +186,10 @@ int main(int argc, char** argv) {
         if ( opt == "--ldflags" ) {
             if ( want_dynamic_linking ) {
 #if __APPLE__
-                result.push_back("-Wl,-all_load");
+                result.emplace_back("-Wl,-all_load");
 #else
-                result.push_back("-Wl,--export-dynamic");
-                result.push_back("-Wl,--whole-archive");
+                result.emplace_back("-Wl,--export-dynamic");
+                result.emplace_back("-Wl,--whole-archive");
 #endif
             }
 
@@ -199,9 +200,9 @@ int main(int argc, char** argv) {
 
             if ( want_dynamic_linking ) {
 #if __APPLE__
-                result.push_back("-Wl,-noall_load");
+                result.emplace_back("-Wl,-noall_load");
 #else
-                result.push_back("-Wl,--no-whole-archive");
+                result.emplace_back("-Wl,--no-whole-archive");
 #endif
             }
 

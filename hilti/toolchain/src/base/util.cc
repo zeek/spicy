@@ -1,6 +1,5 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
-#include <errno.h>
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -8,6 +7,7 @@
 #include <utf8proc/utf8proc.h>
 
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 
@@ -21,6 +21,7 @@
 // around it being installed by its default install target.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
+// NOLINTNEXTLINE(bugprone-suspicious-include)
 #include <pathfind/src/pathfind.cpp>
 #pragma GCC diagnostic pop
 
@@ -214,7 +215,7 @@ std::string util::toIdentifier(const std::string& s, bool ensure_non_keyword) {
 
     std::string ns;
 
-    for ( unsigned char c : normalized ) {
+    for ( auto c : normalized ) {
         if ( isalnum(c) || c == '_' ) {
             ns += c;
             continue;
@@ -290,7 +291,7 @@ std::optional<hilti::rt::filesystem::path> util::cacheDirectory(const hilti::Con
 
     const char* homedir;
 
-    if ( (homedir = getenv("HOME")) == NULL ) {
+    if ( (homedir = getenv("HOME")) == nullptr ) {
         auto pwuid = getpwuid(getuid());
         if ( ! pwuid )
             return {};

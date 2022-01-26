@@ -256,7 +256,7 @@ void cxx::Block::addTry(Block body, std::vector<std::pair<declaration::Argument,
 }
 
 size_t cxx::Block::size(bool ignore_comments) const {
-    auto x = 0;
+    size_t x = 0;
     for ( const auto& [s, b, f] : _stmts ) {
         if ( ignore_comments && util::startsWith(s, "//") )
             continue;
@@ -358,7 +358,7 @@ std::string cxx::type::Struct::str() const {
         auto cassign = fmt("%s& operator=(const %s&) = default;", type_name, type_name);
         auto massign = fmt("%s& operator=(%s&&) = default;", type_name, type_name);
 
-        for ( auto x : {dctor, cctor, mctor, cassign, massign} )
+        for ( const auto& x : {dctor, cctor, mctor, cassign, massign} )
             struct_fields.emplace_back(x);
 
         auto locals_user = util::filter(members, [](const auto& m) {

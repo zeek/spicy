@@ -203,7 +203,7 @@ public:
 
 private:
     friend void ::__fiber_run_trampoline(void* argsp);
-    friend void ::__fiber_switch_trampoline(void* args0);
+    friend void ::__fiber_switch_trampoline(void* argsp);
 
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 

@@ -44,10 +44,7 @@ bool runHook(bool* modified, const Plugin& plugin, const Node* module, const std
         HILTI_DEBUG(logging::debug::Compiler, "  -> modified");
     }
 
-    if ( logger().errors() )
-        return false;
-
-    return true;
+    return logger().errors() == 0;
 }
 
 Unit::~Unit() { _destroyModule(); }
@@ -92,7 +89,7 @@ Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& c
 std::shared_ptr<Unit> Unit::fromModule(const std::shared_ptr<Context>& context, hilti::Module module,
                                        hilti::rt::filesystem::path extension) {
     auto id = module.id();
-    auto unit = std::shared_ptr<Unit>(new Unit(context, std::move(id), {}, extension,
+    auto unit = std::shared_ptr<Unit>(new Unit(context, std::move(id), {}, std::move(extension),
                                                std::move(module))); // no make_shared, ctor is private
     context->cacheUnit(unit);
     return unit;
@@ -145,7 +142,8 @@ Result<std::shared_ptr<Unit>> Unit::fromImport(const std::shared_ptr<Context>& c
 
 Result<std::shared_ptr<Unit>> Unit::fromCXX(std::shared_ptr<Context> context, detail::cxx::Unit cxx,
                                             const hilti::rt::filesystem::path& path) {
-    return std::shared_ptr<Unit>(new Unit(context, ID(fmt("<CXX/%s>", path.native())), ".cxx", path, std::move(cxx)));
+    return std::shared_ptr<Unit>(
+        new Unit(std::move(context), ID(fmt("<CXX/%s>", path.native())), ".cxx", path, std::move(cxx)));
 }
 
 Result<hilti::Module> Unit::_parse(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path) {
@@ -177,7 +175,7 @@ Result<hilti::Module> Unit::_parse(const std::shared_ptr<Context>& context, cons
     if ( ! module.id() )
         return result::Error(fmt("module in %s does not have an ID", path.native()));
 
-    return std::move(module);
+    return module;
 }
 
 Result<Nothing> Unit::buildASTScopes(const Plugin& plugin) {
@@ -333,13 +331,13 @@ std::vector<std::weak_ptr<Unit>> Unit::dependencies(bool recursive) const {
     return deps;
 }
 
-bool Unit::addDependency(std::shared_ptr<Unit> unit) {
+bool Unit::addDependency(const std::shared_ptr<Unit>& unit) {
     for ( const auto& d : _dependencies ) {
         if ( d.lock().get() == unit.get() )
             return false;
     }
 
-    _dependencies.push_back(std::move(unit));
+    _dependencies.push_back(unit);
     return true;
 }
 
@@ -382,14 +380,14 @@ static node::ErrorPriority _recursiveValidateAST(const Node& n, Location closest
 
     auto errs = n.errors();
     auto nprio = prio;
-    for ( auto e = errs.begin(); e != errs.end(); e++ ) {
-        if ( ! e->location && closest_location )
-            e->location = closest_location;
+    for ( auto& err : errs ) {
+        if ( ! err.location && closest_location )
+            err.location = closest_location;
 
-        if ( e->priority > prio )
-            errors->push_back(*e);
+        if ( err.priority > prio )
+            errors->push_back(err);
 
-        nprio = std::max(nprio, e->priority);
+        nprio = std::max(nprio, err.priority);
     }
 
     return nprio;

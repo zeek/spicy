@@ -137,13 +137,13 @@ TEST_CASE("internal fields") {
 
     const auto s = type_info::value::auxType<type_info::Struct>(v);
 
-    CHECK_EQ(s->fields().size(), 2u);
-    CHECK_EQ(s->fields(false).size(), 2u);
-    CHECK_EQ(s->fields(true).size(), 3u);
+    CHECK_EQ(s->fields().size(), 2U);
+    CHECK_EQ(s->fields(false).size(), 2U);
+    CHECK_EQ(s->fields(true).size(), 3U);
 
-    CHECK_EQ(s->iterate(v).size(), 2u);
-    CHECK_EQ(s->iterate(v, false).size(), 2u);
-    CHECK_EQ(s->iterate(v, true).size(), 3u);
+    CHECK_EQ(s->iterate(v).size(), 2U);
+    CHECK_EQ(s->iterate(v, false).size(), 2U);
+    CHECK_EQ(s->iterate(v, true).size(), 3U);
 }
 
 TEST_SUITE_END();

@@ -60,7 +60,7 @@ TEST_CASE("execute") {
                  .get<int>(),
              42);
 
-    CHECK_EQ(count, 1u); // Function was executed exactly once.
+    CHECK_EQ(count, 1U); // Function was executed exactly once.
 }
 
 TEST_SUITE_END();

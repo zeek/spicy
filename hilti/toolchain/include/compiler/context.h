@@ -150,7 +150,7 @@ public:
      * @param unit unit to cache
      * @return the meta data associated with the newly registered module
      */
-    void cacheUnit(std::shared_ptr<Unit> unit);
+    void cacheUnit(const std::shared_ptr<Unit>& unit);
 
     /**
      * Looks up a previously cached unit by its ID.

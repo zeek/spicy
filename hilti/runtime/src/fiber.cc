@@ -72,7 +72,7 @@ extern "C" {
 // Fiber entry point for execution of payload functions.
 void __fiber_run_trampoline(void* argsp) {
     auto* fiber = context::detail::get()->fiber.current;
-    fiber->_finishSwitchFiber("trampoline-run");
+    hilti::rt::detail::Fiber::_finishSwitchFiber("trampoline-run");
 
     // We recycle fibers to run an arbitrary number of user jobs. So this
     // trampoline is actually a loop that yields after it has finished its

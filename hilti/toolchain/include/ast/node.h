@@ -535,7 +535,7 @@ public:
     bool operator==(const RangeIterator& other) const { return _iter == other._iter; }
     bool operator!=(const RangeIterator& other) const { return ! (*this == other); }
 
-    RangeIterator operator++(int) {
+    const RangeIterator operator++(int) {
         auto x = RangeIterator(_iter);
         ++_iter;
         return x;
@@ -668,7 +668,7 @@ public:
     bool operator==(const SetIterator& other) const { return _iter == other._iter; }
     bool operator!=(const SetIterator& other) const { return ! (*this == other); }
 
-    SetIterator operator++(int) {
+    const SetIterator operator++(int) {
         auto x = SetIterator(_iter);
         ++_iter;
         return x;

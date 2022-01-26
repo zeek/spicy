@@ -176,7 +176,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
                                                                                    member_const->meta());
             Expression n = hilti::expression::Assign(new_lhs, assign.source(), assign.meta());
             logChange(p.node, n);
-            p.node = std::move(n);
+            p.node = n;
             modified = true;
             return;
         }

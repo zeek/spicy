@@ -2,6 +2,7 @@
 #include <functional>
 #include <optional>
 #include <sstream>
+#include <utility>
 
 #include <hilti/ast/ctors/reference.h>
 #include <hilti/ast/declaration.h>
@@ -40,8 +41,8 @@ inline const hilti::logging::DebugStream Operator("operator");
 namespace {
 
 struct Visitor : public visitor::PostOrder<void, Visitor> {
-    Visitor(const std::shared_ptr<hilti::Context>& ctx, Node* module, Unit* unit)
-        : visitor::PostOrder<void, Visitor>(), _context(ctx), unit(unit), _module(module->as<Module>()) {}
+    Visitor(std::shared_ptr<hilti::Context> ctx, Node* module, Unit* unit)
+        : _context(std::move(ctx)), unit(unit), _module(module->as<Module>()) {}
 
     std::shared_ptr<hilti::Context> _context;
     Unit* unit;
@@ -111,7 +112,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
     // Associate a type ID, and potentially `&cxxname` with a type.
     Type addTypeID(Type t, ID fully_qualified_id, const hilti::optional_ref<const AttributeSet>& attrs) {
-        t.setTypeID(fully_qualified_id);
+        t.setTypeID(std::move(fully_qualified_id));
 
         if ( attrs ) {
             /*
@@ -148,7 +149,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         if ( auto ntype = typeForExpressions(&p, u.value()) ) {
             logChange(p.node, *ntype);
-            p.node.as<ctor::List>().setElementType(std::move(*ntype));
+            p.node.as<ctor::List>().setElementType(*ntype);
             modified = true;
         }
     }
@@ -186,7 +187,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         }
 
         logChange(p.node, type::Tuple({*key, *value}));
-        p.node.as<ctor::Map>().setElementType(std::move(*key), std::move(*value));
+        p.node.as<ctor::Map>().setElementType(*key, *value);
         modified = true;
     }
 
@@ -214,7 +215,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         if ( auto ntype = typeForExpressions(&p, u.value()) ) {
             logChange(p.node, *ntype);
-            p.node.as<ctor::Set>().setElementType(std::move(*ntype));
+            p.node.as<ctor::Set>().setElementType(*ntype);
             modified = true;
         }
     }
@@ -264,7 +265,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         if ( auto ntype = typeForExpressions(&p, u.value()) ) {
             logChange(p.node, *ntype);
-            p.node.as<ctor::Vector>().setElementType(std::move(*ntype));
+            p.node.as<ctor::Vector>().setElementType(*ntype);
             modified = true;
         }
     }
@@ -395,7 +396,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                 return;
 
             logChange(p.node, n);
-            p.node = std::move(n);
+            p.node = n;
             modified = true;
         }
     }
@@ -437,7 +438,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         const auto& et = t.iteratorType(true).dereferencedType();
         logChange(p.node, et);
-        p.node.as<statement::For>().setLocalType(std::move(et));
+        p.node.as<statement::For>().setLocalType(et);
         modified = true;
     }
 
@@ -837,7 +838,7 @@ bool Visitor::resolveCast(const expression::UnresolvedOperator& u, position_t p)
         auto nop = operator_::generic::CastedCoercion::Operator().instantiate(u.operands().copy(), u.meta());
 
         logChange(p.node, nop);
-        p.node = std::move(nop);
+        p.node = nop;
         modified = true;
         return true;
     }
@@ -890,7 +891,7 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
         std::vector<Node> nops;
 
         for ( const auto& op : ops )
-            nops.push_back(derefOperand(op));
+            nops.emplace_back(derefOperand(op));
 
         return nops;
     };

@@ -190,7 +190,7 @@ public:
      * @param unit the unit this one depends on
      * @returns true if this is a new dependency that had not been previously added
      */
-    bool addDependency(std::shared_ptr<Unit> unit);
+    bool addDependency(const std::shared_ptr<Unit>& unit);
 
     /**
      * Returns the unit's meta data for the internal HILTI linker.
@@ -258,7 +258,7 @@ public:
      */
     static Result<std::shared_ptr<Unit>> fromSource(const std::shared_ptr<Context>& context,
                                                     const hilti::rt::filesystem::path& path,
-                                                    std::optional<hilti::rt::filesystem::path> ast_extension = {});
+                                                    std::optional<hilti::rt::filesystem::path> process_extension = {});
 
     /**
      * Factory method that instantiates a unit from an existing HILTI AST.
@@ -293,7 +293,7 @@ public:
      */
     static Result<std::shared_ptr<Unit>> fromImport(const std::shared_ptr<Context>& context, const ID& id,
                                                     const hilti::rt::filesystem::path& parse_extension,
-                                                    const hilti::rt::filesystem::path& ast_extension,
+                                                    const hilti::rt::filesystem::path& process_extension,
                                                     std::optional<ID> scope,
                                                     std::vector<hilti::rt::filesystem::path> search_dirs);
 

@@ -63,9 +63,9 @@ std::string codegen::production::to_string(const Production& p) {
     return hilti::util::fmt("%10s: %-3s -> %s%s%s%s", name, p.symbol(), p.render(), field, container, can_sync);
 }
 
-int64_t codegen::production::tokenID(const std::string& p) {
+uint64_t codegen::production::tokenID(const std::string& p) {
     // We record the IDs in a global map to keep them stable.
-    static std::unordered_map<std::string, int64_t> ids;
+    static std::unordered_map<std::string, size_t> ids;
 
     if ( auto i = ids.find(p); i != ids.end() )
         return i->second;

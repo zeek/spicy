@@ -9,7 +9,7 @@ using namespace hilti::code_formatter;
 void CodeFormatter::next() {
     // _out << "| " << _at_bol << "/" << _indent << " ";
     if ( _at_bol ) {
-        _out << std::string(_indent * 4, ' ');
+        _out << std::string(static_cast<std::string::size_type>(_indent * 4), ' ');
         _at_bol = false;
     }
 }

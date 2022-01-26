@@ -676,7 +676,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t structMember(const expression::ResolvedOperatorBase& o, const Expression& op1) {
-        auto op0 = o.op0();
+        const auto& op0 = o.op0();
         auto id = op1.as<expression::Member>().id();
         auto attr = memberAccess(o, id);
 
@@ -709,7 +709,8 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
         std::vector<std::pair<Expression, bool>> zipped;
 
-        for ( auto i = 0u; i < args.size(); i++ )
+        zipped.reserve(args.size());
+        for ( auto i = 0U; i < args.size(); i++ )
             zipped.emplace_back(args[i], ft.parameters()[i].kind() == declaration::parameter::Kind::InOut);
 
         return memberAccess(n,

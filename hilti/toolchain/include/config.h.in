@@ -107,7 +107,7 @@ struct Configuration {
         hlto_ld_flags_release; /**< Linker flags when when building a precompiled HLTO library in release mode. */
 
 private:
-    void init(bool use_build_location);
+    void init(bool use_build_directory);
 };
 
 /**

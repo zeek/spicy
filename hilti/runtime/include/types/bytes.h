@@ -91,7 +91,7 @@ public:
         return *this;
     }
 
-    auto operator++(int) {
+    const auto operator++(int) {
         auto result = *this;
         ++_index;
         return result;

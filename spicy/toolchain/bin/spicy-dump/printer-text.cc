@@ -155,7 +155,7 @@ void TextPrinter::print(const type_info::Value& v) {
 
             out() << '(';
 
-            for ( auto i : type.tuple->iterate(v) ) {
+            for ( const auto& i : type.tuple->iterate(v) ) {
                 if ( ! first )
                     out() << ", ";
                 else

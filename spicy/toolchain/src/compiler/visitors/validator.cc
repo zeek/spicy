@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <utility>
+
 #include <spicy/rt/mime.h>
 
 #include <hilti/ast/ctors/string.h>
@@ -30,7 +32,7 @@ namespace {
 bool isEnumType(const Type& t, const char* expected_id) { return t.typeID() && *t.typeID() == ID(expected_id); }
 
 // Helper to validate that a type is parseable.
-hilti::Result<hilti::Nothing> isParseableType(Type pt, const type::unit::item::Field& f) {
+hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::item::Field& f) {
     if ( pt.isA<type::Bitfield>() )
         return hilti::Nothing();
 
@@ -153,21 +155,21 @@ struct VisitorBase {
     // Record error at location of current node.
     void error(std::string msg, position_t& p,
                hilti::node::ErrorPriority priority = hilti::node::ErrorPriority::Normal) {
-        p.node.addError(msg, p.node.location(), priority);
+        p.node.addError(std::move(msg), p.node.location(), priority);
         ++errors;
     }
 
     // Record error with current node, but report with another node's location.
     void error(std::string msg, position_t& p, const Node& n,
                hilti::node::ErrorPriority priority = hilti::node::ErrorPriority::Normal) {
-        p.node.addError(msg, n.location(), priority);
+        p.node.addError(std::move(msg), n.location(), priority);
         ++errors;
     }
 
     // Record error with current node, but report with a custom location.
     void error(std::string msg, position_t& p, Location l,
                hilti::node::ErrorPriority priority = hilti::node::ErrorPriority::Normal) {
-        p.node.addError(msg, std::move(l), priority);
+        p.node.addError(std::move(msg), std::move(l), priority);
         ++errors;
     }
 
@@ -215,15 +217,15 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                         };
 
                         ok = true;
-                        int major = parse_number(v[0]);
-                        int minor = parse_number(v[1]);
-                        int patch = 0;
+                        auto major = parse_number(v[0]);
+                        auto minor = parse_number(v[1]);
+                        auto patch = 0ULL;
 
                         if ( v.size() == 3 )
                             patch = parse_number(v[2]);
 
                         // This must match the computation in the toplevel `CMakeLists.txt` file.
-                        int version = major * 10000 + minor * 100 + patch;
+                        auto version = major * 10000 + minor * 100 + patch;
                         if ( hilti::configuration().version_number < version )
                             error(fmt("module %s requires at least Spicy version %s (have %s)", m.id(), s->value(),
                                       hilti::configuration().version_string),
@@ -735,7 +737,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         auto id = hook.id().local().str();
         bool needs_sink_support = false;
 
-        if ( id.find(".") != std::string::npos )
+        if ( id.find('.') != std::string::npos )
             error("cannot use paths in hooks; trigger on the top-level field instead", p, location);
 
         else if ( hilti::util::startsWith(id, "0x25_") ) {

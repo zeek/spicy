@@ -113,6 +113,7 @@ struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
     std::function<void(uint64_t, const Bytes&, const Bytes&)> __on_0x25_overlap = nullptr;
     std::function<void(uint64_t, const Bytes&)> __on_0x25_undelivered = nullptr;
 
+    // NOLINTNEXTLINE(bugprone-unhandled-self-assignment, cert-oop54-cpp)
     UnitWithSinkSupport& operator=(const UnitWithSinkSupport&) {
         // Not implemented.
         return *this;
@@ -137,7 +138,7 @@ TEST_CASE("registerParser") {
 
         detail::registerParser(parser, "xyz", UnitRef<int>());
 
-        REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
+        REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
 
         CHECK_EQ(parser.linker_scope, "xyz");
@@ -160,7 +161,7 @@ TEST_CASE("registerParser") {
 
         detail::registerParser(parser, "xyz", UnitRef<UnitWithSinkSupport>());
 
-        REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
+        REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
 
         CHECK_EQ(parser.linker_scope, "xyz");
@@ -179,7 +180,7 @@ TEST_CASE("registerParser") {
 
         detail::registerParser(parser, "xyz", UnitRef<UnitWithSinkSupport>());
 
-        REQUIRE_EQ(detail::globalState()->parsers.size(), 1u);
+        REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
     }
 }

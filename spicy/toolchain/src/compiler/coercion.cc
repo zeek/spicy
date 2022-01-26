@@ -65,7 +65,7 @@ std::optional<Ctor> spicy::detail::coerceCtor(Ctor c, const Type& dst, bitmask<h
     if ( auto nc = VisitorCtor(dst, style).dispatch(c) )
         return *nc;
 
-    return (*hilti::plugin::registry().hiltiPlugin().coerce_ctor)(std::move(c), std::move(dst), style);
+    return (*hilti::plugin::registry().hiltiPlugin().coerce_ctor)(std::move(c), dst, style);
 }
 
 // Plugin-specific version just kicking off the local visitor.
@@ -76,5 +76,5 @@ std::optional<Type> spicy::detail::coerceType(Type t, const Type& dst, bitmask<h
     if ( auto nt = VisitorType(dst, style).dispatch(t) )
         return *nt;
 
-    return (*hilti::plugin::registry().hiltiPlugin().coerce_type)(std::move(t), std::move(dst), style);
+    return (*hilti::plugin::registry().hiltiPlugin().coerce_type)(std::move(t), dst, style);
 }

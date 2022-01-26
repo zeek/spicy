@@ -1,3 +1,27 @@
+1.4.0-dev.172 | 2022-01-26 12:05:12 +0100
+
+  * Redefine noop macro case so it always requires a semicolon. (Benjamin Bannier, Corelight)
+
+  * Be explicit about bugprone narrowing conversions. (Benjamin Bannier, Corelight)
+
+  * Fix diagnostics from clang-tidy's bugprone category. (Benjamin Bannier, Corelight)
+
+  * Fix diagnostics from clang-tidy's readability category. (Benjamin Bannier, Corelight)
+
+  * Fix diagnostics from clang-tidy's performance category. (Benjamin Bannier, Corelight)
+
+  * Fix diagnostics from clang-tidy's modernize category. (Benjamin Bannier, Corelight)
+
+  * Fix diagnostics from clang-tidy's cert category. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy config. (Benjamin Bannier, Corelight)
+
+    We previously enabled subcategories incorrectly so that much fewer tests
+    than expected were run. We will fix the newly triggered diagnostics in
+    follow-up patches.
+
+  * Fix HeaderFilterRegex in clang-tidy config. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.162 | 2022-01-25 12:22:48 +0100
 
   * Fix documentation link to TFTP sample capture files. (Benjamin Bannier, Corelight)

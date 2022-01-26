@@ -128,7 +128,7 @@ public:
      * @param u unit to schedule for compilation
      * @return set if successful; otherwise the result provides an error message
      */
-    Result<Nothing> addInput(std::shared_ptr<Unit> u);
+    Result<Nothing> addInput(const std::shared_ptr<Unit>& u);
 
     /**
      * Schedules a source file for compilation. The file will be parsed
@@ -361,7 +361,7 @@ protected:
     virtual std::string hookAddCommandLineOptions() { return ""; }
 
     /** Hook for derived classes for parsing additional options. */
-    virtual bool hookProcessCommandLineOption(char opt, const char* optarg) { return false; }
+    virtual bool hookProcessCommandLineOption(int opt, const char* optarg) { return false; }
 
     /**
      * Hook for derived classes for adding content to the driver's usage
@@ -426,13 +426,13 @@ private:
     enum Stage { UNINITIALIZED, INITIALIZED, COMPILED, CODEGENED, LINKED, JITTED } _stage = UNINITIALIZED;
 
     // Backend for adding a new unit.
-    void _addUnit(std::shared_ptr<Unit> unit);
+    void _addUnit(const std::shared_ptr<Unit>& unit);
 
     // Run a specific plugini's AST passes on all units with the corresponding extension.
     Result<Nothing> _resolveUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units, int& round);
 
     // Runs a specific plugin's transform step on a given set of units.
-    Result<Nothing> _transformUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units);
+    Result<Nothing> _transformUnitsWithPlugin(const Plugin& plugin, const std::vector<std::shared_ptr<Unit>>& units);
 
     // Run all plugins on current units, iterating until finished.
     Result<Nothing> _resolveUnits();
@@ -444,25 +444,26 @@ private:
     Result<Nothing> _optimizeUnits();
 
     // Sends a debug dump of a unit's AST to the global logger.
-    void _dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& stream, const Plugin& plugin,
+    void _dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream, const Plugin& plugin,
                   const std::string& prefix, int round);
 
     // Sends a debug dump of a unit's AST to the global logger.
-    void _dumpAST(std::shared_ptr<Unit> unit, const logging::DebugStream& stream, const std::string& prefix);
+    void _dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream, const std::string& prefix);
 
     // Sends a debug dump of a unit's AST to an output stream.
-    void _dumpAST(std::shared_ptr<Unit> unit, std::ostream& stream, const Plugin& plugin, const std::string& prefix,
-                  int round);
+    void _dumpAST(const std::shared_ptr<Unit>& unit, std::ostream& stream, const Plugin& plugin,
+                  const std::string& prefix, int round);
 
     // Records a reduced debug dump of a unit's AST limited to just declarations.
-    void _dumpDeclarations(std::shared_ptr<Unit> unit, const Plugin& plugin);
+    void _dumpDeclarations(const std::shared_ptr<Unit>& unit, const Plugin& plugin);
 
     // Records a debug dump of a unit's AST to disk.
-    void _saveIterationAST(std::shared_ptr<Unit> unit, const Plugin& plugin, const std::string& prefix, int round);
+    void _saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
+                           int round);
 
     // Records a debug dump of a unit's AST to disk.
-    void _saveIterationAST(std::shared_ptr<Unit> unit, const Plugin& plugin, const std::string& prefix,
-                           std::string tag);
+    void _saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
+                           const std::string& tag);
 
     /**
      * Look up a symbol in the global namespace.

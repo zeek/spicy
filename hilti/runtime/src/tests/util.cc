@@ -75,7 +75,7 @@ TEST_CASE("atoi_n") {
         int64_t x = -42; // If nothing gets parse, this value should remain unchanged.
 
         SUBCASE("empty range") {
-            std::string_view s = "";
+            std::string_view s;
             CHECK_THROWS_WITH_AS(atoi_n(s.begin(), s.end(), 10, &x), "cannot decode from empty range",
                                  const InvalidArgument&);
         }
@@ -135,8 +135,9 @@ TEST_CASE("createTemporaryFile") {
         struct Cleanup {
             Cleanup(hilti::rt::filesystem::path& tmp) : _tmp(tmp) {}
             ~Cleanup() {
-                if ( hilti::rt::filesystem::exists(_tmp) )
-                    hilti::rt::filesystem::remove(_tmp);
+                std::error_code ec;
+                if ( hilti::rt::filesystem::exists(_tmp, ec) )
+                    hilti::rt::filesystem::remove(_tmp, ec);
             }
 
             hilti::rt::filesystem::path& _tmp;
@@ -219,8 +220,8 @@ TEST_CASE("escapeUTF8") {
     }
 
     SUBCASE("escape_control") {
-        CHECK_EQ(escapeUTF8(std::string(1u, '\0'), false, false), std::string(1u, '\0'));
-        CHECK_EQ(escapeUTF8(std::string(1u, '\0'), false, true), "\\0");
+        CHECK_EQ(escapeUTF8(std::string(1U, '\0'), false, false), std::string(1U, '\0'));
+        CHECK_EQ(escapeUTF8(std::string(1U, '\0'), false, true), "\\0");
 
         CHECK_EQ(escapeUTF8("\a", false, false), "\a");
         CHECK_EQ(escapeUTF8("\a", false, true), "\\a");
@@ -269,7 +270,7 @@ TEST_CASE("expandEscapes") {
     CHECK_EQ(expandEscapes("\\r"), "\r");
     CHECK_EQ(expandEscapes("\\n"), "\n");
     CHECK_EQ(expandEscapes("\\t"), "\t");
-    CHECK_EQ(expandEscapes("\\0"), std::string(1u, '\0'));
+    CHECK_EQ(expandEscapes("\\0"), std::string(1U, '\0'));
     CHECK_EQ(expandEscapes("\\a"), "\a");
     CHECK_EQ(expandEscapes("\\b"), "\b");
     CHECK_EQ(expandEscapes("\\v"), "\v");
@@ -335,20 +336,20 @@ TEST_CASE("join") {
     CHECK_EQ(join(str_list{"a", "b"}, "1"), "a1b");
     CHECK_EQ(join(str_list{"a", "b", "c"}, "\b1"), "a\b1b\b1c");
 
-    const auto null = std::string(1u, '\0');
+    const auto null = std::string(1U, '\0');
     CHECK_EQ(join(str_list{null, null}, null), null + null + null);
 }
 
 TEST_CASE("join_tuple") {
     CHECK_EQ(join_tuple(std::make_tuple()), "");
     CHECK_EQ(join_tuple(std::make_tuple(integer::safe<uint8_t>(1), std::string("a"))), "1, \"a\"");
-    CHECK_EQ(join_tuple(std::make_tuple(integer::safe<uint8_t>(1), std::string(1u, '\0'))), "1, \"\\0\"");
+    CHECK_EQ(join_tuple(std::make_tuple(integer::safe<uint8_t>(1), std::string(1U, '\0'))), "1, \"\\0\"");
 }
 
 TEST_CASE("join_tuple_for_print") {
     CHECK_EQ(join_tuple_for_print(std::make_tuple()), "");
     CHECK_EQ(join_tuple_for_print(std::make_tuple(integer::safe<uint8_t>(1), std::string("a"))), "1, a");
-    const auto null = std::string(1u, '\0');
+    const auto null = std::string(1U, '\0');
     CHECK_EQ(join_tuple_for_print(std::make_tuple(integer::safe<uint8_t>(1), null)), "1, " + null);
 }
 
@@ -359,7 +360,7 @@ TEST_CASE("ltrim") {
     CHECK_EQ(ltrim("ab1b2c3d4", "abc"), "1b2c3d4");
     CHECK_EQ(ltrim("abc1b2c3d4", "abc"), "1b2c3d4");
 
-    const auto null = std::string(1u, '\0');
+    const auto null = std::string(1U, '\0');
     CHECK_EQ(ltrim(null + null + "abc", "a" + null), "bc");
 }
 
@@ -371,20 +372,20 @@ TEST_CASE("map_tuple") {
     CHECK_EQ(map_tuple(std::make_tuple(), [](auto&) {}), std::make_tuple());
     CHECK_EQ(map_tuple(std::make_tuple(), [](auto&&) { return 0; }), std::make_tuple());
     CHECK_EQ(map_tuple(std::make_tuple(), [](auto&& x) { return decltype(x){}; }), std::make_tuple());
-    CHECK_EQ(map_tuple(std::make_tuple(1u, 1L, std::string("a")), [](auto&& x) { return decltype(x){}; }),
-             std::make_tuple(0u, 0L, std::string()));
-    CHECK_EQ(map_tuple(std::make_tuple(1u, 1L, std::string("a")), [](auto&& x) { return std::move(x); }),
-             std::make_tuple(1u, 1L, std::string("a")));
+    CHECK_EQ(map_tuple(std::make_tuple(1U, 1L, std::string("a")), [](auto&& x) { return decltype(x){}; }),
+             std::make_tuple(0U, 0L, std::string()));
+    CHECK_EQ(map_tuple(std::make_tuple(1U, 1L, std::string("a")), [](auto x) { return std::move(x); }),
+             std::make_tuple(1U, 1L, std::string("a")));
 
-    auto input = std::make_tuple(1u, 1L, std::string("a"));
+    auto input = std::make_tuple(1U, 1L, std::string("a"));
     CHECK_EQ(map_tuple(input,
                        [](auto& x) {
                            auto y = x;
                            x += x;
                            return y;
                        }),
-             std::make_tuple(1u, 1L, std::string("a")));
-    CHECK_EQ(input, std::make_tuple(2u, 2L, std::string("aa")));
+             std::make_tuple(1U, 1L, std::string("a")));
+    CHECK_EQ(input, std::make_tuple(2U, 2L, std::string("aa")));
 }
 
 TEST_CASE("memory_statistics") {
@@ -399,10 +400,10 @@ TEST_CASE("memory_statistics") {
     const auto ru0 = resource_usage();
     REQUIRE_GE(ru0.system_time, 0);
     REQUIRE_GE(ru0.user_time, 0);
-    REQUIRE_GT(ru0.memory_heap, 0u);
-    REQUIRE_EQ(ru0.num_fibers, 0u);
-    REQUIRE_EQ(ru0.max_fibers, 0u);
-    REQUIRE_EQ(ru0.cached_fibers, 0u);
+    REQUIRE_GT(ru0.memory_heap, 0U);
+    REQUIRE_EQ(ru0.num_fibers, 0U);
+    REQUIRE_EQ(ru0.max_fibers, 0U);
+    REQUIRE_EQ(ru0.cached_fibers, 0U);
 
     // Execute a single fiber.
     hilti::rt::fiber::execute([](auto* p) { return Nothing(); });
@@ -416,7 +417,7 @@ TEST_CASE("memory_statistics") {
     CHECK_GE(ru1.system_time, ru0.system_time);
     CHECK_GE(ru1.user_time, ru0.user_time);
 
-    CHECK_GT(ru1.memory_heap, 0u);
+    CHECK_GT(ru1.memory_heap, 0U);
 
     CHECK_EQ(ru1.num_fibers, 1);
     CHECK_GE(ru1.max_fibers, ru1.num_fibers);
@@ -494,7 +495,7 @@ TEST_CASE("rtrim") {
     CHECK_EQ(rtrim("4d3c2b1bc", "abc"), "4d3c2b1");
     CHECK_EQ(rtrim("4d3c2b1abc", "abc"), "4d3c2b1");
 
-    const auto null = std::string(1u, '\0');
+    const auto null = std::string(1U, '\0');
     CHECK_EQ(rtrim("cba" + null + null, "a" + null), "cb");
 }
 
@@ -587,7 +588,7 @@ TEST_CASE("startsWith") {
     CHECK(startsWith("abc", "ab"));
     CHECK(startsWith("abc", "abc"));
 
-    const auto null = std::string(1u, '\0');
+    const auto null = std::string(1U, '\0');
 
     CHECK(startsWith(null + "abc", null));
     CHECK(startsWith(null + "abc", null + "a"));
@@ -661,7 +662,7 @@ TEST_CASE("trim") {
     CHECK_EQ(trim("aa123a", "abc"), "123");
     CHECK_EQ(trim("aa123a", "XYZ"), "aa123a");
 
-    const auto null = std::string(1u, '\0');
+    const auto null = std::string(1U, '\0');
     CHECK_EQ(trim(null + null + "123" + null + "abc" + null, null), "123" + null + "abc");
 }
 
@@ -687,7 +688,7 @@ TEST_CASE("tuple_for_each") {
     }
 
     {
-        auto input = std::make_tuple(1u, 2L, std::string("a"));
+        auto input = std::make_tuple(1U, 2L, std::string("a"));
         std::stringstream ss;
         tuple_for_each(input, [&](auto&& x) { ss << x; });
         CHECK_EQ(ss.str(), "12a");

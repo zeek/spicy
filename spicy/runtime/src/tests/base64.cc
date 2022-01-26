@@ -143,6 +143,8 @@ TEST_CASE("encode") {
 TEST_CASE("finish") {
     base64::Stream stream;
     CHECK_EQ(base64::finish(stream), ""_b);
+
+    // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS(base64::finish(stream), "stream already finished", const base64::Base64Error&);
 }
 

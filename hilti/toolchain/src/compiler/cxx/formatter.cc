@@ -36,7 +36,7 @@ void Formatter::enterNamespace(const std::string& absolute_ns) {
         auto current = util::split(util::join(_namespaces, "::"), "::");
         auto target = util::split(absolute_ns, "::");
 
-        unsigned int i = 0;
+        int i = 0;
         while ( i < std::min(target.size(), current.size()) && target[i] == current[i] ) {
             i++;
         }

@@ -1,38 +1,54 @@
 ---
-Checks: 'bugprone,
-         cert,
-         clang,
-         misc,
-         modernize,
-         performance,
-         portability,
-         readability,
+Checks: '
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-reserved-identifier,
+  -bugprone-branch-clone,
 
-         -cert-err58-cpp,
-         -clang-analyzer-cplusplus.NewDeleteLeaks,
-         -clang-diagnostic-c++2a-designator,
-         -clang-diagnostic-deprecated-copy,
-         -clang-diagnostic-range-loop-analysis,
-         -misc-macro-parentheses,
-         -misc-non-private-member-variables-in-classes,
-         -misc-suspicious-semicolon,
-         -misc-unused-parameters,
-         -modernize-avoid-c-arrays,
-         -modernize-use-equals-default,
-         -modernize-use-nodiscard,
-         -modernize-use-trailing-return-type,
-         -readability-braces-around-statements,
-         -readability-container-size-empty,
-         -readability-convert-member-functions-to-static,
-         -readability-else-after-return,
-         -readability-implicit-bool-conversion,
-         -readability-magic-numbers,
-         -readability-make-member-function-const,
-         -readability-named-parameter,
-         -readability-qualified-auto,
-         '
+  cert-*,
+  -cert-dcl37-c,
+  -cert-dcl51-cpp,
+  -cert-err58-cpp,
+  -cert-dcl58-cpp,
 
-HeaderFilterRegex: '(/include/(hilti|spicy)/[^3].*/[^_][^_][^/]*$)|(^3rdparty.*)'
+  clang*,
+  -clang-analyzer-cplusplus.NewDeleteLeaks,
+  -clang-diagnostic-c++2a-designator,
+  -clang-diagnostic-deprecated-copy,
+  -clang-diagnostic-range-loop-analysis,
+
+  misc-*,
+  -misc-macro-parentheses,
+  -misc-non-private-member-variables-in-classes,
+  -misc-suspicious-semicolon,
+  -misc-no-recursion,
+  -misc-unused-parameters,
+
+  modernize-*,
+  -modernize-avoid-c-arrays,
+  -modernize-use-equals-default,
+  -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
+  -modernize-return-braced-init-list,
+
+  performance-*,
+  portability-*,
+
+  readability-*,
+  -readability-braces-around-statements,
+  -readability-container-size-empty,
+  -readability-convert-member-functions-to-static,
+  -readability-else-after-return,
+  -readability-implicit-bool-conversion,
+  -readability-magic-numbers,
+  -readability-make-member-function-const,
+  -readability-named-parameter,
+  -readability-qualified-auto,
+  -readability-function-cognitive-complexity,
+  -readability-function-size
+  '
+
+HeaderFilterRegex: '.*(/include/(hilti|spicy)/(^3).*/[^_][^_][^/]*$)|(^3rdparty.*)'
 WarningsAsErrors: '*'
 
 CheckOptions:

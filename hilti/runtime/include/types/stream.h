@@ -401,7 +401,7 @@ public:
     }
 
     /** Advances the iterator by one byte. */
-    auto operator++(int) {
+    const auto operator++(int) {
         auto x = *this;
         _increment(1);
         return x;
@@ -420,7 +420,7 @@ public:
     }
 
     /** Moves back the iterator by one byte. */
-    auto operator--(int) {
+    const auto operator--(int) {
         auto x = *this;
         _decrement(1);
         return x;
@@ -707,7 +707,7 @@ public:
     }
 
     /** Advances the iterator by one byte. */
-    auto operator++(int) {
+    const auto operator++(int) {
         auto x = *this;
         _increment(1);
         return x;
@@ -720,7 +720,7 @@ public:
     }
 
     /** Moves back the iterator by one byte. */
-    auto operator--(int) {
+    const auto operator--(int) {
         auto x = *this;
         _decrement(1);
         return x;
@@ -1351,7 +1351,7 @@ private:
     }
 
     // Common backend for backward searching.
-    std::tuple<bool, UnsafeConstIterator> _findBackward(const Bytes& v, UnsafeConstIterator n) const;
+    std::tuple<bool, UnsafeConstIterator> _findBackward(const Bytes& needle, UnsafeConstIterator i) const;
 
     // Common backend for forward searching.
     std::tuple<bool, UnsafeConstIterator> _findForward(const Bytes& v, UnsafeConstIterator n) const;

@@ -29,11 +29,11 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
     hilti::util::Cache<std::string, Production> cache;
 
     const auto& currentField() { return fields.back(); }
-    void pushField(CurrentField f) { fields.emplace_back(f); }
+    void pushField(const CurrentField& f) { fields.emplace_back(f); }
     void popField() { fields.pop_back(); }
     bool haveField() { return ! fields.empty(); }
 
-    std::optional<Production> productionForItem(NodeRef item) {
+    std::optional<Production> productionForItem(const NodeRef& item) {
         auto field = item->tryAs<spicy::type::unit::item::Field>();
         if ( field )
             pushField({*field, NodeRef(item)});
@@ -175,7 +175,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
 
             AttributeSet attributes;
             if ( auto a = n.attributes() )
-                attributes = std::move(*a);
+                attributes = *a;
 
             return production::Switch(switch_sym, *n.expression(), std::move(cases), std::move(default_),
                                       std::move(attributes), n.meta().location());

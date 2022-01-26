@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <utility>
+
 #include <spicy/compiler/detail/codegen/grammar.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/epsilon.h>
@@ -13,7 +15,7 @@ using namespace spicy::detail;
 using namespace spicy::detail::codegen;
 
 production::While::While(const std::string& symbol, Production body, const Location& l)
-    : ProductionBase(symbol, l), _body(body) {}
+    : ProductionBase(symbol, l), _body(std::move(body)) {}
 
 std::string production::While::render() const {
     if ( _expression )

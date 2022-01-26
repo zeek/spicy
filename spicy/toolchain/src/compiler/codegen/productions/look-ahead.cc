@@ -15,6 +15,7 @@ bool codegen::production::LookAhead::supportsSynchronize() const {
             return false;
     }
 
+    // NOLINTNEXTLINE(readability-use-anyofallof)
     for ( const auto& t : _lahs->second ) {
         if ( ! t.supportsSynchronize() )
             return false;
