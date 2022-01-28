@@ -976,67 +976,27 @@ struct ProductionVisitor
         popBuilder();
     }
 
-    // Get productions for lookaheads of a given production. If the passed
-    // production is non-terminal this function recurses until it finds
-    // lookaheads.
-    Result<std::set<Production>> getLookaheadProductions(const Production& p) {
-        // Validation.
-        if ( auto while_ = p.tryAs<production::While>(); while_ && while_->expression() )
-            return hilti::result::Error("&synchronized cannot be used on while loops with conditions");
-
-        std::set<Production> result;
-
-        // TODO(bbannier): We should fix the implementation here by generalizing Grammar
-        // code, see https://github.com/zeek/spicy/pull/1054#discussion_r791674006.
-
-        // Bottom cases for recursion.
-        if ( p.isLiteral() )
-            result.insert(p);
-        else if ( auto lahead = p.tryAs<production::LookAhead>() ) {
-            auto [alt1, alt2] = lahead->lookAheads();
-            for ( const auto& alt : {alt1, alt2} )
-                result.insert(alt.begin(), alt.end());
-        }
-
-        // Otherwise recurse.
-        else if ( auto resolved = p.tryAs<production::Resolved>(); resolved || p.isNonTerminal() ) {
-            auto rhss = resolved ? grammar.resolved(*resolved).rhss() : p.rhss();
-
-            for ( const auto& rs : rhss )
-                for ( const auto& r : rs ) {
-                    auto tokens = getLookaheadProductions(r);
-
-                    if ( ! tokens )
-                        return tokens.error();
-
-                    for ( const auto& token : *tokens ) {
-                        auto productions = getLookaheadProductions(token);
-
-                        if ( ! productions )
-                            return hilti::result::Error(productions.error());
-
-                        for ( auto p : *productions )
-                            result.insert(p);
-                    }
-                }
-        }
-        return result;
-    }
-
     // Generate code to synchronize on the given production. We assume that the
     // given production supports some form of lookahead; if the production is
     // not supported an error will be generated.
     void syncProduction(const Production& p) {
-        auto tokens = getLookaheadProductions(p);
+        // Validation.
+        if ( auto while_ = p.tryAs<production::While>(); while_ && while_->expression() )
+            hilti::logger().error("&synchronized cannot be used on while loops with conditions");
 
-        if ( ! tokens ) {
-            hilti::logger().error(tokens.error(), p.location());
+        auto tokens = grammar.lookAheadsForProduction(p);
+        if ( ! tokens || tokens->empty() ) {
+            // ignore error message that was returned, it's a bit cryptic for our use-case here
+            hilti::logger().error("&synchronized cannot be used on field, no look-ahead tokens found", p.location());
             return;
         }
 
-        if ( tokens->empty() ) {
-            hilti::logger().error("&synchronized cannot be used on field, no lookahead tokens found", p.location());
-            return;
+        for ( const auto& p : *tokens ) {
+            if ( ! p.isLiteral() ) {
+                hilti::logger().error("&synchronized cannot be used on field, look-ahead contains non-literals",
+                                      p.location());
+                return;
+            }
         }
 
         state().printDebug(builder());
