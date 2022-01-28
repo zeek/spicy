@@ -2,11 +2,16 @@
 
 # @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
 
-# @TEST-EXEC: ${SCRIPTS}/printf '\x00ABABAB' | spicy-driver -d test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00ABABAB' | spicy-driver -i 1 -d test.hlto >>output
 
 # External sync.
-# @TEST-EXEC: ${SCRIPTS}/printf 'ABAB' | spicy-driver -d test.hlto >>output
-# @TEST-EXEC: ${SCRIPTS}/printf '1ABAB' | spicy-driver -d test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf 'ABAB' | spicy-driver -i 1 -d test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '1ABAB' | spicy-driver -i 1 -d test.hlto >>output
+
+# Internal sync.
+# TODO(bbannier): Enable this once we support internal synchronization for vectors.
+# @_TEST-EXEC: ${SCRIPTS}/printf '\x00\x01ABABAB' | spicy-driver -i 1 -d test.hlto >>output
+# @_TEST-EXEC: ${SCRIPTS}/printf 'ABAAB____AB' | spicy-driver -i 1 -d test.hlto >>output
 
 # @TEST-EXEC: btest-diff output
 
