@@ -91,6 +91,20 @@ public:
      */
     const std::map<std::string, Production>& productions() const { return _prods; }
 
+    /**
+     * Returns the set of look-ahead terminals for a given production.
+     *
+     * @param p production to examome
+     * @param parent if given and *p* is nullable, then include any look-aheads
+     * of the parent as well
+     *
+     * @return set of non-epsilon terminal productions, or an error if a
+     * non-terminal led to the set being ambiguous. Note that the set may
+     * contain terminals that are not literals.
+     */
+    hilti::Result<std::set<Production>> lookAheadsForProduction(Production p,
+                                                                std::optional<Production> parent = {}) const;
+
     /** Returns true if the grammar needs look-ahead for parsing.
      *
      * @note will always return false until the root production gets set.
@@ -112,11 +126,12 @@ private:
     std::set<Production> _computeClosure(const Production& p);
     bool _add(std::map<std::string, std::set<std::string>>* tbl, const Production& dst,
               const std::set<std::string>& src, bool changed);
-    bool _isNullable(std::vector<Production>::const_iterator i, std::vector<Production>::const_iterator j);
-    std::set<std::string> _getFirst(const Production& p);
-    std::set<std::string> _getFirstOfRhs(const std::vector<Production>& rhs);
+    bool _isNullable(const Production& p) const;
+    bool _isNullable(std::vector<Production>::const_iterator i, std::vector<Production>::const_iterator j) const;
+    std::set<std::string> _getFirst(const Production& p) const;
+    std::set<std::string> _getFirstOfRhs(const std::vector<Production>& rhs) const;
     std::string _productionLocation(const Production& p) const;
-    std::vector<std::vector<Production>> _rhss(const Production& p);
+    std::vector<std::vector<Production>> _rhss(const Production& p) const;
 
     std::string _name;
     Location _location;
