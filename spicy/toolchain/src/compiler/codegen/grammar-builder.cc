@@ -275,12 +275,14 @@ Result<Nothing> GrammarBuilder::run(const type::Unit& unit, Node* node, CodeGen*
 
     g.setRoot(*root);
 
+    auto r = g.finalize();
+
     if ( hilti::logger().isEnabled(spicy::logging::debug::Grammar) ) {
         hilti::logging::Stream dbg(spicy::logging::debug::Grammar);
         g.printTables(dbg, true);
     }
 
-    if ( auto r = g.finalize(); ! r )
+    if ( ! r )
         return r.error();
 
     _grammars[id] = std::move(g);
