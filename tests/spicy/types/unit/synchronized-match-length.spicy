@@ -4,11 +4,11 @@
 #
 # During normal parsing we prefer the longest possible match, but synchronize
 # on the shortest match.
-# @TEST-EXEC: ${SCRIPTS}/printf xABC | spicy-driver -d test.hlto -p test::A >>output 2>&1
-# @TEST-EXEC: ${SCRIPTS}/printf ABC | spicy-driver -d test.hlto -p test::A >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf xABC | spicy-driver -i 1 -d test.hlto -p test::A >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf ABC | spicy-driver -i 1 -d test.hlto -p test::A >>output 2>&1
 
-# @TEST-EXEC: ${SCRIPTS}/printf xABC | spicy-driver -d test.hlto -p test::B >>output 2>&1
-# @TEST-EXEC: ${SCRIPTS}/printf ABC | spicy-driver -d test.hlto -p test::B >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf xABC | spicy-driver -i 1 -d test.hlto -p test::B >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf ABC | spicy-driver -i 1 -d test.hlto -p test::B >>output 2>&1
 #
 # @TEST-EXEC: btest-diff output
 
