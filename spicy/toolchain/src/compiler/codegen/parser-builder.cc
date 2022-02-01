@@ -1002,8 +1002,12 @@ struct ProductionVisitor
         state().printDebug(builder());
         getLookAhead(*tokens, p.symbol(), p.location(), LiteralMode::Search);
 
-        pushBuilder(builder()->addIf(builder::or_(pb->atEod(), builder::not_(state().lahead))),
-                    [&]() { builder()->addRethrow(); });
+        pushBuilder(builder()->addIf(builder::or_(pb->atEod(), builder::not_(state().lahead))), [&]() {
+            auto trial_mode = builder::member(state().self, "__trial_mode");
+            builder()->addAssert(trial_mode, "original parse error not set");
+            auto original_error = builder::deref(trial_mode);
+            pb->parseError("failed to synchronize: %s", {original_error}, original_error.meta());
+        });
 
         builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
     }
