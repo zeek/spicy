@@ -291,10 +291,9 @@ inline auto parsers() {
  */
 class ParseError : public hilti::rt::UserException {
 public:
-    ParseError(const std::string& msg, const std::string& location = "")
-        : UserException(hilti::rt::fmt("parse error: %s", msg), location) {}
+    ParseError(const std::string& msg, const std::string& location = "") : UserException(msg, location) {}
 
-    ParseError(const hilti::rt::result::Error& e) : UserException(hilti::rt::fmt("parse error: %s", e.description())) {}
+    ParseError(const hilti::rt::result::Error& e) : UserException(e.description()) {}
 
     virtual ~ParseError(); /* required to create vtable, see hilti::rt::Exception */
 };

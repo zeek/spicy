@@ -243,7 +243,7 @@ TEST_CASE("waitForInput") {
 
     SUBCASE("eod") {
         data->freeze();
-        CHECK_THROWS_WITH_AS(waitForInput(), "parse error: error message (location)", const ParseError&);
+        CHECK_THROWS_WITH_AS(waitForInput(), "error message (location)", const ParseError&);
     }
 }
 
@@ -287,7 +287,7 @@ TEST_CASE("waitForInput with min") {
 
     SUBCASE("eod") {
         data->freeze();
-        CHECK_THROWS_WITH_AS(waitForInput(), "parse error: error message (location)", const ParseError&);
+        CHECK_THROWS_WITH_AS(waitForInput(), "error message (location)", const ParseError&);
     }
 }
 
