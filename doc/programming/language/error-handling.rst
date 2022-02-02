@@ -35,8 +35,5 @@ else than an exception handler.
 
 .. rubric:: Error recovery
 
-.. todo::
-
-    The earlier Spicy prototype had support for resynchronizing
-    parsers with their input stream after parse error. It's on the
-    list to bring that back (:issue:`23`).
+Support for resynchronizing parser with their input stream after parse errors
+is discussed in the section on :ref:`error recovery <error_recovery>`.
