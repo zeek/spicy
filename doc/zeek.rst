@@ -237,6 +237,8 @@ As a full example, here's what a new HTTP analyzer could look like:
         port 80/tcp,
         replaces HTTP;
 
+
+.. _zeek_packet_analyzer:
 .. rubric:: Packet Analyzer
 
 Defining packet analyzers works quite similar to protocol analyzers through

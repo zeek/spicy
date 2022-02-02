@@ -1,3 +1,7 @@
+1.4.0-dev.174 | 2022-02-02 20:31:53 +0100
+
+  * Add a FAQ entry explicitly calling out Layer 2 analyzers. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.172 | 2022-01-26 12:05:12 +0100
 
   * Redefine noop macro case so it always requires a semicolon. (Benjamin Bannier, Corelight)
