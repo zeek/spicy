@@ -1,7 +1,6 @@
 
-This following summarizes the most important changes in recent Spicy
-releases. For an exhaustive list of all changes, see the `CHANGES
-<https://github.com/zeek/spicy/blob/main/CHANGES>`_ file coming with
+This following summarizes the most important changes in recent Spicy releases.
+For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
 Version 1.4 (in progress)
