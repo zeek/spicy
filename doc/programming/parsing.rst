@@ -507,8 +507,9 @@ The most commonly used hooks are:
     :ref:`statement_stop` statement to abort container parsing,
     without the current element being added anymore.
 
-In addition, Spicy provides a set of hooks specific to the ``sink``
-type; we discuss these the :ref:`corresponding section <sinks>`.
+In addition, Spicy provides a set of hooks specific to the ``sink`` type which
+are discussed in the :ref:`section on sinks <sinks>`, and hooks which are
+executed during :ref:`error recovery <error_recovery_hooks>`.
 
 There are three locations where hooks can be implemented:
 
@@ -1978,3 +1979,122 @@ the Zeek plugin on a corresponding packet trace.
 Note that the units for the two sides of the connection need to
 declare the same ``%context`` type. Processing will abort at
 runtime with a type mismatch error if that's not the case.
+
+.. _error_recovery:
+
+Error Recovery
+==============
+
+Real world data might be missing data, e.g., due to missed beginning of the
+input for partial connections or input gaps due to packet loss, or not exactly
+conform to the grammar. If a Spicy parser encounters such input the default
+behavior is to stop parsing and trigger an error. In order to dynamically
+recover parsing if such inputs are encounters, parsers can opt into an
+error recovery mode.
+
+.. rubric:: Synchronization points
+
+In practical terms, this is accomplished by annotating fields which support
+:ref:`look-ahead parsing <parse_lookahead>` with a ``&synchronized`` attribute.
+Such fields are usually composed of literals.
+Such fields then act as *synchronization points*. When a parse error
+is encountered for any field preceeding a synchronization point, the parser
+enters a *sync mode*, and jumps to the synchronization point and searches the
+input for it.
+
+.. rubric:: Confirming or rejecting a synchronization result
+
+After the field has been found in the input, the parser goes from sync mode
+into *trial mode* and parsing of the unit continues as usual at the
+synchronization point. To conclude trial mode and return to regular parsing, at
+some later point the grammar should call either :spicy:method:`unit::confirm`
+or :spicy:method:`unit::reject` on the currently parsing unit. If
+synchronization is not confirmed a parse error will be triggered later in the
+processing.
+
+
+.. _error_recovery_hooks:
+
+.. rubric:: Hooks related to synchronization
+
+``on %synced { ...}``
+    Executes when a synchronization point has been found and parsing resumes
+    there, just before the parser begins processing the corresponding field
+    (with the parsing state, like current position, set up accordingly
+    already).
+
+``on %confirmed { ...}``
+    Executes when trial mode ends with success via a call to
+    :spicy:method:`unit::confirm`.
+
+``on %rejected { ...}``
+    Executes when trial mode ends with failure via a call to
+    :spicy:method:`unit::reject`.
+
+.. rubric:: Example
+
+As an example, let's consider a grammar consisting of two sections where each
+section is started with a section header literal (``SEC_A`` and ``SEC_B``
+here).
+
+We want to allow for inputs which miss parts or all of the first section. For
+such inputs we can still synchronize the input stream by looking for the start
+of the next section.
+
+.. spicy-code:: parse-synchronized.spicy
+
+    module Test;
+
+    public type Example = unit {
+        start_a: /SEC_A/;
+        a: uint8;
+
+        # If we fail to find e.g., 'SEC_A' in the input, try to synchronize on this literal.
+        start_b: /SEC_B/ &synchronized;
+        b: bytes &eod;
+
+        # In this example confirm unconditionally.
+        on %synced {
+            print "Synced: %s" % self;
+            self.confirm();
+        }
+
+        # Perform logging for these %confirmed and %rejected.
+        on %confirmed { print "Confirmed: %s" % self; }
+        on %rejected { print "Rejected: %s" % self; }
+
+        on %done { print "Done %s" % self; }
+    };
+
+Let us consider that this parsers encounters the input ``\xFFSEC_Babc``, i.e.,
+
+- ``start_a`` missing,
+- ``a=255``,
+- ``start_b=SEC_B`` as expected, and
+- ``b=abc``.
+
+For such an input parsing will encounter an error when it sees ``\xFF`` where
+``SEC_A`` would have been expected.
+
+1. Since ``start_b`` is marked as a synchronization point, the parser enters
+   sync mode, and jumps over ``a`` to ``start_b`` to search for ``SEC_B``.
+
+2. At this point the input still contains the unexpected ``\xFF`` and is
+   ``\xFFSEC_Babc`` . While searching for ``SEC_B`` ``\xFF`` is skipped
+   over and the expected token is found. The input is now ``SEC_Babc``.
+
+3. The parser has successfully synchronized and enters trial mode. All
+   ``%synced`` hooks are invoked.
+
+4. The unit's ``%synced`` hook calls :spicy:method:`unit::confirm` and the
+   parser leaves trial mode. All ``%confirmed`` hooks are invoked.
+
+5. Regular parsing continues at ``start_b``. The input was ``SEC_Babc`` so
+   ``start_b`` is set to ``SEC_B`` and ``b`` to ``abc``.
+
+Since parsing for ``start_a`` was unsuccessful and ``a`` was jumped over their
+fields remain unset.
+
+.. spicy-output:: parse-synchronized.spicy
+   :exec: printf '\xFFSEC_Babc' | spicy-driver %INPUT
+   :show-with: foo.spicy

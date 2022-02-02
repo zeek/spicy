@@ -54,7 +54,7 @@ class SpicyLexer(RegexLexer):
         'attributes': [
             (words(('bit-order', 'byte-order', 'chunked', 'convert', 'count',
                     'cxxname', 'default', 'eod', 'internal', 'ipv4', 'ipv6',
-                    'length', 'no-emit', 'nosub', 'on-heap', 'optional',
+                    'length', 'max-size', 'no-emit', 'nosub', 'on-heap', 'optional',
                     'originator', 'parse-at', 'parse-from', 'priority',
                     'requires', 'responder', 'size', 'static', 'synchronize',
                     'transient', 'try', 'type', 'until', 'until-including',
