@@ -55,6 +55,12 @@ distribution inside your build directory at
 Yes, see the :ref:`corresponding section <zeek_dpd>` on how to add it
 to your analyzers.
 
+.. rubric:: Can I write a Layer 2 protocol analyzer with Spicy?
+
+Yes, you can. In Zeek terminology a layer 2 protocol analyzer is a packet
+analyzer, see the :ref:`corresponding section <zeek_packet_analyzer>` on how
+to declare such an analyzer.
+
 .. rubric:: I have ``print`` statements in my Spicy grammar, why do I not see any output when running Zeek?
 
 The Zeek plugin by default disables the output of Spicy-side ``print``
