@@ -240,7 +240,8 @@ struct ProductionVisitor
                     // Note: Originally, we had the init expression (`{...}`)
                     // inside the tuple ctor, but that triggered ASAN to report
                     // a memory leak.
-                    std::vector<Type> x = {type::stream::View(), look_ahead::Type, type::stream::Iterator()};
+                    std::vector<Type> x = {type::stream::View(), look_ahead::Type, type::stream::Iterator(),
+                                           type::Optional(builder::typeByID("spicy_rt::ParseError"))};
                     auto result_type = type::Tuple(std::move(x));
                     auto store_result = builder()->addTmp("result", result_type);
 
@@ -288,11 +289,8 @@ struct ProductionVisitor
                             // Assume the filter consumed the full input.
                             pb->advanceInput(builder::size(state().cur));
 
-                            auto result = builder::tuple({
-                                state().cur,
-                                state().lahead,
-                                state().lahead_end,
-                            });
+                            auto result =
+                                builder::tuple({state().cur, state().lahead, state().lahead_end, state().trial_mode});
 
                             builder()->addAssign(store_result, result);
                             popBuilder();
@@ -332,6 +330,7 @@ struct ProductionVisitor
                         state().cur,
                         state().lahead,
                         state().lahead_end,
+                        state().trial_mode,
                     });
 
                     popDestination();
@@ -358,7 +357,8 @@ struct ProductionVisitor
                     // Note: Originally, we had the init expression (`{...}`)
                     // inside the tuple ctor, but that triggered ASAN to report
                     // a memory leak.
-                    std::vector<Type> x = {type::stream::View(), look_ahead::Type, type::stream::Iterator()};
+                    std::vector<Type> x = {type::stream::View(), look_ahead::Type, type::stream::Iterator(),
+                                           type::Optional(builder::typeByID("spicy_rt::ParseError"))};
                     auto result_type = type::Tuple(std::move(x));
                     auto store_result = builder()->addTmp("result", result_type);
 
@@ -405,7 +405,8 @@ struct ProductionVisitor
             args.push_back(destination());
 
         auto call = builder::memberCall(state().self, id, args);
-        builder()->addAssign(builder::tuple({state().cur, state().lahead, state().lahead_end}), call);
+        builder()->addAssign(builder::tuple({state().cur, state().lahead, state().lahead_end, state().trial_mode}),
+                             call);
     }
 
     // Returns a boolean expression that's 'true' if a 'stop' was encountered.
@@ -498,10 +499,9 @@ struct ProductionVisitor
             builder()->addAssign(destination(), std::move(default_));
 
             auto call = builder::memberCall(destination(), "__parse_stage1", std::move(args));
-            builder()->addAssign(builder::tuple({pb->state().cur, pb->state().lahead, pb->state().lahead_end}), call);
-
-            // The unit might have updated the trial mode state, so refresh our view.
-            builder()->addAssign(builder::member(state().self, ID("__trial_mode")), state().trial_mode);
+            builder()->addAssign(builder::tuple({pb->state().cur, pb->state().lahead, pb->state().lahead_end,
+                                                 pb->state().trial_mode}),
+                                 call);
         }
 
         else if ( unit )
@@ -1010,13 +1010,14 @@ struct ProductionVisitor
             // We land here if we failed to find successfully find any sync
             // token in the input stream, or because we ran into EOD. We cannot
             // recover from this and directly trigger a parse error.
-            auto trial_mode = builder::member(state().self, "__trial_mode");
-            builder()->addAssert(trial_mode, "original parse error not set");
-            auto original_error = builder::deref(trial_mode);
+            builder()->addAssert(state().trial_mode, "original parse error not set");
+            auto original_error = builder::deref(state().trial_mode);
             pb->parseError("failed to synchronize: %s", {original_error}, original_error.meta());
         });
 
+        pb->beforeHook();
         builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
+        pb->afterHook();
     }
 
     // Adds a method, and its implementation, to the current parsing struct
@@ -1272,7 +1273,7 @@ struct ProductionVisitor
                                                                     p.fields()[*sync_point].meta().field()->id()));
 
                                 // Remember the original parse error so we can report it in case the sync failed.
-                                builder()->addAssign(builder::member(state().self, "__trial_mode"), builder::id("e"));
+                                builder()->addAssign(state().trial_mode, builder::id("e"));
 
                                 builder()->addComment("Loop on the sync field until parsing succeeds");
                                 syncProduction(p.fields()[*sync_point]);
@@ -1440,7 +1441,8 @@ static auto parseMethodIDs(const type::Unit& t) {
 
 hilti::type::Function ParserBuilder::parseMethodFunctionType(std::optional<type::function::Parameter> addl_param,
                                                              const Meta& m) {
-    auto result = type::Tuple({type::stream::View(), look_ahead::Type, type::stream::Iterator()});
+    auto result = type::Tuple({type::stream::View(), look_ahead::Type, type::stream::Iterator(),
+                               type::Optional(builder::typeByID("spicy_rt::ParseError"))});
 
     auto params = std::vector<type::function::Parameter>{
         builder::parameter("__data", type::ValueReference(type::Stream()), declaration::parameter::Kind::InOut),
@@ -1449,7 +1451,7 @@ hilti::type::Function ParserBuilder::parseMethodFunctionType(std::optional<type:
         builder::parameter("__lah", look_ahead::Type, declaration::parameter::Kind::Copy),
         builder::parameter("__lahe", type::stream::Iterator(), declaration::parameter::Kind::Copy),
         builder::parameter("__trial_mode", type::Optional(builder::typeByID("spicy_rt::ParseError")),
-                           declaration::parameter::Kind::InOut),
+                           declaration::parameter::Kind::Copy),
     };
 
     if ( addl_param )
@@ -1889,9 +1891,6 @@ void ParserBuilder::initializeUnit(const Location& l) {
         builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
     });
 
-    // Forward the current trial mode state into the unit so it can update it with e.g., `confirm`.
-    builder()->addAssign(builder::member(state().self, ID("__trial_mode")), state().trial_mode);
-
     beforeHook();
     builder()->addMemberCall(state().self, "__on_0x25_init", {}, l);
     afterHook();
@@ -1930,11 +1929,6 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
 
     for ( const auto& s : unit.items<type::unit::item::Sink>() )
         builder()->addMemberCall(builder::member(state().self, s.id()), "close", {}, l);
-
-    // Propagate the unit trial mode state back into the global state. We
-    // initially had passed the global state into the unit in `initializeUnit`
-    // for it to possibly work on.
-    builder()->addAssign(state().trial_mode, builder::member(state().self, ID("__trial_mode")));
 }
 
 static Expression _filters(const ParserState& state) { return builder::member(state.self, ID("__filters")); }
@@ -1991,6 +1985,13 @@ void ParserBuilder::setInput(const Expression& i) { builder()->addAssign(state()
 void ParserBuilder::beforeHook() {
     const auto& unit = state().unit.get();
 
+    // Forward the current trial mode state into the unit so hooks see the
+    // correct state should they invoke e.g., `reject`.
+    //
+    // TODO(bbannier): Guard this with a feature flag once
+    // https://github.com/zeek/spicy/issues/1108 is fixed.
+    builder()->addAssign(builder::member(state().self, ID("__trial_mode")), state().trial_mode);
+
     guardFeatureCode(unit, {"uses_random_access"}, [&]() {
         builder()->addAssign(builder::member(state().self, ID("__position_update")),
                              builder::optional(hilti::type::stream::Iterator()));
@@ -2013,6 +2014,13 @@ void ParserBuilder::afterHook() {
         advance->addAssign(builder::member(state().self, ID("__position_update")),
                            builder::optional(hilti::type::stream::Iterator()));
     });
+
+    // Propagate the unit trial mode state back into the global state as it
+    // might have been updated in a hook via e.g., `confirm`.
+    //
+    // TODO(bbannier): Guard this with a feature flag once
+    // https://github.com/zeek/spicy/issues/1108 is fixed.
+    builder()->addAssign(state().trial_mode, builder::member(state().self, ID("__trial_mode")));
 }
 
 void ParserBuilder::saveParsePosition() {

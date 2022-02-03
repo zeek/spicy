@@ -39,6 +39,11 @@ inline void confirm(U& p) {
     // If we are not in trial mode `confirm` is a no-op.
     if ( p.__trial_mode ) {
         p.__trial_mode.reset();
+
+        // TODO(bbannier): For consistence we would ideally bracket the hook
+        // invocation with calls to `ParserBuilder::beforeHook` and
+        // `afterHook`, but this is not possible since we have no direct access
+        // to the parser state here.
         p.__on_0x25_confirmed();
     }
 }
@@ -48,7 +53,12 @@ template<typename U>
 inline void reject(U& p) {
     // Only invoke hook if we were actually in trial mode.
     if ( const auto& trial_mode = p.__trial_mode ) {
+        // TODO(bbannier): For consistence we would ideally bracket the hook
+        // invocation with calls to `ParserBuilder::beforeHook` and
+        // `afterHook`, but this is not possible since we have no direct access
+        // to the parser state here.
         p.__on_0x25_rejected();
+
         throw *trial_mode;
     }
     else

@@ -24,11 +24,11 @@ type A = struct {
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_) ;
     hook void __on_0x25_skipped(uint<64> seq) ;
     hook void __on_0x25_undelivered(uint<64> seq, bytes data) ;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse2(inout value_ref<A> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_A_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_foo_A_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
 } &on-heap;
 public type B = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
@@ -50,11 +50,11 @@ public type B = struct {
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_) ;
     hook void __on_0x25_skipped(uint<64> seq) ;
     hook void __on_0x25_undelivered(uint<64> seq, bytes data) ;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse2(inout value_ref<B> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_B_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_foo_B_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
 } &on-heap;
 type C = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
@@ -76,11 +76,11 @@ type C = struct {
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_) ;
     hook void __on_0x25_skipped(uint<64> seq) ;
     hook void __on_0x25_undelivered(uint<64> seq, bytes data) ;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse2(inout value_ref<C> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_C_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_foo_C_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
 } &on-heap;
 public type D = struct {
     value_ref<C> anon &optional &no-emit;
@@ -103,11 +103,11 @@ public type D = struct {
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_) ;
     hook void __on_0x25_skipped(uint<64> seq) ;
     hook void __on_0x25_undelivered(uint<64> seq, bytes data) ;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse2(inout value_ref<D> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_D_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_foo_D_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
 } &on-heap;
 type F = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
@@ -130,11 +130,11 @@ type F = struct {
     hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_) ;
     hook void __on_0x25_skipped(uint<64> seq) ;
     hook void __on_0x25_undelivered(uint<64> seq, bytes data) ;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse2(inout value_ref<F> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
-    method tuple<view<stream>, int<64>, iterator<stream>> __parse_foo_F_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __parse_foo_F_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode);
 } &on-heap;
 
 const bool __feat%foo__A%uses_random_access = True;
@@ -164,8 +164,8 @@ function void f1() {
 public function void f2() {
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::A::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
     try {
 
         if ( __feat%foo__A%uses_random_access ) 
@@ -193,6 +193,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__A%supports_filters ) 
@@ -205,7 +206,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_sta
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
 
-                __result = (__cur, __lah, __lahe);
+                __result = (__cur, __lah, __lahe, __trial_mode);
             }
 
 
@@ -224,7 +225,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_sta
         if ( __feat%foo__A%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
-        __trial_mode = (*self).__trial_mode;
+        (*self).__trial_mode = __trial_mode;
 
         if ( __feat%foo__A%uses_random_access ) 
             (*self).__position_update = Null;
@@ -239,9 +240,11 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         throw;
     }
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__A%uses_random_access ) 
         (*self).__position_update = Null;
@@ -256,15 +259,17 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_sta
         }
 
 
+    __trial_mode = (*self).__trial_mode;
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_foo_A_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::A::__parse_foo_A_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
 
     if ( __feat%foo__A%uses_random_access ) 
         (*self).__position = begin(__cur);
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__A%uses_random_access ) 
         (*self).__position_update = Null;
@@ -279,13 +284,13 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::A::__parse_foo
         }
 
 
+    __trial_mode = (*self).__trial_mode;
 
     if ( __feat%foo__A%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
-    __trial_mode = (*self).__trial_mode;
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe);
+    __result = (__cur, __lah, __lahe, __trial_mode);
     return __result;
 }
 
@@ -297,7 +302,7 @@ method extern method view<stream> foo::A::parse1(inout value_ref<stream> data, o
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_A ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_A ->
 
     if ( __feat%foo__A%uses_random_access ) 
@@ -319,7 +324,7 @@ method extern method view<stream> foo::A::parse3(inout value_ref<spicy_rt::Parse
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_A ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_A ->
 
     if ( __feat%foo__A%uses_random_access ) 
@@ -339,7 +344,7 @@ method extern method view<stream> foo::A::parse2(inout value_ref<A> unit, inout 
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_A ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_A ->
 
     if ( __feat%foo__A%uses_random_access ) 
@@ -361,8 +366,8 @@ init function void __register_foo_A() {
 
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::B::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
     try {
 
         if ( __feat%foo__B%uses_random_access ) 
@@ -390,6 +395,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__B%supports_filters ) 
@@ -402,7 +408,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_sta
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
 
-                __result = (__cur, __lah, __lahe);
+                __result = (__cur, __lah, __lahe, __trial_mode);
             }
 
 
@@ -421,7 +427,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_sta
         if ( __feat%foo__B%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
-        __trial_mode = (*self).__trial_mode;
+        (*self).__trial_mode = __trial_mode;
 
         if ( __feat%foo__B%uses_random_access ) 
             (*self).__position_update = Null;
@@ -436,9 +442,11 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         throw;
     }
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__B%uses_random_access ) 
         (*self).__position_update = Null;
@@ -453,15 +461,17 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_sta
         }
 
 
+    __trial_mode = (*self).__trial_mode;
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_foo_B_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::B::__parse_foo_B_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
 
     if ( __feat%foo__B%uses_random_access ) 
         (*self).__position = begin(__cur);
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__B%uses_random_access ) 
         (*self).__position_update = Null;
@@ -476,13 +486,13 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::B::__parse_foo
         }
 
 
+    __trial_mode = (*self).__trial_mode;
 
     if ( __feat%foo__B%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
-    __trial_mode = (*self).__trial_mode;
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe);
+    __result = (__cur, __lah, __lahe, __trial_mode);
     return __result;
 }
 
@@ -494,7 +504,7 @@ method extern method view<stream> foo::B::parse1(inout value_ref<stream> data, o
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_B ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_B ->
 
     if ( __feat%foo__B%uses_random_access ) 
@@ -516,7 +526,7 @@ method extern method view<stream> foo::B::parse3(inout value_ref<spicy_rt::Parse
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_B ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_B ->
 
     if ( __feat%foo__B%uses_random_access ) 
@@ -536,7 +546,7 @@ method extern method view<stream> foo::B::parse2(inout value_ref<B> unit, inout 
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_B ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_B ->
 
     if ( __feat%foo__B%uses_random_access ) 
@@ -554,8 +564,8 @@ init function void __register_foo_B() {
     spicy_rt::registerParser(foo::B::__parser, hilti::linker_scope(), Null);
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::C::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
     try {
 
         if ( __feat%foo__C%uses_random_access ) 
@@ -583,6 +593,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__C%supports_filters ) 
@@ -595,7 +606,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_sta
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
 
-                __result = (__cur, __lah, __lahe);
+                __result = (__cur, __lah, __lahe, __trial_mode);
             }
 
 
@@ -614,7 +625,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_sta
         if ( __feat%foo__C%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
-        __trial_mode = (*self).__trial_mode;
+        (*self).__trial_mode = __trial_mode;
 
         if ( __feat%foo__C%uses_random_access ) 
             (*self).__position_update = Null;
@@ -629,9 +640,11 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         throw;
     }
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__C%uses_random_access ) 
         (*self).__position_update = Null;
@@ -646,15 +659,17 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_sta
         }
 
 
+    __trial_mode = (*self).__trial_mode;
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_foo_C_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::C::__parse_foo_C_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
 
     if ( __feat%foo__C%uses_random_access ) 
         (*self).__position = begin(__cur);
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__C%uses_random_access ) 
         (*self).__position_update = Null;
@@ -669,13 +684,13 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::C::__parse_foo
         }
 
 
+    __trial_mode = (*self).__trial_mode;
 
     if ( __feat%foo__C%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
-    __trial_mode = (*self).__trial_mode;
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe);
+    __result = (__cur, __lah, __lahe, __trial_mode);
     return __result;
 }
 
@@ -687,7 +702,7 @@ method extern method view<stream> foo::C::parse1(inout value_ref<stream> data, o
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_C ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_C ->
 
     if ( __feat%foo__C%uses_random_access ) 
@@ -709,7 +724,7 @@ method extern method view<stream> foo::C::parse3(inout value_ref<spicy_rt::Parse
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_C ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_C ->
 
     if ( __feat%foo__C%uses_random_access ) 
@@ -729,7 +744,7 @@ method extern method view<stream> foo::C::parse2(inout value_ref<C> unit, inout 
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_C ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_C ->
 
     if ( __feat%foo__C%uses_random_access ) 
@@ -751,8 +766,8 @@ init function void __register_foo_C() {
 
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::D::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
     try {
 
         if ( __feat%foo__D%uses_random_access ) 
@@ -780,6 +795,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__D%supports_filters ) 
@@ -792,7 +808,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_sta
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
 
-                __result = (__cur, __lah, __lahe);
+                __result = (__cur, __lah, __lahe, __trial_mode);
             }
 
 
@@ -811,7 +827,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_sta
         if ( __feat%foo__D%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
-        __trial_mode = (*self).__trial_mode;
+        (*self).__trial_mode = __trial_mode;
 
         if ( __feat%foo__D%uses_random_access ) 
             (*self).__position_update = Null;
@@ -826,9 +842,11 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         throw;
     }
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__D%uses_random_access ) 
         (*self).__position_update = Null;
@@ -843,17 +861,17 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_sta
         }
 
 
+    __trial_mode = (*self).__trial_mode;
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_foo_D_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::D::__parse_foo_D_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
     local value_ref<C> __transient_anon;
 
     # Begin parsing production: Unit: foo_C_2 ->
     __transient_anon = default<C>();
-    (__cur, __lah, __lahe) = (*__transient_anon).__parse_stage1(__data, __cur, __trim, __lah, __lahe, __trial_mode);
-    (*self).__trial_mode = __trial_mode;
+    (__cur, __lah, __lahe, __trial_mode) = (*__transient_anon).__parse_stage1(__data, __cur, __trim, __lah, __lahe, __trial_mode);
     # End parsing production: Unit: foo_C_2 ->
 
     if ( __feat%foo__D%uses_random_access ) 
@@ -863,6 +881,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_foo
     if ( __feat%foo__D%uses_random_access ) 
         (*self).__position = begin(__cur);
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__D%uses_random_access ) 
         (*self).__position_update = Null;
@@ -877,13 +896,13 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::D::__parse_foo
         }
 
 
+    __trial_mode = (*self).__trial_mode;
 
     if ( __feat%foo__D%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
-    __trial_mode = (*self).__trial_mode;
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe);
+    __result = (__cur, __lah, __lahe, __trial_mode);
     return __result;
 }
 
@@ -895,7 +914,7 @@ method extern method view<stream> foo::D::parse1(inout value_ref<stream> data, o
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_D -> foo_C_2
 
     if ( __feat%foo__D%uses_random_access ) 
@@ -917,7 +936,7 @@ method extern method view<stream> foo::D::parse3(inout value_ref<spicy_rt::Parse
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_D -> foo_C_2
 
     if ( __feat%foo__D%uses_random_access ) 
@@ -937,7 +956,7 @@ method extern method view<stream> foo::D::parse2(inout value_ref<D> unit, inout 
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_D -> foo_C_2
 
     if ( __feat%foo__D%uses_random_access ) 
@@ -955,8 +974,8 @@ init function void __register_foo_D() {
     spicy_rt::registerParser(foo::D::__parser, hilti::linker_scope(), Null);
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::F::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
     try {
 
         if ( __feat%foo__F%uses_random_access ) 
@@ -984,6 +1003,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         local strong_ref<stream> filtered = Null;
 
         if ( __feat%foo__F%supports_filters ) 
@@ -996,7 +1016,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_sta
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
 
-                __result = (__cur, __lah, __lahe);
+                __result = (__cur, __lah, __lahe, __trial_mode);
             }
 
 
@@ -1019,7 +1039,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_sta
         if ( __feat%foo__F%is_filter ) 
             spicy_rt::filter_forward_eod(self);
 
-        __trial_mode = (*self).__trial_mode;
+        (*self).__trial_mode = __trial_mode;
 
         if ( __feat%foo__F%uses_random_access ) 
             (*self).__position_update = Null;
@@ -1034,9 +1054,11 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_sta
             }
 
 
+        __trial_mode = (*self).__trial_mode;
         throw;
     }
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__F%uses_random_access ) 
         (*self).__position_update = Null;
@@ -1051,15 +1073,17 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_sta
         }
 
 
+    __trial_mode = (*self).__trial_mode;
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_foo_F_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, inout optional<spicy_rt::ParseError> __trial_mode) {
-    local tuple<view<stream>, int<64>, iterator<stream>> __result;
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> foo::F::__parse_foo_F_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<spicy_rt::ParseError> __trial_mode) {
+    local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
 
     if ( __feat%foo__F%uses_random_access ) 
         (*self).__position = begin(__cur);
 
+    (*self).__trial_mode = __trial_mode;
 
     if ( __feat%foo__F%uses_random_access ) 
         (*self).__position_update = Null;
@@ -1074,6 +1098,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_foo
         }
 
 
+    __trial_mode = (*self).__trial_mode;
 
     if ( __feat%foo__F%supports_filters ) 
         spicy_rt::filter_disconnect(self);
@@ -1082,9 +1107,8 @@ method method tuple<view<stream>, int<64>, iterator<stream>> foo::F::__parse_foo
     if ( __feat%foo__F%is_filter ) 
         spicy_rt::filter_forward_eod(self);
 
-    __trial_mode = (*self).__trial_mode;
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe);
+    __result = (__cur, __lah, __lahe, __trial_mode);
     return __result;
 }
 
@@ -1096,7 +1120,7 @@ method extern method view<stream> foo::F::parse1(inout value_ref<stream> data, o
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_F ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_F ->
 
     if ( __feat%foo__F%uses_random_access ) 
@@ -1118,7 +1142,7 @@ method extern method view<stream> foo::F::parse3(inout value_ref<spicy_rt::Parse
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_F ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_F ->
 
     if ( __feat%foo__F%uses_random_access ) 
@@ -1138,7 +1162,7 @@ method extern method view<stream> foo::F::parse2(inout value_ref<F> unit, inout 
     local optional<spicy_rt::ParseError> trial_mode = Null;
 
     # Begin parsing production: Unit: foo_F ->
-    (ncur, lahead, lahead_end) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
+    (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
     # End parsing production: Unit: foo_F ->
 
     if ( __feat%foo__F%uses_random_access ) 
