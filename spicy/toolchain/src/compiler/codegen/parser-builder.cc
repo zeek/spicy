@@ -1016,6 +1016,39 @@ struct ProductionVisitor
         });
     }
 
+    // Generate code to synchronize on the given production always advancing input.
+    // This function behaves like `syncProduction`, but makes sure that in case
+    // the current input already appears to be synchronized we find a new
+    // position in the input which is synchronized.
+    void syncProductionNext(const Production& p) {
+        // We wrap lookahead search in a loop so we can advance manually should it get stuck
+        // at the same input position. This can happen if we end up synchronizing on an
+        // input token which matches something neear the start of the list element type, but
+        // is followed by other unexpected data. Without loop we would end up
+        // resynchronizing at the same input position again.
+        auto search_start = builder::local("search_start", state().cur);
+        pushBuilder(builder()->addWhile(search_start, builder::bool_(true)), [&]() {
+            // Generate code which synchronizes the input. This will throw a parse error
+            // if we hit EOD which will implicitly break from the loop.
+            syncProduction(p);
+
+            pushBuilder(builder()->addIf(builder::equal(builder::id("search_start"), state().cur)), [&]() {
+                builder()->addDebugMsg("spicy",
+                                       "search for sync token did not advance "
+                                       "input, advancing explicitly");
+                pb->advanceInput(builder::integer(1));
+                builder()->addContinue();
+            });
+
+            pb->beforeHook();
+            builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
+            pb->afterHook();
+
+            // Sync point found, break from loop.
+            builder()->addBreak();
+        });
+    }
+
     // Adds a method, and its implementation, to the current parsing struct
     // type that has the standard signature for parse methods.
     void addParseMethod(bool add_decl, const ID& id, Statement body,
@@ -1072,9 +1105,35 @@ struct ProductionVisitor
         pushBuilder(body);
         body->addExpression(builder::decrementPostfix(builder::id("__i")));
 
-        auto stop = parseProduction(p.body());
-        auto b = builder()->addIf(stop);
-        b->addBreak();
+        auto parse = [&]() {
+            auto stop = parseProduction(p.body());
+            auto b = builder()->addIf(stop);
+            b->addBreak();
+        };
+
+        // The container element type creating this counter was marked `&synchronize`. Allow any container element to
+        // fail parsing and be skipped. This means that if `n` elements where requested and one element fails to parse,
+        // we will return `n-1` elements.
+        if ( auto f = p.body().meta().field(); f && AttributeSet::find(f->attributes(), "&synchronize") ) {
+            auto try_ = builder()->addTry();
+            pushBuilder(try_.first, [&]() { parse(); });
+
+            pushBuilder(try_.second.addCatch(builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
+                        [&]() {
+                            // Remember the original parse error so we can report it in case the sync failed.
+                            builder()->addAssign(state().trial_mode, builder::id("e"));
+
+                            builder()->addDebugMsg("spicy",
+                                                   "failed to parse list element, will try to "
+                                                   "synchronize at next possible element");
+
+                            syncProductionNext(p);
+                        });
+        }
+
+        else
+            parse();
+
         popBuilder();
     }
 
@@ -1413,7 +1472,35 @@ struct ProductionVisitor
                 builder()->addExpression(pb->waitForInputOrEod(builder::integer(1)));
 
                 auto lah_prod = p.lookAheadProduction();
-                auto [builder_alt1, builder_alt2] = parseLookAhead(lah_prod);
+
+                std::shared_ptr<hilti::builder::Builder> builder_alt1;
+                std::shared_ptr<hilti::builder::Builder> builder_alt2;
+                auto parse = [&]() { std::tie(builder_alt1, builder_alt2) = parseLookAhead(lah_prod); };
+
+                // If the list field generating this While is a synchronization point, set up a try/catch block for
+                // internal list synchronization (failure to parse a list element tries to synchronize at the next
+                // possible list element).
+                if ( auto field = p.body().meta().field();
+                     field && field->attributes() && AttributeSet::find(field->attributes(), "&synchronize") ) {
+                    auto try_ = builder()->addTry();
+
+                    pushBuilder(try_.first, [&]() { parse(); });
+
+                    pushBuilder(try_.second.addCatch(
+                                    builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
+                                [&]() {
+                                    // Remember the original parse error so we can report it in case the sync failed.
+                                    builder()->addAssign(state().trial_mode, builder::id("e"));
+
+                                    builder()->addDebugMsg("spicy",
+                                                           "failed to parse list element, will try to "
+                                                           "synchronize at next possible element");
+
+                                    syncProductionNext(p);
+                                });
+                }
+                else
+                    parse();
 
                 pushBuilder(builder_alt1, [&]() {
                     // Terminate loop.
