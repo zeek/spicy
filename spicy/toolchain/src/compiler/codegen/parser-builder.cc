@@ -1072,9 +1072,61 @@ struct ProductionVisitor
         pushBuilder(body);
         body->addExpression(builder::decrementPostfix(builder::id("__i")));
 
-        auto stop = parseProduction(p.body());
-        auto b = builder()->addIf(stop);
-        b->addBreak();
+        builder()->addComment("NOPE production::Counter");
+
+        auto parse = [&]() {
+            auto stop = parseProduction(p.body());
+            auto b = builder()->addIf(stop);
+            b->addBreak();
+        };
+
+        // The container creating this counter was marked `&synchronize`. Allow
+        // any container element to fail parsing and be skipped. This means
+        // that if `n` elements where requested and one element fails to parse,
+        // we will return `n-1` elements.
+        if ( auto c = p.body().meta().container(); c && AttributeSet::find(c->attributes(), "&synchronize") ) {
+            auto try_ = builder()->addTry();
+            pushBuilder(try_.first, [&]() { parse(); });
+
+            pushBuilder(try_.second.addCatch(builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
+                        [&]() {
+                            // Remember the original parse error so we can report it in case the sync failed.
+                            builder()->addAssign(state().trial_mode, builder::id("e"));
+
+                            builder()->addDebugMsg("spicy",
+                                                   "failed to parse list element, will try to "
+                                                   "synchronize at next possible element");
+
+                            // We wrap lookahead search in a loop so we can advance manually should it get stuck
+                            // at the same input position. This can happen if we end up synchronizing on an
+                            // input token which matches something neear the start of the list element type, but
+                            // is followed by other unexpected data. Without loop we would end up
+                            // resynchronizing at the same input position again.
+                            auto search_start = builder::local("search_start", state().cur);
+                            pushBuilder(builder()->addWhile(search_start, builder::bool_(true)), [&]() {
+                                syncProduction(p);
+
+                                pushBuilder(builder()->addIf(builder::equal(builder::id("search_start"), state().cur)),
+                                            [&]() {
+                                                builder()->addDebugMsg("spicy",
+                                                                       "search for sync token did not advance "
+                                                                       "input, advancing explicitly");
+                                                pb->advanceInput(builder::integer(1));
+                                                builder()->addContinue();
+                                            });
+
+                                pb->beforeHook();
+                                builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
+                                pb->afterHook();
+
+                                builder()->addBreak();
+                            });
+                        });
+        }
+
+        else
+            parse();
+
         popBuilder();
     }
 
@@ -1413,7 +1465,59 @@ struct ProductionVisitor
                 builder()->addExpression(pb->waitForInputOrEod(builder::integer(1)));
 
                 auto lah_prod = p.lookAheadProduction();
-                auto [builder_alt1, builder_alt2] = parseLookAhead(lah_prod);
+
+                std::shared_ptr<hilti::builder::Builder> builder_alt1;
+                std::shared_ptr<hilti::builder::Builder> builder_alt2;
+                auto parse = [&]() { std::tie(builder_alt1, builder_alt2) = parseLookAhead(lah_prod); };
+
+                // If the list field generating this While is a synchronization
+                // point, set up a try/catch block for internal list
+                // synchronization (failure to parse a list element tries to
+                // synchronize at the next possible list element).
+                if ( auto field = p.meta().field();
+                     field && AttributeSet::find(field->attributes(), "&synchronize").has_value() ) {
+                    auto try_ = builder()->addTry();
+
+                    pushBuilder(try_.first, [&]() { parse(); });
+
+                    pushBuilder(
+                        try_.second.addCatch(builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))));
+
+                    // Remember the original parse error so we can report it in case the sync failed.
+                    builder()->addAssign(state().trial_mode, builder::id("e"));
+
+                    builder()->addDebugMsg("spicy", fmt("failed to parse element of '%s', will try to "
+                                                        "synchronize at next possible element",
+                                                        field->id()));
+
+                    // We wrap lookahead search in a loop so we can advance manually should it get stuck
+                    // at the same input position. This can happen if we end up synchronizing on an
+                    // input token which matches something neear the start of the list element type, but
+                    // is followed by other unexpected data. Without loop we would end up
+                    // resynchronizing at the same input position again.
+                    auto search_start = builder::local("search_start", state().cur);
+                    pushBuilder(builder()->addWhile(search_start, builder::bool_(true)), [&]() {
+                        syncProduction(p);
+
+                        pushBuilder(builder()->addIf(builder::equal(builder::id("search_start"), state().cur)), [&]() {
+                            builder()->addDebugMsg("spicy",
+                                                   "search for sync token did not advance "
+                                                   "input, advancing explicitly");
+                            pb->advanceInput(builder::integer(1));
+                            builder()->addContinue();
+                        });
+
+                        pb->beforeHook();
+                        builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
+                        pb->afterHook();
+
+                        builder()->addBreak();
+                    });
+
+                    popBuilder(); // catch.
+                }
+                else
+                    parse();
 
                 pushBuilder(builder_alt1, [&]() {
                     // Terminate loop.
