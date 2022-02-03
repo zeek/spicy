@@ -213,7 +213,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const ctor::UnsignedInteger& n) {
-        return fmt("::hilti::rt::integer::safe<std::uint%u_t>{%" PRId64 "u}", n.width(), n.value());
+        return fmt("::hilti::rt::integer::safe<std::uint%u_t>{%" PRId64 "U}", n.width(), n.value());
     }
 
     result_t operator()(const ctor::WeakReference& n) {
