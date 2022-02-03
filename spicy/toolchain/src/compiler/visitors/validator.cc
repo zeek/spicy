@@ -686,8 +686,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                         }
                     }
 
-                    if ( auto x = AttributeSet::find(f->attributes(), "&synchronized") )
-                        error(fmt("unit switch branches cannot be &synchronized"), p);
+                    if ( auto x = AttributeSet::find(f->attributes(), "&synchronize") )
+                        error(fmt("unit switch branches cannot be &synchronize"), p);
 
                     seen_fields.emplace_back(*f);
                 }

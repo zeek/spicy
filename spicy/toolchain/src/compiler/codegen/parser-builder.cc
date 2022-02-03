@@ -986,18 +986,18 @@ struct ProductionVisitor
     void syncProduction(const Production& p) {
         // Validation.
         if ( auto while_ = p.tryAs<production::While>(); while_ && while_->expression() )
-            hilti::logger().error("&synchronized cannot be used on while loops with conditions");
+            hilti::logger().error("&synchronize cannot be used on while loops with conditions");
 
         auto tokens = grammar.lookAheadsForProduction(p);
         if ( ! tokens || tokens->empty() ) {
             // ignore error message that was returned, it's a bit cryptic for our use-case here
-            hilti::logger().error("&synchronized cannot be used on field, no look-ahead tokens found", p.location());
+            hilti::logger().error("&synchronize cannot be used on field, no look-ahead tokens found", p.location());
             return;
         }
 
         for ( const auto& p : *tokens ) {
             if ( ! p.isLiteral() ) {
-                hilti::logger().error("&synchronized cannot be used on field, look-ahead contains non-literals",
+                hilti::logger().error("&synchronize cannot be used on field, look-ahead contains non-literals",
                                       p.location());
                 return;
             }
@@ -1215,7 +1215,7 @@ struct ProductionVisitor
             for ( auto candidate_counter = field_counter + 1; candidate_counter < p.fields().size();
                   ++candidate_counter )
                 if ( auto candidate = p.fields()[candidate_counter].meta().field();
-                     candidate && AttributeSet::find(candidate->attributes(), "&synchronized") ) {
+                     candidate && AttributeSet::find(candidate->attributes(), "&synchronize") ) {
                     sync_points.emplace_back(candidate_counter);
                     found_sync_point = true;
                     break;

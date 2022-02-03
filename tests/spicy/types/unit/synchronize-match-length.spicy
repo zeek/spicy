@@ -16,7 +16,7 @@ module test;
 
 public type A = unit {
     a: b"x";
-    y: X &synchronized;
+    y: X &synchronize;
     s: bytes &eod;
     on %synced {
         print "Synced at offset=%d" % self.offset();
@@ -34,7 +34,7 @@ type X = unit {
 
 public type B = unit {
     a: b"x";
-    z: Y &synchronized;
+    z: Y &synchronize;
     s: bytes &eod;
     on %synced {
         print "Synced at offset=%d" % self.offset();

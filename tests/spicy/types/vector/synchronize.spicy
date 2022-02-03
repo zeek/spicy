@@ -1,4 +1,4 @@
-# @TEST-DOC: Check external an internal sync of `&synchronized` vector fields.
+# @TEST-DOC: Check external an internal sync of `&synchronize` vector fields.
 
 # @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
 
@@ -24,7 +24,7 @@ type X = unit {
 
 public type Y = unit {
     a: uint8(0);
-    xs: X[] &synchronized foreach { print "Foreach: %s" % $$; }
+    xs: X[] &synchronize foreach { print "Foreach: %s" % $$; }
 
     on %synced { print "Synced: %s" % self; self.confirm(); }
     on %confirmed { print "Confirmed: %s" % self; }

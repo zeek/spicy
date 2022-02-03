@@ -26,6 +26,6 @@ public type Z = unit {
 
 type X = unit {
     a: b"A";
-    b: b"B" &synchronized;
-    c: b"C" &synchronized;
+    b: b"B" &synchronize;
+    c: b"C" &synchronize;
 };

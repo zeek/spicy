@@ -28,8 +28,8 @@ module test;
 
 public type X = unit {
     x: /X/;
-    a: A &synchronized;
-    as: A[] &synchronized;
+    a: A &synchronize;
+    as: A[] &synchronize;
 
     on %synced { self.confirm(); }
     on %done { print self; }

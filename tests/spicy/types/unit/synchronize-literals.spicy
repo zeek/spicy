@@ -18,9 +18,9 @@ module test;
 
 public type X = unit {
     a: b"Axy";
-    b: uint32(6) &synchronized;
-    c: b"Cxy" &synchronized;
-    d: /Dxy/ &synchronized;
+    b: uint32(6) &synchronize;
+    c: b"Cxy" &synchronize;
+    d: /Dxy/ &synchronize;
 
     on %synced { self.confirm(); }
     on %done { print self; }

@@ -25,4 +25,4 @@ test::Z {
     c: C
   }
 }
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: successful synchronization never confirmed: expecting 'A' (<...>/synchronized-confirm-elsewhere.spicy:28:8)
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: successful synchronization never confirmed: expecting 'A' (<...>/synchronize-confirm-elsewhere.spicy:28:8)

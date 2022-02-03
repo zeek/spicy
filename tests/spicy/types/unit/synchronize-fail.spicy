@@ -1,4 +1,4 @@
-# @TEST-DOC: Checks validation related to `&synchronized` attribute.
+# @TEST-DOC: Checks validation related to `&synchronize` attribute.
 #
 # @TEST-EXEC-FAIL: spicyc -d -p %INPUT >>output 2>&1
 #
@@ -8,6 +8,6 @@ module test;
 
 type A = unit {
     switch {
-        -> : b"A" &synchronized;
+        -> : b"A" &synchronize;
     };
 };

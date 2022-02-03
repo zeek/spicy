@@ -30,9 +30,9 @@ module test;
 
 public type A = unit {
     a: /A/;
-    b: b"B" &synchronized;
+    b: b"B" &synchronize;
     c: /C/;
-    d: /D/ &synchronized;
+    d: /D/ &synchronize;
     e: /E/;
 
     on %synced { print "Synced: %s" % self; self.confirm(); }
@@ -72,7 +72,7 @@ public type D = unit {
 # Type for testing lookahead from switch.
 public type E = unit {
      : b"BEGIN";
-    a: E_A &synchronized;
+    a: E_A &synchronize;
      : b"END";
 
     on %synced { print "Synced: %s" % self; self.confirm(); }
