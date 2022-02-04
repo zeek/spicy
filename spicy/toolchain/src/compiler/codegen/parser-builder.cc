@@ -1014,10 +1014,6 @@ struct ProductionVisitor
             auto original_error = builder::deref(state().trial_mode);
             pb->parseError("failed to synchronize: %s", {original_error}, original_error.meta());
         });
-
-        pb->beforeHook();
-        builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
-        pb->afterHook();
     }
 
     // Adds a method, and its implementation, to the current parsing struct
@@ -1277,6 +1273,10 @@ struct ProductionVisitor
 
                                 builder()->addComment("Loop on the sync field until parsing succeeds");
                                 syncProduction(p.fields()[*sync_point]);
+
+                                pb->beforeHook();
+                                builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
+                                pb->afterHook();
                             });
             }
         }
