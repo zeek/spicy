@@ -62,7 +62,7 @@ ParserState::ParserState(const type::Unit& unit, const Grammar& grammar, Express
 
 void ParserState::printDebug(const std::shared_ptr<builder::Builder>& builder) const {
     builder->addCall("spicy_rt::printParserState", {builder::string(unit_id), data, cur, lahead, lahead_end,
-                                                    builder::string(to_string(literal_mode)), trim});
+                                                    builder::string(to_string(literal_mode)), trim, trial_mode});
 }
 
 namespace spicy::detail::codegen {
