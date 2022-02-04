@@ -8,7 +8,7 @@
 [hilti-trace] : local iterator<stream> lahead_end;
 [hilti-trace] : local optional<spicy_rt::ParseError> trial_mode = Null;
 [hilti-trace] :  # Begin parsing production: Unit: Mini_Test -> f1 f2
-[hilti-trace] : spicy_rt::printParserState("Mini::Test", data, ncur, lahead, lahead_end, "default", True);
+[hilti-trace] : spicy_rt::printParserState("Mini::Test", data, ncur, lahead, lahead_end, "default", True, trial_mode);
 [hilti-trace] : hilti::debug("spicy-verbose", "- parsing production: Unit: Mini_Test -> f1 f2");
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
 [hilti-trace] : (ncur, lahead, lahead_end, trial_mode) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, trial_mode);
@@ -26,7 +26,7 @@
 [hilti-trace] : __result = (*self).__parse_Mini_Test_stage2(__data, __cur, __trim, __lah, __lahe, __trial_mode);
 [hilti-trace] : local tuple<view<stream>, int<64>, iterator<stream>, optional<spicy_rt::ParseError>> __result;
 [hilti-trace] :  # Begin parsing production: Variable: f1  -> uint<32>
-[hilti-trace] : spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim);
+[hilti-trace] : spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim, __trial_mode);
 [hilti-trace] : hilti::debug("spicy-verbose", "- parsing production: Variable: f1  -> uint<32>");
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
 [hilti-trace] : spicy_rt::waitForInput(__data, __cur, 4, "expecting 4 bytes for unpacking value", "<...>/debug-trace.spicy:10:9", (*self).__filters);
@@ -43,7 +43,7 @@
 [hilti-trace] <...>/debug-trace.spicy:10:18: hilti::print((*self).f1, True);
 [hilti-trace] : __trial_mode = (*self).__trial_mode;
 [hilti-trace] :  # Begin parsing production: Variable: f2  -> uint<8>
-[hilti-trace] : spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim);
+[hilti-trace] : spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim, __trial_mode);
 [hilti-trace] : hilti::debug("spicy-verbose", "- parsing production: Variable: f2  -> uint<8>");
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
 [hilti-trace] : spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/debug-trace.spicy:11:9", (*self).__filters);

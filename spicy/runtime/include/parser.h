@@ -362,7 +362,7 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
 void printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                       const hilti::rt::stream::View& cur, int64_t lahead,
                       const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
-                      bool trim);
+                      bool trim, const std::optional<ParseError>& trial_mode);
 
 /**
  * Used by generated parsers to wait until a minimum amount of input becomes
