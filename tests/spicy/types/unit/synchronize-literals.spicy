@@ -22,6 +22,6 @@ public type X = unit {
     c: b"Cxy" &synchronize;
     d: /Dxy/ &synchronize;
 
-    on %synced { self.confirm(); }
+    on %synced { confirm; }
     on %done { print self; }
 };

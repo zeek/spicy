@@ -17,7 +17,7 @@ module test;
 
 public type Y = unit {
     x: X;
-    on %done { self.confirm(); }
+    on %done { confirm; }
 };
 
 public type Z = unit {

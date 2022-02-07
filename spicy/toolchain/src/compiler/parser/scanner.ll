@@ -203,6 +203,8 @@ while                 return token::WHILE;
 !>                    return token::HOOK_COMPOSE;
 \$\$                  return token::DOLLARDOLLAR;
 <EXPRESSION>\>\>      return token::SHIFTRIGHT;
+confirm               return token::CONFIRM;
+reject                return token::REJECT_;
 
 
 False                 yylval->build(false); return token::CBOOL;

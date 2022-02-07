@@ -35,7 +35,7 @@ public type A = unit {
     d: /D/ &synchronize;
     e: /E/;
 
-    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %synced { print "Synced: %s" % self; confirm; }
     on %confirmed { print "Confirmed: %s" % self; }
     on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }
@@ -43,8 +43,8 @@ public type A = unit {
 };
 
 public type B = unit {
-    x: uint8 { self.confirm(); }
-    on %synced { print "Synced: %s" % self; self.confirm(); }
+    x: uint8 { confirm; }
+    on %synced { print "Synced: %s" % self; confirm; }
     on %confirmed { print "Confirmed: %s" % self; }
     on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }
@@ -52,8 +52,8 @@ public type B = unit {
 };
 
 public type C = unit {
-    x: uint8 { self.reject(); }
-    on %synced { print "Synced: %s" % self; self.confirm(); }
+    x: uint8 { reject; }
+    on %synced { print "Synced: %s" % self; confirm; }
     on %confirmed { print "Confirmed: %s" % self; }
     on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }
@@ -62,7 +62,7 @@ public type C = unit {
 
 public type D = unit {
     x: uint8 {}
-    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %synced { print "Synced: %s" % self; confirm; }
     on %confirmed { print "Confirmed: %s" % self; }
     on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }
@@ -75,7 +75,7 @@ public type E = unit {
     a: E_A &synchronize;
      : b"END";
 
-    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %synced { print "Synced: %s" % self; confirm; }
     on %confirmed { print "Confirmed: %s" % self; }
     on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }

@@ -387,34 +387,6 @@ Aborts parsing at the current position and returns back to the most recent
     }
 END_METHOD
 
-BEGIN_METHOD(unit, Confirm)
-    auto signature() const {
-        return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
-                                           .result = hilti::type::void_,
-                                           .id = "confirm",
-                                           .args = {},
-                                           .doc = R"(
-For a unit in trial mode, confirm that the unit is successfully synchronized to
-the input; the unit is then put into regular parsing mode again. If the unit is
-not in trial mode ``confirm`` has no effect.
-)"};
-    }
-END_METHOD
-
-BEGIN_METHOD(unit, Reject)
-    auto signature() const {
-        return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
-                                           .result = hilti::type::void_,
-                                           .id = "reject",
-                                           .args = {},
-                                           .doc = R"(
-Reject a unit in trial mode; this immediately fails parsing of the unit and raises
-the parse error which caused the unit to be put into trial mode. If the unit is
-not in trial mode this triggers a generic parse error.
-)"};
-    }
-END_METHOD
-
 static inline auto contextResult(bool is_const) {
     return [=](const hilti::node::Range<Expression>& /* orig_ops */,
                const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {

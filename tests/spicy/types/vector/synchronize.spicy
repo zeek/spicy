@@ -46,7 +46,7 @@ public type Y = unit {
     a: uint8(0);
     xs: (X &synchronize)[] &synchronize foreach { print "Foreach: %s" % $$; }
 
-    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %synced { print "Synced: %s" % self; confirm; }
     on %confirmed { print "Confirmed: %s" % self; }
     on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }
@@ -80,7 +80,7 @@ public type A = unit {
 public type B = unit {
     xs: (X &synchronize)[2] foreach { print "Foreach: %s" % $$; }
 
-    on %synced { print "Synced: %s" % self; self.confirm(); }
+    on %synced { print "Synced: %s" % self; confirm; }
     on %confirmed { print "Confirmed: %s" % self; }
     on %rejected { print "Rejected: %s" % self; }
     on %done { print "Done: %s" % self; }

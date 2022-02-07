@@ -20,7 +20,7 @@ public type A = unit {
     s: bytes &eod;
     on %synced {
         print "Synced at offset=%d" % self.offset();
-        self.confirm();
+        confirm;
     }
     on %done { print "Done A=%s" % self; }
 };
@@ -38,7 +38,7 @@ public type B = unit {
     s: bytes &eod;
     on %synced {
         print "Synced at offset=%d" % self.offset();
-        self.confirm();
+        confirm;
     }
     on %done { print "Done B=%s" % self; }
 };
