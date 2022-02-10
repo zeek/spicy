@@ -4,4 +4,4 @@
 [$a=b"Axy", $b=(not set), $c=b"Cxy", $d=b"Dxy"]
 [$a=b"Axy", $b=6, $c=(not set), $d=b"Dxy"]
 [$a=b"Axy", $b=6, $c=(not set), $d=b"Dxy"]
-[error] terminating with uncaught exception of type hilti::rt::AssertionFailure: unexpected token to consume
+[error] terminating with uncaught exception of type spicy::rt::ParseError: unexpected token to consume (<...>/synchronize-literals.spicy:23:8)

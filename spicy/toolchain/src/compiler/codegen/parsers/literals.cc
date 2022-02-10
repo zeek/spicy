@@ -53,13 +53,18 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
                 pushBuilder(have_lah);
-                builder()->addAssert(builder::equal(state().lahead, builder::integer(production.tokenID())),
-                                     "unexpected token to consume");
-                builder()->addAssert(hilti::builder::equal(builder::expression(c),
-                                                           builder::memberCall(state().cur, "sub",
-                                                                               {builder::begin(state().cur),
-                                                                                state().lahead_end})),
-                                     "unexpected data when consuming token");
+
+                pushBuilder(builder()->addIf(builder::unequal(state().lahead, builder::integer(production.tokenID()))));
+                pb->parseError("unexpected token to consume", c.meta());
+                popBuilder();
+
+                pushBuilder(builder()->addIf(
+                    hilti::builder::unequal(builder::expression(c),
+                                            builder::memberCall(state().cur, "sub",
+                                                                {builder::begin(state().cur), state().lahead_end}))));
+                pb->parseError("unexpected data when consuming token", c.meta());
+                popBuilder();
+
                 pb->consumeLookAhead();
                 popBuilder();
 
@@ -105,8 +110,11 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 result = destination(type::Bytes());
 
             pushBuilder(have_lah);
-            builder()->addAssert(builder::equal(state().lahead, builder::integer(production.tokenID())),
-                                 "unexpected token to consume");
+
+            pushBuilder(builder()->addIf(builder::unequal(state().lahead, builder::integer(production.tokenID()))));
+            pb->parseError("unexpected token to consume", c.meta());
+            popBuilder();
+
             pb->consumeLookAhead(*result);
             popBuilder();
 
@@ -190,8 +198,11 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
                 pushBuilder(have_lah);
-                builder()->addAssert(builder::equal(state().lahead, builder::integer(production.tokenID())),
-                                     "unexpected token to consume");
+
+                pushBuilder(builder()->addIf(builder::unequal(state().lahead, builder::integer(production.tokenID()))));
+                pb->parseError("unexpected token to consume", meta);
+                popBuilder();
+
                 pb->consumeLookAhead();
                 popBuilder();
 
