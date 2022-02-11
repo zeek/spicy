@@ -1096,6 +1096,53 @@ struct ProductionVisitor
         pushState(std::move(pstate));
     }
 
+    // Start sync and trial mode.
+    void startSynchronize(const Production& sync) {
+        builder()->addComment("Wrap remaining fields in loop so we can resynchronize on failure during trial mode");
+
+        // This pushes the while loop body onto the builder so the parsing code
+        // for all subsequent fields is executed in this loop. For that reason
+        // the loop bpdy needs to execute at least one time.
+        auto while_ = builder()->addWhile(builder::bool_(true));
+        pushBuilder(while_);
+
+        // Variable storing whether we actually entered trial mode.
+        auto is_trial_mode = builder()->addTmp("is_trial_mode", builder::bool_(false));
+
+        pushBuilder(builder()->addIf(state().trial_mode), [&]() {
+            builder()->addComment("Synchronize input");
+            syncProduction(sync);
+
+            builder()->addAssign(is_trial_mode, builder::bool_(true));
+
+            pb->beforeHook();
+            builder()->addMemberCall(state().self, "__on_0x25_synced", {}, sync.location());
+            pb->afterHook();
+        });
+
+        auto [body, try_] = builder()->addTry();
+        pushBuilder(try_.addCatch(builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))), [&]() {
+            pushBuilder(builder()->addIf(builder::or_(builder::not_(is_trial_mode), builder::not_(state().trial_mode))),
+                        [&]() { builder()->addRethrow(); });
+
+            builder()->addDebugMsg("spicy", "parse error during trial mode, resynchronizing: %s", {builder::id("e")});
+
+            // Advance input so we can find the next synchronization point.
+            pb->advanceInput(builder::integer(1));
+
+            builder()->addContinue();
+        });
+
+        pushBuilder(body);
+    }
+
+    /** End sync and trial mode. */
+    void finishSynchronize() {
+        builder()->addBreak();
+        popBuilder(); // body.
+        popBuilder(); // while_.
+    }
+
     void operator()(const production::Epsilon& /* p */) {}
 
     void operator()(const production::Counter& p) {
@@ -1298,6 +1345,8 @@ struct ProductionVisitor
                 skipRegExp(*skip->expression());
         };
 
+        int trial_loops = 0;
+
         // Process fields in groups of same sync point.
         for ( const auto& group : groups ) {
             const auto& fields = group.first;
@@ -1329,14 +1378,10 @@ struct ProductionVisitor
 
                                 // Remember the original parse error so we can report it in case the sync failed.
                                 builder()->addAssign(state().trial_mode, builder::id("e"));
-
-                                builder()->addComment("Loop on the sync field until parsing succeeds");
-                                syncProduction(p.fields()[*sync_point]);
-
-                                pb->beforeHook();
-                                builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
-                                pb->afterHook();
                             });
+
+                startSynchronize(p.fields()[*sync_point]);
+                ++trial_loops;
             }
         }
 
@@ -1344,6 +1389,9 @@ struct ProductionVisitor
             skipRegExp(*skipPost->expression());
 
         pb->finalizeUnit(true, p.location());
+
+        for ( int i = 0; i < trial_loops; ++i )
+            finishSynchronize();
 
         if ( auto a = AttributeSet::find(p.unitType().attributes(), "&max-size") ) {
             // Check that we did not read into the sentinel byte.

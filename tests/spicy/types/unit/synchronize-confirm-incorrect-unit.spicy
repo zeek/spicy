@@ -1,0 +1,17 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00' | HILTI_DEBUG=spicy:spicy-verbose spicy-dump -d %INPUT
+
+module foo;
+
+type X = unit {
+	a: uint8(0);
+};
+
+
+public type Y = unit {
+	: /abc/;
+	x: X &synchronize;
+
+	on %synced {
+		confirm;
+	}
+};
