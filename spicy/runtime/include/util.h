@@ -37,8 +37,8 @@ get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::r
 template<typename U>
 inline void confirm(U& p) {
     // If we are not in trial mode `confirm` is a no-op.
-    if ( p.__trial_mode ) {
-        p.__trial_mode.reset();
+    if ( p.__parse_error ) {
+        p.__parse_error.reset();
 
         // TODO(bbannier): For consistence we would ideally bracket the hook
         // invocation with calls to `ParserBuilder::beforeHook` and
@@ -52,14 +52,14 @@ inline void confirm(U& p) {
 template<typename U>
 inline void reject(U& p) {
     // Only invoke hook if we were actually in trial mode.
-    if ( const auto& trial_mode = p.__trial_mode ) {
+    if ( const auto& parse_error = p.__parse_error ) {
         // TODO(bbannier): For consistence we would ideally bracket the hook
         // invocation with calls to `ParserBuilder::beforeHook` and
         // `afterHook`, but this is not possible since we have no direct access
         // to the parser state here.
         p.__on_0x25_rejected();
 
-        throw *trial_mode;
+        throw *parse_error;
     }
     else
         throw spicy::rt::ParseError("unit rejected outside of trial mode");

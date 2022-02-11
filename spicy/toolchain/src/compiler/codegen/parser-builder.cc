@@ -62,7 +62,7 @@ ParserState::ParserState(const type::Unit& unit, const Grammar& grammar, Express
 
 void ParserState::printDebug(const std::shared_ptr<builder::Builder>& builder) const {
     builder->addCall("spicy_rt::printParserState", {builder::string(unit_id), data, cur, lahead, lahead_end,
-                                                    builder::string(to_string(literal_mode)), trim, trial_mode});
+                                                    builder::string(to_string(literal_mode)), trim, parse_error});
 }
 
 namespace spicy::detail::codegen {
@@ -235,7 +235,7 @@ struct ProductionVisitor
                     pstate.trim = builder::id("__trim");
                     pstate.lahead = builder::id("__lah");
                     pstate.lahead_end = builder::id("__lahe");
-                    pstate.trial_mode = builder::id("__trial_mode");
+                    pstate.parse_error = builder::id("__parse_error");
 
                     // Note: Originally, we had the init expression (`{...}`)
                     // inside the tuple ctor, but that triggered ASAN to report
@@ -262,7 +262,7 @@ struct ProductionVisitor
 
                     // Call stage 2.
                     std::vector<Expression> args = {state().data,   state().cur,        state().trim,
-                                                    state().lahead, state().lahead_end, state().trial_mode};
+                                                    state().lahead, state().lahead_end, state().parse_error};
 
                     if ( addl_param )
                         args.push_back(builder::id(addl_param->id()));
@@ -290,7 +290,7 @@ struct ProductionVisitor
                             pb->advanceInput(builder::size(state().cur));
 
                             auto result =
-                                builder::tuple({state().cur, state().lahead, state().lahead_end, state().trial_mode});
+                                builder::tuple({state().cur, state().lahead, state().lahead_end, state().parse_error});
 
                             builder()->addAssign(store_result, result);
                             popBuilder();
@@ -330,7 +330,7 @@ struct ProductionVisitor
                         state().cur,
                         state().lahead,
                         state().lahead_end,
-                        state().trial_mode,
+                        state().parse_error,
                     });
 
                     popDestination();
@@ -346,7 +346,7 @@ struct ProductionVisitor
                     pstate.trim = builder::id("__trim");
                     pstate.lahead = builder::id("__lah");
                     pstate.lahead_end = builder::id("__lahe");
-                    pstate.trial_mode = builder::id("__trial_mode");
+                    pstate.parse_error = builder::id("__parse_error");
 
                     if ( unit )
                         pstate.unit = *unit;
@@ -399,13 +399,13 @@ struct ProductionVisitor
             });
 
         std::vector<Expression> args = {state().data,   state().cur,        state().trim,
-                                        state().lahead, state().lahead_end, state().trial_mode};
+                                        state().lahead, state().lahead_end, state().parse_error};
 
         if ( ! unit && p.meta().field() )
             args.push_back(destination());
 
         auto call = builder::memberCall(state().self, id, args);
-        builder()->addAssign(builder::tuple({state().cur, state().lahead, state().lahead_end, state().trial_mode}),
+        builder()->addAssign(builder::tuple({state().cur, state().lahead, state().lahead_end, state().parse_error}),
                              call);
     }
 
@@ -485,7 +485,7 @@ struct ProductionVisitor
             // Parsing a different unit type. We call the other unit's parse
             // function, but don't have to create it here.
             std::vector<Expression> args = {pb->state().data,   pb->state().cur,        pb->state().trim,
-                                            pb->state().lahead, pb->state().lahead_end, pb->state().trial_mode};
+                                            pb->state().lahead, pb->state().lahead_end, pb->state().parse_error};
 
             Location location;
             hilti::node::Range<Expression> type_args;
@@ -500,7 +500,7 @@ struct ProductionVisitor
 
             auto call = builder::memberCall(destination(), "__parse_stage1", std::move(args));
             builder()->addAssign(builder::tuple({pb->state().cur, pb->state().lahead, pb->state().lahead_end,
-                                                 pb->state().trial_mode}),
+                                                 pb->state().parse_error}),
                                  call);
         }
 
@@ -1010,8 +1010,8 @@ struct ProductionVisitor
             // We land here if we failed to find successfully find any sync
             // token in the input stream, or because we ran into EOD. We cannot
             // recover from this and directly trigger a parse error.
-            builder()->addAssert(state().trial_mode, "original parse error not set");
-            auto original_error = builder::deref(state().trial_mode);
+            builder()->addAssert(state().parse_error, "original parse error not set");
+            auto original_error = builder::deref(state().parse_error);
             pb->parseError("failed to synchronize: %s", {original_error}, original_error.meta());
         });
     }
@@ -1109,7 +1109,7 @@ struct ProductionVisitor
         // Variable storing whether we actually entered trial mode.
         auto is_trial_mode = builder()->addTmp("is_trial_mode", builder::bool_(false));
 
-        pushBuilder(builder()->addIf(state().trial_mode), [&]() {
+        pushBuilder(builder()->addIf(state().parse_error), [&]() {
             builder()->addComment("Synchronize input");
             syncProduction(sync);
 
@@ -1122,7 +1122,8 @@ struct ProductionVisitor
 
         auto [body, try_] = builder()->addTry();
         pushBuilder(try_.addCatch(builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))), [&]() {
-            pushBuilder(builder()->addIf(builder::or_(builder::not_(is_trial_mode), builder::not_(state().trial_mode))),
+            pushBuilder(builder()->addIf(
+                            builder::or_(builder::not_(is_trial_mode), builder::not_(state().parse_error))),
                         [&]() { builder()->addRethrow(); });
 
             builder()->addDebugMsg("spicy", "parse error during trial mode, resynchronizing: %s", {builder::id("e")});
@@ -1168,7 +1169,7 @@ struct ProductionVisitor
             pushBuilder(try_.second.addCatch(builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
                         [&]() {
                             // Remember the original parse error so we can report it in case the sync failed.
-                            builder()->addAssign(state().trial_mode, builder::id("e"));
+                            builder()->addAssign(state().parse_error, builder::id("e"));
 
                             builder()->addDebugMsg("spicy",
                                                    "failed to parse list element, will try to "
@@ -1377,7 +1378,7 @@ struct ProductionVisitor
                                                                     p.fields()[*sync_point].meta().field()->id()));
 
                                 // Remember the original parse error so we can report it in case the sync failed.
-                                builder()->addAssign(state().trial_mode, builder::id("e"));
+                                builder()->addAssign(state().parse_error, builder::id("e"));
                             });
 
                 startSynchronize(p.fields()[*sync_point]);
@@ -1538,7 +1539,7 @@ struct ProductionVisitor
                                     builder::parameter(ID("e"), builder::typeByID("spicy_rt::ParseError"))),
                                 [&]() {
                                     // Remember the original parse error so we can report it in case the sync failed.
-                                    builder()->addAssign(state().trial_mode, builder::id("e"));
+                                    builder()->addAssign(state().parse_error, builder::id("e"));
 
                                     builder()->addDebugMsg("spicy",
                                                            "failed to parse list element, will try to "
@@ -1585,7 +1586,7 @@ hilti::type::Function ParserBuilder::parseMethodFunctionType(std::optional<type:
         builder::parameter("__trim", type::Bool(), declaration::parameter::Kind::Copy),
         builder::parameter("__lah", look_ahead::Type, declaration::parameter::Kind::Copy),
         builder::parameter("__lahe", type::stream::Iterator(), declaration::parameter::Kind::Copy),
-        builder::parameter("__trial_mode", type::Optional(builder::typeByID("spicy_rt::ParseError")),
+        builder::parameter("__parse_error", type::Optional(builder::typeByID("spicy_rt::ParseError")),
                            declaration::parameter::Kind::Copy),
     };
 
@@ -1728,7 +1729,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
                                                                type::stream::View())));
             builder()->addLocal("lahead", look_ahead::Type, look_ahead::None);
             builder()->addLocal("lahead_end", type::stream::Iterator());
-            builder()->addLocal("trial_mode", builder::optional(builder::typeByID("spicy_rt::ParseError")));
+            builder()->addLocal("parse_error", builder::optional(builder::typeByID("spicy_rt::ParseError")));
 
             init_context();
 
@@ -1738,15 +1739,15 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             pstate.trim = builder::bool_(true);
             pstate.lahead = builder::id("lahead");
             pstate.lahead_end = builder::id("lahead_end");
-            pstate.trial_mode = builder::id("trial_mode");
+            pstate.parse_error = builder::id("parse_error");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
             visitor.parseProduction(*grammar.root(), true);
 
             // Check if the unit never left trial mode.
-            pushBuilder(builder()->addIf(state().trial_mode), [&]() {
+            pushBuilder(builder()->addIf(state().parse_error), [&]() {
                 builder()->addDebugMsg("spicy", "successful sync never confirmed, failing unit");
-                auto original_error = builder::deref(state().trial_mode);
+                auto original_error = builder::deref(state().parse_error);
                 parseError("successful synchronization never confirmed: %s", {original_error}, original_error.meta());
             });
 
@@ -1773,7 +1774,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
                                                                type::stream::View())));
             builder()->addLocal("lahead", look_ahead::Type, look_ahead::None);
             builder()->addLocal("lahead_end", type::stream::Iterator());
-            builder()->addLocal("trial_mode", builder::optional(builder::typeByID("spicy_rt::ParseError")));
+            builder()->addLocal("parse_error", builder::optional(builder::typeByID("spicy_rt::ParseError")));
 
             init_context();
 
@@ -1783,15 +1784,15 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             pstate.trim = builder::bool_(true);
             pstate.lahead = builder::id("lahead");
             pstate.lahead_end = builder::id("lahead_end");
-            pstate.trial_mode = builder::id("trial_mode");
+            pstate.parse_error = builder::id("parse_error");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
             visitor.parseProduction(*grammar.root(), true);
 
             // Check if the unit never left trial mode.
-            pushBuilder(builder()->addIf(state().trial_mode), [&]() {
+            pushBuilder(builder()->addIf(state().parse_error), [&]() {
                 builder()->addDebugMsg("spicy", "successful sync never confirmed, failing unit");
-                auto original_error = builder::deref(state().trial_mode);
+                auto original_error = builder::deref(state().parse_error);
                 parseError("successful synchronization never confirmed: %s", {original_error}, original_error.meta());
             });
 
@@ -1811,7 +1812,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
                                              builder::cast(builder::deref(builder::id("data")), type::stream::View())));
         builder()->addLocal("lahead", look_ahead::Type, look_ahead::None);
         builder()->addLocal("lahead_end", type::stream::Iterator());
-        builder()->addLocal("trial_mode", builder::optional(builder::typeByID("spicy_rt::ParseError")));
+        builder()->addLocal("parse_error", builder::optional(builder::typeByID("spicy_rt::ParseError")));
 
         init_context();
 
@@ -1821,15 +1822,15 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
         pstate.trim = builder::bool_(true);
         pstate.lahead = builder::id("lahead");
         pstate.lahead_end = builder::id("lahead_end");
-        pstate.trial_mode = builder::id("trial_mode");
+        pstate.parse_error = builder::id("parse_error");
         pushState(pstate);
         visitor.pushDestination(pstate.self);
         visitor.parseProduction(*grammar.root(), true);
 
         // Check if the unit never left trial mode.
-        pushBuilder(builder()->addIf(state().trial_mode), [&]() {
+        pushBuilder(builder()->addIf(state().parse_error), [&]() {
             builder()->addDebugMsg("spicy", "successful sync never confirmed, failing unit");
-            auto original_error = builder::deref(state().trial_mode);
+            auto original_error = builder::deref(state().parse_error);
             parseError("successful synchronization never confirmed: %s", {original_error}, original_error.meta());
         });
 
@@ -1857,7 +1858,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
             s.addField(std::move(f));
     }
 
-    s.addField(hilti::declaration::Field(ID("__trial_mode"),
+    s.addField(hilti::declaration::Field(ID("__parse_error"),
                                          hilti::type::Optional(builder::typeByID("spicy_rt::ParseError")),
                                          AttributeSet({Attribute("&always-emit"), Attribute("&internal")})));
 
@@ -2125,7 +2126,7 @@ void ParserBuilder::beforeHook() {
     //
     // TODO(bbannier): Guard this with a feature flag once
     // https://github.com/zeek/spicy/issues/1108 is fixed.
-    builder()->addAssign(builder::member(state().self, ID("__trial_mode")), state().trial_mode);
+    builder()->addAssign(builder::member(state().self, ID("__parse_error")), state().parse_error);
 
     guardFeatureCode(unit, {"uses_random_access"}, [&]() {
         builder()->addAssign(builder::member(state().self, ID("__position_update")),
@@ -2155,7 +2156,7 @@ void ParserBuilder::afterHook() {
     //
     // TODO(bbannier): Guard this with a feature flag once
     // https://github.com/zeek/spicy/issues/1108 is fixed.
-    builder()->addAssign(state().trial_mode, builder::member(state().self, ID("__trial_mode")));
+    builder()->addAssign(state().parse_error, builder::member(state().self, ID("__parse_error")));
 }
 
 void ParserBuilder::saveParsePosition() {

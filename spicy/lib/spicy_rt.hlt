@@ -71,7 +71,7 @@ public type MIMEType = __library_type("::spicy::rt::MIMEType");
 public type ParserPort = __library_type("::spicy::rt::ParserPort");
 
 declare public void registerParser(inout Parser parse_func, string linker_scope, any instance) &cxxname="spicy::rt::detail::registerParser" &have_prototype;
-declare public void printParserState(string unit_id, value_ref<stream> data, view<stream> cur, int<64> lahead, iterator<stream> lahead_end, string literal_mode, bool trim, optional<spicy_rt::ParseError> trial_mode) &cxxname="spicy::rt::detail::printParserState" &have_prototype;
+declare public void printParserState(string unit_id, value_ref<stream> data, view<stream> cur, int<64> lahead, iterator<stream> lahead_end, string literal_mode, bool trim, optional<spicy_rt::ParseError> parse_error) &cxxname="spicy::rt::detail::printParserState" &have_prototype;
 
 declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="::spicy::rt::detail::waitForInputOrEod" &have_prototype;
 declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream> cur, uint<64> n, inout strong_ref<Filters> filters) &cxxname="::spicy::rt::detail::waitForInputOrEod" &have_prototype;
