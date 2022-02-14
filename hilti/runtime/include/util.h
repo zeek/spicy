@@ -501,7 +501,7 @@ template<typename... T>
 struct is_tuple<std::tuple<T...>> : std::true_type {};
 
 /** Available byte orders. */
-enum class ByteOrder { Little, Big, Network, Host, Undef = -1 };
+enum class ByteOrder : int64_t { Little, Big, Network, Host, Undef = -1 };
 
 /**
  * Returns the byte order of the system we're running on. The result is

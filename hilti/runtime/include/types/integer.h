@@ -241,7 +241,7 @@ inline uint64_t flip(uint64_t v, uint64_t n) {
 }
 
 /** Available bit orders. */
-enum class BitOrder { LSB0, MSB0, Undef };
+enum class BitOrder : int64_t { LSB0, MSB0, Undef };
 
 /** Extracts a range of bits from an integer value, shifting them to the very left before returning. */
 template<typename UINT>

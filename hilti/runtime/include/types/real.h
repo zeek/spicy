@@ -14,7 +14,7 @@ namespace hilti::rt {
 
 namespace real {
 /** Available formats for unpacking a binary floating point value. */
-enum class Type { Undef, IEEE754_Single, IEEE754_Double };
+enum class Type : int64_t { Undef, IEEE754_Single, IEEE754_Double };
 
 /** Unpacks a floatingpoint value from a binary representation, following the protocol for `unpack` operator. */
 extern Result<std::tuple<double, Bytes>> unpack(const Bytes& data, Type type, ByteOrder fmt);

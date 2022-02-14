@@ -58,7 +58,7 @@ using Offset = integer::safe<uint64_t>;
 using Size = integer::safe<uint64_t>;
 
 /** Direction of a search. */
-enum class Direction { Forward, Backward };
+enum class Direction : int64_t { Forward, Backward };
 
 namespace detail {
 

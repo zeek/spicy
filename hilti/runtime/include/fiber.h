@@ -130,7 +130,7 @@ inline std::ostream& operator<<(std::ostream& out, const StackBuffer& s) {
 class Fiber {
 public:
     /** Type of fiber. */
-    enum class Type {
+    enum class Type : int64_t {
         IndividualStack, /**< Fiver using a dedicated local stack (needs more memory, but switching is fast) */
         SharedStack,     /**< Fiber sharing a global stack (needs less memory, but switching costs extra) */
 
