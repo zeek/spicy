@@ -289,7 +289,12 @@ function run_test_common {
     run_test_btest "${btest_alternative}" || rc=1
 
     log_stage "Checking docs ..."
-    (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc check) || true
+    # We currently ignore this check since lint checks can fail spuriously if
+    # the remote is temporarily unavailable.
+    (cd "${root}"/doc && make BUILDDIR="${build}" DESTDIR="${artifacts}"/doc check) || true
+
+    log_stage "Check Zeek docs ..."
+    (cd "${root}"/doc && make check-zeek-docs) || rc=1
 
     return ${rc}
 }
