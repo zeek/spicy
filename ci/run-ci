@@ -306,12 +306,6 @@ function run_test_install {
     run_test_common installation
 }
 
-function run_deploy {
-    # log_stage "Deploying docs ..."
-    log_stage "Deploying docs NOT implemented ..."
-    # TODO: RTD integration
-}
-
 function run_cleanup {
     log_stage "Cleaning up ..."
     (cd ${build} && ninja clean) || exit 1
@@ -363,7 +357,6 @@ case "${cmd}" in
     test-build)          (run_test_build $@);;
     test-install)        (run_test_install $@);;
     test-code)           (run_test_code $@);;
-    deploy)              (run_deploy $@);;
     cleanup)             (run_cleanup $@);;
     *)       usage;;
 esac
