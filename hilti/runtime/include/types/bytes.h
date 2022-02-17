@@ -29,14 +29,14 @@ class View;
 namespace bytes {
 
 /** For Bytes::Strip, which side to strip from. */
-enum class Side {
+enum class Side : int64_t {
     Left,  /**< left side */
     Right, /**< right side */
     Both   /**< left and right sides */
 };
 
 /** For Bytes::Decode, which character set to use. */
-enum class Charset { Undef, UTF8, ASCII };
+enum class Charset : int64_t { Undef, UTF8, ASCII };
 
 class Iterator {
     using B = std::string;

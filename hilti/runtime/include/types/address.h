@@ -15,7 +15,7 @@
 
 namespace hilti::rt {
 
-enum class AddressFamily { Undef, IPv4, IPv6 };
+enum class AddressFamily : int64_t { Undef, IPv4, IPv6 };
 
 /**
  * Represents HILTI address type. This treats IPv4 and IPv6 addresses
