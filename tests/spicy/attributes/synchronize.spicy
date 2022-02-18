@@ -1,0 +1,27 @@
+# @TEST-EXEC-FAIL: spicyc -d -p non-literal.spicy >>output 2>&1
+# @TEST-EXEC-FAIL: spicyc -d -p unit.spicy >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks validation for the `&synchronize` attribute.
+
+# @TEST-START-FILE non-literal.spicy
+module test;
+
+type A = unit {
+    : uint8;
+    : uint8 &synchronize;
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE unit.spicy
+module test;
+
+type A = unit {
+    : uint8;
+};
+
+type B = unit {
+    : uint8;
+    : A &synchronize;
+};
+# @TEST-END-FILE

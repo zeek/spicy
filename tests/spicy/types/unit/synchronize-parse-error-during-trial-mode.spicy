@@ -1,0 +1,28 @@
+# @TEST-DOC: FIXME(bbannier)
+
+# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto -T
+
+# Base cases: ordinary synchronization.
+# @TEST-EXEC: printf 'AB_C' | spicy-dump -d test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'B_C' | spicy-dump -d test.hlto >>output 2>&1
+
+# Failure during synchronization.
+# @TEST-EXEC: printf 'BB_C' | spicy-dump -d test.hlto >>output 2>&1
+#
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type A = unit {
+    a: b"A";
+    b: B &synchronize {
+        # Confirm once we have successfully parsed the field we synchronize on.
+        confirm;
+    }
+    c: b"C";
+};
+
+type B = unit {
+    x: /B/;
+    y: /_/;
+} &convert=self.x;

@@ -35,7 +35,7 @@ std::string Grammar::_productionLocation(const Production& p) const {
     return loc;
 }
 
-std::vector<std::vector<Production>> Grammar::_rhss(const Production& p) {
+std::vector<std::vector<Production>> Grammar::_rhss(const Production& p) const {
     std::vector<std::vector<Production>> nrhss;
 
     for ( const auto& rhs : p.rhss() ) {
@@ -166,34 +166,37 @@ bool Grammar::_add(std::map<std::string, std::set<std::string>>* tbl, const Prod
     return true;
 }
 
-bool Grammar::_isNullable(std::vector<Production>::const_iterator i, std::vector<Production>::const_iterator j) {
+bool Grammar::_isNullable(const Production& p) const {
+    if ( p.isA<production::Epsilon>() )
+        return true;
+
+    if ( p.isTerminal() )
+        return false;
+
+    return _nullable.find(p.symbol())->second;
+}
+
+bool Grammar::_isNullable(std::vector<Production>::const_iterator i, std::vector<Production>::const_iterator j) const {
     while ( i != j ) {
         auto rhs = *i++;
-
-        if ( rhs.isA<production::Epsilon>() )
-            continue;
-
-        if ( rhs.isTerminal() )
-            return false;
-
-        if ( ! _nullable[rhs.symbol()] )
+        if ( ! _isNullable(rhs) )
             return false;
     }
 
     return true;
 }
 
-std::set<std::string> Grammar::_getFirst(const Production& p) {
+std::set<std::string> Grammar::_getFirst(const Production& p) const {
     if ( p.isA<production::Epsilon>() )
         return {};
 
     if ( p.isTerminal() )
         return {p.symbol()};
 
-    return _first[p.symbol()];
+    return _first.find(p.symbol())->second;
 }
 
-std::set<std::string> Grammar::_getFirstOfRhs(const std::vector<Production>& rhs) {
+std::set<std::string> Grammar::_getFirstOfRhs(const std::vector<Production>& rhs) const {
     auto first = std::set<std::string>();
 
     for ( const auto& p : rhs ) {
@@ -203,9 +206,9 @@ std::set<std::string> Grammar::_getFirstOfRhs(const std::vector<Production>& rhs
         if ( p.isTerminal() )
             return {p.symbol()};
 
-        first = hilti::util::set_union(first, _first[p.symbol()]);
+        first = hilti::util::set_union(first, _first.find(p.symbol())->second);
 
-        if ( ! _nullable[p.symbol()] )
+        if ( auto i = _nullable.find(p.symbol()); i == _nullable.end() )
             break;
     }
 
@@ -271,51 +274,20 @@ Result<Nothing> Grammar::_computeTables() {
     // Build the look-ahead sets.
     for ( auto& sym : _nterms ) {
         auto& p = _prods.find(sym)->second;
-
         if ( ! p.isA<production::LookAhead>() )
             continue;
 
         auto& lap = p.as<production::LookAhead>();
-        auto rhss = _rhss(p);
 
-        assert(rhss.size() == 2);
-        auto r = rhss.begin();
+        auto v0 = lookAheadsForProduction(lap.alternatives().first, p);
+        if ( ! v0 )
+            continue;
 
-        auto laheads = std::vector<std::set<std::string>>{{}, {}};
+        auto v1 = lookAheadsForProduction(lap.alternatives().second, p);
+        if ( ! v1 )
+            continue;
 
-        for ( auto i = 0; i < 2; ++i ) {
-            auto rhs = *r++;
-
-            for ( const auto& term : _getFirstOfRhs(rhs) )
-                laheads[i] = hilti::util::set_union(laheads[i], {term});
-
-            if ( _isNullable(rhs.begin(), rhs.end()) ) {
-                for ( const auto& term : _follow[sym] )
-                    laheads[i] = hilti::util::set_union(laheads[i], {term});
-            }
-        }
-
-        std::set<Production> v0;
-        std::set<Production> v1;
-        std::set<std::string> lahs;
-
-        for ( auto i = 0; i < 2; ++i ) {
-            for ( const auto& s : laheads[i] ) {
-                auto p = _prods.find(s);
-                assert(p != _prods.end());
-
-                if ( p->second.isNonTerminal() )
-                    return hilti::result::Error(
-                        fmt("%s: look-ahead cannot depend on non-terminal", _productionLocation(p->second)));
-
-                if ( i == 0 )
-                    v0.insert(p->second);
-                else
-                    v1.insert(p->second);
-            }
-        }
-
-        lap.setLookAheads(std::make_pair(std::move(v0), std::move(v1)));
+        lap.setLookAheads(std::make_pair(std::move(*v0), std::move(*v1)));
     }
 
     return _check();
@@ -358,6 +330,37 @@ Result<Nothing> Grammar::_check() {
     }
 
     return Nothing();
+}
+
+hilti::Result<std::set<Production>> Grammar::lookAheadsForProduction(Production p,
+                                                                     std::optional<Production> parent) const {
+    if ( auto x = p.tryAs<production::Resolved>() )
+        p = resolved(*x);
+
+    auto laheads = std::set<std::string>{};
+
+    for ( const auto& term : _getFirst(p) )
+        laheads = hilti::util::set_union(laheads, {term});
+
+    if ( parent && _isNullable(p) ) {
+        for ( const auto& term : _follow.find(parent->symbol())->second )
+            laheads = hilti::util::set_union(laheads, {term});
+    }
+
+    std::set<Production> result;
+
+    for ( const auto& s : laheads ) {
+        auto p = _prods.find(s);
+        assert(p != _prods.end());
+
+        if ( ! p->second.isTerminal() )
+            return hilti::result::Error(
+                fmt("%s: look-ahead cannot depend on non-terminal", _productionLocation(p->second)));
+
+        result.insert(p->second);
+    }
+
+    return result;
 }
 
 void Grammar::printTables(std::ostream& out, bool verbose) {

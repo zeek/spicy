@@ -20,5 +20,7 @@ spicy::type::unit::item::UnitHook : isUnitItem
 spicy::type::unit::item::UnresolvedField : isUnitItem
 spicy::type::unit::item::Variable : isUnitItem
 
+spicy::statement::Confirm : isStatement
+spicy::statement::Reject : isStatement
 spicy::statement::Print : isStatement
 spicy::statement::Stop : isStatement

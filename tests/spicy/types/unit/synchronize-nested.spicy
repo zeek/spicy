@@ -1,0 +1,47 @@
+# @TEST-DOC: Exercises synchronization on hierarchies with nesting.
+
+# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
+
+# @TEST-EXEC: echo '# Base cases without synchronization' >>output
+# @TEST-EXEC: ${SCRIPTS}/printf 'X1' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'X12' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'X12\x03' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'X12\x034' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+
+# @TEST-EXEC: echo '# Synchronize on non-vector field' >>output
+# @TEST-EXEC: ${SCRIPTS}/printf 'x1' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'x2' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'x\x03' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'x4' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf 'x5' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+
+# @TEST-EXEC: echo '# Synchronize on vector field' >>output
+# @TEST-EXEC: ${SCRIPTS}/printf 'Xa1' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'Xa2' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'Xa\x03' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'Xa4' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf 'Xa5' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+#
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type X = unit {
+    x: /X/;
+    a: A &synchronize;
+    as: A[] &synchronize;
+
+    on %synced { confirm; }
+    on %done { print self; }
+};
+
+type A = unit {
+    switch {
+        # Exercise simultaneous matching of multiple literals and regexps.
+        # We should be able to match one of these during synchronization.
+        -> a1: b"1";
+        -> a2: /2/;
+        -> a3: uint8(3);
+        -> a4: /4/;
+    };
+};

@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <utility>
 
 #include <spicy/rt/mime.h>
@@ -21,6 +22,7 @@
 #include <spicy/ast/all.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/hook.h>
+#include <spicy/ast/types.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/visitors.h>
 
@@ -605,10 +607,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
         if ( const auto& c = f.ctor() ) {
             // Check that constants are of a supported type.
-            const auto& t = c->type();
-
-            if ( ! (t.isA<type::Bytes>() || t.isA<type::RegExp>() || t.isA<type::SignedInteger>() ||
-                    t.isA<type::UnsignedInteger>()) )
+            if ( ! type::supportsLiterals(c->type()) )
                 error(fmt("not a parseable constant (%s)", *c), p);
         }
 
@@ -687,6 +686,9 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                         }
                     }
 
+                    if ( auto x = AttributeSet::find(f->attributes(), "&synchronize") )
+                        error(fmt("unit switch branches cannot be &synchronize"), p);
+
                     seen_fields.emplace_back(*f);
                 }
             }
@@ -744,7 +746,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             auto id_readable = hilti::util::replace(hook.id().local().str(), "0x25_", "%");
 
             if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_error" || id == "0x25_print" ||
-                 id == "0x25_finally" ) {
+                 id == "0x25_finally" || id == "0x25_rejected" || id == "0x25_confirmed" || id == "0x25_synced" ) {
                 if ( params.size() != 0 )
                     error(fmt("hook '%s' does not take any parameters", id_readable), p, location);
             }

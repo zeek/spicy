@@ -291,10 +291,9 @@ inline auto parsers() {
  */
 class ParseError : public hilti::rt::UserException {
 public:
-    ParseError(const std::string& msg, const std::string& location = "")
-        : UserException(hilti::rt::fmt("parse error: %s", msg), location) {}
+    ParseError(const std::string& msg, const std::string& location = "") : UserException(msg, location) {}
 
-    ParseError(const hilti::rt::result::Error& e) : UserException(hilti::rt::fmt("parse error: %s", e.description())) {}
+    ParseError(const hilti::rt::result::Error& e) : UserException(e.description()) {}
 
     virtual ~ParseError(); /* required to create vtable, see hilti::rt::Exception */
 };
@@ -363,7 +362,7 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
 void printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                       const hilti::rt::stream::View& cur, int64_t lahead,
                       const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
-                      bool trim);
+                      bool trim, const std::optional<ParseError>& parse_error);
 
 /**
  * Used by generated parsers to wait until a minimum amount of input becomes

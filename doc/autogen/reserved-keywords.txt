@@ -17,6 +17,7 @@ bytes
 case
 cast
 catch
+confirm
 const
 const_iterator
 constant
@@ -67,6 +68,7 @@ property
 public
 real
 regexp
+reject
 return
 set
 sink

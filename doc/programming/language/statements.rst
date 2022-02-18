@@ -38,6 +38,23 @@ Inside a :ref:`statement_for` or :ref:`statement_while` loop,
 ``break`` aborts the loop's body, with execution then continuing
 right after the loop construct.
 
+.. _statement_confirm:
+
+``confirm``
+-----------
+
+::
+
+    confirm;
+
+If the parser is currently in trial mode, confirm that the unit is successfully
+synchronized to the input; the unit is then put into regular parsing mode
+again. If the unit is not in trial mode ``confirm`` has no effect.
+
+See :ref:`statement_reject` to reject the synchronization instead.
+
+``confirm`` can only be invoked from hooks.
+
 .. _statement_for:
 
 ``for``
@@ -136,6 +153,24 @@ specified, commas will separate them in the output.
     .. spicy-output:: statement-interpolation.spicy
         :show-with: print.spicy
         :exec: spicyc -j %INPUT
+
+.. _statement_reject:
+
+``reject``
+----------
+
+::
+
+    reject;
+
+If the parse is currently in trial mode, reject the synchronization; this
+immediately fails parsing of the unit and raises the parse error which caused
+the unit to be put into trial mode. If the unit is not in trial mode this
+triggers a generic parse error.
+
+See :ref:`statement_confirm` to confirm the synchronization instead.
+
+``reject`` can only be invoked from hooks.
 
 .. _statement_return:
 

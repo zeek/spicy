@@ -1,0 +1,88 @@
+# @TEST-DOC: Check external an internal sync of `&synchronize` vector fields.
+
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+
+# Parsing for vectors with lookahead happy path.
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00ABABAB' | spicy-driver -i 1 -p test::Y -d test.hlto >>output
+
+# External sync for vectors using lookahead parsing.
+# @TEST-EXEC: ${SCRIPTS}/printf 'ABAB' | spicy-driver -p test::Y -i 1 -d test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '1ABAB' | spicy-driver -p test::Y -i 1 -d test.hlto >>output
+
+# Internal sync for vectors using lookahead parsing.
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00_ABABAB' | spicy-driver -p test::Y -i 1 -d test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf 'ABAB____AB' | spicy-driver -p test::Y -i 1 -d test.hlto >>output
+
+# Internal sync for vectors using lookahead parsing with manual advance after first sync.
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00ABAABAB' | spicy-driver -p test::Y -i 1 -d test.hlto >>output
+
+# Parsing for vectors with lookahead happy path.
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00ABAB' | spicy-driver -i 1 -p test::Z -d test.hlto >>output
+
+# External sync for vectors not using lookahead parsing.
+# @TEST-EXEC: ${SCRIPTS}/printf 'ABAB' | spicy-driver -p test::Z -i 1 -d test.hlto >>output
+
+# Internal sync for vectors not using lookahead parsing. The failing elements will be missing.
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00_ABABAB' | spicy-driver -p test::Z -i 1 -d test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00AB_AB' | spicy-driver -p test::Z -i 1 -d test.hlto >>output
+
+# Exclusive internal sync for vector using lookahead.
+# @TEST-EXEC: ${SCRIPTS}/printf 'AB_AB' | spicy-driver -p test::A -i 1 -d test.hlto >>output
+
+# Exclusive internal sync for vector not using lookahead.
+# @TEST-EXEC: ${SCRIPTS}/printf 'AB_AB' | spicy-driver -p test::B -i 1 -d test.hlto >>output
+
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+type X = unit {
+    a: /A/;
+    b: /B/;
+} &convert="AB";
+
+# Unit with a vector of elements using lookahead.
+public type Y = unit {
+    a: uint8(0);
+    xs: (X &synchronize)[] &synchronize foreach { print "Foreach: %s" % $$; }
+
+    on %synced { print "Synced: %s" % self; confirm; }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};
+
+# Unit with a vector of elements not using lookahead.
+public type Z = unit {
+    a: uint8(0);
+    xs: (X &synchronize)[2] &synchronize foreach { print "Foreach: %s" % $$; }
+
+    on %synced { print "Synced: %s" % self; confirm; }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};
+
+# Unit with a vector of elements using lookahead doing only internal synchronization.
+public type A = unit {
+    xs: (X &synchronize)[] foreach { print "Foreach: %s" % $$; }
+
+    on %synced { print "Synced: %s" % self; confirm; }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};
+
+# Unit with a vector of elements not using lookahead doing only internal synchronization.
+public type B = unit {
+    xs: (X &synchronize)[2] foreach { print "Foreach: %s" % $$; }
+
+    on %synced { print "Synced: %s" % self; confirm; }
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+    on %done { print "Done: %s" % self; }
+    on %error { print "Error: %s" % self; }
+};

@@ -1,0 +1,27 @@
+# @TEST-DOC: Exercises literal types we can synchronize on.
+
+# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
+#
+# @TEST-EXEC: ${SCRIPTS}/printf 'Axy\x00\x00\x00\x06CxyDxy' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x00\x06CxyDxy' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+#
+# @TEST-EXEC: ${SCRIPTS}/printf 'AxyCxyDxy' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+#
+# @TEST-EXEC: ${SCRIPTS}/printf 'Axy\x00\x00\x00\x06Dxy' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'Axy\x00\x00\x00\x06CxDxy' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf 'Axy\x00\x00\x00\x06CxD' | spicy-driver -i 1 -d test.hlto >>output 2>&1
+#
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type X = unit {
+    a: b"Axy";
+    b: uint32(6) &synchronize;
+    c: b"Cxy" &synchronize;
+    d: /Dxy/ &synchronize;
+
+    on %synced { confirm; }
+    on %done { print self; }
+};

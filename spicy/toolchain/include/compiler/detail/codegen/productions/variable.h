@@ -24,7 +24,6 @@ public:
     bool nullable() const { return false; }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return true; }
-    bool supportsSynchronize() const { return hasSize() && maySynchronize(); }
     std::string render() const { return hilti::util::fmt("%s", _type); }
 
 private:

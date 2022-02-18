@@ -1,3 +1,18 @@
+1.4.0-dev.228 | 2022-02-18 19:12:51 +0100
+
+  * Add support for error recovery. (Benjamin Bannier, Corelight)
+
+  * Format unsigned integers with uppercase suffix. (Benjamin Bannier, Corelight)
+
+  * Do not prefix rendered parse errors with `parse error:`. (Benjamin Bannier, Corelight)
+
+  * Provide grammar function to return look-ahead literals for a given (Robin Sommer, Corelight)
+    production.
+
+  * Print grammar debug output only once tables have been computed. (Robin Sommer, Corelight)
+
+  * Remove duplicated and incorrect `default` case rendering to HILTI. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.180 | 2022-02-18 12:25:18 +0100
 
   * Add step in `ci/run-ci` checking whether Zeek docs are up-to-date. (Benjamin Bannier, Corelight)

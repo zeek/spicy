@@ -6,24 +6,6 @@
 using namespace spicy;
 using namespace spicy::detail;
 
-bool codegen::production::LookAhead::supportsSynchronize() const {
-    if ( hasSize() )
-        return true;
-
-    for ( const auto& t : _lahs->first ) {
-        if ( ! t.supportsSynchronize() )
-            return false;
-    }
-
-    // NOLINTNEXTLINE(readability-use-anyofallof)
-    for ( const auto& t : _lahs->second ) {
-        if ( ! t.supportsSynchronize() )
-            return false;
-    }
-
-    return true;
-}
-
 static std::string _fmtAlt(const codegen::Production& alt, const std::set<codegen::Production>& lahs) {
     auto fmt = [&](const auto& lah) {
         if ( lah.isLiteral() )

@@ -1,0 +1,31 @@
+# @TEST-DOC: Checks that we can confirm from another unit.
+
+# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
+
+# Check confirming from a parent unit.
+# @TEST-EXEC: ${SCRIPTS}/printf 'ABC' | spicy-dump -p test::Y -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '1ABC' | spicy-dump -p test::Y -d test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '1BC' | spicy-dump -p test::Y -d test.hlto >>output 2>&1
+
+# Failing to confirm anywhere leads to a toplevel error.
+# @TEST-EXEC: ${SCRIPTS}/printf 'ABC' | spicy-dump -p test::Z -d test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '1ABC' | spicy-dump -p test::Z -d test.hlto >>output 2>&1
+
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type Y = unit {
+    x: X;
+    on %done { confirm; }
+};
+
+public type Z = unit {
+    x: X;
+};
+
+type X = unit {
+    a: b"A";
+    b: b"B" &synchronize;
+    c: b"C" &synchronize;
+};

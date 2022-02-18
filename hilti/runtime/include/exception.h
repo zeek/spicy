@@ -3,6 +3,7 @@
 #pragma once
 
 #include <iostream>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -61,6 +62,8 @@ private:
     std::string _location;
     Backtrace _backtrace;
 };
+
+inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { return stream << e.what(); }
 
 #define HILTI_EXCEPTION(name, base)                                                                                    \
     class name : public ::hilti::rt::base {                                                                            \

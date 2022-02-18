@@ -34,7 +34,7 @@ static bool _haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, c
 void detail::printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                               const hilti::rt::stream::View& cur, int64_t lahead,
                               const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
-                              bool trim) {
+                              bool trim, const std::optional<ParseError>& parse_error) {
     auto str = [&](const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end) {
         auto i = begin + 10;
         if ( i >= end )
@@ -55,11 +55,12 @@ void detail::printParserState(const std::string& unit_id, const hilti::rt::Value
         lah_str = hilti::rt::fmt("%" PRId32, lahead);
     }
 
-    auto msg = hilti::rt::fmt("- state: type=%s input=\"%s%s\" stream=%p offsets=%" PRId64 "/%" PRId64 "/%" PRId64
-                              " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64 " lah_token=\"%s%s\"",
-                              unit_id, input_data, input_dots, data.get(), data->begin().offset(), cur.begin().offset(),
-                              data->end().offset(), data->numberOfChunks(), (data->isFrozen() ? "yes" : "no"),
-                              literal_mode, (trim ? "yes" : "no"), lah_str, lah_data, lah_dots);
+    auto msg =
+        hilti::rt::fmt("- state: type=%s input=\"%s%s\" stream=%p offsets=%" PRId64 "/%" PRId64 "/%" PRId64
+                       " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64 " lah_token=\"%s%s\" recovering=%s",
+                       unit_id, input_data, input_dots, data.get(), data->begin().offset(), cur.begin().offset(),
+                       data->end().offset(), data->numberOfChunks(), (data->isFrozen() ? "yes" : "no"), literal_mode,
+                       (trim ? "yes" : "no"), lah_str, lah_data, lah_dots, (parse_error.has_value() ? "yes" : "no"));
 
     SPICY_RT_DEBUG_VERBOSE(msg);
 }

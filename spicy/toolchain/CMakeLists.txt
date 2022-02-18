@@ -41,6 +41,7 @@ autogen_dispatchers(
 
 set(SOURCES_COMPILER
     src/ast/hook.cc
+    src/ast/types.cc
     src/ast/types/bitfield.cc
     src/ast/types/unit.cc
     src/ast/types/unit-items/field.cc

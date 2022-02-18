@@ -137,6 +137,7 @@
 [debug/optimizer] removing declaration for unused function hilti::printValues
 [debug/optimizer] removing declaration for unused function spicy_rt::atEod
 [debug/optimizer] removing declaration for unused function spicy_rt::backtrack
+[debug/optimizer] removing declaration for unused function spicy_rt::confirm
 [debug/optimizer] removing declaration for unused function spicy_rt::createContext
 [debug/optimizer] removing declaration for unused function spicy_rt::extractBits
 [debug/optimizer] removing declaration for unused function spicy_rt::filter_connect
@@ -145,6 +146,7 @@
 [debug/optimizer] removing declaration for unused function spicy_rt::filter_forward_eod
 [debug/optimizer] removing declaration for unused function spicy_rt::filter_init
 [debug/optimizer] removing declaration for unused function spicy_rt::printParserState
+[debug/optimizer] removing declaration for unused function spicy_rt::reject
 [debug/optimizer] removing declaration for unused function spicy_rt::setContext
 [debug/optimizer] removing declaration for unused function spicy_rt::unit_find
 [debug/optimizer] removing declaration for unused function spicy_rt::waitForEod

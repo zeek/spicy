@@ -147,10 +147,11 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     for ( const auto& i : unit.items() )
         v.dispatch(i);
 
-    auto add_hook = [&](std::string id, std::vector<type::function::Parameter> params) {
+    auto add_hook = [&](std::string id, std::vector<type::function::Parameter> params, AttributeSet attributes = {}) {
         if ( auto hook_decl =
                  compileHook(unit, ID(std::move(id)), {}, false, false, std::move(params), {}, {}, unit.meta()) ) {
-            auto nf = hilti::declaration::Field(hook_decl->id().local(), hook_decl->function().type(), {}, unit.meta());
+            auto nf = hilti::declaration::Field(hook_decl->id().local(), hook_decl->function().type(), attributes,
+                                                unit.meta());
             v.addField(std::move(nf));
         }
     };
@@ -175,6 +176,12 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_error", {});
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
+
+    // TODO(bbannier): Mark these hooks required by a new feature `synchronization`.
+    auto attr_sync = AttributeSet({Attribute("&always-emit")});
+    add_hook("0x25_confirmed", {}, attr_sync);
+    add_hook("0x25_rejected", {}, attr_sync);
+    add_hook("0x25_synced", {}, attr_sync);
 
     if ( unit.id() ) {
         ID typeID = ID(hilti::rt::replace(*unit.id(), ":", "_"));

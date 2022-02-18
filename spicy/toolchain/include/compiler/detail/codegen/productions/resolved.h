@@ -37,7 +37,6 @@ public:
     bool nullable() const { return false; }
     bool eodOk() const { return false; }
     bool atomic() const { return true; }
-    bool supportsSynchronize() const { return false; }
     std::optional<spicy::Type> type() const { return {}; }
 
 public:

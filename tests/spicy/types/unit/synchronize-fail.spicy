@@ -1,0 +1,13 @@
+# @TEST-DOC: Checks validation related to `&synchronize` attribute.
+#
+# @TEST-EXEC-FAIL: spicyc -d -p %INPUT >>output 2>&1
+#
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+type A = unit {
+    switch {
+        -> : b"A" &synchronize;
+    };
+};

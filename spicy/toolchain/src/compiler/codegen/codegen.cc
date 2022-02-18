@@ -357,6 +357,18 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
         }
     }
 
+    void operator()(const statement::Confirm& n, position_t p) {
+        // TODO(bbannier): Add validation checking whether `self` is actually a valid identifier here.
+        auto call = builder::call("spicy_rt::confirm", {builder::deref(builder::id("self"))});
+        replaceNode(&p, hilti::statement::Expression(call, p.node.location()));
+    }
+
+    void operator()(const statement::Reject& n, position_t p) {
+        // TODO(bbannier): Add validation checking whether `self` is actually a valid identifier here.
+        auto call = builder::call("spicy_rt::reject", {builder::deref(builder::id("self"))});
+        replaceNode(&p, hilti::statement::Expression(call, p.node.location()));
+    }
+
     void operator()(const statement::Stop& n, position_t p) {
         auto b = builder::Builder(cg->context());
         b.addAssign(builder::id("__stop"), builder::bool_(true), n.meta());

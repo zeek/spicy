@@ -1,0 +1,23 @@
+# Automatically generated; edit in Sphinx source code, not here.
+module Test;
+
+public type Example = unit {
+    start_a: /SEC_A/;
+    a: uint8;
+
+    # If we fail to find e.g., 'SEC_A' in the input, try to synchronize on this literal.
+    start_b: /SEC_B/ &synchronize;
+    b: bytes &eod;
+
+    # In this example confirm unconditionally.
+    on %synced {
+        print "Synced: %s" % self;
+        confirm;
+    }
+
+    # Perform logging for these %confirmed and %rejected.
+    on %confirmed { print "Confirmed: %s" % self; }
+    on %rejected { print "Rejected: %s" % self; }
+
+    on %done { print "Done %s" % self; }
+};

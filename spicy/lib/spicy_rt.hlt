@@ -43,6 +43,9 @@ declare public void filter_disconnect(inout any unit &requires-type-feature="sup
 declare public void filter_forward(inout any filter &requires-type-feature="is_filter", bytes b) &cxxname="::spicy::rt::filter::forward" &have_prototype;
 declare public void filter_forward_eod(inout any filter &requires-type-feature="is_filter") &cxxname="::spicy::rt::filter::forward_eod" &have_prototype;
 
+declare public void confirm(inout any unit) &cxxname="::spicy::rt::confirm" &have_prototype;
+declare public void reject(inout any unit) &cxxname="::spicy::rt::reject" &have_prototype;
+
 public type UnitContext = __library_type("::spicy::rt::UnitContext");
 declare public UnitContext createContext(any ctx, TypeInfo ti) &cxxname="::spicy::rt::detail::createContext" &have_prototype;
 declare public void setContext(inout any unit, optional<UnitContext> ctx, TypeInfo ti) &cxxname="::spicy::rt::detail::setContext" &have_prototype;
@@ -68,7 +71,7 @@ public type MIMEType = __library_type("::spicy::rt::MIMEType");
 public type ParserPort = __library_type("::spicy::rt::ParserPort");
 
 declare public void registerParser(inout Parser parse_func, string linker_scope, any instance) &cxxname="spicy::rt::detail::registerParser" &have_prototype;
-declare public void printParserState(string unit_id, value_ref<stream> data, view<stream> cur, int<64> lahead, iterator<stream> lahead_end, string literal_mode, bool trim) &cxxname="spicy::rt::detail::printParserState" &have_prototype;
+declare public void printParserState(string unit_id, value_ref<stream> data, view<stream> cur, int<64> lahead, iterator<stream> lahead_end, string literal_mode, bool trim, optional<spicy_rt::ParseError> parse_error) &cxxname="spicy::rt::detail::printParserState" &have_prototype;
 
 declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="::spicy::rt::detail::waitForInputOrEod" &have_prototype;
 declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream> cur, uint<64> n, inout strong_ref<Filters> filters) &cxxname="::spicy::rt::detail::waitForInputOrEod" &have_prototype;

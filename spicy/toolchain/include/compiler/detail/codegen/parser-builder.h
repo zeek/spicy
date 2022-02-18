@@ -44,11 +44,18 @@ enum class LiteralMode {
      * it works, move cur as normal; if it fails, set cur to end.
      */
     Try,
+
+    /**
+     * Search for the field in the input. If a match is found, move cur as
+     * normal; if it fails, set cur to end.
+     */
+    Search,
 };
 
 namespace detail {
 constexpr hilti::util::enum_::Value<LiteralMode> literal_modes[] = {{LiteralMode::Default, "default"},
-                                                                    {LiteralMode::Try, "try"}};
+                                                                    {LiteralMode::Try, "try"},
+                                                                    {LiteralMode::Search, "search"}};
 } // namespace detail
 
 constexpr auto to_string(LiteralMode cc) { return hilti::util::enum_::to_string(cc, detail::literal_modes); }
@@ -77,7 +84,7 @@ extern const hilti::Expression Eod;
  * Maintains access to parser state during code generation. The generated
  * parsing code needs to carry various pieces of state through the logic
  * (e.g., the current input data). This struct records the expressions that
- * arte holding the current state variables. To change same state (e.g., to
+ * are holding the current state variables. To change same state (e.g., to
  * temporarily parse different input) one typically creates a copy of the
  * current struct instance and then pushed that onto parser generator's state
  * stack. To change it back, one pops that struct from the stack.
@@ -101,7 +108,7 @@ struct ParserState {
     /** Unit type that's currently being compiled. */
     std::reference_wrapper<const type::Unit> unit;
 
-    /** Type name of unit type that's currently being compiled. */
+    /** Type name of unit type that is currently being compiled. */
     ID unit_id;
 
     /** True if the current grammar needs look-ahead tracking. */
@@ -145,6 +152,11 @@ struct ParserState {
      * desired.
      */
     std::optional<Expression> captures;
+
+    /**
+     * Expression holding the last parse error if any. This field is set only in sync or trial mode.
+     */
+    Expression parse_error;
 };
 
 /** Generates the parsing logic for a unit type. */
@@ -261,12 +273,18 @@ public:
 
     /**
      * Generates code that parses an instance of a specific literal, meaning
-     * it matches the value against the input. In literal mode `Default`,
-     * returns the parsed value and advances `cur`, consuming the current
-     * look-ahead symbol if any, and throwing a parse error if it couldn't
-     * parse it. In literal mode `Try`, returns an iterator pointing right
+     * it matches the value against the input.
+     *
+     * In literal mode `Default`, returns the parsed value and advances `cur`,
+     * consuming the current look-ahead symbol if any, and throwing a parse
+     * error if it couldn't parse it.
+     *
+     * In literal mode `Try`, returns an iterator pointing right
      * after the parsed literal, with an iterator equal to `begin(cur)`
      * meaning no match (and does not advance `cur`).
+     *
+     * Literal mode `Search` behaves like `Try`, but will advance the input
+     * until a match has been found or EOD is reached.
      */
     Expression parseLiteral(const Production& p, const std::optional<Expression>& dst);
 
