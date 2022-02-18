@@ -1,3 +1,11 @@
+1.4.0-dev.180 | 2022-02-18 12:25:18 +0100
+
+  * Add step in `ci/run-ci` checking whether Zeek docs are up-to-date. (Benjamin Bannier, Corelight)
+
+  * Add doc build target to check whether docs are up-to-date. (Benjamin Bannier, Corelight)
+
+  * Remove unimplemented `deploy_docs` function in `ci/run-ci`. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.176 | 2022-02-17 14:14:06 +0100
 
   * GH-1122: Make sure user-visible enums are represented by `int64_t`. (Benjamin Bannier, Corelight)
