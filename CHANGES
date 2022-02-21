@@ -2431,7 +2431,7 @@ x:
     how the Spicy-to-HILTI code generations operates. Includes a couple of
     things:
 
-            - As there's no appropiate global state on the Spicy side
+            - As there's no appropriate global state on the Spicy side
               where we could story options easily, we extend the
               HILTI-side options struct with the notion of "auxiliary
               options", described by key/value pairs. Spicy can then store
@@ -2610,7 +2610,7 @@ x:
   * Fiber runtime library updates. (Robin Sommer, Corelight)
 
     - Fix state tracking in fibers. When taking a fiber from the
-      cache, we would reset its state ot INIT, which then led to
+      cache, we would reset its state on INIT, which then led to
       restarting it from scratch instead of reusing the already
       running loop.
 
@@ -2671,7 +2671,7 @@ x:
     used to obtained a symbol from a specific library.
 
     While currently `Library` users just call `::dlsym` globally to obtain a
-    symbol, this becomes ambigous if multiple libraries in the process image
+    symbol, this becomes ambiguous if multiple libraries in the process image
     provide similarly named symbols. Instead they could hold handles to
     all interesting libraries and obtain symbols with the added function.
     With that we could also `::dclose` libraries in the `Library`
@@ -2683,13 +2683,13 @@ x:
 
   * Extend error message when `rt::Library::save` fails. (Benjamin Bannier, Corelight)
 
-  * Change CI job to use non-priviledged user.
+  * Change CI job to use non-privileged user.
 
     At least on ubuntu `root` seems to be able to modify even read-only
     directories which makes it hard to write tests checking handling of
     permission errors.
 
-    Change the image used in CI to use a non-priviledged user instead. (Benjamin Bannier, Corelight)
+    Change the image used in CI to use a non-privileged user instead. (Benjamin Bannier, Corelight)
 
   * Change directory used for ccache store in CI.
 
@@ -2703,7 +2703,7 @@ x:
 
   * Consistently provide stringification for all exceptions. (Benjamin Bannier, Corelight)
 
-  * Add comparision operators to `rt::Backtrace`. (Benjamin Bannier, Corelight)
+  * Add comparison operators to `rt::Backtrace`. (Benjamin Bannier, Corelight)
 
   * Fix `to_string_for_print` for `DeferredExpression`.
 
@@ -2746,7 +2746,7 @@ x:
 
   * Lots of new test coverage for HILTI runtime library: references,
     debug logger, configuration, safe-int, iterator, backtrace; along
-    with releated fixed and cleanup. (Benjamin Bannier, Corelight)
+    with related fixes and cleanups. (Benjamin Bannier, Corelight)
 
 0.4.0-737 | 2020-08-11 07:39:31 +0000
 
@@ -2770,7 +2770,7 @@ x:
     input traces.  (Robin Sommer, Corelight)
 
   * When naming a parser to use through "spicy-driver -p XXX", one can
-    now also specifiy a port ("80/tcp") or a MIME type
+    now also specify a port ("80/tcp") or a MIME type
     ("application/text") if the desired Spicy unit defines a
     corresponding property. See the documentation of spicy-driver for
     more. (Robin Sommer, Corelight)
@@ -2887,7 +2887,7 @@ x:
   * Series of smaller documentation updates. (Robin Sommer, Corelight)
 
     * Add documentation for types time/interval/optional.
-    * Add list of reservered keywords.
+    * Add list of reserved keywords.
     * Update debugging sections.
     * Add note about commutativity to operator documentation where applicable.
     * Add note about checking if optional unit variables remains unset still.
@@ -3078,7 +3078,7 @@ x:
     expression that will be evaluated after the parsing for the field
     has finished, but before any hooks execute. If ``EXPR`` returns
     ``False``, the parsing process will abort with an error, just as
-    if the field had been unparseable in the first place.
+    if the field had been unparsable in the first place.
 
     One can similarly enforce conditions globally at the unit level
     through a property ``%requires = EXPR``, which will be evaluated
@@ -3191,7 +3191,7 @@ x:
   * Redo testing of `hilti::rt::Stream` and clean up implementation (Benjamin Bannier, Corelight)
     - Add Doxygen documentation to `rt::Stream`.
     - Add `begin` and `end` methods for `rt::list::Empty`.
-    - Add additional nullptr checks when acessing `rt::Stream` iterator chunks or contents.
+    - Add additional nullptr checks when accessing `rt::Stream` iterator chunks or contents.
     - Fix escaping of `rt::Stream` and `rt::View` in stringification
       to ensure all non-printable byte sequences are escaped.
     - Make `rt::stream::View` iterators be safe by default.
@@ -3324,7 +3324,7 @@ x:
 
 0.4.0-362 | 2020-06-02 15:20:59 +0000
 
-  * GH-282: Set PATH when building documation so that we find the
+  * GH-282: Set PATH when building documentation so that we find the
     Spicy tools. (Robin Sommer, Corelight)
 
   * GH-348: Fix integer overflows in regexp parsing & matching.
@@ -3477,7 +3477,7 @@ x:
 
   * Documentation updates. (Robin Sommer, Corelight)
 
-    - GH-230: Fix a series of smaller inaccuricies and typos. Reported by Duffy Ocraven.
+    - GH-230: Fix a series of smaller inaccuracies and typos. Reported by Duffy Ocraven.
     - Document list type.
     - Include CHANGES into the documentation's release notes.
     - Update link to macOS LLVM binaries. (Robin Sommer, Corelight)

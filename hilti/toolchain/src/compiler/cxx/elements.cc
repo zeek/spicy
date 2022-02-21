@@ -378,7 +378,7 @@ std::string cxx::type::Struct::str() const {
         }
 
         if ( args.size() ) {
-            // Add decidated constructor to initialize the struct's arguments.
+            // Add dedicated constructor to initialize the struct's arguments.
             auto params_ctor_args =
                 util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
             auto params_ctor = fmt("inline %s(%s);", type_name, params_ctor_args);

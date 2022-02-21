@@ -256,7 +256,7 @@ void Sink::_trim(uint64_t rseq) {
 
 void Sink::_tryDeliver(ChunkList::iterator c) {
     // Note that a new block may include both some old stuff and some new
-    // stuff. _addAndCheckk() will have split the new stuff off into its own
+    // stuff. _addAndCheck() will have split the new stuff off into its own
     // block(s), but in the following loop we have to take care not to
     // deliver already-delivered data.
 

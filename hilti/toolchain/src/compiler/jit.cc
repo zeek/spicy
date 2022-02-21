@@ -65,7 +65,7 @@ hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesyste
     if ( out.fail() )
         rt::fatalError(util::fmt("could not write to temporary file %s", cc1));
 
-    // Atomically move the temprorary file to its final location. With that
+    // Atomically move the temporary file to its final location. With that
     // even with concurrent saves to the same final path other processes should
     // always see a consistent version of the contents of that file.
     std::error_code ec;
@@ -402,7 +402,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     if ( auto rc = _waitForJobs(); ! rc )
         return rc.error();
 
-    // Atomically move the temprorary file to its final location. With that
+    // Atomically move the temporary file to its final location. With that
     // even with concurrent saves to the same final path other processes should
     // always see a consistent version of the contents of that file.
     auto lib = hilti::rt::filesystem::temp_directory_path() / util::fmt("__library__%" PRIx64 ".hlto", _hash);

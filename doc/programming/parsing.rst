@@ -383,7 +383,7 @@ constraints on their values. ``EXPR`` must be a boolean expression
 that will be evaluated after the parsing for the field has finished,
 but before any hooks execute. If ``EXPR`` returns ``False``, the
 parsing process will abort with an error, just as if the field had
-been unparseable in the first place (incl. executing any :ref:`%error
+been unparsable in the first place (incl. executing any :ref:`%error
 <on_error>` hooks). ``EXPR`` has access to the parsed value through
 :ref:`$$ <id_dollardollar>`. It may also retrieve the field's final
 value through ``self.<field>``, which can be helpful when

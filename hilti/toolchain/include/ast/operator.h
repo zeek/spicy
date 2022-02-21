@@ -390,7 +390,7 @@ constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Add, "add"},           {Kin
 /**
  * Returns a descriptive string representation of an operator kind. This is
  * meant just for display purposes, and does not correspond directly to the
- * HILTI code representation (because thay may differs based on context).
+ * HILTI code representation (because they may differ based on context).
  */
 constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::kinds); }
 
