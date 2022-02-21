@@ -10,6 +10,7 @@
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
+#include <hilti/rt/json-fwd.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/string.h>
@@ -537,3 +538,14 @@ std::string to_string(const bytes::Charset& x, adl::tag /*unused*/);
 } // namespace detail::adl
 
 } // namespace hilti::rt
+
+// Disable JSON-ification of `Bytes`.
+//
+// As of nlohmann-json-0e694b4060ed55df980eaaebc2398b0ff24530d4 the JSON library misdetects the serialization for
+// `Bytes` on some platforms. We see this on platfoms not providing a C++17-compliant (e.g., in Cirrus' `no-toolchain`
+// task which uses gcc-9.3.0) where code in JSON wants to check whether `Bytes` can be converted to a
+// `std::filesystem::path`, but then runs into compiler issues.
+namespace nlohmann {
+template<>
+struct adl_serializer<hilti::rt::Bytes> {};
+} // namespace nlohmann
