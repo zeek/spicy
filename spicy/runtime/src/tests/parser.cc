@@ -204,9 +204,12 @@ TEST_CASE("waitForEod") {
     SUBCASE("open ended") { view = data->view(true); }
     SUBCASE("closed view") { view = hilti::rt::stream::View{data->begin(), data->begin() + 1}; }
 
-    CHECK_FALSE(waitForEod());
+    auto wait1 = waitForEod();
+    CHECK_FALSE(wait1);
     data->freeze();
-    CHECK(waitForEod());
+
+    auto wait2 = waitForEod();
+    CHECK(wait2);
 }
 
 TEST_CASE("waitForInput") {
@@ -229,7 +232,8 @@ TEST_CASE("waitForInput") {
     SUBCASE("not enough data") {
         // `waitForInput` yields if not enough data available. We
         // can only wait from inside a `Resumable`.
-        CHECK_FALSE(waitForInput());
+        auto wait = waitForInput();
+        CHECK_FALSE(wait);
         CHECK_THROWS_WITH_AS(_waitForInput(nullptr), "'yield' in non-suspendable context",
                              const hilti::rt::RuntimeError&);
     }
@@ -268,7 +272,8 @@ TEST_CASE("waitForInput with min") {
     SUBCASE("not enough data") {
         // `waitForInput` yields if not enough data available. We
         // can only wait from `Resumable`.
-        CHECK_FALSE(waitForInput());
+        auto wait = waitForInput();
+        CHECK_FALSE(wait);
         CHECK_THROWS_WITH_AS(_waitForInput(nullptr), "'yield' in non-suspendable context",
                              const hilti::rt::RuntimeError&);
     }
@@ -277,7 +282,8 @@ TEST_CASE("waitForInput with min") {
         // With enough data available we can get a result.
         data->append("\x01\x02"_b);
         REQUIRE_EQ(data->size(), 2);
-        CHECK_FALSE(waitForInput()); // Still need one more byte.
+        auto wait = waitForInput();
+        CHECK_FALSE(wait); // Still need one more byte.
 
         data->append("\x03");
         REQUIRE_EQ(data->size(), 3);
@@ -320,7 +326,8 @@ TEST_CASE("waitForInputOrEod with min") {
     SUBCASE("not enough data") {
         // `waitForInputOrEod` yields if not enough data is available. We
         // can only wait from inside a `Resumable`.
-        CHECK_FALSE(waitForInputOrEod());
+        auto wait = waitForInputOrEod();
+        CHECK_FALSE(wait);
         CHECK_THROWS_WITH_AS(_waitForInputOrEod(nullptr), "'yield' in non-suspendable context",
                              const hilti::rt::RuntimeError&);
     }
@@ -329,7 +336,8 @@ TEST_CASE("waitForInputOrEod with min") {
         // With enough data available we can get a result.
         data->append("\x01\x02"_b);
         REQUIRE_EQ(data->size(), 2);
-        CHECK_FALSE(waitForInputOrEod()); // Still need one more byte.
+        auto wait = waitForInputOrEod();
+        CHECK_FALSE(wait); // Still need one more byte.
 
         data->append("\x03");
         REQUIRE_EQ(data->size(), 3);
