@@ -1,3 +1,7 @@
+1.4.0-dev.232 | 2022-02-21 15:28:31 +0100
+
+  * Move clang-tidy run to its own CI job. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.230 | 2022-02-21 15:27:55 +0100
 
   * GH-1120: Do not change a LHS to RHS when codegen'ing BuiltinFunctions. (Benjamin Bannier, Corelight)

@@ -12,6 +12,41 @@ environment:
     ZEEK_SPICY_BRANCH:      main
     ZEEK_ANALYZERS_BRANCH:  main
 
+lint_task:
+  container:
+    dockerfile: ci/Dockerfile
+    cpu: 4
+    memory: 12G
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+    LD_LIBRARY_PATH: /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
+
+  update_git_script:
+    - git submodule update --recursive --init
+
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-12 --clang-format `which clang-format-12` --clang-tidy `which clang-tidy-12` --rpath /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
+  build_script:       ./ci/run-ci -b build build
+  test_code_script:   ./ci/run-ci -b build test-code
+
+  on_failure:
+    ci_artifacts:
+      path: artifacts
+    junit_artifacts:
+      path: artifacts/diag.xml
+      type: text/xml
+      format: junit
+    clang_artifacts:
+        path: build/ci
+
 clang12_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile
@@ -36,7 +71,6 @@ clang12_ubuntu_debug_task:
   configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-12 --clang-format `which clang-format-12` --clang-tidy `which clang-tidy-12` --rpath /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
   build_script:       ./ci/run-ci -b build build
   test_build_script:  ./ci/run-ci -b build test-build
-  test_code_script:   ./ci/run-ci -b build test-code
   install_script:     ./ci/run-ci -b build install
   packaging_script:
     - ninja -C build package
