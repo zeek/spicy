@@ -201,6 +201,26 @@ struct VisitorBase {
 struct VisitorPre : public hilti::visitor::PreOrder<void, VisitorPre>, public VisitorBase {};
 
 struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public VisitorBase {
+    template<typename GlobalOrLocalVariable>
+    void checkVariable(const GlobalOrLocalVariable& n, position_t p) {
+        // A variable initialized from a struct initializer always needs an explicit type.
+        const bool isTyped = n.type().typeID().has_value();
+        if ( isTyped )
+            return;
+
+        if ( auto init = n.init() ) {
+            if ( auto ctor = init->template tryAs<hilti::expression::Ctor>() ) {
+                if ( ctor->ctor().template tryAs<hilti::ctor::Struct>() ) {
+                    error("declaration needs a concrete struct type", p);
+                }
+            }
+        }
+    }
+
+    void operator()(const hilti::declaration::GlobalVariable& n, position_t p) { checkVariable(n, p); }
+
+    void operator()(const hilti::declaration::LocalVariable& n, position_t p) { checkVariable(n, p); }
+
     void operator()(const hilti::Module& m, position_t p) {
         if ( auto version = m.moduleProperty("%spicy-version") ) {
             if ( ! version->expression() ) {
