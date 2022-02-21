@@ -1,0 +1,13 @@
+# @TEST-DOC: Checks that enums with duplicate values are rejected, see #1072.
+#
+# @TEST-EXEC-FAIL: hiltic -j -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+type X = enum {
+    A = 1,
+    B = 2,
+    C = 1,
+    D = 2
+};
+}
