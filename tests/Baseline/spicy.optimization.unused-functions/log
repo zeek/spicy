@@ -10,6 +10,11 @@
 [debug/optimizer] disabling feature 'supports_sinks' of type 'foo::C' since it is not used
 [debug/optimizer] disabling feature 'supports_sinks' of type 'foo::D' since it is not used
 [debug/optimizer] disabling feature 'supports_sinks' of type 'foo::F' since it is not used
+[debug/optimizer] disabling feature 'synchronization' of type 'foo::A' since it is not used
+[debug/optimizer] disabling feature 'synchronization' of type 'foo::B' since it is not used
+[debug/optimizer] disabling feature 'synchronization' of type 'foo::C' since it is not used
+[debug/optimizer] disabling feature 'synchronization' of type 'foo::D' since it is not used
+[debug/optimizer] disabling feature 'synchronization' of type 'foo::F' since it is not used
 [debug/optimizer] disabling feature 'uses_random_access' of type 'foo::A' since it is not used
 [debug/optimizer] disabling feature 'uses_random_access' of type 'foo::B' since it is not used
 [debug/optimizer] disabling feature 'uses_random_access' of type 'foo::C' since it is not used
@@ -154,56 +159,71 @@
 [debug/optimizer] removing declaration for unused function spicy_rt::waitForInput
 [debug/optimizer] removing declaration for unused function spicy_rt::waitForInputOrEod
 [debug/optimizer] removing declaration for unused function spicy_rt::waitForInputOrEod
+[debug/optimizer] removing field for unused method foo::A::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_finally
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_init
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::A::__on_0x25_rejected
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::A::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::A::__parse_stage1
 [debug/optimizer] removing field for unused method foo::A::__str__
 [debug/optimizer] removing field for unused method foo::A::parse1
 [debug/optimizer] removing field for unused method foo::A::parse2
 [debug/optimizer] removing field for unused method foo::A::parse3
+[debug/optimizer] removing field for unused method foo::B::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_finally
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_init
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::B::__on_0x25_rejected
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::B::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::B::__str__
+[debug/optimizer] removing field for unused method foo::C::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_finally
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_init
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::C::__on_0x25_rejected
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::C::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::C::__str__
 [debug/optimizer] removing field for unused method foo::C::parse1
 [debug/optimizer] removing field for unused method foo::C::parse2
 [debug/optimizer] removing field for unused method foo::C::parse3
+[debug/optimizer] removing field for unused method foo::D::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_finally
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_init
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::D::__on_0x25_rejected
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::D::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::D::__str__
+[debug/optimizer] removing field for unused method foo::F::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_error
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_finally
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_gap
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_init
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_overlap
+[debug/optimizer] removing field for unused method foo::F::__on_0x25_rejected
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_skipped
+[debug/optimizer] removing field for unused method foo::F::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::F::__parse_stage1
 [debug/optimizer] removing field for unused method foo::F::__str__
