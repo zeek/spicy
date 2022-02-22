@@ -1,5 +1,5 @@
-# NOTE: Since this file is not part of the normal docs build process
-# any dependencies specified here are likely only seen by RTD.
-
-# Require >=sphinx-2.0 to work around https://github.com/sphinx-doc/sphinx/issues/9727.
-Sphinx>=2.0
+# Note: beware of https://github.com/readthedocs/sphinx_rtd_theme/issues/1115
+# and broken behavior with docutils 0.17.
+docutils==0.16
+sphinx_rtd_theme==0.5.2
+Sphinx==3.4.3
