@@ -5,10 +5,9 @@ module Foo {
 
 import hilti;
 
-type X = enum { a, b, c=5, d=5 };
+type X = enum { a, b, c=5 };
 
 assert X::a != X::b;
-assert X::c == X::d;
 assert X::c != X::a;
 
 global X x;

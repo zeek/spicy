@@ -1,3 +1,23 @@
+1.4.0-dev.247 | 2022-02-23 09:43:39 +0100
+
+  * GH-1072: Disallow enum declarations with non-unique values. (Benjamin Bannier, Corelight)
+
+    It is unclear what code should be generated when requested to convert an
+    integer value to the following enum:
+
+        type E = enum {
+            A = 1,
+            B = 2,
+            C = 1,
+        };
+
+    For `1` we could produce either `E::A` or `E::C` here.
+
+    Instead of allowing that ambiguity we disallow enums with non-unique
+    values with this patch.
+
+    Closes #1072.
+
 1.4.0-dev.245 | 2022-02-23 09:37:14 +0100
 
   * GH-1043: Add validation rejecting untyped variable decl from struct initializer. (Benjamin Bannier, Corelight)

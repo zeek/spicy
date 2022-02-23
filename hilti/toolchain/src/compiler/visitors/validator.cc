@@ -399,6 +399,17 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         error("automatic type has not been resolved", p, node::ErrorPriority::Low);
     }
 
+    void operator()(const type::Enum& n, position_t p) {
+        std::unordered_set<int> seen;
+
+        for ( const auto& label : n.labels() ) {
+            auto [it, inserted] = seen.insert(label.get().value());
+            if ( ! inserted ) {
+                error(fmt("enum values are not unique"), p);
+            }
+        }
+    }
+
     void operator()(const type::Exception& n, position_t p) {
         if ( n.baseType() && ! n.baseType()->isA<type::Exception>() )
             error("exception's base type must be an exception type as well", p);

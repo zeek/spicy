@@ -9,7 +9,6 @@ import hilti;
 type X = enum {
     A1 = 1,
     A2 = 2,
-    A3 = 2
 };
 
 global int<8>  two_i8 = 2;

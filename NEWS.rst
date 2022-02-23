@@ -28,6 +28,23 @@ Version 1.4 (in progress)
 - GH-1074: ``%random-access`` is now derived automatically from uses and
   declaring it explicitly has been deprecated.
 
+- GH-1072: Disallow enum declarations with non-unique values.
+
+  It is unclear what code should be generated when requested to convert an
+  integer value to the following enum:
+
+  .. code-block::
+
+      type E = enum {
+          A = 1,
+          B = 2,
+          C = 1,
+      };
+
+  For ``1`` we could produce either ``E::A`` or ``E::C`` here.
+
+  Instead of allowing this ambiguity we now disallow enums with non-unique values.
+
 .. rubric:: Bug fixes
 
 - Prevent exception if cache directory is not readable.
