@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicyc -p %INPUT
+#
+# @TEST-DOC: Make sure we get the constness resolved correctly for assignment to context fields (regression test for #1112).
+
+module Test;
+
+type Context = unit {
+    var initialized: bool;
+};
+
+public type Foo = unit {
+    %context = Context;
+
+    on %init {
+        self.context().initialized = True;
+    }
+};
