@@ -1,3 +1,7 @@
+1.4.0-dev.236 | 2022-02-23 09:03:43 +0100
+
+  * GH-1131: Optimize out unused hooks related to synchronization. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.234 | 2022-02-23 09:03:08 +0100
 
   * Fix styling of lists on RTD. (Benjamin Bannier, Corelight)

@@ -1,4 +1,4 @@
-# @TEST-DOC: FIXME(bbannier)
+# @TEST-DOC: Checks that if a parse error occurs during trial mode we enter sync mode again.
 
 # @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto -T
 

@@ -297,6 +297,7 @@
 [debug/ast-declarations]   - Constant "__feat%a__X%is_filter" (a::__feat%a__X%is_filter)
 [debug/ast-declarations]   - Constant "__feat%a__X%supports_filters" (a::__feat%a__X%supports_filters)
 [debug/ast-declarations]   - Constant "__feat%a__X%supports_sinks" (a::__feat%a__X%supports_sinks)
+[debug/ast-declarations]   - Constant "__feat%a__X%synchronization" (a::__feat%a__X%synchronization)
 [debug/ast-declarations]   - Function "a::X::__parse_stage1" (a::X::__parse_stage1)
 [debug/ast-declarations]         - Parameter "__data" (a::X::__parse_stage1::__data)
 [debug/ast-declarations]         - Parameter "__cur" (a::X::__parse_stage1::__cur)

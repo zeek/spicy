@@ -177,8 +177,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
 
-    // TODO(bbannier): Mark these hooks required by a new feature `synchronization`.
-    auto attr_sync = AttributeSet({Attribute("&always-emit")});
+    auto attr_sync = AttributeSet({Attribute("&needed-by-feature", builder::string("synchronization"))});
     add_hook("0x25_confirmed", {}, attr_sync);
     add_hook("0x25_rejected", {}, attr_sync);
     add_hook("0x25_synced", {}, attr_sync);
@@ -190,6 +189,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(unit.isFilter())));
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%synchronization", typeID)), builder::bool_(true)));
     }
 
     add_hook("0x25_gap", {builder::parameter("seq", type::UnsignedInteger(64)),

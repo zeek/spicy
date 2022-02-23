@@ -92,9 +92,9 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
     void collect(Node& node) override {
         _stage = Stage::COLLECT;
 
-        bool collect_again = false;
-
         while ( true ) {
+            bool collect_again = false;
+
             for ( auto i : this->walk(&node) )
                 if ( auto x = dispatch(i) )
                     collect_again = collect_again || *x;
@@ -187,6 +187,25 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 if ( is_cxx )
                     function.defined = true;
 
+                if ( auto type = type_ )
+                    for ( const auto& requirement : AttributeSet::findAll(x.attributes(), "&needed-by-feature") ) {
+                        auto feature = *requirement.valueAsString();
+
+                        // If no feature constants were collected yet, reschedule us for the next collection pass.
+                        //
+                        // NOTE: If we emit a `&needed-by-feature` attribute we also always emit a matching feature
+                        // constant, so eventually at this point we will see at least one feature constant.
+                        if ( _features.empty() )
+                            return true;
+
+                        auto it = _features.find(type->get().canonicalID());
+                        if ( it == _features.end() )
+                            // No feature requirements known for type.
+                            continue;
+
+                        function.referenced = function.referenced || it->second.at(feature);
+                    }
+
                 break;
             }
 
@@ -198,7 +217,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 const auto& function = _data.at(function_id);
 
                 // Remove function methods without implementation.
-                if ( ! function.defined ) {
+                if ( ! function.defined && ! function.referenced ) {
                     HILTI_DEBUG(logging::debug::Optimizer,
                                 util::fmt("removing field for unused method %s", function_id));
                     removeNode(p);
@@ -248,7 +267,7 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                         // If no feature constants were collected yet, reschedule us for the next collection pass.
                         //
                         // NOTE: If we emit a `&needed-by-feature` attribute we also always emit a matching feature
-                        // constant, so eventually at this point we will see at least on feature constant.
+                        // constant, so eventually at this point we will see at least one feature constant.
                         if ( _features.empty() )
                             return true;
 
@@ -330,8 +349,6 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 if ( ! function.hook && ! function.referenced ) {
                     HILTI_DEBUG(logging::debug::Optimizer,
                                 util::fmt("removing declaration for unused function %s", function_id));
-
-                    /// return false; // XXX
 
                     removeNode(p);
                     return true;

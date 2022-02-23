@@ -43,8 +43,8 @@ declare public void filter_disconnect(inout any unit &requires-type-feature="sup
 declare public void filter_forward(inout any filter &requires-type-feature="is_filter", bytes b) &cxxname="::spicy::rt::filter::forward" &have_prototype;
 declare public void filter_forward_eod(inout any filter &requires-type-feature="is_filter") &cxxname="::spicy::rt::filter::forward_eod" &have_prototype;
 
-declare public void confirm(inout any unit) &cxxname="::spicy::rt::confirm" &have_prototype;
-declare public void reject(inout any unit) &cxxname="::spicy::rt::reject" &have_prototype;
+declare public void confirm(inout any unit &requires-type-feature="synchronization") &cxxname="::spicy::rt::confirm" &have_prototype;
+declare public void reject(inout any unit &requires-type-feature="synchronization") &cxxname="::spicy::rt::reject" &have_prototype;
 
 public type UnitContext = __library_type("::spicy::rt::UnitContext");
 declare public UnitContext createContext(any ctx, TypeInfo ti) &cxxname="::spicy::rt::detail::createContext" &have_prototype;
