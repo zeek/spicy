@@ -33,7 +33,7 @@ Version 1.4 (in progress)
   It is unclear what code should be generated when requested to convert an
   integer value to the following enum:
 
-  .. code-block::
+  .. code-block:: spicy
 
       type E = enum {
           A = 1,
