@@ -69,7 +69,7 @@ enum class ErrorPriority {
     High = 3,   /**< high priority error that will always be reported */
     Normal = 2, /**< normal priority error that will be reported if there are no higher priority ones */
     Low = 1,    /**< low priority error that will be reported if there are no higher priority ones */
-    NoError = 0 /**< place-holder for comparision if no error was encountered */
+    NoError = 0 /**< place-holder for comparison if no error was encountered */
 };
 
 inline bool operator<(ErrorPriority x, ErrorPriority y) {
@@ -84,7 +84,7 @@ struct Error {
     std::vector<std::string> context;               /**< additional lines to print along with error as context */
     ErrorPriority priority = ErrorPriority::Normal; /**< priortity of error */
 
-    // Comparision considers message & location, so that we can unique based
+    // Comparison considers message & location, so that we can unique based
     // on those two.
     bool operator<(const Error& other) const {
         return std::tie(message, location) < std::tie(other.message, other.location);
@@ -702,7 +702,7 @@ private:
 /**
  * A set of AST nodes. The set creates a view of nodes that can be iterated
  * over, yielding a reference to each node in turn. In contrast to `Range`, a
- * set can include nodes that are not all part of a continous slice inside a
+ * set can include nodes that are not all part of a continuous slice inside a
  * vector.
  */
 template<typename T>

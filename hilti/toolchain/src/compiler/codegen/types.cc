@@ -727,7 +727,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     }
 
     result_t operator()(const type::UnresolvedID& n) {
-        logger().internalError(fmt("codgen: unresolved type ID %s", n.id()), n);
+        logger().internalError(fmt("codegen: unresolved type ID %s", n.id()), n);
     }
 
     result_t operator()(const type::Void& n) { return CxxTypes{.base_type = "void"}; }
@@ -786,7 +786,7 @@ struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder<cxx::Expression, Vis
     result_t operator()(const type::Void& n) { return "::hilti::rt::type_info::void_"; }
 
     result_t operator()(const type::UnresolvedID& n) {
-        logger().internalError(fmt("codgen: unresolved type ID %s", n.id()), n);
+        logger().internalError(fmt("codegen: unresolved type ID %s", n.id()), n);
     }
 
     result_t operator()(const type::Auto& n) {

@@ -168,7 +168,9 @@ TEST_CASE("createTemporaryFile") {
 
 TEST_CASE("enumerate") {
     auto input = std::vector<char>({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'});
-    for ( auto&& [i, c] : enumerate(input) ) {
+    for ( auto x : enumerate(input) ) {
+        auto i = std::get<0>(x);
+        auto c = std::get<1>(x);
         CHECK_EQ(c, input[i]);
         input[i] = ' ';
     }

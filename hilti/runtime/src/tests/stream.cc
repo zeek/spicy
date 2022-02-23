@@ -380,7 +380,7 @@ TEST_CASE("iteration") {
     }
 
     SUBCASE("difference") {
-        const auto [s, before_begin] = []() {
+        const auto x = []() {
             auto s = Stream(" 123"_b);
             const auto before_begin = s.begin();
 
@@ -389,6 +389,8 @@ TEST_CASE("iteration") {
 
             return std::make_tuple(std::move(s), before_begin);
         }();
+        const auto& s = std::get<0>(x);
+        const auto& before_begin = std::get<1>(x);
 
         REQUIRE_FALSE(before_begin.isExpired());
 

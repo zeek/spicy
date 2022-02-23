@@ -91,7 +91,7 @@ void Driver::_debugStats(size_t current_flows, size_t current_connections) {
 
 Result<Nothing> Driver::listParsers(std::ostream& out) {
     if ( ! hilti::rt::isInitialized() )
-        return Error("runtime not intialized");
+        return Error("runtime not initialized");
 
     const auto& parsers = spicy::rt::parsers();
 

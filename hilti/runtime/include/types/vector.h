@@ -460,8 +460,8 @@ public:
 
     /** Inserts value before a given position.
      *
-     * @param pos iterator to the position preceeding the inserted value
-     * @parm value value to insert
+     * @param pos iterator to the position preceding the inserted value
+     * @param value value to insert
      * @return iterator pointing to the inserted element
      * */
     iterator insert(iterator pos, const T& value) {

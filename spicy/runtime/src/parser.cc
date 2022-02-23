@@ -82,7 +82,7 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, co
     while ( min > cur.size() )
         if ( ! waitForInputOrEod(data, cur, filters) ) {
             SPICY_RT_DEBUG_VERBOSE(
-                hilti::rt::fmt("insufficent input at end of data for stream %p (which is not ok here)", data.get()));
+                hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
             throw ParseError(error_msg, location);
         }
 }
@@ -131,7 +131,7 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, co
                           const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( ! waitForInputOrEod(data, cur, filters) ) {
         SPICY_RT_DEBUG_VERBOSE(
-            hilti::rt::fmt("insufficent input at end of data for stream %p (which is not ok here)", data.get()));
+            hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
         throw ParseError(error_msg, location);
     }
 }

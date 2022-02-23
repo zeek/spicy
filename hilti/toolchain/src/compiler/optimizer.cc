@@ -1202,7 +1202,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 };
 
 struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> {
-    // Map tracking wether a member is used in the code.
+    // Map tracking whether a member is used in the code.
     std::map<std::string, bool> _used;
 
     // Map tracking for each type which features are enabled.

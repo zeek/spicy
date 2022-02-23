@@ -200,7 +200,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_undelivered",
              {builder::parameter("seq", type::UnsignedInteger(64)), builder::parameter("data", type::Bytes())});
 
-    // Fields releated to random-access functionality.
+    // Fields related to random-access functionality.
     auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
     auto f1 = hilti::declaration::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
                                         AttributeSet({Attribute("&internal"), attr_random_access}));

@@ -435,7 +435,7 @@ hilti::Result<linker::MetaData> Unit::linkerMetaData() const {
     if ( ! joins.empty() )
         j["joins"] = joins;
 
-    return {j};
+    return linker::MetaData(j);
 }
 
 std::pair<bool, std::optional<linker::MetaData>> Unit::readLinkerMetaData(std::istream& input) {

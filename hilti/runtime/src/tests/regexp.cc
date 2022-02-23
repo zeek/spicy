@@ -325,7 +325,9 @@ TEST_CASE("advance") {
 
         SUBCASE("match until limit") {
             // Match a regexp ending in a wildcard so it could match the entire input.
-            auto&& [rc, unconsumed] = RegExp("123.*").tokenMatcher().advance(limited);
+            const auto x = RegExp("123.*").tokenMatcher().advance(limited);
+            const auto& rc = std::get<0>(x);
+            const auto& unconsumed = std::get<1>(x);
 
             CHECK_EQ(rc, -1);           // Could consume more data.
             CHECK_EQ(unconsumed, ""_b); // Should have consumed entire input.
@@ -334,7 +336,8 @@ TEST_CASE("advance") {
 
         SUBCASE("no match in limit") {
             // Match a regexp matching the input, but not the passed, limited view.
-            auto&& [rc, unconsumed] = RegExp(input.data()).tokenMatcher().advance(limited);
+            const auto x = RegExp(input.data()).tokenMatcher().advance(limited);
+            const auto& rc = std::get<0>(x);
 
             CHECK_EQ(rc, -1); // No match found yet in available, limited data.
         }

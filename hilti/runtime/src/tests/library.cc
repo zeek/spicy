@@ -44,7 +44,8 @@ public:
     }
 
     ~Env() {
-        const auto& [k, v] = _prev;
+        const auto& k = _prev.first;
+        const auto& v = _prev.second;
 
         if ( v ) {
             REQUIRE_EQ(::setenv(k.c_str(), v->c_str(), 1), 0);
