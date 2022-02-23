@@ -1,3 +1,7 @@
+1.4.0-dev.245 | 2022-02-23 09:37:14 +0100
+
+  * GH-1043: Add validation rejecting untyped variable decl from struct initializer. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.243 | 2022-02-23 09:04:22 +0100
 
   * GH-1096: Bump submodules and pre-commit hooks. (Benjamin Bannier, Corelight)

@@ -1,0 +1,18 @@
+# @TEST-DOC: Checks that struct initialization without type is rejected, see #1043.
+
+# @TEST-EXEC-FAIL: spicyc -p -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type X = struct {
+    x: uint64;
+};
+
+global foo1: X = [$x=0];
+global foo2 = [$x=0];
+
+function f() {
+    local bar1: X = [$x=1];
+    local bar2 = [$x=1];
+}
