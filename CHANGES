@@ -1,3 +1,7 @@
+1.4.0-dev.234 | 2022-02-23 09:03:08 +0100
+
+  * Fix styling of lists on RTD. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.232 | 2022-02-21 15:28:31 +0100
 
   * Move clang-tidy run to its own CI job. (Benjamin Bannier, Corelight)
