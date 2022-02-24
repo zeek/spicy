@@ -67,6 +67,11 @@ using ChainPtr = IntrusivePtr<Chain>;
 using ConstChainPtr = IntrusivePtr<const Chain>;
 class UnsafeConstIterator;
 
+// Represents a gap of length `size`.
+struct Gap {
+    size_t size;
+};
+
 /**
  * Represents one block of continuous data inside a stream instance. A
  * stream's *Chain* links multiple of these chunks to represent all of its
@@ -95,6 +100,9 @@ public:
     Chunk(Offset o, std::array<Byte, N> d) : Chunk(_fromArray(o, std::move(d))) {}
     Chunk(Offset o, const char* d, Size n) : Chunk(_fromArray(o, d, n)) {}
 
+    // Constructs a gap chunk which signifies empty data.
+    Chunk(Offset o, size_t len) : _offset(o), _data(Gap{len}) {}
+
     Chunk(const Chunk& other) : _offset(other._offset), _data(other._data) {}
     Chunk(Chunk&& other) noexcept
         : _offset(other._offset), _data(std::move(other._data)), _next(std::move(other._next)) {}
@@ -113,16 +121,20 @@ public:
 
     Offset offset() const { return _offset; }
     Offset endOffset() const { return _offset + size(); }
-    bool isCompact() const { return std::holds_alternative<Array>(_data); }
+    bool isCompact() const { return ! std::holds_alternative<Vector>(_data); }
+    bool isGap() const { return std::holds_alternative<Gap>(_data); }
     bool inRange(Offset offset) const { return offset >= _offset && offset < endOffset(); }
 
     const Byte* data() const {
         if ( auto a = std::get_if<Array>(&_data) )
             return a->second.data();
-        else {
-            auto& v = std::get<Vector>(_data);
-            return v.data();
+        else if ( auto a = std::get_if<Vector>(&_data) ) {
+            return a->data();
         }
+        else if ( auto a = std::get_if<Gap>(&_data) )
+            throw MissingData("data is missing");
+
+        hilti::rt::cannot_be_reached();
     }
 
     const Byte* data(Offset offset) const {
@@ -133,21 +145,27 @@ public:
     const Byte* endData() const {
         if ( auto a = std::get_if<Array>(&_data) )
             return a->second.data() + a->first.Ref();
-        else {
-            auto& v = std::get<Vector>(_data);
-            return v.data() + v.size();
+        else if ( auto a = std::get_if<Vector>(&_data) ) {
+            return a->data() + a->size();
         }
+        else if ( auto a = std::get_if<Gap>(&_data) )
+            throw MissingData("data is missing");
+
+        hilti::rt::cannot_be_reached();
     }
 
     Size size() const {
         if ( auto a = std::get_if<Array>(&_data) )
             return a->first;
+        else if ( auto a = std::get_if<Vector>(&_data) )
+            return a->size();
+        else if ( auto a = std::get_if<Gap>(&_data) )
+            return a->size;
 
-        auto& v = std::get<Vector>(_data);
-        return v.size();
+        hilti::rt::cannot_be_reached();
     }
 
-    bool isLast() const { return ! _next.get(); }
+    bool isLast() const { return ! _next; }
     const Chunk* next() const { return _next.get(); }
 
     auto last() const {
@@ -226,10 +244,10 @@ private:
         return Chunk(o, Chunk::Vector(ud, ud + n.Ref()));
     }
 
-    Offset _offset = 0;                // global offset of 1st byte
-    std::variant<Array, Vector> _data; // content of this chunk
-    const Chain* _chain = nullptr;     // chain this chunk is part of, or null if not linked to a chain yet (non-owning;
-                                       // will stay valid at least as long as the current chunk does)
+    Offset _offset = 0;                     // global offset of 1st byte
+    std::variant<Array, Vector, Gap> _data; // content of this chunk
+    const Chain* _chain = nullptr; // chain this chunk is part of, or null if not linked to a chain yet (non-owning;
+                                   // will stay valid at least as long as the current chunk does)
     std::unique_ptr<Chunk> _next = nullptr; // next chunk in chain, or null if last
 };
 
@@ -562,7 +580,7 @@ protected:
 
 private:
     SafeConstIterator(ConstChainPtr chain, Offset offset, const Chunk* chunk)
-        : _chain(chain), _offset(offset), _chunk(chunk) {
+        : _chain(std::move(chain)), _offset(offset), _chunk(chunk) {
         assert(! isUnset());
     }
 
@@ -635,6 +653,10 @@ private:
 
         auto c = _chain->findChunk(_offset, chunk());
         assert(c);
+
+        if ( c->isGap() )
+            throw MissingData("data is missing");
+
         return *c->data(_offset);
     }
 
@@ -837,7 +859,7 @@ protected:
     const Chain* chain() const { return _chain; }
 
 private:
-    UnsafeConstIterator(ConstChainPtr chain, Offset offset, const Chunk* chunk)
+    UnsafeConstIterator(const ConstChainPtr& chain, Offset offset, const Chunk* chunk)
         : _chain(chain.get()), _offset(offset), _chunk(chunk) {
         assert(! isUnset());
     }
@@ -875,6 +897,9 @@ private:
             internalError("dereference of invalid iterator");
 
         auto* byte = _chunk->data(_offset);
+
+        if ( ! byte )
+            throw MissingData("data is missing");
 
         return *byte;
     }
@@ -1274,6 +1299,9 @@ public:
     /** Returns a copy of the data the view refers to. */
     Bytes data() const;
 
+    /** Returns a string representation of the data the view refers to. */
+    std::string dataForPrint() const;
+
     /** Returns an unsafe iterator pointing to the beginning of the view. */
     detail::UnsafeConstIterator unsafeBegin() const { return detail::UnsafeConstIterator(_begin); }
 
@@ -1360,10 +1388,7 @@ private:
     std::optional<SafeConstIterator> _end;
 };
 
-inline std::ostream& operator<<(std::ostream& out, const View& x) {
-    out << escapeBytes(x.data().str());
-    return out;
-}
+inline std::ostream& operator<<(std::ostream& out, const View& x) { return out << hilti::rt::to_string_for_print(x); }
 } // namespace stream
 
 /**
@@ -1410,9 +1435,11 @@ public:
      */
     explicit Stream(const char* d) : Stream(Chunk(0, d, strlen(d))) {}
 
-    /** Creates an instance from an existing memory block. The data will be copied. */
-    Stream(const char* d, Size n) : Stream(Chunk(0, d, n)) {}
-
+    /**
+     * Creates an instance from an existing memory block. The data
+     * will be copied if set, otherwise a gap will be recorded.
+     */
+    Stream(const char* d, Size n);
     /**
      * Creates an instance from an existing stream view.
      * @param d `View` to create the stream from
@@ -1496,7 +1523,7 @@ public:
     void append(std::unique_ptr<const Byte*> data);
 
     /** Appends the content of a raw memory area, copying the data. This function does not invalidate iterators.
-     * @param data pointer to the data to append
+     * @param data pointer to the data to append. If this is nullptr and gap will be appended instead.
      * @param len length of the data to append
      */
     void append(const char* data, size_t len);
@@ -1546,12 +1573,6 @@ public:
      */
     View view(bool expanding = true) const { return expanding ? View(begin()) : View(begin(), end()); }
 
-    /**
-     * Returns a copy of the data the stream refers to. Depending on size of
-     * the stream, this can be an expensive operation.
-     */
-    Bytes data() const;
-
     bool operator==(const Bytes& other) const { return view() == other; }
     bool operator==(const Stream& other) const { return view() == other.view(); }
     bool operator==(const stream::View& other) const { return view() == other; }
@@ -1581,28 +1602,24 @@ private:
     ChainPtr _chain; // always non-null
 };
 
-inline std::ostream& operator<<(std::ostream& out, const Stream& x) {
-    out << escapeBytes(x.data().str());
-    return out;
+template<>
+inline std::string detail::to_string_for_print<stream::View>(const stream::View& x) {
+    return escapeBytes(x.dataForPrint(), true);
 }
 
 template<>
 inline std::string detail::to_string_for_print<Stream>(const Stream& x) {
-    return escapeBytes(x.data().str(), true);
+    return to_string_for_print(x.view());
 }
 
-template<>
-inline std::string detail::to_string_for_print<stream::View>(const stream::View& x) {
-    return escapeBytes(x.data().str(), true);
-}
+inline std::ostream& operator<<(std::ostream& out, const Stream& x) { return out << to_string_for_print(x); }
 
 namespace detail::adl {
-inline std::string to_string(const Stream& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeBytes(x.data().str(), true));
-}
 inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
-    return fmt("b\"%s\"", escapeBytes(x.data().str(), true));
+    return fmt("b\"%s\"", hilti::rt::to_string_for_print(x));
 }
+
+inline std::string to_string(const Stream& x, adl::tag /*unused*/) { return hilti::rt::to_string(x.view()); }
 } // namespace detail::adl
 
 } // namespace hilti::rt

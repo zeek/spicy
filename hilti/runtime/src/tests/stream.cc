@@ -112,10 +112,10 @@ TEST_CASE("construct") {
 
         auto d1 = std::string(1, '\x01');
         REQUIRE_LT(d1.size(), SmallBufferSize);
-        CHECK_EQ(Stream(d1.c_str()).data().str(), d1);
+        CHECK_EQ(to_string_for_print(Stream(d1.c_str())), escapeBytes(d1, true));
 
         auto d2 = std::string(SmallBufferSize + 10, '\x01');
-        CHECK_EQ(Stream(d2.c_str()).data().str(), d2);
+        CHECK_EQ(to_string_for_print(Stream(d2.c_str())), escapeBytes(d2, true));
     }
 }
 
@@ -151,10 +151,10 @@ TEST_CASE("assign") {
             y = make_stream({"abcd"_b});
         }
 
-        REQUIRE_EQ(y.data(), "abcd"_b);
+        REQUIRE_EQ(to_string_for_print(y), "abcd");
 
         y = x;
-        CHECK_EQ(y.data(), "1234"_b);
+        CHECK_EQ(to_string_for_print(y), "1234");
     }
 
     SUBCASE("self-assign") { // Self-assignment is a no-op.
@@ -607,7 +607,7 @@ TEST_CASE("sub") {
 
     auto f = [](const stream::View& v) { return v.sub(v.begin() + 15, v.begin() + 25); };
 
-    CHECK_EQ(Bytes(f(x.view()).data()), "6789012345"_b);
+    CHECK_EQ(to_string(f(x.view())), R"(b"6789012345")");
 }
 
 TEST_CASE("freezing") {
@@ -850,6 +850,54 @@ TEST_CASE("View") {
 
         CHECK_EQ(view.size(), input.size() - advance);
         CHECK(view.startsWith("67890"_b));
+    }
+
+    SUBCASE("dataForPrint") {
+        auto s = make_stream({"AAA", "BBB", "CCC"});
+        REQUIRE_EQ(s.numberOfChunks(), 3);
+
+        auto v = s.view();
+
+        // `start` and `end` at chunk boundary.
+        CHECK_EQ(v.dataForPrint(), "AAABBBCCC");
+        CHECK_EQ(v.sub(v.begin(), v.end()).dataForPrint(), "AAABBBCCC");
+        CHECK_EQ(v.sub(v.begin() + 3, v.end()).dataForPrint(), "BBBCCC");
+        CHECK_EQ(v.sub(v.begin(), v.end() - 3).dataForPrint(), "AAABBB");
+        CHECK_EQ(v.sub(v.begin() + 3, v.end() - 3).dataForPrint(), "BBB");
+
+        // `start` or `end` inside different chunks.
+        CHECK_EQ(v.sub(v.begin() + 1, v.end()).dataForPrint(), "AABBBCCC");
+        CHECK_EQ(v.sub(v.begin(), v.end() - 1).dataForPrint(), "AAABBBCC");
+        CHECK_EQ(v.sub(v.begin() + 1, v.end() - 1).dataForPrint(), "AABBBCC");
+
+        // `start` and `end` inside same chunk.
+        CHECK_EQ(v.sub(v.begin() + 1, v.begin() + 1).dataForPrint(), "");
+        CHECK_EQ(v.sub(v.begin() + 1, v.begin() + 2).dataForPrint(), "A");
+        CHECK_EQ(v.sub(v.begin() + 4, v.begin() + 5).dataForPrint(), "B");
+        CHECK_EQ(v.sub(v.begin() + 7, v.begin() + 8).dataForPrint(), "C");
+    }
+
+    SUBCASE("dataForPrint with gap chunks") {
+        auto s = Stream();
+        s.append("AAA");
+        s.append(nullptr, 3);
+        s.append("CCC");
+        REQUIRE_EQ(s.numberOfChunks(), 3);
+
+        auto v = s.view();
+        CHECK_EQ(v.dataForPrint(), "AAA<gap>CCC");
+
+        CHECK_EQ(v.sub(v.begin() + 3, v.end()).dataForPrint(), "<gap>CCC");
+        CHECK_EQ(v.sub(v.begin() + 4, v.end()).dataForPrint(), "<gap>CCC");
+        CHECK_EQ(v.sub(v.begin() + 5, v.end()).dataForPrint(), "<gap>CCC");
+
+        CHECK_EQ(v.sub(v.begin() + 3, v.begin() + 6).dataForPrint(), "<gap>");
+        CHECK_EQ(v.sub(v.begin() + 3, v.begin() + 5).dataForPrint(), "<gap>");
+        CHECK_EQ(v.sub(v.begin() + 3, v.begin() + 4).dataForPrint(), "<gap>");
+
+        CHECK_EQ(v.sub(v.begin() + 3, v.begin() + 3).dataForPrint(), "");
+
+        CHECK_EQ(v.sub(v.begin() + 6, v.end()).dataForPrint(), "CCC");
     }
 
     SUBCASE("equal") {

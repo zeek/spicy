@@ -130,6 +130,9 @@ HILTI_EXCEPTION(InvalidValue, RuntimeError);
 /** Exception indicating illegal reuse of MatchState. **/
 HILTI_EXCEPTION(MatchStateReuse, RuntimeError)
 
+/** Exception indicating that the request data is missing. **/
+HILTI_EXCEPTION(MissingData, RuntimeError);
+
 /** Exception indicating use of unsupported matching capabilities. */
 HILTI_EXCEPTION(NotSupported, RuntimeError)
 

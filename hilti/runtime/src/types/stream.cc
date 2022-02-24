@@ -45,10 +45,11 @@ void Chunk::trim(Offset o) {
         a->first = (end - begin);
         memmove(a->second.data(), begin, a->first.Ref());
     }
-    else {
+    else if ( auto a = std::get_if<Vector>(&_data) ) {
         auto& v = std::get<Vector>(_data);
         v.erase(v.begin(), v.begin() + static_cast<Vector::difference_type>((o - _offset).Ref()));
     }
+    // Nothing to do for gap chunks.
 
     _offset = o;
 }
@@ -384,6 +385,8 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
 
 Stream::Stream(const Bytes& d) : Stream(Chunk(0, d.str())) {}
 
+Stream::Stream(const char* d, Size n) : Stream() { append(d, n); }
+
 void Stream::append(Bytes&& data) {
     if ( data.isEmpty() )
         return;
@@ -399,10 +402,13 @@ void Stream::append(const Bytes& data) {
 }
 
 void Stream::append(const char* data, size_t len) {
-    if ( ! len )
+    if ( len == 0 )
         return;
 
-    _chain->append(std::make_unique<Chunk>(0, std::string(data, len)));
+    if ( data )
+        _chain->append(std::make_unique<Chunk>(0, std::string(data, len)));
+    else
+        _chain->append(std::make_unique<Chunk>(0, len));
 }
 
 Size View::size() const {
@@ -426,8 +432,6 @@ Size View::size() const {
         return _end->offset() > _begin.offset() ? (_end->offset() - _begin.offset()).Ref() : 0;
 }
 
-Bytes Stream::data() const { return view().data(); }
-
 stream::View::~View() = default;
 
 Bytes stream::View::data() const {
@@ -437,6 +441,43 @@ Bytes stream::View::data() const {
         s.append(std::string(reinterpret_cast<const char*>(block->start), block->size));
 
     return s;
+}
+
+std::string stream::View::dataForPrint() const {
+    std::string data;
+
+    const auto begin = unsafeBegin();
+    const auto end = unsafeEnd();
+
+    const auto start = begin.offset();
+    const auto stop = end.offset();
+
+    auto* c = begin.chunk();
+    while ( c && c->offset() < stop ) {
+        if ( c->isGap() )
+            data.append("<gap>");
+
+        else {
+            auto cstart = c->data();
+            auto csize = c->size();
+
+            if ( c->inRange(start) ) {
+                cstart = cstart + (start - c->offset()).Ref();
+                csize = csize - (start - c->offset()).Ref();
+            }
+
+            if ( c->inRange(start) && c->inRange(stop) )
+                csize = stop - start;
+            else if ( c->inRange(stop) )
+                csize = stop - c->offset();
+
+            data.append(reinterpret_cast<const char*>(cstart), csize);
+        }
+
+        c = c->next();
+    }
+
+    return data;
 }
 
 bool stream::View::operator==(const Stream& other) const { return *this == other.view(); }
@@ -449,8 +490,14 @@ bool stream::View::operator==(const View& other) const {
     auto j = other.unsafeBegin();
 
     while ( i != unsafeEnd() ) {
-        if ( *i++ != *j++ )
+        if ( i.chunk()->isGap() != j.chunk()->isGap() )
             return false;
+
+        if ( ! i.chunk()->isGap() && *i != *j )
+            return false;
+
+        ++i;
+        ++j;
     }
 
     return true;
