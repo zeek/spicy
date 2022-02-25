@@ -87,6 +87,9 @@ HILTI_EXCEPTION(RuntimeError, Exception)
 /** Base class for exceptions created by HILTI programs. */
 HILTI_EXCEPTION(UserException, Exception)
 
+/** Base class for exceptions which can be recovered. */
+HILTI_EXCEPTION(RecoverableFailure, Exception)
+
 /** Thrown when an `assert` statement fails. */
 HILTI_EXCEPTION(AssertionFailure, RuntimeError)
 
@@ -131,7 +134,7 @@ HILTI_EXCEPTION(InvalidValue, RuntimeError);
 HILTI_EXCEPTION(MatchStateReuse, RuntimeError)
 
 /** Exception indicating that the request data is missing. **/
-HILTI_EXCEPTION(MissingData, RuntimeError);
+HILTI_EXCEPTION(MissingData, RecoverableFailure);
 
 /** Exception indicating use of unsupported matching capabilities. */
 HILTI_EXCEPTION(NotSupported, RuntimeError)

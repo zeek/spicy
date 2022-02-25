@@ -156,7 +156,7 @@ struct ParserState {
     /**
      * Expression holding the last parse error if any. This field is set only in sync or trial mode.
      */
-    Expression parse_error;
+    Expression error;
 };
 
 /** Generates the parsing logic for a unit type. */

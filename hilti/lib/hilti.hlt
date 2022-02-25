@@ -35,4 +35,6 @@ public type Exception = exception &cxxname="::hilti::rt::Exception";
 # this allows to continue after operations triggering runtime errors.
 public type RuntimeError = exception &cxxname="::hilti::rt::RuntimeError";
 
+# Base class for exceptions which can be recovered.
+public type RecoverableFailure = exception &cxxname="::hilti::rt::RecoverableFailure";
 }

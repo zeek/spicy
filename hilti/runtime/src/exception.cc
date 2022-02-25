@@ -11,6 +11,7 @@ using namespace hilti::rt;
 
 HILTI_EXCEPTION_IMPL(RuntimeError)
 HILTI_EXCEPTION_IMPL(UserException)
+HILTI_EXCEPTION_IMPL(RecoverableFailure)
 
 HILTI_EXCEPTION_IMPL(AssertionFailure)
 HILTI_EXCEPTION_IMPL(AttributeNotSet)
