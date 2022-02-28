@@ -455,7 +455,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             _total_connections++;
         }
         else if ( m[0] == "@data" ) {
-            // @data <id> <size>>
+            // @data <id> <size>
             // [data]\n
             if ( m.size() != 3 )
                 return hilti::rt::result::Error("unexpected number of argument for @data");
@@ -474,6 +474,23 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( s != flows.end() ) {
                 try {
                     s->second.process(size, data);
+                } catch ( const hilti::rt::Exception& e ) {
+                    std::cout << hilti::rt::fmt("error for ID %s: %s\n", id, e.what());
+                }
+            }
+        }
+        else if ( m[0] == "@gap" ) {
+            // @gap <id> <size>
+            if ( m.size() != 3 )
+                return hilti::rt::result::Error("unexpected number of argument for @gap");
+
+            auto id = std::string(m[1]);
+            auto size = std::stoul(std::string(m[2]));
+
+            auto s = flows.find(id);
+            if ( s != flows.end() ) {
+                try {
+                    s->second.process(size, nullptr);
                 } catch ( const hilti::rt::Exception& e ) {
                     std::cout << hilti::rt::fmt("error for ID %s: %s\n", id, e.what());
                 }

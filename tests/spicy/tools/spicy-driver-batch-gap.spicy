@@ -1,0 +1,38 @@
+# @TEST-DOC: Checks that parsers with error recovery can recover from gaps.
+
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: spicy-driver -F test.dat test.hlto >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type X = unit {
+    %port = 80/tcp;
+    %mime-type = "application/foo";
+
+    data: (/[a-zA-Z]/ &synchronize)[] foreach { confirm; }
+
+    on %done { print self; }
+};
+
+@TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-flow id1 block 80/tcp
+@begin-flow id2 block application/foo
+@gap id1 1024
+@data id1 2
+AB
+@data id2 2
+ab
+@data id1 2
+CD
+@data id2 2
+cd
+@gap id2 1024
+@data id1 2
+EF
+@data id2 2
+ef
+@end-flow id1
+@end-flow id2
+@TEST-END-FILE
