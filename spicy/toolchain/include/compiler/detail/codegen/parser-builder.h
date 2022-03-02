@@ -343,6 +343,12 @@ public:
     Expression atEod();
 
     /**
+     * Generates code that advances the current view to the next position which is not a gap.
+     * This implicitly calls advancedInput() afterwards.
+     */
+    void advanceToNextData();
+
+    /**
      * Generates code that advances the current view to a new start position.
      * This implicitly calls advancedInput() afterwards.
      *

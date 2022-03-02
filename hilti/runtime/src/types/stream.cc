@@ -173,6 +173,43 @@ int Chain::numberOfChunks() const {
     return n;
 }
 
+View View::advanceToNextData() const {
+    // Start search for next data chunk at the next byte. This
+    // ensures that we always advance by at least one byte.
+    auto i = _begin + 1;
+
+    auto* c = i.chunk(); // Pointer to the currently looked at chunk.
+
+    // If the position is already not in a gap we can directly compute a view at it.
+    if ( c && ! c->isGap() )
+        return View(i, _end);
+
+    std::optional<Offset> last_end; // Offset of the end of the last seen chunk.
+
+    while ( c ) {
+        last_end = c->offset() + c->size();
+
+        // Non-gap found, stop iterating.
+        if ( ! c->isGap() )
+            break;
+
+        // Work on next chunk.
+        c = c->next();
+    }
+
+    // If we have found a non-gap chunk its offset points to the next data.
+    if ( c )
+        return View(_begin + c->offset(), _end);
+
+    // If we have seen a previous chunk, return a View starting after its end.
+    if ( last_end )
+        return View(_begin + *last_end, _end);
+
+    // If we have not found a next non-gap chunk simply return a view at the next
+    // byte. Since this is a gap chunk this can cause recovery in the caller.
+    return advance(1U);
+}
+
 UnsafeConstIterator View::find(Byte b, UnsafeConstIterator n) const {
     if ( ! n )
         n = unsafeBegin();

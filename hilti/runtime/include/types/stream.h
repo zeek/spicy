@@ -1210,6 +1210,11 @@ public:
     View advance(integer::safe<uint64_t> i) const { return View(begin() + i, _end); }
 
     /**
+     * Advances the view to the next, none gap offset. This always advances at least by one byte.
+     */
+    View advanceToNextData() const;
+
+    /**
      * Extracts a subrange of bytes from the view, returned as a new view.
      *
      * @param from iterator pointing to start of subrange

@@ -12,6 +12,11 @@
     stream values as the view, and it must be equal or ahead of the view's
     starting position.
 
+.. spicy:method:: stream::view::advance_to_next_data view<stream> advance_to_next_data False view<stream> ()
+
+    Advances the view's starting position to the next non-gap position.
+    This always advances the input by at least one byte.
+
 .. spicy:method:: stream::view::at view<stream> at False iterator<stream> (i: uint<64>)
 
     Returns an iterator representing the offset *i* inside the view.

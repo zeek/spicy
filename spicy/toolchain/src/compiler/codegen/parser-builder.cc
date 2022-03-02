@@ -969,7 +969,7 @@ struct ProductionVisitor
 
                     auto [if_, else_] = builder()->addIfElse(builder::or_(pb->atEod(), state().lahead));
                     pushBuilder(if_, [&]() { builder()->addBreak(); });
-                    pushBuilder(else_, [&]() { pb->advanceInput(builder::integer(1)); });
+                    pushBuilder(else_, [&]() { pb->advanceToNextData(); });
                 });
 
                 break;
@@ -1035,7 +1035,7 @@ struct ProductionVisitor
                 builder()->addDebugMsg("spicy",
                                        "search for sync token did not advance "
                                        "input, advancing explicitly");
-                pb->advanceInput(builder::integer(1));
+                pb->advanceToNextData();
                 builder()->addContinue();
             });
 
@@ -1127,7 +1127,7 @@ struct ProductionVisitor
             builder()->addDebugMsg("spicy", "parse error during trial mode, resynchronizing: %s", {builder::id("e")});
 
             // Advance input so we can find the next synchronization point.
-            pb->advanceInput(builder::integer(1));
+            pb->advanceToNextData();
 
             builder()->addContinue();
         });
@@ -2105,6 +2105,11 @@ void ParserBuilder::parseError(const std::string& error_msg, const Meta& locatio
 
 void ParserBuilder::parseError(const std::string& fmt, std::vector<Expression> args, const Meta& location) {
     parseError(builder::modulo(builder::string(fmt), builder::tuple(std::move(args))), location);
+}
+
+void ParserBuilder::advanceToNextData() {
+    builder()->addAssign(state().cur, builder::memberCall(state().cur, "advance_to_next_data", {}));
+    trimInput();
 }
 
 void ParserBuilder::advanceInput(const Expression& i) {
