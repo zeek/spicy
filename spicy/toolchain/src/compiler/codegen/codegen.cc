@@ -86,6 +86,12 @@ struct VisitorPass1 : public hilti::visitor::PreOrder<void, VisitorPass1> {
         auto new_t = hilti::declaration::Type(t.id(), ns, attrs, t.linkage(), t.meta());
         replaceNode(&p, new_t);
     }
+
+    void operator()(const spicy::ctor::Unit& c, position_t p) {
+        // Replace unit ctor with an equivalent struct ctor.
+        auto n = hilti::ctor::Struct(c.fields().copy(), c.meta());
+        replaceNode(&p, n);
+    }
 };
 
 // Visitor that runs repeatedly over the AST until no further changes.

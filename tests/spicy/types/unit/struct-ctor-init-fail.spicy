@@ -1,0 +1,15 @@
+# @TEST-EXEC-FAIL:  spicyc -j %INPUT
+# @TEST-EXEC: btest-diff .stderr
+#
+# @TEST-DOC: Check that unit constructors are validated to spot type errors.
+
+module foo;
+
+type X = unit {
+    a: uint8;
+    b: bytes &eod;
+};
+
+function f() {
+    local x1: X = [$a = 1, $b = 2];
+}

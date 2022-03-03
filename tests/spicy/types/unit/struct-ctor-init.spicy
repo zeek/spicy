@@ -1,0 +1,18 @@
+# @TEST-EXEC:  spicyc -j %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Initialize a unit variable with a struct field constructor.
+
+module foo;
+
+type X = unit {
+    a: uint8;
+    b: uint8;
+};
+
+function f() {
+    local x: X = [$a = 1, $b = 2];
+    print x;
+}
+
+f();
