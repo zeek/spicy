@@ -6,6 +6,8 @@ spicy::type::bitfield::Bits : isNode
 spicy::type::unit::Item : isNode
 spicy::type::unit::item::switch_::Case : isNode
 
+spicy::ctor::Unit : isCtor
+
 spicy::declaration::UnitHook : isDeclaration
 
 spicy::type::Bitfield : isType
