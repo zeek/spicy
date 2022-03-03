@@ -325,15 +325,16 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
             if ( ! util::set_difference(src_fields, dst_fields).empty() )
                 return {};
 
-            // Check for fields in type that ctor does not have, they must be
-            // optional,
+            // Check for fields that the type has, but are left out in the
+            // ctor. These must all be either optional, internal, or have a
+            // default.
             auto x = util::set_difference(dst_fields, src_fields);
 
             std::set<ID> can_be_missing;
 
             for ( const auto& k : x ) {
                 auto f = dtype->field(k);
-                if ( f->isOptional() || f->default_() || f->type().isA<type::Function>() )
+                if ( f->isOptional() || f->isInternal() || f->default_() || f->type().isA<type::Function>() )
                     can_be_missing.insert(k);
             }
 

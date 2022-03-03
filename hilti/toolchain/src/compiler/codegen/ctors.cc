@@ -168,7 +168,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const ctor::Struct& n) {
         auto id = cg->compile(n.type(), codegen::TypeUsage::Ctor);
 
-        auto is_field = [&](auto f) { return ! f.type().template isA<type::Function>(); };
+        auto is_public_field = [&](auto f) { return ! f.type().template isA<type::Function>() && ! f.isInternal(); };
 
         auto convert_field = [&](auto f) {
             if ( auto c = n.field(f.id()) )
@@ -178,7 +178,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         };
 
         return fmt("%s(%s)", id,
-                   util::join(node::transform(node::filter(n.type().as<type::Struct>().fields(), is_field),
+                   util::join(node::transform(node::filter(n.type().as<type::Struct>().fields(), is_public_field),
                                               convert_field),
                               ", "));
     }
