@@ -86,6 +86,12 @@ struct VisitorPass1 : public hilti::visitor::PreOrder<void, VisitorPass1> {
         auto new_t = hilti::declaration::Type(t.id(), ns, attrs, t.linkage(), t.meta());
         replaceNode(&p, new_t);
     }
+
+    void operator()(const spicy::ctor::Unit& c, position_t p) {
+        // Replace unit ctor with an equivalent struct ctor.
+        auto n = hilti::ctor::Struct(c.fields().copy(), c.meta());
+        replaceNode(&p, n);
+    }
 };
 
 // Visitor that runs repeatedly over the AST until no further changes.
@@ -393,6 +399,20 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
     }
 };
 
+// Visitor that runs once at the very end once the AST is pure HILTI.
+struct VisitorPass3 : public hilti::visitor::PostOrder<void, VisitorPass3> {
+    VisitorPass3(CodeGen* cg) : cg(cg) {}
+    CodeGen* cg;
+    bool modified = false;
+
+    void operator()(const hilti::ctor::Coerced& c, position_t p) {
+        // Replace coercions with their final result, so that HILTI will not
+        // see them (because if did, it wouldn't apply further HILTI-side
+        // coercions to the result anymore).
+        p.node = c.coercedCtor();
+        modified = true;
+    }
+};
 
 } // anonymous namespace
 
@@ -429,12 +449,16 @@ bool CodeGen::compileModule(hilti::Node* root, hilti::Unit* u) {
             break;
     }
 
+    auto v3 = VisitorPass3(this);
+    for ( auto i : v3.walk(root) )
+        v3.dispatch(i);
+
     u->setExtension(".hlt");
 
     _hilti_unit = nullptr;
     _root = nullptr;
 
-    return v1.modified || v2_modified;
+    return v1.modified || v2_modified || v3.modified;
 }
 
 std::optional<hilti::declaration::Function> CodeGen::compileHook(
