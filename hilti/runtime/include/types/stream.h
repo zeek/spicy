@@ -121,7 +121,6 @@ public:
 
     Offset offset() const { return _offset; }
     Offset endOffset() const { return _offset + size(); }
-    bool isCompact() const { return ! std::holds_alternative<Vector>(_data); }
     bool isGap() const { return std::holds_alternative<Gap>(_data); }
     bool inRange(Offset offset) const { return offset >= _offset && offset < endOffset(); }
 
