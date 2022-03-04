@@ -90,8 +90,7 @@ public:
     using Array = std::pair<Size, std::array<Byte, SmallBufferSize>>;
     using Vector = std::vector<Byte>;
 
-    Chunk(Offset o, std::array<Byte, SmallBufferSize>&& d, Size n)
-        : _offset(o), _data(std::make_pair(n, std::move(d))) {}
+    Chunk(Offset o, std::array<Byte, SmallBufferSize> d, Size n) : _offset(o), _data(std::make_pair(n, d)) {}
     Chunk(Offset o, Vector&& d) : _offset(o), _data(std::move(d)) {}
     Chunk(Offset o, const View& d);
     Chunk(Offset o, const std::string& s);
@@ -113,7 +112,7 @@ public:
         _offset = other._offset;
         _data = std::move(other._data);
         _next = std::move(other._next);
-        _chain = std::move(other._chain);
+        _chain = other._chain;
         return *this;
     }
 
@@ -237,7 +236,7 @@ private:
         if ( n <= Chunk::SmallBufferSize ) {
             std::array<Byte, Chunk::SmallBufferSize> x{};
             std::copy(ud, ud + n.Ref(), x.data());
-            return Chunk(o, std::move(x), n);
+            return Chunk(o, x, n);
         }
 
         return Chunk(o, Chunk::Vector(ud, ud + n.Ref()));
