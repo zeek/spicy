@@ -12,9 +12,17 @@ using namespace hilti::rt;
 using namespace hilti::rt::detail;
 
 namespace hilti::rt::context::detail {
+
 // Not part of global state, it's per thread.
 thread_local Context* __current = nullptr;
 Context*& current() { return __current; }
+
+hilti::rt::Context* set(Context* ctx) {
+    auto old = current();
+    current() = ctx;
+    return old;
+}
+
 } // namespace hilti::rt::context::detail
 
 Context::Context(vthread::ID vid) : vid(vid) {

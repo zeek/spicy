@@ -478,6 +478,10 @@ void detail::Fiber::resume() {
 void detail::Fiber::abort() {
     assert(_state == State::Yielded);
     _state = State::Aborting;
+
+    if ( ! context::detail::get(true) )
+        return;
+
     return run();
 }
 
@@ -502,7 +506,11 @@ void detail::Fiber::destroy(std::unique_ptr<detail::Fiber> f) {
     if ( f->_state == State::Yielded )
         f->abort();
 
-    auto* context = context::detail::get();
+    auto* context = context::detail::get(true);
+
+    if ( ! context )
+        return;
+
     auto& cache = context->fiber.cache;
     if ( cache.size() < configuration::get().fiber_cache_size ) {
         HILTI_RT_FIBER_DEBUG("destroy", fmt("putting fiber %s back into cache", *f.get()));
