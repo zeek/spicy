@@ -70,6 +70,11 @@ TEST_CASE("match") {
         CHECK_EQ(RegExp("ab+c", regexp::Flags{.use_std = 1}).match("abbbcdef"_b), 1);
         CHECK_EQ(RegExp("ab+c", regexp::Flags{.use_std = 1}).match("012abbbc345"_b), 0);
     }
+
+    SUBCASE("prefers shorted match") {
+        CHECK_EQ(RegExp(std::vector<std::string>{"A{#1}", "ABC{#2}"}).match("ABC"_b), 1);
+        CHECK_EQ(RegExp(std::vector<std::string>{"ABC{#1}", "A{#2}"}).match("ABC"_b), 2);
+    }
 }
 
 TEST_CASE("find") {
