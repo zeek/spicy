@@ -229,7 +229,7 @@ Install `Docker Desktop for Mac
 Using pre-built Docker images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We provide the following Docker images:
+We publish the following Docker images to the ECR public gallery:
 
 .. list-table::
     :widths: auto
@@ -241,11 +241,11 @@ We provide the following Docker images:
       - Source
 
     * - Release
-      - `zeekurity/spicy <https://hub.docker.com/r/zeekurity/spicy>`_
+      - `zeekurity/spicy <https://gallery.ecr.aws/zeek/spicy>`_
       - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
     * - Development
-      - `zeekurity/spicy-dev <https://hub.docker.com/r/zeekurity/spicy-dev>`_
+      - `zeekurity/spicy-dev <https://gallery.ecr.aws/zeek/spicy-dev>`_
       - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
 These images include Zeek, the :ref:`Spicy plugin <zeek_plugin>` for
@@ -255,7 +255,7 @@ them to try out the full setup end-to-end.
 
 To run the release image, execute the following command::
 
-    # docker run -it zeekurity/spicy:latest
+    # docker run -it public.ecr.aws/zeek/spicy:latest
 
 Spicy is installed in ``/opt/spicy`` on these images. The development
 image is updated nightly.
