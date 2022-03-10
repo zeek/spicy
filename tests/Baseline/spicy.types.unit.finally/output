@@ -16,9 +16,9 @@ Foo error, [$y=(not set)]
 Foo finally, [$y=(not set)]
 Bar error, [$x=b"abc", $y=[$y=(not set)]]
 Bar finally, [$x=b"abc", $y=[$y=(not set)]]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: expecting 'def' (<...>/finally.spicy:28:8)
+[error] terminating with uncaught exception of type hilti::rt::RecoverableFailure: expecting 'def' (<...>/finally.spicy:28:8)
 
 Bar init, [$x=(not set), $y=(not set)]
 Bar error, [$x=(not set), $y=(not set)]
 Bar finally, [$x=(not set), $y=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: expecting 'abc' (<...>/finally.spicy:18:8)
+[error] terminating with uncaught exception of type hilti::rt::RecoverableFailure: expecting 'abc' (<...>/finally.spicy:18:8)

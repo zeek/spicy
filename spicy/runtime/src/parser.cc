@@ -14,6 +14,7 @@ using namespace spicy::rt;
 using namespace spicy::rt::detail;
 
 HILTI_EXCEPTION_IMPL(Backtrack)
+HILTI_EXCEPTION_IMPL(MissingData);
 HILTI_EXCEPTION_IMPL(ParseError)
 
 // Returns true if EOD can be seen already, even if not reached yet.
@@ -34,7 +35,7 @@ static bool _haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, c
 void detail::printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                               const hilti::rt::stream::View& cur, int64_t lahead,
                               const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
-                              bool trim, const std::optional<ParseError>& parse_error) {
+                              bool trim, const std::optional<hilti::rt::RecoverableFailure>& error) {
     auto str = [&](const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end) {
         auto i = begin + 10;
         if ( i >= end )
@@ -60,7 +61,7 @@ void detail::printParserState(const std::string& unit_id, const hilti::rt::Value
                        " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64 " lah_token=\"%s%s\" recovering=%s",
                        unit_id, input_data, input_dots, data.get(), data->begin().offset(), cur.begin().offset(),
                        data->end().offset(), data->numberOfChunks(), (data->isFrozen() ? "yes" : "no"), literal_mode,
-                       (trim ? "yes" : "no"), lah_str, lah_data, lah_dots, (parse_error.has_value() ? "yes" : "no"));
+                       (trim ? "yes" : "no"), lah_str, lah_data, lah_dots, (error.has_value() ? "yes" : "no"));
 
     SPICY_RT_DEBUG_VERBOSE(msg);
 }

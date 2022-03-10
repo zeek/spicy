@@ -11,6 +11,7 @@ using namespace hilti::rt;
 
 HILTI_EXCEPTION_IMPL(RuntimeError)
 HILTI_EXCEPTION_IMPL(UserException)
+HILTI_EXCEPTION_IMPL(RecoverableFailure)
 
 HILTI_EXCEPTION_IMPL(AssertionFailure)
 HILTI_EXCEPTION_IMPL(AttributeNotSet)
@@ -24,6 +25,7 @@ HILTI_EXCEPTION_IMPL(InvalidArgument)
 HILTI_EXCEPTION_IMPL(InvalidIterator)
 HILTI_EXCEPTION_IMPL(InvalidValue)
 HILTI_EXCEPTION_IMPL(MatchStateReuse)
+HILTI_EXCEPTION_IMPL(MissingData)
 HILTI_EXCEPTION_IMPL(NotSupported)
 HILTI_EXCEPTION_IMPL(NullReference)
 HILTI_EXCEPTION_IMPL(OutOfRange)

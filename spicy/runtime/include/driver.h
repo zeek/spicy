@@ -93,9 +93,9 @@ public:
      * parser can fully consume it as one unit instance.
      *
      * @param size length of data
-     * @param data pointer to *size* bytes to feed into parsing
-     * @returns Returns `State` indicating
-     * if parsing remains ongoing or has finished.
+     * @param data pointer to *size* bytes to feed into parsing. If this is a nullptr a gap of length *size* will be
+     * processed.
+     * @returns Returns `State` indicating if parsing remains ongoing or has finished.
      * @throws any exceptions (including in particular parse errors) are
      * passed through to caller
      */

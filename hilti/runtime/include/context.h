@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -85,20 +86,20 @@ extern Context*& current();
 extern Context* master();
 
 /** Returns the context set for the current hardware thread. */
-inline auto get() {
-    assert(current());
-    return current();
+inline auto get(bool allow_missing_context = false) {
+    auto* ctx = current();
+
+    if ( ! allow_missing_context )
+        assert(ctx);
+
+    return ctx;
 }
 
 /**
  * Sets the current context. This will be visible to code inside the current
  * hardware thread.
  */
-inline auto set(Context* ctx) {
-    auto old = current();
-    current() = ctx;
-    return old;
-}
+hilti::rt::Context* set(Context* ctx);
 
 /**
  * Utility class that sets the current context's `resumable` field during its life-time.

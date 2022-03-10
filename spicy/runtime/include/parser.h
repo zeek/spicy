@@ -289,13 +289,13 @@ inline auto parsers() {
 /**
  * Exception thrown by generated parser code when an parsing failed.
  */
-class ParseError : public hilti::rt::UserException {
+class ParseError : public hilti::rt::RecoverableFailure {
 public:
-    ParseError(const std::string& msg, const std::string& location = "") : UserException(msg, location) {}
+    ParseError(const std::string& msg, const std::string& location = "") : RecoverableFailure(msg, location) {}
 
-    ParseError(const hilti::rt::result::Error& e) : UserException(e.description()) {}
+    ParseError(const hilti::rt::result::Error& e) : RecoverableFailure(e.description()) {}
 
-    virtual ~ParseError(); /* required to create vtable, see hilti::rt::Exception */
+    ~ParseError() override; /* required to create vtable, see hilti::rt::Exception */
 };
 
 /**
@@ -306,7 +306,13 @@ public:
 class Backtrack : public ParseError {
 public:
     Backtrack() : ParseError("backtracking outside of &try scope") {}
-    virtual ~Backtrack();
+    ~Backtrack() override;
+};
+
+class MissingData : public ParseError {
+public:
+    MissingData(const std::string& location = "") : ParseError("missing data", location) {}
+    ~MissingData() override; /* required to create vtable, see hilti::rt::Exception */
 };
 
 namespace detail {
@@ -362,7 +368,7 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
 void printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                       const hilti::rt::stream::View& cur, int64_t lahead,
                       const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
-                      bool trim, const std::optional<ParseError>& parse_error);
+                      bool trim, const std::optional<hilti::rt::RecoverableFailure>& error);
 
 /**
  * Used by generated parsers to wait until a minimum amount of input becomes

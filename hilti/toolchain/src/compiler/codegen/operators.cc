@@ -568,6 +568,11 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         return fmt("%s.advance(%s)", self, args[0]);
     }
 
+    result_t operator()(const operator_::stream::view::AdvanceToNextData& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.advanceToNextData()", self);
+    }
+
     result_t operator()(const operator_::stream::view::Limit& n) {
         auto [self, args] = methodArguments(n);
         return fmt("%s.limit(%s)", self, args[0]);

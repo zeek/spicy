@@ -156,7 +156,7 @@ struct ParserState {
     /**
      * Expression holding the last parse error if any. This field is set only in sync or trial mode.
      */
-    Expression parse_error;
+    Expression error;
 };
 
 /** Generates the parsing logic for a unit type. */
@@ -341,6 +341,12 @@ public:
 
     /** Returns a boolean expression that's true if EOD has been reached. */
     Expression atEod();
+
+    /**
+     * Generates code that advances the current view to the next position which is not a gap.
+     * This implicitly calls advancedInput() afterwards.
+     */
+    void advanceToNextData();
 
     /**
      * Generates code that advances the current view to a new start position.

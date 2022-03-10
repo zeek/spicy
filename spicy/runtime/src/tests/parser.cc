@@ -108,7 +108,7 @@ TEST_CASE("atEod") {
 struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
     static Parser __parser;
     sink::detail::State* __sink = nullptr;
-    std::optional<ParseError> __parse_error;
+    std::optional<hilti::rt::RecoverableFailure> __error;
     std::function<void(uint64_t, uint64_t)> __on_0x25_gap = nullptr;
     std::function<void(uint64_t)> __on_0x25_skipped = nullptr;
     std::function<void(uint64_t, const Bytes&, const Bytes&)> __on_0x25_overlap = nullptr;

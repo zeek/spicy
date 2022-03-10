@@ -126,6 +126,19 @@ it must be equal or ahead of the view's starting position.
     }
 END_METHOD
 
+BEGIN_METHOD(stream::view, AdvanceToNextData)
+    auto signature() const {
+        return Signature{.self = type::constant(type::stream::View()),
+                         .result = type::stream::View(),
+                         .id = "advance_to_next_data",
+                         .args = {},
+                         .doc = R"(
+Advances the view's starting position to the next non-gap position. This always
+advances the input by at least one byte.
+)"};
+    }
+END_METHOD
+
 BEGIN_METHOD(stream::view, Limit)
     auto signature() const {
         return Signature{.self = type::constant(type::stream::View()),

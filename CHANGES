@@ -1,3 +1,21 @@
+1.4.0-dev.264 | 2022-03-10 11:22:08 +0100
+
+  * Add missing include. (Benjamin Bannier, Corelight)
+
+  * Allow teardown of resumables even if runtime is already gone. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy warning about trivially copyable types in `stream.h`. (Benjamin Bannier, Corelight)
+
+  * Remove unused method `Chunk::isCompact`. (Benjamin Bannier, Corelight)
+
+  * Take gaps explicitly into account when recovering. (Benjamin Bannier, Corelight)
+
+  * Add a test for error recovery on gap. (Benjamin Bannier, Corelight)
+
+  * Use more general exception type for recoverable errors in Spicy. (Benjamin Bannier, Corelight)
+
+  * Add a chunk type for gaps. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.255 | 2022-03-04 09:01:36 +0100
 
   * GH-1036: Support unit initialization through a struct constructor
