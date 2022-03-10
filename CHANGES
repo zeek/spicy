@@ -1,3 +1,9 @@
+1.4.0 | 2022-03-11 11:16:37 +0100
+
+  * Update NEWS. (Benjamin Bannier, Corelight)
+
+  * Bump docs for spicy-plugin. (Benjamin Bannier, Corelight)
+
 1.4.0-dev.264 | 2022-03-10 11:22:08 +0100
 
   * Add missing include. (Benjamin Bannier, Corelight)

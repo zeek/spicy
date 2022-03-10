@@ -3,10 +3,20 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.4 (in progress)
-=========================
+Version 1.4
+===========
 
 .. rubric:: New Functionality
+
+- Add support for recovery from parse errors or incomplete input
+
+  This release adds support for recovering from parse errors or incomplete
+  input (e.g., gaps or partial connections). Grammars can denote unit
+  synchronization points with a ``&synchronize`` attribute. If an error is
+  encountered while extracting a previous fields, parsing will attempt to
+  resynchronize the input at that point. The synchronization result needs to be
+  checked and confirmed or rejected explicitly; a number of hooks are provided
+  for that. See :ref:`the docs <error_recovery>` for details.
 
 - Remove restriction that units used as sinks need to be ``public``
 
@@ -22,6 +32,8 @@ Version 1.4 (in progress)
   disabled via the ``HILTI_CXX_COMPILER_LAUNCHER`` environment variable.
 
 - GH-842: Add Spicy support for struct initialization.
+
+- GH-1036: Support unit initialization through a struct constructor expression.
 
 .. rubric:: Changed Functionality
 
