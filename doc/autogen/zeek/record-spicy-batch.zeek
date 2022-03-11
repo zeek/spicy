@@ -59,6 +59,11 @@ event tcp_contents(c: connection, is_orig: bool, seq: count, contents: string)
 	print output, "\n";
 	}
 
+event content_gap(c: connection, is_orig: bool, seq: count, length: count)
+	{
+	print output, fmt("@gap %s-%s %d\n", id(c), (is_orig ? "orig" : "resp"), length);
+	}
+
 event udp_contents(c: connection, is_orig: bool, contents: string)
 	{
 	if ( c$id !in conns )
