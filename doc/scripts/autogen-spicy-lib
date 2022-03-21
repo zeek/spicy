@@ -90,8 +90,10 @@ awk -v "target=$1" -v "ns=$2" '
         split($0, y, "[()]");
         name = x[3];
         args = y[2];
-        split(y[3], z, "[: ]+");
-        result = z[2];
+
+        sub(/^[: ]+/, "", y[3]);
+        split(y[3], z, " &");
+        result = z[1];
 
         if ( result ~ /void/ )
             result = "";
