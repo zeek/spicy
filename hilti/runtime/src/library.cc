@@ -1,6 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
 #include <dlfcn.h>
+#include <sys/stat.h>
 
 #include <utility>
 
@@ -129,6 +130,18 @@ hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::
 
     if ( ec )
         return result::Error(fmt("could not save library to %s: %s", path, ec.message()));
+
+    // Query the current umask. This is safe since we always query and set the umask from a single thread.
+    auto default_perms = ::umask(::mode_t());
+    ::umask(default_perms);
+
+    // Create the file taking into account the active umask. Since clang creates
+    // shared libraries with executable bit we assume default permissions of 777.
+    hilti::rt::filesystem::permissions(path, hilti::rt::filesystem::perms(0777 - default_perms),
+                                       hilti::rt::filesystem::perm_options::replace, ec);
+
+    if ( ec )
+        rt::fatalError(fmt("could not preserve permissions of file %s: %s", path, ec.message()));
 
     return hilti::rt::Nothing();
 }
