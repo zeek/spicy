@@ -1,3 +1,11 @@
+1.5.0-dev.3 | 2022-03-22 10:44:59 +0100
+
+  * Refresh package docs with `doc/scripts/autogen-zeek-docs`. (Benjamin Bannier, Corelight)
+
+  * Fix doc gen script to allow for tuples with named fields in return type. (Benjamin Bannier, Corelight)
+
+  * Add placeholder section for 1.5 to NEWS. (Benjamin Bannier, Corelight)
+
 1.4.0 | 2022-03-11 11:16:37 +0100
 
   * Update NEWS. (Benjamin Bannier, Corelight)
