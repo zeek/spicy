@@ -27,9 +27,8 @@ BEGIN_METHOD(string, Encode)
         return Signature{.self = type::constant(type::String()),
                          .result = type::Bytes(),
                          .id = "encode",
-                         .args = {{.id = "charset",
-                                   .type = type::Enum(type::Wildcard()),
-                                   .default_ = builder::id("hilti::Charset::UTF8")}},
+                         .args = {{"charset", type::Enum(type::Wildcard()), false,
+                                   builder::id("hilti::Charset::UTF8")}},
                          .doc =
                              R"(
 Converts the string into a binary representation encoded with the given character set.
@@ -43,7 +42,7 @@ BEGIN_OPERATOR_CUSTOM(string, Modulo)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const { return {{.type = type::String()}, {.type = type::Any()}}; }
+    std::vector<Operand> operands() const { return {{{}, type::String()}, {{}, type::Any()}}; }
 
     void validate(const expression::ResolvedOperator& /* i */, operator_::position_t /* p */) const {
         // TODO(robin): Not sure if we need this restriction. Let's try without.

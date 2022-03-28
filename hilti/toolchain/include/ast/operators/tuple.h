@@ -45,7 +45,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, Index)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Tuple(type::Wildcard())}, {.type = type::UnsignedInteger(64)}};
+        return {{{}, type::Tuple(type::Wildcard())}, {{}, type::UnsignedInteger(64)}};
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -83,7 +83,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Tuple(type::Wildcard())}, {.type = type::Member(type::Wildcard()), .doc = "<id>"}};
+        return {{{}, type::Tuple(type::Wildcard())}, {{}, type::Member(type::Wildcard()), false, {}, "<id>"}};
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -111,10 +111,13 @@ BEGIN_OPERATOR_CUSTOM(tuple, CustomAssign)
     std::vector<Operand> operands() const {
         // The operator gets instantiated only through the normalizer, but this is used for documentation.
         return {{
-                    .type = type::Member(type::Wildcard()),
-                    .doc = "(x, ..., y)",
+                    {},
+                    type::Member(type::Wildcard()),
+                    false,
+                    {},
+                    "(x, ..., y)",
                 },
-                {.type = type::Tuple(type::Wildcard()), .doc = "<tuple>"}};
+                {{}, type::Tuple(type::Wildcard()), false, {}, "<tuple>"}};
         return {};
     }
 

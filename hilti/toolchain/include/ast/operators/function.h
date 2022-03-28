@@ -23,8 +23,8 @@ public:
 
     struct Operator : public hilti::trait::isOperator {
         Operator(const Scope::Referee& r, const type::Function& ftype) {
-            auto op0 = operator_::Operand{.type = type::Any()}; // IDs won't be resolved
-            auto op1 = operator_::Operand{.type = type::OperandList::fromParameters(ftype.parameters())};
+            auto op0 = operator_::Operand{{}, type::Any()}; // IDs won't be resolved
+            auto op1 = operator_::Operand{{}, type::OperandList::fromParameters(ftype.parameters())};
             _referee = r;
             _operands = {op0, op1};
             _result = ftype.result().type();

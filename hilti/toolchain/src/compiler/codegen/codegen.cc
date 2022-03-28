@@ -58,7 +58,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
             if ( include_implementation )
                 unit->setUsesGlobals();
 
-            auto t = cxx::declaration::Type{.id = {ns, "__globals_t"}, .type = cxx::Type(v.cxxGlobalsType())};
+            auto t = cxx::declaration::Type{{ns, "__globals_t"}, v.cxxGlobalsType()};
 
             auto idx =
                 cxx::declaration::Global{.id = {ns, "__globals_index"}, .type = "unsigned int", .linkage = "inline"};
@@ -115,7 +115,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
         std::vector<cxx::type::struct_::Member> fields;
 
         for ( const auto& g : globals ) {
-            auto f = cxx::declaration::Local{.id = g.id.local(), .type = g.type};
+            auto f = cxx::declaration::Local{g.id.local(), g.type};
             fields.emplace_back(f);
         }
 
@@ -293,9 +293,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
             // Make any additional types the hook needs known to local unit and linker.
             std::list<cxx::declaration::Type> aux_types{
-                cxx::declaration::Type{.id = cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                       .type = fmt("struct %s", id_class),
-                                       .forward_decl = true}};
+                cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                       fmt("struct %s", id_class),
+                                       {},
+                                       true}};
 
             for ( const auto& p : ft.parameters() ) {
                 auto type = p.type();
@@ -321,9 +322,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                     id_module = cg->hiltiUnit()->id();
 
                 aux_types.push_back(
-                    cxx::declaration::Type{.id = cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                           .type = fmt("struct %s", id_class),
-                                           .forward_decl = true});
+                    cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                           fmt("struct %s", id_class),
+                                           {},
+                                           true});
             }
 
             for ( const auto& t : aux_types )
@@ -377,9 +379,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                     id_module = cg->hiltiUnit()->id();
 
                 aux_types.push_back(
-                    cxx::declaration::Type{.id = cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                           .type = fmt("struct %s", id_class),
-                                           .forward_decl = true});
+                    cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                           fmt("struct %s", id_class),
+                                           {},
+                                           true});
             }
 
             for ( const auto& t : aux_types )
@@ -411,9 +414,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         if ( n.linkage() == declaration::Linkage::Struct && ! f.isStatic() ) {
             if ( ! is_hook && ! f.isStatic() ) {
                 // Need a LHS value for __self.
-                auto self = cxx::declaration::Local{.id = "__self",
-                                                    .type = "auto",
-                                                    .init = fmt("%s::__self()", id_struct_type)};
+                auto self = cxx::declaration::Local{"__self", "auto", {}, fmt("%s::__self()", id_struct_type)};
                 body.addStatementAtFront(std::move(self));
             }
 
@@ -456,14 +457,13 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
                            ", ");
 
-            body.addLocal({.id = "args", .type = "auto", .init = fmt("std::make_tuple(%s)", outer_args)});
+            body.addLocal({"args", "auto", {}, fmt("std::make_tuple(%s)", outer_args)});
 
             // Move the arguments to the heap. Would be nice to use a
             // unique_ptr here and then move that into the lambda. However,
             // turns out our `Lambda` requires a callback that can be copied,
             // which the unique_ptr would prevent.
-            body.addLocal(
-                {.id = "args_on_heap", .type = "auto", .init = "std::make_shared<decltype(args)>(std::move(args))"});
+            body.addLocal({"args_on_heap", "auto", {}, "std::make_shared<decltype(args)>(std::move(args))"});
 
             int idx = 0;
             auto inner_args =
@@ -480,7 +480,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             }
 
             body.addLambda("cb", "[args_on_heap](hilti::rt::resumable::Handle* r) -> hilti::rt::any", std::move(cb));
-            body.addLocal({.id = "r", .type = "auto", .init = "std::make_unique<hilti::rt::Resumable>(std::move(cb))"});
+            body.addLocal({"r", "auto", {}, "std::make_unique<hilti::rt::Resumable>(std::move(cb))"});
             body.addStatement("r->run()");
             body.addReturn("std::move(*r)");
 
@@ -697,7 +697,7 @@ cxx::Expression CodeGen::addTmp(const std::string& prefix, const cxx::Expression
     if ( auto i = _tmp_counters.find(prefix); i != _tmp_counters.end() )
         n = i->second;
 
-    auto tmp = cxx::declaration::Local({.id = cxx::ID(fmt("__%s_%d", prefix, ++n)), .type = "auto", .init = init});
+    auto tmp = cxx::declaration::Local(cxx::ID(fmt("__%s_%d", prefix, ++n)), "auto", {}, init);
     cxxBlock()->addTmp(tmp);
     _tmp_counters[prefix] = n;
     return std::string(tmp.id);
@@ -711,7 +711,7 @@ cxx::Expression CodeGen::addTmp(const std::string& prefix, const cxx::Type& t) {
     if ( auto i = _tmp_counters.find(prefix); i != _tmp_counters.end() )
         n = i->second;
 
-    auto tmp = cxx::declaration::Local({.id = cxx::ID(fmt("__%s_%d", prefix, ++n)), .type = t});
+    auto tmp = cxx::declaration::Local(cxx::ID(fmt("__%s_%d", prefix, ++n)), t);
     cxxBlock()->addTmp(tmp);
     _tmp_counters[prefix] = n;
     return std::string(tmp.id);

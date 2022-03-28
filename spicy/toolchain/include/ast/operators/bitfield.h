@@ -57,8 +57,8 @@ BEGIN_OPERATOR_CUSTOM(bitfield, Member)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<hilti::operator_::Operand> operands() const {
-        return {{.type = type::constant(type::Bitfield(type::Wildcard())), .doc = "bitfield"},
-                {.type = type::Member(type::Wildcard()), .doc = "<attribute>"}};
+        return {{{}, type::constant(type::Bitfield(type::Wildcard())), false, {}, "bitfield"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<attribute>"}};
     }
 
     void validate(const hilti::expression::ResolvedOperator& i, hilti::operator_::position_t p) const {

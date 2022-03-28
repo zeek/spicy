@@ -25,6 +25,13 @@ struct OneFilter {
     using Parse1Function = std::function<hilti::rt::Resumable(hilti::rt::ValueReference<hilti::rt::Stream>&,
                                                               const std::optional<hilti::rt::stream::View>&)>;
 
+    OneFilter() = default;
+    OneFilter(OneFilter&&) = default;
+    OneFilter(const OneFilter&) = delete;
+    OneFilter(Parse1Function _parse, hilti::rt::ValueReference<hilti::rt::Stream> _input,
+              hilti::rt::Resumable _resumable)
+        : parse(std::move(_parse)), input(std::move(_input)), resumable(std::move(_resumable)) {}
+
     Parse1Function parse;
     hilti::rt::ValueReference<hilti::rt::Stream> input;
     hilti::rt::Resumable resumable;
@@ -136,8 +143,8 @@ void connect(S& state, UnitRef<F> filter_unit) {
     if ( ! state.__filters )
         state.__filters = hilti::rt::reference::make_strong<::spicy::rt::filter::detail::Filters>();
 
-    auto filter = detail::OneFilter{.parse = [filter_unit](hilti::rt::ValueReference<hilti::rt::Stream>& data,
-                                                           const std::optional<hilti::rt::stream::View>& cur) mutable
+    auto filter = detail::OneFilter{[filter_unit](hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                                                  const std::optional<hilti::rt::stream::View>& cur) mutable
                                     -> hilti::rt::Resumable {
                                         auto lhs_filter_unit = filter_unit.derefAsValue();
                                         auto parse2 = hilti::rt::any_cast<Parse2Function<F>>(F::__parser.parse2);
@@ -146,7 +153,8 @@ void connect(S& state, UnitRef<F> filter_unit) {
                                                            data.get(), lhs_filter_unit->__forward.get()));
                                         return (*parse2)(lhs_filter_unit, data, cur, {});
                                     },
-                                    .input = hilti::rt::Stream()};
+                                    hilti::rt::Stream(),
+                                    {}};
 
     (*state.__filters).push_back(std::move(filter));
     filter_unit->__forward = (*state.__filters).back().input;

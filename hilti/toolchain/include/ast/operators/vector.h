@@ -49,7 +49,7 @@ BEGIN_METHOD(vector, Assign)
         return Signature{.self = type::Vector(type::Wildcard()),
                          .result = type::void_,
                          .id = "assign",
-                         .args = {{.id = "i", .type = type::UnsignedInteger(64)}, {.id = "x", .type = type::Any()}},
+                         .args = {{"i", type::UnsignedInteger(64)}, {"x", type::Any()}},
                          .doc = R"(
 Assigns *x* to the *i*th element of the vector. If the vector contains less
 than *i* elements a sufficient number of default-initialized elements is added
@@ -63,7 +63,7 @@ BEGIN_METHOD(vector, PushBack)
         return Signature{.self = type::Vector(type::Wildcard()),
                          .result = type::void_,
                          .id = "push_back",
-                         .args = {{.id = "x", .type = type::Any()}},
+                         .args = {{"x", type::Any()}},
                          .doc = R"(
 Appends *x* to the end of the vector.
 )"};
@@ -114,7 +114,7 @@ BEGIN_METHOD(vector, Reserve)
         return Signature{.self = type::Vector(type::Wildcard()),
                          .result = type::void_,
                          .id = "reserve",
-                         .args = {{.id = "n", .type = type::constant(type::UnsignedInteger(64))}},
+                         .args = {{"n", type::constant(type::UnsignedInteger(64))}},
                          .doc = R"(
 Reserves space for at least *n* elements. This operation does not change the
 vector in any observable way but provides a hint about the size that will be
@@ -128,7 +128,7 @@ BEGIN_METHOD(vector, Resize)
         return Signature{.self = type::Vector(type::Wildcard()),
                          .result = type::void_,
                          .id = "resize",
-                         .args = {{.id = "n", .type = type::constant(type::UnsignedInteger(64))}},
+                         .args = {{"n", type::constant(type::UnsignedInteger(64))}},
                          .doc = R"(
 Resizes the vector to hold exactly *n* elements. If *n* is larger than the
 current size, the new slots are filled with default values. If *n* is smaller
@@ -142,7 +142,7 @@ BEGIN_METHOD(vector, At)
         return Signature{.self = type::constant(type::Vector(type::Wildcard())),
                          .result = operator_::iteratorType(0, true),
                          .id = "at",
-                         .args = {{.id = "i", .type = type::UnsignedInteger(64)}},
+                         .args = {{"i", type::UnsignedInteger(64)}},
                          .doc = R"(
 Returns an iterator referring to the element at vector index *i*.
 )"};
@@ -154,8 +154,7 @@ BEGIN_METHOD(vector, SubRange)
         return Signature{.self = type::constant(type::Vector(type::Wildcard())),
                          .result = operator_::sameTypeAs(0, "vector<*>"),
                          .id = "sub",
-                         .args = {{.id = "begin", .type = type::UnsignedInteger(64)},
-                                  {.id = "end", .type = type::UnsignedInteger(64)}},
+                         .args = {{"begin", type::UnsignedInteger(64)}, {"end", type::UnsignedInteger(64)}},
                          .doc = R"(
 Extracts a subsequence of vector elements spanning from index *begin*
 to (but not including) index *end*.
@@ -168,7 +167,7 @@ BEGIN_METHOD(vector, SubEnd)
         return Signature{.self = type::constant(type::Vector(type::Wildcard())),
                          .result = operator_::sameTypeAs(0, "vector<*>"),
                          .id = "sub",
-                         .args = {{.id = "end", .type = type::UnsignedInteger(64)}},
+                         .args = {{"end", type::UnsignedInteger(64)}},
                          .doc = R"(
 Extracts a subsequence of vector elements spanning from the beginning
 to (but not including) the index *end* as a new vector.

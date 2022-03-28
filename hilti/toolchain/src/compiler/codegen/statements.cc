@@ -59,8 +59,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                 logger().internalError("not support currently for testing for specific exception in assertion", n);
 
             cxx::Block try_body;
-            try_body.addTmp(
-                cxx::declaration::Local{.id = "_", .type = "::hilti::rt::exception::DisableAbortOnExceptions"});
+            try_body.addTmp(cxx::declaration::Local{"_", "::hilti::rt::exception::DisableAbortOnExceptions"});
             try_body.addStatement(fmt("%s", cg->compile(n.expression())));
 
             if ( cg->options().debug_flow )
@@ -75,11 +74,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             cxx::Block catch_cont;
             catch_cont.addStatement(""); // dummy to  make it non-empty;
 
-            block->addTry(std::move(try_body),
-                          {
-                              {{.id = "", .type = "const hilti::rt::AssertionFailure&"}, catch_rethrow},
-                              {{.id = "", .type = "const hilti::rt::Exception&"}, catch_cont},
-                          });
+            block->addTry(std::move(try_body), {
+                                                   {{{}, "const hilti::rt::AssertionFailure&"}, catch_rethrow},
+                                                   {{{}, "const hilti::rt::Exception&"}, catch_cont},
+                                               });
         }
     }
 
@@ -131,10 +129,8 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             init = cg->typeDefaultValue(d->type());
         }
 
-        auto l = cxx::declaration::Local{.id = cxx::ID(d->id()),
-                                         .type = cg->compile(d->type(), codegen::TypeUsage::Storage),
-                                         .args = std::move(args),
-                                         .init = init};
+        auto l = cxx::declaration::Local{cxx::ID(d->id()), cg->compile(d->type(), codegen::TypeUsage::Storage),
+                                         std::move(args), init};
 
         block->addLocal(l);
     }
@@ -188,7 +184,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         else {
             cxx::Block b;
             b.setEnsureBracesforBlock();
-            b.addTmp(cxx::declaration::Local{.id = "__seq", .type = "auto", .init = seq});
+            b.addTmp(cxx::declaration::Local{"__seq", "auto", {}, seq});
             b.addForRange(true, id, fmt("::hilti::rt::range(__seq)"), body);
             block->addBlock(std::move(b));
         }
@@ -278,10 +274,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
             if ( auto p = c.parameter() ) {
                 auto t = cg->compile(p->type(), codegen::TypeUsage::InParameter);
-                arg = {.id = cxx::ID(p->id()), .type = std::move(t)};
+                arg = {cxx::ID(p->id()), std::move(t)};
             }
             else
-                arg = {.id = "", .type = cxx::Type("...")};
+                arg = {"", cxx::Type("...")};
 
             catches.emplace_back(std::move(arg), cg->compile(c.body()));
         }
@@ -324,12 +320,11 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
             if ( init ) {
                 if ( n.condition() )
-                    outer_wrapper.addLocal({.id = cxx::ID(init->id()),
-                                            .type = cg->compile(init->type(), codegen::TypeUsage::Storage),
-                                            .init = cxx_init});
+                    outer_wrapper.addLocal(
+                        {cxx::ID(init->id()), cg->compile(init->type(), codegen::TypeUsage::Storage), {}, cxx_init});
                 else
                     outer_wrapper.addLocal(
-                        {.id = cxx::ID(init->id()), .type = cg->compile(init->type(), codegen::TypeUsage::Storage)});
+                        {cxx::ID(init->id()), cg->compile(init->type(), codegen::TypeUsage::Storage)});
             }
 
             outer_wrapper.addWhile(cxx::Expression("true"), inner_wrapper);

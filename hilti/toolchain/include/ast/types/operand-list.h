@@ -37,10 +37,8 @@ public:
         std::vector<operator_::Operand> ops;
 
         for ( const auto& p : params ) {
-            operator_::Operand op = {.id = p.id(),
-                                     .type = (p.isConstant() ? type::constant(p.type()) : p.type()),
-                                     .optional = p.default_().has_value(),
-                                     .default_ = p.default_()};
+            operator_::Operand op = {p.id(), (p.isConstant() ? type::constant(p.type()) : p.type()),
+                                     p.default_().has_value(), p.default_()};
 
             ops.push_back(std::move(op));
         }

@@ -69,8 +69,8 @@ BEGIN_OPERATOR_CUSTOM_x(union_, MemberConst, Member)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::constant(type::Union(type::Wildcard())), .doc = "union"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::constant(type::Union(type::Wildcard())), false, {}, "union"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const expression::ResolvedOperator& i, position_t p) const {
@@ -97,8 +97,8 @@ BEGIN_OPERATOR_CUSTOM_x(union_, MemberNonConst, Member)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Union(type::Wildcard()), .doc = "union"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::Union(type::Wildcard()), false, {}, "union"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const expression::ResolvedOperator& i, position_t p) const {
@@ -120,8 +120,8 @@ BEGIN_OPERATOR_CUSTOM(union_, HasMember)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Union(type::Wildcard()), .doc = "union"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::Union(type::Wildcard()), false, {}, "union"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const expression::ResolvedOperator& i, position_t p) const {

@@ -78,8 +78,7 @@ BEGIN_METHOD(map, Get)
         return Signature{.self = type::Map(type::Wildcard()),
                          .result = operator_::elementType(0),
                          .id = "get",
-                         .args = {{.id = "key", .type = type::Any()},
-                                  {.id = "default", .type = type::Any(), .optional = true}},
+                         .args = {{"key", type::Any()}, {"default", type::Any(), true}},
                          .doc = R"(
 Returns the map's element for the given key. If the key does not exist, returns
 the default value if provided; otherwise throws a runtime error.

@@ -11,7 +11,7 @@ BEGIN_CTOR(exception, Ctor)
     auto ctorType() const { return type::Exception(type::Wildcard()); }
 
     auto signature() const {
-        return Signature{.args = {{.id = "msg", .type = type::String()}}, .doc = R"(
+        return Signature{.args = {{"msg", type::String()}}, .doc = R"(
 Instantiates an instance of the exception type carrying the error message *msg*.
 )"};
     }

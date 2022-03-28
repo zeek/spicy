@@ -48,8 +48,7 @@ BEGIN_METHOD(sink, Connect)
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
                                            .result = type::void_,
                                            .id = "connect",
-                                           .args = {{.id = "u",
-                                                     .type = type::StrongReference(type::Unit(type::Wildcard()))}},
+                                           .args = {{"u", type::StrongReference(type::Unit(type::Wildcard()))}},
                                            .doc = R"(
 Connects a parsing unit to a sink. All subsequent write operations to the sink will pass their
 data on to this parsing unit. Each unit can only be connected to a single sink. If
@@ -64,7 +63,7 @@ BEGIN_METHOD(sink, ConnectMIMETypeString)
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
                                            .result = type::void_,
                                            .id = "connect_mime_type",
-                                           .args = {{.id = "mt", .type = type::String()}},
+                                           .args = {{"mt", type::String()}},
                                            .doc = R"(
 Connects parsing units to a sink for all parsers that support a given MIME
 type. All subsequent write operations to the sink will pass their data on to
@@ -79,7 +78,7 @@ BEGIN_METHOD(sink, ConnectMIMETypeBytes)
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
                                            .result = type::void_,
                                            .id = "connect_mime_type",
-                                           .args = {{.id = "mt", .type = type::constant(type::Bytes())}},
+                                           .args = {{"mt", type::constant(type::Bytes())}},
                                            .doc = R"(
 Connects parsing units to a sink for all parsers that support a given MIME
 type. All subsequent write operations to the sink will pass their data on to
@@ -94,9 +93,8 @@ BEGIN_METHOD(sink, ConnectFilter)
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
                                            .result = hilti::type::void_,
                                            .id = "connect_filter",
-                                           .args = {{.id = "filter",
-                                                     .type = hilti::type::StrongReference(
-                                                         spicy::type::Unit(type::Wildcard()))}},
+                                           .args = {{"filter", hilti::type::StrongReference(
+                                                                   spicy::type::Unit(type::Wildcard()))}},
                                            .doc = R"(
 Connects a filter unit to the sink that will transform its input transparently
 before forwarding it for parsing to other connected units.
@@ -117,8 +115,8 @@ BEGIN_METHOD(sink, Gap)
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
                                            .result = type::void_,
                                            .id = "gap",
-                                           .args = {{.id = "seq", .type = type::UnsignedInteger(64)},
-                                                    {.id = "len", .type = type::UnsignedInteger(64)}},
+                                           .args = {{"seq", type::UnsignedInteger(64)},
+                                                    {"len", type::UnsignedInteger(64)}},
                                            .doc = R"(
 Reports a gap in the input stream. *seq* is the sequence number of the first
 byte missing, *len* is the length of the gap.
@@ -144,7 +142,7 @@ BEGIN_METHOD(sink, SetAutoTrim)
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
                                            .result = type::void_,
                                            .id = "set_auto_trim",
-                                           .args = {{.id = "enable", .type = type::Bool()}},
+                                           .args = {{"enable", type::Bool()}},
                                            .doc = R"(
 Enables or disables auto-trimming. If enabled (which is the default) sink input
 data is trimmed automatically once in-order and processed. See ``trim()`` for
@@ -160,7 +158,7 @@ BEGIN_METHOD(sink, SetInitialSequenceNumber)
                                            .id = "set_initial_sequence_number",
                                            .args =
                                                {
-                                                   {.id = "seq", .type = type::UnsignedInteger(64)},
+                                                   {"seq", type::UnsignedInteger(64)},
                                                },
                                            .doc = R"(
 Sets the sink's initial sequence number. All sequence numbers given to other
@@ -177,9 +175,8 @@ BEGIN_METHOD(sink, SetPolicy)
                                            .id = "set_policy",
                                            .args =
                                                {
-                                                   {.id = "policy",
-                                                    .type =
-                                                        type::Enum(type::Wildcard())}, // TODO(robin): Specify full type
+                                                   {"policy",
+                                                    type::Enum(type::Wildcard())}, // TODO(robin): Specify full type
                                                },
                                            .doc = R"(
 Sets a sink's reassembly policy for ambiguous input. As long as data hasn't
@@ -198,7 +195,7 @@ BEGIN_METHOD(sink, Skip)
                                            .id = "skip",
                                            .args =
                                                {
-                                                   {.id = "seq", .type = type::UnsignedInteger(64)},
+                                                   {"seq", type::UnsignedInteger(64)},
                                                },
                                            .doc = R"(
 Skips ahead in the input stream. *seq* is the sequence number where to continue
@@ -218,7 +215,7 @@ BEGIN_METHOD(sink, Trim)
                                            .id = "trim",
                                            .args =
                                                {
-                                                   {.id = "seq", .type = type::UnsignedInteger(64)},
+                                                   {"seq", type::UnsignedInteger(64)},
                                                },
                                            .doc = R"(
 Deletes all data that's still buffered internally up to *seq*. If processing the
@@ -238,9 +235,9 @@ BEGIN_METHOD(sink, Write)
         return hilti::operator_::Signature{.self = spicy::type::Sink(),
                                            .result = type::void_,
                                            .id = "write",
-                                           .args = {{.id = "data", .type = type::Bytes()},
-                                                    {.id = "seq", .type = type::UnsignedInteger(64), .optional = true},
-                                                    {.id = "len", .type = type::UnsignedInteger(64), .optional = true}},
+                                           .args = {{"data", type::Bytes()},
+                                                    {"seq", type::UnsignedInteger(64), true},
+                                                    {"len", type::UnsignedInteger(64), true}},
                                            .doc = R"(
 Passes data on to all connected parsing units. Multiple *write* calls act like
 passing input in incrementally: The units will parse the pieces as if they were

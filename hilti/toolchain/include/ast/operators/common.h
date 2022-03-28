@@ -107,7 +107,7 @@ private:                                                                        
             return hilti::operator_::Signature{.result = result_,                                                      \
                                                .args =                                                                 \
                                                    {                                                                   \
-                                                       {.id = "op", .type = ty_op1},                                   \
+                                                       {"op", ty_op1},                                                 \
                                                    },                                                                  \
                                                .doc = doc_};                                                           \
         }                                                                                                              \
@@ -122,7 +122,7 @@ private:                                                                        
         return hilti::operator_::Signature{.result = result_,                                                          \
                                            .args =                                                                     \
                                                {                                                                       \
-                                                   {.id = "op", .type = ty_op1},                                       \
+                                                   {"op", ty_op1},                                                     \
                                                },                                                                      \
                                            .doc = doc_};                                                               \
     }                                                                                                                  \
@@ -135,7 +135,7 @@ private:                                                                        
     BEGIN_OPERATOR(ns, op)                                                                                             \
         auto signature() const {                                                                                       \
             return hilti::operator_::Signature{.result = result_,                                                      \
-                                               .args = {{.id = "op0", .type = ty_op1}, {.id = "op1", .type = ty_op2}}, \
+                                               .args = {{"op0", ty_op1}, {"op1", ty_op2}},                             \
                                                .doc = doc_};                                                           \
         }                                                                                                              \
     END_OPERATOR
@@ -147,7 +147,7 @@ private:                                                                        
     __BEGIN_OPERATOR_CUSTOM(ns, op, cls)                                                                               \
     auto signature() const {                                                                                           \
         return hilti::operator_::Signature{.result = result_,                                                          \
-                                           .args = {{.id = "op0", .type = ty_op1}, {.id = "op1", .type = ty_op2}},     \
+                                           .args = {{"op0", ty_op1}, {"op1", ty_op2}},                                 \
                                            .doc = doc_};                                                               \
     }                                                                                                                  \
     END_OPERATOR
@@ -160,7 +160,7 @@ private:                                                                        
     auto signature() const {                                                                                           \
         return hilti::operator_::Signature{.priority = operator_::Priority::Low,                                       \
                                            .result = result_,                                                          \
-                                           .args = {{.id = "op0", .type = ty_op1}, {.id = "op1", .type = ty_op2}},     \
+                                           .args = {{"op0", ty_op1}, {"op1", ty_op2}},                                 \
                                            .doc = doc_};                                                               \
     }                                                                                                                  \
     END_OPERATOR
@@ -173,7 +173,7 @@ private:                                                                        
     auto signature() const {                                                                                           \
         return hilti::operator_::Signature{.lhs = true,                                                                \
                                            .result = result_,                                                          \
-                                           .args = {{.id = "op0", .type = ty_op1}, {.id = "op1", .type = ty_op2}},     \
+                                           .args = {{"op0", ty_op1}, {"op1", ty_op2}},                                 \
                                            .doc = doc_};                                                               \
     }                                                                                                                  \
     END_OPERATOR
@@ -185,9 +185,7 @@ private:                                                                        
     BEGIN_OPERATOR(ns, op)                                                                                             \
         auto signature() const {                                                                                       \
             return hilti::operator_::Signature{.result = result_,                                                      \
-                                               .args = {{.id = "op0", .type = ty_op1},                                 \
-                                                        {.id = "op1", .type = ty_op2},                                 \
-                                                        {.id = "op2", .type = ty_op3}},                                \
+                                               .args = {{"op0", ty_op1}, {"op1", ty_op2}, {"op2", ty_op3}},            \
                                                .doc = doc_};                                                           \
         }                                                                                                              \
     END_OPERATOR
@@ -213,9 +211,9 @@ private:                                                                        
 /** Internal helper macro. */
 #define __END_METHOD                                                                                                   \
     std::vector<hilti::operator_::Operand> operands() const {                                                          \
-        return {{.type = signature().self},                                                                            \
-                {.type = hilti::type::Member(signature().id)},                                                         \
-                {.type = hilti::type::OperandList(signature().args)}};                                                 \
+        return {{{}, signature().self},                                                                                \
+                {{}, hilti::type::Member(signature().id)},                                                             \
+                {{}, hilti::type::OperandList(signature().args)}};                                                     \
     }                                                                                                                  \
                                                                                                                        \
     std::string doc() const { return signature().doc; }
@@ -253,7 +251,7 @@ private:                                                                        
 
 #define END_CTOR                                                                                                       \
     std::vector<hilti::operator_::Operand> operands() const {                                                          \
-        return {{.type = hilti::type::Type_(ctorType())}, {.type = hilti::type::OperandList(signature().args)}};       \
+        return {{{}, hilti::type::Type_(ctorType())}, {{}, hilti::type::OperandList(signature().args)}};               \
     }                                                                                                                  \
                                                                                                                        \
     std::string doc() const { return signature().doc; }                                                                \

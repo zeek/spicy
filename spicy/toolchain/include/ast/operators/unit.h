@@ -62,8 +62,8 @@ BEGIN_OPERATOR_CUSTOM(unit, Unset)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Unit(type::Wildcard()), .doc = "unit"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::Unit(type::Wildcard()), false, {}, "unit"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const hilti::expression::ResolvedOperator& i, hilti::operator_::position_t p) const {
@@ -89,8 +89,8 @@ BEGIN_OPERATOR_CUSTOM_x(unit, MemberNonConst, Member)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Unit(type::Wildcard()), .doc = "unit"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::Unit(type::Wildcard()), false, {}, "unit"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const hilti::expression::ResolvedOperator& i, hilti::operator_::position_t p) const {
@@ -121,8 +121,8 @@ BEGIN_OPERATOR_CUSTOM_x(unit, MemberConst, Member)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::constant(type::Unit(type::Wildcard())), .doc = "unit"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::constant(type::Unit(type::Wildcard())), false, {}, "unit"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const hilti::expression::ResolvedOperator& i, position_t p) const {
@@ -150,8 +150,8 @@ BEGIN_OPERATOR_CUSTOM(unit, TryMember)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Unit(type::Wildcard()), .doc = "unit"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::Unit(type::Wildcard()), false, {}, "unit"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const hilti::expression::ResolvedOperator& i, position_t p) const {
@@ -177,8 +177,8 @@ BEGIN_OPERATOR_CUSTOM(unit, HasMember)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::constant(type::Unit(type::Wildcard())), .doc = "unit"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::constant(type::Unit(type::Wildcard())), false, {}, "unit"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const hilti::expression::ResolvedOperator& i, position_t p) const {
@@ -201,9 +201,9 @@ public:
     struct Operator : public hilti::trait::isOperator {
         Operator(const type::Unit& stype, const type::unit::item::Field& f) : _field(f) {
             auto ftype = f.itemType().as<type::Function>();
-            auto op0 = Operand{.type = stype};
-            auto op1 = Operand{.type = type::Member(f.id())};
-            auto op2 = Operand{.type = type::OperandList::fromParameters(ftype.parameters())};
+            auto op0 = Operand{{}, stype};
+            auto op1 = Operand{{}, type::Member(f.id())};
+            auto op2 = Operand{{}, type::OperandList::fromParameters(ftype.parameters())};
             _operands = {op0, op1, op2};
             _result = ftype.result().type();
         };
@@ -289,8 +289,7 @@ BEGIN_METHOD(unit, SetInput)
         return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
                                            .result = hilti::type::void_,
                                            .id = "set_input",
-                                           .args = {{.id = "i",
-                                                     .type = type::constant(hilti::type::stream::Iterator())}},
+                                           .args = {{"i", type::constant(hilti::type::stream::Iterator())}},
                                            .doc = R"(
 Moves the current parsing position to *i*. The iterator *i* must be into the
 input of the current unit, or the method will throw a runtime exception.
@@ -305,13 +304,9 @@ BEGIN_METHOD(unit, Find)
                                            .id = "find",
                                            .args =
                                                {
-                                                   {.id = "needle", .type = type::constant(hilti::type::Bytes())},
-                                                   {.id = "dir",
-                                                    .type = type::constant(hilti::type::Enum(type::Wildcard())),
-                                                    .optional = true},
-                                                   {.id = "start",
-                                                    .type = type::constant(hilti::type::stream::Iterator()),
-                                                    .optional = true},
+                                                   {"needle", type::constant(hilti::type::Bytes())},
+                                                   {"dir", type::constant(hilti::type::Enum(type::Wildcard())), true},
+                                                   {"start", type::constant(hilti::type::stream::Iterator()), true},
 
                                                },
                                            .doc = R"(
@@ -332,9 +327,8 @@ BEGIN_METHOD(unit, ConnectFilter)
         return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
                                            .result = hilti::type::void_,
                                            .id = "connect_filter",
-                                           .args = {{.id = "filter",
-                                                     .type = hilti::type::StrongReference(
-                                                         spicy::type::Unit(type::Wildcard()))}},
+                                           .args = {{"filter", hilti::type::StrongReference(
+                                                                   spicy::type::Unit(type::Wildcard()))}},
                                            .doc = R"(
 Connects a separate filter unit to transform the unit's input transparently
 before parsing. The filter unit will see the original input, and this unit will
@@ -351,7 +345,7 @@ BEGIN_METHOD(unit, Forward)
         return hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
                                            .result = hilti::type::void_,
                                            .id = "forward",
-                                           .args = {{.id = "data", .type = hilti::type::Bytes()}},
+                                           .args = {{"data", hilti::type::Bytes()}},
                                            .doc = R"(
 If the unit is connected as a filter to another one, this method forwards
 transformed input over to that other one to parse. If the unit is not connected,
