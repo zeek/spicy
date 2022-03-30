@@ -195,6 +195,7 @@ TEST_CASE("Map") {
     CHECK_EQ(to_string(Map<int, int>()), "{}");
     CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}})), "{1: b\"abc\"}");
     CHECK_EQ(to_string(Map<int, Bytes>({{1, "abc"_b}, {2, "def"_b}})), "{1: b\"abc\", 2: b\"def\"}");
+    CHECK_EQ(to_string(*Map<uint32_t, uint32_t>({{1, 11}, {2, 22}, {3, 33}}).begin()), "[1, 11]");
 }
 
 TEST_CASE("null") {
