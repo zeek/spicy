@@ -35,6 +35,7 @@ global int<64> i1;
 global bytes b1;
 
 for ( x in m1 ) {
+    hilti::print(x);
     i1 += x[0];
     b1 += x[1];
 }

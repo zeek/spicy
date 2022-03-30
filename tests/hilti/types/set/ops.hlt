@@ -33,8 +33,10 @@ assert |s2| == 1;
 
 global int<64> x1;
 
-for ( i in s1 )
+for ( i in s1 ) {
+    hilti::print(x1);
     x1 += i;
+}
 
 assert x1 == 6;
 

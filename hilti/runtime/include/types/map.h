@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -349,6 +350,13 @@ inline std::string to_string(const Map<K, V>& x, adl::tag /*unused*/) {
     return fmt("{%s}", rt::join(r, ", "));
 }
 
+template<typename K, typename V>
+inline std::string to_string(const std::pair<const K, V>& x, adl::tag /*unused*/) {
+    // Overloading for `Map::value_type` leads to ambiguities so we overload the desugared type `std::pair`.
+    static_assert(std::is_same_v<typename Map<K, V>::value_type, std::pair<const K, V>>);
+    return fmt("(%s, %s)", hilti::rt::to_string(x.first), hilti::rt::to_string(x.second));
+}
+
 inline std::string to_string(const map::Empty& x, adl::tag /*unused*/) { return "{}"; }
 
 template<typename K, typename V>
@@ -365,6 +373,13 @@ inline std::string to_string(const map::ConstIterator<K, V>& /*unused*/, adl::ta
 
 template<typename K, typename V>
 inline std::ostream& operator<<(std::ostream& out, const Map<K, V>& x) {
+    return out << to_string(x);
+}
+
+template<typename K, typename V>
+inline std::ostream& operator<<(std::ostream& out, const std::pair<K, V>& x) {
+    // Overloading for `Map::value_type` leads to ambiguities so we overload the desugared type `std::pair`.
+    static_assert(std::is_same_v<typename Map<K, V>::value_type, std::pair<const K, V>>);
     return out << to_string(x);
 }
 

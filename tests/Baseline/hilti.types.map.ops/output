@@ -2,4 +2,7 @@
 {1: b"AAA", 2: b"BBB", 3: b"CCC"}
 {}
 BBB
+(1, b"AAA")
+(2, b"XXX")
+(3, b"CCC")
 <map iterator>

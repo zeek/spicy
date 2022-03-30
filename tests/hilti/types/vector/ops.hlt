@@ -76,4 +76,9 @@ assert c + b == [1,0,3,0,0,42,0,1];
 c += b;
 assert c == [1,0,3,0,0,42,0,1];
 
+for ( x in c ) {
+    hilti::print(x);
+    break;
+}
+
 }
