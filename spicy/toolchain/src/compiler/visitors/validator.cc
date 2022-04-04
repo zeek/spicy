@@ -302,6 +302,13 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             }
         }
 
+        else if ( const auto& prop = i.id().str(); prop == "%synchronize-at" || prop == "%synchronize-after" ) {
+            if ( auto e = i.expression(); ! e ) {
+                error(fmt("%s requires an argument", prop), p);
+                return;
+            }
+        }
+
         else
             error(fmt("unknown property '%s'", i.id().str()), p);
     }
@@ -391,6 +398,13 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 error(fmt("%byte-order expression must be of spicy::ByteOrder, but is of type %s ",
                           i.expression()->type()),
                       p);
+        }
+
+        else if ( const auto& prop = i.id().str(); prop == "%synchronize-at" || prop == "%synchronize-after" ) {
+            if ( ! i.expression() ) {
+                error(fmt("%s requires an argument", prop), p);
+                return;
+            }
         }
 
         else
@@ -585,6 +599,9 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                     error(fmt("field name '%s' cannot have name identical to owning unit '%s'", field->id(), *typeId),
                           p);
         }
+
+        if ( u.propertyItem("%synchronize-at") && u.propertyItem("%synchronize-after") )
+            error("unit cannot specify both %synchronize-at and %synchronize-after", p);
     }
 
     void operator()(const hilti::operator_::value_reference::Equal& o, position_t p) {
