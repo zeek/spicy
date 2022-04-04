@@ -63,7 +63,7 @@ repos:
   - id: cmake-lint
 
 - repo: https://github.com/crate-ci/typos
-  rev: typos-v0.8.6
+  rev: v1.5.0
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*'
