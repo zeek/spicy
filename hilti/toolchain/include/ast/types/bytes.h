@@ -7,8 +7,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/integer.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 namespace bytes {
 
@@ -39,7 +38,7 @@ public:
 /** AST node for a bytes type. */
 class Bytes : public TypeBase, trait::isAllocable, trait::isMutable, trait::isIterable, trait::isRuntimeNonTrivial {
 public:
-    Bytes(Meta m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8)), Type(bytes::Iterator(m))), m) {}
+    Bytes(const Meta& m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8)), Type(bytes::Iterator(m))), m) {}
 
     bool operator==(const Bytes& /* other */) const { return true; }
 
@@ -56,6 +55,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace type
-
-} // namespace hilti
+} // namespace hilti::type

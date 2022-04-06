@@ -59,7 +59,7 @@ public:
         return *this;
     };
 
-    const Iterator operator++(int) {
+    Iterator operator++(int) {
         auto ret = *this;
         ++(*this); // Ensures the iterator is valid.
         return ret;

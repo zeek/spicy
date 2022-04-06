@@ -7,8 +7,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/library.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for a "move" expression. */
 class TypeInfo : public NodeBase, public trait::isExpression {
@@ -35,5 +34,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

@@ -9,8 +9,7 @@
 #include <hilti/ast/statement.h>
 #include <hilti/base/logger.h>
 
-namespace hilti {
-namespace statement {
+namespace hilti::statement {
 
 /** AST node for a "while" statement. */
 class While : public NodeBase, public hilti::trait::isStatement {
@@ -36,8 +35,8 @@ public:
     const auto& body() const { return child<hilti::Statement>(2); }
     auto else_() const { return children()[3].tryAs<Statement>(); }
 
-    void setCondition(hilti::Expression c) { children()[1] = std::move(c); }
-    void setInit(hilti::Expression c) { children()[0] = std::move(c); }
+    void setCondition(const hilti::Expression& c) { children()[1] = c; }
+    void setInit(const hilti::Expression& c) { children()[0] = c; }
 
     bool operator==(const While& other) const {
         return init() == other.init() && condition() == other.condition() && body() == other.body() &&
@@ -57,5 +56,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace statement
-} // namespace hilti
+} // namespace hilti::statement

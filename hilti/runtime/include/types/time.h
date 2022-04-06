@@ -42,8 +42,8 @@ public:
         : _nsecs([&]() {
               auto x = secs * 1'000'000'000;
 
-              constexpr auto limits = std::numeric_limits<uint64_t>();
-              if ( x < static_cast<double>(limits.min()) || static_cast<double>(limits.max()) < x )
+              using limits = std::numeric_limits<uint64_t>;
+              if ( x < static_cast<double>(limits::min()) || static_cast<double>(limits::max()) < x )
                   throw OutOfRange("value cannot be represented as a time");
 
               return integer::safe<uint64_t>(x);
@@ -57,7 +57,7 @@ public:
     Time& operator=(Time&&) noexcept = default;
 
     /** Returns a UNIX timestamp. */
-    double seconds() const { return _nsecs.Ref() / 1e9; }
+    double seconds() const { return static_cast<double>(_nsecs.Ref()) / 1e9; }
 
     /** Returns nanoseconds since epoch. */
     uint64_t nanoseconds() const { return _nsecs; }

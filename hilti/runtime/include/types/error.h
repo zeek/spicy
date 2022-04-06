@@ -8,9 +8,7 @@
 #include <hilti/rt/result.h>
 #include <hilti/rt/util.h>
 
-namespace hilti::rt {
-
-namespace detail::adl {
+namespace hilti::rt::detail::adl {
 inline std::string to_string(const result::Error& x, adl::tag /*unused*/) {
     if ( ! x.description().empty() )
         return fmt("<error: %s>", x.description());
@@ -18,6 +16,4 @@ inline std::string to_string(const result::Error& x, adl::tag /*unused*/) {
     return "<error>";
 }
 
-} // namespace detail::adl
-
-} // namespace hilti::rt
+} // namespace hilti::rt::detail::adl

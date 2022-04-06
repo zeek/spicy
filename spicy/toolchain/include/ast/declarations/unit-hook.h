@@ -11,13 +11,12 @@
 
 #include <spicy/ast/hook.h>
 
-namespace spicy {
-namespace declaration {
+namespace spicy::declaration {
 
 /** AST node for a declaration of an external (i.e., module-level) unit hook. */
 class UnitHook : public hilti::DeclarationBase {
 public:
-    UnitHook(ID id, const Hook& hook, Meta m = Meta()) : DeclarationBase(hilti::nodes(id, hook), std::move(m)) {
+    UnitHook(const ID& id, const Hook& hook, Meta m = Meta()) : DeclarationBase(hilti::nodes(id, hook), std::move(m)) {
         children()[1].as<Hook>().setID(id);
     }
 
@@ -40,5 +39,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace declaration
-} // namespace spicy
+} // namespace spicy::declaration

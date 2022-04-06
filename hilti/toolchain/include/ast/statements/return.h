@@ -7,8 +7,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
-namespace hilti {
-namespace statement {
+namespace hilti::statement {
 
 /** AST node for a "return" statement. */
 class Return : public NodeBase, public hilti::trait::isStatement {
@@ -18,7 +17,7 @@ public:
 
     auto expression() const { return children()[0].tryAs<hilti::Expression>(); }
 
-    void setExpression(hilti::Expression c) { children()[0] = std::move(c); }
+    void setExpression(const hilti::Expression& c) { children()[0] = c; }
 
     bool operator==(const Return& other) const { return expression() == other.expression(); }
 
@@ -29,5 +28,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace statement
-} // namespace hilti
+} // namespace hilti::statement

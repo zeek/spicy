@@ -12,8 +12,7 @@
 #include <hilti/ast/types/unknown.h>
 #include <hilti/base/util.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 namespace keyword {
 // Type of a reserved keyword
@@ -81,5 +80,4 @@ inline std::ostream& operator<<(std::ostream& stream, const Keyword& keyword) {
     return stream;
 }
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

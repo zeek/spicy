@@ -9,15 +9,14 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/time.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a time constructor. */
 class Time : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Time;
 
-    Time(const Value& time, Meta m = Meta()) : NodeBase(nodes(type::Time(m)), m), _time(time) {}
+    Time(Value time, const Meta& m = Meta()) : NodeBase(nodes(type::Time(m)), m), _time(std::move(time)) {}
 
     const auto& value() const { return _time; }
 
@@ -40,5 +39,4 @@ private:
     Value _time;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

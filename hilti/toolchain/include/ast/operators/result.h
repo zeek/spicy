@@ -5,8 +5,7 @@
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/result.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_1(result, Deref, operator_::dereferencedType(0), type::constant(type::Result(type::Wildcard())),
                     "Retrieves value stored inside the result instance. Will throw a ``NoResult`` exception if the "
@@ -24,5 +23,4 @@ BEGIN_METHOD(result, Error)
     }
 END_METHOD
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

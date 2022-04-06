@@ -8,8 +8,7 @@
 #include <hilti/ast/types/interval.h>
 #include <hilti/ast/types/real.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_2(interval, Equal, type::Bool(), type::Interval(), type::Interval(), "Compares two interval values.")
 STANDARD_OPERATOR_2(interval, Unequal, type::Bool(), type::Interval(), type::Interval(),
@@ -48,5 +47,4 @@ Returns the interval as an integer value representing nanoseconds.
     }
 END_METHOD
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

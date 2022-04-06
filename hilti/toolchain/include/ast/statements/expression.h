@@ -7,8 +7,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
-namespace hilti {
-namespace statement {
+namespace hilti::statement {
 
 /** AST node for an expression statement. */
 class Expression : public NodeBase, public hilti::trait::isStatement {
@@ -26,5 +25,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace statement
-} // namespace hilti
+} // namespace hilti::statement

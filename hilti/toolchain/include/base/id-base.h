@@ -41,7 +41,7 @@ public:
 
     /** Concatenates multiple strings into a single ID, separating them with `::`. */
     IDBase(std::initializer_list<std::string> x)
-        : _id(util::join(util::transform(std::vector(std::move(x)), [](auto i) { return N(i); }), "::")) {}
+        : _id(util::join(util::transform(std::vector(x), [](auto i) { return N(i); }), "::")) {}
 
     /** Returns the ID's full name as a string. */
     const auto& str() const { return _id; }

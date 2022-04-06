@@ -39,7 +39,7 @@ public:
     bool atomic() const { return true; }
     std::optional<spicy::Type> type() const { return {}; }
 
-public:
+
     std::shared_ptr<std::string> _symbol;
     std::string _rsymbol;
 

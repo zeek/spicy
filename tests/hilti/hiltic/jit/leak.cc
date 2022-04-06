@@ -5,7 +5,7 @@
 //
 // If we have compiled with address/leak sanitizer, make sure it's active.
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <hilti/rt/libhilti.h>
 

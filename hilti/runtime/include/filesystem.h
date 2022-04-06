@@ -5,5 +5,5 @@
 #include <hilti/rt/3rdparty/ghc/filesystem.hpp>
 
 namespace hilti::rt {
-namespace filesystem = ::ghc::filesystem;
+namespace filesystem = ::ghc::filesystem; // NOLINT(misc-unused-alias-decls)
 } // namespace hilti::rt

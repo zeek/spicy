@@ -15,8 +15,7 @@
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 namespace enum_ {
 /** AST node for an enum label. */
@@ -106,5 +105,4 @@ private:
     bool _initialized = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

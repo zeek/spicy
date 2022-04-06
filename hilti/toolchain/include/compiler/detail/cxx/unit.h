@@ -28,10 +28,7 @@
 #include <hilti/compiler/detail/cxx/elements.h>
 #include <hilti/compiler/detail/cxx/formatter.h>
 
-namespace hilti {
-namespace detail {
-
-namespace cxx {
+namespace hilti::detail::cxx {
 
 class Linker;
 
@@ -148,6 +145,4 @@ private:
     cxx::Block _init_globals;
 };
 
-} // namespace cxx
-} // namespace detail
-} // namespace hilti
+} // namespace hilti::detail::cxx

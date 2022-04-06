@@ -31,7 +31,7 @@ public:
     bool atomic() const { return false; }
     std::string render() const { return _child.symbol(); }
 
-public:
+
     Production _child;
 };
 

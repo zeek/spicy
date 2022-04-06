@@ -329,7 +329,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         auto t = addTypeID(u.type(), u.canonicalID(), u.attributes());
         HILTI_DEBUG(logging::debug::Resolver,
                     util::fmt("[%s] setting type ID to %s (%s)", p.node.typename_(), *t.typeID(), p.node.location()));
-        p.node.as<declaration::Type>().setType(std::move(t));
+        p.node.as<declaration::Type>().setType(t);
         modified = true;
     }
 

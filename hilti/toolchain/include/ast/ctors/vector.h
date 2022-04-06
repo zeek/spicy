@@ -12,26 +12,26 @@
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/vector.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a vector constructor. */
 class Vector : public NodeBase, public hilti::trait::isCtor {
 public:
-    Vector(std::vector<Expression> e, Meta m = Meta())
-        : NodeBase(nodes(type::Vector(e.size() ? Type(type::auto_) : Type(type::Bool())), e), m) {
+    Vector(const std::vector<Expression>& e, Meta m = Meta())
+        : NodeBase(nodes(type::Vector(e.size() ? Type(type::auto_) : Type(type::Bool())), e), std::move(m)) {
     } // Bool is just an arbitrary place-holder type for empty values
-    Vector(Type t, std::vector<Expression> e, Meta m = Meta()) : NodeBase(nodes(type::Vector(t, m), std::move(e)), m) {}
+    Vector(const Type& t, std::vector<Expression> e, const Meta& m = Meta())
+        : NodeBase(nodes(type::Vector(t, m), std::move(e)), m) {}
 
     const auto& elementType() const { return children()[0].as<type::Vector>().elementType(); }
     auto value() const { return children<Expression>(1, -1); }
 
-    void setElementType(Type t) { children()[0] = type::Vector(std::move(t), meta()); }
+    void setElementType(const Type& t) { children()[0] = type::Vector(t, meta()); }
 
-    void setValue(std::vector<Expression> elems) {
+    void setValue(const std::vector<Expression>& elems) {
         children().erase(children().begin() + 1, children().end());
         for ( auto&& e : elems )
-            children().push_back(e);
+            children().emplace_back(e);
     }
 
     bool operator==(const Vector& other) const {
@@ -52,5 +52,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

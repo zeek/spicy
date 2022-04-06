@@ -9,8 +9,7 @@
 #include <hilti/ast/operator.h>
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /**
  * AST node for a type representing a list of function/method operands. This
@@ -53,5 +52,4 @@ private:
     std::vector<operator_::Operand> _operands;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

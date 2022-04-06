@@ -417,7 +417,7 @@ public:
     }
 
     /** Advances the iterator by one byte. */
-    const auto operator++(int) {
+    auto operator++(int) {
         auto x = *this;
         _increment(1);
         return x;
@@ -436,7 +436,7 @@ public:
     }
 
     /** Moves back the iterator by one byte. */
-    const auto operator--(int) {
+    auto operator--(int) {
         auto x = *this;
         _decrement(1);
         return x;
@@ -727,7 +727,7 @@ public:
     }
 
     /** Advances the iterator by one byte. */
-    const auto operator++(int) {
+    auto operator++(int) {
         auto x = *this;
         _increment(1);
         return x;
@@ -740,7 +740,7 @@ public:
     }
 
     /** Moves back the iterator by one byte. */
-    const auto operator--(int) {
+    auto operator--(int) {
         auto x = *this;
         _decrement(1);
         return x;

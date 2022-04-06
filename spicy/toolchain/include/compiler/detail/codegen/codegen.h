@@ -29,7 +29,7 @@ namespace spicy::detail {
  */
 class CodeGen {
 public:
-    CodeGen(std::shared_ptr<hilti::Context> context) : _context(std::move(context)), _gb(this), _pb(this) {}
+    CodeGen(const std::shared_ptr<hilti::Context>& context) : _context(context), _gb(this), _pb(this) {}
 
     /** Entry point for transformation from a Spicy AST to a HILTI AST. */
     bool compileModule(hilti::Node* root, hilti::Unit* u);

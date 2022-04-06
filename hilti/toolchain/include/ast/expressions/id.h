@@ -12,13 +12,12 @@
 #include <hilti/ast/types/auto.h>
 #include <hilti/base/logger.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for a expression representing a resolved ID. */
 class ResolvedID : public NodeBase, hilti::trait::isExpression {
 public:
-    ResolvedID(ID id, NodeRef d, Meta m = Meta()) : NodeBase(nodes(std::move(id)), m), _d(std::move(d)) {}
+    ResolvedID(ID id, NodeRef d, Meta m = Meta()) : NodeBase(nodes(std::move(id)), std::move(m)), _d(std::move(d)) {}
 
     const auto& id() const { return child<ID>(0); }
     const auto& declaration() const { return _d->as<Declaration>(); }
@@ -66,5 +65,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

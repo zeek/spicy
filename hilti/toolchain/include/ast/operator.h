@@ -22,12 +22,9 @@ namespace hilti {
 namespace visitor {}
 
 namespace expression {
-namespace resolved_operator {
-
-namespace detail {
+namespace resolved_operator::detail {
 class ResolvedOperator;
-} // namespace detail
-} // namespace resolved_operator
+} // namespace resolved_operator::detail
 
 using ResolvedOperator = resolved_operator::detail::ResolvedOperator;
 

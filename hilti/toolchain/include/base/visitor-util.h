@@ -10,8 +10,7 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 
-namespace hilti {
-namespace visitor {
+namespace hilti::visitor {
 
 /**
  * Represents a path inside an AST from the root node to a node reached
@@ -86,5 +85,4 @@ std::optional<const T> findParent(const Path<const Node>& path) {
 }
 
 
-} // namespace visitor
-} // namespace hilti
+} // namespace hilti::visitor

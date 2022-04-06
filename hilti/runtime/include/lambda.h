@@ -79,7 +79,7 @@ class Lambda {};
 template<typename Out, typename... In>
 class Lambda<Out(In...)> : public LambdaExecutor<Out(In...)> {
 public:
-    Lambda() : LambdaExecutor<Out(In...)>(lambda), lambda(nullptr), deleteLambda(nullptr), copyLambda(nullptr) {}
+    Lambda() : LambdaExecutor<Out(In...)>(lambda) {}
 
     Lambda(Lambda<Out(In...)> const& other)
         : LambdaExecutor<Out(In...)>(lambda),
@@ -90,7 +90,7 @@ public:
     }
 
     template<typename T>
-    Lambda(T const& lambda) : LambdaExecutor<Out(In...)>(this->lambda), lambda(nullptr) {
+    Lambda(T const& lambda) : LambdaExecutor<Out(In...)>(this->lambda) {
         // Copy should set all variables
         copy_(lambda);
     }
@@ -103,6 +103,9 @@ public:
     } // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
 
     Lambda<Out(In...)>& operator=(Lambda<Out(In...)> const& other) {
+        if ( &other == this )
+            return *this;
+
         this->lambda = other.copyLambda ? other.copyLambda(other.lambda) : nullptr;
         this->receiveExecutor(other);
         this->deleteLambda = other.deleteLambda;
@@ -132,9 +135,9 @@ private:
         copyLambda = [](void* lambda) -> void* { return lambda ? new T(*(T*)lambda) : nullptr; };
     }
 
-    void* lambda;
-    void (*deleteLambda)(void*);
-    void* (*copyLambda)(void*);
+    void* lambda{nullptr};
+    void (*deleteLambda)(void*){nullptr};
+    void* (*copyLambda)(void*){nullptr};
 };
 
 // namespace lambda

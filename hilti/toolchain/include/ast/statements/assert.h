@@ -7,8 +7,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
-namespace hilti {
-namespace statement {
+namespace hilti::statement {
 
 namespace assert {
 /**
@@ -50,7 +49,7 @@ public:
     auto exception() const { return children()[1].tryAs<Type>(); }
     auto message() const { return children()[2].tryAs<::hilti::Expression>(); }
 
-    void setCondition(hilti::Expression c) { children()[0] = std::move(c); }
+    void setCondition(const hilti::Expression& c) { children()[0] = c; }
 
     bool operator==(const Assert& other) const {
         return _expects_exception == other._expects_exception && expression() == other.expression() &&
@@ -67,5 +66,4 @@ private:
     bool _expects_exception = false;
 };
 
-} // namespace statement
-} // namespace hilti
+} // namespace hilti::statement

@@ -6,8 +6,7 @@
 
 #include <hilti/ast/expression.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for an assign expression. */
 class Assign : public NodeBase, public trait::isExpression {
@@ -18,8 +17,8 @@ public:
     const auto& source() const { return child<Expression>(1); }
     const auto& target() const { return child<Expression>(0); }
 
-    void setSource(hilti::Expression c) { children()[1] = std::move(c); }
-    void setTarget(hilti::Expression c) { children()[0] = std::move(c); }
+    void setSource(const hilti::Expression& c) { children()[1] = c; }
+    void setTarget(const hilti::Expression& c) { children()[0] = c; }
 
     bool operator==(const Assign& other) const { return target() == other.target() && source() == other.source(); }
 
@@ -38,5 +37,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

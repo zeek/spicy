@@ -8,9 +8,7 @@
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/types/enum.h>
 
-namespace hilti {
-
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for an enum constructor. */
 class Enum : public NodeBase, public hilti::trait::isCtor {
@@ -36,5 +34,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

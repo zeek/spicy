@@ -109,30 +109,28 @@ inline Expression struct_(std::vector<ctor::struct_::Field> f, Type t, const Met
     return expression::Ctor(ctor::Struct(std::move(f), std::move(t), m), m);
 }
 
-inline Expression tuple(std::vector<Expression> v, const Meta& m = Meta()) {
-    return expression::Ctor(ctor::Tuple(std::move(v), m), m);
+inline Expression tuple(const std::vector<Expression>& v, const Meta& m = Meta()) {
+    return expression::Ctor(ctor::Tuple(v, m), m);
 }
 
 inline Expression vector(const std::vector<Expression>& v, const Meta& m = Meta()) {
     return expression::Ctor(ctor::Vector(v, m), m);
 }
 
-inline Expression vector(Type t, std::vector<Expression> v, const Meta& m = Meta()) {
-    return expression::Ctor(ctor::Vector(std::move(t), std::move(v), m), m);
+inline Expression vector(const Type& t, std::vector<Expression> v, const Meta& m = Meta()) {
+    return expression::Ctor(ctor::Vector(t, std::move(v), m), m);
 }
 
-inline Expression vector(Type t, const Meta& m = Meta()) {
-    return expression::Ctor(ctor::Vector(std::move(t), {}, m), m);
-}
+inline Expression vector(const Type& t, const Meta& m = Meta()) { return expression::Ctor(ctor::Vector(t, {}, m), m); }
 
 inline Expression void_(const Meta& m = Meta()) { return expression::Void(m); }
 
-inline Expression strong_reference(Type t, const Meta& m = Meta()) {
-    return expression::Ctor(ctor::StrongReference(std::move(t), m), m);
+inline Expression strong_reference(const Type& t, const Meta& m = Meta()) {
+    return expression::Ctor(ctor::StrongReference(t, m), m);
 }
 
-inline Expression weak_reference(Type t, const Meta& m = Meta()) {
-    return expression::Ctor(ctor::WeakReference(std::move(t), m), m);
+inline Expression weak_reference(const Type& t, const Meta& m = Meta()) {
+    return expression::Ctor(ctor::WeakReference(t, m), m);
 }
 
 inline Expression value_reference(Expression e, const Meta& m = Meta()) {
@@ -171,8 +169,8 @@ inline Expression end(Expression e, const Meta& m = Meta()) {
     return expression::UnresolvedOperator(operator_::Kind::End, {std::move(e)}, m);
 }
 
-inline Expression call(ID id_, std::vector<Expression> v, const Meta& m = Meta()) {
-    return expression::UnresolvedOperator(operator_::Kind::Call, {id(std::move(id_), m), tuple(std::move(v), m)}, m);
+inline Expression call(ID id_, const std::vector<Expression>& v, const Meta& m = Meta()) {
+    return expression::UnresolvedOperator(operator_::Kind::Call, {id(std::move(id_), m), tuple(v, m)}, m);
 }
 
 inline Expression index(Expression value, unsigned int index, const Meta& m = Meta()) {
@@ -226,10 +224,10 @@ inline Expression tryMember(Expression self, std::string id_, const Meta& m = Me
                                           {std::move(self), expression::Member(ID(std::move(id_)), m)}, m);
 }
 
-inline Expression memberCall(Expression self, std::string id_, std::vector<Expression> args, const Meta& m = Meta()) {
+inline Expression memberCall(Expression self, std::string id_, const std::vector<Expression>& args,
+                             const Meta& m = Meta()) {
     return expression::UnresolvedOperator(operator_::Kind::MemberCall,
-                                          {std::move(self), expression::Member(ID(std::move(id_)), m),
-                                           tuple(std::move(args), m)},
+                                          {std::move(self), expression::Member(ID(std::move(id_)), m), tuple(args, m)},
                                           m);
 }
 
@@ -240,9 +238,9 @@ inline Expression memberCall(Expression self, std::string id_, ctor::Tuple args,
                                           m);
 }
 
-inline Expression unpack(Type type, std::vector<Expression> args, const Meta& m = Meta()) {
+inline Expression unpack(Type type, const std::vector<Expression>& args, const Meta& m = Meta()) {
     return expression::UnresolvedOperator(operator_::Kind::Unpack,
-                                          {hilti::expression::Type_(std::move(type), m), tuple(std::move(args), m)}, m);
+                                          {hilti::expression::Type_(std::move(type), m), tuple(args, m)}, m);
 }
 
 inline Expression unset(Expression self, ID field, const Meta& m = Meta()) {
@@ -291,11 +289,10 @@ inline Expression new_(Type t, const Meta& m = Meta()) {
                                           m);
 }
 
-inline Expression new_(Type t, std::vector<Expression> args, const Meta& m = Meta()) {
+inline Expression new_(Type t, const std::vector<Expression>& args, const Meta& m = Meta()) {
     return expression::UnresolvedOperator(operator_::Kind::New,
                                           std::vector<Expression>{expression::Type_(std::move(t), m),
-                                                                  hilti::expression::Ctor(
-                                                                      hilti::ctor::Tuple(std::move(args), m))},
+                                                                  hilti::expression::Ctor(hilti::ctor::Tuple(args, m))},
                                           m);
 }
 
@@ -311,7 +308,7 @@ inline Expression grouping(Expression e, Meta m = Meta()) { return expression::G
 
 inline Expression move(Expression e, Meta m = Meta()) { return expression::Move(std::move(e), std::move(m)); }
 
-inline Expression typeinfo(Type t, Meta m = Meta()) {
+inline Expression typeinfo(Type t, const Meta& m = Meta()) {
     return expression::TypeInfo(expression::Type_(std::move(t), m), m);
 }
 
@@ -321,7 +318,7 @@ inline Expression assign(Expression target, Expression src, Meta m = Meta()) {
     return expression::Assign(std::move(target), std::move(src), std::move(m));
 }
 
-inline Expression not_(Expression e, Meta m = Meta()) { return expression::LogicalNot(std::move(e), std::move(m)); }
+inline Expression not_(Expression e, const Meta& m = Meta()) { return expression::LogicalNot(std::move(e), m); }
 
 inline Expression ternary(Expression cond, Expression true_, Expression false_, Meta m = Meta()) {
     return expression::Ternary(std::move(cond), std::move(true_), std::move(false_), std::move(m));

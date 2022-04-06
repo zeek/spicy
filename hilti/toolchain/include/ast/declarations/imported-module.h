@@ -48,7 +48,7 @@ public:
           _scope(std::move(search_scope)),
           _dirs(std::move(search_dirs)) {}
 
-    ImportedModule(ID id, hilti::rt::filesystem::path path, Meta m = Meta())
+    ImportedModule(ID id, const hilti::rt::filesystem::path& path, Meta m = Meta())
         : DeclarationBase({std::move(id)}, std::move(m)), _parse_extension(path.extension()), _path(path) {}
 
     hilti::rt::filesystem::path parseExtension() const { return _parse_extension; }
@@ -59,7 +59,7 @@ public:
     const auto& searchDirectories() const { return _dirs; }
 
     /** Sets both extensions to the same value. */
-    void setUnit(std::shared_ptr<Unit> unit) { _unit = std::move(unit); }
+    void setUnit(const std::shared_ptr<Unit>& unit) { _unit = unit; }
 
     bool operator==(const ImportedModule& other) const { return id() == other.id(); }
 

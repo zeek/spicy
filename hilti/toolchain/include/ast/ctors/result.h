@@ -12,13 +12,12 @@
 #include <hilti/ast/types/error.h>
 #include <hilti/ast/types/result.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a constructor for a result value. */
 class Result : public NodeBase, public hilti::trait::isCtor {
 public:
-    Result(Expression v, Meta m = Meta()) : NodeBase(nodes(type::Result(type::auto_), std::move(v)), m) {}
+    Result(Expression v, Meta m = Meta()) : NodeBase(nodes(type::Result(type::auto_), std::move(v)), std::move(m)) {}
 
     hilti::optional_ref<const Expression> value() const {
         const auto& e = child<Expression>(1);
@@ -67,5 +66,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

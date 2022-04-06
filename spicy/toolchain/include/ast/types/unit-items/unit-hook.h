@@ -13,7 +13,7 @@ namespace spicy::type::unit::item {
 /** AST node for a unit hook. */
 class UnitHook : public hilti::NodeBase, public spicy::trait::isUnitItem {
 public:
-    UnitHook(ID id, Hook hook, Meta m = Meta()) : NodeBase(nodes(id, std::move(hook)), std::move(m)) {
+    UnitHook(const ID& id, Hook hook, Meta m = Meta()) : NodeBase(nodes(id, std::move(hook)), std::move(m)) {
         children()[1].as<Hook>().setID(id);
     }
 

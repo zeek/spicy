@@ -13,8 +13,7 @@
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/map.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 namespace map {
 /** AST node for a map element constructor. */
@@ -39,9 +38,9 @@ inline Node to_node(Element f) { return Node(std::move(f)); }
 class Map : public NodeBase, public hilti::trait::isCtor {
 public:
     Map(const std::vector<map::Element>& e, const Meta& m = Meta())
-        : NodeBase(nodes(e.size() ? Type(type::auto_) : Type(type::Bool()), std::move(e)), m) {}
-    Map(Type key, Type value, const std::vector<map::Element>& e, Meta m = Meta())
-        : NodeBase(nodes(type::Map(key, value, m), std::move(e)), m) {}
+        : NodeBase(nodes(e.size() ? Type(type::auto_) : Type(type::Bool()), e), m) {}
+    Map(const Type& key, const Type& value, const std::vector<map::Element>& e, const Meta& m = Meta())
+        : NodeBase(nodes(type::Map(key, value, m), e), m) {}
 
     const auto& keyType() const {
         if ( auto t = children()[0].tryAs<type::Map>() )
@@ -59,12 +58,12 @@ public:
 
     auto value() const { return children<const map::Element>(1, -1); }
 
-    void setElementType(Type k, Type v) { children()[0] = type::Map(std::move(k), std::move(v), meta()); }
+    void setElementType(const Type& k, const Type& v) { children()[0] = type::Map(k, v, meta()); }
 
-    void setValue(std::vector<map::Element> elems) {
+    void setValue(const std::vector<map::Element>& elems) {
         children().erase(children().begin() + 1, children().end());
         for ( auto&& e : elems )
-            children().push_back(e);
+            children().emplace_back(e);
     }
 
     bool operator==(const Map& other) const {
@@ -85,5 +84,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

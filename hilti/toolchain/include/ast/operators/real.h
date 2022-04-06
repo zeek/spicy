@@ -9,8 +9,7 @@
 #include <hilti/ast/types/type.h>
 #include <hilti/base/logger.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 STANDARD_OPERATOR_1(real, SignNeg, type::Real(), type::Real(), "Inverts the sign of the real.");
 STANDARD_OPERATOR_2(real, Difference, type::Real(), type::Real(), type::Real(),
                     "Returns the difference between the two values.");
@@ -48,5 +47,4 @@ STANDARD_OPERATOR_2x(real, CastToTime, Cast, type::Time(), type::Real(), type::T
 STANDARD_OPERATOR_2x(real, CastToInterval, Cast, type::Interval(), type::Real(), type::Type_(type::Interval()),
                      "Interprets the value as number of seconds.");
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

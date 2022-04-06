@@ -11,8 +11,7 @@
 #include <hilti/ast/types/struct.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 namespace struct_::detail {
 
@@ -229,5 +228,4 @@ public:
 
 } // namespace struct_
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

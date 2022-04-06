@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -9,9 +10,7 @@
 #include <hilti/rt/logging.h>
 #include <hilti/rt/type-info.h>
 
-namespace hilti::rt {
-
-namespace enum_ {
+namespace hilti::rt::enum_ {
 
 /**
  * Returns true if an enum value maps to a known label.
@@ -25,12 +24,9 @@ bool has_label(const T& t, const TypeInfo* ti) {
     if ( ti->tag != TypeInfo::Enum )
         internalError("unexpected type info in enum_::has_label");
 
-    for ( const auto& l : ti->enum_->labels() ) {
-        if ( l.value != -1 && static_cast<int64_t>(t) == l.value )
-            return true;
-    }
-
-    return false;
+    const auto& labels = ti->enum_->labels();
+    return std::any_of(labels.begin(), labels.end(),
+                       [&](const auto& l) { return l.value != -1 && static_cast<int64_t>(t) == l.value; });
 }
 
 /**
@@ -70,5 +66,4 @@ T from_uint(uint64_t n) {
     return static_cast<T>(n);
 }
 
-} // namespace enum_
-} // namespace hilti::rt
+} // namespace hilti::rt::enum_

@@ -9,8 +9,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/id.h>
 
-namespace hilti {
-namespace declaration {
+namespace hilti::declaration {
 
 /** AST node for a declaration of a module property. */
 class Property : public DeclarationBase {
@@ -39,5 +38,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace declaration
-} // namespace hilti
+} // namespace hilti::declaration

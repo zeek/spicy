@@ -7,13 +7,12 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/bool.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a boolean constructor. */
 class Bool : public NodeBase, public hilti::trait::isCtor {
 public:
-    Bool(bool v, Meta m = Meta()) : NodeBase(nodes(type::Bool(m)), m), _value(v) {}
+    Bool(bool v, const Meta& m = Meta()) : NodeBase(nodes(type::Bool(m)), m), _value(v) {}
 
     auto value() const { return _value; }
 
@@ -37,5 +36,4 @@ private:
     bool _value;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

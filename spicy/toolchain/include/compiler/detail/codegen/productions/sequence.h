@@ -37,7 +37,7 @@ public:
         return hilti::util::join(hilti::util::transform(_prods, [](const auto& p) { return p.symbol(); }), " ");
     }
 
-public:
+
     std::vector<Production> _prods;
 };
 

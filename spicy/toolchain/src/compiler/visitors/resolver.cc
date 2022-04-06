@@ -76,7 +76,7 @@ struct FieldTypeVisitor : public hilti::visitor::PreOrder<Type, FieldTypeVisitor
 
 // Helper function to compute one of several kinds of a field's types.
 std::optional<Type> _fieldType(const type::unit::item::Field& f, const Type& type, FieldType ft, bool is_container,
-                               Meta meta) {
+                               const Meta& meta) {
     Type nt;
     if ( auto e = FieldTypeVisitor(ft).dispatch(type) )
         nt = std::move(*e);
@@ -87,7 +87,7 @@ std::optional<Type> _fieldType(const type::unit::item::Field& f, const Type& typ
         return {};
 
     if ( is_container )
-        return type::Vector(std::move(nt), std::move(meta));
+        return type::Vector(nt, meta);
     else
         return nt;
 }
@@ -182,7 +182,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         }
 
         logChange(p.node, t, "item type");
-        p.node.as<type::bitfield::Bits>().setItemType(std::move(t));
+        p.node.as<type::bitfield::Bits>().setItemType(t);
         modified = true;
     }
 
@@ -202,7 +202,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         Type t = type::Tuple(std::move(elems), b.meta());
         assert(type::isResolved(t));
         logChange(p.node, t);
-        p.node.as<type::Bitfield>().setType(std::move(t));
+        p.node.as<type::Bitfield>().setType(t);
         modified = true;
     }
 

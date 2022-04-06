@@ -9,8 +9,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
-namespace hilti {
-namespace statement {
+namespace hilti::statement {
 
 /** AST node for a "while" statement. */
 class For : public NodeBase, public hilti::trait::isStatement {
@@ -24,7 +23,7 @@ public:
     const auto& sequence() const { return child<hilti::Expression>(1); }
     const auto& body() const { return child<hilti::Statement>(2); }
 
-    void setLocalType(Type t) { children()[0].as<declaration::LocalVariable>().setType(std::move(t)); }
+    void setLocalType(const Type& t) { children()[0].as<declaration::LocalVariable>().setType(t); }
 
     bool operator==(const For& other) const {
         return local() == other.local() && sequence() == other.sequence() && body() == other.body();
@@ -43,5 +42,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace statement
-} // namespace hilti
+} // namespace hilti::statement

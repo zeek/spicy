@@ -9,15 +9,15 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/interval.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a interval constructor. */
 class Interval : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Interval;
 
-    Interval(const Value& interval, Meta m = Meta()) : NodeBase(nodes(type::Interval(m)), m), _interval(interval) {}
+    Interval(Value interval, const Meta& m = Meta())
+        : NodeBase(nodes(type::Interval(m)), m), _interval(std::move(interval)) {}
 
     const auto& value() const { return _interval; }
 
@@ -40,5 +40,4 @@ private:
     Value _interval;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

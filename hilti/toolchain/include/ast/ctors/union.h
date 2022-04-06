@@ -9,8 +9,7 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/types/struct.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a struct constructor. */
 class Union : public NodeBase, public hilti::trait::isCtor {
@@ -39,5 +38,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

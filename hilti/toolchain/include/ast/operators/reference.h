@@ -6,8 +6,7 @@
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/reference.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_1(strong_reference, Deref, operator_::dereferencedType(0, "<dereferenced type>", false),
                     type::constant(type::StrongReference(type::Wildcard())),
@@ -33,5 +32,4 @@ STANDARD_OPERATOR_2(value_reference, Equal, type::Bool(), type::constant(type::V
 STANDARD_OPERATOR_2(value_reference, Unequal, type::Bool(), type::constant(type::ValueReference(type::Wildcard())),
                     operator_::sameTypeAs(0), "Returns true if the values of both operands are not equal.")
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

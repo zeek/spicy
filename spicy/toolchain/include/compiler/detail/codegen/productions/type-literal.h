@@ -26,7 +26,7 @@ public:
     bool nullable() const { return false; }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return true; }
-    int64_t tokenID() const { return production::tokenID(hilti::util::fmt("%s", _type)); }
+    int64_t tokenID() const { return static_cast<int64_t>(production::tokenID(hilti::util::fmt("%s", _type))); }
     std::string render() const { return hilti::util::fmt("%s", _type); }
 
 private:

@@ -10,17 +10,17 @@
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/optional.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a constructor for an optional value. */
 class Optional : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a set value. */
-    Optional(Expression e, Meta m = Meta()) : NodeBase(nodes(type::Optional(type::auto_), e), m) {}
+    Optional(Expression e, Meta m = Meta())
+        : NodeBase(nodes(type::Optional(type::auto_), std::move(e)), std::move(m)) {}
 
     /** Constructs an unset value of type `t`. */
-    Optional(Type t, Meta m = Meta()) : NodeBase(nodes(type::Optional(t, m), node::none), m) {}
+    Optional(Type t, const Meta& m = Meta()) : NodeBase(nodes(type::Optional(std::move(t), m), node::none), m) {}
 
     const Type& dereferencedType() const { return children()[0].as<type::Optional>().dereferencedType(); }
     hilti::optional_ref<const Expression> value() const { return children()[1].tryAs<Expression>(); }
@@ -52,5 +52,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

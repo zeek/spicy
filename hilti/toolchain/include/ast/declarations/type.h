@@ -9,8 +9,7 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace declaration {
+namespace hilti::declaration {
 
 /** AST node for a type declaration. */
 class Type : public DeclarationBase {
@@ -42,7 +41,7 @@ public:
     /** Shortcut to `type::resolvedID()` for the declared type. */
     auto resolvedID() const { return children()[1].as<hilti::Type>().resolvedID(); }
 
-    void setType(::hilti::Type t) { children()[1] = std::move(t); }
+    void setType(const ::hilti::Type& t) { children()[1] = t; }
 
     bool operator==(const Type& other) const { return id() == other.id() && type() == other.type(); }
 
@@ -67,5 +66,4 @@ private:
     Linkage _linkage;
 };
 
-} // namespace declaration
-} // namespace hilti
+} // namespace hilti::declaration

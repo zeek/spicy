@@ -9,8 +9,7 @@
 #include <hilti/ast/node.h>
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node representing a builtin function call. */
 class BuiltinFunction : public NodeBase, public trait::isExpression {
@@ -25,14 +24,15 @@ public:
      * @param m meta information for the function call
      */
     BuiltinFunction(std::string name, std::string cxxname, hilti::Type type,
-                    std::vector<declaration::Parameter> parameters, std::vector<Expression> arguments, Meta m = Meta())
+                    const std::vector<declaration::Parameter>& parameters, std::vector<Expression> arguments,
+                    Meta m = Meta())
         : NodeBase(nodes(std::move(type), parameters, std::move(arguments)), std::move(m)),
           _name(std::move(name)),
           _cxxname(std::move(cxxname)),
-          _num_parameters(parameters.size()) {}
+          _num_parameters(static_cast<int>(parameters.size())) {}
 
     auto arguments() const { return children<Expression>(_num_parameters + 1, -1); }
-    const auto parameters() const { return children<declaration::Parameter>(1, _num_parameters); }
+    auto parameters() const { return children<declaration::Parameter>(1, _num_parameters); }
     const auto& cxxname() const { return _cxxname; }
     const auto& name() const { return _name; }
 
@@ -64,8 +64,7 @@ public:
 private:
     std::string _name;
     std::string _cxxname;
-    size_t _num_parameters = 0;
+    int _num_parameters = 0;
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

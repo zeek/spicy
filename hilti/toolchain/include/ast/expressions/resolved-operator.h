@@ -18,19 +18,16 @@ class isResolvedOperator {};
 } // namespace trait
 
 namespace expression {
-namespace resolved_operator {
-namespace detail {
+namespace resolved_operator::detail {
 #include <hilti/autogen/__resolved-operator.h>
 
 inline Node to_node(ResolvedOperator t) { return Node(std::move(t)); }
 
 inline std::ostream& operator<<(std::ostream& out, ResolvedOperator i) { return out << to_node(std::move(i)); }
 
-} // namespace detail
-} // namespace resolved_operator
+} // namespace resolved_operator::detail
 
 using ResolvedOperator = resolved_operator::detail::ResolvedOperator;
-using resolved_operator::detail::to_node;
 
 /**
  * Base class for an AST node for an expression representing a resolved operator usage.

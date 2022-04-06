@@ -8,13 +8,12 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/stream.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a stream constructor. */
 class Stream : public NodeBase, public hilti::trait::isCtor {
 public:
-    Stream(std::string v, Meta m = Meta()) : NodeBase(nodes(type::Stream(m)), m), _value(std::move(v)) {}
+    Stream(std::string v, const Meta& m = Meta()) : NodeBase(nodes(type::Stream(m)), m), _value(std::move(v)) {}
 
     auto value() const { return _value; }
 
@@ -38,5 +37,4 @@ private:
     std::string _value;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

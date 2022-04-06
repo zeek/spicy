@@ -7,8 +7,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/any.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /** AST node for a type representing a type value. */
 class Type_ : public TypeBase, trait::isParameterized {
@@ -35,5 +34,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

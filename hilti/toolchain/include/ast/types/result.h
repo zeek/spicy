@@ -7,8 +7,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /** AST node for a "result" type. */
 class Result : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isDereferenceable {
@@ -36,5 +35,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

@@ -7,17 +7,16 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/bool.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for a logical "not" expression. */
 class LogicalNot : public NodeBase, public trait::isExpression {
 public:
-    LogicalNot(Expression e, Meta m = Meta()) : NodeBase(nodes(std::move(e), type::Bool(m)), m) {}
+    LogicalNot(Expression e, const Meta& m = Meta()) : NodeBase(nodes(std::move(e), type::Bool(m)), m) {}
 
     const auto& expression() const { return child<Expression>(0); }
 
-    void setExpression(const Expression op) { children()[0] = std::move(op); }
+    void setExpression(const Expression& op) { children()[0] = op; }
 
     bool operator==(const LogicalNot& other) const { return expression() == other.expression(); }
 
@@ -36,5 +35,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

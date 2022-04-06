@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -9,8 +10,7 @@
 #include <hilti/ast/operator.h>
 #include <hilti/ast/types/auto.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for an expression representing an unresolved operator usage. */
 class UnresolvedOperator : public NodeBase, public trait::isExpression {
@@ -19,17 +19,13 @@ public:
         : NodeBase(nodes(type::auto_, std::move(operands)), std::move(meta)), _kind(op) {}
 
     UnresolvedOperator(operator_::Kind op, hilti::node::Range<Expression> operands, Meta meta = Meta())
-        : NodeBase(nodes(type::auto_, std::move(operands)), std::move(meta)), _kind(op) {}
+        : NodeBase(nodes(type::auto_, operands), std::move(meta)), _kind(op) {}
 
     auto kind() const { return _kind; }
 
     bool areOperandsResolved() const {
-        for ( auto op : children<Expression>(1, -1) ) {
-            if ( ! type::isResolved(op.type()) )
-                return false;
-        }
-
-        return true;
+        const auto& xs = children<Expression>(1, -1);
+        return std::all_of(xs.begin(), xs.end(), [](const auto& x) { return type::isResolved(x.type()); });
     }
 
     bool operator==(const UnresolvedOperator& other) const {
@@ -59,5 +55,4 @@ private:
     operator_::Kind _kind;
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

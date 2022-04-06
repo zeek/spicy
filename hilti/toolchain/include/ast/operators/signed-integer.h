@@ -13,8 +13,7 @@
 #include <hilti/ast/types/type.h>
 #include <hilti/base/logger.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 namespace detail {
 inline static auto widestTypeSigned() {
@@ -113,5 +112,4 @@ STANDARD_OPERATOR_2x(signed_integer, CastToEnum, Cast, operator_::typedType(1, "
 STANDARD_OPERATOR_2x(signed_integer, CastToInterval, Cast, type::Interval(), type::SignedInteger(type::Wildcard()),
                      type::Type_(type::Interval()), "Interprets the value as number of seconds.");
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

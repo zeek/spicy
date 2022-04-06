@@ -43,8 +43,8 @@ public:
         : _nsecs([&]() {
               auto x = secs * 1'000'000'000;
 
-              constexpr auto limits = std::numeric_limits<int64_t>();
-              if ( x < static_cast<double>(limits.min()) || static_cast<double>(limits.max()) < x )
+              using limits = std::numeric_limits<int64_t>;
+              if ( x < static_cast<double>(limits::min()) || static_cast<double>(limits::max()) < x )
                   throw OutOfRange("value cannot be represented as an interval");
 
               return integer::safe<int64_t>(x);
@@ -58,7 +58,7 @@ public:
     Interval& operator=(Interval&&) noexcept = default;
 
     /** Returns interval as seconds. */
-    double seconds() const { return _nsecs.Ref() / 1e9; }
+    double seconds() const { return static_cast<double>(_nsecs.Ref()) / 1e9; }
 
     /** Returns interval as nanoseconds. */
     int64_t nanoseconds() const { return _nsecs.Ref(); }
@@ -79,7 +79,9 @@ public:
         return Interval(_nsecs * i.Ref(), NanosecondTag());
     }
 
-    Interval operator*(double i) const { return Interval(integer::safe<int64_t>(_nsecs.Ref() * i), NanosecondTag()); }
+    Interval operator*(double i) const {
+        return Interval(integer::safe<int64_t>(static_cast<double>(_nsecs.Ref()) * i), NanosecondTag());
+    }
 
     /** Returns true if the interval is non-zero. */
     explicit operator bool() const { return _nsecs.Ref() != 0; }

@@ -215,7 +215,7 @@ public:
     Iterator& operator++();
 
     /** Advances the iterator forward. */
-    const Iterator operator++(int);
+    Iterator operator++(int);
 
     /**
      * Dereferences the iterator, returning the contained value.
@@ -312,9 +312,7 @@ public:
     IterableType(const TypeInfo* etype, Accessor accessor) : _etype(etype), _accessor(std::move(accessor)) {}
 
     /** Returns a `Sequence` that can be iterated over to visit all the contained elements. */
-    iterable_type::Sequence iterate(const Value& value) const {
-        return iterable_type::Sequence(this, std::move(value));
-    }
+    iterable_type::Sequence iterate(const Value& value) const { return iterable_type::Sequence(this, value); }
 
     /**
      * Returns the type of the contained elements, as passed into the
@@ -343,7 +341,7 @@ inline Iterator& Iterator::operator++() {
     return *this;
 }
 
-inline const Iterator Iterator::operator++(int) {
+inline Iterator Iterator::operator++(int) {
     auto x = *this;
 
     if ( _cur.has_value() )
@@ -485,7 +483,7 @@ public:
     Iterator& operator++();
 
     /** Advances the iterator forward. */
-    const Iterator operator++(int);
+    Iterator operator++(int);
 
     /**
      * Dereferences the iterator, returning the contained value.
@@ -566,7 +564,7 @@ public:
         : _ktype(ktype), _vtype(vtype), _accessor(std::move(accessor)) {}
 
     /** Returns a `Sequence` that can be iterated over to visit all the contained elements. */
-    map::Sequence iterate(const Value& value) const { return map::Sequence(this, std::move(value)); }
+    map::Sequence iterate(const Value& value) const { return map::Sequence(this, value); }
 
     /**
      * Returns the type of the key of the elements, as passed into the
@@ -629,7 +627,7 @@ inline Iterator& Iterator::operator++() {
     return *this;
 }
 
-inline const Iterator Iterator::operator++(int) {
+inline Iterator Iterator::operator++(int) {
     auto x = *this;
 
     if ( _cur.has_value() )
@@ -842,7 +840,7 @@ struct Field {
      */
     Field(const char* name, const TypeInfo* type, std::ptrdiff_t offset, bool internal,
           Accessor accessor = accessor_default)
-        : name(name), type(type), offset(offset), accessor(std::move(accessor)), internal(internal) {}
+        : name(name), type(type), offset(offset), accessor(accessor), internal(internal) {}
 
     /** Default accessor function suitable for non-optional fields. */
     static const void* accessor_default(const Value& v) { return v.pointer(); }
@@ -1024,8 +1022,7 @@ public:
      * @param labels the union's fields
      * @param accessor accessor function returning the index of the currently set field
      */
-    Union(std::vector<union_::Field> fields, Accessor accessor)
-        : _fields(std::move(fields)), _accessor(std::move(accessor)) {}
+    Union(std::vector<union_::Field> fields, Accessor accessor) : _fields(std::move(fields)), _accessor(accessor) {}
 
     /** Returns the union's fields. */
     const auto& fields() const { return _fields; }
@@ -1195,7 +1192,7 @@ struct TypeInfo {
     };
 
     // Actual storage for the held type.
-    std::unique_ptr<char, void (*)(char*)> _storage = {nullptr, [](char*) {}};
+    std::unique_ptr<const char, void (*)(const char*)> _storage = {nullptr, [](const char*) {}};
 
     Tag tag = Tag::Undefined; ///< Tag indicating which field of below union is set.
     union {
@@ -1248,9 +1245,9 @@ struct TypeInfo {
 
     template<typename Type>
     TypeInfo(std::optional<const char*> _id, const char* _display, Type* value)
-        : id(std::move(_id)),
-          display(_display),
-          _storage(reinterpret_cast<char*>(value), [](char* p) { delete reinterpret_cast<Type*>(p); }) {
+        : id(_id), display(_display), _storage(reinterpret_cast<const char*>(value), [](const char* p) {
+              delete reinterpret_cast<const Type*>(p);
+          }) {
         if constexpr ( std::is_same_v<Type, type_info::Address> ) {
             tag = Address;
             address = value;
@@ -1630,7 +1627,7 @@ extern TypeInfo any;
 extern TypeInfo bool_;
 extern TypeInfo bytes_iterator;
 extern TypeInfo bytes;
-extern TypeInfo bytes;
+
 extern TypeInfo error;
 extern TypeInfo int16;
 extern TypeInfo int32;
@@ -1646,7 +1643,7 @@ extern TypeInfo stream_iterator;
 extern TypeInfo stream_view;
 extern TypeInfo stream;
 extern TypeInfo string;
-extern TypeInfo string;
+
 extern TypeInfo time;
 extern TypeInfo uint16;
 extern TypeInfo uint32;

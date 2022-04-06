@@ -25,7 +25,7 @@ public:
 
     optional_ref() = default;
     optional_ref(const optional_ref<T>& other) = default;
-    optional_ref(optional_ref<T>&& other) = default;
+    optional_ref(optional_ref<T>&& other) noexcept = default;
     optional_ref(std::nullopt_t) {}
     optional_ref(T& other) : _ptr(&other) {}
     optional_ref(T&& other) = delete; // to avoid easy mistakes
@@ -47,7 +47,7 @@ public:
     T& operator*() const { return *_ptr; }
 
     optional_ref& operator=(const optional_ref<T>& other) = default;
-    optional_ref& operator=(optional_ref<T>&& other) = default;
+    optional_ref& operator=(optional_ref<T>&& other) noexcept = default;
 
     optional_ref& operator=(std::nullopt_t) {
         _ptr = nullptr;

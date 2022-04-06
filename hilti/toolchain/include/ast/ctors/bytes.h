@@ -8,13 +8,12 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/bytes.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a bytes constructor. */
 class Bytes : public NodeBase, public hilti::trait::isCtor {
 public:
-    Bytes(std::string v, Meta m = Meta()) : NodeBase(nodes(type::Bytes(m)), m), _value(std::move(v)) {}
+    Bytes(std::string v, const Meta& m = Meta()) : NodeBase(nodes(type::Bytes(m)), m), _value(std::move(v)) {}
 
     auto value() const { return _value; }
 
@@ -38,5 +37,4 @@ private:
     std::string _value;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

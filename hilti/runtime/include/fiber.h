@@ -146,10 +146,10 @@ public:
     Fiber& operator=(const Fiber&) = delete;
     Fiber& operator=(Fiber&&) = delete;
 
-    void init(Lambda<hilti::rt::any(resumable::Handle*)> f) {
+    void init(const Lambda<hilti::rt::any(resumable::Handle*)>& f) {
         _result = {};
         _exception = nullptr;
-        _function = std::move(f);
+        _function = f;
     }
 
     /** Returns the fiber's type. */
@@ -361,7 +361,7 @@ auto copyArg(T t) {
 // Special case: We don't want to (nor need to) deep-copy value references.
 // Their payload already resides on the heap, so reuse that.
 template<typename T>
-const ValueReference<T> copyArg(const ValueReference<T>& t) {
+ValueReference<T> copyArg(const ValueReference<T>& t) {
     return ValueReference<T>(t.asSharedPtr());
 }
 

@@ -16,8 +16,8 @@ namespace hilti::rt {
 // Note that this implementation pulls in the *experimental* any interface,
 // which is slightly different from the standardized C++17 API.
 
-using linb::any;
-using linb::any_cast;
-using linb::bad_any_cast;
+using linb::any;          // NOLINT(misc-unused-using-decls)
+using linb::any_cast;     // NOLINT(misc-unused-using-decls)
+using linb::bad_any_cast; // NOLINT(misc-unused-using-decls)
 
 } // namespace hilti::rt

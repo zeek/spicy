@@ -15,8 +15,7 @@
 #include <hilti/ast/types/tuple.h>
 #include <hilti/ast/types/type.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 BEGIN_OPERATOR_CUSTOM(generic, Unpack)
     Type result(const hilti::node::Range<Expression>& ops) const {
@@ -172,5 +171,4 @@ public:
 };
 } // namespace generic
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

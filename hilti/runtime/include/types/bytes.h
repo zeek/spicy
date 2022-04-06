@@ -49,8 +49,7 @@ class Iterator {
 public:
     Iterator() = default;
 
-    Iterator(typename B::size_type index, const std::weak_ptr<B*> control)
-        : _control(control), _index(std::move(index)) {}
+    Iterator(typename B::size_type index, std::weak_ptr<B*> control) : _control(std::move(control)), _index(index) {}
 
     uint8_t operator*() const {
         if ( auto&& l = _control.lock() ) {
@@ -92,7 +91,7 @@ public:
         return *this;
     }
 
-    const auto operator++(int) {
+    auto operator++(int) {
         auto result = *this;
         ++_index;
         return result;
@@ -176,7 +175,7 @@ public:
 
     Bytes(Base&& str) : Base(std::move(str)), _control(std::make_shared<Base*>(static_cast<Base*>(this))) {}
     Bytes(const Bytes& xs) : Base(xs), _control(std::make_shared<Base*>(static_cast<Base*>(this))) {}
-    Bytes(Bytes&& xs) : Base(std::move(xs)), _control(std::make_shared<Base*>(static_cast<Base*>(this))) {}
+    Bytes(Bytes&& xs) noexcept : Base(std::move(xs)), _control(std::make_shared<Base*>(static_cast<Base*>(this))) {}
 
     /** Replaces the contents of this `Bytes` with another `Bytes`.
      *
@@ -186,6 +185,9 @@ public:
      * @return a reference to the changed `Bytes`
      */
     Bytes& operator=(const Bytes& b) {
+        if ( &b == this )
+            return *this;
+
         invalidateIterators();
         this->Base::operator=(b);
         return *this;
@@ -198,7 +200,7 @@ public:
      * @param b the `Bytes` to assign
      * @return a reference to the changed `Bytes`
      */
-    Bytes& operator=(Bytes&& b) {
+    Bytes& operator=(Bytes&& b) noexcept {
         invalidateIterators();
         this->Base::operator=(std::move(b));
         return *this;
@@ -211,13 +213,13 @@ public:
     void append(const stream::View& view);
 
     /** Appends a single byte the data. */
-    void append(const uint8_t x) { Base::append(1, x); }
+    void append(const uint8_t x) { Base::append(1, static_cast<Base::value_type>(x)); }
 
     /** Returns the bytes' data as a string instance. */
     const std::string& str() const& { return *this; }
 
     /** Returns an iterator representing the first byte of the instance. */
-    const_iterator begin() const { return const_iterator(0u, _control); }
+    const_iterator begin() const { return const_iterator(0U, _control); }
 
     /** Returns an iterator representing the end of the instance. */
     const_iterator end() const { return const_iterator(size(), _control); }
@@ -406,7 +408,7 @@ public:
             if ( i > 0 )
                 rval += *this;
 
-            rval += Bytes(hilti::rt::to_string_for_print(parts[i]).data());
+            rval += Bytes(hilti::rt::to_string_for_print(parts[i]));
         }
 
         return rval;

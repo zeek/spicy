@@ -11,8 +11,7 @@
 #include <hilti/ast/types/real.h>
 #include <hilti/ast/types/time.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_2(time, Equal, type::Bool(), type::Time(), type::Time(), "Compares two time values.")
 STANDARD_OPERATOR_2(time, Unequal, type::Bool(), type::Time(), type::Time(), "Compares two time values.")
@@ -47,5 +46,4 @@ Returns the time as an integer value representing nanoseconds since the UNIX epo
     }
 END_METHOD
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

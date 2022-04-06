@@ -41,7 +41,7 @@ public:
     // Empty, but required to make exception handling work between library
     // and host application. See:
     // http://www.toptip.ca/2012/06/c-exceptions-thrown-from-shared-library.html
-    virtual ~Exception();
+    ~Exception() override;
 
     /** Returns the message associated with the exception. */
     auto description() const { return _description; }

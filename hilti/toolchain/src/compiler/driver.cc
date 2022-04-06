@@ -851,7 +851,7 @@ Result<Nothing> Driver::_optimizeUnits() {
 
     HILTI_DEBUG(logging::debug::Driver, "performing global transformations");
 
-    Optimizer opt(_hlts, _ctx);
+    Optimizer opt(_hlts);
     opt.run();
 
     return Nothing();

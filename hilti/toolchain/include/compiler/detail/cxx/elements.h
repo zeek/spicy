@@ -142,7 +142,7 @@ extern void from_json(const nlohmann::json& j, Constant& c); // NOLINT
 struct Type {
     cxx::ID id;
     cxx::Type type;
-    std::string inline_code = "";
+    std::string inline_code;
     bool forward_decl = false;
     bool forward_decl_prio = false;
     bool no_using = false; // turned on automatically for types starting with "struct"

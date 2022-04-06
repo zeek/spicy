@@ -23,10 +23,13 @@ public:
     bool nullable() const { return false; }
     bool eodOk() const { return nullable(); }
     bool atomic() const { return true; }
-    int64_t tokenID() const { return production::tokenID(hilti::util::fmt("%s|%s", _ctor, _ctor.type())); }
+
+    int64_t tokenID() const {
+        return static_cast<int64_t>(production::tokenID(hilti::util::fmt("%s|%s", _ctor, _ctor.type())));
+    }
+
     std::string render() const { return hilti::util::fmt("%s (%s)", _ctor, _ctor.type()); }
 
-public:
     spicy::Ctor _ctor;
 };
 

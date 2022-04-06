@@ -14,8 +14,7 @@
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace declaration {
+namespace hilti::declaration {
 
 /** AST node for a struct/union field. */
 class Field : public DeclarationBase {
@@ -26,8 +25,8 @@ public:
     Field(ID id, ::hilti::function::CallingConvention cc, type::Function ft, std::optional<AttributeSet> attrs = {},
           Meta m = Meta())
         : DeclarationBase(nodes(std::move(id), std::move(ft), std::move(attrs), node::none), std::move(m)), _cc(cc) {}
-    Field(ID id, hilti::Function inline_func, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : DeclarationBase(nodes(std::move(id), node::none, std::move(attrs), std::move(inline_func)), std::move(m)),
+    Field(ID id, const hilti::Function& inline_func, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
+        : DeclarationBase(nodes(std::move(id), node::none, std::move(attrs), inline_func), std::move(m)),
           _cc(inline_func.callingConvention()) {}
 
     const auto& id() const { return child<ID>(0); }
@@ -83,7 +82,7 @@ public:
             return children()[1];
     }
 
-    void setAttributes(AttributeSet attrs) { children()[2] = std::move(attrs); }
+    void setAttributes(const AttributeSet& attrs) { children()[2] = attrs; }
 
     bool operator==(const Field& other) const {
         return id() == other.id() && type() == other.type() && attributes() == other.attributes() && _cc == other._cc;
@@ -108,5 +107,4 @@ private:
     ::hilti::function::CallingConvention _cc = ::hilti::function::CallingConvention::Standard;
 }; // namespace struct_
 
-} // namespace declaration
-} // namespace hilti
+} // namespace hilti::declaration

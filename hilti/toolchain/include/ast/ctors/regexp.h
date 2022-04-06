@@ -11,8 +11,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/regexp.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a RegExp constructor. */
 class RegExp : public NodeBase, public hilti::trait::isCtor {
@@ -47,5 +46,4 @@ private:
     std::vector<std::string> _patterns;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

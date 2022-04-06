@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 #include <hilti/compiler/driver.h>
 
@@ -30,7 +31,7 @@ public:
      * @param name descriptive name for the tool using the driver, which will
      * be used in usage and error messages.
      */
-    explicit Driver(std::string name) : hilti::Driver(name) {}
+    explicit Driver(std::string name) : hilti::Driver(std::move(name)) {}
 
     /**
      * @param name descriptive name for the tool using the driver, which will
@@ -39,9 +40,9 @@ public:
      * the global options instance returns if it's inside Spicy build
      * directory.
      */
-    Driver(std::string name, const hilti::rt::filesystem::path& argv0) : hilti::Driver(name, argv0) {}
+    Driver(std::string name, const hilti::rt::filesystem::path& argv0) : hilti::Driver(std::move(name), argv0) {}
 
-    virtual ~Driver() {}
+    ~Driver() override {}
 
     Driver() = delete;
     Driver(const Driver&) = delete;

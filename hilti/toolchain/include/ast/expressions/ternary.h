@@ -6,8 +6,7 @@
 
 #include <hilti/ast/expression.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for a ternary expression. */
 class Ternary : public NodeBase, public trait::isExpression {
@@ -40,5 +39,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

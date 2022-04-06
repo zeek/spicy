@@ -7,8 +7,7 @@
 
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 namespace detail {
 
@@ -64,5 +63,4 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

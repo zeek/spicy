@@ -6,8 +6,7 @@
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/address.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_2(address, Equal, type::Bool(), type::Address(), type::Address(), "Compares two address values.")
 STANDARD_OPERATOR_2(address, Unequal, type::Bool(), type::Address(), type::Address(), "Compares two address values.")
@@ -24,5 +23,4 @@ Returns the protocol family of the address, which can be IPv4 or IPv6.
     }
 END_METHOD
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

@@ -284,7 +284,7 @@ struct ProductionVisitor
                                                 builder::id("filtered"));
                             args2[0] = builder::id("filtered_data");
                             args2[1] = builder::deref(args2[0]);
-                            builder()->addExpression(builder::memberCall(state().self, id_stage2, std::move(args2)));
+                            builder()->addExpression(builder::memberCall(state().self, id_stage2, args2));
 
                             // Assume the filter consumed the full input.
                             pb->advanceInput(builder::size(state().cur));
@@ -299,7 +299,7 @@ struct ProductionVisitor
 
                     auto not_have_filter = builder()->addIf(builder::not_(builder::id("filtered")));
                     pushBuilder(not_have_filter);
-                    builder()->addAssign(store_result, builder::memberCall(state().self, id_stage2, std::move(args)));
+                    builder()->addAssign(store_result, builder::memberCall(state().self, id_stage2, args));
                     popBuilder();
 
                     end_try(try_);
@@ -497,7 +497,7 @@ struct ProductionVisitor
             Expression default_ = builder::default_(builder::typeByID(*unit->unitType().id()), type_args, location);
             builder()->addAssign(destination(), std::move(default_));
 
-            auto call = builder::memberCall(destination(), "__parse_stage1", std::move(args));
+            auto call = builder::memberCall(destination(), "__parse_stage1", args);
             builder()->addAssign(builder::tuple(
                                      {pb->state().cur, pb->state().lahead, pb->state().lahead_end, pb->state().error}),
                                  call);
@@ -1644,11 +1644,11 @@ std::shared_ptr<hilti::builder::Builder> ParserBuilder::pushBuilder() {
     return _builders.back();
 }
 
-hilti::declaration::Function _setBody(const hilti::declaration::Function& d, Statement body) {
+hilti::declaration::Function _setBody(const hilti::declaration::Function& d, const Statement& body) {
     auto x = Node(d)._clone().as<hilti::declaration::Function>();
     auto f = Node(d.function())._clone().as<hilti::Function>();
-    f.setBody(std::move(body));
-    x.setFunction(std::move(f));
+    f.setBody(body);
+    x.setFunction(f);
     return x;
 }
 
@@ -1962,7 +1962,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
             // Special-case: No value parsed, but still run hook.
             builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), {}, field->meta());
         else
-            builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), std::move(args),
+            builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), args,
                                      field->meta());
 
         afterHook();
@@ -2142,8 +2142,8 @@ void ParserBuilder::parseError(const std::string& error_msg, const Meta& locatio
     parseError(builder::string(error_msg), location);
 }
 
-void ParserBuilder::parseError(const std::string& fmt, std::vector<Expression> args, const Meta& location) {
-    parseError(builder::modulo(builder::string(fmt), builder::tuple(std::move(args))), location);
+void ParserBuilder::parseError(const std::string& fmt, const std::vector<Expression>& args, const Meta& location) {
+    parseError(builder::modulo(builder::string(fmt), builder::tuple(args)), location);
 }
 
 void ParserBuilder::advanceToNextData() {

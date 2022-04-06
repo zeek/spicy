@@ -6,8 +6,7 @@
 
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /** AST node for a address type. */
 class Address : public TypeBase, trait::isAllocable {
@@ -24,5 +23,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

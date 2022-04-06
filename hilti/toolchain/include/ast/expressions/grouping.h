@@ -7,13 +7,12 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/auto.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for grouping another expression inside parentheses. */
 class Grouping : public NodeBase, public trait::isExpression {
 public:
-    Grouping(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, m) {}
+    Grouping(Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
 
     const auto& expression() const { return child<Expression>(0); }
 
@@ -34,5 +33,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

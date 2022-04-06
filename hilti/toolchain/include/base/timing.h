@@ -12,9 +12,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace hilti::util {
-
-namespace timing {
+namespace hilti::util::timing {
 
 using Clock = std::chrono::high_resolution_clock;
 using Time = Clock::time_point;
@@ -153,6 +151,4 @@ protected:
     Ledger* _ledger;
 };
 
-} // namespace timing
-
-} // namespace hilti::util
+} // namespace hilti::util::timing

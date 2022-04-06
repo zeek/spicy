@@ -9,8 +9,7 @@
 #include <hilti/ast/types/void.h>
 #include <hilti/base/util.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_1(list::iterator, Deref, operator_::dereferencedType(0),
                     type::constant(type::list::Iterator(type::Wildcard())),
@@ -35,6 +34,4 @@ STANDARD_OPERATOR_2(list, Equal, type::Bool(), type::constant(type::List(type::W
 STANDARD_OPERATOR_2(list, Unequal, type::Bool(), type::constant(type::List(type::Wildcard())),
                     operator_::sameTypeAs(0, "list<*>"), "Compares two lists element-wise.");
 
-} // namespace operator_
-
-} // namespace hilti
+} // namespace hilti::operator_

@@ -10,8 +10,7 @@
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/tuple.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_2(tuple, Equal, type::Bool(), type::constant(type::Tuple(type::Wildcard())),
                     operator_::sameTypeAs(0, "tuple<*>"), "Compares two tuples element-wise.");
@@ -133,7 +132,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, CustomAssign)
             return;
         }
 
-        for ( auto i = 0u; i < lhs_type.elements().size(); i++ ) {
+        for ( auto i = 0U; i < lhs_type.elements().size(); i++ ) {
             const auto& lhs_elem = lhs.value()[i];
             const auto& lhs_elem_type = lhs_type.elements()[i].type();
             const auto& rhs_elem_type = rhs_type->elements()[i].type();
@@ -150,5 +149,4 @@ BEGIN_OPERATOR_CUSTOM(tuple, CustomAssign)
     std::string doc() const { return "Assigns element-wise to the left-hand-side tuple"; }
 END_OPERATOR_CUSTOM_x
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

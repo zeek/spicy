@@ -80,7 +80,7 @@ public:
 
     template<typename F>
     Union& operator=(F&& t) {
-        value = std::move(t);
+        value = std::forward<F>(t);
         return *this;
     }
 

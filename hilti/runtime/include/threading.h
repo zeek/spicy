@@ -4,9 +4,7 @@
 
 #include <cstdint>
 
-namespace hilti::rt {
-
-namespace vthread {
+namespace hilti::rt::vthread {
 
 /** Type for the unique IDs of virtual threads. */
 using ID = int64_t;
@@ -14,6 +12,4 @@ using ID = int64_t;
 /** ID of original (main) thread. */
 inline const ID Master = -1;
 
-} // namespace vthread
-
-} // namespace hilti::rt
+} // namespace hilti::rt::vthread

@@ -138,7 +138,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         if ( auto coerced = coerceExpressions(n.value(), n.elementType()) ) {
             if ( *coerced ) {
                 logChange(p.node, ctor::Tuple(**coerced), "elements");
-                p.node.as<ctor::List>().setValue(std::move(**coerced));
+                p.node.as<ctor::List>().setValue(**coerced);
                 modified = true;
             }
         }
@@ -183,7 +183,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
 
         if ( changed ) {
             logChange(p.node, ctor::Map(nelems), "value");
-            p.node.as<ctor::Map>().setValue(std::move(nelems));
+            p.node.as<ctor::Map>().setValue(nelems);
             modified = true;
         }
     }
@@ -194,7 +194,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             p.node.addError("type mismatch in set elements");
         else if ( *coerced ) {
             logChange(p.node, ctor::Tuple(**coerced), "value");
-            p.node.as<ctor::Set>().setValue(std::move(**coerced));
+            p.node.as<ctor::Set>().setValue(**coerced);
             modified = true;
         }
     }
@@ -205,7 +205,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             p.node.addError("type mismatch in vector elements");
         else if ( *coerced ) {
             logChange(p.node, ctor::Tuple(**coerced), "value");
-            p.node.as<ctor::Vector>().setValue(std::move(**coerced));
+            p.node.as<ctor::Vector>().setValue(**coerced);
             modified = true;
         }
     }
@@ -233,7 +233,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     void operator()(const declaration::Constant& n, position_t p) {
         if ( auto x = coerceTo(&p.node, n.value(), n.type(), false, true) ) {
             logChange(p.node, *x, "value");
-            p.node.as<declaration::Constant>().setValue(std::move(*x));
+            p.node.as<declaration::Constant>().setValue(*x);
             modified = true;
         }
     }
@@ -242,7 +242,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         if ( auto def = n.default_() ) {
             if ( auto x = coerceTo(&p.node, *def, n.type(), false, true) ) {
                 logChange(p.node, *x, "default value");
-                p.node.as<declaration::Parameter>().setDefault(std::move(*x));
+                p.node.as<declaration::Parameter>().setDefault(*x);
                 modified = true;
             }
         }
@@ -266,7 +266,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         if ( init || args ) {
             if ( init ) {
                 logChange(p.node, *init, "init expression");
-                p.node.as<declaration::LocalVariable>().setInit(std::move(*init));
+                p.node.as<declaration::LocalVariable>().setInit(*init);
             }
 
             if ( args ) {
@@ -296,7 +296,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         if ( init || args ) {
             if ( init ) {
                 logChange(p.node, *init, "init expression");
-                p.node.as<declaration::GlobalVariable>().setInit(std::move(*init));
+                p.node.as<declaration::GlobalVariable>().setInit(*init);
             }
 
             if ( args ) {
@@ -370,7 +370,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
 
         if ( auto x = coerceTo(&p.node, n.expression(), type::Bool(), true, false) ) {
             logChange(p.node, *x, "expression");
-            p.node.as<statement::Assert>().setCondition(std::move(*x));
+            p.node.as<statement::Assert>().setCondition(*x);
             modified = true;
         }
     }
@@ -379,7 +379,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         if ( auto cond = n.condition() ) {
             if ( auto x = coerceTo(&p.node, *cond, type::Bool(), true, false) ) {
                 logChange(p.node, *x, "condition");
-                p.node.as<statement::If>().setCondition(std::move(*x));
+                p.node.as<statement::If>().setCondition(*x);
                 modified = true;
             }
         }
@@ -400,7 +400,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
 
         if ( auto x = coerceTo(&p.node, *e, t, false, true) ) {
             logChange(p.node, *x, "expression");
-            p.node.as<statement::Return>().setExpression(std::move(*x));
+            p.node.as<statement::Return>().setExpression(*x);
             modified = true;
         }
     }
@@ -409,7 +409,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         if ( auto cond = n.condition() ) {
             if ( auto x = coerceTo(&p.node, *cond, type::Bool(), true, false) ) {
                 logChange(p.node, *x, "condition");
-                p.node.as<statement::While>().setCondition(std::move(*x));
+                p.node.as<statement::While>().setCondition(*x);
                 modified = true;
             }
         }
@@ -421,7 +421,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             if ( auto x = attrs.coerceValueTo("&default", f.type()) ) {
                 if ( *x ) {
                     logChange(p.node, attrs, "attributes");
-                    p.node.as<declaration::Field>().setAttributes(std::move(attrs));
+                    p.node.as<declaration::Field>().setAttributes(attrs);
                     modified = true;
                 }
 
@@ -437,7 +437,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         // is by value.
         if ( auto x = coerceTo(&p.node, n.source(), n.target().type(), false, true) ) {
             logChange(p.node, *x, "source");
-            p.node.as<expression::Assign>().setSource(std::move(*x));
+            p.node.as<expression::Assign>().setSource(*x);
             modified = true;
         }
     }
@@ -467,7 +467,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     void operator()(const expression::LogicalNot& n, position_t p) {
         if ( auto x = coerceTo(&p.node, n.expression(), type::Bool(), true, false) ) {
             logChange(p.node, *x, "expression");
-            p.node.as<expression::LogicalNot>().setExpression(std::move(*x));
+            p.node.as<expression::LogicalNot>().setExpression(*x);
             modified = true;
         }
     }
@@ -539,7 +539,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         }
 
         if ( changed ) {
-            auto new_rhs = builder::tuple(std::move(new_elems));
+            auto new_rhs = builder::tuple(new_elems);
             logChange(p.node, new_rhs, "tuple assign");
             p.node.as<operator_::tuple::CustomAssign>().setOp1(new_rhs);
             modified = true;

@@ -328,7 +328,7 @@ public:
      * @param path path associated with the C++ code, if any
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<std::shared_ptr<Unit>> fromCXX(std::shared_ptr<Context> context, detail::cxx::Unit cxx,
+    static Result<std::shared_ptr<Unit>> fromCXX(const std::shared_ptr<Context>& context, detail::cxx::Unit cxx,
                                                  const hilti::rt::filesystem::path& path = "");
 
     /**
@@ -366,18 +366,18 @@ public:
 private:
     // Private constructor initializing the unit's meta data. Use the public
     // `from*()` factory functions instead to instantiate a unit.
-    Unit(std::shared_ptr<Context> context, ID id, hilti::rt::filesystem::path path,
+    Unit(const std::shared_ptr<Context>& context, ID id, const hilti::rt::filesystem::path& path,
          hilti::rt::filesystem::path extension, Node&& module)
-        : _index(id, util::normalizePath(path)),
-          _extension(extension),
+        : _index(std::move(id), util::normalizePath(path)),
+          _extension(std::move(std::move(extension))),
           _module(std::move(module)),
-          _context(std::move(context)) {}
+          _context(context) {}
 
-    Unit(std::shared_ptr<Context> context, ID id, hilti::rt::filesystem::path path,
+    Unit(const std::shared_ptr<Context>& context, ID id, const hilti::rt::filesystem::path& path,
          hilti::rt::filesystem::path extension, std::optional<detail::cxx::Unit> cxx_unit = {})
-        : _index(id, util::normalizePath(path)),
-          _extension(extension),
-          _context(std::move(context)),
+        : _index(std::move(id), util::normalizePath(path)),
+          _extension(std::move(std::move(extension))),
+          _context(context),
           _cxx_unit(std::move(cxx_unit)) {}
 
     // Backend for the public import() methods.

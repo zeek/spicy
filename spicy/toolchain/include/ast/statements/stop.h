@@ -9,8 +9,7 @@
 
 #include <spicy/ast/aliases.h>
 
-namespace spicy {
-namespace statement {
+namespace spicy::statement {
 
 /** AST node for Spicy's `stop` statement. */
 class Stop : public hilti::NodeBase, public hilti::trait::isStatement {
@@ -26,5 +25,4 @@ public:
     auto properties() const { return hilti::node::Properties{}; }
 };
 
-} // namespace statement
-} // namespace spicy
+} // namespace spicy::statement

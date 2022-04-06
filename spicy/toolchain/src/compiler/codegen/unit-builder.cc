@@ -274,7 +274,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         _pb.builder()->addReturn(expression);
         auto body = _pb.popBuilder();
         auto function = hilti::Function(ID("__convert"), std::move(ftype), body->block());
-        auto convert_ = hilti::declaration::Field(ID("__convert"), std::move(function));
+        auto convert_ = hilti::declaration::Field(ID("__convert"), function);
         v.addField(std::move(convert_));
     }
 

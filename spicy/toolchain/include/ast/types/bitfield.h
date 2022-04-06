@@ -18,8 +18,7 @@
 
 #include <spicy/ast/aliases.h>
 
-namespace spicy {
-namespace type {
+namespace spicy::type {
 
 namespace bitfield {
 
@@ -55,8 +54,8 @@ public:
         };
     }
 
-    void setAttributes(AttributeSet attrs) { children()[3] = std::move(attrs); }
-    void setItemType(Type t) { children()[2] = std::move(t); }
+    void setAttributes(const AttributeSet& attrs) { children()[3] = attrs; }
+    void setItemType(const Type& t) { children()[2] = t; }
 
     bool operator==(const Bits& other) const {
         return id() == other.id() && _lower == other._lower && _upper == other._upper &&
@@ -80,7 +79,7 @@ class Bitfield : public hilti::TypeBase,
                  hilti::type::trait::isParameterized,
                  hilti::type::trait::isMutable {
 public:
-    Bitfield(int width, std::vector<bitfield::Bits> bits, Meta m = Meta())
+    Bitfield(int width, std::vector<bitfield::Bits> bits, const Meta& m = Meta())
         : TypeBase(nodes(type::UnsignedInteger(width, m), hilti::type::auto_, std::move(bits)), m), _width(width) {}
     Bitfield(Wildcard /*unused*/, Meta m = Meta())
         : TypeBase({hilti::type::unknown, hilti::type::unknown}, std::move(m)), _wildcard(true) {}
@@ -93,7 +92,7 @@ public:
     const Type& type() const { return child<Type>(1); }
 
     void addField(bitfield::Bits f) { addChild(std::move(f)); }
-    void setType(Type t) { children()[1] = std::move(t); }
+    void setType(const Type& t) { children()[1] = t; }
 
     bool operator==(const Bitfield& other) const { return width() == other.width() && bits() == other.bits(); }
 
@@ -113,5 +112,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace spicy
+} // namespace spicy::type

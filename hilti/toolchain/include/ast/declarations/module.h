@@ -15,8 +15,7 @@
 #include <hilti/base/result.h>
 #include <hilti/base/type_erase.h>
 
-namespace hilti {
-namespace declaration {
+namespace hilti::declaration {
 
 /** AST node for an AST's top-level module declaration. */
 class Module : public DeclarationBase {
@@ -52,5 +51,4 @@ private:
     NodeRef _root;
 };
 
-} // namespace declaration
-} // namespace hilti
+} // namespace hilti::declaration

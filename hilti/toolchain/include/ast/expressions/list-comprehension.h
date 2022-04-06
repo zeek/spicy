@@ -10,15 +10,15 @@
 #include <hilti/ast/types/list.h>
 #include <hilti/ast/types/vector.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for a vector comprehension expression. */
 class ListComprehension : public NodeBase, public trait::isExpression {
 public:
-    ListComprehension(Expression input, Expression output, ID id, std::optional<Expression> cond, Meta m = Meta())
+    ListComprehension(Expression input, Expression output, const ID& id, std::optional<Expression> cond,
+                      Meta m = Meta())
         : NodeBase(nodes(std::move(input), std::move(output),
-                         declaration::LocalVariable(std::move(id), type::auto_, true, id.meta()), std::move(cond),
+                         declaration::LocalVariable(id, type::auto_, true, id.meta()), std::move(cond),
                          type::List(type::auto_, m)),
                    std::move(m)) {}
 
@@ -34,8 +34,8 @@ public:
      */
     IntrusivePtr<Scope> scope() const { return children()[1].scope(); }
 
-    void setLocalType(Type t) { children()[2].as<declaration::LocalVariable>().setType(std::move(t)); }
-    void setElementType(const Type x) { children()[4] = type::List(std::move(x)); }
+    void setLocalType(const Type& t) { children()[2].as<declaration::LocalVariable>().setType(t); }
+    void setElementType(const Type& x) { children()[4] = type::List(x); }
 
     bool operator==(const ListComprehension& other) const {
         return input() == other.input() && output() == other.output() && local() == other.local() &&
@@ -58,5 +58,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression
