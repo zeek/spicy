@@ -1,0 +1,13 @@
+# @TEST-DOC: Validates that const declarations at non-global scope are rejected.
+#
+# @TEST-EXEC-FAIL: spicyc -dj %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module x;
+
+const A = 4711;
+
+function foo() {
+    const a = 4711;
+    public const b = 4711;
+}
