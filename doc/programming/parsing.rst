@@ -851,15 +851,32 @@ properties:
     stream in between parsing of unit fields. This overwrites a value set at
     the module level; use ``Null`` to reset the property, i.e., not skip
     anything.
+
 ``%skip-pre = ( REGEXP | Null );``
     Specifies a pattern which should be skipped when encountered in the input
     stream before parsing of a unit begins. This overwrites a value set at the
     module level; use ``Null`` to reset the property, i.e., not skip anything.
+
 ``%skip-post = ( REGEXP | Null );``
     Specifies a pattern which should be skipped when encountered in the input
     stream after parsing of a unit has finished. This overwrites a value set at
     the module level; use ``Null`` to reset the property, i.e., not skip
     anything.
+
+.. _synchronize-at:
+
+``%synchronize-at = EXPR;``
+    Specifies a literal to synchronize on if the unit is used as a
+    synchronization point during :ref:`error recovery <error_recovery>`.
+    The literal is left in the input stream.
+
+.. _synchronize-after:
+
+``%synchronize-after = EXPR;``
+    Specifies a literal to synchronize on if the unit is used as a
+    synchronization point during :ref:`error recovery <error_recovery>`.
+    The literal is consumed and will not be present in the input stream after
+    successful synchronization.
 
 Units support some further properties for other purposes, which we
 introduce in the corresponding sections.
@@ -2044,6 +2061,31 @@ A synchronization point may be any of the following:
     complex the field, as long as there's one or more literals that always
     *must* be coming first when parsing it, the field may be used as a
     synchronization point.
+
+- A field with a type which specifies :ref:`%synchronize-at <synchronize-at>`
+  or  :ref:`%synchronize-after <synchronize-after>`. The parser will search the
+  input for the next occurrence of the given literal, discarding any data in
+  between. If the search was successful, ``%synchronize-at`` will leave the
+  input at the position of the search literal for later extraction while
+  ``%synchronize-after`` will discard the search literal.
+
+  If either of these unit properties is specified, it will always overrule any
+  other potential synchronization points in the unit. Example::
+
+    type X = unit {
+        ...
+        : /END/;
+    };
+
+    type Y = unit {
+        %synchronize-after = /END/;
+        a: bytes &size=10;
+    };
+
+    type Foo = unit {
+        x: X;
+        y: Y &synchronize;
+    };
 
 - A field that's located inside the input stream at a fixed offset relative to
   the field triggering the error. The parser will then be able to skip ahead to

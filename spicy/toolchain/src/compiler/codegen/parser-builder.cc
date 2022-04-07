@@ -982,15 +982,62 @@ struct ProductionVisitor
     // Generate code to synchronize on the given production. We assume that the
     // given production supports some form of lookahead; if the production is
     // not supported an error will be generated.
-    void syncProduction(const Production& p) {
+    void syncProduction(const Production& p_) {
+        const auto* p = &p_;
+
+        if ( auto resolved = p->tryAs<production::Resolved>() ) {
+            p = &grammar.resolved(*resolved);
+        }
+
         // Validation.
-        if ( auto while_ = p.tryAs<production::While>(); while_ && while_->expression() )
+        if ( auto while_ = p->tryAs<production::While>(); while_ && while_->expression() )
             hilti::logger().error("&synchronize cannot be used on while loops with conditions");
 
-        auto tokens = grammar.lookAheadsForProduction(p);
+        // Helper to validate the parser state after search for a lookahead.
+        auto validateSearchResult = [&]() {
+            pushBuilder(builder()->addIf(builder::or_(pb->atEod(), builder::not_(state().lahead))), [&]() {
+                // We land here if we failed to find successfully find any sync
+                // token in the input stream, or because we ran into EOD. We cannot
+                // recover from this and directly trigger a parse error.
+                builder()->addAssert(state().error, "original error not set");
+                auto original_error = builder::deref(state().error);
+                pb->parseError("failed to synchronize: %s", {original_error}, original_error.meta());
+            });
+        };
+
+        // Handle synchronization via `synchronize-at` or `synchronize-after` unit properties.
+        if ( const auto& unit = p->tryAs<production::Unit>() ) {
+            const auto& type = unit->unitType();
+            const auto synchronize_at = type.propertyItem("%synchronize-at");
+            const auto synchronize_after = type.propertyItem("%synchronize-after");
+
+            std::optional<Expression> e;
+
+            if ( synchronize_at )
+                e = synchronize_at->expression();
+
+            if ( synchronize_after )
+                e = synchronize_after->expression();
+
+            if ( e ) {
+                const auto id = "synchronize";
+                const auto ctor_ = e->tryAs<hilti::expression::Ctor>();
+                assert(ctor_);
+                auto ctor = production::Ctor(cg()->uniquer()->get(id), ctor_->ctor(), ctor_->meta().location());
+                getLookAhead({ctor}, id, ctor.location(), LiteralMode::Search);
+                validateSearchResult();
+
+                if ( synchronize_after )
+                    pb->consumeLookAhead();
+
+                return;
+            }
+        }
+
+        auto tokens = grammar.lookAheadsForProduction(*p);
         if ( ! tokens || tokens->empty() ) {
             // ignore error message that was returned, it's a bit cryptic for our use-case here
-            hilti::logger().error("&synchronize cannot be used on field, no look-ahead tokens found", p.location());
+            hilti::logger().error("&synchronize cannot be used on field, no look-ahead tokens found", p->location());
             return;
         }
 
@@ -1003,16 +1050,8 @@ struct ProductionVisitor
         }
 
         state().printDebug(builder());
-        getLookAhead(*tokens, p.symbol(), p.location(), LiteralMode::Search);
-
-        pushBuilder(builder()->addIf(builder::or_(pb->atEod(), builder::not_(state().lahead))), [&]() {
-            // We land here if we failed to find successfully find any sync
-            // token in the input stream, or because we ran into EOD. We cannot
-            // recover from this and directly trigger a parse error.
-            builder()->addAssert(state().error, "original error not set");
-            auto original_error = builder::deref(state().error);
-            pb->parseError("failed to synchronize: %s", {original_error}, original_error.meta());
-        });
+        getLookAhead(*tokens, p->symbol(), p->location(), LiteralMode::Search);
+        validateSearchResult();
     }
 
     // Generate code to synchronize on the given production always advancing input.

@@ -1,0 +1,25 @@
+# @TEST-DOC: Validates synchronization via `%synchronize-after` property.
+#
+# @TEST-EXEC: spicyc -d -j %INPUT -o foo.hlto
+# @TEST-EXEC: printf 'foobar123' | spicy-dump -d foo.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '1234567' | spicy-dump -d foo.hlto >>output 2>&1
+# @TEST-EXEC: printf '123bar4567' | spicy-dump -d foo.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+type Foo = unit {
+    data: /foobar/;
+};
+
+type Bar = unit {
+    %synchronize-after = /bar/;
+    data: bytes &eod;
+};
+
+public type Test = unit {
+    foo: Foo;
+    bar: Bar &synchronize;
+
+    on %synced { print self; confirm; }
+};

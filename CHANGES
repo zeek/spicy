@@ -1,3 +1,7 @@
+1.5.0-dev.12 | 2022-04-07 11:44:43 +0200
+
+  * GH-1134: Add support for synchronize-at and synchronize-after properties. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.10 | 2022-04-07 11:44:04 +0200
 
   * GH-1080: Reject constant declarations at non-global scope. (Benjamin Bannier, Corelight)

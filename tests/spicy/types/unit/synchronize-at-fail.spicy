@@ -1,0 +1,11 @@
+# @TEST-DOC: Validates that specifying both `%synchronize-at` and `%synchronize-after` is rejected.
+#
+# @TEST-EXEC-FAIL: spicyc -dj %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+type Foo = unit {
+    %synchronize-at = 1;
+    %synchronize-after = 1;
+};
