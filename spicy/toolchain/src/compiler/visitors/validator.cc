@@ -221,6 +221,11 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
     void operator()(const hilti::declaration::LocalVariable& n, position_t p) { checkVariable(n, p); }
 
+    void operator()(const hilti::declaration::Constant& n, position_t p) {
+        if ( auto parent = p.parent(); ! parent.isA<hilti::Module>() && ! parent.isA<hilti::type::Enum>() )
+            error("constant cannot be declared at local scope", p);
+    }
+
     void operator()(const hilti::Module& m, position_t p) {
         if ( auto version = m.moduleProperty("%spicy-version") ) {
             if ( ! version->expression() ) {

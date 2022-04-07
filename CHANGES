@@ -1,3 +1,9 @@
+1.5.0-dev.10 | 2022-04-07 11:44:04 +0200
+
+  * GH-1080: Reject constant declarations at non-global scope. (Benjamin Bannier, Corelight)
+
+  * Fix test for `Map::value_type` stringification. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.7 | 2022-03-30 15:28:35 +0200
 
   * GH-1154: Add stringificaton of `Map::value_type`. (Benjamin Bannier, Corelight)
