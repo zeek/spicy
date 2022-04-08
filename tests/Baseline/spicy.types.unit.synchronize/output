@@ -44,16 +44,16 @@ Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy]   a = A
 [spicy]   failed to parse, will try to synchronize at 'd'
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type hilti::rt::RecoverableFailure: failed to synchronize: expecting 'B' (<...>/synchronize.spicy:33:8)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: expecting 'B' (<...>/synchronize.spicy:33:8)
 [spicy] test::A
 [spicy]   a = A
 [spicy]   failed to parse, will try to synchronize at 'd'
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type hilti::rt::RecoverableFailure: failed to synchronize: expecting 'B' (<...>/synchronize.spicy:33:8)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: expecting 'B' (<...>/synchronize.spicy:33:8)
 [spicy] test::A
 [spicy]   failed to parse, will try to synchronize at 'b'
 Error: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type hilti::rt::RecoverableFailure: failed to synchronize: failed to match regular expression (<...>/synchronize.spicy:32:8)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize.spicy:32:8)
 [spicy] test::E
 [spicy]   anon = BEGIN
 [spicy]   test::E_A
