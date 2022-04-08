@@ -2095,7 +2095,7 @@ void ParserBuilder::waitForEod() {
 }
 
 void ParserBuilder::parseError(const Expression& error_msg, const Meta& location) {
-    builder()->addThrow(builder::exception(builder::typeByID("hilti::RecoverableFailure"), error_msg, location),
+    builder()->addThrow(builder::exception(builder::typeByID("spicy_rt::ParseError"), error_msg, location),
                         location);
 }
 
