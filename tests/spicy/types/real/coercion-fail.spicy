@@ -1,5 +1,6 @@
+# @TEST-REQUIRES: [ $(uname -m) != i686 ]
 # @TEST-EXEC-FAIL: ${SPICYC} -j %INPUT >output 2>&1
-# @TEST-EXEC:  btest-diff output
+# @TEST-EXEC: btest-diff output
 
 module Foo;
 

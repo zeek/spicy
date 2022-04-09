@@ -1,3 +1,4 @@
+# @TEST-REQUIRES: [ $(uname -m) != i686 ]
 # @TEST-EXEC-FAIL: ${SPICYC} -j %INPUT >>output 2>&1
 
 # @TEST-EXEC: btest-diff output
@@ -30,5 +31,4 @@ global i64: int64 = 0x8000000000000000;
 
 # ******* Coerce to Real **********
 
-global from_u64_1p53: real = 0x20000000000001;
 global from_i64_1p53: real = -0x20000000000001;
