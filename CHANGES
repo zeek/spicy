@@ -1,3 +1,9 @@
+1.4.1 | 2022-04-11 16:34:08 +0200
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
+  * Fix incorrect exception for parse errors. (Benjamin Bannier, Corelight)
+
 1.4.0 | 2022-03-11 11:16:37 +0100
 
   * Update NEWS. (Benjamin Bannier, Corelight)
