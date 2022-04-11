@@ -22,6 +22,12 @@ Returns true if we're currently parsing the originator side of a connection.
 
 Returns the current connection's UID.
 
+.. _spicy_conn_id:
+
+.. rubric:: ``function zeek::conn_id() : tuple<orig_h``
+
+Returns the current connection's 4-tuple ID.
+
 .. _spicy_flip_roles:
 
 .. rubric:: ``function zeek::flip_roles()``
@@ -36,7 +42,7 @@ Returns the number of packets seen so far on the current side of the current con
 
 .. _spicy_protocol_begin:
 
-.. rubric:: ``function zeek::protocol_begin(analyzer: optional<string> = Null) : &cxxname="spicy``
+.. rubric:: ``function zeek::protocol_begin(analyzer: optional<string> = Null)``
 
 Adds a Zeek-side child protocol analyzer to the current connection.
 
