@@ -43,10 +43,7 @@ private:
 /** AST node for a signed integer constructor. */
 class SignedInteger : public detail::IntegerBase<int64_t, type::SignedInteger> {
 public:
-    using Base = detail::IntegerBase<int64_t, type::SignedInteger>;
-    using Base::IntegerBase;
-
-    SignedInteger(uint64_t v, int w, const Meta& m = Meta()) : Base::IntegerBase(static_cast<int64_t>(v), w, m) {}
+    using detail::IntegerBase<int64_t, type::SignedInteger>::IntegerBase;
 
     bool operator==(const SignedInteger& other) const { return value() == other.value() && width() == other.width(); }
 
