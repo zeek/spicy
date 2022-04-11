@@ -1,3 +1,7 @@
+1.5.0-dev.14 | 2022-04-11 11:34:39 +0200
+
+  * Fix incorrect exception for parse errors. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.12 | 2022-04-07 11:44:43 +0200
 
   * GH-1134: Add support for synchronize-at and synchronize-after properties. (Benjamin Bannier, Corelight)
