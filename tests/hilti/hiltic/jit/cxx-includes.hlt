@@ -14,15 +14,17 @@ assert(test_cc() == 42);
 
 #include <cstdint>
 #include <my-test.h>
+#include <hilti/rt/types/integer.h>
 
-int64_t test_cc() { return test_h(); }
+hilti::rt::integer::safe<int64_t> test_cc() { return test_h(); }
 
 @TEST-END-FILE
 
 @TEST-START-FILE xxx/my-test.h
 
 #include <cstdint>
+#include <hilti/rt/types/integer.h>
 
-inline int64_t test_h() { return 42; }
+inline hilti::rt::integer::safe<int64_t> test_h() { return 42; }
 
 @TEST-END-FILE
