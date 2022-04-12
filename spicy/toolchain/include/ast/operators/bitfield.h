@@ -14,8 +14,7 @@
 
 #include <spicy/ast/types/bitfield.h>
 
-namespace spicy {
-namespace operator_ {
+namespace spicy::operator_ {
 
 namespace bitfield::detail {
 
@@ -75,5 +74,4 @@ right.
     }
 END_OPERATOR_CUSTOM_x
 
-} // namespace operator_
-} // namespace spicy
+} // namespace spicy::operator_

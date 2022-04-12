@@ -14,6 +14,7 @@
 #include <hilti/rt/context.h>
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/filesystem.h>
+#include <hilti/rt/logging.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt::test {
@@ -44,8 +45,14 @@ public:
     const auto& path() const { return _path; }
 
     ~TemporaryFile() {
-        if ( hilti::rt::filesystem::exists(_path) )
-            hilti::rt::filesystem::remove_all(_path);
+        std::error_code ec;
+        auto exists = hilti::rt::filesystem::exists(_path, ec);
+
+        if ( ec )
+            fatalError(fmt("failed to check whether %s exists: %s", _path, ec));
+
+        if ( exists )
+            hilti::rt::filesystem::remove_all(_path, ec); // Swallow any error from removal.
     }
 
 private:

@@ -6,8 +6,7 @@
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/port.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_2(port, Equal, type::Bool(), type::Port(), type::Port(), "Compares two port values.")
 STANDARD_OPERATOR_2(port, Unequal, type::Bool(), type::Port(), type::Port(), "Compares two port values.")
@@ -24,5 +23,4 @@ Returns the protocol the port is using (such as UDP or TCP).
     }
 END_METHOD
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

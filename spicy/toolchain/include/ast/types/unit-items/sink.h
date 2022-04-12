@@ -17,7 +17,7 @@ namespace spicy::type::unit::item {
  */
 class Sink : public hilti::NodeBase, public spicy::trait::isUnitItem {
 public:
-    Sink(ID id, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
+    Sink(ID id, std::optional<AttributeSet> attrs = {}, const Meta& m = Meta())
         : NodeBase(nodes(std::move(id), std::move(attrs), type::Sink(m)), m) {}
 
     const auto& id() const { return child<ID>(0); }

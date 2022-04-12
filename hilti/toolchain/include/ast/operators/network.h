@@ -7,8 +7,7 @@
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/network.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_2(network, Equal, type::Bool(), type::Network(), type::Network(), "Compares two network values.")
 STANDARD_OPERATOR_2(network, Unequal, type::Bool(), type::Network(), type::Network(), "Compares two network values.")
@@ -47,5 +46,4 @@ Returns the length of the network's prefix.
     }
 END_METHOD
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

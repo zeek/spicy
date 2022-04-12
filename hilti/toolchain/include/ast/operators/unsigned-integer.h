@@ -11,8 +11,7 @@
 #include <hilti/ast/types/real.h>
 #include <hilti/ast/types/string.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 namespace detail {
 inline static auto widestTypeUnsigned() {
@@ -126,5 +125,4 @@ STANDARD_OPERATOR_2x(unsigned_integer, CastToTime, Cast, type::Time(), type::Uns
                      type::Type_(type::Time()), "Interprets the value as number of seconds since the UNIX epoch.");
 STANDARD_OPERATOR_2x(unsigned_integer, CastToInterval, Cast, type::Interval(), type::UnsignedInteger(type::Wildcard()),
                      type::Type_(type::Interval()), "Interprets the value as number of seconds.");
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

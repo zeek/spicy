@@ -7,8 +7,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 namespace set {
 
@@ -59,8 +58,9 @@ class Set : public TypeBase,
             trait::isRuntimeNonTrivial,
             trait::isParameterized {
 public:
-    Set(Type t, Meta m = Meta()) : TypeBase(nodes(set::Iterator(t, true, m), set::Iterator(t, false, m)), m) {}
-    Set(Wildcard /*unused*/, Meta m = Meta())
+    Set(const Type& t, const Meta& m = Meta())
+        : TypeBase(nodes(set::Iterator(t, true, m), set::Iterator(t, false, m)), m) {}
+    Set(Wildcard /*unused*/, const Meta& m = Meta())
         : TypeBase(nodes(set::Iterator(Wildcard{}, true, m), set::Iterator(Wildcard{}, false, m)), m),
           _wildcard(true) {}
 
@@ -88,5 +88,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

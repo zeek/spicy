@@ -7,8 +7,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/integer.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 namespace stream {
 
@@ -37,7 +36,7 @@ public:
 /** AST node for a stream view type. */
 class View : public TypeBase, trait::isView, trait::isIterable, trait::isAllocable, trait::isRuntimeNonTrivial {
 public:
-    View(Meta m = Meta()) : TypeBase(nodes(stream::Iterator(m)), m) {}
+    View(const Meta& m = Meta()) : TypeBase(nodes(stream::Iterator(m)), m) {}
 
     bool operator==(const View& /* other */) const { return true; }
 
@@ -63,7 +62,7 @@ class Stream : public TypeBase,
                trait::isViewable,
                trait::isRuntimeNonTrivial {
 public:
-    Stream(Meta m = Meta()) : TypeBase(nodes(stream::View(m)), m) {}
+    Stream(const Meta& m = Meta()) : TypeBase(nodes(stream::View(m)), m) {}
 
     bool operator==(const Stream& /* other */) const { return true; }
 
@@ -85,6 +84,4 @@ namespace detail::stream {
 inline Node element_type = Node(type::UnsignedInteger(8, Location()));
 } // namespace detail::stream
 
-} // namespace type
-
-} // namespace hilti
+} // namespace hilti::type

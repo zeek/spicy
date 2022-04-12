@@ -5,4 +5,4 @@
 // unexpected output. Because the actual output depends on the underlying
 // compiler, we just check for a keyword being in there.
 
-Broken C++.
+Broken C;++.

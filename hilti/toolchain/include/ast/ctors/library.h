@@ -8,8 +8,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/library.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /**
  * AST node for a constructor of an instance of a library type. Because we
@@ -42,5 +41,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

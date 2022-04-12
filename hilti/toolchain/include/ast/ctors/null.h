@@ -7,13 +7,12 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/null.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a null constructor. */
 class Null : public NodeBase, public hilti::trait::isCtor {
 public:
-    Null(Meta m = Meta()) : NodeBase(nodes(type::Null(m)), m) {}
+    Null(const Meta& m = Meta()) : NodeBase(nodes(type::Null(m)), m) {}
 
     bool operator==(const Null& /* other */) const { return true; }
 
@@ -32,5 +31,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

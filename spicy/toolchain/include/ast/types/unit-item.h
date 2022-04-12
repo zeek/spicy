@@ -19,8 +19,7 @@ namespace trait {
 class isUnitItem : public hilti::trait::isNode {};
 } // namespace trait
 
-namespace type {
-namespace unit {
+namespace type::unit {
 namespace detail {
 
 #include <spicy/autogen/__unit-item.h>
@@ -34,7 +33,6 @@ inline std::ostream& operator<<(std::ostream& out, Item d) { return out << to_no
 } // namespace detail
 
 using Item = detail::Item;
-using detail::to_node;
 
 namespace item {
 /** Constructs an AST node from any class implementing the `Item` interface. */
@@ -44,8 +42,7 @@ inline Node to_node(T t) {
 }
 
 } // namespace item
-} // namespace unit
-} // namespace type
+} // namespace type::unit
 } // namespace spicy
 
 namespace spicy::type::unit::detail {

@@ -9,8 +9,7 @@
 #include <hilti/ast/types/void.h>
 #include <hilti/base/util.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_1(vector::iterator, Deref, operator_::dereferencedType(0),
                     type::constant(type::vector::Iterator(type::Wildcard())),
@@ -177,6 +176,4 @@ to (but not including) the index *end* as a new vector.
     }
 END_METHOD
 
-} // namespace operator_
-
-} // namespace hilti
+} // namespace hilti::operator_

@@ -293,7 +293,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                     return {};
             }
 
-            return ctor::Tuple(std::move(coerced), c.meta());
+            return ctor::Tuple(coerced, c.meta());
         }
 
         return {};
@@ -931,7 +931,7 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
             if ( auto result = coerceOperands(t->value(), o->operands(), function_style) ) {
                 if ( result->first ) {
                     RETURN(
-                        CoercedExpression(e.type(), expression::Ctor(hilti::ctor::Tuple(std::move(result->second)))));
+                        CoercedExpression(e.type(), expression::Ctor(hilti::ctor::Tuple(result->second))));
                 }
                 else {
                     RETURN(no_change);

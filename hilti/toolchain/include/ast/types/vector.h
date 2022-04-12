@@ -7,8 +7,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 namespace vector {
 
@@ -59,8 +58,9 @@ class Vector : public TypeBase,
                trait::isRuntimeNonTrivial,
                trait::isParameterized {
 public:
-    Vector(Type t, Meta m = Meta()) : TypeBase(nodes(vector::Iterator(t, true, m), vector::Iterator(t, false, m)), m) {}
-    Vector(Wildcard /*unused*/, Meta m = Meta())
+    Vector(const Type& t, const Meta& m = Meta())
+        : TypeBase(nodes(vector::Iterator(t, true, m), vector::Iterator(t, false, m)), m) {}
+    Vector(Wildcard /*unused*/, const Meta& m = Meta())
         : TypeBase(nodes(vector::Iterator(Wildcard{}, true, m), vector::Iterator(Wildcard{}, false, m)), m),
           _wildcard(true) {}
 
@@ -88,5 +88,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

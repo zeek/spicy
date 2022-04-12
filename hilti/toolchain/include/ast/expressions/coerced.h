@@ -6,8 +6,7 @@
 
 #include <hilti/ast/expression.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for an expression that's being coerced from one type to another. */
 class Coerced : public NodeBase, public trait::isExpression {
@@ -34,5 +33,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

@@ -12,8 +12,7 @@
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/struct.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 namespace struct_ {
 /** AST node for a struct field constructor. */
@@ -56,7 +55,7 @@ public:
         return {};
     }
 
-    void setType(type::Struct x) { children()[0] = std::move(x); }
+    void setType(const type::Struct& x) { children()[0] = x; }
 
     bool operator==(const Struct& other) const { return fields() == other.fields(); }
 
@@ -76,5 +75,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

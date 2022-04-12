@@ -60,8 +60,8 @@ static hilti::Plugin spicy_plugin() {
 
         .ast_print = [](const Node& root, hilti::printer::Stream& out) { return ast::print(root, out); },
 
-        .ast_transform = [](std::shared_ptr<hilti::Context> ctx, Node* n, hilti::Unit* u) -> bool {
-            return CodeGen(std::move(ctx)).compileModule(n, u);
+        .ast_transform = [](const std::shared_ptr<hilti::Context>& ctx, Node* n, hilti::Unit* u) -> bool {
+            return CodeGen(ctx).compileModule(n, u);
         },
     };
 }

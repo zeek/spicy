@@ -8,8 +8,7 @@
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/result.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /**
  * AST node for an expression for which evaluation is deferred at runtime to
@@ -21,7 +20,7 @@ class Deferred : public NodeBase, public trait::isExpression {
 public:
     Deferred(Expression e, Meta m = Meta()) : NodeBase(nodes(std::move(e), type::auto_), std::move(m)) {}
     Deferred(Expression e, bool catch_exception, Meta m = Meta())
-        : NodeBase(nodes(e, type::auto_), m), _catch_exception(catch_exception) {}
+        : NodeBase(nodes(std::move(e), type::auto_), std::move(m)), _catch_exception(catch_exception) {}
 
     const auto& expression() const { return child<Expression>(0); }
     bool catchException() const { return _catch_exception; }
@@ -30,7 +29,7 @@ public:
         if ( _catch_exception )
             children()[1] = type::Result(std::move(t));
         else
-            children()[1] = std::move(t);
+            children()[1] = t;
     }
 
     bool operator==(const Deferred& other) const {
@@ -55,5 +54,4 @@ private:
     bool _catch_exception;
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

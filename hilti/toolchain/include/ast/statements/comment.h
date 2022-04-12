@@ -8,8 +8,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
-namespace hilti {
-namespace statement {
+namespace hilti::statement {
 
 namespace comment {
 enum class Separator { After, BeforeAndAfter, Before };
@@ -38,5 +37,4 @@ private:
     comment::Separator _separator;
 };
 
-} // namespace statement
-} // namespace hilti
+} // namespace hilti::statement

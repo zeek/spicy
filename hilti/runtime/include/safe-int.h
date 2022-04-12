@@ -6,8 +6,7 @@
 #include <hilti/rt/3rdparty/SafeInt/SafeInt.hpp>
 #include <hilti/rt/exception.h>
 
-namespace hilti::rt {
-namespace integer {
+namespace hilti::rt::integer {
 
 namespace detail {
 class SafeIntException {
@@ -21,8 +20,7 @@ public:
 template<typename T>
 using safe = SafeInt<T, detail::SafeIntException>;
 
-} // namespace integer
-} // namespace hilti::rt
+} // namespace hilti::rt::integer
 
 // Needs to be a top level.
 template<typename O, typename T>

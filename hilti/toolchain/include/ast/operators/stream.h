@@ -9,8 +9,7 @@
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/stream.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 // stream::Iterator
 
@@ -322,5 +321,4 @@ even on frozen values.
     }
 END_METHOD
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

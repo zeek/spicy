@@ -13,8 +13,7 @@
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace declaration {
+namespace hilti::declaration {
 
 namespace parameter {
 
@@ -70,9 +69,9 @@ public:
     auto isTypeParameter() const { return _is_type_param; }
     auto isResolved(type::ResolvedState* rstate) const { return type::detail::isResolved(type(), rstate); }
 
-    void setDefault(hilti::Expression e) { children()[2] = std::move(e); }
+    void setDefault(const hilti::Expression& e) { children()[2] = e; }
     void setIsTypeParameter() { _is_type_param = true; }
-    void setType(hilti::Type t) { children()[1] = std::move(t); }
+    void setType(const hilti::Type& t) { children()[1] = t; }
 
     bool operator==(const Parameter& other) const {
         return id() == other.id() && type() == other.type() && kind() == other.kind() && default_() == other.default_();
@@ -111,5 +110,4 @@ inline bool areEquivalent(const Parameter& p1, const Parameter& p2) {
     return p1.type() == p2.type();
 }
 
-} // namespace declaration
-} // namespace hilti
+} // namespace hilti::declaration

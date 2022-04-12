@@ -7,8 +7,7 @@
 
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /**
  * AST node for a generic type defined just by the runtime library. A library
@@ -41,5 +40,4 @@ private:
     std::string _cxx_name;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

@@ -15,8 +15,7 @@
 #include <hilti/ast/types/function.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /** AST node for a struct type. */
 class Union : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isMutable {
@@ -90,5 +89,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

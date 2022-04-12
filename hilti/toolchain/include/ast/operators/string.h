@@ -11,8 +11,7 @@
 #include <hilti/ast/types/bytes.h>
 #include <hilti/ast/types/string.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_2(string, Equal, type::Bool(), type::String(), type::String(),
                     "Compares two strings lexicographically.")
@@ -56,5 +55,4 @@ BEGIN_OPERATOR_CUSTOM(string, Modulo)
     std::string doc() const { return "Renders a printf-style format string."; }
 END_OPERATOR_CUSTOM
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

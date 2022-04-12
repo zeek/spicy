@@ -64,9 +64,9 @@ public:
                attributes() == other.attributes() && callingConvention() == other.callingConvention();
     }
 
-    void setBody(Statement b) { children()[2] = std::move(b); }
-    void setID(ID id) { children()[0] = std::move(id); }
-    void setResultType(Type t) { children()[1].as<type::Function>().setResultType(std::move(t)); }
+    void setBody(const Statement& b) { children()[2] = b; }
+    void setID(const ID& id) { children()[0] = id; }
+    void setResultType(const Type& t) { children()[1].as<type::Function>().setResultType(t); }
 
     /** Internal method for use by builder API only. */
     Node& _typeNode() { return children()[1]; }

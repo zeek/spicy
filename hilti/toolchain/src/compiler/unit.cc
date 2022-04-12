@@ -140,10 +140,10 @@ Result<std::shared_ptr<Unit>> Unit::fromImport(const std::shared_ptr<Context>& c
     return unit;
 }
 
-Result<std::shared_ptr<Unit>> Unit::fromCXX(std::shared_ptr<Context> context, detail::cxx::Unit cxx,
+Result<std::shared_ptr<Unit>> Unit::fromCXX(const std::shared_ptr<Context>& context, detail::cxx::Unit cxx,
                                             const hilti::rt::filesystem::path& path) {
     return std::shared_ptr<Unit>(
-        new Unit(std::move(context), ID(fmt("<CXX/%s>", path.native())), ".cxx", path, std::move(cxx)));
+        new Unit(context, ID(fmt("<CXX/%s>", path.native())), ".cxx", path, std::move(cxx)));
 }
 
 Result<hilti::Module> Unit::_parse(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path) {

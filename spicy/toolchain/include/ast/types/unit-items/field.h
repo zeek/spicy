@@ -23,11 +23,11 @@ class Field : public hilti::NodeBase, public spicy::trait::isUnitItem {
 public:
     Field(const std::optional<ID>& id, Type type, Engine e, const std::vector<Expression>& args,
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,
-          std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {}, std::vector<Hook> hooks = {},
-          Meta m = Meta())
+          std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
+          const std::vector<Hook>& hooks = {}, Meta m = Meta())
         : NodeBase(nodes((id ? id : _uniquer.get("anon")), hilti::type::pruneWalk(std::move(type)), hilti::type::auto_,
-                         hilti::node::none, hilti::type::auto_, node::none, repeat, std::move(attrs), std::move(cond),
-                         args, sinks, hooks),
+                         hilti::node::none, hilti::type::auto_, node::none, std::move(repeat), std::move(attrs),
+                         std::move(cond), args, sinks, hooks),
                    std::move(m)),
           _is_forwarding(false),
           _is_transient(! id.has_value()),
@@ -41,10 +41,11 @@ public:
 
     Field(const std::optional<ID>& id, Ctor ctor, Engine e, const std::vector<Expression>& args,
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,
-          std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {}, std::vector<Hook> hooks = {},
-          Meta m = Meta())
+          std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
+          const std::vector<Hook>& hooks = {}, Meta m = Meta())
         : NodeBase(nodes((id ? id : _uniquer.get("anon")), hilti::node::none, hilti::type::auto_, hilti::node::none,
-                         hilti::type::auto_, ctor, repeat, std::move(attrs), std::move(cond), args, sinks, hooks),
+                         hilti::type::auto_, std::move(ctor), std::move(repeat), std::move(attrs), std::move(cond),
+                         args, sinks, hooks),
                    std::move(m)),
           _is_forwarding(false),
           _is_transient(! id.has_value()),
@@ -58,11 +59,11 @@ public:
 
     Field(const std::optional<ID>& id, Item item, Engine e, const std::vector<Expression>& args,
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,
-          std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {}, std::vector<Hook> hooks = {},
-          const Meta& m = Meta())
+          std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
+          const std::vector<Hook>& hooks = {}, const Meta& m = Meta())
         : NodeBase(nodes((id ? id : _uniquer.get("anon")), hilti::node::none, hilti::type::auto_, hilti::node::none,
-                         hilti::type::auto_, std::move(item), repeat, std::move(attrs), std::move(cond), args, sinks,
-                         hooks),
+                         hilti::type::auto_, std::move(item), std::move(repeat), std::move(attrs), std::move(cond),
+                         args, sinks, hooks),
                    m),
           _is_forwarding(false),
           _is_transient(! id.has_value()),
@@ -76,11 +77,12 @@ public:
 
     Field(const std::optional<ID>& id, NodeRef type, Engine e, const std::vector<Expression>& args,
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,
-          std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {}, std::vector<Hook> hooks = {},
-          const Meta& m = Meta())
+          std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
+          const std::vector<Hook>& hooks = {}, const Meta& m = Meta())
         : NodeBase(nodes((id ? id : _uniquer.get("anon")), node::none, hilti::type::auto_, hilti::node::none,
-                         hilti::type::auto_, node::none, repeat, std::move(attrs), std::move(cond), args, sinks, hooks),
-                   std::move(m)),
+                         hilti::type::auto_, node::none, std::move(repeat), std::move(attrs), std::move(cond), args,
+                         sinks, hooks),
+                   m),
           _type(std::move(type)),
           _is_forwarding(false),
           _is_transient(! id.has_value()),

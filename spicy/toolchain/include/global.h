@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 
-#include <spicy/ast/aliases.h>
+#include "spicy/ast/aliases.h"
 
 namespace spicy {
 

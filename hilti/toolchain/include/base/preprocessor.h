@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <hilti/base/result.h>
@@ -35,7 +36,7 @@ public:
      *
      * @param constants map of constants that preprocessor directives can work on
      */
-    SourceCodePreprocessor(std::map<ID, Value> constants) : _constants(constants) {}
+    SourceCodePreprocessor(std::map<ID, Value> constants) : _constants(std::move(std::move(constants))) {}
 
     /**
      * Process one preprocessor directive of the form `@<id> [expression]`.

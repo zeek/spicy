@@ -9,15 +9,14 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/network.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a Network constructor. */
 class Network : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Network;
 
-    Network(const Value& network, Meta m = Meta()) : NodeBase(nodes(type::Network(m)), m), _network(network) {}
+    Network(const Value& network, const Meta& m = Meta()) : NodeBase(nodes(type::Network(m)), m), _network(network) {}
 
     const auto& value() const { return _network; }
 
@@ -40,5 +39,4 @@ private:
     Value _network;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

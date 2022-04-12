@@ -12,8 +12,7 @@
 #include <hilti/ast/types/union.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 namespace union_::detail {
 
@@ -132,5 +131,4 @@ BEGIN_OPERATOR_CUSTOM(union_, HasMember)
     std::string doc() const { return "Returns true if the union's field is set."; }
 END_OPERATOR_CUSTOM
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

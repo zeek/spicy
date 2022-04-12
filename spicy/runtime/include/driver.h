@@ -170,7 +170,10 @@ public:
      */
     ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, std::optional<std::string> cid,
                           std::optional<UnitContext> context, Driver* driver)
-        : ParsingState(type, parser, std::move(context)), _id(id), _cid(cid), _driver(driver) {}
+        : ParsingState(type, parser, std::move(context)),
+          _id(std::move(std::move(id))),
+          _cid(std::move(std::move(cid))),
+          _driver(driver) {}
 
     /** Returns the textual ID associated with the state. */
     const auto& id() const { return _id; }

@@ -7,13 +7,12 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/real.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a double precision floating-point constructor. */
 class Real : public NodeBase, public hilti::trait::isCtor {
 public:
-    Real(double v, Meta m = Meta()) : NodeBase(nodes(type::Real(m)), m), _value(v) {}
+    Real(double v, const Meta& m = Meta()) : NodeBase(nodes(type::Real(m)), m), _value(v) {}
 
     auto value() const { return _value; }
 
@@ -37,5 +36,4 @@ private:
     double _value;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

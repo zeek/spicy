@@ -11,12 +11,11 @@
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/string.h>
 
-namespace hilti {
-namespace operator_ {
-
+namespace hilti::operator_ {
 OPERATOR_DECLARE_ONLY(function, Call)
+}
 
-namespace function {
+namespace hilti::operator_::function {
 
 class Call : public hilti::expression::ResolvedOperatorBase {
 public:
@@ -57,7 +56,4 @@ public:
     };
 };
 
-} // namespace function
-
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_::function

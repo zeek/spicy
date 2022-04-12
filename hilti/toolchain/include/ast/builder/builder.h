@@ -77,12 +77,12 @@ public:
         _block._add(statement::Expression(builder::sumAssign(builder::id(std::move(dst)), std::move(src), m), m));
     }
 
-    void addCall(ID id, std::vector<Expression> v, const Meta& m = Meta()) {
-        _block._add(statement::Expression(builder::call(std::move(id), std::move(v), m), m));
+    void addCall(ID id, const std::vector<Expression>& v, const Meta& m = Meta()) {
+        _block._add(statement::Expression(builder::call(std::move(id), v, m), m));
     }
 
-    void addMemberCall(Expression self, const ID& id, std::vector<Expression> v, const Meta& m = Meta()) {
-        _block._add(statement::Expression(builder::memberCall(std::move(self), id, std::move(v), m), m));
+    void addMemberCall(Expression self, const ID& id, const std::vector<Expression>& v, const Meta& m = Meta()) {
+        _block._add(statement::Expression(builder::memberCall(std::move(self), id, v, m), m));
     }
 
     void addComment(std::string comment,
@@ -194,8 +194,8 @@ public:
         statement::Switch& _switch;
     };
 
-    auto addSwitch(Expression cond, Meta m = Meta()) {
-        _block._add(statement::Switch(std::move(cond), {}, std::move(m)));
+    auto addSwitch(Expression cond, const Meta& m = Meta()) {
+        _block._add(statement::Switch(std::move(cond), {}, m));
         return SwitchProxy(this, lastStatement<statement::Switch>());
     }
 

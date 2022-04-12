@@ -6,8 +6,7 @@
 
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /** AST node for an "auto" type. */
 class Auto : public TypeBase, type::trait::isAllocable {
@@ -34,5 +33,4 @@ private:
 /** Singleton. */
 static const Type auto_ = Auto::create(Location("<singleton>"));
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -19,7 +20,7 @@ public:
      * @param output stream to send output to
      * @param options output controlling specifics of the output
      */
-    TextPrinter(std::ostream& output, OutputOptions options) : _output(output), _options(std::move(options)){};
+    TextPrinter(std::ostream& output, OutputOptions options) : _output(output), _options(options){};
 
     /**
      * Render one parsed value into text.
@@ -33,7 +34,7 @@ private:
     std::ostream& out() { return _output; }
 
     // Insert current indentation into output stream.
-    void outputIndent() { out() << std::string(_level * 2, ' '); }
+    void outputIndent() { out() << std::string(static_cast<std::basic_string<char>::size_type>(_level) * 2, ' '); }
 
     // Increase indentation level while executing callback function.
     void indent(const std::function<void()>& func) {

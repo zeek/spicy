@@ -5,8 +5,7 @@
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/exception.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 BEGIN_CTOR(exception, Ctor)
     auto ctorType() const { return type::Exception(type::Wildcard()); }
@@ -29,5 +28,4 @@ Returns the textual message associated with an exception object.
 )"};
     }
 END_METHOD
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

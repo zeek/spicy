@@ -6,8 +6,7 @@
 
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /** AST node for an `exception` type. */
 class Exception : public TypeBase, trait::isAllocable, trait::isParameterized {
@@ -37,5 +36,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

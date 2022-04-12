@@ -350,13 +350,13 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
             }
 
             case 1: {
-                auto call = builder::call("hilti::print", std::move(exprs));
+                auto call = builder::call("hilti::print", exprs);
                 replaceNode(&p, hilti::statement::Expression(call, p.node.location()));
                 break;
             }
 
             default: {
-                auto call = builder::call("hilti::printValues", {builder::tuple(std::move(exprs))});
+                auto call = builder::call("hilti::printValues", {builder::tuple(exprs)});
                 replaceNode(&p, hilti::statement::Expression(call, p.node.location()));
                 break;
             }

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -18,7 +19,7 @@ public:
 
     void beginLine() {
         _flush_pending();
-        _stream << std::string(_indent * 4, ' ');
+        _stream << std::string(static_cast<size_t>(_indent) * 4, ' ');
     }
     void endLine() {
         if ( _compact )

@@ -6,8 +6,7 @@
 
 #include <hilti/ast/expression.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for an expression that will be coerced from one type to another.
  *  The actual coercion expression will be generated later and replace the
@@ -38,5 +37,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

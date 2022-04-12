@@ -61,7 +61,7 @@ class Unit : detail::AssignIndices,
              hilti::type::trait::takesArguments,
              hilti::type::trait::isMutable {
 public:
-    Unit(std::vector<type::function::Parameter> params, std::vector<unit::Item> i,
+    Unit(const std::vector<type::function::Parameter>& params, std::vector<unit::Item> i,
          const std::optional<AttributeSet>& /* attrs */ = {}, Meta m = Meta())
         : TypeBase(hilti::nodes(node::none, node::none, node::none,
                                 hilti::util::transform(params,
@@ -162,15 +162,15 @@ public:
 
     /** Adds a number of new items to the unit. */
     void addItems(std::vector<unit::Item> items) {
-        auto new_items = assignIndices(items);
+        auto new_items = assignIndices(std::move(items));
 
         for ( auto i : new_items )
             children().emplace_back(std::move(i));
     }
 
-    void setAttributes(AttributeSet attrs) { children()[2] = std::move(attrs); }
+    void setAttributes(const AttributeSet& attrs) { children()[2] = attrs; }
     void setGrammar(std::shared_ptr<spicy::detail::codegen::Grammar> g) { _grammar = std::move(g); }
-    void setID(ID id) { children()[1] = std::move(id); }
+    void setID(const ID& id) { children()[1] = id; }
     void setPublic(bool p) { _public = p; }
 
     bool operator==(const Unit& other) const {
@@ -183,12 +183,8 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
 
     auto _isResolved(ResolvedState* rstate) const {
-        for ( const auto& i : items() ) {
-            if ( ! i.isResolved() )
-                return false;
-        }
-
-        return true;
+        auto xs = items();
+        return std::all_of(xs.begin(), xs.end(), [](const auto& x) { return x.isResolved(); });
     }
 
     // type::trait::Parameterized interface.
@@ -210,7 +206,7 @@ public:
                                                      StrongReference(hilti::type::pruneWalk(n->as<Type>())), n->meta());
         Declaration d =
             hilti::declaration::Expression("self", std::move(self), declaration::Linkage::Private, n->meta());
-        n->children()[0] = std::move(d);
+        n->children()[0] = d;
     }
 
 private:

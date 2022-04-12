@@ -15,8 +15,7 @@ namespace trait {
 class isCtor : public isNode {};
 } // namespace trait
 
-namespace ctor {
-namespace detail {
+namespace ctor::detail {
 #include <hilti/autogen/__ctor.h>
 
 /** Creates an AST node representing a `Ctor`. */
@@ -35,11 +34,10 @@ inline bool operator==(const Ctor& x, const Ctor& y) {
 
 inline bool operator!=(const Ctor& c1, const Ctor& c2) { return ! (c1 == c2); }
 
-} // namespace detail
-} // namespace ctor
+} // namespace ctor::detail
 
 using Ctor = ctor::detail::Ctor;
-using ctor::detail::to_node;
+using ctor::detail::to_node; // NOLINT(misc-unused-using-decls)
 
 /** Constructs an AST node from any class implementing the `Ctor` interface. */
 template<typename T, typename std::enable_if_t<std::is_base_of<trait::isCtor, T>::value>* = nullptr>

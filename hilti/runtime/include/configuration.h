@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -16,10 +17,10 @@ struct Configuration {
     Configuration();
 
     /** Stack size for fibers with individual stacks. */
-    size_t fiber_individual_stack_size = 1 * 1024 * 1024;
+    size_t fiber_individual_stack_size = static_cast<size_t>(1 * 1024 * 1024);
 
     /** Stack size for shared fiber stack. */
-    size_t fiber_shared_stack_size = 1 * 1024 * 1024;
+    size_t fiber_shared_stack_size = static_cast<size_t>(1 * 1024 * 1024);
 
     /** Max. number of fibers cached for reuse. */
     unsigned int fiber_cache_size = 100;
@@ -31,7 +32,7 @@ struct Configuration {
      * exception if we're getting too low. (It seems that the latter can
      * require quite a bit of space, hence the large default here.)
      **/
-    size_t fiber_min_stack_size = 20 * 1024;
+    size_t fiber_min_stack_size = static_cast<size_t>(20 * 1024);
 
     /** File where debug output is to be sent. Default is stderr. */
     std::optional<hilti::rt::filesystem::path> debug_out;

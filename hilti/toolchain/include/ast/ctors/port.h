@@ -9,15 +9,14 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/port.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a port constructor. */
 class Port : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Port;
 
-    Port(const Value& port, Meta m = Meta()) : NodeBase(nodes(type::Port(m)), m), _port(port) {}
+    Port(const Value& port, const Meta& m = Meta()) : NodeBase(nodes(type::Port(m)), m), _port(port) {}
 
     const auto& value() const { return _port; }
 
@@ -40,5 +39,4 @@ private:
     Value _port;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

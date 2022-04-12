@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <utility>
 #include <vector>
@@ -9,8 +10,7 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 namespace tuple {
 
@@ -56,12 +56,12 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const {
-        for ( const auto& c : children() ) {
-            if ( auto t = c.tryAs<Type>(); t && ! type::detail::isResolved(*t, rstate) )
-                return false;
-        }
+        const auto& cs = children();
 
-        return true;
+        return std::all_of(cs.begin(), cs.end(), [&](const auto& c) {
+            auto t = c.template tryAs<Type>();
+            return ! t || type::detail::isResolved(*t, rstate);
+        });
     }
 
     /** Implements the `Type` interface. */
@@ -75,6 +75,7 @@ public:
 private:
     std::vector<tuple::Element> _typesToElements(std::vector<Type>&& types) {
         std::vector<tuple::Element> elements;
+        elements.reserve(types.size());
         for ( auto&& t : types )
             elements.emplace_back(std::move(t), t.meta());
 
@@ -84,5 +85,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

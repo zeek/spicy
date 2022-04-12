@@ -8,8 +8,7 @@
 #include <hilti/ast/types/tuple.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 namespace map {
 
@@ -22,7 +21,7 @@ class Iterator : public TypeBase,
                  trait::isRuntimeNonTrivial,
                  trait::isParameterized {
 public:
-    Iterator(Type ktype, Type vtype, bool const_, Meta m = Meta())
+    Iterator(Type ktype, Type vtype, bool const_, const Meta& m = Meta())
         : TypeBase(nodes(type::Tuple({std::move(ktype), std::move(vtype)}, m)), m), _const(const_) {}
     Iterator(Wildcard /*unused*/, bool const_ = true, Meta m = Meta())
         : TypeBase(nodes(type::unknown, type::unknown), std::move(m)), _wildcard(true), _const(const_) {}
@@ -76,9 +75,9 @@ class Map : public TypeBase,
             trait::isRuntimeNonTrivial,
             trait::isParameterized {
 public:
-    Map(Type k, Type v, Meta m = Meta())
+    Map(const Type& k, const Type& v, const Meta& m = Meta())
         : TypeBase(nodes(map::Iterator(k, v, true, m), map::Iterator(k, v, false, m)), m) {}
-    Map(Wildcard /*unused*/, Meta m = Meta())
+    Map(Wildcard /*unused*/, const Meta& m = Meta())
         : TypeBase(nodes(map::Iterator(Wildcard{}, true, m), map::Iterator(Wildcard{}, false, m)), m),
           _wildcard(true) {}
 
@@ -109,5 +108,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

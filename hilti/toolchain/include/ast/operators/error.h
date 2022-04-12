@@ -5,8 +5,7 @@
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/error.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ { // NOLINT(modernize-concat-nested-namespaces)
 
 BEGIN_METHOD(error, Description)
     auto signature() const {
@@ -18,5 +17,4 @@ BEGIN_METHOD(error, Description)
     }
 END_METHOD
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

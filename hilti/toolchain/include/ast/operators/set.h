@@ -9,8 +9,7 @@
 #include <hilti/ast/types/void.h>
 #include <hilti/base/util.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 STANDARD_OPERATOR_1(set::iterator, Deref, operator_::dereferencedType(0),
                     type::constant(type::set::Iterator(type::Wildcard())),
@@ -53,6 +52,4 @@ Removes all elements from the set.
     }
 END_METHOD
 
-} // namespace operator_
-
-} // namespace hilti
+} // namespace hilti::operator_

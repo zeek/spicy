@@ -117,7 +117,13 @@ inline const char sink_name[] = "__sink__";
 class Sink {
 public:
     Sink() { _init(); } // NOLINT(hicpp-member-init)
-    ~Sink() { _close(true); }
+    ~Sink() {
+        try {
+            _close(true);
+        } catch ( ... ) {
+            // Ignore errors.
+        }
+    }
 
     Sink(const Sink&) = delete;
     Sink(Sink&&) = default;

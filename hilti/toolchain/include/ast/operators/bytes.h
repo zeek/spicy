@@ -11,8 +11,7 @@
 #include <hilti/ast/types/string.h>
 #include <hilti/ast/types/vector.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 // bytes::Iterator
 
@@ -379,5 +378,4 @@ expression is considered anchored to the beginning of the data.
     }
 END_METHOD
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

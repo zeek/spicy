@@ -4,12 +4,14 @@ Checks: '
   -bugprone-easily-swappable-parameters,
   -bugprone-reserved-identifier,
   -bugprone-branch-clone,
+  -bugprone-macro-parentheses,
 
   cert-*,
   -cert-dcl37-c,
   -cert-dcl51-cpp,
   -cert-err58-cpp,
   -cert-dcl58-cpp,
+  -cert-dcl21-cpp,
 
   clang*,
   -clang-analyzer-cplusplus.NewDeleteLeaks,
@@ -40,6 +42,7 @@ Checks: '
   -readability-convert-member-functions-to-static,
   -readability-else-after-return,
   -readability-implicit-bool-conversion,
+  -readability-identifier-length,
   -readability-magic-numbers,
   -readability-make-member-function-const,
   -readability-named-parameter,
@@ -48,7 +51,7 @@ Checks: '
   -readability-function-size
   '
 
-HeaderFilterRegex: '.*(/include/(hilti|spicy)/(^3).*/[^_][^_][^/]*$)|(^3rdparty.*)'
+HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z]+/include/([a-zA-Z]+/)*[a-zA-Z]+\.h'
 WarningsAsErrors: '*'
 
 CheckOptions:

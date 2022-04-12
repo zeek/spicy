@@ -17,11 +17,9 @@
 #include <variant>
 #include <vector>
 
-namespace hilti {
-namespace trait {
+namespace hilti::trait {
 class isNode {};
-} // namespace trait
-} // namespace hilti
+} // namespace hilti::trait
 
 #include <hilti/ast/meta.h>
 #include <hilti/ast/node-ref.h>
@@ -47,14 +45,14 @@ namespace detail {
 using PropertyValue = std::variant<bool, const char*, double, int, int64_t, unsigned int, uint64_t, std::string>;
 
 /** Renders a property value into a string for display. */
-inline std::string to_string(PropertyValue v) {
+inline std::string to_string(const PropertyValue& v) {
     struct Visitor {
         auto operator()(bool s) { return std::string(s ? "true" : "false"); }
         auto operator()(const char* s) { return util::escapeUTF8(s); }
         auto operator()(double d) { return util::fmt("%.6f", d); }
         auto operator()(int i) { return util::fmt("%d", i); }
         auto operator()(int64_t i) { return util::fmt("%" PRId64, i); }
-        auto operator()(std::string s) { return util::escapeUTF8(s); }
+        auto operator()(const std::string& s) { return util::escapeUTF8(s); }
         auto operator()(unsigned int u) { return util::fmt("%u", u); }
         auto operator()(uint64_t u) { return util::fmt("%" PRIu64, u); }
     };
@@ -228,7 +226,7 @@ public:
      * @param l custom location to associate with the error
      * @param context further lines of context to show along with error
      */
-    void addError(std::string msg, Location l, std::vector<std::string> context = {}) {
+    void addError(std::string msg, const Location& l, std::vector<std::string> context = {}) {
         addError(std::move(msg), location(), node::ErrorPriority::Normal, std::move(context));
     }
 
@@ -307,6 +305,9 @@ public:
      * this node will remain valid and reflect the new value.
      */
     Node& operator=(const Node& n) {
+        if ( &n == this )
+            return *this;
+
         _scope = n._scope;
         node::detail::ErasedBase::operator=(n);
         return *this;
@@ -428,7 +429,7 @@ public:
 
         std::vector<NodeRef> refs;
         for ( auto c = _children.begin(); c != end_; c = std::next(c) )
-            refs.push_back(NodeRef(*c));
+            refs.emplace_back(*c);
 
         return refs;
     }
@@ -520,22 +521,22 @@ public:
     using reference = BaseIterator::reference;
     using iterator_category = BaseIterator::iterator_category;
 
-    explicit RangeIterator(BaseIterator i) : _iter(std::move(i)) {}
+    explicit RangeIterator(BaseIterator i) : _iter(i) {}
     RangeIterator(const RangeIterator& other) = default;
-    RangeIterator(RangeIterator&& other) = default;
+    RangeIterator(RangeIterator&& other) noexcept = default;
     RangeIterator() {}
     ~RangeIterator() = default;
 
     const Node& node() const { return *_iter; }
 
     RangeIterator& operator=(const RangeIterator& other) = default;
-    RangeIterator& operator=(RangeIterator&& other) = default;
+    RangeIterator& operator=(RangeIterator&& other) noexcept = default;
     const T& operator*() const { return value(); }
     const T* operator->() const { return &value(); }
     bool operator==(const RangeIterator& other) const { return _iter == other._iter; }
     bool operator!=(const RangeIterator& other) const { return ! (*this == other); }
 
-    const RangeIterator operator++(int) {
+    RangeIterator operator++(int) {
         auto x = RangeIterator(_iter);
         ++_iter;
         return x;
@@ -578,13 +579,12 @@ public:
     using const_iterator = RangeIterator<T>;
 
     explicit Range() {}
-    Range(std::vector<Node>::const_iterator begin, std::vector<Node>::const_iterator end)
-        : _begin(std::move(begin)), _end(std::move(end)) {}
+    Range(std::vector<Node>::const_iterator begin, std::vector<Node>::const_iterator end) : _begin(begin), _end(end) {}
 
     explicit Range(const std::vector<Node>& nodes) : Range(nodes.begin(), nodes.end()) {}
 
     Range(const Range& other) = default;
-    Range(Range&& other) = default;
+    Range(Range&& other) noexcept = default;
     ~Range() = default;
 
     auto begin() const { return const_iterator(_begin); }
@@ -628,7 +628,7 @@ public:
     }
 
     Range& operator=(const Range& other) = default;
-    Range& operator=(Range&& other) = default;
+    Range& operator=(Range&& other) noexcept = default;
 
 private:
     RangeIterator<T> _begin;
@@ -655,20 +655,20 @@ public:
 
     explicit SetIterator(BaseIterator i) : _iter(std::move(i)) {}
     SetIterator(const SetIterator& other) = default;
-    SetIterator(SetIterator&& other) = default;
+    SetIterator(SetIterator&& other) noexcept = default;
     SetIterator() {}
     ~SetIterator() = default;
 
     const Node& node() const { return *_iter; }
 
     SetIterator& operator=(const SetIterator& other) = default;
-    SetIterator& operator=(SetIterator&& other) = default;
+    SetIterator& operator=(SetIterator&& other) noexcept = default;
     const T& operator*() const { return value(); }
     const T* operator->() const { return &value(); }
     bool operator==(const SetIterator& other) const { return _iter == other._iter; }
     bool operator!=(const SetIterator& other) const { return ! (*this == other); }
 
-    const SetIterator operator++(int) {
+    SetIterator operator++(int) {
         auto x = SetIterator(_iter);
         ++_iter;
         return x;
@@ -713,7 +713,7 @@ public:
 
     Set() {}
     Set(const Set& other) = default;
-    Set(Set&& other) = default;
+    Set(Set&& other) noexcept = default;
     ~Set() = default;
 
     auto begin() const { return const_iterator(_set.begin()); }
@@ -754,7 +754,7 @@ public:
     }
 
     Set& operator=(const Set& other) = default;
-    Set& operator=(Set&& other) = default;
+    Set& operator=(Set&& other) noexcept = default;
 
 private:
     std::vector<std::reference_wrapper<const T>> _set;
@@ -939,7 +939,7 @@ std::vector<NodeRef> NodeBase::childRefsOfType() const {
     typename std::vector<NodeRef> n;
     for ( auto c = _children.begin(); c != _children.end(); c = std::next(c) ) {
         if ( c->isA<T>() )
-            n.push_back(NodeRef(*c));
+            n.emplace_back(*c);
     }
 
     return n;

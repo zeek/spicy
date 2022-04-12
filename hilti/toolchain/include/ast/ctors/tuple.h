@@ -12,13 +12,12 @@
 #include <hilti/ast/types/tuple.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a tuple constructor. */
 class Tuple : public NodeBase, public hilti::trait::isCtor {
 public:
-    Tuple(std::vector<Expression> v, Meta m = Meta()) : NodeBase(nodes(_inferType(v), v), std::move(m)) {}
+    Tuple(const std::vector<Expression>& v, Meta m = Meta()) : NodeBase(nodes(_inferType(v), v), std::move(m)) {}
 
     auto value() const { return children<Expression>(1, -1); }
 
@@ -34,15 +33,12 @@ public:
 
     /** Implements `Ctor` interface. */
     auto isLhs() const {
-        if ( value().empty() )
+        const auto& v = value();
+
+        if ( v.empty() )
             return false;
 
-        for ( const auto& e : value() ) {
-            if ( ! e.isLhs() )
-                return false;
-        }
-
-        return true;
+        return std::all_of(v.begin(), v.end(), [](const auto& e) { return e.isLhs(); });
     }
 
     /** Implements `Ctor` interface. */
@@ -60,6 +56,7 @@ private:
         }
 
         std::vector<Type> types;
+        types.reserve(exprs.size());
         for ( const auto& e : exprs )
             types.push_back(e.type());
 
@@ -67,5 +64,4 @@ private:
     }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

@@ -26,15 +26,15 @@
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /** AST node for a struct type. */
 class Struct : public TypeBase, trait::isAllocable, trait::isParameterized, trait::takesArguments, trait::isMutable {
 public:
-    Struct(std::vector<Declaration> fields, Meta m = Meta()) : TypeBase(nodes(node::none, std::move(fields)), m) {}
+    Struct(std::vector<Declaration> fields, Meta m = Meta())
+        : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {}
 
-    Struct(std::vector<type::function::Parameter> params, std::vector<Declaration> fields, Meta m = Meta())
+    Struct(const std::vector<type::function::Parameter>& params, std::vector<Declaration> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields),
                          util::transform(params,
                                          [](auto p) {
@@ -43,7 +43,7 @@ public:
                                          })),
                    std::move(m)) {}
 
-    Struct(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(nodes(node::none), m), _wildcard(true) {}
+    Struct(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(nodes(node::none), std::move(m)), _wildcard(true) {}
 
     NodeRef selfRef() const {
         if ( children()[0].isA<Declaration>() )
@@ -88,17 +88,17 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const {
-        for ( const auto& c : children() ) {
-            if ( auto f = c.tryAs<declaration::Field>() ) {
-                if ( ! f->isResolved(rstate) )
-                    return false;
-            }
-            else if ( auto p = c.tryAs<type::function::Parameter>() )
-                if ( ! p->isResolved(rstate) )
-                    return false;
-        }
+        const auto& cs = children();
 
-        return true;
+        return std::all_of(cs.begin(), cs.end(), [&](const auto& c) {
+            if ( auto f = c.template tryAs<declaration::Field>() )
+                return f->isResolved(rstate);
+
+            else if ( auto p = c.template tryAs<type::function::Parameter>() )
+                return p->isResolved(rstate);
+
+            return true;
+        });
     }
 
     /** Implements the `Type` interface. */
@@ -125,12 +125,11 @@ public:
         Expression self =
             expression::Keyword(expression::keyword::Kind::Self, type::ValueReference(NodeRef(*n)), n->meta());
         Declaration d = declaration::Expression("self", std::move(self), declaration::Linkage::Private, n->meta());
-        n->children()[0] = std::move(d);
+        n->children()[0] = d;
     }
 
 private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

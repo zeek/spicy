@@ -84,9 +84,9 @@ public:
 
     ModelBase() = delete;
     ModelBase(const ModelBase&) = default;
-    ModelBase(ModelBase&&) = default;
+    ModelBase(ModelBase&&) noexcept = default;
     ModelBase& operator=(const ModelBase&) = default;
-    ModelBase& operator=(ModelBase&&) = default;
+    ModelBase& operator=(ModelBase&&) noexcept = default;
 
 
     const T& data() const { return this->_data; }

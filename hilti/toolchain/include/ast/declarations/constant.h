@@ -10,8 +10,7 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/types/auto.h>
 
-namespace hilti {
-namespace declaration {
+namespace hilti::declaration {
 
 /** AST node for a declaration of a constant. */
 class Constant : public DeclarationBase {
@@ -32,7 +31,7 @@ public:
             return value().type();
     }
 
-    void setValue(hilti::Expression i) { children()[2] = std::move(i); }
+    void setValue(const hilti::Expression& i) { children()[2] = i; }
 
     bool operator==(const Constant& other) const { return id() == other.id() && value() == other.value(); }
 
@@ -54,5 +53,4 @@ private:
     Linkage _linkage;
 };
 
-} // namespace declaration
-} // namespace hilti
+} // namespace hilti::declaration

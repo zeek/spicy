@@ -108,7 +108,7 @@ public:
         return *this;
     }
 
-    const Iterator operator++(int) {
+    Iterator operator++(int) {
         auto ret = *this;
         ++(*this);
         return ret;
@@ -184,7 +184,7 @@ public:
         return *this;
     }
 
-    const ConstIterator operator++(int) {
+    ConstIterator operator++(int) {
         auto ret = *this;
         ++(*this);
         return ret;
@@ -366,6 +366,9 @@ public:
      * @return a reference to the changed `Vector`
      */
     Vector& operator=(const Vector& other) {
+        if ( &other == this )
+            return *this;
+
         static_cast<V&>(*this) = static_cast<const V&>(other);
         return *this;
     }
@@ -473,13 +476,13 @@ public:
         return pos;
     }
 
-    auto begin() { return iterator(0u, _control); }
+    auto begin() { return iterator(0U, _control); }
     auto end() { return iterator(size(), _control); }
 
-    auto begin() const { return const_iterator(0u, _control); }
+    auto begin() const { return const_iterator(0U, _control); }
     auto end() const { return const_iterator(size(), _control); }
 
-    auto cbegin() const { return const_iterator(0u, _control); }
+    auto cbegin() const { return const_iterator(0U, _control); }
     auto cend() const { return const_iterator(size(), _control); }
 
     size_type size() const { return V::size(); }

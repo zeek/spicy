@@ -38,8 +38,7 @@ namespace logging::debug {
 inline const DebugStream Parser("parser");
 } // namespace logging::debug
 
-namespace detail {
-namespace parser {
+namespace detail::parser {
 
 class Parser;
 class Scanner;
@@ -72,6 +71,5 @@ private:
     int _expression_mode = 0;
 };
 
-} // namespace parser
-} // namespace detail
+} // namespace detail::parser
 } // namespace hilti

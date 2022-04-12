@@ -81,7 +81,7 @@ std::string fmt(const char* fmt, const Args&... args) {
     return tfm::format(fmt, args...);
 }
 
-using hilti::rt::transform;
+using hilti::rt::transform; // NOLINT(misc-unused-using-decls)
 
 /** Applies a function to each element of a set, returning a vector with the results. */
 template<typename X, typename F>
@@ -329,7 +329,7 @@ constexpr std::pair<uintmax_t, uintmax_t> unsigned_integer_range(int width) {
  * @param handler: an error-handling function object or lambda.
  */
 template<typename Error>
-uint64_t chars_to_uint64(const char* dgts, unsigned int base, Error handler) {
+uint64_t chars_to_uint64(const char* dgts, int base, Error handler) {
     errno = 0;
     char* cp;
     auto u = strtoul(dgts, &cp, base);
@@ -372,8 +372,8 @@ double chars_to_double(const char* dgts, Error handler) {
 extern std::string uitoa_n(uint64_t value, unsigned int base, int n = -1);
 
 using hilti::rt::escapeBytes;
-using hilti::rt::escapeUTF8;
-using hilti::rt::expandEscapes;
+using hilti::rt::escapeUTF8;    // NOLINT(misc-unused-using-decls)
+using hilti::rt::expandEscapes; // NOLINT(misc-unused-using-decls)
 
 /**
  * Wrapper for `escapeBytes` that produces a valid C++ string literal.
@@ -382,7 +382,7 @@ using hilti::rt::expandEscapes;
  * @return escaped std::string
  *
  */
-inline std::string escapeBytesForCxx(std::string_view s) { return escapeBytes(std::move(s), true, true); }
+inline std::string escapeBytesForCxx(std::string_view s) { return escapeBytes(s, true, true); }
 
 /**
  * Turns an arbitrary string into something that can be used as C-level
@@ -403,7 +403,7 @@ extern hilti::Result<hilti::rt::filesystem::path> findInPaths(const hilti::rt::f
                                                               const std::vector<hilti::rt::filesystem::path>& paths);
 
 /** Turns a path into an absolute path with all dots removed. */
-using hilti::rt::normalizePath;
+using hilti::rt::normalizePath; // NOLINT(misc-unused-using-decls)
 
 /**
  * Creates a temporary file in the system temporary directory.
@@ -411,7 +411,7 @@ using hilti::rt::normalizePath;
  * @param prefix prefix to use for the file's basename
  * @return a valid path or an error
  * */
-using hilti::rt::createTemporaryFile;
+using hilti::rt::createTemporaryFile; // NOLINT(misc-unused-using-decls)
 
 /** Returns the path of the current executable. */
 hilti::rt::filesystem::path currentExecutable();

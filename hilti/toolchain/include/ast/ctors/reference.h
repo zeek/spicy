@@ -11,14 +11,13 @@
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/reference.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a constructor for a `ref<T>` value (which can only be null). */
 class StrongReference : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a null value of type `t`. */
-    StrongReference(Type t, Meta m = Meta()) : NodeBase(nodes(t, type::StrongReference(t, m)), m) {}
+    StrongReference(const Type& t, const Meta& m = Meta()) : NodeBase(nodes(t, type::StrongReference(t, m)), m) {}
 
     const Type& dereferencedType() const { return child<Type>(0); }
 
@@ -45,7 +44,7 @@ public:
 class WeakReference : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a null value of type `t`. */
-    WeakReference(Type t, Meta m = Meta()) : NodeBase(nodes(t, type::WeakReference(t, m)), m) {}
+    WeakReference(const Type& t, const Meta& m = Meta()) : NodeBase(nodes(t, type::WeakReference(t, m)), m) {}
 
     const Type& dereferencedType() const { return child<Type>(0); }
 
@@ -73,7 +72,7 @@ class ValueReference : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a reference value of type `t`. */
     ValueReference(Expression e, Meta m = Meta())
-        : NodeBase(nodes(type::ValueReference(type::auto_, m), e), std::move(m)) {}
+        : NodeBase(nodes(type::ValueReference(type::auto_, m), std::move(e)), std::move(m)) {}
 
     const Type& dereferencedType() const { return child<type::ValueReference>(0).dereferencedType(); }
     const Expression& expression() const { return child<Expression>(1); }
@@ -98,5 +97,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

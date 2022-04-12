@@ -11,8 +11,7 @@
 #include <hilti/ast/types/void.h>
 #include <hilti/base/util.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 namespace detail {
 
@@ -101,6 +100,4 @@ Removes all elements from the map.
 END_METHOD
 
 
-} // namespace operator_
-
-} // namespace hilti
+} // namespace hilti::operator_

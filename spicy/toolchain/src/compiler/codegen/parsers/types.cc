@@ -49,13 +49,13 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         return builder()->addTmp("x", t);
     }
 
-    Expression performUnpack(const Expression& target, const Type& t, int len, std::vector<Expression> unpack_args,
+    Expression performUnpack(const Expression& target, const Type& t, int len, const std::vector<Expression>& unpack_args,
                              const Meta& m, bool is_try) {
         if ( ! is_try ) {
             auto error_msg = fmt("expecting %d bytes for unpacking value", len);
             pb->waitForInput(builder::integer(len), error_msg, m);
 
-            auto unpacked = builder::unpack(t, std::move(unpack_args));
+            auto unpacked = builder::unpack(t, unpack_args);
             builder()->addAssign(builder::tuple({target, state().cur}), builder::deref(unpacked));
 
             if ( ! state().needs_look_ahead )
@@ -70,7 +70,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
             auto true_ = builder()->addIf(has_data);
             pushBuilder(true_);
-            auto unpacked = builder::deref(builder::unpack(t, std::move(unpack_args)));
+            auto unpacked = builder::deref(builder::unpack(t, unpack_args));
             builder()->addAssign(builder::tuple({result, state().cur}), unpacked);
             popBuilder();
 
@@ -153,7 +153,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         builder()->addDebugDedent("spicy");
 
         auto target = destination(t.type());
-        builder()->addAssign(target, builder::tuple(std::move(extracted_bits)));
+        builder()->addAssign(target, builder::tuple(extracted_bits));
         return target;
     }
 

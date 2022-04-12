@@ -7,8 +7,7 @@
 
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /**
  * AST node for a type that's only used for documentation purposes. This type
@@ -35,5 +34,4 @@ private:
     std::string _description;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

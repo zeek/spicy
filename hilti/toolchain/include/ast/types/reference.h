@@ -7,8 +7,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/unknown.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /*
  * AST node for a `strong_ref<T>` type.
@@ -110,12 +109,11 @@ public:
     auto isWildcard() const { return _wildcard; }
 
     /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"rid", (_node ? _node->rid() : 0u)}}; }
+    auto properties() const { return node::Properties{{"rid", (_node ? _node->rid() : 0U)}}; }
 
 private:
     bool _wildcard = false;
     NodeRef _node;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

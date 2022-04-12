@@ -555,25 +555,35 @@ public:
     }
 
     TemporaryDirectory(const TemporaryDirectory& other) = delete;
-    TemporaryDirectory(TemporaryDirectory&& other) { _path = std::move(other._path); }
+    TemporaryDirectory(TemporaryDirectory&& other) noexcept { _path = std::move(other._path); }
 
     ~TemporaryDirectory() {
-        if ( ! hilti::rt::filesystem::exists(_path) )
+        // In general, ignore errors in this function.
+        std::error_code ec;
+
+        if ( ! hilti::rt::filesystem::exists(_path, ec) )
             return;
 
         // Make sure we have permissions to remove the directory.
-        hilti::rt::filesystem::permissions(_path, hilti::rt::filesystem::perms::all);
-        for ( const auto& entry : hilti::rt::filesystem::recursive_directory_iterator(_path) )
-            hilti::rt::filesystem::permissions(entry, hilti::rt::filesystem::perms::all);
+        hilti::rt::filesystem::permissions(_path, hilti::rt::filesystem::perms::all, ec);
 
-        std::error_code ec;
+        // The desugared loop contains an iterator increment which could throw (no automagic call of
+        // `std::filesystem::recursive_directory_iterator::increment`), see LWG3013 for the "fix".
+        // Ignore errors from that.
+        try {
+            for ( const auto& entry : hilti::rt::filesystem::recursive_directory_iterator(_path, ec) )
+                hilti::rt::filesystem::permissions(entry, hilti::rt::filesystem::perms::all, ec);
+        } catch ( ... ) {
+            ; // Ignore error.
+        }
+
         hilti::rt::filesystem::remove_all(_path, ec); // ignore errors
     }
 
     const auto& path() const { return _path; }
 
     TemporaryDirectory& operator=(const TemporaryDirectory& other) = delete;
-    TemporaryDirectory& operator=(TemporaryDirectory&& other) {
+    TemporaryDirectory& operator=(TemporaryDirectory&& other) noexcept {
         _path = std::move(other._path);
         return *this;
     }

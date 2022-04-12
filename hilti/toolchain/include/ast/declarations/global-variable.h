@@ -12,8 +12,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/auto.h>
 
-namespace hilti {
-namespace declaration {
+namespace hilti::declaration {
 
 /** AST node for a declaration of global variable. */
 class GlobalVariable : public DeclarationBase {
@@ -46,7 +45,7 @@ public:
 
     auto typeArguments() const { return children<hilti::Expression>(3, -1); }
 
-    void setInit(hilti::Expression i) { children()[2] = std::move(i); }
+    void setInit(const hilti::Expression& i) { children()[2] = i; }
     void setTypeArguments(std::vector<hilti::Expression> args) {
         auto& c = children();
         c.erase(c.begin() + 3, c.end());
@@ -76,5 +75,4 @@ private:
     Linkage _linkage;
 };
 
-} // namespace declaration
-} // namespace hilti
+} // namespace hilti::declaration

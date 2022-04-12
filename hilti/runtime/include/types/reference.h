@@ -238,15 +238,20 @@ public:
     /**
      * Assigns to the contained value. Assigning does not invalidate other
      * references associated with the same value; they'll see the change.
-     *
-     * @throws NullReference if the instance does not currently refer to a valid value
      */
     ValueReference& operator=(ValueReference&& other) noexcept {
         if ( &other != this ) {
             // We can't move the actual value as other references may be
             // referring to it.
-            *_safeGet() = *other._safeGet();
-            other._ptr = nullptr;
+            *_get() = *other._get();
+
+            // Some implementations for `std::variant` do not have a `noexpect`
+            // move assignment operator.
+            try {
+                other._ptr = nullptr;
+            } catch ( ... ) {
+                cannot_be_reached();
+            }
         }
 
         return *this;
@@ -288,7 +293,7 @@ private:
      */
     explicit ValueReference(T* t) : _ptr(t) { static_assert(std::is_base_of<Controllable<T>, T>::value); }
 
-    const T* _get() const {
+    const T* _get() const noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
@@ -298,7 +303,7 @@ private:
         cannot_be_reached();
     }
 
-    T* _get() {
+    T* _get() noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
@@ -453,6 +458,9 @@ public:
 
     /** Copy assignment. This will share ownership, not copy the value. */
     StrongReference& operator=(const StrongReference& other) {
+        if ( &other == this )
+            return *this;
+
         Base::operator=(other);
         return *this;
     }
@@ -624,6 +632,9 @@ public:
 
     /** Copy assignment. This will share ownership, not copy the value. */
     WeakReference& operator=(const WeakReference& other) {
+        if ( &other == this )
+            return *this;
+
         Base::operator=(other);
         return *this;
     }

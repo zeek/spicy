@@ -14,8 +14,7 @@ namespace trait {
 class isStatement : public isNode {};
 } // namespace trait
 
-namespace statement {
-namespace detail {
+namespace statement::detail {
 #include <hilti/autogen/__statement.h>
 
 /** Creates an AST node representing a `Statement`. */
@@ -34,11 +33,9 @@ inline bool operator==(const Statement& x, const Statement& y) {
 
 inline bool operator!=(const Statement& s1, const Statement& s2) { return ! (s1 == s2); }
 
-} // namespace detail
-} // namespace statement
+} // namespace statement::detail
 
 using Statement = statement::detail::Statement;
-using statement::detail::to_node;
 
 /** Constructs an AST node from any class implementing the `Statement` interface. */
 template<typename T, typename std::enable_if_t<std::is_base_of<trait::isStatement, T>::value>* = nullptr>

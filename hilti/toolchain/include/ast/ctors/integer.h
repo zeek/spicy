@@ -7,8 +7,7 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/integer.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 namespace detail {
 
@@ -66,5 +65,4 @@ public:
     auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

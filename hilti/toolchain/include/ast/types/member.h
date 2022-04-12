@@ -9,8 +9,7 @@
 #include <hilti/ast/node-ref.h>
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /** AST node for a type representing a member of another type. */
 class Member : public TypeBase, trait::isParameterized {
@@ -38,5 +37,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

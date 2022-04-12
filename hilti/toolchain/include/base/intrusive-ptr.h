@@ -17,7 +17,7 @@ using NewRef = ::hilti::rt::intrusive_ptr::NewRef;
 using ManagedObject = ::hilti::rt::intrusive_ptr::ManagedObject;
 } // namespace intrusive_ptr
 
-using rt::cast_intrusive;
-using rt::make_intrusive;
+using rt::cast_intrusive; // NOLINT(misc-unused-using-decls)
+using rt::make_intrusive; // NOLINT(misc-unused-using-decls)
 
 } // namespace hilti

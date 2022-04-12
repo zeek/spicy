@@ -55,7 +55,7 @@ struct CxxTypeInfo {
  */
 class CodeGen {
 public:
-    CodeGen(std::shared_ptr<Context> context) : _context(std::move(context)) {}
+    CodeGen(const std::shared_ptr<Context>& context) : _context(context) {}
 
     /** Entry point for code generation. */
     Result<cxx::Unit> compileModule(Node& root, hilti::Unit* hilti_unit,

@@ -11,7 +11,7 @@
 
 extern "C" {
 
-#include <stdio.h>
+#include <cstdio>
 
 int main(int argc, char** argv) {
     printf("in main\n");

@@ -52,7 +52,7 @@ public:
 
     const auto& type() const { return child<Type>(0); }
 
-    void setType(Type x) { children()[0] = std::move(x); }
+    void setType(const Type& x) { children()[0] = x; }
 
     bool operator==(const Result& other) const { return type() == other.type(); }
 
@@ -83,7 +83,7 @@ public:
     auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
     auto flavor() const { return _flavor; }
 
-    void setResultType(Type t) { children()[0].as<function::Result>().setType(std::move(t)); }
+    void setResultType(const Type& t) { children()[0].as<function::Result>().setType(t); }
 
     bool operator==(const Function& other) const {
         return result() == other.result() && parameters() == other.parameters();

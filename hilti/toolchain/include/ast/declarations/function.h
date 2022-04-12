@@ -11,8 +11,7 @@
 #include <hilti/ast/statement.h>
 #include <hilti/ast/types/struct.h>
 
-namespace hilti {
-namespace declaration {
+namespace hilti::declaration {
 
 /** AST node for a declaration of an function. */
 class Function : public DeclarationBase {
@@ -44,7 +43,7 @@ public:
         return _parent->as<declaration::Type>().type().tryAs<type::Struct>();
     }
 
-    void setFunction(::hilti::Function f) { children()[0] = std::move(f); }
+    void setFunction(const ::hilti::Function& f) { children()[0] = f; }
     void setLinkage(Linkage x) { _linkage = x; }
     void setParentRef(NodeRef p) {
         assert(p && p->isA<Declaration>());
@@ -74,5 +73,4 @@ private:
     NodeRef _parent;
 };
 
-} // namespace declaration
-} // namespace hilti
+} // namespace hilti::declaration

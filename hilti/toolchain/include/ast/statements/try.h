@@ -10,8 +10,7 @@
 #include <hilti/ast/statement.h>
 #include <hilti/base/logger.h>
 
-namespace hilti {
-namespace statement {
+namespace hilti::statement {
 
 namespace try_ {
 
@@ -72,5 +71,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace statement
-} // namespace hilti
+} // namespace hilti::statement

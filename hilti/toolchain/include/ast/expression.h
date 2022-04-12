@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <list>
 #include <utility>
 #include <vector>
@@ -56,12 +57,8 @@ inline bool isResolved(const detail::Expression& e, type::ResolvedState* rstate 
  * @param rstate internal parameter, leave unset
  */
 inline bool isResolved(const std::vector<detail::Expression>& exprs, type::ResolvedState* rstate = nullptr) {
-    for ( const auto& e : exprs ) {
-        if ( ! type::detail::isResolved(e.type(), rstate) )
-            return false;
-    }
-
-    return true;
+    return std::all_of(exprs.begin(), exprs.end(),
+                       [&](const auto& e) { return type::detail::isResolved(e.type(), rstate); });
 }
 
 /**
@@ -71,12 +68,8 @@ inline bool isResolved(const std::vector<detail::Expression>& exprs, type::Resol
  * @param rstate internal parameter, leave unset
  */
 inline bool isResolved(const hilti::node::Range<detail::Expression>& exprs, type::ResolvedState* rstate = nullptr) {
-    for ( const auto& e : exprs ) {
-        if ( ! type::detail::isResolved(e.type(), rstate) )
-            return false;
-    }
-
-    return true;
+    return std::all_of(exprs.begin(), exprs.end(),
+                       [&](const auto& e) { return type::detail::isResolved(e.type(), rstate); });
 }
 
 /**
@@ -86,18 +79,14 @@ inline bool isResolved(const hilti::node::Range<detail::Expression>& exprs, type
  * @param rstate internal parameter, leave unset
  */
 inline bool isResolved(const hilti::node::Set<detail::Expression>& exprs, type::ResolvedState* rstate = nullptr) {
-    for ( const auto& e : exprs ) {
-        if ( ! type::detail::isResolved(e.type(), rstate) )
-            return false;
-    }
-
-    return true;
+    return std::all_of(exprs.begin(), exprs.end(),
+                       [&](const auto& e) { return type::detail::isResolved(e.type(), rstate); });
 }
 
 } // namespace expression
 
 using Expression = expression::detail::Expression;
-using expression::detail::to_node;
+using expression::detail::to_node; // NOLINT(misc-unused-using-decls)
 
 /** Constructs an AST node from any class implementing the `Expression` interface. */
 template<typename T, typename std::enable_if_t<std::is_base_of<trait::isExpression, T>::value>* = nullptr>

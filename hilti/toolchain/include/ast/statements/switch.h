@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,8 +13,7 @@
 #include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/statement.h>
 
-namespace hilti {
-namespace statement {
+namespace hilti::statement {
 
 class Switch;
 
@@ -36,7 +36,8 @@ public:
     Case(hilti::Expression expr, Statement body, Meta m = Meta())
         : NodeBase(nodes(std::move(body), std::move(expr)), std::move(m)), _end_exprs(2) {}
     Case(std::vector<hilti::Expression> exprs, Statement body, Meta m = Meta())
-        : NodeBase(nodes(std::move(body), std::move(exprs)), std::move(m)), _end_exprs(children().size()) {}
+        : NodeBase(nodes(std::move(body), std::move(exprs)), std::move(m)),
+          _end_exprs(static_cast<int>(children().size())) {}
     Case(Default /*unused*/, Statement body, Meta m = Meta())
         : NodeBase(nodes(std::move(body)), std::move(m)), _end_exprs(1) {}
     Case() = default;
@@ -60,7 +61,7 @@ private:
 
     void _preprocessExpressions(const std::string& id) {
         children().erase(children().begin() + _end_exprs, children().end());
-        children().reserve(_end_exprs * 2); // avoid resizing/invalidation below on emplace
+        children().reserve(static_cast<size_t>(_end_exprs) * 2); // avoid resizing/invalidation below on emplace
 
         for ( const auto& e : expressions() ) {
             hilti::Expression n =
@@ -80,8 +81,8 @@ inline Node to_node(Case c) { return Node(std::move(c)); }
 /** AST node for a "switch" statement. */
 class Switch : public NodeBase, public hilti::trait::isStatement {
 public:
-    Switch(hilti::Expression cond, const std::vector<switch_::Case>& cases, Meta m = Meta())
-        : Switch(hilti::declaration::LocalVariable(hilti::ID("__x"), std::move(cond), true, m), std::move(cases), m) {}
+    Switch(hilti::Expression cond, const std::vector<switch_::Case>& cases, const Meta& m = Meta())
+        : Switch(hilti::declaration::LocalVariable(hilti::ID("__x"), std::move(cond), true, m), cases, m) {}
 
     Switch(const hilti::Declaration& cond, const std::vector<switch_::Case>& cases, Meta m = Meta())
         : NodeBase(nodes(cond, cases), std::move(m)) {
@@ -134,5 +135,4 @@ private:
     bool _preprocessed = false;
 };
 
-} // namespace statement
-} // namespace hilti
+} // namespace hilti::statement

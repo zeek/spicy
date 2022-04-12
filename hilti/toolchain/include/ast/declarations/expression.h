@@ -10,8 +10,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/id.h>
 
-namespace hilti {
-namespace declaration {
+namespace hilti::declaration {
 
 /** AST node for a declaration of an expression. */
 class Expression : public DeclarationBase {
@@ -45,5 +44,4 @@ private:
     Linkage _linkage;
 };
 
-} // namespace declaration
-} // namespace hilti
+} // namespace hilti::declaration

@@ -41,8 +41,7 @@ namespace logging::debug {
 inline const hilti::logging::DebugStream Parser("parser");
 } // namespace logging::debug
 
-namespace detail {
-namespace parser {
+namespace detail::parser {
 
 class Parser;
 class Scanner;
@@ -87,6 +86,5 @@ private:
     hilti::util::SourceCodePreprocessor _preprocessor;
 };
 
-} // namespace parser
-} // namespace detail
+} // namespace detail::parser
 } // namespace spicy

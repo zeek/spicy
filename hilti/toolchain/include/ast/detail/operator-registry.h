@@ -12,8 +12,7 @@
 #include <hilti/ast/operator.h>
 #include <hilti/ast/types/struct.h>
 
-namespace hilti {
-namespace operator_ {
+namespace hilti::operator_ {
 
 /** Singleton registering available operators. */
 class Registry {
@@ -61,5 +60,4 @@ public:
 
 inline const auto& registry() { return Registry::singleton(); }
 
-} // namespace operator_
-} // namespace hilti
+} // namespace hilti::operator_

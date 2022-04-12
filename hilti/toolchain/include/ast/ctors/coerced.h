@@ -7,8 +7,7 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a constructor that's been coerced from one type to another. */
 class Coerced : public NodeBase, public hilti::trait::isCtor {
@@ -37,5 +36,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

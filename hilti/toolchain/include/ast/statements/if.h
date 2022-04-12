@@ -9,14 +9,13 @@
 #include <hilti/ast/statement.h>
 #include <hilti/base/logger.h>
 
-namespace hilti {
-namespace statement {
+namespace hilti::statement {
 
 /** AST node for a "if" statement. */
 class If : public NodeBase, public hilti::trait::isStatement {
 public:
-    If(hilti::Declaration init, std::optional<hilti::Expression> cond, Statement true_, std::optional<Statement> false_,
-       Meta m = Meta())
+    If(const hilti::Declaration& init, std::optional<hilti::Expression> cond, Statement true_,
+       std::optional<Statement> false_, Meta m = Meta())
         : NodeBase(nodes(init, std::move(cond), std::move(true_), std::move(false_)), std::move(m)) {
         if ( ! init.isA<declaration::LocalVariable>() )
             logger().internalError("initialization for 'if' must be a local declaration");
@@ -33,7 +32,7 @@ public:
     const auto& true_() const { return child<hilti::Statement>(2); }
     auto false_() const { return children()[3].tryAs<Statement>(); }
 
-    void setCondition(hilti::Expression e) { children()[1] = std::move(e); }
+    void setCondition(const hilti::Expression& e) { children()[1] = e; }
     void removeFalse() { children()[3] = node::none; }
 
     bool operator==(const If& other) const {
@@ -54,5 +53,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace statement
-} // namespace hilti
+} // namespace hilti::statement

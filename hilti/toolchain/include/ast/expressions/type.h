@@ -7,13 +7,12 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/types/type.h>
 
-namespace hilti {
-namespace expression {
+namespace hilti::expression {
 
 /** AST node for a type expression. */
 class Type_ : public NodeBase, public trait::isExpression {
 public:
-    Type_(Type t, Meta m = Meta()) : NodeBase(nodes(type::Type_(std::move(t), m)), m) {}
+    Type_(Type t, const Meta& m = Meta()) : NodeBase(nodes(type::Type_(std::move(t), m)), m) {}
 
     const auto& typeValue() const { return child<type::Type_>(0).typeValue(); }
 
@@ -34,5 +33,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace expression
-} // namespace hilti
+} // namespace hilti::expression

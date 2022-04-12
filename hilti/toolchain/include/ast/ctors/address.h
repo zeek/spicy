@@ -9,15 +9,14 @@
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/address.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a Address constructor. */
 class Address : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Address;
 
-    Address(const Value& addr, Meta m = Meta()) : NodeBase(nodes(type::Address(m)), m), _address(addr) {}
+    Address(const Value& addr, const Meta& m = Meta()) : NodeBase(nodes(type::Address(m)), m), _address(addr) {}
 
     const auto& value() const { return _address; }
 
@@ -41,5 +40,4 @@ private:
     Value _address;
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

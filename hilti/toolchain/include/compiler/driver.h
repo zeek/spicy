@@ -373,7 +373,7 @@ protected:
      * Hook for derived classes to execute custom code when a new unit
      * is being added as an input file.
      */
-    virtual void hookAddInput(std::shared_ptr<Unit> unit) {}
+    virtual void hookAddInput(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
 
     /**
      * Hook for derived classes to execute custom code when a new source code
@@ -386,14 +386,14 @@ protected:
      * been loaded. This hook will run before the AST has been compiled (and
      * hence it'll be fully unprocessed).
      */
-    virtual void hookNewASTPreCompilation(std::shared_ptr<Unit> unit) {}
+    virtual void hookNewASTPreCompilation(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
 
     /**
      * Hook for derived classes to execute custom code when a code unit has
      * been finalized. This hook will run after the AST has been be fully
      * processed by the suitable plugin, but before it's being transformed.
      */
-    virtual void hookNewASTPostCompilation(std::shared_ptr<Unit> unit) {}
+    virtual void hookNewASTPostCompilation(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
 
     /**
      * Hook for derived classes to execute custom code when all input files

@@ -9,8 +9,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace ctor {
+namespace hilti::ctor {
 
 /** AST node for a constructor for a type's default value. */
 class Default : public NodeBase, public hilti::trait::isCtor {
@@ -50,5 +49,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace ctor
-} // namespace hilti
+} // namespace hilti::ctor

@@ -6,8 +6,7 @@
 
 #include <hilti/ast/type.h>
 
-namespace hilti {
-namespace type {
+namespace hilti::type {
 
 /** AST node for a null type. */
 class Null : public TypeBase {
@@ -25,5 +24,4 @@ public:
     auto properties() const { return node::Properties{}; }
 };
 
-} // namespace type
-} // namespace hilti
+} // namespace hilti::type

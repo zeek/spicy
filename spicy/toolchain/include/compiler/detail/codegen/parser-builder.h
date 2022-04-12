@@ -393,7 +393,7 @@ public:
     void parseError(const Expression& error_msg, const Meta& location);
 
     /** Generates code that triggers a parse error exception. */
-    void parseError(const std::string& fmt, std::vector<Expression> args, const Meta& location);
+    void parseError(const std::string& fmt, const std::vector<Expression>& args, const Meta& location);
 
     /** Called when a field has been updated. */
     void newValueForField(const production::Meta& meta, const Expression& value, const Expression& dd);
