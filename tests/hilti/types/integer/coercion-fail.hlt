@@ -1,3 +1,4 @@
+# @TEST-REQUIRES: [ $(uname -m) != i686 ]
 # @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
 # @TEST-EXEC: btest-diff output
 

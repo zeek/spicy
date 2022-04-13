@@ -10,7 +10,7 @@ using namespace hilti;
 using namespace hilti::type;
 
 std::vector<Node> SignedInteger::typeParameters() const {
-    return {Ctor(ctor::SignedInteger(static_cast<uint64_t>(width()), 64))};
+    return {Ctor(ctor::SignedInteger(static_cast<int64_t>(width()), 64))};
 }
 
 std::vector<Node> UnsignedInteger::typeParameters() const { return {Ctor(ctor::UnsignedInteger(width(), 64))}; }

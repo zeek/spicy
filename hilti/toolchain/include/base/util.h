@@ -332,7 +332,7 @@ template<typename Error>
 uint64_t chars_to_uint64(const char* dgts, int base, Error handler) {
     errno = 0;
     char* cp;
-    auto u = strtoul(dgts, &cp, base);
+    auto u = strtoull(dgts, &cp, base);
     if ( cp == dgts || *cp != '\0' || (u == ULONG_MAX && errno == ERANGE) ) {
         errno = 0;
         handler();
