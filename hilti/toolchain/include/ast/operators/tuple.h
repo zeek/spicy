@@ -51,8 +51,7 @@ BEGIN_OPERATOR_CUSTOM(tuple, Index)
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         if ( auto ec = i.op1().tryAs<expression::Ctor>() )
             if ( auto c = ec->ctor().tryAs<ctor::UnsignedInteger>() ) {
-                if ( c->value() < 0 ||
-                     c->value() >= static_cast<uint64_t>(i.op0().type().as<type::Tuple>().elements().size()) )
+                if ( c->value() >= static_cast<uint64_t>(i.op0().type().as<type::Tuple>().elements().size()) )
                     p.node.addError("tuple index out of range");
 
                 return;
@@ -135,16 +134,16 @@ BEGIN_OPERATOR_CUSTOM(tuple, CustomAssign)
             return;
         }
 
-        for ( auto i = 0U; i < lhs_type.elements().size(); i++ ) {
-            const auto& lhs_elem = lhs.value()[i];
-            const auto& lhs_elem_type = lhs_type.elements()[i].type();
-            const auto& rhs_elem_type = rhs_type->elements()[i].type();
+        for ( auto j = 0U; j < lhs_type.elements().size(); j++ ) {
+            const auto& lhs_elem = lhs.value()[j];
+            const auto& lhs_elem_type = lhs_type.elements()[j].type();
+            const auto& rhs_elem_type = rhs_type->elements()[j].type();
 
             if ( ! lhs_elem.isLhs() )
                 p.node.addError(util::fmt("cannot assign to expression: %s", to_node(lhs_elem)));
 
             if ( ! type::sameExceptForConstness(lhs_elem_type, rhs_elem_type) )
-                p.node.addError(util::fmt("type mismatch for element %d in assignment, expected type %s but got %s", i,
+                p.node.addError(util::fmt("type mismatch for element %d in assignment, expected type %s but got %s", j,
                                           lhs_elem_type, rhs_elem_type));
         }
     }

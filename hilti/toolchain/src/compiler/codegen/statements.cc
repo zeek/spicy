@@ -272,9 +272,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         for ( const auto& c : n.catches() ) {
             cxx::declaration::Argument arg;
 
-            if ( auto p = c.parameter() ) {
-                auto t = cg->compile(p->type(), codegen::TypeUsage::InParameter);
-                arg = {cxx::ID(p->id()), std::move(t)};
+            if ( auto par = c.parameter() ) {
+                auto t = cg->compile(par->type(), codegen::TypeUsage::InParameter);
+                arg = {cxx::ID(par->id()), std::move(t)};
             }
             else
                 arg = {"", cxx::Type("...")};
