@@ -20,7 +20,7 @@ BEGIN_METHOD(regexp, Match)
         return Signature{.self = type::RegExp(),
                          .result = type::SignedInteger(32),
                          .id = "match",
-                         .args = {{.id = "data", .type = type::constant(type::Bytes())}},
+                         .args = {{"data", type::constant(type::Bytes())}},
                          .doc = R"(
 Matches the regular expression against *data*. If it matches, returns an
 integer that's greater than zero. If multiple patterns have been compiled for
@@ -39,7 +39,7 @@ BEGIN_METHOD(regexp, Find)
         return Signature{.self = type::RegExp(),
                          .result = type::Tuple({type::SignedInteger(32), type::Bytes()}),
                          .id = "find",
-                         .args = {{.id = "data", .type = type::constant(type::Bytes())}},
+                         .args = {{"data", type::constant(type::Bytes())}},
                          .doc = R"(
 Searches the regular expression in *data* and returns the matching part.
 Different from ``match``, this does not anchor the expression to the beginning
@@ -58,7 +58,7 @@ BEGIN_METHOD(regexp, MatchGroups)
         return Signature{.self = type::RegExp(),
                          .result = type::Vector(type::Bytes()),
                          .id = "match_groups",
-                         .args = {{.id = "data", .type = type::constant(type::Bytes())}},
+                         .args = {{"data", type::constant(type::Bytes())}},
                          .doc = R"(
 Matches the regular expression against *data*. If it matches, returns a vector
 with one entry for each capture group defined by the regular expression;
@@ -92,10 +92,8 @@ BEGIN_METHOD(regexp_match_state, AdvanceBytes)
         return Signature{.self = type::Library("::hilti::rt::regexp::MatchState"),
                          .result = type::Tuple({type::SignedInteger(32), type::stream::View()}),
                          .id = "advance",
-                         .args = {{.id = "data", .type = type::constant(type::Bytes())},
-                                  {.id = "final",
-                                   .type = type::Bool(),
-                                   .default_ = expression::Ctor(ctor::Bool(true))}},
+                         .args = {{"data", type::constant(type::Bytes())},
+                                  {"final", type::Bool(), false, expression::Ctor(ctor::Bool(true))}},
                          .doc = R"(
 Feeds a chunk of data into the token match state, continuing matching where it
 left off last time. If *final* is true, this is assumed to be the final piece
@@ -113,7 +111,7 @@ BEGIN_METHOD(regexp_match_state, AdvanceView)
         return Signature{.self = type::Library("::hilti::rt::regexp::MatchState"),
                          .result = type::Tuple({type::SignedInteger(32), type::stream::View()}),
                          .id = "advance",
-                         .args = {{.id = "data", .type = type::constant(type::stream::View())}},
+                         .args = {{"data", type::constant(type::stream::View())}},
                          .doc = R"(
 Feeds a chunk of data into the token match state, continuing matching where it
 left off last time. If the underlying view is frozen, this will be assumed to

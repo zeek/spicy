@@ -28,7 +28,7 @@ BEGIN_CTOR(enum_, CtorSigned)
     auto ctorType() const { return type::Enum(type::Wildcard()); }
 
     auto signature() const {
-        return Signature{.args = {{.id = "value", .type = type::SignedInteger(type::Wildcard())}}, .doc = R"(
+        return Signature{.args = {{"value", type::SignedInteger(type::Wildcard())}}, .doc = R"(
 Instantiates an enum instance initialized from a signed integer value. The value does
 *not* need to correspond to any of the type's enumerator labels.
 )"};
@@ -39,7 +39,7 @@ BEGIN_CTOR(enum_, CtorUnsigned)
     auto ctorType() const { return type::Enum(type::Wildcard()); }
 
     auto signature() const {
-        return Signature{.args = {{.id = "value", .type = type::UnsignedInteger(type::Wildcard())}}, .doc = R"(
+        return Signature{.args = {{"value", type::UnsignedInteger(type::Wildcard())}}, .doc = R"(
 Instantiates an enum instance initialized from an unsigned integer
 value. The value does *not* need to correspond to any of the type's
 enumerator labels. It must not be larger than the maximum that a

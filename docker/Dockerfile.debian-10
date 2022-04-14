@@ -7,44 +7,29 @@ ENV CCACHE_COMPRESS 1
 ENV CMAKE_DIR "/opt/cmake"
 ENV CMAKE_VERSION "3.19.1"
 
-# We use clang to build as Spicy requires a C++17-capable compiler. Buster
-# ships with gcc-8.3.0, but we require at least gcc-9 which is only available
-# in testing here. Use an LLVM stack instead.
-ENV LLVM_VERSION "11"
-ENV CC "clang-${LLVM_VERSION}"
-ENV CXX "clang++-${LLVM_VERSION}"
-ENV ASM "clang-${LLVM_VERSION}"
-
 ENV PATH "${CMAKE_DIR}/bin:${PATH}"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # configure system for build
 RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list && \
-      apt-get -q update && \
-      apt-get install -q -y --no-install-recommends gnupg2 curl ca-certificates && \
-      bash -c "curl -sSL https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -" && \
-      echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-${LLVM_VERSION} main" >> /etc/apt/sources.list && \
-      echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster-${LLVM_VERSION} main" >> /etc/apt/sources.list && \
     apt-get -q update && \
     apt-get install -q -y -t buster-backports --no-install-recommends \
         binutils \
         bison \
         ccache \
-        clang-${LLVM_VERSION} \
         file \
         flex \
+        g++ \
         git \
         google-perftools \
         jq \
-        libclang-${LLVM_VERSION}-dev \
         libfl-dev \
         libgoogle-perftools-dev \
         libkrb5-dev \
         libmaxminddb-dev \
         libpcap0.8-dev \
         libssl-dev \
-        llvm-${LLVM_VERSION}-dev \
         locales-all \
         make \
         ninja-build \

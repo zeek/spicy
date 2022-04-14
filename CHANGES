@@ -1,3 +1,11 @@
+1.5.0-dev.26 | 2022-04-14 07:53:47 +0200
+
+  * Fix warnings from LGTM. (Benjamin Bannier, Corelight)
+
+  * Bump LLVM in LGTM config. (Benjamin Bannier, Corelight)
+
+  * Allow building with gcc-8.3. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.22 | 2022-04-13 12:18:43 +0200
 
   * Disable tests of lossy (u)int64_t-double conversion on 32bit. (honk)

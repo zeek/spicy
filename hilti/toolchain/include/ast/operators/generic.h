@@ -30,7 +30,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Type_(type::Wildcard())}, {.type = type::Tuple(type::Wildcard())}};
+        return {Operand{{}, type::Type_(type::Wildcard())}, Operand{{}, type::Tuple(type::Wildcard())}};
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -56,7 +56,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Begin)
 
     std::vector<Operand> operands() const {
         return {
-            {.type = type::Any(), .doc = "<container>"},
+            Operand{{}, type::Any(), false, {}, "<container>"},
         };
     }
 
@@ -81,7 +81,7 @@ BEGIN_OPERATOR_CUSTOM(generic, End)
 
     std::vector<Operand> operands() const {
         return {
-            {.type = type::Any(), .doc = "<container>"},
+            {{}, type::Any(), false, {}, "<container>"},
         };
     }
 
@@ -111,8 +111,8 @@ BEGIN_OPERATOR_CUSTOM(generic, New)
 
     std::vector<Operand> operands() const {
         return {
-            {.id = "t", .type = type::Any()},
-            {.type = type::Tuple(type::Wildcard())},
+            {"t", type::Any()},
+            {{}, type::Tuple(type::Wildcard())},
         };
     }
 

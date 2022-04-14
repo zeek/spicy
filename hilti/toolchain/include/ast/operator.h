@@ -189,6 +189,20 @@ inline auto typedType(unsigned int op, const char* doc = "<type>") {
 
 /** Describes an operand that an operator accepts. */
 struct Operand {
+    Operand(Operand&&) = default;
+    Operand(const Operand&) = default;
+
+    Operand& operator=(Operand&&) = default;
+    Operand& operator=(const Operand&) = default;
+
+    Operand(std::optional<ID> _id = {}, OperandType _type = {}, bool _optional = false,
+            std::optional<Expression> _default = {}, std::optional<std::string> _doc = {})
+        : id(std::move(_id)),
+          type(std::move(_type)),
+          optional(_optional),
+          default_(std::move(_default)),
+          doc(std::move(_doc)) {}
+
     std::optional<ID> id;                    /**< ID for the operand; used only for documentation purposes. */
     OperandType type;                        /**< operand's type */
     bool optional = false;                   /**< true if operand can be skipped; `default_` will be used instead */
@@ -301,7 +315,7 @@ enum class Kind {
 };
 
 /** Returns true for operator types that HILTI considers commutative. */
-constexpr auto isCommutative(Kind k) {
+inline auto isCommutative(Kind k) {
     switch ( k ) {
         case Kind::BitAnd:
         case Kind::BitOr:

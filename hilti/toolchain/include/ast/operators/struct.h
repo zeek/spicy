@@ -56,8 +56,8 @@ BEGIN_OPERATOR_CUSTOM(struct_, Unset)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Struct(type::Wildcard()), .doc = "struct"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::Struct(type::Wildcard()), false, {}, "struct"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -83,8 +83,8 @@ BEGIN_OPERATOR_CUSTOM_x(struct_, MemberNonConst, Member)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Struct(type::Wildcard()), .doc = "struct"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::Struct(type::Wildcard()), false, {}, "struct"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -112,8 +112,8 @@ BEGIN_OPERATOR_CUSTOM_x(struct_, MemberConst, Member)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::constant(type::Struct(type::Wildcard())), .doc = "struct"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::constant(type::Struct(type::Wildcard())), false, {}, "struct"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -141,8 +141,8 @@ BEGIN_OPERATOR_CUSTOM(struct_, TryMember)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::Struct(type::Wildcard()), .doc = "struct"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::Struct(type::Wildcard()), false, {}, "struct"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -168,8 +168,8 @@ BEGIN_OPERATOR_CUSTOM(struct_, HasMember)
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
     std::vector<Operand> operands() const {
-        return {{.type = type::constant(type::Struct(type::Wildcard())), .doc = "struct"},
-                {.type = type::Member(type::Wildcard()), .doc = "<field>"}};
+        return {{{}, type::constant(type::Struct(type::Wildcard())), false, {}, "struct"},
+                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -192,9 +192,9 @@ public:
     struct Operator : public hilti::trait::isOperator {
         Operator(const type::Struct& stype, const declaration::Field& f) {
             auto ftype = f.type().as<type::Function>();
-            auto op0 = operator_::Operand{.type = stype};
-            auto op1 = operator_::Operand{.type = type::Member(f.id())};
-            auto op2 = operator_::Operand{.type = type::OperandList::fromParameters(ftype.parameters())};
+            auto op0 = operator_::Operand{{}, stype};
+            auto op1 = operator_::Operand{{}, type::Member(f.id())};
+            auto op2 = operator_::Operand{{}, type::OperandList::fromParameters(ftype.parameters())};
             _field = f;
             _operands = {op0, op1, op2};
             _result = ftype.result().type();

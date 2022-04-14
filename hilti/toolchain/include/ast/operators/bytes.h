@@ -90,7 +90,7 @@ BEGIN_METHOD(bytes, Find)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Tuple({type::Bool(), type::bytes::Iterator()}),
                          .id = "find",
-                         .args = {{.id = "needle", .type = type::constant(type::Bytes())}},
+                         .args = {{"needle", type::constant(type::Bytes())}},
                          .doc = R"(
 Searches *needle* in the value's content. Returns a tuple of a boolean and an
 iterator. If *needle* was found, the boolean will be true and the iterator will
@@ -108,9 +108,8 @@ BEGIN_METHOD(bytes, LowerCase)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Bytes(),
                          .id = "lower",
-                         .args = {{.id = "charset",
-                                   .type = type::Enum(type::Wildcard()),
-                                   .default_ = builder::id("hilti::Charset::UTF8")}},
+                         .args = {{"charset", type::Enum(type::Wildcard()), false,
+                                   builder::id("hilti::Charset::UTF8")}},
                          .doc = R"(
 Returns a lower-case version of the bytes value, assuming it is encoded in character set *charset*.
 )"};
@@ -122,9 +121,8 @@ BEGIN_METHOD(bytes, UpperCase)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Bytes(),
                          .id = "upper",
-                         .args = {{.id = "charset",
-                                   .type = type::Enum(type::Wildcard()),
-                                   .default_ = builder::id("hilti::Charset::UTF8")}},
+                         .args = {{"charset", type::Enum(type::Wildcard()), false,
+                                   builder::id("hilti::Charset::UTF8")}},
                          .doc = R"(
 Returns an upper-case version of the bytes value, assuming it is encoded in character set *charset*.
 )"};
@@ -136,7 +134,7 @@ BEGIN_METHOD(bytes, At)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::bytes::Iterator(),
                          .id = "at",
-                         .args = {{.id = "i", .type = type::UnsignedInteger(64)}},
+                         .args = {{"i", type::UnsignedInteger(64)}},
                          .doc = R"(
 Returns an iterator representing the offset *i* inside the bytes value.
 )"};
@@ -148,7 +146,7 @@ BEGIN_METHOD(bytes, Split)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Vector(type::Bytes()),
                          .id = "split",
-                         .args = {{.id = "sep", .type = type::constant(type::Bytes()), .optional = true}},
+                         .args = {{"sep", type::constant(type::Bytes()), true}},
                          .doc = R"(
 Splits the bytes value at each occurrence of *sep* and returns a vector
 containing the individual pieces, with all separators removed. If the separator
@@ -164,7 +162,7 @@ BEGIN_METHOD(bytes, Split1)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Tuple({type::Bytes(), type::Bytes()}),
                          .id = "split1",
-                         .args = {{.id = "sep", .type = type::constant(type::Bytes()), .optional = true}},
+                         .args = {{"sep", type::constant(type::Bytes()), true}},
                          .doc = R"(
 Splits the bytes value at the first occurrence of *sep* and returns the two parts
 as a 2-tuple, with the separator removed. If the separator is not found, the
@@ -180,7 +178,7 @@ BEGIN_METHOD(bytes, StartsWith)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Bool(),
                          .id = "starts_with",
-                         .args = {{.id = "b", .type = type::constant(type::Bytes())}},
+                         .args = {{"b", type::constant(type::Bytes())}},
                          .doc = R"(
 Returns true if the bytes value starts with *b*.
 )"};
@@ -192,10 +190,8 @@ BEGIN_METHOD(bytes, Strip)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Bytes(),
                          .id = "strip",
-                         .args = {{.id = "side",
-                                   .type = type::constant(type::Library("::hilti::rt::bytes::Side")),
-                                   .optional = true},
-                                  {.id = "set", .type = type::constant(type::Bytes()), .optional = true}},
+                         .args = {{"side", type::constant(type::Library("::hilti::rt::bytes::Side")), true},
+                                  {"set", type::constant(type::Bytes()), true}},
                          .doc = R"(
 Removes leading and/or trailing sequences of all characters in *set* from the bytes
 value. If *set* is not given, removes all white spaces. If *side* is given,
@@ -210,8 +206,7 @@ BEGIN_METHOD(bytes, SubIterators)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Bytes(),
                          .id = "sub",
-                         .args = {{.id = "begin", .type = type::bytes::Iterator()},
-                                  {.id = "end", .type = type::bytes::Iterator()}},
+                         .args = {{"begin", type::bytes::Iterator()}, {"end", type::bytes::Iterator()}},
                          .doc = R"(
 Returns the subsequence from *begin* to (but not including) *end*.
 )"};
@@ -223,7 +218,7 @@ BEGIN_METHOD(bytes, SubIterator)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Bytes(),
                          .id = "sub",
-                         .args = {{.id = "end", .type = type::bytes::Iterator()}},
+                         .args = {{"end", type::bytes::Iterator()}},
                          .doc = R"(
 Returns the subsequence from the value's beginning to (but not including) *end*.
 )"};
@@ -235,8 +230,7 @@ BEGIN_METHOD(bytes, SubOffsets)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Bytes(),
                          .id = "sub",
-                         .args = {{.id = "begin", .type = type::UnsignedInteger(64)},
-                                  {.id = "end", .type = type::UnsignedInteger(64)}},
+                         .args = {{"begin", type::UnsignedInteger(64)}, {"end", type::UnsignedInteger(64)}},
                          .doc = R"(
 Returns the subsequence from offset *begin* to (but not including) offset *end*.
 )"};
@@ -248,7 +242,7 @@ BEGIN_METHOD(bytes, Join)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Bytes(),
                          .id = "join",
-                         .args = {{.id = "parts", .type = type::Vector(type::Wildcard())}},
+                         .args = {{"parts", type::Vector(type::Wildcard())}},
                          .doc =
                              R"(
 Returns the concatenation of all elements in the *parts* list rendered as
@@ -263,7 +257,7 @@ BEGIN_METHOD(bytes, ToIntAscii)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::SignedInteger(64),
                          .id = "to_int",
-                         .args = {{.id = "base", .type = type::UnsignedInteger(64), .optional = true}},
+                         .args = {{"base", type::UnsignedInteger(64), true}},
                          .doc =
                              R"(
 Interprets the data as representing an ASCII-encoded number and converts that
@@ -278,7 +272,7 @@ BEGIN_METHOD(bytes, ToUIntAscii)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::UnsignedInteger(64),
                          .id = "to_uint",
-                         .args = {{.id = "base", .type = type::UnsignedInteger(64), .optional = true}},
+                         .args = {{"base", type::UnsignedInteger(64), true}},
                          .doc =
                              R"(
 Interprets the data as representing an ASCII-encoded number and converts that
@@ -293,7 +287,7 @@ BEGIN_METHOD(bytes, ToIntBinary)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::SignedInteger(64),
                          .id = "to_int",
-                         .args = {{.id = "byte_order", .type = type::Enum(type::Wildcard())}},
+                         .args = {{"byte_order", type::Enum(type::Wildcard())}},
                          .doc =
                              R"(
 Interprets the ``bytes`` as representing an binary number encoded with the given
@@ -307,7 +301,7 @@ BEGIN_METHOD(bytes, ToUIntBinary)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::UnsignedInteger(64),
                          .id = "to_uint",
-                         .args = {{.id = "byte_order", .type = type::Enum(type::Wildcard())}},
+                         .args = {{"byte_order", type::Enum(type::Wildcard())}},
                          .doc =
                              R"(
 Interprets the ``bytes`` as representing an binary number encoded with the given
@@ -321,7 +315,7 @@ BEGIN_METHOD(bytes, ToTimeAscii)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Time(),
                          .id = "to_time",
-                         .args = {{.id = "base", .type = type::UnsignedInteger(64), .optional = true}},
+                         .args = {{"base", type::UnsignedInteger(64), true}},
                          .doc =
                              R"(
 Interprets the ``bytes`` as representing a number of seconds since the epoch in
@@ -336,7 +330,7 @@ BEGIN_METHOD(bytes, ToTimeBinary)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Time(),
                          .id = "to_time",
-                         .args = {{.id = "byte_order", .type = type::Enum(type::Wildcard())}},
+                         .args = {{"byte_order", type::Enum(type::Wildcard())}},
                          .doc =
                              R"(
 Interprets the ``bytes`` as representing as number of seconds since the epoch in
@@ -351,9 +345,8 @@ BEGIN_METHOD(bytes, Decode)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::String(),
                          .id = "decode",
-                         .args = {{.id = "charset",
-                                   .type = type::Enum(type::Wildcard()),
-                                   .default_ = builder::id("hilti::Charset::UTF8")}},
+                         .args = {{"charset", type::Enum(type::Wildcard()), false,
+                                   builder::id("hilti::Charset::UTF8")}},
                          .doc =
                              R"(
 Interprets the ``bytes`` as representing an binary string encoded with the given
@@ -367,8 +360,7 @@ BEGIN_METHOD(bytes, Match)
         return Signature{.self = type::constant(type::Bytes()),
                          .result = type::Result(type::Bytes()),
                          .id = "match",
-                         .args = {{.id = "regex", .type = type::RegExp()},
-                                  {.id = "group", .type = type::UnsignedInteger(64), .optional = true}},
+                         .args = {{"regex", type::RegExp()}, {"group", type::UnsignedInteger(64), true}},
                          .doc =
                              R"(
 Matches the ``bytes`` object against the regular expression *regex*. Returns

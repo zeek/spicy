@@ -377,19 +377,19 @@ TEST_CASE("waitForInputOrEod with min") {
             // yield, so that we can resume them later when
             // waitForInputOrEod() flushes all filters.
 
-            filters->push_back(filter::detail::OneFilter({.resumable = [&](hilti::rt::resumable::Handle* h) {
+            filters->push_back(filter::detail::OneFilter({}, {}, [&](hilti::rt::resumable::Handle* h) {
                 if ( ++called1 == 1 )
                     h->yield();
                 ++called1;
                 return Nothing();
-            }}));
+            }));
 
-            filters->push_back(filter::detail::OneFilter({.resumable = [&](hilti::rt::resumable::Handle* h) {
+            filters->push_back(filter::detail::OneFilter({}, {}, [&](hilti::rt::resumable::Handle* h) {
                 if ( ++called2 == 1 )
                     h->yield();
                 ++called2;
                 return Nothing();
-            }}));
+            }));
 
             REQUIRE_EQ(called1, 0);
             REQUIRE_EQ(called2, 0);

@@ -47,7 +47,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
             id,
             []() {
                 // Just return an empty dummy for now to avoid cyclic recursion.
-                return cxx::declaration::Type{.id = "", .type = ""};
+                return cxx::declaration::Type{};
             },
             [&](auto& dummy) {
                 std::vector<cxx::declaration::Argument> args;
@@ -121,9 +121,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                                     id_module = cg->hiltiUnit()->id();
 
                                 auto id_type = cxx::ID(id_module, id_class);
-                                auto self = cxx::declaration::Local{.id = "__self",
-                                                                    .type = "auto",
-                                                                    .init = fmt("%s::__self()", id_type)};
+                                auto self = cxx::declaration::Local{"__self", "auto", {}, fmt("%s::__self()", id_type)};
                                 cxx_body.addLocal(self);
                             }
 
@@ -158,9 +156,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                             auto method_body = cxx::Block();
 
                             // Need a LHS for __self.
-                            auto self = cxx::declaration::Local{.id = "__self",
-                                                                .type = "auto",
-                                                                .init = fmt("%s::__self()", id_type)};
+                            auto self = cxx::declaration::Local{"__self", "auto", {}, fmt("%s::__self()", id_type)};
                             method_body.addLocal(self);
                             method_body.addStatement(fmt("return %s(%s)", id_hook, util::join(args, ", ")));
 
@@ -171,10 +167,10 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                             cg->unit()->add(method_impl);
 
                             std::list<cxx::declaration::Type> aux_types = {
-                                cxx::declaration::Type{.id = cxx::ID(cg->options().cxx_namespace_intern, id_module,
-                                                                     id_class),
-                                                       .type = fmt("struct %s", id_class),
-                                                       .forward_decl = true}};
+                                cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                                       fmt("struct %s", id_class),
+                                                       {},
+                                                       true}};
 
                             for ( const auto& p : ft->parameters() ) {
                                 for ( auto t : cg->typeDependencies(p.type()) )
@@ -212,10 +208,11 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                         cg->popSelf();
                     }
 
-                    auto x = cxx::declaration::Local{.id = cxx::ID(f.id()),
-                                                     .type = t,
-                                                     .init = default_,
-                                                     .linkage = (f.isStatic() ? "inline static" : "")};
+                    auto x = cxx::declaration::Local{cxx::ID(f.id()),
+                                                     t,
+                                                     {},
+                                                     default_,
+                                                     (f.isStatic() ? "inline static" : "")};
 
                     fields.emplace_back(std::move(x));
                 }
@@ -239,10 +236,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
                 // Also add a forward declaration.
                 auto type_forward = cxx::declaration::Type{
-                    .id = id,
-                    .type = fmt("struct %s", id),
-                    .forward_decl = true,
-                    .forward_decl_prio = true,
+                    id, fmt("struct %s", id), {}, true, true,
                 };
 
                 cg->unit()->add(type_forward);
@@ -252,7 +246,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                                            .members = std::move(fields),
                                            .type_name = cxx::ID(id.local()),
                                            .add_ctors = true};
-                return cxx::declaration::Type{.id = id, .type = t, .inline_code = t.inlineCode()};
+                return cxx::declaration::Type{id, t, t.inlineCode()};
             });
 
         util::cannot_be_reached();
@@ -277,12 +271,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         auto id = cxx::ID(scope, sid);
 
         // Add a forward declaration.
-        auto type_forward = cxx::declaration::Type{
-            .id = id,
-            .type = fmt("struct %s", id.local()),
-            .forward_decl = true,
-            .forward_decl_prio = true,
-        };
+        auto type_forward = cxx::declaration::Type{id, fmt("struct %s", id.local()), {}, true, true};
 
         cg->unit()->add(type_forward);
         dependencies.push_back(type_forward);
@@ -290,12 +279,12 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         std::vector<cxx::type::union_::Member> fields;
         for ( const auto& f : n.fields() ) {
             auto t = cg->compile(f.type(), codegen::TypeUsage::Storage);
-            auto x = cxx::declaration::Local{.id = cxx::ID(f.id()), .type = t};
+            auto x = cxx::declaration::Local{cxx::ID(f.id()), t};
             fields.emplace_back(std::move(x));
         }
 
         auto t = cxx::type::Union{.members = std::move(fields), .type_name = cxx::ID(id.local())};
-        return cxx::declaration::Type{.id = id, .type = t};
+        return cxx::declaration::Type{id, t};
     }
 
     result_t operator()(const type::Vector& n, const position_t p) {
@@ -320,7 +309,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         auto labels =
             util::transform(n.labels(), [](auto l) { return std::make_pair(cxx::ID(l.get().id()), l.get().value()); });
         auto t = cxx::type::Enum{.labels = std::move(labels), .type_name = cxx::ID(id.local())};
-        auto decl = cxx::declaration::Type{.id = id, .type = t, .forward_decl = true, .no_using = true};
+        auto decl = cxx::declaration::Type{id, t, {}, true, false, true};
         dependencies.push_back(decl);
         return decl;
     }
@@ -354,9 +343,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         auto func = cxx::Function{.declaration = std::move(decl), .body = cxx::Block()};
         cg->unit()->add(func);
 
-        return cxx::declaration::Type{.id = id,
-                                      .type = fmt("HILTI_EXCEPTION_NS(%s, %s, %s)", id.local(), base_ns, base_cls),
-                                      .no_using = true};
+        return cxx::declaration::Type(id, fmt("HILTI_EXCEPTION_NS(%s, %s, %s)", id.local(), base_ns, base_cls), {},
+                                      false, false, true);
     }
 };
 

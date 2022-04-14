@@ -116,7 +116,7 @@ BEGIN_METHOD(stream::view, AdvanceBy)
         return Signature{.self = type::constant(type::stream::View()),
                          .result = type::stream::View(),
                          .id = "advance",
-                         .args = {{.id = "i", .type = type::stream::Iterator()}},
+                         .args = {{"i", type::stream::Iterator()}},
                          .doc = R"(
 Advances the view's starting position to a given iterator *i*, returning the new
 view. The iterator must be referring to the same stream values as the view, and
@@ -143,7 +143,7 @@ BEGIN_METHOD(stream::view, Limit)
         return Signature{.self = type::constant(type::stream::View()),
                          .result = type::stream::View(),
                          .id = "limit",
-                         .args = {{.id = "i", .type = type::UnsignedInteger(64)}},
+                         .args = {{"i", type::UnsignedInteger(64)}},
                          .doc = R"(
 Returns a new view that keeps the current start but cuts off the end *i*
 characters from that beginning. The returned view will not be able to expand any
@@ -157,7 +157,7 @@ BEGIN_METHOD(stream::view, AdvanceTo)
         return Signature{.self = type::constant(type::stream::View()),
                          .result = type::stream::View(),
                          .id = "advance",
-                         .args = {{.id = "i", .type = type::UnsignedInteger(64)}},
+                         .args = {{"i", type::UnsignedInteger(64)}},
                          .doc = R"(
 Advances the view's starting position by *i* stream, returning the new view.
 )"};
@@ -169,7 +169,7 @@ BEGIN_METHOD(stream::view, Find)
         return Signature{.self = type::constant(type::stream::View()),
                          .result = type::Tuple({type::Bool(), type::stream::Iterator()}),
                          .id = "find",
-                         .args = {{.id = "needle", .type = type::constant(type::Bytes())}},
+                         .args = {{"needle", type::constant(type::Bytes())}},
                          .doc = R"(
 Searches *needle* inside the view's content. Returns a tuple of a boolean and an
 iterator. If *needle* was found, the boolean will be true and the iterator will point
@@ -188,7 +188,7 @@ BEGIN_METHOD(stream::view, At)
         return Signature{.self = type::constant(type::stream::View()),
                          .result = type::stream::Iterator(),
                          .id = "at",
-                         .args = {{.id = "i", .type = type::UnsignedInteger(64)}},
+                         .args = {{"i", type::UnsignedInteger(64)}},
                          .doc = R"(
 Returns an iterator representing the offset *i* inside the view.
 )"};
@@ -200,7 +200,7 @@ BEGIN_METHOD(stream::view, StartsWith)
         return Signature{.self = type::constant(type::stream::View()),
                          .result = type::Bool(),
                          .id = "starts_with",
-                         .args = {{.id = "b", .type = type::constant(type::Bytes())}},
+                         .args = {{"b", type::constant(type::Bytes())}},
                          .doc = R"(
 Returns true if the view starts with *b*.
 )"};
@@ -212,8 +212,7 @@ BEGIN_METHOD(stream::view, SubIterators)
         return Signature{.self = type::constant(type::stream::View()),
                          .result = type::stream::View(),
                          .id = "sub",
-                         .args = {{.id = "begin", .type = type::stream::Iterator()},
-                                  {.id = "end", .type = type::stream::Iterator()}},
+                         .args = {{"begin", type::stream::Iterator()}, {"end", type::stream::Iterator()}},
                          .doc = R"(
 Returns a new view of the subsequence from *begin* up to (but not including)
 *end*.
@@ -226,7 +225,7 @@ BEGIN_METHOD(stream::view, SubIterator)
         return Signature{.self = type::constant(type::stream::View()),
                          .result = type::stream::View(),
                          .id = "sub",
-                         .args = {{.id = "end", .type = type::stream::Iterator()}},
+                         .args = {{"end", type::stream::Iterator()}},
                          .doc = R"(
 Returns a new view of the subsequence from the beginning of the stream up to
 (but not including) *end*.
@@ -239,8 +238,7 @@ BEGIN_METHOD(stream::view, SubOffsets)
         return Signature{.self = type::constant(type::stream::View()),
                          .result = type::stream::View(),
                          .id = "sub",
-                         .args = {{.id = "begin", .type = type::UnsignedInteger(64)},
-                                  {.id = "end", .type = type::UnsignedInteger(64)}},
+                         .args = {{"begin", type::UnsignedInteger(64)}, {"end", type::UnsignedInteger(64)}},
                          .doc = R"(
 Returns a new view of the subsequence from offset *begin* to (but not including)
 offset *end*. The offsets are relative to the beginning of the view.
@@ -296,7 +294,7 @@ BEGIN_METHOD(stream, At)
         return Signature{.self = type::constant(type::Stream()),
                          .result = type::stream::Iterator(),
                          .id = "at",
-                         .args = {{.id = "i", .type = type::UnsignedInteger(64)}},
+                         .args = {{"i", type::UnsignedInteger(64)}},
                          .doc = R"(
 Returns an iterator representing the offset *i* inside the stream value.
 )"};
@@ -308,7 +306,7 @@ BEGIN_METHOD(stream, Trim)
         return Signature{.self = type::Stream(),
                          .result = type::void_,
                          .id = "trim",
-                         .args = {{.id = "i", .type = type::stream::Iterator()}},
+                         .args = {{"i", type::stream::Iterator()}},
                          .doc = R"(
 Trims the stream value by removing all data from its beginning up to (but not
 including) the position *i*. The iterator *i* will remain valid afterwards and

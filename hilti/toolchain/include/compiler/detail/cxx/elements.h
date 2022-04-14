@@ -91,6 +91,18 @@ struct IncludeFile {
 
 /** Declaration of a local C++ variable. */
 struct Local {
+    Local(Local&&) = default;
+    Local(const Local&) = default;
+    Local& operator=(Local&&) = default;
+    Local& operator=(const Local&) = default;
+    Local(cxx::ID _id = {}, cxx::Type _type = {}, std::vector<cxx::Expression> _args = {},
+          std::optional<cxx::Expression> _init = {}, Linkage _linkage = {})
+        : id(std::move(_id)),
+          type(std::move(_type)),
+          args(std::move(_args)),
+          init(std::move(_init)),
+          linkage(std::move(_linkage)) {}
+
     cxx::ID id;
     cxx::Type type;
     std::vector<cxx::Expression> args;
@@ -146,6 +158,15 @@ struct Type {
     bool forward_decl = false;
     bool forward_decl_prio = false;
     bool no_using = false; // turned on automatically for types starting with "struct"
+
+    Type(cxx::ID _id = {}, cxx::Type _type = {}, std::string _inline_code = {}, bool _forward_decl = false,
+         bool _forward_decl_prio = false, bool _no_using = false)
+        : id(std::move(_id)),
+          type(std::move(_type)),
+          inline_code(std::move(_inline_code)),
+          forward_decl(_forward_decl),
+          forward_decl_prio(_forward_decl_prio),
+          no_using(_no_using) {}
 
     bool operator==(const Type& other) const {
         return id == other.id && type == other.type && inline_code == other.inline_code &&
