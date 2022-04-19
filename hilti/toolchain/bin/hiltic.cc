@@ -1,8 +1,10 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/compiler/init.h>
 #include <hilti/hilti.h>
 
 int main(int argc, char** argv) {
+    hilti::init();
     hilti::Driver driver("hiltic", hilti::util::currentExecutable());
 
     if ( auto rc = driver.parseOptions(argc, argv); ! rc ) {

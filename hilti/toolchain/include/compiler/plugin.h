@@ -287,21 +287,10 @@ private:
     std::vector<Plugin> _plugins;
 };
 
-namespace plugin {
-/**
- * Helper class to register a plugin at startup. To add a plugin, create a
- * global `Register` instance to register it.
- */
-class Register {
-public:
-    /**
-     * Registers a plugin with the global `registry()`.
-     *
-     * @param p plugin to register
-     */
-    Register(const Plugin& p) { registry().register_(p); }
-};
+namespace detail {
 
-} // namespace plugin
+Plugin create_hilti_plugin();
+
+} // namespace detail
 
 } // namespace hilti

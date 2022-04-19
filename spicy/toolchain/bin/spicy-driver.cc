@@ -9,8 +9,10 @@
 
 #include <spicy/rt/libspicy.h>
 
+#include <hilti/compiler/init.h>
 #include <hilti/hilti.h>
 
+#include <spicy/compiler/init.h>
 #include <spicy/spicy.h>
 
 using spicy::rt::fmt;
@@ -232,6 +234,9 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
+    hilti::init();
+    spicy::init();
+
     SpicyDriver driver;
 
     driver.parseOptions(argc, argv);

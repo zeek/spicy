@@ -2,8 +2,10 @@
 
 #include <spicy/rt/libspicy.h>
 
+#include <hilti/compiler/init.h>
 #include <hilti/hilti.h>
 
+#include <spicy/compiler/init.h>
 #include <spicy/spicy.h>
 
 class Spicyc : public spicy::Driver {
@@ -17,6 +19,9 @@ public:
 };
 
 int main(int argc, char** argv) {
+    hilti::init();
+    spicy::init();
+
     Spicyc driver;
 
     if ( auto rc = driver.parseOptions(argc, argv); ! rc ) {

@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include "compiler/plugin.h"
+
 #include <hilti/compiler/plugin.h>
 #include <hilti/compiler/printer.h>
 
@@ -13,7 +15,7 @@
 using namespace spicy;
 using namespace spicy::detail;
 
-static hilti::Plugin spicy_plugin() {
+hilti::Plugin spicy::detail::create_spicy_plugin() {
     return hilti::Plugin{
         .component = "Spicy",
         .order = 5, // before HILTI
@@ -65,5 +67,3 @@ static hilti::Plugin spicy_plugin() {
         },
     };
 }
-
-static hilti::plugin::Register _(spicy_plugin());
