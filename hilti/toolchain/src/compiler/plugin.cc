@@ -1,9 +1,10 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include "hilti/compiler/plugin.h"
+
 #include <hilti/autogen/config.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/visitors.h>
-#include <hilti/compiler/plugin.h>
 
 using namespace hilti;
 using namespace hilti::detail;
@@ -43,7 +44,7 @@ void PluginRegistry::register_(const Plugin& p) {
 }
 
 // Always-on default plugin with HILTI functionality.
-static Plugin hilti_plugin() {
+Plugin hilti::detail::create_hilti_plugin() {
     return Plugin{
         .component = "HILTI",
         .order = 10,
@@ -90,5 +91,3 @@ static Plugin hilti_plugin() {
         .ast_transform = {},
     };
 }
-
-static plugin::Register _(hilti_plugin());

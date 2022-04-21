@@ -3,8 +3,10 @@
 #include <hilti/rt/json.h>
 
 #include <hilti/ast/detail/operator-registry.h>
+#include <hilti/compiler/init.h>
 #include <hilti/hilti.h>
 
+#include <spicy/compiler/init.h>
 #include <spicy/spicy.h>
 
 using nlohmann::json;
@@ -117,6 +119,9 @@ static json operandToJSON(const hilti::operator_::Operand& o) {
 
 // NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {
+    hilti::init();
+    spicy::init();
+
     json all_operators;
 
     // Helper function adding one operator to all_operators.

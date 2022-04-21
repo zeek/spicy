@@ -1,3 +1,9 @@
+1.5.0-dev.33 | 2022-04-21 16:35:04 +0200
+
+  * GH-1164: Make compiler plugin initialization explicit. (Benjamin Bannier, Corelight)
+
+  * Refresh package docs with `doc/scripts/autogen-zeek-docs`. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.30 | 2022-04-21 09:10:11 +0200
 
   * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
