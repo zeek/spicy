@@ -97,6 +97,14 @@ Returns the Zeek-side file ID of the new file.
 
 Returns the current file's FUID.
 
+.. _spicy_terminate_session:
+
+.. rubric:: ``function zeek::terminate_session()``
+
+Terminates the currently active Zeek-side session, flushing all state. Any
+subsequent activity will start a new session from scratch. This can only be
+called from inside a protocol analyzer.
+
 .. _spicy_file_set_size:
 
 .. rubric:: ``function zeek::file_set_size(size: uint64, fid: optional<string> = Null)``
