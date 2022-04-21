@@ -1,3 +1,11 @@
+1.5.0-dev.30 | 2022-04-21 09:10:11 +0200
+
+  * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
+
+  * Add fuzzing related files. (Benjamin Bannier, Corelight)
+
+  * Refresh package docs with `doc/scripts/autogen-zeek-docs`. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.26 | 2022-04-14 07:53:47 +0200
 
   * Fix warnings from LGTM. (Benjamin Bannier, Corelight)
