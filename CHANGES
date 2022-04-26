@@ -1,3 +1,7 @@
+1.5.0-dev.35 | 2022-04-26 11:28:26 +0200
+
+  * GH-1114: Update test comments to reflect actual behavior. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.33 | 2022-04-21 16:35:04 +0200
 
   * GH-1164: Make compiler plugin initialization explicit. (Benjamin Bannier, Corelight)
