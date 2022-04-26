@@ -1,9 +1,8 @@
-# @TEST-DOC: Checks that we always synchronize on the shortest possible match.
+# @TEST-DOC: Checks match semantics on synchronization; we prefer the longest possible match.
 
 # @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
 #
-# During normal parsing we prefer the longest possible match, but synchronize
-# on the shortest match.
+# During both normal parsing and synchronization we prefer the longest possible match.
 # @TEST-EXEC: ${SCRIPTS}/printf xABC | spicy-driver -i 1 -d test.hlto -p test::A >>output 2>&1
 # @TEST-EXEC: ${SCRIPTS}/printf ABC | spicy-driver -i 1 -d test.hlto -p test::A >>output 2>&1
 
