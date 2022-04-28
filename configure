@@ -8,6 +8,7 @@
 set -e
 
 # Defaults
+cmake_binary_packaging_mode="no"
 cmake_bison_root=""
 cmake_build_directory="build"
 cmake_build_shared_libs="yes"
@@ -50,6 +51,7 @@ usage="\
 Usage: $0 [OPTION]... [VAR=VALUE]...
 
   Build Options:
+    --binary-package                      Toggle special logic for binary packaging
     --build-dir=DIR                       Place build files in directory [default: ${cmake_build_directory}]
     --build-static-libs                   Build static libraries instead [default: shared]
     --build-toolchain={yes,no}            Build the Spicy compiler toolchain [default: ${cmake_build_toolchain}]
@@ -103,6 +105,7 @@ while [ $# -ne 0 ]; do
     esac
 
     case "$1" in
+        --binary-package)                  cmake_binary_packaging_mode="yes";;
         --build-dir=*|--builddir=*)        cmake_build_directory="${optarg}";;
         --build-static-libs)               cmake_build_shared_libs="no";;
         --build-toolchain=*)               cmake_build_toolchain="${optarg}";;
@@ -142,6 +145,7 @@ while [ $# -ne 0 ]; do
 done
 
 # Set CMake cache options.
+append_cache_entry BINARY_PACKAGING_MODE        BOOL   "${cmake_binary_packaging_mode}"
 append_cache_entry BISON_ROOT                   PATH   "${cmake_bison_root}"
 append_cache_entry BUILD_SHARED_LIBS            BOOL   "${cmake_build_shared_libs}"
 append_cache_entry BUILD_TOOLCHAIN              BOOL   "${cmake_build_toolchain}"
