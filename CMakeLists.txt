@@ -43,8 +43,21 @@ if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 endif ()
 
-make_install_rpath(rpath ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_LIBDIR})
-set(CMAKE_INSTALL_RPATH "${rpath}")
+if (BINARY_PACKAGING_MODE)
+    # Binary packaging mode uses a static link which causes issues with
+    # unresolved symbols for a number of tests.
+    if (USE_SANITIZERS)
+        message(FATAL_ERROR "Sanitizers are unsupported in binary packaging mode")
+    endif ()
+
+    set(BUILD_SHARED_LIBS OFF)
+    set(CMAKE_SKIP_RPATH ON)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH OFF)
+    set(CMAKE_MACOSX_RPATH OFF)
+else ()
+    make_install_rpath(rpath ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_LIBDIR})
+    set(CMAKE_INSTALL_RPATH "${rpath}")
+endif ()
 
 if (USE_CCACHE)
     find_program(CCACHE_PROGRAM ccache)
