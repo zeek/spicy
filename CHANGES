@@ -1,3 +1,9 @@
+1.5.0-dev.40 | 2022-05-04 14:25:52 +0200
+
+  * Enable building on armv7. (Benjamin Bannier, Corelight)
+
+  * Remove test assumption on whether `char` is signed. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.37 | 2022-05-03 15:54:47 +0200
 
   * Add binary packaging mode. (Benjamin Bannier, Corelight)

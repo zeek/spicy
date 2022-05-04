@@ -56,7 +56,7 @@ TEST_CASE("primitive") {
 TEST_CASE("safe-int") {
     using integer::safe;
     CHECK_EQ(to_string(safe<int8_t>(-42)), "-42");
-    CHECK_EQ(to_string(safe<char>(-42)), "-42");
+    CHECK_EQ(to_string(safe<char>(42)), "42");
 
     CHECK_EQ(to_string(safe<uint16_t>(42)), "42");
     CHECK_EQ(to_string(safe<int16_t>(-42)), "-42");

@@ -249,7 +249,7 @@ std::pair<char*, char*> detail::StackBuffer::activeRegion() const {
     // The direction in which the stack grows is platform-specific. It's
     // probably gong to be growing downwards pretty much everywhere, but to be
     // safe we whitelist platforms that we have confirmed to do so.
-#if __x86_64__ || __arm64__ || __aarch64__ || __i386__
+#if __x86_64__ || __arm__ || __arm64__ || __aarch64__ || __i386__
     auto lower = reinterpret_cast<char*>(_fiber->regs.sp);
     auto upper = reinterpret_cast<char*>(_fiber->regs.sp) + fiber_stack_used_size(_fiber);
 #else
@@ -268,7 +268,7 @@ size_t detail::StackBuffer::liveRemainingSize() const {
     assert(::fiber_is_executing(_fiber)); // must be live
 
     // Whitelist architectures where we know how to do this.
-#if __x86_64__ || __arm64__ || __aarch64__ || __i386__
+#if __x86_64__ || __arm__ || __arm64__ || __aarch64__ || __i386__
     // See
     // https://stackoverflow.com/questions/20059673/print-out-value-of-stack-pointer
     // for discussion of how to get stack pointer.
