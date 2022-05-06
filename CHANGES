@@ -1,3 +1,7 @@
+1.5.0-dev.42 | 2022-05-06 11:43:58 +0200
+
+  * GH-1171: Remove freebsd11, add freebsd13. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.40 | 2022-05-04 14:25:52 +0200
 
   * Enable building on armv7. (Benjamin Bannier, Corelight)
