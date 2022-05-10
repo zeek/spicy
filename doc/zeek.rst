@@ -262,7 +262,7 @@ Packet analyzers support just one property currently:
         Spicy-side type name. The unit type must have been declared as
         ``public`` in Spicy.
 
-As a full example, here's what a new analyzer could look like:
+As a full example, here's what a new packet analyzer could look like::
 
     packet analyzer spicy::RawLayer:
         parse with Raw Layer::Packet;
@@ -311,7 +311,7 @@ File analyzers support the following properties:
     ``mime-type MIME-TYPE``
         Specifies a MIME type for which you want Zeek to automatically
         activate your analyzer when it sees a corresponding file on
-        the network. The type is a specified in standard
+        the network. The type is specified in standard
         ``type/subtype`` notion, without quotes (e.g., ``image/gif``).
 
         .. note::
@@ -345,7 +345,7 @@ File analyzers support the following properties:
 
         .. note::
 
-            This feature requires Zeek >= 4.1
+            This feature requires Zeek >= 4.1.
 
 As a full example, here's what a new GIF analyzer could look like:
 
@@ -361,9 +361,9 @@ Event Definitions
 To define a Zeek event that you want the Spicy plugin to trigger, you
 add lines of the form::
 
-    on HOOK_ID -> event EVENT_NAME(ARG1_, ..., ARG_N);
+    on HOOK_ID -> event EVENT_NAME(ARG_1, ..., ARG_N);
 
-    on HOOK_ID if COND -> event EVENT_NAME(ARG1_, ..., ARG_N);
+    on HOOK_ID if COND -> event EVENT_NAME(ARG_1, ..., ARG_N);
 
 The Zeek plugin automatically derives from this everything it needs to
 register new events with Zeek, including a mapping of the arguments'
@@ -372,29 +372,29 @@ the pieces going into such an event definition:
 
 ``on HOOK_ID``
     A Spicy-side ID that defines when you want to trigger the event.
-    This works just like a ``on ...`` :ref:`unit hook <unit_hooks>`,
+    This works just like an ``on ...`` :ref:`unit hook <unit_hooks>`,
     and you can indeed use anything here that Spicy supports for those
-    as well (except container hooks). So, e.g., ``on
+    as well (except :ref:`container hooks <foreach>`). So, e.g., ``on
     HTTP::Request::%done`` triggers an event whenever a
     ``HTTP::Request`` unit has been fully parsed, and ``on
     HTTP::Request::uri`` leads to an event each time the ``uri`` field
-    has been parsed. (In the former example, you may skip the
-    ``%done`` actually: ``on HTTP::Request`` implicitly adds it.)
+    has been parsed. (In the former example you may skip the
+    ``%done``, actually: ``on HTTP::Request`` implicitly adds it.)
 
 ``EVENT_NAME``
-    The Zeek-side name of event you want to generate, preferably
+    The Zeek-side name of the event you want to generate, preferably
     including a namespace (e.g., ``http::request``).
 
-``ARG_I``
-    An argument to pass to the event, given as an arbitrary Spicy
-    expression. The expression will be evaluated within the context of
+``ARG_1, ..., ARG_N``
+    Arguments to pass to the event, given as arbitrary Spicy
+    expressions. Each expression will be evaluated within the context of
     the unit that the ``on ...`` triggers on, similar to code running
     inside the body of a corresponding :ref:`unit hook <unit_hooks>`.
-    That means the expressions has access to ``self`` for accessing
+    That means the expression has access to ``self`` for accessing
     the unit instance that's currently being parsed.
 
     The Spicy type of the expression determines the Zeek-side type of
-    the corresponding event parameters. Most Spicy types translate
+    the corresponding event argument. Most Spicy types translate
     over pretty naturally, the following summarizes the translation:
 
     .. csv-table:: Type Conversion from Spicy to Zeek
@@ -581,8 +581,8 @@ makes two additional identifiers available for testing to both
         Zeek.
 
     ``ZEEK_VERSION``
-        The numerical Zeek version that's being compiled for (see the
-        output of ``spicy-config --zeek-version-number``).
+        The numerical Zeek version that's being compiled for (see
+        ``zeek -e 'print Version::number'``).
 
 This is an example bracketing code by Zeek version in an EVT file:
 
@@ -792,7 +792,7 @@ zeek``. For example, reusing the :ref:`HTTP example
     [debug/zeek] Done with Spicy driver
 
 You can see the main pieces in there: The files being loaded, unit
-types provided by them, analyzers and event being created.
+types provided by them, analyzers and events being created.
 
 If that all looks as expected, it's time to turn to the Zeek side and
 see what it's doing at runtime. You'll need a debug version of Zeek
