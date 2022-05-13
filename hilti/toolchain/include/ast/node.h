@@ -606,7 +606,7 @@ public:
     }
 
     const T& operator[](size_t i) const {
-        assert(i < std::distance(_begin, _end));
+        assert(static_cast<typename RangeIterator<T>::difference_type>(i) < std::distance(_begin, _end));
         return *(_begin + i);
     }
 

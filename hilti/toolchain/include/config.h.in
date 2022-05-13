@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -84,7 +85,7 @@ struct Configuration {
         toolchain_cxx_include_paths; /**< C++ include directories for toolchain headers */
     std::vector<hilti::rt::filesystem::path> toolchain_cxx_library_paths; /**< C++ library directories for runtime */
 
-    int version_number;              /**< Single version number encoding major/minor/patch levels */
+    uint64_t version_number;         /**< Single version number encoding major/minor/patch levels */
     std::string version_string;      /* Readable version string, without git information */
     std::string version_string_long; /* Readable version string, including git information */
 

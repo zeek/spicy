@@ -36,7 +36,7 @@ void Formatter::enterNamespace(const std::string& absolute_ns) {
         auto current = util::split(util::join(_namespaces, "::"), "::");
         auto target = util::split(absolute_ns, "::");
 
-        int i = 0;
+        auto i = 0UL;
         while ( i < std::min(target.size(), current.size()) && target[i] == current[i] ) {
             i++;
         }
@@ -46,7 +46,7 @@ void Formatter::enterNamespace(const std::string& absolute_ns) {
             return;
 
         if ( i >= current.size() ) {
-            pushNamespace(util::join(util::slice(target, i), "::"));
+            pushNamespace(util::join(util::slice(target, static_cast<int>(i)), "::"));
             return;
         }
 

@@ -16,10 +16,10 @@ namespace hilti::rt::library {
  * the HILTI version they were compile with.
  */
 struct Version {
-    std::string magic; /**< magic string for identification */
-    int hilti_version; /**< HILTI project version */
-    bool debug;        /**< true if compiled in debug mode */
-    bool optimize;     /**< true if compiled with optimizations enabled */
+    std::string magic;      /**< magic string for identification */
+    uint64_t hilti_version; /**< HILTI project version */
+    bool debug;             /**< true if compiled in debug mode */
+    bool optimize;          /**< true if compiled with optimizations enabled */
 
     hilti::rt::filesystem::path path; /**< path to file that library was loaded from; not embedded into JSON, but filled
                                    in by `Library::open()` */
