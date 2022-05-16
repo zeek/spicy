@@ -202,15 +202,32 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
     // We ignore the output, just see if running the compiler works. `-dumpversion`
     // works with both GCC and clang, but unlikely to be supported by something
     // other than a compiler.
-    if ( auto rc = _spawnJob(cxx, {"-dumpversion"}); ! rc )
+    if ( auto rc = _runner._spawnJob(cxx, {"-dumpversion"}); ! rc )
         return result::Error(util::fmt("C++ compiler not available or not functioning (looking for %s)", cxx),
                              rc.error().context());
 
-    if ( auto rc = _waitForJobs(); ! rc )
+    if ( auto rc = _runner._waitForJobs(); ! rc )
         return result::Error(util::fmt("C++ compiler not available or not functioning (looking for %s)", cxx),
                              rc.error().context());
 
     return Nothing();
+}
+
+void JIT::JobRunner::finish() {
+    for ( auto&& [id, job] : _jobs ) {
+        auto [status, ec] = job.process->stop(reproc::stop_actions{
+            .first = {.action = reproc::stop::terminate, .timeout = reproc::milliseconds(1000)},
+            .second = {.action = reproc::stop::kill, .timeout = reproc::milliseconds::max()},
+        });
+
+        if ( ec )
+            HILTI_DEBUG(logging::debug::Jit, util::fmt("failed to stop job: %s", ec.message()));
+
+        // Since we terminated the process forcibly, which if the process was still running probably
+        // triggered a non-zero exist status, we ignore the status returned from `stop`.
+    }
+
+    _jobs.clear();
 }
 
 void JIT::_finish() {
@@ -227,20 +244,7 @@ void JIT::_finish() {
 
     _objects.clear();
 
-    for ( auto&& [id, job] : _jobs ) {
-        auto [status, ec] = job.process->stop(reproc::stop_actions{
-            .first = {.action = reproc::stop::terminate, .timeout = reproc::milliseconds(1000)},
-            .second = {.action = reproc::stop::kill, .timeout = reproc::milliseconds::max()},
-        });
-
-        if ( ec )
-            HILTI_DEBUG(logging::debug::Jit, util::fmt("failed to stop job: %s", ec.message()));
-
-        // Since we terminated the process forcibly, which if the process was still running probably
-        // triggered a non-zero exist status, we ignore the status returned from `stop`.
-    }
-
-    _jobs.clear();
+    _runner.finish();
 }
 
 hilti::Result<Nothing> JIT::_compile() {
@@ -325,17 +329,17 @@ hilti::Result<Nothing> JIT::_compile() {
             cxx = *launcher;
         }
 
-        if ( auto rc = _spawnJob(cxx, std::move(args)); ! rc )
+        if ( auto rc = _runner._spawnJob(cxx, std::move(args)); ! rc )
             errors.push_back(rc.error());
 
         if ( sequential ) {
-            if ( auto rc = _waitForJobs(); ! rc )
+            if ( auto rc = _runner._waitForJobs(); ! rc )
                 errors.push_back(rc.error());
         }
     }
 
     // Noop if sequential.
-    if ( auto rc = _waitForJobs(); ! rc )
+    if ( auto rc = _runner._waitForJobs(); ! rc )
         errors.push_back(rc.error());
 
     if ( ! errors.empty() )
@@ -396,10 +400,10 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
 
     // We are using the compiler as a linker here, no need to use a compiler launcher.
     // Since we are writing to a random temporary file non of this would cache anyway.
-    if ( auto rc = _spawnJob(hilti::configuration().cxx, std::move(args)); ! rc )
+    if ( auto rc = _runner._spawnJob(hilti::configuration().cxx, std::move(args)); ! rc )
         return rc.error();
 
-    if ( auto rc = _waitForJobs(); ! rc )
+    if ( auto rc = _runner._waitForJobs(); ! rc )
         return rc.error();
 
     // Atomically move the temporary file to its final location. With that
@@ -434,7 +438,8 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     return library;
 }
 
-Result<JIT::JobID> JIT::_spawnJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args) {
+Result<JIT::JobRunner::JobID> JIT::JobRunner::_spawnJob(const hilti::rt::filesystem::path& cmd,
+                                                        std::vector<std::string> args) {
     std::vector<std::string> cmdline = {cmd.native()};
 
     for ( auto&& a : args )
@@ -471,7 +476,7 @@ Result<JIT::JobID> JIT::_spawnJob(const hilti::rt::filesystem::path& cmd, std::v
     return jid;
 }
 
-Result<Nothing> JIT::_waitForJobs() {
+Result<Nothing> JIT::JobRunner::_waitForJobs() {
     if ( _jobs.empty() )
         return Nothing();
 
