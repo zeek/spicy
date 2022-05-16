@@ -125,12 +125,11 @@ public:
             return *x;
 
         try {
-            if ( auto ptr = std::get<T*>(_ptr) ) {
+            if ( auto ptr = std::get<T*>(_ptr) )
                 if constexpr ( std::is_base_of<Controllable<T>, T>::value )
                     return ptr->shared_from_this();
                 else
                     throw IllegalReference("cannot dynamically create reference for type");
-            }
             else
                 throw IllegalReference("unexpected state of value reference");
         } catch ( const std::bad_weak_ptr& ) {

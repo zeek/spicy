@@ -63,10 +63,9 @@ public:
     std::vector<std::reference_wrapper<const enum_::Label>> uniqueLabels() const;
 
     hilti::optional_ref<const enum_::Label> label(const ID& id) const {
-        for ( const auto& l : labels() ) {
+        for ( const auto& l : labels() )
             if ( l.get().id() == id )
                 return l.get();
-        }
 
         return {};
     }

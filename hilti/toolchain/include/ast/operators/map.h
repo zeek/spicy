@@ -21,10 +21,9 @@ static inline auto constantKeyType(unsigned int op, const char* doc = "<type of 
         if ( resolved_ops.empty() )
             return type::DocOnly(doc);
 
-        if ( op >= resolved_ops.size() ) {
+        if ( op >= resolved_ops.size() )
             logger().internalError(
                 util::fmt("keyType(): index %d out of range, only %" PRIu64 " ops available", op, resolved_ops.size()));
-        }
 
         return type::constant(resolved_ops[op].type().as<type::Map>().keyType());
     };

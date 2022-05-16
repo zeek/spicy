@@ -44,10 +44,9 @@ public:
 
     /** Returns true if all items have been resolved. */
     bool isResolved() const {
-        for ( const auto& i : items() ) {
+        for ( const auto& i : items() )
             if ( ! i.isResolved() )
                 return false;
-        }
 
         return true;
     }
@@ -102,10 +101,9 @@ public:
     const Type& itemType() const { return type::void_; }
 
     bool isResolved() const {
-        for ( const auto& c : cases() ) {
+        for ( const auto& c : cases() )
             if ( ! c.isResolved() )
                 return false;
-        }
 
         return true;
     }

@@ -591,9 +591,8 @@ typename vector::Iterator<T, Allocator>::reference vector::Iterator<T, Allocator
     if ( auto&& c = _container() ) {
         auto&& data = c->get();
 
-        if ( _index >= data.size() ) {
+        if ( _index >= data.size() )
             throw InvalidIterator(fmt("index %s out of bounds", _index));
-        }
 
         return data[_index];
     }
@@ -606,9 +605,8 @@ typename vector::Iterator<T, Allocator>::const_reference vector::Iterator<T, All
     if ( auto&& c = _container() ) {
         auto&& data = c->get();
 
-        if ( _index >= data.size() ) {
+        if ( _index >= data.size() )
             throw InvalidIterator(fmt("index %s out of bounds", _index));
-        }
 
         return data[_index];
     }
@@ -632,9 +630,8 @@ inline std::ostream& operator<<(std::ostream& out, const vector::ConstIterator<T
 
 template<typename T, typename Allocator>
 std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::Iterator<T, Allocator>::_container() const {
-    if ( auto l = _control.lock() ) {
+    if ( auto l = _control.lock() )
         return {std::ref(**l)};
-    }
 
     return std::nullopt;
 }
@@ -644,9 +641,8 @@ typename vector::ConstIterator<T, Allocator>::const_reference vector::ConstItera
     if ( auto&& c = _container() ) {
         auto&& data = c->get();
 
-        if ( _index >= data.size() ) {
+        if ( _index >= data.size() )
             throw InvalidIterator(fmt("index %s out of bounds", _index));
-        }
 
         return data[_index];
     }
@@ -656,9 +652,8 @@ typename vector::ConstIterator<T, Allocator>::const_reference vector::ConstItera
 
 template<typename T, typename Allocator>
 std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::ConstIterator<T, Allocator>::_container() const {
-    if ( auto l = _control.lock() ) {
+    if ( auto l = _control.lock() )
         return {std::ref(**l)};
-    }
 
     return std::nullopt;
 }

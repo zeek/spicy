@@ -619,10 +619,9 @@ public:
 
         auto x = _begin;
         auto y = other._begin;
-        while ( x != _end ) {
+        while ( x != _end )
             if ( ! (*x++ == *y++) )
                 return false;
-        }
 
         return true;
     }
@@ -745,10 +744,9 @@ public:
 
         auto x = begin();
         auto y = other.begin();
-        while ( x != end() ) {
+        while ( x != end() )
             if ( ! (*x++ == *y++) )
                 return false;
-        }
 
         return true;
     }
@@ -861,10 +859,9 @@ bool isEqual(const T* this_, const Other& other) {
 template<typename X, typename F>
 auto filter(const hilti::node::Range<X>& x, F f) {
     hilti::node::Set<X> y;
-    for ( const auto& i : x ) {
+    for ( const auto& i : x )
         if ( f(i) )
             y.push_back(i);
-    }
 
     return y;
 }
@@ -876,10 +873,9 @@ auto filter(const hilti::node::Range<X>& x, F f) {
 template<typename X, typename F>
 auto filter(const hilti::node::Set<X>& x, F f) {
     hilti::node::Set<X> y;
-    for ( const auto& i : x ) {
+    for ( const auto& i : x )
         if ( f(i) )
             y.insert(i);
-    }
 
     return y;
 }
@@ -926,10 +922,9 @@ inline std::ostream& operator<<(std::ostream& out, const Node& n) {
 template<typename T>
 hilti::node::Set<T> NodeBase::childrenOfType() const {
     typename hilti::node::Set<T> n;
-    for ( auto c = _children.begin(); c != _children.end(); c = std::next(c) ) {
+    for ( auto c = _children.begin(); c != _children.end(); c = std::next(c) )
         if ( auto t = c->tryAs<T>() )
             n.insert(*t);
-    }
 
     return n;
 }
@@ -937,10 +932,9 @@ hilti::node::Set<T> NodeBase::childrenOfType() const {
 template<typename T>
 std::vector<NodeRef> NodeBase::childRefsOfType() const {
     typename std::vector<NodeRef> n;
-    for ( auto c = _children.begin(); c != _children.end(); c = std::next(c) ) {
+    for ( auto c = _children.begin(); c != _children.end(); c = std::next(c) )
         if ( c->isA<T>() )
             n.emplace_back(*c);
-    }
 
     return n;
 }

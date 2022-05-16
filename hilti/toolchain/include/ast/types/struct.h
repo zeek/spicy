@@ -59,20 +59,18 @@ public:
     auto fields() const { return childrenOfType<declaration::Field>(); }
 
     hilti::optional_ref<const declaration::Field> field(const ID& id) const {
-        for ( const auto& f : fields() ) {
+        for ( const auto& f : fields() )
             if ( f.id() == id )
                 return f;
-        }
 
         return {};
     }
 
     hilti::node::Set<const declaration::Field> fields(const ID& id) const {
         hilti::node::Set<const declaration::Field> x;
-        for ( const auto& f : fields() ) {
+        for ( const auto& f : fields() )
             if ( f.id() == id )
                 x.insert(f);
-        }
 
         return x;
     }

@@ -78,10 +78,9 @@ Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<No
 
         if ( skip_to_module ) {
             // Advance to module scope directly.
-            while ( ++i != p.path.rend() ) {
+            while ( ++i != p.path.rend() )
                 if ( (*i)->isA<Module>() )
                     break;
-            }
             --i; // for-loop will increase
         }
     }

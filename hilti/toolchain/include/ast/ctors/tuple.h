@@ -50,10 +50,9 @@ public:
 
 private:
     Type _inferType(const std::vector<Expression>& exprs) {
-        for ( const auto& e : exprs ) {
+        for ( const auto& e : exprs )
             if ( ! expression::isResolved(e) )
                 return type::auto_;
-        }
 
         std::vector<Type> types;
         types.reserve(exprs.size());

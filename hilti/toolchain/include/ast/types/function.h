@@ -103,10 +103,9 @@ public:
         if ( ! type::detail::isResolved(result().type(), rstate) )
             return false;
 
-        for ( auto p = children().begin() + 1; p != children().end(); p++ ) {
+        for ( auto p = children().begin() + 1; p != children().end(); p++ )
             if ( ! p->as<function::Parameter>().isResolved(rstate) )
                 return false;
-        }
 
         return true;
     }

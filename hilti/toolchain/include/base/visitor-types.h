@@ -61,10 +61,9 @@ public:
     /** Returns the first parent that has a given type. */
     template<typename T>
     std::optional<std::reference_wrapper<const T>> findParent() const {
-        for ( auto i = path.rbegin() + 1; i != path.rend(); i++ ) {
+        for ( auto i = path.rbegin() + 1; i != path.rend(); i++ )
             if ( (**i).template isA<T>() )
                 return {(**i).template as<T>()};
-        }
 
         return std::nullopt;
     }
@@ -72,10 +71,9 @@ public:
     /** Returns a reference to the first parent that has a given type. */
     template<typename T>
     NodeRef findParentRef() const {
-        for ( auto i = path.rbegin() + 1; i != path.rend(); i++ ) {
+        for ( auto i = path.rbegin() + 1; i != path.rend(); i++ )
             if ( (**i).template isA<T>() )
                 return NodeRef(**i);
-        }
 
         return {};
     }

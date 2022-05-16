@@ -118,10 +118,9 @@ public:
      * than once, it's undefined which one is returned.
      */
     hilti::optional_ref<const unit::item::Property> propertyItem(const std::string& name) const {
-        for ( const auto& i : items<unit::item::Property>() ) {
+        for ( const auto& i : items<unit::item::Property>() )
             if ( i.id() == name )
                 return i;
-        }
 
         return {};
     }
@@ -130,10 +129,9 @@ public:
     auto propertyItems(const std::string& name) const {
         hilti::node::Set<unit::item::Property> props;
 
-        for ( const auto& i : items<unit::item::Property>() ) {
+        for ( const auto& i : items<unit::item::Property>() )
             if ( i.id() == name )
                 props.insert(i);
-        }
 
         return props;
     }

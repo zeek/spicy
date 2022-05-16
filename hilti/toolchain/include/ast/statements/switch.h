@@ -95,10 +95,9 @@ public:
     auto cases() const { return children<switch_::Case>(1, -1); }
 
     hilti::optional_ref<const switch_::Case> default_() const {
-        for ( const auto& c : children<switch_::Case>(1, -1) ) {
+        for ( const auto& c : children<switch_::Case>(1, -1) )
             if ( c.isDefault() )
                 return c;
-        }
         return {};
     }
 

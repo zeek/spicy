@@ -27,19 +27,17 @@ public:
     auto fields() const { return childrenOfType<declaration::Field>(); }
 
     hilti::optional_ref<const declaration::Field> field(const ID& id) const {
-        for ( const auto& f : fields() ) {
+        for ( const auto& f : fields() )
             if ( f.id() == id )
                 return f;
-        }
 
         return {};
     }
 
     unsigned int index(const ID& id) const {
-        for ( const auto&& [i, f] : util::enumerate(fields()) ) {
+        for ( const auto&& [i, f] : util::enumerate(fields()) )
             if ( f.id() == id )
                 return i + 1;
-        }
 
         return 0;
     }
@@ -51,10 +49,9 @@ public:
 
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const {
-        for ( auto c = ++children().begin(); c != children().end(); c++ ) {
+        for ( auto c = ++children().begin(); c != children().end(); c++ )
             if ( ! c->as<declaration::Field>().isResolved(rstate) )
                 return false;
-        }
 
         return true;
     }

@@ -62,10 +62,9 @@ inline Node& parent(const Path<Node>& path, int parent_nr = 1) {
  */
 template<typename T, IF_NOT_SAME(T, Node)>
 std::optional<const T> findParent(const Path<Node>& path) {
-    for ( auto i = path.rbegin() + 1; i != path.rend(); i++ ) {
+    for ( auto i = path.rbegin() + 1; i != path.rend(); i++ )
         if ( auto t = (*i).get().tryAs<T>() )
             return std::move(t);
-    }
 
     return {};
 }
@@ -76,10 +75,9 @@ std::optional<const T> findParent(const Path<Node>& path) {
  */
 template<typename T, IF_NOT_SAME(T, Node)>
 std::optional<const T> findParent(const Path<const Node>& path) {
-    for ( auto i = path.rbegin() + 1; i != path.rend(); i++ ) {
+    for ( auto i = path.rbegin() + 1; i != path.rend(); i++ )
         if ( auto t = (*i).get().tryAs<T>() )
             return std::move(t);
-    }
 
     return {};
 }

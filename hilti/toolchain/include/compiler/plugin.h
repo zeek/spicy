@@ -250,10 +250,9 @@ public:
      */
     template<typename PluginMember>
     bool hasHookFor(PluginMember hook) {
-        for ( const auto& p : plugin::registry().plugins() ) {
+        for ( const auto& p : plugin::registry().plugins() )
             if ( p.*hook )
                 return true;
-        }
 
         return false;
     }
@@ -270,7 +269,8 @@ public:
 
     /** Returns a vector of all extensions that registered set of plugins handles. */
     auto supportedExtensions() const {
-        return util::transform(_plugins, [](auto& p) { return p.extension; });
+        return util::transform(
+            _plugins, [](auto& p) { return p.extension; });
     }
 
     /**

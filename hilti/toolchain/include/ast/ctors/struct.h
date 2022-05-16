@@ -47,10 +47,9 @@ public:
 
     /** Returns a field initialized by the constructor by its ID. */
     hilti::optional_ref<const struct_::Field> field(const ID& id) const {
-        for ( const auto& f : fields() ) {
+        for ( const auto& f : fields() )
             if ( f.id() == id )
                 return f;
-        }
 
         return {};
     }

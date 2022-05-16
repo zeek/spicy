@@ -55,9 +55,8 @@ public:
     friend bool operator!=(const Iterator& a, const Iterator& b) { return ! (a == b); }
 
     Iterator& operator++() {
-        if ( ! _control.lock() ) {
+        if ( ! _control.lock() )
             throw IndexError("iterator is invalid");
-        }
 
         ++_iterator;
         return *this;
@@ -110,9 +109,8 @@ public:
     friend bool operator!=(const ConstIterator& a, const ConstIterator& b) { return ! (a == b); }
 
     ConstIterator& operator++() {
-        if ( ! _control.lock() ) {
+        if ( ! _control.lock() )
             throw IndexError("iterator is invalid");
-        }
 
         ++_iterator;
         return *this;
@@ -287,9 +285,8 @@ public:
     auto erase(const key_type& key) {
         auto removed = static_cast<M&>(*this).erase(key);
 
-        if ( removed ) {
+        if ( removed )
             this->invalidateIterators();
-        }
 
         return removed;
     }

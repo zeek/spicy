@@ -223,7 +223,9 @@ inline bool operator!=(const Empty& /*unused*/, const Set<T>& v) {
 namespace detail::adl {
 template<typename T>
 inline std::string to_string(const Set<T>& x, adl::tag /*unused*/) {
-    return fmt("{%s}", rt::join(rt::transform(x, [](const T& y) { return rt::to_string(y); }), ", "));
+    return fmt("{%s}", rt::join(rt::transform(
+                                    x, [](const T& y) { return rt::to_string(y); }),
+                                ", "));
 }
 
 inline std::string to_string(const set::Empty& x, adl::tag /*unused*/) { return "{}"; }

@@ -126,9 +126,8 @@ public:
     const Byte* data() const {
         if ( auto a = std::get_if<Array>(&_data) )
             return a->second.data();
-        else if ( auto a = std::get_if<Vector>(&_data) ) {
+        else if ( auto a = std::get_if<Vector>(&_data) )
             return a->data();
-        }
         else if ( auto a = std::get_if<Gap>(&_data) )
             throw MissingData("data is missing");
 
@@ -143,9 +142,8 @@ public:
     const Byte* endData() const {
         if ( auto a = std::get_if<Array>(&_data) )
             return a->second.data() + a->first.Ref();
-        else if ( auto a = std::get_if<Vector>(&_data) ) {
+        else if ( auto a = std::get_if<Vector>(&_data) )
             return a->data() + a->size();
-        }
         else if ( auto a = std::get_if<Gap>(&_data) )
             throw MissingData("data is missing");
 

@@ -36,7 +36,9 @@ public:
     bool eodOk() const { return nullable(); }
     bool atomic() const { return false; }
     std::string render() const {
-        return hilti::util::join(hilti::util::transform(_fields, [](const auto& p) { return p.symbol(); }), " ");
+        return hilti::util::join(hilti::util::transform(
+                                     _fields, [](const auto& p) { return p.symbol(); }),
+                                 " ");
     }
 
 private:
