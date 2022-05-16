@@ -1,3 +1,7 @@
+1.5.0-dev.51 | 2022-05-16 16:37:15 +0200
+
+  * Avoid truncation when performing int64 range check. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.49 | 2022-05-16 16:27:50 +0200
 
   * Fix signed/unsigned comparison warnings flagged by GCC. (Benjamin Bannier, Corelight)

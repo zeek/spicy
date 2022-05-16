@@ -76,12 +76,12 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
  * latter cases an error is reported, too
  */
 static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& m) {
-    uint64_t max = (positive ? std::numeric_limits<int64_t>::max() : std::abs(std::numeric_limits<int64_t>::min()));
+    uint64_t max = (positive ? std::numeric_limits<int64_t>::max() : std::fabs(std::numeric_limits<int64_t>::min()));
 
     if ( x <= max )
         return x;
 
-    hilti::logger().error("signed integer value out of tange", m.location());
+    hilti::logger().error("signed integer value out of range", m.location());
     return 0; // Return dummy value
 }
 
