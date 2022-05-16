@@ -2,10 +2,12 @@
 
 #pragma once
 
+#include <deque>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -200,9 +202,13 @@ private:
     struct JobRunner {
         using JobID = uint64_t;
 
-        Result<JobID> _spawnJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args);
+        Result<JobID> _scheduleJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args);
+        Result<Nothing> _spawnJob();
         Result<Nothing> _waitForJobs();
         void finish();
+
+        using CmdLine = std::vector<std::string>;
+        std::deque<std::tuple<JobID, CmdLine>> _jobs_pending;
 
         JobID _job_counter = 0;
 
