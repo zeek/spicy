@@ -45,7 +45,7 @@ void Chunk::trim(Offset o) {
         a->first = (end - begin);
         memmove(a->second.data(), begin, a->first.Ref());
     }
-    else if ( auto a = std::get_if<Vector>(&_data) ) {
+    else if ( std::holds_alternative<Vector>(_data) ) {
         auto& v = std::get<Vector>(_data);
         v.erase(v.begin(), v.begin() + static_cast<Vector::difference_type>((o - _offset).Ref()));
     }

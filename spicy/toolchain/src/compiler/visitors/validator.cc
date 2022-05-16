@@ -246,7 +246,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                         ok = true;
                         auto major = parse_number(v[0]);
                         auto minor = parse_number(v[1]);
-                        auto patch = 0ULL;
+                        uint64_t patch = 0;
 
                         if ( v.size() == 3 )
                             patch = parse_number(v[2]);

@@ -129,7 +129,7 @@ public:
         else if ( auto a = std::get_if<Vector>(&_data) ) {
             return a->data();
         }
-        else if ( auto a = std::get_if<Gap>(&_data) )
+        else if ( std::holds_alternative<Gap>(_data) )
             throw MissingData("data is missing");
 
         hilti::rt::cannot_be_reached();
@@ -146,7 +146,7 @@ public:
         else if ( auto a = std::get_if<Vector>(&_data) ) {
             return a->data() + a->size();
         }
-        else if ( auto a = std::get_if<Gap>(&_data) )
+        else if ( std::holds_alternative<Gap>(_data) )
             throw MissingData("data is missing");
 
         hilti::rt::cannot_be_reached();

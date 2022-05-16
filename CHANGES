@@ -1,3 +1,13 @@
+1.5.0-dev.49 | 2022-05-16 16:27:50 +0200
+
+  * Fix signed/unsigned comparison warnings flagged by GCC. (Benjamin Bannier, Corelight)
+
+  * Remove unused variables. (Benjamin Bannier, Corelight)
+
+  * Fix linking of runtime test executables. (Benjamin Bannier, Corelight)
+
+  * Only check whether Zeek docs are up-to-date from cron builds. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.44 | 2022-05-10 09:01:16 +0200
 
   * Minor edits to the Zeek Integration section (Christian Kreibich, Corelight)

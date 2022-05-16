@@ -154,6 +154,8 @@ add_executable(
 target_compile_options(hilti-rt-tests PRIVATE "-Wall")
 target_compile_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+target_link_libraries(hilti-rt-tests
+                      PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
 add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-library-dummy2)
 add_test(NAME hilti-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-tests)
