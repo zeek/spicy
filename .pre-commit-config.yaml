@@ -22,13 +22,13 @@ repos:
     pass_filenames: false
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 'v13.0.1'
+  rev: 'v14.0.3'
   hooks:
   - id: clang-format
     types: ["c", "c++"]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.1.0
+  rev: v4.2.0
   hooks:
   - id: trailing-whitespace
     exclude: '^tests/Baseline'
@@ -63,7 +63,7 @@ repos:
   - id: cmake-lint
 
 - repo: https://github.com/crate-ci/typos
-  rev: v1.5.0
+  rev: typos-v0.10.0
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*'
