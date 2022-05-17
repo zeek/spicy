@@ -2,10 +2,12 @@
 
 #pragma once
 
+#include <deque>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -182,10 +184,6 @@ private:
     // Clean up after compilation.
     void _finish();
 
-    using JobID = uint64_t;
-    Result<JobID> _spawnJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args);
-    Result<Nothing> _waitForJobs();
-
     std::weak_ptr<Context> _context; // global context for options
     bool _dump_code;                 // save all C++ code for debugging
 
@@ -201,8 +199,22 @@ private:
         void collectOutputs(int events);
     };
 
-    JobID _job_counter = 0;
-    std::map<JobID, Job> _jobs;
+    struct JobRunner {
+        using JobID = uint64_t;
+
+        Result<JobID> _scheduleJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args);
+        Result<Nothing> _spawnJob();
+        Result<Nothing> _waitForJobs();
+        void finish();
+
+        using CmdLine = std::vector<std::string>;
+        std::deque<std::tuple<JobID, CmdLine>> _jobs_pending;
+
+        JobID _job_counter = 0;
+
+        std::map<JobID, Job> _jobs;
+    };
+    JobRunner _runner;
 
     std::size_t _hash;
 };

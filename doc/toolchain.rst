@@ -65,8 +65,14 @@ control the compilation process:
         Specified additional, colon-separated C++ include directory to
         search for header files.
 
+    ``HILTI_JIT_PARALLELISM``
+        Set to specify the maximum number of background compilation jobs to run
+        during JIT. Defaults to number of cores.
+
     ``HILTI_JIT_SEQUENTIAL``
         Set to prevent spawning multiple concurrent C++ compiler instances.
+        This overrides any value set for ``HILTI_JIT_PARALLELISM`` and
+        effectively sets it to one.
 
     ``HILTI_OPTIMIZER_PASSES``
         Colon-separated list of optimizer passes to activate. If unset uses the

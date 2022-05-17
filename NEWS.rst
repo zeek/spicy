@@ -7,6 +7,16 @@ Version 1.5 (in progress)
 
 .. rubric:: New Functionality
 
+- GH-1179: Cap parallelism use for JIT background jobs.
+
+  During JIT, we would previously launch all compilation jobs in parallel. For
+  projects using many modules this could have lead to resource contention which
+  often forced users to use sequential compilation with
+  ``HILTI_JIT_SEQUENTIAL``. We now by default cap the number of parallel
+  background jobs at the number of logical cores. This can be parameterized
+  with the environment variable ``HILTI_JIT_PARALLELISM`` which for
+  ``HILTI_JIT_PARALLELISM=1`` reproduces ``HILTI_JIT_SEQUENTIAL``.
+
 .. rubric:: Changed Functionality
 
 .. rubric:: Bug fixes

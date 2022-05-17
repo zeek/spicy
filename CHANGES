@@ -1,3 +1,9 @@
+1.5.0-dev.54 | 2022-05-17 13:05:48 +0200
+
+  * GH-1179: Cap parallelism use for JIT background jobs. (Benjamin Bannier, Corelight)
+
+  * Move JIT background jobs to its own class. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.51 | 2022-05-16 16:37:15 +0200
 
   * Avoid truncation when performing int64 range check. (Benjamin Bannier, Corelight)
