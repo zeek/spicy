@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <sstream>
+#include <thread>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/doctest.h>
@@ -336,3 +337,6 @@ TEST_CASE("stack-size-check") {
 }
 
 TEST_SUITE_END();
+
+// FIXME(bbannier): one-off test that `hardware_concurrency` returns a meaningful value.
+TEST_CASE("hardware_concurrency") { CHECK_GT(std::thread::hardware_concurrency(), 0); }
