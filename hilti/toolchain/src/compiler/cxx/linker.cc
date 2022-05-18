@@ -2,6 +2,7 @@
 
 #include <hilti/rt/json.h>
 #include <hilti/rt/library.h>
+#include <hilti/rt/util.h>
 
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
@@ -63,8 +64,7 @@ void cxx::Linker::finalize() {
     for ( const auto& [id, path] : _modules ) {
         std::ifstream ifs(path);
         std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-        auto h = std::hash<std::string>()(content);
-        hash = hash ^ (h << 1);
+        hash = rt::hashCombine(hash, std::hash<std::string>()(content));
     }
 
     auto scope = hilti::rt::fmt("%" PRIx64, hash);

@@ -1,3 +1,9 @@
+1.5.0-dev.57 | 2022-05-18 14:16:12 +0200
+
+  * Use `rt::hashCombine` instead of handwritten hash combine. (Benjamin Bannier, Corelight)
+
+  * Drop contents of included codes from JIT state hash. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.54 | 2022-05-17 13:05:48 +0200
 
   * GH-1179: Cap parallelism use for JIT background jobs. (Benjamin Bannier, Corelight)

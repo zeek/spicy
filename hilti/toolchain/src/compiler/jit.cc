@@ -28,15 +28,6 @@ using namespace hilti;
 
 namespace {
 
-std::string readFile(const hilti::rt::filesystem::path& path) {
-    std::ifstream ifs(path);
-
-    if ( ! ifs )
-        rt::fatalError(util::fmt("could not read file %s", path));
-
-    return {(std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>())};
-}
-
 hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesystem::path& id, std::size_t hash) {
     const auto cc_hash = code.hash();
 
@@ -580,12 +571,6 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
     return Nothing();
 }
 
-void JIT::add(CxxCode d) {
-    _hash = rt::hashCombine(_hash, d.hash());
-    _codes.push_back(std::move(d));
-}
+void JIT::add(CxxCode d) { _codes.push_back(std::move(d)); }
 
-void JIT::add(const hilti::rt::filesystem::path& p) {
-    _hash = rt::hashCombine(_hash, std::hash<std::string>{}(readFile(p)));
-    _files.push_back(p);
-}
+void JIT::add(const hilti::rt::filesystem::path& p) { _files.push_back(p); }
