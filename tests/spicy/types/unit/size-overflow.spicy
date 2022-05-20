@@ -1,0 +1,11 @@
+# @TEST-DOC: Validates that overflow errors when setting limited views are reported on the correct location.
+#
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x00\x00' | spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type X = unit {
+    var x: uint8 = 0;
+    nope: bytes &size=self.x - 1;
+};
