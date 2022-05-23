@@ -125,10 +125,10 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("static_cast<bool>(%s)", expr);
 
         if ( auto t = dst.tryAs<type::SignedInteger>() )
-            return fmt("::hilti::rt::integer::safe<int%d_t>(%s)", std::max(16, t->width()), expr);
+            return fmt("::hilti::rt::integer::safe<int%d_t>(%s)", t->width(), expr);
 
         if ( auto t = dst.tryAs<type::UnsignedInteger>() )
-            return fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", std::max(16, t->width()), expr);
+            return fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", t->width(), expr);
 
         logger().internalError(fmt("codegen: unexpected type coercion from signed integer to %s", dst.typename_()));
     }
@@ -177,10 +177,10 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("static_cast<bool>(%s)", expr);
 
         if ( auto t = dst.tryAs<type::SignedInteger>() )
-            return fmt("::hilti::rt::integer::safe<int%d_t>(%s)", std::max(16, t->width()), expr);
+            return fmt("::hilti::rt::integer::safe<int%d_t>(%s)", t->width(), expr);
 
         if ( auto t = dst.tryAs<type::UnsignedInteger>() )
-            return fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", std::max(16, t->width()), expr);
+            return fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", t->width(), expr);
 
         logger().internalError(fmt("codegen: unexpected type coercion from unsigned integer to %s", dst.typename_()));
     }
