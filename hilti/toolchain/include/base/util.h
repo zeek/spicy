@@ -86,7 +86,7 @@ using hilti::rt::transform; // NOLINT(misc-unused-using-decls)
 /** Applies a function to each element of a set, returning a vector with the results. */
 template<typename X, typename F>
 auto transform_to_vector(const std::set<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
+    using Y = typename std::invoke_result_t<F, X&>;
     std::vector<Y> y;
     y.reserve(x.size());
     for ( const auto& i : x )

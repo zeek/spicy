@@ -1,3 +1,7 @@
+1.5.0-dev.64 | 2022-05-25 14:30:37 +0200
+
+  * GH-1190: Replace uses of deprecated `result_of` with `invoke_result`. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.62 | 2022-05-25 09:21:15 +0200
 
   * Bump justrx. (Benjamin Bannier, Corelight)
