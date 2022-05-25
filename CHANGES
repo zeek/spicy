@@ -1,3 +1,7 @@
+1.5.0-dev.66 | 2022-05-25 14:31:13 +0200
+
+  * GH-1174: Do not artificially suppress uses of `(u)int8` in some cases. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.64 | 2022-05-25 14:30:37 +0200
 
   * GH-1190: Replace uses of deprecated `result_of` with `invoke_result`. (Benjamin Bannier, Corelight)
