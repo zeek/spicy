@@ -890,7 +890,7 @@ auto filter(const hilti::node::Set<X>& x, F f) {
  */
 template<typename X, typename F>
 auto transform(const hilti::node::Range<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
+    using Y = typename std::invoke_result_t<F, X&>;
     std::vector<Y> y;
     y.reserve(x.size());
     for ( const auto& i : x )
@@ -905,7 +905,7 @@ auto transform(const hilti::node::Range<X>& x, F f) {
  */
 template<typename X, typename F>
 auto transform(const hilti::node::Set<X>& x, F f) {
-    using Y = typename std::result_of<F(X&)>::type;
+    using Y = typename std::invoke_result_t<F, X&>;
     std::vector<Y> y;
     y.reserve(x.size());
     for ( const auto& i : x )

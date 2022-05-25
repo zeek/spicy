@@ -330,7 +330,7 @@ constexpr auto transform_result_value(const C&) {
 /** Applies a function to each element of container. */
 template<typename C, typename F>
 auto transform(const C& x, F f) {
-    using Y = typename std::result_of_t<F(typename C::value_type&)>;
+    using Y = typename std::invoke_result_t<F, typename C::value_type&>;
 
     auto y = detail::transform_result_value<C, Y>(x);
     std::transform(std::begin(x), std::end(x), std::inserter(y, std::end(y)), f);
