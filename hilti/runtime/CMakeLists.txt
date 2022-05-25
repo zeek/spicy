@@ -170,6 +170,7 @@ add_test(NAME hilti-rt-configuration-tests
          COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-configuration-tests)
 
 add_executable(hilti-rt-fiber-benchmark src/benchmarks/fiber.cc)
+set_target_properties(hilti-rt-fiber-benchmark PROPERTIES EXCLUDE_FROM_ALL YES)
 target_compile_options(hilti-rt-fiber-benchmark PRIVATE "-Wall")
 target_link_libraries(hilti-rt-fiber-benchmark
                       PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>)

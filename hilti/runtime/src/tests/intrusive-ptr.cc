@@ -8,6 +8,14 @@
 // The IntrusivePtr class is adapted from Zeek. We only test basic
 // functionality and extensions here.
 
+// Some versions of GCC have trouble following the internal state of
+// `IntrusivePtr` and might report frees of non-heap objects, even though the
+// code would not be called. Silence this warning (and accommodate for either
+// Clang or GCC not knowing that warning).
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+
 using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("IntrusivePtr");

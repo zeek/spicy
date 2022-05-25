@@ -62,10 +62,7 @@ void spicy::rt::init() {
         }
     }
 
-    if ( default_parser )
-        globalState()->default_parser = *default_parser;
-    else
-        globalState()->default_parser = std::nullopt;
+    globalState()->default_parser = default_parser;
 
     HILTI_RT_DEBUG("libspicy", "registered parsers (w/ aliases):");
     for ( const auto& i : globalState()->parsers_by_name ) {
