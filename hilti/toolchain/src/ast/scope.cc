@@ -54,10 +54,11 @@ static auto createRefs(const std::vector<Scope::Referee>& refs, const std::strin
 template<typename NodeSet>
 static auto createRefs(const NodeSet& refs, const std::string& id, bool external) {
     std::vector<Scope::Referee> result;
-
     result.reserve(refs.size());
-    for ( auto& n : refs )
-        result.push_back(Scope::Referee{.node = NodeRef(n), .qualified = id, .external = external});
+
+    std::transform(refs.begin(), refs.end(), std::back_inserter(result), [&](const auto& n) {
+        return Scope::Referee{.node = NodeRef(n), .qualified = id, .external = external};
+    });
 
     return result;
 }
