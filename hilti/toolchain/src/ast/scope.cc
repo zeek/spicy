@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <hilti/rt/util.h>
+
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/declarations/imported-module.h>
@@ -11,19 +13,22 @@
 
 using namespace hilti;
 
-void Scope::insert(const ID& id, NodeRef&& n) {
-    assert(n && n->isA<Declaration>());
-    const auto& d = n->as<Declaration>();
-    auto& nodes = _items[std::string(id)];
-
-    // Filter out duplicates
-    for ( const auto& i : nodes ) {
-        if ( i && i->as<Declaration>() == d )
-            return;
+std::size_t Scope::NodeRefHash::operator()(const hilti::NodeRef& n) const {
+    if ( n ) {
+        const auto& l = n->location();
+        return rt::hashCombine(std::hash<std::string>()(l.file()), l.from(), l.to());
     }
 
-    nodes.push_back(std::move(n));
+    return 0;
 }
+
+bool Scope::NodeRefEqual::operator()(const hilti::NodeRef& a, const hilti::NodeRef& b) const {
+    const auto& a_ = a->as<Declaration>();
+    const auto& b_ = b->as<Declaration>();
+    return a_ == b_;
+}
+
+void Scope::insert(const ID& id, NodeRef&& n) { _items[id].insert(std::move(n)); }
 
 void Scope::insert(NodeRef&& n) {
     assert(n && n->isA<Declaration>());
@@ -46,7 +51,8 @@ static auto createRefs(const std::vector<Scope::Referee>& refs, const std::strin
     return result;
 }
 
-static auto createRefs(const std::vector<NodeRef>& refs, const std::string& id, bool external) {
+template<typename NodeSet>
+static auto createRefs(const NodeSet& refs, const std::string& id, bool external) {
     std::vector<Scope::Referee> result;
 
     result.reserve(refs.size());

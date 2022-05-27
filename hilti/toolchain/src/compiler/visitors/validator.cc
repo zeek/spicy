@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <unordered_set>
 #include <utility>
 
@@ -51,9 +52,13 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             if ( nodes.size() <= 1 )
                 continue;
 
-            const auto& firstNode = nodes.front();
-            for ( auto it = std::next(nodes.begin()); it != nodes.end(); ++it ) {
-                const auto& node = *it;
+            const auto& firstNode = *std::min_element(nodes.begin(), nodes.end(), [](const auto& a, const auto& b) {
+                return a->location() < b->location();
+            });
+
+            for ( const auto& node : nodes ) {
+                if ( node->location() == firstNode->location() )
+                    continue;
 
                 // We whitelist functions and import declarations as they can legitimately appear multiple times.
                 // To not permit shadowing of e.g., variable declarations with function declarations, we require nodes
