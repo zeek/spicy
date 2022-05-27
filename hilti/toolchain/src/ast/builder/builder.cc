@@ -102,3 +102,5 @@ void Builder::addDebugDedent(const std::string& stream) {
     auto call = builder::call("hilti::debugDedent", {builder::string(stream)});
     _block._add(statement::Expression(std::move(call)));
 }
+
+void Builder::setLocation(const Location& l) { _block._add(statement::SetLocation(builder::string(l.render()))); }

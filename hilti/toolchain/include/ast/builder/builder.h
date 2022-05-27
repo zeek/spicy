@@ -204,6 +204,8 @@ public:
         return SwitchProxy(this, lastStatement<statement::Switch>());
     }
 
+    void setLocation(const Location& l);
+
     class TryProxy {
     public:
         TryProxy(Builder* b, statement::Try& s) : _builder(b), _try(&s) {} //NOLINT(google-runtime-references)
