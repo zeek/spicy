@@ -30,7 +30,7 @@ TEST_SUITE_BEGIN("Visitor");
 
 TEST_CASE("Single-shot, result, constant node") {
     struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
-        using base_t::base_t;
+        using Visitor::base_t::base_t;
 
         result_t operator()(const hilti::Module& m) { return "(mo)"; }
         result_t operator()(const hilti::ID& id) { return "(id)"; }
