@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -33,7 +34,7 @@ public:
         return _location ? *_location : null;
     }
 
-    void setLocation(Location l) { _location = &*_cache()->insert(std::move(l)).first; }
+    void setLocation(Location l) { _location = std::move(l); }
     void setComments(Comments c) { _comments = std::move(c); }
 
     /**
@@ -43,9 +44,9 @@ public:
     explicit operator bool() const { return _location || _comments.size(); }
 
 private:
-    std::unordered_set<Location>* _cache();
+    static std::unordered_set<Location> _cache;
 
-    const Location* _location = nullptr;
+    std::optional<Location> _location;
     Comments _comments;
 };
 

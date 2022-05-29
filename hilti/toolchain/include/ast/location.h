@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 #include <utility>
 
@@ -101,13 +102,8 @@ namespace std {
 template<>
 struct hash<hilti::Location> {
     size_t operator()(const hilti::Location& x) const {
-        auto hash = std::hash<const char*>()(x._file.c_str());
-        hash = hilti::rt::hashCombine(hash, x._from_line);
-        hash = hilti::rt::hashCombine(hash, x._to_line);
-        hash = hilti::rt::hashCombine(hash, x._from_character);
-        hash = hilti::rt::hashCombine(hash, x._to_character);
-
-        return hash;
+        return hilti::rt::hashCombine(std::hash<std::string>()(x._file), x._from_line, x._to_line, x._from_character,
+                                      x._to_character);
     }
 };
 } // namespace std
