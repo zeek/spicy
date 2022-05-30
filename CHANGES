@@ -1,3 +1,7 @@
+1.5.0-dev.68 | 2022-05-30 10:03:28 +0200
+
+  * Suppress GCC warning about maybe uninitialized variable. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.66 | 2022-05-25 14:31:13 +0200
 
   * GH-1174: Do not artificially suppress uses of `(u)int8` in some cases. (Benjamin Bannier, Corelight)
