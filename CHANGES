@@ -1,3 +1,9 @@
+1.5.0-dev.71 | 2022-05-30 10:24:58 +0200
+
+  * GH-1050: Update location when entering most parser methods. (Benjamin Bannier, Corelight)
+
+  * Add builder method to set a new location. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.68 | 2022-05-30 10:03:28 +0200
 
   * Suppress GCC warning about maybe uninitialized variable. (Benjamin Bannier, Corelight)

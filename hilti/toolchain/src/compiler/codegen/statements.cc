@@ -200,6 +200,11 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             block->addStatement("return");
     }
 
+    void operator()(const statement::SetLocation& n, position_t p) {
+        const auto& location = n.expression()->as<expression::Ctor>().ctor().as<ctor::String>().value();
+        block->addStatement(fmt("__location__(\"%s\")", location));
+    }
+
     void operator()(const statement::Switch& n, position_t p) {
         // TODO(robin): We generate if-else chain here. We could optimize the case
         // where all expressions are integers and go with a "real" switch in

@@ -628,6 +628,12 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         out.endLine();
     }
 
+    void operator()(const statement::SetLocation& n) {
+        out.beginLine();
+        out << "# " << *n.expression();
+        out.endLine();
+    }
+
     void operator()(const statement::Return& n) {
         out.beginLine();
         out << "return";

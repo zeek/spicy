@@ -103,6 +103,7 @@ hilti::statement::Expression : isStatement
 hilti::statement::For : isStatement
 hilti::statement::If : isStatement
 hilti::statement::Return : isStatement
+hilti::statement::SetLocation : isStatement
 hilti::statement::Switch : isStatement
 hilti::statement::Throw : isStatement
 hilti::statement::Try : isStatement

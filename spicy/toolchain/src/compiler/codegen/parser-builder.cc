@@ -227,6 +227,8 @@ struct ProductionVisitor
                 auto build_parse_stage1 = [&]() {
                     pushBuilder();
 
+                    builder()->setLocation(p.location());
+
                     auto pstate = state();
                     pstate.self = hilti::expression::UnresolvedID(ID("self"));
                     pstate.data = builder::id("__data");
@@ -354,6 +356,8 @@ struct ProductionVisitor
                     pushState(std::move(pstate));
                     pushBuilder();
 
+                    builder()->setLocation(p.location());
+
                     // Note: Originally, we had the init expression (`{...}`)
                     // inside the tuple ctor, but that triggered ASAN to report
                     // a memory leak.
@@ -462,6 +466,8 @@ struct ProductionVisitor
         }
 
         // Parse production
+
+        builder()->setLocation(p.location());
 
         std::optional<Expression> pre_container_offset;
         if ( is_field_owner )
@@ -1756,6 +1762,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
         if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p.default_(); }) ) {
             // Create parse1() body.
             pushBuilder();
+            builder()->setLocation(grammar.root()->location());
             builder()->addLocal("unit", builder::value_reference(
                                             builder::default_(builder::typeByID(*t.id()),
                                                               hilti::node::transform(t.parameters(), [](const auto& p) {
@@ -1798,6 +1805,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
             // Create parse3() body.
             pushBuilder();
+            builder()->setLocation(grammar.root()->location());
             builder()->addLocal("unit", builder::value_reference(
                                             builder::default_(builder::typeByID(*t.id()),
                                                               hilti::node::transform(parameters, [](const auto& p) {
@@ -1845,6 +1853,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
         // Create parse2() body.
         pushBuilder();
+        builder()->setLocation(grammar.root()->location());
         builder()->addLocal("ncur", type::stream::View(),
                             builder::ternary(builder::id("cur"), builder::deref(builder::id("cur")),
                                              builder::cast(builder::deref(builder::id("data")), type::stream::View())));
@@ -1962,8 +1971,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
             // Special-case: No value parsed, but still run hook.
             builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), {}, field->meta());
         else
-            builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), args,
-                                     field->meta());
+            builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), args, field->meta());
 
         afterHook();
     }
@@ -2134,8 +2142,7 @@ void ParserBuilder::waitForEod() {
 }
 
 void ParserBuilder::parseError(const Expression& error_msg, const Meta& location) {
-    builder()->addThrow(builder::exception(builder::typeByID("spicy_rt::ParseError"), error_msg, location),
-                        location);
+    builder()->addThrow(builder::exception(builder::typeByID("spicy_rt::ParseError"), error_msg, location), location);
 }
 
 void ParserBuilder::parseError(const std::string& error_msg, const Meta& location) {
