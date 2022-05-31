@@ -50,25 +50,17 @@ bool runHook(bool* modified, const Plugin& plugin, const Node* module, const std
 Unit::~Unit() { _destroyModule(); }
 
 Result<std::shared_ptr<Unit>> Unit::fromCache(const std::shared_ptr<Context>& context,
-                                              const hilti::rt::filesystem::path& path) {
-    if ( auto cached = context->lookupUnit(path) )
+                                              const hilti::rt::filesystem::path& path, const std::optional<ID>& scope) {
+    if ( auto cached = context->lookupUnit(path, scope) )
         return cached->unit;
     else
         return result::Error(fmt("unknown module %s", path));
 }
 
-Result<std::shared_ptr<Unit>> Unit::fromCache(const std::shared_ptr<Context>& context, const hilti::ID& id,
-                                              const hilti::rt::filesystem::path& extension) {
-    if ( auto cached = context->lookupUnit(id, extension) )
-        return cached->unit;
-    else
-        return result::Error(fmt("unknown module %s", id));
-}
-
 Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& context,
-                                               const hilti::rt::filesystem::path& path,
+                                               const hilti::rt::filesystem::path& path, const std::optional<ID>& scope,
                                                std::optional<hilti::rt::filesystem::path> process_extension) {
-    if ( auto cached = context->lookupUnit(path, process_extension) )
+    if ( auto cached = context->lookupUnit(path, scope, process_extension) )
         return cached->unit;
 
     auto module = _parse(context, path);
@@ -78,19 +70,17 @@ Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& c
     if ( ! process_extension )
         process_extension = path.extension();
 
-    auto id = module->id();
-    auto unit = std::shared_ptr<Unit>(new Unit(context, std::move(id), path, *process_extension,
+    auto unit = std::shared_ptr<Unit>(new Unit(context, module->id(), scope, path, *process_extension,
                                                std::move(*module))); // no make_shared, ctor is private
     context->cacheUnit(unit);
 
     return unit;
 }
 
-std::shared_ptr<Unit> Unit::fromModule(const std::shared_ptr<Context>& context, hilti::Module module,
+std::shared_ptr<Unit> Unit::fromModule(const std::shared_ptr<Context>& context, const hilti::Module& module,
                                        hilti::rt::filesystem::path extension) {
-    auto id = module.id();
-    auto unit = std::shared_ptr<Unit>(new Unit(context, std::move(id), {}, std::move(extension),
-                                               std::move(module))); // no make_shared, ctor is private
+    auto unit = std::shared_ptr<Unit>(new Unit(context, module.id(), {}, {}, std::move(extension),
+                                               module)); // no make_shared, ctor is private
     context->cacheUnit(unit);
     return unit;
 }
@@ -100,7 +90,7 @@ Result<std::shared_ptr<Unit>> Unit::fromImport(const std::shared_ptr<Context>& c
                                                const hilti::rt::filesystem::path& process_extension,
                                                std::optional<ID> scope,
                                                std::vector<hilti::rt::filesystem::path> search_dirs) {
-    if ( auto cached = context->lookupUnit(id, process_extension) )
+    if ( auto cached = context->lookupUnit(id, scope, process_extension) )
         return cached->unit;
 
     auto parse_plugin = plugin::registry().pluginForExtension(parse_extension);
@@ -129,7 +119,7 @@ Result<std::shared_ptr<Unit>> Unit::fromImport(const std::shared_ptr<Context>& c
         return result::Error(fmt("cannot find file"));
     }
 
-    auto unit = fromSource(context, *path, process_extension);
+    auto unit = fromSource(context, *path, scope, process_extension);
     if ( ! unit )
         return unit;
 
@@ -143,7 +133,7 @@ Result<std::shared_ptr<Unit>> Unit::fromImport(const std::shared_ptr<Context>& c
 Result<std::shared_ptr<Unit>> Unit::fromCXX(const std::shared_ptr<Context>& context, detail::cxx::Unit cxx,
                                             const hilti::rt::filesystem::path& path) {
     return std::shared_ptr<Unit>(
-        new Unit(context, ID(fmt("<CXX/%s>", path.native())), ".cxx", path, std::move(cxx)));
+        new Unit(context, ID(fmt("<CXX/%s>", path.native())), {}, ".cxx", path, std::move(cxx)));
 }
 
 Result<hilti::Module> Unit::_parse(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path) {
@@ -185,7 +175,7 @@ Result<Nothing> Unit::buildASTScopes(const Plugin& plugin) {
     bool modified = false; // not used
 
     if ( ! runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_build_scopes,
-                   fmt("building scopes for module %s", id()), context(), &*_module, this) )
+                   fmt("building scopes for module %s", uniqueID()), context(), &*_module, this) )
         return result::Error("errors encountered during scope building");
 
     return Nothing();
@@ -195,15 +185,15 @@ Result<Unit::ASTState> Unit::resolveAST(const Plugin& plugin) {
     bool modified = false;
 
     if ( ! runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_normalize,
-                   fmt("normalizing nodes in module %s", id()), context(), &*_module, this) )
+                   fmt("normalizing nodes in module %s", uniqueID()), context(), &*_module, this) )
         return result::Error("errors encountered during normalizing");
 
     if ( ! runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_coerce,
-                   fmt("coercing nodes in module %s", id()), context(), &*_module, this) )
+                   fmt("coercing nodes in module %s", uniqueID()), context(), &*_module, this) )
         return result::Error("errors encountered during coercing");
 
     if ( ! runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_resolve,
-                   fmt("resolving nodes in module %s", id()), context(), &*_module, this) )
+                   fmt("resolving nodes in module %s", uniqueID()), context(), &*_module, this) )
         return result::Error("errors encountered during resolving");
 
     return modified ? Modified : NotModified;
@@ -215,7 +205,7 @@ bool Unit::validateASTPre(const Plugin& plugin) {
 
     bool modified = false; // not used
     runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_validate_pre,
-            fmt("validating module %s (pre)", id()), context(), &*_module, this);
+            fmt("validating module %s (pre)", uniqueID()), context(), &*_module, this);
 
     return _collectErrors();
 }
@@ -226,7 +216,7 @@ bool Unit::validateASTPost(const Plugin& plugin) {
 
     bool modified = false; // not used
     runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_validate_post,
-            fmt("validating module %s (post)", id()), context(), &*_module, this);
+            fmt("validating module %s (post)", uniqueID()), context(), &*_module, this);
 
     return _collectErrors();
 }
@@ -236,7 +226,7 @@ Result<Nothing> Unit::transformAST(const Plugin& plugin) {
         return Nothing();
 
     bool modified = false;
-    runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_transform, fmt("transforming module %s", id()),
+    runHook(&modified, plugin, &*_module, _extension, &Plugin::ast_transform, fmt("transforming module %s", uniqueID()),
             context(), &*_module, this);
 
     return Nothing();
@@ -246,7 +236,7 @@ Result<Nothing> Unit::codegen() {
     if ( ! _module )
         return Nothing();
 
-    HILTI_DEBUG(logging::debug::Compiler, fmt("compiling module %s to C++", id()));
+    HILTI_DEBUG(logging::debug::Compiler, fmt("compiling module %s to C++", uniqueID()));
     logging::DebugPushIndent _(logging::debug::Compiler);
 
     // Compile to C++.
@@ -256,8 +246,8 @@ Result<Nothing> Unit::codegen() {
         return result::Error("errors encountered during code generation");
 
     if ( ! c )
-        logger().internalError(
-            fmt("code generation for module %s failed, but did not log error (%s)", id(), c.error().description()));
+        logger().internalError(fmt("code generation for module %s failed, but did not log error (%s)", uniqueID(),
+                                   c.error().description()));
 
     // Import declarations from our dependencies. They will have been compiled
     // at this point.
@@ -265,12 +255,12 @@ Result<Nothing> Unit::codegen() {
     // TODO(robin): Would be nice if we had a "cheap" compilation mode that
     // only generated declarations.
     for ( const auto& unit : dependencies(true) ) {
-        HILTI_DEBUG(logging::debug::Compiler, fmt("importing declarations from module %s", unit.lock()->id()));
+        HILTI_DEBUG(logging::debug::Compiler, fmt("importing declarations from module %s", unit.lock()->uniqueID()));
         auto other = detail::CodeGen(context()).compileModule(unit.lock()->module(), unit.lock().get(), false);
         c->importDeclarations(*other);
     }
 
-    HILTI_DEBUG(logging::debug::Compiler, fmt("finalizing module %s", id()));
+    HILTI_DEBUG(logging::debug::Compiler, fmt("finalizing module %s", uniqueID()));
     if ( auto x = c->finalize(); ! x )
         return x.error();
 
@@ -457,7 +447,7 @@ void Unit::resetAST() {
     if ( ! _module )
         return;
 
-    HILTI_DEBUG(logging::debug::Compiler, fmt("resetting nodes for module %s", id()));
+    HILTI_DEBUG(logging::debug::Compiler, fmt("resetting nodes for module %s", uniqueID()));
 
     for ( auto&& i : hilti::visitor::PreOrder<>().walk(&*_module) ) {
         i.node.clearScope();

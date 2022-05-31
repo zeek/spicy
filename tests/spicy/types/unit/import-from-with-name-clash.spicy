@@ -1,0 +1,37 @@
+# @TEST-EXEC: mkdir -p a b
+# @TEST-EXEC: mv a.a.spicy a/a.spicy && mv a.foo.spicy a/foo.spicy
+# @TEST-EXEC: mv b.b.spicy b/b.spicy && mv b.foo.spicy b/foo.spicy
+# @TEST-EXEC: spicyc -j %INPUT >&2
+
+module x;
+
+import a from ./a;
+import b from ./b;
+
+@TEST-START-FILE a.a.spicy
+module a;
+
+import foo from ./a;
+@TEST-END-FILE
+
+@TEST-START-FILE a.foo.spicy
+module foo;
+
+type bar = unit { };
+@TEST-END-FILE
+
+@TEST-START-FILE b.b.spicy
+module b;
+
+import foo from ./b;
+
+type X = unit(x: uint8) {
+	: foo::bar(x);
+};
+@TEST-END-FILE
+
+@TEST-START-FILE b.foo.spicy
+module foo;
+
+type bar = unit(x: uint8) { };
+@TEST-END-FILE

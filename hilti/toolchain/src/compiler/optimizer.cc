@@ -1401,7 +1401,7 @@ void Optimizer::run() {
         // We initially store the list as a `set` to ensure uniqueness, but
         // convert to a `vector` so we can mutate entries while iterating.
         auto UnitCmp = [](const std::shared_ptr<Unit>& lhs, const std::shared_ptr<Unit>& rhs) {
-            return lhs->id() < rhs->id();
+            return lhs->uniqueID() < rhs->uniqueID();
         };
         std::set<std::shared_ptr<Unit>, decltype(UnitCmp)> units(UnitCmp);
 

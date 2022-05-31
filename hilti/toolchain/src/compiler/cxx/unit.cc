@@ -24,8 +24,8 @@ Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std
 Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id)
     : _context(context), _module_id(std::move(module_id)), _no_linker_meta_data(true) {}
 
-void Unit::setModule(const hilti::Module& m) {
-    _module_id = cxx::ID(m.id());
+void Unit::setModule(const hilti::Module& m, const hilti::Unit& hilti_unit) {
+    _module_id = hilti_unit.uniqueID();
     _module_path = m.meta().location().file();
 }
 

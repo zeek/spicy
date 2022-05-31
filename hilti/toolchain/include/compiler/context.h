@@ -106,11 +106,14 @@ namespace context {
  */
 struct CacheIndex {
     ID id;                            /**< module ID */
+    ID scope;                         /**< import scope  */
     hilti::rt::filesystem::path path; /**< path to module's source code on disk; can be left empty if no file exists */
 
+    auto scopedID() const { return scope + id; }
+
     CacheIndex() = default;
-    CacheIndex(ID id, const hilti::rt::filesystem::path& path) : id(std::move(id)), path(util::normalizePath(path)) {}
-    bool operator<(const CacheIndex& other) const { return id < other.id; }
+    CacheIndex(ID id, const std::optional<ID>& scope, const hilti::rt::filesystem::path& path)
+        : id(std::move(id)), scope(scope ? *scope : ID()), path(util::normalizePath(path)) {}
 };
 
 /**
@@ -155,29 +158,45 @@ public:
     /**
      * Looks up a previously cached unit by its ID.
      *
-     * @param path path to look up a unit for
+     * @param id module ID look up a unit for
+     * @param scope import-from scope associated with the import operation, if any
      * @param extension a file extension expected for the unit, indicating its
      * source language; a cached unit will only be returned if its extension
      * matches
      * @return the cache entry associated with the path if found
      */
-    std::optional<context::CacheEntry> lookupUnit(const ID& id, const hilti::rt::filesystem::path& extension);
+    std::optional<context::CacheEntry> lookupUnit(const ID& id, const std::optional<ID>& scope,
+                                                  const hilti::rt::filesystem::path& extension);
 
     /**
      * Looks up a previously cached unit by its path. It will only return a
      * cached module if its extension matches that of the given path.
      *
      * @param path path to look up a unit for
+     * @param scope import-from scope associated with the path being imported, if any
      * @return the cache entry associated with the path if found
      */
     std::optional<context::CacheEntry> lookupUnit(const hilti::rt::filesystem::path& path,
+                                                  const std::optional<ID>& scope,
                                                   std::optional<hilti::rt::filesystem::path> ast_extension = {});
+
+    /**
+     * Looks up a previously cached unit using an existing cache index as the key.
+     *
+     * @param idx cache index to look up
+     * @return the cache entry associated with the path if found
+     */
+    std::optional<context::CacheEntry> lookupUnit(const context::CacheIndex& idx,
+                                                  const std::optional<hilti::rt::filesystem::path>& ast_extension = {});
 
     /**
      * Returns all (direct & indirect) dependencies that a module imports. This
      * information will be complete only once all AST have been fully resolved.
+     *
+     * @param idx cache index for the module which to return dependencies for
+     * @return set of dependencies
      */
-    std::vector<std::weak_ptr<Unit>> lookupDependenciesForUnit(const ID& id,
+    std::vector<std::weak_ptr<Unit>> lookupDependenciesForUnit(const context::CacheIndex& idx,
                                                                const hilti::rt::filesystem::path& extension);
 
     /**

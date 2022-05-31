@@ -353,7 +353,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     auto block = _pb.popBuilder()->block();
 
     auto register_unit =
-        builder::function(ID(fmt("__register_%s", hilti::util::replace(*unit.id(), "::", "_"))), type::void_, {},
+        builder::function(ID(fmt("__register_%s_%s", hiltiUnit()->uniqueID(), unit.id()->local())), type::void_, {},
                           std::move(block), type::function::Flavor::Standard, declaration::Linkage::Init);
     addDeclaration(std::move(register_unit));
 

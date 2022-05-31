@@ -5,6 +5,7 @@ Checks: '
   -bugprone-reserved-identifier,
   -bugprone-branch-clone,
   -bugprone-macro-parentheses,
+  -bugprone-lambda-function-name,
 
   cert-*,
   -cert-dcl37-c,

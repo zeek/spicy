@@ -27,6 +27,7 @@
 #include <hilti/ast/types/unknown.h>
 #include <hilti/ast/types/void.h>
 #include <hilti/base/util.h>
+#include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/visitors.h>
 #include <hilti/compiler/unit.h>
 #include <hilti/global.h>
@@ -300,7 +301,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             }
             else {
                 name = m.path().native();
-                u = Unit::fromSource(_context, m.path(), unit->extension());
+                u = Unit::fromSource(_context, m.path(), m.scope(), unit->extension());
             }
 
             if ( u )
@@ -311,10 +312,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             }
         }
 
-        auto current = _context->lookupUnit(_module.id(), unit->extension());
-        assert(current); // unit must have been created before we started resolving the AST
-
-        if ( current->unit->addDependency(imported_unit) || ! m.unit() ) {
+        if ( unit->addDependency(imported_unit) || ! m.unit() ) {
             logChange(p.node, "imported");
             p.node.as<declaration::ImportedModule>().setUnit(imported_unit);
             modified = true;
