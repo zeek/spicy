@@ -2,11 +2,13 @@
 
 #pragma once
 
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -72,7 +74,17 @@ public:
     Scope& operator=(Scope&& other) = delete;
 
 private:
-    using ItemMap = std::map<std::string, std::vector<NodeRef>>;
+    // Specialized implementation for `NodeRef` hashing and equality checks for
+    // nodes referencing declarations.
+    struct NodeRefHash {
+        std::size_t operator()(const hilti::NodeRef& n) const;
+    };
+
+    struct NodeRefEqual {
+        bool operator()(const hilti::NodeRef& a, const hilti::NodeRef& b) const;
+    };
+
+    using ItemMap = std::map<std::string, std::unordered_set<NodeRef, NodeRefHash, NodeRefEqual>>;
 
     std::vector<Referee> _findID(const ID& id, bool external = false) const;
     std::vector<Referee> _findID(const Scope* scope, const ID& id, bool external = false) const;

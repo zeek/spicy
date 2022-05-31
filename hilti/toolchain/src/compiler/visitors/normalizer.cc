@@ -172,6 +172,9 @@ struct VisitorComputeCanonicalIDs : public visitor::PreOrder<ID, VisitorComputeC
     }
 
     result_t operator()(const Declaration& d, position_t p) {
+        if ( const auto& id = d.canonicalID() )
+            return id;
+
         ID id;
 
         // A couple of special-cases for top-level declarations.

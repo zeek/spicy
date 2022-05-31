@@ -1,3 +1,13 @@
+1.5.0-dev.78 | 2022-05-31 15:08:20 +0200
+
+  * Stop interning Locations. (Benjamin Bannier, Corelight)
+
+  * Avoid recomputing already known canonical ID. (Benjamin Bannier, Corelight)
+
+  * Simplify creating of refs when building scope. (Benjamin Bannier, Corelight)
+
+  * Speed up building of scopes. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.73 | 2022-05-31 15:07:35 +0200
 
   * GH-1073: Switch to ECR images in documentation. (Benjamin Bannier, Corelight)
