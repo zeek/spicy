@@ -222,6 +222,14 @@ Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const
 }
 
 void Driver::dumpUnit(const Unit& unit) {
+    if ( auto module = unit.moduleRef() ) {
+        auto output_path = util::fmt("dbg.%s%s.ast", unit.id(), unit.extension().native());
+        if ( auto out = openOutput(output_path) ) {
+            HILTI_DEBUG(logging::debug::Driver, fmt("saving AST for module %s to %s", unit.id(), output_path));
+            render(*out, *module, true);
+        }
+    }
+
     if ( unit.isCompiledHILTI() ) {
         auto output_path = util::fmt("dbg.%s%s", unit.id(), unit.extension().native());
         if ( auto out = openOutput(output_path) ) {
