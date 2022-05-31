@@ -134,7 +134,7 @@ public:
     /** Appends an ID, separating it with `::`. */
     Derived& operator+=(std::string other) {
         if ( ! other.empty() ) {
-            if ( _id.empty() )
+            if ( empty() )
                 _id = N(std::move(other));
             else
                 _id += "::" + N(std::move(other));
@@ -146,7 +146,7 @@ public:
     /** Appends an ID, separating it with `::`. */
     Derived& operator+=(const Derived& other) {
         if ( ! other._id.empty() ) {
-            if ( other._id.empty() )
+            if ( empty() )
                 _id = other._id;
             else
                 _id += "::" + other._id;
