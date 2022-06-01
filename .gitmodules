@@ -1,9 +1,6 @@
 [submodule "3rdparty/doctest"]
 	path = 3rdparty/doctest
 	url = https://github.com/onqtam/doctest.git
-[submodule "3rdparty/json"]
-	path = 3rdparty/json
-	url = https://github.com/nlohmann/json.git
 [submodule "3rdparty/SafeInt"]
 	path = 3rdparty/SafeInt
 	url = https://github.com/dcleblanc/SafeInt
