@@ -48,7 +48,14 @@ export {
 # doc-functions-end
 }
 
+@if ( Version::number >= 50000 )
+# Marked with &is_used to suppress complaints when there aren't any
+# Spicy file analyzers loaded, and hence this event can't be generated.
+# The attribute is only supported for Zeek 5.0 and higher.
+event spicy_analyzer_for_mime_type(a: Files::Tag, mt: string) &is_used
+@else
 event spicy_analyzer_for_mime_type(a: Files::Tag, mt: string)
+@endif
     {
     Files::register_for_mime_type(a, mt);
     }
