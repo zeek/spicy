@@ -1,16 +1,16 @@
 # @TEST-DOC: Checks that the process umask is taken into account when saving HLTO files.
 #
-# @TEST-EXEC: umask 0000 && hiltic -dj %INPUT -o 1.hlto && python3 stat.py 1.hlto >>output
-# @TEST-EXEC: umask 0002 && hiltic -dj %INPUT -o 2.hlto && python3 stat.py 2.hlto >>output
-# @TEST-EXEC: umask 0006 && hiltic -dj %INPUT -o 2.hlto && python3 stat.py 2.hlto >>output
-# @TEST-EXEC: umask 0020 && hiltic -dj %INPUT -o 2.hlto && python3 stat.py 2.hlto >>output
-# @TEST-EXEC: umask 0022 && hiltic -dj %INPUT -o 2.hlto && python3 stat.py 2.hlto >>output
-# @TEST-EXEC: umask 0066 && hiltic -dj %INPUT -o 2.hlto && python3 stat.py 2.hlto >>output
+# @TEST-EXEC: umask 0000 && hiltic -dj %INPUT -o 1.hlto && python3 mystat.py 1.hlto >>output
+# @TEST-EXEC: umask 0002 && hiltic -dj %INPUT -o 2.hlto && python3 mystat.py 2.hlto >>output
+# @TEST-EXEC: umask 0006 && hiltic -dj %INPUT -o 2.hlto && python3 mystat.py 2.hlto >>output
+# @TEST-EXEC: umask 0020 && hiltic -dj %INPUT -o 2.hlto && python3 mystat.py 2.hlto >>output
+# @TEST-EXEC: umask 0022 && hiltic -dj %INPUT -o 2.hlto && python3 mystat.py 2.hlto >>output
+# @TEST-EXEC: umask 0066 && hiltic -dj %INPUT -o 2.hlto && python3 mystat.py 2.hlto >>output
 # @TEST-EXEC: btest-diff output
 
 module foo {}
 
-@TEST-START-FILE stat.py
+@TEST-START-FILE mystat.py
 import os
 import stat
 import sys
