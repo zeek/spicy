@@ -1,0 +1,8 @@
+nlohmann/json for Spicy
+=======================
+
+This folder contains a vendored files from <https://github.com/nlohmann/json>.
+That Github repository contains a lot of history which we do not need, but
+which makes recursive clones of the Spicy repository slow, see e.g.,
+<https://github.com/nlohmann/json/issues/2088>; we instead vendor selected
+files.

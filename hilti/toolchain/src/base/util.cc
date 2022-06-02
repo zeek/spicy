@@ -21,6 +21,7 @@
 // around it being installed by its default install target.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wpessimizing-move"
 // NOLINTNEXTLINE(bugprone-suspicious-include)
 #include <pathfind/src/pathfind.cpp>
 #pragma GCC diagnostic pop
