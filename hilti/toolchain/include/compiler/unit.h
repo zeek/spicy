@@ -66,10 +66,25 @@ public:
      * Returns the index to use when storing the unit inside the context's
      * unit cache.
      */
-    const auto& cacheIndex() { return _index; }
+    const auto& cacheIndex() const { return _index; }
 
     /** Returns the ID of the unit's module. */
     const auto& id() const { return _index.id; }
+
+    /**
+     * Returns an ID for the unit's module that's globally unique across all
+     * units processed within the current context. This ID will often be the
+     * same as returned by `id()`, but it may include an additional string for
+     * unification, in particular if the module was imported through `import
+     * ... from ...`.
+     *
+     * @returns globally unique ID for the module; the method guaranteees that
+     * the ID represents a valid C++ identifier
+     */
+    ID uniqueID() const {
+        return _index.scope.empty() ? _index.id :
+                                      ID(util::fmt("%s_%s", util::replace(_index.scope, ".", "_"), _index.id));
+    }
 
     /** Returns the path associated with the unit's module. */
     const auto& path() const { return _index.path; }
@@ -252,12 +267,14 @@ public:
      *
      * @param context global compiler context
      * @param path path to parse the module from
+     * @param scope import-from scope associated with the import operation, if any
      * @param ast_extension extension indicating which plugin to use for
      * processing the AST; if not given, this will be taken from the filename
      * @return instantiated unit, or an appropriate error result if operation failed
      */
     static Result<std::shared_ptr<Unit>> fromSource(const std::shared_ptr<Context>& context,
                                                     const hilti::rt::filesystem::path& path,
+                                                    const std::optional<ID>& scope,
                                                     std::optional<hilti::rt::filesystem::path> process_extension = {});
 
     /**
@@ -273,7 +290,7 @@ public:
      * processing the AST
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static std::shared_ptr<Unit> fromModule(const std::shared_ptr<Context>& context, hilti::Module module,
+    static std::shared_ptr<Unit> fromModule(const std::shared_ptr<Context>& context, const hilti::Module& module,
                                             hilti::rt::filesystem::path extension);
 
     /**
@@ -302,23 +319,13 @@ public:
      * already cached by the global context.
      *
      * @param context global compiler context
-     * @param id ID of the cached module
-     * @param extension file extension to limit cache hits to
-     * @return instantiated unit, or an appropriate error result if operation failed
-     */
-    static Result<std::shared_ptr<Unit>> fromCache(const std::shared_ptr<Context>& context, const hilti::ID& id,
-                                                   const hilti::rt::filesystem::path& extension);
-
-    /**
-     * Factory method that instantiates a unit from an existing HILTI module
-     * already cached by the global context.
-     *
-     * @param context global compiler context
      * @param path path of the cached module
+     * @param scope import-from scope associated with the existing module
      * @return instantiated unit, or an appropriate error result if operation failed
      */
     static Result<std::shared_ptr<Unit>> fromCache(const std::shared_ptr<Context>& context,
-                                                   const hilti::rt::filesystem::path& path);
+                                                   const hilti::rt::filesystem::path& path,
+                                                   const std::optional<ID>& scope);
 
     /**
      * Factory method that instantiates a unit from existing C++ source code
@@ -366,16 +373,17 @@ public:
 private:
     // Private constructor initializing the unit's meta data. Use the public
     // `from*()` factory functions instead to instantiate a unit.
-    Unit(const std::shared_ptr<Context>& context, ID id, const hilti::rt::filesystem::path& path,
-         hilti::rt::filesystem::path extension, Node&& module)
-        : _index(std::move(id), util::normalizePath(path)),
+    Unit(const std::shared_ptr<Context>& context, const ID& id, const std::optional<ID>& scope,
+         const hilti::rt::filesystem::path& path, hilti::rt::filesystem::path extension, Node&& module)
+        : _index(id, scope, util::normalizePath(path)),
           _extension(std::move(std::move(extension))),
           _module(std::move(module)),
           _context(context) {}
 
-    Unit(const std::shared_ptr<Context>& context, ID id, const hilti::rt::filesystem::path& path,
-         hilti::rt::filesystem::path extension, std::optional<detail::cxx::Unit> cxx_unit = {})
-        : _index(std::move(id), util::normalizePath(path)),
+    Unit(const std::shared_ptr<Context>& context, const ID& id, const std::optional<ID>& scope,
+         const hilti::rt::filesystem::path& path, hilti::rt::filesystem::path extension,
+         std::optional<detail::cxx::Unit> cxx_unit = {})
+        : _index(id, scope, util::normalizePath(path)),
           _extension(std::move(std::move(extension))),
           _context(context),
           _cxx_unit(std::move(cxx_unit)) {}

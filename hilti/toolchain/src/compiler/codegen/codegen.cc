@@ -157,9 +157,11 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
 // This visitor will only receive AST nodes of the first two levels (i.e.,
 // the module and its declarations).
 struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
-    Visitor(CodeGen* cg, const Scope& module_scope, cxx::Unit* unit) : cg(cg), unit(unit), module_scope(module_scope) {}
+    Visitor(CodeGen* cg, const Scope& module_scope, cxx::Unit* unit, hilti::Unit* hilti_unit)
+        : cg(cg), unit(unit), hilti_unit(hilti_unit), module_scope(module_scope) {}
     CodeGen* cg;
     cxx::Unit* unit;
+    hilti::Unit* hilti_unit;
 
     std::optional<ID> module;
     const Scope& module_scope;
@@ -167,7 +169,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
     // Top-level nodes.
 
     void operator()(const Module& n) {
-        unit->setModule(n);
+        unit->setModule(n, *hilti_unit);
 
         for ( const auto& p : plugin::registry().plugins() ) {
             for ( const auto& i : p.cxx_includes ) {
@@ -319,7 +321,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                     continue;
 
                 if ( id_module.empty() )
-                    id_module = cg->hiltiUnit()->id();
+                    id_module = cg->hiltiUnit()->uniqueID();
 
                 aux_types.push_back(
                     cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
@@ -376,7 +378,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                     continue;
 
                 if ( id_module.empty() )
-                    id_module = cg->hiltiUnit()->id();
+                    id_module = cg->hiltiUnit()->uniqueID();
 
                 aux_types.push_back(
                     cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
@@ -652,7 +654,7 @@ Result<cxx::Unit> CodeGen::compileModule(Node& root, hilti::Unit* hilti_unit, bo
 
     _cxx_unit = std::make_unique<cxx::Unit>(context());
     _hilti_unit = hilti_unit;
-    auto v = Visitor(this, *root.scope(), _cxx_unit.get());
+    auto v = Visitor(this, *root.scope(), _cxx_unit.get(), hilti_unit);
 
     v.dispatch(root);
 

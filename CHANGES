@@ -1,3 +1,27 @@
+1.5.0-dev.90 | 2022-06-03 13:11:14 +0200
+
+  * GH-1187: Fix support for having multiple source modules of the
+    same name. (Robin Sommer, Corelight)
+
+    There was an underlying assumption in much of the code that a module
+    name would be globally unique, meaning it could be used as index into
+    maps and as seeds for C++ identifiers. However, while that's often the
+    case, the `import ... from ...` syntax allow pulling in multiple
+    modules all having the same name.
+    This change fixes that to track a module's "scope" (i.e., the part
+    after `from ...`) more thoroughly across various pieces..
+
+  * Fix test that could break because of file name clash. (Robin
+    Sommer, Corelight)
+
+  * Fix concatenation of IDs. (Robin Sommer, Corelight)
+
+  * Fix error message. (Robin Sommer, Corelight)
+
+  * Fix for HILTI printing of `import` statements. (Robin Sommer, Corelight)
+
+  * Dump ASTs with ``--dump-code`` as well. (Robin Sommer, Corelight)
+
 1.5.0-dev.83 | 2022-06-02 09:43:07 +0200
 
   * Bump 3rdparty/pathfind to latest snapshot. (Benjamin Bannier, Corelight)

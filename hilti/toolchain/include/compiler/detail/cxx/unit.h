@@ -66,7 +66,7 @@ class Unit {
 public:
     Unit(const std::shared_ptr<Context>& context);
 
-    void setModule(const hilti::Module& m);
+    void setModule(const hilti::Module& m, const hilti::Unit& hilti_unit);
     cxx::ID moduleID() const { return _module_id; }
 
     void setUsesGlobals() { _uses_globals = true; }

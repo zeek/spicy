@@ -123,7 +123,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const declaration::ImportedModule& m, position_t p) {
-        if ( const auto& cached = context->lookupUnit(m.id(), unit->extension()) ) {
+        if ( const auto& cached = context->lookupUnit(m.id(), m.scope(), unit->extension()) ) {
             auto other = cached->unit->moduleRef();
             p.node.setScope(other->scope());
             auto n = unit->module().as<Module>().preserve(p.node);

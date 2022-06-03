@@ -399,7 +399,11 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const declaration::ImportedModule& n) {
         out.beginLine();
-        out << "import " << n.id() << ';';
+        if ( n.scope() )
+            out << "import " << n.id() << " from " << *n.scope() << ';';
+        else
+            out << "import " << n.id() << ';';
+
         out.endLine();
     }
 

@@ -569,10 +569,11 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
     void _checkStructArguments(const node::Range<Expression>& have, const node::Set<type::function::Parameter>& want,
                                position_t& p) {
-        if ( have.size() > want.size() )
-            error(fmt("type expects %u parameter%s, but receives %u", have.size(), (have.size() > 1 ? "s" : ""),
-                      want.size()),
+        if ( have.size() > want.size() ) {
+            error(fmt("type expects %u parameter%s, but receives %u", want.size(), (want.size() > 1 ? "s" : ""),
+                      have.size()),
                   p);
+        }
 
         for ( size_t i = 0; i < want.size(); i++ ) {
             if ( i < have.size() ) {
