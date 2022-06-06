@@ -11,4 +11,13 @@
 #include <${Backtrace_HEADER}>
 #endif
 
-#cmakedefine HILTI_HAVE_SANITIZER
+// GCC uses __SANITIZE_ADDRESS__, Clang uses __has_feature.
+#if defined(__SANITIZE_ADDRESS__)
+#define HILTI_HAVE_ASAN
+#endif
+
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define HILTI_HAVE_ASAN
+#endif
+#endif

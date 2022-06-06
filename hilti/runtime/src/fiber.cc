@@ -13,13 +13,13 @@
 #include <hilti/rt/logging.h>
 #include <hilti/rt/util.h>
 
-#ifdef HILTI_HAVE_SANITIZER
+#ifdef HILTI_HAVE_ASAN
 #include <sanitizer/common_interface_defs.h>
 #endif
 
 using namespace hilti::rt;
 
-#ifndef HILTI_HAVE_SANITIZER
+#ifndef HILTI_HAVE_ASAN
 // Defaults for normal operation.
 static const auto DefaultFiberType = detail::Fiber::Type::SharedStack; // share stack by default
 static const auto AlwaysUseStackSwitchTrampoline = false;              // use switch trampoline only with shared stacks
@@ -172,7 +172,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
                                  this, FiberGuardFlags) )
                 internalError("could not allocate individual-stack fiber");
 
-#ifdef HILTI_HAVE_SANITIZER
+#ifdef HILTI_HAVE_ASAN
             _asan.stack = ::fiber_stack(_fiber.get());
             _asan.stack_size = configuration::get().fiber_individual_stack_size;
 #endif
@@ -182,7 +182,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             auto shared_stack = context::detail::get()->fiber.shared_stack.get();
             ::fiber_init(_fiber.get(), shared_stack->stack, shared_stack->stack_size, fiber_bottom_abort, this);
 
-#ifdef HILTI_HAVE_SANITIZER
+#ifdef HILTI_HAVE_ASAN
             _asan.stack = ::fiber_stack(_fiber.get());
             _asan.stack_size = configuration::get().fiber_shared_stack_size;
 #endif
@@ -194,7 +194,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
                                  this, FiberGuardFlags) )
                 internalError("could not allocate individual-stack fiber");
 
-#ifdef HILTI_HAVE_SANITIZER
+#ifdef HILTI_HAVE_ASAN
             _asan.stack = ::fiber_stack(_fiber.get());
             _asan.stack_size = configuration::get().fiber_individual_stack_size;
 #endif
@@ -307,7 +307,7 @@ void detail::StackBuffer::restore() const {
 
 // ASAN doesn't seem to always track the new stack correctly if this method gets optimized.
 void ASAN_NO_OPTIMIZE detail::Fiber::_startSwitchFiber(const char* tag, detail::Fiber* to) {
-#ifdef HILTI_HAVE_SANITIZER
+#ifdef HILTI_HAVE_ASAN
     auto* current = context::detail::get()->fiber.current;
     __sanitizer_start_switch_fiber(&current->_asan.fake_stack, to->_asan.stack, to->_asan.stack_size);
 
@@ -319,7 +319,7 @@ void ASAN_NO_OPTIMIZE detail::Fiber::_startSwitchFiber(const char* tag, detail::
 
 // ASAN doesn't seem to always track the new stack correctly if this method gets optimized.
 void ASAN_NO_OPTIMIZE detail::Fiber::_finishSwitchFiber(const char* tag) {
-#ifdef HILTI_HAVE_SANITIZER
+#ifdef HILTI_HAVE_ASAN
     auto* context = context::detail::get();
     auto* current = context->fiber.current;
 

@@ -12,7 +12,6 @@
 #include <hilti/base/util.h>
 
 #cmakedefine HAVE_TOOLCHAIN
-#cmakedefine HILTI_HAVE_SANITIZER
 
 #define CMAKE_DL_LIBS (std::string("@CMAKE_DL_LIBS@").size() ? "@CMAKE_DL_LIBS@" : "")
 #define CMAKE_THREAD_LIBS_INIT (std::string("@CMAKE_THREAD_LIBS_INIT@").size() ? "@CMAKE_THREAD_LIBS_INIT@" : "")
