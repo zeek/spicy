@@ -448,7 +448,7 @@ TEST_CASE("pow") {
     CHECK_EQ(pow(2, 16), 65536);
 
     CHECK_EQ(pow(integer::safe<int8_t>(2), 3), 8);
-    CHECK_THROWS_WITH_AS(pow(integer::safe<int8_t>(2), 4), "integer overflow", const Overflow&);
+    CHECK_THROWS_WITH_AS(pow(integer::safe<int8_t>(2), 7), "integer overflow", const Overflow&);
     CHECK_EQ(pow(integer::safe<int16_t>(2), 4), 16);
     CHECK_EQ(pow(integer::safe<int16_t>(2), integer::safe<int16_t>(4)), 16);
 }

@@ -419,11 +419,13 @@ template<typename I1, typename I2>
 inline I1 pow(I1 base, I2 exp) {
     I1 x = 1;
 
-    while ( exp ) {
+    while ( true ) {
         if ( exp & 1 )
             x *= base;
 
         exp >>= 1;
+        if ( ! exp )
+            break;
         base *= base;
     }
 
