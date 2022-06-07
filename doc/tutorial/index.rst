@@ -599,8 +599,8 @@ Before proceeding, follow the instructions to :ref:`install the Zeek
 plugin <zeek_installation>`. You should now be seeing output similar
 to this::
 
-    # zeek -NN _Zeek::Spicy
-    _Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version x.y.z)
+    # zeek -NN Zeek::Spicy
+    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version x.y.z)
 
 You should also have ``spicyz`` in your ``PATH``::
 
