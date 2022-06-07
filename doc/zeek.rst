@@ -62,11 +62,11 @@ manager::
 This will pull down the plugin's package, compile and test the plugin,
 and then install and activate it. That process may take a bit to
 complete. To check afterwards that the plugin has
-become available, run ``zeek -N _Zeek::Spicy``, it should show output
+become available, run ``zeek -N Zeek::Spicy``, it should show output
 like this::
 
-    # zeek -N _Zeek::Spicy
-    _Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version x.y.z)
+    # zeek -N Zeek::Spicy
+    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version x.y.z)
 
 By default, *zkg* will install the most recent release version of the
 plugin. If you want to install the current development version, use
@@ -171,7 +171,7 @@ write ``enable "spicy::BitTorrent"`` into the signature.
 .. note::
 
     Once you have made your analyzers available to Zeek (which we will
-    discuss below), running ``zeek -NN _Zeek::Spicy`` will show you a
+    discuss below), running ``zeek -NN Zeek::Spicy`` will show you a
     summary of what's now available, including their Zeek-side names
     and tags.
 
@@ -542,7 +542,7 @@ for use in your scripts:
 You can also see the type in the output of ``zeek -NN``::
 
     [...]
-    _Zeek::Spicy - Support for Spicy parsers
+    Zeek::Spicy - Support for Spicy parsers
         [Type] Test::MyEnum
     [...]
 
@@ -764,7 +764,7 @@ possible, use a debug version of Zeek (i.e., build Zeek with
 
 If your analyzer doesn't seem to be active at all, first make sure
 Zeek actually knows about it: It should show up in the output of
-``zeek -NN _Zeek::Spicy``. If it doesn't, you might not being loading
+``zeek -NN Zeek::Spicy``. If it doesn't, you might not being loading
 the right ``*.spicy`` or ``*.evt`` files. Also check your ``*.evt`` if
 it defines your analyzer correctly.
 
