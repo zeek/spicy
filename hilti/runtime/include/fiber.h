@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <hilti/rt/any.h>
+#include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/lambda.h>
 #include <hilti/rt/types/reference.h>
@@ -234,7 +235,7 @@ private:
     /** Buffer for the fiber's stack when swapped out. */
     StackBuffer _stack_buffer;
 
-#ifdef HILTI_HAVE_SANITIZER
+#ifdef HILTI_HAVE_ASAN
     /** Additional tracking state that ASAN needs. */
     struct {
         const void* stack = nullptr;

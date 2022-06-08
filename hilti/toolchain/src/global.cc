@@ -3,6 +3,8 @@
 #include <string>
 #include <utility>
 
+#include <hilti/rt/autogen/config.h>
+
 #include <hilti/ast/ctors/enum.h>
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/module.h>
@@ -20,7 +22,7 @@ void hilti::render(logging::DebugStream stream, const Node& node, bool include_s
     detail::renderNode(node, std::move(stream), include_scopes);
 }
 
-#ifdef HILTI_HAVE_SANITIZER
+#ifdef HILTI_HAVE_ASAN
 // This following injects ASAN options. Note that this works on macOS, but
 // *not* work on Linux because there the ASAN runtime's weak version of the
 // same symbol seems to be winning during linking. However, the only option we

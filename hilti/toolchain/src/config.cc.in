@@ -21,7 +21,7 @@ std::optional<hilti::rt::filesystem::path> precompiled_libhilti(const Configurat
     // sanitizer flags are not exposed on the config level.
     //
     // TODO(bbannier): Allow using of precompiled headers for sanitizer builds.
-#ifdef HILTI_HAVE_SANITIZER
+#ifdef HILTI_HAVE_ASAN
     return {};
 #endif
 

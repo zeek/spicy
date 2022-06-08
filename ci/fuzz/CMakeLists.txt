@@ -15,8 +15,7 @@ function (fuzz_parser Name SpicyInput Parser)
         COMMENT "Generating C++ linker code for ${Parser}")
 
     add_executable(fuzz-${name} fuzz.cc "${name}.cc" "${name}_link.cc")
-    target_compile_definitions(fuzz-${name} PRIVATE SPICY_FUZZ_PARSER="${Parser}"
-                                                    HILTI_HAVE_SANITIZER)
+    target_compile_definitions(fuzz-${name} PRIVATE SPICY_FUZZ_PARSER="${Parser}")
     target_compile_options(fuzz-${name} PRIVATE -fsanitize=fuzzer-no-link)
     target_link_options(fuzz-${name} PRIVATE -fsanitize=fuzzer-no-link)
     target_link_libraries(

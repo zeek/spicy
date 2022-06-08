@@ -1,3 +1,9 @@
+1.5.0-dev.95 | 2022-06-08 12:22:01 +0200
+
+  * Prevent too early integer overflow in `pow`. (Benjamin Bannier, Corelight)
+
+  * Make handling of sanitizer workarounds more granular. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.92 | 2022-06-07 11:53:18 +0200
 
   * GH-44: Update docs for spicy-plugin rename `_Zeek::Spicy` -> `Zeek::Spicy`. (Benjamin Bannier, Corelight)
