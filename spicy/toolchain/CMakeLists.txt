@@ -172,7 +172,8 @@ install(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/spicy-build DESTINATION ${CMA
 
 install_headers(include spicy)
 install_headers(${PROJECT_BINARY_DIR}/include/spicy spicy)
-install(CODE "file(REMOVE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/spicy/spicy)") # Get rid of symlink
+install(CODE "file(REMOVE $ENV{DESTDIR}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spicy/spicy)"
+)# Get rid of symlink.
 
 ## Tests
 

@@ -186,7 +186,8 @@ install(TARGETS hilti-config RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install_headers(include hilti)
 install_headers(${PROJECT_BINARY_DIR}/include/hilti hilti)
-install(CODE "file(REMOVE ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/hilti)") # Get rid of symlink
+install(CODE "file(REMOVE $ENV{DESTDIR}${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/hilti)"
+)# Get rid of symlink.
 
 ##### Tests
 
