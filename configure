@@ -19,6 +19,7 @@ cmake_cxx_compiler=""
 cmake_flex_root=""
 cmake_generator=""
 cmake_install_prefix="/usr/local"
+cmake_use_benchmark="no"
 cmake_use_ccache="no"
 cmake_use_gold="yes"
 cmake_use_precompiled_headers="yes"
@@ -58,6 +59,7 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --build-type=TYPE                     Set build type (Debug,Release,RelWithDebInfo) [default: ${cmake_build_type}]
     --disable-gold                        On Linux, do not try to use the gold linker
     --disable-precompiled-headers         Disable use of precompiled headers for developer tests
+    --enable-benchmark                    Build benchmark [default: ${cmake_use_benchmark}]
     --enable-ccache                       Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
     --enable-debug                        Compile debug version (same as --build-type=Debug) [default: off]
     --enable-sanitizer[=<names>]          Enable sanitizer(s), default if not further specified is \"address\"
@@ -112,6 +114,7 @@ while [ $# -ne 0 ]; do
         --build-type=*)                    cmake_build_type="${optarg}";;
         --disable-gold)                    cmake_use_gold="no";;
         --disable-precompiled-headers)     cmake_use_precompiled_headers="no";;
+        --enable-benchmark)                cmake_use_benchmark="yes";;
         --enable-ccache)                   cmake_use_ccache="yes";;
         --enable-debug)                    cmake_build_type="Debug";;
         --enable-sanitizer)                cmake_use_sanitizers="address";;
@@ -155,6 +158,7 @@ append_cache_entry CMAKE_CXX_COMPILER           PATH   "${cmake_cxx_compiler}"
 append_cache_entry CMAKE_INSTALL_PREFIX         PATH   "${cmake_install_prefix}"
 append_cache_entry HILTI_COMPILER_LAUNCHER      STRING "${hilti_compiler_launcher}"
 append_cache_entry FLEX_ROOT                    PATH   "${cmake_flex_root}"
+append_cache_entry USE_BENCHMARK                BOOL   "${cmake_use_benchmark}"
 append_cache_entry USE_CCACHE                   BOOL   "${cmake_use_ccache}"
 append_cache_entry USE_GOLD                     BOOL   "${cmake_use_gold}"
 append_cache_entry USE_SANITIZERS               STRING "${cmake_use_sanitizers}"
