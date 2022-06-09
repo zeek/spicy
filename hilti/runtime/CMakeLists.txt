@@ -95,7 +95,7 @@ install(TARGETS hilti-rt hilti-rt-debug ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBD
 
 install_headers(include hilti/rt)
 install_headers(${PROJECT_BINARY_DIR}/include/hilti/rt hilti/rt)
-install(CODE "file(REMOVE $ENV{DESTDIR}${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilti)"
+install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilti\")"
 )# Get rid of symlink.
 
 # Install the 3rdparty headers that we need individually.
