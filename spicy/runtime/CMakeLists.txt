@@ -64,7 +64,7 @@ install(TARGETS spicy-rt spicy-rt-debug ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBD
 
 install_headers(include spicy/rt)
 install_headers(${PROJECT_BINARY_DIR}/include/spicy/rt spicy/rt)
-install(CODE "file(REMOVE $ENV{DESTDIR}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spicy/rt/spicy)"
+install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spicy/rt/spicy\")"
 )# Get rid of symlink.
 
 ##### Tests
