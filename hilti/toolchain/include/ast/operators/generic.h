@@ -29,8 +29,10 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {Operand{{}, type::Type_(type::Wildcard())}, Operand{{}, type::Tuple(type::Wildcard())}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {Operand{{}, type::Type_(type::Wildcard())},
+                                                 Operand{{}, type::Tuple(type::Wildcard())}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -54,10 +56,11 @@ BEGIN_OPERATOR_CUSTOM(generic, Begin)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {
             Operand{{}, type::Any(), false, {}, "<container>"},
         };
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -79,10 +82,11 @@ BEGIN_OPERATOR_CUSTOM(generic, End)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {
             {{}, type::Any(), false, {}, "<container>"},
         };
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -109,11 +113,12 @@ BEGIN_OPERATOR_CUSTOM(generic, New)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {
             {"t", type::Any()},
             {{}, type::Tuple(type::Wildcard())},
         };
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -152,7 +157,10 @@ public:
         Operator() = default;
 
         static operator_::Kind kind() { return operator_::Kind::Cast; }
-        std::vector<operator_::Operand> operands() const { return {}; } // Won't participate in overload resolution
+        const std::vector<operator_::Operand>& operands() const {
+            static std::vector<Operand> _operands = {}; // Won't participate in overload resolution
+            return _operands;
+        }
         Type result(const hilti::node::Range<Expression>& ops) const {
             return ops[1].as<expression::Type_>().typeValue();
         }

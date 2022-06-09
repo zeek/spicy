@@ -44,8 +44,9 @@ BEGIN_OPERATOR_CUSTOM(tuple, Index)
     bool isLhs() const { return true; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::Tuple(type::Wildcard())}, {{}, type::UnsignedInteger(64)}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {{{}, type::Tuple(type::Wildcard())}, {{}, type::UnsignedInteger(64)}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -81,8 +82,10 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
     bool isLhs() const { return true; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::Tuple(type::Wildcard())}, {{}, type::Member(type::Wildcard()), false, {}, "<id>"}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {{{}, type::Tuple(type::Wildcard())},
+                                                 {{}, type::Member(type::Wildcard()), false, {}, "<id>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -107,17 +110,17 @@ BEGIN_OPERATOR_CUSTOM(tuple, CustomAssign)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
+    const std::vector<Operand>& operands() const {
         // The operator gets instantiated only through the normalizer, but this is used for documentation.
-        return {{
-                    {},
-                    type::Member(type::Wildcard()),
-                    false,
-                    {},
-                    "(x, ..., y)",
-                },
-                {{}, type::Tuple(type::Wildcard()), false, {}, "<tuple>"}};
-        return {};
+        static std::vector<Operand> _operands = {{
+                                                     {},
+                                                     type::Member(type::Wildcard()),
+                                                     false,
+                                                     {},
+                                                     "(x, ..., y)",
+                                                 },
+                                                 {{}, type::Tuple(type::Wildcard()), false, {}, "<tuple>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
