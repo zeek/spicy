@@ -89,7 +89,8 @@ like to hear from you!
 
 - Propose ideas, and show what you're doing, on GitHub's [Discussions](https://github.com/zeek/spicy/discussions).
 
-- Subscribe to the [Spicy mailing list](https://lists.zeek.org/mailman3/lists/spicy.lists.zeek.org).
+- Visit the [Zeek community](https://community.zeek.org) to discuss Spicy under
+  the [Spicy tag](https://community.zeek.org/c/spicy/).
 
 - To follow development, subscribe to the [commits mailing
   list](https://lists.zeek.org/mailman3/lists/spicy-commits.lists.zeek.org) (it can
