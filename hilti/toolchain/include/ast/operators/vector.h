@@ -45,133 +45,144 @@ STANDARD_OPERATOR_2(vector, SumAssign, operator_::sameTypeAs(0, "vector<*>"), ty
                     operator_::sameTypeAs(0, "vector<*>"), "Concatenates another vector to the vector.")
 
 BEGIN_METHOD(vector, Assign)
-    auto signature() const {
-        return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::void_,
-                         .id = "assign",
-                         .args = {{"i", type::UnsignedInteger(64)}, {"x", type::Any()}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Vector(type::Wildcard()),
+                                           .result = type::void_,
+                                           .id = "assign",
+                                           .args = {{"i", type::UnsignedInteger(64)}, {"x", type::Any()}},
+                                           .doc = R"(
 Assigns *x* to the *i*th element of the vector. If the vector contains less
 than *i* elements a sufficient number of default-initialized elements is added
 to carry out the assignment.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(vector, PushBack)
-    auto signature() const {
-        return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::void_,
-                         .id = "push_back",
-                         .args = {{"x", type::Any()}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Vector(type::Wildcard()),
+                                           .result = type::void_,
+                                           .id = "push_back",
+                                           .args = {{"x", type::Any()}},
+                                           .doc = R"(
 Appends *x* to the end of the vector.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(vector, PopBack)
-    auto signature() const {
-        return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::void_,
-                         .id = "pop_back",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Vector(type::Wildcard()),
+                                           .result = type::void_,
+                                           .id = "pop_back",
+                                           .args = {},
+                                           .doc = R"(
 Removes the last element from the vector, which must be non-empty.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(vector, Front)
-    auto signature() const {
-        return Signature{.self = type::constant(type::Vector(type::Wildcard())),
-                         .result = operator_::constantElementType(0),
-                         .id = "front",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::Vector(type::Wildcard())),
+                                           .result = operator_::constantElementType(0),
+                                           .id = "front",
+                                           .args = {},
+                                           .doc = R"(
 Returns the first element of the vector. It throws an exception if the vector is
 empty.
 )"};
+        return _signature;
     }
 END_METHOD
 
 
 BEGIN_METHOD(vector, Back)
-    auto signature() const {
-        return Signature{.self = type::constant(type::Vector(type::Wildcard())),
-                         .result = operator_::constantElementType(0),
-                         .id = "back",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::Vector(type::Wildcard())),
+                                           .result = operator_::constantElementType(0),
+                                           .id = "back",
+                                           .args = {},
+                                           .doc = R"(
 Returns the last element of the vector. It throws an exception if the vector is
 empty.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(vector, Reserve)
-    auto signature() const {
-        return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::void_,
-                         .id = "reserve",
-                         .args = {{"n", type::constant(type::UnsignedInteger(64))}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Vector(type::Wildcard()),
+                                           .result = type::void_,
+                                           .id = "reserve",
+                                           .args = {{"n", type::constant(type::UnsignedInteger(64))}},
+                                           .doc = R"(
 Reserves space for at least *n* elements. This operation does not change the
 vector in any observable way but provides a hint about the size that will be
 needed.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(vector, Resize)
-    auto signature() const {
-        return Signature{.self = type::Vector(type::Wildcard()),
-                         .result = type::void_,
-                         .id = "resize",
-                         .args = {{"n", type::constant(type::UnsignedInteger(64))}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Vector(type::Wildcard()),
+                                           .result = type::void_,
+                                           .id = "resize",
+                                           .args = {{"n", type::constant(type::UnsignedInteger(64))}},
+                                           .doc = R"(
 Resizes the vector to hold exactly *n* elements. If *n* is larger than the
 current size, the new slots are filled with default values. If *n* is smaller
 than the current size, the excessive elements are removed.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(vector, At)
-    auto signature() const {
-        return Signature{.self = type::constant(type::Vector(type::Wildcard())),
-                         .result = operator_::iteratorType(0, true),
-                         .id = "at",
-                         .args = {{"i", type::UnsignedInteger(64)}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::Vector(type::Wildcard())),
+                                           .result = operator_::iteratorType(0, true),
+                                           .id = "at",
+                                           .args = {{"i", type::UnsignedInteger(64)}},
+                                           .doc = R"(
 Returns an iterator referring to the element at vector index *i*.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(vector, SubRange)
-    auto signature() const {
-        return Signature{.self = type::constant(type::Vector(type::Wildcard())),
-                         .result = operator_::sameTypeAs(0, "vector<*>"),
-                         .id = "sub",
-                         .args = {{"begin", type::UnsignedInteger(64)}, {"end", type::UnsignedInteger(64)}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::constant(type::Vector(type::Wildcard())),
+                      .result = operator_::sameTypeAs(0, "vector<*>"),
+                      .id = "sub",
+                      .args = {{"begin", type::UnsignedInteger(64)}, {"end", type::UnsignedInteger(64)}},
+                      .doc = R"(
 Extracts a subsequence of vector elements spanning from index *begin*
 to (but not including) index *end*.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(vector, SubEnd)
-    auto signature() const {
-        return Signature{.self = type::constant(type::Vector(type::Wildcard())),
-                         .result = operator_::sameTypeAs(0, "vector<*>"),
-                         .id = "sub",
-                         .args = {{"end", type::UnsignedInteger(64)}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::Vector(type::Wildcard())),
+                                           .result = operator_::sameTypeAs(0, "vector<*>"),
+                                           .id = "sub",
+                                           .args = {{"end", type::UnsignedInteger(64)}},
+                                           .doc = R"(
 Extracts a subsequence of vector elements spanning from the beginning
 to (but not including) the index *end* as a new vector.
 )"};
+        return _signature;
     }
 END_METHOD
 

@@ -8,12 +8,13 @@
 namespace hilti::operator_ { // NOLINT(modernize-concat-nested-namespaces)
 
 BEGIN_METHOD(error, Description)
-    auto signature() const {
-        return Signature{.self = type::Error(),
-                         .result = type::String(),
-                         .id = "description",
-                         .args = {},
-                         .doc = "Retrieves the textual description associated with the error."};
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Error(),
+                                           .result = type::String(),
+                                           .id = "description",
+                                           .args = {},
+                                           .doc = "Retrieves the textual description associated with the error."};
+        return _signature;
     }
 END_METHOD
 

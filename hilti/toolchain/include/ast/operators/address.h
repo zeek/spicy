@@ -12,14 +12,15 @@ STANDARD_OPERATOR_2(address, Equal, type::Bool(), type::Address(), type::Address
 STANDARD_OPERATOR_2(address, Unequal, type::Bool(), type::Address(), type::Address(), "Compares two address values.")
 
 BEGIN_METHOD(address, Family)
-    auto signature() const {
-        return Signature{.self = type::Address(),
-                         .result = builder::typeByID("hilti::AddressFamily"),
-                         .id = "family",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Address(),
+                                           .result = builder::typeByID("hilti::AddressFamily"),
+                                           .id = "family",
+                                           .args = {},
+                                           .doc = R"(
 Returns the protocol family of the address, which can be IPv4 or IPv6.
 )"};
+        return _signature;
     }
 END_METHOD
 

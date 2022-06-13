@@ -56,27 +56,29 @@ STANDARD_OPERATOR_2(stream::iterator, SumAssign, type::stream::Iterator(), type:
                     type::UnsignedInteger(64), "Advances the iterator by the given number of stream.")
 
 BEGIN_METHOD(stream::iterator, Offset)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::Iterator()),
-                         .result = type::UnsignedInteger(64),
-                         .id = "offset",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::Iterator()),
+                                           .result = type::UnsignedInteger(64),
+                                           .id = "offset",
+                                           .args = {},
+                                           .doc = R"(
 Returns the offset of the byte that the iterator refers to relative to the
 beginning of the underlying stream value.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::iterator, IsFrozen)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::Iterator()),
-                         .result = type::Bool(),
-                         .id = "is_frozen",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::Iterator()),
+                                           .result = type::Bool(),
+                                           .id = "is_frozen",
+                                           .args = {},
+                                           .doc = R"(
 Returns whether the stream value that the iterator refers to has been frozen.
 )"};
+        return _signature;
     }
 END_METHOD
 
@@ -100,77 +102,82 @@ STANDARD_OPERATOR_2x(stream::view, UnequalBytes, Unequal, type::Bool(), type::co
                      type::constant(type::Bytes()), "Compares a stream view and a bytes instance lexicographically.");
 
 BEGIN_METHOD(stream::view, Offset)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::UnsignedInteger(64),
-                         .id = "offset",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::View()),
+                                           .result = type::UnsignedInteger(64),
+                                           .id = "offset",
+                                           .args = {},
+                                           .doc = R"(
 Returns the offset of the view's starting position within the associated stream value.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, AdvanceBy)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::stream::View(),
-                         .id = "advance",
-                         .args = {{"i", type::stream::Iterator()}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::View()),
+                                           .result = type::stream::View(),
+                                           .id = "advance",
+                                           .args = {{"i", type::stream::Iterator()}},
+                                           .doc = R"(
 Advances the view's starting position to a given iterator *i*, returning the new
 view. The iterator must be referring to the same stream values as the view, and
 it must be equal or ahead of the view's starting position.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, AdvanceToNextData)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::stream::View(),
-                         .id = "advance_to_next_data",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::View()),
+                                           .result = type::stream::View(),
+                                           .id = "advance_to_next_data",
+                                           .args = {},
+                                           .doc = R"(
 Advances the view's starting position to the next non-gap position. This always
 advances the input by at least one byte.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, Limit)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::stream::View(),
-                         .id = "limit",
-                         .args = {{"i", type::UnsignedInteger(64)}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::View()),
+                                           .result = type::stream::View(),
+                                           .id = "limit",
+                                           .args = {{"i", type::UnsignedInteger(64)}},
+                                           .doc = R"(
 Returns a new view that keeps the current start but cuts off the end *i*
 characters from that beginning. The returned view will not be able to expand any
 further.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, AdvanceTo)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::stream::View(),
-                         .id = "advance",
-                         .args = {{"i", type::UnsignedInteger(64)}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::View()),
+                                           .result = type::stream::View(),
+                                           .id = "advance",
+                                           .args = {{"i", type::UnsignedInteger(64)}},
+                                           .doc = R"(
 Advances the view's starting position by *i* stream, returning the new view.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, Find)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::Tuple({type::Bool(), type::stream::Iterator()}),
-                         .id = "find",
-                         .args = {{"needle", type::constant(type::Bytes())}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::View()),
+                                           .result = type::Tuple({type::Bool(), type::stream::Iterator()}),
+                                           .id = "find",
+                                           .args = {{"needle", type::constant(type::Bytes())}},
+                                           .doc = R"(
 Searches *needle* inside the view's content. Returns a tuple of a boolean and an
 iterator. If *needle* was found, the boolean will be true and the iterator will point
 to its first occurrence. If *needle* was not found, the boolean will be false and
@@ -180,69 +187,77 @@ trim until that position and then restart the search from there if more data
 gets appended to the underlying stream value). Note that for a simple yes/no result,
 you should use the ``in`` operator instead of this method, as it's more efficient.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, At)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::stream::Iterator(),
-                         .id = "at",
-                         .args = {{"i", type::UnsignedInteger(64)}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::View()),
+                                           .result = type::stream::Iterator(),
+                                           .id = "at",
+                                           .args = {{"i", type::UnsignedInteger(64)}},
+                                           .doc = R"(
 Returns an iterator representing the offset *i* inside the view.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, StartsWith)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::Bool(),
-                         .id = "starts_with",
-                         .args = {{"b", type::constant(type::Bytes())}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::View()),
+                                           .result = type::Bool(),
+                                           .id = "starts_with",
+                                           .args = {{"b", type::constant(type::Bytes())}},
+                                           .doc = R"(
 Returns true if the view starts with *b*.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, SubIterators)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::stream::View(),
-                         .id = "sub",
-                         .args = {{"begin", type::stream::Iterator()}, {"end", type::stream::Iterator()}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::constant(type::stream::View()),
+                      .result = type::stream::View(),
+                      .id = "sub",
+                      .args = {{"begin", type::stream::Iterator()}, {"end", type::stream::Iterator()}},
+                      .doc = R"(
 Returns a new view of the subsequence from *begin* up to (but not including)
 *end*.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, SubIterator)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::stream::View(),
-                         .id = "sub",
-                         .args = {{"end", type::stream::Iterator()}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::stream::View()),
+                                           .result = type::stream::View(),
+                                           .id = "sub",
+                                           .args = {{"end", type::stream::Iterator()}},
+                                           .doc = R"(
 Returns a new view of the subsequence from the beginning of the stream up to
 (but not including) *end*.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream::view, SubOffsets)
-    auto signature() const {
-        return Signature{.self = type::constant(type::stream::View()),
-                         .result = type::stream::View(),
-                         .id = "sub",
-                         .args = {{"begin", type::UnsignedInteger(64)}, {"end", type::UnsignedInteger(64)}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::constant(type::stream::View()),
+                      .result = type::stream::View(),
+                      .id = "sub",
+                      .args = {{"begin", type::UnsignedInteger(64)}, {"end", type::UnsignedInteger(64)}},
+                      .doc = R"(
 Returns a new view of the subsequence from offset *begin* to (but not including)
 offset *end*. The offsets are relative to the beginning of the view.
 )"};
+        return _signature;
     }
 END_METHOD
 
@@ -258,56 +273,62 @@ STANDARD_OPERATOR_2x(stream, SumAssignBytes, SumAssign, type::Stream(), type::St
                      "Concatenates data to the stream.");
 
 BEGIN_METHOD(stream, Freeze)
-    auto signature() const {
-        return Signature{.self = type::Stream(), .result = type::void_, .id = "freeze", .args = {}, .doc = R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::Stream(), .result = type::void_, .id = "freeze", .args = {}, .doc = R"(
 Freezes the stream value. Once frozen, one cannot append any more data to a
 frozen stream value (unless it gets unfrozen first). If the value is
 already frozen, the operation does not change anything.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream, Unfreeze)
-    auto signature() const {
-        return Signature{.self = type::Stream(), .result = type::void_, .id = "unfreeze", .args = {}, .doc = R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::Stream(), .result = type::void_, .id = "unfreeze", .args = {}, .doc = R"(
 Unfreezes the stream value. A unfrozen stream value can be further modified. If
 the value is already unfrozen (which is the default), the operation does not
 change anything.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream, IsFrozen)
-    auto signature() const {
-        return Signature{.self = type::constant(type::Stream()),
-                         .result = type::Bool(),
-                         .id = "is_frozen",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::Stream()),
+                                           .result = type::Bool(),
+                                           .id = "is_frozen",
+                                           .args = {},
+                                           .doc = R"(
 Returns true if the stream value has been frozen.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream, At)
-    auto signature() const {
-        return Signature{.self = type::constant(type::Stream()),
-                         .result = type::stream::Iterator(),
-                         .id = "at",
-                         .args = {{"i", type::UnsignedInteger(64)}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::Stream()),
+                                           .result = type::stream::Iterator(),
+                                           .id = "at",
+                                           .args = {{"i", type::UnsignedInteger(64)}},
+                                           .doc = R"(
 Returns an iterator representing the offset *i* inside the stream value.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(stream, Trim)
-    auto signature() const {
-        return Signature{.self = type::Stream(),
-                         .result = type::void_,
-                         .id = "trim",
-                         .args = {{"i", type::stream::Iterator()}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Stream(),
+                                           .result = type::void_,
+                                           .id = "trim",
+                                           .args = {{"i", type::stream::Iterator()}},
+                                           .doc = R"(
 Trims the stream value by removing all data from its beginning up to (but not
 including) the position *i*. The iterator *i* will remain valid afterwards and
 will still point to the same location, which will now be the beginning of the stream's
@@ -316,6 +337,7 @@ their offsets as well. The effect of this operation is undefined if *i* does not
 actually refer to a location inside the stream value. Trimming is permitted
 even on frozen values.
 )"};
+        return _signature;
     }
 END_METHOD
 
