@@ -169,13 +169,13 @@ public:
     /** Implements the `Type` interface. */
     bool hasFlag(type::Flag f) const { return _state().flags.has(f); }
     /** Implements the `Type` interface. */
-    type::Flags flags() const { return _state().flags; }
+    const type::Flags& flags() const { return _state().flags; }
     /** Implements the `Type` interface. */
     bool _isConstant() const { return _state().flags.has(type::Flag::Constant); }
     /** Implements the `Type` interface. */
-    std::optional<ID> typeID() const { return _state().id; }
+    const std::optional<ID>& typeID() const { return _state().id; }
     /** Implements the `Type` interface. */
-    std::optional<ID> cxxID() const { return _state().cxx; }
+    const std::optional<ID>& cxxID() const { return _state().cxx; }
     /** Implements the `Type` interface. */
     const type::detail::State& _state() const { return _state_; }
     /** Implements the `Type` interface. */

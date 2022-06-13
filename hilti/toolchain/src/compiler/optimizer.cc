@@ -615,7 +615,7 @@ struct TypeVisitor : OptimizerVisitor, visitor::PreOrder<bool, TypeVisitor> {
             case Stage::COLLECT: {
                 const auto type = innermostType(x.type());
 
-                const auto type_id = type.typeID();
+                const auto& type_id = type.typeID();
 
                 if ( ! type_id )
                     break;
