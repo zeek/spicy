@@ -16,6 +16,7 @@
 #include <hilti/ast/types/optional.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/result.h>
+#include <hilti/base/logger.h>
 #include <hilti/compiler/coercion.h>
 #include <hilti/compiler/plugin.h>
 #include <hilti/global.h>
@@ -981,17 +982,18 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
     _result = result::Error();
 
 exit:
-    HILTI_DEBUG(logging::debug::Operator,
-                util::fmt("coercing %s %s (%s) to %s%s (%s) -> %s [%s] (%s) (#%d)",
-                          (e_is_const ? "const" : "non-const"), to_node(src),
-                          util::replace(src.typename_(), "hilti::type::", ""), (dst_is_const ? "" : "non-const "),
-                          to_node(dst), util::replace(dst.typename_(), "hilti::type::", ""),
-                          (_result ?
-                               util::fmt("%s %s (%s)", (_result.coerced->isConstant() ? "const" : "non-const"),
-                                         _result.coerced->type(),
-                                         util::replace(_result.coerced->type().typename_(), "hilti::type::", "")) :
-                               "fail"),
-                          to_string(style), e.meta().location(), _line));
+    if ( logger().isEnabled(logging::debug::Operator) )
+        HILTI_DEBUG(logging::debug::Operator,
+                    util::fmt("coercing %s %s (%s) to %s%s (%s) -> %s [%s] (%s) (#%d)",
+                              (e_is_const ? "const" : "non-const"), to_node(src),
+                              util::replace(src.typename_(), "hilti::type::", ""), (dst_is_const ? "" : "non-const "),
+                              to_node(dst), util::replace(dst.typename_(), "hilti::type::", ""),
+                              (_result ?
+                                   util::fmt("%s %s (%s)", (_result.coerced->isConstant() ? "const" : "non-const"),
+                                             _result.coerced->type(),
+                                             util::replace(_result.coerced->type().typename_(), "hilti::type::", "")) :
+                                   "fail"),
+                              to_string(style), e.meta().location(), _line));
 
 #undef RETURN
 
