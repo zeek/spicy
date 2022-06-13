@@ -611,21 +611,26 @@ static Result<Type> _coerceParameterizedType(const Type& src, const Type& dst, b
         return {};
 
     bool have_wildcard = false;
-    for ( auto&& [p1, p2] : util::zip2(params1, params2) ) {
-        auto t1 = p1.tryAs<Type>();
-        auto t2 = p2.tryAs<Type>();
 
-        if ( ! (t1 && t2) )
-            // Don't have a generic node comparison for the individual
-            // parameters, so just stop here and decline. (Note that the case
-            // of src == dst has been handled already, that usually does it.)
+    for ( auto&& [p1, p2] : util::zip2(params1, params2) ) {
+        // If we cannot get both parametres as types, we don't have a generic
+        // node comparison for the individual parameters, so just stop here and
+        // decline. (Note that the case of src == dst has been handled already,
+        // that usually does it.)
+
+        auto t1 = p1.tryAs<Type>();
+        if ( ! t1 )
+            return {};
+
+        auto t2 = p2.tryAs<Type>();
+        if ( ! t2 )
+            return {};
+
+        if ( ! coerceType(*t1, *t2, style) )
             return {};
 
         if ( t2->isWildcard() )
             have_wildcard = true;
-
-        if ( ! coerceType(*t1, *t2, style) )
-            return {};
     }
 
     // If one of the parameter types is a wildcard, we return the original type
