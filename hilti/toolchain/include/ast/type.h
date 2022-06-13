@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include <list>
-#include <set>
+#include <unordered_set>
 #include <utility>
 
 #include <hilti/ast/id.h>
@@ -44,7 +43,7 @@ class supportsWildcard {};
 class takesArguments {};
 } // namespace trait
 
-using ResolvedState = std::set<uintptr_t>;
+using ResolvedState = std::unordered_set<uintptr_t>;
 
 /** Additional flags to associated with types. */
 enum class Flag {
