@@ -877,7 +877,7 @@ void Visitor::recordAutoParameters(const Type& type, const Expression& args) {
 std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidates,
                                           const node::Range<Expression>& operands, const Meta& meta,
                                           bool disallow_type_changes) {
-    static const std::vector<bitmask<CoercionStyle>> styles = {
+    const std::array<bitmask<CoercionStyle>, 4> styles = {
         CoercionStyle::OperandMatching | CoercionStyle::TryExactMatch,
         CoercionStyle::OperandMatching | CoercionStyle::TryExactMatch | CoercionStyle::TryCoercion,
         CoercionStyle::OperandMatching | CoercionStyle::TryExactMatch | CoercionStyle::TryConstPromotion,
@@ -886,12 +886,7 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
     };
 
     auto deref_operands = [&](const node::Range<Expression>& ops) {
-        std::vector<Node> nops;
-
-        for ( const auto& op : ops )
-            nops.emplace_back(derefOperand(op));
-
-        return nops;
+        return node::transform(ops, [this](const auto& op) { return Node(derefOperand(op)); });
     };
 
     auto try_candidate = [&](const auto& candidate, const node::Range<Expression>& ops, auto style,
@@ -914,8 +909,8 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
         auto r = candidate.instantiate(nops->second, meta);
 
         // Some operators may not be able to determine their type before the
-        // resolver had a chance to provife the information needed. They will
-        // return "auto" in that case (specficially, that's the case for Spicy
+        // resolver had a chance to provide the information needed. They will
+        // return "auto" in that case (specifically, that's the case for Spicy
         // unit member access). Note we can't check if type::isResolved() here
         // because operators may legitimately return other unresolved types
         // (e.g., IDs that still need to be looked up).
@@ -941,7 +936,7 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
                     // Not looking at operators of this priority right now.
                     continue;
 
-                if ( priority == operator_::Priority::Low && kinds_resolved->find(c.kind()) != kinds_resolved->end() )
+                if ( priority == operator_::Priority::Low && kinds_resolved->count(c.kind()) )
                     // Already have a higher priority match for this operator kind.
                     continue;
 
