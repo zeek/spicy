@@ -1,3 +1,9 @@
+1.5.0-dev.105 | 2022-06-15 12:11:01 +0200
+
+  * Drop support for end-of-life Fedora 33/34, add support for Fedora 35/36. (Benjamin Bannier, Corelight)
+
+  * GH-1204: Remove potential use-after-move. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.102 | 2022-06-09 15:31:22 +0200
 
   * Allow changing `DESTDIR` between configure and install time. (Benjamin Bannier, Corelight)

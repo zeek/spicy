@@ -70,7 +70,8 @@ Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& c
     if ( ! process_extension )
         process_extension = path.extension();
 
-    auto unit = std::shared_ptr<Unit>(new Unit(context, module->id(), scope, path, *process_extension,
+    auto id = module->id();
+    auto unit = std::shared_ptr<Unit>(new Unit(context, id, scope, path, *process_extension,
                                                std::move(*module))); // no make_shared, ctor is private
     context->cacheUnit(unit);
 
