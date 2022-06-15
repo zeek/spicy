@@ -1,4 +1,4 @@
-FROM fedora:33
+FROM fedora:35
 
 RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
  && echo 'LC_ALL="C"' >> /etc/locale.conf \
