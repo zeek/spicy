@@ -7,6 +7,11 @@ add_subdirectory(doctest)
 
 add_subdirectory(justrx)
 
+# The GNU toolchain by default assumes that any assembly files (of which the
+# fiber library contains at least one) need an executable stack; explictly
+# disable that since we do not need executable stacks and some package linters
+# call this out as needlessly insecure.
+set(CMAKE_ASM_FLAGS ${CMAKE_ASM_FLAGS} -Wa,--noexecstack)
 set(FIBER_SHARED OFF)
 set(FIBER_OBJECT ON)
 add_subdirectory(fiber)
