@@ -760,7 +760,7 @@ static auto _unitsForPlugin(const std::vector<std::shared_ptr<Unit>>& units, con
         if ( u->extension() == extension && (! u->isResolved() || include_resolved) ) {
             nunits.insert(u);
 
-            for ( const auto& d_ : u->dependencies() ) {
+            for ( const auto& d_ : u->dependencies(true) ) {
                 auto d = d_.lock();
                 assert(d);
                 if ( d->extension() == extension && (! d->isResolved() || include_resolved) )
