@@ -27,37 +27,40 @@ STANDARD_OPERATOR_2x(
 BEGIN_CTOR(enum_, CtorSigned)
     auto ctorType() const { return type::Enum(type::Wildcard()); }
 
-    auto signature() const {
-        return Signature{.args = {{"value", type::SignedInteger(type::Wildcard())}}, .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.args = {{"value", type::SignedInteger(type::Wildcard())}}, .doc = R"(
 Instantiates an enum instance initialized from a signed integer value. The value does
 *not* need to correspond to any of the type's enumerator labels.
 )"};
+        return _signature;
     }
 END_CTOR
 
 BEGIN_CTOR(enum_, CtorUnsigned)
     auto ctorType() const { return type::Enum(type::Wildcard()); }
 
-    auto signature() const {
-        return Signature{.args = {{"value", type::UnsignedInteger(type::Wildcard())}}, .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.args = {{"value", type::UnsignedInteger(type::Wildcard())}}, .doc = R"(
 Instantiates an enum instance initialized from an unsigned integer
 value. The value does *not* need to correspond to any of the type's
 enumerator labels. It must not be larger than the maximum that a
 *signed* 64-bit integer value can represent.
 )"};
+        return _signature;
     }
 END_CTOR
 
 BEGIN_METHOD(enum_, HasLabel)
-    auto signature() const {
-        return Signature{.self = type::constant(type::Enum(type::Wildcard())),
-                         .result = type::Bool(),
-                         .id = "has_label",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::constant(type::Enum(type::Wildcard())),
+                                           .result = type::Bool(),
+                                           .id = "has_label",
+                                           .args = {},
+                                           .doc = R"(
 Returns *true* if the value of *op1* corresponds to a known enum label (other
 than ``Undef``), as defined by it's type.
 )"};
+        return _signature;
     }
 END_METHOD
 

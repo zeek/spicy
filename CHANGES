@@ -1,3 +1,20 @@
+1.5.0-dev.116 | 2022-06-17 11:01:21 +0200
+
+  * Avoid recomputing signatures. (Benjamin Bannier, Corelight)
+
+  * Avoid computing format string if debug stream not enabled. (Benjamin Bannier, Corelight)
+
+  * Use `unordered_set` to cache resolved types. (Benjamin Bannier, Corelight)
+
+  * Reorder instructions to avoid performing unneeded work. (Benjamin Bannier, Corelight)
+
+  * Avoid recomputing same information when resolving expressions. (Benjamin Bannier, Corelight)
+
+  * Prevent excessive copies. (Benjamin Bannier, Corelight)
+
+  * Small optimizations in `matchOverloads`. (Benjamin Bannier, Corelight)
+
+  * Remove excessive copying in `Operator::operands`. (Benjamin Bannier, Corelight)
 
 1.5.0-dev.107 | 2022-06-17 08:43:12 +0200
 

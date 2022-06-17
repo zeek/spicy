@@ -16,6 +16,7 @@
 #include <hilti/ast/types/optional.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/result.h>
+#include <hilti/base/logger.h>
 #include <hilti/compiler/coercion.h>
 #include <hilti/compiler/plugin.h>
 #include <hilti/global.h>
@@ -611,21 +612,26 @@ static Result<Type> _coerceParameterizedType(const Type& src, const Type& dst, b
         return {};
 
     bool have_wildcard = false;
-    for ( auto&& [p1, p2] : util::zip2(params1, params2) ) {
-        auto t1 = p1.tryAs<Type>();
-        auto t2 = p2.tryAs<Type>();
 
-        if ( ! (t1 && t2) )
-            // Don't have a generic node comparison for the individual
-            // parameters, so just stop here and decline. (Note that the case
-            // of src == dst has been handled already, that usually does it.)
+    for ( auto&& [p1, p2] : util::zip2(params1, params2) ) {
+        // If we cannot get both parametres as types, we don't have a generic
+        // node comparison for the individual parameters, so just stop here and
+        // decline. (Note that the case of src == dst has been handled already,
+        // that usually does it.)
+
+        auto t1 = p1.tryAs<Type>();
+        if ( ! t1 )
+            return {};
+
+        auto t2 = p2.tryAs<Type>();
+        if ( ! t2 )
+            return {};
+
+        if ( ! coerceType(*t1, *t2, style) )
             return {};
 
         if ( t2->isWildcard() )
             have_wildcard = true;
-
-        if ( ! coerceType(*t1, *t2, style) )
-            return {};
     }
 
     // If one of the parameter types is a wildcard, we return the original type
@@ -797,11 +803,7 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const nod
 
 static CoercedExpression _coerceExpression(const Expression& e, const Type& src, const Type& dst,
                                            bitmask<CoercionStyle> style) {
-    std::unique_ptr<logging::DebugPushIndent> dbg_indent;
-
-    if ( style & CoercionStyle::_Recursing )
-        dbg_indent = std::make_unique<logging::DebugPushIndent>(logging::debug::Operator);
-    else
+    if ( ! (style & CoercionStyle::_Recursing) )
         style |= CoercionStyle::_Recursing;
 
     const auto no_change = CoercedExpression(e);
@@ -814,6 +816,10 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
         _line = __LINE__;                                                                                              \
         goto exit;                                                                                                     \
     }
+
+    const bool dst_is_const = type::isConstant(dst);
+    const bool dst_is_mut = type::isMutable(dst);
+    const bool e_is_const = e.isConstant();
 
     if ( dst.isA<type::Auto>() )
         // Always accept, we're going to update the auto type later.
@@ -834,23 +840,16 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
         }
     }
 
-    /*
-     * if ( ! dst.isA<type::Any>() ) {
-     *     if ( ! (type::isResolved(src) && type::isResolved(dst)) )
-     *         RETURN(result::Error("types not resolved"));
-     * }
-     */
-
     if ( style & CoercionStyle::TryExactMatch ) {
         if ( src == dst ) {
-            if ( e.isConstant() == type::isConstant(dst) )
+            if ( e_is_const == dst_is_const )
                 RETURN(no_change);
 
-            if ( style & CoercionStyle::OperandMatching && ! type::isMutable(dst) )
+            if ( style & CoercionStyle::OperandMatching && ! dst_is_mut )
                 RETURN(no_change);
         }
 
-        if ( e.isConstant() == type::isConstant(dst) && type::isParameterized(src) && type::isParameterized(dst) &&
+        if ( e_is_const == dst_is_const && type::isParameterized(src) && type::isParameterized(dst) &&
              _coerceParameterizedType(src, dst, CoercionStyle::TryExactMatch) )
             RETURN(no_change); // can say no_change because we're in the ExactMatch case
     }
@@ -858,7 +857,7 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
     if ( style & CoercionStyle::TryConstPromotion ) {
         if ( style & (CoercionStyle::OperandMatching | CoercionStyle::FunctionCall) ) {
             // Don't allow a constant value to match a non-constant operand.
-            if ( e.isConstant() && (! type::isConstant(dst)) && type::isMutable(dst) )
+            if ( e_is_const && (! dst_is_const) && dst_is_mut )
                 RETURN(result::Error());
 
             if ( dst.isWildcard() && src.typename_() == dst.typename_() )
@@ -887,13 +886,13 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
     else {
         if ( style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall) ) {
             // Don't allow assigning to a constant.
-            if ( type::isConstant(dst) )
+            if ( dst_is_const )
                 RETURN(result::Error());
         }
 
         if ( style & CoercionStyle::OperandMatching ) {
             // Don't allow a constant value to match a non-constant operand.
-            if ( e.isConstant() && ! (type::isConstant(dst) || ! type::isMutable(dst)) )
+            if ( e_is_const && ! (dst_is_const || ! dst_is_mut) )
                 RETURN(result::Error());
         }
     }
@@ -930,8 +929,7 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
                                                       CoercionStyle::TryDirectMatchForFunctionCall);
             if ( auto result = coerceOperands(t->value(), o->operands(), function_style) ) {
                 if ( result->first ) {
-                    RETURN(
-                        CoercedExpression(e.type(), expression::Ctor(hilti::ctor::Tuple(result->second))));
+                    RETURN(CoercedExpression(e.type(), expression::Ctor(hilti::ctor::Tuple(result->second))));
                 }
                 else {
                     RETURN(no_change);
@@ -984,18 +982,20 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
     _result = result::Error();
 
 exit:
-    HILTI_DEBUG(logging::debug::Operator,
-                util::fmt("coercing %s %s (%s) to %s%s (%s) -> %s [%s] (%s) (#%d)",
-                          (e.isConstant() ? "const" : "non-const"), to_node(src),
-                          util::replace(src.typename_(), "hilti::type::", ""),
-                          (type::isConstant(dst) ? "" : "non-const "), to_node(dst),
-                          util::replace(dst.typename_(), "hilti::type::", ""),
-                          (_result ?
-                               util::fmt("%s %s (%s)", (_result.coerced->isConstant() ? "const" : "non-const"),
-                                         _result.coerced->type(),
-                                         util::replace(_result.coerced->type().typename_(), "hilti::type::", "")) :
-                               "fail"),
-                          to_string(style), e.meta().location(), _line));
+    if ( logger().isEnabled(logging::debug::Operator) )
+        HILTI_DEBUG(logging::debug::Operator,
+                    util::fmt("coercing %s %s (%s) to %s%s (%s) -> %s [%s] (%s) (#%d)",
+                              (e_is_const ? "const" : "non-const"), to_node(src),
+                              util::replace(src.typename_(), "hilti::type::", ""), (dst_is_const ? "" : "non-const "),
+                              to_node(dst), util::replace(dst.typename_(), "hilti::type::", ""),
+                              (_result ?
+                                   util::fmt("%s %s (%s)", (_result.coerced->isConstant() ? "const" : "non-const"),
+                                             _result.coerced->type(),
+                                             util::replace(_result.coerced->type().typename_(), "hilti::type::", "")) :
+                                   "fail"),
+                              to_string(style), e.meta().location(), _line));
+
+#undef RETURN
 
     return _result;
 }

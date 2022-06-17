@@ -50,7 +50,7 @@ private:                                                                        
 
 /** Ends definition of a method call operator. */
 #define END_OPERATOR                                                                                                   \
-    std::vector<hilti::operator_::Operand> operands() const { return signature().args; }                               \
+    const std::vector<hilti::operator_::Operand>& operands() const { return signature().args; }                        \
                                                                                                                        \
     std::string doc() const { return signature().doc; }                                                                \
                                                                                                                        \
@@ -103,13 +103,14 @@ private:                                                                        
  */
 #define STANDARD_OPERATOR_1(ns, op, result_, ty_op1, doc_)                                                             \
     BEGIN_OPERATOR(ns, op)                                                                                             \
-        auto signature() const {                                                                                       \
-            return hilti::operator_::Signature{.result = result_,                                                      \
-                                               .args =                                                                 \
-                                                   {                                                                   \
-                                                       {"op", ty_op1},                                                 \
-                                                   },                                                                  \
-                                               .doc = doc_};                                                           \
+        const auto& signature() const {                                                                                \
+            static hilti::operator_::Signature _signature = {.result = result_,                                        \
+                                                             .args =                                                   \
+                                                                 {                                                     \
+                                                                     {"op", ty_op1},                                   \
+                                                                 },                                                    \
+                                                             .doc = doc_};                                             \
+            return _signature;                                                                                         \
         }                                                                                                              \
     END_OPERATOR
 
@@ -118,13 +119,14 @@ private:                                                                        
  */
 #define STANDARD_OPERATOR_1x(ns, cls, op, result_, ty_op1, doc_)                                                       \
     __BEGIN_OPERATOR_CUSTOM(ns, op, cls)                                                                               \
-    auto signature() const {                                                                                           \
-        return hilti::operator_::Signature{.result = result_,                                                          \
-                                           .args =                                                                     \
-                                               {                                                                       \
-                                                   {"op", ty_op1},                                                     \
-                                               },                                                                      \
-                                           .doc = doc_};                                                               \
+    const auto& signature() const {                                                                                    \
+        static hilti::operator_::Signature _signature = {.result = result_,                                            \
+                                                         .args =                                                       \
+                                                             {                                                         \
+                                                                 {"op", ty_op1},                                       \
+                                                             },                                                        \
+                                                         .doc = doc_};                                                 \
+        return _signature;                                                                                             \
     }                                                                                                                  \
     END_OPERATOR
 
@@ -133,10 +135,11 @@ private:                                                                        
  */
 #define STANDARD_OPERATOR_2(ns, op, result_, ty_op1, ty_op2, doc_)                                                     \
     BEGIN_OPERATOR(ns, op)                                                                                             \
-        auto signature() const {                                                                                       \
-            return hilti::operator_::Signature{.result = result_,                                                      \
-                                               .args = {{"op0", ty_op1}, {"op1", ty_op2}},                             \
-                                               .doc = doc_};                                                           \
+        const auto& signature() const {                                                                                \
+            static hilti::operator_::Signature _signature = {.result = result_,                                        \
+                                                             .args = {{"op0", ty_op1}, {"op1", ty_op2}},               \
+                                                             .doc = doc_};                                             \
+            return _signature;                                                                                         \
         }                                                                                                              \
     END_OPERATOR
 
@@ -145,10 +148,11 @@ private:                                                                        
  */
 #define STANDARD_OPERATOR_2x(ns, cls, op, result_, ty_op1, ty_op2, doc_)                                               \
     __BEGIN_OPERATOR_CUSTOM(ns, op, cls)                                                                               \
-    auto signature() const {                                                                                           \
-        return hilti::operator_::Signature{.result = result_,                                                          \
-                                           .args = {{"op0", ty_op1}, {"op1", ty_op2}},                                 \
-                                           .doc = doc_};                                                               \
+    const auto& signature() const {                                                                                    \
+        static hilti::operator_::Signature _signature = {.result = result_,                                            \
+                                                         .args = {{"op0", ty_op1}, {"op1", ty_op2}},                   \
+                                                         .doc = doc_};                                                 \
+        return _signature;                                                                                             \
     }                                                                                                                  \
     END_OPERATOR
 
@@ -157,11 +161,12 @@ private:                                                                        
  */
 #define STANDARD_OPERATOR_2x_low_prio(ns, cls, op, result_, ty_op1, ty_op2, doc_)                                      \
     __BEGIN_OPERATOR_CUSTOM(ns, op, cls)                                                                               \
-    auto signature() const {                                                                                           \
-        return hilti::operator_::Signature{.priority = operator_::Priority::Low,                                       \
-                                           .result = result_,                                                          \
-                                           .args = {{"op0", ty_op1}, {"op1", ty_op2}},                                 \
-                                           .doc = doc_};                                                               \
+    const auto& signature() const {                                                                                    \
+        static hilti::operator_::Signature _signature = {.priority = operator_::Priority::Low,                         \
+                                                         .result = result_,                                            \
+                                                         .args = {{"op0", ty_op1}, {"op1", ty_op2}},                   \
+                                                         .doc = doc_};                                                 \
+        return _signature;                                                                                             \
     }                                                                                                                  \
     END_OPERATOR
 
@@ -170,11 +175,12 @@ private:                                                                        
  */
 #define STANDARD_OPERATOR_2x_lhs(ns, cls, op, result_, ty_op1, ty_op2, doc_)                                           \
     __BEGIN_OPERATOR_CUSTOM(ns, op, cls)                                                                               \
-    auto signature() const {                                                                                           \
-        return hilti::operator_::Signature{.lhs = true,                                                                \
-                                           .result = result_,                                                          \
-                                           .args = {{"op0", ty_op1}, {"op1", ty_op2}},                                 \
-                                           .doc = doc_};                                                               \
+    const auto& signature() const {                                                                                    \
+        static hilti::operator_::Signature _signature = {.lhs = true,                                                  \
+                                                         .result = result_,                                            \
+                                                         .args = {{"op0", ty_op1}, {"op1", ty_op2}},                   \
+                                                         .doc = doc_};                                                 \
+        return _signature;                                                                                             \
     }                                                                                                                  \
     END_OPERATOR
 
@@ -183,10 +189,10 @@ private:                                                                        
  */
 #define STANDARD_OPERATOR_3(ns, op, result_, ty_op1, ty_op2, ty_op3, doc_)                                             \
     BEGIN_OPERATOR(ns, op)                                                                                             \
-        auto signature() const {                                                                                       \
-            return hilti::operator_::Signature{.result = result_,                                                      \
-                                               .args = {{"op0", ty_op1}, {"op1", ty_op2}, {"op2", ty_op3}},            \
-                                               .doc = doc_};                                                           \
+        const auto& signature() const {                                                                                \
+            static hilti::operator_::Signature _signature =                                                            \
+                {.result = result_, .args = {{"op0", ty_op1}, {"op1", ty_op2}, {"op2", ty_op3}}, .doc = doc_};         \
+            return _signature;                                                                                         \
         }                                                                                                              \
     END_OPERATOR
 
@@ -210,10 +216,11 @@ private:                                                                        
 
 /** Internal helper macro. */
 #define __END_METHOD                                                                                                   \
-    std::vector<hilti::operator_::Operand> operands() const {                                                          \
-        return {{{}, signature().self},                                                                                \
-                {{}, hilti::type::Member(signature().id)},                                                             \
-                {{}, hilti::type::OperandList(signature().args)}};                                                     \
+    const std::vector<hilti::operator_::Operand>& operands() const {                                                   \
+        static std::vector<hilti::operator_::Operand> _operands = {{{}, signature().self},                             \
+                                                                   {{}, hilti::type::Member(signature().id)},          \
+                                                                   {{}, hilti::type::OperandList(signature().args)}};  \
+        return _operands;                                                                                              \
     }                                                                                                                  \
                                                                                                                        \
     std::string doc() const { return signature().doc; }
@@ -250,8 +257,10 @@ private:                                                                        
 #define BEGIN_CTOR(ns, cls) __BEGIN_OPERATOR_CUSTOM(ns, Call, cls)
 
 #define END_CTOR                                                                                                       \
-    std::vector<hilti::operator_::Operand> operands() const {                                                          \
-        return {{{}, hilti::type::Type_(ctorType())}, {{}, hilti::type::OperandList(signature().args)}};               \
+    const std::vector<hilti::operator_::Operand>& operands() const {                                                   \
+        static std::vector<hilti::operator_::Operand> _operands = {{{}, hilti::type::Type_(ctorType())},               \
+                                                                   {{}, hilti::type::OperandList(signature().args)}};  \
+        return _operands;                                                                                              \
     }                                                                                                                  \
                                                                                                                        \
     std::string doc() const { return signature().doc; }                                                                \

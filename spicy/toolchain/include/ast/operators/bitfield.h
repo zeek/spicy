@@ -56,9 +56,11 @@ BEGIN_OPERATOR_CUSTOM(bitfield, Member)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<hilti::operator_::Operand> operands() const {
-        return {{{}, type::constant(type::Bitfield(type::Wildcard())), false, {}, "bitfield"},
-                {{}, type::Member(type::Wildcard()), false, {}, "<attribute>"}};
+    const std::vector<hilti::operator_::Operand>& operands() const {
+        static std::vector<hilti::operator_::Operand> _operands =
+            {{{}, type::constant(type::Bitfield(type::Wildcard())), false, {}, "bitfield"},
+             {{}, type::Member(type::Wildcard()), false, {}, "<attribute>"}};
+        return _operands;
     }
 
     void validate(const hilti::expression::ResolvedOperator& i, hilti::operator_::position_t p) const {

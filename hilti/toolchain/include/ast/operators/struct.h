@@ -55,9 +55,10 @@ BEGIN_OPERATOR_CUSTOM(struct_, Unset)
     bool isLhs() const { return true; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::Struct(type::Wildcard()), false, {}, "struct"},
-                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {{{}, type::Struct(type::Wildcard()), false, {}, "struct"},
+                                                 {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -82,9 +83,10 @@ BEGIN_OPERATOR_CUSTOM_x(struct_, MemberNonConst, Member)
     bool isLhs() const { return true; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::Struct(type::Wildcard()), false, {}, "struct"},
-                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {{{}, type::Struct(type::Wildcard()), false, {}, "struct"},
+                                                 {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -111,9 +113,11 @@ BEGIN_OPERATOR_CUSTOM_x(struct_, MemberConst, Member)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::constant(type::Struct(type::Wildcard())), false, {}, "struct"},
-                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands =
+            {{{}, type::constant(type::Struct(type::Wildcard())), false, {}, "struct"},
+             {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -140,9 +144,10 @@ BEGIN_OPERATOR_CUSTOM(struct_, TryMember)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::Struct(type::Wildcard()), false, {}, "struct"},
-                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {{{}, type::Struct(type::Wildcard()), false, {}, "struct"},
+                                                 {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -167,9 +172,11 @@ BEGIN_OPERATOR_CUSTOM(struct_, HasMember)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::constant(type::Struct(type::Wildcard())), false, {}, "struct"},
-                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands =
+            {{{}, type::constant(type::Struct(type::Wildcard())), false, {}, "struct"},
+             {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
@@ -201,7 +208,7 @@ public:
         };
 
         static operator_::Kind kind() { return operator_::Kind::MemberCall; }
-        std::vector<operator_::Operand> operands() const { return _operands; }
+        const std::vector<operator_::Operand>& operands() const { return _operands; }
         Type result(const hilti::node::Range<Expression>& /* ops */) const { return _result; }
         bool isLhs() const { return false; }
         auto priority() const { return hilti::operator_::Priority::Normal; }

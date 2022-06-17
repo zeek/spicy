@@ -23,16 +23,17 @@ STANDARD_OPERATOR_2(string, Sum, type::String(), type::String(), type::String(),
                     "Returns the concatenation of two strings.");
 
 BEGIN_METHOD(string, Encode)
-    auto signature() const {
-        return Signature{.self = type::constant(type::String()),
-                         .result = type::Bytes(),
-                         .id = "encode",
-                         .args = {{"charset", type::Enum(type::Wildcard()), false,
-                                   builder::id("hilti::Charset::UTF8")}},
-                         .doc =
-                             R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::constant(type::String()),
+                      .result = type::Bytes(),
+                      .id = "encode",
+                      .args = {{"charset", type::Enum(type::Wildcard()), false, builder::id("hilti::Charset::UTF8")}},
+                      .doc =
+                          R"(
 Converts the string into a binary representation encoded with the given character set.
 )"};
+        return _signature;
     }
 END_METHOD
 
@@ -42,7 +43,10 @@ BEGIN_OPERATOR_CUSTOM(string, Modulo)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const { return {{{}, type::String()}, {{}, type::Any()}}; }
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {{{}, type::String()}, {{}, type::Any()}};
+        return _operands;
+    }
 
     void validate(const expression::ResolvedOperator& /* i */, operator_::position_t /* p */) const {
         // TODO(robin): Not sure if we need this restriction. Let's try without.

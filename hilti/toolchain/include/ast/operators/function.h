@@ -31,7 +31,7 @@ public:
         }
 
         static operator_::Kind kind() { return operator_::Kind::Call; }
-        std::vector<operator_::Operand> operands() const { return _operands; }
+        const std::vector<operator_::Operand>& operands() const { return _operands; }
         Type result(const hilti::node::Range<Expression>& /* ops */) const { return _result; }
         bool isLhs() const { return false; }
         auto priority() const { return hilti::operator_::Priority::Normal; }

@@ -62,7 +62,7 @@ class Operator(trait::isOperator) {
      *
      * @return
      */
-    std::vector<hilti::operator_::Operand> operands() const;
+    const std::vector<hilti::operator_::Operand>& operands() const;
 
     /**
      * Creates an expression representing this operator instantied with a

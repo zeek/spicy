@@ -68,9 +68,11 @@ BEGIN_OPERATOR_CUSTOM_x(union_, MemberConst, Member)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::constant(type::Union(type::Wildcard())), false, {}, "union"},
-                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands =
+            {{{}, type::constant(type::Union(type::Wildcard())), false, {}, "union"},
+             {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, position_t p) const {
@@ -96,9 +98,10 @@ BEGIN_OPERATOR_CUSTOM_x(union_, MemberNonConst, Member)
     bool isLhs() const { return true; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::Union(type::Wildcard()), false, {}, "union"},
-                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {{{}, type::Union(type::Wildcard()), false, {}, "union"},
+                                                 {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, position_t p) const {
@@ -119,9 +122,10 @@ BEGIN_OPERATOR_CUSTOM(union_, HasMember)
     bool isLhs() const { return false; }
     auto priority() const { return hilti::operator_::Priority::Normal; }
 
-    std::vector<Operand> operands() const {
-        return {{{}, type::Union(type::Wildcard()), false, {}, "union"},
-                {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {{{}, type::Union(type::Wildcard()), false, {}, "union"},
+                                                 {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+        return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, position_t p) const {

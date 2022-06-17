@@ -41,14 +41,12 @@ STANDARD_OPERATOR_2(set, Delete, type::void_, type::Set(type::Wildcard()), opera
                     "Removes an element from the set.")
 
 BEGIN_METHOD(set, Clear)
-    auto signature() const {
-        return Signature{.self = type::Set(type::Wildcard()),
-                         .result = type::void_,
-                         .id = "clear",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::Set(type::Wildcard()), .result = type::void_, .id = "clear", .args = {}, .doc = R"(
 Removes all elements from the set.
 )"};
+        return _signature;
     }
 END_METHOD
 

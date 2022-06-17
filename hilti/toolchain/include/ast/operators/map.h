@@ -74,27 +74,26 @@ STANDARD_OPERATOR_3(map, IndexAssign, type::void_, type::Map(type::Wildcard()), 
                     "Updates the map value for a given key. If the key does not exist a new element is inserted.");
 
 BEGIN_METHOD(map, Get)
-    auto signature() const {
-        return Signature{.self = type::Map(type::Wildcard()),
-                         .result = operator_::elementType(0),
-                         .id = "get",
-                         .args = {{"key", type::Any()}, {"default", type::Any(), true}},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Map(type::Wildcard()),
+                                           .result = operator_::elementType(0),
+                                           .id = "get",
+                                           .args = {{"key", type::Any()}, {"default", type::Any(), true}},
+                                           .doc = R"(
 Returns the map's element for the given key. If the key does not exist, returns
 the default value if provided; otherwise throws a runtime error.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(map, Clear)
-    auto signature() const {
-        return Signature{.self = type::Map(type::Wildcard()),
-                         .result = type::void_,
-                         .id = "clear",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::Map(type::Wildcard()), .result = type::void_, .id = "clear", .args = {}, .doc = R"(
 Removes all elements from the map.
 )"};
+        return _signature;
     }
 END_METHOD
 

@@ -27,22 +27,25 @@ STANDARD_OPERATOR_2(time, Lower, type::Bool(), type::Time(), type::Time(), "Comp
 STANDARD_OPERATOR_2(time, LowerEqual, type::Bool(), type::Time(), type::Time(), "Compares the times.");
 
 BEGIN_METHOD(time, Seconds)
-    auto signature() const {
-        return Signature{.self = type::Time(), .result = type::Real(), .id = "seconds", .args = {}, .doc = R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::Time(), .result = type::Real(), .id = "seconds", .args = {}, .doc = R"(
 Returns the time as a real value representing seconds since the UNIX epoch.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(time, Nanoseconds)
-    auto signature() const {
-        return Signature{.self = type::Time(),
-                         .result = type::UnsignedInteger(64),
-                         .id = "nanoseconds",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Time(),
+                                           .result = type::UnsignedInteger(64),
+                                           .id = "nanoseconds",
+                                           .args = {},
+                                           .doc = R"(
 Returns the time as an integer value representing nanoseconds since the UNIX epoch.
 )"};
+        return _signature;
     }
 END_METHOD
 

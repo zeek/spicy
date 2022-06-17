@@ -28,22 +28,25 @@ STANDARD_OPERATOR_2x(interval, MultipleReal, Multiple, type::Interval(), type::I
                      "Multiplies the interval with the given factor.");
 
 BEGIN_METHOD(interval, Seconds)
-    auto signature() const {
-        return Signature{.self = type::Interval(), .result = type::Real(), .id = "seconds", .args = {}, .doc = R"(
+    const auto& signature() const {
+        static auto _signature =
+            Signature{.self = type::Interval(), .result = type::Real(), .id = "seconds", .args = {}, .doc = R"(
 Returns the interval as a real value representing seconds.
 )"};
+        return _signature;
     }
 END_METHOD
 
 BEGIN_METHOD(interval, Nanoseconds)
-    auto signature() const {
-        return Signature{.self = type::Interval(),
-                         .result = type::SignedInteger(64),
-                         .id = "nanoseconds",
-                         .args = {},
-                         .doc = R"(
+    const auto& signature() const {
+        static auto _signature = Signature{.self = type::Interval(),
+                                           .result = type::SignedInteger(64),
+                                           .id = "nanoseconds",
+                                           .args = {},
+                                           .doc = R"(
 Returns the interval as an integer value representing nanoseconds.
 )"};
+        return _signature;
     }
 END_METHOD
 
