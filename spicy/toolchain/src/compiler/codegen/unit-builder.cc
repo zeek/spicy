@@ -173,7 +173,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
 
     add_hook("0x25_init", {});
     add_hook("0x25_done", {});
-    add_hook("0x25_error", {});
+    add_hook("0x25_error", { builder::parameter("__except", type::String()) });
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
 
