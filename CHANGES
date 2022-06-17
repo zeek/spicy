@@ -1,3 +1,8 @@
+
+1.5.0-dev.107 | 2022-06-17 08:43:12 +0200
+
+  * GH-1210: Prevent unnecessarily executable stack with GNU toolchain. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.105 | 2022-06-15 12:11:01 +0200
 
   * Drop support for end-of-life Fedora 33/34, add support for Fedora 35/36. (Benjamin Bannier, Corelight)
