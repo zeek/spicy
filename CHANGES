@@ -1,3 +1,16 @@
+1.5.0-dev.121 | 2022-06-20 14:39:05 +0200
+
+  * GH-1209: Provide error message to `%error` handler. (Robin Sommer, Corelight)
+
+    We now allow to optionally provide a string parameter with
+    `%error` that will receive the associated error message:
+
+        on %error(msg: string) { print msg; }
+
+  * GH-1206: Fix detection of recursive dependencies. (Robin Sommer, Corelight)
+
+  * Fix internal error with not fully resolved IDs. (Robin Sommer, Corelight)
+
 1.5.0-dev.116 | 2022-06-17 11:01:21 +0200
 
   * Avoid recomputing signatures. (Benjamin Bannier, Corelight)

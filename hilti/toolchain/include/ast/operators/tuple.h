@@ -72,7 +72,11 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
             return type::DocOnly("<type of element>");
 
         auto id = ops[1].as<expression::Member>().id();
-        auto elem = ops[0].type().as<type::Tuple>().elementByID(id);
+        auto tt = ops[0].type().tryAs<type::Tuple>();
+        if ( ! tt )
+            return type::unknown;
+
+        auto elem = tt->elementByID(id);
         if ( ! elem )
             return type::unknown;
 
@@ -90,7 +94,14 @@ BEGIN_OPERATOR_CUSTOM(tuple, Member)
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
         auto id = i.operands()[1].as<expression::Member>().id();
-        auto elem = i.operands()[0].type().as<type::Tuple>().elementByID(id);
+
+        auto tt = i.operands()[0].type().tryAs<type::Tuple>();
+        if ( ! tt ) {
+            p.node.addError("unknown tuple element");
+            return;
+        }
+
+        auto elem = tt->elementByID(id);
 
         if ( ! elem )
             p.node.addError("unknown tuple element");

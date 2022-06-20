@@ -1,0 +1,32 @@
+# @TEST-EXEC: spicyc -p foo.spicy
+# @TEST-EXEC: spicyc -j foo.spicy
+#
+# @TEST-DOC: Regression test for #1206 to check automatic addition of all dependencies in print-only mode
+
+@TEST-START-FILE foo.spicy
+module foo;
+import bar;
+@TEST-END-FILE
+
+@TEST-START-FILE bar.spicy
+module bar;
+import common;
+
+type Message = unit(header: common::Header) {
+	on %init {
+		switch (header.flags.X) {
+			default: {}
+		}
+	}
+};
+@TEST-END-FILE
+
+@TEST-START-FILE common.spicy
+module common;
+
+type Header = unit {
+	flags: bitfield(8) {
+		X: 7;
+	};
+};
+@TEST-END-FILE
