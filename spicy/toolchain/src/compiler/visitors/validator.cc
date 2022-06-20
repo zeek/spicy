@@ -787,10 +787,15 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         else if ( hilti::util::startsWith(id, "0x25_") ) {
             auto id_readable = hilti::util::replace(hook.id().local().str(), "0x25_", "%");
 
-            if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_error" || id == "0x25_print" ||
+            if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_print" ||
                  id == "0x25_finally" || id == "0x25_rejected" || id == "0x25_confirmed" || id == "0x25_synced" ) {
                 if ( params.size() != 0 )
                     error(fmt("hook '%s' does not take any parameters", id_readable), p, location);
+            }
+
+            else if ( id == "0x25_error" ) {
+                if ( params.size() != 1 || params[0].type() != type::String() )
+                    error("signature for hook must be: %error or %error(err: string)", p, location);
             }
 
             else if ( id == "0x25_gap" ) {

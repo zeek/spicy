@@ -246,6 +246,7 @@
 [debug/optimizer] removing declaration for unused function hilti::abort
 [debug/optimizer] removing declaration for unused function hilti::current_time
 [debug/optimizer] removing declaration for unused function hilti::debug
+[debug/optimizer] removing declaration for unused function hilti::exception_what
 [debug/optimizer] removing declaration for unused function hilti::mktime
 [debug/optimizer] removing declaration for unused function hilti::print
 [debug/optimizer] removing declaration for unused function hilti::printValues

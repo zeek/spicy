@@ -117,7 +117,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
             __result = (*self).__parse_foo_Pub2_stage2(__data, __cur, __trim, __lah, __lahe, __error);
 
     }
-    catch {
+    catch ( hilti::SystemException __except ) {
         default<void>();
         (*self).__error = __error;
         default<void>();
@@ -227,7 +227,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
             __result = (*self).__parse_foo_Priv5_stage2(__data, __cur, __trim, __lah, __lahe, __error);
 
     }
-    catch {
+    catch ( hilti::SystemException __except ) {
         default<void>();
         (*self).__error = __error;
         default<void>();
@@ -269,7 +269,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
             __result = (*self).__parse_foo_Priv6_stage2(__data, __cur, __trim, __lah, __lahe, __error);
 
     }
-    catch {
+    catch ( hilti::SystemException __except ) {
         default<void>();
         (*self).__error = __error;
         default<void>();
@@ -311,7 +311,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
             __result = (*self).__parse_foo_Pub3_stage2(__data, __cur, __trim, __lah, __lahe, __error);
 
     }
-    catch {
+    catch ( hilti::SystemException __except ) {
         default<void>();
         (*self).__error = __error;
         default<void>();
@@ -430,7 +430,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
             __result = (*self).__parse_foo_Priv10_stage2(__data, __cur, __trim, __lah, __lahe, __error);
 
     }
-    catch {
+    catch ( hilti::SystemException __except ) {
         default<void>();
         (*self).__error = __error;
         default<void>();

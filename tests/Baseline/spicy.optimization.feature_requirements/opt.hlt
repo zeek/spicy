@@ -111,7 +111,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
             __result = (*self).__parse_foo_X4_stage2(__data, __cur, __trim, __lah, __lahe, __error);
 
     }
-    catch {
+    catch ( hilti::SystemException __except ) {
         default<void>();
         
             spicy_rt::filter_forward_eod(self);
@@ -239,7 +239,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
             __result = (*self).__parse_foo_X5_stage2(__data, __cur, __trim, __lah, __lahe, __error);
 
     }
-    catch {
+    catch ( hilti::SystemException __except ) {
         default<void>();
         
             spicy_rt::filter_disconnect(self);
@@ -350,7 +350,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
             __result = (*self).__parse_foo_X6_stage2(__data, __cur, __trim, __lah, __lahe, __error);
 
     }
-    catch {
+    catch ( hilti::SystemException __except ) {
         default<void>();
         (*(*self).data).close();
         (*self).__error = __error;

@@ -66,6 +66,7 @@ public:
 
     void setBody(const Statement& b) { children()[2] = b; }
     void setID(const ID& id) { children()[0] = id; }
+    void setFunctionType(const type::Function& ftype) { children()[1] = ftype; }
     void setResultType(const Type& t) { children()[1].as<type::Function>().setResultType(t); }
 
     /** Internal method for use by builder API only. */

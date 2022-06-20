@@ -114,6 +114,17 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             }
         }
 
+        // If an `%error` hook doesn't provide the optional string argument,
+        // add it here so that we can treat the two versions the same.
+        if ( h.id().local().str() == "0x25_error" ) {
+            auto params = h.ftype().parameters();
+            if ( params.size() == 0 ) {
+                logChange(p.node, "adding parameter to %error");
+                p.node.as<Hook>().setParameters({hilti::builder::parameter("__except", type::String())});
+                modified = true;
+            }
+        }
+
         // Link hook to its unit type and field.
 
         NodeRef unit_type_ref = p.findParentRef<type::Unit>();

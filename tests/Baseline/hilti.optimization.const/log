@@ -28,6 +28,7 @@
 [debug/optimizer] removing declaration for unused function hilti::debug
 [debug/optimizer] removing declaration for unused function hilti::debugDedent
 [debug/optimizer] removing declaration for unused function hilti::debugIndent
+[debug/optimizer] removing declaration for unused function hilti::exception_what
 [debug/optimizer] removing declaration for unused function hilti::linker_scope
 [debug/optimizer] removing declaration for unused function hilti::mktime
 [debug/optimizer] removing declaration for unused function hilti::printValues

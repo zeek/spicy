@@ -15,6 +15,7 @@
 #include <hilti/ast/expressions/type-wrapped.h>
 #include <hilti/ast/expressions/void.h>
 #include <hilti/ast/statements/declaration.h>
+#include <hilti/ast/types/exception.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/stream.h>
 #include <hilti/ast/types/struct.h>
@@ -189,7 +190,9 @@ struct ProductionVisitor
                     // is that we want a reliable point of error handling
                     // no matter what kind of trouble a Spicy script runs
                     // into.
-                    auto catch_ = try_->addCatch();
+                    auto catch_ =
+                        try_->addCatch({builder::parameter("__except", builder::typeByID("hilti::SystemException"))});
+
                     pushBuilder(catch_, [&]() {
                         pb->finalizeUnit(false, p.location());
                         run_finally();
@@ -2099,8 +2102,10 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         builder()->addMemberCall(state().self, "__on_0x25_done", {}, l);
         afterHook();
     }
-    else
-        builder()->addMemberCall(state().self, "__on_0x25_error", {}, l);
+    else {
+        auto what = builder::call("hilti::exception_what", {builder::id("__except")});
+        builder()->addMemberCall(state().self, "__on_0x25_error", {what}, l);
+    }
 
     guardFeatureCode(unit, {"supports_filters"},
                      [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });

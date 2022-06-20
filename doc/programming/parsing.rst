@@ -469,9 +469,11 @@ The most commonly used hooks are:
 
 .. _on_error:
 
-``on %error  { ... }``
+``on %error  { ... }`` or ``on %error(msg: string) { ... }``
     Executes when a parse error has been encountered, just before the
-    parser either aborts processing.
+    parser either aborts processing. If the second form is used, a
+    description of the error will be provided through the string
+    argument.
 
 ``on %finally  { ... }``
     Executes once unit parsing has completed in any way. This hook is
