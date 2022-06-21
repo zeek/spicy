@@ -85,7 +85,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const type::StrongReference& src) {
         if ( auto t = dst.tryAs<type::Bool>() )
-            return fmt("static_cast<bool>(%s)", expr);
+            return fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
         if ( auto t = dst.tryAs<type::ValueReference>() )
             return fmt("%s.derefAsValue()", expr);
@@ -112,7 +112,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const type::Result& src) {
         if ( auto t = dst.tryAs<type::Bool>() )
-            return fmt("static_cast<bool>(%s)", expr);
+            return fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
         if ( auto t = dst.tryAs<type::Optional>() )
             return fmt("static_cast<%s>(%s)", cg->compile(dst, codegen::TypeUsage::Storage), expr);
@@ -122,7 +122,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const type::SignedInteger& src) {
         if ( dst.isA<type::Bool>() )
-            return fmt("static_cast<bool>(%s)", expr);
+            return fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
         if ( auto t = dst.tryAs<type::SignedInteger>() )
             return fmt("::hilti::rt::integer::safe<int%d_t>(%s)", t->width(), expr);
@@ -174,7 +174,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const type::UnsignedInteger& src) {
         if ( dst.isA<type::Bool>() )
-            return fmt("static_cast<bool>(%s)", expr);
+            return fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
         if ( auto t = dst.tryAs<type::SignedInteger>() )
             return fmt("::hilti::rt::integer::safe<int%d_t>(%s)", t->width(), expr);
@@ -187,7 +187,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const type::WeakReference& src) {
         if ( auto t = dst.tryAs<type::Bool>() )
-            return fmt("static_cast<bool>(%s)", expr);
+            return fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
         if ( auto t = dst.tryAs<type::StrongReference>() )
             return fmt("::hilti::rt::StrongReference<%s>(%s)",

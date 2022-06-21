@@ -20,6 +20,8 @@ assert x;
 assert y;
 assert ! z;
 
+True? cast<bool>(x): True;
+
 x = new b"abc";
 hilti::print(x);
 hilti::print(y);

@@ -1,3 +1,7 @@
+1.5.0-dev.123 | 2022-06-21 13:32:59 +0200
+
+  * GH-1217: Produce `hilti::rt::Bool` when casting to boolean. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.121 | 2022-06-20 14:39:05 +0200
 
   * GH-1209: Provide error message to `%error` handler. (Robin Sommer, Corelight)
