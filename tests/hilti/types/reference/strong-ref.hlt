@@ -16,6 +16,7 @@ assert x == y;
 assert *x == *y;
 assert !(x != y);
 assert !(*x != *y);
+True? cast<bool>(x): True;
 
 *x += b"123";
 assert *x == b"xyz123";

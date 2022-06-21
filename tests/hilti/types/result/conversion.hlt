@@ -41,4 +41,6 @@ hilti::print(o);
 y(x(True));
 y(x(False));
 
+True? cast<bool>(x(True)): True;
+
 }
