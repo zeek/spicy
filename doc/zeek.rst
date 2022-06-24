@@ -35,10 +35,18 @@ refer to as a "Spicy (protocol/file/packet) analyzer" for Zeek.
 Installation
 ============
 
-To use the Spicy plugin with Zeek, it first needs to be installed. The
-recommended way to do so is through Zeek's package manager `zkg
-<https://docs.zeek.org/projects/package-manager/en/stable>`_. If you
-have not yet installed *zkg*, follow `its instructions
+As of Zeek version 5.0 Spicy and Spicy plugin are by default bundled with Zeek.
+To confirm whether Spicy plugin is available you can inspect the list of
+installed plugins,
+
+    # zeek -N
+    <...>
+    Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (built-in)
+
+If you see ``Zeek::Spicy`` listed, spicy-plugin is available, otherwise it
+needs to be installed manually. The recommended way to do so is through Zeek's
+package manager `zkg <https://docs.zeek.org/projects/package-manager/en/stable>`_.
+If you have not yet installed *zkg*, follow `its instructions
 <https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html>`_.
 
 You will need to have Spicy and Zeek installed as well of course.
@@ -50,6 +58,8 @@ in your ``PATH``::
 
     # which zeek-config
     /usr/local/zeek/bin/zeek-config
+
+.. _zeek_spicy_plugin_installation:
 
 Package Installation
 --------------------

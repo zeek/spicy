@@ -40,6 +40,22 @@ refers to compiling generated C++ code).
 Zeek
 ----
 
+.. rubric:: Do I need to install Spicy and its Zeek plugin to use Spicy parsers in Zeek?
+
+As of version 5.0 Zeek by default bundles Spicy and its Zeek plugin. If that is
+the case the folder containing the ``zeek`` binary should also contain e.g.,
+``spicyc`` (provided by Spicy) and ``spicyz`` (provided by Spicy plugin). To
+check that the Spicy plugin is active look for ``Zeek::Spicy`` in the output
+of ``zeek -N``::
+
+    # zeek -N
+    <...>
+    Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (built-in)
+
+If ``spicyc`` is missing, you need to :ref:`install Spicy <installation>`; if
+``spicyz`` is missing or ``Zeek::Spicy`` is not listed you need to :ref:`install
+Spicy plugin <zeek_spicy_plugin_installation>`.
+
 .. rubric:: Do I need a Spicy installation for using the Zeek plugin?
 
 No, if the Zeek plugin was compiled with ``--build-toolchain=no``,
