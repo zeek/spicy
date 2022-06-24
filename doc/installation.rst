@@ -94,6 +94,16 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-deb:`DEB <docker_debian11>`
       - :repo:`Dockerfile <docker/Dockerfile.debian-11>`
 
+    * - Fedora 33
+      - :package-release-rpm:`RPM <linux_fedora33>`
+      -
+      -
+
+    * - Fedora 34
+      - :package-release-rpm:`RPM <linux_fedora34>`
+      -
+      -
+
     * - Fedora 35
       - :package-release-rpm:`RPM <linux_fedora35>`
       - :package-dev-rpm:`RPM <docker_fedora35>`
