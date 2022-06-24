@@ -595,9 +595,14 @@ Zeek-side script to do something with our new TFTP events. We will
 walk through this in the following, starting with the mechanics of
 compiling the Spicy analyzer for Zeek.
 
-Before proceeding, follow the instructions to :ref:`install the Zeek
-plugin <zeek_installation>`. You should now be seeing output similar
-to this::
+Before proceeding, make sure that the Zeek plugin is available::
+
+    # zeek -N Zeek::Spicy
+    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (built-in)
+
+If it is not available follow the instructions to :ref:`install the Zeek plugin
+<zeek_spicy_plugin_installation>`. You should now be seeing output similar to
+this::
 
     # zeek -NN Zeek::Spicy
     Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version x.y.z)
