@@ -124,8 +124,7 @@ std::optional<CacheEntry> Context::lookupUnit(const hilti::rt::filesystem::path&
         ast_extension = path.extension();
 
     if ( auto x = _unit_cache_by_path.find(util::normalizePath(path)); x != _unit_cache_by_path.end() ) {
-        ID scope_ = scope ? *scope : ID();
-        if ( scope_ == x->second->unit->cacheIndex().scope && x->second->unit->extension() == *ast_extension )
+        if ( x->second->unit->extension() == *ast_extension )
             return *x->second;
     }
 
