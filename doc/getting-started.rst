@@ -200,9 +200,8 @@ and ``spicyc -p my-http.spicy`` will show the intermediary HILTI code.
 Zeek Integration
 ----------------
 
-Now let's use our ``RequestLine`` parser with Zeek. For that we first
-need to prepare some input, and get Zeek to load the required Spicy
-plugin. Then we can use the grammar that we already got to add a new
+Now let's use our ``RequestLine`` parser with Zeek. For that we need to prepare
+some input and then we can use the grammar that we already got to add a new
 protocol analyzer to Zeek.
 
 .. rubric:: Preparations
@@ -222,22 +221,21 @@ payload::
 
 This gets us :download:`this trace file <examples/request-line.pcap>`.
 
-Next, we need to tell Zeek to load a Spicy plugin. If your Spicy build
-has found Zeek during its ``configure`` run, it will have already
-compiled and installed the plugin into Zeek's system-wide plugin
-directory. You can confirm that with ``zeek -N``::
+Next we need to make sure that Zeek can load Spicy parsers. As of version 5.0
+Zeek by default bundles Spicy and spicy-plugin which makes Spicy parsers
+available to Zeek.
 
     # zeek -N
     <...>
-    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt) (dynamic, version 0.3.0)
+    Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (built-in)
 
-As you can see, Zeek now reports the Spicy plugin as available among
-all the other plugins that it has already built-in.
+Depending on the Zeek build configuration this could also report
 
-If you don't see the Spicy plugin in there, the installation might not
-have had permission to write into the Zeek plugin directory. See
-:ref:`zeek_installation` for how to point Zeek to the right location
-manually.
+    Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (dynamic, version 1.3.13)
+
+If you do not see the Spicy plugin listed you need to install the Zeek plugin
+spicy-plugin yourself, see :ref:`the Zeek package installation guide
+<zeek_spicy_plugin_installation>`.
 
 .. _example_zeek_my_http_adding_analyzer:
 

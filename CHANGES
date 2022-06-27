@@ -1,3 +1,11 @@
+1.5.0-dev.127 | 2022-06-27 14:35:05 +0200
+
+  * Bump doc links to 1.4.1. (Benjamin Bannier, Corelight)
+
+  * Fix links to Fedora artifacts for releases. (Benjamin Bannier, Corelight)
+
+  * GH-1205: Update Spicy docs for now being built into Zeek. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.123 | 2022-06-21 13:32:59 +0200
 
   * GH-1217: Produce `hilti::rt::Bool` when casting to boolean. (Benjamin Bannier, Corelight)
