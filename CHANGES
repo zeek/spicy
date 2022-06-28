@@ -1,3 +1,7 @@
+1.5.0-dev.129 | 2022-06-28 12:08:25 +0200
+
+  * GH-1224: Fix import segfault. (Robin Sommer, Corelight)
+
 1.5.0-dev.127 | 2022-06-27 14:35:05 +0200
 
   * Bump doc links to 1.4.1. (Benjamin Bannier, Corelight)
