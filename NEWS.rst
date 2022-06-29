@@ -2,8 +2,8 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.5 (in progress)
-=========================
+Version 1.5
+===========
 
 .. rubric:: New Functionality
 
@@ -17,11 +17,68 @@ Version 1.5 (in progress)
   with the environment variable ``HILTI_JIT_PARALLELISM`` which for
   ``HILTI_JIT_PARALLELISM=1`` reproduces ``HILTI_JIT_SEQUENTIAL``.
 
+- GH-1134: Add support for ``synchronize-at`` and ``synchronize-after`` properties.
+
+  These unit properties allow specifying a literal which should be searched for
+  during error recovery. If the respective unit is used as a synchronize point
+  during error recovery, i.e., it is used as a field which is marked
+  ``&synchronize``, input resynchronization during error recovery will seek to
+  the next position of this pattern in the input stream.
+
+- GH-1209: Provide error message to ``%error`` handler.
+
+    We now allow to optionally provide a string parameter with
+    ``%error`` that will receive the associated error message:
+
+  .. code-block:: spicy
+
+    on %error(msg: string) { print msg; }
+
 .. rubric:: Changed Functionality
+
+- GH-1184: Allow more cache hits if only a few modules are changed in multi-module compilation.
+
+- GH-1208: Incremental performance tweaks for JIT.
+
+- GH-1197: Make handling of sanitizer workarounds more granular.
 
 .. rubric:: Bug fixes
 
+- GH-1150: Preserve additional permissions from umask when generating HLTO files.
+
+- GH-1154: Add stringificaton of ``Map::value_type``.
+
+- GH-1080: Reject constant declarations at non-global scope.
+
+- GH-1164: Make compiler plugin initialization explicit.
+
+- GH-1050: Update location when entering most parser methods.
+
+- GH-1187: Fix support for having multiple source modules of the same name.
+
+- GH-1197: Prevent too early integer overflow in pow.
+
+- GH-1201: Adjust removal of symlinks on install for ``DESTDIR``.
+
+- GH-1203: Allow changing ``DESTDIR`` between configure and install time.
+
+- GH-1204: Remove potential use-after-move.
+
+- GH-1210: Prevent unnecessarily executable stack with GNU toolchain.
+
+- GH-1206: Fix detection of recursive dependencies.
+
+- GH-1217: Produce ``hilti::rt::Bool`` when casting to boolean.
+
+- GH-1224: Fix import segfault.
+
 .. rubric:: Documentation
+
+- GH-44: Update docs for spicy-plugin rename ``_Zeek::Spicy`` -> ``Zeek::Spicy``.
+
+- GH-1183: Update docs for Discourse migration [skip CI].
+
+- GH-1205: Update Spicy docs for now being built into Zeek.
 
 Version 1.4
 ===========
