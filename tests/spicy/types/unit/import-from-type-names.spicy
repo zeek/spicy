@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicyc -d -j %INPUT -o z.hlto
+
+module z;
+import y;
+
+@TEST-START-FILE y.spicy
+module y;
+import x from bla;
+@TEST-END-FILE
+
+@TEST-START-FILE bla/x.spicy
+module x;
+
+type X = unit {
+	on %done {}
+};
+@TEST-END-FILE

@@ -1,3 +1,8 @@
+1.5.0-3 | 2022-07-08 12:28:02 +0200
+
+  * GH-1227: Fix code generation when a module's file could be imported through
+    different means. (Robin Sommer, Corelight)
+
 1.5.0 | 2022-06-30 12:15:14 +0200
 
   * Release 1.5.0 (Benjamin Bannier, Corelight)
