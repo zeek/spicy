@@ -25,7 +25,7 @@ copyright = u'2020 by the Zeek Project'
 author = u'Zeek Project'
 
 version = open('../VERSION').readline()
-release = "1.4.1"  # most recent release version
+release = "1.5.0"  # most recent release version
 
 # -- General configuration ---------------------------------------------------
 

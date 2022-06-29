@@ -1,3 +1,11 @@
+1.5.0 | 2022-06-30 12:15:14 +0200
+
+  * Release 1.5.0 (Benjamin Bannier, Corelight)
+
+  * Explicitly request content write permission for create-release action. (Benjamin Bannier, Corelight)
+
+  * Update NEWS file. (Benjamin Bannier, Corelight)
+
 1.5.0-dev.131 | 2022-06-30 10:15:01 +0200
 
   * Extending content on zkg template [skip CI]. (Robin Sommer, Corelight)
