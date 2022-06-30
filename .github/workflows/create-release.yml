@@ -7,6 +7,10 @@ on:
 
 name: Create Release
 
+# In order to create a release we need content write permissions.
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Upload Release Assets
