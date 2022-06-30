@@ -22,9 +22,9 @@ This analyzer is a good introductory example because the Spicy side is
 pretty straight-forward. The Zeek-side logging is more tricky because
 of the data transfer happening over a separate network session.
 
-    - `TFTP Spicy grammar <https://github.com/zeek/spicy-tftp/blob/main/analyzer/analyzer.spicy>`_
-    - `Spicy code for TFTP analyzer Zeek integration <https://github.com/zeek/spicy-tftp/blob/main/analyzer/zeek_analyzer.spicy>`_
-    - `TFTP Zeek analyzer definition (EVT) <https://github.com/zeek/spicy-tftp/blob/main/analyzer/analyzer.evt>`_
+    - `TFTP Spicy grammar <https://github.com/zeek/spicy-tftp/blob/main/analyzer/TFTP.spicy>`_
+    - `Spicy code for TFTP analyzer Zeek integration <https://github.com/zeek/spicy-tftp/blob/main/analyzer/zeek_TFTP.spicy>`_
+    - `TFTP Zeek analyzer definition (EVT) <https://github.com/zeek/spicy-tftp/blob/main/analyzer/TFTP.evt>`_
     - `Zeek TFTP script for logging <https://github.com/zeek/spicy-tftp/blob/main/analyzer/main.zeek>`_
 
 .. rubric:: HTTP
