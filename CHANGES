@@ -1,3 +1,7 @@
+1.5.0-dev.131 | 2022-06-30 10:15:01 +0200
+
+  * Extending content on zkg template [skip CI]. (Robin Sommer, Corelight)
+
 1.5.0-dev.129 | 2022-06-28 12:08:25 +0200
 
   * GH-1224: Fix import segfault. (Robin Sommer, Corelight)

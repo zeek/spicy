@@ -13,6 +13,19 @@ facilitate adding new protocol and file analyzers to `Zeek
 accessible to Zeek's processing pipeline. In the following, we dig
 deeper into how to use all of this.
 
+.. note::
+
+    There are a number of pieces involved in creating a full Zeek
+    analyzer, in particular if you want to distribute it as a Zeek
+    package. To help you get started with that, Zeek's package manager
+    can create a skeleton Spicy package by running::
+
+        # zkg create --features=spicy-analyzer --packagedir <packagedir>
+
+    The generated files mark places that will need manual editing with
+    ``TODO``. See the :ref:`tutorial <zkg_create_package>` for more on
+    this.
+
 .. _zeek_terminology:
 
 Terminology
@@ -37,7 +50,7 @@ Installation
 
 As of Zeek version 5.0 Spicy and Spicy plugin are by default bundled with Zeek.
 To confirm whether Spicy plugin is available you can inspect the list of
-installed plugins,
+installed plugin::
 
     # zeek -N
     <...>
