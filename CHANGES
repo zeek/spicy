@@ -1,3 +1,17 @@
+1.6.0-dev.6 | 2022-07-05 14:22:35 +0200
+
+  * Add C keywords up to C23 to identifier sanitizer list. (Benjamin Bannier, Corelight)
+
+  * Add C++ keywords up to C++20 to identifier sanitizer list. (Benjamin Bannier, Corelight)
+
+  * Sort list of C++ keywords to sanitize. (Benjamin Bannier, Corelight)
+
+  * Fix doc check for renames in spicy-tftp. (Benjamin Bannier, Corelight)
+
+  * Update doc links for latest releases. (Benjamin Bannier, Corelight)
+
+  * Add placeholder section for 1.6 to NEWS. (Benjamin Bannier, Corelight)
+
 1.5.0 | 2022-06-30 12:15:14 +0200
 
   * Release 1.5.0 (Benjamin Bannier, Corelight)
