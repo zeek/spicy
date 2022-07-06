@@ -14,10 +14,10 @@ version:
 
 .. spicy-code::
 
-    @if SPICY_VERSION < 10000
-        <code for Spicy versions older than 1.0>
+    @if SPICY_VERSION < 10401
+        <code for Spicy versions older than 1.4.1>
     @else
-        <code for Spicy versions equal or newer than 1.0>
+        <code for Spicy versions equal or newer than 1.4.1>
     @endif
 
 

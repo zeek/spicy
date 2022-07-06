@@ -1,3 +1,7 @@
+1.6.0-dev.8 | 2022-07-06 11:40:25 +0200
+
+  * GH-1240: Clarify docs on `SPICY_VERSION`. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.6 | 2022-07-05 14:22:35 +0200
 
   * Add C keywords up to C23 to identifier sanitizer list. (Benjamin Bannier, Corelight)
@@ -22,7 +26,7 @@
 
 1.5.0-dev.131 | 2022-06-30 10:15:01 +0200
 
-  * Extending content on zkg template [skip CI]. (Robin Sommer, Corelight)
+  * Extending content on zkg template. (Robin Sommer, Corelight)
 
 1.5.0-dev.129 | 2022-06-28 12:08:25 +0200
 
@@ -85,7 +89,7 @@
 
   * Allow changing `DESTDIR` between configure and install time. (Benjamin Bannier, Corelight)
 
-  * GH-1183: Update docs for Discourse migration [skip CI]. (Benjamin Bannier, Corelight)
+  * GH-1183: Update docs for Discourse migration. (Benjamin Bannier, Corelight)
 
 1.5.0-dev.99 | 2022-06-08 16:37:08 +0200
 
@@ -543,7 +547,7 @@
 
   * Fix typos in variable documentation. (Robin Sommer, Corelight)
 
-  * Document visibility for globals [skip CI]. (Benjamin Bannier, Corelight)
+  * Document visibility for globals. (Benjamin Bannier, Corelight)
 
 1.4.0-dev.112 | 2021-12-13 10:46:37 +0100
 
@@ -555,7 +559,7 @@
 
 1.4.0-dev.108 | 2021-12-13 10:43:52 +0100
 
-  * Refresh package docs with `doc/scripts/autogen-zeek-docs` [skip ci]. (Benjamin Bannier, Corelight)
+  * Refresh package docs with `doc/scripts/autogen-zeek-docs`. (Benjamin Bannier, Corelight)
 
   * Fix docs build for split-apart zeek/spicy-analyzers. (Benjamin Bannier, Corelight)
 
@@ -642,7 +646,7 @@
 
 1.4.0-dev.68 | 2021-11-12 09:35:59 +0100
 
-  * Refresh package docs with `doc/scripts/autogen-zeek-docs` [skip ci]. (Benjamin Bannier, Corelight)
+  * Refresh package docs with `doc/scripts/autogen-zeek-docs`. (Benjamin Bannier, Corelight)
 
   * Fix lints in `doc/scripts/autogen-zeek-docs.` (Benjamin Bannier, Corelight)
 
@@ -954,7 +958,7 @@
 
 1.3.0-dev.50 | 2021-08-26 12:38:15 +0200
 
-  * Fix C++ snippets in "Custom Host Application" docs [skip CI]. (Benjamin Bannier, Corelight)
+  * Fix C++ snippets in "Custom Host Application" docs. (Benjamin Bannier, Corelight)
 
 1.3.0-dev.48 | 2021-08-24 15:22:43 +0200
 
@@ -1018,7 +1022,7 @@
 
 1.3.0-dev.18 | 2021-08-05 17:26:57 +0200
 
-  * GH-970: Use publicly accessible links to Docker images [skip CI]. (Benjamin Bannier, Corelight)
+  * GH-970: Use publicly accessible links to Docker images. (Benjamin Bannier, Corelight)
 
 1.3.0-dev.16 | 2021-08-05 11:24:08 +0200
 
@@ -1322,7 +1326,7 @@
 
 1.1.0-dev.68 | 2021-05-05 11:40:05 +0200
 
-  * Add rough scaffolding for fuzzing parsers [skip ci]. (Benjamin Bannier, Corelight)
+  * Add rough scaffolding for fuzzing parsers. (Benjamin Bannier, Corelight)
 
 1.1.0-dev.66 | 2021-05-04 16:20:50 +0200
 
@@ -1402,7 +1406,7 @@
 
 1.1.0-dev.24 | 2021-04-19 15:30:16 +0200
 
-  * Build Zeek plugin for benchmarking job [skip ci]. (Benjamin Bannier, Corelight)
+  * Build Zeek plugin for benchmarking job. (Benjamin Bannier, Corelight)
 
 1.1.0-dev.22 | 2021-04-19 09:24:14 +0000
 
@@ -1435,15 +1439,15 @@
 
 1.1.0-dev.7 | 2021-04-13 11:49:36 +0200
 
-  * Disable 'create-release' and 'docker-tags' workflows for dev tags [skip ci]. (Benjamin Bannier, Corelight)
+  * Disable 'create-release' and 'docker-tags' workflows for dev tags. (Benjamin Bannier, Corelight)
 
-  * Include build status for 1.0 release branch in README [skip ci]. (Benjamin Bannier, Corelight)
+  * Include build status for 1.0 release branch in README. (Benjamin Bannier, Corelight)
 
 1.1.0-dev.3 | 2021-04-12 18:23:41 +0200
 
   * Fix leftovers in GH actions from master -> main rename. (Benjamin Bannier, Corelight)
 
-  * Remove build tag for release build from README for now [skip ci]. (Benjamin Bannier, Corelight)
+  * Remove build tag for release build from README for now. (Benjamin Bannier, Corelight)
 
 1.0.0 | 2021-04-12 14:22:09 +0200
 
