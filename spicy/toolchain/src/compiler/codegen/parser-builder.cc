@@ -891,9 +891,34 @@ struct ProductionVisitor
                 pushBuilder(builder()->addWhile(ms, builder::bool_(true)), [&]() {
                     builder()->addLocal(ID("rc"), hilti::type::SignedInteger(32));
 
+                    // Since `advance` can trigger recoverable errors when
+                    // hitting a gap, bracket the call to it in a `try`/`catch`
+                    // block if we are in search mode and attempt to recover.
+                    if ( mode == LiteralMode::Search ) {
+                        auto [body, try_] = builder()->addTry();
+                        pushBuilder(body);
+                        pushBuilder(try_.addCatch(builder::parameter(ID("e"), builder::typeByID("hilti::MissingData"))),
+                                    [&]() {
+                                        // `advance` has failed, retry at the next non-gap block.
+                                        pb->advanceToNextData();
+
+                                        // We operate on `ncur` while `advanceToNextData`
+                                        // updates `cur`; copy its result over.
+                                        builder()->addAssign(ID("ncur"), state().cur);
+
+                                        // Continue incremental matching.
+                                        builder()->addContinue();
+                                    });
+                    }
+
+                    // Potentially bracketed `advance`.
                     builder()->addAssign(builder::tuple({builder::id("rc"), builder::id("ncur")}),
                                          builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}),
                                          location);
+
+                    if ( mode == LiteralMode::Search ) {
+                        popBuilder(); // body.
+                    }
 
                     auto switch_ = builder()->addSwitch(builder::id("rc"), location);
 
@@ -1059,6 +1084,7 @@ struct ProductionVisitor
         }
 
         state().printDebug(builder());
+
         getLookAhead(*tokens, p->symbol(), p->location(), LiteralMode::Search);
         validateSearchResult();
     }
@@ -1070,7 +1096,7 @@ struct ProductionVisitor
     void syncProductionNext(const Production& p) {
         // We wrap lookahead search in a loop so we can advance manually should it get stuck
         // at the same input position. This can happen if we end up synchronizing on an
-        // input token which matches something neear the start of the list element type, but
+        // input token which matches something near the start of the list element type, but
         // is followed by other unexpected data. Without loop we would end up
         // resynchronizing at the same input position again.
         auto search_start = builder::local("search_start", state().cur);
