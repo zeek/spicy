@@ -1,0 +1,39 @@
+# @TEST-DOC: Validates that if a gap is encountered during recovery we can still resynchronize.
+#
+# @TEST-EXEC: spicyc -cdo sync.cc sync.spicy
+# @TEST-EXEC: spicyc -ldo sync-linker.cc sync.spicy
+# @TEST-EXEC: spicyc -Pdo sync.h sync.spicy
+# @TEST-EXEC: $(spicy-config --cxx-launcher --cxx) -o main main.cc sync.cc sync-linker.cc $(spicy-config --debug --cxxflags --ldflags)
+# @TEST-EXEC: HILTI_DEBUG=spicy:spicy-verbose ./main >output 2>&1
+# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff output
+
+# @TEST-START-FILE sync.spicy
+module sync;
+
+public type Xs = unit {
+        xs: (/(A|B|C)/ &synchronize)[];
+        on %synced { confirm; }
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE main.cc
+#include <hilti/rt/libhilti.h>
+
+#include "sync.h"
+
+int main() {
+    hilti::rt::init();
+
+    auto xs = hilti::rt::reference::make_value<__hlt::sync::Xs>();
+
+    hilti::rt::ValueReference<hilti::rt::Stream> stream;
+    stream->append("A");
+    stream->append(nullptr, 1024); // Gap.
+    stream->append("BC");
+
+    hlt::sync::Xs::parse2(xs, stream, {}, {});
+    std::cout << xs << '\n';
+
+    hilti::rt::done();
+}
+# @TEST-END-FILE
