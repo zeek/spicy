@@ -787,16 +787,11 @@ docker_opensuse15_2_task:
 
 freebsd13_task:
   freebsd_instance:
-    image_family: freebsd-13-0
+    image_family: freebsd-13-1
     cpu: 8
     memory: 8GB
 
   prepare_script: ./ci/prepare_freebsd.sh
-
-  # Not required for now since the way we perform symbol demangling seems to be
-  # broken on freebsd13 at the moment, see #1171.
-  allow_failures: true
-  skip_notification: true
 
   timeout_in: 120m
 
@@ -813,7 +808,7 @@ freebsd13_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --with-cxx-compiler=clang++11 --with-c-compiler=clang11 --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_install_script:
