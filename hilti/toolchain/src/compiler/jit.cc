@@ -297,7 +297,7 @@ hilti::Result<Nothing> JIT::_compile() {
 
         if ( auto path = getenv("HILTI_CXX_INCLUDE_DIRS") ) {
             for ( auto&& dir : hilti::rt::split(path, ":") ) {
-                if ( dir.size() ) {
+                if ( ! dir.empty() ) {
                     args.emplace_back("-I");
                     args.emplace_back(dir);
                 }
@@ -381,6 +381,12 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
                                         ec); // will save into current directory; ignore errors
         }
     }
+
+    // Add additional shared libraries or static archives to the link. This needs to happen
+    // after we added the objects to make sure we pull in symbols used in the objects.
+    for ( const auto& lib : options().cxx_link )
+        if ( ! lib.empty() )
+            args.emplace_back(lib);
 
     // We are using the compiler as a linker here, no need to use a compiler launcher.
     // Since we are writing to a random temporary file non of this would cache anyway.

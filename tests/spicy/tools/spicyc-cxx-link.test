@@ -1,0 +1,36 @@
+# @TEST-DOC: Validate that one can load additional static or shared libraries.
+
+# @TEST-REQUIRES: command -v ar
+# @TEST-EXEC: $(spicy-config --cxx-launcher --cxx --debug --ldflags) -fPIC -shared -o hello.so hello.cc
+# @TEST-EXEC: CXX="$(spicy-config --cxx-launcher --cxx)" CXXFLAGS="$(spicy-config --debug --ldflags) -fPIC" make hi.o && ar rcs hi.a hi.o
+
+# Works in just-in-time mode.
+# @TEST-EXEC: spicyc --cxx-link $PWD/hello.so --cxx-link $PWD/hi.a -j foo.spicy>>output
+
+# Works in ahead-of-time mode.
+# @TEST-EXEC: spicyc -D jit --cxx-link $PWD/hello.so --cxx-link $PWD/hi.a -j foo.spicy -o foo.hlto >>output
+# @TEST-EXEC: spicyc -j foo.hlto >>output
+
+# @TEST-EXEC: btest-diff output
+
+# @TEST-START-FILE hello.cc
+// This file will be compiled into a shared library.
+#include <string>
+std::string hello(const std::string& name) { return "Hello, " + name + "!"; }
+# @TEST-END-FILE
+
+# @TEST-START-FILE hi.cc
+// This file will be compiled into a static archive.
+#include <string>
+std::string hi(const std::string& name) { return "Hi, " + name + "!"; }
+# @TEST-END-FILE
+
+# @TEST-START-FILE foo.spicy
+module foo;
+
+public function hello(name: string): string &cxxname="::hello";
+public function hi(name: string): string &cxxname="::hi";
+
+print hello("world");
+print hi("world");
+# @TEST-END-FILE

@@ -35,9 +35,12 @@ inline const DebugStream Compiler("compiler");
 inline const DebugStream Driver("driver");
 } // namespace hilti::logging::debug
 
+constexpr int OPT_CXX_LINK = 1000;
+
 static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
                                               {"show-backtraces", required_argument, nullptr, 'B'},
                                               {"compiler-debug", required_argument, nullptr, 'D'},
+                                              {"cxx-link", required_argument, nullptr, OPT_CXX_LINK},
                                               {"debug", no_argument, nullptr, 'd'},
                                               {"debug-addl", required_argument, nullptr, 'X'},
                                               {"disable-optimizations", no_argument, nullptr, 'g'},
@@ -126,6 +129,8 @@ void Driver::usage() {
            "  -V | --skip-validation          Don't validate ASTs (for debugging only).\n"
            "  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation "
            "(comma-separated; see 'help' for list).\n"
+           "       --cxx-link <lib>           Link specified static archive or shared library during JIT or to "
+           "produced HLTO file. Can be given multiple times.\n"
         << addl_usage
         << "\n"
            "Inputs can be "
@@ -239,7 +244,7 @@ void Driver::dumpUnit(const Unit& unit) {
     }
 
     if ( auto cxx = unit.cxxCode() ) {
-        ID id = (unit.isCompiledHILTI() ? unit.uniqueID(): ID(unit.cxxCode()->id()));
+        ID id = (unit.isCompiledHILTI() ? unit.uniqueID() : ID(unit.cxxCode()->id()));
         auto output_path = util::fmt("dbg.%s.cc", id);
         if ( auto out = openOutput(util::fmt("dbg.%s.cc", id)) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", id, output_path));
@@ -348,7 +353,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 ++num_output_types;
                 break;
 
-            case 'L': _compiler_options.library_paths.emplace_back(std::string(optarg)); break;
+            case 'L': _compiler_options.library_paths.emplace_back(optarg); break;
 
             case 'o': _driver_options.output_path = std::string(optarg); break;
 
@@ -380,6 +385,8 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 return Nothing();
 
             case 'V': _compiler_options.skip_validation = true; break;
+
+            case OPT_CXX_LINK: _compiler_options.cxx_link.emplace_back(optarg); break;
 
             case 'h': usage(); return Nothing();
 
@@ -691,7 +698,8 @@ Result<Nothing> Driver::_resolveUnitsWithPlugin(const Plugin& plugin, std::vecto
             logging::DebugPushIndent _(logging::debug::Compiler);
             HILTI_DEBUG(logging::debug::Compiler,
                         fmt("dependencies: %s",
-                            util::join(util::transform(u->dependencies(), [](const auto& u) { return u.lock()->uniqueID(); }),
+                            util::join(util::transform(u->dependencies(),
+                                                       [](const auto& u) { return u.lock()->uniqueID(); }),
                                        ", ")));
         }
 
@@ -1060,7 +1068,8 @@ Result<Nothing> Driver::outputUnits() {
                 if ( ! output )
                     return output.error();
 
-                HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", unit->uniqueID(), cxx_path));
+                HILTI_DEBUG(logging::debug::Driver,
+                            fmt("saving C++ code for module %s to %s", unit->uniqueID(), cxx_path));
                 cxx->save(*output);
             }
 
@@ -1077,7 +1086,8 @@ Result<Nothing> Driver::outputUnits() {
             if ( _driver_options.output_dependencies != driver::Dependencies::None ) {
                 const bool code_only = (_driver_options.output_dependencies == driver::Dependencies::Code);
 
-                for ( const auto& unit_ : context()->lookupDependenciesForUnit(unit->cacheIndex(), unit->extension()) ) {
+                for ( const auto& unit_ :
+                      context()->lookupDependenciesForUnit(unit->cacheIndex(), unit->extension()) ) {
                     auto unit = unit_.lock();
                     if ( code_only && ! unit->requiresCompilation() )
                         continue;
@@ -1260,7 +1270,8 @@ void Driver::_dumpDeclarations(const std::shared_ptr<Unit>& unit, const Plugin& 
         return;
 
     logger().debugSetIndent(logging::debug::AstDeclarations, 0);
-    HILTI_DEBUG(logging::debug::AstDeclarations, fmt("# [%s] %s", pluginForUnit(unit).get().component, unit->uniqueID()));
+    HILTI_DEBUG(logging::debug::AstDeclarations,
+                fmt("# [%s] %s", pluginForUnit(unit).get().component, unit->uniqueID()));
 
     for ( const auto i : visitor::PreOrder<>().walk(unit->module()) ) {
         auto decl = i.node.tryAs<Declaration>();
