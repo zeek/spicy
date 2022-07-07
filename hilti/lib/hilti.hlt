@@ -41,6 +41,9 @@ public type RuntimeError = exception &cxxname="::hilti::rt::RuntimeError";
 # Base class for exceptions which can be recovered.
 public type RecoverableFailure = exception &cxxname="::hilti::rt::RecoverableFailure";
 
+# Exception raised when attempting to extracting data from a gap.
+public type MissingData = exception &cxxname="::hilti::rt::MissingData";
+
 # Returns the message associated with an exception.
 declare public string exception_what(SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype;
 }

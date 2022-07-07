@@ -1,3 +1,15 @@
+1.6.0-dev.15 | 2022-07-07 12:11:55 +0200
+
+  * GH-1231: Add special handling for potential `advance` failure in trial mode. (Benjamin Bannier, Corelight)
+
+  * Expose type `MissingData` in HILTI. (Benjamin Bannier, Corelight)
+
+  * GH-1231: Add failing test for #1231. (Benjamin Bannier, Corelight)
+
+  * Use default compiler on FreeBSD. (Benjamin Bannier, Corelight)
+
+  * Update CI to freebsd-13.1. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.8 | 2022-07-06 11:40:25 +0200
 
   * GH-1240: Clarify docs on `SPICY_VERSION`. (Benjamin Bannier, Corelight)

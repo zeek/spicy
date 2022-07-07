@@ -233,6 +233,7 @@
 [debug/ast-declarations]   - Type "SystemException" (hilti::SystemException)
 [debug/ast-declarations]   - Type "RuntimeError" (hilti::RuntimeError)
 [debug/ast-declarations]   - Type "RecoverableFailure" (hilti::RecoverableFailure)
+[debug/ast-declarations]   - Type "MissingData" (hilti::MissingData)
 [debug/ast-declarations]   - Function "exception_what" (hilti::exception_what)
 [debug/ast-declarations]         - Parameter "excpt" (hilti::exception_what::excpt)
 [debug/ast-declarations] # [HILTI] a
@@ -662,6 +663,7 @@
 [debug/ast-declarations]   - Type "SystemException" (hilti::SystemException)
 [debug/ast-declarations]   - Type "RuntimeError" (hilti::RuntimeError)
 [debug/ast-declarations]   - Type "RecoverableFailure" (hilti::RecoverableFailure)
+[debug/ast-declarations]   - Type "MissingData" (hilti::MissingData)
 [debug/ast-declarations]   - Function "exception_what" (hilti::exception_what)
 [debug/ast-declarations]         - Parameter "excpt" (hilti::exception_what::excpt)
 [debug/ast-declarations] # [HILTI] spicy_rt
