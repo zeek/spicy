@@ -23,6 +23,8 @@ inline const DebugStream AstCodegen("ast-codegen");
 inline const DebugStream Compiler("compiler");
 } // namespace hilti::logging::debug
 
+std::unordered_map<ID, unsigned int> Unit::_uid_cache;
+
 template<typename PluginMember, typename... Args>
 bool runHook(bool* modified, const Plugin& plugin, const Node* module, const std::string& extension, PluginMember hook,
              const std::string& debug_msg, const Args&... args) {
@@ -45,6 +47,15 @@ bool runHook(bool* modified, const Plugin& plugin, const Node* module, const std
     }
 
     return logger().errors() == 0;
+}
+
+ID Unit::_makeUniqueID(const ID& id) {
+    if ( auto i = _uid_cache.find(id); i != _uid_cache.end() )
+        return ID(util::fmt("%s_%s", id, ++(i->second)));
+    else {
+        _uid_cache[id] = 1;
+        return id;
+    }
 }
 
 Unit::~Unit() { _destroyModule(); }

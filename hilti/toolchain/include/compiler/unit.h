@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -75,16 +76,13 @@ public:
      * Returns an ID for the unit's module that's globally unique across all
      * units processed within the current context. This ID will often be the
      * same as returned by `id()`, but it may include an additional string for
-     * unification, in particular if the module was imported through `import
-     * ... from ...`.
+     * unification, in particular if there are more than one module with the
+     * same ID.
      *
      * @returns globally unique ID for the module; the method guaranteees that
      * the ID represents a valid C++ identifier
      */
-    ID uniqueID() const {
-        return _index.scope.empty() ? _index.id :
-                                      ID(util::fmt("%s_%s", util::replace(_index.scope, ".", "_"), _index.id));
-    }
+    ID uniqueID() const { return _unique_id; }
 
     /** Returns the path associated with the unit's module. */
     const auto& path() const { return _index.path; }
@@ -376,6 +374,7 @@ private:
     Unit(const std::shared_ptr<Context>& context, const ID& id, const std::optional<ID>& scope,
          const hilti::rt::filesystem::path& path, hilti::rt::filesystem::path extension, Node&& module)
         : _index(id, scope, util::normalizePath(path)),
+          _unique_id(_makeUniqueID(id)),
           _extension(std::move(std::move(extension))),
           _module(std::move(module)),
           _context(context) {}
@@ -384,9 +383,13 @@ private:
          const hilti::rt::filesystem::path& path, hilti::rt::filesystem::path extension,
          std::optional<detail::cxx::Unit> cxx_unit = {})
         : _index(id, scope, util::normalizePath(path)),
+          _unique_id(_makeUniqueID(id)),
           _extension(std::move(std::move(extension))),
           _context(context),
           _cxx_unit(std::move(cxx_unit)) {}
+
+    // Make a given ID globally unique.
+    ID _makeUniqueID(const ID& id);
 
     // Backend for the public import() methods.
     Result<context::CacheIndex> _import(const hilti::rt::filesystem::path& path, std::optional<ID> expected_name);
@@ -407,6 +410,7 @@ private:
                                         const hilti::rt::filesystem::path& path);
 
     context::CacheIndex _index;                     // index for the context's module cache
+    ID _unique_id;                                  // globally unique ID for this module
     hilti::rt::filesystem::path _extension;         // AST extension, which may differ from source file
     std::optional<Node> _module;                    // root node for AST (always a `Module`), if available
     std::vector<std::weak_ptr<Unit>> _dependencies; // recorded dependencies
@@ -414,6 +418,8 @@ private:
     std::optional<detail::cxx::Unit> _cxx_unit;     // compiled C++ code for this unit, once available
     bool _resolved = false;                         // state of resolving the AST
     bool _requires_compilation = false;             // mark explicitly as requiring compilation to C++
+
+    static std::unordered_map<ID, unsigned int> _uid_cache; // cache storing state for generating globally unique IDs
 };
 
 } // namespace hilti

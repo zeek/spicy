@@ -1,3 +1,7 @@
+1.6.0-dev.17 | 2022-07-08 12:12:02 +0200
+
+  * GH-1227: Fix code generation when a module's file could be imported through different means. (Robin Sommer, Corelight)
+
 1.6.0-dev.15 | 2022-07-07 12:11:55 +0200
 
   * GH-1231: Add special handling for potential `advance` failure in trial mode. (Benjamin Bannier, Corelight)
