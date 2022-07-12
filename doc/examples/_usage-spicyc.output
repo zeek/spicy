@@ -6,6 +6,7 @@ Options controlling code generation:
   -c | --output-c++               Print out all generated C++ code (including linker glue by default).
   -d | --debug                    Include debug instrumentation into generated code.
   -e | --output-all-dependencies  Output list of dependencies for all compiled modules.
+  -g | --disable-optimizations    Disable HILTI-side optimizations of the generated code.
   -j | --jit-code                 Fully compile all code, and then execute it unless --output-to gives a file to store it
   -l | --output-linker            Print out only generated HILTI linker glue code.
   -o | --output-to <path>         Path for saving output.
@@ -24,9 +25,10 @@ Options controlling code generation:
   -T | --keep-tmps                Do not delete any temporary files created.
   -V | --skip-validation          Don't validate ASTs (for debugging only).
   -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation (comma-separated; see 'help' for list).
+       --cxx-link <lib>           Link specified static archive or shared library during JIT or to produced HLTO file. Can be given multiple times.
 
   -Q | --include-offsets          Include stream offsets of parsed data in output.
 
 
-Inputs can be .hlt, .spicy, .cc/.cxx, *.hlto.
+Inputs can be .spicy, .hlt, .cc/.cxx, *.hlto.
 

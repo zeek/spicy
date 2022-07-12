@@ -45,8 +45,9 @@ struct Options {
         "hlt"; /**< CXX namespace for generated C++ code accessible to the host application */
     std::string cxx_namespace_intern = "__hlt"; /**< CXX namespace for generated internal C++ code */
     std::vector<hilti::rt::filesystem::path>
-        cxx_include_paths;  /**< additional C++ directories to search for #include files */
-    bool keep_tmps = false; /**< if true, do not remove generated files on exit */
+        cxx_include_paths;             /**< additional C++ directories to search for #include files */
+    bool keep_tmps = false;            /**< if true, do not remove generated files on exit */
+    std::vector<std::string> cxx_link; /**< additional static archives or shared libraries to link during JIT */
 
     /**
      * Retrieves the value for an auxiliary option.

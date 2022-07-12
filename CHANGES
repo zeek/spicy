@@ -1,3 +1,7 @@
+1.6.0-dev.19 | 2022-07-12 10:46:48 +0200
+
+  * GH-1236: Add support for adding link dependencies via `--cxx-link`. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.17 | 2022-07-08 12:12:02 +0200
 
   * GH-1227: Fix code generation when a module's file could be imported through different means. (Robin Sommer, Corelight)
