@@ -478,8 +478,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             if ( f.isStatic() && f.default_() )
                 error("&default is currently not supported for static fields", p);
 
-            if ( auto d = f.default_(); d && d->type() != f.type() )
-                error(fmt("type mismatch for &default expression, expecting type %s", f.type()), p);
+            if ( auto d = f.default_(); d && ! type::sameExceptForConstness(d->type(), f.type()) )
+                error(fmt("type mismatch for &default expression, expecting type %s, got %s", f.type(), d->type()), p);
 
             if ( f.id().str() == "~finally" ) {
                 auto ft = f.type().tryAs<type::Function>();

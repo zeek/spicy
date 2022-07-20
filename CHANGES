@@ -1,3 +1,7 @@
+1.5.0-4 | 2022-07-26 11:16:25 +0200
+
+  * Fix validator for field `&default` expression types for constness. (Benjamin Bannier, Corelight)
+
 1.5.0-3 | 2022-07-08 12:28:02 +0200
 
   * GH-1227: Fix code generation when a module's file could be imported through
