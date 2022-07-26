@@ -1,3 +1,15 @@
+1.6.0-dev.24 | 2022-07-26 11:14:06 +0200
+
+  * Merge branch 'topic/bbannier/doc-fixes' (Benjamin Bannier, Corelight)
+
+  * Clarify that `&until` consumes the delimiter. (Benjamin Bannier, Corelight)
+
+  * Add FAQ item on source locations. (Benjamin Bannier, Corelight)
+
+  * Add example for use of `?.`. (Benjamin Bannier, Corelight)
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.19 | 2022-07-12 10:46:48 +0200
 
   * GH-1236: Add support for adding link dependencies via `--cxx-link`. (Benjamin Bannier, Corelight)

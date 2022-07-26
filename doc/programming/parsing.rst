@@ -622,8 +622,9 @@ would rather leave a variable unset by default, you can add
     :exec: printf \05 | spicy-driver %INPUT
     :show-with: foo.spicy
 
-You can use the ``?.`` unit operator to test if an optional unit
-variable remains unset.
+You can use the ``?.`` unit operator to test if an optional unit variable
+remains unset, e.g., ``self?.x`` would return ``True`` if field ``x`` is set
+and ``False`` otherwise.
 
 Unit variables can also be initialized with custom expressions when being
 defined. The initialization is performed just before the containing unit starts
@@ -1020,7 +1021,7 @@ stop. The following attributes are supported:
 ``&until=DELIM``
     Consumes bytes until the specified delimiter is found. ``DELIM``
     must be of type ``bytes`` itself. The delimiter will not be
-    included into the resulting value.
+    included into the resulting value, but consumed.
 
 ``&until-including=DELIM``
     Similar to ``&until``, but this does include the delimiter

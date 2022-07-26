@@ -19,6 +19,17 @@ needs truly global state. Take a look at :ref:`unit_context` for a
 different mechanism tying state to the current connection, which is a
 much more common requirement.
 
+.. rubric:: What do the numbers in ``foo.spicy:37:1`` or
+  ``foo.spicy:37:1-42:19`` in messages mean?
+
+These are source locations or source ranges. You might encounter them in e.g.,
+error messages from the Spicy compiler or in errors when parsing fails.
+
+In this case ``foo.spicy:37:1`` is a source location, in particular it refers
+to line 37, character 1 in the file ``foo.spicy``; ``foo.spicy:37:1-42:19`` is
+a source range in the file ``foo.spicy`` starting in line 37, character 1 and
+ending in line 42, character 19 in the same file.
+
 Toolchain
 ---------
 
