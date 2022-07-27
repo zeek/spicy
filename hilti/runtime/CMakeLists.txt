@@ -61,13 +61,17 @@ foreach (lib hilti-rt hilti-rt-debug)
 endforeach ()
 
 # Build hilti-rt with release flags.
-string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
+if (CMAKE_CXX_FLAGS_RELEASE)
+    string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
+endif ()
 target_compile_options(hilti-rt-objects PRIVATE ${cxx_flags_release})
 target_compile_options(hilti-rt-objects PRIVATE "-g;-O3;-DNDEBUG;-Wall")
 target_compile_definitions(hilti-rt-objects PRIVATE "HILTI_RT_BUILD_TYPE_RELEASE")
 
 # Build hilti-rt-debug with debug flags.
-string(REPLACE " " ";" cxx_flags_debug ${CMAKE_CXX_FLAGS_DEBUG})
+if (CMAKE_CXX_FLAGS_DEBUG)
+    string(REPLACE " " ";" cxx_flags_debug ${CMAKE_CXX_FLAGS_DEBUG})
+endif ()
 target_compile_options(hilti-rt-debug-objects PRIVATE ${cxx_flags_debug})
 target_compile_options(hilti-rt-debug-objects PRIVATE "-UNDEBUG;-O0;-Wall")
 target_compile_definitions(hilti-rt-debug-objects PRIVATE "HILTI_RT_BUILD_TYPE_DEBUG")
