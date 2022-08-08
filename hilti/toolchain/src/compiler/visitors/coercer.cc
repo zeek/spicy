@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <optional>
+
 #include <hilti/ast/all.h>
 #include <hilti/ast/builder/expression.h>
 #include <hilti/ast/detail/visitor.h>
@@ -128,6 +130,39 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         else
             // No change.
             return {std::nullopt};
+    }
+
+    /**
+     * Coerces a specific call argument to a given type returning the coerced
+     * expression (only) if its type has changed.
+     */
+    Result<std::optional<Expression>> coerceMethodArgument(const expression::ResolvedOperatorBase& o, size_t i,
+                                                           const Type& t) {
+        auto ops = o.op2();
+
+        // If the argument list was the result of a coercion unpack its result.
+        if ( auto coerced = ops.tryAs<expression::Coerced>() )
+            ops = coerced->expression();
+
+        auto ctor_ = ops.as<expression::Ctor>().ctor();
+
+        // If the argument was the result of a coercion unpack its result.
+        if ( auto x = ctor_.tryAs<ctor::Coerced>() )
+            ctor_ = x->coercedCtor();
+
+        const auto& args = ctor_.as<ctor::Tuple>().value();
+        if ( i >= args.size() )
+            return {std::nullopt};
+
+        if ( auto narg = hilti::coerceExpression(args[i], t); ! narg )
+            return result::Error(fmt("cannot coerce argument %d from %s to %s", i, args[i].type(), t));
+        else if ( narg.nexpr ) {
+            auto nargs = args.copy();
+            nargs[i] = *narg.nexpr;
+            return {expression::Ctor(ctor::Tuple(nargs))};
+        }
+
+        return {std::nullopt};
     }
 
     void operator()(const Attribute& n) {
@@ -335,6 +370,18 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
                 modified = true;
             }
         }
+    }
+
+    void operator()(const operator_::map::Get& n, position_t p) {
+        if ( auto nargs = coerceMethodArgument(n, 1, n.result()) ) {
+            if ( *nargs ) {
+                logChange(p.node, **nargs, "default value");
+                p.node.as<operator_::map::Get>().setOp2(**nargs);
+                modified = true;
+            }
+        }
+        else
+            p.node.addError(nargs.error());
     }
 
     // TODO(bbannier): Ideally instead of inserting this coercion we would

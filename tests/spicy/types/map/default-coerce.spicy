@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test for #1230.
+
+module test;
+
+global m: map<uint8, uint8> = map<uint8, uint8>();
+
+m[0] = 1;
+m[0] = m.get(1, 0) + 1;
+
+print m;
