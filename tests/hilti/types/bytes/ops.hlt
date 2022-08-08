@@ -59,6 +59,10 @@ global auto z = b"AbCdEfü";
 assert z.lower(hilti::Charset::UTF8) == b"abcdefü";
 assert z.upper(hilti::Charset::UTF8) == b"ABCDEFÜ";
 
+global auto z2 = b"\xc3\x28aBcD";
+assert z2.upper(hilti::Charset::UTF8) == b"\ufffd(ABCD";
+assert (b"KEYWORD" in z2.lower()) == False;
+
 assert b"abc def".split1() == (b"abc", b"def");
 assert b"abc   def".split1() == (b"abc", b"def");
 assert b"abc   def xyz".split1() == (b"abc", b"def xyz");

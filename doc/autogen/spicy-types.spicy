@@ -58,6 +58,20 @@ Specifies the character set for bytes encoding/decoding.
         UTF8
     };
 
+.. _spicy_decodeerrorstrategy:
+
+.. rubric:: ``spicy::DecodeErrorStrategy``
+
+Specifies how data is handled that's not representable in a specified character set.
+
+.. spicy-code::
+
+    type DecodeErrorStrategy = enum {
+        IGNORE,  # data is skipped but processing continues
+        REPLACE, # data is replaced with a valid place-holder and processing continues
+        STRICT   # runtime error is triggered
+    };
+
 .. _spicy_matchstate:
 
 .. rubric:: ``spicy::MatchState``

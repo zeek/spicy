@@ -12,27 +12,42 @@ namespace hilti::rt {
 
 namespace string {
 
-/** Computes the length of a UTF8 string.
+/* When processing UTF8, how to handle invalid data not representing UTF8 codepoints. */
+enum class DecodeErrorStrategy : int64_t {
+    IGNORE,  // skip data
+    REPLACE, // replace with a place-holder
+    STRICT   // throw a runtime error
+};
+
+/**
+ * Computes the length of a UTF8 string in number of codepoints.
  *
  * @param s input UTF8 string
+ * @param errors how to handle invalid UTF8 encodings
  * @return the length of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-size_t size(const std::string& s);
+size_t size(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
 
-/** Computes a lower-case version of an UTF8 string.
+/**
+ * Computes a lower-case version of an UTF8 string.
+ *
  * @param s input UTF8 string
+ * @param errors how to handle invalid UTF8 encodings
  * @return a lower-case version of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-std::string lower(const std::string& s);
+std::string lower(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
 
-/** Computes a upper-case version of an UTF8 string.
+/**
+ * Computes a upper-case version of an UTF8 string.
+ *
  * @param s input UTF8 string
+ * @param errors how to handle invalid UTF8 encodings
  * @return a upper-case version of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-std::string upper(const std::string& s);
+std::string upper(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
 
 } // namespace string
 

@@ -44,7 +44,13 @@ TEST_CASE("construct") {
     CHECK_EQ(Bytes("abc", bytes::Charset::UTF8).str(), "abc");
 
     CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::UTF8).str(), "\xF0\x9F\x98\x85");
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII).str(), "????");
+    CHECK_EQ(Bytes("\xc3\x28", bytes::Charset::UTF8, bytes::DecodeErrorStrategy::REPLACE).str(), "\ufffd(");
+    CHECK_EQ(Bytes("\xc3\x28", bytes::Charset::UTF8, bytes::DecodeErrorStrategy::IGNORE).str(), "(");
+    CHECK_THROWS_WITH_AS(Bytes("\xc3\x28", bytes::Charset::UTF8, bytes::DecodeErrorStrategy::STRICT).str(), "illegal UTF8 sequence in string", const RuntimeError&);
+
+    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII, bytes::DecodeErrorStrategy::REPLACE).str(), "????");
+    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII, bytes::DecodeErrorStrategy::IGNORE).str(), "");
+    CHECK_THROWS_WITH_AS(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII, bytes::DecodeErrorStrategy::STRICT).str(), "illegal ASCII character in string", const RuntimeError&);
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS(Bytes("123", bytes::Charset::Undef), "unknown character set for encoding",
@@ -56,7 +62,17 @@ TEST_CASE("decode") {
     CHECK_EQ("abc"_b.decode(bytes::Charset::ASCII), "abc");
     CHECK_EQ("abc"_b.decode(bytes::Charset::UTF8), "abc");
     CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(bytes::Charset::UTF8), "\xF0\x9F\x98\x85");
-    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(bytes::Charset::ASCII), "\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd");
+    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(bytes::Charset::ASCII), "????");
+
+    CHECK_EQ("€100"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::REPLACE), "???100");
+    CHECK_EQ("€100"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::IGNORE), "100");
+    CHECK_THROWS_WITH_AS("123ä4"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::STRICT), "illegal ASCII character in string",
+                         const RuntimeError&);
+
+    CHECK_EQ("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::REPLACE), "\ufffd(");
+    CHECK_EQ("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::IGNORE), "(");
+    CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::STRICT), "illegal UTF8 sequence in string",
+                         const RuntimeError&);
 
     CHECK_THROWS_WITH_AS("123"_b.decode(bytes::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
@@ -189,7 +205,7 @@ TEST_CASE("lower") {
     CHECK_EQ("ABC123"_b.lower(bytes::Charset::UTF8).str(), "abc123");
     CHECK_EQ("ABC123"_b.lower(bytes::Charset::ASCII).str(), "abc123");
     CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::UTF8).str(), "gänsefüßchen");
-    CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::ASCII).str(), "g??????nsef????????????chen");
+    CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::ASCII).str(), "g??nsef????chen");
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS("123"_b.lower(bytes::Charset::Undef), "unknown character set for decoding",
@@ -397,7 +413,7 @@ TEST_CASE("upper") {
     CHECK_EQ("abc123"_b.upper(bytes::Charset::UTF8).str(), "ABC123");
     CHECK_EQ("abc123"_b.upper(bytes::Charset::ASCII).str(), "ABC123");
     CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::UTF8).str(), "GÄNSEFÜẞCHEN");
-    CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::ASCII).str(), "G??????NSEF????????????CHEN");
+    CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::ASCII).str(), "G??NSEF????CHEN");
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS("123"_b.upper(bytes::Charset::Undef), "unknown character set for decoding",

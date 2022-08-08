@@ -8,6 +8,7 @@ public type AddressFamily = enum { IPv4, IPv6 } &cxxname="::hilti::rt::AddressFa
 public type RealType = enum { IEEE754_Single, IEEE754_Double } &cxxname="::hilti::rt::real::Type";
 public type Protocol = enum { TCP, UDP, ICMP } &cxxname="::hilti::rt::Protocol";
 public type Charset = enum { ASCII, UTF8 } &cxxname="::hilti::rt::bytes::Charset";
+public type DecodeErrorStrategy = enum { IGNORE, REPLACE, STRICT } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy";
 public type Captures = vector<bytes>;
 
 public type MatchState = struct {

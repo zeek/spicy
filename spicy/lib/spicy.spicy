@@ -33,6 +33,13 @@ public type Charset = enum {
     UTF8
 } &cxxname="::hilti::rt::bytes::Charset";
 
+## Specifies how data is handled that's not representable in a specified character set.
+public type DecodeErrorStrategy = enum {
+    IGNORE,  # data is skipped but processing continues
+    REPLACE, # data is replaced with a valid place-holder and processing continues
+    STRICT   # runtime error is triggered
+} &cxxname="::hilti::rt::bytes::DecodeErrorStrategy";
+
 ## Captures state for incremental regular expression matching.
 public type MatchState = struct {
 } &cxxname="::hilti::rt::regexp::MatchState";

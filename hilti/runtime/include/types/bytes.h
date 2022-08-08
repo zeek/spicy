@@ -36,8 +36,11 @@ enum class Side : int64_t {
     Both   /**< left and right sides */
 };
 
-/** For Bytes::Decode, which character set to use. */
+/** For bytes decoding, which character set to use. */
 enum class Charset : int64_t { Undef, UTF8, ASCII };
+
+/** For bytes decoding, how to handle decoding errors. */
+using DecodeErrorStrategy = string::DecodeErrorStrategy;
 
 class Iterator {
     using B = std::string;
@@ -164,14 +167,15 @@ public:
     using Base::data;
 
     /**
-     * Creates a bytes instance from a UTF8 string, transforming the contents
-     * into a binary representation defined by a specified character set.
+     * Creates a bytes instance from a raw string representation
+     * encoded in a specified character set.
      *
-     * @param s string assumed to be in UTF8 (as all runtime strings)
-     * @param cs character set to use for the binary encoding
+     * @param s raw data
+     * @param cs character set the raw data is assumed to be encoded in
+     * @param errors how to handle errors when decoding the data
      * @return bytes instances encoding *s* in character set *cs*
      */
-    Bytes(std::string s, bytes::Charset cs);
+    Bytes(std::string s, bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE);
 
     Bytes(Base&& str) : Base(std::move(str)), _control(std::make_shared<Base*>(static_cast<Base*>(this))) {}
     Bytes(const Bytes& xs) : Base(xs), _control(std::make_shared<Base*>(static_cast<Base*>(this))) {}
@@ -315,9 +319,11 @@ public:
      * specified character set.
      *
      * @param cs character set to assume the binary data to be encoded in
+     * @param errors how to handle errors when decoding the data
      * @return UTF8 string
      */
-    std::string decode(bytes::Charset cs) const;
+    std::string decode(bytes::Charset cs,
+                       bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const;
 
     /** Returns true if the data begins with a given, other bytes instance. */
     bool startsWith(const Bytes& b) const { return hilti::rt::startsWith(*this, b); }
@@ -328,16 +334,23 @@ public:
      * back afterwards.
      *
      * @param cs character set for decoding/encoding
+     * @param errors how to handle errors when decoding/encoding the data
      * @return an upper case version of the instance
      */
-    Bytes upper(bytes::Charset cs) const { return Bytes(hilti::rt::string::upper(decode(cs)), cs); }
+    Bytes upper(bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const {
+        return Bytes(hilti::rt::string::upper(decode(cs, errors), errors), cs, errors);
+    }
 
-    /** Returns an upper-case version of the instance.
+    /**
+     * Returns an upper-case version of the instance.
      *
      * @param cs character set for decoding/encoding
+     * @param errors how to handle errors when decoding/encoding the data
      * @return a lower case version of the instance
      */
-    Bytes lower(bytes::Charset cs) const { return Bytes(hilti::rt::string::lower(decode(cs)), cs); }
+    Bytes lower(bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const {
+        return Bytes(hilti::rt::string::lower(decode(cs, errors), errors), cs, errors);
+    }
 
     /**
      * Removes leading and/or trailing sequences of all characters of a set
@@ -537,6 +550,7 @@ namespace detail::adl {
 std::string to_string(const Bytes& x, adl::tag /*unused*/);
 std::string to_string(const bytes::Side& x, adl::tag /*unused*/);
 std::string to_string(const bytes::Charset& x, adl::tag /*unused*/);
+std::string to_string(const bytes::DecodeErrorStrategy& x, adl::tag /*unused*/);
 } // namespace detail::adl
 
 } // namespace hilti::rt

@@ -110,9 +110,14 @@ BEGIN_METHOD(bytes, LowerCase)
             Signature{.self = type::constant(type::Bytes()),
                       .result = type::Bytes(),
                       .id = "lower",
-                      .args = {{"charset", type::Enum(type::Wildcard()), false, builder::id("hilti::Charset::UTF8")}},
+                      .args = {{"charset", type::Enum(type::Wildcard()), false, builder::id("hilti::Charset::UTF8")},
+                               {"errors", type::Enum(type::Wildcard()), false,
+                                builder::id("hilti::DecodeErrorStrategy::REPLACE")}},
                       .doc = R"(
-Returns a lower-case version of the bytes value, assuming it is encoded in character set *charset*.
+Returns a lower-case version of the bytes value, assuming it is
+encoded in character set *charset*. If data is encountered that
+*charset* cannot represent, it's handled according to the *errors*
+strategy.
 )"};
         return _signature;
     }
@@ -124,9 +129,14 @@ BEGIN_METHOD(bytes, UpperCase)
             Signature{.self = type::constant(type::Bytes()),
                       .result = type::Bytes(),
                       .id = "upper",
-                      .args = {{"charset", type::Enum(type::Wildcard()), false, builder::id("hilti::Charset::UTF8")}},
+                      .args = {{"charset", type::Enum(type::Wildcard()), false, builder::id("hilti::Charset::UTF8")},
+                               {"errors", type::Enum(type::Wildcard()), false,
+                                builder::id("hilti::DecodeErrorStrategy::REPLACE")}},
                       .doc = R"(
-Returns an upper-case version of the bytes value, assuming it is encoded in character set *charset*.
+Returns an upper-case version of the bytes value, assuming it is
+encoded in character set *charset*. If data is encountered that
+*charset* cannot represent, it's handled according to the *errors*
+strategy.
 )"};
         return _signature;
     }
@@ -367,11 +377,15 @@ BEGIN_METHOD(bytes, Decode)
             Signature{.self = type::constant(type::Bytes()),
                       .result = type::String(),
                       .id = "decode",
-                      .args = {{"charset", type::Enum(type::Wildcard()), false, builder::id("hilti::Charset::UTF8")}},
+                      .args = {{"charset", type::Enum(type::Wildcard()), false, builder::id("hilti::Charset::UTF8")},
+                               {"errors", type::Enum(type::Wildcard()), false,
+                                builder::id("hilti::DecodeErrorStrategy::REPLACE")}},
                       .doc =
                           R"(
-Interprets the ``bytes`` as representing an binary string encoded with the given
-character set, and converts it into a UTF8 string.
+Interprets the ``bytes`` as representing an binary string encoded with
+the given character set, and converts it into a UTF8 string. If data
+is encountered that *charset* or UTF* cannot represent, it's handled
+according to the *errors* strategy.
 )"};
         return _signature;
     }
