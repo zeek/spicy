@@ -1606,7 +1606,10 @@ struct ProductionVisitor
                 pushBuilder(builder_alt2, [&]() {
                     // Parse body.
                     auto cookie = pb->initLoopBody();
-                    parseProduction(p.body());
+                    auto stop = parseProduction(p.body());
+                    auto b = builder()->addIf(stop);
+                    b->addBreak();
+
                     pb->finishLoopBody(cookie, p.location());
                 });
             });
