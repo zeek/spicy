@@ -55,7 +55,8 @@ public:
         return {};
     }
 
-    void setType(const type::Struct& x) { children()[0] = x; }
+    void setType(const Type& t) { children()[0] = t; }
+    void setTypeID(ID id) { children()[0].as<Type>().setTypeID(std::move(id)); }
 
     bool operator==(const Struct& other) const { return fields() == other.fields(); }
 
