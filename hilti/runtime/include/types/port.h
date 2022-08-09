@@ -54,6 +54,9 @@ public:
 
     bool operator==(const Port& other) const { return _port == other._port && _protocol == other._protocol; }
     bool operator!=(const Port& other) const { return ! (*this == other); }
+    bool operator<(const Port& other) const {
+        return (_port < other._port) || (_port == other._port && _protocol < other._protocol);
+    };
 
     /**
      * Returns a human-readable representation of the port, using the same

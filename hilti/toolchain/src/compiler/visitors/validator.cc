@@ -428,6 +428,11 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         }
     }
 
+    void operator()(const type::Map& n, position_t p) {
+        if ( ! type::isSortable(n.keyType()) )
+            error("type cannot be used as key type for maps (because it is not sortable)", p);
+    }
+
     void operator()(const type::SignedInteger& n, position_t p) {
         auto w = n.width();
 

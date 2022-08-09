@@ -48,7 +48,7 @@ inline Node to_node(Label l) { return Node(std::move(l)); }
 } // namespace enum_
 
 /** AST node for an enum type. */
-class Enum : public TypeBase, trait::isAllocable, trait::isParameterized {
+class Enum : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isSortable {
 public:
     Enum(std::vector<enum_::Label> l, Meta m = Meta())
         : TypeBase(nodes(_normalizeLabels(std::move(l))), std::move(m)) {}

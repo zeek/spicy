@@ -47,11 +47,16 @@ TEST_CASE("construct") {
 TEST_CASE("comparison") {
     const auto p0 = Port();
     const auto p1 = Port(22, Protocol::TCP);
+    const auto p2 = Port(23, Protocol::TCP);
 
     CHECK_EQ(p0, p0);
     CHECK_EQ(p1, p1);
     CHECK_NE(p0, p1);
     CHECK_NE(p1, p0);
+
+    CHECK(p0 < p1);
+    CHECK(p1 < p2);
+    CHECK(! (p1 < p1));
 }
 
 TEST_SUITE_END();

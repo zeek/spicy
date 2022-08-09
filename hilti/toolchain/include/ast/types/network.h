@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a network type. */
-class Network : public TypeBase, trait::isAllocable {
+class Network : public TypeBase, trait::isAllocable, trait::isSortable {
 public:
     Network(Meta m = Meta()) : TypeBase(std::move(m)) {}
 

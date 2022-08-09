@@ -85,6 +85,7 @@ public:
 
     bool operator==(const Address& other) const;
     bool operator!=(const Address& other) const { return ! (*this == other); }
+    bool operator<(const Address& other) const { return (_a1 < other._a1) || (_a1 == other._a1 && _a2 < other._a2); };
 
     /**
      * Returns a string representation of the address. For addresses in the

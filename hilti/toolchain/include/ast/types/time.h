@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a time type. */
-class Time : public TypeBase, trait::isAllocable {
+class Time : public TypeBase, trait::isAllocable, trait::isSortable {
 public:
     Time(Meta m = Meta()) : TypeBase(std::move(m)) {}
 

@@ -13,7 +13,7 @@ namespace detail {
 
 // CHECK: IntegerBase = TypeBase
 /** Base class for an AST node representing an integer type. */
-class IntegerBase : public TypeBase, trait::isAllocable, trait::isParameterized {
+class IntegerBase : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isSortable {
 public:
     IntegerBase(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(std::move(m)), _wildcard(true) {}
     IntegerBase(int width, Meta m = Meta()) : TypeBase(std::move(m)), _width(width) {}

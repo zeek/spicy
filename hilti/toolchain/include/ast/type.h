@@ -30,6 +30,7 @@ using Parameter = declaration::Parameter;
 
 namespace trait {
 class isAllocable {};
+class isSortable {};
 class isDereferenceable {};
 class isIterable {};
 class isIterator {};
@@ -269,6 +270,9 @@ class Wildcard {};
 
 /** Returns true for HILTI types that can be used to instantiate variables. */
 inline bool isAllocable(const Type& t) { return t._isAllocable(); }
+
+/** Returns true for HILTI types that can be compared for ordering at runtime. */
+inline bool isSortable(const Type& t) { return t._isSortable(); }
 
 /** Returns true for HILTI types that one can iterator over. */
 inline bool isDereferenceable(const Type& t) { return t._isDereferenceable(); }
