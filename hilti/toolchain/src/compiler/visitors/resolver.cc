@@ -234,7 +234,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             field_types.emplace_back(declaration::Field(f.id(), f.expression().type(), std::nullopt, f.id().meta()));
         }
 
-        auto ntype = type::Struct(std::move(field_types), u.meta());
+        auto ntype = type::Struct(type::Struct::AnonymousStruct{}, std::move(field_types), u.meta());
         logChange(p.node, ntype);
         p.node.as<ctor::Struct>().setType(ntype);
         modified = true;

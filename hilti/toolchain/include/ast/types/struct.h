@@ -34,6 +34,10 @@ public:
     Struct(std::vector<Declaration> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {}
 
+    enum AnonymousStruct {};
+    Struct(AnonymousStruct _, std::vector<Declaration> fields, Meta m = Meta())
+        : TypeBase(nodes(node::none, std::move(fields)), std::move(m)), _anon_struct(++_anon_struct_counter) {}
+
     Struct(const std::vector<type::function::Parameter>& params, std::vector<Declaration> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields),
                          util::transform(params,
@@ -85,7 +89,16 @@ public:
     bool operator==(const Struct& other) const { return fields() == other.fields(); }
 
     /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    auto isEqual(const Type& other) const {
+        if ( auto x = other.tryAs<type::Struct>() ) {
+            // Anonymous structs only compare successfully to themselves.
+            if ( _anon_struct >= 0 || x->_anon_struct >= 0 )
+                return _anon_struct == x->_anon_struct;
+        }
+
+        return node::isEqual(this, other);
+    }
+
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const {
         const auto& cs = children();
@@ -130,6 +143,9 @@ public:
 
 private:
     bool _wildcard = false;
+    int64_t _anon_struct = -1;
+
+    static int64_t _anon_struct_counter;
 };
 
 } // namespace hilti::type
