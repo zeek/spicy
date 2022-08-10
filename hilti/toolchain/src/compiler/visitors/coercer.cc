@@ -308,6 +308,19 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         }
     }
 
+    void operator()(const expression::Ternary& n, position_t p) {
+        if ( ! (type::isResolved(n.true_().type()) && type::isResolved(n.false_().type())) )
+            return;
+
+        // Coerce the second branch to the type of the first. This isn't quite
+        // ideal, but as good as we can do right now.
+        if ( auto coerced = coerceExpression(n.false_(), n.true_().type()); coerced && coerced.nexpr ) {
+            logChange(p.node, *coerced.nexpr, "ternary");
+            p.node.as<expression::Ternary>().setFalse(*coerced.nexpr);
+            modified = true;
+        }
+    }
+
     void operator()(const operator_::generic::New& n, position_t p) {
         auto etype = n.op0().tryAs<expression::Type_>();
         if ( ! etype )

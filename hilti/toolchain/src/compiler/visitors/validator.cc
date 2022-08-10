@@ -276,10 +276,11 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
     }
 
     void operator()(const expression::Ternary& n, position_t p) {
-        if ( ! hilti::type::sameExceptForConstness(n.true_().type(), n.false_().type()) )
+        if ( ! hilti::type::sameExceptForConstness(n.true_().type(), n.false_().type()) ) {
             error(fmt("types of alternatives do not match in ternary expression (%s vs. %s)", n.true_().type(),
                       n.false_().type()),
                   p);
+        }
     }
 
     void operator()(const expression::UnresolvedID& n, position_t p) {
