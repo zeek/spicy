@@ -107,6 +107,35 @@ public:
         return result::Error(hilti::util::fmt("value for attribute '%s' must be an integer", _tag));
     }
 
+    /**
+     * Coerce the attribute's expression value to a specified type.
+     *
+     * @return A successful return value if either the coercion succeeded
+     * (then the result's value is true), or nothing was to be done (then the
+     * result's value is false); a failure if a coercion would have been
+     * necessary, but failed, or the attribute does not have a expression value.
+     */
+    Result<bool> coerceValueTo(const Type& dst) {
+        auto x = valueAsExpression();
+        if ( ! x )
+            return x.error();
+
+        if ( ! type::isResolved(dst) )
+            return false;
+
+        auto ne = coerceExpression(*x, dst);
+        if ( ! ne.coerced )
+            return result::Error(util::fmt("cannot coerce attribute's expression from type '%s' to '%s' (%s)",
+                                           x->get().type(), dst, tag()));
+
+        if ( ne.nexpr ) {
+            children()[0] = *ne.nexpr;
+            return true;
+        }
+
+        return false;
+    }
+
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"tag", _tag}}; }
 

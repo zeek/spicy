@@ -42,8 +42,8 @@ hilti::Plugin spicy::detail::create_spicy_plugin() {
         .ast_normalize = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
                             hilti::Unit* u) { return ast::normalize(ctx, m, u); },
 
-        .ast_coerce = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
-                         hilti::Unit* u) { return (*hilti::plugin::registry().hiltiPlugin().ast_coerce)(ctx, m, u); },
+        .ast_coerce = [](const std::shared_ptr<hilti::Context>& ctx, hilti::Node* m,
+                         hilti::Unit* u) { return ast::coerce(ctx, m, u); },
 
         .ast_resolve = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
                           hilti::Unit* u) { return ast::resolve(ctx, m, u); },

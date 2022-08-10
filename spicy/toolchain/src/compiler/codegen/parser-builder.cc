@@ -614,13 +614,11 @@ struct ProductionVisitor
         assert(! (AttributeSet::find(field->attributes(), "&size") &&
                   AttributeSet::find(field->attributes(), "&max-size")));
         if ( auto a = AttributeSet::find(field->attributes(), "&size") )
-            length = builder::coerceTo(*a->valueAsExpression(), type::UnsignedInteger(64));
+            length = *a->valueAsExpression();
         if ( auto a = AttributeSet::find(field->attributes(), "&max-size") )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
-            length =
-                builder()->addTmp("max_size", type::UnsignedInteger(64),
-                                  builder::sum(builder::coerceTo(*a->valueAsExpression(), type::UnsignedInteger(64)),
-                                               builder::integer(1U)));
+            length = builder()->addTmp("max_size", type::UnsignedInteger(64),
+                                       builder::sum(*a->valueAsExpression(), builder::integer(1U)));
 
         if ( length ) {
             // Limit input to the specified length.
@@ -1296,7 +1294,7 @@ struct ProductionVisitor
         std::optional<Expression> ncur;
         if ( const auto& a = AttributeSet::find(p.attributes(), "&size") ) {
             // Limit input to the specified length.
-            auto length = builder::coerceTo(*a->valueAsExpression(), type::UnsignedInteger(64));
+            auto length = *a->valueAsExpression();
             auto limited = builder()->addTmp("limited_field", builder::memberCall(state().cur, "limit", {length}));
 
             // Establish limited view, remembering position to continue at.
@@ -1355,13 +1353,11 @@ struct ProductionVisitor
         assert(! (AttributeSet::find(p.unitType().attributes(), "&size") &&
                   AttributeSet::find(p.unitType().attributes(), "&max-size")));
         if ( auto a = AttributeSet::find(p.unitType().attributes(), "&size") )
-            length = builder::coerceTo(*a->valueAsExpression(), type::UnsignedInteger(64));
+            length = *a->valueAsExpression();
         else if ( auto a = AttributeSet::find(p.unitType().attributes(), "&max-size") )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
-            length =
-                builder()->addTmp("max_size", type::UnsignedInteger(64),
-                                  builder::sum(builder::coerceTo(*a->valueAsExpression(), type::UnsignedInteger(64)),
-                                               builder::integer(1U)));
+            length = builder()->addTmp("max_size", type::UnsignedInteger(64),
+                                       builder::sum(*a->valueAsExpression(), builder::integer(1U)));
 
         if ( length ) {
             // Limit input to the specified length.
