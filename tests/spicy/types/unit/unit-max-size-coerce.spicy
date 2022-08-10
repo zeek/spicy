@@ -1,0 +1,10 @@
+# @TEST-EXEC: spicyc -j -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test for #1196.
+
+module foo;
+
+public type X = unit {
+	xs: bytes &max-size=1 &eod;
+};
