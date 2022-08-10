@@ -424,6 +424,16 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
     }
 
     result_t operator()(const type::Optional& r) {
+        if ( auto t = dst.tryAs<type::Optional>() ) {
+            const auto& s = r.dereferencedType();
+            const auto& d = t->dereferencedType();
+
+            if ( type::sameExceptForConstness(s, d) && (style & CoercionStyle::Assignment) )
+                // Assignments copy, so it's safe to turn  into the
+                // destination without considering constness.
+                return dst;
+        }
+
         if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
             return dst;
 
