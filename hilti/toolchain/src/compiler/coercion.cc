@@ -802,7 +802,7 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const nod
 }
 
 static CoercedExpression _coerceExpression(const Expression& e, const Type& src, const Type& dst,
-                                           bitmask<CoercionStyle> style) {
+                                           bitmask<CoercionStyle> style, bool lhs) {
     if ( ! (style & CoercionStyle::_Recursing) )
         style |= CoercionStyle::_Recursing;
 
@@ -1002,13 +1002,13 @@ exit:
 
 // Public version going through all plugins.
 CoercedExpression hilti::coerceExpression(const Expression& e, const Type& src, const Type& dst,
-                                          bitmask<CoercionStyle> style) {
-    return _coerceExpression(e, src, dst, style);
+                                          bitmask<CoercionStyle> style, bool lhs) {
+    return _coerceExpression(e, src, dst, style, lhs);
 }
 
 // Public version going through all plugins.
-CoercedExpression hilti::coerceExpression(const Expression& e, const Type& dst, bitmask<CoercionStyle> style) {
-    return coerceExpression(e, e.type(), dst, style);
+CoercedExpression hilti::coerceExpression(const Expression& e, const Type& dst, bitmask<CoercionStyle> style, bool lhs) {
+    return coerceExpression(e, e.type(), dst, style, lhs);
 }
 
 

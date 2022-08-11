@@ -55,10 +55,35 @@ private:
     std::string _s;
 };
 
-using Attribute = Element<element::Type::Attribute>;   /**< C++ function attribute */
-using Expression = Element<element::Type::Expression>; /**< C++ expression */
-using Linkage = Element<element::Type::Linkage>;       /**< C++ linkage specification */
-using Type = Element<element::Type::Type>;             /**< C++ type */
+using Attribute = Element<element::Type::Attribute>; /**< C++ function attribute */
+using Linkage = Element<element::Type::Linkage>;     /**< C++ linkage specification */
+using Type = Element<element::Type::Type>;           /**< C++ type */
+
+/** Captures whether a `cxx::Expression` has LHS or RHS semantics. */
+enum class Side { LHS, RHS };
+
+/**
+ * Represents a C++-side expression, stored as a string of the C++ code along
+ * with a associated "side".
+ */
+class Expression {
+public:
+    Expression() = default;
+    Expression(std::string s, Side side = Side::RHS) : _s(std::move(s)), _side(side) {}
+    Expression(const char* s, Side side = Side::RHS) : _s(s), _side(side) {}
+
+    bool isLhs() const { return _side == Side::LHS; }
+
+    operator std::string() const { return _s; }
+    explicit operator bool() const { return ! _s.empty(); }
+    bool operator<(const Expression& s) const { return _s < s._s; }
+    bool operator==(const Expression& s) const { return _s == s._s; }
+    bool operator!=(const Expression& s) const { return _s != s._s; }
+
+private:
+    std::string _s;
+    Side _side = Side::LHS;
+};
 
 extern std::string normalize_id(std::string id);
 

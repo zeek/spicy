@@ -16,7 +16,7 @@ using namespace hilti::detail;
 
 namespace {
 
-struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
+struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     Visitor(CodeGen* cg, bool lhs) : cg(cg), lhs(lhs) {}
     CodeGen* cg;
     bool lhs;
@@ -95,7 +95,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     /// bytes::Iterator
 
-    result_t operator()(const operator_::bytes::iterator::Deref& n) { return fmt("*%s", op0(n)); }
+    result_t operator()(const operator_::bytes::iterator::Deref& n) { return {fmt("*%s", op0(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::bytes::iterator::IncrPostfix& n) { return fmt("%s++", op0(n)); }
     result_t operator()(const operator_::bytes::iterator::IncrPrefix& n) { return fmt("++%s", op0(n)); }
     result_t operator()(const operator_::bytes::iterator::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
@@ -308,7 +308,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     // List
     result_t operator()(const operator_::list::iterator::IncrPostfix& n) { return fmt("%s++", op0(n)); }
     result_t operator()(const operator_::list::iterator::IncrPrefix& n) { return fmt("++%s", op0(n)); }
-    result_t operator()(const operator_::list::iterator::Deref& n) { return fmt("*%s", op0(n)); }
+    result_t operator()(const operator_::list::iterator::Deref& n) { return {fmt("*%s", op0(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::list::iterator::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::list::iterator::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
@@ -320,15 +320,15 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const operator_::map::iterator::IncrPostfix& n) { return fmt("%s++", op0(n)); }
     result_t operator()(const operator_::map::iterator::IncrPrefix& n) { return fmt("++%s", op0(n)); }
-    result_t operator()(const operator_::map::iterator::Deref& n) { return fmt("*%s", op0(n)); }
+    result_t operator()(const operator_::map::iterator::Deref& n) { return {fmt("*%s", op0(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::map::iterator::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::map::iterator::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
     result_t operator()(const operator_::map::Delete& n) { return fmt("%s.erase(%s)", op0(n), op1(n)); }
     result_t operator()(const operator_::map::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::map::In& n) { return fmt("%s.contains(%s)", op1(n), op0(n)); }
-    result_t operator()(const operator_::map::IndexConst& n) { return fmt("%s[%s]", op0(n), op1(n)); }
-    result_t operator()(const operator_::map::IndexNonConst& n) { return fmt("%s[%s]", op0(n), op1(n)); }
+    result_t operator()(const operator_::map::IndexConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
+    result_t operator()(const operator_::map::IndexNonConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::map::Size& n) { return fmt("%s.size()", op0(n)); }
     result_t operator()(const operator_::map::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
@@ -441,9 +441,8 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
         auto name = op0(n);
 
         if ( auto a = AttributeSet::find(f.function().attributes(), "&cxxname") ) {
-            auto s = a->valueAsString();
-            if ( s )
-                name = *s;
+            if (auto s = a->valueAsString() )
+                name = cxx::Expression(*s);
             else
                 logger().error(s, n);
         }
@@ -485,7 +484,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     // Optional
     result_t operator()(const operator_::optional::Deref& n) {
-        return fmt("::hilti::rt::optional::value(%s, \"%s\")", op0(n), n.op0().meta().location().render());
+        return {fmt("::hilti::rt::optional::value(%s, \"%s\")", op0(n), n.op0().meta().location().render()), cxx::Side::LHS};
     }
 
     /// Port
@@ -497,7 +496,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     // Set
     result_t operator()(const operator_::set::iterator::IncrPostfix& n) { return fmt("%s++", op0(n)); }
     result_t operator()(const operator_::set::iterator::IncrPrefix& n) { return fmt("++%s", op0(n)); }
-    result_t operator()(const operator_::set::iterator::Deref& n) { return fmt("*%s", op0(n)); }
+    result_t operator()(const operator_::set::iterator::Deref& n) { return {fmt("*%s", op0(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::set::iterator::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::set::iterator::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
@@ -515,7 +514,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     /// stream::Iterator
 
-    result_t operator()(const operator_::stream::iterator::Deref& n) { return fmt("*%s", op0(n)); }
+    result_t operator()(const operator_::stream::iterator::Deref& n) { return {fmt("*%s", op0(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::stream::iterator::IncrPostfix& n) { return fmt("%s++", op0(n)); }
     result_t operator()(const operator_::stream::iterator::IncrPrefix& n) { return fmt("++%s", op0(n)); }
     result_t operator()(const operator_::stream::iterator::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
@@ -666,7 +665,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     // Strong reference
-    result_t operator()(const operator_::strong_reference::Deref& n) { return fmt("(*%s)", op0(n)); }
+    result_t operator()(const operator_::strong_reference::Deref& n) { return {fmt("(*%s)", op0(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::strong_reference::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::strong_reference::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
@@ -690,9 +689,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
             if ( lhs ) {
                 if ( d )
-                    return fmt("::hilti::rt::optional::valueOrInit(%s, %s)", attr, cg->compile(*d));
+                    return {fmt("::hilti::rt::optional::valueOrInit(%s, %s)", attr, cg->compile(*d)), cxx::Side::LHS};
 
-                return fmt("::hilti::rt::optional::valueOrInit(%s)", attr);
+                return {fmt("::hilti::rt::optional::valueOrInit(%s)", attr), cxx::Side::LHS};
             }
 
             if ( d )
@@ -701,7 +700,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("::hilti::rt::optional::value(%s, \"%s\")", attr, op0.meta().location().render());
         }
 
-        return attr;
+        return {attr, cxx::Side::LHS};
     }
 
     result_t operator()(const operator_::struct_::MemberConst& n) { return structMember(n, n.op1()); }
@@ -769,14 +768,14 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const operator_::union_::MemberConst& n) {
         auto idx = unionFieldIndex(n.op0(), n.op1());
-        return fmt("::hilti::rt::union_::get<%u>(%s)", idx, op0(n));
+        return {fmt("::hilti::rt::union_::get<%u>(%s)", idx, op0(n)), cxx::Side::LHS};
     }
 
     result_t operator()(const operator_::union_::MemberNonConst& n) {
         auto idx = unionFieldIndex(n.op0(), n.op1());
 
         if ( lhs )
-            return fmt("::hilti::rt::union_::get_proxy<%u>(%s)", idx, op0(n));
+            return {fmt("::hilti::rt::union_::get_proxy<%u>(%s)", idx, op0(n)), cxx::Side::LHS};
         else
             return fmt("::hilti::rt::union_::get<%u>(%s)", idx, op0(n));
     }
@@ -857,7 +856,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const operator_::tuple::CustomAssign& n) {
         auto t = n.operands()[0].as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
         auto l = util::join(node::transform(t, [this](auto& x) { return cg->compile(x, true); }), ", ");
-        return fmt("std::tie(%s) = %s", l, op1(n));
+        return {fmt("std::tie(%s) = %s", l, op1(n)), cxx::Side::LHS};
     }
 
     result_t operator()(const operator_::tuple::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
@@ -865,14 +864,14 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const operator_::tuple::Index& n) {
         auto i = n.op1().as<expression::Ctor>().ctor().as<ctor::UnsignedInteger>().value();
-        return fmt("std::get<%u>(%s)", i, op0(n));
+        return {fmt("std::get<%u>(%s)", i, op0(n)), cxx::Side::LHS};
     }
 
     result_t operator()(const operator_::tuple::Member& n) {
         auto id = n.op1().as<expression::Member>().id();
         auto elem = n.op0().type().as<type::Tuple>().elementByID(id);
         assert(elem);
-        return fmt("std::get<%u>(%s)", elem->first, op0(n));
+        return {fmt("std::get<%u>(%s)", elem->first, op0(n)), cxx::Side::LHS};
     }
 
     // Unsigned integer
@@ -944,13 +943,13 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     // Vector
     result_t operator()(const operator_::vector::iterator::IncrPostfix& n) { return fmt("%s++", op0(n)); }
     result_t operator()(const operator_::vector::iterator::IncrPrefix& n) { return fmt("++%s", op0(n)); }
-    result_t operator()(const operator_::vector::iterator::Deref& n) { return fmt("*%s", op0(n)); }
+    result_t operator()(const operator_::vector::iterator::Deref& n) { return {fmt("*%s", op0(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::vector::iterator::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::vector::iterator::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
     result_t operator()(const operator_::vector::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
-    result_t operator()(const operator_::vector::IndexConst& n) { return fmt("%s[%s]", op0(n), op1(n)); }
-    result_t operator()(const operator_::vector::IndexNonConst& n) { return fmt("%s[%s]", op0(n), op1(n)); }
+    result_t operator()(const operator_::vector::IndexConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
+    result_t operator()(const operator_::vector::IndexNonConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::vector::Size& n) { return fmt("%s.size()", op0(n)); }
     result_t operator()(const operator_::vector::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
     result_t operator()(const operator_::vector::Sum& n) { return fmt("%s + %s", op0(n), op1(n)); }
@@ -1007,12 +1006,12 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     // Weak reference
-    result_t operator()(const operator_::weak_reference::Deref& n) { return fmt("(*%s)", op0(n)); }
+    result_t operator()(const operator_::weak_reference::Deref& n) { return {fmt("(*%s)", op0(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::weak_reference::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::weak_reference::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
     // Value reference
-    result_t operator()(const operator_::value_reference::Deref& n) { return fmt("(*%s)", op0(n)); }
+    result_t operator()(const operator_::value_reference::Deref& n) { return {fmt("(*%s)", op0(n)), cxx::Side::LHS}; }
     result_t operator()(const operator_::value_reference::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::value_reference::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 };
@@ -1021,7 +1020,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
 cxx::Expression CodeGen::compile(const expression::ResolvedOperator& o, bool lhs) {
     if ( auto x = Visitor(this, lhs).dispatch(Expression(o)) )
-        return cxx::Expression(*x);
+        return lhs ? _makeLhs(*x, o.type()) : *x;
 
     hilti::render(std::cerr, Expression(o));
     logger().internalError(fmt("operator failed to compile: %s", detail::renderOperatorPrototype(o)));
