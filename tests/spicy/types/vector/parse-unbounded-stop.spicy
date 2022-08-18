@@ -1,0 +1,17 @@
+# @TEST-EXEC: printf '\01\02\00\01\02' | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test for #1248.
+
+module foo;
+
+public type X = unit {
+	xs: uint8[] foreach {
+		print self.xs, $$;
+
+		if ($$==0) {
+			print "Stopping";
+			stop;
+		}
+	}
+};
