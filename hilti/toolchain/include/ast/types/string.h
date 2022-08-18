@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a string type. */
-class String : public TypeBase, trait::isAllocable {
+class String : public TypeBase, trait::isAllocable, trait::isSortable {
 public:
     String(Meta m = Meta()) : TypeBase(std::move(m)) {}
 

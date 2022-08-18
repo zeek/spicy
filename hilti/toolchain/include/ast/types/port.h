@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a port type. */
-class Port : public TypeBase, trait::isAllocable {
+class Port : public TypeBase, trait::isAllocable, trait::isSortable {
 public:
     Port(Meta m = Meta()) : TypeBase(std::move(m)) {}
 

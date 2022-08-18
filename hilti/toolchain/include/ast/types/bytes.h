@@ -36,7 +36,12 @@ public:
 } // namespace bytes
 
 /** AST node for a bytes type. */
-class Bytes : public TypeBase, trait::isAllocable, trait::isMutable, trait::isIterable, trait::isRuntimeNonTrivial {
+class Bytes : public TypeBase,
+              trait::isAllocable,
+              trait::isMutable,
+              trait::isIterable,
+              trait::isRuntimeNonTrivial,
+              trait::isSortable {
 public:
     Bytes(const Meta& m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8)), Type(bytes::Iterator(m))), m) {}
 

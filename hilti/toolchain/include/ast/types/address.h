@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a address type. */
-class Address : public TypeBase, trait::isAllocable {
+class Address : public TypeBase, trait::isAllocable, trait::isSortable {
 public:
     Address(Meta m = Meta()) : TypeBase(std::move(m)) {}
 

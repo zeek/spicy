@@ -1,0 +1,15 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test for #1234.
+
+module test;
+
+type Key = unit {a: uint8;};
+
+# The below will be rejeced because units can't be used a key types, but that's
+# fine, we just want to make sure type resolution doesn't complain.
+global m: map<Key, uint8>;
+m[[$a=1]] = 1;
+
+print m;

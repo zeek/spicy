@@ -1,0 +1,45 @@
+# @TEST-EXEC: spicyc -j %INPUT
+#
+# @TEST-DOC: Instantiate maps with all key types that support sorting.
+
+module Test;
+
+type Enum = enum { A,B,C};
+type Unit = unit { a: uint32; };
+
+global m1: map<addr, string>;
+m1[1.2.3.4] = "";
+
+global m2: map<bool, string>;
+m2[True] = "";
+
+global m3: map<bytes, string>;
+m3[b"123"] = "";
+
+global m4: map<Enum, string>;
+m4[Enum::A] = "";
+
+global m5: map<int64, string>;
+m5[-42] = "";
+
+global m6: map<uint64, string>;
+m6[42] = "";
+
+# Not exposed in Spicy.
+# global m7: map<net, string>;
+# m7[1.2.3.4/32] = "";
+
+global m8: map<port, string>;
+m8[42/tcp] = "";
+
+global m9: map<real, string>;
+m9[3.14] = "";
+
+global m10: map<string, string>;
+m10["123"] = "";
+
+global m11: map<time, string>;
+m11[time(0)] = "";
+
+global m12: map<tuple<bool, bytes>, string>;
+m12[(True, b"123")] = "";

@@ -77,6 +77,22 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         }
     };
 
+    // Returns an error if the given type cannot be ordered at runtime.
+    Result<Nothing> isSortable(const Type& t) {
+        if ( ! type::isSortable(t) )
+            return result::Error(fmt("type '%s' is not sortable", t));
+
+        // Sortability of tuples requires sortable element types.
+        if ( auto tt = t.tryAs<type::Tuple>() ) {
+            for ( const auto& e : tt->elements() ) {
+                if ( auto rc = isSortable(e.type()); ! rc )
+                    return rc;
+            }
+        }
+
+        return Nothing();
+    }
+
     void operator()(const Function& f, position_t p) {
         if ( auto attrs = f.attributes() ) {
             if ( auto prio = attrs->find("&priority") ) {
@@ -426,6 +442,11 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             if ( ! (r == type::void_ || r.isA<type::Optional>()) )
                 error(fmt("hooks must have return type either void or optional<T>"), p);
         }
+    }
+
+    void operator()(const type::Map& n, position_t p) {
+        if ( auto rc = isSortable(n.keyType()); ! rc )
+            error(fmt("type cannot be used as key type for maps (because %s)", rc.error()), p);
     }
 
     void operator()(const type::SignedInteger& n, position_t p) {

@@ -37,6 +37,9 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     /** For internal use. Use ``type::isAllocable` instead. */
     trait _isAllocable() from hilti::type::trait::isAllocable;
 
+    /** For internal use. Use ``type::isSortable` instead. */
+    trait _isSortable() from hilti::type::trait::isSortable;
+
     /** For internal use. Use ``type::isDereferenceable` instead. */
     trait _isDereferenceable() from hilti::type::trait::isDereferenceable;
 

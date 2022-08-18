@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for an interval type. */
-class Interval : public TypeBase, trait::isAllocable {
+class Interval : public TypeBase, trait::isAllocable, trait::isSortable {
 public:
     Interval(Meta m = Meta()) : TypeBase(std::move(m)) {}
 

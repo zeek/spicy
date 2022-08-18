@@ -81,6 +81,9 @@ public:
 
     bool operator==(const Network& other) const { return _prefix == other._prefix && _length == other._length; }
     bool operator!=(const Network& other) const { return ! (*this == other); }
+    bool operator<(const Network& other) const {
+        return std::tie(_prefix, _length) < std::tie(other._prefix, other._length);
+    };
 
     /**
      * Returns a human-readable representation of the network, using the same

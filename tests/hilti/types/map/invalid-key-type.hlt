@@ -1,0 +1,14 @@
+# @TEST-EXEC-FAIL: hiltic -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that a non-sortable key type is reported.
+
+module foo {
+
+type X = struct {};
+global map<X, string> m;
+
+global map<tuple<set<uint<8>>>, uint<8>> x1;
+global map<tuple<tuple<set<uint<8>>>>, uint<8>> x2;
+
+}

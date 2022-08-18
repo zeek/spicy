@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a floating point type. */
-class Real : public TypeBase, trait::isAllocable {
+class Real : public TypeBase, trait::isAllocable, trait::isSortable {
 public:
     Real(Meta m = Meta()) : TypeBase(std::move(m)) {}
 

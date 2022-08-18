@@ -36,7 +36,7 @@ inline Node to_node(Element f) { return Node(std::move(f)); }
 } // namespace tuple
 
 /** AST node for a tuple type. */
-class Tuple : public TypeBase, trait::isAllocable, trait::isParameterized {
+class Tuple : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isSortable {
 public:
     Tuple(std::vector<Type> t, Meta m = Meta()) : TypeBase(nodes(_typesToElements(std::move(t))), std::move(m)) {}
     Tuple(std::vector<tuple::Element> e, Meta m = Meta()) : TypeBase(nodes(std::move(e)), std::move(m)) {}
