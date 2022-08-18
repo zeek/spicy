@@ -22,6 +22,8 @@ public:
         return condition() == other.condition() && true_() == other.true_() && false_() == other.false_();
     }
 
+    void setFalse(const Expression& expr) { children()[2] = expr; }
+
     /** Implements `Expression` interface. */
     bool isLhs() const { return false; }
     /** Implements `Expression` interface. */
