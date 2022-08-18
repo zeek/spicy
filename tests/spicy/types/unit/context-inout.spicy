@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicy-driver %INPUT </dev/null >output
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+type Ctx = unit { x: int64; };
+
+type X = unit(inout ctx: Ctx) {
+	on %init() { ctx.x = 100; }
+};
+
+public type Y = unit {
+	%context = Ctx;
+	: X(self.context());
+
+	on %done() { print self.context(); }
+};

@@ -19,6 +19,10 @@
 
 namespace hilti {
 
+namespace logging::debug {
+inline const DebugStream CodeGen("codegen");
+} // namespace logging::debug
+
 class Node;
 class Unit;
 
@@ -72,7 +76,7 @@ public:
     std::list<cxx::declaration::Type> typeDependencies(const hilti::Type& t);
     cxx::Type compile(const hilti::Type& t, codegen::TypeUsage usage);
     cxx::Expression compile(const hilti::Expression& e, bool lhs = false);
-    cxx::Expression compile(const hilti::Ctor& c);
+    cxx::Expression compile(const hilti::Ctor& c, bool lhs = false);
     cxx::Expression compile(const hilti::expression::ResolvedOperator& o, bool lhs = false);
     cxx::Block compile(const hilti::Statement& s, cxx::Block* b = nullptr);
     cxx::declaration::Function compile(const ID& id, type::Function ft, declaration::Linkage linkage,
@@ -109,7 +113,7 @@ public:
 
     cxx::Expression self() const { return _self.back(); }
     cxx::Expression dollardollar() const {
-        return "__dd";
+        return {"__dd", cxx::Side::LHS};
     } // TODO(robin): We hardcode the currently; need a stack, too?
     void pushSelf(detail::cxx::Expression e) { _self.push_back(std::move(e)); }
     void popSelf() { _self.pop_back(); }
@@ -128,10 +132,15 @@ public:
 private:
     const codegen::CxxTypeInfo& _getOrCreateTypeInfo(const hilti::Type& t);
 
+    // Adapt expression so that it can be used as a LHS. If expr is already a
+    // LHS, it's returned directly. Otherwise it assigns it over into a
+    // temporary, which is then returned.
+    cxx::Expression _makeLhs(cxx::Expression expr, const Type& type);
+
     std::unique_ptr<cxx::Unit> _cxx_unit;
     hilti::Unit* _hilti_unit = nullptr;
     std::weak_ptr<Context> _context;
-    std::vector<detail::cxx::Expression> _self = {"__self"};
+    std::vector<detail::cxx::Expression> _self = {{"__self", cxx::Side::LHS}};
     std::vector<detail::cxx::Block*> _cxx_blocks;
     std::vector<detail::cxx::declaration::Local> _tmps;
     std::map<std::string, int> _tmp_counters;

@@ -14,7 +14,7 @@ using namespace hilti::detail;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
+struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     Visitor(CodeGen* cg, const cxx::Expression& expr, const Type& dst) : cg(cg), expr(expr), dst(dst) {}
     CodeGen* cg;
     const cxx::Expression& expr;
@@ -74,7 +74,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
         if ( auto t = dst.tryAs<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
-            return fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp);
+            return {fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp), cxx::Side::LHS};
         }
 
         if ( auto t = dst.tryAs<type::Bool>() )
@@ -95,7 +95,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
                        cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( src.dereferencedType() == dst )
-            return fmt("(*%s)", expr);
+            return {fmt("(*%s)", expr), cxx::Side::LHS};
 
         logger().internalError(fmt("codegen: unexpected type coercion from %s to %s", Type(src), dst.typename_()));
     }
@@ -197,7 +197,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("%s.derefAsValue()", expr);
 
         if ( src.dereferencedType() == dst )
-            return fmt("(*%s)", expr);
+            return {fmt("(*%s)", expr), cxx::Side::LHS};
 
         logger().internalError(fmt("codegen: unexpected type coercion from weak reference to %s", dst.typename_()));
     }
@@ -219,7 +219,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::string, Visitor> {
                        cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( src.dereferencedType() == dst )
-            return fmt("(*%s)", expr);
+            return {fmt("(*%s)", expr), cxx::Side::LHS};
 
         logger().internalError(fmt("codegen: unexpected type coercion from value reference to %s", dst.typename_()));
     }

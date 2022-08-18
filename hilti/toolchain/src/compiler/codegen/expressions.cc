@@ -16,13 +16,13 @@ using namespace hilti::detail;
 
 namespace {
 
-struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
+struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     Visitor(CodeGen* cg, bool lhs) : cg(cg), lhs(lhs) {}
     CodeGen* cg;
     bool lhs;
 
     result_t operator()(const expression::Assign& n) {
-        return fmt("%s = %s", cg->compile(n.target(), true), cg->compile(n.source()));
+        return {fmt("%s = %s", cg->compile(n.target(), true), cg->compile(n.source())), cxx::Side::LHS};
     }
 
     result_t operator()(const expression::BuiltinFunction& n) {
@@ -56,12 +56,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     }
 
     result_t operator()(const expression::Ctor& n) {
-        auto e = cg->compile(n.ctor());
-
-        if ( ! lhs )
-            return std::move(e);
-
-        return cg->addTmp("ctor", e);
+        return cg->compile(n.ctor(), lhs);
     }
 
     result_t operator()(const expression::Deferred& n) {
@@ -77,13 +72,13 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             return fmt("::hilti::rt::DeferredExpression<%s>([=]() -> %s { return %s; })", type, type, value);
     }
 
-    result_t operator()(const expression::Grouping& n) { return fmt("(%s)", cg->compile(n.expression())); }
+    result_t operator()(const expression::Grouping& n) { return fmt("(%s)", cg->compile(n.expression(), lhs)); }
 
     result_t operator()(const expression::Keyword& n) {
         switch ( n.kind() ) {
-            case expression::keyword::Kind::Self: return cg->self();
-            case expression::keyword::Kind::DollarDollar: return cg->dollardollar();
-            case expression::keyword::Kind::Captures: return "__captures";
+            case expression::keyword::Kind::Self: return {cg->self(), cxx::Side::LHS};
+            case expression::keyword::Kind::DollarDollar: return {cg->dollardollar(), cxx::Side::LHS};
+            case expression::keyword::Kind::Captures: return {"__captures", cxx::Side::LHS};
             default: util::cannot_be_reached();
         }
     }
@@ -135,9 +130,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
     result_t operator()(const expression::ResolvedID& n, position_t p) {
         if ( auto g = n.declaration().tryAs<declaration::GlobalVariable>() ) {
             if ( auto ns = n.id().namespace_(); ! ns.empty() )
-                return fmt("%s->%s", cxx::ID(ns, "__globals()"), cxx::ID(n.id().local()));
+                return {fmt("%s->%s", cxx::ID(ns, "__globals()"), cxx::ID(n.id().local())), cxx::Side::LHS};
 
-            return fmt("__globals()->%s", cxx::ID(n.id()));
+            return {fmt("__globals()->%s", cxx::ID(n.id())), cxx::Side::LHS};
         }
 
         if ( auto e = n.declaration().tryAs<declaration::Expression>() )
@@ -145,9 +140,9 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
         if ( auto c = n.declaration().tryAs<declaration::Constant>() ) {
             if ( c->value().type().isA<type::Enum>() )
-                return cxx::ID(cg->compile(c->value()));
+                return {cxx::ID(cg->compile(c->value())), cxx::Side::LHS};
 
-            return cxx::ID(cg->options().cxx_namespace_intern, cxx::ID(n.id()));
+            return {cxx::ID(cg->options().cxx_namespace_intern, cxx::ID(n.id())), cxx::Side::LHS};
         }
 
         if ( auto f = n.declaration().tryAs<declaration::Function>() ) {
@@ -158,34 +153,21 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
                  (p.path.empty() || ! p.parent().isA<operator_::function::Call>()) ) {
                 if ( n.id().namespace_().empty() )
                     // Call to local function, don't qualify it.
-                    return cxx::ID(n.id());
+                    return {cxx::ID(n.id()), cxx::Side::LHS};
                 else
-                    return cxx::ID(cg->options().cxx_namespace_extern, n.id());
+                    return {cxx::ID(cg->options().cxx_namespace_extern, n.id()), cxx::Side::LHS};
             }
         }
 
         if ( auto p = n.declaration().tryAs<declaration::Parameter>(); p && p->isTypeParameter() ) {
-            if ( type::isReferenceType(p->type()) ) {
+            if ( type::isReferenceType(p->type()) )
                 // Need to adjust here for potential automatic change to a weak reference.
-                auto result = fmt("%s->__p_%s.derefAsValue()", cg->self(), p->id());
-
-                if ( p->kind() == declaration::parameter::Kind::InOut && p->type().isA<type::ValueReference>() &&
-                     cg->cxxBlock() ) {
-                    // Need a LHS to pass by reference. Not pretty, but can't
-                    // add an assignment statement here. Note that when
-                    // creating the LHS, we need to avoid copying the value,
-                    // hence going through a shared ptr.
-                    auto lhs = cg->addTmp(fmt("self_%s", p->id()), cg->compile(p->type(), codegen::TypeUsage::Storage));
-                    return cxx::Expression(fmt("(%s = (%s).asSharedPtr())", lhs, result));
-                }
-                else
-                    return cxx::Expression(result);
-            }
+                return fmt("%s->__p_%s.derefAsValue()", cg->self(), p->id());
             else
-                return cxx::Expression(fmt("%s->__p_%s", cg->self(), p->id()));
+                return {fmt("%s->__p_%s", cg->self(), p->id()), cxx::Side::LHS};
         }
 
-        return cxx::ID(n.id());
+        return {cxx::ID(n.id()), cxx::Side::LHS};
     }
 
     result_t operator()(const expression::ResolvedOperator& n) { return cg->compile(n, lhs); }
@@ -224,7 +206,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
 cxx::Expression CodeGen::compile(const hilti::Expression& e, bool lhs) {
     if ( auto x = Visitor(this, lhs).dispatch(e) )
-        return *x;
+        return lhs ? _makeLhs(*x, e.type()) : *x;
 
     logger().internalError(fmt("expression failed to compile ('%s' / %s)", e, e.typename_()), e);
 }

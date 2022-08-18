@@ -1111,6 +1111,25 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(const hilti::Type& t) {
         });
 }
 
+cxx::Expression CodeGen::_makeLhs(cxx::Expression expr, const Type& type) {
+    if ( expr.isLhs() )
+        return expr;
+
+    auto tmp = addTmp("lhs", compile(type, TypeUsage::Storage));
+    cxx::Expression result;
+
+    if ( type.isA<type::ValueReference>() )
+        result = cxx::Expression{fmt("(%s=(%s).asSharedPtr())", tmp, expr), cxx::Side::LHS}; // avoid copy
+    else
+        result = cxx::Expression{fmt("(%s=(%s))", tmp, expr), cxx::Side::LHS};
+
+    // This can help show where LHS conversions happen unexpectedly; they
+    // should be very rare.
+    HILTI_DEBUG(logging::debug::CodeGen, fmt("RHS -> LHS: %s -> %s [%s]", expr, result, type.typename_()));
+
+    return result;
+}
+
 cxx::Expression CodeGen::typeInfo(const hilti::Type& t) { return _getOrCreateTypeInfo(t).reference; };
 
 void CodeGen::addTypeInfoDefinition(const hilti::Type& t) { _getOrCreateTypeInfo(t); }

@@ -623,14 +623,14 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function ft, dec
 
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,
                                                            const node::Set<declaration::Parameter>& params) {
-    assert(args.size() == params.size());
-
     auto kinds = node::transform(params, [](auto& x) { return x.kind(); });
 
     std::vector<cxx::Expression> x;
     x.reserve(args.size());
-    for ( auto i = 0U; i < args.size(); i++ )
-        x.emplace_back(compile(args[i], params[i].kind() == declaration::parameter::Kind::InOut));
+    for ( auto i = 0U; i < params.size(); i++ ) {
+        Expression arg = (i < args.size() ? args[i] : *params[i].default_());
+        x.emplace_back(compile(arg, params[i].kind() == declaration::parameter::Kind::InOut));
+    }
 
     return x;
 }
@@ -702,7 +702,7 @@ cxx::Expression CodeGen::addTmp(const std::string& prefix, const cxx::Expression
     auto tmp = cxx::declaration::Local(cxx::ID(fmt("__%s_%d", prefix, ++n)), "auto", {}, init);
     cxxBlock()->addTmp(tmp);
     _tmp_counters[prefix] = n;
-    return std::string(tmp.id);
+    return {std::string(tmp.id), cxx::Side::LHS};
 }
 
 cxx::Expression CodeGen::addTmp(const std::string& prefix, const cxx::Type& t) {
@@ -716,7 +716,7 @@ cxx::Expression CodeGen::addTmp(const std::string& prefix, const cxx::Type& t) {
     auto tmp = cxx::declaration::Local(cxx::ID(fmt("__%s_%d", prefix, ++n)), t);
     cxxBlock()->addTmp(tmp);
     _tmp_counters[prefix] = n;
-    return std::string(tmp.id);
+    return {std::string(tmp.id), cxx::Side::LHS};
 }
 
 cxx::ID CodeGen::uniqueID(const std::string& prefix, const Node& n) {

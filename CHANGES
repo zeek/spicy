@@ -1,3 +1,49 @@
+1.6.0-dev.48 | 2022-08-18 16:30:14 +0200
+
+  * GH-1251: When decoding bytes into a string using a given character
+    set, allow caller to control error handling. (Robin Sommer,
+    Corelight)
+
+    All methods taking a charset parameters now take an additional
+    enum selecting 1 of 3 possible error handling strategies in case a
+    character can't be decoded/represented: `STRICT` throws an error,
+    `IGNORE` skips the problematic character and proceeds with the
+    next, and `REPLACE` replaces the problematic character with a safe
+    substitute. `REPLACE` is the default everywhere now, so that by
+    default no errors are triggered.
+
+    This comes with an additional functional change for the ASCII
+    encoding: we now consistently sanitize characters that ASCII can't
+    represent when in `REPLACE`/`IGNORE` modes (and, hence, by
+    default), and trigger errors in `STRICT` mode. Previously, we'd
+    sometimes let them through, and never triggered any errors. This
+    also fixes a bug with the ASCII encoding sometimes turning a
+    non-printable character into multiple repeated substitutes.
+
+  * GH-1170: Fix contexts not allowing being passed `inout`. (Robin
+    Sommer, Corelight)
+
+  * GH-1143, GH-1220: Add coercion on assignment for optionals that
+    only differ in constness of their inner types. (Robin Sommer,
+    Corelight)
+
+  * GH-1115, GH-1196: Explicitly type temporary value used by
+    `&max_size` logic. (Robin Sommer, Corelight)
+
+  * GH-1250: Fix internal errors when seeing unsupported character
+    classes in regular expression. (Robin Sommer, Corelight)
+
+  * GH-1234, GH-1238: Fix assertions with anonymous struct
+    constructor. (Robin Sommer, Corelight)
+
+  * GH-1233: Reject key types for maps that can't be sorted. (Robin
+    Sommer, Corelight)
+
+  * GH-1230: Add coercion to default argument of `map::get`. (Robin
+    Sommer, Corelight)
+
+  * GH-1248: Fix `stop` for unbounded loop. (Robin Sommer, Corelight)
+
 1.6.0-dev.28 | 2022-07-27 08:43:04 +0200
 
   * Fix build with empty CMAKE_CXX_FLAGS_{DEBUG,RELEASE}. (Fabrice Fontaine)

@@ -191,7 +191,7 @@ struct CoercedExpression {
  * so, the contained fields will provide more information
  */
 CoercedExpression coerceExpression(const Expression& e, const Type& dst,
-                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment);
+                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment, bool lhs = false);
 
 /**
  * Coerces an expression to a given target type. This returns a struct with
@@ -214,7 +214,7 @@ CoercedExpression coerceExpression(const Expression& e, const Type& dst,
  * so, the contained fields will provide more information
  */
 CoercedExpression coerceExpression(const Expression& e, const Type& src_, const Type& dst_,
-                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment);
+                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment, bool lhs = false);
 
 /**
  * Matches a set of expressions against a set of operands, coercing them as

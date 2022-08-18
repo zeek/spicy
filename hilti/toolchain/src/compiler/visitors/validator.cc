@@ -525,12 +525,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             switch ( param.kind() ) {
                 case declaration::parameter::Kind::Copy:
                 case declaration::parameter::Kind::In:
-                    // Nothing to check.
-                    break;
-
                 case declaration::parameter::Kind::InOut:
-                    if ( ! type::isReferenceType(param.type()) )
-                        error("only parameters of reference type can be 'inout' for struct parameters", p);
+                    // Nothing to check.
                     break;
 
                 case declaration::parameter::Kind::Unknown: error("parameter kind unexpectedly not known", p); break;
