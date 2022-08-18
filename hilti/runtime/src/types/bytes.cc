@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <utf8proc/utf8proc.h>
+
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
@@ -38,18 +40,54 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_
     }
 }
 
-Bytes::Bytes(std::string s, bytes::Charset cs) : _control(std::make_shared<Base*>(static_cast<Base*>(this))) {
+Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors)
+    : _control(std::make_shared<Base*>(static_cast<Base*>(this))) {
     switch ( cs ) {
-        case bytes::Charset::UTF8:
-            // Data is already in UTF-8, just need to copy it over.
-            *this = std::move(s);
+        case bytes::Charset::UTF8: {
+            // Data supposedly is already in UTF-8, but let's validate it.
+            std::string t;
+
+            auto p = reinterpret_cast<const unsigned char*>(s.data());
+            auto e = p + s.size();
+
+            while ( p < e ) {
+                utf8proc_int32_t cp;
+                auto n = utf8proc_iterate(p, e - p, &cp);
+
+                if ( n < 0 ) {
+                    switch ( errors ) {
+                        case DecodeErrorStrategy::IGNORE: break;
+                        case DecodeErrorStrategy::REPLACE: t += "\ufffd"; break;
+                        case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+                    }
+
+                    p += 1;
+                    continue;
+                }
+
+                t += std::string(reinterpret_cast<const char*>(p), n);
+                p += n;
+            }
+
+            *this = std::move(t);
             return;
+        }
 
         case bytes::Charset::ASCII: {
-            // Convert all bytes to 7-bit codepoints.
-            std::for_each(s.begin(), s.end(), [](auto&& c) { c = (c >= 32 && c < 0x7f) ? static_cast<char>(c) : '?'; });
+            std::string t;
+            for ( const auto& c : s ) {
+                if ( c >= 32 && c < 0x7f )
+                    t += static_cast<char>(c);
+                else {
+                    switch ( errors ) {
+                        case DecodeErrorStrategy::IGNORE: break;
+                        case DecodeErrorStrategy::REPLACE: t += '?'; break;
+                        case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal ASCII character in string");
+                    }
+                }
+            }
 
-            *this = std::move(s);
+            *this = std::move(t);
             return;
         }
 
@@ -59,20 +97,24 @@ Bytes::Bytes(std::string s, bytes::Charset cs) : _control(std::make_shared<Base*
     cannot_be_reached();
 }
 
-std::string Bytes::decode(bytes::Charset cs) const {
+std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) const {
     switch ( cs ) {
         case bytes::Charset::UTF8:
-            // Data is already in UTF-8, just need to copy it into a string.
-            return str();
+            // Data is already in UTF-8, but let's validate it.
+            return Bytes(str(), cs, errors).str();
 
         case bytes::Charset::ASCII: {
-            // Convert non-printable to the unicode replacement character.
             std::string s;
             for ( auto c : *this ) {
                 if ( c >= 32 && c < 0x7f )
                     s += static_cast<char>(c);
-                else
-                    s += "\ufffd";
+                else {
+                    switch ( errors ) {
+                        case DecodeErrorStrategy::IGNORE: break;
+                        case DecodeErrorStrategy::REPLACE: s += "?"; break;
+                        case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal ASCII character in string");
+                    }
+                }
             }
 
             return s;
@@ -180,6 +222,16 @@ std::string to_string(const bytes::Charset& x, tag /*unused*/) {
         case bytes::Charset::ASCII: return "Charset::ASCII";
         case bytes::Charset::UTF8: return "Charset::UTF8";
         case bytes::Charset::Undef: return "Charset::Undef";
+    }
+
+    cannot_be_reached();
+}
+
+std::string to_string(const bytes::DecodeErrorStrategy& x, tag /*unused*/) {
+    switch ( x ) {
+        case bytes::DecodeErrorStrategy::IGNORE: return "Charset::IGNORE";
+        case bytes::DecodeErrorStrategy::REPLACE: return "Charset::REPLACE";
+        case bytes::DecodeErrorStrategy::STRICT: return "Charset::STRICT";
     }
 
     cannot_be_reached();

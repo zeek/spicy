@@ -5,10 +5,12 @@
     Returns an iterator representing the offset *i* inside the bytes
     value.
 
-.. spicy:method:: bytes::decode bytes decode False string (charset: enum = hilti::Charset::UTF8)
+.. spicy:method:: bytes::decode bytes decode False string (charset: enum = hilti::Charset::UTF8, errors: enum = hilti::DecodeErrorStrategy::REPLACE)
 
     Interprets the ``bytes`` as representing an binary string encoded with
-    the given character set, and converts it into a UTF8 string.
+    the given character set, and converts it into a UTF8 string. If data
+    is encountered that *charset* or UTF* cannot represent, it's handled
+    according to the *errors* strategy.
 
 .. spicy:method:: bytes::find bytes find False tuple<bool,~iterator<bytes>> (needle: bytes)
 
@@ -27,10 +29,12 @@
     as printable strings. The portions will be separated by the bytes
     value to which this method is invoked as a member.
 
-.. spicy:method:: bytes::lower bytes lower False bytes (charset: enum = hilti::Charset::UTF8)
+.. spicy:method:: bytes::lower bytes lower False bytes (charset: enum = hilti::Charset::UTF8, errors: enum = hilti::DecodeErrorStrategy::REPLACE)
 
     Returns a lower-case version of the bytes value, assuming it is
-    encoded in character set *charset*.
+    encoded in character set *charset*. If data is encountered that
+    *charset* cannot represent, it's handled according to the *errors*
+    strategy.
 
 .. spicy:method:: bytes::match bytes match False result<bytes> (regex: regexp, [ group: uint<64> ])
 
@@ -116,10 +120,12 @@
     Interprets the ``bytes`` as representing an binary number encoded with
     the given byte order, and converts it into an unsigned integer.
 
-.. spicy:method:: bytes::upper bytes upper False bytes (charset: enum = hilti::Charset::UTF8)
+.. spicy:method:: bytes::upper bytes upper False bytes (charset: enum = hilti::Charset::UTF8, errors: enum = hilti::DecodeErrorStrategy::REPLACE)
 
     Returns an upper-case version of the bytes value, assuming it is
-    encoded in character set *charset*.
+    encoded in character set *charset*. If data is encountered that
+    *charset* cannot represent, it's handled according to the *errors*
+    strategy.
 
 .. rubric:: Operators
 

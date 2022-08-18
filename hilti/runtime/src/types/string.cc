@@ -7,7 +7,7 @@
 
 using namespace hilti::rt;
 
-size_t string::size(const std::string& s) {
+size_t string::size(const std::string& s, DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -17,8 +17,16 @@ size_t string::size(const std::string& s) {
         utf8proc_int32_t cp;
         auto n = utf8proc_iterate(p, e - p, &cp);
 
-        if ( n < 0 )
-            throw RuntimeError("illegal UTF8 sequence in string");
+        if ( n < 0 ) {
+            switch ( errors ) {
+                case DecodeErrorStrategy::IGNORE: break;
+                case DecodeErrorStrategy::REPLACE: ++len; break;
+                case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+            }
+
+            p += 1;
+            continue;
+        }
 
         ++len;
         p += n;
@@ -27,7 +35,7 @@ size_t string::size(const std::string& s) {
     return len;
 }
 
-std::string string::upper(const std::string& s) {
+std::string string::upper(const std::string& s, DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -38,8 +46,16 @@ std::string string::upper(const std::string& s) {
         utf8proc_int32_t cp;
         auto n = utf8proc_iterate(p, e - p, &cp);
 
-        if ( n < 0 )
-            throw RuntimeError("illegal UTF8 sequence in string");
+        if ( n < 0 ) {
+            switch ( errors ) {
+                case DecodeErrorStrategy::IGNORE: break;
+                case DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
+                case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+            }
+
+            p += 1;
+            continue;
+        }
 
         auto m = utf8proc_encode_char(utf8proc_toupper(cp), buf);
         rval += std::string(reinterpret_cast<char*>(buf), m);
@@ -49,7 +65,7 @@ std::string string::upper(const std::string& s) {
     return rval;
 }
 
-std::string string::lower(const std::string& s) {
+std::string string::lower(const std::string& s, DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -60,8 +76,16 @@ std::string string::lower(const std::string& s) {
         utf8proc_int32_t cp;
         auto n = utf8proc_iterate(p, e - p, &cp);
 
-        if ( n < 0 )
-            throw RuntimeError("illegal UTF8 sequence in string");
+        if ( n < 0 ) {
+            switch ( errors ) {
+                case DecodeErrorStrategy::IGNORE: break;
+                case DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
+                case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+            }
+
+            p += 1;
+            continue;
+        }
 
         auto m = utf8proc_encode_char(utf8proc_tolower(cp), buf);
         rval += std::string(reinterpret_cast<char*>(buf), m);

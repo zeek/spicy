@@ -131,12 +131,12 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const operator_::bytes::LowerCase& n) {
         auto [self, args] = methodArguments(n);
-        return fmt("%s.lower(%s)", self, args[0]);
+        return fmt("%s.lower(%s, %s)", self, args[0], args[1]);
     }
 
     result_t operator()(const operator_::bytes::UpperCase& n) {
         auto [self, args] = methodArguments(n);
-        return fmt("%s.upper(%s)", self, args[0]);
+        return fmt("%s.upper(%s, %s)", self, args[0], args[1]);
     }
 
     result_t operator()(const operator_::bytes::At& n) {
@@ -229,7 +229,7 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
 
     result_t operator()(const operator_::bytes::Decode& n) {
         auto [self, args] = methodArguments(n);
-        return fmt("%s.decode(%s)", self, args[0]);
+        return fmt("%s.decode(%s, %s)", self, args[0], args[1]);
     }
 
     result_t operator()(const operator_::bytes::Match& n) {
