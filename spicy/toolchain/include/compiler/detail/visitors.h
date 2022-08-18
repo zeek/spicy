@@ -25,6 +25,9 @@ namespace spicy::detail::ast {
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
 void buildScopes(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 
+/** Implements the corresponding functionality for the default HILTI compiler plugin. */
+bool coerce(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
+
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
 bool normalize(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 

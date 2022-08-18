@@ -62,6 +62,7 @@ set(SOURCES_COMPILER
     src/compiler/init.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc
+    src/compiler/visitors/coercer.cc
     src/compiler/visitors/normalizer.cc
     src/compiler/visitors/resolver.cc
     src/compiler/visitors/printer.cc
