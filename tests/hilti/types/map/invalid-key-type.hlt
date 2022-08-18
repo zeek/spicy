@@ -8,4 +8,7 @@ module foo {
 type X = struct {};
 global map<X, string> m;
 
+global map<tuple<set<uint<8>>>, uint<8>> x1;
+global map<tuple<tuple<set<uint<8>>>>, uint<8>> x2;
+
 }

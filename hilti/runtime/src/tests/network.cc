@@ -22,6 +22,10 @@ TEST_CASE("comparison") {
     CHECK_NE(Network(addr1, 32), Network(addr1, 0));
     CHECK_NE(Network(addr1, 32), Network(addr2, 32));
     CHECK_NE(Network(addr1, 0), Network(addr3, 0));
+
+    CHECK(Network(addr1, 10) < Network(addr1, 12));
+    CHECK(Network(addr2, 16) < Network(addr1, 16));
+    CHECK_FALSE(Network(addr2, 32) < Network(addr4, 32));
 }
 
 TEST_CASE("construct") {

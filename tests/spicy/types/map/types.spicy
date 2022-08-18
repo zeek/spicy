@@ -1,5 +1,4 @@
-# @TEST-EXEC: spicyc -j %INPUT >output
-# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc -j %INPUT
 #
 # @TEST-DOC: Instantiate maps with all key types that support sorting.
 

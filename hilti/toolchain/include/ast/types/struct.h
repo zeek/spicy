@@ -34,7 +34,7 @@ public:
     Struct(std::vector<Declaration> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {}
 
-    enum AnonymousStruct {};
+    struct AnonymousStruct {};
     Struct(AnonymousStruct _, std::vector<Declaration> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields)), std::move(m)), _anon_struct(++_anon_struct_counter) {}
 
