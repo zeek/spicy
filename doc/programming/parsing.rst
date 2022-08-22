@@ -1908,7 +1908,7 @@ error prone. As an alternative, a unit can make use of a dedicated
 lifetime determined by the host application running the parser. For
 example, Zeek will tie the context to the underlying connection.
 
-A public unit can declare its context through a unit-level property
+A top-level unit can declare its context through a unit-level property
 called ``%context``, which takes an arbitrary type as its argument.
 For example:
 
