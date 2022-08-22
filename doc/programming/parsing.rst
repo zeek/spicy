@@ -1027,7 +1027,7 @@ stop. The following attributes are supported:
     Similar to ``&until``, but this does include the delimiter
     ``DELIM`` into the resulting value.
 
-One of these attributes must be provided.
+At least one of these attributes must be provided.
 
 On top of that, bytes fields support the attribute ``&chunked`` to
 change how the parsed data is processed and stored. Normally, a bytes

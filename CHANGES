@@ -1,3 +1,7 @@
+1.6.0-dev.50 | 2022-08-22 16:33:10 +0200
+
+  * GH-1249: Allow combining `&eod` with `&until` or `&until-including`. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.48 | 2022-08-18 16:30:14 +0200
 
   * GH-1251: When decoding bytes into a string using a given character

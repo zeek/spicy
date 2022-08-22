@@ -68,11 +68,14 @@ hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::
                 size_attrs_present.emplace_back(i->tag());
         }
 
-        for ( const auto* attrs_present : {&start_attrs_present, &end_attrs_present, &size_attrs_present} ) {
+        for ( const auto* attrs_present : {&start_attrs_present, &size_attrs_present} ) {
             if ( attrs_present->size() > 1 )
                 return hilti::result::Error(
                     fmt("attributes cannot be combined: %s", hilti::util::join(*attrs_present, ", ")));
         }
+
+        if ( until_attr && until_including_attr )
+            return hilti::result::Error(fmt("attributes cannot be combined: &until, &until-including"));
 
         if ( ! size_attr && start_attrs_present.empty() && end_attrs_present.empty() )
             return hilti::result::Error(
@@ -787,8 +790,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         else if ( hilti::util::startsWith(id, "0x25_") ) {
             auto id_readable = hilti::util::replace(hook.id().local().str(), "0x25_", "%");
 
-            if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_print" ||
-                 id == "0x25_finally" || id == "0x25_rejected" || id == "0x25_confirmed" || id == "0x25_synced" ) {
+            if ( id == "0x25_init" || id == "0x25_done" || id == "0x25_print" || id == "0x25_finally" ||
+                 id == "0x25_rejected" || id == "0x25_confirmed" || id == "0x25_synced" ) {
                 if ( params.size() != 0 )
                     error(fmt("hook '%s' does not take any parameters", id_readable), p, location);
             }

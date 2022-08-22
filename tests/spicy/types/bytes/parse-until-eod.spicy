@@ -1,0 +1,16 @@
+# @TEST-DOC: Validates that `&until` or `&until-including` can be combined with `&eod`.
+#
+# @TEST-EXEC: spicyc -dj %INPUT -o test.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '0' | spicy-dump -d test.hlto -p Test::X >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '0' | spicy-dump -d test.hlto -p Test::Y >>output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type X = unit {
+    x: bytes &until=b"\x00" &eod;
+};
+
+public type Y = unit {
+    x: bytes &until-including=b"\x00" &eod;
+};

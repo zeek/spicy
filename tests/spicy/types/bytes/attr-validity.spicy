@@ -7,7 +7,6 @@ public type X = unit {
     : bytes;
     : bytes &until;
     : bytes &until=b"4";
-    : bytes &eod &until=b"4";
     : bytes &until=b"1" &until-including=b"1";
     : bytes &parse-from=self.input() &parse-at=self.input();
     : bytes &parse-from=self.input();
