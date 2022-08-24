@@ -1,3 +1,11 @@
+1.5.1 | 2022-08-22 14:02:03 +0200
+
+  * GH-1248: Fix `stop` for unbounded loop. (Robin Sommer, Corelight)
+
+  * GH-1230: Add coercion to default argument of `map::get`. (Robin Sommer, Corelight)
+
+  * GH-1143, GH-1220: Add coercion on assignment for optionals that only differ in constness of their inner types. (Robin Sommer, Corelight)
+
 1.5.0-4 | 2022-07-26 11:16:25 +0200
 
   * Fix validator for field `&default` expression types for constness. (Benjamin Bannier, Corelight)
