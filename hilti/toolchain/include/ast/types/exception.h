@@ -3,13 +3,14 @@
 #pragma once
 
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
 /** AST node for an `exception` type. */
-class Exception : public TypeBase, trait::isParameterized {
+class Exception : public TypeBase {
 public:
     Exception(Meta m = Meta()) : TypeBase({node::none}, std::move(m)) {}
     Exception(Type base, Meta m = Meta()) : TypeBase({std::move(base)}, std::move(m)) {}
@@ -25,14 +26,14 @@ public:
     auto _isResolved(ResolvedState* rstate) const {
         return baseType().has_value() ? type::detail::isResolved(baseType(), rstate) : true;
     }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+
+    std::vector<Node> typeParameters() const override { return children(); }
+    bool isWildcard() const override { return _wildcard; }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isParameterized() const override { return true; }
 
 private:
     bool _wildcard = false;

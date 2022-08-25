@@ -3,6 +3,7 @@
 #pragma once
 
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/tuple.h>
@@ -13,11 +14,7 @@ namespace hilti::type {
 namespace map {
 
 /** AST node for a map iterator type. */
-class Iterator : public TypeBase,
-                 trait::isIterator,
-                 trait::isDereferenceable,
-                 trait::isRuntimeNonTrivial,
-                 trait::isParameterized {
+class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable, trait::isRuntimeNonTrivial {
 public:
     Iterator(Type ktype, Type vtype, bool const_, const Meta& m = Meta())
         : TypeBase(nodes(type::Tuple({std::move(ktype), std::move(vtype)}, m)), m), _const(const_) {}
@@ -48,14 +45,15 @@ public:
     /** Implements the `Type` interface. */
     const Type& dereferencedType() const { return child<Type>(0); }
     /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+    bool isWildcard() const override { return _wildcard; }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
+    std::vector<Node> typeParameters() const override { return children(); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"const", _const}}; }
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
+    bool _isParameterized() const override { return true; }
 
     bool operator==(const Iterator& other) const {
         return keyType() == other.keyType() && valueType() == other.valueType();
@@ -69,7 +67,7 @@ private:
 } // namespace map
 
 /** AST node for a map type. */
-class Map : public TypeBase, trait::isIterable, trait::isRuntimeNonTrivial, trait::isParameterized {
+class Map : public TypeBase, trait::isIterable, trait::isRuntimeNonTrivial {
 public:
     Map(const Type& k, const Type& v, const Meta& m = Meta())
         : TypeBase(nodes(map::Iterator(k, v, true, m), map::Iterator(k, v, false, m)), m) {}
@@ -91,15 +89,14 @@ public:
     const Type& elementType() const { return valueType(); }
     /** Implements the `Type` interface. */
     const Type& iteratorType(bool const_) const { return const_ ? child<Type>(0) : child<Type>(1); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
+    bool isWildcard() const override { return _wildcard; }
+    std::vector<Node> typeParameters() const override { return children(); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
+    bool _isParameterized() const override { return true; }
 
     bool operator==(const Map& other) const { return iteratorType(true) == other.iteratorType(true); }
 

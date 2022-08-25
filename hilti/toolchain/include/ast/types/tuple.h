@@ -36,7 +36,7 @@ inline Node to_node(Element f) { return Node(std::move(f)); }
 } // namespace tuple
 
 /** AST node for a tuple type. */
-class Tuple : public TypeBase, trait::isParameterized {
+class Tuple : public TypeBase {
 public:
     Tuple(std::vector<Type> t, Meta m = Meta()) : TypeBase(nodes(_typesToElements(std::move(t))), std::move(m)) {}
     Tuple(std::vector<tuple::Element> e, Meta m = Meta()) : TypeBase(nodes(std::move(e)), std::move(m)) {}
@@ -65,15 +65,15 @@ public:
     }
 
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+    bool isWildcard() const override { return _wildcard; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"wildcard", _wildcard}}; }
 
+    std::vector<Node> typeParameters() const override { return children(); }
     bool _isAllocable() const override { return true; }
     bool _isSortable() const override { return true; }
+    bool _isParameterized() const override { return true; }
 
 private:
     std::vector<tuple::Element> _typesToElements(std::vector<Type>&& types) {

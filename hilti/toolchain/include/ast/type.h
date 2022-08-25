@@ -4,6 +4,7 @@
 
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/id.h>
 #include <hilti/ast/node.h>
@@ -32,12 +33,10 @@ namespace trait {
 class isDereferenceable {};
 class isIterable {};
 class isIterator {};
-class isParameterized {};
 class isReferenceType {};
 class isRuntimeNonTrivial {};
 class isView {};
 class isViewable {};
-class supportsWildcard {};
 class takesArguments {};
 } // namespace trait
 
@@ -166,11 +165,28 @@ public:
 
     virtual ~TypeBase() = default;
 
+    /**
+     * Returns true if all instances of the same type class can be coerced
+     * into the current instance, independent of their pararameters. In HILTI
+     * source code, this typically corresponds to a type `T<*>`.
+     */
+    virtual bool isWildcard() const { return false; }
+
+    /**
+     * Returns any parameters associated with type. If a type is declared as
+     * `T<A,B,C>` this returns a vector of the AST nodes for `A`, `B`, and
+     * `C`.
+     */
+    virtual std::vector<Node> typeParameters() const { return {}; }
+
     /** For internal use. Use ``type::isAllocable` instead. */
     virtual bool _isAllocable() const { return false; }
 
     /** For internal use. Use ``type::isMutable` instead. */
     virtual bool _isMutable() const { return false; }
+
+    /** For internal use. Use ``type::isParameterized` instead. */
+    virtual bool _isParameterized() const { return false; }
 
     /** For internal use. Use ``type::isSortable` instead. */
     virtual bool _isSortable() const { return false; }

@@ -68,7 +68,7 @@ using Kind = declaration::parameter::Kind;
 
 } // namespace function
 
-class Function : public TypeBase, trait::isParameterized {
+class Function : public TypeBase {
 public:
     Function(Wildcard /*unused*/, Meta m = Meta())
         : TypeBase(nodes(function::Result(type::Error(m))), std::move(m)), _wildcard(true) {}
@@ -111,13 +111,13 @@ public:
         return true;
     }
 
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+    std::vector<Node> typeParameters() const override { return children(); }
+    bool isWildcard() const override { return _wildcard; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"flavor", to_string(_flavor)}}; }
+
+    bool _isParameterized() const override { return true; }
 
 private:
     bool _wildcard = false;

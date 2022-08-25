@@ -3,6 +3,7 @@
 #pragma once
 
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/unknown.h>
@@ -12,7 +13,7 @@ namespace hilti::type {
 /*
  * AST node for a `strong_ref<T>` type.
  */
-class StrongReference : public TypeBase, trait::isParameterized, trait::isDereferenceable, trait::isReferenceType {
+class StrongReference : public TypeBase, trait::isDereferenceable, trait::isReferenceType {
 public:
     StrongReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     StrongReference(Type ct, Meta m = Meta()) : TypeBase(nodes(std::move(ct)), std::move(m)) {}
@@ -31,15 +32,14 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+    std::vector<Node> typeParameters() const override { return children(); }
+    bool isWildcard() const override { return _wildcard; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"type", _type.renderedRid()}}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isParameterized() const override { return true; }
 
 private:
     bool _wildcard = false;
@@ -47,7 +47,7 @@ private:
 };
 
 /** AST node for a `weak_ref<T>` type. */
-class WeakReference : public TypeBase, trait::isParameterized, trait::isDereferenceable, trait::isReferenceType {
+class WeakReference : public TypeBase, trait::isDereferenceable, trait::isReferenceType {
 public:
     WeakReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     WeakReference(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
@@ -61,21 +61,22 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
+    std::vector<Node> typeParameters() const override { return children(); }
     /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+    bool isWildcard() const override { return _wildcard; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isParameterized() const override { return true; }
 
 private:
     bool _wildcard = false;
 };
 
 /** AST node for a `val_ref<T>` type. */
-class ValueReference : public TypeBase, trait::isParameterized, trait::isDereferenceable, trait::isReferenceType {
+class ValueReference : public TypeBase, trait::isDereferenceable, trait::isReferenceType {
 public:
     ValueReference(Wildcard /*unused*/, Meta m = Meta())
         : TypeBase(nodes(type::unknown), std::move(m)), _wildcard(true) {}
@@ -96,14 +97,15 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
+    std::vector<Node> typeParameters() const override { return children(); }
     /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+    bool isWildcard() const override { return _wildcard; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"rid", (_node ? _node->rid() : 0U)}}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isParameterized() const override { return true; }
 
 private:
     bool _wildcard = false;

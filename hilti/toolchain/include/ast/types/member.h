@@ -12,7 +12,7 @@
 namespace hilti::type {
 
 /** AST node for a type representing a member of another type. */
-class Member : public TypeBase, trait::isParameterized {
+class Member : public TypeBase {
 public:
     Member(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({ID("<wildcard>")}, std::move(m)), _wildcard(true) {}
     Member(::hilti::ID id, Meta m = Meta()) : TypeBase({std::move(id)}, std::move(m)) {}
@@ -25,13 +25,13 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return std::vector<Node>{id()}; }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+    std::vector<Node> typeParameters() const override { return std::vector<Node>{id()}; }
+    bool isWildcard() const override { return _wildcard; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isParameterized() const override { return true; }
 
 private:
     bool _wildcard = false;

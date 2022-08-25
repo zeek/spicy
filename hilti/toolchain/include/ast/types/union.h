@@ -18,7 +18,7 @@
 namespace hilti::type {
 
 /** AST node for a struct type. */
-class Union : public TypeBase, trait::isParameterized {
+class Union : public TypeBase {
 public:
     Union(std::vector<Declaration> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {}
@@ -59,21 +59,21 @@ public:
         return true;
     }
 
-    /** Implements the `Type` interface. */
-    auto typeParameters() const {
+    std::vector<Node> typeParameters() const override {
         std::vector<Node> params;
         for ( auto c = ++children().begin(); c != children().end(); c++ )
             params.emplace_back(c->as<declaration::Field>().type());
         return params;
     }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+
+    bool isWildcard() const override { return _wildcard; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
+    bool _isParameterized() const override { return true; }
 
     /**
      * Copies an existing type and adds a new field to the copy.

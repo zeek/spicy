@@ -10,14 +10,14 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
      * `T<A,B,C>` this returns a vector of the AST nodes for `A`, `B`, and
      * `C`.
      */
-    std::vector<Node> typeParameters() const if hilti::type::trait::isParameterized else {};
+    std::vector<Node> typeParameters() const;
 
     /**
      * Returns true if all instances of the same type class can be coerced
      * into the current instance, independent of their pararameters. In HILTI
      * source code, this typically corresponds to a type `T<*>`.
      */
-    bool isWildcard() const if hilti::type::trait::isParameterized else false;
+    bool isWildcard() const;
 
     /** Returns the type of an iterator for this type. */
     const hilti::Type& iteratorType(bool const_) const if hilti::type::trait::isIterable or hilti::type::trait::isView;
@@ -56,7 +56,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     trait _isView() from hilti::type::trait::isView;
 
     /** For internal use. Use ``type::isParameterized` instead. */
-    trait _isParameterized() from hilti::type::trait::isParameterized;
+    bool _isParameterized() const;
 
     /** For internal use. Use ``type::isReferenceType` instead. */
     trait _isReferenceType() from hilti::type::trait::isReferenceType;

@@ -54,10 +54,7 @@ struct AssignIndices {
 } // namespace detail
 
 /** AST node for a Spicy unit. */
-class Unit : detail::AssignIndices,
-             public hilti::TypeBase,
-             hilti::type::trait::isParameterized,
-             hilti::type::trait::takesArguments {
+class Unit : detail::AssignIndices, public hilti::TypeBase, hilti::type::trait::takesArguments {
 public:
     Unit(const std::vector<type::function::Parameter>& params, std::vector<unit::Item> i,
          const std::optional<AttributeSet>& /* attrs */ = {}, Meta m = Meta())
@@ -185,15 +182,15 @@ public:
         return std::all_of(xs.begin(), xs.end(), [](const auto& x) { return x.isResolved(); });
     }
 
-    // type::trait::Parameterized interface.
-    auto typeParameters() const { return children(); }
-    auto isWildcard() const { return _wildcard; }
+    std::vector<Node> typeParameters() const override { return children(); }
+    bool isWildcard() const override { return _wildcard; }
 
     // Node interface.
     auto properties() const { return node::Properties{{"public", _public}}; }
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
+    bool _isParameterized() const override { return true; }
 
     /**
      * Given an existing node wrapping a unit type, updates the contained unit

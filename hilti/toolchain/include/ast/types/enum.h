@@ -48,7 +48,7 @@ inline Node to_node(Label l) { return Node(std::move(l)); }
 } // namespace enum_
 
 /** AST node for an enum type. */
-class Enum : public TypeBase, trait::isParameterized {
+class Enum : public TypeBase {
 public:
     Enum(std::vector<enum_::Label> l, Meta m = Meta())
         : TypeBase(nodes(_normalizeLabels(std::move(l))), std::move(m)) {}
@@ -81,16 +81,16 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return _initialized; }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const {
+
+    std::vector<Node> typeParameters() const override {
         std::vector<Node> params;
         for ( auto&& c : uniqueLabels() )
             params.emplace_back(c.get());
 
         return params;
     }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+
+    bool isWildcard() const override { return _wildcard; }
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
@@ -99,6 +99,7 @@ public:
     static void initLabelTypes(Node* n);
 
     bool _isAllocable() const override { return true; }
+    bool _isParameterized() const override { return true; }
     bool _isSortable() const override { return true; }
 
 private:
