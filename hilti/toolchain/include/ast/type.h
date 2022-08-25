@@ -32,7 +32,6 @@ namespace trait {
 class isDereferenceable {};
 class isIterable {};
 class isIterator {};
-class isMutable {};
 class isParameterized {};
 class isReferenceType {};
 class isRuntimeNonTrivial {};
@@ -169,6 +168,9 @@ public:
 
     /** For internal use. Use ``type::isAllocable` instead. */
     virtual bool _isAllocable() const { return false; }
+
+    /** For internal use. Use ``type::isMutable` instead. */
+    virtual bool _isMutable() const { return false; }
 
     /** For internal use. Use ``type::isSortable` instead. */
     virtual bool _isSortable() const { return false; }

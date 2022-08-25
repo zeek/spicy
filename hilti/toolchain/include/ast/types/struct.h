@@ -29,7 +29,7 @@
 namespace hilti::type {
 
 /** AST node for a struct type. */
-class Struct : public TypeBase, trait::isParameterized, trait::takesArguments, trait::isMutable {
+class Struct : public TypeBase, trait::isParameterized, trait::takesArguments {
 public:
     Struct(std::vector<Declaration> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {}
@@ -128,6 +128,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
     /**
      * Given an existing node wrapping a struct type, updates the contained

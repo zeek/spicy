@@ -18,7 +18,7 @@
 namespace hilti::type {
 
 /** AST node for a struct type. */
-class Union : public TypeBase, trait::isParameterized, trait::isMutable {
+class Union : public TypeBase, trait::isParameterized {
 public:
     Union(std::vector<Declaration> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {}
@@ -73,6 +73,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
     /**
      * Copies an existing type and adds a new field to the copy.

@@ -12,11 +12,7 @@ namespace hilti::type {
 namespace bytes {
 
 /** AST node for a list iterator type. */
-class Iterator : public TypeBase,
-                 trait::isIterator,
-                 trait::isDereferenceable,
-                 trait::isMutable,
-                 trait::isRuntimeNonTrivial {
+class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable, trait::isRuntimeNonTrivial {
 public:
     Iterator(Meta m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8))), std::move(m)) {}
 
@@ -32,12 +28,13 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 };
 
 } // namespace bytes
 
 /** AST node for a bytes type. */
-class Bytes : public TypeBase, trait::isMutable, trait::isIterable, trait::isRuntimeNonTrivial {
+class Bytes : public TypeBase, trait::isIterable, trait::isRuntimeNonTrivial {
 public:
     Bytes(const Meta& m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8)), Type(bytes::Iterator(m))), m) {}
 
@@ -56,6 +53,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
     bool _isSortable() const override { return true; }
 };
 

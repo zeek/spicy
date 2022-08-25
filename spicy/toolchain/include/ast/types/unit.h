@@ -57,8 +57,7 @@ struct AssignIndices {
 class Unit : detail::AssignIndices,
              public hilti::TypeBase,
              hilti::type::trait::isParameterized,
-             hilti::type::trait::takesArguments,
-             hilti::type::trait::isMutable {
+             hilti::type::trait::takesArguments {
 public:
     Unit(const std::vector<type::function::Parameter>& params, std::vector<unit::Item> i,
          const std::optional<AttributeSet>& /* attrs */ = {}, Meta m = Meta())
@@ -194,6 +193,7 @@ public:
     auto properties() const { return node::Properties{{"public", _public}}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
     /**
      * Given an existing node wrapping a unit type, updates the contained unit

@@ -74,7 +74,7 @@ inline hilti::Node to_node(Bits f) { return hilti::Node(std::move(f)); }
 } // namespace bitfield
 
 /** AST node for a struct type. */
-class Bitfield : public hilti::TypeBase, hilti::type::trait::isParameterized, hilti::type::trait::isMutable {
+class Bitfield : public hilti::TypeBase, hilti::type::trait::isParameterized {
 public:
     Bitfield(int width, std::vector<bitfield::Bits> bits, const Meta& m = Meta())
         : TypeBase(nodes(type::UnsignedInteger(width, m), hilti::type::auto_, std::move(bits)), m), _width(width) {}
@@ -105,6 +105,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
 private:
     int _width = 0;

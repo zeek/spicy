@@ -62,7 +62,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     trait _isReferenceType() from hilti::type::trait::isReferenceType;
 
     /** For internal use. Use ``type::isMutable` instead. */
-    trait _isMutable() from hilti::type::trait::isMutable;
+    bool _isMutable() const;
 
     /** For internal use. Use ``type::isRuntimeNonTrivial` instead. */
     trait _isRuntimeNonTrivial() from hilti::type::trait::isRuntimeNonTrivial;

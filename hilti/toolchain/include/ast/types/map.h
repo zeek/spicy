@@ -16,7 +16,6 @@ namespace map {
 class Iterator : public TypeBase,
                  trait::isIterator,
                  trait::isDereferenceable,
-                 trait::isMutable,
                  trait::isRuntimeNonTrivial,
                  trait::isParameterized {
 public:
@@ -56,6 +55,7 @@ public:
     auto properties() const { return node::Properties{{"const", _const}}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
     bool operator==(const Iterator& other) const {
         return keyType() == other.keyType() && valueType() == other.valueType();
@@ -69,7 +69,7 @@ private:
 } // namespace map
 
 /** AST node for a map type. */
-class Map : public TypeBase, trait::isMutable, trait::isIterable, trait::isRuntimeNonTrivial, trait::isParameterized {
+class Map : public TypeBase, trait::isIterable, trait::isRuntimeNonTrivial, trait::isParameterized {
 public:
     Map(const Type& k, const Type& v, const Meta& m = Meta())
         : TypeBase(nodes(map::Iterator(k, v, true, m), map::Iterator(k, v, false, m)), m) {}
@@ -99,6 +99,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
     bool operator==(const Map& other) const { return iteratorType(true) == other.iteratorType(true); }
 

@@ -15,7 +15,6 @@ namespace list {
 class Iterator : public TypeBase,
                  trait::isIterator,
                  trait::isDereferenceable,
-                 trait::isMutable,
                  trait::isRuntimeNonTrivial,
                  trait::isParameterized {
 public:
@@ -41,6 +40,7 @@ public:
     auto properties() const { return node::Properties{{"const", _const}}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
     bool operator==(const Iterator& other) const { return dereferencedType() == other.dereferencedType(); }
 
@@ -52,7 +52,7 @@ private:
 } // namespace list
 
 /** AST node for a list type. */
-class List : public TypeBase, trait::isMutable, trait::isIterable, trait::isRuntimeNonTrivial, trait::isParameterized {
+class List : public TypeBase, trait::isIterable, trait::isRuntimeNonTrivial, trait::isParameterized {
 public:
     List(const Type& t, const Meta& m = Meta())
         : TypeBase(nodes(list::Iterator(t, true, m), list::Iterator(t, false, m)), m) {}
@@ -79,6 +79,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
     bool operator==(const List& other) const { return elementType() == other.elementType(); }
 

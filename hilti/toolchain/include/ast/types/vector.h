@@ -15,7 +15,6 @@ namespace vector {
 class Iterator : public TypeBase,
                  trait::isIterator,
                  trait::isDereferenceable,
-                 trait::isMutable,
                  trait::isRuntimeNonTrivial,
                  trait::isParameterized {
 public:
@@ -41,6 +40,7 @@ public:
     auto properties() const { return node::Properties{{"const", _const}}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
     bool operator==(const Iterator& other) const { return dereferencedType() == other.dereferencedType(); }
 
@@ -52,11 +52,7 @@ private:
 } // namespace vector
 
 /** AST node for a vector type. */
-class Vector : public TypeBase,
-               trait::isMutable,
-               trait::isIterable,
-               trait::isRuntimeNonTrivial,
-               trait::isParameterized {
+class Vector : public TypeBase, trait::isIterable, trait::isRuntimeNonTrivial, trait::isParameterized {
 public:
     Vector(const Type& t, const Meta& m = Meta())
         : TypeBase(nodes(vector::Iterator(t, true, m), vector::Iterator(t, false, m)), m) {}
@@ -83,6 +79,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isMutable() const override { return true; }
 
     bool operator==(const Vector& other) const { return elementType() == other.elementType(); }
 
