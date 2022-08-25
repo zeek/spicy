@@ -10,7 +10,7 @@
 namespace hilti::type {
 
 /** AST node for an "optional" type. */
-class Optional : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isDereferenceable {
+class Optional : public TypeBase, trait::isParameterized, trait::isDereferenceable {
 public:
     Optional(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     Optional(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
@@ -30,6 +30,8 @@ public:
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 
 private:
     bool _wildcard = false;

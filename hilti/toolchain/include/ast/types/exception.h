@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for an `exception` type. */
-class Exception : public TypeBase, trait::isAllocable, trait::isParameterized {
+class Exception : public TypeBase, trait::isParameterized {
 public:
     Exception(Meta m = Meta()) : TypeBase({node::none}, std::move(m)) {}
     Exception(Type base, Meta m = Meta()) : TypeBase({std::move(base)}, std::move(m)) {}
@@ -31,6 +31,8 @@ public:
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 
 private:
     bool _wildcard = false;

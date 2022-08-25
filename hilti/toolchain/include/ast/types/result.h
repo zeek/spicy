@@ -10,7 +10,7 @@
 namespace hilti::type {
 
 /** AST node for a "result" type. */
-class Result : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isDereferenceable {
+class Result : public TypeBase, trait::isParameterized, trait::isDereferenceable {
 public:
     Result(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     Result(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
@@ -30,6 +30,8 @@ public:
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 
 private:
     bool _wildcard = false;

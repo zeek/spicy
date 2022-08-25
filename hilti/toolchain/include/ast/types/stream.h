@@ -15,7 +15,6 @@ namespace stream {
 class Iterator : public TypeBase,
                  trait::isIterator,
                  trait::isDereferenceable,
-                 trait::isAllocable,
                  trait::isMutable,
                  trait::isRuntimeNonTrivial {
 public:
@@ -31,10 +30,12 @@ public:
     const Type& dereferencedType() const { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 };
 
 /** AST node for a stream view type. */
-class View : public TypeBase, trait::isView, trait::isIterable, trait::isAllocable, trait::isRuntimeNonTrivial {
+class View : public TypeBase, trait::isView, trait::isIterable, trait::isRuntimeNonTrivial {
 public:
     View(const Meta& m = Meta()) : TypeBase(nodes(stream::Iterator(m)), m) {}
 
@@ -50,17 +51,14 @@ public:
     const Type& iteratorType(bool /* const_ */) const { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 };
 
 } // namespace stream
 
 /** AST node for a stream type. */
-class Stream : public TypeBase,
-               trait::isAllocable,
-               trait::isMutable,
-               trait::isIterable,
-               trait::isViewable,
-               trait::isRuntimeNonTrivial {
+class Stream : public TypeBase, trait::isMutable, trait::isIterable, trait::isViewable, trait::isRuntimeNonTrivial {
 public:
     Stream(const Meta& m = Meta()) : TypeBase(nodes(stream::View(m)), m) {}
 
@@ -78,6 +76,8 @@ public:
     const Type& viewType() const { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 };
 
 namespace detail::stream {

@@ -15,7 +15,6 @@ namespace bytes {
 class Iterator : public TypeBase,
                  trait::isIterator,
                  trait::isDereferenceable,
-                 trait::isAllocable,
                  trait::isMutable,
                  trait::isRuntimeNonTrivial {
 public:
@@ -31,17 +30,14 @@ public:
     const Type& dereferencedType() const { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 };
 
 } // namespace bytes
 
 /** AST node for a bytes type. */
-class Bytes : public TypeBase,
-              trait::isAllocable,
-              trait::isMutable,
-              trait::isIterable,
-              trait::isRuntimeNonTrivial,
-              trait::isSortable {
+class Bytes : public TypeBase, trait::isMutable, trait::isIterable, trait::isRuntimeNonTrivial, trait::isSortable {
 public:
     Bytes(const Meta& m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8)), Type(bytes::Iterator(m))), m) {}
 
@@ -58,6 +54,8 @@ public:
     const Type& iteratorType(bool /* const */) const { return child<Type>(1); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 };
 
 } // namespace hilti::type

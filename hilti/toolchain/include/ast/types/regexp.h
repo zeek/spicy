@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a regexp type. */
-class RegExp : public TypeBase, trait::isAllocable, trait::isRuntimeNonTrivial {
+class RegExp : public TypeBase, trait::isRuntimeNonTrivial {
 public:
     RegExp(Meta m = Meta()) : TypeBase(std::move(m)) {}
 
@@ -21,6 +21,8 @@ public:
     auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 };
 
 } // namespace hilti::type

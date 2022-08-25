@@ -12,11 +12,7 @@ namespace hilti::type {
 /*
  * AST node for a `strong_ref<T>` type.
  */
-class StrongReference : public TypeBase,
-                        trait::isAllocable,
-                        trait::isParameterized,
-                        trait::isDereferenceable,
-                        trait::isReferenceType {
+class StrongReference : public TypeBase, trait::isParameterized, trait::isDereferenceable, trait::isReferenceType {
 public:
     StrongReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     StrongReference(Type ct, Meta m = Meta()) : TypeBase(nodes(std::move(ct)), std::move(m)) {}
@@ -43,17 +39,15 @@ public:
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"type", _type.renderedRid()}}; }
 
+    bool _isAllocable() const override { return true; }
+
 private:
     bool _wildcard = false;
     NodeRef _type;
 };
 
 /** AST node for a `weak_ref<T>` type. */
-class WeakReference : public TypeBase,
-                      trait::isAllocable,
-                      trait::isParameterized,
-                      trait::isDereferenceable,
-                      trait::isReferenceType {
+class WeakReference : public TypeBase, trait::isParameterized, trait::isDereferenceable, trait::isReferenceType {
 public:
     WeakReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     WeakReference(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
@@ -74,16 +68,14 @@ public:
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
+    bool _isAllocable() const override { return true; }
+
 private:
     bool _wildcard = false;
 };
 
 /** AST node for a `val_ref<T>` type. */
-class ValueReference : public TypeBase,
-                       trait::isAllocable,
-                       trait::isParameterized,
-                       trait::isDereferenceable,
-                       trait::isReferenceType {
+class ValueReference : public TypeBase, trait::isParameterized, trait::isDereferenceable, trait::isReferenceType {
 public:
     ValueReference(Wildcard /*unused*/, Meta m = Meta())
         : TypeBase(nodes(type::unknown), std::move(m)), _wildcard(true) {}
@@ -110,6 +102,8 @@ public:
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"rid", (_node ? _node->rid() : 0U)}}; }
+
+    bool _isAllocable() const override { return true; }
 
 private:
     bool _wildcard = false;

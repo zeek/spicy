@@ -16,7 +16,7 @@ namespace hilti::type {
  * making it accessible in the `hilti::*` namespace. HILTI assumes the
  * library type to be mutable.
  */
-class Library : public TypeBase, trait::isAllocable, trait::isMutable {
+class Library : public TypeBase, trait::isMutable {
 public:
     Library(std::string cxx_name, Meta m = Meta()) : TypeBase(std::move(m)), _cxx_name(std::move(cxx_name)) {}
 
@@ -35,6 +35,8 @@ public:
     auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"cxx_name", _cxx_name}}; }
+
+    bool _isAllocable() const override { return true; }
 
 private:
     std::string _cxx_name;

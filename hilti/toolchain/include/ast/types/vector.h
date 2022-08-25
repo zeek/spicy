@@ -15,7 +15,6 @@ namespace vector {
 class Iterator : public TypeBase,
                  trait::isIterator,
                  trait::isDereferenceable,
-                 trait::isAllocable,
                  trait::isMutable,
                  trait::isRuntimeNonTrivial,
                  trait::isParameterized {
@@ -41,6 +40,8 @@ public:
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"const", _const}}; }
 
+    bool _isAllocable() const override { return true; }
+
     bool operator==(const Iterator& other) const { return dereferencedType() == other.dereferencedType(); }
 
 private:
@@ -52,7 +53,6 @@ private:
 
 /** AST node for a vector type. */
 class Vector : public TypeBase,
-               trait::isAllocable,
                trait::isMutable,
                trait::isIterable,
                trait::isRuntimeNonTrivial,
@@ -81,6 +81,8 @@ public:
     auto typeParameters() const { return children(); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 
     bool operator==(const Vector& other) const { return elementType() == other.elementType(); }
 

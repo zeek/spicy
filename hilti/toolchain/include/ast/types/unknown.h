@@ -10,7 +10,7 @@ namespace hilti {
 namespace type {
 
 /** AST node for an unknown place-holder type. */
-class Unknown : public TypeBase, public type::trait::isAllocable, public util::type_erasure::trait::Singleton {
+class Unknown : public TypeBase, public util::type_erasure::trait::Singleton {
 public:
     bool operator==(const Unknown& /* other */) const { return true; }
 
@@ -21,6 +21,8 @@ public:
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 
     /**
      * Wrapper around constructor so that we can make it private. Don't use

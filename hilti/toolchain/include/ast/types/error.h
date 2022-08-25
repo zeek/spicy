@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for an error type. */
-class Error : public TypeBase, trait::isAllocable {
+class Error : public TypeBase {
 public:
     Error(Meta m = Meta()) : TypeBase(std::move(m)) {}
 
@@ -22,6 +22,8 @@ public:
 
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 };
 
 } // namespace hilti::type

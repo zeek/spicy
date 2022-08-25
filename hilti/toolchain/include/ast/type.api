@@ -35,7 +35,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     hilti::node::Set<type::function::Parameter> parameters() const if hilti::type::trait::takesArguments;
 
     /** For internal use. Use ``type::isAllocable` instead. */
-    trait _isAllocable() from hilti::type::trait::isAllocable;
+    bool _isAllocable() const;
 
     /** For internal use. Use ``type::isSortable` instead. */
     trait _isSortable() from hilti::type::trait::isSortable;

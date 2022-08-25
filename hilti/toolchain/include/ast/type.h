@@ -29,7 +29,6 @@ using Parameter = declaration::Parameter;
 }
 
 namespace trait {
-class isAllocable {};
 class isSortable {};
 class isDereferenceable {};
 class isIterable {};
@@ -156,6 +155,23 @@ struct State {
 
 } // namespace type
 
+class Type;
+
+/**
+ * Base class for classes implementing the `Type` interface. This class
+ * provides implementations for some interface methods shared that are shared
+ * by all types.
+ */
+class TypeBase : public NodeBase, public hilti::trait::isType {
+public:
+    using NodeBase::NodeBase;
+
+    virtual ~TypeBase() = default;
+
+    /** For internal use. Use ``type::isAllocable` instead. */
+    virtual bool _isAllocable() const { return false; }
+};
+
 class Type : public type::detail::Type {
 public:
     using type::detail::Type::Type;
@@ -189,16 +205,6 @@ inline Node to_node(Type t) { return Node(std::move(t)); }
 
 /** Renders a type as HILTI source code. */
 inline std::ostream& operator<<(std::ostream& out, Type t) { return out << to_node(std::move(t)); }
-
-/**
- * Base class for classes implementing the `Type` interface. This class
- * provides implementations for some interface methods shared that are shared
- * by all types.
- */
-class TypeBase : public NodeBase, public hilti::trait::isType {
-public:
-    using NodeBase::NodeBase;
-};
 
 namespace type {
 namespace detail {

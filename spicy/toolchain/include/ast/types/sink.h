@@ -9,7 +9,7 @@
 namespace spicy::type {
 
 /** AST node for a Sink type. */
-class Sink : public hilti::TypeBase, hilti::type::trait::isAllocable {
+class Sink : public hilti::TypeBase {
 public:
     Sink(hilti::Meta m = hilti::Meta()) : TypeBase(std::move(m)) {}
 
@@ -21,6 +21,8 @@ public:
     auto _isResolved(hilti::type::ResolvedState* rstate) const { return true; }
     /** Implements the `Node` interface. */
     auto properties() const { return hilti::node::Properties{}; }
+
+    bool _isAllocable() const override { return true; }
 };
 
 } // namespace spicy::type
