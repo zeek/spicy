@@ -34,7 +34,6 @@ class isDereferenceable {};
 class isIterable {};
 class isIterator {};
 class isReferenceType {};
-class isRuntimeNonTrivial {};
 class isView {};
 class isViewable {};
 class takesArguments {};
@@ -187,6 +186,9 @@ public:
 
     /** For internal use. Use ``type::isParameterized` instead. */
     virtual bool _isParameterized() const { return false; }
+
+    /** For internal use. Use ``type::isRuntimeNonTrivial` instead. */
+    virtual bool _isRuntimeNonTrivial() const { return false; }
 
     /** For internal use. Use ``type::isSortable` instead. */
     virtual bool _isSortable() const { return false; }

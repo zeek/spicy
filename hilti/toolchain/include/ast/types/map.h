@@ -14,7 +14,7 @@ namespace hilti::type {
 namespace map {
 
 /** AST node for a map iterator type. */
-class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable, trait::isRuntimeNonTrivial {
+class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable {
 public:
     Iterator(Type ktype, Type vtype, bool const_, const Meta& m = Meta())
         : TypeBase(nodes(type::Tuple({std::move(ktype), std::move(vtype)}, m)), m), _const(const_) {}
@@ -54,6 +54,7 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
+    bool _isRuntimeNonTrivial() const override { return true; }
 
     bool operator==(const Iterator& other) const {
         return keyType() == other.keyType() && valueType() == other.valueType();
@@ -67,7 +68,7 @@ private:
 } // namespace map
 
 /** AST node for a map type. */
-class Map : public TypeBase, trait::isIterable, trait::isRuntimeNonTrivial {
+class Map : public TypeBase, trait::isIterable {
 public:
     Map(const Type& k, const Type& v, const Meta& m = Meta())
         : TypeBase(nodes(map::Iterator(k, v, true, m), map::Iterator(k, v, false, m)), m) {}
@@ -97,6 +98,7 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
+    bool _isRuntimeNonTrivial() const override { return true; }
 
     bool operator==(const Map& other) const { return iteratorType(true) == other.iteratorType(true); }
 

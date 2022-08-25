@@ -65,7 +65,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     bool _isMutable() const;
 
     /** For internal use. Use ``type::isRuntimeNonTrivial` instead. */
-    trait _isRuntimeNonTrivial() from hilti::type::trait::isRuntimeNonTrivial;
+    bool _isRuntimeNonTrivial() const;
 
     /** For internal use. Use ``type::isResolved` instead. */
     bool _isResolved(type::ResolvedState* rstate) const;

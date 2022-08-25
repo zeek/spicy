@@ -13,7 +13,7 @@ namespace hilti::type {
 namespace set {
 
 /** AST node for a set iterator type. */
-class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable, trait::isRuntimeNonTrivial {
+class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable {
 public:
     Iterator(Type etype, bool const_, Meta m = Meta())
         : TypeBase(nodes(std::move(etype)), std::move(m)), _const(const_) {}
@@ -37,6 +37,7 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
+    bool _isRuntimeNonTrivial() const override { return true; }
 
     bool operator==(const Iterator& other) const { return dereferencedType() == other.dereferencedType(); }
 
@@ -48,7 +49,7 @@ private:
 } // namespace set
 
 /** AST node for a set type. */
-class Set : public TypeBase, trait::isIterable, trait::isRuntimeNonTrivial {
+class Set : public TypeBase, trait::isIterable {
 public:
     Set(const Type& t, const Meta& m = Meta())
         : TypeBase(nodes(set::Iterator(t, true, m), set::Iterator(t, false, m)), m) {}
@@ -77,6 +78,7 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
+    bool _isRuntimeNonTrivial() const override { return true; }
 
     bool operator==(const Set& other) const { return elementType() == other.elementType(); }
 

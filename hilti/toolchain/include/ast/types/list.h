@@ -13,7 +13,7 @@ namespace hilti::type {
 namespace list {
 
 /** AST node for a list iterator type. */
-class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable, trait::isRuntimeNonTrivial {
+class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable {
 public:
     Iterator(Type etype, bool const_, Meta m = Meta())
         : TypeBase(nodes(std::move(etype)), std::move(m)), _const(const_) {}
@@ -39,6 +39,7 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
+    bool _isRuntimeNonTrivial() const override { return true; }
 
     bool operator==(const Iterator& other) const { return dereferencedType() == other.dereferencedType(); }
 
@@ -50,7 +51,7 @@ private:
 } // namespace list
 
 /** AST node for a list type. */
-class List : public TypeBase, trait::isIterable, trait::isRuntimeNonTrivial {
+class List : public TypeBase, trait::isIterable {
 public:
     List(const Type& t, const Meta& m = Meta())
         : TypeBase(nodes(list::Iterator(t, true, m), list::Iterator(t, false, m)), m) {}
@@ -77,6 +78,7 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
+    bool _isRuntimeNonTrivial() const override { return true; }
 
     bool operator==(const List& other) const { return elementType() == other.elementType(); }
 

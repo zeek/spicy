@@ -12,7 +12,7 @@ namespace hilti::type {
 namespace stream {
 
 /** AST node for a stream iterator type. */
-class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable, trait::isRuntimeNonTrivial {
+class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable {
 public:
     Iterator(Meta m = Meta()) : TypeBase(nodes(type::UnsignedInteger(8)), std::move(m)) {}
 
@@ -29,10 +29,11 @@ public:
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
+    bool _isRuntimeNonTrivial() const override { return true; }
 };
 
 /** AST node for a stream view type. */
-class View : public TypeBase, trait::isView, trait::isIterable, trait::isRuntimeNonTrivial {
+class View : public TypeBase, trait::isView, trait::isIterable {
 public:
     View(const Meta& m = Meta()) : TypeBase(nodes(stream::Iterator(m)), m) {}
 
@@ -50,12 +51,13 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isRuntimeNonTrivial() const override { return true; }
 };
 
 } // namespace stream
 
 /** AST node for a stream type. */
-class Stream : public TypeBase, trait::isIterable, trait::isViewable, trait::isRuntimeNonTrivial {
+class Stream : public TypeBase, trait::isIterable, trait::isViewable {
 public:
     Stream(const Meta& m = Meta()) : TypeBase(nodes(stream::View(m)), m) {}
 
@@ -76,6 +78,7 @@ public:
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
+    bool _isRuntimeNonTrivial() const override { return true; }
 };
 
 namespace detail::stream {
