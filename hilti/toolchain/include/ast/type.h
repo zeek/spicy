@@ -29,7 +29,6 @@ using Parameter = declaration::Parameter;
 }
 
 namespace trait {
-class isSortable {};
 class isDereferenceable {};
 class isIterable {};
 class isIterator {};
@@ -170,6 +169,9 @@ public:
 
     /** For internal use. Use ``type::isAllocable` instead. */
     virtual bool _isAllocable() const { return false; }
+
+    /** For internal use. Use ``type::isSortable` instead. */
+    virtual bool _isSortable() const { return false; }
 };
 
 class Type : public type::detail::Type {

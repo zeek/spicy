@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a time type. */
-class Time : public TypeBase, trait::isSortable {
+class Time : public TypeBase {
 public:
     Time(Meta m = Meta()) : TypeBase(std::move(m)) {}
 
@@ -23,6 +23,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isSortable() const override { return true; }
 };
 
 } // namespace hilti::type

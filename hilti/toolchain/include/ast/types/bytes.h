@@ -37,7 +37,7 @@ public:
 } // namespace bytes
 
 /** AST node for a bytes type. */
-class Bytes : public TypeBase, trait::isMutable, trait::isIterable, trait::isRuntimeNonTrivial, trait::isSortable {
+class Bytes : public TypeBase, trait::isMutable, trait::isIterable, trait::isRuntimeNonTrivial {
 public:
     Bytes(const Meta& m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8)), Type(bytes::Iterator(m))), m) {}
 
@@ -56,6 +56,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isSortable() const override { return true; }
 };
 
 } // namespace hilti::type

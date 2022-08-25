@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a string type. */
-class String : public TypeBase, trait::isSortable {
+class String : public TypeBase {
 public:
     String(Meta m = Meta()) : TypeBase(std::move(m)) {}
 
@@ -23,6 +23,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isSortable() const override { return true; }
 };
 
 } // namespace hilti::type

@@ -48,7 +48,7 @@ inline Node to_node(Label l) { return Node(std::move(l)); }
 } // namespace enum_
 
 /** AST node for an enum type. */
-class Enum : public TypeBase, trait::isParameterized, trait::isSortable {
+class Enum : public TypeBase, trait::isParameterized {
 public:
     Enum(std::vector<enum_::Label> l, Meta m = Meta())
         : TypeBase(nodes(_normalizeLabels(std::move(l))), std::move(m)) {}
@@ -99,6 +99,7 @@ public:
     static void initLabelTypes(Node* n);
 
     bool _isAllocable() const override { return true; }
+    bool _isSortable() const override { return true; }
 
 private:
     static std::vector<Declaration> _normalizeLabels(std::vector<enum_::Label> labels);

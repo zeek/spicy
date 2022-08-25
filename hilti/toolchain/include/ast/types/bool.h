@@ -9,7 +9,7 @@
 namespace hilti::type {
 
 /** AST node for a bool type. */
-class Bool : public TypeBase, trait::isSortable {
+class Bool : public TypeBase {
 public:
     Bool(Meta m = Meta()) : TypeBase(std::move(m)) {}
 
@@ -23,6 +23,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isSortable() const override { return true; }
 };
 
 } // namespace hilti::type
