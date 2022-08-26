@@ -33,7 +33,7 @@ public:
 };
 
 /** AST node for a stream view type. */
-class View : public TypeBase, trait::isIterable {
+class View : public TypeBase {
 public:
     View(const Meta& m = Meta()) : TypeBase(nodes(stream::Iterator(m)), m) {}
 
@@ -51,13 +51,14 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isIterable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
 };
 
 } // namespace stream
 
 /** AST node for a stream type. */
-class Stream : public TypeBase, trait::isIterable, trait::isViewable {
+class Stream : public TypeBase, trait::isViewable {
 public:
     Stream(const Meta& m = Meta()) : TypeBase(nodes(stream::View(m)), m) {}
 
@@ -77,6 +78,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isIterable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
     bool _isView() const override { return true; }

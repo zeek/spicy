@@ -36,7 +36,7 @@ public:
 } // namespace bytes
 
 /** AST node for a bytes type. */
-class Bytes : public TypeBase, trait::isIterable {
+class Bytes : public TypeBase {
 public:
     Bytes(const Meta& m = Meta()) : TypeBase(nodes(Type(type::UnsignedInteger(8)), Type(bytes::Iterator(m))), m) {}
 
@@ -55,6 +55,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isIterable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
     bool _isSortable() const override { return true; }

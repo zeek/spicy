@@ -184,6 +184,9 @@ public:
     /** For internal use. Use ``type::isAllocable` instead. */
     virtual bool _isAllocable() const { return false; }
 
+    /** For internal use. Use ``type::isIterable` instead. */
+    virtual bool _isIterable() const { return false; }
+
     /** For internal use. Use ``type::isMutable` instead. */
     virtual bool _isMutable() const { return false; }
 

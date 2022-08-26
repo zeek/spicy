@@ -50,7 +50,7 @@ private:
 } // namespace vector
 
 /** AST node for a vector type. */
-class Vector : public TypeBase, trait::isIterable {
+class Vector : public TypeBase {
 public:
     Vector(const Type& t, const Meta& m = Meta())
         : TypeBase(nodes(vector::Iterator(t, true, m), vector::Iterator(t, false, m)), m) {}
@@ -75,6 +75,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isIterable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }

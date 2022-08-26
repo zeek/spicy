@@ -69,7 +69,7 @@ private:
 } // namespace map
 
 /** AST node for a map type. */
-class Map : public TypeBase, trait::isIterable {
+class Map : public TypeBase {
 public:
     Map(const Type& k, const Type& v, const Meta& m = Meta())
         : TypeBase(nodes(map::Iterator(k, v, true, m), map::Iterator(k, v, false, m)), m) {}
@@ -97,6 +97,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isIterable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }

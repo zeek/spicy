@@ -50,7 +50,7 @@ private:
 } // namespace set
 
 /** AST node for a set type. */
-class Set : public TypeBase, trait::isIterable {
+class Set : public TypeBase {
 public:
     Set(const Type& t, const Meta& m = Meta())
         : TypeBase(nodes(set::Iterator(t, true, m), set::Iterator(t, false, m)), m) {}
@@ -77,6 +77,7 @@ public:
     auto properties() const { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isIterable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
