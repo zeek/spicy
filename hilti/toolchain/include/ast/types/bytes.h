@@ -49,8 +49,8 @@ public:
     /** Implements the `Type` interface. */
     const Type& elementType() const { return child<Type>(0); }
 
-    /** Implements the `Type` interface. */
-    const Type& iteratorType(bool /* const */) const { return child<Type>(1); }
+    optional_ref<const Type> iteratorType(bool /* const */) const override { return child<Type>(1); }
+
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 

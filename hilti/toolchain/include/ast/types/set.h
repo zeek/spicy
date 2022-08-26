@@ -67,8 +67,11 @@ public:
     }
     /** Implements the `Type` interface. */
     const Type& elementType() const { return *child<set::Iterator>(0).dereferencedType(); }
-    /** Implements the `Type` interface. */
-    const Type& iteratorType(bool const_) const { return const_ ? child<Type>(0) : child<Type>(1); }
+
+    optional_ref<const Type> iteratorType(bool const_) const override {
+        return const_ ? child<Type>(0) : child<Type>(1);
+    }
+
     /** Implements the `Type` interface. */
     bool isWildcard() const override { return _wildcard; }
     /** Implements the `Type` interface. */

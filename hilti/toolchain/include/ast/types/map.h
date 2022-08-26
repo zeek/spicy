@@ -89,8 +89,11 @@ public:
     }
     /** Implements the `Type` interface. */
     const Type& elementType() const { return valueType(); }
-    /** Implements the `Type` interface. */
-    const Type& iteratorType(bool const_) const { return const_ ? child<Type>(0) : child<Type>(1); }
+
+    optional_ref<const Type> iteratorType(bool const_) const override {
+        return const_ ? child<Type>(0) : child<Type>(1);
+    }
+
     bool isWildcard() const override { return _wildcard; }
     std::vector<Node> typeParameters() const override { return children(); }
     /** Implements the `Node` interface. */

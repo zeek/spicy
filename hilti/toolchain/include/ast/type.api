@@ -20,7 +20,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     bool isWildcard() const;
 
     /** Returns the type of an iterator for this type. */
-    const hilti::Type& iteratorType(bool const_) const if hilti::type::trait::isIterable or hilti::type::trait::isView;
+    const optional_ref<const hilti::Type> iteratorType(bool const_) const;
 
     /** Returns the type of an view for this type. */
     const hilti::Type& viewType() const if hilti::type::trait::isViewable;

@@ -49,7 +49,7 @@ static hilti::Meta toMeta(hilti::detail::parser::location l) {
 
 static hilti::Type iteratorForType(hilti::Type t, bool const_, hilti::Meta m) {
     if ( hilti::type::isIterable(t) )
-        return t.iteratorType(const_);
+        return *t.iteratorType(const_);
     else {
         hilti::logger().error(hilti::util::fmt("type '%s' is not iterable", t), m.location());
         return hilti::type::Error(m);

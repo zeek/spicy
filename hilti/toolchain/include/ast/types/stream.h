@@ -44,9 +44,8 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Type` interface. */
-    const Type& elementType() const { return *iteratorType(true).dereferencedType(); }
-    /** Implements the `Type` interface. */
-    const Type& iteratorType(bool /* const_ */) const { return child<Type>(0); }
+    const Type& elementType() const { return *iteratorType(true)->dereferencedType(); }
+    optional_ref<const Type> iteratorType(bool /* const_ */) const override { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
@@ -69,9 +68,8 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Type` interface. */
-    const Type& elementType() const { return *iteratorType(true).dereferencedType(); }
-    /** Implements the `Type` interface. */
-    const Type& iteratorType(bool /* const_ */) const { return viewType().iteratorType(true); }
+    const Type& elementType() const { return *iteratorType(true)->dereferencedType(); }
+    optional_ref<const Type> iteratorType(bool /* const_ */) const override { return viewType().iteratorType(true); }
     /** Implements the `Type` interface. */
     const Type& viewType() const { return child<Type>(0); }
     /** Implements the `Node` interface. */
