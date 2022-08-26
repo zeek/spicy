@@ -79,7 +79,14 @@ public:
           _flavor(flavor) {}
 
     const auto& result() const { return child<function::Result>(0); }
-    auto parameters() const { return children<function::Parameter>(1, -1); }
+
+    node::Set<type::function::Parameter> parameters() const override {
+        node::Set<type::function::Parameter> result;
+        for ( auto&& p : children<function::Parameter>(1, -1) )
+            result.insert(p);
+        return result;
+    }
+
     auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
     auto flavor() const { return _flavor; }
 

@@ -29,7 +29,7 @@
 namespace hilti::type {
 
 /** AST node for a struct type. */
-class Struct : public TypeBase, trait::takesArguments {
+class Struct : public TypeBase {
 public:
     Struct(std::vector<Declaration> fields, Meta m = Meta())
         : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {}
@@ -57,7 +57,11 @@ public:
     }
 
     auto hasFinalizer() const { return field("~finally").has_value(); }
-    auto parameters() const { return childrenOfType<type::function::Parameter>(); }
+
+    node::Set<type::function::Parameter> parameters() const override {
+        return childrenOfType<type::function::Parameter>();
+    }
+
     auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
 
     auto fields() const { return childrenOfType<declaration::Field>(); }

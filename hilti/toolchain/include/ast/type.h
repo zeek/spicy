@@ -33,7 +33,6 @@ using Parameter = declaration::Parameter;
 namespace trait {
 class isIterator {};
 class isReferenceType {};
-class takesArguments {};
 } // namespace trait
 
 using ResolvedState = std::unordered_set<uintptr_t>;
@@ -176,6 +175,9 @@ public:
      * source code, this typically corresponds to a type `T<*>`.
      */
     virtual bool isWildcard() const { return false; }
+
+    /** Returns any parameters the type expects. */
+    virtual hilti::node::Set<type::function::Parameter> parameters() const { return {}; }
 
     /**
      * Returns any parameters associated with type. If a type is declared as
@@ -333,7 +335,7 @@ inline bool isRuntimeNonTrivial(const Type& t) { return t._isRuntimeNonTrivial()
 inline bool isViewable(const Type& t) { return t.viewType().has_value(); }
 
 /** Returns true for HILTI types that may receive type arguments on instantiations. */
-inline bool takesArguments(const Type& t) { return t._takesArguments(); }
+inline bool takesArguments(const Type& t) { return ! t.parameters().empty(); }
 
 /**
  * Returns true if the type is marked constant.

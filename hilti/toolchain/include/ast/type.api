@@ -32,7 +32,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     optional_ref<const hilti::Type> elementType() const;
 
     /** Returns any parameters the type expects. */
-    hilti::node::Set<type::function::Parameter> parameters() const if hilti::type::trait::takesArguments;
+    hilti::node::Set<type::function::Parameter> parameters() const;
 
     /** For internal use. Use ``type::isAllocable` instead. */
     bool _isAllocable() const;
@@ -60,9 +60,6 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
 
     /** Internal state managed by derived class. */
     member type::detail::State _state_;
-
-    /** For internal use. Use ``type::takesArguments` instead. */
-    trait _takesArguments() from hilti::type::trait::takesArguments;
 
     /** Implements the `Node` interface. */
     hilti::node::Properties properties() const;

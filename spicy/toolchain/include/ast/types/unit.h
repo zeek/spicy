@@ -54,7 +54,7 @@ struct AssignIndices {
 } // namespace detail
 
 /** AST node for a Spicy unit. */
-class Unit : detail::AssignIndices, public hilti::TypeBase, hilti::type::trait::takesArguments {
+class Unit : detail::AssignIndices, public hilti::TypeBase {
 public:
     Unit(const std::vector<type::function::Parameter>& params, std::vector<unit::Item> i,
          const std::optional<AttributeSet>& /* attrs */ = {}, Meta m = Meta())
@@ -77,7 +77,11 @@ public:
     }
 
     auto id() const { return children()[1].tryAs<ID>(); }
-    auto parameters() const { return childrenOfType<type::function::Parameter>(); }
+
+    hilti::node::Set<type::function::Parameter> parameters() const override {
+        return childrenOfType<type::function::Parameter>();
+    }
+
     auto parameterRefs() const { return childRefsOfType<type::function::Parameter>(); }
     auto items() const { return childrenOfType<unit::Item>(); }
     auto itemRefs() const { return childRefsOfType<unit::Item>(); }
