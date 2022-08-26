@@ -202,6 +202,9 @@ public:
     /** For internal use. Use ``type::isReferenceType` instead. */
     virtual bool _isReferenceType() const { return false; }
 
+    /** For internal use. Use ``type::isResolved` instead. */
+    virtual bool _isResolved(type::ResolvedState* rstate) const = 0;
+
     /** For internal use. Use ``type::isRuntimeNonTrivial` instead. */
     virtual bool _isRuntimeNonTrivial() const { return false; }
 

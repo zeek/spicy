@@ -78,8 +78,7 @@ public:
     }
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return _initialized; }
+    bool _isResolved(ResolvedState* rstate) const override { return _initialized; }
 
     std::vector<Node> typeParameters() const override {
         std::vector<Node> params;

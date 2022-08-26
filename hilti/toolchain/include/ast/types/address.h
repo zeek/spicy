@@ -17,8 +17,7 @@ public:
 
     /** Implements the `Type` interface. */
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
+    bool _isResolved(ResolvedState* rstate) const override { return true; }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 

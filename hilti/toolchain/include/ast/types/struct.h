@@ -102,8 +102,7 @@ public:
         return node::isEqual(this, other);
     }
 
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const {
+    bool _isResolved(ResolvedState* rstate) const override {
         const auto& cs = children();
 
         return std::all_of(cs.begin(), cs.end(), [&](const auto& c) {

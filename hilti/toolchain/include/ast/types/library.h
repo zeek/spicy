@@ -30,8 +30,7 @@ public:
         return node::isEqual(this, other);
     }
 
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
+    bool _isResolved(ResolvedState* rstate) const override { return true; }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{{"cxx_name", _cxx_name}}; }
 

@@ -180,7 +180,7 @@ public:
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
 
-    auto _isResolved(ResolvedState* rstate) const {
+    bool _isResolved(ResolvedState* rstate) const override {
         auto xs = items();
         return std::all_of(xs.begin(), xs.end(), [](const auto& x) { return x.isResolved(); });
     }

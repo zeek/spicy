@@ -21,8 +21,7 @@ public:
     bool operator==(const Type_& other) const { return typeValue() == other.typeValue(); }
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(typeValue(), rstate); }
+    bool _isResolved(ResolvedState* rstate) const override { return type::detail::isResolved(typeValue(), rstate); }
     bool isWildcard() const override { return _wildcard; }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }

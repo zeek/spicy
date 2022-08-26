@@ -25,8 +25,11 @@ public:
     bool isConstant() const { return _const; }
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
+
+    bool _isResolved(ResolvedState* rstate) const override {
+        return type::detail::isResolved(dereferencedType(), rstate);
+    }
+
     /** Implements the `Type` interface. */
     optional_ref<const Type> dereferencedType() const override { return child<Type>(0); }
     bool isWildcard() const override { return _wildcard; }
@@ -59,8 +62,8 @@ public:
           _wildcard(true) {}
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const {
+
+    bool _isResolved(ResolvedState* rstate) const override {
         return type::detail::isResolved(iteratorType(true), rstate) &&
                type::detail::isResolved(iteratorType(false), rstate);
     }

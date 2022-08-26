@@ -30,8 +30,11 @@ public:
     bool operator==(const StrongReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
+
+    bool _isResolved(ResolvedState* rstate) const override {
+        return type::detail::isResolved(dereferencedType(), rstate);
+    }
+
     std::vector<Node> typeParameters() const override { return children(); }
     bool isWildcard() const override { return _wildcard; }
 
@@ -58,8 +61,11 @@ public:
     bool operator==(const WeakReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
+
+    bool _isResolved(ResolvedState* rstate) const override {
+        return type::detail::isResolved(dereferencedType(), rstate);
+    }
+
     /** Implements the `Type` interface. */
     std::vector<Node> typeParameters() const override { return children(); }
     /** Implements the `Type` interface. */
@@ -94,8 +100,11 @@ public:
     bool operator==(const ValueReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
+
+    bool _isResolved(ResolvedState* rstate) const override {
+        return type::detail::isResolved(dereferencedType(), rstate);
+    }
+
     /** Implements the `Type` interface. */
     std::vector<Node> typeParameters() const override { return children(); }
     /** Implements the `Type` interface. */
