@@ -23,7 +23,7 @@ public:
     Vector(const Type& t, std::vector<Expression> e, const Meta& m = Meta())
         : NodeBase(nodes(type::Vector(t, m), std::move(e)), m) {}
 
-    const auto& elementType() const { return children()[0].as<type::Vector>().elementType(); }
+    const auto& elementType() const { return *children()[0].as<type::Vector>().elementType(); }
     auto value() const { return children<Expression>(1, -1); }
 
     void setElementType(const Type& t) { children()[0] = type::Vector(t, meta()); }

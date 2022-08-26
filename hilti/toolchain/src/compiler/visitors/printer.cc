@@ -859,7 +859,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "list<*>";
         else {
-            out << const_(n) << "list<" << n.elementType() << ">";
+            out << const_(n) << "list<" << *n.elementType() << ">";
         }
     }
 
@@ -899,7 +899,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "set<*>";
         else {
-            out << const_(n) << "set<" << n.elementType() << ">";
+            out << const_(n) << "set<" << *n.elementType() << ">";
         }
     }
 
@@ -993,7 +993,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "vector<*>";
         else {
-            out << const_(n) << "vector<" << n.elementType() << ">";
+            out << const_(n) << "vector<" << *n.elementType() << ">";
         }
     }
 

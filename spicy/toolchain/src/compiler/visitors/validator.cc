@@ -145,7 +145,7 @@ hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::
     }
 
     else if ( const auto& x = pt.tryAs<type::Vector>() ) {
-        if ( auto rc = isParseableType(x->elementType(), f); ! rc )
+        if ( auto rc = isParseableType(*x->elementType(), f); ! rc )
             return rc;
 
         return hilti::Nothing();

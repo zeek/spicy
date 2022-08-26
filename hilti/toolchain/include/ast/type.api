@@ -29,7 +29,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     optional_ref<const hilti::Type> dereferencedType() const;
 
     /** Returns the type of elements the container stores. */
-    const hilti::Type& elementType() const if hilti::type::trait::isIterable;
+    optional_ref<const hilti::Type> elementType() const;
 
     /** Returns any parameters the type expects. */
     hilti::node::Set<type::function::Parameter> parameters() const if hilti::type::trait::takesArguments;

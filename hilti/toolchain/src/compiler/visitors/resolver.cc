@@ -359,7 +359,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                 return;
             }
 
-            const auto& et = container.elementType();
+            const auto& et = *container.elementType();
             logChange(p.node, et);
             p.node.as<expression::ListComprehension>().setLocalType(et);
             modified = true;

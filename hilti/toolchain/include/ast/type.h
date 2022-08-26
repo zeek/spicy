@@ -167,6 +167,9 @@ public:
     /** Returns the type of elements the iterator traverse. */
     virtual optional_ref<const Type> dereferencedType() const { return {}; }
 
+    /** Returns the type of elements the container stores. */
+    virtual optional_ref<const hilti::Type> elementType() const { return {}; }
+
     /** Returns the type of an iterator for this type. */
     virtual optional_ref<const hilti::Type> iteratorType(bool const_) const { return {}; }
 

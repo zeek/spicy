@@ -243,7 +243,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
                     // If there's list comprehension, morph the type into a vector.
                     // Assignment will transparently work.
                     if ( auto x = t->tryAs<type::List>() )
-                        t = hilti::type::Vector(x->elementType(), x->meta());
+                        t = hilti::type::Vector(*x->elementType(), x->meta());
                 }
             }
             else if ( const auto& i = f.item(); i && i->isA<type::unit::item::Field>() ) {

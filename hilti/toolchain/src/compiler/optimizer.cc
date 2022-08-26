@@ -45,7 +45,7 @@ Type innermostType(Type type) {
         return innermostType(*type.dereferencedType());
 
     if ( type::isIterable(type) )
-        return innermostType(type.elementType());
+        return innermostType(*type.elementType());
 
     return type;
 }

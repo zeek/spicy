@@ -46,8 +46,7 @@ public:
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Type` interface. */
-    const Type& elementType() const { return child<Type>(0); }
+    optional_ref<const Type> elementType() const override { return child<Type>(0); }
 
     optional_ref<const Type> iteratorType(bool /* const */) const override { return child<Type>(1); }
 

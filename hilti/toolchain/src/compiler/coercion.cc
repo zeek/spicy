@@ -49,7 +49,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
             std::vector<ctor::map::Element> nelemns;
             for ( const auto& e : c.value() ) {
                 auto k = hilti::coerceExpression(e.key(), t->keyType(), style);
-                auto v = hilti::coerceExpression(e.value(), t->elementType(), style);
+                auto v = hilti::coerceExpression(e.value(), *t->elementType(), style);
 
                 if ( k && v )
                     nelemns.emplace_back(*k.coerced, *v.coerced);
@@ -57,7 +57,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
                     return {};
             }
 
-            return ctor::Map(t->keyType(), t->elementType(), nelemns, c.meta());
+            return ctor::Map(t->keyType(), *t->elementType(), nelemns, c.meta());
         }
 
         return {};
@@ -80,16 +80,16 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( auto t = dst.tryAs<type::List>() ) {
             std::vector<Expression> nexprs;
             for ( const auto& e : c.value() ) {
-                if ( auto x = hilti::coerceExpression(e, t->elementType(), CoercionStyle::TryAllForAssignment) )
+                if ( auto x = hilti::coerceExpression(e, *t->elementType(), CoercionStyle::TryAllForAssignment) )
                     nexprs.push_back(*x.coerced);
                 else
                     return {};
             }
-            return ctor::List(t->elementType(), std::move(nexprs), c.meta());
+            return ctor::List(*t->elementType(), std::move(nexprs), c.meta());
         }
 
         if ( auto t = dst.tryAs<type::Vector>() ) {
-            auto dt = t->isWildcard() ? c.elementType() : t->elementType();
+            auto dt = t->isWildcard() ? c.elementType() : *t->elementType();
 
             std::vector<Expression> nexprs;
             for ( const auto& e : c.value() ) {
@@ -102,7 +102,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         }
 
         if ( auto t = dst.tryAs<type::Set>() ) {
-            auto dt = t->isWildcard() ? c.elementType() : t->elementType();
+            auto dt = t->isWildcard() ? c.elementType() : *t->elementType();
 
             std::vector<Expression> nexprs;
             for ( const auto& e : c.value() ) {
@@ -178,12 +178,12 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( auto t = dst.tryAs<type::Set>() ) {
             std::vector<Expression> nexprs;
             for ( const auto& e : c.value() ) {
-                if ( auto x = hilti::coerceExpression(e, t->elementType(), style) )
+                if ( auto x = hilti::coerceExpression(e, *t->elementType(), style) )
                     nexprs.push_back(*x.coerced);
                 else
                     return {};
             }
-            return ctor::Set(t->elementType(), std::move(nexprs), c.meta());
+            return ctor::Set(*t->elementType(), std::move(nexprs), c.meta());
         }
 
         return {};
@@ -228,12 +228,12 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( auto t = dst.tryAs<type::Vector>() ) {
             std::vector<Expression> nexprs;
             for ( const auto& e : c.value() ) {
-                if ( auto x = hilti::coerceExpression(e, t->elementType(), style) )
+                if ( auto x = hilti::coerceExpression(e, *t->elementType(), style) )
                     nexprs.push_back(*x.coerced);
                 else
                     return {};
             }
-            return ctor::Vector(t->elementType(), std::move(nexprs), c.meta());
+            return ctor::Vector(*t->elementType(), std::move(nexprs), c.meta());
         }
 
         return {};

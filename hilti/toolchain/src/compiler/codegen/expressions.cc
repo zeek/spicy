@@ -55,9 +55,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         return cg->coerce(cg->compile(n.expression(), lhs), n.expression().type(), n.type());
     }
 
-    result_t operator()(const expression::Ctor& n) {
-        return cg->compile(n.ctor(), lhs);
-    }
+    result_t operator()(const expression::Ctor& n) { return cg->compile(n.ctor(), lhs); }
 
     result_t operator()(const expression::Deferred& n) {
         auto type = cg->compile(n.type(), codegen::TypeUsage::Storage);
@@ -86,7 +84,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const expression::ListComprehension& n) {
         auto id = cxx::ID(n.local().id());
         auto input = cg->compile(n.input());
-        auto itype = cg->compile(n.input().type().elementType(), codegen::TypeUsage::Storage);
+        auto itype = cg->compile(*n.input().type().elementType(), codegen::TypeUsage::Storage);
         auto otype = cg->compile(n.output().type(), codegen::TypeUsage::Storage);
         auto output = cg->compile(n.output());
         auto pred = std::string();

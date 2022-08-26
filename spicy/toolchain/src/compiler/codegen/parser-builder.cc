@@ -437,7 +437,7 @@ struct ProductionVisitor
         // Push destination for parsed value onto stack.
 
         if ( auto c = meta.container() ) {
-            auto etype = c->parseType().elementType();
+            auto etype = *c->parseType().elementType();
             auto container_element = builder()->addTmp("elem", etype);
             pushDestination(container_element);
         }

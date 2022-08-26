@@ -401,7 +401,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     // passed `set` and perform the coercion automatically when resolving the
     // function call.
     void operator()(const operator_::set::In& n, position_t p) {
-        if ( auto x = coerceTo(&p.node, n.op0(), n.op1().type().as<type::Set>().elementType(), true, false) ) {
+        if ( auto x = coerceTo(&p.node, n.op0(), *n.op1().type().as<type::Set>().elementType(), true, false) ) {
             logChange(p.node, *x, "call argument");
             p.node.as<operator_::set::In>().setOp0(*x);
             modified = true;
@@ -414,10 +414,10 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
 
         // Need to coerce the element here as the normal overload resolution
         // couldn't know the element type yet.
-        auto etype = n.op0().type().as<type::Vector>().elementType();
+        auto etype = *n.op0().type().as<type::Vector>().elementType();
         auto elem = methodArgument(n, 0);
 
-        if ( auto x = coerceTo(&p.node, n.op2(), type::Tuple({etype}), false, true) ) {
+        if ( auto x = coerceTo(&p.node, n.op2(), type::Tuple({std::move(etype)}), false, true) ) {
             logChange(p.node, *x, "element type");
             p.node.as<operator_::vector::PushBack>().setOp2(*x);
             modified = true;

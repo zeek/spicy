@@ -23,7 +23,7 @@ public:
     List(const Type& t, std::vector<Expression> e, const Meta& m = Meta())
         : NodeBase(nodes(type::List(t, m), std::move(e)), m) {}
 
-    const auto& elementType() const { return children()[0].as<type::List>().elementType(); }
+    const auto& elementType() const { return *children()[0].as<type::List>().elementType(); }
     auto value() const { return children<Expression>(1, -1); }
 
     void setElementType(const Type& t) { children()[0] = type::List(t, meta()); }

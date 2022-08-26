@@ -79,7 +79,7 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
             if ( ! type::isResolved(pt) )
                 return;
 
-            auto dd = hilti::expression::Keyword::createDollarDollarDeclaration(pt.elementType());
+            auto dd = hilti::expression::Keyword::createDollarDollarDeclaration(*pt.elementType());
             auto n = unit->module().as<Module>().preserve(std::move(dd));
             p.node.scope()->insert(std::move(n));
         }

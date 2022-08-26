@@ -58,10 +58,10 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
             return fmt("::hilti::rt::Set(%s)", expr);
 
         if ( auto t = dst.tryAs<type::Vector>() ) {
-            auto x = cg->compile(t->elementType(), codegen::TypeUsage::Storage);
+            auto x = cg->compile(*t->elementType(), codegen::TypeUsage::Storage);
 
             std::string allocator;
-            if ( auto def = cg->typeDefaultValue(t->elementType()) )
+            if ( auto def = cg->typeDefaultValue(*t->elementType()) )
                 allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
             return fmt("::hilti::rt::Vector<%s%s>(%s)", x, allocator, expr);

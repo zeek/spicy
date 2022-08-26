@@ -65,8 +65,8 @@ public:
         return type::detail::isResolved(iteratorType(true), rstate) &&
                type::detail::isResolved(iteratorType(false), rstate);
     }
-    /** Implements the `Type` interface. */
-    const Type& elementType() const { return *child<set::Iterator>(0).dereferencedType(); }
+
+    optional_ref<const Type> elementType() const override { return child<set::Iterator>(0).dereferencedType(); }
 
     optional_ref<const Type> iteratorType(bool const_) const override {
         return const_ ? child<Type>(0) : child<Type>(1);

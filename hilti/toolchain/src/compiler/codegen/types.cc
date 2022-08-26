@@ -289,7 +289,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
     result_t operator()(const type::Vector& n, const position_t p) {
         if ( n.elementType() != type::unknown )
-            addDependency(n.elementType());
+            addDependency(*n.elementType());
 
         return {};
     }
@@ -499,7 +499,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
             // Can only be the empty list.
             t = "::hilti::rt::vector::Empty";
         else
-            t = fmt("::hilti::rt::Vector<%s>", cg->compile(n.elementType(), codegen::TypeUsage::Storage));
+            t = fmt("::hilti::rt::Vector<%s>", cg->compile(*n.elementType(), codegen::TypeUsage::Storage));
 
         return CxxTypes{.base_type = fmt("%s", t)};
     }
@@ -512,7 +512,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
             t = "::hilti::rt::map::Empty";
         else {
             auto k = cg->compile(n.keyType(), codegen::TypeUsage::Storage);
-            auto v = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
+            auto v = cg->compile(*n.elementType(), codegen::TypeUsage::Storage);
             t = fmt("::hilti::rt::Map<%s, %s>", k, v);
         }
 
@@ -548,7 +548,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
             // Can only be the empty list.
             t = "::hilti::rt::set::Empty";
         else {
-            auto x = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
+            auto x = cg->compile(*n.elementType(), codegen::TypeUsage::Storage);
             t = fmt("::hilti::rt::Set<%s>", x);
         }
 
@@ -602,10 +602,10 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
             // Can only be the empty list.
             t = "::hilti::rt::vector::Empty";
         else {
-            auto x = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
+            auto x = cg->compile(*n.elementType(), codegen::TypeUsage::Storage);
 
             std::string allocator;
-            if ( auto def = cg->typeDefaultValue(n.elementType()) )
+            if ( auto def = cg->typeDefaultValue(*n.elementType()) )
                 allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
             t = fmt("::hilti::rt::Vector<%s%s>", x, allocator);
@@ -809,12 +809,12 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
 
     result_t operator()(const type::Map& n) {
         auto ktype = cg->compile(n.keyType(), codegen::TypeUsage::Storage);
-        auto vtype = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
-        auto deref_type = type::Tuple({n.keyType(), n.elementType()});
+        auto vtype = cg->compile(*n.elementType(), codegen::TypeUsage::Storage);
+        auto deref_type = type::Tuple({n.keyType(), *n.elementType()});
         return fmt("::hilti::rt::type_info::Map(%s, %s, ::hilti::rt::type_info::Map::accessor<%s, %s>())",
-                   cg->typeInfo(n.keyType()), cg->typeInfo(n.elementType()),
+                   cg->typeInfo(n.keyType()), cg->typeInfo(*n.elementType()),
                    cg->compile(n.keyType(), codegen::TypeUsage::Storage),
-                   cg->compile(n.elementType(), codegen::TypeUsage::Storage));
+                   cg->compile(*n.elementType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::map::Iterator& n) {
@@ -839,7 +839,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
 
     result_t operator()(const type::Set& n) {
         return fmt("::hilti::rt::type_info::Set(%s, ::hilti::rt::type_info::Set::accessor<%s>())",
-                   cg->typeInfo(n.elementType()), cg->compile(n.elementType(), codegen::TypeUsage::Storage));
+                   cg->typeInfo(*n.elementType()), cg->compile(*n.elementType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::set::Iterator& n) {
@@ -921,14 +921,14 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
     }
 
     result_t operator()(const type::Vector& n) {
-        auto x = cg->compile(n.elementType(), codegen::TypeUsage::Storage);
+        auto x = cg->compile(*n.elementType(), codegen::TypeUsage::Storage);
 
         std::string allocator;
-        if ( auto def = cg->typeDefaultValue(n.elementType()) )
+        if ( auto def = cg->typeDefaultValue(*n.elementType()) )
             allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         return fmt("::hilti::rt::type_info::Vector(%s, ::hilti::rt::type_info::Vector::accessor<%s%s>())",
-                   cg->typeInfo(n.elementType()), x, allocator);
+                   cg->typeInfo(*n.elementType()), x, allocator);
     }
 
     result_t operator()(const type::vector::Iterator& n) {

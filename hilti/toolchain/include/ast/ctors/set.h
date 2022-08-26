@@ -23,7 +23,7 @@ public:
     Set(const Type& t, std::vector<Expression> e, const Meta& m = Meta())
         : NodeBase(nodes(type::Set(t, m), std::move(e)), m) {}
 
-    const auto& elementType() const { return children()[0].as<type::Set>().elementType(); }
+    const auto& elementType() const { return *children()[0].as<type::Set>().elementType(); }
     auto value() const { return children<Expression>(1, -1); }
 
     void setElementType(const Type& t) { children()[0] = type::Set(t, meta()); }

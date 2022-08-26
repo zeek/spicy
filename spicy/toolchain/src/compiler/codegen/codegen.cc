@@ -492,7 +492,7 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
 
     if ( foreach ) {
         params.push_back(
-            {ID("__dd"), field->get().ddType().elementType(), hilti::type::function::parameter::Kind::In, {}, {}});
+            {ID("__dd"), *field->get().ddType().elementType(), hilti::type::function::parameter::Kind::In, {}, {}});
         params.push_back({ID("__stop"), type::Bool(), hilti::type::function::parameter::Kind::InOut, {}, {}});
     }
     else if ( original_field_type ) {

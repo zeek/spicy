@@ -257,7 +257,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
     }
 
     Production operator()(const type::Vector& n, position_t p) {
-        auto sub = productionForType(n.elementType(), ID(fmt("%s", n.elementType())));
+        auto sub = productionForType(*n.elementType(), ID(fmt("%s", *n.elementType())));
         return productionForLoop(std::move(sub), p);
     }
 };
