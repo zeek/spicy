@@ -14,7 +14,7 @@ namespace hilti::type {
 /*
  * AST node for a `strong_ref<T>` type.
  */
-class StrongReference : public TypeBase, trait::isReferenceType {
+class StrongReference : public TypeBase {
 public:
     StrongReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     StrongReference(Type ct, Meta m = Meta()) : TypeBase(nodes(std::move(ct)), std::move(m)) {}
@@ -41,6 +41,7 @@ public:
 
     bool _isAllocable() const override { return true; }
     bool _isParameterized() const override { return true; }
+    bool _isReferenceType() const override { return true; }
 
 private:
     bool _wildcard = false;
@@ -48,7 +49,7 @@ private:
 };
 
 /** AST node for a `weak_ref<T>` type. */
-class WeakReference : public TypeBase, trait::isReferenceType {
+class WeakReference : public TypeBase {
 public:
     WeakReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     WeakReference(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
@@ -71,13 +72,14 @@ public:
 
     bool _isAllocable() const override { return true; }
     bool _isParameterized() const override { return true; }
+    bool _isReferenceType() const override { return true; }
 
 private:
     bool _wildcard = false;
 };
 
 /** AST node for a `val_ref<T>` type. */
-class ValueReference : public TypeBase, trait::isReferenceType {
+class ValueReference : public TypeBase {
 public:
     ValueReference(Wildcard /*unused*/, Meta m = Meta())
         : TypeBase(nodes(type::unknown), std::move(m)), _wildcard(true) {}
@@ -107,6 +109,7 @@ public:
 
     bool _isAllocable() const override { return true; }
     bool _isParameterized() const override { return true; }
+    bool _isReferenceType() const override { return true; }
 
 private:
     bool _wildcard = false;

@@ -47,7 +47,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     bool _isParameterized() const;
 
     /** For internal use. Use ``type::isReferenceType` instead. */
-    trait _isReferenceType() from hilti::type::trait::isReferenceType;
+    bool _isReferenceType() const;
 
     /** For internal use. Use ``type::isMutable` instead. */
     bool _isMutable() const;

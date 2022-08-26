@@ -32,7 +32,6 @@ using Parameter = declaration::Parameter;
 
 namespace trait {
 class isIterator {};
-class isReferenceType {};
 } // namespace trait
 
 using ResolvedState = std::unordered_set<uintptr_t>;
@@ -197,6 +196,9 @@ public:
 
     /** For internal use. Use ``type::isParameterized` instead. */
     virtual bool _isParameterized() const { return false; }
+
+    /** For internal use. Use ``type::isReferenceType` instead. */
+    virtual bool _isReferenceType() const { return false; }
 
     /** For internal use. Use ``type::isRuntimeNonTrivial` instead. */
     virtual bool _isRuntimeNonTrivial() const { return false; }
