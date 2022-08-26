@@ -210,6 +210,9 @@ public:
 
     /** For internal use. Use ``type::isSortable` instead. */
     virtual bool _isSortable() const { return false; }
+
+    /** Implements the `Node` interface. */
+    virtual node::Properties properties() const = 0;
 };
 
 class Type : public type::detail::Type {

@@ -90,8 +90,7 @@ public:
 
     bool isWildcard() const override { return _wildcard; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     /** Helper method for the resolver to link labels to their type. */
     static void initLabelTypes(Node* n);

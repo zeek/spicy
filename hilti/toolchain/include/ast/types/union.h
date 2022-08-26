@@ -66,8 +66,7 @@ public:
 
     bool isWildcard() const override { return _wildcard; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }

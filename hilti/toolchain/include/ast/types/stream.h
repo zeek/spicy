@@ -22,8 +22,7 @@ public:
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     bool _isResolved(ResolvedState* rstate) const override { return true; }
     optional_ref<const Type> dereferencedType() const override { return child<Type>(0); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isIterator() const override { return true; }
@@ -42,8 +41,7 @@ public:
     bool _isResolved(ResolvedState* rstate) const override { return true; }
     optional_ref<const Type> elementType() const override { return iteratorType(true)->dereferencedType(); }
     optional_ref<const Type> iteratorType(bool /* const_ */) const override { return child<Type>(0); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
@@ -63,8 +61,7 @@ public:
     optional_ref<const Type> elementType() const override { return iteratorType(true)->dereferencedType(); }
     optional_ref<const Type> iteratorType(bool /* const_ */) const override { return viewType()->iteratorType(true); }
     optional_ref<const Type> viewType() const override { return child<Type>(0); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }

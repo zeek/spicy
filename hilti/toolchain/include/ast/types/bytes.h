@@ -23,8 +23,7 @@ public:
     bool _isResolved(ResolvedState* rstate) const override { return true; }
     /** Implements the `Type` interface. */
     optional_ref<const Type> dereferencedType() const override { return child<Type>(0); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isIterator() const override { return true; }
@@ -47,8 +46,7 @@ public:
 
     optional_ref<const Type> iteratorType(bool /* const */) const override { return child<Type>(1); }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }

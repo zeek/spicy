@@ -188,8 +188,7 @@ public:
     std::vector<Node> typeParameters() const override { return children(); }
     bool isWildcard() const override { return _wildcard; }
 
-    // Node interface.
-    auto properties() const { return node::Properties{{"public", _public}}; }
+    node::Properties properties() const override { return node::Properties{{"public", _public}}; }
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }

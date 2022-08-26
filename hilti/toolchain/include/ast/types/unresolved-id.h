@@ -24,8 +24,7 @@ public:
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     bool _isResolved(ResolvedState* rstate) const override { return false; }
 
-    // Node interface.
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 };
 
 } // namespace hilti::type

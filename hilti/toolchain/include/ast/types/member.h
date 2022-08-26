@@ -26,8 +26,7 @@ public:
     std::vector<Node> typeParameters() const override { return std::vector<Node>{id()}; }
     bool isWildcard() const override { return _wildcard; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     bool _isParameterized() const override { return true; }
 

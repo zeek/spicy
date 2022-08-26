@@ -24,7 +24,7 @@ public:
     bool isWildcard() const override { return _wildcard; }
     bool _isResolved(ResolvedState* rstate) const override { return true; }
     /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"width", _width}}; }
+    node::Properties properties() const override { return node::Properties{{"width", _width}}; }
 
     bool _isAllocable() const override { return true; }
     bool _isSortable() const override { return true; }

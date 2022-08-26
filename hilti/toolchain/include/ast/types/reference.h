@@ -38,8 +38,7 @@ public:
     std::vector<Node> typeParameters() const override { return children(); }
     bool isWildcard() const override { return _wildcard; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"type", _type.renderedRid()}}; }
+    node::Properties properties() const override { return node::Properties{{"type", _type.renderedRid()}}; }
 
     bool _isAllocable() const override { return true; }
     bool _isParameterized() const override { return true; }
@@ -71,8 +70,7 @@ public:
     /** Implements the `Type` interface. */
     bool isWildcard() const override { return _wildcard; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isParameterized() const override { return true; }
@@ -110,8 +108,7 @@ public:
     /** Implements the `Type` interface. */
     bool isWildcard() const override { return _wildcard; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"rid", (_node ? _node->rid() : 0U)}}; }
+    node::Properties properties() const override { return node::Properties{{"rid", (_node ? _node->rid() : 0U)}}; }
 
     bool _isAllocable() const override { return true; }
     bool _isParameterized() const override { return true; }

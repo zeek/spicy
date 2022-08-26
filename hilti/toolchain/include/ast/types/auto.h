@@ -16,7 +16,7 @@ public:
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     bool _isResolved(ResolvedState* rstate) const override { return false; }
     /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     /**
      * Wrapper around constructor so that we can make it private. Don't use

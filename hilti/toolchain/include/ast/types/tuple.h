@@ -67,8 +67,7 @@ public:
     /** Implements the `Type` interface. */
     bool isWildcard() const override { return _wildcard; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"wildcard", _wildcard}}; }
+    node::Properties properties() const override { return node::Properties{{"wildcard", _wildcard}}; }
 
     std::vector<Node> typeParameters() const override { return children(); }
     bool _isAllocable() const override { return true; }

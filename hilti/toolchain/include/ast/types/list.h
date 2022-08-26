@@ -36,8 +36,7 @@ public:
     bool isWildcard() const override { return _wildcard; }
     /** Implements the `Type` interface. */
     std::vector<Node> typeParameters() const override { return children(); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"const", _const}}; }
+    node::Properties properties() const override { return node::Properties{{"const", _const}}; }
 
     bool _isAllocable() const override { return true; }
     bool _isIterator() const override { return true; }
@@ -78,8 +77,7 @@ public:
 
     bool isWildcard() const override { return _wildcard; }
     std::vector<Node> typeParameters() const override { return children(); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const override { return node::Properties{}; }
 
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }

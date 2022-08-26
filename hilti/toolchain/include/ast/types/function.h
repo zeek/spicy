@@ -119,8 +119,7 @@ public:
     std::vector<Node> typeParameters() const override { return children(); }
     bool isWildcard() const override { return _wildcard; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"flavor", to_string(_flavor)}}; }
+    node::Properties properties() const override { return node::Properties{{"flavor", to_string(_flavor)}}; }
 
     bool _isParameterized() const override { return true; }
 
