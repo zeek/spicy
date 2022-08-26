@@ -17,7 +17,6 @@ public:
 
     bool isEqual(const hilti::Type& other) const override { return hilti::node::isEqual(this, other); }
     bool _isResolved(hilti::type::ResolvedState* rstate) const override { return true; }
-    /** Implements the `Node` interface. */
     hilti::node::Properties properties() const override { return hilti::node::Properties{}; }
 
     bool _isAllocable() const override { return true; }

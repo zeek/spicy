@@ -30,7 +30,6 @@ public:
         return type::detail::isResolved(dereferencedType(), rstate);
     }
 
-    /** Implements the `Type` interface. */
     optional_ref<const Type> dereferencedType() const override { return child<Type>(0); }
     bool isWildcard() const override { return _wildcard; }
     std::vector<Node> typeParameters() const override { return children(); }
@@ -73,9 +72,7 @@ public:
         return const_ ? child<Type>(0) : child<Type>(1);
     }
 
-    /** Implements the `Type` interface. */
     bool isWildcard() const override { return _wildcard; }
-    /** Implements the `Type` interface. */
     std::vector<Node> typeParameters() const override { return children(); }
     node::Properties properties() const override { return node::Properties{}; }
 

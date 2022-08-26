@@ -21,7 +21,6 @@ public:
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     bool _isResolved(ResolvedState* rstate) const override { return true; }
-    /** Implements the `Type` interface. */
     optional_ref<const Type> dereferencedType() const override { return child<Type>(0); }
     node::Properties properties() const override { return node::Properties{}; }
 

@@ -23,7 +23,6 @@ public:
 
     bool isWildcard() const override { return _wildcard; }
     bool _isResolved(ResolvedState* rstate) const override { return true; }
-    /** Implements the `Node` interface. */
     node::Properties properties() const override { return node::Properties{{"width", _width}}; }
 
     bool _isAllocable() const override { return true; }
@@ -44,7 +43,6 @@ public:
 
     bool operator==(const SignedInteger& other) const { return width() == other.width(); }
 
-    /** Implements the `Type` interface. */
     std::vector<Node> typeParameters() const override;
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
@@ -57,7 +55,6 @@ public:
 
     bool operator==(const UnsignedInteger& other) const { return width() == other.width(); }
 
-    /** Implements the `Type` interface. */
     std::vector<Node> typeParameters() const override;
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }

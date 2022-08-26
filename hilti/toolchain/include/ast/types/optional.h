@@ -27,9 +27,7 @@ public:
         return type::detail::isResolved(dereferencedType(), rstate);
     }
 
-    /** Implements the `Type` interface. */
     std::vector<Node> typeParameters() const override { return children(); }
-    /** Implements the `Type` interface. */
     bool isWildcard() const override { return _wildcard; }
 
     node::Properties properties() const override { return node::Properties{}; }

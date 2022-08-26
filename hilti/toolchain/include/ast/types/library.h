@@ -31,7 +31,6 @@ public:
     }
 
     bool _isResolved(ResolvedState* rstate) const override { return true; }
-    /** Implements the `Node` interface. */
     node::Properties properties() const override { return node::Properties{{"cxx_name", _cxx_name}}; }
 
     bool _isAllocable() const override { return true; }

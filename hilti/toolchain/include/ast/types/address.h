@@ -15,7 +15,6 @@ public:
 
     bool operator==(const Address& /* other */) const { return true; }
 
-    /** Implements the `Type` interface. */
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     bool _isResolved(ResolvedState* rstate) const override { return true; }
     node::Properties properties() const override { return node::Properties{}; }

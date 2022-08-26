@@ -52,7 +52,6 @@ public:
         return elements() == other.elements();
     }
 
-    /** Implements the `Type` interface. */
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
 
     bool _isResolved(ResolvedState* rstate) const override {
@@ -64,7 +63,6 @@ public:
         });
     }
 
-    /** Implements the `Type` interface. */
     bool isWildcard() const override { return _wildcard; }
 
     node::Properties properties() const override { return node::Properties{{"wildcard", _wildcard}}; }

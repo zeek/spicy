@@ -25,7 +25,6 @@ public:
 
     bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     bool _isResolved(ResolvedState* rstate) const override { return true; }
-    /** Implements the `Node` interface. */
     node::Properties properties() const override { return node::Properties{}; }
 
     bool operator==(const OperandList& other) const { return operands() == other.operands(); }
