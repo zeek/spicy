@@ -33,7 +33,6 @@ using Parameter = declaration::Parameter;
 namespace trait {
 class isIterator {};
 class isReferenceType {};
-class isViewable {};
 class takesArguments {};
 } // namespace trait
 
@@ -185,6 +184,9 @@ public:
      */
     virtual std::vector<Node> typeParameters() const { return {}; }
 
+    /** Returns the type of an view for this type. */
+    virtual optional_ref<const hilti::Type> viewType() const { return {}; }
+
     /** For internal use. Use ``type::isAllocable` instead. */
     virtual bool _isAllocable() const { return false; }
 
@@ -328,7 +330,7 @@ inline bool isMutable(const Type& t) { return t._isMutable(); }
 inline bool isRuntimeNonTrivial(const Type& t) { return t._isRuntimeNonTrivial(); }
 
 /** Returns true for HILTI types that one can create a view for. */
-inline bool isViewable(const Type& t) { return t._isViewable(); }
+inline bool isViewable(const Type& t) { return t.viewType().has_value(); }
 
 /** Returns true for HILTI types that may receive type arguments on instantiations. */
 inline bool takesArguments(const Type& t) { return t._takesArguments(); }

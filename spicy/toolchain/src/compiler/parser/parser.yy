@@ -58,8 +58,8 @@ static hilti::Type iteratorForType(hilti::Type t, bool const_, hilti::Meta m) {
 }
 
 static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
-    if ( hilti::type::isViewable(t) )
-        return t.viewType();
+    if ( auto v = t.viewType() )
+        return *v;
     else {
         hilti::logger().error(hilti::util::fmt("type '%s' is not viewable", t), m.location());
         return hilti::type::Error(m);

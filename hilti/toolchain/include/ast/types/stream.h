@@ -55,7 +55,7 @@ public:
 } // namespace stream
 
 /** AST node for a stream type. */
-class Stream : public TypeBase, trait::isViewable {
+class Stream : public TypeBase {
 public:
     Stream(const Meta& m = Meta()) : TypeBase(nodes(stream::View(m)), m) {}
 
@@ -66,9 +66,8 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     optional_ref<const Type> elementType() const override { return iteratorType(true)->dereferencedType(); }
-    optional_ref<const Type> iteratorType(bool /* const_ */) const override { return viewType().iteratorType(true); }
-    /** Implements the `Type` interface. */
-    const Type& viewType() const { return child<Type>(0); }
+    optional_ref<const Type> iteratorType(bool /* const_ */) const override { return viewType()->iteratorType(true); }
+    optional_ref<const Type> viewType() const override { return child<Type>(0); }
     /** Implements the `Node` interface. */
     auto properties() const { return node::Properties{}; }
 
