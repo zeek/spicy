@@ -42,7 +42,7 @@ inline const DebugStream OptimizerCollect("optimizer-collect");
 // Helper function to extract innermost type, removing any wrapping in reference or container types.
 Type innermostType(Type type) {
     if ( type::isReferenceType(type) )
-        return innermostType(type.dereferencedType());
+        return innermostType(*type.dereferencedType());
 
     if ( type::isIterable(type) )
         return innermostType(type.elementType());
@@ -1005,7 +1005,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
             case Stage::COLLECT: {
                 auto type = x.op0().type();
                 while ( type::isReferenceType(type) )
-                    type = type.dereferencedType();
+                    type = *type.dereferencedType();
 
                 const auto struct_ = type.tryAs<type::Struct>();
                 if ( ! struct_ )
@@ -1127,7 +1127,7 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
             case Stage::COLLECT: {
                 auto type_ = x.op0().type();
                 while ( type::isReferenceType(type_) )
-                    type_ = type_.dereferencedType();
+                    type_ = *type_.dereferencedType();
 
                 auto typeID = type_.typeID();
                 if ( ! typeID )

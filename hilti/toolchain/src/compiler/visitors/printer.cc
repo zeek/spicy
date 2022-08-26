@@ -253,7 +253,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         // C99 snprintf instead.
         constexpr size_t size = 256;
         char buf[size];
-        std::snprintf(buf, size, "%a", n.value());
+        assert(std::snprintf(buf, size, "%a", n.value()) >= 0);
         out << buf;
     }
 
@@ -811,7 +811,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "optional<*>";
         else {
-            out << const_(n) << "optional<" << n.dereferencedType() << ">";
+            out << const_(n) << "optional<" << *n.dereferencedType() << ">";
         }
     }
 
@@ -823,7 +823,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "strong_ref<*>";
         else
-            out << const_(n) << "strong_ref<" << n.dereferencedType() << ">";
+            out << const_(n) << "strong_ref<" << *n.dereferencedType() << ">";
     }
 
     void operator()(const type::Stream& n) { out << const_(n) << "stream"; }
@@ -834,7 +834,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "iterator<list<*>>";
         else
-            out << const_(n) << fmt("iterator<list<%s>>", n.dereferencedType());
+            out << const_(n) << fmt("iterator<list<%s>>", *n.dereferencedType());
     }
 
     void operator()(const type::stream::Iterator& n) { out << const_(n) << "iterator<stream>"; }
@@ -843,7 +843,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "iterator<vector<*>>";
         else
-            out << const_(n) << fmt("iterator<vector<%s>>", n.dereferencedType());
+            out << const_(n) << fmt("iterator<vector<%s>>", *n.dereferencedType());
     }
 
     void operator()(const type::stream::View& n) { out << const_(n) << "view<stream>"; }
@@ -867,7 +867,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "iterator<map<*>>";
         else
-            out << const_(n) << fmt("iterator<map<%s>>", n.dereferencedType());
+            out << const_(n) << fmt("iterator<map<%s>>", *n.dereferencedType());
     }
 
     void operator()(const type::Map& n) {
@@ -884,7 +884,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "result<*>";
         else {
-            out << const_(n) << "result<" << n.dereferencedType() << ">";
+            out << const_(n) << "result<" << *n.dereferencedType() << ">";
         }
     }
 
@@ -892,7 +892,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "iterator<set<*>>";
         else
-            out << const_(n) << fmt("iterator<set<%s>>", n.dereferencedType());
+            out << const_(n) << fmt("iterator<set<%s>>", *n.dereferencedType());
     }
 
     void operator()(const type::Set& n) {
@@ -1003,14 +1003,14 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( n.isWildcard() )
             out << const_(n) << "weak_ref<*>";
         else
-            out << const_(n) << "weak_ref<" << n.dereferencedType() << ">";
+            out << const_(n) << "weak_ref<" << *n.dereferencedType() << ">";
     }
 
     void operator()(const type::ValueReference& n) {
         if ( n.isWildcard() )
             out << const_(n) << "value_ref<*>";
         else
-            out << const_(n) << "value_ref<" << n.dereferencedType() << ">";
+            out << const_(n) << "value_ref<" << *n.dereferencedType() << ">";
     }
 
 private:
@@ -1084,7 +1084,7 @@ static std::string _renderOperatorInstance(operator_::Kind kind, const node::Ran
     switch ( kind ) {
         case operator_::Kind::Call: {
             assert(exprs.size() == 2);
-            auto id = exprs[0];
+            const auto& id = exprs[0];
             auto ops = exprs[1].as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
             auto args =
                 util::join(node::transform(ops, [&](auto x) { return fmt("<%s>", renderExpressionType(x)); }), ", ");
@@ -1093,8 +1093,8 @@ static std::string _renderOperatorInstance(operator_::Kind kind, const node::Ran
 
         case operator_::Kind::MemberCall: {
             assert(exprs.size() == 3);
-            auto self = exprs[0];
-            auto id = exprs[1];
+            const auto& self = exprs[0];
+            const auto& id = exprs[1];
             auto ops = exprs[2].as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
             auto args =
                 util::join(node::transform(ops, [&](auto x) { return fmt("<%s>", renderExpressionType(x)); }), ", ");

@@ -7,13 +7,14 @@
 
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/unknown.h>
+#include <hilti/base/optional-ref.h>
 
 namespace hilti::type {
 
 namespace list {
 
 /** AST node for a list iterator type. */
-class Iterator : public TypeBase, trait::isIterator, trait::isDereferenceable {
+class Iterator : public TypeBase, trait::isIterator {
 public:
     Iterator(Type etype, bool const_, Meta m = Meta())
         : TypeBase(nodes(std::move(etype)), std::move(m)), _const(const_) {}
@@ -28,7 +29,7 @@ public:
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
-    const Type& dereferencedType() const { return child<Type>(0); }
+    optional_ref<const Type> dereferencedType() const override { return child<Type>(0); }
     /** Implements the `Type` interface. */
     bool isWildcard() const override { return _wildcard; }
     /** Implements the `Type` interface. */
@@ -67,7 +68,7 @@ public:
                type::detail::isResolved(iteratorType(false), rstate);
     }
     /** Implements the `Type` interface. */
-    const Type& elementType() const { return child<list::Iterator>(0).dereferencedType(); }
+    const Type& elementType() const { return *child<list::Iterator>(0).dereferencedType(); }
     /** Implements the `Type` interface. */
     const Type& iteratorType(bool const_) const { return const_ ? child<Type>(0) : child<Type>(1); }
     bool isWildcard() const override { return _wildcard; }

@@ -7,19 +7,20 @@
 
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/unknown.h>
+#include <hilti/base/optional-ref.h>
 
 namespace hilti::type {
 
 /*
  * AST node for a `strong_ref<T>` type.
  */
-class StrongReference : public TypeBase, trait::isDereferenceable, trait::isReferenceType {
+class StrongReference : public TypeBase, trait::isReferenceType {
 public:
     StrongReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     StrongReference(Type ct, Meta m = Meta()) : TypeBase(nodes(std::move(ct)), std::move(m)) {}
     StrongReference(NodeRef ct, Meta m = Meta()) : TypeBase(nodes(node::none), std::move(m)), _type(std::move(ct)) {}
 
-    const Type& dereferencedType() const {
+    optional_ref<const Type> dereferencedType() const override {
         if ( _type )
             return _type->as<Type>();
         else
@@ -47,12 +48,12 @@ private:
 };
 
 /** AST node for a `weak_ref<T>` type. */
-class WeakReference : public TypeBase, trait::isDereferenceable, trait::isReferenceType {
+class WeakReference : public TypeBase, trait::isReferenceType {
 public:
     WeakReference(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     WeakReference(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
 
-    const Type& dereferencedType() const { return children()[0].as<Type>(); }
+    optional_ref<const Type> dereferencedType() const override { return children()[0].as<Type>(); }
 
     bool operator==(const WeakReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
@@ -76,14 +77,14 @@ private:
 };
 
 /** AST node for a `val_ref<T>` type. */
-class ValueReference : public TypeBase, trait::isDereferenceable, trait::isReferenceType {
+class ValueReference : public TypeBase, trait::isReferenceType {
 public:
     ValueReference(Wildcard /*unused*/, Meta m = Meta())
         : TypeBase(nodes(type::unknown), std::move(m)), _wildcard(true) {}
     ValueReference(Type ct, Meta m = Meta()) : TypeBase(nodes(std::move(ct)), std::move(m)) {}
     ValueReference(NodeRef ct, Meta m = Meta()) : TypeBase(nodes(type::unknown), std::move(m)), _node(std::move(ct)) {}
 
-    const Type& dereferencedType() const {
+    optional_ref<const Type> dereferencedType() const override {
         if ( _node )
             return _node->as<Type>();
         else

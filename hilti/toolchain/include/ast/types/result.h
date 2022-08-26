@@ -7,16 +7,17 @@
 
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/unknown.h>
+#include <hilti/base/optional-ref.h>
 
 namespace hilti::type {
 
 /** AST node for a "result" type. */
-class Result : public TypeBase, trait::isDereferenceable {
+class Result : public TypeBase {
 public:
     Result(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
     Result(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
 
-    const Type& dereferencedType() const { return children()[0].as<Type>(); }
+    optional_ref<const Type> dereferencedType() const override { return children()[0].as<Type>(); }
 
     bool operator==(const Result& other) const { return dereferencedType() == other.dereferencedType(); }
 

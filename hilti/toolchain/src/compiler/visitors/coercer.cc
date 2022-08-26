@@ -252,7 +252,7 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         auto t = n.type();
 
         if ( auto vr = t.tryAs<type::ValueReference>() )
-            t = vr->dereferencedType();
+            t = *vr->dereferencedType();
 
         if ( type::takesArguments(t) ) {
             if ( auto x = n.typeArguments(); x.size() ) {

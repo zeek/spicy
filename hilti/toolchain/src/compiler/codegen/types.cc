@@ -76,7 +76,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                         // potentially expensive copies or let us hold on to
                         // objects longer than they'd otherwise stick around.
                         assert(type::isReferenceType(p.type()));
-                        internal_type = cg->compile(type::WeakReference(p.type().dereferencedType(), p.meta()),
+                        internal_type = cg->compile(type::WeakReference(*p.type().dereferencedType(), p.meta()),
                                                     codegen::TypeUsage::Storage);
                     }
 
@@ -456,7 +456,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
     result_t operator()(const type::list::Iterator& n) {
         auto t =
-            fmt("::hilti::rt::Vector<%s>::iterator_t", cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+            fmt("::hilti::rt::Vector<%s>::iterator_t", cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
         return CxxTypes{.base_type = fmt("%s", t)};
     }
 
@@ -471,7 +471,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
     result_t operator()(const type::set::Iterator& n) {
         auto i = (n.isConstant() ? "const_iterator" : "iterator");
-        auto x = cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage);
+        auto x = cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage);
 
         auto t = fmt("::hilti::rt::Set<%s>::%s", x, i);
         return CxxTypes{.base_type = fmt("%s", t)};
@@ -480,10 +480,10 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
     result_t operator()(const type::vector::Iterator& n) {
         auto i = (n.isConstant() ? "const_iterator" : "iterator");
-        auto x = cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage);
+        auto x = cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage);
 
         std::string allocator;
-        if ( auto def = cg->typeDefaultValue(n.dereferencedType()) )
+        if ( auto def = cg->typeDefaultValue(*n.dereferencedType()) )
             allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         auto t = fmt("::hilti::rt::Vector<%s%s>::%s", x, allocator, i);
@@ -635,7 +635,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::Optional& n) {
         std::string t;
 
-        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() )
+        if ( const auto& ct = *n.dereferencedType(); ! ct.isWildcard() )
             t = fmt("std::optional<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
         else
             t = "*";
@@ -646,7 +646,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::StrongReference& n) {
         std::string t;
 
-        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() )
+        if ( const auto& ct = *n.dereferencedType(); ! ct.isWildcard() )
             t = fmt("::hilti::rt::StrongReference<%s>", cg->compile(ct, codegen::TypeUsage::Ctor)); // XXX
         else
             t = "*";
@@ -659,7 +659,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::Result& n) {
         std::string t;
 
-        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() )
+        if ( const auto& ct = *n.dereferencedType(); ! ct.isWildcard() )
             t = fmt("::hilti::rt::Result<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
         else
             t = "*";
@@ -727,7 +727,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::WeakReference& n) {
         std::string t;
 
-        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() )
+        if ( const auto& ct = *n.dereferencedType(); ! ct.isWildcard() )
             t = fmt("::hilti::rt::WeakReference<%s>", cg->compile(ct, codegen::TypeUsage::Ctor));
         else
             t = "*";
@@ -738,7 +738,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::ValueReference& n) {
         std::string t;
 
-        if ( const auto& ct = n.dereferencedType(); ! ct.isWildcard() ) {
+        if ( const auto& ct = *n.dereferencedType(); ! ct.isWildcard() ) {
             auto element_type = cg->compile(ct, codegen::TypeUsage::Ctor);
             return CxxTypes{.base_type = fmt("::hilti::rt::ValueReference<%s>", element_type), .ctor = element_type};
         }
@@ -827,12 +827,14 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
 
     result_t operator()(const type::Optional& n) {
         return fmt("::hilti::rt::type_info::Optional(%s, ::hilti::rt::type_info::Optional::accessor<%s>())",
-                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+                   cg->typeInfo(*n.dereferencedType()),
+                   cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::Result& n) {
         return fmt("::hilti::rt::type_info::Result(%s, ::hilti::rt::type_info::Result::accessor<%s>())",
-                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+                   cg->typeInfo(*n.dereferencedType()),
+                   cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::Set& n) {
@@ -842,7 +844,8 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
 
     result_t operator()(const type::set::Iterator& n) {
         return fmt("::hilti::rt::type_info::SetIterator(%s, ::hilti::rt::type_info::SetIterator::accessor<%s>())",
-                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+                   cg->typeInfo(*n.dereferencedType()),
+                   cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::Struct& n, position_t p) {
@@ -902,17 +905,19 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
     result_t operator()(const type::StrongReference& n) {
         return fmt(
             "::hilti::rt::type_info::StrongReference(%s, ::hilti::rt::type_info::StrongReference::accessor<%s>())",
-            cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+            cg->typeInfo(*n.dereferencedType()), cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::ValueReference& n) {
         return fmt("::hilti::rt::type_info::ValueReference(%s, ::hilti::rt::type_info::ValueReference::accessor<%s>())",
-                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+                   cg->typeInfo(*n.dereferencedType()),
+                   cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::WeakReference& n) {
         return fmt("::hilti::rt::type_info::WeakReference(%s, ::hilti::rt::type_info::WeakReference::accessor<%s>())",
-                   cg->typeInfo(n.dereferencedType()), cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage));
+                   cg->typeInfo(*n.dereferencedType()),
+                   cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
     result_t operator()(const type::Vector& n) {
@@ -927,15 +932,15 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
     }
 
     result_t operator()(const type::vector::Iterator& n) {
-        auto x = cg->compile(n.dereferencedType(), codegen::TypeUsage::Storage);
+        auto x = cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage);
 
         std::string allocator;
-        if ( auto def = cg->typeDefaultValue(n.dereferencedType()) )
+        if ( auto def = cg->typeDefaultValue(*n.dereferencedType()) )
             allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         return fmt(
             "::hilti::rt::type_info::VectorIterator(%s, ::hilti::rt::type_info::VectorIterator::accessor<%s%s>())",
-            cg->typeInfo(n.dereferencedType()), x, allocator);
+            cg->typeInfo(*n.dereferencedType()), x, allocator);
     }
 
     result_t operator()(const type::Auto& n) {

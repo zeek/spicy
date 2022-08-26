@@ -117,7 +117,7 @@ hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::
         return hilti::Nothing();
 
     if ( const auto& x = pt.tryAs<type::ValueReference>() ) {
-        const auto& dt = x->dereferencedType();
+        const auto& dt = *x->dereferencedType();
 
         if ( auto rc = isParseableType(dt, f); ! rc )
             return rc;
@@ -614,25 +614,25 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
     void operator()(const hilti::operator_::value_reference::Equal& o, position_t p) {
         if ( auto ref = o.op0().type().tryAs<hilti::type::ValueReference>();
-             ref && ref->dereferencedType().isA<type::Unit>() )
+             ref && ref->dereferencedType()->isA<type::Unit>() )
             error("units cannot be compared with ==", p);
     }
 
     void operator()(const hilti::operator_::value_reference::Unequal& o, position_t p) {
         if ( auto ref = o.op0().type().tryAs<hilti::type::ValueReference>();
-             ref && ref->dereferencedType().isA<type::Unit>() )
+             ref && ref->dereferencedType()->isA<type::Unit>() )
             error("units cannot be compared with !=", p);
     }
 
     void operator()(const hilti::operator_::strong_reference::Equal& o, position_t p) {
         if ( auto ref = o.op0().type().tryAs<hilti::type::ValueReference>();
-             ref && ref->dereferencedType().isA<type::Unit>() )
+             ref && ref->dereferencedType()->isA<type::Unit>() )
             error("units cannot be compared with ==", p);
     }
 
     void operator()(const hilti::operator_::strong_reference::Unequal& o, position_t p) {
         if ( auto ref = o.op0().type().tryAs<hilti::type::ValueReference>();
-             ref && ref->dereferencedType().isA<type::Unit>() )
+             ref && ref->dereferencedType()->isA<type::Unit>() )
             error("units cannot be compared with !=", p);
     }
 
@@ -858,7 +858,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
     void operator()(const operator_::unit::ConnectFilter& n, position_t p) {
         if ( const auto& y =
-                 methodArgument(n, 0).type().as<type::StrongReference>().dereferencedType().as<type::Unit>();
+                 methodArgument(n, 0).type().as<type::StrongReference>().dereferencedType()->as<type::Unit>();
              ! y.isFilter() )
             error("unit type cannot be a filter, %filter missing", p);
     }

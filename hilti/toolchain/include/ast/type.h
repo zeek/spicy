@@ -8,6 +8,7 @@
 
 #include <hilti/ast/id.h>
 #include <hilti/ast/node.h>
+#include <hilti/base/optional-ref.h>
 #include <hilti/base/type_erase.h>
 
 namespace hilti {
@@ -30,7 +31,6 @@ using Parameter = declaration::Parameter;
 }
 
 namespace trait {
-class isDereferenceable {};
 class isIterable {};
 class isIterator {};
 class isReferenceType {};
@@ -163,6 +163,9 @@ public:
     using NodeBase::NodeBase;
 
     virtual ~TypeBase() = default;
+
+    /** Returns the type of elements the iterator traverse. */
+    virtual optional_ref<const Type> dereferencedType() const { return {}; }
 
     /**
      * Returns true if all instances of the same type class can be coerced
@@ -301,9 +304,6 @@ inline bool isAllocable(const Type& t) { return t._isAllocable(); }
 
 /** Returns true for HILTI types that can be compared for ordering at runtime. */
 inline bool isSortable(const Type& t) { return t._isSortable(); }
-
-/** Returns true for HILTI types that one can iterator over. */
-inline bool isDereferenceable(const Type& t) { return t._isDereferenceable(); }
 
 /** Returns true for HILTI types that one can iterator over. */
 inline bool isIterable(const Type& t) { return t._isIterable(); }

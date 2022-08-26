@@ -98,7 +98,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         if ( auto e = n.value() )
             return fmt("std::make_optional(%s)", cg->compile(*e));
 
-        return fmt("std::optional<%s>()", cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor));
+        return fmt("std::optional<%s>()", cg->compile(*n.dereferencedType(), codegen::TypeUsage::Ctor));
     }
 
     result_t operator()(const ctor::Port& n) { return fmt("::hilti::rt::Port(\"%s\")", n.value()); }
@@ -123,7 +123,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     }
 
     result_t operator()(const ctor::StrongReference& n) {
-        return fmt("::hilti::rt::StrongReference<%s>()", cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor));
+        return fmt("::hilti::rt::StrongReference<%s>()", cg->compile(*n.dereferencedType(), codegen::TypeUsage::Ctor));
     }
 
     result_t operator()(const ctor::RegExp& n) {
@@ -200,7 +200,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const ctor::ValueReference& n) {
         return fmt("::hilti::rt::reference::make_value<%s>(%s)",
-                   cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor), cg->compile(n.expression()));
+                   cg->compile(*n.dereferencedType(), codegen::TypeUsage::Ctor), cg->compile(n.expression()));
     }
 
     result_t operator()(const ctor::Vector& n) {
@@ -223,7 +223,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     }
 
     result_t operator()(const ctor::WeakReference& n) {
-        return fmt("::hilti::rt::WeakReference<%s>()", cg->compile(n.dereferencedType(), codegen::TypeUsage::Ctor));
+        return fmt("::hilti::rt::WeakReference<%s>()", cg->compile(*n.dereferencedType(), codegen::TypeUsage::Ctor));
     }
 };
 

@@ -437,7 +437,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             return;
         }
 
-        const auto& et = t.iteratorType(true).dereferencedType();
+        const auto& et = *t.iteratorType(true).dereferencedType();
         logChange(p.node, et);
         p.node.as<statement::For>().setLocalType(et);
         modified = true;

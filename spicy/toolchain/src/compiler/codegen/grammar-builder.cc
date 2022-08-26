@@ -251,7 +251,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
 
     Production operator()(const type::ValueReference& n, position_t /* p */) {
         // Forward to referenced type, which will usually be a unit.
-        auto x = dispatch(n.dereferencedType());
+        auto x = dispatch(*n.dereferencedType());
         assert(x);
         return *x;
     }

@@ -10,6 +10,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/reference.h>
+#include <hilti/base/optional-ref.h>
 
 namespace hilti::ctor {
 
@@ -19,7 +20,7 @@ public:
     /** Constructs a null value of type `t`. */
     StrongReference(const Type& t, const Meta& m = Meta()) : NodeBase(nodes(t, type::StrongReference(t, m)), m) {}
 
-    const Type& dereferencedType() const { return child<Type>(0); }
+    optional_ref<const Type> dereferencedType() const { return child<Type>(0); }
 
     bool operator==(const StrongReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
@@ -46,7 +47,7 @@ public:
     /** Constructs a null value of type `t`. */
     WeakReference(const Type& t, const Meta& m = Meta()) : NodeBase(nodes(t, type::WeakReference(t, m)), m) {}
 
-    const Type& dereferencedType() const { return child<Type>(0); }
+    optional_ref<const Type> dereferencedType() const { return child<Type>(0); }
 
     bool operator==(const WeakReference& other) const { return dereferencedType() == other.dereferencedType(); }
 
@@ -74,7 +75,7 @@ public:
     ValueReference(Expression e, Meta m = Meta())
         : NodeBase(nodes(type::ValueReference(type::auto_, m), std::move(e)), std::move(m)) {}
 
-    const Type& dereferencedType() const { return child<type::ValueReference>(0).dereferencedType(); }
+    optional_ref<const Type> dereferencedType() const { return child<type::ValueReference>(0).dereferencedType(); }
     const Expression& expression() const { return child<Expression>(1); }
 
     void setDereferencedType(Type x) { children()[0] = type::ValueReference(std::move(x)); }

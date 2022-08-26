@@ -11,6 +11,7 @@
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/error.h>
 #include <hilti/ast/types/result.h>
+#include <hilti/base/optional-ref.h>
 
 namespace hilti::ctor {
 
@@ -37,7 +38,7 @@ public:
         return {};
     }
 
-    const Type& dereferencedType() const { return children()[0].as<type::Result>().dereferencedType(); }
+    optional_ref<const Type> dereferencedType() const { return children()[0].as<type::Result>().dereferencedType(); }
 
     void setDereferencedType(Type x) { children()[0] = type::Result(std::move(x)); }
 

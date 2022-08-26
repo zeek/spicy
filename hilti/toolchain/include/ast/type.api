@@ -26,7 +26,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     const hilti::Type& viewType() const if hilti::type::trait::isViewable;
 
     /** Returns the type of elements the iterator traverse. */
-    const hilti::Type& dereferencedType() const if hilti::type::trait::isDereferenceable;
+    optional_ref<const hilti::Type> dereferencedType() const;
 
     /** Returns the type of elements the container stores. */
     const hilti::Type& elementType() const if hilti::type::trait::isIterable;
@@ -39,9 +39,6 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
 
     /** For internal use. Use ``type::isSortable` instead. */
     bool _isSortable() const;
-
-    /** For internal use. Use ``type::isDereferenceable` instead. */
-    trait _isDereferenceable() from hilti::type::trait::isDereferenceable;
 
     /** For internal use. Use ``type::isIterable` instead. */
     trait _isIterable() from hilti::type::trait::isIterable;

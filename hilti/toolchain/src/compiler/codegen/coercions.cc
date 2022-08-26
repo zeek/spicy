@@ -74,7 +74,8 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         if ( auto t = dst.tryAs<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
-            return {fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp), cxx::Side::LHS};
+            return {fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp),
+                    cxx::Side::LHS};
         }
 
         if ( auto t = dst.tryAs<type::Bool>() )
@@ -92,7 +93,7 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
         if ( auto t = dst.tryAs<type::WeakReference>() )
             return fmt("::hilti::rt::WeakReference<%s>(%s)",
-                       cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
+                       cg->compile(*src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( src.dereferencedType() == dst )
             return {fmt("(*%s)", expr), cxx::Side::LHS};
@@ -191,7 +192,7 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
         if ( auto t = dst.tryAs<type::StrongReference>() )
             return fmt("::hilti::rt::StrongReference<%s>(%s)",
-                       cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
+                       cg->compile(*src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( auto t = dst.tryAs<type::ValueReference>() )
             return fmt("%s.derefAsValue()", expr);
@@ -204,19 +205,19 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const type::ValueReference& src) {
         if ( auto t = dst.tryAs<type::Bool>() )
-            return cg->coerce(fmt("*%s", expr), src.dereferencedType(), dst);
+            return cg->coerce(fmt("*%s", expr), *src.dereferencedType(), dst);
 
         if ( auto t = dst.tryAs<type::ValueReference>();
-             t && type::sameExceptForConstness(src.dereferencedType(), t->dereferencedType()) )
+             t && type::sameExceptForConstness(*src.dereferencedType(), *t->dereferencedType()) )
             return fmt("%s", expr);
 
         if ( auto t = dst.tryAs<type::StrongReference>() )
             return fmt("::hilti::rt::StrongReference<%s>(%s)",
-                       cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
+                       cg->compile(*src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( auto t = dst.tryAs<type::WeakReference>() )
             return fmt("::hilti::rt::WeakReference<%s>(%s)",
-                       cg->compile(src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
+                       cg->compile(*src.dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         if ( src.dereferencedType() == dst )
             return {fmt("(*%s)", expr), cxx::Side::LHS};

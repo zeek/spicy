@@ -136,7 +136,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 auto t = n.type();
 
                 if ( type::isReferenceType(t) )
-                    t = t.dereferencedType();
+                    t = *t.dereferencedType();
 
                 if ( ! type::takesArguments(t) )
                     error("type does not take arguments", p);
@@ -218,7 +218,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         auto t = c.type();
 
         if ( auto vr = t.tryAs<type::ValueReference>() )
-            t = vr->dereferencedType();
+            t = *vr->dereferencedType();
 
         if ( auto args = c.typeArguments(); args.size() ) {
             if ( ! type::takesArguments(t) )
@@ -477,7 +477,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( n.isWildcard() )
             return;
 
-        if ( const auto& t = n.dereferencedType(); ! type::isAllocable(t) )
+        if ( const auto& t = *n.dereferencedType(); ! type::isAllocable(t) )
             error(fmt("type %s cannot be used inside optional", t), p);
     }
 
@@ -485,7 +485,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( n.isWildcard() )
             return;
 
-        if ( const auto& t = n.dereferencedType(); ! type::isAllocable(t) )
+        if ( const auto& t = *n.dereferencedType(); ! type::isAllocable(t) )
             error(fmt("type %s is not allocable and can thus not be used with references", t), p);
     }
 
@@ -493,7 +493,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( n.isWildcard() )
             return;
 
-        if ( const auto& t = n.dereferencedType(); ! type::isAllocable(t) )
+        if ( const auto& t = *n.dereferencedType(); ! type::isAllocable(t) )
             error(fmt("type %s cannot be used inside result", t), p);
     }
 
@@ -570,7 +570,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( n.isWildcard() )
             return;
 
-        if ( const auto& t = n.dereferencedType(); ! type::isAllocable(t) )
+        if ( const auto& t = *n.dereferencedType(); ! type::isAllocable(t) )
             error(fmt("type %s is not allocable and can thus not be used with weak references", t), p);
     }
 

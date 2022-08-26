@@ -21,7 +21,7 @@ std::optional<std::pair<const Expression, std::optional<const Type>>> spicy::typ
     Type t = parseType();
 
     if ( auto x = t.tryAs<type::ValueReference>() )
-        t = x->dereferencedType();
+        t = *x->dereferencedType();
 
     if ( auto x = t.tryAs<type::Unit>() ) {
         if ( auto convert = AttributeSet::find(x->attributes(), "&convert") )

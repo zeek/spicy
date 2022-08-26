@@ -65,13 +65,13 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
 
     result_t operator()(const ctor::Null& c) {
         if ( auto t = dst.tryAs<type::Optional>() )
-            return ctor::Optional(t->dereferencedType());
+            return ctor::Optional(*t->dereferencedType());
 
         if ( auto t = dst.tryAs<type::StrongReference>() )
-            return ctor::StrongReference(t->dereferencedType());
+            return ctor::StrongReference(*t->dereferencedType());
 
         if ( auto t = dst.tryAs<type::WeakReference>() )
-            return ctor::WeakReference(t->dereferencedType());
+            return ctor::WeakReference(*t->dereferencedType());
 
         return {};
     }
@@ -305,7 +305,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
 
         if ( (dst.isA<type::ValueReference>() || dst.isA<type::StrongReference>()) && ! type::isReferenceType(dst) )
             // Allow coercion from value to reference type with new instance.
-            dst_ = dst.dereferencedType();
+            dst_ = *dst.dereferencedType();
 
         if ( auto dtype = dst_.tryAs<type::Struct>() ) {
             if ( ! dst_.typeID() )
@@ -425,8 +425,8 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
 
     result_t operator()(const type::Optional& r) {
         if ( auto t = dst.tryAs<type::Optional>() ) {
-            const auto& s = r.dereferencedType();
-            const auto& d = t->dereferencedType();
+            const auto& s = *r.dereferencedType();
+            const auto& d = *t->dereferencedType();
 
             if ( type::sameExceptForConstness(s, d) && (style & CoercionStyle::Assignment) )
                 // Assignments copy, so it's safe to turn  into the
@@ -445,7 +445,7 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
             return dst;
 
         if ( type::isReferenceType(dst) ) {
-            if ( type::sameExceptForConstness(r.dereferencedType(), dst.dereferencedType()) )
+            if ( type::sameExceptForConstness(*r.dereferencedType(), *dst.dereferencedType()) )
                 return dst;
         }
 
@@ -556,10 +556,10 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
 
     result_t operator()(const type::ValueReference& r) {
         if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return hilti::coerceType(r.dereferencedType(), dst, style);
+            return hilti::coerceType(*r.dereferencedType(), dst, style);
 
         if ( type::isReferenceType(dst) ) {
-            if ( type::sameExceptForConstness(r.dereferencedType(), dst.dereferencedType()) )
+            if ( type::sameExceptForConstness(*r.dereferencedType(), *dst.dereferencedType()) )
                 return dst;
         }
 
@@ -574,7 +574,7 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
             return dst;
 
         if ( type::isReferenceType(dst) ) {
-            if ( type::sameExceptForConstness(r.dereferencedType(), dst.dereferencedType()) )
+            if ( type::sameExceptForConstness(*r.dereferencedType(), *dst.dereferencedType()) )
                 return dst;
         }
 
@@ -675,7 +675,7 @@ static Result<Type> _coerceType(const Type& src, const Type& dst, bitmask<Coerci
                 return dst;
 
             // All types converts into a corresponding optional.
-            if ( auto x = coerceType(src, opt->dereferencedType(), style) )
+            if ( auto x = coerceType(src, *opt->dereferencedType(), style) )
                 return {type::Optional(*x, src.meta())};
         }
 
@@ -684,13 +684,13 @@ static Result<Type> _coerceType(const Type& src, const Type& dst, bitmask<Coerci
                 return dst;
 
             // All types converts into a corresponding result.
-            if ( auto x = coerceType(src, opt->dereferencedType(), style) )
+            if ( auto x = coerceType(src, *opt->dereferencedType(), style) )
                 return {type::Result(*x, src.meta())};
         }
 
         if ( auto x = dst.tryAs<type::ValueReference>(); x && ! type::isReferenceType(src) ) {
             // All types converts into a corresponding value_ref.
-            if ( auto y = coerceType(src, x->dereferencedType(), style) )
+            if ( auto y = coerceType(src, *x->dereferencedType(), style) )
                 return {type::ValueReference(*x, src.meta())};
         }
     }
@@ -775,7 +775,8 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const nod
         auto oat = operator_::type(op.type, exprs, node::Range<Expression>(transformed.begin(), transformed.end()));
 
         if ( ! oat ) {
-            HILTI_DEBUG(logging::debug::Operator, util::fmt("  [param %d] could not look up operand type -> failure", i));
+            HILTI_DEBUG(logging::debug::Operator,
+                        util::fmt("  [param %d] could not look up operand type -> failure", i));
             return result::Error("could not look up operand type");
         }
 
@@ -958,7 +959,7 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
                 RETURN(no_change);
 
             // All types converts into a corresponding optional.
-            if ( auto x = coerceExpression(e, opt->dereferencedType(), style) )
+            if ( auto x = coerceExpression(e, *opt->dereferencedType(), style) )
                 RETURN(CoercedExpression(src, expression::Coerced(*x.coerced, dst, e.meta())));
         }
 
@@ -967,13 +968,13 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
                 RETURN(no_change);
 
             // All types convert into a corresponding result.
-            if ( auto x = coerceExpression(e, result->dereferencedType(), style) )
+            if ( auto x = coerceExpression(e, *result->dereferencedType(), style) )
                 RETURN(CoercedExpression(src, expression::Coerced(*x.coerced, dst, e.meta())));
         }
 
         if ( auto x = dst.tryAs<type::ValueReference>(); x && ! type::isReferenceType(src) ) {
             // All types converts into a corresponding value_ref.
-            if ( auto y = coerceExpression(e, x->dereferencedType(), style) )
+            if ( auto y = coerceExpression(e, *x->dereferencedType(), style) )
                 RETURN(CoercedExpression(src, expression::Coerced(*y.coerced, dst, e.meta())));
         }
     }
@@ -1019,7 +1020,8 @@ CoercedExpression hilti::coerceExpression(const Expression& e, const Type& src, 
 }
 
 // Public version going through all plugins.
-CoercedExpression hilti::coerceExpression(const Expression& e, const Type& dst, bitmask<CoercionStyle> style, bool lhs) {
+CoercedExpression hilti::coerceExpression(const Expression& e, const Type& dst, bitmask<CoercionStyle> style,
+                                          bool lhs) {
     return coerceExpression(e, e.type(), dst, style, lhs);
 }
 
