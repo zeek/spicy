@@ -195,6 +195,9 @@ public:
 
     /** For internal use. Use ``type::isSortable` instead. */
     virtual bool _isSortable() const { return false; }
+
+    /** For internal use. Use ``type::isView` instead. */
+    virtual bool _isView() const { return false; }
 };
 
 class Type : public type::detail::Type {

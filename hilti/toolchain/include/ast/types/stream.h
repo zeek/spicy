@@ -33,7 +33,7 @@ public:
 };
 
 /** AST node for a stream view type. */
-class View : public TypeBase, trait::isView, trait::isIterable {
+class View : public TypeBase, trait::isIterable {
 public:
     View(const Meta& m = Meta()) : TypeBase(nodes(stream::Iterator(m)), m) {}
 
@@ -79,6 +79,7 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
+    bool _isView() const override { return true; }
 };
 
 namespace detail::stream {

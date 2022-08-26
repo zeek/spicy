@@ -50,7 +50,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     trait _isIterator() from hilti::type::trait::isIterator;
 
     /** For internal use. Use ``type::isView` instead. */
-    trait _isView() from hilti::type::trait::isView;
+    bool _isView() const;
 
     /** For internal use. Use ``type::isParameterized` instead. */
     bool _isParameterized() const;
