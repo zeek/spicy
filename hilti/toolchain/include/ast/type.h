@@ -31,10 +31,8 @@ using Parameter = declaration::Parameter;
 }
 
 namespace trait {
-class isIterable {};
 class isIterator {};
 class isReferenceType {};
-class isView {};
 class isViewable {};
 class takesArguments {};
 } // namespace trait
@@ -190,9 +188,6 @@ public:
     /** For internal use. Use ``type::isAllocable` instead. */
     virtual bool _isAllocable() const { return false; }
 
-    /** For internal use. Use ``type::isIterable` instead. */
-    virtual bool _isIterable() const { return false; }
-
     /** For internal use. Use ``type::isMutable` instead. */
     virtual bool _isMutable() const { return false; }
 
@@ -204,9 +199,6 @@ public:
 
     /** For internal use. Use ``type::isSortable` instead. */
     virtual bool _isSortable() const { return false; }
-
-    /** For internal use. Use ``type::isView` instead. */
-    virtual bool _isView() const { return false; }
 };
 
 class Type : public type::detail::Type {
@@ -318,7 +310,7 @@ inline bool isAllocable(const Type& t) { return t._isAllocable(); }
 inline bool isSortable(const Type& t) { return t._isSortable(); }
 
 /** Returns true for HILTI types that one can iterator over. */
-inline bool isIterable(const Type& t) { return t._isIterable(); }
+inline bool isIterable(const Type& t) { return t.iteratorType(true).has_value(); }
 
 /** Returns true for HILTI types that represent iterators. */
 inline bool isIterator(const Type& t) { return t._isIterator(); }
@@ -334,9 +326,6 @@ inline bool isMutable(const Type& t) { return t._isMutable(); }
 
 /** Returns true for HILTI types that, when compiled, correspond to non-POD C++ types. */
 inline bool isRuntimeNonTrivial(const Type& t) { return t._isRuntimeNonTrivial(); }
-
-/** Returns true for HILTI types that represent iterators. */
-inline bool isView(const Type& t) { return t._isView(); }
 
 /** Returns true for HILTI types that one can create a view for. */
 inline bool isViewable(const Type& t) { return t._isViewable(); }
