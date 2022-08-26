@@ -30,10 +30,6 @@ namespace function {
 using Parameter = declaration::Parameter;
 }
 
-namespace trait {
-class isIterator {};
-} // namespace trait
-
 using ResolvedState = std::unordered_set<uintptr_t>;
 
 /** Additional flags to associated with types. */
@@ -190,6 +186,9 @@ public:
 
     /** For internal use. Use ``type::isAllocable` instead. */
     virtual bool _isAllocable() const { return false; }
+
+    /** For internal use. Use ``type::isIterator` instead. */
+    virtual bool _isIterator() const { return false; }
 
     /** For internal use. Use ``type::isMutable` instead. */
     virtual bool _isMutable() const { return false; }

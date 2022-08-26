@@ -41,7 +41,7 @@ class Type(hilti::trait::isType) : hilti::trait::isNode {
     bool _isSortable() const;
 
     /** For internal use. Use ``type::isIterator` instead. */
-    trait _isIterator() from hilti::type::trait::isIterator;
+    bool _isIterator() const;
 
     /** For internal use. Use ``type::isParameterized` instead. */
     bool _isParameterized() const;

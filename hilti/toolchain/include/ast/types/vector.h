@@ -14,7 +14,7 @@ namespace hilti::type {
 namespace vector {
 
 /** AST node for a vector iterator type. */
-class Iterator : public TypeBase, trait::isIterator {
+class Iterator : public TypeBase {
 public:
     Iterator(Type etype, bool const_, Meta m = Meta())
         : TypeBase(nodes(std::move(etype)), std::move(m)), _const(const_) {}
@@ -36,6 +36,7 @@ public:
     auto properties() const { return node::Properties{{"const", _const}}; }
 
     bool _isAllocable() const override { return true; }
+    bool _isIterator() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
