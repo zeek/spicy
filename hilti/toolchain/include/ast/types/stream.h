@@ -19,8 +19,7 @@ public:
 
     bool operator==(const Iterator& /* other */) const { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     optional_ref<const Type> dereferencedType() const override { return child<Type>(0); }
@@ -40,8 +39,7 @@ public:
 
     bool operator==(const View& /* other */) const { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     optional_ref<const Type> elementType() const override { return iteratorType(true)->dereferencedType(); }
@@ -62,8 +60,7 @@ public:
 
     bool operator==(const Stream& /* other */) const { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     optional_ref<const Type> elementType() const override { return iteratorType(true)->dereferencedType(); }

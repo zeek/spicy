@@ -21,8 +21,7 @@ public:
 
     bool operator==(const Member& other) const { return id() == other.id(); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     std::vector<Node> typeParameters() const override { return std::vector<Node>{id()}; }

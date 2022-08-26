@@ -20,8 +20,7 @@ public:
 
     bool operator==(const Type_& other) const { return typeValue() == other.typeValue(); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(typeValue(), rstate); }
     bool isWildcard() const override { return _wildcard; }

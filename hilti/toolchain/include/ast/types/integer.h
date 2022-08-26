@@ -48,8 +48,7 @@ public:
     /** Implements the `Type` interface. */
     std::vector<Node> typeParameters() const override;
 
-    /** Implements the `Node` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
 };
 
 /** AST node for an unsigned integer type. */
@@ -62,8 +61,7 @@ public:
     /** Implements the `Type` interface. */
     std::vector<Node> typeParameters() const override;
 
-    /** Implements the `Node` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
 };
 
 } // namespace hilti::type

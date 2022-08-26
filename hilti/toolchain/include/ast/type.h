@@ -161,6 +161,9 @@ public:
     /** Returns the type of elements the container stores. */
     virtual optional_ref<const hilti::Type> elementType() const { return {}; }
 
+    /** Returns true if the type is equivalent to another HILTI type. */
+    virtual bool isEqual(const hilti::Type& other) const = 0;
+
     /** Returns the type of an iterator for this type. */
     virtual optional_ref<const hilti::Type> iteratorType(bool const_) const { return {}; }
 

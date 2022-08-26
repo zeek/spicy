@@ -21,8 +21,7 @@ public:
 
     bool operator==(const Result& other) const { return dereferencedType() == other.dereferencedType(); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     std::vector<Node> typeParameters() const override { return children(); }

@@ -23,8 +23,7 @@ public:
     const std::string& cxxName() const { return _cxx_name; }
     bool operator==(const Library& other) const { return _cxx_name == other._cxx_name; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const {
+    bool isEqual(const Type& other) const override {
         if ( other.cxxID() == _cxx_name )
             return true;
 

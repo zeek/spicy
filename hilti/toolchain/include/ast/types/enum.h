@@ -77,8 +77,7 @@ public:
         return children<Declaration>(0, -1) == other.children<Declaration>(0, -1);
     }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return _initialized; }
 

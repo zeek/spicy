@@ -93,8 +93,7 @@ public:
 
     bool operator==(const Bitfield& other) const { return width() == other.width() && bits() == other.bits(); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     std::vector<hilti::Node> typeParameters() const override { return hilti::util::slice(children(), 1); }

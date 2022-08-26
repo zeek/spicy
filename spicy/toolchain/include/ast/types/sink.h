@@ -15,8 +15,7 @@ public:
 
     bool operator==(const Sink& /* other */) const { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const hilti::Type& other) const { return hilti::node::isEqual(this, other); }
+    bool isEqual(const hilti::Type& other) const override { return hilti::node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(hilti::type::ResolvedState* rstate) const { return true; }
     /** Implements the `Node` interface. */

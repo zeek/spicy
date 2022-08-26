@@ -13,8 +13,7 @@ class Auto : public TypeBase {
 public:
     bool operator==(const Auto& /* other */) const { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return false; }
     /** Implements the `Node` interface. */

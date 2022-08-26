@@ -39,8 +39,7 @@ public:
     /** Returns true if the container elements aren't modifiable. */
     bool isConstant() const { return _const; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
@@ -81,8 +80,7 @@ public:
     const Type& keyType() const { return child<map::Iterator>(0).keyType(); }
     const Type& valueType() const { return child<map::Iterator>(0).valueType(); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const {
         return type::detail::isResolved(iteratorType(true), rstate) &&

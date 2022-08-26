@@ -24,8 +24,7 @@ public:
     /** Returns true if the container elements aren't modifiable. */
     bool isConstant() const { return _const; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
     /** Implements the `Type` interface. */
@@ -59,8 +58,7 @@ public:
         : TypeBase(nodes(vector::Iterator(Wildcard{}, true, m), vector::Iterator(Wildcard{}, false, m)), m),
           _wildcard(true) {}
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const {
         return type::detail::isResolved(iteratorType(true), rstate) &&

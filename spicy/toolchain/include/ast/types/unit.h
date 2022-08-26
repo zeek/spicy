@@ -178,8 +178,7 @@ public:
         return false;
     }
 
-    // Type interface.
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
 
     auto _isResolved(ResolvedState* rstate) const {
         auto xs = items();

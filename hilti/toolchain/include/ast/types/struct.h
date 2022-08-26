@@ -92,8 +92,7 @@ public:
 
     bool operator==(const Struct& other) const { return fields() == other.fields(); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const {
+    bool isEqual(const Type& other) const override {
         if ( auto x = other.tryAs<type::Struct>() ) {
             // Anonymous structs only compare successfully to themselves.
             if ( _anon_struct >= 0 || x->_anon_struct >= 0 )

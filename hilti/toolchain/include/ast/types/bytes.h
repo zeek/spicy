@@ -19,8 +19,7 @@ public:
 
     bool operator==(const Iterator& /* other */) const { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     /** Implements the `Type` interface. */
@@ -43,8 +42,7 @@ public:
 
     bool operator==(const Bytes& /* other */) const { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+    bool isEqual(const Type& other) const override { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
     auto _isResolved(ResolvedState* rstate) const { return true; }
     optional_ref<const Type> elementType() const override { return child<Type>(0); }
