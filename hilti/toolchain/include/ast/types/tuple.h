@@ -72,6 +72,8 @@ public:
     bool _isSortable() const override { return true; }
     bool _isParameterized() const override { return true; }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
 private:
     std::vector<tuple::Element> _typesToElements(std::vector<Type>&& types) {
         std::vector<tuple::Element> elements;

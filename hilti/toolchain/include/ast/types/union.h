@@ -72,6 +72,8 @@ public:
     bool _isMutable() const override { return true; }
     bool _isParameterized() const override { return true; }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
     /**
      * Copies an existing type and adds a new field to the copy.
      *

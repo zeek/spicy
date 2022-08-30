@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <typeinfo>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -165,7 +166,7 @@ public:
     virtual optional_ref<const hilti::Type> elementType() const { return {}; }
 
     /** Returns true if the type is equivalent to another HILTI type. */
-    virtual bool isEqual(const hilti::Type& other) const = 0;
+    virtual bool isEqual(const hilti::Type& other) const { return false; }
 
     /** Returns the type of an iterator for this type. */
     virtual optional_ref<const hilti::Type> iteratorType(bool const_) const { return {}; }
@@ -206,7 +207,7 @@ public:
     virtual bool _isReferenceType() const { return false; }
 
     /** For internal use. Use ``type::isResolved` instead. */
-    virtual bool _isResolved(type::ResolvedState* rstate) const = 0;
+    virtual bool _isResolved(type::ResolvedState* rstate) const { return false; }
 
     /** For internal use. Use ``type::isRuntimeNonTrivial` instead. */
     virtual bool _isRuntimeNonTrivial() const { return false; }
@@ -215,12 +216,22 @@ public:
     virtual bool _isSortable() const { return false; }
 
     /** Implements the `Node` interface. */
-    virtual node::Properties properties() const = 0;
+    virtual node::Properties properties() const { return {}; }
+
+    virtual const std::type_info& typeid_() const { return typeid(decltype(*this)); }
 };
 
 class Type : public type::detail::Type {
 public:
-    using type::detail::Type::Type;
+    Type() = default;
+    Type(const Type&) = default;
+    Type(Type&&) = default;
+    Type(const TypeBase& data) : _data_(isocpp_p0201::make_polymorphic_value<TypeBase>(data)) {}
+
+    Type& operator=(const Type&) = default;
+    Type& operator=(Type&&) = default;
+
+    ~Type() override = default;
 
     std::optional<ID> resolvedID() const { return _state().resolved_id; }
 
@@ -243,6 +254,8 @@ public:
     std::vector<hilti::Node>& children() { return _data_->children(); }
     const Meta& meta() const { return _data_->meta(); }
     void setMeta(Meta m) { return _data_->setMeta(std::move(m)); }
+
+    const std::type_info& typeid_() const { return _data_->typeid_(); }
 
 private:
     isocpp_p0201::polymorphic_value<TypeBase> _data_;

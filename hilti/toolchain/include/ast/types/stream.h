@@ -28,6 +28,8 @@ public:
     bool _isIterator() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 };
 
 /** AST node for a stream view type. */
@@ -45,6 +47,8 @@ public:
 
     bool _isAllocable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 };
 
 } // namespace stream
@@ -66,6 +70,8 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 };
 
 namespace detail::stream {

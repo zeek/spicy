@@ -44,6 +44,8 @@ public:
     bool _isParameterized() const override { return true; }
     bool _isReferenceType() const override { return true; }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
 private:
     bool _wildcard = false;
     NodeRef _type;
@@ -73,6 +75,8 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isParameterized() const override { return true; }
     bool _isReferenceType() const override { return true; }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
 private:
     bool _wildcard = false;
@@ -109,6 +113,8 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isParameterized() const override { return true; }
     bool _isReferenceType() const override { return true; }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
 private:
     bool _wildcard = false;

@@ -29,6 +29,8 @@ public:
     bool _isSortable() const override { return true; }
     bool _isParameterized() const override { return true; }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
 private:
     bool _wildcard = false;
     int _width = 0;

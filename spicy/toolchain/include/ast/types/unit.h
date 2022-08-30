@@ -209,6 +209,8 @@ public:
         n->children()[0] = d;
     }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
 private:
     bool _public = false;
     bool _wildcard = false;

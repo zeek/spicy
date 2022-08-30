@@ -43,6 +43,8 @@ public:
 
     bool operator==(const Iterator& other) const { return dereferencedType() == other.dereferencedType(); }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
 private:
     bool _wildcard = false;
     bool _const = false;
@@ -82,6 +84,8 @@ public:
     bool _isRuntimeNonTrivial() const override { return true; }
 
     bool operator==(const List& other) const { return elementType() == other.elementType(); }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
 private:
     bool _wildcard = false;

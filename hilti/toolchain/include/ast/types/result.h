@@ -35,6 +35,8 @@ public:
     bool _isAllocable() const override { return true; }
     bool _isParameterized() const override { return true; }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
 private:
     bool _wildcard = false;
 };

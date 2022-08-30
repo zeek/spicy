@@ -150,6 +150,8 @@ private:
     int64_t _anon_struct = -1;
 
     static int64_t _anon_struct_counter;
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 };
 
 } // namespace hilti::type

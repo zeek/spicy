@@ -123,6 +123,8 @@ public:
 
     bool _isParameterized() const override { return true; }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
 private:
     bool _wildcard = false;
     function::Flavor _flavor = function::Flavor::Standard;

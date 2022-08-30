@@ -18,6 +18,8 @@ public:
 
     node::Properties properties() const override { return node::Properties{}; }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
     /**
      * Wrapper around constructor so that we can make it private. Don't use
      * this, use the singleton `type::void_` instead.

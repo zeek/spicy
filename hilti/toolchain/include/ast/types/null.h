@@ -19,6 +19,8 @@ public:
     bool _isResolved(ResolvedState* rstate) const override { return true; }
 
     node::Properties properties() const override { return node::Properties{}; }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 };
 
 } // namespace hilti::type

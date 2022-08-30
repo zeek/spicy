@@ -25,6 +25,8 @@ public:
 
     bool _isAllocable() const override { return true; }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
 private:
     Auto(Meta m = Meta()) : TypeBase(std::move(m)) {}
 };

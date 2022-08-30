@@ -28,6 +28,8 @@ public:
     bool _isIterator() const override { return true; }
     bool _isMutable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 };
 
 } // namespace bytes
@@ -51,6 +53,8 @@ public:
     bool _isMutable() const override { return true; }
     bool _isRuntimeNonTrivial() const override { return true; }
     bool _isSortable() const override { return true; }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 };
 
 } // namespace hilti::type

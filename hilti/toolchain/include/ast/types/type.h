@@ -28,6 +28,8 @@ public:
     std::vector<Node> typeParameters() const override { return children(); }
     bool _isParameterized() const override { return true; }
 
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
 private:
     bool _wildcard = false;
 };

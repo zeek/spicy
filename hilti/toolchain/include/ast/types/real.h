@@ -22,6 +22,8 @@ public:
 
     bool _isAllocable() const override { return true; }
     bool _isSortable() const override { return true; }
+
+    const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 };
 
 } // namespace hilti::type
