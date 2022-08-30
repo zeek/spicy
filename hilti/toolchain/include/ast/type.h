@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <type_traits>
 #include <typeinfo>
 #include <unordered_set>
 #include <utility>
@@ -11,6 +12,7 @@
 #include <hilti/ast/node.h>
 #include <hilti/base/optional-ref.h>
 #include <hilti/base/type_erase.h>
+#include <hilti/base/visitor-types.h>
 
 // FIXME(bbannier): Add proper dependency with CMake.
 #include "polymorphic_value/polymorphic_value.h"
@@ -23,6 +25,7 @@ class isType : public isNode {};
 } // namespace trait
 
 class Type;
+class TypeBase;
 
 namespace declaration {
 class Parameter;
@@ -144,9 +147,17 @@ struct State {
 #include <hilti/autogen/__type.h>
 } // namespace detail
 
-} // namespace type
+class SignedInteger;
 
-class Type;
+class Visitor {
+public:
+    using position_t = visitor::Position<const Node&>;
+
+    virtual void operator()(const hilti::TypeBase&, position_t&) {}
+    virtual void operator()(const hilti::type::SignedInteger&, position_t&) {}
+};
+
+} // namespace type
 
 /**
  * Base class for classes implementing the `Type` interface. This class
@@ -219,6 +230,8 @@ public:
     virtual node::Properties properties() const { return {}; }
 
     virtual const std::type_info& typeid_() const { return typeid(decltype(*this)); }
+
+    virtual void dispatch(type::Visitor& v, type::Visitor::position_t& p) const { v(*this, p); }
 };
 
 class Type : public type::detail::Type {
@@ -226,7 +239,9 @@ public:
     Type() = default;
     Type(const Type&) = default;
     Type(Type&&) = default;
-    Type(const TypeBase& data) : _data_(isocpp_p0201::make_polymorphic_value<TypeBase>(data)) {}
+
+    template<typename T, typename = std::enable_if_t<std::is_base_of_v<TypeBase, T>>>
+    Type(const T& data) : _data_(isocpp_p0201::make_polymorphic_value<TypeBase, T>(data)) {}
 
     Type& operator=(const Type&) = default;
     Type& operator=(Type&&) = default;
@@ -256,6 +271,8 @@ public:
     void setMeta(Meta m) { return _data_->setMeta(std::move(m)); }
 
     const std::type_info& typeid_() const { return _data_->typeid_(); }
+
+    void dispatch(type::Visitor& v, type::Visitor::position_t& p) const { _data_->dispatch(v, p); }
 
 private:
     isocpp_p0201::polymorphic_value<TypeBase> _data_;

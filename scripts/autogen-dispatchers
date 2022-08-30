@@ -55,20 +55,24 @@ for (cls, trait) in nodes:
         sys.exit(1)
 
 for (btrait, bcls) in traits.items():
-    print("  if constexpr ( std::is_base_of<{}, Erased>::value ) {{ \\".format(
+    print("  if constexpr ( std::is_base_of_v<{}, Erased> && std::is_base_of_v<hilti::type::Visitor, Dispatcher> ) {{ \\".format(
         bcls), file=out)
 
-    for (cls, trait) in nodes:
-        if trait != btrait:
-            continue
+    if bcls == "hilti::Type":
+        print("    n.dispatch(d, i); \\", file=out)
 
-        def output(msg):
-            print(msg.format(cls=cls) + " \\", file=out)
+    else:
+        for (cls, trait) in nodes:
+            if trait != btrait:
+                continue
 
-        output(
-            "    if ( auto r = do_dispatch_one<Result, {cls}, Erased, Dispatcher, Iterator>(n, tn, d, i, no_match_so_far) ) return r;")
+            def output(msg):
+                print(msg.format(cls=cls) + " \\", file=out)
+
+            output(
+                "    if ( auto r = do_dispatch_one<Result, {cls}, Erased, Dispatcher, Iterator>(n, tn, d, i, no_match_so_far) ) return r;")
 
     print("  } \\", file=out)
-    output("")
+    print(" \\", file=out)
 
 print("", file=out)

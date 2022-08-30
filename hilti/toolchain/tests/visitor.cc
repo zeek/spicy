@@ -216,8 +216,8 @@ TEST_CASE("Retrieve parent") {
 }
 
 TEST_CASE("Find specific parent") {
-    struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
-        result_t operator()(const hilti::type::SignedInteger& n, const_position_t i) {
+    struct Visitor : hilti::visitor::PreOrder<void, Visitor>, hilti::type::Visitor {
+        void operator()(const hilti::type::SignedInteger& n, hilti::type::Visitor::position_t& i) override {
             x = to_node(i.findParent<hilti::Module>()).typename_();
         }
         std::string x;
