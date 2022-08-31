@@ -30,14 +30,14 @@ static auto ast() {
 TEST_SUITE_BEGIN("Visitor");
 
 TEST_CASE("Single-shot, result, constant node") {
-    struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
+    struct Visitor : hilti::visitor::PreOrder<void, Visitor>, hilti::type::Visitor {
         using Visitor::base_t::base_t;
 
         void operator()(const hilti::Module& m) { result = "(mo)"; }
         void operator()(const hilti::ID& id) { result = "(id)"; }
         void operator()(const hilti::Type& t, const_position_t i) { result = "(t)"; }
-        void operator()(const hilti::type::String& s) { result = "(ts)"; }
-        void operator()(const hilti::type::SignedInteger& i) { result = "(ti)"; }
+        void operator()(const hilti::type::String& s, Visitor::position_t&) override { result = "(ts)"; }
+        void operator()(const hilti::type::SignedInteger& i, Visitor::position_t&) override { result = "(ti)"; }
         void operator()(const hilti::expression::Ctor& c, const_position_t i) { result = "(e:c)"; }
         void operator()(const hilti::ctor::Bool& b) { result = "(c:b)"; }
 
@@ -63,14 +63,16 @@ TEST_CASE("Single-shot, result, constant node") {
 }
 
 TEST_CASE("Visitor, pre-order, no result, constant nodes") {
-    struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
+    struct Visitor : hilti::visitor::PreOrder<void, Visitor>, hilti::type::Visitor {
         using base_t::base_t;
 
         result_t operator()(const hilti::Module& m) { x += "(mo)"; }
         result_t operator()(const hilti::ID& id) { x += "(id)"; }
         result_t operator()(const hilti::Type& t, const_position_t i) { x += "(t)"; }
-        result_t operator()(const hilti::type::String& s) { x += "(ts)"; }
-        result_t operator()(const hilti::type::SignedInteger& i) { x += "(ti)"; }
+        result_t operator()(const hilti::type::String& s, hilti::type::Visitor::position_t&) override { x += "(ts)"; }
+        result_t operator()(const hilti::type::SignedInteger& i, hilti::type::Visitor::position_t&) override {
+            x += "(ti)";
+        }
         result_t operator()(const hilti::expression::Ctor& c, const_position_t i) { x += "(e:c)"; }
         result_t operator()(const hilti::ctor::Bool& b) { x += "(c:b)"; }
 

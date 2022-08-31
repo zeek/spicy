@@ -23,6 +23,8 @@ public:
     bool _isSortable() const override { return true; }
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
+    void dispatch(type::Visitor& v, type::Visitor::position_t& p) const override { v(*this, p); }
 };
 
 } // namespace hilti::type

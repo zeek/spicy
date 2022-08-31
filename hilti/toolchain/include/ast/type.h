@@ -148,13 +148,15 @@ struct State {
 } // namespace detail
 
 class SignedInteger;
+class String;
 
 class Visitor {
 public:
-    using position_t = visitor::Position<const Node&>;
+    using position_t = visitor::Position<Node&>;
 
     virtual void operator()(const hilti::TypeBase&, position_t&) {}
     virtual void operator()(const hilti::type::SignedInteger&, position_t&) {}
+    virtual void operator()(const hilti::type::String&, position_t&) {}
 };
 
 } // namespace type
