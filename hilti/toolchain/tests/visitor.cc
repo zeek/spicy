@@ -8,6 +8,7 @@
 #include <doctest/doctest.h>
 
 #include <algorithm>
+#include <optional>
 #include <sstream>
 
 #include <hilti/ast/detail/visitor.h>
@@ -29,44 +30,36 @@ static auto ast() {
 TEST_SUITE_BEGIN("Visitor");
 
 TEST_CASE("Single-shot, result, constant node") {
-    struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
+    struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         using Visitor::base_t::base_t;
 
-        result_t operator()(const hilti::Module& m) { return "(mo)"; }
-        result_t operator()(const hilti::ID& id) { return "(id)"; }
-        result_t operator()(const hilti::Type& t, const_position_t i) { return "(t)"; }
-        result_t operator()(const hilti::type::String& s) { return "(ts)"; }
-        result_t operator()(const hilti::type::SignedInteger& i) { return "(ti)"; }
-        result_t operator()(const hilti::expression::Ctor& c, const_position_t i) { return "(e:c)"; }
-        result_t operator()(const hilti::ctor::Bool& b) { return "(c:b)"; }
+        void operator()(const hilti::Module& m) { result = "(mo)"; }
+        void operator()(const hilti::ID& id) { result = "(id)"; }
+        void operator()(const hilti::Type& t, const_position_t i) { result = "(t)"; }
+        void operator()(const hilti::type::String& s) { result = "(ts)"; }
+        void operator()(const hilti::type::SignedInteger& i) { result = "(ti)"; }
+        void operator()(const hilti::expression::Ctor& c, const_position_t i) { result = "(e:c)"; }
+        void operator()(const hilti::ctor::Bool& b) { result = "(c:b)"; }
 
-        void testDispatch(iterator_t::Position i) {
-            if ( auto s = dispatch(i) )
-                x += *s;
-            else
-                x += "-";
-
-            x += ",";
-        }
-
-        std::string x;
-        const std::string expected =
-            "(mo),(id),-,-,(id),(ts),-,(id),(ti),-,(id),(t),-,-,(id),(t),-,-,(id),(t),(e:c),(c:b),";
+        std::optional<std::string> result;
     };
 
     auto root = ast();
     auto v = Visitor();
 
-    auto x = v.dispatch(root);
-    REQUIRE(x);
-    REQUIRE(*x == "(mo)");
+    v.result.reset();
+    v.dispatch(root);
+    REQUIRE(v.result);
+    REQUIRE(*v.result == "(mo)");
 
-    x = v.dispatch(root.children()[0]);
-    REQUIRE(x);
-    REQUIRE(*x == "(id)");
+    v.result.reset();
+    v.dispatch(root.children()[0]);
+    REQUIRE(v.result);
+    REQUIRE(*v.result == "(id)");
 
-    x = v.dispatch(root.children()[1]);
-    REQUIRE(! x);
+    v.result.reset();
+    v.dispatch(root.children()[1]);
+    REQUIRE(! v.result);
 }
 
 TEST_CASE("Visitor, pre-order, no result, constant nodes") {
