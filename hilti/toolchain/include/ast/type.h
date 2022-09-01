@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <polymorphic_value/polymorphic_value.h>
+
 #include <type_traits>
 #include <typeinfo>
 #include <unordered_set>
@@ -13,9 +15,6 @@
 #include <hilti/base/optional-ref.h>
 #include <hilti/base/type_erase.h>
 #include <hilti/base/visitor-types.h>
-
-// FIXME(bbannier): Add proper dependency with CMake.
-#include "polymorphic_value/polymorphic_value.h"
 
 namespace hilti {
 

@@ -29,3 +29,5 @@ set(REPROC_OBJECT_LIBRARIES ON)
 add_subdirectory(reproc)
 set_property(TARGET reproc PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET reproc++ PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+add_subdirectory(polymorphic_value)

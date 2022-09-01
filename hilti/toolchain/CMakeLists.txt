@@ -113,6 +113,7 @@ set_target_properties(hilti-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 target_link_libraries(hilti-objects
                       PUBLIC $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
+target_link_libraries(hilti-objects PRIVATE polymorphic_value)
 
 add_dependencies(hilti-objects reproc++)
 target_include_directories(hilti-objects BEFORE
