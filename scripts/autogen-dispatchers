@@ -54,24 +54,28 @@ for (cls, trait) in nodes:
         print("No 'trait' definition for {}".format(trait), file=sys.stderr)
         sys.exit(1)
 
+print("""\\
+  if constexpr ( std::is_base_of_v<hilti::Type, Erased> && std::is_base_of_v<hilti::type::Visitor, Dispatcher> ) { \\
+          if constexpr ( std::is_const_v<decltype(i.node)> ) {\\
+            n.dispatch(d, i); \\
+            return false; \\
+          } else {\\
+            using P__ = std::decay_t<decltype(i)>; \\
+            using N__ = std::add_lvalue_reference_t<typename P__::Erased>; \\
+            auto& n__ = const_cast<N__>(i.node); \\
+            std::vector<hilti::visitor::Location<N__>> path__; path__.reserve(i.path.size());\\
+            for ( auto&& x: i.path ) path__.push_back(hilti::visitor::Location<N__>{const_cast<N__>(x.node), x.child}); \\
+            hilti::visitor::Position<N__> ii = {n__, path__}; \\
+            n.dispatch(d, ii); \\
+            return false; \\
+          }\\
+  } \\""", file=out)
 for (btrait, bcls) in traits.items():
     print("  if constexpr ( std::is_base_of_v<{}, Erased> && std::is_base_of_v<hilti::type::Visitor, Dispatcher> ) {{ \\".format(
         bcls), file=out)
 
     if bcls == "hilti::Type":
-        print("    if constexpr ( std::is_const_v<decltype(i.node)> ) {\\", file=out)
-        print("      n.dispatch(d, i); \\", file=out)
-        print("    } else {\\", file=out)
-        # Types can only be dispatched on with mutable position, adjust received data.
-        print("      using P__ = std::decay_t<decltype(i)>; \\", file=out)
-        print("      using N__ = std::add_lvalue_reference_t<typename P__::Erased>; \\", file=out)
-        print("      auto& n__ = const_cast<N__>(i.node); \\", file=out)
-        print("      std::vector<hilti::visitor::Location<N__>> path__; path__.reserve(i.path.size());\\", file=out)
-        print("      for ( auto&& x: i.path ) path__.push_back(hilti::visitor::Location<N__>{const_cast<N__>(x.node), x.child}); \\", file=out)
-        print("      hilti::visitor::Position<N__> ii = {n__, path__}; \\", file=out)
-        print("      n.dispatch(d, ii); \\", file=out)
-        print("    }\\", file=out)
-
+        pass
     else:
         for (cls, trait) in nodes:
             if trait != btrait:
