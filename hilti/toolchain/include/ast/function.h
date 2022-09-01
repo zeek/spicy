@@ -51,7 +51,7 @@ public:
     Function() : NodeBase(nodes(node::none, node::none, node::none, node::none), Meta()) {}
 
     const auto& id() const { return child<ID>(0); }
-    const auto& type() const { return child<Type>(1).as<Type>(); }
+    const auto& type() const { return child<Type>(1); }
     NodeRef typeRef() { return NodeRef(children()[1]); }
     const auto& ftype() const { return child<Type>(1).as<type::Function>(); }
     auto body() const { return children()[2].tryAs<Statement>(); }

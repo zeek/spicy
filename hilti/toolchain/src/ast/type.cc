@@ -9,7 +9,7 @@ using namespace hilti;
 
 bool type::isResolved(const Type& t) {
     ResolvedState rstate;
-    return isResolved(t, &rstate);
+    return detail::isResolved(t, &rstate);
 }
 
 bool type::detail::isResolved(const hilti::Type& t, ResolvedState* rstate) {

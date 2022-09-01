@@ -14,6 +14,7 @@
 #include <hilti/ast/node.h>
 #include <hilti/base/optional-ref.h>
 #include <hilti/base/type_erase.h>
+#include <hilti/base/util.h>
 #include <hilti/base/visitor-types.h>
 
 namespace hilti {
@@ -271,9 +272,93 @@ public:
     const Meta& meta() const { return _data_->meta(); }
     void setMeta(Meta m) { return _data_->setMeta(std::move(m)); }
 
+    template<typename T>
+    bool isA() const {
+        return dynamic_cast<const T*>(&*_data_);
+    }
+
+    template<typename T>
+    const T& as() const {
+        return *dynamic_cast<const T*>(&*_data_);
+    }
+
+    template<typename T>
+    T& as() {
+        return *dynamic_cast<T*>(&*_data_);
+    }
+
+    template<typename T>
+    optional_ref<const T> tryAs() const {
+        if ( auto d = dynamic_cast<const T*>(&*_data_) )
+            return {*d};
+        else
+            return {};
+    }
+
+    auto typename_() const { return util::demangle(_data_->typeid_().name()); }
+
     const std::type_info& typeid_() const { return _data_->typeid_(); }
 
     void dispatch(type::Visitor& v, type::Visitor::position_t& p) const { _data_->dispatch(v, p); }
+
+
+    /** Implements the `Type interface. */
+
+    /** Returns true if the type is equivalent to another HILTI type. */
+    bool isEqual(const hilti::Type& other) const { return _data_->isEqual(other); }
+
+    /**
+     * Returns any parameters associated with type. If a type is declared as
+     * `T<A,B,C>` this returns a vector of the AST nodes for `A`, `B`, and
+     * `C`.
+     */
+    std::vector<Node> typeParameters() const { return _data_->typeParameters(); }
+
+    /**
+     * Returns true if all instances of the same type class can be coerced
+     * into the current instance, independent of their pararameters. In HILTI
+     * source code, this typically corresponds to a type `T<*>`.
+     */
+    bool isWildcard() const { return _data_->isWildcard(); }
+
+    /** Returns the type of an iterator for this type. */
+    optional_ref<const hilti::Type> iteratorType(bool const_) const { return _data_->iteratorType(const_); }
+
+    /** Returns the type of an view for this type. */
+    optional_ref<const hilti::Type> viewType() const { return _data_->viewType(); }
+
+    /** Returns the type of elements the iterator traverse. */
+    optional_ref<const hilti::Type> dereferencedType() const { return _data_->dereferencedType(); }
+
+    /** Returns the type of elements the container stores. */
+    optional_ref<const hilti::Type> elementType() const { return _data_->elementType(); }
+
+    /** Returns any parameters the type expects. */
+    hilti::node::Set<type::function::Parameter> parameters() const { return _data_->parameters(); }
+
+    /** For internal use. Use `type::isAllocable` instead. */
+    bool _isAllocable() const { return _data_->_isAllocable(); }
+
+    /** For internal use. Use `type::isSortable` instead. */
+    bool _isSortable() const { return _data_->_isSortable(); }
+
+    /** For internal use. Use `type::isIterator` instead. */
+    bool _isIterator() const { return _data_->_isIterator(); }
+
+    /** For internal use. Use `type::isParameterized` instead. */
+    bool _isParameterized() const { return _data_->_isParameterized(); }
+    /** For internal use. Use `type::isReferenceType` instead. */
+
+    bool _isReferenceType() const { return _data_->_isReferenceType(); }
+
+    /** For internal use. Use `type::isMutable` instead. */
+    bool _isMutable() const { return _data_->_isMutable(); }
+
+    /** For internal use. Use `type::isRuntimeNonTrivial` instead. */
+    bool _isRuntimeNonTrivial() const { return _data_->_isRuntimeNonTrivial(); }
+
+    /** For internal use. Use `type::isResolved` instead. */
+    bool _isResolved(type::ResolvedState* rstate) const { return _data_->_isResolved(rstate); }
 
 private:
     isocpp_p0201::polymorphic_value<TypeBase> _data_;
