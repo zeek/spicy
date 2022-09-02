@@ -236,6 +236,10 @@ public:
     virtual void dispatch(type::Visitor& v, type::Visitor::position_t& p) const { v(*this, p); }
 };
 
+#define HILTI_TYPE_VISITOR_IMPLEMENT                                                                                   \
+    void dispatch(type::Visitor& v, type::Visitor::position_t& p) const override { v(*this, p); }
+
+
 class Type : public type::detail::Type {
 public:
     Type() = default;

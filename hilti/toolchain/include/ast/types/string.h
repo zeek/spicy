@@ -24,7 +24,7 @@ public:
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
-    void dispatch(type::Visitor& v, type::Visitor::position_t& p) const override { v(*this, p); }
+    HILTI_TYPE_VISITOR_IMPLEMENT
 };
 
 } // namespace hilti::type
