@@ -26,6 +26,8 @@ public:
      */
     static Void create(Meta m = Meta()) { return Void(std::move(m)); }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     Void(Meta m = Meta()) : TypeBase(std::move(m)) {}
 };

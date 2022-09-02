@@ -145,6 +145,8 @@ public:
         n->children()[0] = d;
     }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     bool _wildcard = false;
     int64_t _anon_struct = -1;

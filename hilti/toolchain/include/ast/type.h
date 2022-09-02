@@ -17,6 +17,12 @@
 #include <hilti/base/util.h>
 #include <hilti/base/visitor-types.h>
 
+namespace spicy::type {
+class Bitfield;
+class Sink;
+class Unit;
+} // namespace spicy::type
+
 namespace hilti {
 
 namespace trait {
@@ -147,16 +153,133 @@ struct State {
 #include <hilti/autogen/__type.h>
 } // namespace detail
 
+class Address;
+class Any;
+class Auto;
+class Bool;
+class Bytes;
+class DocOnly;
+class Enum;
+class Error;
+class Exception;
+class Function;
+class Interval;
+class Library;
+class List;
+class Map;
+class Member;
+class Network;
+class Null;
+class OperandList;
+class Optional;
+class Port;
+class Real;
+class Real;
+class RegExp;
+class Result;
+class Set;
 class SignedInteger;
+class Stream;
 class String;
+class StrongReference;
+class Struct;
+class Time;
+class Tuple;
+class Type_;
+class Union;
+class Unknown;
+class UnresolvedID;
+class UnsignedInteger;
+class ValueReference;
+class Vector;
+class Void;
+class WeakReference;
+
+namespace bytes {
+class Iterator;
+}
+
+namespace detail {
+class IntegerBase;
+}
+
+namespace list {
+class Iterator;
+}
+
+namespace map {
+class Iterator;
+}
+
+namespace set {
+class Iterator;
+}
+
+namespace stream {
+class Iterator;
+class View;
+} // namespace stream
+
+namespace vector {
+class Iterator;
+}
 
 class Visitor {
 public:
     using position_t = visitor::Position<Node&>;
 
     virtual void operator()(const hilti::TypeBase&, position_t&) {}
+    virtual void operator()(const hilti::type::Address&, position_t&) {}
+    virtual void operator()(const hilti::type::Any&, position_t&) {}
+    virtual void operator()(const hilti::type::Auto&, position_t&) {}
+    virtual void operator()(const hilti::type::Bool&, position_t&) {}
+    virtual void operator()(const hilti::type::Bytes&, position_t&) {}
+    virtual void operator()(const hilti::type::DocOnly&, position_t&) {}
+    virtual void operator()(const hilti::type::Enum&, position_t&) {}
+    virtual void operator()(const hilti::type::Error&, position_t&) {}
+    virtual void operator()(const hilti::type::Exception&, position_t&) {}
+    virtual void operator()(const hilti::type::Function&, position_t&) {}
+    virtual void operator()(const hilti::type::Interval&, position_t&) {}
+    virtual void operator()(const hilti::type::Library&, position_t&) {}
+    virtual void operator()(const hilti::type::List&, position_t&) {}
+    virtual void operator()(const hilti::type::Map&, position_t&) {}
+    virtual void operator()(const hilti::type::Member&, position_t&) {}
+    virtual void operator()(const hilti::type::Network&, position_t&) {}
+    virtual void operator()(const hilti::type::Null&, position_t&) {}
+    virtual void operator()(const hilti::type::OperandList&, position_t&) {}
+    virtual void operator()(const hilti::type::Optional&, position_t&) {}
+    virtual void operator()(const hilti::type::Port&, position_t&) {}
+    virtual void operator()(const hilti::type::Real&, position_t&) {}
+    virtual void operator()(const hilti::type::RegExp&, position_t&) {}
+    virtual void operator()(const hilti::type::Result&, position_t&) {}
+    virtual void operator()(const hilti::type::Set&, position_t&) {}
     virtual void operator()(const hilti::type::SignedInteger&, position_t&) {}
+    virtual void operator()(const hilti::type::Stream&, position_t&) {}
     virtual void operator()(const hilti::type::String&, position_t&) {}
+    virtual void operator()(const hilti::type::StrongReference&, position_t&) {}
+    virtual void operator()(const hilti::type::Struct&, position_t&) {}
+    virtual void operator()(const hilti::type::Time&, position_t&) {}
+    virtual void operator()(const hilti::type::Tuple&, position_t&) {}
+    virtual void operator()(const hilti::type::Type_&, position_t&) {}
+    virtual void operator()(const hilti::type::Union&, position_t&) {}
+    virtual void operator()(const hilti::type::Unknown&, position_t&) {}
+    virtual void operator()(const hilti::type::UnresolvedID&, position_t&) {}
+    virtual void operator()(const hilti::type::UnsignedInteger&, position_t&) {}
+    virtual void operator()(const hilti::type::ValueReference&, position_t&) {}
+    virtual void operator()(const hilti::type::Vector&, position_t&) {}
+    virtual void operator()(const hilti::type::Void&, position_t&) {}
+    virtual void operator()(const hilti::type::WeakReference&, position_t&) {}
+    virtual void operator()(const hilti::type::bytes::Iterator&, position_t&) {}
+    virtual void operator()(const hilti::type::detail::IntegerBase&, position_t&) {}
+    virtual void operator()(const hilti::type::list::Iterator&, position_t&) {}
+    virtual void operator()(const hilti::type::map::Iterator&, position_t&) {}
+    virtual void operator()(const hilti::type::set::Iterator&, position_t&) {}
+    virtual void operator()(const hilti::type::stream::Iterator&, position_t&) {}
+    virtual void operator()(const hilti::type::stream::View&, position_t&) {}
+    virtual void operator()(const hilti::type::vector::Iterator&, position_t&) {}
+    virtual void operator()(const spicy::type::Bitfield&, position_t&) {}
+    virtual void operator()(const spicy::type::Sink&, position_t&) {}
+    virtual void operator()(const spicy::type::Unit&, position_t&) {}
 };
 
 } // namespace type
@@ -237,7 +360,7 @@ public:
 };
 
 #define HILTI_TYPE_VISITOR_IMPLEMENT                                                                                   \
-    void dispatch(type::Visitor& v, type::Visitor::position_t& p) const override { v(*this, p); }
+    void dispatch(hilti::type::Visitor& v, hilti::type::Visitor::position_t& p) const override { v(*this, p); }
 
 
 class Type : public type::detail::Type {

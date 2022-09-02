@@ -45,6 +45,8 @@ public:
         return type::OperandList(std::move(ops));
     }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     std::vector<operator_::Operand> _operands;
 };

@@ -45,6 +45,8 @@ public:
 
     bool operator==(const Iterator& other) const { return dereferencedType() == other.dereferencedType(); }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     bool _wildcard = false;
     bool _const = false;
@@ -86,6 +88,8 @@ public:
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
     bool operator==(const Vector& other) const { return elementType() == other.elementType(); }
+
+    HILTI_TYPE_VISITOR_IMPLEMENT
 
 private:
     bool _wildcard = false;

@@ -87,6 +87,8 @@ public:
         return x;
     }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     bool _wildcard = false;
 };

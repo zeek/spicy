@@ -74,6 +74,8 @@ public:
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     std::vector<tuple::Element> _typesToElements(std::vector<Type>&& types) {
         std::vector<tuple::Element> elements;

@@ -62,6 +62,8 @@ public:
         return keyType() == other.keyType() && valueType() == other.valueType();
     }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     bool _wildcard = false;
     bool _const = false;
@@ -106,6 +108,8 @@ public:
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
     bool operator==(const Map& other) const { return iteratorType(true) == other.iteratorType(true); }
+
+    HILTI_TYPE_VISITOR_IMPLEMENT
 
 private:
     bool _wildcard = false;

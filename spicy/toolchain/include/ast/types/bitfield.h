@@ -105,6 +105,8 @@ public:
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     int _width = 0;
     bool _wildcard = false;

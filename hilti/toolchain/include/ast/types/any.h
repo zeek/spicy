@@ -21,6 +21,8 @@ public:
     node::Properties properties() const override { return node::Properties{}; }
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
+    HILTI_TYPE_VISITOR_IMPLEMENT
 };
 
 } // namespace hilti::type

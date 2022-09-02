@@ -125,6 +125,8 @@ public:
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     bool _wildcard = false;
     function::Flavor _flavor = function::Flavor::Standard;

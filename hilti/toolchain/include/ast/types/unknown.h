@@ -29,6 +29,8 @@ public:
      */
     static Unknown create(Meta m = Meta()) { return Unknown(std::move(m)); }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     Unknown(Meta m = Meta()) : TypeBase(std::move(m)) {}
 };

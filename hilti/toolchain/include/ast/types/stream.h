@@ -30,6 +30,8 @@ public:
     bool _isRuntimeNonTrivial() const override { return true; }
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
+    HILTI_TYPE_VISITOR_IMPLEMENT
 };
 
 /** AST node for a stream view type. */
@@ -49,6 +51,8 @@ public:
     bool _isRuntimeNonTrivial() const override { return true; }
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
+    HILTI_TYPE_VISITOR_IMPLEMENT
 };
 
 } // namespace stream
@@ -72,6 +76,8 @@ public:
     bool _isRuntimeNonTrivial() const override { return true; }
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
+
+    HILTI_TYPE_VISITOR_IMPLEMENT
 };
 
 namespace detail::stream {

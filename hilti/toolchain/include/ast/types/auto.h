@@ -27,6 +27,8 @@ public:
 
     const std::type_info& typeid_() const override { return typeid(decltype(*this)); }
 
+    HILTI_TYPE_VISITOR_IMPLEMENT
+
 private:
     Auto(Meta m = Meta()) : TypeBase(std::move(m)) {}
 };
