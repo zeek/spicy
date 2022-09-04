@@ -71,7 +71,7 @@ print("""\\
           }\\
   } \\""", file=out)
 for (btrait, bcls) in traits.items():
-    print("  if constexpr ( std::is_base_of_v<{}, Erased> && std::is_base_of_v<hilti::type::Visitor, Dispatcher> ) {{ \\".format(
+    print("  if constexpr ( std::is_base_of<{}, Erased>::value ) {{ \\".format(
         bcls), file=out)
 
     if bcls == "hilti::Type":
