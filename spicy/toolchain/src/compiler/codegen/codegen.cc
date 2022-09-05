@@ -95,7 +95,7 @@ struct VisitorPass1 : public hilti::visitor::PreOrder<void, VisitorPass1> {
 };
 
 // Visitor that runs repeatedly over the AST until no further changes.
-struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
+struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2>, type::Visitor {
     VisitorPass2(CodeGen* cg, hilti::Module* module) : cg(cg), module(module) {}
     CodeGen* cg;
     hilti::Module* module;
@@ -382,14 +382,14 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
         replaceNode(&p, b.block());
     }
 
-    void operator()(const type::Sink& n, position_t p) {
+    void operator()(const type::Sink& n, type::Visitor::position_t& p) override {
         // Strong reference (instead of value reference) so that copying unit
         // instances doesn't copy the sink.
         auto sink = hilti::type::StrongReference(builder::typeByID("spicy_rt::Sink", n.meta()));
         replaceNode(&p, Type(sink));
     }
 
-    void operator()(const type::Unit& n, position_t p) {
+    void operator()(const type::Unit& n, type::Visitor::position_t& p) override {
         // Replace usage of the the unit type with a reference to the compiled struct.
         if ( auto t = p.parent().tryAs<hilti::declaration::Type>();
              ! t && ! p.parent(2).tryAs<hilti::declaration::Type>() ) {
