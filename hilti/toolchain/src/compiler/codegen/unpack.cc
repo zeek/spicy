@@ -18,7 +18,7 @@ using namespace hilti::detail;
 
 namespace {
 
-struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
+struct Visitor : hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
     Visitor(CodeGen* cg, cxx::Expression data, const std::vector<cxx::Expression>& args)
         : cg(cg), data(std::move(data)), args(args) {}
     CodeGen* cg;
@@ -27,19 +27,19 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
     std::optional<std::string> _result;
 
-    result_t operator()(const type::Address& n) {
+    result_t operator()(const type::Address& n, type::Visitor::position_t&) override {
         _result = fmt("::hilti::rt::address::unpack(%s, %s, %s)", data, args[0], args[1]);
     }
 
-    result_t operator()(const type::UnsignedInteger& n) {
+    result_t operator()(const type::UnsignedInteger& n, type::Visitor::position_t&) override {
         _result = fmt("::hilti::rt::integer::unpack<uint%d_t>(%s, %s)", n.width(), data, args[0]);
     }
 
-    result_t operator()(const type::SignedInteger& n) {
+    result_t operator()(const type::SignedInteger& n, type::Visitor::position_t&) override {
         _result = fmt("::hilti::rt::integer::unpack<int%d_t>(%s, %s)", n.width(), data, args[0]);
     }
 
-    result_t operator()(const type::Real& n) {
+    result_t operator()(const type::Real& n, type::Visitor::position_t&) override {
         _result = fmt("::hilti::rt::real::unpack(%s, %s, %s)", data, args[0], args[1]);
     }
 };
