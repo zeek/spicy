@@ -92,7 +92,7 @@ std::optional<Type> _fieldType(const type::unit::item::Field& f, const Type& typ
         return nt;
 }
 
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
+struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
     explicit Visitor(hilti::Unit* unit) : unit(unit) {}
     hilti::Unit* unit;
     bool modified = false;
@@ -186,7 +186,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         modified = true;
     }
 
-    void operator()(const type::Bitfield& b, position_t p) {
+    void operator()(const type::Bitfield& b, type::Visitor::position_t& p) override {
         if ( type::isResolved(b.type()) )
             return;
 
