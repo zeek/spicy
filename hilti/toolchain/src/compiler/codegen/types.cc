@@ -796,38 +796,76 @@ struct VisitorStorage : hilti::visitor::PreOrder<void, VisitorStorage>, type::Vi
 };
 
 // Visitor returning the ID of static, predefined type information instances for types that provide it.
-struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder<void, VisitorTypeInfoPredefined> {
+struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder<void, VisitorTypeInfoPredefined>, type::Visitor {
     VisitorTypeInfoPredefined(CodeGen* cg) : cg(cg) {}
 
     CodeGen* cg;
 
     std::optional<cxx::Expression> _result;
 
-    result_t operator()(const type::Address& n) { _result = "::hilti::rt::type_info::address"; }
-    result_t operator()(const type::Any& n) { _result = "::hilti::rt::type_info::any"; }
-    result_t operator()(const type::Bool& n) { _result = "::hilti::rt::type_info::bool_"; }
-    result_t operator()(const type::Bytes& n) { _result = "::hilti::rt::type_info::bytes"; }
-    result_t operator()(const type::bytes::Iterator& n) { _result = "::hilti::rt::type_info::bytes_iterator"; }
-    result_t operator()(const type::Error& n) { _result = "::hilti::rt::type_info::error"; }
-    result_t operator()(const type::Interval& n) { _result = "::hilti::rt::type_info::interval"; }
-    result_t operator()(const type::Network& n) { _result = "::hilti::rt::type_info::network"; }
-    result_t operator()(const type::Port& n) { _result = "::hilti::rt::type_info::port"; }
-    result_t operator()(const type::Real& n) { _result = "::hilti::rt::type_info::real"; }
-    result_t operator()(const type::RegExp& n) { _result = "::hilti::rt::type_info::regexp"; }
-    result_t operator()(const type::SignedInteger& n) { _result = fmt("::hilti::rt::type_info::int%d", n.width()); }
-    result_t operator()(const type::Stream& n) { _result = "::hilti::rt::type_info::stream"; }
-    result_t operator()(const type::stream::Iterator& n) { _result = "::hilti::rt::type_info::stream_iterator"; }
-    result_t operator()(const type::stream::View& n) { _result = "::hilti::rt::type_info::stream_view"; }
-    result_t operator()(const type::String& n) { _result = "::hilti::rt::type_info::string"; }
-    result_t operator()(const type::Time& n) { _result = "::hilti::rt::type_info::time"; }
-    result_t operator()(const type::UnsignedInteger& n) { _result = fmt("::hilti::rt::type_info::uint%d", n.width()); }
-    result_t operator()(const type::Void& n) { _result = "::hilti::rt::type_info::void_"; }
+    result_t operator()(const type::Address& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::address";
+    }
+    result_t operator()(const type::Any& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::any";
+    }
+    result_t operator()(const type::Bool& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::bool_";
+    }
+    result_t operator()(const type::Bytes& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::bytes";
+    }
+    result_t operator()(const type::bytes::Iterator& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::bytes_iterator";
+    }
+    result_t operator()(const type::Error& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::error";
+    }
+    result_t operator()(const type::Interval& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::interval";
+    }
+    result_t operator()(const type::Network& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::network";
+    }
+    result_t operator()(const type::Port& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::port";
+    }
+    result_t operator()(const type::Real& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::real";
+    }
+    result_t operator()(const type::RegExp& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::regexp";
+    }
+    result_t operator()(const type::SignedInteger& n, type::Visitor::position_t&) override {
+        _result = fmt("::hilti::rt::type_info::int%d", n.width());
+    }
+    result_t operator()(const type::Stream& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::stream";
+    }
+    result_t operator()(const type::stream::Iterator& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::stream_iterator";
+    }
+    result_t operator()(const type::stream::View& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::stream_view";
+    }
+    result_t operator()(const type::String& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::string";
+    }
+    result_t operator()(const type::Time& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::time";
+    }
+    result_t operator()(const type::UnsignedInteger& n, type::Visitor::position_t&) override {
+        _result = fmt("::hilti::rt::type_info::uint%d", n.width());
+    }
+    result_t operator()(const type::Void& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::void_";
+    }
 
-    result_t operator()(const type::UnresolvedID& n) {
+    result_t operator()(const type::UnresolvedID& n, type::Visitor::position_t&) override {
         logger().internalError(fmt("codegen: unresolved type ID %s", n.id()), n);
     }
 
-    result_t operator()(const type::Auto& n) {
+    result_t operator()(const type::Auto& n, type::Visitor::position_t&) override {
         logger().internalError("codegen: automatic type has not been replaced");
     }
 };
