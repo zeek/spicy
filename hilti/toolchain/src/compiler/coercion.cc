@@ -366,61 +366,49 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
     }
 };
 
-struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> {
+struct VisitorType : public visitor::PreOrder<void, VisitorType> {
     VisitorType(const Type& dst, bitmask<CoercionStyle> style) : dst(dst), style(style) {}
 
     const Type& dst;
     bitmask<CoercionStyle> style;
 
+    std::optional<Type> _result;
+
     result_t operator()(const type::Enum& c) {
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
-            return dst;
-
-        return {};
+            _result = dst;
     }
 
     result_t operator()(const type::Interval& c) {
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
-            return dst;
-
-        return {};
+            _result = dst;
     }
 
     result_t operator()(const type::Null& c) {
         if ( auto t = dst.tryAs<type::Optional>() )
-            return dst;
-
-        if ( auto t = dst.tryAs<type::StrongReference>() )
-            return dst;
-
-        if ( auto t = dst.tryAs<type::WeakReference>() )
-            return dst;
-
-        return {};
+            _result = dst;
+        else if ( auto t = dst.tryAs<type::StrongReference>() )
+            _result = dst;
+        else if ( auto t = dst.tryAs<type::WeakReference>() )
+            _result = dst;
     }
 
     result_t operator()(const type::Bytes& c) {
         if ( dst.tryAs<type::Stream>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
-            return dst;
-
-        return {};
+            _result = dst;
     }
 
     result_t operator()(const type::Error& e) {
         if ( auto t = dst.tryAs<type::Result>() )
-            return dst;
-
-        return {};
+            _result = dst;
     }
 
     result_t operator()(const type::List& e) {
         if ( auto t = dst.tryAs<type::Set>(); t && t->elementType() == e.elementType() )
-            return dst;
+            _result = dst;
 
-        if ( auto t = dst.tryAs<type::Vector>(); t && t->elementType() == e.elementType() )
-            return dst;
-
-        return {};
+        else if ( auto t = dst.tryAs<type::Vector>(); t && t->elementType() == e.elementType() )
+            _result = dst;
     }
 
     result_t operator()(const type::Optional& r) {
@@ -428,111 +416,104 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
             const auto& s = *r.dereferencedType();
             const auto& d = *t->dereferencedType();
 
-            if ( type::sameExceptForConstness(s, d) && (style & CoercionStyle::Assignment) )
-                // Assignments copy, so it's safe to turn  into the
+            if ( type::sameExceptForConstness(s, d) && (style & CoercionStyle::Assignment) ) {
+                // Assignments copy, so it's safe to turn into the
                 // destination without considering constness.
-                return dst;
+                _result = dst;
+                return;
+            }
         }
 
         if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return dst;
-
-        return {};
+            _result = dst;
     }
 
     result_t operator()(const type::StrongReference& r) {
-        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return dst;
+        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
+            _result = dst;
+            return;
+        }
 
         if ( type::isReferenceType(dst) ) {
-            if ( type::sameExceptForConstness(*r.dereferencedType(), *dst.dereferencedType()) )
-                return dst;
+            if ( type::sameExceptForConstness(*r.dereferencedType(), *dst.dereferencedType()) ) {
+                _result = dst;
+                return;
+            }
         }
 
         if ( ! (style & CoercionStyle::Assignment) ) {
-            if ( r.dereferencedType() == dst )
-                return dst;
+            if ( r.dereferencedType() == dst ) {
+                _result = dst;
+            }
         }
-
-        return {};
     }
 
     result_t operator()(const type::Time& c) {
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
-            return dst;
-
-        return {};
+            _result = dst;
     }
 
     result_t operator()(const type::Result& r) {
         if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return dst;
+            _result = dst;
 
-        if ( auto t = dst.tryAs<type::Optional>(); t && t->dereferencedType() == r.dereferencedType() )
-            return dst;
-
-        return {};
+        else if ( auto t = dst.tryAs<type::Optional>(); t && t->dereferencedType() == r.dereferencedType() )
+            _result = dst;
     }
 
     result_t operator()(const type::SignedInteger& src) {
         if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
-            return dst;
+            _result = dst;
 
-        if ( auto t = dst.tryAs<type::SignedInteger>() ) {
+        else if ( auto t = dst.tryAs<type::SignedInteger>() ) {
             if ( src.width() <= t->width() )
-                return dst;
+                _result = dst;
         }
-
-        return {};
     }
 
     result_t operator()(const type::Stream& c) {
         if ( auto t = dst.tryAs<type::stream::View>() )
-            return dst;
-
-        return {};
+            _result = dst;
     }
 
     result_t operator()(const type::stream::View& c) {
         if ( dst.tryAs<type::Bytes>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
-            return dst;
-
-        return {};
+            _result = dst;
     }
 
     result_t operator()(const type::Type_& src) {
         if ( auto t = dst.tryAs<type::Type_>() ) {
             // We don't allow arbitrary coercions here, just (more or less) direct matches.
             if ( auto x = hilti::coerceType(src.typeValue(), t->typeValue(), CoercionStyle::TryDirectForMatching) )
-                return type::Type_(*x);
+                _result = type::Type_(*x);
         }
-
-        return {};
     }
 
     result_t operator()(const type::Union& c) {
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
-            return dst;
-
-        return {};
+            _result = dst;
     }
 
     result_t operator()(const type::UnsignedInteger& src) {
-        if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
-            return dst;
+        if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) ) {
+            _result = dst;
+            return;
+        }
 
         if ( auto t = dst.tryAs<type::UnsignedInteger>() ) {
-            if ( src.width() <= t->width() )
-                return dst;
+            if ( src.width() <= t->width() ) {
+                _result = dst;
+                return;
+            }
         }
 
         if ( auto t = dst.tryAs<type::SignedInteger>() ) {
             // As long as the target type has more bits, we can coerce.
-            if ( src.width() < t->width() )
-                return dst;
+            if ( src.width() < t->width() ) {
+                _result = dst;
+                return;
+            }
         }
-
-        return {};
     }
 
     result_t operator()(const type::Tuple& src) {
@@ -541,49 +522,55 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
             auto ve = t->elements();
 
             if ( vc.size() != ve.size() )
-                return {};
+                return;
 
             for ( auto i = std::make_pair(vc.begin(), ve.begin()); i.first != vc.end(); ++i.first, ++i.second ) {
                 if ( auto x = hilti::coerceType((*i.first).type(), (*i.second).type()); ! x )
-                    return {};
+                    return;
             }
 
-            return dst;
+            _result = dst;
         }
-
-        return {};
     }
 
     result_t operator()(const type::ValueReference& r) {
-        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return hilti::coerceType(*r.dereferencedType(), dst, style);
-
-        if ( type::isReferenceType(dst) ) {
-            if ( type::sameExceptForConstness(*r.dereferencedType(), *dst.dereferencedType()) )
-                return dst;
+        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
+            _result = hilti::coerceType(*r.dereferencedType(), dst, style);
+            return;
         }
 
-        if ( r.dereferencedType() == dst )
-            return dst;
+        if ( type::isReferenceType(dst) ) {
+            if ( type::sameExceptForConstness(*r.dereferencedType(), *dst.dereferencedType()) ) {
+                _result = dst;
+                return;
+            }
+        }
 
-        return {};
+        if ( r.dereferencedType() == dst ) {
+            _result = dst;
+            return;
+        }
     }
 
     result_t operator()(const type::WeakReference& r) {
-        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
-            return dst;
+        if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
+            _result = dst;
+            return;
+        }
 
         if ( type::isReferenceType(dst) ) {
-            if ( type::sameExceptForConstness(*r.dereferencedType(), *dst.dereferencedType()) )
-                return dst;
+            if ( type::sameExceptForConstness(*r.dereferencedType(), *dst.dereferencedType()) ) {
+                _result = dst;
+                return;
+            }
         }
 
         if ( ! (style & CoercionStyle::Assignment) ) {
-            if ( r.dereferencedType() == dst )
-                return dst;
+            if ( r.dereferencedType() == dst ) {
+                _result = dst;
+                return;
+            }
         }
-
-        return {};
     }
 };
 
@@ -1042,8 +1029,7 @@ std::optional<Type> hilti::detail::coerceType(Type t, const Type& dst, bitmask<C
     if ( ! (type::isResolved(t) && type::isResolved(dst)) )
         return {};
 
-    if ( auto nt = VisitorType(dst, style).dispatch(std::move(t)) )
-        return *nt;
-
-    return {};
+    auto v = VisitorType(dst, style);
+    v.dispatch(std::move(t));
+    return v._result;
 }
