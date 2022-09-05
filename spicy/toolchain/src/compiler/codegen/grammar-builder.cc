@@ -18,7 +18,7 @@ using hilti::util::fmt;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
+struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
     Visitor(CodeGen* cg, codegen::GrammarBuilder* gb, Grammar* g) : cg(cg), gb(gb), grammar(g) {}
     CodeGen* cg;
     codegen::GrammarBuilder* gb;
@@ -227,7 +227,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         assert(_result);
     }
 
-    void operator()(const type::Unit& n, position_t p) {
+    void operator()(const type::Unit& n, type::Visitor::position_t& p) override {
         auto prod = cache.getOrCreate(
             *n.id(), []() { return production::Unresolved(); },
             [&](auto& unresolved) {
@@ -257,14 +257,14 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         _result = prod;
     }
 
-    void operator()(const type::ValueReference& n, position_t /* p */) {
+    void operator()(const type::ValueReference& n, type::Visitor::position_t& /* p */) override {
         // Forward to referenced type, which will usually be a unit.
         _result.reset();
         dispatch(*n.dereferencedType());
         assert(_result);
     }
 
-    void operator()(const type::Vector& n, position_t p) {
+    void operator()(const type::Vector& n, type::Visitor::position_t& p) override {
         auto sub = productionForType(*n.elementType(), ID(fmt("%s", *n.elementType())));
         _result = productionForLoop(std::move(sub), p);
     }
