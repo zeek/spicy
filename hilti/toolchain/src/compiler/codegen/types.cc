@@ -19,12 +19,14 @@ using util::fmt;
 
 namespace {
 
-struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, VisitorDeclaration> {
+struct VisitorDeclaration : hilti::visitor::PreOrder<void, VisitorDeclaration> {
     VisitorDeclaration(CodeGen* cg, util::Cache<cxx::ID, cxx::declaration::Type>* cache) : cg(cg), cache(cache) {}
 
     CodeGen* cg;
     util::Cache<cxx::ID, cxx::declaration::Type>* cache;
     std::list<cxx::declaration::Type> dependencies;
+
+    std::optional<cxx::declaration::Type> _result;
 
     void addDependency(const Type& t) {
         for ( auto&& t : cg->typeDependencies(t) )
@@ -45,7 +47,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
         auto id = cxx::ID(scope, sid);
 
-        return cache->getOrCreate(
+        _result = cache->getOrCreate(
             id,
             []() {
                 // Just return an empty dummy for now to avoid cyclic recursion.
@@ -258,7 +260,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         for ( const auto& e : n.elements() )
             addDependency(e.type());
 
-        return {};
+        _result = cxx::declaration::Type();
     }
 
     result_t operator()(const type::Union& n, const position_t p) {
@@ -286,14 +288,14 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         }
 
         auto t = cxx::type::Union{.members = std::move(fields), .type_name = cxx::ID(id.local())};
-        return cxx::declaration::Type{id, t};
+        _result = cxx::declaration::Type{id, t};
     }
 
     result_t operator()(const type::Vector& n, const position_t p) {
         if ( n.elementType() != type::unknown )
             addDependency(*n.elementType());
 
-        return {};
+        _result = cxx::declaration::Type();
     }
 
     result_t operator()(const type::Enum& n, const position_t p) {
@@ -313,7 +315,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         auto t = cxx::type::Enum{.labels = std::move(labels), .type_name = cxx::ID(id.local())};
         auto decl = cxx::declaration::Type{id, t, {}, true, false, true};
         dependencies.push_back(decl);
-        return decl;
+        _result = decl;
     }
 
     result_t operator()(const type::Exception& n, const position_t p) {
@@ -345,8 +347,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
         auto func = cxx::Function{.declaration = std::move(decl), .body = cxx::Block()};
         cg->unit()->add(func);
 
-        return cxx::declaration::Type(id, fmt("HILTI_EXCEPTION_NS(%s, %s, %s)", id.local(), base_ns, base_cls), {},
-                                      false, false, true);
+        _result = cxx::declaration::Type(id, fmt("HILTI_EXCEPTION_NS(%s, %s, %s)", id.local(), base_ns, base_cls), {},
+                                         false, false, true);
     }
 };
 
@@ -1158,7 +1160,9 @@ std::list<cxx::declaration::Type> CodeGen::typeDependencies(const hilti::Type& t
 };
 
 std::optional<cxx::declaration::Type> CodeGen::typeDeclaration(const hilti::Type& t) {
-    return VisitorDeclaration(this, &_cache_types_declarations).dispatch(t);
+    auto v = VisitorDeclaration(this, &_cache_types_declarations);
+    v.dispatch(t);
+    return v._result;
 };
 
 const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(const hilti::Type& t) {
