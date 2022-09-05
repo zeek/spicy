@@ -41,7 +41,7 @@ inline const hilti::logging::DebugStream Operator("operator");
 
 namespace {
 
-struct Visitor : public visitor::PostOrder<void, Visitor> {
+struct Visitor : public visitor::PostOrder<void, Visitor>, type::Visitor {
     Visitor(std::shared_ptr<hilti::Context> ctx, Node* module, Unit* unit)
         : _context(std::move(ctx)), unit(unit), _module(module->as<Module>()) {}
 
@@ -460,7 +460,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         }
     }
 
-    void operator()(const type::Enum& m, position_t p) {
+    void operator()(const type::Enum& m, type::Visitor::position_t& p) override {
         if ( type::isResolved(p.node.as<Type>()) )
             return;
 
@@ -473,7 +473,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         modified = true;
     }
 
-    void operator()(const type::UnresolvedID& u, position_t p) {
+    void operator()(const type::UnresolvedID& u, type::Visitor::position_t& p) override {
         auto resolved = scope::lookupID<declaration::Type>(u.id(), p, "type");
         if ( ! resolved ) {
             p.node.addError(resolved.error(), node::ErrorPriority::High);
