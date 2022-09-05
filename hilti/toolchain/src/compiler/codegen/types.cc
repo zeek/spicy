@@ -871,7 +871,7 @@ struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder<void, VisitorTypeInf
 };
 
 // Visitor creaating dynamic type information instances for types that do not provide predefined static ones.
-struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDynamic> {
+struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDynamic>, type::Visitor {
     VisitorTypeInfoDynamic(CodeGen* cg) : cg(cg) {}
     CodeGen* cg;
 
@@ -880,7 +880,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDy
     auto typeID(const Node& n) { return n.as<Type>().typeID(); }
     auto cxxID(const Node& n) { return n.as<Type>().cxxID(); }
 
-    result_t operator()(const type::Enum& n) {
+    result_t operator()(const type::Enum& n, type::Visitor::position_t&) override {
         std::vector<std::string> labels;
 
         for ( const auto& l : n.labels() )
@@ -891,13 +891,19 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDy
                       util::join(labels, ", "));
     }
 
-    result_t operator()(const type::Exception& n, position_t p) { _result = "::hilti::rt::type_info::Exception()"; }
+    result_t operator()(const type::Exception& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::Exception()";
+    }
 
-    result_t operator()(const type::Function& n) { _result = "::hilti::rt::type_info::Function()"; }
+    result_t operator()(const type::Function& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::Function()";
+    }
 
-    result_t operator()(const type::Library& n) { _result = "::hilti::rt::type_info::Library()"; }
+    result_t operator()(const type::Library& n, type::Visitor::position_t&) override {
+        _result = "::hilti::rt::type_info::Library()";
+    }
 
-    result_t operator()(const type::Map& n) {
+    result_t operator()(const type::Map& n, type::Visitor::position_t&) override {
         auto ktype = cg->compile(n.keyType(), codegen::TypeUsage::Storage);
         auto vtype = cg->compile(*n.elementType(), codegen::TypeUsage::Storage);
         auto deref_type = type::Tuple({n.keyType(), *n.elementType()});
@@ -907,7 +913,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDy
                       cg->compile(*n.elementType(), codegen::TypeUsage::Storage));
     }
 
-    result_t operator()(const type::map::Iterator& n) {
+    result_t operator()(const type::map::Iterator& n, type::Visitor::position_t&) override {
         _result =
             fmt("::hilti::rt::type_info::MapIterator(%s, %s, ::hilti::rt::type_info::MapIterator::accessor<%s, %s>())",
                 cg->typeInfo(n.keyType()), cg->typeInfo(n.valueType()),
@@ -915,30 +921,30 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDy
                 cg->compile(n.valueType(), codegen::TypeUsage::Storage));
     }
 
-    result_t operator()(const type::Optional& n) {
+    result_t operator()(const type::Optional& n, type::Visitor::position_t&) override {
         _result =
             fmt("::hilti::rt::type_info::Optional(%s, ::hilti::rt::type_info::Optional::accessor<%s>())",
                 cg->typeInfo(*n.dereferencedType()), cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
-    result_t operator()(const type::Result& n) {
+    result_t operator()(const type::Result& n, type::Visitor::position_t&) override {
         _result =
             fmt("::hilti::rt::type_info::Result(%s, ::hilti::rt::type_info::Result::accessor<%s>())",
                 cg->typeInfo(*n.dereferencedType()), cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
-    result_t operator()(const type::Set& n) {
+    result_t operator()(const type::Set& n, type::Visitor::position_t&) override {
         _result = fmt("::hilti::rt::type_info::Set(%s, ::hilti::rt::type_info::Set::accessor<%s>())",
                       cg->typeInfo(*n.elementType()), cg->compile(*n.elementType(), codegen::TypeUsage::Storage));
     }
 
-    result_t operator()(const type::set::Iterator& n) {
+    result_t operator()(const type::set::Iterator& n, type::Visitor::position_t&) override {
         _result =
             fmt("::hilti::rt::type_info::SetIterator(%s, ::hilti::rt::type_info::SetIterator::accessor<%s>())",
                 cg->typeInfo(*n.dereferencedType()), cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
-    result_t operator()(const type::Struct& n, position_t p) {
+    result_t operator()(const type::Struct& n, type::Visitor::position_t& p) override {
         std::vector<std::string> fields;
 
         for ( const auto& f : n.fields() ) {
@@ -967,7 +973,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDy
                       util::join(fields, ", "));
     }
 
-    result_t operator()(const type::Tuple& n, position_t p) {
+    result_t operator()(const type::Tuple& n, type::Visitor::position_t& p) override {
         std::vector<std::string> elems;
         auto ttype = cg->compile(p.node.as<Type>(), codegen::TypeUsage::Storage);
 
@@ -980,7 +986,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDy
                       util::join(elems, ", "));
     }
 
-    result_t operator()(const type::Union& n, position_t p) {
+    result_t operator()(const type::Union& n, type::Visitor::position_t& p) override {
         std::vector<std::string> fields;
 
         for ( const auto& f : n.fields() )
@@ -992,25 +998,25 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDy
                 "::hilti::rt::type_info::Union::accessor<%s>())",
                 util::join(fields, ", "), cg->compile(p.node.as<Type>(), codegen::TypeUsage::Storage));
     }
-    result_t operator()(const type::StrongReference& n) {
+    result_t operator()(const type::StrongReference& n, type::Visitor::position_t&) override {
         _result =
             fmt("::hilti::rt::type_info::StrongReference(%s, ::hilti::rt::type_info::StrongReference::accessor<%s>())",
                 cg->typeInfo(*n.dereferencedType()), cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
-    result_t operator()(const type::ValueReference& n) {
+    result_t operator()(const type::ValueReference& n, type::Visitor::position_t&) override {
         _result =
             fmt("::hilti::rt::type_info::ValueReference(%s, ::hilti::rt::type_info::ValueReference::accessor<%s>())",
                 cg->typeInfo(*n.dereferencedType()), cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
-    result_t operator()(const type::WeakReference& n) {
+    result_t operator()(const type::WeakReference& n, type::Visitor::position_t&) override {
         _result =
             fmt("::hilti::rt::type_info::WeakReference(%s, ::hilti::rt::type_info::WeakReference::accessor<%s>())",
                 cg->typeInfo(*n.dereferencedType()), cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage));
     }
 
-    result_t operator()(const type::Vector& n) {
+    result_t operator()(const type::Vector& n, type::Visitor::position_t&) override {
         auto x = cg->compile(*n.elementType(), codegen::TypeUsage::Storage);
 
         std::string allocator;
@@ -1021,7 +1027,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDy
                       cg->typeInfo(*n.elementType()), x, allocator);
     }
 
-    result_t operator()(const type::vector::Iterator& n) {
+    result_t operator()(const type::vector::Iterator& n, type::Visitor::position_t&) override {
         auto x = cg->compile(*n.dereferencedType(), codegen::TypeUsage::Storage);
 
         std::string allocator;
@@ -1033,11 +1039,11 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<void, VisitorTypeInfoDy
                 cg->typeInfo(*n.dereferencedType()), x, allocator);
     }
 
-    result_t operator()(const type::Auto& n) {
+    result_t operator()(const type::Auto& n, type::Visitor::position_t&) override {
         logger().internalError("codegen: automatic type has not been replaced");
     }
 
-    result_t operator()(const type::UnresolvedID& n) {
+    result_t operator()(const type::UnresolvedID& n, type::Visitor::position_t&) override {
         logger().internalError(fmt("codegen: unresolved type ID %s", n.id()), n);
     }
 };
