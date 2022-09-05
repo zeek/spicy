@@ -19,7 +19,7 @@ inline const hilti::logging::DebugStream Normalizer("normalizer");
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
+struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
     explicit Visitor(Node* root) : root(root) {}
     Node* root;
     bool modified = false;
@@ -193,7 +193,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         }
     }
 
-    void operator()(const type::Unit& u, position_t p) {
+    void operator()(const type::Unit& u, type::Visitor::position_t& p) override {
         if ( ! p.node.as<Type>().typeID() )
             return;
 
