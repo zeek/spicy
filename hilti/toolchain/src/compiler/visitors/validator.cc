@@ -46,7 +46,7 @@ struct VisitorBase {
 
 struct VisitorPre : public hilti::visitor::PreOrder<void, VisitorPre>, public VisitorBase {};
 
-struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public VisitorBase {
+struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public VisitorBase, type::Visitor {
     void preDispatch(const Node& n, int level) override {
         // Validate that identifier names are not reused.
         for ( const auto& [id, nodes] : n.scope()->items() ) {
@@ -426,11 +426,11 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
     ////// Types
 
-    void operator()(const type::Auto& n, position_t p) {
+    void operator()(const type::Auto& n, type::Visitor::position_t& p) override {
         error("automatic type has not been resolved", p, node::ErrorPriority::Low);
     }
 
-    void operator()(const type::Enum& n, position_t p) {
+    void operator()(const type::Enum& n, type::Visitor::position_t& p) override {
         std::unordered_set<int> seen;
 
         for ( const auto& label : n.labels() ) {
@@ -441,12 +441,12 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         }
     }
 
-    void operator()(const type::Exception& n, position_t p) {
+    void operator()(const type::Exception& n, type::Visitor::position_t& p) override {
         if ( n.baseType() && ! n.baseType()->isA<type::Exception>() )
             error("exception's base type must be an exception type as well", p);
     }
 
-    void operator()(const type::Function& n, position_t p) {
+    void operator()(const type::Function& n, type::Visitor::position_t& p) override {
         if ( n.flavor() == type::function::Flavor::Hook ) {
             auto r = n.result().type();
             if ( ! (r == type::void_ || r.isA<type::Optional>()) )
@@ -454,26 +454,26 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         }
     }
 
-    void operator()(const type::Map& n, position_t p) {
+    void operator()(const type::Map& n, type::Visitor::position_t& p) override {
         if ( auto rc = isSortable(n.keyType()); ! rc )
             error(fmt("type cannot be used as key type for maps (because %s)", rc.error()), p);
     }
 
-    void operator()(const type::SignedInteger& n, position_t p) {
+    void operator()(const type::SignedInteger& n, type::Visitor::position_t& p) override {
         auto w = n.width();
 
         if ( w != 8 && w != 16 && w != 32 && w != 64 && ! n.isWildcard() )
             error(fmt("integer type's width must be one of 8/16/32/64, but is %d", n.width()), p);
     }
 
-    void operator()(const type::UnsignedInteger& n, position_t p) {
+    void operator()(const type::UnsignedInteger& n, type::Visitor::position_t& p) override {
         auto w = n.width();
 
         if ( w != 8 && w != 16 && w != 32 && w != 64 && ! n.isWildcard() )
             error(fmt("integer type's width must be one of 8/16/32/64, but is %d", n.width()), p);
     }
 
-    void operator()(const type::Optional& n, position_t p) {
+    void operator()(const type::Optional& n, type::Visitor::position_t& p) override {
         if ( n.isWildcard() )
             return;
 
@@ -481,7 +481,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             error(fmt("type %s cannot be used inside optional", t), p);
     }
 
-    void operator()(const type::StrongReference& n, position_t p) {
+    void operator()(const type::StrongReference& n, type::Visitor::position_t& p) override {
         if ( n.isWildcard() )
             return;
 
@@ -489,7 +489,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             error(fmt("type %s is not allocable and can thus not be used with references", t), p);
     }
 
-    void operator()(const type::Result& n, position_t p) {
+    void operator()(const type::Result& n, type::Visitor::position_t& p) override {
         if ( n.isWildcard() )
             return;
 
@@ -497,7 +497,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             error(fmt("type %s cannot be used inside result", t), p);
     }
 
-    void operator()(const type::Struct& n, position_t p) {
+    void operator()(const type::Struct& n, type::Visitor::position_t& p) override {
         std::set<ID> seen;
 
         for ( const auto& f : n.fields() ) {
@@ -543,7 +543,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         }
     }
 
-    void operator()(const type::Union& n, position_t p) {
+    void operator()(const type::Union& n, type::Visitor::position_t& p) override {
         std::set<ID> seen;
 
         for ( const auto& f : n.fields() ) {
@@ -554,19 +554,19 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         }
     }
 
-    void operator()(const type::Tuple& n, position_t p) {
+    void operator()(const type::Tuple& n, type::Visitor::position_t& p) override {
         for ( const auto& e : n.elements() ) {
             if ( ! type::isAllocable(e.type()) && ! e.type().isA<type::Null>() )
                 error(fmt("type '%s' cannot be used inside a tuple", e.type()), p);
         }
     }
 
-    void operator()(const type::UnresolvedID& n, position_t p) {
+    void operator()(const type::UnresolvedID& n, type::Visitor::position_t& p) override {
         if ( ! p.node.hasErrors() )
             error(fmt("unknown ID '%s'", n.id()), p, node::ErrorPriority::Low);
     }
 
-    void operator()(const type::WeakReference& n, position_t p) {
+    void operator()(const type::WeakReference& n, type::Visitor::position_t& p) override {
         if ( n.isWildcard() )
             return;
 
