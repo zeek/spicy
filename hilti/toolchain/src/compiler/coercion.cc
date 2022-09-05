@@ -366,7 +366,7 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
     }
 };
 
-struct VisitorType : public visitor::PreOrder<void, VisitorType> {
+struct VisitorType : public visitor::PreOrder<void, VisitorType>, type::Visitor {
     VisitorType(const Type& dst, bitmask<CoercionStyle> style) : dst(dst), style(style) {}
 
     const Type& dst;
@@ -374,17 +374,17 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
 
     std::optional<Type> _result;
 
-    result_t operator()(const type::Enum& c) {
+    result_t operator()(const type::Enum& c, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             _result = dst;
     }
 
-    result_t operator()(const type::Interval& c) {
+    result_t operator()(const type::Interval& c, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             _result = dst;
     }
 
-    result_t operator()(const type::Null& c) {
+    result_t operator()(const type::Null& c, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Optional>() )
             _result = dst;
         else if ( auto t = dst.tryAs<type::StrongReference>() )
@@ -393,17 +393,17 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
             _result = dst;
     }
 
-    result_t operator()(const type::Bytes& c) {
+    result_t operator()(const type::Bytes& c, type::Visitor::position_t&) override {
         if ( dst.tryAs<type::Stream>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
             _result = dst;
     }
 
-    result_t operator()(const type::Error& e) {
+    result_t operator()(const type::Error& e, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Result>() )
             _result = dst;
     }
 
-    result_t operator()(const type::List& e) {
+    result_t operator()(const type::List& e, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Set>(); t && t->elementType() == e.elementType() )
             _result = dst;
 
@@ -411,7 +411,7 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
             _result = dst;
     }
 
-    result_t operator()(const type::Optional& r) {
+    result_t operator()(const type::Optional& r, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Optional>() ) {
             const auto& s = *r.dereferencedType();
             const auto& d = *t->dereferencedType();
@@ -428,7 +428,7 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
             _result = dst;
     }
 
-    result_t operator()(const type::StrongReference& r) {
+    result_t operator()(const type::StrongReference& r, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
             _result = dst;
             return;
@@ -448,12 +448,12 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
         }
     }
 
-    result_t operator()(const type::Time& c) {
+    result_t operator()(const type::Time& c, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             _result = dst;
     }
 
-    result_t operator()(const type::Result& r) {
+    result_t operator()(const type::Result& r, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
             _result = dst;
 
@@ -461,7 +461,7 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
             _result = dst;
     }
 
-    result_t operator()(const type::SignedInteger& src) {
+    result_t operator()(const type::SignedInteger& src, type::Visitor::position_t&) override {
         if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
             _result = dst;
 
@@ -471,17 +471,17 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
         }
     }
 
-    result_t operator()(const type::Stream& c) {
+    result_t operator()(const type::Stream& c, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::stream::View>() )
             _result = dst;
     }
 
-    result_t operator()(const type::stream::View& c) {
+    result_t operator()(const type::stream::View& c, type::Visitor::position_t&) override {
         if ( dst.tryAs<type::Bytes>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
             _result = dst;
     }
 
-    result_t operator()(const type::Type_& src) {
+    result_t operator()(const type::Type_& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Type_>() ) {
             // We don't allow arbitrary coercions here, just (more or less) direct matches.
             if ( auto x = hilti::coerceType(src.typeValue(), t->typeValue(), CoercionStyle::TryDirectForMatching) )
@@ -489,12 +489,12 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
         }
     }
 
-    result_t operator()(const type::Union& c) {
+    result_t operator()(const type::Union& c, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             _result = dst;
     }
 
-    result_t operator()(const type::UnsignedInteger& src) {
+    result_t operator()(const type::UnsignedInteger& src, type::Visitor::position_t&) override {
         if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) ) {
             _result = dst;
             return;
@@ -516,7 +516,7 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
         }
     }
 
-    result_t operator()(const type::Tuple& src) {
+    result_t operator()(const type::Tuple& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Tuple>() ) {
             auto vc = src.elements();
             auto ve = t->elements();
@@ -533,7 +533,7 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
         }
     }
 
-    result_t operator()(const type::ValueReference& r) {
+    result_t operator()(const type::ValueReference& r, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
             _result = hilti::coerceType(*r.dereferencedType(), dst, style);
             return;
@@ -552,7 +552,7 @@ struct VisitorType : public visitor::PreOrder<void, VisitorType> {
         }
     }
 
-    result_t operator()(const type::WeakReference& r) {
+    result_t operator()(const type::WeakReference& r, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
             _result = dst;
             return;
