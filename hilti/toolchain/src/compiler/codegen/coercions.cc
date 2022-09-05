@@ -16,7 +16,7 @@ using namespace hilti::detail;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
+struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
     Visitor(CodeGen* cg, const cxx::Expression& expr, const Type& dst) : cg(cg), expr(expr), dst(dst) {}
     CodeGen* cg;
     const cxx::Expression& expr;
@@ -24,7 +24,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 
     std::optional<cxx::Expression> _result;
 
-    result_t operator()(const type::Bytes& src) {
+    result_t operator()(const type::Bytes& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Stream>() )
             _result = fmt("::hilti::rt::Stream(%s)", expr);
 
@@ -32,7 +32,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from bytes to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Enum& src, position_t p) {
+    result_t operator()(const type::Enum& src, type::Visitor::position_t& p) override {
         if ( auto t = dst.tryAs<type::Bool>() ) {
             auto etype = p.node.as<Type>(); // preserve type ID
             auto id = cg->compile(etype, codegen::TypeUsage::Storage);
@@ -43,7 +43,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from enum to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Error& src) {
+    result_t operator()(const type::Error& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Result>() ) {
             _result = fmt("%s(%s)", cg->compile(dst, codegen::TypeUsage::Storage), expr);
         }
@@ -52,7 +52,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from error to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Interval& src) {
+    result_t operator()(const type::Interval& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>() ) {
             auto id = cg->compile(src, codegen::TypeUsage::Storage);
             _result = fmt("(%s != hilti::rt::Interval())", expr);
@@ -62,7 +62,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from interval to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::List& src) {
+    result_t operator()(const type::List& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Set>() )
             _result = fmt("::hilti::rt::Set(%s)", expr);
 
@@ -80,7 +80,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from lisst to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Optional& src) {
+    result_t operator()(const type::Optional& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
@@ -95,7 +95,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from optional to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::StrongReference& src) {
+    result_t operator()(const type::StrongReference& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>() )
             _result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
@@ -113,7 +113,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from %s to %s", Type(src), dst.typename_()));
     }
 
-    result_t operator()(const type::Time& src) {
+    result_t operator()(const type::Time& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>() ) {
             auto id = cg->compile(src, codegen::TypeUsage::Storage);
             _result = fmt("(%s != hilti::rt::Time())", expr);
@@ -123,7 +123,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from time to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Result& src) {
+    result_t operator()(const type::Result& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>() )
             _result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
@@ -134,7 +134,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from result to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::SignedInteger& src) {
+    result_t operator()(const type::SignedInteger& src, type::Visitor::position_t&) override {
         if ( dst.isA<type::Bool>() )
             _result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
@@ -148,7 +148,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from signed integer to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Stream& src) {
+    result_t operator()(const type::Stream& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::stream::View>() )
             _result = fmt("%s.view()", expr);
 
@@ -156,7 +156,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from stream to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Union& src, position_t p) {
+    result_t operator()(const type::Union& src, type::Visitor::position_t& p) override {
         if ( auto t = dst.tryAs<type::Bool>() ) {
             auto utype = p.node.as<Type>(); // preserve type ID
             auto id = cg->compile(utype, codegen::TypeUsage::Storage);
@@ -167,7 +167,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from union to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::stream::View& src) {
+    result_t operator()(const type::stream::View& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bytes>() )
             _result = fmt("%s.data()", expr);
 
@@ -175,7 +175,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from view<stream> to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::Tuple& src) {
+    result_t operator()(const type::Tuple& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Tuple>() ) {
             std::vector<cxx::Expression> exprs;
 
@@ -191,7 +191,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from tuple to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::UnsignedInteger& src) {
+    result_t operator()(const type::UnsignedInteger& src, type::Visitor::position_t&) override {
         if ( dst.isA<type::Bool>() )
             _result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
@@ -206,7 +206,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
                 fmt("codegen: unexpected type coercion from unsigned integer to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::WeakReference& src) {
+    result_t operator()(const type::WeakReference& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>() )
             _result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
@@ -224,7 +224,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logger().internalError(fmt("codegen: unexpected type coercion from weak reference to %s", dst.typename_()));
     }
 
-    result_t operator()(const type::ValueReference& src) {
+    result_t operator()(const type::ValueReference& src, type::Visitor::position_t&) override {
         if ( auto t = dst.tryAs<type::Bool>() )
             _result = cg->coerce(fmt("*%s", expr), *src.dereferencedType(), dst);
 
