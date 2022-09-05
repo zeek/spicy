@@ -14,11 +14,11 @@ using namespace spicy;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
+struct Visitor : public hilti::visitor::PostOrder<void, Visitor>, type::Visitor {
     explicit Visitor(hilti::Unit* unit) : unit(unit) {}
     hilti::Unit* unit;
 
-    void operator()(const type::Unit& t, position_t p) {
+    void operator()(const type::Unit& t, type::Visitor::position_t& p) override {
         if ( auto d = t.selfRef() )
             p.node.scope()->insert(std::move(d));
 
