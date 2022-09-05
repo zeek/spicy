@@ -399,6 +399,8 @@ public:
     const Meta& meta() const { return _data_->meta(); }
     void setMeta(Meta m) { return _data_->setMeta(std::move(m)); }
 
+    uintptr_t identity() const { return reinterpret_cast<uintptr_t>(&*_data_); }
+
     template<typename T>
     bool isA() const {
         return dynamic_cast<const T*>(&*_data_);

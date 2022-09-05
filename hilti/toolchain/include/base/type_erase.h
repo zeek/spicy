@@ -230,7 +230,12 @@ public:
     auto& data() { return _data; }
 
     /** For internal use. */
-    uintptr_t identity() const { return _data ? _data->identity() : 0; }
+    uintptr_t identity() const {
+        if ( const auto& t = tryAs<hilti::Type>() )
+            return t->identity();
+
+        return _data ? _data->identity() : 0;
+    }
 
 private:
     template<typename T>
