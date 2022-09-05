@@ -21,7 +21,7 @@ using namespace hilti;
 
 namespace {
 
-struct Visitor : public visitor::PostOrder<void, Visitor> {
+struct Visitor : public visitor::PostOrder<void, Visitor>, type::Visitor {
     explicit Visitor(std::shared_ptr<hilti::Context> ctx, Unit* unit) : context(std::move(ctx)), unit(unit) {}
 
     std::shared_ptr<hilti::Context> context;
@@ -155,7 +155,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             p.node.scope()->insert(std::move(x));
     }
 
-    void operator()(const type::Enum& m, position_t p) {
+    void operator()(const type::Enum& m, type::Visitor::position_t& p) override {
         if ( ! p.parent().isA<declaration::Type>() )
             return;
 
@@ -168,7 +168,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             p.parent().scope()->insert(std::move(d));
     }
 
-    void operator()(const type::Struct& t, position_t p) {
+    void operator()(const type::Struct& t, type::Visitor::position_t& p) override {
         if ( ! p.node.as<Type>().typeID() )
             // We need to associate the type ID with the declaration we're
             // creating, so wait for that to have been set by the resolver.
