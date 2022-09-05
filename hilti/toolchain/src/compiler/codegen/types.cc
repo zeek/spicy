@@ -19,7 +19,7 @@ using util::fmt;
 
 namespace {
 
-struct VisitorDeclaration : hilti::visitor::PreOrder<void, VisitorDeclaration> {
+struct VisitorDeclaration : hilti::visitor::PreOrder<void, VisitorDeclaration>, type::Visitor {
     VisitorDeclaration(CodeGen* cg, util::Cache<cxx::ID, cxx::declaration::Type>* cache) : cg(cg), cache(cache) {}
 
     CodeGen* cg;
@@ -36,7 +36,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<void, VisitorDeclaration> {
     auto typeID(const Node& n) { return n.as<Type>().typeID(); }
     auto cxxID(const Node& n) { return n.as<Type>().cxxID(); }
 
-    result_t operator()(const type::Struct& n, const position_t p) {
+    result_t operator()(const type::Struct& n, type::Visitor::position_t& p) override {
         assert(typeID(p.node));
 
         auto scope = cxx::ID{cg->unit()->cxxNamespace()};
@@ -252,18 +252,16 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<void, VisitorDeclaration> {
                                            .add_ctors = true};
                 return cxx::declaration::Type{id, t, t.inlineCode()};
             });
-
-        util::cannot_be_reached();
     }
 
-    result_t operator()(const type::Tuple& n) {
+    result_t operator()(const type::Tuple& n, type::Visitor::position_t&) override {
         for ( const auto& e : n.elements() )
             addDependency(e.type());
 
         _result = cxx::declaration::Type();
     }
 
-    result_t operator()(const type::Union& n, const position_t p) {
+    result_t operator()(const type::Union& n, type::Visitor::position_t& p) override {
         assert(typeID(p.node));
 
         auto scope = cxx::ID{cg->unit()->cxxNamespace()};
@@ -291,14 +289,14 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<void, VisitorDeclaration> {
         _result = cxx::declaration::Type{id, t};
     }
 
-    result_t operator()(const type::Vector& n, const position_t p) {
+    result_t operator()(const type::Vector& n, type::Visitor::position_t& p) override {
         if ( n.elementType() != type::unknown )
             addDependency(*n.elementType());
 
         _result = cxx::declaration::Type();
     }
 
-    result_t operator()(const type::Enum& n, const position_t p) {
+    result_t operator()(const type::Enum& n, type::Visitor::position_t& p) override {
         assert(typeID(p.node));
 
         auto scope = cxx::ID{cg->unit()->cxxNamespace()};
@@ -318,7 +316,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<void, VisitorDeclaration> {
         _result = decl;
     }
 
-    result_t operator()(const type::Exception& n, const position_t p) {
+    result_t operator()(const type::Exception& n, type::Visitor::position_t& p) override {
         assert(typeID(p.node));
 
         auto scope = cxx::ID{cg->unit()->cxxNamespace()};
