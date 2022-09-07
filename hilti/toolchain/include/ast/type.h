@@ -411,7 +411,7 @@ public:
         return *dynamic_cast<const T*>(&*_data_);
     }
 
-    template<typename T>
+    template<typename T, typename = std::enable_if<std::is_base_of_v<TypeBase, T>>>
     T& as() {
         return *dynamic_cast<T*>(&*_data_);
     }
