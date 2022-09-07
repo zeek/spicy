@@ -4,6 +4,7 @@
 
 #include <hilti/ast/builder/all.h>
 #include <hilti/ast/builder/expression.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 
@@ -21,7 +22,7 @@ namespace builder = hilti::builder;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
+struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
     Visitor(ParserBuilder* pb_, const production::Meta& meta_, const std::optional<Expression>& dst_, bool is_try_)
         : pb(pb_), meta(meta_), dst(dst_), is_try(is_try_) {}
     ParserBuilder* pb;
@@ -100,7 +101,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             return builder::id("hilti::ByteOrder::Network");
     }
 
-    result_t operator()(const hilti::type::Address& t) {
+    result_t operator()(const hilti::type::Address& t, type::Visitor::position_t&) override {
         auto v4 = AttributeSet::find(meta.field()->attributes(), "&ipv4");
         auto v6 = AttributeSet::find(meta.field()->attributes(), "&ipv6");
         (void)v6;
@@ -117,7 +118,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
                                     t.meta(), is_try);
     }
 
-    result_t operator()(const spicy::type::Bitfield& t) {
+    result_t operator()(const spicy::type::Bitfield& t, type::Visitor::position_t&) override {
         const auto& itype = t.parseType();
         auto value = builder()->addTmp("bitfield", itype);
         performUnpack(value, itype, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
@@ -159,22 +160,22 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         _result = target;
     }
 
-    result_t operator()(const hilti::type::Real& t) {
+    result_t operator()(const hilti::type::Real& t, type::Visitor::position_t&) override {
         auto type = AttributeSet::find(meta.field()->attributes(), "&type");
         assert(type);
         _result = performUnpack(destination(t), type::Real(), 4,
                                 {state().cur, *type->valueAsExpression(), fieldByteOrder()}, t.meta(), is_try);
     }
 
-    result_t operator()(const hilti::type::SignedInteger& t) {
+    result_t operator()(const hilti::type::SignedInteger& t, type::Visitor::position_t&) override {
         _result = performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
     }
 
-    result_t operator()(const hilti::type::UnsignedInteger& t) {
+    result_t operator()(const hilti::type::UnsignedInteger& t, type::Visitor::position_t&) override {
         _result = performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
     }
 
-    result_t operator()(const hilti::type::Void& t) {
+    result_t operator()(const hilti::type::Void& t, type::Visitor::position_t&) override {
         if ( auto size = AttributeSet::find(meta.field()->attributes(), "&size") )
             // Even though we we do not store parsed data, we still need to consume
             // data in the input stream so that `&size` checks can work.
@@ -219,7 +220,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         _result = hilti::expression::Void();
     }
 
-    result_t operator()(const hilti::type::Bytes& t) {
+    result_t operator()(const hilti::type::Bytes& t, type::Visitor::position_t&) override {
         auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");
         auto eod_attr = AttributeSet::find(meta.field()->attributes(), "&eod");
         auto size_attr = AttributeSet::find(meta.field()->attributes(), "&size");
