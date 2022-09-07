@@ -1908,7 +1908,7 @@ error prone. As an alternative, a unit can make use of a dedicated
 lifetime determined by the host application running the parser. For
 example, Zeek will tie the context to the underlying connection.
 
-A public unit can declare its context through a unit-level property
+Any public unit can declare a context through a unit-level property
 called ``%context``, which takes an arbitrary type as its argument.
 For example:
 
@@ -1919,10 +1919,10 @@ For example:
         [...]
     };
 
-By default, each instance of such a unit will then receive a unique
-context value of that type. The context value can be accessed through
-the :spicy:method:`unit::context` method, which will return a
-reference to it:
+When used as a top-level entry point to parsing, the unit will then,
+by default, receive a unique context value of that type. That context
+value can be accessed through the :spicy:method:`unit::context`
+method, which will return a reference to it:
 
 .. spicy-code:: context-empty.spicy
 
@@ -1945,6 +1945,14 @@ the :ref:`Zeek plugin <zeek_plugin>` always creates a single context
 value shared by all top-level units belonging to the same connection,
 enabling parsers to maintain bi-directional, per-connection state.
 The batch mode of :ref:`spicy-driver <spicy-driver>` does the same.
+
+.. note::
+
+    A unit's context value gets set only when a host application uses
+    it as the top-level starting point for parsing. If in the above
+    example `Foo` wasn't the entry point, but used inside another unit
+    further down during the parsing process, it's context would remain
+    unset.
 
 As an example, the following grammar---mimicking a request/reply-style
 protocol---maintains a queue of outstanding textual commands to then
