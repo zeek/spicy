@@ -717,7 +717,11 @@ bool Visitor::resolveMethodCall(const expression::UnresolvedOperator& u, positio
 
     std::vector<Node> shadow_ops;
 
-    auto stype = operands[0].type().tryAs<type::Struct>();
+    auto ty0 = operands[0].type();
+    if ( type::isReferenceType(ty0) )
+        ty0 = *ty0.dereferencedType();
+
+    auto stype = ty0.tryAs<type::Struct>();
     if ( ! stype ) {
         // Allow a still unresolved ID here so that we can start resolving auto parameters below.
         if ( auto id = operands[0].tryAs<expression::UnresolvedID>() ) {
@@ -726,7 +730,12 @@ bool Visitor::resolveMethodCall(const expression::UnresolvedOperator& u, positio
                 shadow_ops.emplace_back(Expression(expression::ResolvedID(resolved->second, NodeRef(resolved->first))));
                 shadow_ops.emplace_back(operands[1]);
                 shadow_ops.emplace_back(operands[2]);
-                stype = shadow_ops[0].as<Expression>().type().tryAs<type::Struct>();
+
+                const auto& sty0 = shadow_ops[0].as<Expression>().type();
+                if ( type::isReferenceType(sty0) )
+                    stype = sty0.dereferencedType()->tryAs<type::Struct>();
+                else
+                    stype = sty0.tryAs<type::Struct>();
             }
         }
     }
