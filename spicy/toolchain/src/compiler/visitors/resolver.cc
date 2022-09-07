@@ -1,5 +1,6 @@
 // Copyrights (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <optional>
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
@@ -55,31 +56,38 @@ enum class FieldType {
 };
 
 // Visitor determining a unit field type.
-struct FieldTypeVisitor : public hilti::visitor::PreOrder<Type, FieldTypeVisitor> {
+struct FieldTypeVisitor : public hilti::visitor::PreOrder<void, FieldTypeVisitor> {
     explicit FieldTypeVisitor(FieldType ft) : ft(ft) {}
 
     FieldType ft;
 
+    std::optional<Type> _result;
+
     result_t operator()(const type::Bitfield& t) {
         switch ( ft ) {
             case FieldType::DDType:
-            case FieldType::ItemType: return t.type();
+            case FieldType::ItemType: {
+                _result = t.type();
+                break;
+            }
 
-            case FieldType::ParseType: return t;
+            case FieldType::ParseType: {
+                _result = t;
+                break;
+            }
         };
-
-        hilti::util::cannot_be_reached();
     }
 
-    result_t operator()(const hilti::type::RegExp& /* t */) { return hilti::type::Bytes(); }
+    result_t operator()(const hilti::type::RegExp& /* t */) { _result = hilti::type::Bytes(); }
 };
 
 // Helper function to compute one of several kinds of a field's types.
 std::optional<Type> _fieldType(const type::unit::item::Field& f, const Type& type, FieldType ft, bool is_container,
                                const Meta& meta) {
     Type nt;
-    if ( auto e = FieldTypeVisitor(ft).dispatch(type) )
-        nt = std::move(*e);
+    auto v = FieldTypeVisitor(ft);
+    if ( v.dispatch(type); v._result )
+        nt = std::move(*v._result);
     else
         nt = type;
 
