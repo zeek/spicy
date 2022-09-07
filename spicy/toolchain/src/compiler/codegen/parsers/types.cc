@@ -21,13 +21,15 @@ namespace builder = hilti::builder;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
+struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
     Visitor(ParserBuilder* pb_, const production::Meta& meta_, const std::optional<Expression>& dst_, bool is_try_)
         : pb(pb_), meta(meta_), dst(dst_), is_try(is_try_) {}
     ParserBuilder* pb;
     const production::Meta& meta;
     const std::optional<Expression>& dst;
     bool is_try;
+
+    std::optional<Expression> _result;
 
     auto state() { return pb->state(); }
     auto builder() { return pb->builder(); }
@@ -49,8 +51,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         return builder()->addTmp("x", t);
     }
 
-    Expression performUnpack(const Expression& target, const Type& t, int len, const std::vector<Expression>& unpack_args,
-                             const Meta& m, bool is_try) {
+    Expression performUnpack(const Expression& target, const Type& t, int len,
+                             const std::vector<Expression>& unpack_args, const Meta& m, bool is_try) {
         if ( ! is_try ) {
             auto error_msg = fmt("expecting %d bytes for unpacking value", len);
             pb->waitForInput(builder::integer(len), error_msg, m);
@@ -105,14 +107,14 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         assert(! (v4 && v6));
 
         if ( v4 )
-            return performUnpack(destination(t), type::Address(), 4,
-                                 {state().cur, builder::id("hilti::AddressFamily::IPv4"), fieldByteOrder()}, t.meta(),
-                                 is_try);
+            _result = performUnpack(destination(t), type::Address(), 4,
+                                    {state().cur, builder::id("hilti::AddressFamily::IPv4"), fieldByteOrder()},
+                                    t.meta(), is_try);
 
         else
-            return performUnpack(destination(t), type::Address(), 16,
-                                 {state().cur, builder::id("hilti::AddressFamily::IPv6"), fieldByteOrder()}, t.meta(),
-                                 is_try);
+            _result = performUnpack(destination(t), type::Address(), 16,
+                                    {state().cur, builder::id("hilti::AddressFamily::IPv6"), fieldByteOrder()},
+                                    t.meta(), is_try);
     }
 
     result_t operator()(const spicy::type::Bitfield& t) {
@@ -154,22 +156,22 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
         auto target = destination(t.type());
         builder()->addAssign(target, builder::tuple(extracted_bits));
-        return target;
+        _result = target;
     }
 
     result_t operator()(const hilti::type::Real& t) {
         auto type = AttributeSet::find(meta.field()->attributes(), "&type");
         assert(type);
-        return performUnpack(destination(t), type::Real(), 4,
-                             {state().cur, *type->valueAsExpression(), fieldByteOrder()}, t.meta(), is_try);
+        _result = performUnpack(destination(t), type::Real(), 4,
+                                {state().cur, *type->valueAsExpression(), fieldByteOrder()}, t.meta(), is_try);
     }
 
     result_t operator()(const hilti::type::SignedInteger& t) {
-        return performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
+        _result = performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
     }
 
     result_t operator()(const hilti::type::UnsignedInteger& t) {
-        return performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
+        _result = performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
     }
 
     result_t operator()(const hilti::type::Void& t) {
@@ -214,7 +216,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
             });
         }
 
-        return hilti::expression::Void();
+        _result = hilti::expression::Void();
     }
 
     result_t operator()(const hilti::type::Bytes& t) {
@@ -281,7 +283,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 // pretend that we have processed it all.
                 pb->advanceInput(builder::end(state().cur));
 
-            return target;
+            _result = target;
         }
 
         if ( until_attr || until_including_attr ) {
@@ -349,10 +351,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
             });
 
-            return target;
+            _result = target;
         }
-
-        return {};
     }
 };
 
@@ -362,8 +362,9 @@ Expression ParserBuilder::_parseType(const Type& t, const production::Meta& meta
                                      bool is_try) {
     assert(! is_try || (t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>()));
 
-    if ( auto e = Visitor(this, meta, dst, is_try).dispatch(t) )
-        return std::move(*e);
+    auto v = Visitor(this, meta, dst, is_try);
+    if ( v.dispatch(t); v._result )
+        return std::move(*v._result);
 
     hilti::logger().internalError(fmt("codegen: type parser did not return expression for '%s'", t));
 }
