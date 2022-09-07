@@ -401,7 +401,7 @@ public:
 
     uintptr_t identity() const { return reinterpret_cast<uintptr_t>(&*_data_); }
 
-    template<typename T>
+    template<typename T, typename = std::enable_if<std::is_base_of_v<TypeBase, T>>>
     bool isA() const {
         return dynamic_cast<const T*>(&*_data_);
     }
