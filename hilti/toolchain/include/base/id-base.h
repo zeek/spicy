@@ -17,7 +17,7 @@ inline std::string identity_normalizer(std::string s) { return s; }
 
 /**
  * Base class for representing scoped language IDs. It provides a number of
- * standard accesasorsd and manipulators to support operations on/with
+ * standard accessors and manipulators to support operations on/with
  * namespaces. This class assumes that namespaces are separated with `::`.
  *
  * @tparam Derived name of the class deriving from this one (CRTP).
