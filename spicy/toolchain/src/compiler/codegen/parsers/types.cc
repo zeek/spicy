@@ -361,6 +361,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
 
 Expression ParserBuilder::_parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst,
                                      bool is_try) {
+    assert(meta.field());
     assert(! is_try || (t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>()));
 
     auto v = Visitor(this, meta, dst, is_try);
@@ -371,6 +372,7 @@ Expression ParserBuilder::_parseType(const Type& t, const production::Meta& meta
 }
 
 Expression ParserBuilder::parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst) {
+    assert(meta.field());
     return _parseType(t, meta, dst, /*is_try =*/false);
 }
 

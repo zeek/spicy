@@ -210,6 +210,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 auto old_cur = builder()->addTmp("ocur", state().cur);
 
                 // Parse value as an instance of the corresponding type.
+                assert(production.meta().field());
                 auto x = pb->parseType(type, production.meta(), {});
 
                 // Compare parsed value against expected value.
