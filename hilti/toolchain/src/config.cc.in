@@ -177,11 +177,11 @@ void Configuration::init(bool use_build_directory) {
     hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup",
                                      prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag)});
 
-#ifdef __APPLE_
-    // This avoids duplicate symbols when the HLTO is loaded, seems default
-    // linker behavior is different on macOS.
-    hlto_ld_flags_debug.push_back("-nostdlib");
-    hlto_ld_flags_release.push_back("-nostdlib");
+#ifdef __APPLE__
+    // Recent macOS versions have started to report `ld: warning: -undefined
+    // dynamic_lookup may not work with chained fixups`. This suppresses that.
+    hlto_ld_flags_debug.push_back("-Wl,-w");
+    hlto_ld_flags_release.push_back("-Wl,-w");
 #endif
 };
 
