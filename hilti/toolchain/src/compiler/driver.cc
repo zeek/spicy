@@ -1289,7 +1289,7 @@ void Driver::_saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& 
     if ( ! logger().isEnabled(logging::debug::AstDumpIterations) )
         return;
 
-    std::ofstream out(fmt("ast-%s-%d.tmp", plugin.component, round));
+    std::ofstream out(fmt("ast-%s-%s-%d.tmp", plugin.component, unit->id(), round));
     _dumpAST(unit, out, plugin, prefix, round);
 }
 
