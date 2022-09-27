@@ -275,7 +275,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const declaration::Function& u, position_t p) {
-        if ( u.linkage() != declaration::Linkage::Struct ) {
+        if ( u.linkage() != declaration::Linkage::Struct && u.id().namespace_() ) {
             // See if the namespace refers to a struct. If so, change linkage
             // because that's what the normalizer will look for when linking
             // methods to their parent type.
