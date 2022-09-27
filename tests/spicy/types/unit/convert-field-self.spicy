@@ -1,0 +1,9 @@
+# @TEST-EXEC:  printf '\005abcde' | spicy-dump -d %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module foo;
+
+public type X = unit {
+	len: uint8;
+	x: bytes &eod &convert=self.len;
+};

@@ -393,7 +393,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
                 return;
 
             auto n = expression::ResolvedID(resolved->second, NodeRef(resolved->first), u.meta());
-            if ( ! type::isResolved(n.type()) )
+            if ( ! expression::isResolved(n) )
                 return;
 
             logChange(p.node, n);

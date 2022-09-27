@@ -23,10 +23,7 @@ public:
 
     auto kind() const { return _kind; }
 
-    bool areOperandsResolved() const {
-        const auto& xs = children<Expression>(1, -1);
-        return std::all_of(xs.begin(), xs.end(), [](const auto& x) { return type::isResolved(x.type()); });
-    }
+    bool areOperandsResolved() const { return expression::isResolved(children<Expression>(1, -1)); }
 
     bool operator==(const UnresolvedOperator& other) const {
         return kind() == other.kind() && operands() == other.operands();
