@@ -105,7 +105,7 @@ install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/hil
 # Install the 3rdparty headers that we need individually.
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/ArticleEnumClass-v2
                 hilti/rt/3rdparty/ArticleEnumClass-v2)
-install_headers(${PROJECT_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt)
+install_headers(${PROJECT_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt SafeInt.hpp)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)
