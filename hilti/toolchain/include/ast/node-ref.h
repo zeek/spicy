@@ -91,6 +91,8 @@ public:
 private:
     const Node* _node() const;
     IntrusivePtr<node_ref::detail::Control> _control;
+
+    std::string _originalType;
 };
 
 } // namespace hilti
