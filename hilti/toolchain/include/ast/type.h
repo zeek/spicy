@@ -354,6 +354,8 @@ public:
     /** Implements the `Node` interface. */
     virtual node::Properties properties() const { return {}; }
 
+    virtual uintptr_t identity() const { return reinterpret_cast<uintptr_t>(this); }
+
     virtual const std::type_info& typeid_() const { return typeid(decltype(*this)); }
 
     virtual void dispatch(type::Visitor& v, type::Visitor::position_t& p) const { v(*this, p); }
@@ -399,7 +401,7 @@ public:
     const Meta& meta() const { return _data_->meta(); }
     void setMeta(Meta m) { return _data_->setMeta(std::move(m)); }
 
-    uintptr_t identity() const { return reinterpret_cast<uintptr_t>(&*_data_); }
+    uintptr_t identity() const { return _data_->identity(); }
 
     template<typename T, typename = std::enable_if<std::is_base_of_v<TypeBase, T>>>
     bool isA() const {
