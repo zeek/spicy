@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include <polymorphic_value/polymorphic_value.h>
-
+#include <memory>
 #include <type_traits>
 #include <typeinfo>
 #include <unordered_set>
@@ -372,7 +371,7 @@ public:
     Type(Type&&) = default;
 
     template<typename T, typename = std::enable_if_t<std::is_base_of_v<TypeBase, T>>>
-    Type(const T& data) : _data_(isocpp_p0201::make_polymorphic_value<TypeBase, T>(data)) {}
+    Type(const T& data) : _data_(std::make_shared<T>(data)) {}
 
     Type& operator=(const Type&) = default;
     Type& operator=(Type&&) = default;
@@ -405,21 +404,33 @@ public:
 
     template<typename T, typename = std::enable_if<std::is_base_of_v<TypeBase, T>>>
     bool isA() const {
+        if constexpr ( std::is_same_v<Type, T> )
+            return true;
+
         return dynamic_cast<const T*>(&*_data_);
     }
 
     template<typename T, typename = std::enable_if<std::is_base_of_v<TypeBase, T>>>
     const T& as() const {
+        if constexpr ( std::is_same_v<Type, T> )
+            return *this;
+
         return *dynamic_cast<const T*>(&*_data_);
     }
 
     template<typename T, typename = std::enable_if<std::is_base_of_v<TypeBase, T>>>
     T& as() {
+        if constexpr ( std::is_same_v<Type, T> )
+            return *this;
+
         return *dynamic_cast<T*>(&*_data_);
     }
 
     template<typename T, typename = std::enable_if<std::is_base_of_v<TypeBase, T>>>
     optional_ref<const T> tryAs() const {
+        if constexpr ( std::is_same_v<Type, T> )
+            return *this;
+
         if ( auto d = dynamic_cast<const T*>(&*_data_) )
             return {*d};
         else
@@ -432,6 +443,7 @@ public:
 
     void dispatch(type::Visitor& v, type::Visitor::position_t& p) const { _data_->dispatch(v, p); }
 
+    Type _clone() const;
 
     /** Implements the `Type interface. */
 
@@ -492,7 +504,7 @@ public:
     bool _isResolved(type::ResolvedState* rstate) const { return _data_->_isResolved(rstate); }
 
 private:
-    isocpp_p0201::polymorphic_value<TypeBase> _data_;
+    std::shared_ptr<TypeBase> _data_;
 };
 
 /** Creates an AST node representing a `Type`. */
