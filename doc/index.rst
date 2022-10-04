@@ -76,8 +76,8 @@ like to hear from you!
       the [Spicy tag](https://community.zeek.org/c/spicy/).
 
     - To follow development, subscribe to the `commits mailing list
-      <https://lists.zeek.org/mailman3/lists/spicy-commits.lists.zeek.org>`_ (it
-      can be noisy!).
+      <https://groups.google.com/a/zeek.org/g/spicy-commits/>`_ (it can be
+      noisy!).
 
 Documentation
 -------------
