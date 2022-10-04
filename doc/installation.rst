@@ -75,7 +75,7 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :repo:`Dockerfile <docker/Dockerfile.alpine-3.12>`
 
     * - CentOS Stream 8
-      -
+      - :package-release-rpm:`TAR <linux_centos_stream_8>`
       - :package-dev-rpm:`RPM <docker_centos_stream_8>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-stream-8>`
 
