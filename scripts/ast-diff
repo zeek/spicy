@@ -1,0 +1,30 @@
+#! /usr/bin/env bash
+#
+# A helper script for manual diffing of two AST debug renderings, ignoring any
+# content that's not stable between subsequent executions.
+
+function filter
+{
+    # 1. Remove node addresses, including optional brackets/parentheses (e.g., [@i:60000266c520])
+    # 2. Remove source locations (e.g., "(foo.spicy:2:3)").
+    # 3. Replace node IDs (e.g., %42) with `%xxx`
+
+    sed 's/ \{0,\}[[(]\{0,\}@.:[0-9a-z]*[])]\{0,\}//g' | \
+    sed 's/ \{0,\}([^)]*:[0-9-]*:[0-9-]*)//g' | \
+    sed 's/%[0-9-]\{1,\}/%xxx/g'
+}
+
+if [ $# != 2 ]; then
+    echo "usage: $(basename $0) <ast1> <ast2>"
+    exit 1
+fi
+
+tmp1=/tmp/$(basename $0).$$.1
+tmp2=/tmp/$(basename $0).$$.2
+
+trap "rm -f ${tmp1} ${tmp2}" EXIT
+
+cat $1 | filter >${tmp1}
+cat $2 | filter >${tmp2}
+
+diff -u ${tmp1} ${tmp2}

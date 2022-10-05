@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/module.h>
 #include <hilti/ast/node.h>
@@ -106,6 +107,14 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
     }
 
     ////// Declarations
+
+    // Perform validation of ID names suitable for all types of declarations.
+    void operator()(const Declaration& n, position_t p) {
+        // 'self' is only ok for our internally created 'self' declarations,
+        // which are expressions.
+        if ( n.id().str() == "self" && ! n.isA<declaration::Expression>() )
+            error("cannot use 'self' as identifier", p);
+    }
 
     void operator()(const declaration::Constant& n, position_t p) {
         if ( n.value().type().isWildcard() )

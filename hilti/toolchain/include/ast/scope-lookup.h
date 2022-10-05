@@ -34,6 +34,9 @@ std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, const Nod
  */
 template<typename D>
 Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<Node&>& p, const std::string_view& what) {
+    if ( ! id )
+        logger().internalError("lookupID() called with empty ID");
+
     for ( auto i = p.path.rbegin(); i != p.path.rend(); ++i ) {
         auto [stop, resolved] = detail::lookupID(id, **i);
 

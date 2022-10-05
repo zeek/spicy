@@ -46,9 +46,7 @@ inline bool operator!=(const Expression& e1, const Expression& e2) { return ! (e
  * @param e expression to check
  * @param rstate internal parameter, leave unset
  */
-inline bool isResolved(const detail::Expression& e, type::ResolvedState* rstate = nullptr) {
-    return type::detail::isResolved(e.type(), rstate);
-}
+bool isResolved(const detail::Expression& e, type::ResolvedState* rstate = nullptr);
 
 /**
  * Returns true if the types of all expressions in a vector have been resolved.
@@ -57,8 +55,7 @@ inline bool isResolved(const detail::Expression& e, type::ResolvedState* rstate 
  * @param rstate internal parameter, leave unset
  */
 inline bool isResolved(const std::vector<detail::Expression>& exprs, type::ResolvedState* rstate = nullptr) {
-    return std::all_of(exprs.begin(), exprs.end(),
-                       [&](const auto& e) { return type::detail::isResolved(e.type(), rstate); });
+    return std::all_of(exprs.begin(), exprs.end(), [&](const auto& e) { return isResolved(e, rstate); });
 }
 
 /**
@@ -68,8 +65,7 @@ inline bool isResolved(const std::vector<detail::Expression>& exprs, type::Resol
  * @param rstate internal parameter, leave unset
  */
 inline bool isResolved(const hilti::node::Range<detail::Expression>& exprs, type::ResolvedState* rstate = nullptr) {
-    return std::all_of(exprs.begin(), exprs.end(),
-                       [&](const auto& e) { return type::detail::isResolved(e.type(), rstate); });
+    return std::all_of(exprs.begin(), exprs.end(), [&](const auto& e) { return isResolved(e, rstate); });
 }
 
 /**
