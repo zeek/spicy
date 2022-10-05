@@ -203,7 +203,7 @@ public:
     static void setSelf(Node* n) {
         assert(n->isA<type::Unit>());
         Expression self = hilti::expression::Keyword(hilti::expression::keyword::Kind::Self,
-                                                     StrongReference(hilti::type::pruneWalk(n->as<Type>())), n->meta());
+                                                     hilti::type::pruneWalk(n->as<Type>()), n->meta());
         Declaration d =
             hilti::declaration::Expression("self", std::move(self), declaration::Linkage::Private, n->meta());
         n->children()[0] = d;

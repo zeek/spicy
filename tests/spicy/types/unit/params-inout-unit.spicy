@@ -1,0 +1,23 @@
+# @TEST-EXEC:  spicy-driver %INPUT </dev/null >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Pass a unit as an inout parameter into another unit.
+
+module Test;
+
+public type Message = unit {
+	on %init {
+		self.s.connect(new La(self));
+	}
+
+	on %done {
+		print self;
+	}
+
+	var x: int32 = 1;
+	sink s;
+};
+
+type La = unit(inout msg: Message) {
+	on %finally { msg.x++; }
+};
