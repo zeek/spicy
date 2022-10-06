@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/ast/type.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/printer.h>
 
@@ -13,7 +14,7 @@ using hilti::util::fmt;
 
 namespace {
 
-struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
+struct Visitor : hilti::visitor::PreOrder<void, Visitor>, hilti::type::Visitor {
     explicit Visitor(hilti::printer::Stream& out) : out(out) {} // NOLINT
 
     auto const_(const Type& t) { return (out.isCompact() && hilti::type::isConstant(t)) ? "const " : ""; }
@@ -32,7 +33,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         out << ";" << out.newline();
     }
 
-    void operator()(const type::Bitfield& n, position_t p) {
+    void operator()(const type::Bitfield& n, position_t& p) override {
         if ( ! out.isExpandSubsequentType() ) {
             if ( auto id = p.node.as<Type>().typeID() ) {
                 out << *id;
@@ -50,9 +51,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         out << "}";
     }
 
-    void operator()(const type::Sink& /* n */) { out << "sink"; }
+    void operator()(const type::Sink& /* n */, position_t&) override { out << "sink"; }
 
-    void operator()(const type::Unit& n) {
+    void operator()(const type::Unit& n, position_t&) override {
         if ( n.isWildcard() )
             out << "unit<*>";
         else {
