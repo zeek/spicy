@@ -2,6 +2,7 @@
 
 #include <hilti/ast/builder/type.h>
 #include <hilti/ast/ctors/library.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/library.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/compiler/plugin.h>
@@ -54,7 +55,7 @@ struct VisitorCtor : public hilti::visitor::PreOrder<std::optional<Ctor>, Visito
     }
 };
 
-struct VisitorType : public hilti::visitor::PreOrder<void, VisitorType> {
+struct VisitorType : public hilti::visitor::PreOrder<void, VisitorType>, public hilti::type::Visitor {
     VisitorType(const Type& dst, bitmask<hilti::CoercionStyle> style) : dst(dst), style(style) {}
 
     const Type& dst;
@@ -62,7 +63,7 @@ struct VisitorType : public hilti::visitor::PreOrder<void, VisitorType> {
 
     std::optional<Type> _result;
 
-    void operator()(const type::Unit& t, position_t p) {
+    void operator()(const type::Unit& t, position_t& p) override {
         if ( auto x = dst.tryAs<type::StrongReference>(); x && x->dereferencedType() == p.node.as<Type>() )
             // Our codegen will turn a unit T into value_ref<T>, which coerces to strong_ref<T>.
             _result = dst;
