@@ -54,18 +54,20 @@ struct VisitorCtor : public hilti::visitor::PreOrder<std::optional<Ctor>, Visito
     }
 };
 
-struct VisitorType : public hilti::visitor::PreOrder<std::optional<Type>, VisitorType> {
+struct VisitorType : public hilti::visitor::PreOrder<void, VisitorType> {
     VisitorType(const Type& dst, bitmask<hilti::CoercionStyle> style) : dst(dst), style(style) {}
 
     const Type& dst;
     bitmask<hilti::CoercionStyle> style;
 
-    result_t operator()(const type::Unit& t, position_t p) {
+    std::optional<Type> _result;
+
+    void operator()(const type::Unit& t, position_t p) {
         if ( auto x = dst.tryAs<type::StrongReference>(); x && x->dereferencedType() == p.node.as<Type>() )
             // Our codegen will turn a unit T into value_ref<T>, which coerces to strong_ref<T>.
-            return dst;
-
-        return {};
+            _result = dst;
+        else
+            _result = {};
     }
 };
 
@@ -87,8 +89,9 @@ std::optional<Type> spicy::detail::coerceType(Type t, const Type& dst, bitmask<h
     if ( ! (type::isResolved(t) && type::isResolved(dst)) )
         return {};
 
-    if ( auto nt = VisitorType(dst, style).dispatch(t) )
-        return *nt;
+    VisitorType v(dst, style);
+    if ( v.dispatch(t); v._result )
+        return std::move(*v._result);
 
     return (*hilti::plugin::registry().hiltiPlugin().coerce_type)(std::move(t), dst, style);
 }
