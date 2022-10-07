@@ -1579,10 +1579,7 @@ struct ProductionVisitor
             parseProduction(i);
     }
 
-    void operator()(const production::Variable& p) {
-        assert(p.meta().field());
-        pb->parseType(p.type(), p.meta(), destination());
-    }
+    void operator()(const production::Variable& p) { pb->parseType(p.type(), p.meta(), destination()); }
 
     void operator()(const production::While& p) {
         if ( p.expression() )
