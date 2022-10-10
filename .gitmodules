@@ -37,3 +37,6 @@
 [submodule "3rdparty/any"]
 	path = 3rdparty/any
 	url = https://github.com/thelink2012/any.git
+[submodule "3rdparty/polymorphic_value"]
+	path = 3rdparty/polymorphic_value
+	url = https://github.com/jbcoe/polymorphic_value.git

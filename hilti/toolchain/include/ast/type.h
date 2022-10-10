@@ -11,6 +11,9 @@
 #include <hilti/base/optional-ref.h>
 #include <hilti/base/type_erase.h>
 
+// FIXME(bbannier): Add proper dependency with CMake.
+#include "polymorphic_value/polymorphic_value.h"
+
 namespace hilti {
 
 namespace trait {
