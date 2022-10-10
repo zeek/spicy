@@ -227,58 +227,63 @@ class Visitor {
 public:
     using position_t = visitor::Position<Node&>;
 
-    virtual void operator()(const hilti::TypeBase&, position_t&) {}
-    virtual void operator()(const hilti::type::Address&, position_t&) {}
-    virtual void operator()(const hilti::type::Any&, position_t&) {}
-    virtual void operator()(const hilti::type::Auto&, position_t&) {}
-    virtual void operator()(const hilti::type::Bool&, position_t&) {}
-    virtual void operator()(const hilti::type::Bytes&, position_t&) {}
-    virtual void operator()(const hilti::type::DocOnly&, position_t&) {}
-    virtual void operator()(const hilti::type::Enum&, position_t&) {}
-    virtual void operator()(const hilti::type::Error&, position_t&) {}
-    virtual void operator()(const hilti::type::Exception&, position_t&) {}
-    virtual void operator()(const hilti::type::Function&, position_t&) {}
-    virtual void operator()(const hilti::type::Interval&, position_t&) {}
-    virtual void operator()(const hilti::type::Library&, position_t&) {}
-    virtual void operator()(const hilti::type::List&, position_t&) {}
-    virtual void operator()(const hilti::type::Map&, position_t&) {}
-    virtual void operator()(const hilti::type::Member&, position_t&) {}
-    virtual void operator()(const hilti::type::Network&, position_t&) {}
-    virtual void operator()(const hilti::type::Null&, position_t&) {}
-    virtual void operator()(const hilti::type::OperandList&, position_t&) {}
-    virtual void operator()(const hilti::type::Optional&, position_t&) {}
-    virtual void operator()(const hilti::type::Port&, position_t&) {}
-    virtual void operator()(const hilti::type::Real&, position_t&) {}
-    virtual void operator()(const hilti::type::RegExp&, position_t&) {}
-    virtual void operator()(const hilti::type::Result&, position_t&) {}
-    virtual void operator()(const hilti::type::Set&, position_t&) {}
-    virtual void operator()(const hilti::type::SignedInteger&, position_t&) {}
-    virtual void operator()(const hilti::type::Stream&, position_t&) {}
-    virtual void operator()(const hilti::type::String&, position_t&) {}
-    virtual void operator()(const hilti::type::StrongReference&, position_t&) {}
-    virtual void operator()(const hilti::type::Struct&, position_t&) {}
-    virtual void operator()(const hilti::type::Time&, position_t&) {}
-    virtual void operator()(const hilti::type::Tuple&, position_t&) {}
-    virtual void operator()(const hilti::type::Type_&, position_t&) {}
-    virtual void operator()(const hilti::type::Union&, position_t&) {}
-    virtual void operator()(const hilti::type::Unknown&, position_t&) {}
-    virtual void operator()(const hilti::type::UnresolvedID&, position_t&) {}
-    virtual void operator()(const hilti::type::UnsignedInteger&, position_t&) {}
-    virtual void operator()(const hilti::type::ValueReference&, position_t&) {}
-    virtual void operator()(const hilti::type::Vector&, position_t&) {}
-    virtual void operator()(const hilti::type::Void&, position_t&) {}
-    virtual void operator()(const hilti::type::WeakReference&, position_t&) {}
-    virtual void operator()(const hilti::type::bytes::Iterator&, position_t&) {}
-    virtual void operator()(const hilti::type::detail::IntegerBase&, position_t&) {}
-    virtual void operator()(const hilti::type::list::Iterator&, position_t&) {}
-    virtual void operator()(const hilti::type::map::Iterator&, position_t&) {}
-    virtual void operator()(const hilti::type::set::Iterator&, position_t&) {}
-    virtual void operator()(const hilti::type::stream::Iterator&, position_t&) {}
-    virtual void operator()(const hilti::type::stream::View&, position_t&) {}
-    virtual void operator()(const hilti::type::vector::Iterator&, position_t&) {}
-    virtual void operator()(const spicy::type::Bitfield&, position_t&) {}
-    virtual void operator()(const spicy::type::Sink&, position_t&) {}
-    virtual void operator()(const spicy::type::Unit&, position_t&) {}
+    virtual void operator()(const hilti::TypeBase&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Address&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Any&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Auto&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Bool&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Bytes&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::DocOnly&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Enum&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Error&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Exception&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Function&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Interval&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Library&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::List&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Map&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Member&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Network&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Null&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::OperandList&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Optional&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Port&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Real&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::RegExp&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Result&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Set&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::SignedInteger&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Stream&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::String&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::StrongReference&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Struct&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Time&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Tuple&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Type_&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Union&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Unknown&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::UnresolvedID&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::UnsignedInteger&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::ValueReference&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Vector&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::Void&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::WeakReference&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::bytes::Iterator&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::detail::IntegerBase&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::list::Iterator&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::map::Iterator&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::set::Iterator&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::stream::Iterator&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::stream::View&, position_t&) { _not_visited = true; }
+    virtual void operator()(const hilti::type::vector::Iterator&, position_t&) { _not_visited = true; }
+    virtual void operator()(const spicy::type::Bitfield&, position_t&) { _not_visited = true; }
+    virtual void operator()(const spicy::type::Sink&, position_t&) { _not_visited = true; }
+    virtual void operator()(const spicy::type::Unit&, position_t&) { _not_visited = true; }
+
+    bool did_visit() const { return ! _not_visited; }
+
+private:
+    bool _not_visited = false;
 };
 
 } // namespace type
