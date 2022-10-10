@@ -235,8 +235,17 @@ public:
     const std::optional<ID>& cxxID() const { return _state().cxx; }
     const type::detail::State& _state() const { return _state_; }
     type::detail::State& _state() { return _state_; }
+
     /** Implements the `Node` interface. */
     bool pruneWalk() const { return hasFlag(type::Flag::PruneWalk); }
+    node::Properties properties() const { return _data_->properties(); }
+    const std::vector<hilti::Node>& children() const { return _data_->children(); }
+    std::vector<hilti::Node>& children() { return _data_->children(); }
+    const Meta& meta() const { return _data_->meta(); }
+    void setMeta(Meta m) { return _data_->setMeta(std::move(m)); }
+
+private:
+    isocpp_p0201::polymorphic_value<TypeBase> _data_;
 };
 
 /** Creates an AST node representing a `Type`. */
