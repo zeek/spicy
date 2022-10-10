@@ -260,7 +260,7 @@ public:
     Visitor() = default;
     virtual ~Visitor() = default;
 
-    virtual void preDispatch(const Erased& /* n */, int /* level */){};
+    virtual void preDispatch(const Erased& /* n */, int /* level */) {}
 
     /** Execute matching dispatch methods for a single node.  */
     auto dispatch(position_t& i) {
