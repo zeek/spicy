@@ -792,7 +792,7 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
         }
     }
 
-    void operator()(const type::Function& n, position_t&) override {
+    void operator()(const type::Function& n, type::Visitor::position_t&) override {
         out << const_(n) << "function ";
         printFunctionType(n, {});
     }
