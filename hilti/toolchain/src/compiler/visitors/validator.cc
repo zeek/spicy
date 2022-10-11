@@ -47,6 +47,8 @@ struct VisitorBase {
 struct VisitorPre : public hilti::visitor::PreOrder<void, VisitorPre>, public VisitorBase {};
 
 struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public VisitorBase, type::Visitor {
+    using position_t = hilti::visitor::PreOrder<void, VisitorPost>::position_t;
+
     void preDispatch(const Node& n, int level) override {
         // Validate that identifier names are not reused.
         for ( const auto& [id, nodes] : n.scope()->items() ) {
