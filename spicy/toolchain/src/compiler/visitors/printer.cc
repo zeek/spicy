@@ -33,7 +33,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor>, hilti::type::Visitor {
         out << ";" << out.newline();
     }
 
-    void operator()(const type::Bitfield& n, position_t& p) override {
+    void operator()(const type::Bitfield& n, hilti::type::Visitor::position_t& p) override {
         if ( ! out.isExpandSubsequentType() ) {
             if ( auto id = p.node.as<Type>().typeID() ) {
                 out << *id;
