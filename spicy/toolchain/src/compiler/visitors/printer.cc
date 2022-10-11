@@ -51,7 +51,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor>, hilti::type::Visitor {
         out << "}";
     }
 
-    void operator()(const type::Sink& /* n */, position_t&) override { out << "sink"; }
+    void operator()(const type::Sink& /* n */, hilti::type::Visitor::position_t&) override { out << "sink"; }
 
     void operator()(const type::Unit& n, position_t&) override {
         if ( n.isWildcard() )
