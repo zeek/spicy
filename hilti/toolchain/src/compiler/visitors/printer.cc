@@ -90,6 +90,7 @@ static std::string renderOperand(operator_::Operand op, const node::Range<Expres
 namespace {
 
 struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
+    using position_t = visitor::PreOrder<void, Visitor>::position_t;
     Visitor(printer::Stream& out) : out(out) {} // NOLINT
 
     void printFunctionType(const type::Function& ftype, const std::optional<ID>& id) {
