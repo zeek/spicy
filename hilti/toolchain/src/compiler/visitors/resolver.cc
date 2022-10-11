@@ -41,7 +41,9 @@ inline const hilti::logging::DebugStream Operator("operator");
 
 namespace {
 
-struct Visitor : public visitor::PostOrder<void, Visitor>, type::Visitor {
+struct Visitor : visitor::PostOrder<void, Visitor>, type::Visitor {
+    using position_t = visitor::PostOrder<void, Visitor>::position_t;
+
     Visitor(std::shared_ptr<hilti::Context> ctx, Node* module, Unit* unit)
         : _context(std::move(ctx)), unit(unit), _module(module->as<Module>()) {}
 
