@@ -285,6 +285,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
                 pb->advanceInput(builder::end(state().cur));
 
             _result = target;
+            return;
         }
 
         if ( until_attr || until_including_attr ) {
@@ -353,6 +354,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
             });
 
             _result = target;
+            return;
         }
     }
 };
