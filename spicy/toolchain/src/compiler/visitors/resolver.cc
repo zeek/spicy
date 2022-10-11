@@ -102,7 +102,9 @@ std::optional<Type> _fieldType(const type::unit::item::Field& f, const Type& typ
         return nt;
 }
 
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
+struct Visitor : hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
+    using position_t = hilti::visitor::PreOrder<void, Visitor>::position_t;
+
     explicit Visitor(hilti::Unit* unit) : unit(unit) {}
     hilti::Unit* unit;
     bool modified = false;
