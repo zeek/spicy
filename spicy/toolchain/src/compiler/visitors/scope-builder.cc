@@ -14,7 +14,9 @@ using namespace spicy;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PostOrder<void, Visitor>, type::Visitor {
+struct Visitor : hilti::visitor::PostOrder<void, Visitor>, type::Visitor {
+    using position_t = hilti::visitor::PostOrder<void, Visitor>::position_t;
+
     explicit Visitor(hilti::Unit* unit) : unit(unit) {}
     hilti::Unit* unit;
 
