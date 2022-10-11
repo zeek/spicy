@@ -96,7 +96,7 @@ struct VisitorPass1 : public hilti::visitor::PreOrder<void, VisitorPass1> {
 
 // Visitor that runs repeatedly over the AST until no further changes.
 struct VisitorPass2 : hilti::visitor::PreOrder<void, VisitorPass2>, type::Visitor {
-    using position_t = hilti::visitor::PreOrder<void, VisitorPass>::position_t;
+    using position_t = hilti::visitor::PreOrder<void, VisitorPass2>::position_t;
 
     VisitorPass2(CodeGen* cg, hilti::Module* module) : cg(cg), module(module) {}
     CodeGen* cg;
