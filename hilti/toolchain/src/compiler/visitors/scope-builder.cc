@@ -21,7 +21,9 @@ using namespace hilti;
 
 namespace {
 
-struct Visitor : public visitor::PostOrder<void, Visitor>, type::Visitor {
+struct Visitor : visitor::PostOrder<void, Visitor>, type::Visitor {
+    using position_t = visitor::PostOrder<void, Visitor>::position_t;
+
     explicit Visitor(std::shared_ptr<hilti::Context> ctx, Unit* unit) : context(std::move(ctx)), unit(unit) {}
 
     std::shared_ptr<hilti::Context> context;
