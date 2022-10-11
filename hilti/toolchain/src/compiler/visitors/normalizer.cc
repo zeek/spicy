@@ -17,7 +17,9 @@ inline const hilti::logging::DebugStream Normalizer("normalizer");
 namespace {
 
 
-struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer>, type::Visitor {
+struct VisitorNormalizer : visitor::PreOrder<void, VisitorNormalizer>, type::Visitor {
+    using position_t = visitor::PreOrder<void, VisitorNormalizer>::position_t;
+
     bool modified = false;
 
     // Log debug message recording resolving a epxxression.
