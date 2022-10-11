@@ -36,8 +36,10 @@ TEST_CASE("Single-shot, result, constant node") {
         void operator()(const hilti::Module& m) { result = "(mo)"; }
         void operator()(const hilti::ID& id) { result = "(id)"; }
         void operator()(const hilti::Type& t, const_position_t i) { result = "(t)"; }
-        void operator()(const hilti::type::String& s, Visitor::position_t&) override { result = "(ts)"; }
-        void operator()(const hilti::type::SignedInteger& i, Visitor::position_t&) override { result = "(ti)"; }
+        void operator()(const hilti::type::String& s, hilti::type::Visitor::position_t&) override { result = "(ts)"; }
+        void operator()(const hilti::type::SignedInteger& i, hilti::type::Visitor::position_t&) override {
+            result = "(ti)";
+        }
         void operator()(const hilti::expression::Ctor& c, const_position_t i) { result = "(e:c)"; }
         void operator()(const hilti::ctor::Bool& b) { result = "(c:b)"; }
 
