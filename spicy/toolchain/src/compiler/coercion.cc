@@ -63,7 +63,7 @@ struct VisitorType : public hilti::visitor::PreOrder<void, VisitorType>, public 
 
     std::optional<Type> _result;
 
-    void operator()(const type::Unit& t, position_t& p) override {
+    void operator()(const type::Unit& t, hilti::type::Visitor::position_t& p) override {
         if ( auto x = dst.tryAs<type::StrongReference>(); x && x->dereferencedType() == p.node.as<Type>() )
             // Our codegen will turn a unit T into value_ref<T>, which coerces to strong_ref<T>.
             _result = dst;
