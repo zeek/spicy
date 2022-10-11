@@ -19,7 +19,9 @@ inline const hilti::logging::DebugStream Normalizer("normalizer");
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
+struct Visitor : hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
+    using position_t = hilti::visitor::PreOrder<void, Visitor>::position_t;
+
     explicit Visitor(Node* root) : root(root) {}
     Node* root;
     bool modified = false;
