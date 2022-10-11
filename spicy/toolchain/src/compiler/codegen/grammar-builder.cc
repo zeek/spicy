@@ -18,7 +18,9 @@ using hilti::util::fmt;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
+struct Visitor : hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
+    using position_t = hilti::visitor::PreOrder<void, Visitor>::position_t;
+
     Visitor(CodeGen* cg, codegen::GrammarBuilder* gb, Grammar* g) : cg(cg), gb(gb), grammar(g) {}
     CodeGen* cg;
     codegen::GrammarBuilder* gb;
