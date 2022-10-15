@@ -277,7 +277,7 @@ Here, ``ANALYZER_NAME`` is again a name to identify your analyzer
 inside Zeek.  On the Zeek-side, the name will be added to Zeek's
 ``PacketAnalyzer::Tag`` enum.
 
-Packet analyzers support just one property currently:
+Packet analyzers support the following properties:
 
     ``parse with SPICY_UNIT``
         Specifies the top-level Spicy unit the analyzer uses for
@@ -285,28 +285,59 @@ Packet analyzers support just one property currently:
         Spicy-side type name. The unit type must have been declared as
         ``public`` in Spicy.
 
+    ``replaces ANALYZER_NAME``
+        Disables an existing packet analyzer that Zeek already
+        provides internally, allowing you to replace a built-in
+        analyzer with a new Spicy version. ``ANALYZER_NAME`` is the
+        Zeek-side name of the existing analyzer. To find that name,
+        inspect the output of ``zeek -NN`` for available analyzers::
+
+            # zeek -NN | grep '\[Packet Analyzer\]'
+            ...
+            [Packet Analyzer] Ethernet (ANALYZER_ETHERNET)
+            ...
+
+        Here, ``Ethernet`` is the name you would give to ``replaces``
+        to disable the built-in Ethernet analyzer.
+
+        When replacing an existing packet analyzer, you still need to
+        configure your new analyzer on the Zeek side through a
+        `zeek_init()` event handler. See below for more.
+
+        .. note::
+
+            This feature requires Zeek >= 5.2.
+
 As a full example, here's what a new packet analyzer could look like::
 
     packet analyzer spicy::RawLayer:
         parse with Raw Layer::Packet;
 
-In addition to the Spicy-side configuration, packet analyzers also need to be
-registered with Zeek inside a ``zeek_init`` event handler; see the
-`Zeek documentation <https://docs.zeek.org/en/master/frameworks/packet-analysis.html>`_
-for more. You will need to use the
-`PacketAnalyzer::try_register_packet_analyzer_by_name
-<https://docs.zeek.org/en/master/scripts/base/bif/packet_analysis.bif.zeek.html#id-PacketAnalyzer::try_register_packet_analyzer_by_name>`_
-for registering Spicy analyzers (not ``register_packet_analyzer``), with
-the name of the new Spicy analyzer being ``ANALYZER_NAME``. ``zeek -NN``
-shows the names of existing analyzers. For example:
+In addition to the Spicy-side configuration, packet analyzers also
+need to be registered with Zeek inside a ``zeek_init`` event handler;
+see the `Zeek documentation
+<https://docs.zeek.org/en/master/frameworks/packet-analysis.html>`_
+for more. The ``-NN`` output shows your new analyzer's ``ANALYZER_*``
+tag to use.
 
-.. code-block:: zeek
+.. note::
 
-    event zeek_init()
-        {
-        if ( ! PacketAnalyzer::try_register_packet_analyzer_by_name("Ethernet", 0x88b5, "spicy::RawLayer") )
-                Reporter::error("cannot register Spicy analyzer");
-        }
+    Depending on relative loading order between your analyzer and
+    Zeek's scripts, in some situations you may not have access to the
+    ``ANALYZER_*`` tag referring to your new analyzer. If you run into
+    this, use `PacketAnalyzer::try_register_packet_analyzer_by_name
+    <https://docs.zeek.org/en/master/scripts/base/bif/packet_analysis.bif.zeek.html#id-PacketAnalyzer::try_register_packet_analyzer_by_name>`_
+    to register your Spicy analyzer by name (as shown by ``-NN``).
+    Example:
+
+    .. code-block:: zeek
+
+        event zeek_init()
+            {
+            if ( ! PacketAnalyzer::try_register_packet_analyzer_by_name("Ethernet", 0x88b5, "spicy::RawLayer") )
+                    Reporter::error("unknown analyzer name used");
+            }
+
 
 .. rubric:: File Analyzer
 
