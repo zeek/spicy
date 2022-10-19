@@ -32,7 +32,6 @@ static struct option long_options[] = {{"abort-on-exceptions", required_argument
                                        {"json", no_argument, nullptr, 'J'},
                                        {"library-path", required_argument, nullptr, 'L'},
                                        {"list-parsers", no_argument, nullptr, 'l'},
-                                       {"optimize", no_argument, nullptr, 'O'},
                                        {"parser", required_argument, nullptr, 'p'},
                                        {"report-times", required_argument, nullptr, 'R'},
                                        {"show-backtraces", required_argument, nullptr, 'B'},
@@ -89,7 +88,6 @@ void SpicyDump::usage() {
            "(comma-separated; 'help' for list).\n"
            "  -L | --library-path <path>      Add path to list of directories to search when importing modules.\n"
            "  -J | --json                     Print JSON output.\n"
-           "  -O | --optimize                 Build optimized release version of generated code.\n"
            "  -P | --enable-print             Show output of Spicy 'print' statements (default: off).\n"
            "  -Q | --include-offsets          Include stream offsets of parsed data in output.\n"
            "  -R | --report-times             Report a break-down of compiler's execution time.\n"
@@ -119,7 +117,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABD:f:hdX:OQVlp:PSRL:J", long_options, nullptr);
+        int c = getopt_long(argc, argv, "ABD:f:hdX:QVlp:PSRL:J", long_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -192,8 +190,6 @@ void SpicyDump::parseOptions(int argc, char** argv) {
             case 'p': opt_parser = optarg; break;
 
             case 'P': opt_enable_print = true; break;
-
-            case 'O': hilti_compiler_options.optimize = true; break;
 
             case 'R': driver_options.report_times = true; break;
 

@@ -27,7 +27,6 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"increment", required_argument, nullptr, 'i'},
                                               {"library-path", required_argument, nullptr, 'L'},
                                               {"list-parsers", no_argument, nullptr, 'l'},
-                                              {"optimize", no_argument, nullptr, 'O'},
                                               {"parser", required_argument, nullptr, 'p'},
                                               {"report-times", required_argument, nullptr, 'R'},
                                               {"show-backtraces", required_argument, nullptr, 'B'},
@@ -97,7 +96,6 @@ void SpicyDriver::usage() {
            "  -F | --batch-file <path>        Read Spicy batch input from <path>; see docs for description of "
            "format.\n"
            "  -L | --library-path <path>      Add path to list of directories to search when importing modules.\n"
-           "  -O | --optimize                 Build optimized release version of generated code.\n"
            "  -R | --report-times             Report a break-down of compiler's execution time.\n"
            "  -S | --skip-dependencies        Do not automatically compile dependencies during JIT.\n"
            "  -U | --report-resource-usage    Print summary of runtime resource usage.\n"
@@ -124,7 +122,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABD:f:F:hdJX:OVlp:i:SRL:U", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABD:f:F:hdJX:Vlp:i:SRL:U", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -203,8 +201,6 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'l': opt_list_parsers = true; break;
 
             case 'p': opt_parser = optarg; break;
-
-            case 'O': compiler_options.optimize = true; break;
 
             case 'R': driver_options.report_times = true; break;
 

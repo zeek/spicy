@@ -19,7 +19,6 @@ struct Version {
     std::string magic;      /**< magic string for identification */
     uint64_t hilti_version; /**< HILTI project version */
     bool debug;             /**< true if compiled in debug mode */
-    bool optimize;          /**< true if compiled with optimizations enabled */
 
     hilti::rt::filesystem::path path; /**< path to file that library was loaded from; not embedded into JSON, but filled
                                    in by `Library::open()` */
@@ -41,8 +40,7 @@ struct Version {
     void checkCompatibility() const;
 
     friend bool operator==(const Version& a, const Version& b) {
-        return a.magic == b.magic && a.hilti_version == b.hilti_version && a.debug == b.debug &&
-               a.optimize == b.optimize;
+        return a.magic == b.magic && a.hilti_version == b.hilti_version && a.debug == b.debug;
     }
 
     friend bool operator!=(const Version& a, const Version& b) { return ! (a == b); }
