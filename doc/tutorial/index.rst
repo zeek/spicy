@@ -925,21 +925,27 @@ analyzer to Zeek. By adding a few further pieces, we can wrap that
 analyzer into a full *Zeek package* for others to install easily
 through *zkg*. To help create that wrapping, *zkg* provides a template
 for instantiating a skeleton analyzer package as a starting point. The
-skeleton creates all the necessary files along with the appropriate
-directory layout, and it even includes a couple of standard test
-cases.
+skeleton comes in three different flavors, depending on which kind of
+analyzer you want to create: protocol, file, or packet analyzer.
+In each case, it creates all the necessary files along with the
+appropriate directory layout, and even includes a couple of
+standard test cases.
 
 To create the scaffolding for our TFTP analyzer, execute the following
 command and provide the requested information::
 
-    # zkg create --features=spicy-analyzer --packagedir spicy-tftp
-    "package-template" requires a "name" value (the name of the package, e.g. "FooBar"):
-    name: Packet
-    "package-template" requires a "namespace" value (a namespace for the package, e.g. "MyOrg"):
-    namespace: TFTP
+    # zkg create --features spicy-protocol-analyzer --packagedir spicy-tftp
+    "package-template" requires a "name" value (the name of the package, e.g. "FooBar" or "spicy-http"):
+    name: spicy-tftp
+    "package-template" requires a "analyzer" value (name of the Spicy analyzer, which typically corresponds to the protocol/format being parsed (e.g. "HTTP", "PNG")):
+    analyzer: TFTP
+    "package-template" requires a "protocol" value (transport protocol for the analyzer to use: TCP or UDP):
+    protocol: UDP
+    "package-template" requires a "unit_orig" value (name of the top-level Spicy parsing unit for the originator side of the connection (e.g. "Request")):
+    unit_orig: Packet
+    "package-template" requires a "unit_resp" value (name of the top-level Spicy parsing unit for the responder side of the connection (e.g. "Reply"); may be the same as originator side):
+    unit_resp: Packet
 
-For ``name``, use the name of the top-level Spicy unit; for
-``namespace`` the name of the analyzer.
 
 The above creates the following files (skipping anything related to
 ``.git``)::
@@ -948,27 +954,32 @@ The above creates the following files (skipping anything related to
     spicy-tftp/COPYING
     spicy-tftp/README
     spicy-tftp/analyzer/CMakeLists.txt
-    spicy-tftp/analyzer/TFTP.evt
-    spicy-tftp/analyzer/TFTP.spicy
-    spicy-tftp/analyzer/zeek_TFTP.spicy
+    spicy-tftp/analyzer/tftp.evt
+    spicy-tftp/analyzer/tftp.spicy
+    spicy-tftp/analyzer/zeek_tftp.spicy
     spicy-tftp/cmake/FindSpicyPlugin.cmake
     spicy-tftp/scripts/__load__.zeek
     spicy-tftp/scripts/dpd.sig
     spicy-tftp/scripts/main.zeek
-    spicy-tftp/testing/Baseline/TFTP.parse/output
-    spicy-tftp/testing/Baseline/packet.run-pcap/conn.log
-    spicy-tftp/testing/Baseline/packet.run-pcap/output
+    spicy-tftp/testing/Baseline/tests.run-pcap/conn.log
+    spicy-tftp/testing/Baseline/tests.run-pcap/output
+    spicy-tftp/testing/Baseline/tests.standalone/
+    spicy-tftp/testing/Baseline/tests.standalone/output
+    spicy-tftp/testing/Baseline/tests.trace/output
+    spicy-tftp/testing/Baseline/tests.trace/tftp.log
     spicy-tftp/testing/Files/random.seed
     spicy-tftp/testing/Makefile
     spicy-tftp/testing/Scripts/README
     spicy-tftp/testing/Scripts/diff-remove-timestamps
     spicy-tftp/testing/Scripts/get-zeek-env
-    spicy-tftp/testing/Traces/http.pcap
-    spicy-tftp/testing/TFTP/availability.zeek
-    spicy-tftp/testing/TFTP/parse.spicy
+    spicy-tftp/testing/Traces/tcp-port-12345.pcap
+    spicy-tftp/testing/Traces/udp-port-12345.pcap
     spicy-tftp/testing/btest.cfg
-    spicy-tftp/testing/packet/run-pcap.zeek
+    spicy-tftp/testing/tests/availability.zeek
+    spicy-tftp/testing/tests/standalone.spicy
+    spicy-tftp/testing/tests/trace.zeek
     spicy-tftp/zkg.meta
+
 
 Note the ``*.evt``, ``*.spicy``, ``*.zeek`` files: they correspond to
 the files we created for TFTP in the preceding sections; we can just
@@ -978,6 +989,11 @@ TODO`` inside the ``spicy-tftp`` directory to find them. We won't go
 through all the specific customizations for TFTP here, but for
 reference you can find the full TFTP package as created from the *zkg*
 template on `GitHub <https://github.com/zeek/spicy-tftp>`_.
+
+If instead of a protocol analyzer, you'd like to create a file or
+packet analyzer, run zkg with ``--features spicy-file-analyzer`` or
+``--features spicy-packet-analyzer``, respectively. The generated
+skeleton will be suitably adjusted then.
 
 Next Steps
 ==========
