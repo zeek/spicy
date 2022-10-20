@@ -1,3 +1,7 @@
+1.6.0-dev.71 | 2022-10-20 18:40:36 +0200
+
+  * Bump justrx. (Robin Sommer, Corelight)
+
 1.6.0-dev.68 | 2022-10-05 08:50:05 +0200
 
   * GH-1266: Fix wrong type for Spicy-side `self` expression. (Robin
