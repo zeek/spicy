@@ -1,3 +1,25 @@
+1.6.0-dev.68 | 2022-10-05 08:50:05 +0200
+
+  * GH-1266: Fix wrong type for Spicy-side `self` expression. (Robin
+    Sommer, Corelight)
+
+  * GH-1261: Fix inability to access unit fields through `self` in
+    `&convert` expressions. (Robin Sommer, Corelight)
+
+  * GH-1267: Install only needed SafeInt header. (Benjamin Bannier,
+    Corelight)
+
+  * Disallow `self` as ID in declarations. (Robin Sommer, Corelight)
+
+  * Fix accidental lookup of empty IDs. (Robin Sommer, Corelight)
+
+  * Add helper script to diff two AST. (Robin Sommer, Corelight)
+
+  * Documentation updates.  (Benjamin Bannier, Corelight)
+    - Update doc link to commits mailing list.
+    - Update version referenced in docs.
+    - Add doc link to releases packages for centos8-stream.
+
 1.6.0-dev.55 | 2022-09-27 13:22:08 +0200
 
   * GH-1267: Install only needed SafeInt header. (Benjamin Bannier, Corelight)
