@@ -1,0 +1,4 @@
+module MyLibrary;
+
+## Rotate each letter by 13 characters.
+public function rot13(s: string) : string &cxxname="MyLibrary::rot13";

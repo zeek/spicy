@@ -24,3 +24,4 @@ that Spicy grammars can leverage.
     library
     examples
     debugging
+    extending

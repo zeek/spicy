@@ -1,0 +1,3 @@
+# Automatically generated; do not edit. -- <HASH> spicyc -j %INPUT programming/examples/mylibrary.spicy programming/examples/mylibrary.cc/spicyc -j %INPUT mylibrary.spicy mylibrary.cc/False
+# spicyc -j rot13.spicy mylibrary.spicy mylibrary.cc
+'Hello, world!' -> 'Uryyb, jbeyq!' -> 'Hello, world!'
