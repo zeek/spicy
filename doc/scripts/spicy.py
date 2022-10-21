@@ -341,7 +341,8 @@ class SpicyOutput(LiteralInclude):
         self.content_hash = ("# Automatically generated; do not edit. -- <HASH> %s/%s/%s" %
                              (self.exec_,  self.show_as, self.expect_failure))
 
-        file = "_" + args[1][0]
+        source_orig = args[1][0]
+        file = "_" + source_orig
         index = ("_%s" % args[1][1] if len(args[1]) > 1 else "")
         output = "examples/%s.output%s" % (file, index)
         args = list(args)
@@ -351,7 +352,7 @@ class SpicyOutput(LiteralInclude):
         super(LiteralInclude, self).__init__(*args, **kwargs)
 
         source = self.env.relfn2path(os.path.join("examples/", file))[0]
-        self.update(source, source + ".output%s" % index, self.exec_)
+        self.update(source_orig, source, source + ".output%s" % index, self.exec_)
 
     def run(self):
         literal = LiteralInclude.run(self)
@@ -362,7 +363,7 @@ class SpicyOutput(LiteralInclude):
         else:
             return literal
 
-    def update(self, source, destination, cmd):
+    def update(self, source_orig, source, destination, cmd):
         if os.path.exists(destination) and not "UPDATE_SPICY_CODE" in os.environ:
             destination_time = os.path.getmtime(destination)
 
@@ -426,7 +427,7 @@ class SpicyOutput(LiteralInclude):
 
                 if show_as:
                     one_cmd = "# %s\n" % show_as[0].strip()
-                    one_cmd = one_cmd.replace("%INPUT", self.show_with)
+                    one_cmd = one_cmd.replace("%INPUT", self.show_with if self.show_with else source_orig)
                     output = output.replace(
                         source.encode(), self.show_with.encode())
                     out.write(one_cmd.encode())
