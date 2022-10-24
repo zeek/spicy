@@ -5,3 +5,11 @@
 #define PROJECT_VERSION_NUMBER @SPICY_VERSION_NUMBER@
 #define PROJECT_VERSION_STRING_SHORT "@SPICY_VERSION@"
 #define PROJECT_VERSION_STRING_LONG "@SPICY_VERSION_LONG@"
+
+// A C function that has our version encoded into its name. One can link a
+// target against this to ensure that it won't load if the versions differ
+// between when the target was compiled vs when it's run.
+//
+// We name this `spicy_version_*` because it might become user-visible, to avoid confusion.
+#define PROJECT_VERSION_FUNCTION spicy_version_@SPICY_VERSION_C_IDENT@
+extern "C" const char* PROJECT_VERSION_FUNCTION();
