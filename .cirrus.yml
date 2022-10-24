@@ -9,7 +9,7 @@ environment:
     IMAGE_MACOS_CATALINA: catalina-base
 
     # Branches to use for spicy-plugin and spicy-analyzers tests.
-    ZEEK_SPICY_BRANCH:      main
+    ZEEK_SPICY_BRANCH:      topic/robin/gh-1221-embed-version
     ZEEK_ANALYZERS_BRANCH:  main
 
 lint_task:
