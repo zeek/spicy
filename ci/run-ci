@@ -231,8 +231,7 @@ function execute_btest {
     export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
 
     eval ${preload} \
-        btest -b \
-              -j 5 \
+        btest -j 5 \
               -f ${artifacts}/diag.log \
               -x ${artifacts}/diag.xml \
               ${alternative} \
