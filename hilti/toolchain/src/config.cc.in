@@ -180,8 +180,8 @@ void Configuration::init(bool use_build_directory) {
 #ifdef __APPLE__
     // Recent macOS versions have started to report `ld: warning: -undefined
     // dynamic_lookup may not work with chained fixups`. This suppresses that.
-    hlto_ld_flags_debug.push_back("-Wl,-w");
-    hlto_ld_flags_release.push_back("-Wl,-w");
+    hlto_ld_flags_debug.emplace_back("-Wl,-w");
+    hlto_ld_flags_release.emplace_back("-Wl,-w");
 #endif
 };
 
@@ -189,53 +189,3 @@ Configuration& hilti::configuration() {
     static Configuration singleton;
     return singleton;
 }
-
-namespace std {
-
-template<>
-struct hash<hilti::rt::filesystem::path> {
-    std::size_t operator()(const hilti::rt::filesystem::path& x) const { return hilti::rt::filesystem::hash_value(x); }
-};
-
-template<typename T>
-struct hash<std::vector<T>> {
-    std::size_t operator()(const std::vector<T>& xs) const {
-        std::hash<T> hasher;
-
-        std::size_t result = 0;
-
-        for ( const auto& x : xs )
-            result = rt::hashCombine(result, hasher(x));
-
-        return result;
-    }
-};
-
-template<>
-struct hash<hilti::Configuration> {
-    std::size_t operator()(const hilti::Configuration& config) const {
-        std::hash<std::string> hasher_string;
-        std::hash<std::vector<hilti::rt::filesystem::path>> hasher_vect_p;
-        std::hash<std::vector<std::string>> hasher_vect_s;
-
-        return rt::hashCombine(hasher_string(config.build_directory), hasher_string(config.compiler_id),
-                               hasher_string(config.cxx), hasher_string(config.distbase),
-                               hasher_vect_p(config.hilti_library_paths), hasher_string(config.hiltic),
-                               hasher_vect_s(config.hlto_cxx_flags_debug), hasher_vect_s(config.hlto_cxx_flags_release),
-                               hasher_vect_s(config.hlto_ld_flags_debug), hasher_vect_s(config.hlto_ld_flags_release),
-                               hasher_string(config.install_prefix), hasher_string(config.lib_directory),
-                               hasher_vect_s(config.runtime_cxx_flags_debug),
-                               hasher_vect_s(config.runtime_cxx_flags_release),
-                               hasher_vect_p(config.runtime_cxx_include_paths),
-                               hasher_vect_p(config.runtime_cxx_library_paths),
-                               hasher_vect_s(config.runtime_ld_flags_debug),
-                               hasher_vect_s(config.runtime_ld_flags_release),
-                               hasher_vect_p(config.toolchain_cxx_include_paths),
-                               hasher_vect_p(config.toolchain_cxx_library_paths), config.uses_build_directory,
-                               config.version_number, hasher_string(config.version_string),
-                               hasher_string(config.version_string_long));
-    }
-};
-} // namespace std
-
-std::size_t Configuration::hash() const { return std::hash<hilti::Configuration>{}(*this); }

@@ -169,8 +169,7 @@ bool CxxCode::save(std::ostream& out) const {
 JIT::JIT(const std::shared_ptr<Context>& context, bool dump_code)
     : _context(context),
       _dump_code(dump_code),
-      _hash(rt::hashCombine(hilti::configuration().hash(),
-                            std::hash<std::string>{}(hilti::rt::filesystem::current_path().string()))) {}
+      _hash(std::hash<std::string>{}(hilti::rt::filesystem::current_path().string())) {}
 
 JIT::~JIT() { _finish(); }
 
