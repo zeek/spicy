@@ -5,16 +5,16 @@ set(AUTOGEN_CC "${PROJECT_BINARY_DIR}/hilti/runtime/src/autogen")
 file(MAKE_DIRECTORY "${AUTOGEN_H}" "${AUTOGEN_CC}")
 file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
-# Create a version string that's a valid C identifier.
-set(SPICY_VERSION_C_IDENT "${SPICY_VERSION}")
+# Create a version string that's a valid C identifier. We use only the actual
+# version number, no development postfix, to make ccache a bit happier.
+string(REGEX REPLACE "([0-9]+\.[0-9]+\.[0-9]+).*" "\\1" SPICY_VERSION_C_IDENT
+                     "${CMAKE_PROJECT_VERSION}")
+string(REPLACE "." "_" SPICY_VERSION_C_IDENT "${SPICY_VERSION_C_IDENT}")
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     # Distinguish between release and debug builds.
     set(SPICY_VERSION_C_IDENT "${SPICY_VERSION_C_IDENT}_debug")
 endif ()
-
-string(REGEX REPLACE "-[0-9]*$" "_git" SPICY_VERSION_C_IDENT "${SPICY_VERSION_C_IDENT}")
-string(REGEX REPLACE "[^a-zA-Z0-9_\$]" "_" SPICY_VERSION_C_IDENT "${SPICY_VERSION_C_IDENT}")
 
 ##### Runtime libraries
 

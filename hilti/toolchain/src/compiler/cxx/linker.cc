@@ -59,7 +59,7 @@ void cxx::Linker::finalize() {
             unit.add(cxx::declaration::IncludeFile{i});
 
     unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * __hlto_library_version = R\"(%s)\";", version.toJSON()));
-    unit.add("const char HILTI_EXPORT HILTI_WEAK * __hlto_bind_to_version = " PROJECT_VERSION_FUNCTION_STRING "();");
+    unit.add("const char HILTI_EXPORT HILTI_WEAK * __hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();");
 
     // Create a scope string that's likely to be unique to this linker module.
     std::size_t hash = 0;

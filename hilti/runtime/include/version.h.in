@@ -11,6 +11,6 @@
 // between when the target was compiled vs when it's run.
 //
 // We name this `spicy_version_*` because it might become user-visible, to avoid confusion.
-#define PROJECT_VERSION_FUNCTION spicy_version_@SPICY_VERSION_C_IDENT@
-#define PROJECT_VERSION_FUNCTION_STRING "spicy_version_@SPICY_VERSION_C_IDENT@"
-extern "C" const char* PROJECT_VERSION_FUNCTION();
+#define HILTI_VERSION_FUNCTION spicy_version_@SPICY_VERSION_C_IDENT@
+#define HILTI_VERSION_FUNCTION_STRING "spicy_version_@SPICY_VERSION_C_IDENT@"
+extern "C" const char* HILTI_VERSION_FUNCTION();

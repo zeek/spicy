@@ -2,4 +2,4 @@
 
 #include <hilti/rt/autogen/version.h>
 
-const char* PROJECT_VERSION_FUNCTION() { return PROJECT_VERSION_STRING_LONG; }
+const char* HILTI_VERSION_FUNCTION() { return PROJECT_VERSION_STRING_LONG; }
