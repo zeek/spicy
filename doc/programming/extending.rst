@@ -83,7 +83,7 @@ simple example.
 
     We should tweak ``-P`` so that it disables optimization
     automatically (because that just removes the supposedly unused
-    function).
+    function). (:issue:`1284`)
 
 Advanced Usage
 ==============
@@ -107,6 +107,7 @@ generates. For global identifiers, it's best to prefix the name with
 .. todo::
 
     We should just add that ``::`` prefix automatically if not there.
+    (:issue:`1285`)
 
 Type mapping
 ^^^^^^^^^^^^
@@ -239,7 +240,7 @@ three options:
    .. todo::
 
       We should add a mechanism to provide an arbitrary
-      custom C++ prototype directly.
+      custom C++ prototype directly. (:issue:`1286`)
 
    There's a similar trick for complex types, such as structs and
    enums: If your C++ function requires a type that Spicy doesn't
