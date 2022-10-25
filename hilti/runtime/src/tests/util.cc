@@ -321,14 +321,6 @@ TEST_CASE("hashCombine") {
     CHECK_EQ(hashCombine(0, 0, 0, 0, 1), 2);
 }
 
-TEST_CASE("isDebugVersion") {
-#ifndef NDEBUG
-    CHECK(isDebugVersion());
-#else
-    CHECK_FALSE(isDebugVersion());
-#endif
-}
-
 TEST_CASE("join") {
     using str_list = std::initializer_list<std::string>;
 
@@ -703,10 +695,6 @@ TEST_CASE("version") {
 
     CHECK_MESSAGE(version().find(PROJECT_VERSION_STRING_LONG) != std::string::npos,
                   fmt("version string '%s' does not contain version '%s'", version(), PROJECT_VERSION_STRING_LONG));
-
-    const std::string build_type = isDebugVersion() ? "debug build" : "release build";
-    CHECK_MESSAGE(version().find(build_type) != std::string::npos,
-                  fmt("version string '%s' does not contain build type '%s'", version(), build_type));
 }
 
 TEST_SUITE_END();
