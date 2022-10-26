@@ -43,9 +43,6 @@ namespace hilti::rt {
 /** Returns a string identifying the version of the runtime library. */
 extern std::string version();
 
-/** Returns true if called for a debug version of the runtime library. */
-extern bool isDebugVersion();
-
 /** Dumps a backtrack to stderr and then aborts execution. */
 extern void abort_with_backtrace() __attribute__((noreturn));
 

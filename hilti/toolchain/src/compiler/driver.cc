@@ -48,7 +48,6 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"help", no_argument, nullptr, 'h'},
                                               {"keep-tmps", no_argument, nullptr, 'T'},
                                               {"library-path", required_argument, nullptr, 'L'},
-                                              {"optimize", no_argument, nullptr, 'O'},
                                               {"output", required_argument, nullptr, 'o'},
                                               {"output-c++", no_argument, nullptr, 'c'},
                                               {"output-hilti", no_argument, nullptr, 'p'},
@@ -121,7 +120,6 @@ void Driver::usage() {
            "  -E | --output-code-dependencies Output list of dependencies for all compiled modules that require "
            "separate compilation of their own.\n"
            "  -L | --library-path <path>      Add path to list of directories to search when importing modules.\n"
-           "  -O | --optimize                 Build optimized release version of generated code.\n"
            "  -P | --output-prototypes        Output C++ header with prototypes for public functionality.\n"
            "  -R | --report-times             Report a break-down of compiler's execution time.\n"
            "  -S | --skip-dependencies        Do not automatically compile dependencies during JIT.\n"
@@ -257,7 +255,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     int num_output_types = 0;
 
     opterr = 0; // don't print errors
-    std::string option_string = "ABlL:OcCpPvjhvVdX:o:D:TUEeSRg" + hookAddCommandLineOptions();
+    std::string option_string = "ABlL:cCpPvjhvVdX:o:D:TUEeSRg" + hookAddCommandLineOptions();
 
     while ( true ) {
         int c = getopt_long(argc, argv, option_string.c_str(), long_driver_options, nullptr);
@@ -357,8 +355,6 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
             case 'o': _driver_options.output_path = std::string(optarg); break;
 
-            case 'O': _compiler_options.optimize = true; break;
-
             case 'p':
                 _driver_options.output_hilti = true;
                 ++num_output_types;
@@ -415,7 +411,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
     if ( ! _compiler_options.debug ) {
         if ( _compiler_options.debug_trace || _compiler_options.debug_flow )
-            return error("cannot use --optimize with --cgdebug");
+            return error("must use --debug with --cgdebug");
     }
 
     if ( _driver_options.execute_code and ! _driver_options.output_path.empty() ) {

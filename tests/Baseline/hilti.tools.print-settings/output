@@ -7,7 +7,6 @@
                  debug_flow   false
              track_location   true
             skip_validation   false
-                   optimize   false
          addl library_paths   "x/x/x/x"
                               "y/y/y/y/y"
        cxx_namespace_extern   hlt

@@ -49,10 +49,11 @@ void cxx::Linker::finalize() {
         unit.addComment(fmt("  - %s (%s)", m.first, m.second));
 
     // Create the HLTO version information.
-    auto version = rt::library::Version{.magic = "v1",
-                                        .hilti_version = configuration().version_number,
-                                        .debug = _codegen->context()->options().debug,
-                                        .optimize = _codegen->context()->options().optimize};
+    auto version = rt::library::Version{
+        .magic = "v1",
+        .hilti_version = configuration().version_number,
+        .debug = _codegen->context()->options().debug,
+    };
 
     for ( const auto& p : plugin::registry().plugins() )
         for ( const auto& i : p.cxx_includes )

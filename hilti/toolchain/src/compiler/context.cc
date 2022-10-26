@@ -51,7 +51,6 @@ void Options::print(std::ostream& out) const {
     print_one("debug_flow", debug_flow);
     print_one("track_location", track_location);
     print_one("skip_validation", skip_validation);
-    print_one("optimize", optimize);
     print_list("addl library_paths", library_paths);
     print_one("cxx_namespace_extern", cxx_namespace_extern);
     print_one("cxx_namespace_intern", cxx_namespace_intern);

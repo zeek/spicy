@@ -1,3 +1,19 @@
+1.6.0-dev.90 | 2022-10-26 14:57:02 +0200
+
+  * Remove `hilti::rt::isDebugVersion()`. (Robin Sommer, Corelight)
+
+  * Remove `--optimize` flag. This was already a no-op, and just
+    confusing/misleading. (Robin Sommer, Corelight)
+
+  * Tie HLTOs files to the Spicy version that generated them. They
+    will now fail at load time if the current Spicy version doesn't
+    match what they were built with. (Robin Sommer, Corelight)
+
+  * Embed a C function into `hilti-rt` that encodes our version into
+    its name. If a host applications links against this, it will fail
+    to load if the runtime version changes without a rebuild. (Robin
+    Sommer, Corelight)
+
 1.6.0-dev.81 | 2022-10-26 12:32:26 +0200
 
   * Documentation updates. (Robin Sommer, Corelight)

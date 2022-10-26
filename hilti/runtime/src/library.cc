@@ -16,7 +16,7 @@ using namespace hilti::rt;
 
 std::string hilti::rt::library::Version::toJSON() const {
     auto version =
-        nlohmann::json{{"magic", magic}, {"hilti_version", hilti_version}, {"debug", debug}, {"optimize", optimize}};
+        nlohmann::json{{"magic", magic}, {"hilti_version", hilti_version}, {"debug", debug}};
     std::stringstream json;
     json << version;
     return json.str();
@@ -30,7 +30,6 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::library::Version::from
         j.at("magic").get_to(version.magic);
         j.at("hilti_version").get_to(version.hilti_version);
         j.at("debug").get_to(version.debug);
-        j.at("optimize").get_to(version.optimize);
     } catch ( const nlohmann::json::exception& e ) {
         return result::Error(e.what());
     }
@@ -42,12 +41,6 @@ void hilti::rt::library::Version::checkCompatibility() const {
     if ( hilti_version != PROJECT_VERSION_NUMBER )
         warning(fmt("module %s was compiled with HILTI version %d, but using HILTI version %d", path.filename(),
                     hilti_version, PROJECT_VERSION_NUMBER));
-
-    if ( hilti::rt::isDebugVersion() && optimize )
-        warning(
-            fmt("module %s was compiled with optimizations, but running with HILTI debug version; performance will be "
-                "affected",
-                path.filename()));
 }
 
 hilti::rt::Library::Library(const hilti::rt::filesystem::path& path) : _path(hilti::rt::filesystem::canonical(path)) {}

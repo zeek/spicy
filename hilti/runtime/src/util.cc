@@ -31,16 +31,6 @@ std::string hilti::rt::version() {
 #endif
 }
 
-bool hilti::rt::isDebugVersion() {
-#if HILTI_RT_BUILD_TYPE_DEBUG
-    return true;
-#elif HILTI_RT_BUILD_TYPE_RELEASE
-    return false;
-#else
-#error "Neither HILTI_RT_BUILD_TYPE_DEBUG nor HILTI_RT_BUILD_TYPE_RELEASE define."
-#endif
-}
-
 void hilti::rt::abort_with_backtrace() {
     fputs("\n--- Aborting in libhilti\n", stderr);
     auto bt = hilti::rt::Backtrace().backtrace();
