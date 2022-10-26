@@ -1,3 +1,11 @@
+1.6.0-dev.81 | 2022-10-26 12:32:26 +0200
+
+  * Documentation updates. (Robin Sommer, Corelight)
+
+    - Document how to pull custom C++ code into Spicy.
+    - Adapt Zeek instructions for zkg template updates.
+    - Documentation updates for recent Zeek integration changes.
+
 1.6.0-dev.71 | 2022-10-20 18:40:36 +0200
 
   * Bump justrx. (Robin Sommer, Corelight)

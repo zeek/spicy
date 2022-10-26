@@ -311,7 +311,7 @@ Packet analyzers support the following properties:
 As a full example, here's what a new packet analyzer could look like::
 
     packet analyzer spicy::RawLayer:
-        parse with Raw Layer::Packet;
+        parse with RawLayer::Packet;
 
 In addition to the Spicy-side configuration, packet analyzers also
 need to be registered with Zeek inside a ``zeek_init`` event handler;
