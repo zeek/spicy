@@ -53,17 +53,17 @@ todo_include_todos = True
 
 # Extlinks extension
 extlinks = {
-    "repo":  ("https://github.com/zeek/spicy/blob/main/%s", "#"),
-    "issue": ("https://github.com/zeek/spicy/issues/%s", "#"),
-    "pr":    ("https://github.com/zeek/spicy/pulls/%s", "#"),
+    "repo":  ("https://github.com/zeek/spicy/blob/main/%s", "#%s"),
+    "issue": ("https://github.com/zeek/spicy/issues/%s", "#%s"),
+    "pr":    ("https://github.com/zeek/spicy/pulls/%s", "#%s"),
 
     # Links to binary builds.
-    "package-dev-tgz": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/build/spicy-dev.tar.gz", ""),
-    "package-dev-rpm": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/spicy-dev.rpm", ""),
-    "package-dev-deb": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/spicy-dev.deb", ""),
-    "package-release-tgz": ("https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.tar.gz" % release, ""),
-    "package-release-rpm": ("https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.rpm" % release, ""),
-    "package-release-deb": ("https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.deb" % release, ""),
+    "package-dev-tgz": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/build/spicy-dev.tar.gz", "%s"),
+    "package-dev-rpm": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/spicy-dev.rpm", "%s"),
+    "package-dev-deb": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/spicy-dev.deb", "%s"),
+    "package-release-tgz": ("https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.tar.gz" % release, "%s"),
+    "package-release-rpm": ("https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.rpm" % release, "%s"),
+    "package-release-deb": ("https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.deb" % release, "%s"),
 }
 
 # -- Options for HTML output -------------------------------------------------
