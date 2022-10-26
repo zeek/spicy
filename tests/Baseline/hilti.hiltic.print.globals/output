@@ -49,5 +49,6 @@ extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModul
 #include <hilti/rt/libhilti.h>
 
 const char HILTI_EXPORT HILTI_WEAK * __hlto_library_version = <...>
+const char HILTI_EXPORT HILTI_WEAK * __hlto_bind_to_version = <...>
 const char HILTI_WEAK * __hlto_scope = <...>
 

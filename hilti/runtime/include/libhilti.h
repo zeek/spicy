@@ -7,6 +7,7 @@
 #define HILTI_RUNTIME_LIBHILTI_H
 
 #include <hilti/rt/autogen/config.h>
+#include <hilti/rt/autogen/version.h>
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
 #include <hilti/rt/deferred-expression.h>

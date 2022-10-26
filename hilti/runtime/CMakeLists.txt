@@ -5,6 +5,17 @@ set(AUTOGEN_CC "${PROJECT_BINARY_DIR}/hilti/runtime/src/autogen")
 file(MAKE_DIRECTORY "${AUTOGEN_H}" "${AUTOGEN_CC}")
 file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
+# Create a version string that's a valid C identifier. We use only the actual
+# version number, no development postfix, to make ccache a bit happier.
+string(REGEX REPLACE "([0-9]+\.[0-9]+\.[0-9]+).*" "\\1" SPICY_VERSION_C_IDENT
+                     "${CMAKE_PROJECT_VERSION}")
+string(REPLACE "." "_" SPICY_VERSION_C_IDENT "${SPICY_VERSION_C_IDENT}")
+
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    # Distinguish between release and debug builds.
+    set(SPICY_VERSION_C_IDENT "${SPICY_VERSION_C_IDENT}_debug")
+endif ()
+
 ##### Runtime libraries
 
 configure_file(include/version.h.in ${AUTOGEN_H}/version.h)
@@ -32,6 +43,7 @@ set(SOURCES
     src/types/string.cc
     src/types/time.cc
     src/util.cc
+    src/version.cc
     ${PROJECT_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c)
 
 foreach (lib hilti-rt hilti-rt-debug)
