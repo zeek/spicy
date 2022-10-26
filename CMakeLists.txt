@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.15.0)
 
 project(spicy LANGUAGES ASM C CXX)
 
-set(flex_minimum_version "2.6")
+set(flex_minimum_version "2.5.37")
 set(bison_minimum_version "3.0")
 set(python_minimum_version "3.2")
 set(macos_minimum_version "19.0.0") # macOS 10.15.0 (Catalina)
