@@ -1,6 +1,6 @@
 # Copyright (c) 2021 by the Zeek Project. See LICENSE for details.
 #
-# Note: When line number changes in this file, update the documentation that pulls it in.
+# Note: When line numbers change in this file, update the documentation that pulls it in.
 
 protocol analyzer spicy::TFTP over UDP:
     parse with TFTP::Packet,
