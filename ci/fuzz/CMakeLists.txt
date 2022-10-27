@@ -18,9 +18,17 @@ function (fuzz_parser Name SpicyInput Parser)
     target_compile_definitions(fuzz-${name} PRIVATE SPICY_FUZZ_PARSER="${Parser}")
     target_compile_options(fuzz-${name} PRIVATE -fsanitize=fuzzer-no-link)
     target_link_options(fuzz-${name} PRIVATE -fsanitize=fuzzer-no-link)
-    target_link_libraries(
-        fuzz-${name} spicy-rt hilti-rt
-        "/usr/local/lib/clang/14.0.0/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a")
+
+    set(LIBFUZZER_LIB $ENV{LIBFUZZER_LIB})
+    if ("${LIBFUZZER_LIB}" STREQUAL "")
+        message(FATAL_ERROR "When building fuzzers the environment variable LIBFUZZER_LIB "
+                            "must contain the path to libclang_rt.fuzzer_no_main-<arch>.a")
+    endif ()
+    if (NOT EXISTS ${LIBFUZZER_LIB})
+        message(FATAL_ERROR "Configured LIBFUZZER_LIB ${LIBFUZZER_LIB} does not exist")
+    endif ()
+
+    target_link_libraries(fuzz-${name} spicy-rt hilti-rt "${LIBFUZZER_LIB}")
 endfunction ()
 
 fuzz_parser(dhcp ${CMAKE_SOURCE_DIR}/spicy-dhcp/analyzer/analyzer.spicy "dhcp::Message")
