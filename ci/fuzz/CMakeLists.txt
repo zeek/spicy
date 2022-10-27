@@ -32,7 +32,7 @@ function (fuzz_parser Name SpicyInput Parser)
 endfunction ()
 
 fuzz_parser(dhcp ${CMAKE_SOURCE_DIR}/spicy-dhcp/analyzer/analyzer.spicy "dhcp::Message")
-fuzz_parser(tftp ${CMAKE_SOURCE_DIR}/spicy-tftp/analyzer/analyzer.spicy "tftp::Packet")
+fuzz_parser(tftp ${CMAKE_SOURCE_DIR}/spicy-tftp/analyzer/tftp.spicy "TFTP::Packet")
 fuzz_parser(pe ${CMAKE_SOURCE_DIR}/spicy-pe/analyzer/analyzer.spicy "pe::ImageFile")
 fuzz_parser(png ${CMAKE_SOURCE_DIR}/spicy-png/analyzer/analyzer.spicy "PNG::File")
 fuzz_parser(dns ${CMAKE_SOURCE_DIR}/spicy-dns/analyzer/analyzer.spicy "dns::Message")
