@@ -1,3 +1,7 @@
+1.6.0-dev.95 | 2022-10-27 08:47:30 +0200
+
+  * GH-1273: Replace `Lambda` class. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.93 | 2022-10-27 08:46:22 +0200
 
   * Show btest progress in CI. (Benjamin Bannier, Corelight)

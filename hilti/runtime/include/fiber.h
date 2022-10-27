@@ -15,7 +15,6 @@
 #include <hilti/rt/any.h>
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
-#include <hilti/rt/lambda.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/util.h>
 
@@ -121,6 +120,27 @@ inline std::ostream& operator<<(std::ostream& out, const StackBuffer& s) {
     return out;
 }
 
+/** Helper class to store stackless callbacks to be executed on fibers.*/
+class Callback {
+public:
+    template<typename F>
+    Callback(F f)
+        : _f(std::move(f)), _invoke([](const hilti::rt::any& f, resumable::Handle* h) -> hilti::rt::any {
+              return hilti::rt::any_cast<F>(f)(h);
+          }) {}
+
+    Callback(const Callback&) = default;
+    Callback(Callback&&) = default;
+
+    Callback& operator=(const Callback&) = default;
+    Callback& operator=(Callback&&) = default;
+
+    hilti::rt::any operator()(resumable::Handle* h) const { return _invoke(_f, h); }
+
+private:
+    hilti::rt::any _f; //< Type-erased storage for the concrete callback.
+    hilti::rt::any (*_invoke)(const hilti::rt::any& f, resumable::Handle* h); //< Invoke type-erased callback.
+};
 
 /**
  * A fiber implements a co-routine that can at any time yield control back to
@@ -147,10 +167,10 @@ public:
     Fiber& operator=(const Fiber&) = delete;
     Fiber& operator=(Fiber&&) = delete;
 
-    void init(const Lambda<hilti::rt::any(resumable::Handle*)>& f) {
+    void init(Callback f) {
         _result = {};
         _exception = nullptr;
-        _function = f;
+        _function = std::move(f);
     }
 
     /** Returns the fiber's type. */
@@ -222,7 +242,7 @@ private:
 
     Type _type;
     State _state{State::Init};
-    std::optional<Lambda<hilti::rt::any(resumable::Handle*)>> _function;
+    std::optional<Callback> _function;
     std::optional<hilti::rt::any> _result;
     std::exception_ptr _exception;
 
