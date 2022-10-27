@@ -16,9 +16,6 @@ export {
     ## Save all generated code into files on disk.
     const dump_code = F &redef;
 
-    ## Enable optimization for code generation.
-    const optimize = F &redef;
-
     ## Report a break-down of compiler's execution time.
     const report_times = F &redef;
 
