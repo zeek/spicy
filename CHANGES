@@ -1,3 +1,11 @@
+1.6.0-dev.101 | 2022-10-27 12:59:41 +0200
+
+  * Fix fuzzer build for recently renamed spicy-tftp files. (Benjamin Bannier, Corelight)
+
+  * Make it possible to parameterize location of fuzzer lib. (Benjamin Bannier, Corelight)
+
+  * Update docs for changes in spicy-plugin and spicy-tftp. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.97 | 2022-10-27 08:47:59 +0200
 
   * Downgrade required Flex version. (Johanna Amann, Corelight)
