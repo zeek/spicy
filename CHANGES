@@ -1,3 +1,7 @@
+1.6.0-dev.97 | 2022-10-27 08:47:59 +0200
+
+  * Downgrade required Flex version. (Johanna Amann, Corelight)
+
 1.6.0-dev.95 | 2022-10-27 08:47:30 +0200
 
   * GH-1273: Replace `Lambda` class. (Benjamin Bannier, Corelight)
