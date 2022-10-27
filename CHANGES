@@ -1,3 +1,9 @@
+1.6.0-dev.93 | 2022-10-27 08:46:22 +0200
+
+  * Show btest progress in CI. (Benjamin Bannier, Corelight)
+
+  * Remove configuration from JIT hash. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.90 | 2022-10-26 14:57:02 +0200
 
   * Remove `hilti::rt::isDebugVersion()`. (Robin Sommer, Corelight)

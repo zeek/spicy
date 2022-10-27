@@ -60,9 +60,9 @@ struct Configuration {
     void initLocation(const char* argv0);
 
     /**
-     * Returns a hash of the current configuration.
+     * Returns a hash of the current configuration. This only takes config values relevant for JIT into account.
      */
-    std::size_t hash() const;
+    std::size_t hash_for_jit() const;
 
     bool uses_build_directory; /**< True if all information pertains to running outside of the build directory. */
 
