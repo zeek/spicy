@@ -26,17 +26,7 @@ void fatalError(const std::string& msg) __attribute__((noreturn));
 /** Reports a warning. */
 void warning(const std::string& msg);
 
-/**
- * Prints a string, or a runtime value, to a specific debug stream. This is a
- * macro wrapper around `debug::detail::print(*)` that avoids evaluation of
- * the arguments if nothing is going to get logged.
- */
-#define HILTI_RT_DEBUG(stream, msg)                                                                                    \
-    {                                                                                                                  \
-        if ( ::hilti::rt::detail::globalState()->debug_logger &&                                                       \
-             ::hilti::rt::detail::globalState()->debug_logger->isEnabled(stream) )                                     \
-            ::hilti::rt::debug::detail::print(stream, msg);                                                            \
-    }
+#define HILTI_RT_DEBUG(stream, msg) hilti::rt::debug::print(stream, msg);
 
 /** Shortcut to `hilti::rt::debug::setLocation`. */
 #define __location__(x) ::hilti::rt::debug::setLocation(x);
@@ -97,6 +87,18 @@ inline const char* location() {
 inline void setLocation(const char* l = nullptr) {
     if ( auto context = ::hilti::rt::context::detail::current() )
         context->source_location = l;
+}
+
+/**
+ * Prints a string, or a runtime value, to a specific debug stream. This is a
+ * wrapper around `debug::detail::print(*)` that avoids evaluation of the
+ * arguments if nothing is going to get logged.
+ */
+template<typename T>
+inline void print(const std::string& stream, T&& msg) {
+    if ( ::hilti::rt::detail::globalState()->debug_logger &&
+         ::hilti::rt::detail::globalState()->debug_logger->isEnabled(stream) )
+        ::hilti::rt::debug::detail::print(stream, std::forward<T>(msg));
 }
 
 } // namespace debug
