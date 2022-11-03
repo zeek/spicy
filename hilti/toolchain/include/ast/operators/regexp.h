@@ -93,7 +93,7 @@ END_METHOD
 
 BEGIN_METHOD(regexp_match_state, AdvanceBytes)
     const auto& signature() const {
-        static auto _signature = Signature{.self = type::Library("::hilti::rt::regexp::MatchState"),
+        static auto _signature = Signature{.self = type::Library("hilti::rt::regexp::MatchState"),
                                            .result = type::Tuple({type::SignedInteger(32), type::stream::View()}),
                                            .id = "advance",
                                            .args = {{"data", type::constant(type::Bytes())},
@@ -113,7 +113,7 @@ END_METHOD
 
 BEGIN_METHOD(regexp_match_state, AdvanceView)
     const auto& signature() const {
-        static auto _signature = Signature{.self = type::Library("::hilti::rt::regexp::MatchState"),
+        static auto _signature = Signature{.self = type::Library("hilti::rt::regexp::MatchState"),
                                            .result = type::Tuple({type::SignedInteger(32), type::stream::View()}),
                                            .id = "advance",
                                            .args = {{"data", type::constant(type::stream::View())}},
