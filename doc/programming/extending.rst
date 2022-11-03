@@ -101,13 +101,7 @@ As said above, the name of the C++ function must be provided to Spicy
 through the ``&cxxname`` attribute. The name may be namespaced, but
 can also just be a global identifier, depending on what the C++ code
 expects. Spicy will simply use the name literally in any C++ code it
-generates. For global identifiers, it's best to prefix the name with
-``::`` to ensure that the C++-side name lookup starts at global scope.
-
-.. todo::
-
-    We should just add that ``::`` prefix automatically if not there.
-    (:issue:`1285`)
+generates.
 
 Type mapping
 ^^^^^^^^^^^^
