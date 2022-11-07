@@ -1,3 +1,23 @@
+1.5.2 | 2022-11-07 10:12:17 +0100
+
+  * Quote CMake string to ensure correct argument count. (Nic Boet)
+
+  * Fix Zeek docs build for case-sensitive filesystems. (Benjamin Bannier, Corelight)
+
+  * Update docs for changes in spicy-plugin and spicy-tftp. (Benjamin Bannier, Corelight)
+
+  * Update doc link to commits mailing list. (Benjamin Bannier, Corelight)
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
+  * GH-1273: Replace `Lambda` class. (Benjamin Bannier, Corelight)
+
+  * Downgrade required Flex version. (Johanna Amann, Corelight)
+
+  * GH-4: Fix linker warning on Darwin. (Robin Sommer, Corelight)
+
+  * Bump justrx. (Benjamin Bannier, Corelight)
+
 1.5.1 | 2022-08-22 14:02:03 +0200
 
   * GH-1248: Fix `stop` for unbounded loop. (Robin Sommer, Corelight)
