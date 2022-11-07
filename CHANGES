@@ -1,3 +1,9 @@
+1.6.0-dev.104 | 2022-11-07 09:54:12 +0100
+
+  * Quote CMake string to ensure correct argument count. (Nic Boet)
+
+  * Fix Zeek docs build for case-sensitive filesystems. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.101 | 2022-10-27 12:59:41 +0200
 
   * Fix fuzzer build for recently renamed spicy-tftp files. (Benjamin Bannier, Corelight)
