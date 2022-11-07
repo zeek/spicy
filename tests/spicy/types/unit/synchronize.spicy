@@ -1,27 +1,29 @@
 # @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
 #
 # Parsing a unit with synchronization.
-# @TEST-EXEC: printf 'ABCDE' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
-# @TEST-EXEC: printf '111ABCDE' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
-# @TEST-EXEC: printf 'ACDE' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
-# @TEST-EXEC: printf 'BCDE' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
-# @TEST-EXEC: printf 'ADE' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf 'AE' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf 'A' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf '123' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'ABCDE' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC: printf '111ABCDE' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'ACDE' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'BCDE' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'ADE' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf 'AE' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf 'A' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '123' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::A test.hlto >>output 2>&1
 
-# @TEST-EXEC: printf 'BEGIN123END' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::E test.hlto >>output 2>&1
-# @TEST-EXEC: printf 'BEGINabcEND' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::E test.hlto >>output 2>&1
-# @TEST-EXEC: printf 'abcEND' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::E test.hlto >>output 2>&1
-# @TEST-EXEC: printf '123END' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::E test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'BEGIN123END' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::E test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'BEGINabcEND' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::E test.hlto >>output 2>&1
+# @TEST-EXEC: printf 'abcEND' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::E test.hlto >>output 2>&1
+# @TEST-EXEC: printf '123END' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::E test.hlto >>output 2>&1
 #
 # Effects of `confirm`/`reject` outside of synchronization.
-# @TEST-EXEC: printf '1' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::B test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf '1' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::C test.hlto >>output 2>&1
+# @TEST-EXEC: printf '1' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::B test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '1' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::C test.hlto >>output 2>&1
 #
 # Synchronization hooks are not invoked for normal parsing.
-# @TEST-EXEC: printf '1' | HILTI_DEBUG=spicy spicy-driver -i 1 -d -p test::D test.hlto >>output 2>&1
+# @TEST-EXEC: printf '1' | HILTI_DEBUG=spicy-verbose spicy-driver -i 1 -d -p test::D test.hlto >>output 2>&1
 #
+# @TEST-EXEC: cat output | ${SCRIPTS}/canonify-spicy-debug | ${SCRIPTS}/canonify-hiltic >output.canonified
+# @TEST-EXEC: mv output.canonified output
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: Tests synchronization on the unit level.

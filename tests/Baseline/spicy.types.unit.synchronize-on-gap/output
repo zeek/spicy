@@ -9,10 +9,10 @@
 [spicy-verbose]     - parsing production: Ctor: anon -> /(A|B|C)/ (regexp) (container 'xs')
 [spicy-verbose]       - consuming look-ahead token
 [spicy-verbose]     - got container item
-[spicy]   failed to parse list element, will try to synchronize at next possible element
+[spicy-verbose]     failed to parse list element, will try to synchronize at next possible element
 [spicy-verbose]     - state: type=sync::Xs input="<gap>..." stream=0xXXXXXXXX offsets=0/1/1027 chunks=3 frozen=no mode=default trim=no lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - state: type=sync::Xs input="C" stream=0xXXXXXXXX offsets=0/1026/1027 chunks=3 frozen=no mode=default trim=no lah=1 lah_token="C" recovering=yes
-[spicy]   successfully synchronized
+[spicy-verbose]     successfully synchronized
 [spicy-verbose]     - state: type=sync::Xs input="C" stream=0xXXXXXXXX offsets=0/1026/1027 chunks=3 frozen=no mode=default trim=no lah=1 lah_token="C" recovering=no
 [spicy-verbose]     - parsing production: Ctor: anon -> /(A|B|C)/ (regexp) (container 'xs')
 [spicy-verbose]       - consuming look-ahead token
