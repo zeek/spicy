@@ -8,6 +8,7 @@
 Done: [$a=b"A", $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   failed to parse, will try to synchronize at 'b'
+[spicy]   successfully synchronized
 Synced: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 Confirmed: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy]   b = B
@@ -18,6 +19,7 @@ Done: [$a=(not set), $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   a = A
 [spicy]   failed to parse, will try to synchronize at 'd'
+[spicy]   successfully synchronized
 Synced: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy]   d = D
@@ -25,6 +27,7 @@ Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   failed to parse, will try to synchronize at 'b'
+[spicy]   successfully synchronized
 Synced: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 Confirmed: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy]   b = B
@@ -35,6 +38,7 @@ Done: [$a=(not set), $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy] test::A
 [spicy]   a = A
 [spicy]   failed to parse, will try to synchronize at 'd'
+[spicy]   successfully synchronized
 Synced: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy]   d = D
@@ -74,6 +78,7 @@ Done: [$a=[$x=[$x=b"123"], $y=(not set)]]
 Done: [$a=[$x=(not set), $y=[$y=b"abc"]]]
 [spicy] test::E
 [spicy]   failed to parse, will try to synchronize at 'a'
+[spicy]   successfully synchronized
 Synced: [$a=(not set)]
 Confirmed: [$a=(not set)]
 [spicy]   test::E_A
@@ -85,6 +90,7 @@ Confirmed: [$a=(not set)]
 Done: [$a=[$x=(not set), $y=[$y=b"abc"]]]
 [spicy] test::E
 [spicy]   failed to parse, will try to synchronize at 'a'
+[spicy]   successfully synchronized
 Synced: [$a=(not set)]
 Confirmed: [$a=(not set)]
 [spicy]   test::E_A

@@ -1112,6 +1112,7 @@ struct ProductionVisitor
             });
 
             pb->beforeHook();
+            builder()->addDebugMsg("spicy", "successfully synchronized");
             builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
             pb->afterHook();
 
@@ -1187,6 +1188,7 @@ struct ProductionVisitor
             builder()->addAssign(is_trial_mode, builder::bool_(true));
 
             pb->beforeHook();
+            builder()->addDebugMsg("spicy", "successfully synchronized");
             builder()->addMemberCall(state().self, "__on_0x25_synced", {}, sync.location());
             pb->afterHook();
         });
