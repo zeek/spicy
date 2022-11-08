@@ -248,7 +248,7 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
         }
 
         if ( ! prototypes_only || ! util::endsWith(ns, "::") ) { // skip anonymous namespace
-            if ( ns == "__hlt::type_info::" )
+            if ( ID(ns) == cxx::ID(context()->options().cxx_namespace_intern, "type_info::") )
                 // We force this to come last later below because creating the type information needs access to all
                 // other types.
                 continue;
@@ -283,7 +283,7 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
     // Add the contents of the type information namespace. We know that there are only constants in there.
     if ( ! prototypes_only ) {
         for ( const auto& i : _constants ) {
-            if ( i.second.id.namespace_() == cxx::ID("__hlt::type_info::") )
+            if ( i.second.id.namespace_() == cxx::ID(context()->options().cxx_namespace_intern, "type_info::") )
                 f << i.second;
         }
     }
