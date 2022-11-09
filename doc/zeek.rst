@@ -448,43 +448,44 @@ the pieces going into such an event definition:
     the unit instance that's currently being parsed.
 
     The Spicy type of the expression determines the Zeek-side type of
-    the corresponding event argument. Most Spicy types translate
-    over pretty naturally, the following summarizes the translation:
+    the corresponding event argument. Generally types map over into
+    corresponding Zeek equivalents pretty naturally, per the following
+    table:
 
     .. csv-table:: Type Conversion from Spicy to Zeek
         :header: "Spicy Type", "Zeek Type", "Notes"
 
         ``addr``, ``addr``,
         ``bool``, ``bool``,
-        ``enum { ... }``, ``enum { ... }``, [1]
+        ``enum { ... }``, ``enum { ... }``
         ``int(8|16|32|64)``, ``int``,
         ``interval``, ``interval``,
         ``list<T>``, ``vector of T``,
         "``map<V,K>``", "``table[V] of K``",
-        ``optional<T>``, ``T``,  [2]
+        ``optional<T>``, ``T``,  [1]
         ``port``, ``port``,
         ``real``, ``double``,
+        "``unit<F_1, ... ,F_N>``", "``record { F1, ..., F_N }``", [2]
         ``set<T>``, ``set[T]``,
         ``string``, ``string``,
+        "``struct<F_1, ... ,F_N>``", "``record { F1, ..., F_N }``", [2]
         ``time``, ``time``,
-        "``tuple<T_1, ... ,T_N>``", "``record { T1, ..., T_N }``", [3]
+        "``tuple<T_1, ... ,T_N>``", "``record { T1, ..., T_N }``", [2] [3]
         ``uint(8|16|32|64)``, ``count``,
         ``vector<T>``, ``vector of T``,
+
 
     .. note::
 
         [1]
-            A corresponding Zeek-side ``enum`` type is automatically
-            created. See :ref:`below <zeek_enum>` for more.
-
-        [2]
             The optional value must have a value, otherwise a runtime
             exception will be thrown.
 
-        [3]
+        [2]
             Must be mapped to a Zeek-side record type with matching
             fields.
 
+        [3]
             If a tuple element is mapped to a record field with a
             ``&default`` or ``&optional`` attribute, a couple special
             cases are supported:
@@ -496,6 +497,16 @@ the pieces going into such an event definition:
                   :spicy:op:`.? <unit::TryMember>` operator and that
                   fails to produce a value, the record field is
                   likewise left unset.
+
+    Such implicit mapping generally works for all types that either do
+    not require any further Zeek-side type declaration, or where your
+    Zeek script code already provides that declaration (e.g., if you
+    define a ``record`` with matching fields yourself, then you can
+    pass corresponding ``unit``/``struct``/``tuple`` instances over to
+    it). However, as it can be cumbersome to create such Zeek-side
+    declarations manually, the plugin can also create the Zeek types
+    for you automatically if you export them in the EVT file; see
+    :ref:`zeek_export` for more on that.
 
     In addition to full Spicy expressions, there are three reserved
     IDs with specific meanings when used as arguments:
@@ -554,51 +565,92 @@ the pieces going into such an event definition:
     access to ``self``.
 
 
-.. _zeek_enum:
+.. _zeek_export:
 
-Enum Types
-~~~~~~~~~~
+Exporting Types
+---------------
 
-The Zeek plugin automatically makes Spicy :ref:`enum types
-<type_enum>` available on the Zeek-side if you declare them
-``public``. For example, assume the following Spicy declaration:
+The Spicy plugin can automatically create corresponding Zeek types for
+most Spicy types. To do so, you can ``export`` them in your EVT
+file. For example, consider the following Spicy ``enum``:
 
 .. spicy-code::
 
     module Test;
 
-    public type MyEnum = enum {
+    type MyEnum = enum {
         A = 83,
         B = 84,
         C = 85
     };
 
-The plugin will then create the equivalent of the following Zeek type
-for use in your scripts:
+If you add ``export Test::MyEnum;`` to your EVT file, the plugin will
+automatically create the following corresponding Zeek ``enum``:
 
 .. code-block:: zeek
 
     module Test;
 
-    export {
+    type MyEnum: enum {
+        MyEnum_A = 83,
+        MyEnum_B = 84,
+        MyEnum_A = 85,
+        MyEnum_Undef = -1
+    };
 
-      type MyEnum: enum {
-          MyEnum_A = 83,
-          MyEnum_B = 84,
-          MyEnum_A = 85,
-          MyEnum_Undef = -1
-      };
+(The odd naming of the labels is due to ID limitations on the Zeek side.)
 
-    }
-
-(The odd naming is due to ID limitations on the Zeek side.)
-
-You can also see the type in the output of ``zeek -NN``::
+You can then also see the exported type in the output of ``zeek -NN``::
 
     [...]
     Zeek::Spicy - Support for Spicy parsers
         [Type] Test::MyEnum
     [...]
+
+Such exporting generally works for most Spicy type declarations (i.e.,
+``type X = ...``). It is  most useful for types that would be
+cumbersome to declare manually in a Zeek script, in particular Zeek
+``record`` types corresponding to a Spicy-side ``unit`` or ``struct``.
+So if you have an event handler that needs to pass a Spicy unit
+instance to Zeek, export the Spicy type in your EVT file, and the
+corresponding Zeek ``record`` will be created automatically.
+
+Exporting works for most Spicy types, but comes with some limitations
+for complex types. In particular, any contained, nested types must
+be explicitly exported as well; and they must be exported **first** in
+the EVT file. Consider the following Spicy code:
+
+.. spicy-code::
+
+    module Test;
+
+    type E = enum { A, B, C };
+
+    type S = struct {
+        x: MyEnum;
+        y: uint8;
+    };
+
+
+Here, to export ``S``, you need to first export ``E`` as well in your EVT
+
+.. code-block:: spicy-evt
+
+   export Test::E;
+   export Test::S;
+
+It follows from the ordering requirement that you cannot export
+self-recursive types (e.g., a ``unit`` containing, directly or
+indirectly, instances of its own). If you run into any limitations,
+keep in mind that you can always declare a corresponding Zeek type
+yourself; the ``export`` mechanism is purely for convenience.
+
+.. note::
+
+   Older Spicy versions *automatically* exported all ``enum`` types
+   declared as ``public``. For backwards compatibility, the Spicy
+   plugin continues to do so, but that feature is deprecated and will
+   eventually be removed.
 
 
 Importing Spicy Modules
