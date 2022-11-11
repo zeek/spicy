@@ -16,6 +16,10 @@
     type will be allocated and initialized with the value of the
     expression.
 
+.. spicy:operator:: generic::Pack <packable> pack <sp> t:tuple
+
+    Packs a value into a binary representation.
+
 .. spicy:operator:: generic::Unpack <unpackable> unpack <sp> t:any-type
 
     Unpacks a value from a binary representation.

@@ -25,6 +25,26 @@ ostream& operator<<(ostream& stream, const Result<T>& x) {
 
 TEST_SUITE_BEGIN("real");
 
+TEST_CASE("pack") {
+    SUBCASE("IEEE754_Single") {
+        CHECK_EQ(real::pack(0.5, real::Type::IEEE754_Single, ByteOrder::Big), "\x3f\x00\x00\x00"_b);
+        CHECK_EQ(real::pack(0.75, real::Type::IEEE754_Single, ByteOrder::Big), "\x3f\x40\x00\x00"_b);
+        CHECK_EQ(real::pack(0.5, real::Type::IEEE754_Single, ByteOrder::Little), "\x00\x00\x00\x3f"_b);
+        CHECK_EQ(real::pack(0.75, real::Type::IEEE754_Single, ByteOrder::Little), "\x00\x00\x40\x3f"_b);
+        CHECK_THROWS_WITH_AS(real::pack(1.0, real::Type::Undef, ByteOrder::Big),
+                             "attempt to pack real value of undefined type", const RuntimeError&);
+        CHECK_THROWS_WITH_AS(real::pack(1.0, real::Type::IEEE754_Single, ByteOrder::Undef),
+                             "attempt to pack value with undefined byte order", const RuntimeError&);
+    }
+
+    SUBCASE("IEEE754_Double") {
+        CHECK_EQ(real::pack(0.5, real::Type::IEEE754_Double, ByteOrder::Big), "\x3f\xe0\x00\x00\x00\x00\x00\x00"_b);
+        CHECK_EQ(real::pack(0.75, real::Type::IEEE754_Double, ByteOrder::Big), "\x3f\xe8\x00\x00\x00\x00\x00\x00"_b);
+        CHECK_EQ(real::pack(0.5, real::Type::IEEE754_Double, ByteOrder::Little), "\x00\x00\x00\x00\x00\x00\xe0\x3f"_b);
+        CHECK_EQ(real::pack(0.75, real::Type::IEEE754_Double, ByteOrder::Little), "\x00\x00\x00\x00\x00\x00\xe8\x3f"_b);
+    }
+}
+
 TEST_CASE("unpack") {
     SUBCASE("Bytes") {
         using Result = Result<std::tuple<double, Bytes>>;

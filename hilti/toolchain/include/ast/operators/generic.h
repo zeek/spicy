@@ -17,6 +17,29 @@
 
 namespace hilti::operator_ {
 
+BEGIN_OPERATOR_CUSTOM(generic, Pack)
+    Type result(const hilti::node::Range<Expression>& ops) const {
+        if ( ops.empty() )
+            return type::DocOnly("<packable>");
+
+        return type::Bytes();
+    }
+
+    bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
+
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {Operand{{}, type::Tuple(type::Wildcard())}};
+        return _operands;
+    }
+
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
+        // TODO
+    }
+
+    std::string doc() const { return "Packs a value into a binary representation."; }
+END_OPERATOR_CUSTOM
+
 BEGIN_OPERATOR_CUSTOM(generic, Unpack)
     Type result(const hilti::node::Range<Expression>& ops) const {
         if ( ops.empty() )

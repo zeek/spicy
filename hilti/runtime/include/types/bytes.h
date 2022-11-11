@@ -12,7 +12,7 @@
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/json-fwd.h>
 #include <hilti/rt/result.h>
-#include <hilti/rt/types/integer.h>
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/string.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
