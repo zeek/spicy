@@ -10,6 +10,7 @@
 
 #include <hilti/rt/json.h>
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/util.h>
 
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/detail/visitor.h>
@@ -253,6 +254,12 @@ void Driver::dumpUnit(const Unit& unit) {
 
 Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     int num_output_types = 0;
+
+    if ( const auto& arg = rt::getenv("HILTI_DEBUG"); arg && ! arg->empty() ) {
+        for ( const auto& s : util::split(*arg, ",") )
+            // Ignore unknown streams.
+            _driver_options.logger->debugEnable(s);
+    }
 
     opterr = 0; // don't print errors
     std::string option_string = "ABlL:cCpPvjhvVdX:o:D:TUEeSRg" + hookAddCommandLineOptions();

@@ -1,0 +1,6 @@
+# @TEST-DOC: Checks compiler debug streams can be toggled via `HILTI_DEBUG`.
+#
+# @TEST-EXEC-FAIL: hiltic -c -o /dev/null %INPUT 2>&1 | grep -q "[debug/compiler]"
+# @TEST-EXEC: HILTI_DEBUG=compiler hiltic -c -o /dev/null %INPUT 2>&1 | grep -q "[debug/compiler]"
+
+module test {}

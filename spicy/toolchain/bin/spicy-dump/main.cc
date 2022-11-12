@@ -112,6 +112,12 @@ void SpicyDump::parseOptions(int argc, char** argv) {
     hilti::Options hilti_compiler_options;
     spicy::Options spicy_compiler_options;
 
+    if ( const auto& arg = hilti::rt::getenv("HILTI_DEBUG"); arg && ! arg->empty() ) {
+        for ( const auto& s : hilti::util::split(*arg, ",") )
+            // Ignore unknown streams.
+            driver_options.logger->debugEnable(s);
+    }
+
     driver_options.execute_code = true;
     driver_options.include_linker = true;
     driver_options.logger = std::make_unique<hilti::Logger>();

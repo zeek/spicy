@@ -6,9 +6,11 @@
 #include <iostream>
 
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/util.h>
 
 #include <spicy/rt/libspicy.h>
 
+#include <hilti/base/util.h>
 #include <hilti/compiler/init.h>
 #include <hilti/hilti.h>
 
@@ -116,6 +118,12 @@ void SpicyDriver::usage() {
 void SpicyDriver::parseOptions(int argc, char** argv) {
     hilti::driver::Options driver_options;
     hilti::Options compiler_options;
+
+    if ( const auto& arg = hilti::rt::getenv("HILTI_DEBUG"); arg && ! arg->empty() ) {
+        for ( const auto& s : hilti::util::split(*arg, ",") )
+            // Ignore unknown streams.
+            driver_options.logger->debugEnable(s);
+    }
 
     driver_options.execute_code = true;
     driver_options.include_linker = true;
