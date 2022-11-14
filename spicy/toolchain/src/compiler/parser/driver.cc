@@ -133,3 +133,18 @@ void Driver::processPreprocessorLine(const std::string_view& directive, const st
         case hilti::util::SourceCodePreprocessor::State::Skip: _scanner->setIgnoreMode(true); break;
     }
 }
+
+void Driver::docSummary(const std::string& s) { _doc.addSummary(s); }
+void Driver::docText(const std::string& s) { _doc.addText(s); }
+void Driver::docField(const std::string& s) {
+    // TODO
+}
+
+void Driver::docDeclaration(Declaration* d) {
+    if ( _doc )
+        d->setDocumentation(std::move(_doc));
+
+    _doc.clear();
+}
+
+void Driver::docClear() { _doc.clear(); }

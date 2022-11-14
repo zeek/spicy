@@ -81,6 +81,16 @@ std::string Node::render(bool include_location) const {
 
         if ( auto t = this->tryAs<declaration::Type>() )
             s += (type::isResolved(t->type()) ? " (resolved)" : " (not resolved)");
+
+        if ( const auto& doc = d->documentation(); doc && ! doc->summary().empty() ) {
+            auto summary = doc->summary().front();
+            auto summary_dots = (summary.size() > 20 || doc->summary().size() > 1 ? "..." : "");
+            auto text = doc->text().front();
+            auto text_dots = (text.size() > 20 || doc->text().size() > 1 ? "..." : "");
+
+            s += util::fmt(R"( (summary: "%s%s" doc: "%s%s"))", summary.substr(0, 20), summary_dots, text.substr(0, 20),
+                           text_dots);
+        }
     }
 
     s += util::fmt(" [@%s:%p]", util::tolower(name.substr(0, 1)), identity());

@@ -37,6 +37,7 @@ autogen_dispatchers(
 set(SOURCES
     src/ast/builder/builder.cc
     src/ast/builder/type.cc
+    src/ast/declaration.cc
     src/ast/declarations/imported-module.cc
     src/ast/expression.cc
     src/ast/expressions

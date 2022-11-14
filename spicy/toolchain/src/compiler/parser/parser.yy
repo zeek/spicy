@@ -329,7 +329,7 @@ dotted_id     : { driver->enableDottedIDMode(); }
 
 global_scope_items
               : global_scope_items global_scope_decl
-                                                 { $$ = std::move($1); $$.first.push_back($2); }
+                                                 { $$ = std::move($1); $$.first.push_back($2); driver->docDeclaration(&($$.first.back())); }
               | global_scope_items stmt
                                                  { $$ = std::move($1); $$.second.push_back($2); }
               | /* empty */                      { $$ = {}; }

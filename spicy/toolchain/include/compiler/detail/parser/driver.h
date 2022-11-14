@@ -75,7 +75,14 @@ public:
     int nextToken();
     void processPreprocessorLine(const std::string_view& directive, const std::string_view& expression, const Meta& m);
 
+    void docSummary(const std::string& s);
+    void docText(const std::string& s);
+    void docField(const std::string& s);
+    void docDeclaration(Declaration* d);
+    void docClear();
+
 private:
+    declaration::DocString _doc;
     Module _module;
     Expression _expression;
     std::string _filename;

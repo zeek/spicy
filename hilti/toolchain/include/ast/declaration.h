@@ -2,7 +2,9 @@
 #pragma once
 
 #include <optional>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/id.h>
 #include <hilti/ast/node.h>
@@ -44,6 +46,54 @@ namespace linkage {
  */
 constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Linkage>(s, detail::linkages); }
 } // namespace linkage
+
+/** Represents a declaration's documentation string. */
+class DocString {
+public:
+    /**
+     * Returns all lines of summary text added so far. The returned lines will
+     * have their comment prefixes stripped.
+     */
+    const auto& summary() const { return _summary; }
+
+    /**
+     * Returns all lines of documentation text added so far. The returned lines
+     * will have their comment prefixes stripped.
+     */
+    const auto& text() const { return _text; }
+
+    /**
+     * Appends a line of summary text to the documentation.
+     *
+     * @param line line to add, with optional comment prefix (which will be removed)
+     */
+    void addSummary(const std::string& line) { _summary.push_back(normalize(line)); }
+
+    /**
+     * Appends a line of documentation text to the documentation.
+     *
+     * @param line line to add, with optional comment prefix (which will be removed)
+     */
+    void addText(const std::string& line) { _text.push_back(normalize(line)); }
+
+    /** Empties out all content. */
+    void clear();
+
+    /**
+     * Renders the comment back into a multi-line string. This is primarily for debugging.
+     */
+    void render(std::ostream& out) const;
+
+    /** Returns true if any summary or documentation text has been added. */
+    operator bool() const { return ! (_summary.empty() || _text.empty()); }
+
+private:
+    // Removes any comment prefix from a line.
+    std::string normalize(std::string line) const;
+
+    std::vector<std::string> _summary;
+    std::vector<std::string> _text;
+};
 
 namespace detail {
 #include <hilti/autogen/__declaration.h>
@@ -92,9 +142,14 @@ public:
     const ID& canonicalID() const { return _id; }
     /** Implements the `Declaration` interface. */
     void setCanonicalID(ID id) { _id = std::move(id); }
+    /** Implements the `Declaration` interface. */
+    const std::optional<declaration::DocString>& documentation() const { return _doc; }
+    /** Implements the `Declaration` interface. */
+    void setDocumentation(declaration::DocString docs) { _doc = std::move(docs); }
 
 private:
     ID _id;
+    std::optional<declaration::DocString> _doc;
 };
 
 } // namespace hilti

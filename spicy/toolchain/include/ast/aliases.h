@@ -37,6 +37,7 @@ using Type = hilti::Type;
 
 namespace declaration {
 using Linkage = hilti::declaration::Linkage;
+using DocString = hilti::declaration::DocString;
 
 namespace parameter {
 using Kind = hilti::declaration::parameter::Kind;
