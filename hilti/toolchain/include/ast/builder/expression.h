@@ -348,5 +348,8 @@ inline auto port(Expression port, Expression protocol, const Meta& m = Meta()) {
         std::vector<Expression>{std::move(port), std::move(protocol)}, m);
 }
 
+inline auto scope(const Meta& m = Meta()) {
+    return hilti::expression::Keyword(hilti::expression::keyword::Kind::Scope, m);
+}
 
 } // namespace hilti::builder

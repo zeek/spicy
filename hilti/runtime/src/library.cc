@@ -65,7 +65,7 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
         _handle = handle;
     }
 
-    auto version_string = reinterpret_cast<const char**>(::dlsym(_handle, "__hlto_library_version"));
+    auto version_string = reinterpret_cast<const char**>(::dlsym(_handle, "__hlt_hlto_library_version"));
     if ( ! version_string )
         return result::Error("no version information");
 

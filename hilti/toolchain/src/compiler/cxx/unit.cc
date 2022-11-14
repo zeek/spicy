@@ -176,11 +176,16 @@ void Unit::_addModuleInitFunction() {
         addInitFunction(context().get(), _preinit_module, "__preinit_module");
 
     if ( moduleID() != cxx::ID("__linker__") ) {
+        auto scope = fmt("%s_hlto_scope", context()->options().cxx_namespace_intern);
+        auto extern_scope =
+            cxx::declaration::Global{.id = cxx::ID(scope), .type = "const char*", .linkage = "extern"};
+        add(extern_scope);
+
         cxx::Block register_;
-        register_.addStatement(
-            fmt("::hilti::rt::detail::registerModule({ \"%s\", %s_hlto_scope, %s, %s, %s})",
-                context()->options().cxx_namespace_intern, moduleID(), _init_module ? "&__init_module" : "nullptr",
-                _uses_globals ? "&__init_globals" : "nullptr", _uses_globals ? "&__globals_index" : "nullptr"));
+        register_.addStatement(fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s, %s})", moduleID(), scope,
+                                   _init_module ? "&__init_module" : "nullptr",
+                                   _uses_globals ? "&__init_globals" : "nullptr",
+                                   _uses_globals ? "&__globals_index" : "nullptr"));
 
         if ( _preinit_module )
             register_.addStatement(fmt("__preinit_module()"));

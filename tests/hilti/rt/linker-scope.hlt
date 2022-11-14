@@ -11,6 +11,6 @@ module X {
 import hilti;
 global x = GLOBAL;
 
-hilti::print(hilti::linker_scope());
+hilti::print($scope);
 
 }

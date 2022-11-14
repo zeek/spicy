@@ -346,7 +346,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
 
         _pb.builder()->addExpression(
             builder::call("spicy_rt::registerParser",
-                          {builder::id(ID(*unit.id(), "__parser")), builder::call("hilti::linker_scope", {}),
+                          {builder::id(ID(*unit.id(), "__parser")), builder::scope(),
                            builder::strong_reference(unit)}));
     });
 
