@@ -1112,6 +1112,7 @@ struct ProductionVisitor
             });
 
             pb->beforeHook();
+            builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
             builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
             pb->afterHook();
 
@@ -1187,6 +1188,7 @@ struct ProductionVisitor
             builder()->addAssign(is_trial_mode, builder::bool_(true));
 
             pb->beforeHook();
+            builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
             builder()->addMemberCall(state().self, "__on_0x25_synced", {}, sync.location());
             pb->afterHook();
         });
@@ -1242,7 +1244,7 @@ struct ProductionVisitor
                             // Remember the original error so we can report it in case the sync failed.
                             builder()->addAssign(state().error, builder::id("e"));
 
-                            builder()->addDebugMsg("spicy",
+                            builder()->addDebugMsg("spicy-verbose",
                                                    "failed to parse list element, will try to "
                                                    "synchronize at next possible element");
 
@@ -1443,8 +1445,9 @@ struct ProductionVisitor
                             [&]() {
                                 // There is a sync point; run its production w/o consuming input until parsing
                                 // succeeds or we run out of data.
-                                builder()->addDebugMsg("spicy", fmt("failed to parse, will try to synchronize at '%s'",
-                                                                    p.fields()[*sync_point].meta().field()->id()));
+                                builder()->addDebugMsg("spicy-verbose",
+                                                       fmt("failed to parse, will try to synchronize at '%s'",
+                                                           p.fields()[*sync_point].meta().field()->id()));
 
                                 // Remember the original error so we can report it in case the sync failed.
                                 builder()->addAssign(state().error, builder::id("e"));
@@ -1610,7 +1613,7 @@ struct ProductionVisitor
                                     // Remember the original error so we can report it in case the sync failed.
                                     builder()->addAssign(state().error, builder::id("e"));
 
-                                    builder()->addDebugMsg("spicy",
+                                    builder()->addDebugMsg("spicy-verbose",
                                                            "failed to parse list element, will try to "
                                                            "synchronize at next possible element");
 

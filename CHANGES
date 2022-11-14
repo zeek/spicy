@@ -1,3 +1,9 @@
+1.6.0-dev.107 | 2022-11-14 09:19:03 +0100
+
+  * Post synchronization-related debug messages in `spicy-verbose` stream. (Benjamin Bannier, Corelight)
+
+  * Log successful synchronization. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.104 | 2022-11-07 09:54:12 +0100
 
   * Quote CMake string to ensure correct argument count. (Nic Boet)
