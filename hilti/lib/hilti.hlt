@@ -27,8 +27,6 @@ declare public time mktime(uint<64> y, uint<64> m, uint<64> d, uint<64> H, uint<
 
 declare public void abort() &cxxname="hilti::rt::abort_with_backtrace" &have_prototype;
 
-declare public string linker_scope() &cxxname="hilti::rt::linker_scope" &have_prototype;
-
 # Base type for all exceptions.
 public type Exception = exception &cxxname="hilti::rt::Exception";
 

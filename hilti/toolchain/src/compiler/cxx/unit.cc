@@ -177,10 +177,10 @@ void Unit::_addModuleInitFunction() {
 
     if ( moduleID() != cxx::ID("__linker__") ) {
         cxx::Block register_;
-        register_.addStatement(fmt("::hilti::rt::detail::registerModule({ \"%s\", __hlto_scope, %s, %s, %s})",
-                                   moduleID(), _init_module ? "&__init_module" : "nullptr",
-                                   _uses_globals ? "&__init_globals" : "nullptr",
-                                   _uses_globals ? "&__globals_index" : "nullptr"));
+        register_.addStatement(
+            fmt("::hilti::rt::detail::registerModule({ \"%s\", %s_hlto_scope, %s, %s, %s})",
+                context()->options().cxx_namespace_intern, moduleID(), _init_module ? "&__init_module" : "nullptr",
+                _uses_globals ? "&__init_globals" : "nullptr", _uses_globals ? "&__globals_index" : "nullptr"));
 
         if ( _preinit_module )
             register_.addStatement(fmt("__preinit_module()"));
