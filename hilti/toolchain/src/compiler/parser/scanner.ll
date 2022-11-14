@@ -179,6 +179,7 @@ yield                 return token::YIELD;
 \.\.                  return token::DOTDOT;
 ->                    return token::ARROW;
 \$\$                  return token::DOLLARDOLLAR;
+\$scope               return token::SCOPE;
 <EXPRESSION>\>\>      return token::SHIFTRIGHT;
 
 

@@ -34,7 +34,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 115
-%expect-rr 189
+%expect-rr 191
 
 %{
 
@@ -797,6 +797,7 @@ expr_f        : ctor                             { $$ = hilti::expression::Ctor(
 
 expr_g        : '(' expr ')'                     { $$ = hilti::expression::Grouping(std::move($2)); }
               | scoped_id                        { $$ = hilti::expression::UnresolvedID(std::move($1), __loc__); }
+              | SCOPE                            { $$ = hilti::expression::Keyword(hilti::expression::keyword::Kind::Scope, __loc__); }
 
 
 member_expr   : local_id                         { $$ = hilti::expression::Member(std::move($1), __loc__); }

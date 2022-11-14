@@ -6,6 +6,8 @@
 
 #include <hilti/rt/libhilti.h>
 
+extern const char* __hlt_hlto_scope;
+
 namespace __hlt::Foo {
     extern void __init_module();
     extern void __register_module();
@@ -18,7 +20,7 @@ extern void __hlt::Foo::__init_module() {
     ::hilti::rt::print(std::string("Hello, world!"), ::hilti::rt::Bool(true));
 }
 
-extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlto_scope, &__init_module, nullptr, nullptr}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, nullptr, nullptr}); }
 
 /* __HILTI_LINKER_V1__
 {"module":"Foo","namespace":"__hlt::Foo","path":"<...>/hello-world.hlt","version":1}
@@ -35,7 +37,7 @@ extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModul
 
 #include <hilti/rt/libhilti.h>
 
-const char HILTI_EXPORT HILTI_WEAK * __hlto_library_version = <...>
-const char HILTI_EXPORT HILTI_WEAK * __hlto_bind_to_version = <...>
-const char HILTI_WEAK * __hlto_scope = <...>
+const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_library_version = <...>
+const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_bind_to_version = <...>
+const char HILTI_WEAK * __hlt_hlto_scope = <...>
 

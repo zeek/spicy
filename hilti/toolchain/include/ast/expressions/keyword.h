@@ -19,11 +19,15 @@ namespace keyword {
 enum class Kind {
     Self,         /**< `self` */
     DollarDollar, /**< `$$` */
-    Captures      /**< `$@` */
+    Captures,     /**< `$@` */
+    Scope         /**< `$scope`*/
 };
 
 namespace detail {
-constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Self, "self"}, {Kind::DollarDollar, "$$"}, {Kind::Captures, "$@"}};
+constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Self, "self"},
+                                              {Kind::DollarDollar, "$$"},
+                                              {Kind::Captures, "$@"},
+                                              {Kind::Scope, "$scope"}};
 } // namespace detail
 
 namespace kind {
@@ -43,6 +47,8 @@ public:
     keyword::Kind kind() const { return _kind; }
 
     bool operator==(const Keyword& other) const { return _kind == other._kind && type() == other.type(); }
+
+    void setType(const Type& t) { children()[0] = t; }
 
     /** Implements `Expression` interface. */
     bool isLhs() const { return true; }
@@ -75,6 +81,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Keyword& keyword) {
         case keyword::Kind::Self: return stream << "<self>";
         case keyword::Kind::DollarDollar: return stream << "<$$>";
         case keyword::Kind::Captures: return stream << "<captures>";
+        case keyword::Kind::Scope: return stream << "<scope>";
     }
 
     return stream;
