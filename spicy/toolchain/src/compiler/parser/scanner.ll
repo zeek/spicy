@@ -52,9 +52,13 @@ static std::string preprocessor_directive;
 address4  ({digits}"."){3}{digits}
 address6  ("["({hexs}:){7}{hexs}"]")|("["0x{hexs}({hexs}|:)*"::"({hexs}|:)*"]")|("["({hexs}|:)*"::"({hexs}|:)*"]")|("["({hexs}|:)*"::"({hexs}|:)*({digits}"."){3}{digits}"]")
 
+doc_summary  [ \t]*##![^\n]*\n?
+doc_field    [ \t]*##<[^\n]*\n?
+doc_text     [ \t]*##[^\n]*\n?
+comment      [ \t]*#[^#\n]*\n?
+
 attribute \&(bit-order|byte-order|chunked|convert|count|cxxname|default|eod|internal|ipv4|ipv6|hilti_type|length|max-size|no-emit|nosub|on-heap|optional|originator|parse-at|parse-from|priority|requires|responder|size|static|synchronize|transient|try|type|until|until-including|while|have_prototype)
 blank     [ \t]
-comment   [ \t]*#[^\n]*\n?
 digit     [0-9]
 digits    {digit}+
 hexit     [0-9a-fA-F]
@@ -87,7 +91,9 @@ preprocessor @[a-zA-Z_][a-zA-Z_0-9-]*
 {blank}+              yylloc->step();
 [\n]+                 yylloc->lines(yyleng); yylloc->step();
 {comment}             yylloc->lines(1); yylloc->step();
-
+{doc_summary}         yylloc->lines(1); driver->docSummary(std::string(yytext)); yylloc->step();
+{doc_field}           yylloc->lines(1); driver->docField(std::string(yytext)); yylloc->step();
+{doc_text}            yylloc->lines(1); driver->docText(std::string(yytext)); yylloc->step();
 __library_type        return token::LIBRARY_TYPE;
 addr                  return token::ADDRESS;
 add                   return token::ADD;

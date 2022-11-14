@@ -2,6 +2,7 @@
 #pragma once
 
 #include <optional>
+#include <string>
 #include <utility>
 
 #include <hilti/ast/id.h>
@@ -84,7 +85,7 @@ inline Node to_node(T t) {
  * provides implementations for some interface methods shared that are shared
  * by all declarations.
  */
-class DeclarationBase : public NodeBase, public hilti::trait::isDeclaration {
+class DeclarationBase : public NodeBase, public node::WithDocString, public hilti::trait::isDeclaration {
 public:
     using NodeBase::NodeBase;
 

@@ -17,6 +17,7 @@ void Module::clear() {
     }
 
     children()[1] = statement::Block({}, meta());
+    clearDocumentation();
 }
 
 hilti::optional_ref<const declaration::Property> Module::moduleProperty(const ID& id) const {

@@ -18,7 +18,7 @@
 namespace hilti {
 
 /** AST node representing a HILTI module. */
-class Module : public NodeBase {
+class Module : public NodeBase, public node::WithDocString {
 public:
     Module(ID id, Meta m = Meta()) : NodeBase({std::move(id), statement::Block({}, m)}, std::move(m)) {}
 

@@ -13,6 +13,31 @@ using namespace hilti;
 
 const Node node::none = None::create();
 
+static std::string fmtDoc(const std::optional<DocString>& doc) {
+    if ( ! (doc && *doc) )
+        return "";
+
+    const int max_doc = 40;
+    std::string rendering;
+
+    auto summary = util::join(doc->summary(), " ");
+    if ( ! summary.empty() ) {
+        auto summary_dots = (summary.size() > max_doc || doc->summary().size() > 1 ? "..." : "");
+        rendering += util::fmt(R"(summary: "%s%s")", summary.substr(0, max_doc), summary_dots);
+    }
+
+    auto text = util::join(doc->text(), " ");
+    if ( ! text.empty() ) {
+        if ( ! rendering.empty() )
+            rendering += " ";
+
+        auto text_dots = (text.size() > max_doc || doc->text().size() > 1 ? "..." : "");
+        rendering += util::fmt(R"(doc: "%s%s")", text.substr(0, max_doc), text_dots);
+    }
+
+    return util::fmt(" (%s)", rendering);
+}
+
 std::string Node::render(bool include_location) const {
     auto f = [&](const node::Properties::value_type& x) {
         return util::fmt("%s=%s", x.first, std::quoted(node::detail::to_string(x.second)));
@@ -81,7 +106,12 @@ std::string Node::render(bool include_location) const {
 
         if ( auto t = this->tryAs<declaration::Type>() )
             s += (type::isResolved(t->type()) ? " (resolved)" : " (not resolved)");
+
+        s += fmtDoc(d->documentation());
     }
+
+    else if ( auto m = this->tryAs<Module>() )
+        s += fmtDoc(m->documentation());
 
     s += util::fmt(" [@%s:%p]", util::tolower(name.substr(0, 1)), identity());
 
