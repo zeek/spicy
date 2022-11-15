@@ -1,0 +1,14 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+#
+# @TEST-DOC: Exercise ``spicy::parse_address()``
+
+module Test;
+
+import spicy;
+
+# We only test basic functionality because the parsing itself is unit-tested
+# inside the runtime librart.
+assert spicy::parse_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334") == [2001:0db8:85a3:0000:0000:8a2e:0370:7334];
+assert spicy::parse_address(b"192.168.1.1") == 192.168.1.1;
+assert spicy::parse_address(b"2001:db8::FFFF:192.168.0.5") == [2001:db8::ffff:c0a8:5];
+assert-exception spicy::parse_address("Foo");
