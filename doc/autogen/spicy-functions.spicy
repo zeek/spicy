@@ -120,7 +120,7 @@ Parses an address from a string. The address can be in standard IPv4 or IPv6
 ASCII represententation. The function raises ``InvalidArgument`` if the string
 could not be parsed.
 
-.. _spicy_parse_address:
+.. _spicy_parse_address_2:
 
 .. rubric:: ``function spicy::parse_address(b: bytes) : addr``
 
