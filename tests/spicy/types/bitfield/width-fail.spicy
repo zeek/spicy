@@ -1,0 +1,13 @@
+# @TEST-DOC: Checks validation bitfield field ranges.
+
+# @TEST-EXEC-FAIL: spicyc -dj %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module xyz;
+
+public type X = unit {
+    x: bitfield(8) {
+        x1: 0..8; # Upper beyond range of bitfield.
+        x2: 4..3; # Lower not smaller than upper.
+    };
+};

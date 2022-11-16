@@ -872,6 +872,21 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->isFilter() )
             error("unit type cannot be a filter, %filter missing", p);
     }
+
+    void operator()(const spicy::type::Bitfield& b, position_t p) {
+        const auto width = b.width();
+
+        for ( const auto& bit : b.bits() ) {
+            const auto lower = bit.lower();
+            const auto upper = bit.upper();
+
+            if ( lower > upper )
+                error("lower limit needs to be lower than upper limit", p);
+
+            if ( upper >= width )
+                error("upper limit is beyond the width of the bitfield", p);
+        }
+    }
 };
 
 } // anonymous namespace

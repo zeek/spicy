@@ -1,3 +1,9 @@
+1.6.0-dev.110 | 2022-11-16 09:43:26 +0100
+
+  * GH-1299: Add validator for bitfield field ranges. (Benjamin Bannier, Corelight)
+
+  * Bump doctest to 2.4.9. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.107 | 2022-11-14 09:19:03 +0100
 
   * Post synchronization-related debug messages in `spicy-verbose` stream. (Benjamin Bannier, Corelight)
