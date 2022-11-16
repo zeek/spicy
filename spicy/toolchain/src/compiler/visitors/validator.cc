@@ -878,7 +878,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>,
             error("unit type cannot be a filter, %filter missing", p);
     }
 
-    void operator()(const spicy::type::Bitfield& b, position_t p) {
+    void operator()(const spicy::type::Bitfield& b, hilti::type::Visitor::position_t& p) override {
         const auto width = b.width();
 
         for ( const auto& bit : b.bits() ) {
