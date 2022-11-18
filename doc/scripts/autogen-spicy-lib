@@ -100,12 +100,17 @@ awk -v "target=$1" -v "ns=$2" '
         else
             result = " : " result;
 
+        postfix = ""
+        if ( name in functions )
+            postfix = sprintf("_%d", functions[name] + 1);
+
         if ( target == "functions" ) {
-            printf(".. _spicy_%s:\n\n", name);
+            printf(".. _spicy_%s%s:\n\n", name, postfix);
             printf(".. rubric:: ``function %s::%s(%s)%s``\n\n", ns, name, args, result);
             printf("%s\n\n", comment);
         }
 
+        functions[name] = 1;
         comment = "";
         next;
     }

@@ -28,7 +28,7 @@ public:
      *
      * @param addr string representation, as in `1.2.3.4` or `2001:db8:85a3:8d3:1319:8a2e:370:7348`.
      *
-     * @throws RuntimeError if it cannot parse the address into a valid IPv4 or IPv6 address.
+     * @throws InvalidArgument if it cannot parse the address into a valid IPv4 or IPv6 address.
      */
     explicit Address(const std::string& addr) { _parse(addr); }
 
@@ -101,7 +101,7 @@ private:
     void _init(struct in_addr addr);
     void _init(struct in6_addr addr);
 
-    // Throws RuntimeError if it cannot parse the address.
+    // Throws ``InvalidArgument`` if it cannot parse the address.
     void _parse(const std::string& addr);
 
     uint64_t _a1 = 0; // The 8 more significant bytes.
@@ -116,6 +116,24 @@ extern Result<std::tuple<Address, Bytes>> unpack(const Bytes& data, AddressFamil
 
 /** Unpacks an address from binary representation, following the protocol for `unpack` operator. */
 extern Result<std::tuple<Address, stream::View>> unpack(const stream::View& data, AddressFamily family, ByteOrder fmt);
+
+/**
+ * Parses an address from a IPv4 or IPv6 string representation.
+ *
+ * @param addr string representation, as in ``1.2.3.4`` or ``2001:db8:85a3:8d3:1319:8a2e:370:7348``.
+ *
+ * @throws InvalidArgument if it cannot parse the address into a valid IPv4 or IPv6 address.
+ */
+inline Address parse(const Bytes& data) { return Address(data.str()); }
+
+/**
+ * Parses an address from a IPv4 or IPv6 string representation.
+ *
+ * @param addr string representation, as in ``1.2.3.4`` or ``2001:db8:85a3:8d3:1319:8a2e:370:7348``.
+ *
+ * @throws InvalidArgument if it cannot parse the address into a valid IPv4 or IPv6 address.
+ */
+inline Address parse(const std::string& data) { return Address(data); }
 
 } // namespace address
 

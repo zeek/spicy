@@ -1,3 +1,19 @@
+1.6.0-dev.113 | 2022-11-18 11:48:35 +0100
+
+  * GH-1294: Add library function to parse an address from string or bytes. (Robin Sommer, Corelight)
+
+        ## Parses an address from a string. The address can be in standard IPv4 or IPv6
+        ## ASCII representation. The function raises ``InvalidArgument`` if the string
+        ## could not be parsed.
+        public function parse_address(s: string) : addr;
+
+        ## Parses an address from a bytes instance. The address can be in standard IPv4
+        ## or IPv6 ASCII representation. The function raises ``InvalidArgument`` if the
+        ## string could not be parsed.
+        public function parse_address(b: bytes) : addr;
+
+  * Support overloaded functions in documentation. (Robin Sommer, Corelight)
+
 1.6.0-dev.110 | 2022-11-16 09:43:26 +0100
 
   * GH-1299: Add validator for bitfield field ranges. (Benjamin Bannier, Corelight)

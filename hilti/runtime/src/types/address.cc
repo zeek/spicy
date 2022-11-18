@@ -17,7 +17,7 @@ void Address::_parse(const std::string& addr) {
         if ( inet_pton(AF_INET, addr.c_str(), &v4) > 0 )
             _init(v4);
         else
-            throw RuntimeError(fmt("cannot parse IPv4 address '%s'", addr));
+            throw InvalidArgument(fmt("cannot parse IPv4 address '%s'", addr));
     }
 
     else {
@@ -25,7 +25,7 @@ void Address::_parse(const std::string& addr) {
         if ( inet_pton(AF_INET6, addr.c_str(), &v6) > 0 )
             _init(v6);
         else
-            throw RuntimeError(fmt("cannot parse IPv6 address '%s'", addr));
+            throw InvalidArgument(fmt("cannot parse IPv6 address '%s'", addr));
     }
 
     // Allow IPv6 addresses to decay to IPv4 addresses to allow specifying
