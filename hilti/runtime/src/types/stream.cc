@@ -197,13 +197,16 @@ View View::advanceToNextData() const {
         c = c->next();
     }
 
+    // Iterator to zero point in original stream. All offsets are relative to this.
+    const auto zero = _begin - _begin.offset();
+
     // If we have found a non-gap chunk its offset points to the next data.
     if ( c )
-        return View(_begin + c->offset(), _end);
+        return View(zero + c->offset(), _end);
 
     // If we have seen a previous chunk, return a View starting after its end.
     if ( last_end )
-        return View(_begin + *last_end, _end);
+        return View(zero + *last_end, _end);
 
     // If we have not found a next non-gap chunk simply return a view at the next
     // byte. Since this is a gap chunk this can cause recovery in the caller.
