@@ -290,7 +290,7 @@ private:
 
 /**
  * Base class for classes implementing the `Type` interface. This class
- * provides implementations for some interface methods shared that are shared
+ * provides implementations for some interface methods that are shared
  * by all types.
  */
 class TypeBase : public NodeBase {
