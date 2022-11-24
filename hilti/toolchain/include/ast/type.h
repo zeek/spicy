@@ -293,7 +293,7 @@ private:
  * provides implementations for some interface methods shared that are shared
  * by all types.
  */
-class TypeBase : public NodeBase, public hilti::trait::isType {
+class TypeBase : public NodeBase {
 public:
     using NodeBase::NodeBase;
 
