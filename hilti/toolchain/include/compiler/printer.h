@@ -69,13 +69,7 @@ public:
     template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
     Stream& operator<<(const T& t) {
         _flush_pending();
-        if constexpr ( std::is_base_of<trait::isType, T>::value ) {
-            if ( auto id = Type(t).typeID() )
-                _stream << *id;
-        }
-        else
-            hilti::detail::printAST(t, *this);
-
+        hilti::detail::printAST(t, *this);
         return *this;
     }
 

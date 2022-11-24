@@ -10,10 +10,6 @@ spicy::ctor::Unit : isCtor
 
 spicy::declaration::UnitHook : isDeclaration
 
-spicy::type::Bitfield : isType
-spicy::type::Sink : isType
-spicy::type::Unit : isType
-
 spicy::type::unit::item::Field : isUnitItem
 spicy::type::unit::item::Property : isUnitItem
 spicy::type::unit::item::Sink : isUnitItem
