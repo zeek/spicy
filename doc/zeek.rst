@@ -20,7 +20,7 @@ deeper into how to use all of this.
     package. To help you get started with that, Zeek's package manager
     can create a skeleton Spicy package by running::
 
-        # zkg create --features=spicy-analyzer --packagedir <packagedir>
+        # zkg create --features=spicy-protocol-analyzer --packagedir <packagedir>
 
     The generated files mark places that will need manual editing with
     ``TODO``. See the :ref:`tutorial <zkg_create_package>` for more on
@@ -163,7 +163,7 @@ an ``*.evt``.
 Analyzer Setup
 --------------
 
-You can define both protocol analyzers and file analyzers in an
+You can define protocol analyzers, packet analyzers and file analyzers in an
 ``*.evt`` file, per the following.
 
 .. rubric:: Protocol Analyzer
