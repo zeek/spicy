@@ -1,3 +1,7 @@
+1.6.0-dev.115 | 2022-12-01 13:59:34 +0100
+
+  * GH-1303: Fix incorrect offset computation in `advanceToNextData`. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.113 | 2022-11-18 11:48:35 +0100
 
   * GH-1294: Add library function to parse an address from string or bytes. (Robin Sommer, Corelight)

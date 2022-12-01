@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
@@ -850,6 +851,27 @@ TEST_CASE("View") {
 
         CHECK_EQ(view.size(), input.size() - advance);
         CHECK(view.startsWith("67890"_b));
+    }
+
+    SUBCASE("advanceToNextData") {
+        auto stream = Stream();
+        stream.append("A");
+        stream.append(nullptr, 1024);
+        stream.append("BC");
+
+        std::optional<View> view;
+        SUBCASE("view with zero offset") { view = stream.view(); }
+
+        SUBCASE("with with non-zero offset") {
+            // This is a regression test for GH-1303.
+            view = stream.view().sub(1, stream.end().offset() + 1);
+        }
+
+        REQUIRE(view);
+
+        auto ncur = view->advanceToNextData();
+        CHECK_EQ(ncur.offset(), 1025);
+        CHECK_EQ(ncur.data().str(), "BC");
     }
 
     SUBCASE("dataForPrint") {
