@@ -1,6 +1,6 @@
 ## Enable Gold linker if available.
 
-option(USE_GOLD "Use Gold linker" ON)
+option(USE_GOLD "Use Gold linker" OFF)
 
 set(GOLD_FOUND "no")
 
