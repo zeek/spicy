@@ -371,7 +371,9 @@ TEST_CASE("advance") {
 
         // Match on `A`.
         {
-            auto [rc, ncur] = re.tokenMatcher().advance(cur);
+            int rc;
+            hilti::rt::stream::View ncur;
+            std::tie(rc, ncur) = re.tokenMatcher().advance(cur);
             CHECK_EQ(rc, 1);
             CHECK_EQ(ncur, stream::View(cur.begin() + 1, cur.end()));
             cur = ncur;
@@ -388,7 +390,9 @@ TEST_CASE("advance") {
 
         // Match on `B`.
         {
-            auto [rc, ncur] = re.tokenMatcher().advance(cur);
+            int rc;
+            hilti::rt::stream::View ncur;
+            std::tie(rc, ncur) = re.tokenMatcher().advance(cur);
             CHECK_EQ(rc, 1);
             CHECK_EQ(ncur.offset(), 1 + 1024 + 1);
         }
