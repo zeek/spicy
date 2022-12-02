@@ -1,3 +1,9 @@
+1.6.0-dev.118 | 2022-12-02 12:20:30 +0100
+
+  * cmake/FindGoldLinker: Do not use gold by default (Arne Welzel, Corelight)
+
+  * cmake/FindGoldLinker: Put -fuse-ld=gold before existing flags (Arne Welzel, Corelight)
+
 1.6.0-dev.115 | 2022-12-01 13:59:34 +0100
 
   * GH-1303: Fix incorrect offset computation in `advanceToNextData`. (Benjamin Bannier, Corelight)
