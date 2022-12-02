@@ -125,4 +125,6 @@ STANDARD_OPERATOR_2x(unsigned_integer, CastToTime, Cast, type::Time(), type::Uns
                      type::Type_(type::Time()), "Interprets the value as number of seconds since the UNIX epoch.");
 STANDARD_OPERATOR_2x(unsigned_integer, CastToInterval, Cast, type::Interval(), type::UnsignedInteger(type::Wildcard()),
                      type::Type_(type::Interval()), "Interprets the value as number of seconds.");
+STANDARD_OPERATOR_2x(unsigned_integer, CastToBool, Cast, type::Bool(), type::SignedInteger(type::Wildcard()),
+                     type::Type_(type::Bool()), "Converts the value to a boolean by comparing against zero");
 } // namespace hilti::operator_

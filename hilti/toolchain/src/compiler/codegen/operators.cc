@@ -328,7 +328,9 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::map::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::map::In& n) { return fmt("%s.contains(%s)", op1(n), op0(n)); }
     result_t operator()(const operator_::map::IndexConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
-    result_t operator()(const operator_::map::IndexNonConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
+    result_t operator()(const operator_::map::IndexNonConst& n) {
+        return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS};
+    }
     result_t operator()(const operator_::map::Size& n) { return fmt("%s.size()", op0(n)); }
     result_t operator()(const operator_::map::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
@@ -441,7 +443,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         auto name = op0(n);
 
         if ( auto a = AttributeSet::find(f.function().attributes(), "&cxxname") ) {
-            if (auto s = a->valueAsString() )
+            if ( auto s = a->valueAsString() )
                 name = cxx::Expression(*s);
             else
                 logger().error(s, n);
@@ -484,7 +486,8 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     // Optional
     result_t operator()(const operator_::optional::Deref& n) {
-        return {fmt("::hilti::rt::optional::value(%s, \"%s\")", op0(n), n.op0().meta().location().render()), cxx::Side::LHS};
+        return {fmt("::hilti::rt::optional::value(%s, \"%s\")", op0(n), n.op0().meta().location().render()),
+                cxx::Side::LHS};
     }
 
     /// Port
@@ -787,6 +790,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     // Signed integer
 
+    result_t operator()(const operator_::signed_integer::CastToBool& n) { return fmt("::hilti::rt::Bool(%s)", op0(n)); }
     result_t operator()(const operator_::signed_integer::CastToInterval& n) {
         return fmt("::hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
                    ") * 1000000000, hilti::rt::Interval::NanosecondTag())",
@@ -879,6 +883,9 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::unsigned_integer::BitAnd& n) { return fmt("(%s & %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::BitOr& n) { return fmt("(%s | %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::BitXor& n) { return fmt("(%s ^ %s)", op0(n), op1(n)); }
+    result_t operator()(const operator_::unsigned_integer::CastToBool& n) {
+        return fmt("::hilti::rt::Bool(%s)", op0(n));
+    }
     result_t operator()(const operator_::unsigned_integer::CastToEnum& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("::hilti::rt::enum_::from_uint<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
@@ -948,8 +955,12 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::vector::iterator::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
     result_t operator()(const operator_::vector::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
-    result_t operator()(const operator_::vector::IndexConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
-    result_t operator()(const operator_::vector::IndexNonConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
+    result_t operator()(const operator_::vector::IndexConst& n) {
+        return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS};
+    }
+    result_t operator()(const operator_::vector::IndexNonConst& n) {
+        return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS};
+    }
     result_t operator()(const operator_::vector::Size& n) { return fmt("%s.size()", op0(n)); }
     result_t operator()(const operator_::vector::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
     result_t operator()(const operator_::vector::Sum& n) { return fmt("%s + %s", op0(n), op1(n)); }

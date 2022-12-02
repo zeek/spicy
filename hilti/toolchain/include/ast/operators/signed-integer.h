@@ -111,5 +111,7 @@ STANDARD_OPERATOR_2x(signed_integer, CastToEnum, Cast, operator_::typedType(1, "
                      "any of the target type's enumerator labels.");
 STANDARD_OPERATOR_2x(signed_integer, CastToInterval, Cast, type::Interval(), type::SignedInteger(type::Wildcard()),
                      type::Type_(type::Interval()), "Interprets the value as number of seconds.");
+STANDARD_OPERATOR_2x(signed_integer, CastToBool, Cast, type::Bool(), type::SignedInteger(type::Wildcard()),
+                     type::Type_(type::Bool()), "Converts the value to a boolean by comparing against zero");
 
 } // namespace hilti::operator_
