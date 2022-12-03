@@ -371,7 +371,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     /// Real
 
     result_t operator()(const operator_::real::CastToInterval& n) {
-        return fmt("::hilti::rt::Interval(%f, hilti::rt::Interval::NanosecondTag())", op0(n));
+        return fmt("::hilti::rt::Interval(%f, hilti::rt::Interval::SecondTag())", op0(n));
     }
     result_t operator()(const operator_::real::CastToTime& n) {
         return fmt("::hilti::rt::Time(%f, hilti::rt::Time::SecondTag())", op0(n));
