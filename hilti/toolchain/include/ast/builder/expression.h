@@ -245,7 +245,9 @@ inline Expression pack(Type type, const std::vector<Expression>& args, const Met
 
 inline Expression unpack(Type type, const std::vector<Expression>& args, const Meta& m = Meta()) {
     return expression::UnresolvedOperator(operator_::Kind::Unpack,
-                                          {hilti::expression::Type_(std::move(type), m), tuple(args, m)}, m);
+                                          {hilti::expression::Type_(std::move(type), m), tuple(args, m),
+                                           hilti::expression::Ctor(hilti::ctor::Bool(false))},
+                                          m);
 }
 
 inline Expression unset(Expression self, ID field, const Meta& m = Meta()) {

@@ -96,8 +96,10 @@ public:
     cxx::Expression coerce(const cxx::Expression& e, const Type& src, const Type& dst); // only for supported coercions
     cxx::Expression pack(const Expression& data, const std::vector<Expression>& args);
     cxx::Expression pack(const hilti::Type& t, const cxx::Expression& data, const std::vector<cxx::Expression>& args);
-    cxx::Expression unpack(const hilti::Type& t, const Expression& data, const std::vector<Expression>& args);
-    cxx::Expression unpack(const hilti::Type& t, const cxx::Expression& data, const std::vector<cxx::Expression>& args);
+    cxx::Expression unpack(const hilti::Type& t, const Expression& data, const std::vector<Expression>& args,
+                           bool throw_on_error);
+    cxx::Expression unpack(const hilti::Type& t, const cxx::Expression& data, const std::vector<cxx::Expression>& args,
+                           bool throw_on_error);
     void addDeclarationFor(const hilti::Type& t) { _need_decls.push_back(t); }
 
     cxx::Expression addTmp(const std::string& prefix, const cxx::Type& t);

@@ -6,10 +6,12 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/ast/ctors/bool.h>
 #include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/expressions/type.h>
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/address.h>
+#include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/bytes.h>
 #include <hilti/ast/types/error.h>
 #include <hilti/ast/types/integer.h>
@@ -98,7 +100,10 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
         if ( args.empty() )
             return type::Error();
 
-        return type::Result(type::Tuple({ops[0].type().as<type::Type_>().typeValue(), args[0].type()}, ops[0].meta()));
+        auto t = type::Tuple({ops[0].type().as<type::Type_>().typeValue(), args[0].type()}, ops[0].meta());
+
+        auto throw_on_error = ops[2].as<expression::Ctor>().ctor().as<ctor::Bool>().value();
+        return throw_on_error ? Type(t) : Type(type::Result(t));
     }
 
     bool isLhs() const { return false; }
@@ -106,7 +111,7 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
 
     const std::vector<Operand>& operands() const {
         static std::vector<Operand> _operands = {Operand{{}, type::Type_(type::Wildcard())},
-                                                 Operand{{}, type::Tuple(type::Wildcard())}};
+                                                 Operand{{}, type::Tuple(type::Wildcard())}, Operand({}, type::Bool())};
         return _operands;
     }
 
