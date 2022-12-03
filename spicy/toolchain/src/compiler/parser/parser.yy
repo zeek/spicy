@@ -35,7 +35,7 @@ namespace spicy { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 131
-%expect-rr 160
+%expect-rr 164
 
 %{
 
@@ -190,6 +190,7 @@ static int _field_width = 0;
 %token ON
 %token OPTIONAL
 %token OR
+%token PACK
 %token PLUSASSIGN
 %token PLUSPLUS
 %token PORT
@@ -226,6 +227,7 @@ static int _field_width = 0;
 %token UINT64
 %token UINT8
 %token UNIT
+%token UNPACK
 %token UNSET
 %token VAR
 %token VECTOR
@@ -238,7 +240,7 @@ static int _field_width = 0;
 %type <std::vector<hilti::Declaration>>              struct_fields
 %type <hilti::Type>                                  base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
 %type <hilti::Ctor>                                  ctor tuple struct_ regexp list vector map set
-%type <hilti::Expression>                            expr tuple_elem member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
+%type <hilti::Expression>                            expr tuple_elem tuple_expr member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
 %type <std::vector<hilti::Expression>>               opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
 %type <std::optional<hilti::Statement>>              opt_else_block
 %type <std::optional<hilti::Expression>>             opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr
@@ -903,6 +905,8 @@ expr_d        : expr_d '(' opt_exprs ')'         { $$ = hilti::expression::Unres
               | expr_e                           { $$ = std::move($1); }
 
 expr_e        : CAST type_param_begin type type_param_end '(' expr ')'   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Cast, {std::move($6), hilti::expression::Type_(std::move($3))}, __loc__); }
+              | PACK tuple_expr                  { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Pack, {std::move($2)}, __loc__); }
+              | UNPACK type_param_begin type type_param_end tuple_expr   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unpack, {hilti::expression::Type_(std::move($3)), std::move($5), hilti::expression::Ctor(hilti::ctor::Bool(true), __loc__)}, __loc__); }
               | BEGIN_ '(' expr ')'              { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Begin, {std::move($3)}, __loc__); }
               | END_ '(' expr ')'                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::End, {std::move($3)}, __loc__); }
               | NEW ctor                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Ctor(std::move($2), __loc__), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
@@ -1007,6 +1011,8 @@ opt_tuple_elems2
 
 tuple_elem    : expr                             { $$ = std::move($1); }
               | NONE                             { $$ = hilti::expression::Ctor(hilti::ctor::Null(__loc__), __loc__); }
+
+tuple_expr    : tuple                            { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
 
 list          : '[' opt_exprs ']'                { $$ = hilti::ctor::List(std::move($2), __loc__); }
               | LIST '(' opt_exprs ')'           { $$ = hilti::ctor::List(std::move($3), __loc__); }
