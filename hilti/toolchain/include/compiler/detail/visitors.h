@@ -58,6 +58,33 @@ std::string renderOperatorInstance(const expression::ResolvedOperator& o);
 void renderNode(const Node& n, std::ostream& out, bool include_scopes = false);
 void renderNode(const Node& n, logging::DebugStream stream, bool include_scopes = false);
 
+/**
+ * Folds an expression into a constant value if that's possible. Note that the
+ * current implementation is very, very basic, and covers just a few cases. If
+ * the function returns an error, that does not necessarily mean that the
+ * expression is not represeneting a constant value, but only that we aren't
+ * able to compute it.
+ */
+Result<Ctor> foldConstant(const Expression& expr);
+
+/**
+ * Folds an expression intoa constant value of a specific type, if that's
+ * possible. This behaves like the non-templated version of `foldConstant()`
+ * but adds a check that the resulting ``Ctor`` is of the expected type. If
+ * not, it will fail.
+ */
+template<typename Ctor>
+Result<Ctor> foldConstant(const Expression& expr) {
+    auto ctor = foldConstant(expr);
+    if ( ! ctor )
+        return ctor.error();
+
+    if ( auto ctor_ = ctor->tryAs<Ctor>() )
+        return *ctor_;
+    else
+        return result::Error("unexpected type");
+}
+
 namespace ast {
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 void buildScopes(const std::shared_ptr<hilti::Context>& ctx, Node* root, Unit* unit);

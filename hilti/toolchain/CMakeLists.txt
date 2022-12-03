@@ -83,6 +83,7 @@ set(SOURCES
     src/compiler/plugin.cc
     src/compiler/unit.cc
     src/compiler/visitors/coercer.cc
+    src/compiler/visitors/constant-folder.cc
     src/compiler/visitors/normalizer.cc
     src/compiler/visitors/printer.cc
     src/compiler/visitors/renderer.cc

@@ -34,7 +34,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 115
-%expect-rr 189
+%expect-rr 191
 
 %{
 
@@ -165,6 +165,7 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token INOUT "inout"
 %token INT "int"
 %token INTERVAL "interval"
+%token INTERVAL_NS "interval_ns"
 %token IOSRC "iosrc"
 %token ITERATOR "iterator"
 %token CONST_ITERATOR "const_iterator"
@@ -235,7 +236,7 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %type <std::vector<hilti::Declaration>>               struct_fields union_fields opt_union_fields
 %type <hilti::Type>                                   base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type
 %type <hilti::Ctor>                                   ctor tuple struct_ list regexp map set
-%type <hilti::Expression>                             expr tuple_elem tuple_expr member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
+%type <hilti::Expression>                             expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
 %type <std::vector<hilti::Expression>>                opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments
 %type <std::optional<hilti::Expression>>              opt_func_default_expr
 %type <hilti::Function>                               function_with_body method_with_body hook_with_body function_without_body
@@ -270,7 +271,6 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %type <std::pair<std::vector<hilti::Declaration>, std::vector<hilti::Statement>>> global_scope_items
 
 %type <double>   const_real
-%type <int64_t>  const_sint
 %type <uint64_t> const_uint
 
 %%
@@ -787,6 +787,7 @@ expr_e        : BEGIN_ '(' expr ')'              { $$ = hilti::expression::Unres
               | expr_f                           { $$ = std::move($1); }
 
 expr_f        : ctor                             { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
+              | ctor_expr                        { $$ = std::move($1); }
               | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::port(std::move($3), std::move($5), __loc__); }
               | '-' expr_g                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
               | '[' expr FOR local_id IN expr ']'
@@ -816,12 +817,6 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | CADDRESS                         { $$ = hilti::ctor::Address(hilti::ctor::Address::Value($1), __loc__); }
               | CADDRESS '/' CUINTEGER           { $$ = hilti::ctor::Network(hilti::ctor::Network::Value($1, $3), __loc__); }
               | CPORT                            { $$ = hilti::ctor::Port(hilti::ctor::Port::Value($1), __loc__); }
-              | INTERVAL '(' const_real ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
-                                                 }
-              | INTERVAL '(' const_sint ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
-                                                 }
               | TIME '(' const_real ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
                                                    catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
                                                  }
@@ -850,13 +845,12 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | tuple                            { $$ = std::move($1); }
               ;
 
+ctor_expr     : INTERVAL '(' expr ')'            { $$ = builder::namedCtor("interval", { std::move($3) }, __loc__); }
+              | INTERVAL_NS '(' expr ')'         { $$ = builder::namedCtor("interval_ns", { std::move($3) }, __loc__); }
+
 const_real    : CUREAL                           { $$ = $1; }
               | '+' CUREAL                       { $$ = $2; }
               | '-' CUREAL                       { $$ = -$2; }
-
-const_sint    : CUINTEGER                        { $$ = check_int64_range($1, true, __loc__); }
-              | '+' CUINTEGER                    { $$ = check_int64_range($2, true, __loc__); }
-              | '-' CUINTEGER                    { $$ = -check_int64_range($2, false, __loc__); }
 
 const_uint    : CUINTEGER                        { $$ = $1; }
               | '+' CUINTEGER                    { $$ = $2; }

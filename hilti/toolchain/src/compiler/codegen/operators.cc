@@ -305,6 +305,31 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::interval::Sum& n) { return binary(n, "+"); }
     result_t operator()(const operator_::interval::Unequal& n) { return binary(n, "!="); }
 
+    result_t operator()(const operator_::interval::CtorSignedIntegerSecs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%s, hilti::rt::Interval::SecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::interval::CtorSignedIntegerNs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%s, hilti::rt::Interval::NanosecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::interval::CtorUnsignedIntegerSecs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%s, hilti::rt::Interval::SecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::interval::CtorUnsignedIntegerNs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%s, hilti::rt::Interval::NanosecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::interval::CtorRealSecs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%f, hilti::rt::Interval::SecondTag())", args[0]);
+    }
+
     // List
     result_t operator()(const operator_::list::iterator::IncrPostfix& n) { return fmt("%s++", op0(n)); }
     result_t operator()(const operator_::list::iterator::IncrPrefix& n) { return fmt("++%s", op0(n)); }

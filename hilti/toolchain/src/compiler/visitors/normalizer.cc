@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/ast/ctors/integer.h>
+#include <hilti/ast/ctors/interval.h>
 #include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/detail/operator-registry.h>
@@ -27,6 +29,12 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
                     util::fmt("[%s] %s -> expression %s (%s)", old.typename_(), old, nexpr, old.location()));
     }
 
+    // Log debug message recording resolving a ctor.
+    void logChange(const Node& old, const Ctor& nexpr) {
+        HILTI_DEBUG(logging::debug::Normalizer,
+                    util::fmt("[%s] %s -> ctor %s (%s)", old.typename_(), old, nexpr, old.location()));
+    }
+
     // Log debug message recording resolving a statement.
     void logChange(const Node& old, const Statement& nstmt) {
         HILTI_DEBUG(logging::debug::Normalizer,
@@ -42,6 +50,31 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     // Log debug message recording attribute normalizations.
     void logChange(const Node& old, const Attribute& nattr) {
         HILTI_DEBUG(logging::debug::Normalizer, util::fmt("%s -> %s (%s)", old, nattr, old.location()));
+    }
+
+    auto callArgument(const expression::ResolvedOperatorBase& o, int i) {
+        auto ctor = o.op1().as<expression::Ctor>().ctor();
+
+        if ( auto x = ctor.tryAs<ctor::Coerced>() )
+            ctor = x->coercedCtor();
+
+        return ctor.as<ctor::Tuple>().value()[i];
+    }
+
+    // Helper to replace an type constructor expression that receives a
+    // constant argument with a corresponding ctor expression.
+    template<typename Ctor, typename Operator>
+    void tryReplaceCtorExpression(const Operator& op, position_t p, std::function<hilti::Ctor(const Ctor& ctor)> cb) {
+        if ( auto ctor = detail::foldConstant<Ctor>(callArgument(op, 0)) ) {
+            try {
+                auto i = cb(*ctor);
+                logChange(p.node, i);
+                p.node = expression::Ctor(std::move(i));
+                modified = true;
+            } catch ( hilti::rt::RuntimeError& e ) {
+                p.node.addError(e.what());
+            }
+        }
     }
 
     void operator()(const declaration::Function& u, position_t p) {
@@ -123,6 +156,36 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
                 return;
             }
         }
+    }
+
+    void operator()(const operator_::interval::CtorSignedIntegerSecs& op, position_t p) {
+        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
+            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::SecondTag()));
+        });
+    }
+
+    void operator()(const operator_::interval::CtorUnsignedIntegerSecs& op, position_t p) {
+        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
+            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::SecondTag()));
+        });
+    }
+
+    void operator()(const operator_::interval::CtorSignedIntegerNs& op, position_t p) {
+        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
+            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::NanosecondTag()));
+        });
+    }
+
+    void operator()(const operator_::interval::CtorUnsignedIntegerNs& op, position_t p) {
+        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
+            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::NanosecondTag()));
+        });
+    }
+
+    void operator()(const operator_::interval::CtorRealSecs& op, position_t p) {
+        tryReplaceCtorExpression<ctor::Real>(op, p, [](const auto& ctor) {
+            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::SecondTag()));
+        });
     }
 
     void operator()(const statement::If& n, position_t p) {

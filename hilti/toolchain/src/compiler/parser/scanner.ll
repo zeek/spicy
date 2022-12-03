@@ -117,6 +117,7 @@ init                  return token::INIT;
 inout                 return token::INOUT;
 int                   return token::INT;
 interval              return token::INTERVAL;
+interval_ns           return token::INTERVAL_NS;
 iterator              return token::ITERATOR;
 list                  return token::LIST;
 local                 return token::LOCAL;

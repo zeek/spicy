@@ -800,7 +800,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const type::Interval& n) { out << const_(n) << "interval"; }
 
-    void operator()(const type::Member& n) { out << const_(n) << "<member>"; }
+    void operator()(const type::Member& n) { out << const_(n) << n.id(); }
 
     void operator()(const type::Network& n) { out << const_(n) << "net"; }
 

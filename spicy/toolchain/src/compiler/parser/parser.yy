@@ -34,7 +34,7 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 131
+%expect 129
 %expect-rr 164
 
 %{
@@ -240,7 +240,8 @@ static int _field_width = 0;
 %type <std::vector<hilti::Declaration>>              struct_fields
 %type <hilti::Type>                                  base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
 %type <hilti::Ctor>                                  ctor tuple struct_ regexp list vector map set
-%type <hilti::Expression>                            expr tuple_elem tuple_expr member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
+%type <hilti::Expression>                            expr tuple_elem member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
+%type <hilti::Expression>                            expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
 %type <std::vector<hilti::Expression>>               opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
 %type <std::optional<hilti::Statement>>              opt_else_block
 %type <std::optional<hilti::Expression>>             opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr
@@ -915,6 +916,7 @@ expr_e        : CAST type_param_begin type type_param_end '(' expr ')'   { $$ = 
               | expr_f                           { $$ = std::move($1); }
 
 expr_f        : ctor                             { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
+              | ctor_expr                        { $$ = std::move($1); }
               | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::port(std::move($3), std::move($5), __loc__); }
               | '-' expr_g                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
               | '[' expr FOR local_id IN expr ']'
@@ -949,13 +951,6 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(check_int64_range($2, true, __loc__), 64, __loc__); }
               | '-' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(-check_int64_range($2, false, __loc__), 64, __loc__); }
               | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
-              | INTERVAL '(' const_real ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
-                                                 }
-              | INTERVAL '(' const_sint ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
-                                                 }
-              | INTERVAL_NS '(' const_sint ')'   { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::NanosecondTag()), __loc__); }
               | TIME '(' const_real ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
                                                    catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
                                                  }
@@ -982,6 +977,9 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | tuple                            { $$ = std::move($1); }
               | vector                           { $$ = std::move($1); }
               ;
+
+ctor_expr     : INTERVAL '(' expr ')'            { $$ = hilti::builder::namedCtor("interval", { std::move($3) }, __loc__); }
+              | INTERVAL_NS '(' expr ')'         { $$ = hilti::builder::namedCtor("interval_ns", { std::move($3) }, __loc__); }
 
 const_real    : CUREAL                           { $$ = $1; }
               | '+' CUREAL                       { $$ = $2; }

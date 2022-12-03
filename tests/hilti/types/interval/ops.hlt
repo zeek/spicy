@@ -7,6 +7,8 @@ import hilti;
 
 global i1 = interval(2.5);
 global i2 = interval(1.5);
+global i3 = interval(10 + 15);
+global i4 = interval(10.0 + 15.0);
 
 hilti::print(i1);
 hilti::print(i2);
@@ -29,5 +31,10 @@ assert i2 <= i2;
 
 assert cast<interval>(5) == interval(5.0);
 assert cast<interval>(5.0) == interval(5.0);
+
+assert i3 == interval(25.0);
+assert i3 == i4;
+
+assert interval_ns(2500000000) == i1;
 
 }
