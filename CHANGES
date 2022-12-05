@@ -3923,7 +3923,7 @@ x:
 
   * Fix ADL for `rt::to_string`. (Benjamin Bannier, Corelight)
 
-  * Fix `rt::util::split` for empty delimter case. (Benjamin Bannier, Corelight)
+  * Fix `rt::util::split` for empty delimiter case. (Benjamin Bannier, Corelight)
 
 0.4.0-364 | 2020-06-04 08:40:25 +0200
 

@@ -78,7 +78,9 @@ struct State {
     operator bool() const { return __filters && (*__filters).size(); }
 
     /** Dummy struct capturing the type's name for debug purposes. */
-    using _ParserDummy = struct { const char* name; };
+    using _ParserDummy = struct {
+        const char* name;
+    };
 
     /** Pseudo-parser object. It just needs to have a `name`. */
     inline static _ParserDummy __parser = _ParserDummy{.name = debug_type_name};
