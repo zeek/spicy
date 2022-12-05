@@ -8,6 +8,7 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/node.h>
 #include <hilti/base/type_erase.h>
+#include <hilti/base/util.h>
 
 namespace hilti {
 
@@ -162,7 +163,14 @@ public:
 
     std::optional<ID> resolvedID() const { return _state().resolved_id; }
 
-    void setCxxID(ID id) { _state().cxx = std::move(id); }
+    void setCxxID(ID id) {
+        // We always normalize cxx IDs so they refer to fully qualified names.
+        if ( ! util::startsWith(id, "::") )
+            _state().cxx = util::fmt("::%s", id);
+        else
+            _state().cxx = std::move(id);
+    }
+
     void setTypeID(ID id) { _state().id = std::move(id); }
     void addFlag(type::Flag f) { _state().flags += f; }
 
