@@ -12,6 +12,10 @@
 
     Computes the bit-wise 'xor' of the two integers.
 
+.. spicy:operator:: integer::Cast bool cast<bool-type>(int)
+
+    Converts the value to a boolean by comparing against zero
+
 .. spicy:operator:: integer::Cast enum cast<enum-type>(int)
 
     Converts the value into an enum instance. The value does *not* need to

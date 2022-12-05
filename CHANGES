@@ -1,3 +1,7 @@
+1.6.0-dev.120 | 2022-12-05 09:30:26 +0100
+
+  * Explicitly type integer to boolean cast. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.118 | 2022-12-02 12:20:30 +0100
 
   * cmake/FindGoldLinker: Do not use gold by default (Arne Welzel, Corelight)
