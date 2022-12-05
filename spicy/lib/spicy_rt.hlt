@@ -11,7 +11,7 @@ public type UnitAlreadyConnected = exception &cxxname="::spicy::rt::UnitAlreadyC
 public type SinkState = __library_type("::spicy::rt::sink::detail::State*");
 
 public type ParsedUnit = __library_type("::spicy::rt::ParsedUnit");
-public type TypeInfo = __library_type("const hilti::rt::TypeInfo*");
+public type TypeInfo = __library_type("hilti::rt::TypeInfo const*");
 
 # Type for a Sink instance. When adding methods here, extend the C++-side spicy::rt::Sink type as well.
 public type Sink = struct {

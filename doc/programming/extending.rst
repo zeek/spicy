@@ -249,7 +249,7 @@ three options:
 
    .. spicy-code::
 
-       public type MyType = __library_type("::MyType");
+       public type MyType = __library_type("MyType");
 
    Then you can use ``MyType`` as as type in Spicy-side declarations.
    The name given to ``__library_type`` works similar to function
