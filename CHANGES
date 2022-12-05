@@ -1,3 +1,7 @@
+1.6.0-dev.122 | 2022-12-05 09:31:26 +0100
+
+  * GH-1311: Validate that unit using `self.context()` declares `%context`. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.120 | 2022-12-05 09:30:26 +0100
 
   * Explicitly type integer to boolean cast. (Benjamin Bannier, Corelight)

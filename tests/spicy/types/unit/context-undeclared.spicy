@@ -1,0 +1,10 @@
+# @TEST-DOC: Validates that `self.context()` can only be used in unit with `%context`. This is a regression test for #1311.
+#
+# @TEST-EXEC-FAIL: spicyc -dp %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+type X = unit {
+    : uint8 { self.context(); }
+};

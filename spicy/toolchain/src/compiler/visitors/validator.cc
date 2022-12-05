@@ -863,6 +863,16 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             error("unit type cannot be a filter, %filter missing", p);
     }
 
+    void operator()(const operator_::unit::ContextConst& n, position_t p) {
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->contextType() )
+            error("context() used with a unit which did not declare %context", p);
+    }
+
+    void operator()(const operator_::unit::ContextNonConst& n, position_t p) {
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->contextType() )
+            error("context() used with a unit which did not declare %context", p);
+    }
+
     void operator()(const operator_::unit::Forward& n, position_t p) {
         if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->isFilter() )
             error("unit type cannot be a filter, %filter missing", p);
