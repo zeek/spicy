@@ -1,3 +1,21 @@
+1.6.0-dev.131 | 2022-12-06 10:37:30 +0100
+
+  * Drop redundant leading `::` for C++ entities in script land. (Benjamin Bannier, Corelight)
+
+  * GH-1285: Remove implemented TODO in docs. (Benjamin Bannier, Corelight)
+
+  * Normalize names used in `__library_type`. (Benjamin Bannier, Corelight)
+
+  * Normalize any type `cxxID` set through C++ API. (Benjamin Bannier, Corelight)
+
+  * Normalize `&cxxname` values to be fully qualified. (Benjamin Bannier, Corelight)
+
+  * Expose function instead of macro for `hilti::debug`. (Benjamin Bannier, Corelight)
+
+  * Fix duplicate prefixing of `::` for prototypes generated for `&cxxname`. (Benjamin Bannier, Corelight)
+
+  * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.122 | 2022-12-05 09:31:26 +0100
 
   * GH-1311: Validate that unit using `self.context()` declares `%context`. (Benjamin Bannier, Corelight)
@@ -3923,7 +3941,7 @@ x:
 
   * Fix ADL for `rt::to_string`. (Benjamin Bannier, Corelight)
 
-  * Fix `rt::util::split` for empty delimter case. (Benjamin Bannier, Corelight)
+  * Fix `rt::util::split` for empty delimiter case. (Benjamin Bannier, Corelight)
 
 0.4.0-364 | 2020-06-04 08:40:25 +0200
 

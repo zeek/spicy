@@ -66,7 +66,7 @@ const hilti::rt::TypeInfo __ti_Test_Y =
 } // namespace __hlt::type_info
 
 TEST_CASE("traverse structs") {
-    // Check that we can traverse the structs and get exepcted values.
+    // Check that we can traverse the structs and get expected values.
 
     auto sx = StrongReference<Test::X>({42, "foo", Test::Y{true, 3.14}});
     auto p = type_info::value::Parent(sx);

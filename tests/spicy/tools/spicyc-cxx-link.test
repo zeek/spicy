@@ -28,8 +28,8 @@ std::string hi(const std::string& name) { return "Hi, " + name + "!"; }
 # @TEST-START-FILE foo.spicy
 module foo;
 
-public function hello(name: string): string &cxxname="::hello";
-public function hi(name: string): string &cxxname="::hi";
+public function hello(name: string): string &cxxname="hello";
+public function hi(name: string): string &cxxname="hi";
 
 print hello("world");
 print hi("world");

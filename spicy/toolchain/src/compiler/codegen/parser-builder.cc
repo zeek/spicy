@@ -456,7 +456,7 @@ struct ProductionVisitor
         }
 
         else if ( field->isTransient() ) {
-            // We won't have a field to store the valule in, create a temporary.
+            // We won't have a field to store the value in, create a temporary.
             // auto init = builder::default_(field->itemType(), field->arguments());
             auto dst = builder()->addTmp(fmt("transient_%s", field->id()), field->itemType());
             pushDestination(dst);
@@ -1400,7 +1400,7 @@ struct ProductionVisitor
                 sync_points.emplace_back();
         }
 
-        // Group adjecent fields with same sync point.
+        // Group adjacent fields with same sync point.
         std::vector<std::pair<std::vector<uint64_t>, std::optional<uint64_t>>> groups;
         for ( uint64_t i = 0; i < sync_points.size(); ++i ) {
             const auto& sync_point = sync_points[i];

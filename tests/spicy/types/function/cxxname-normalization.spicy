@@ -1,0 +1,16 @@
+# @TEST-DOC: Validates normalization of `&cxxname` values.
+
+# @TEST-EXEC: spicyc -c %INPUT -o /dev/null -D normalizer >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public function f1(): string &cxxname="foo::bar";
+public function f2(): string &cxxname="::foo::baz";
+public function f3(): string &cxxname="bar";
+public function f4(): string &cxxname="::baz";
+
+print f1();
+print f2();
+print f3();
+print f4();

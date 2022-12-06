@@ -758,7 +758,8 @@ bool Visitor::resolveMethodCall(const expression::UnresolvedOperator& u, positio
 
     auto fields = stype->fields(member->id());
     if ( fields.empty() ) {
-        p.node.addError(util::fmt("struct type does not have a method `%s`", member->id()));
+        p.node.addError(
+            util::fmt("struct type %s does not have a method `%s`", stype->meta().location(), member->id()));
         return false; // Continue trying to find another match.
     }
 

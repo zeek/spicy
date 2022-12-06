@@ -13,7 +13,7 @@ namespace hilti::expression {
 class TypeInfo : public NodeBase, public trait::isExpression {
 public:
     TypeInfo(Expression e, Meta m = Meta())
-        : NodeBase(nodes(std::move(e), Type(type::Library("const hilti::rt::TypeInfo*"))), std::move(m)) {}
+        : NodeBase(nodes(std::move(e), Type(type::Library("hilti::rt::TypeInfo const*"))), std::move(m)) {}
 
     const auto& expression() const { return child<Expression>(0); }
 

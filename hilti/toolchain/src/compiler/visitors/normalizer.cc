@@ -6,6 +6,7 @@
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/visitors.h>
 #include <hilti/compiler/unit.h>
 
@@ -20,7 +21,7 @@ namespace {
 struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     bool modified = false;
 
-    // Log debug message recording resolving a epxxression.
+    // Log debug message recording resolving a expression.
     void logChange(const Node& old, const Expression& nexpr) {
         HILTI_DEBUG(logging::debug::Normalizer,
                     util::fmt("[%s] %s -> expression %s (%s)", old.typename_(), old, nexpr, old.location()));
@@ -36,6 +37,11 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     void logChange(const Node& old, const Type& ntype) {
         HILTI_DEBUG(logging::debug::Normalizer,
                     util::fmt("[%s] %s -> type %s (%s)", old.typename_(), old, ntype, old.location()));
+    }
+
+    // Log debug message recording attribute normalizations.
+    void logChange(const Node& old, const Attribute& nattr) {
+        HILTI_DEBUG(logging::debug::Normalizer, util::fmt("%s -> %s (%s)", old, nattr, old.location()));
     }
 
     void operator()(const declaration::Function& u, position_t p) {
@@ -142,6 +148,18 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
         if ( ! t.selfRef() )
             type::Struct::setSelf(&p.node);
     }
+
+    void operator()(const Attribute& n, position_t p) {
+        // Normalize values passed as `&cxxname` so they always are interpreted as FQNs by enforcing leading `::`.
+        if ( const auto& tag = n.tag(); tag == "&cxxname" && n.hasValue() ) {
+            if ( const auto& value = n.valueAsString(); value && ! util::startsWith(*value, "::") ) {
+                auto n = Attribute(tag, builder::string(util::fmt("::%s", *value)));
+                logChange(p.node, n);
+                p.node = n;
+                modified = true;
+            }
+        }
+    }
 };
 
 } // anonymous namespace
@@ -215,7 +233,7 @@ struct VisitorComputeCanonicalIDs : public visitor::PreOrder<ID, VisitorComputeC
         // inside which our standard scheme wouldn't assign any canonical IDs
         // because we don't descend down into expressions. So we do this
         // manually here. However, we need to "invent" a random ID for the type
-        // as their's no globally reachable declaration.
+        // as theirs no globally reachable declaration.
         if ( ! d.type().isA<type::Struct>() )
             return {};
 

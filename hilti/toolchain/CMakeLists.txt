@@ -51,6 +51,7 @@ set(SOURCES
     src/ast/type.cc
     src/ast/types/enum.cc
     src/ast/types/integer.cc
+    src/ast/types/library.cc
     src/ast/types/struct.cc
     src/ast/types/tuple.cc
     src/base/code-formatter.cc
