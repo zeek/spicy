@@ -195,7 +195,7 @@ std::string replace(std::string s, std::string_view o, std::string_view n);
  *
  * \note This function is not UTF8-aware.
  */
-inline bool startsWith(const std::string& s, const std::string& prefix) { return s.find(prefix) == 0; }
+bool startsWith(const std::string& s, const std::string& prefix);
 
 /**
  * Python-style enumerate() that returns an iterable yielding pairs `(index,

@@ -1,3 +1,7 @@
+1.6.0-dev.133 | 2022-12-07 08:44:38 +0100
+
+  * Improve efficiency of `startsWith` for long inputs. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.131 | 2022-12-06 10:37:30 +0100
 
   * Drop redundant leading `::` for C++ entities in script land. (Benjamin Bannier, Corelight)
