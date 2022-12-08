@@ -55,4 +55,8 @@ function void p(stream x) {
 global stream x2 = stream(b"abc");
 p(x2);
 
+global auto q = b"def";
+global auto qq = stream(b"abc" + q);
+assert |qq| == 6 && qq.starts_with(b"abcdef");
+
 }

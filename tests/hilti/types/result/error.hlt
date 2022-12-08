@@ -10,4 +10,7 @@ global auto e = error("test");
 hilti::print(e);
 hilti::print(e.description());
 
+global s = " 2";
+assert error("test 2").description() == error("test" + s).description();
+
 }

@@ -5,7 +5,4 @@
 [error] <...>/ctor-fail.spicy:13:16: integer value out of range for type
 [error] <...>/ctor-fail.spicy:14:17: integer value out of range for type
 [error] <...>/ctor-fail.spicy:15:17: integer value out of range for type
-[error] <...>/ctor-fail.spicy:18:16: integer value out of range for type
-[error] <...>/ctor-fail.spicy:19:17: integer value out of range for type
-[error] <...>/ctor-fail.spicy:20:17: integer value out of range for type
 [error] spicyc: aborting after errors

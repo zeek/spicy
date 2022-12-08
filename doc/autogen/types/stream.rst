@@ -38,6 +38,10 @@
 
     Returns an iterator to the beginning of the container's content.
 
+.. spicy:operator:: stream::Call stream stream(bytes)
+
+    Creates a stream instance preinitialized with the given data.
+
 .. spicy:operator:: stream::End <iterator> end(<container>)
 
     Returns an iterator to the end of the container's content.

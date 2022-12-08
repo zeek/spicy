@@ -12,6 +12,7 @@ global i2 = interval(-110.5);
 hilti::print(t1);
 assert t1.seconds() == 1295415110.5;
 assert t1.nanoseconds() == cast<uint<64>>(1295415110.5 * 1e9);
+assert time_ns(1295415110500000000) == t1;
 
 hilti::print(t1+i);
 hilti::print(time(1295418710));
@@ -30,5 +31,9 @@ assert t1 >= t1;
 assert t1 <= t1;
 
 assert cast<time>(1295416110) == time(1295416110);
+
+global int<32> x = 500;
+assert time(1000) == time(2 * x);
+assert time_ns(1000) == time_ns(2 * x);
 
 }

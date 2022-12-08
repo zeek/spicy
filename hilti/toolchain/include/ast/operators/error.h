@@ -7,6 +7,8 @@
 
 namespace hilti::operator_ { // NOLINT(modernize-concat-nested-namespaces)
 
+STANDARD_KEYWORD_CTOR(error, Ctor, "error", type::Error(), type::String(), "Creates an error with the given message.");
+
 BEGIN_METHOD(error, Description)
     const auto& signature() const {
         static auto _signature = Signature{.self = type::Error(),

@@ -5,5 +5,5 @@
 [error] <...>/ctor-fail.spicy:1:38: invalid character
 [error] <...>/ctor-fail.spicy:1:38: invalid character
 [error] <...>/ctor-fail.spicy:1:38: invalid character
-[error] <...>/ctor-fail.spicy:1:38: syntax error, unexpected ')', expecting unsigned integer value or '+'
+[error] <...>/ctor-fail.spicy:1:38: syntax error, unexpected ')'
 [error] spicyc: parse error

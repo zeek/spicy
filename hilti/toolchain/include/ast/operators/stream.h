@@ -55,6 +55,9 @@ STANDARD_OPERATOR_2(stream::iterator, Sum, type::stream::Iterator(), type::const
 STANDARD_OPERATOR_2(stream::iterator, SumAssign, type::stream::Iterator(), type::stream::Iterator(),
                     type::UnsignedInteger(64), "Advances the iterator by the given number of stream.")
 
+STANDARD_KEYWORD_CTOR(stream, Ctor, "stream", type::Stream(), type::constant(type::Bytes()),
+                      "Creates a stream instance preinitialized with the given data.");
+
 BEGIN_METHOD(stream::iterator, Offset)
     const auto& signature() const {
         static auto _signature = Signature{.self = type::constant(type::stream::Iterator()),

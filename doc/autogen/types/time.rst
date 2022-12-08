@@ -12,6 +12,26 @@
 
 .. rubric:: Operators
 
+.. spicy:operator:: time::Call time time(int)
+
+    Creates an time interpreting the argument as number of seconds.
+
+.. spicy:operator:: time::Call time time(real)
+
+    Creates an time interpreting the argument as number of seconds.
+
+.. spicy:operator:: time::Call time time(uint)
+
+    Creates an time interpreting the argument as number of seconds.
+
+.. spicy:operator:: time::Call time time_ns(int)
+
+    Creates an time interpreting the argument as number of nanoseconds.
+
+.. spicy:operator:: time::Call time time_ns(uint)
+
+    Creates an time interpreting the argument as number of nanoseconds.
+
 .. spicy:operator:: time::Difference interval t:time <sp> op:- <sp> t:time
 
     Returns the difference of the times.

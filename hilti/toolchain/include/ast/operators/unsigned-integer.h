@@ -127,4 +127,22 @@ STANDARD_OPERATOR_2x(unsigned_integer, CastToInterval, Cast, type::Interval(), t
                      type::Type_(type::Interval()), "Interprets the value as number of seconds.");
 STANDARD_OPERATOR_2x(unsigned_integer, CastToBool, Cast, type::Bool(), type::SignedInteger(type::Wildcard()),
                      type::Type_(type::Bool()), "Converts the value to a boolean by comparing against zero");
+
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorSigned8, "uint8", type::UnsignedInteger(8),
+                      type::SignedInteger(type::Wildcard()), "Creates a 8-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorSigned16, "uint16", type::UnsignedInteger(16),
+                      type::SignedInteger(type::Wildcard()), "Creates a 16-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorSigned32, "uint32", type::UnsignedInteger(32),
+                      type::SignedInteger(type::Wildcard()), "Creates a 32-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorSigned64, "uint64", type::UnsignedInteger(64),
+                      type::SignedInteger(type::Wildcard()), "Creates a 64-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorUnsigned8, "uint8", type::UnsignedInteger(8),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 8-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorUnsigned16, "uint16", type::UnsignedInteger(16),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 16-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorUnsigned32, "uint32", type::UnsignedInteger(32),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 32-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorUnsigned64, "uint64", type::UnsignedInteger(64),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 64-bit unsigned integer value.");
+
 } // namespace hilti::operator_

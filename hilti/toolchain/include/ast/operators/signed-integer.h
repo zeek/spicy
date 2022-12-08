@@ -114,4 +114,21 @@ STANDARD_OPERATOR_2x(signed_integer, CastToInterval, Cast, type::Interval(), typ
 STANDARD_OPERATOR_2x(signed_integer, CastToBool, Cast, type::Bool(), type::SignedInteger(type::Wildcard()),
                      type::Type_(type::Bool()), "Converts the value to a boolean by comparing against zero");
 
+STANDARD_KEYWORD_CTOR(signed_integer, CtorSigned8, "int8", type::SignedInteger(8),
+                      type::SignedInteger(type::Wildcard()), "Creates a 8-bit signed integer value.");
+STANDARD_KEYWORD_CTOR(signed_integer, CtorSigned16, "int16", type::SignedInteger(16),
+                      type::SignedInteger(type::Wildcard()), "Creates a 16-bit signed integer value.");
+STANDARD_KEYWORD_CTOR(signed_integer, CtorSigned32, "int32", type::SignedInteger(32),
+                      type::SignedInteger(type::Wildcard()), "Creates a 32-bit signed integer value.");
+STANDARD_KEYWORD_CTOR(signed_integer, CtorSigned64, "int64", type::SignedInteger(64),
+                      type::SignedInteger(type::Wildcard()), "Creates a 64-bit signed integer value.");
+STANDARD_KEYWORD_CTOR(signed_integer, CtorUnsigned8, "int8", type::SignedInteger(8),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 8-bit signed integer value.");
+STANDARD_KEYWORD_CTOR(signed_integer, CtorUnsigned16, "int16", type::SignedInteger(16),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 16-bit signed integer value.");
+STANDARD_KEYWORD_CTOR(signed_integer, CtorUnsigned32, "int32", type::SignedInteger(32),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 32-bit signed integer value.");
+STANDARD_KEYWORD_CTOR(signed_integer, CtorUnsigned64, "int64", type::SignedInteger(64),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 64-bit signed integer value.");
+
 } // namespace hilti::operator_

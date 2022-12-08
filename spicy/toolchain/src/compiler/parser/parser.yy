@@ -34,7 +34,7 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 129
+%expect 126
 %expect-rr 164
 
 %{
@@ -239,8 +239,7 @@ static int _field_width = 0;
 %type <hilti::Declaration>                           local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
 %type <std::vector<hilti::Declaration>>              struct_fields
 %type <hilti::Type>                                  base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
-%type <hilti::Ctor>                                  ctor tuple struct_ regexp list vector map set
-%type <hilti::Expression>                            expr tuple_elem member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
+%type <hilti::Ctor>                                  ctor tuple struct_ regexp list vector map set unit_field_ctor
 %type <hilti::Expression>                            expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
 %type <std::vector<hilti::Expression>>               opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
 %type <std::optional<hilti::Statement>>              opt_else_block
@@ -274,11 +273,6 @@ static int _field_width = 0;
 
 %type <std::pair<std::vector<hilti::Declaration>, std::vector<hilti::Statement>>> global_scope_items
 
-%type <double>   const_real
-%type <uint64_t> const_uint
-%type <int64_t>  const_sint
-
-
 // Spicy-only
 %type <std::optional<hilti::ID>>                            opt_unit_field_id
 %type <spicy::Engine>                                       opt_unit_field_engine opt_hook_engine
@@ -288,6 +282,9 @@ static int _field_width = 0;
 %type <std::vector<spicy::type::unit::Item>>                unit_items opt_unit_items
 %type <spicy::type::unit::item::switch_::Case>              unit_switch_case
 %type <std::vector<spicy::type::unit::item::switch_::Case>> unit_switch_cases
+
+%type <int64_t>  const_sint
+%type <uint64_t> const_uint
 
 %%
 
@@ -653,7 +650,7 @@ enum_label    : local_id                         { $$ = hilti::type::enum_::Labe
               | local_id '=' CUINTEGER           { $$ = hilti::type::enum_::Label(std::move($1), $3, __loc__); }
               ;
 
-bitfield_type : BITFIELD '(' const_uint ')'
+bitfield_type : BITFIELD '(' CUINTEGER ')'
                                                  { _field_width = $3; }
                 '{' opt_bitfield_bits '}'
                                                  { $$ = spicy::type::Bitfield($3, $7, __loc__); }
@@ -669,9 +666,9 @@ bitfield_bits
               | bitfield_bits_spec               { $$ = std::vector<spicy::type::bitfield::Bits>(); $$.push_back(std::move($1)); }
 
 bitfield_bits_spec
-              : local_id ':' const_uint DOTDOT const_uint opt_attributes ';'
+              : local_id ':' CUINTEGER DOTDOT CUINTEGER opt_attributes ';'
                                                  { $$ = spicy::type::bitfield::Bits(std::move($1), $3, $5, _field_width, std::move($6), __loc__); }
-              | local_id ':' const_uint opt_attributes ';'
+              | local_id ':' CUINTEGER opt_attributes ';'
                                                  { $$ = spicy::type::bitfield::Bits(std::move($1), $3, $3, _field_width, std::move($4), __loc__); }
 
 /* --- Begin of Spicy units --- */
@@ -716,7 +713,7 @@ unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_fiel
                                                      $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__);
                                                  }
 
-              | opt_unit_field_id opt_unit_field_engine ctor       opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+              | opt_unit_field_id opt_unit_field_engine unit_field_ctor       opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__); }
 
               | opt_unit_field_id opt_unit_field_engine scoped_id  opt_unit_field_args opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
@@ -724,6 +721,25 @@ unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_fiel
 
               | opt_unit_field_id opt_unit_field_engine '(' unit_field_in_container ')' opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($4), std::move($2), {}, std::move($6), std::move($9), std::move($7), std::move($8), std::move($10), __loc__); }
+
+
+const_sint    : CUINTEGER                        { $$ = check_int64_range($1, true, __loc__); }
+              | '+' CUINTEGER                    { $$ = check_int64_range($2, true, __loc__); }
+              | '-' CUINTEGER                    { $$ = -check_int64_range($2, false, __loc__); }
+
+const_uint    : CUINTEGER                        { $$ = $1; }
+              | '+' CUINTEGER                    { $$ = $2; }
+
+unit_field_ctor
+              : ctor
+              | UINT8 '(' const_uint ')'         { $$ = hilti::ctor::UnsignedInteger($3, 8, __loc__); }
+              | UINT16 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 16, __loc__); }
+              | UINT32 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 32, __loc__); }
+              | UINT64 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 64, __loc__); }
+              | INT8 '(' const_sint ')'          { $$ = hilti::ctor::SignedInteger($3, 8, __loc__); }
+              | INT16 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 16, __loc__); }
+              | INT32 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 32, __loc__); }
+              | INT64 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 64, __loc__); }
 
 unit_field_in_container
               : ctor opt_unit_field_args opt_attributes
@@ -945,29 +961,14 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | CPORT                            { $$ = hilti::ctor::Port(hilti::ctor::Port::Value($1), __loc__); }
               | CNULL                            { $$ = hilti::ctor::Null(__loc__); }
               | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
-
-              | const_real                       { $$ = hilti::ctor::Real($1, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
               | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(check_int64_range($2, true, __loc__), 64, __loc__); }
               | '-' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(-check_int64_range($2, false, __loc__), 64, __loc__); }
-              | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
-              | TIME '(' const_real ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
-                                                 }
-              | TIME '(' const_uint ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
-                                                 }
-              | TIME_NS '(' const_uint ')'       { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::NanosecondTag()), __loc__); }
-              | STREAM '(' CBYTES ')'            { $$ = hilti::ctor::Stream(std::move($3), __loc__); }
+              | CUREAL                           { $$ = hilti::ctor::Real($1, __loc__); }
+              | '+' CUREAL                       { $$ = hilti::ctor::Real($2, __loc__);; }
+              | '-' CUREAL                       { $$ = hilti::ctor::Real(-$2, __loc__);; }
 
-              | UINT8 '(' const_uint ')'         { $$ = hilti::ctor::UnsignedInteger($3, 8, __loc__); }
-              | UINT16 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 16, __loc__); }
-              | UINT32 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 32, __loc__); }
-              | UINT64 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 64, __loc__); }
-              | INT8 '(' const_sint ')'          { $$ = hilti::ctor::SignedInteger($3, 8, __loc__); }
-              | INT16 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 16, __loc__); }
-              | INT32 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 32, __loc__); }
-              | INT64 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 64, __loc__); }
+              | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
 
               | list                             { $$ = std::move($1); }
               | map                              { $$ = std::move($1); }
@@ -980,17 +981,18 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
 
 ctor_expr     : INTERVAL '(' expr ')'            { $$ = hilti::builder::namedCtor("interval", { std::move($3) }, __loc__); }
               | INTERVAL_NS '(' expr ')'         { $$ = hilti::builder::namedCtor("interval_ns", { std::move($3) }, __loc__); }
-
-const_real    : CUREAL                           { $$ = $1; }
-              | '+' CUREAL                       { $$ = $2; }
-              | '-' CUREAL                       { $$ = -$2; }
-
-const_sint    : CUINTEGER                        { $$ = check_int64_range($1, true, __loc__); }
-              | '+' CUINTEGER                    { $$ = check_int64_range($2, true, __loc__); }
-              | '-' CUINTEGER                    { $$ = -check_int64_range($2, false, __loc__); }
-
-const_uint    : CUINTEGER                        { $$ = $1; }
-              | '+' CUINTEGER                    { $$ = $2; }
+              | TIME '(' expr ')'                { $$ = hilti::builder::namedCtor("time", { std::move($3) }, __loc__); }
+              | TIME_NS '(' expr ')'             { $$ = hilti::builder::namedCtor("time_ns", { std::move($3) }, __loc__); }
+              | STREAM '(' expr ')'              { $$ = hilti::builder::namedCtor("stream", { std::move($3) }, __loc__); }
+              | INT8 '(' expr ')'                { $$ = hilti::builder::namedCtor("int8", { std::move($3) }, __loc__); }
+              | INT16 '(' expr ')'               { $$ = hilti::builder::namedCtor("int16", { std::move($3) }, __loc__); }
+              | INT32 '(' expr ')'               { $$ = hilti::builder::namedCtor("int32", { std::move($3) }, __loc__); }
+              | INT64 '(' expr ')'               { $$ = hilti::builder::namedCtor("int64", { std::move($3) }, __loc__); }
+              | UINT8 '(' expr ')'               { $$ = hilti::builder::namedCtor("uint8", { std::move($3) }, __loc__); }
+              | UINT16 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint16", { std::move($3) }, __loc__); }
+              | UINT32 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint32", { std::move($3) }, __loc__); }
+              | UINT64 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint64", { std::move($3) }, __loc__); }
+              ;
 
 tuple         : '(' opt_tuple_elems1 ')'         { $$ = hilti::ctor::Tuple(std::move($2), __loc__); }
               | TUPLE '(' opt_exprs ')'          { $$ = hilti::ctor::Tuple(std::move($3), __loc__); }

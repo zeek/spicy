@@ -26,6 +26,17 @@ STANDARD_OPERATOR_2(time, GreaterEqual, type::Bool(), type::Time(), type::Time()
 STANDARD_OPERATOR_2(time, Lower, type::Bool(), type::Time(), type::Time(), "Compares the times.");
 STANDARD_OPERATOR_2(time, LowerEqual, type::Bool(), type::Time(), type::Time(), "Compares the times.");
 
+STANDARD_KEYWORD_CTOR(time, CtorSignedIntegerNs, "time_ns", type::Time(), type::SignedInteger(type::Wildcard()),
+                      "Creates an time interpreting the argument as number of nanoseconds.");
+STANDARD_KEYWORD_CTOR(time, CtorSignedIntegerSecs, "time", type::Time(), type::SignedInteger(type::Wildcard()),
+                      "Creates an time interpreting the argument as number of seconds.");
+STANDARD_KEYWORD_CTOR(time, CtorUnsignedIntegerNs, "time_ns", type::Time(), type::UnsignedInteger(type::Wildcard()),
+                      "Creates an time interpreting the argument as number of nanoseconds.");
+STANDARD_KEYWORD_CTOR(time, CtorUnsignedIntegerSecs, "time", type::Time(), type::UnsignedInteger(type::Wildcard()),
+                      "Creates an time interpreting the argument as number of seconds.");
+STANDARD_KEYWORD_CTOR(time, CtorRealSecs, "time", type::Time(), type::Real(),
+                      "Creates an time interpreting the argument as number of seconds.");
+
 BEGIN_METHOD(time, Seconds)
     const auto& signature() const {
         static auto _signature =

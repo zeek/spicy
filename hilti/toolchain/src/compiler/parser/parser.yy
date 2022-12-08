@@ -33,8 +33,8 @@ namespace hilti { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 115
-%expect-rr 191
+%expect 113
+%expect-rr 205
 
 %{
 
@@ -164,6 +164,10 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token INIT "init"
 %token INOUT "inout"
 %token INT "int"
+%token INT16 "int16"
+%token INT32 "int32"
+%token INT64 "int64"
+%token INT8 "int8"
 %token INTERVAL "interval"
 %token INTERVAL_NS "interval_ns"
 %token IOSRC "iosrc"
@@ -209,6 +213,7 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token STRUCT "struct"
 %token SWITCH "switch"
 %token TIME "time"
+%token TIME_NS "time_ns"
 %token TIMER "timer"
 %token TIMERMGR "timer_mgr"
 %token TIMESASSIGN "*="
@@ -219,6 +224,10 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token TYPE "type"
 %token TYPEINFO "typeinfo"
 %token UINT "uint"
+%token UINT16 "uint16"
+%token UINT32 "uint32"
+%token UINT64 "uint64"
+%token UINT8 "uint8"
 %token UNION "union"
 %token UNPACK "unpack"
 %token UNSET "unset"
@@ -269,9 +278,6 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %type <hilti::type::Flags>                            opt_type_flags /* type_flag */
 
 %type <std::pair<std::vector<hilti::Declaration>, std::vector<hilti::Statement>>> global_scope_items
-
-%type <double>   const_real
-%type <uint64_t> const_uint
 
 %%
 
@@ -808,34 +814,21 @@ member_expr   : local_id                         { $$ = hilti::expression::Membe
 ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __loc__); }
               | CBYTES                           { $$ = hilti::ctor::Bytes(std::move($1), __loc__); }
               | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
-              | const_real                       { $$ = hilti::ctor::Real($1, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
               | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(check_int64_range($2, true, __loc__), 64, __loc__); }
               | '-' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(-check_int64_range($2, false, __loc__), 64, __loc__); }
+              | CUREAL                           { $$ = hilti::ctor::Real($1, __loc__); }
+              | '+' CUREAL                       { $$ = hilti::ctor::Real($2, __loc__);; }
+              | '-' CUREAL                       { $$ = hilti::ctor::Real(-$2, __loc__);; }
               | CNULL                            { $$ = hilti::ctor::Null(__loc__); }
 
               | CADDRESS                         { $$ = hilti::ctor::Address(hilti::ctor::Address::Value($1), __loc__); }
               | CADDRESS '/' CUINTEGER           { $$ = hilti::ctor::Network(hilti::ctor::Network::Value($1, $3), __loc__); }
               | CPORT                            { $$ = hilti::ctor::Port(hilti::ctor::Port::Value($1), __loc__); }
-              | TIME '(' const_real ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
-                                                 }
-              | TIME '(' const_uint ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
-                                                 }
-              | STREAM '(' CBYTES ')'            { $$ = hilti::ctor::Stream(std::move($3), __loc__); }
 
-              | ERROR '(' CSTRING ')'            { $$ = hilti::ctor::Error(std::move($3), __loc__); }
               | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
               | DEFAULT type_param_begin type type_param_end '(' opt_exprs ')'
                                                  { $$ = hilti::ctor::Default(std::move($3), std::move($6), __loc__); }
-
-              | UINT '<' CUINTEGER '>' '(' CUINTEGER ')'
-                                                 { $$ = hilti::ctor::UnsignedInteger($6, $3, __loc__); }
-              | INT '<' CUINTEGER '>' '(' CUINTEGER ')'
-                                                 { $$ = hilti::ctor::SignedInteger(check_int64_range($6, true, __loc__), $3, __loc__); }
-              | INT '<' CUINTEGER '>' '(' '-' CUINTEGER ')'
-                                                 { $$ = hilti::ctor::SignedInteger(-check_int64_range($7, false, __loc__), $3, __loc__); }
 
               | list                             { $$ = std::move($1); }
               | map                              { $$ = std::move($1); }
@@ -845,16 +838,21 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | tuple                            { $$ = std::move($1); }
               ;
 
-ctor_expr     : INTERVAL '(' expr ')'            { $$ = builder::namedCtor("interval", { std::move($3) }, __loc__); }
-              | INTERVAL_NS '(' expr ')'         { $$ = builder::namedCtor("interval_ns", { std::move($3) }, __loc__); }
-
-const_real    : CUREAL                           { $$ = $1; }
-              | '+' CUREAL                       { $$ = $2; }
-              | '-' CUREAL                       { $$ = -$2; }
-
-const_uint    : CUINTEGER                        { $$ = $1; }
-              | '+' CUINTEGER                    { $$ = $2; }
-
+ctor_expr     : INTERVAL '(' expr ')'            { $$ = hilti::builder::namedCtor("interval", { std::move($3) }, __loc__); }
+              | INTERVAL_NS '(' expr ')'         { $$ = hilti::builder::namedCtor("interval_ns", { std::move($3) }, __loc__); }
+              | TIME '(' expr ')'                { $$ = hilti::builder::namedCtor("time", { std::move($3) }, __loc__); }
+              | TIME_NS '(' expr ')'             { $$ = hilti::builder::namedCtor("time_ns", { std::move($3) }, __loc__); }
+              | STREAM '(' expr ')'              { $$ = hilti::builder::namedCtor("stream", { std::move($3) }, __loc__); }
+              | ERROR '(' expr ')'               { $$ = hilti::builder::namedCtor("error", { std::move($3) }, __loc__); }
+              | INT8 '(' expr ')'                { $$ = hilti::builder::namedCtor("int8", { std::move($3) }, __loc__); }
+              | INT16 '(' expr ')'               { $$ = hilti::builder::namedCtor("int16", { std::move($3) }, __loc__); }
+              | INT32 '(' expr ')'               { $$ = hilti::builder::namedCtor("int32", { std::move($3) }, __loc__); }
+              | INT64 '(' expr ')'               { $$ = hilti::builder::namedCtor("int64", { std::move($3) }, __loc__); }
+              | UINT8 '(' expr ')'               { $$ = hilti::builder::namedCtor("uint8", { std::move($3) }, __loc__); }
+              | UINT16 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint16", { std::move($3) }, __loc__); }
+              | UINT32 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint32", { std::move($3) }, __loc__); }
+              | UINT64 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint64", { std::move($3) }, __loc__); }
+              ;
 
 tuple         : '(' opt_tuple_elems1 ')'         { $$ = hilti::ctor::Tuple(std::move($2), __loc__); }
 

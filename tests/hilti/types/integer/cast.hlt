@@ -12,7 +12,7 @@ i = cast<int<32>>(j);
 assert j == 32;
 assert i == 32;
 
-global auto x = int<8>(5);
+global auto x = int8(5);
 global int<8> y = 5;
 assert x == y;
 }
