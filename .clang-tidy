@@ -6,6 +6,14 @@ Checks: '
   -bugprone-branch-clone,
   -bugprone-macro-parentheses,
   -bugprone-lambda-function-name,
+  -bugprone-assignment-in-if-condition,
+  -bugprone-unchecked-optional-access,
+  -bugprone-exception-escape,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-shared-ptr-array-mismatch,
+  -bugprone-stringview-nullptr,
+  -bugprone-suspicious-memory-comparison,
+  -bugprone-unhandled-exception-at-new,
 
   cert-*,
   -cert-dcl37-c,
@@ -13,12 +21,20 @@ Checks: '
   -cert-err58-cpp,
   -cert-dcl58-cpp,
   -cert-dcl21-cpp,
+  -cert-err33-c,
+  -cert-exp42-c,
+  -cert-flp37-c,
+  -cert-pos47-c,
 
   clang*,
   -clang-analyzer-cplusplus.NewDeleteLeaks,
   -clang-diagnostic-c++2a-designator,
   -clang-diagnostic-deprecated-copy,
   -clang-diagnostic-range-loop-analysis,
+  -clang-analyzer-core.StackAddressEscape,
+  -clang-analyzer-apiModeling.Errno,
+  -clang-analyzer-apiModeling.TrustReturnsNonnull,
+  -clang-analyzer-cplusplus.StringChecker,
 
   misc-*,
   -misc-macro-parentheses,
@@ -26,6 +42,11 @@ Checks: '
   -misc-suspicious-semicolon,
   -misc-no-recursion,
   -misc-unused-parameters,
+  -misc-const-correctness,
+  -misc-confusable-identifiers,
+  -misc-misleading-bidirectional,
+  -misc-misleading-identifier,
+  -misc-unused-using-decls,
 
   modernize-*,
   -modernize-avoid-c-arrays,
@@ -33,9 +54,14 @@ Checks: '
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -modernize-return-braced-init-list,
+  -modernize-use-emplace,
+  -modernize-macro-to-enum,
 
   performance-*,
+  -performance-unnecessary-copy-initialization,
+  -performance-inefficient-vector-operation,
   portability-*,
+  -portability-std-allocator-const,
 
   readability-*,
   -readability-braces-around-statements,
@@ -49,7 +75,12 @@ Checks: '
   -readability-named-parameter,
   -readability-qualified-auto,
   -readability-function-cognitive-complexity,
-  -readability-function-size
+  -readability-function-size,
+  -readability-duplicate-include,
+  -readability-simplify-boolean-expr
+  -readability-container-contains,
+  -readability-container-data-pointer,
+  -readability-suspicious-call-argument
   '
 
 HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z]+/include/([a-zA-Z]+/)*[a-zA-Z]+\.h'
