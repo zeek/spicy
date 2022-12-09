@@ -535,6 +535,12 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const operator_::port::Equal& n) { return binary(n, "=="); }
     result_t operator()(const operator_::port::Unequal& n) { return binary(n, "!="); }
+
+    result_t operator()(const operator_::port::Ctor& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Port(%s, %s)", args[0], args[1]);
+    }
+
     result_t operator()(const operator_::port::Protocol& n) { return fmt("%s.protocol()", op0(n)); }
 
     // Set

@@ -968,8 +968,10 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | '+' CUREAL                       { $$ = hilti::ctor::Real($2, __loc__);; }
               | '-' CUREAL                       { $$ = hilti::ctor::Real(-$2, __loc__);; }
 
+              /* There are more here that we could move into ctor_expr and have them use namedCtor.
+                 But not sure if that'd change much so leaving here for now.
+              */
               | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
-
               | list                             { $$ = std::move($1); }
               | map                              { $$ = std::move($1); }
               | regexp                           { $$ = std::move($1); }
@@ -992,6 +994,7 @@ ctor_expr     : INTERVAL '(' expr ')'            { $$ = hilti::builder::namedCto
               | UINT16 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint16", { std::move($3) }, __loc__); }
               | UINT32 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint32", { std::move($3) }, __loc__); }
               | UINT64 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint64", { std::move($3) }, __loc__); }
+              | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::namedCtor("port", {std::move($3), std::move($5)}, __loc__); }
               ;
 
 tuple         : '(' opt_tuple_elems1 ')'         { $$ = hilti::ctor::Tuple(std::move($2), __loc__); }

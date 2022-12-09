@@ -212,6 +212,12 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
         });
     }
 
+    void operator()(const operator_::port::Ctor& op, position_t p) {
+        tryReplaceCtorExpression<ctor::Port>(op, p, [](const auto& ctor) {
+            return ctor::Port(ctor::Port::Value(ctor.value()));
+        });
+    }
+
     void operator()(const operator_::signed_integer::CtorSigned8& op, position_t p) {
         tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
             return ctor::SignedInteger(to_int64(ctor.value(), p), 8);

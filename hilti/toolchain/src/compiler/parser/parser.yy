@@ -794,7 +794,6 @@ expr_e        : BEGIN_ '(' expr ')'              { $$ = hilti::expression::Unres
 
 expr_f        : ctor                             { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
               | ctor_expr                        { $$ = std::move($1); }
-              | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::port(std::move($3), std::move($5), __loc__); }
               | '-' expr_g                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
               | '[' expr FOR local_id IN expr ']'
                                                  { $$ = hilti::expression::ListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
@@ -826,10 +825,12 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | CADDRESS '/' CUINTEGER           { $$ = hilti::ctor::Network(hilti::ctor::Network::Value($1, $3), __loc__); }
               | CPORT                            { $$ = hilti::ctor::Port(hilti::ctor::Port::Value($1), __loc__); }
 
+              /* There are more here that we could move into ctor_expr and have them use namedCtor.
+                 But not sure if that'd change much so leaving here for now.
+              */
               | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
               | DEFAULT type_param_begin type type_param_end '(' opt_exprs ')'
                                                  { $$ = hilti::ctor::Default(std::move($3), std::move($6), __loc__); }
-
               | list                             { $$ = std::move($1); }
               | map                              { $$ = std::move($1); }
               | regexp                           { $$ = std::move($1); }
@@ -852,6 +853,7 @@ ctor_expr     : INTERVAL '(' expr ')'            { $$ = hilti::builder::namedCto
               | UINT16 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint16", { std::move($3) }, __loc__); }
               | UINT32 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint32", { std::move($3) }, __loc__); }
               | UINT64 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint64", { std::move($3) }, __loc__); }
+              | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::namedCtor("port", {std::move($3), std::move($5)}, __loc__); }
               ;
 
 tuple         : '(' opt_tuple_elems1 ')'         { $$ = hilti::ctor::Tuple(std::move($2), __loc__); }
