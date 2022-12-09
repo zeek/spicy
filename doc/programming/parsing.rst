@@ -933,7 +933,7 @@ Bitfields parse an integer value of a given size, and then make
 selected smaller bit ranges within that value available individually
 through dedicated identifiers. For example, the following unit parses
 4 bytes as an ``uint32`` and then makes the value of bit 0 available
-as ``f.x1``, bits 1 to 2 as ``f.x2``, and bits 3 to 5 as ``f.x3``,
+as ``f.x1``, bits 1 to 2 as ``f.x2``, and bits 3 to 4 as ``f.x3``,
 respectively:
 
 .. spicy-code:: parse-bitfield.spicy
@@ -994,7 +994,7 @@ range to an enum, using ``$$`` to access the parsed value:
     };
 
 .. spicy-output:: parse-bitfield-enum.spicy
-    :exec: printf '\41' | spicy-driver %INPUT
+    :exec: printf '\x21' | spicy-driver %INPUT
     :show-with: foo.spicy
 
 .. _parse_bytes:
