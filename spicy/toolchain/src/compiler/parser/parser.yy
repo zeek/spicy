@@ -34,7 +34,7 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 126
+%expect 125
 %expect-rr 164
 
 %{
@@ -722,7 +722,6 @@ unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_fiel
               | opt_unit_field_id opt_unit_field_engine '(' unit_field_in_container ')' opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($4), std::move($2), {}, std::move($6), std::move($9), std::move($7), std::move($8), std::move($10), __loc__); }
 
-
 const_sint    : CUINTEGER                        { $$ = check_int64_range($1, true, __loc__); }
               | '+' CUINTEGER                    { $$ = check_int64_range($2, true, __loc__); }
               | '-' CUINTEGER                    { $$ = -check_int64_range($2, false, __loc__); }
@@ -933,8 +932,7 @@ expr_e        : CAST type_param_begin type type_param_end '(' expr ')'   { $$ = 
 
 expr_f        : ctor                             { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
               | ctor_expr                        { $$ = std::move($1); }
-              | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::port(std::move($3), std::move($5), __loc__); }
-              | '-' expr_g                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
+              | '-' expr_f                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
               | '[' expr FOR local_id IN expr ']'
                                                  { $$ = hilti::expression::ListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
               | '[' expr FOR local_id IN expr IF expr ']'
@@ -962,11 +960,13 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | CNULL                            { $$ = hilti::ctor::Null(__loc__); }
               | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
-              | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(check_int64_range($2, true, __loc__), 64, __loc__); }
-              | '-' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(-check_int64_range($2, false, __loc__), 64, __loc__); }
+              | '+' CUINTEGER                    { if ( $2 > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
+                                                    hilti::logger().error("integer constant out of range C1", __loc__.location());
+
+                                                   $$ = hilti::ctor::SignedInteger($2, 64, __loc__);
+                                                 }
               | CUREAL                           { $$ = hilti::ctor::Real($1, __loc__); }
               | '+' CUREAL                       { $$ = hilti::ctor::Real($2, __loc__);; }
-              | '-' CUREAL                       { $$ = hilti::ctor::Real(-$2, __loc__);; }
 
               /* There are more here that we could move into ctor_expr and have them use namedCtor.
                  But not sure if that'd change much so leaving here for now.

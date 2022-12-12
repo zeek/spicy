@@ -65,26 +65,6 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
         }
 }
 
-
-/**
- * Checks if an unsigned integer value can be represented as an int64_t.
- *
- * @param x value to check
- * @param positive if false, check if ``-x`` can be represented instead of ``x`` itself.
- * @param m location information to associate with error message.
- * @return *x* on success, or zero on failure as a temporary stand-in; in the
- * latter cases an error is reported, too
- */
-static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& m) {
-    uint64_t max = (positive ? std::numeric_limits<int64_t>::max() : std::fabs(std::numeric_limits<int64_t>::min()));
-
-    if ( x <= max )
-        return x;
-
-    hilti::logger().error("signed integer value out of range", m.location());
-    return 0; // Return dummy value
-}
-
 #define __loc__ toMeta(yylhs.location)
 
 %}
@@ -794,7 +774,7 @@ expr_e        : BEGIN_ '(' expr ')'              { $$ = hilti::expression::Unres
 
 expr_f        : ctor                             { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
               | ctor_expr                        { $$ = std::move($1); }
-              | '-' expr_g                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
+              | '-' expr_f                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
               | '[' expr FOR local_id IN expr ']'
                                                  { $$ = hilti::expression::ListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
               | '[' expr FOR local_id IN expr IF expr ']'
@@ -814,11 +794,13 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | CBYTES                           { $$ = hilti::ctor::Bytes(std::move($1), __loc__); }
               | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
-              | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(check_int64_range($2, true, __loc__), 64, __loc__); }
-              | '-' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(-check_int64_range($2, false, __loc__), 64, __loc__); }
+              | '+' CUINTEGER                    { if ( $2 > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
+                                                    logger().error("integer constant out of range C1", __loc__.location());
+
+                                                   $$ = hilti::ctor::SignedInteger($2, 64, __loc__);
+                                                 }
               | CUREAL                           { $$ = hilti::ctor::Real($1, __loc__); }
               | '+' CUREAL                       { $$ = hilti::ctor::Real($2, __loc__);; }
-              | '-' CUREAL                       { $$ = hilti::ctor::Real(-$2, __loc__);; }
               | CNULL                            { $$ = hilti::ctor::Null(__loc__); }
 
               | CADDRESS                         { $$ = hilti::ctor::Address(hilti::ctor::Address::Value($1), __loc__); }

@@ -65,7 +65,7 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     // Helper to replace an type constructor expression that receives a
     // constant argument with a corresponding ctor expression.
     template<typename Ctor, typename Operator, typename Fn>
-    void tryReplaceCtorExpression(const Operator& op, position_t p, Fn ctor)> cb) {
+    void tryReplaceCtorExpression(const Operator& op, position_t p, Fn cb) {
         if ( auto ctor = detail::foldConstant<Ctor>(callArgument(op, 0)) ) {
             try {
                 auto i = cb(*ctor);

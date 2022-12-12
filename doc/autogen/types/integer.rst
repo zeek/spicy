@@ -284,6 +284,10 @@
 
     Inverts the sign of the integer.
 
+.. spicy:operator:: integer::SignNeg int op:- t:uint op:
+
+    Inverts the sign of the integer.
+
 .. spicy:operator:: integer::Sum int t:int <sp> op:+ <sp> t:int
 
     Computes the sum of the integers.

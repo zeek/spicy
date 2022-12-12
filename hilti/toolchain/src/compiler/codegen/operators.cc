@@ -1045,6 +1045,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     }
     result_t operator()(const operator_::unsigned_integer::ShiftLeft& n) { return fmt("(%s << %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::ShiftRight& n) { return fmt("(%s >> %s)", op0(n), op1(n)); }
+    result_t operator()(const operator_::unsigned_integer::SignNeg& n) { return fmt("(-%s)", op0(n)); }
     result_t operator()(const operator_::unsigned_integer::Sum& n) { return fmt("%s + %s", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::SumAssign& n) { return fmt("%s += %s", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }

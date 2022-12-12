@@ -48,6 +48,20 @@ inline static auto widestTypeUnsigned() {
         return type::UnsignedInteger(std::max(w1, w2));
     };
 }
+
+inline static auto sameWidthSigned() {
+    return [=](const hilti::node::Range<Expression>& orig_ops,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
+        if ( orig_ops.empty() && resolved_ops.empty() )
+            return type::DocOnly("int<*>");
+
+        if ( auto t = orig_ops[0].type().tryAs<type::UnsignedInteger>() )
+            return type::SignedInteger(t->width());
+        else
+            return {};
+    };
+}
+
 } // namespace detail
 
 STANDARD_OPERATOR_1(unsigned_integer, DecrPostfix, operator_::sameTypeAs(0, "uint"),
@@ -58,6 +72,8 @@ STANDARD_OPERATOR_1(unsigned_integer, IncrPostfix, operator_::sameTypeAs(0, "uin
                     type::UnsignedInteger(type::Wildcard()), "Increments the value, returning the old value.");
 STANDARD_OPERATOR_1(unsigned_integer, IncrPrefix, operator_::sameTypeAs(0, "uint"),
                     type::UnsignedInteger(type::Wildcard()), "Increments the value, returning the new value.");
+STANDARD_OPERATOR_1(unsigned_integer, SignNeg, detail::sameWidthSigned(), type::UnsignedInteger(type::Wildcard()),
+                    "Inverts the sign of the integer.");
 STANDARD_OPERATOR_1(unsigned_integer, Negate, operator_::sameTypeAs(0, "uint"), type::UnsignedInteger(type::Wildcard()),
                     "Computes the bit-wise negation of the integer.");
 STANDARD_OPERATOR_2(unsigned_integer, BitAnd, detail::widestTypeUnsigned(), detail::widestTypeUnsigned(),
