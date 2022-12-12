@@ -1,3 +1,7 @@
+1.6.0-dev.143 | 2022-12-12 09:02:59 +0100
+
+  * GH-1298: Fix/clarify bitfield docs. (Robin Sommer, Corelight)
+
 1.6.0-dev.141 | 2022-12-12 08:56:24 +0100
 
   * Expose new `pack`/`unpack` operators in Spicy. These provide
