@@ -65,7 +65,7 @@ void renderNode(const Node& n, logging::DebugStream stream, bool include_scopes 
  * expression is not represeneting a constant value, but only that we aren't
  * able to compute it.
  */
-Result<Ctor> foldConstant(const Expression& expr);
+Result<Ctor> foldConstant(const Node& expr);
 
 /**
  * Folds an expression intoa constant value of a specific type, if that's

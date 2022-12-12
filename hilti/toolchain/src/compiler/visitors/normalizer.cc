@@ -20,6 +20,37 @@ inline const hilti::logging::DebugStream Normalizer("normalizer");
 } // namespace hilti::logging::debug
 namespace {
 
+struct VisitorConstants : public visitor::PreOrder<void, VisitorConstants> {
+    bool modified = false;
+
+    // Log debug message recording resolving a expression.
+    void logChange(const Node& old, const Ctor& ctor) {
+        HILTI_DEBUG(logging::debug::Normalizer,
+                    util::fmt("[%s] %s -> constant %s (%s)", old.typename_(), old, ctor, old.location()));
+    }
+
+    void operator()(const Expression& d, position_t p) {
+        if ( ! expression::isResolved(d) )
+            return;
+
+        if ( d.isA<expression::Ctor>() )
+            return;
+
+        try {
+            auto ctor = detail::foldConstant(p.node);
+            if ( ! ctor )
+                return;
+
+            logChange(p.node, *ctor);
+            auto nexpr = expression::Ctor(*ctor, ctor->meta());
+            p.node = nexpr;
+            modified = true;
+        } catch ( hilti::rt::RuntimeError& e ) {
+            logger().error(e.what(), p.node.location());
+        }
+    }
+};
+
 struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     bool modified = false;
 
@@ -497,6 +528,13 @@ static void _computeCanonicalIDs(VisitorComputeCanonicalIDs* v, Node* node, ID c
 bool hilti::detail::ast::normalize(Node* root, Unit* unit) {
     util::timing::Collector _("hilti/compiler/ast/normalizer");
 
+    auto v0 = VisitorConstants();
+    for ( auto i : v0.walk(root) )
+        v0.dispatch(i);
+
+    if ( logger().errors() )
+        return v0.modified;
+
     auto v1 = VisitorNormalizer();
     for ( auto i : v1.walk(root) )
         v1.dispatch(i);
@@ -513,5 +551,5 @@ bool hilti::detail::ast::normalize(Node* root, Unit* unit) {
         v4.dispatch(i);
 #endif
 
-    return v1.modified;
+    return v0.modified || v1.modified;
 }
