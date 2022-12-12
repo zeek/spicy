@@ -36,18 +36,19 @@ struct VisitorConstants : public visitor::PreOrder<void, VisitorConstants> {
         if ( d.isA<expression::Ctor>() )
             return;
 
-        try {
-            auto ctor = detail::foldConstant(p.node);
-            if ( ! ctor )
-                return;
-
-            logChange(p.node, *ctor);
-            auto nexpr = expression::Ctor(*ctor, ctor->meta());
-            p.node = nexpr;
-            modified = true;
-        } catch ( hilti::rt::RuntimeError& e ) {
-            logger().error(e.what(), p.node.location());
+        auto ctor = detail::foldConstant(p.node);
+        if ( ! ctor ) {
+            p.node.addError(ctor.error());
+            return;
         }
+
+        if ( ! *ctor )
+            return;
+
+        logChange(p.node, **ctor);
+        auto nexpr = expression::Ctor(**ctor, (*ctor)->meta());
+        p.node = nexpr;
+        modified = true;
     }
 };
 
@@ -90,22 +91,6 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
             ctor = x->coercedCtor();
 
         return ctor.as<ctor::Tuple>().value()[i];
-    }
-
-    // Helper to replace an type constructor expression that receives a
-    // constant argument with a corresponding ctor expression.
-    template<typename Ctor, typename Operator, typename Fn>
-    void tryReplaceCtorExpression(const Operator& op, position_t p, Fn cb) {
-        try {
-            if ( auto ctor = detail::foldConstant<Ctor>(callArgument(op, 0)) ) {
-                auto i = cb(*ctor);
-                logChange(p.node, i);
-                p.node = expression::Ctor(std::move(i), p.node.location());
-                modified = true;
-            }
-        } catch ( hilti::rt::RuntimeError& e ) {
-            logger().error(e.what(), p.node.location());
-        }
     }
 
     // Helper to cast an uint64 to int64, with range check.
@@ -206,176 +191,6 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
                 return;
             }
         }
-    }
-
-    void operator()(const operator_::error::Ctor& op, position_t p) {
-        tryReplaceCtorExpression<ctor::Error>(op, p, [](const auto& ctor) { return ctor::Error(ctor.value()); });
-    }
-
-    void operator()(const operator_::interval::CtorSignedIntegerSecs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::SecondTag()));
-        });
-    }
-
-    void operator()(const operator_::interval::CtorUnsignedIntegerSecs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::SecondTag()));
-        });
-    }
-
-    void operator()(const operator_::interval::CtorSignedIntegerNs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::NanosecondTag()));
-        });
-    }
-
-    void operator()(const operator_::interval::CtorUnsignedIntegerNs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::NanosecondTag()));
-        });
-    }
-
-    void operator()(const operator_::interval::CtorRealSecs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::Real>(op, p, [](const auto& ctor) {
-            return ctor::Interval(ctor::Interval::Value(ctor.value(), hilti::rt::Interval::SecondTag()));
-        });
-    }
-
-    void operator()(const operator_::port::Ctor& op, position_t p) {
-        tryReplaceCtorExpression<ctor::Port>(op, p, [](const auto& ctor) {
-            return ctor::Port(ctor::Port::Value(ctor.value()));
-        });
-    }
-
-    void operator()(const operator_::signed_integer::CtorSigned8& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 8);
-        });
-    }
-
-    void operator()(const operator_::signed_integer::CtorSigned16& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 16);
-        });
-    }
-
-    void operator()(const operator_::signed_integer::CtorSigned32& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 32);
-        });
-    }
-
-    void operator()(const operator_::signed_integer::CtorSigned64& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 64);
-        });
-    }
-
-    void operator()(const operator_::signed_integer::CtorUnsigned8& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 8);
-        });
-    }
-
-    void operator()(const operator_::signed_integer::CtorUnsigned16& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 16);
-        });
-    }
-
-    void operator()(const operator_::signed_integer::CtorUnsigned32& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 32);
-        });
-    }
-
-    void operator()(const operator_::signed_integer::CtorUnsigned64& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 64);
-        });
-    }
-
-    void operator()(const operator_::time::CtorSignedIntegerSecs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::Time(ctor::Time::Value(ctor.value(), hilti::rt::Time::SecondTag()));
-        });
-    }
-
-    void operator()(const operator_::time::CtorUnsignedIntegerSecs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::Time(ctor::Time::Value(ctor.value(), hilti::rt::Time::SecondTag()));
-        });
-    }
-
-    void operator()(const operator_::stream::Ctor& op, position_t p) {
-        tryReplaceCtorExpression<ctor::Stream>(op, p, [](const auto& ctor) { return ctor::Stream(ctor.value()); });
-    }
-
-    void operator()(const operator_::time::CtorSignedIntegerNs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::Time(ctor::Time::Value(ctor.value(), hilti::rt::Time::NanosecondTag()));
-        });
-    }
-
-    void operator()(const operator_::time::CtorUnsignedIntegerNs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::Time(ctor::Time::Value(ctor.value(), hilti::rt::Time::NanosecondTag()));
-        });
-    }
-
-    void operator()(const operator_::time::CtorRealSecs& op, position_t p) {
-        tryReplaceCtorExpression<ctor::Real>(op, p, [](const auto& ctor) {
-            return ctor::Time(ctor::Time::Value(ctor.value(), hilti::rt::Time::SecondTag()));
-        });
-    }
-
-    void operator()(const operator_::unsigned_integer::CtorSigned8& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::UnsignedInteger(to_uint64(ctor.value(), p), 8);
-        });
-    }
-
-    void operator()(const operator_::unsigned_integer::CtorSigned16& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::UnsignedInteger(to_uint64(ctor.value(), p), 16);
-        });
-    }
-
-    void operator()(const operator_::unsigned_integer::CtorSigned32& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::UnsignedInteger(to_uint64(ctor.value(), p), 32);
-        });
-    }
-
-    void operator()(const operator_::unsigned_integer::CtorSigned64& op, position_t p) {
-        tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::UnsignedInteger(to_uint64(ctor.value(), p), 64);
-        });
-    }
-
-    void operator()(const operator_::unsigned_integer::CtorUnsigned8& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::UnsignedInteger(ctor.value(), 8);
-        });
-    }
-
-    void operator()(const operator_::unsigned_integer::CtorUnsigned16& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::UnsignedInteger(ctor.value(), 16);
-        });
-    }
-
-    void operator()(const operator_::unsigned_integer::CtorUnsigned32& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::UnsignedInteger(ctor.value(), 32);
-        });
-    }
-
-    void operator()(const operator_::unsigned_integer::CtorUnsigned64& op, position_t p) {
-        tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
-            return ctor::UnsignedInteger(ctor.value(), 64);
-        });
     }
 
     void operator()(const statement::If& n, position_t p) {

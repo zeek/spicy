@@ -576,7 +576,7 @@ bool Visitor::resolveOperator(const expression::UnresolvedOperator& u, position_
     modified = true;
 
 #ifndef NDEBUG
-    const Expression& new_op = p.node.as<expression::ResolvedOperator>();
+    const auto& new_op = p.node.as<Expression>();
     HILTI_DEBUG(logging::debug::Operator, util::fmt("=> resolved to %s (result: %s, expression is %s)", p.node.render(),
                                                     new_op, (new_op.isConstant() ? "const" : "non-const")));
 #endif
@@ -911,6 +911,11 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
             return {};
 
         auto r = candidate.instantiate(nops->second, meta);
+
+        // Fold any constants right here in case downstream resolving depends
+        // on finding a constant (like for coercion).
+        if ( auto ctor = detail::foldConstant(r); ctor && *ctor )
+            r = expression::Ctor(**ctor, r.meta());
 
         // Some operators may not be able to determine their type before the
         // resolver had a chance to provide the information needed. They will

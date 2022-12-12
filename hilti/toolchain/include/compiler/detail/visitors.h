@@ -65,25 +65,7 @@ void renderNode(const Node& n, logging::DebugStream stream, bool include_scopes 
  * expression is not represeneting a constant value, but only that we aren't
  * able to compute it.
  */
-Result<Ctor> foldConstant(const Node& expr);
-
-/**
- * Folds an expression intoa constant value of a specific type, if that's
- * possible. This behaves like the non-templated version of `foldConstant()`
- * but adds a check that the resulting ``Ctor`` is of the expected type. If
- * not, it will fail.
- */
-template<typename Ctor>
-Result<Ctor> foldConstant(const Expression& expr) {
-    auto ctor = foldConstant(expr);
-    if ( ! ctor )
-        return ctor.error();
-
-    if ( auto ctor_ = ctor->tryAs<Ctor>() )
-        return *ctor_;
-    else
-        return result::Error("unexpected type");
-}
+Result<std::optional<Ctor>> foldConstant(const Node& expr);
 
 namespace ast {
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
