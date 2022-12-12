@@ -20,7 +20,6 @@ inline const hilti::logging::DebugStream Normalizer("normalizer");
 } // namespace hilti::logging::debug
 namespace {
 
-
 struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     bool modified = false;
 
@@ -66,22 +65,22 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     // constant argument with a corresponding ctor expression.
     template<typename Ctor, typename Operator, typename Fn>
     void tryReplaceCtorExpression(const Operator& op, position_t p, Fn cb) {
-        if ( auto ctor = detail::foldConstant<Ctor>(callArgument(op, 0)) ) {
-            try {
+        try {
+            if ( auto ctor = detail::foldConstant<Ctor>(callArgument(op, 0)) ) {
                 auto i = cb(*ctor);
                 logChange(p.node, i);
                 p.node = expression::Ctor(std::move(i), p.node.location());
                 modified = true;
-            } catch ( hilti::rt::RuntimeError& e ) {
-                logger().error(e.what(), p.node.location());
             }
+        } catch ( hilti::rt::RuntimeError& e ) {
+            logger().error(e.what(), p.node.location());
         }
     }
 
     // Helper to cast an uint64 to int64, with range check.
     int64_t to_int64(uint64_t x, position_t& p) {
-        if ( x > std::numeric_limits<int64_t>::max() )
-            logger().error("signed integer value out of range", p.node.location());
+        if ( x > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
+            throw hilti::rt::OutOfRange("integer value out of range A1");
 
         return static_cast<int64_t>(x);
     }
@@ -92,7 +91,7 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     // Helper to cast an int64 to uint64, with range check.
     uint64_t to_uint64(int64_t x, position_t& p) {
         if ( x < 0 )
-            logger().error("unsigned integer value out of range", p.node.location());
+            throw hilti::rt::OutOfRange("integer value out of range A2");
 
         return static_cast<uint64_t>(x);
     }
