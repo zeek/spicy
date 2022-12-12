@@ -10,6 +10,7 @@ function void do_unpack(bytes data, hilti::RealType family, hilti::ByteOrder ord
     local bytes r;
     (a, r) = *unpack<real>(data, family, order);
     assert ("%f" % a) == expected && r == b"XXX";
+    assert pack(a, family, order) == data.strip(hilti::Side::Right, b"X");
 }
 
 # We match expected values as string since floats/double don't compare well directly for equality.
@@ -26,5 +27,6 @@ global real a;
 global view<stream> r;
 (a, r) = *unpack<real>(v, hilti::RealType::IEEE754_Single, hilti::ByteOrder::Big);
 assert ("%f" % a) == "3.140000" && r == b"XXX";
+assert pack(a, hilti::RealType::IEEE754_Single, hilti::ByteOrder::Big) == b"@H\xf5\xc3";
 
 }

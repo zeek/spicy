@@ -1,0 +1,15 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+#
+# @TEST-DOC: Test packing/unpacking support.
+#
+# This just makes sure the operators generally work in Spicy. The type-specific
+# behaviour is tested at the HILTI level.
+
+module Foo;
+
+import spicy;
+
+global unpacked = unpack<uint16>(b"\x01\x02", spicy::ByteOrder::Network);
+assert pack(unpacked[0], spicy::ByteOrder::Network) == b"\x01\x02";
+
+assert-exception unpack<uint16>(b"", spicy::ByteOrder::Network);

@@ -124,6 +124,27 @@ Address::operator std::string() const {
     }
 }
 
+Bytes Address::pack(ByteOrder fmt) const {
+    switch ( _family ) {
+        case AddressFamily::IPv4: return integer::pack<uint32_t>(_a2, fmt);
+
+        case AddressFamily::IPv6: {
+            auto x = integer::pack<uint64_t>(_a1, fmt);
+            auto y = integer::pack<uint64_t>(_a2, fmt);
+
+            const bool nbo =
+                (fmt == ByteOrder::Little || (fmt == ByteOrder::Host && systemByteOrder() == ByteOrder::Little));
+
+            if ( ! nbo )
+                return x + y;
+            else
+                return y + x;
+        }
+
+        case AddressFamily::Undef: throw RuntimeError("attempt to pack address of undefined family");
+    }
+}
+
 template<typename T>
 Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily family, ByteOrder fmt) {
     switch ( family ) {

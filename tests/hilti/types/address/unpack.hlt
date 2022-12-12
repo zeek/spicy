@@ -11,6 +11,7 @@ function void do_unpack(bytes data, hilti::AddressFamily family, hilti::ByteOrde
     local bytes r;
     (a, r) = *unpack<addr>(data, family, order);
     assert a == expected && r == b"XXX";
+    assert pack(a, order) == data.strip(hilti::Side::Right, b"X");
 }
 
 do_unpack(b"\xc0\xa8\x01\x01XXX", hilti::AddressFamily::IPv4, hilti::ByteOrder::Network, 192.168.1.1);
@@ -27,5 +28,6 @@ global addr a;
 global view<stream> r;
 (a, r) = *unpack<addr>(v, hilti::AddressFamily::IPv4, hilti::ByteOrder::Network);
 assert a == 192.168.1.1 && r == b"XXX";
+#assert pack(a, hilti::ByteOrder::Network) == v;
 
 }

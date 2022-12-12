@@ -127,6 +127,7 @@ move                  return token::MOVE;
 net                   return token::NETWORK;
 new                   return token::NEW;
 optional              return token::OPTIONAL;
+pack                  return token::PACK;
 port                  return token::PORT;
 preinit               return token::PREINIT;
 private               return token::PRIVATE;

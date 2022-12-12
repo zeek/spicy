@@ -51,6 +51,7 @@ static std::string renderOperator(operator_::Kind kind, const std::vector<std::s
         case operator_::Kind::MultipleAssign: return fmt("%s *= %s", ops[0], ops[1]);
         case operator_::Kind::Negate: return fmt("~%s", ops[0]);
         case operator_::Kind::New: return fmt("new %s%s", ops[0], ops[1]);
+        case operator_::Kind::Pack: return fmt("pack%s", ops[0]);
         case operator_::Kind::Power: return fmt("%s ** %s", ops[0], ops[1]);
         case operator_::Kind::ShiftLeft: return fmt("%s << %s", ops[0], ops[1]);
         case operator_::Kind::ShiftRight: return fmt("%s >> %s", ops[0], ops[1]);

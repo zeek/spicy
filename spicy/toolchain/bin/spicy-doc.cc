@@ -63,6 +63,7 @@ static std::string kindToString(hilti::operator_::Kind kind) {
         KIND_TO_STRING(hilti::operator_::Kind::MultipleAssign);
         KIND_TO_STRING(hilti::operator_::Kind::Negate);
         KIND_TO_STRING(hilti::operator_::Kind::New);
+        KIND_TO_STRING(hilti::operator_::Kind::Pack);
         KIND_TO_STRING(hilti::operator_::Kind::Power);
         KIND_TO_STRING(hilti::operator_::Kind::ShiftLeft);
         KIND_TO_STRING(hilti::operator_::Kind::ShiftRight);

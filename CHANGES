@@ -1,3 +1,16 @@
+1.6.0-dev.141 | 2022-12-12 08:56:24 +0100
+
+  * Expose new `pack`/`unpack` operators in Spicy. These provide
+    low-level primitives for transforming a value into, or out of, a
+    binary representations. See
+    https://docs.zeek.org/projects/spicy/en/latest/programming/language/packing.html
+    for more. Internally, `unpack` already existed; `pack` is new.
+    (Robin Sommer, Corelight)
+
+  * Update clang-tidy config for clang-15. (Benjamin Bannier, Corelight)
+
+  * Use clang-15 for lint CI job. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.133 | 2022-12-07 08:44:38 +0100
 
   * Improve efficiency of `startsWith` for long inputs. (Benjamin Bannier, Corelight)

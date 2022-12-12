@@ -7,6 +7,23 @@
 
 using namespace hilti::rt;
 
+Bytes real::pack(double d, real::Type type, ByteOrder fmt) {
+    switch ( type ) {
+        case real::Type::IEEE754_Single: {
+            auto f = static_cast<float>(d);
+            auto i = reinterpret_cast<uint32_t*>(&f);
+            return integer::pack<uint32_t>(*i, fmt);
+        }
+
+        case real::Type::IEEE754_Double: {
+            auto i = reinterpret_cast<uint64_t*>(&d);
+            return integer::pack<uint64_t>(*i, fmt);
+        }
+
+        case real::Type::Undef: throw RuntimeError("attempt to pack real value of undefined type");
+    }
+}
+
 template<typename T>
 Result<std::tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrder fmt) {
     switch ( type ) {

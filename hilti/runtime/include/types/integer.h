@@ -74,6 +74,14 @@ namespace integer {
 namespace detail {
 
 template<typename T, typename D>
+inline void pack(D x, uint8_t* dst, std::initializer_list<int> bytes) {
+    for ( auto i : bytes ) {
+        dst[sizeof(x) - i - 1] = (x & 0xff);
+        x >>= 8U;
+    }
+}
+
+template<typename T, typename D>
 inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, const uint8_t* dst, std::initializer_list<int> bytes) {
     T x = 0;
     for ( auto i : bytes ) {
@@ -85,6 +93,61 @@ inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, const uint8_t* dst, s
 }
 
 } // namespace detail
+
+template<typename T>
+inline Bytes pack(integer::safe<T> i, ByteOrder fmt) {
+    if ( fmt == ByteOrder::Host )
+        return pack<T>(i, systemByteOrder());
+
+    uint8_t raw[sizeof(T)];
+
+    switch ( fmt ) {
+        case ByteOrder::Big:
+        case ByteOrder::Network:
+            if constexpr ( std::is_same_v<T, uint8_t> )
+                raw[0] = i;
+            else if constexpr ( std::is_same_v<T, int8_t> )
+                raw[0] = static_cast<uint8_t>(i);
+            else if constexpr ( std::is_same_v<T, uint16_t> || std::is_same_v<T, int16_t> )
+                detail::pack<T>(i, raw, {0, 1});
+            else if constexpr ( std::is_same_v<T, uint32_t> || std::is_same_v<T, int32_t> )
+                detail::pack<T>(i, raw, {0, 1, 2, 3});
+            else if constexpr ( std::is_same_v<T, uint64_t> || std::is_same_v<T, int64_t> )
+                detail::pack<T>(i, raw, {0, 1, 2, 3, 4, 5, 6, 7});
+            else
+                abort_with_backtrace();
+
+            break;
+
+        case ByteOrder::Little:
+            if constexpr ( std::is_same_v<T, uint8_t> )
+                raw[0] = i;
+
+            else if constexpr ( std::is_same_v<T, int8_t> )
+                raw[0] = static_cast<uint8_t>(i);
+
+            else if constexpr ( std::is_same_v<T, uint16_t> || std::is_same_v<T, int16_t> )
+                detail::pack<T>(i, raw, {1, 0});
+
+            else if constexpr ( std::is_same_v<T, uint32_t> || std::is_same_v<T, int32_t> )
+                detail::pack<T>(i, raw, {3, 2, 1, 0});
+
+            else if constexpr ( std::is_same_v<T, uint64_t> || std::is_same_v<T, int64_t> )
+                detail::pack<T>(i, raw, {7, 6, 5, 4, 3, 2, 1, 0});
+            else
+                abort_with_backtrace();
+
+            break;
+
+        case ByteOrder::Host:
+            // Cannot reach, we check this above.
+            abort_with_backtrace();
+
+        case ByteOrder::Undef: throw RuntimeError("attempt to pack value with undefined byte order");
+    }
+
+    return Bytes(reinterpret_cast<Bytes::Base::value_type*>(raw), sizeof(raw));
+}
 
 template<typename T, typename D>
 inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {

@@ -34,7 +34,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 115
-%expect-rr 187
+%expect-rr 189
 
 %{
 
@@ -187,6 +187,7 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 %token OPTIONAL "optional"
 %token OR "||"
 %token OVERLAY "overlay"
+%token PACK "pack"
 %token PLUSASSIGN "+="
 %token PLUSPLUS "++"
 %token PORT "port"
@@ -776,7 +777,8 @@ expr_e        : BEGIN_ '(' expr ')'              { $$ = hilti::expression::Unres
               | CAST type_param_begin type type_param_end '(' expr ')'   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Cast, {std::move($6), hilti::expression::Type_(std::move($3))}, __loc__); }
               | END_ '(' expr ')'                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::End, {std::move($3)}, __loc__); }
               | MOVE '(' expr ')'                { $$ = hilti::expression::Move(std::move($3), __loc__); }
-              | UNPACK type_param_begin type type_param_end tuple_expr   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unpack, {hilti::expression::Type_(std::move($3)), std::move($5)}, __loc__); }
+              | PACK tuple_expr   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Pack, {std::move($2)}, __loc__); }
+              | UNPACK type_param_begin type type_param_end tuple_expr   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unpack, {hilti::expression::Type_(std::move($3)), std::move($5), hilti::expression::Ctor(hilti::ctor::Bool(false), __loc__)}, __loc__); }
               | NEW expr                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {std::move($2), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
               | NEW type                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Type_(std::move($2)), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
               | NEW type '(' opt_exprs ')'       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Type_(std::move($2)), hilti::expression::Ctor(hilti::ctor::Tuple(std::move($4), __loc__))}, __loc__); }
