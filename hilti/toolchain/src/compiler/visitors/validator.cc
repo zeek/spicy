@@ -257,7 +257,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         auto [min, max] = util::signed_integer_range(n.width());
 
         if ( n.value() < min || n.value() > max )
-            error("integer value out of range for type B1", p);
+            error("integer value out of range for type", p);
     }
 
     void operator()(const ctor::Set& n, position_t p) {
@@ -273,7 +273,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         auto [min, max] = util::unsigned_integer_range(n.width());
 
         if ( n.value() < min || n.value() > max )
-            error("integer value out of range for type B2", p);
+            error("integer value out of range for type", p);
     }
 
     void operator()(const ctor::Vector& n, position_t p) {

@@ -961,7 +961,7 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
               | '+' CUINTEGER                    { if ( $2 > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
-                                                    hilti::logger().error("integer constant out of range C1", __loc__.location());
+                                                    hilti::logger().error("integer constant out of range", __loc__.location());
 
                                                    $$ = hilti::ctor::SignedInteger($2, 64, __loc__);
                                                  }
