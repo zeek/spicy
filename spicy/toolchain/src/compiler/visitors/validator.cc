@@ -753,6 +753,14 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
     }
 
     void operator()(const spicy::type::unit::item::Variable& v, position_t p) {
+        if ( auto attrs = v.attributes() ) {
+            for ( const auto& attr : attrs->attributes() ) {
+                const auto& tag = attr.tag();
+                if ( tag != "&optional" )
+                    error(fmt("attribute '%s' not supported for unit variables", tag), p);
+            }
+        }
+
         if ( v.itemType().isA<type::Sink>() )
             error(
                 "cannot use type 'sink' for unit variables; use either a 'sink' item or a reference to a sink "

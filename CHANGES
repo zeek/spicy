@@ -1,3 +1,7 @@
+1.6.0-dev.147 | 2022-12-12 09:40:49 +0100
+
+  * GH-1319: Add validation rejecting unsupported attributes on unit variables. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.145 | 2022-12-12 09:14:22 +0100
 
   * doc/zeek: zkg template changed and mention packet analyzers (Arne
