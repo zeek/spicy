@@ -1085,7 +1085,7 @@ static std::string _renderOperatorInstance(operator_::Kind kind, const node::Ran
     switch ( kind ) {
         case operator_::Kind::Call: {
             assert(exprs.size() == 2);
-            auto id = exprs[0];
+            const auto& id = exprs[0];
             auto ops = exprs[1].as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
             auto args =
                 util::join(node::transform(ops, [&](auto x) { return fmt("<%s>", renderExpressionType(x)); }), ", ");
@@ -1094,8 +1094,8 @@ static std::string _renderOperatorInstance(operator_::Kind kind, const node::Ran
 
         case operator_::Kind::MemberCall: {
             assert(exprs.size() == 3);
-            auto self = exprs[0];
-            auto id = exprs[1];
+            const auto& self = exprs[0];
+            const auto& id = exprs[1];
             auto ops = exprs[2].as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
             auto args =
                 util::join(node::transform(ops, [&](auto x) { return fmt("<%s>", renderExpressionType(x)); }), ", ");

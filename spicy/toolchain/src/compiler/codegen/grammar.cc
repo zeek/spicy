@@ -244,7 +244,7 @@ Result<Nothing> Grammar::_computeTables() {
                 }
 
                 for ( auto i = first; i != last; i++ ) {
-                    auto rhs = *i;
+                    const auto& rhs = *i;
 
                     if ( _isNullable(first, i) )
                         changed = _add(&_first, p, _getFirst(rhs), changed);

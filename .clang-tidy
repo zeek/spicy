@@ -56,7 +56,6 @@ Checks: '
   -modernize-macro-to-enum,
 
   performance-*,
-  -performance-unnecessary-copy-initialization,
   portability-*,
   -portability-std-allocator-const,
 
