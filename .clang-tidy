@@ -58,7 +58,6 @@ Checks: '
 
   performance-*,
   -performance-unnecessary-copy-initialization,
-  -performance-inefficient-vector-operation,
   portability-*,
   -portability-std-allocator-const,
 

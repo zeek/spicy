@@ -24,6 +24,7 @@ std::string codegen::production::Switch::render() const {
     for ( const auto& c : _cases ) {
         std::vector<std::string> exprs;
 
+        exprs.reserve(c.first.size());
         for ( const auto& e : c.first )
             exprs.push_back(hilti::util::fmt("%s", e));
 
