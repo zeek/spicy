@@ -1,0 +1,151 @@
+# @TEST-DOC: Validates that when connecting a sink by MIME type only public units or units in the same compilation unit are considered when compiled statically through C++ source modules
+#
+# @TEST-EXEC: spicyc -x foo foo.spicy
+# @TEST-EXEC: spicyc -x bar bar.spicy
+# @TEST-EXEC: ${SCRIPTS}/cxx-compile-and-link -o a.out *.cc
+#
+# @TEST-EXEC: echo "### Test::Foo" >>output
+# @TEST-EXEC: ./a.out Test::Foo >>output
+# @TEST-EXEC: echo "### Test::Bar" >>output
+# @TEST-EXEC: ./a.out Test::Bar >>output
+#
+# @TEST-EXEC: btest-diff output
+
+# @TEST-START-FILE foo.spicy
+module Test;
+
+public type Foo = unit {
+    : bytes &eod -> self.data;
+    sink data;
+
+    on %init {
+        print "Foo";
+        self.data.connect_mime_type("foo/private"); # works
+        self.data.connect_mime_type("bar/private"); # won't work
+        self.data.connect_mime_type("common/public"); # will use our version
+        self.data.connect_mime_type("common/private"); # will use our version
+    }
+};
+
+type FooPrivate = unit {
+    %mime-type = "foo/private";
+    : bytes &eod -> self.data;
+    sink data;
+
+    on %init { print "foo/private from Foo"; }
+};
+
+public type CommonPublic = unit {
+    %mime-type = "common/public";
+    x: bytes &eod;
+
+    on %init { print "common/public from Foo"; }
+};
+
+type CommonPrivate = unit {
+    %mime-type = "common/private";
+    x: bytes &eod;
+
+    on %init { print "common/private from Foo"; }
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE bar.spicy
+module Test;
+
+public type Bar = unit {
+    : bytes &eod -> self.data;
+    sink data;
+
+    on %init {
+        print "Bar";
+        self.data.connect_mime_type("foo/private"); # works
+        self.data.connect_mime_type("bar/private"); # won't work
+        self.data.connect_mime_type("common/public"); # will use our version
+        self.data.connect_mime_type("common/private"); # will use our version
+    }
+};
+
+type BarPrivate = unit {
+    %mime-type = "bar/private";
+    : bytes &eod -> self.data;
+    sink data;
+
+    on %init { print "bar/private from Bar"; }
+};
+
+public type CommonPublic = unit {
+    %mime-type = "common/public";
+    x: bytes &eod;
+
+    on %init { print "common/public from Bar"; }
+};
+
+type CommonPrivate = unit {
+    %mime-type = "common/private";
+    x: bytes &eod;
+
+    on %init { print "common/private from Bar"; }
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE driver.cc
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+
+#include <spicy/rt/libspicy.h>
+
+void print(const hilti::rt::type_info::Value& v) {
+    const auto& type = v.type();
+    switch ( type.tag ) {
+        case hilti::rt::TypeInfo::Bytes: std::cout << type.bytes->get(v); break;
+        case hilti::rt::TypeInfo::ValueReference: print(type.value_reference->value(v)); break;
+        case hilti::rt::TypeInfo::Struct:
+            for ( const auto& [f, y] : type.struct_->iterate(v) ) {
+                std::cout << f.name << ": ";
+                print(y);
+                std::cout << std::endl;
+            }
+            break;
+        default: assert(false);
+    }
+}
+
+// Usage: "my-driver <unit>"
+int main(int argc, char** argv) {
+    // Initialize runtime libraries.
+    hilti::rt::init();
+    spicy::rt::init();
+
+    // Instantiate driver providing higher level parsing API.
+    spicy::rt::Driver driver;
+
+    // Print out available parsers.
+    driver.listParsers(std::cout);
+
+    if ( argc != 2 )
+        return 0;
+
+    // Retrieve meta object describing parser.
+    auto parser = driver.lookupParser(argv[1]);
+    assert(parser);
+
+    // Fill string stream with data to parse.
+    std::stringstream data("xyz");
+
+    // Feed data.
+    auto unit = driver.processInput(**parser, data);
+    assert(unit);
+
+    // Print out content of parsed unit.
+    print(unit->value());
+
+    // Wrap up runtime libraries.
+    spicy::rt::done();
+    hilti::rt::done();
+
+    return 0;
+}
+
+# @TEST-END-FILE
