@@ -23,7 +23,7 @@ TEST_CASE("backtrace") {
 }
 
 // Helper function to create a backtrace with one more frame as the caller.
-auto __attribute__((noinline)) make_backtrace() { return Backtrace(); }
+auto __attribute__((optnone)) make_backtrace() { return Backtrace(); }
 
 TEST_CASE("comparison") {
     const auto bt1 = Backtrace();      // Backtrace to this call site.
