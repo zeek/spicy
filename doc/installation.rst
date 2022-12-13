@@ -160,11 +160,19 @@ macOS versions:
 
     * - Catalina (10.15)
       - :package-release-tgz:`TAR <macos_catalina>`
-      - :package-dev-tgz:`TAR <macos_catalina>`
+      -
 
     * - Big Sur (11)
       - :package-release-tgz:`TAR <macos_big_sur>`
-      - :package-dev-tgz:`TAR <macos_big_sur>`
+      -
+
+    * - Monterey (12)
+      -
+      - :package-dev-tgz:`TAR <macos_monterey>`
+
+    * - Catalina (13)
+      -
+      - :package-dev-tgz:`TAR <macos_venture>`
 
 The TAR archives need to be unpacked into ``/opt/spicy``. Any previous
 installation must be removed first. To prevent macOS from quarantining
