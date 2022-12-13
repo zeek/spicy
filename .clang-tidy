@@ -8,7 +8,6 @@ Checks: '
   -bugprone-lambda-function-name,
   -bugprone-assignment-in-if-condition,
   -bugprone-unchecked-optional-access,
-  -bugprone-exception-escape,
   -bugprone-implicit-widening-of-multiplication-result,
   -bugprone-shared-ptr-array-mismatch,
   -bugprone-stringview-nullptr,
