@@ -73,7 +73,6 @@ Checks: '
   -readability-qualified-auto,
   -readability-function-cognitive-complexity,
   -readability-function-size,
-  -readability-simplify-boolean-expr
   -readability-container-contains,
   -readability-container-data-pointer,
   -readability-suspicious-call-argument

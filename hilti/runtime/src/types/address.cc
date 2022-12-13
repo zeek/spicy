@@ -163,7 +163,7 @@ Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily family, Byte
                 return result::Error("insufficient data to unpack IPv6 address");
 
             const bool nbo =
-                ! (fmt == ByteOrder::Little || (fmt == ByteOrder::Host && systemByteOrder() == ByteOrder::Little));
+                fmt != ByteOrder::Little && (fmt != ByteOrder::Host || systemByteOrder() != ByteOrder::Little);
 
             if ( auto x = integer::unpack<uint64_t>(data, fmt) ) {
                 if ( auto y = integer::unpack<uint64_t>(std::get<1>(*x), fmt) ) {
