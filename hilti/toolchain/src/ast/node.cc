@@ -120,7 +120,7 @@ node::Properties operator+(const node::Properties& p1, const node::Properties& p
     return p;
 }
 
-void node::detail::flattenedChildren(const hilti::Node& n, node::Set<const hilti::Node>* dst) {
+void node::detail::flattenedChildren(const hilti::Node& n, node::Set<hilti::Node>* dst) {
     const auto& children = n.children();
     for ( const auto& i : children ) {
         dst->insert(i);

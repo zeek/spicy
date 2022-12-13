@@ -948,15 +948,15 @@ std::vector<NodeRef> NodeBase::childRefsOfType() const {
 namespace node {
 namespace detail {
 // Backend to NodeBase::flattenedChildren.
-void flattenedChildren(const hilti::Node& n, node::Set<const hilti::Node>* dst);
+void flattenedChildren(const hilti::Node& n, node::Set<hilti::Node>* dst);
 } // namespace detail
 
 /**
  * Returns a list of all children of specific type, descending recursively
  * to find instance anywhere below this node.
  */
-inline node::Set<const Node> flattenedChildren(const Node& n) {
-    node::Set<const Node> dst;
+inline node::Set<Node> flattenedChildren(const Node& n) {
+    node::Set<Node> dst;
     detail::flattenedChildren(n, &dst);
     return dst;
 }

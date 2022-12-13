@@ -56,7 +56,6 @@ Checks: '
 
   performance-*,
   portability-*,
-  -portability-std-allocator-const,
 
   readability-*,
   -readability-braces-around-statements,
