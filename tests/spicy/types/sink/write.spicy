@@ -5,8 +5,10 @@ module Mini;
 
 import spicy;
 
+const b123 = b"123";
+
 public type Main = unit {
-    a: bytes &size=2 { self.data.write(b"123"); }
+    a: bytes &size=2 { self.data.write(b123); }
     b: bytes &size=5 { self.data.write(b"4567"); }
     c: bytes &size=3 { self.data.write(b""); }
     d: bytes &size=5 { self.data.write(b"890"); }

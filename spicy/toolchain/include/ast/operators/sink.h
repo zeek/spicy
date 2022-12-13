@@ -250,7 +250,7 @@ BEGIN_METHOD(sink, Write)
         static auto _signature = hilti::operator_::Signature{.self = spicy::type::Sink(),
                                                              .result = type::void_,
                                                              .id = "write",
-                                                             .args = {{"data", type::Bytes()},
+                                                             .args = {{"data", type::constant(type::Bytes())},
                                                                       {"seq", type::UnsignedInteger(64), true},
                                                                       {"len", type::UnsignedInteger(64), true}},
                                                              .doc = R"(
