@@ -1,3 +1,7 @@
+1.7.0-dev.4 | 2022-12-13 10:56:35 +0100
+
+  * Fix docs for enum using semicolon instead of comma. (Arne Welzel, Corelight)
+
 1.7.0-dev.2 | 2022-12-13 10:43:41 +0100
 
   * GH-1322: Bring implementation of `Sink::write` in line with declaration. (Benjamin Bannier, Corelight)

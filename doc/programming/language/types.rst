@@ -88,7 +88,7 @@ Enum types associate labels with numerical values.
 
 .. rubric:: Type
 
-- ``enum { LABEL_1; ... LABEL_N }``
+- ``enum { LABEL_1, ..., LABEL_N }``
 - Each label has the form ``ID [= VALUE]``. If ``VALUE`` is skipped,
   one will be assigned automatically.
 
