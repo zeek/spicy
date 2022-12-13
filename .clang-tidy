@@ -71,7 +71,6 @@ Checks: '
   -readability-function-cognitive-complexity,
   -readability-function-size,
   -readability-container-contains,
-  -readability-container-data-pointer,
   -readability-suspicious-call-argument
   '
 
