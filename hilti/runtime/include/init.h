@@ -21,6 +21,9 @@ extern void done();
 /** Returns true if init() has already been called. */
 extern bool isInitialized();
 
+/** Execute any functions registered through `RegisterManualPreInit`. */
+extern void executeManualPreInits();
+
 namespace detail {
 
 /** A HILTI module registered with the runtime. The HILTI code generator creates code to register an instance of this
@@ -39,13 +42,28 @@ struct HiltiModule {
 /** Entry point for the generated code to register a compiled HILTI module with the runtime */
 extern void registerModule(HiltiModule module);
 
-/** Macro to schedule a global function to be called at startup time through a global constructor. */
+/**
+ * Macro to schedule a global function to be called at startup time. Execution
+ * will happen either automatically through a static constructor (default), or
+ * if `HILTI_MANUAL_PREINIT` is defined, be triggered through a call to
+ * `executeCustomPreInits()`.
+ */
+#ifdef HILTI_MANUAL_PREINIT
+#define HILTI_PRE_INIT(func) static ::hilti::rt::detail::RegisterManualPreInit __pre_init_##__COUNTER__(func);
+#else
 #define HILTI_PRE_INIT(func) static ::hilti::rt::detail::ExecutePreInit __pre_init_##__COUNTER__(func);
+#endif
 
 /** Helper class to execute a global function at startup time through a global constructor. */
 class ExecutePreInit {
 public:
     ExecutePreInit(void (*f)()) { (*f)(); }
+};
+
+/** Helper class to register a global function to execute through `executeCustomPreInits`. */
+class RegisterManualPreInit {
+public:
+    RegisterManualPreInit(void (*f)());
 };
 
 } // namespace detail
