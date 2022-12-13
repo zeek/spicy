@@ -224,10 +224,6 @@ macos_catalina_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
-  update_homebrew_script:
-    - brew update
-
   update_git_script:
     - git submodule update --recursive --init
 
@@ -260,10 +256,6 @@ macos_big_sur_task:
   environment:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
-
-  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
-  update_homebrew_script:
-    - brew update
 
   update_git_script:
     - git submodule update --recursive --init
@@ -366,10 +358,6 @@ homebrew_catalina_task:
   osx_instance:
     image: $IMAGE_MACOS_CATALINA
 
-  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
-  update_homebrew_script:
-    - brew update
-
   script:
     - brew tap zeek/zeek
     - brew install spicy --HEAD
@@ -380,10 +368,6 @@ homebrew_big_sur_task:
 
   osx_instance:
     image: $IMAGE_MACOS_BIG_SUR
-
-  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
-  update_homebrew_script:
-    - brew update
 
   script:
     - brew tap zeek/zeek
