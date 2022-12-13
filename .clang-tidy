@@ -6,7 +6,6 @@ Checks: '
   -bugprone-branch-clone,
   -bugprone-macro-parentheses,
   -bugprone-lambda-function-name,
-  -bugprone-assignment-in-if-condition,
   -bugprone-unchecked-optional-access,
   -bugprone-implicit-widening-of-multiplication-result,
   -bugprone-shared-ptr-array-mismatch,
