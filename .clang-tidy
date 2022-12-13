@@ -7,11 +7,6 @@ Checks: '
   -bugprone-macro-parentheses,
   -bugprone-lambda-function-name,
   -bugprone-unchecked-optional-access,
-  -bugprone-implicit-widening-of-multiplication-result,
-  -bugprone-shared-ptr-array-mismatch,
-  -bugprone-stringview-nullptr,
-  -bugprone-suspicious-memory-comparison,
-  -bugprone-unhandled-exception-at-new,
 
   cert-*,
   -cert-dcl37-c,
@@ -20,9 +15,6 @@ Checks: '
   -cert-dcl58-cpp,
   -cert-dcl21-cpp,
   -cert-err33-c,
-  -cert-exp42-c,
-  -cert-flp37-c,
-  -cert-pos47-c,
 
   clang*,
   -clang-analyzer-cplusplus.NewDeleteLeaks,
@@ -30,9 +22,6 @@ Checks: '
   -clang-diagnostic-deprecated-copy,
   -clang-diagnostic-range-loop-analysis,
   -clang-analyzer-core.StackAddressEscape,
-  -clang-analyzer-apiModeling.Errno,
-  -clang-analyzer-apiModeling.TrustReturnsNonnull,
-  -clang-analyzer-cplusplus.StringChecker,
 
   misc-*,
   -misc-macro-parentheses,
@@ -42,9 +31,6 @@ Checks: '
   -misc-unused-parameters,
   -misc-const-correctness,
   -misc-confusable-identifiers,
-  -misc-misleading-bidirectional,
-  -misc-misleading-identifier,
-  -misc-unused-using-decls,
 
   modernize-*,
   -modernize-avoid-c-arrays,
@@ -52,7 +38,6 @@ Checks: '
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -modernize-return-braced-init-list,
-  -modernize-macro-to-enum,
 
   performance-*,
   portability-*,
@@ -70,8 +55,6 @@ Checks: '
   -readability-qualified-auto,
   -readability-function-cognitive-complexity,
   -readability-function-size,
-  -readability-container-contains,
-  -readability-suspicious-call-argument
   '
 
 HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z]+/include/([a-zA-Z]+/)*[a-zA-Z]+\.h'
