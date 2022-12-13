@@ -1132,7 +1132,7 @@ struct ProductionVisitor
                                       function::CallingConvention::Standard, {}, m);
 
         if ( add_decl )
-            new_fields.emplace_back(hilti::declaration::Field(id, func.function().type()));
+            new_fields.emplace_back(id, func.function().type());
 
         cg()->addDeclaration(func);
     }

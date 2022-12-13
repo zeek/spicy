@@ -437,7 +437,7 @@ Result<JIT::JobRunner::JobID> JIT::JobRunner::_scheduleJob(const hilti::rt::file
     auto jid = ++_job_counter;
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] %s", jid, util::join(cmdline, " ")));
 
-    _jobs_pending.emplace_back(std::make_tuple(jid, cmdline));
+    _jobs_pending.emplace_back(jid, cmdline);
     return jid;
 }
 
