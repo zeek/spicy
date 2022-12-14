@@ -5,8 +5,8 @@ environment:
     HILTI_JIT_SEQUENTIAL: 1
 
     # Images for macOS
-    IMAGE_MACOS_BIG_SUR:  big-sur-base
-    IMAGE_MACOS_CATALINA: catalina-base
+    IMAGE_MACOS_MONTEREY: ghcr.io/cirruslabs/macos-monterey-base:latest
+    IMAGE_MACOS_VENTURA: ghcr.io/cirruslabs/macos-ventura-base:latest
 
     # Branches to use for spicy-plugin and spicy-analyzers tests.
     ZEEK_SPICY_BRANCH:      main
@@ -211,9 +211,9 @@ clang11_nightly_task:
       type: text/xml
       format: junit
 
-macos_catalina_task:
-  osx_instance:
-    image: $IMAGE_MACOS_CATALINA
+macos_monterey_task:
+  macos_instance:
+    image: $IMAGE_MACOS_MONTEREY
 
   always:
     ccache_cache:
@@ -224,10 +224,6 @@ macos_catalina_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
-  update_homebrew_script:
-    - brew update
-
   update_git_script:
     - git submodule update --recursive --init
 
@@ -236,7 +232,7 @@ macos_catalina_task:
     - sudo pip3 install "btest>=0.66" sphinx_rtd_theme
 
   configure_script:
-    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror --prefix=/opt/spicy
+    - ./configure --generator=Ninja --with-bison=/opt/Homebrew/opt/bison --with-flex=/opt/Homebrew/opt/flex --enable-ccache --enable-werror --prefix=/opt/spicy
   build_script:
     - ninja -C build all check
   test_build_script:
@@ -248,9 +244,9 @@ macos_catalina_task:
     path: build/spicy*.tar.gz
     type: application/gzip
 
-macos_big_sur_task:
-  osx_instance:
-    image: $IMAGE_MACOS_BIG_SUR
+macos_ventura_task:
+  macos_instance:
+    image: $IMAGE_MACOS_VENTURA
 
   always:
     ccache_cache:
@@ -261,10 +257,6 @@ macos_big_sur_task:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
 
-  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
-  update_homebrew_script:
-    - brew update
-
   update_git_script:
     - git submodule update --recursive --init
 
@@ -273,7 +265,7 @@ macos_big_sur_task:
     - sudo pip3 install btest sphinx_rtd_theme zkg
 
   configure_script:
-    - ./configure --generator=Ninja --with-bison=/usr/local/opt/bison --with-flex=/usr/local/opt/flex --enable-ccache --enable-werror --prefix=/opt/spicy
+    - ./configure --generator=Ninja --with-bison=/opt/Homebrew/opt/bison --with-flex=/opt/Homebrew/opt/flex --enable-ccache --enable-werror --prefix=/opt/spicy
   build_script:
     - ninja -C build all check
   test_build_script:
@@ -360,30 +352,22 @@ validate_release_tarball_task:
     - cd /tmp/spicy-tarball/spicy-*
     - make -C tests
 
-homebrew_catalina_task:
+homebrew_monterey_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
-  osx_instance:
-    image: $IMAGE_MACOS_CATALINA
-
-  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
-  update_homebrew_script:
-    - brew update
+  macos_instance:
+    image: $IMAGE_MACOS_MONTEREY
 
   script:
     - brew tap zeek/zeek
     - brew install spicy --HEAD
     - brew test spicy
 
-homebrew_big_sur_task:
+homebrew_ventura_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
-  osx_instance:
-    image: $IMAGE_MACOS_BIG_SUR
-
-  # TODO(bbannier): This is a temporary workaround for cirruslabs/cirrus-ci-docs#878.
-  update_homebrew_script:
-    - brew update
+  macos_instance:
+    image: $IMAGE_MACOS_VENTURA
 
   script:
     - brew tap zeek/zeek

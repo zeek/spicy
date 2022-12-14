@@ -1,3 +1,11 @@
+1.7.0-dev.20 | 2022-12-14 13:24:47 +0100
+
+  * Bump Cirrus macos CI. (Benjamin Bannier, Corelight)
+
+  * Fix test `Backtrace.comparison` for aggressive constant folding. (Benjamin Bannier, Corelight)
+
+  * Remove workaround for outdated Homebrew db on Cirrus CI. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.16 | 2022-12-14 10:29:59 +0100
 
   * Audit previously disabled clang-tidy-15 checks. (Benjamin Bannier, Corelight)
