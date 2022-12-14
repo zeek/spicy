@@ -549,11 +549,10 @@ std::string cxx::type::Union::str() const {
 }
 
 std::string cxx::type::Enum::str() const {
-    // The following line triggers a NullDereference in tinyformat.h for some reason.
-    auto x = util::transform(labels, [](const auto& l) {
-        return fmt("%s = %d", l.first, l.second);
-    }); // NOLINT(clang-analyzer-core.NullDereference)
-    return fmt("enum class %s : int64_t { %s }", type_name, util::join(x, ", "));
+    auto vals =
+        util::join(util::transform(labels, [](const auto& l) { return fmt("%s = %d", l.first, l.second); }), ", ");
+
+    return fmt("HILTI_RT_ENUM_WITH_DEFAULT(%s, Undef, %s);", type_name, vals);
 }
 
 cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Block& x) {

@@ -3,12 +3,13 @@
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/types/enum.h>
+#include <hilti/rt/util.h>
 
 using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("Enum");
 
-enum class X : int64_t { A1 = 1, A2 = 2, A3 = -2, Undef = -1 };
+HILTI_RT_ENUM(X, Undef, A1 = 1, A2 = 2, A3 = -2);
 
 TEST_CASE("from_int") {
     CHECK_EQ(enum_::from_int<X>(1), X::A1);

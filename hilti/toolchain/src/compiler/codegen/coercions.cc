@@ -31,7 +31,7 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         if ( auto t = dst.tryAs<type::Bool>() ) {
             auto etype = p.node.as<Type>(); // preserve type ID
             auto id = cg->compile(etype, codegen::TypeUsage::Storage);
-            return fmt("(%s != %s::Undef)", expr, id);
+            return fmt("(%s != %s(%s::Undef))", expr, id, id);
         }
 
         logger().internalError(fmt("codegen: unexpected type coercion from enum to %s", dst.typename_()));
