@@ -8,7 +8,14 @@ using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("Enum");
 
-enum class X : int64_t { A1 = 1, A2 = 2, A3 = -2, Undef = -1 };
+struct X {
+    enum Value : int64_t { A1 = 1, A2 = 2, A3 = -2, Undef = -1 };
+    constexpr X(int64_t _value = Undef) : value(_value) {}
+    friend constexpr bool operator==(const X& a, const X& b) { return a.value == b.value; }
+    friend constexpr bool operator!=(const X& a, const X& b) { return ! (a == b); }
+    friend constexpr bool operator<(const X& a, const X& b) { return a.value < b.value; }
+    int64_t value;
+};
 
 TEST_CASE("from_int") {
     CHECK_EQ(enum_::from_int<X>(1), X::A1);

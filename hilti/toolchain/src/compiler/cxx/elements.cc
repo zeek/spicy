@@ -549,11 +549,57 @@ std::string cxx::type::Union::str() const {
 }
 
 std::string cxx::type::Enum::str() const {
-    // The following line triggers a NullDereference in tinyformat.h for some reason.
-    auto x = util::transform(labels, [](const auto& l) {
-        return fmt("%s = %d", l.first, l.second);
-    }); // NOLINT(clang-analyzer-core.NullDereference)
-    return fmt("enum class %s : int64_t { %s }", type_name, util::join(x, ", "));
+    cxx::Formatter f;
+    f << "struct " << type_name << " {";
+    f.eol();
+    f.indent();
+
+    // Inner enum type.
+    auto vals = util::transform(labels, [](const auto& l) { return fmt("%s = %d", l.first, l.second); });
+    f << fmt("enum Value : int64_t { %s };\n", util::join(vals, ", "));
+
+    // Constructors and assignment operators.
+    f << "constexpr " << type_name << "(int64_t _value = Undef) : value(_value) {}\n";
+    f << "constexpr " << type_name << "(const " << type_name << "&) = default;\n";
+    f << "constexpr " << type_name << "(" << type_name << "&&) = default;\n";
+    f << type_name << "& operator=(const " << type_name << "&) = default;\n";
+    f << type_name << "& operator=(" << type_name << "&&) = default;\n";
+
+    // Stringification.
+    f << "operator std::string() const {";
+    f.eol();
+    f.indent();
+    f << "switch ( value ) {\n";
+    for ( auto&& l : labels ) {
+        f << "case " << l.second << ": return \"" << type_name << "::" << l.first << "\";\n";
+    }
+    f << "}\n";
+    f << "return hilti::rt::fmt(\"" << type_name << R"(::<unknown-%" PRIu64 ">", value);)";
+    f.eol();
+    f.dedent();
+    f << "}\n";
+
+    // Operators.
+    f << "friend constexpr bool operator==(const " << type_name << "& a, const " << type_name
+      << "& b) { return a.value == b.value; }\n";
+
+    f << "friend constexpr bool operator!=(const " << type_name << "& a, const " << type_name
+      << "& b) { return ! ( a == b); }\n";
+
+    f << "friend constexpr bool operator<(const " << type_name << "& a, const " << type_name
+      << "& b) { return a.value < b.value; }\n";
+
+    f << "friend std::ostream& operator<<(std::ostream& stream, const " << type_name
+      << "& e) { return stream << std::string(e); }\n";
+
+    // Private data.
+    f << "int64_t value = " << type_name << "::Undef;";
+
+    f.eol();
+    f.dedent();
+    f << "}";
+
+    return f.str();
 }
 
 cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Block& x) {

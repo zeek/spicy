@@ -384,18 +384,9 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
         auto id = cxx::ID(scope, sid);
 
         // Add tailored to_string() function.
-        auto cases = util::transform(n.uniqueLabels(), [&](auto l) {
-            auto b = cxx::Block();
-            b.addReturn(fmt("\"%s\"", cxx::ID(id.local(), l.get().id())));
-            return std::make_pair(cxx::Expression(cxx::ID(id, l.get().id())), std::move(b));
-        });
-
-        auto default_ = cxx::Block();
-        default_.addReturn(
-            fmt(R"(hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", static_cast<uint64_t>(x)))", id.local()));
 
         auto body = cxx::Block();
-        body.addSwitch("x", cases, std::move(default_));
+        body.addReturn(fmt("std::string(x)"));
 
         auto ts_decl = cxx::declaration::Function{.result = "std::string",
                                                   .id = {"::hilti::rt::detail::adl", "to_string"},
@@ -407,22 +398,6 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
         cg->unit()->add(ts_decl);
         cg->unit()->add(ts_impl);
-
-        // Add tailored operator<<.
-        auto render_body = cxx::Block();
-        render_body.addStatement("o << ::hilti::rt::to_string(x); return o");
-
-        auto render_decl =
-            cxx::declaration::Function{.result = "std::ostream&",
-                                       .id = cxx::ID{fmt("%s::operator<<", id.namespace_())},
-                                       .args = {cxx::declaration::Argument{.id = "o", .type = "std::ostream&"},
-                                                cxx::declaration::Argument{.id = "x", .type = cxx::Type(id.local())}},
-                                       .linkage = "inline"};
-
-        auto render_impl = cxx::Function{.declaration = render_decl, .body = std::move(render_body)};
-
-        cg->unit()->add(render_decl);
-        cg->unit()->add(render_impl);
 
         cg->addDeclarationFor(p.node.as<Type>());
         return CxxTypes{.base_type = std::string(sid), .default_ = cxx::Expression(cxx::ID(sid, "Undef"))};

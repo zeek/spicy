@@ -26,7 +26,7 @@ bool has_label(const T& t, const TypeInfo* ti) {
 
     const auto& labels = ti->enum_->labels();
     return std::any_of(labels.begin(), labels.end(),
-                       [&](const auto& l) { return l.value != -1 && static_cast<int64_t>(t) == l.value; });
+                       [&](const auto& l) { return l.value != -1 && t.value == l.value; });
 }
 
 /**
@@ -40,7 +40,9 @@ bool has_label(const T& t, const TypeInfo* ti) {
  */
 template<typename T>
 T from_int(int64_t n) {
-    static_assert(std::is_enum<T>::value && std::is_same_v<std::underlying_type_t<T>, int64_t>);
+    using Value = typename T::Value;
+    static_assert(std::is_enum_v<Value>);
+    static_assert(std::is_same_v<std::underlying_type_t<Value>, int64_t>);
     return static_cast<T>(n);
 }
 
@@ -58,7 +60,9 @@ T from_int(int64_t n) {
  */
 template<typename T>
 T from_uint(uint64_t n) {
-    static_assert(std::is_enum<T>::value && std::is_same_v<std::underlying_type_t<T>, int64_t>);
+    using Value = typename T::Value;
+    static_assert(std::is_enum_v<Value>);
+    static_assert(std::is_same_v<std::underlying_type_t<Value>, int64_t>);
 
     if ( n > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
         throw InvalidValue("enum value exceeds range");
