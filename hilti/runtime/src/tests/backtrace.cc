@@ -23,7 +23,12 @@ TEST_CASE("backtrace") {
 }
 
 // Helper function to create a backtrace with one more frame as the caller.
-auto __attribute__((optnone)) make_backtrace() { return Backtrace(); }
+//
+// NOTE: Some compilers remove this function even if `noinline` is given via
+// e.g., constant folding, so we try to completely disable optimization via
+// `optnone`. We still keep `noinline` since `optnone` is not understood by all
+// compilers.
+auto __attribute__((noinline, optnone)) make_backtrace() { return Backtrace(); }
 
 TEST_CASE("comparison") {
     const auto bt1 = Backtrace();      // Backtrace to this call site.
