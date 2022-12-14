@@ -56,7 +56,7 @@ public:
             return children()[0].as<Type>();
     }
 
-    auto value() const { return children<const map::Element>(1, -1); }
+    auto value() const { return children<map::Element>(1, -1); }
 
     void setElementType(const Type& k, const Type& v) { children()[0] = type::Map(k, v, meta()); }
 

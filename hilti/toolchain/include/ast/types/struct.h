@@ -71,8 +71,8 @@ public:
         return {};
     }
 
-    hilti::node::Set<const declaration::Field> fields(const ID& id) const {
-        hilti::node::Set<const declaration::Field> x;
+    hilti::node::Set<declaration::Field> fields(const ID& id) const {
+        hilti::node::Set<declaration::Field> x;
         for ( const auto& f : fields() ) {
             if ( f.id() == id )
                 x.insert(f);

@@ -7,9 +7,7 @@
 #include <hilti/autogen/config.h>
 #include <hilti/base/id-base.h>
 
-#include <string>
 
-#include <hilti/base/id-base.h>
 
 using namespace hilti;
 

@@ -1460,7 +1460,7 @@ public:
      * Constructs a stream from another stream instance.
      * @param other instance to create this stream from
      */
-    Stream(const Stream& other) noexcept : _chain(other._chain->deepCopy()) {}
+    Stream(const Stream& other) : _chain(other._chain->deepCopy()) {}
 
     /**
      * Constructs a stream from another stream instance.

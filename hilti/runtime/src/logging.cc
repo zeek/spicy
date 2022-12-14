@@ -10,7 +10,6 @@ using namespace hilti::rt::detail;
 #include <cstdlib>
 #include <iostream>
 
-#include <hilti/rt/util.h>
 
 using namespace hilti::rt;
 

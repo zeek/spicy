@@ -240,7 +240,7 @@ struct VisitorComputeCanonicalIDs : public visitor::PreOrder<ID, VisitorComputeC
         // Create a fake current ID and then restart ID computation below the
         // current node.
         auto id = ID(util::fmt("%s::<anon-struct-%d>", parent_id, ++ctor_struct_count));
-        _computeCanonicalIDs(this, const_cast<Node*>(&d.children()[0]), std::move(id));
+        _computeCanonicalIDs(this, const_cast<Node*>(d.children().data()), std::move(id));
         return {};
     }
 };
