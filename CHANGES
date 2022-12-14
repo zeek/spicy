@@ -1,3 +1,7 @@
+1.7.0-dev.22 | 2022-12-14 13:25:57 +0100
+
+  * Push container images to Docker Hub zeek org, too. (Arne Welzel, Corelight)
+
 1.7.0-dev.20 | 2022-12-14 13:24:47 +0100
 
   * Bump Cirrus macos CI. (Benjamin Bannier, Corelight)

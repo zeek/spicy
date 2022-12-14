@@ -83,3 +83,4 @@ jobs:
         tags: |
           public.ecr.aws/zeek/${{ steps.target.outputs.tag }}
           docker.io/zeekurity/${{ steps.target.outputs.tag }}
+          docker.io/zeek/${{ steps.target.outputs.tag }}
