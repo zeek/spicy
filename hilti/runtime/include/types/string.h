@@ -13,11 +13,11 @@ namespace hilti::rt {
 namespace string {
 
 /* When processing UTF8, how to handle invalid data not representing UTF8 codepoints. */
-enum class DecodeErrorStrategy : int64_t {
-    IGNORE,  // skip data
-    REPLACE, // replace with a place-holder
-    STRICT   // throw a runtime error
-};
+HILTI_RT_ENUM_WITH_DEFAULT(DecodeErrorStrategy, IGNORE,
+                           IGNORE,  // skip data
+                           REPLACE, // replace with a place-holder
+                           STRICT   // throw a runtime error
+);
 
 /**
  * Computes the length of a UTF8 string in number of codepoints.

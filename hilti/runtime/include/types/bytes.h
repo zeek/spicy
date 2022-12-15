@@ -30,14 +30,14 @@ class View;
 namespace bytes {
 
 /** For Bytes::Strip, which side to strip from. */
-enum class Side : int64_t {
-    Left,  /**< left side */
-    Right, /**< right side */
-    Both   /**< left and right sides */
-};
+HILTI_RT_ENUM_WITH_DEFAULT(Side, Left,
+                           Left,  // left side
+                           Right, // right side
+                           Both   // left and right side
+);
 
 /** For bytes decoding, which character set to use. */
-enum class Charset : int64_t { Undef, UTF8, ASCII };
+HILTI_RT_ENUM(Charset, Undef, UTF8, ASCII);
 
 /** For bytes decoding, how to handle decoding errors. */
 using DecodeErrorStrategy = string::DecodeErrorStrategy;

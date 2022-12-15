@@ -16,13 +16,50 @@
 #include <utility>
 #include <vector>
 
-#include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector_fwd.h>
+
+/**
+ * Helper to create runtime type with enum semantics.
+ *
+ * This macros should only be used if the enum type needs to default to a value
+ * other than `Undef` which is usually expected by users. All other cases
+ * should use `HILTI_RT_ENUM`.
+ *
+ * @param name name of the type to create.
+ * @param default_ enum value to use for default-constructed values.
+ * @param __VA_ARGS__ comma-separated list of enumerator definitions, either
+ *        identifier or identifier with initializer
+ */
+#define HILTI_RT_ENUM_WITH_DEFAULT(name, default_, ...)                                                                \
+    struct name {                                                                                                      \
+        enum Value : int64_t { __VA_ARGS__ };                                                                          \
+        constexpr name(int64_t value = default_) noexcept : _value(value) {}                                           \
+        friend name Enum(Value value) { return name(value); }                                                          \
+        friend constexpr bool operator==(const name& a, const name& b) noexcept { return a.value() == b.value(); }     \
+        friend constexpr bool operator!=(const name& a, const name& b) noexcept { return ! (a == b); }                 \
+        friend constexpr bool operator<(const name& a, const name& b) noexcept { return a.value() < b.value(); }       \
+        constexpr int64_t value() const { return _value; }                                                             \
+        int64_t _value;                                                                                                \
+    }
+
+/**
+ * Helper to create runtime type with enum semantics with default value `Undef`.
+ *
+ * This macro is the preferred way to create runtime types for enums since
+ * types created with this macro have the usual semantics of defaulting values
+ * to `Undef`.
+ *
+ * @param name name of the type to create.
+ * @param __VA_ARGS__ comma-separated list of enumerator definitions, either
+ *        identifier or identifier with initializer. This list should contain
+ *        an enumerator `Undef`.
+ */
+#define HILTI_RT_ENUM(name, ...) HILTI_RT_ENUM_WITH_DEFAULT(name, Undef, __VA_ARGS__)
 
 namespace hilti::rt {
 
@@ -500,7 +537,7 @@ template<typename... T>
 struct is_tuple<std::tuple<T...>> : std::true_type {};
 
 /** Available byte orders. */
-enum class ByteOrder : int64_t { Little, Big, Network, Host, Undef = -1 };
+HILTI_RT_ENUM(ByteOrder, Little, Big, Network, Host, Undef = -1);
 
 /**
  * Returns the byte order of the system we're running on. The result is

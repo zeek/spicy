@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/autogen/config.h>
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/util.h>
