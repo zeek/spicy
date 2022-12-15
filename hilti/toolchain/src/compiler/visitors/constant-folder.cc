@@ -2,6 +2,8 @@
 
 #include <optional>
 
+#include <hilti/rt/safe-math.h>
+
 #include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/integer.h>
 #include <hilti/ast/detail/visitor.h>
@@ -63,14 +65,12 @@ struct VisitorConstantFolder : public visitor::PreOrder<std::optional<Ctor>, Vis
 
     // Helper to cast an uint64 to int64, with range check.
     int64_t to_int64(uint64_t x, position_t& p) {
-        if ( x > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
+        try {
+            return SafeInt<int64_t>(x);
+        } catch ( ... ) {
             throw hilti::rt::OutOfRange("integer value out of range");
-
-        return static_cast<int64_t>(x);
+        }
     }
-
-    // Overload that doesn't need to do any checking.
-    int64_t to_int64(int64_t x, position_t& p) { return x; }
 
     // Helper to cast an int64 to uint64, with range check.
     uint64_t to_uint64(int64_t x, position_t& p) {
@@ -95,10 +95,7 @@ struct VisitorConstantFolder : public visitor::PreOrder<std::optional<Ctor>, Vis
         if ( ! op )
             return std::nullopt;
 
-        if ( op->value() > std::abs(std::numeric_limits<int64_t>::min()) )
-            throw hilti::rt::OutOfRange("integer value out of range");
-
-        return ctor::SignedInteger(-static_cast<int64_t>(op->value()), op->width(), p.node.meta());
+        return ctor::SignedInteger(hilti::rt::integer::safe_negate(op->value()), op->width(), p.node.meta());
     }
 
     result_t operator()(const operator_::real::SignNeg& n, position_t p) {
@@ -150,26 +147,26 @@ struct VisitorConstantFolder : public visitor::PreOrder<std::optional<Ctor>, Vis
     }
 
     result_t operator()(const operator_::signed_integer::CtorSigned8& op, position_t p) {
-        return tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 8);
+        return tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
+            return ctor::SignedInteger(ctor.value(), 8);
         });
     }
 
     result_t operator()(const operator_::signed_integer::CtorSigned16& op, position_t p) {
-        return tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 16);
+        return tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
+            return ctor::SignedInteger(ctor.value(), 16);
         });
     }
 
     result_t operator()(const operator_::signed_integer::CtorSigned32& op, position_t p) {
-        return tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 32);
+        return tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
+            return ctor::SignedInteger(ctor.value(), 32);
         });
     }
 
     result_t operator()(const operator_::signed_integer::CtorSigned64& op, position_t p) {
-        return tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [this, &p](const auto& ctor) {
-            return ctor::SignedInteger(to_int64(ctor.value(), p), 64);
+        return tryReplaceCtorExpression<ctor::SignedInteger>(op, p, [](const auto& ctor) {
+            return ctor::SignedInteger(ctor.value(), 64);
         });
     }
 

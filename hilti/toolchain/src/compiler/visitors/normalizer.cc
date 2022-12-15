@@ -96,7 +96,7 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     // Helper to cast an uint64 to int64, with range check.
     int64_t to_int64(uint64_t x, position_t& p) {
         if ( x > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
-            throw hilti::rt::OutOfRange("integer value out of range A1");
+            throw hilti::rt::OutOfRange("integer value out of range");
 
         return static_cast<int64_t>(x);
     }
@@ -107,7 +107,7 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     // Helper to cast an int64 to uint64, with range check.
     uint64_t to_uint64(int64_t x, position_t& p) {
         if ( x < 0 )
-            throw hilti::rt::OutOfRange("integer value out of range A2");
+            throw hilti::rt::OutOfRange("integer value out of range");
 
         return static_cast<uint64_t>(x);
     }

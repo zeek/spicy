@@ -68,5 +68,4 @@ assert int64(20) == int64(2 * s);
 # Check that max/min doesn't trigger an error.
 global x = int64(9223372036854775807); # max_int64
 global y = int64(-9223372036854775808); # min_int64
-
 }

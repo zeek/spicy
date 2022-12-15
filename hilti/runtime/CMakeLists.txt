@@ -32,6 +32,7 @@ set(SOURCES
     src/library.cc
     src/logging.cc
     src/main.cc
+    src/safe-math.cc
     src/type-info.cc
     src/types/address.cc
     src/types/bytes.cc
