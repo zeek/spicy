@@ -39,21 +39,30 @@ TEST_CASE("at") {
 }
 
 TEST_CASE("construct") {
-    CHECK_EQ(Bytes("123", bytes::Charset::ASCII).str(), "123");
-    CHECK_EQ(Bytes("abc", bytes::Charset::ASCII).str(), "abc");
-    CHECK_EQ(Bytes("abc", bytes::Charset::UTF8).str(), "abc");
+    CHECK_EQ(Bytes("123", bytes::Charset(bytes::Charset::ASCII)).str(), "123");
+    CHECK_EQ(Bytes("abc", bytes::Charset(bytes::Charset::ASCII)).str(), "abc");
+    CHECK_EQ(Bytes("abc", bytes::Charset(bytes::Charset::UTF8)).str(), "abc");
 
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::UTF8).str(), "\xF0\x9F\x98\x85");
-    CHECK_EQ(Bytes("\xc3\x28", bytes::Charset::UTF8, bytes::DecodeErrorStrategy::REPLACE).str(), "\ufffd(");
-    CHECK_EQ(Bytes("\xc3\x28", bytes::Charset::UTF8, bytes::DecodeErrorStrategy::IGNORE).str(), "(");
-    CHECK_THROWS_WITH_AS(Bytes("\xc3\x28", bytes::Charset::UTF8, bytes::DecodeErrorStrategy::STRICT).str(), "illegal UTF8 sequence in string", const RuntimeError&);
+    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset(bytes::Charset::UTF8)).str(), "\xF0\x9F\x98\x85");
+    CHECK_EQ(Bytes("\xc3\x28", bytes::Charset(bytes::Charset::UTF8), bytes::DecodeErrorStrategy::REPLACE).str(),
+             "\ufffd(");
+    CHECK_EQ(Bytes("\xc3\x28", bytes::Charset(bytes::Charset::UTF8), bytes::DecodeErrorStrategy::IGNORE).str(), "(");
+    CHECK_THROWS_WITH_AS(Bytes("\xc3\x28", bytes::Charset(bytes::Charset::UTF8), bytes::DecodeErrorStrategy::STRICT)
+                             .str(),
+                         "illegal UTF8 sequence in string", const RuntimeError&);
 
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII, bytes::DecodeErrorStrategy::REPLACE).str(), "????");
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII, bytes::DecodeErrorStrategy::IGNORE).str(), "");
-    CHECK_THROWS_WITH_AS(Bytes("\xF0\x9F\x98\x85", bytes::Charset::ASCII, bytes::DecodeErrorStrategy::STRICT).str(), "illegal ASCII character in string", const RuntimeError&);
+    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset(bytes::Charset::ASCII), bytes::DecodeErrorStrategy::REPLACE)
+                 .str(),
+             "????");
+    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", bytes::Charset(bytes::Charset::ASCII), bytes::DecodeErrorStrategy::IGNORE).str(),
+             "");
+    CHECK_THROWS_WITH_AS(Bytes("\xF0\x9F\x98\x85", bytes::Charset(bytes::Charset::ASCII),
+                               bytes::DecodeErrorStrategy::STRICT)
+                             .str(),
+                         "illegal ASCII character in string", const RuntimeError&);
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-    CHECK_THROWS_WITH_AS(Bytes("123", bytes::Charset::Undef), "unknown character set for encoding",
+    CHECK_THROWS_WITH_AS(Bytes("123", bytes::Charset(bytes::Charset::Undef)), "unknown character set for encoding",
                          const RuntimeError&);
 }
 
@@ -66,13 +75,13 @@ TEST_CASE("decode") {
 
     CHECK_EQ("€100"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::REPLACE), "???100");
     CHECK_EQ("€100"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::IGNORE), "100");
-    CHECK_THROWS_WITH_AS("123ä4"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::STRICT), "illegal ASCII character in string",
-                         const RuntimeError&);
+    CHECK_THROWS_WITH_AS("123ä4"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::STRICT),
+                         "illegal ASCII character in string", const RuntimeError&);
 
     CHECK_EQ("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::REPLACE), "\ufffd(");
     CHECK_EQ("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::IGNORE), "(");
-    CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::STRICT), "illegal UTF8 sequence in string",
-                         const RuntimeError&);
+    CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::STRICT),
+                         "illegal UTF8 sequence in string", const RuntimeError&);
 
     CHECK_THROWS_WITH_AS("123"_b.decode(bytes::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
@@ -352,20 +361,20 @@ TEST_CASE("toInt") {
     }
 
     SUBCASE("with byte order") {
-        CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
-        CHECK_EQ("100"_b.toInt(ByteOrder::Network), 3223600);
-        CHECK_EQ("100"_b.toInt(ByteOrder::Little), 3158065);
-        if ( systemByteOrder() == ByteOrder::Little ) {
-            CHECK_EQ("100"_b.toInt(ByteOrder::Host), 3158065);
+        CHECK_EQ("100"_b.toInt(ByteOrder(ByteOrder::Big)), 3223600);
+        CHECK_EQ("100"_b.toInt(ByteOrder(ByteOrder::Network)), 3223600);
+        CHECK_EQ("100"_b.toInt(ByteOrder(ByteOrder::Little)), 3158065);
+        if ( systemByteOrder().value == ByteOrder::Little ) {
+            CHECK_EQ("100"_b.toInt(ByteOrder(ByteOrder::Host)), 3158065);
         }
         else {
             CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
         }
 
-        CHECK_THROWS_WITH_AS("1234567890"_b.toInt(ByteOrder::Big), "more than max of 8 bytes for conversion to integer",
-                             const RuntimeError&);
+        CHECK_THROWS_WITH_AS("1234567890"_b.toInt(ByteOrder(ByteOrder::Big)),
+                             "more than max of 8 bytes for conversion to integer", const RuntimeError&);
 
-        CHECK_THROWS_WITH_AS("100"_b.toInt(ByteOrder::Undef), "cannot convert value to undefined byte order",
+        CHECK_THROWS_WITH_AS("100"_b.toInt(ByteOrder(ByteOrder::Undef)), "cannot convert value to undefined byte order",
                              const RuntimeError&);
     }
 }
@@ -380,15 +389,15 @@ TEST_CASE("toUInt") {
     }
 
     SUBCASE("with byte order") {
-        CHECK_EQ("100"_b.toUInt(ByteOrder::Big), 3223600U);
-        CHECK_EQ("100"_b.toUInt(ByteOrder::Network), 3223600U);
-        CHECK_EQ("100"_b.toUInt(ByteOrder::Little), 3158065U);
-        CHECK_EQ("100"_b.toUInt(ByteOrder::Host), 3158065U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder(ByteOrder::Big)), 3223600U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder(ByteOrder::Network)), 3223600U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder(ByteOrder::Little)), 3158065U);
+        CHECK_EQ("100"_b.toUInt(ByteOrder(ByteOrder::Host)), 3158065U);
 
-        CHECK_THROWS_WITH_AS("1234567890"_b.toUInt(ByteOrder::Big),
+        CHECK_THROWS_WITH_AS("1234567890"_b.toUInt(ByteOrder(ByteOrder::Big)),
                              "more than max of 8 bytes for conversion to integer", const RuntimeError&);
 
-        CHECK_THROWS_WITH_AS("100"_b.toInt(ByteOrder::Undef), "cannot convert value to undefined byte order",
+        CHECK_THROWS_WITH_AS("100"_b.toInt(ByteOrder(ByteOrder::Undef)), "cannot convert value to undefined byte order",
                              const RuntimeError&);
     }
 }
@@ -400,12 +409,12 @@ TEST_CASE("toTime") {
     CHECK_EQ(""_b.toTime(), Time());
     CHECK_THROWS_WITH_AS("abc"_b.toTime(), "cannot parse bytes as unsigned integer", const RuntimeError&);
 
-    CHECK_EQ("\x00\x01"_b.toTime(ByteOrder::Big), Time(1, Time::SecondTag()));
-    CHECK_EQ("\x01\x00"_b.toTime(ByteOrder::Little), Time(1, Time::SecondTag()));
+    CHECK_EQ("\x00\x01"_b.toTime(ByteOrder(ByteOrder::Big)), Time(1, Time::SecondTag()));
+    CHECK_EQ("\x01\x00"_b.toTime(ByteOrder(ByteOrder::Little)), Time(1, Time::SecondTag()));
 
-    CHECK_EQ("\x04\x4B\x80\x00\x00"_b.toTime(ByteOrder::Big),
+    CHECK_EQ("\x04\x4B\x80\x00\x00"_b.toTime(ByteOrder(ByteOrder::Big)),
              Time(18446548992, Time::SecondTag())); // Value near end of `Time` range.
-    CHECK_THROWS_WITH_AS("\x04\x4B\x90\x00\x00"_b.toTime(ByteOrder::Big), "integer overflow",
+    CHECK_THROWS_WITH_AS("\x04\x4B\x90\x00\x00"_b.toTime(ByteOrder(ByteOrder::Big)), "integer overflow",
                          const RuntimeError&); // Value beyond end of `Time` range.
 }
 

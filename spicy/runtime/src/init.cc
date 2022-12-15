@@ -39,7 +39,7 @@ void spicy::rt::init() {
         for ( const auto& x : p->ports ) {
             auto idx = std::string(x.port);
 
-            switch ( x.direction ) {
+            switch ( x.direction.value ) {
                 case Direction::Originator: globalState()->parsers_by_name[idx + "%orig"].emplace_back(p); break;
 
                 case Direction::Responder: globalState()->parsers_by_name[idx + "%resp"].emplace_back(p); break;

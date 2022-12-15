@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 
+#include <hilti/rt/autogen/config.h>
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>

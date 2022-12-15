@@ -101,7 +101,7 @@ inline Bytes pack(integer::safe<T> i, ByteOrder fmt) {
 
     uint8_t raw[sizeof(T)];
 
-    switch ( fmt ) {
+    switch ( fmt.value ) {
         case ByteOrder::Big:
         case ByteOrder::Network:
             if constexpr ( std::is_same_v<T, uint8_t> )
@@ -160,7 +160,7 @@ inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
     uint8_t raw[sizeof(T)];
     b = b.extract(raw);
 
-    switch ( fmt ) {
+    switch ( fmt.value ) {
         case ByteOrder::Big:
         case ByteOrder::Network:
             if constexpr ( std::is_same<T, uint8_t>::value )
@@ -304,7 +304,7 @@ inline uint64_t flip(uint64_t v, uint64_t n) {
 }
 
 /** Available bit orders. */
-enum class BitOrder : int64_t { LSB0, MSB0, Undef };
+HILTI_RT_ENUM(BitOrder, LSB0, MSB0, Undef);
 
 /** Extracts a range of bits from an integer value, shifting them to the very left before returning. */
 template<typename UINT>
@@ -318,7 +318,7 @@ inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v, uin
     if ( upper >= width )
         throw InvalidArgument("upper limit needs to be less or equal the input width");
 
-    switch ( bo ) {
+    switch ( bo.value ) {
         case BitOrder::LSB0: break;
 
         case BitOrder::MSB0:

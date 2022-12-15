@@ -16,13 +16,32 @@
 #include <utility>
 #include <vector>
 
-#include <hilti/rt/autogen/config.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector_fwd.h>
+
+#define HILTI_RT_ENUM_WITH_DEFAULT(name, default_, ...)                                                                \
+    struct name {                                                                                                      \
+        enum Value : int64_t { __VA_ARGS__ };                                                                          \
+        constexpr name(int64_t _value = default_) : value(_value) {}                                                   \
+        friend constexpr bool operator==(const name& a, const name& b) { return a.value == b.value; }                  \
+        friend constexpr bool operator!=(const name& a, const name& b) { return ! (a == b); }                          \
+        friend constexpr bool operator<(const name& a, const name& b) { return a.value < b.value; }                    \
+        int64_t value;                                                                                                 \
+    }
+
+#define HILTI_RT_ENUM(name, ...)                                                                                       \
+    struct name {                                                                                                      \
+        enum Value : int64_t { __VA_ARGS__ };                                                                          \
+        constexpr name(int64_t _value = Undef) : value(_value) {}                                                      \
+        friend constexpr bool operator==(const name& a, const name& b) { return a.value == b.value; }                  \
+        friend constexpr bool operator!=(const name& a, const name& b) { return ! (a == b); }                          \
+        friend constexpr bool operator<(const name& a, const name& b) { return a.value < b.value; }                    \
+        int64_t value;                                                                                                 \
+    }
 
 namespace hilti::rt {
 
@@ -500,7 +519,7 @@ template<typename... T>
 struct is_tuple<std::tuple<T...>> : std::true_type {};
 
 /** Available byte orders. */
-enum class ByteOrder : int64_t { Little, Big, Network, Host, Undef = -1 };
+HILTI_RT_ENUM(ByteOrder, Little, Big, Network, Host, Undef = -1);
 
 /**
  * Returns the byte order of the system we're running on. The result is

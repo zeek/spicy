@@ -29,7 +29,7 @@ public:
      * @throws InvalidArgument for invalid length values.
      */
     Network(const Address& prefix, int length) : _prefix(prefix), _length(length) {
-        switch ( _prefix.family() ) {
+        switch ( _prefix.family().value ) {
             case AddressFamily::IPv4:
                 if ( _length < 0 || _length > 32 )
                     throw InvalidArgument(fmt("prefix length %s is invalid for IPv4 networks", _length));

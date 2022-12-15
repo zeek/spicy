@@ -14,7 +14,7 @@
 namespace hilti::rt {
 
 /** Protocols that can be associated with a `Port`. */
-enum class Protocol : int64_t { Undef = 0, TCP, UDP, ICMP };
+HILTI_RT_ENUM(Protocol, Undef = 0, TCP, UDP, ICMP);
 
 /**
  * Represents HILTI's port type. A port is pair of port number and protocol.
@@ -52,10 +52,12 @@ public:
     /** Returns the port's protocol. */
     auto protocol() const { return _protocol; }
 
-    bool operator==(const Port& other) const { return _port == other._port && _protocol == other._protocol; }
+    bool operator==(const Port& other) const {
+        return _port == other._port && _protocol.value == other._protocol.value;
+    }
     bool operator!=(const Port& other) const { return ! (*this == other); }
     bool operator<(const Port& other) const {
-        return std::tie(_port, _protocol) < std::tie(other._port, other._protocol);
+        return std::tie(_port, _protocol.value) < std::tie(other._port, other._protocol.value);
     };
 
     /**

@@ -58,7 +58,7 @@ uint32_t integer::ntoh32(uint32_t v) { return ntohl(v); } //NOLINT(hicpp-signed-
 uint16_t integer::ntoh16(uint16_t v) { return ntohs(v); } //NOLINT(hicpp-signed-bitwise)
 
 std::string detail::adl::to_string(const integer::BitOrder& x, tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value ) {
         case integer::BitOrder::LSB0: return "BitOrder::LSB0";
         case integer::BitOrder::MSB0: return "BitOrder::MSB0";
         case integer::BitOrder::Undef: return "BitOrder::Undef";

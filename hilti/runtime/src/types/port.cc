@@ -45,7 +45,7 @@ void Port::_parse(const std::string& port) {
 Port::operator std::string() const {
     std::string protocol;
 
-    switch ( _protocol ) {
+    switch ( _protocol.value ) {
         case Protocol::ICMP: {
             protocol = "icmp";
             break;
@@ -68,7 +68,7 @@ Port::operator std::string() const {
 }
 
 std::string hilti::rt::detail::adl::to_string(const Protocol& x, adl::tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value ) {
         case Protocol::ICMP: return "ICMP";
         case Protocol::TCP: return "TCP";
         case Protocol::UDP: return "UDP";
