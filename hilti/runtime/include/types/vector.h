@@ -4,7 +4,7 @@
  * A vector that for large part built on std::vector, but adds a couple of things:
  *
  *     - We record if an element has been set at all.
- *     - We add safe HILTIs-side iterators become detectably invalid when the main
+ *     - We add safe HILTI-side iterators become detectably invalid when the main
  *       containers gets destroyed.
  *     - We add auto-growth on assign.
  *     - We track which elements are set at all.
@@ -40,12 +40,17 @@ namespace hilti::rt {
 namespace vector {
 
 /**
- * Allocactor for `Vector` that initializes elements with a given default value.
+ * Allocator for `Vector` that initializes elements with a given default value.
  *
  * See https://howardhinnant.github.io/allocator_boilerplate.html and
  * https://stackoverflow.com/questions/48061522/create-the-simplest-allocator-with-two-template-arguments
+ *
+ * We allow defaults with types differing from the allocated type (but
+ * implicitly convertible to it) to support allocators over non-basic types,
+ * see e.g.,
+ * https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1907r1.html.
  */
-template<class T, T Default_>
+template<class T, decltype(auto) Default_>
 class Allocator {
 public:
     using value_type = T;
@@ -70,12 +75,12 @@ public:
     };
 };
 
-template<class T, T D1, class U, U D2>
+template<class T, decltype(auto) D1, class U, decltype(auto) D2>
 bool operator==(Allocator<T, D1> const&, Allocator<U, D2> const&) noexcept {
     return true;
 }
 
-template<class T, T D1, class U, U D2>
+template<class T, decltype(auto) D1, class U, decltype(auto) D2>
 bool operator!=(Allocator<T, D1> const&, Allocator<U, D2> const&) noexcept {
     return false;
 }
@@ -343,7 +348,7 @@ public:
     }
 
     /**
-     * Extraces a subsequence from the vector.
+     * Extracts a subsequence from the vector.
      *
      * @param end end index (not including)
      * @returns new vector with a copy of the elements from the beginning to *end*
