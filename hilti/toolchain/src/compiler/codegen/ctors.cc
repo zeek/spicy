@@ -212,7 +212,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n.elementType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", hilti::rt::vector::Allocator<%s, decltype(%s), %s>", x, *def, *def);
 
         return fmt("::hilti::rt::Vector<%s%s>({%s})", x, allocator,
                    util::join(node::transform(n.value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));

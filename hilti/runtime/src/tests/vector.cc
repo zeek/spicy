@@ -304,16 +304,14 @@ TEST_CASE("vector of bool") {
     }
 
     SUBCASE("w/ rt::vector::Allocator") {
-        // TODO(bbannier): The following code does not compile in C++17 since
-        // the non-type template argument `Bool(true)` is not a literal type.
-        // auto xs = Vector<Bool, vector::Allocator<Bool, Bool(true)>>();
-        // REQUIRE_EQ(xs.size(), 0u);
+        auto xs = Vector<Bool, vector::Allocator<Bool, bool, true>>();
+        REQUIRE_EQ(xs.size(), 0U);
 
-        // xs.assign(2, false);
-        // CHECK_EQ(xs.size(), 3u);
-        // CHECK_EQ(xs[0], true);
-        // CHECK_EQ(xs[1], true);
-        // CHECK_EQ(xs[2], false);
+        xs.assign(2, false);
+        CHECK_EQ(xs.size(), 3U);
+        CHECK_EQ(xs[0], true);
+        CHECK_EQ(xs[1], true);
+        CHECK_EQ(xs[2], false);
     }
 }
 

@@ -62,7 +62,7 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
             std::string allocator;
             if ( auto def = cg->typeDefaultValue(t->elementType()) )
-                allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+                allocator = fmt(", hilti::rt::vector::Allocator<%s, decltype(%s), %s>", x, *def, *def);
 
             return fmt("::hilti::rt::Vector<%s%s>(%s)", x, allocator, expr);
         }
@@ -74,7 +74,8 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         if ( auto t = dst.tryAs<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
-            return {fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp), cxx::Side::LHS};
+            return {fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp),
+                    cxx::Side::LHS};
         }
 
         if ( auto t = dst.tryAs<type::Bool>() )

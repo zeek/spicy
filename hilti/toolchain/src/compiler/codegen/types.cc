@@ -484,7 +484,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n.dereferencedType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", hilti::rt::vector::Allocator<%s, decltype(%s), %s>", x, *def, *def);
 
         auto t = fmt("::hilti::rt::Vector<%s%s>::%s", x, allocator, i);
         return CxxTypes{.base_type = fmt("%s", t)};
@@ -606,7 +606,7 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
             std::string allocator;
             if ( auto def = cg->typeDefaultValue(n.elementType()) )
-                allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+                allocator = fmt(", hilti::rt::vector::Allocator<%s, decltype(%s), %s>", x, *def, *def);
 
             t = fmt("::hilti::rt::Vector<%s%s>", x, allocator);
         }
@@ -920,7 +920,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n.elementType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", hilti::rt::vector::Allocator<%s, decltype(%s), %s>", x, *def, *def);
 
         return fmt("::hilti::rt::type_info::Vector(%s, ::hilti::rt::type_info::Vector::accessor<%s%s>())",
                    cg->typeInfo(n.elementType()), x, allocator);
@@ -931,7 +931,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n.dereferencedType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", hilti::rt::vector::Allocator<%s, decltype(%s), %s>", x, *def, *def);
 
         return fmt(
             "::hilti::rt::type_info::VectorIterator(%s, ::hilti::rt::type_info::VectorIterator::accessor<%s%s>())",
