@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: ${HILTIC} -dj %INPUT >output
 # @TEST-EXEC: btest-diff output
 
 module Foo {
@@ -63,4 +63,14 @@ hilti::print(x1());
 hilti::print(x2());
 hilti::print(x3());
 
+# Always initialized as Undef.
+global X u1;
+assert u1 == X::Undef;
+
+global tuple<X> u2;
+assert u2 == (X::Undef, );
+
+global vector<X> u3;
+u3.resize(1);
+assert u3[0] == X::Undef;
 }
