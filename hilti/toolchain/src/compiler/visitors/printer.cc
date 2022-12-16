@@ -222,7 +222,10 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         out << "default<" << n.type() << ">(" << std::make_pair(n.typeArguments(), ", ") << ")";
     }
 
-    void operator()(const ctor::Enum& n, position_t p) { out << *p.node.as<Type>().typeID() << "::" << n.value(); }
+    void operator()(const ctor::Enum& n, position_t p) {
+        assert(n.type().typeID());
+        out << *n.type().typeID() << "::" << n.value().id();
+    }
 
     void operator()(const ctor::Error& n) { out << "error(\"" << n.value() << "\")"; }
 
