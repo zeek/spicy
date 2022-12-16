@@ -5,17 +5,17 @@
 #include <hilti/rt/safe-math.h>
 
 #include <hilti/ast/builder/expression.h>
+#include <hilti/ast/ctors/bool.h>
 #include <hilti/ast/ctors/integer.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/expressions/grouping.h>
 #include <hilti/ast/operators/real.h>
 #include <hilti/ast/operators/signed-integer.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/visitors.h>
-
-#include "exception.h"
 
 using namespace hilti;
 
@@ -88,6 +88,60 @@ struct VisitorConstantFolder : public visitor::PreOrder<std::optional<Ctor>, Vis
             return std::nullopt;
 
         return ctor::SignedInteger(-op->value(), op->width(), p.node.meta());
+    }
+
+    result_t operator()(const expression::Grouping& n, position_t p) {
+        auto x = _foldConstant(n.expression());
+        if ( ! x )
+            return std::nullopt;
+
+        return *x;
+    }
+
+    result_t operator()(const expression::LogicalOr& n, position_t p) {
+        auto op0 = foldConstant<ctor::Bool>(n.op0());
+        auto op1 = foldConstant<ctor::Bool>(n.op1());
+        if ( ! (op0 && op1) )
+            return std::nullopt;
+
+        return ctor::Bool(op0->value() || op1->value(), p.node.meta());
+    }
+
+    result_t operator()(const expression::LogicalAnd& n, position_t p) {
+        auto op0 = foldConstant<ctor::Bool>(n.op0());
+        auto op1 = foldConstant<ctor::Bool>(n.op1());
+        if ( ! (op0 && op1) )
+            return std::nullopt;
+
+        return ctor::Bool(op0->value() && op1->value(), p.node.meta());
+    }
+
+    result_t operator()(const expression::LogicalNot& n, position_t p) {
+        auto op = foldConstant<ctor::Bool>(n.expression());
+        if ( ! op )
+            return std::nullopt;
+
+        return ctor::Bool(! op->value(), p.node.meta());
+    }
+
+    result_t operator()(const expression::ResolvedID& n, position_t p) {
+        // We cannot fold the optimizer's feature constants currently because
+        // that would mess up its state tracking. We continue to let the
+        // optimizer handle expressions involving these.
+        //
+        // TODO: Can we unify this?
+        if ( util::startsWith(n.id().sub(1), "__feat") )
+            return std::nullopt;
+
+        auto const_ = n.declaration().tryAs<declaration::Constant>();
+        if ( ! const_ )
+            return std::nullopt;
+
+        auto x = _foldConstant(const_->value());
+        if ( ! x )
+            return std::nullopt;
+
+        return *x;
     }
 
     result_t operator()(const operator_::unsigned_integer::SignNeg& n, position_t p) {
