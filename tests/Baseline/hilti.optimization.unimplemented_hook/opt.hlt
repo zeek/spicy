@@ -19,7 +19,7 @@ method hook void X::implemented() {
 
 global_implemented();
 default<void>();
-Foo::x.implemented();
+x.implemented();
 default<void>();
 
 }

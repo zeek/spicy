@@ -38,10 +38,6 @@ public:
 
     char newline() const { return _nl; }
 
-    const ID& currentScope() const { return _scopes.back(); }
-    void pushScope(ID id) { _scopes.push_back(std::move(id)); }
-    void popScope() { _scopes.pop_back(); }
-
     bool isCompact() { return _compact; }
     bool setCompact(bool new_compact) {
         auto old = _compact;
@@ -120,7 +116,6 @@ private:
     bool _first_in_block = false;
     bool _last_in_block = false;
     bool _expand_subsequent_type = false;
-    std::vector<ID> _scopes = {""};
 };
 
 } // namespace hilti::printer
