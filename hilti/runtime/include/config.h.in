@@ -4,8 +4,6 @@
 
 #include <string>
 
-#define CXX_FILESYSTEM_HEADER "@CXX_FILESYSTEM_HEADER@"
-
 #cmakedefine HILTI_HAVE_BACKTRACE
 #ifdef HILTI_HAVE_BACKTRACE
 #include <${Backtrace_HEADER}>
