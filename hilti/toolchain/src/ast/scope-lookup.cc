@@ -2,6 +2,7 @@
 
 #include <hilti/ast/ctors/enum.h>
 #include <hilti/ast/declarations/constant.h>
+#include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/declarations/module.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/base/logger.h>
@@ -31,7 +32,7 @@ std::pair<bool, Result<std::pair<NodeRef, ID>>> hilti::scope::detail::lookupID(c
         }
 
         if ( auto d = r.node->template tryAs<Declaration>() ) {
-            if ( auto c = d->tryAs<declaration::Module>() ) {
+            if ( d->isA<declaration::Module>() || d->isA<declaration::ImportedModule>() ) {
                 auto err = result::Error(util::fmt("cannot use module '%s' as an ID", id));
                 return std::make_pair(true, std::move(err));
             }

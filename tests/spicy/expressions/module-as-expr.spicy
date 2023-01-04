@@ -1,0 +1,14 @@
+# @TEST-DOC: Validates invalid uses of module id as an expression.
+#
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+module Test;
+
+import spicy;
+
+public const x = 10;
+
+Test::x;
+Test.x;
+
+spicy.version();
