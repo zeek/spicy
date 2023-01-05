@@ -249,11 +249,11 @@ We publish the following Docker images to the ECR public gallery:
       - Source
 
     * - Release
-      - `zeekurity/spicy <https://gallery.ecr.aws/zeek/spicy>`_
+      - `zeek/spicy <https://gallery.ecr.aws/zeek/spicy>`_
       - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
     * - Development
-      - `zeekurity/spicy-dev <https://gallery.ecr.aws/zeek/spicy-dev>`_
+      - `zeek/spicy-dev <https://gallery.ecr.aws/zeek/spicy-dev>`_
       - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
 
 These images include Zeek, the :ref:`Spicy plugin <zeek_plugin>` for
