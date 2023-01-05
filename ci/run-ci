@@ -234,6 +234,7 @@ function execute_btest {
         btest -j 5 \
               -f ${artifacts}/diag.log \
               -x ${artifacts}/diag.xml \
+              -z 3 \
               ${alternative} \
               ${group}
 
