@@ -1,3 +1,7 @@
+1.7.0-dev.33 | 2023-01-05 17:33:00 +0100
+
+  * Update repo to not publish Docker images anymore. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.31 | 2023-01-05 15:38:13 +0100
 
   * GH-1326: Generate proper runtime types for enums. (Benjamin Bannier, Corelight)

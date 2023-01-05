@@ -56,6 +56,8 @@ TAR archives
         # rm -rf /opt/spicy && mkdir /opt/spicy
         # tar xf spicy.tar.gz -C /opt/spicy --strip-components=1
 
+.. _dockerfiles:
+
 The binaries may require installation of additional dependencies; see
 the ``Dockerfile`` for the respective platform for what's needed.
 
@@ -189,36 +191,15 @@ For JIT support, these binaries require an Xcode installation.
 Using Docker
 ------------
 
-We provide :ref:`pre-built Docker images <prebuilt_docker>` on Docker
-Hub. The Spicy distribution also comes with a :ref:`set of Docker
-files <docker>` to create base images for all the supported Linux
-distributions that put all of Spicy's dependencies in place. We'll walk
-through using either of these in the following.
-
-Pre-requisites
-~~~~~~~~~~~~~~
-
-You first need to install Docker on your host system, if you haven't yet.
-
-Linux
-^^^^^
-
-All major Linux distributions provide Docker. Install it using your
-package manager. Alternatively, follow the official
-`instructions <https://docs.docker.com/install/>`__.
-
-macOS
-^^^^^
-
-Install `Docker Desktop for Mac
-<https://docs.docker.com/docker-for-mac>`_ following the official
-`instructions <https://docs.docker.com/docker-for-mac/install>`__.
+The Zeek Docker images include Spicy. See their `documentation
+<https://docs.zeek.org/en/master/install.html#docker-images>`__ on how to
+run them.
 
 .. note::
 
     Docker Desktop for Mac uses a VM behind the scenes to host the
     Docker runtime environment. By default it allocates 2 GB of RAM to
-    the VM. This is not enough to compile Spicy or Zeek and will cause
+    the VM. This is not enough to compile Spicy analzers and will cause
     an error that looks something like this::
 
         c++: internal compiler error: Killed (program cc1plus)
@@ -231,83 +212,6 @@ Install `Docker Desktop for Mac
     Icon in your menubar and select "Preferences". Click on the "Advanced"
     tab and then use the slider to select 8 GB of RAM. Docker Desktop will
     restart and then you will be ready to go.
-
-.. _prebuilt_docker:
-
-Using pre-built Docker images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-We publish the following Docker images to the ECR public gallery:
-
-.. list-table::
-    :widths: auto
-    :header-rows: 1
-    :align: center
-
-    * - Spicy Version
-      - Image name/tag
-      - Source
-
-    * - Release
-      - `zeekurity/spicy <https://gallery.ecr.aws/zeek/spicy>`_
-      - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
-
-    * - Development
-      - `zeekurity/spicy-dev <https://gallery.ecr.aws/zeek/spicy-dev>`_
-      - :repo:`Dockerfile <ci/Dockerfile.dockerhub>`
-
-These images include Zeek, the :ref:`Spicy plugin <zeek_plugin>` for
-Zeek, and the `Zeek analyzer collection
-<https://github.com/zeek/spicy-analyzers>`_ as well, so you can use
-them to try out the full setup end-to-end.
-
-To run the release image, execute the following command::
-
-    # docker run -it public.ecr.aws/zeek/spicy:latest
-
-Spicy is installed in ``/opt/spicy`` on these images. The development
-image is updated nightly.
-
-.. _dockerfiles:
-
-Build your own Spicy container
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You can build base images for your own Spicy setups through the
-:repo:`Docker files <docker>` coming with the distribution. These
-images do *not* include Spicy itself, just the dependencies that it
-needs on each platform, both for a source build and for the using the
-corresponding binary packages. (The images do include Zeek, but not
-the Zeek plugin.)
-
-To build an image, go into Spicy's ``docker`` directory and run
-``make`` to see the container platforms available::
-
-    # cd docker
-    # make
-
-    Run "make build-<platform>", then "make run-<platform>".
-
-    Available platforms:
-
-        alpine-3.12
-        centos-8-stream
-        debian-10
-        [...]
-
-To build and run a container image based on, for example,
-Debian 10, execute::
-
-    # make build-debian-10
-    # make run-debian-10
-
-.. note::
-
-    The primary purpose of these Docker files is creating the
-    foundation for our CI pipelines. However, they also double as
-    verified installation instructions for setting up Spicy's
-    dependencies on the various platforms, which is why we are
-    describing them here.
 
 .. _building_from_source:
 
