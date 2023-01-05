@@ -18,6 +18,7 @@
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/struct.h>
+#include <hilti/rt/util.h>
 
 #include <spicy/rt/filter.h>
 #include <spicy/rt/global-state.h>
@@ -29,14 +30,14 @@
 namespace spicy::rt {
 
 /** Defines the direction a `ParserPort` applies to. */
-enum class Direction { Originator, Responder, Both, Undef };
+HILTI_RT_ENUM(Direction, Originator, Responder, Both, Undef);
 
 } // namespace spicy::rt
 
 namespace hilti::rt::detail::adl {
 
 inline std::string to_string(const ::spicy::rt::Direction& x, adl::tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value() ) {
         case spicy::rt::Direction::Originator: return "originator";
         case spicy::rt::Direction::Responder: return "responder";
         case spicy::rt::Direction::Both: return "both";

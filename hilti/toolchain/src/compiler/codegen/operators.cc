@@ -250,24 +250,24 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const operator_::enum_::CastToSignedInteger& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
-        return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
+        return fmt("static_cast<%s>(%s.value())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     result_t operator()(const operator_::enum_::CastToUnsignedInteger& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
-        return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
+        return fmt("static_cast<%s>(%s.value())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     result_t operator()(const operator_::enum_::CtorSigned& n) {
         auto args = tupleArguments(n, n.op1());
         auto t = n.op0().type().as<type::Type_>().typeValue();
-        return fmt("::hilti::rt::enum_::from_int<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
+        return fmt("%s(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
     result_t operator()(const operator_::enum_::CtorUnsigned& n) {
         auto args = tupleArguments(n, n.op1());
         auto t = n.op0().type().as<type::Type_>().typeValue();
-        return fmt("::hilti::rt::enum_::from_uint<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
+        return fmt("%s(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
     result_t operator()(const operator_::enum_::HasLabel& n) {
@@ -420,7 +420,8 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::generic::Unpack& n) {
         auto args = tupleArguments(n, n.op1());
         auto throw_on_error = n.op2().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
-        return cg->unpack(n.op0().type().as<type::Type_>().typeValue(), args[0], util::slice(args, 1, -1), throw_on_error);
+        return cg->unpack(n.op0().type().as<type::Type_>().typeValue(), args[0], util::slice(args, 1, -1),
+                          throw_on_error);
     }
 
     result_t operator()(const operator_::generic::Begin& n) { return fmt("%s.begin()", op0(n)); }

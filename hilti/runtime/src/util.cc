@@ -400,7 +400,7 @@ hilti::rt::ByteOrder hilti::rt::systemByteOrder() {
 }
 
 std::string hilti::rt::detail::adl::to_string(const hilti::rt::ByteOrder& x, tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value() ) {
         case hilti::rt::ByteOrder::Little: return "ByteOrder::Little";
         case hilti::rt::ByteOrder::Big: return "ByteOrder::Big";
         case hilti::rt::ByteOrder::Network: return "ByteOrder::Network";

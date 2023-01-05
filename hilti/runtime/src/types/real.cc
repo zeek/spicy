@@ -8,7 +8,7 @@
 using namespace hilti::rt;
 
 Bytes real::pack(double d, real::Type type, ByteOrder fmt) {
-    switch ( type ) {
+    switch ( type.value() ) {
         case real::Type::IEEE754_Single: {
             auto f = static_cast<float>(d);
             auto i = reinterpret_cast<uint32_t*>(&f);
@@ -20,13 +20,15 @@ Bytes real::pack(double d, real::Type type, ByteOrder fmt) {
             return integer::pack<uint64_t>(*i, fmt);
         }
 
-        case real::Type::Undef: throw RuntimeError("attempt to pack real value of undefined type");
+        case real::Type::Undef:; // Intentional fall through.
     }
+
+    throw RuntimeError("attempt to pack real value of undefined type");
 }
 
 template<typename T>
 Result<std::tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrder fmt) {
-    switch ( type ) {
+    switch ( type.value() ) {
         case real::Type::IEEE754_Single: {
             if ( data.size() < 4 )
                 return result::Error("insufficient data to unpack single precision real");
@@ -71,7 +73,7 @@ std::string detail::adl::to_string(double x, tag /*unused*/) {
 }
 
 std::string detail::adl::to_string(const real::Type& x, adl::tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value() ) {
         case real::Type::IEEE754_Double: return "Type::IEEE754_Double";
         case real::Type::IEEE754_Single: return "Type::IEEE754_Single";
         case real::Type::Undef: return "Type::Undef";

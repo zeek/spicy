@@ -42,7 +42,7 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_
 
 Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors)
     : _control(std::make_shared<Base*>(static_cast<Base*>(this))) {
-    switch ( cs ) {
+    switch ( cs.value() ) {
         case bytes::Charset::UTF8: {
             // Data supposedly is already in UTF-8, but let's validate it.
             std::string t;
@@ -55,7 +55,7 @@ Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors)
                 auto n = utf8proc_iterate(p, e - p, &cp);
 
                 if ( n < 0 ) {
-                    switch ( errors ) {
+                    switch ( errors.value() ) {
                         case DecodeErrorStrategy::IGNORE: break;
                         case DecodeErrorStrategy::REPLACE: t += "\ufffd"; break;
                         case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
@@ -79,7 +79,7 @@ Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors)
                 if ( c >= 32 && c < 0x7f )
                     t += static_cast<char>(c);
                 else {
-                    switch ( errors ) {
+                    switch ( errors.value() ) {
                         case DecodeErrorStrategy::IGNORE: break;
                         case DecodeErrorStrategy::REPLACE: t += '?'; break;
                         case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal ASCII character in string");
@@ -98,7 +98,7 @@ Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors)
 }
 
 std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) const {
-    switch ( cs ) {
+    switch ( cs.value() ) {
         case bytes::Charset::UTF8:
             // Data is already in UTF-8, but let's validate it.
             return Bytes(str(), cs, errors).str();
@@ -109,7 +109,7 @@ std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) 
                 if ( c >= 32 && c < 0x7f )
                     s += static_cast<char>(c);
                 else {
-                    switch ( errors ) {
+                    switch ( errors.value() ) {
                         case DecodeErrorStrategy::IGNORE: break;
                         case DecodeErrorStrategy::REPLACE: s += "?"; break;
                         case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal ASCII character in string");
@@ -127,7 +127,7 @@ std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) 
 }
 
 Bytes Bytes::strip(const Bytes& set, bytes::Side side) const {
-    switch ( side ) {
+    switch ( side.value() ) {
         case bytes::Side::Left: return Bytes(hilti::rt::ltrim(*this, set.str()));
 
         case bytes::Side::Right: return Bytes(hilti::rt::rtrim(*this, set.str()));
@@ -139,7 +139,7 @@ Bytes Bytes::strip(const Bytes& set, bytes::Side side) const {
 }
 
 Bytes Bytes::strip(bytes::Side side) const {
-    switch ( side ) {
+    switch ( side.value() ) {
         case bytes::Side::Left: return Bytes(hilti::rt::ltrim(*this));
 
         case bytes::Side::Right: return Bytes(hilti::rt::rtrim(*this));
@@ -181,7 +181,7 @@ int64_t Bytes::toInt(ByteOrder byte_order) const {
 }
 
 uint64_t Bytes::toUInt(ByteOrder byte_order) const {
-    switch ( byte_order ) {
+    switch ( byte_order.value() ) {
         case ByteOrder::Undef: throw RuntimeError("cannot convert value to undefined byte order");
         case ByteOrder::Host: return toInt(systemByteOrder());
         case ByteOrder::Little: [[fallthrough]];
@@ -218,7 +218,7 @@ namespace hilti::rt::detail::adl {
 std::string to_string(const Bytes& x, tag /*unused*/) { return fmt("b\"%s\"", escapeBytes(x.str(), true)); }
 
 std::string to_string(const bytes::Charset& x, tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value() ) {
         case bytes::Charset::ASCII: return "Charset::ASCII";
         case bytes::Charset::UTF8: return "Charset::UTF8";
         case bytes::Charset::Undef: return "Charset::Undef";
@@ -228,7 +228,7 @@ std::string to_string(const bytes::Charset& x, tag /*unused*/) {
 }
 
 std::string to_string(const bytes::DecodeErrorStrategy& x, tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value() ) {
         case bytes::DecodeErrorStrategy::IGNORE: return "Charset::IGNORE";
         case bytes::DecodeErrorStrategy::REPLACE: return "Charset::REPLACE";
         case bytes::DecodeErrorStrategy::STRICT: return "Charset::STRICT";
@@ -238,7 +238,7 @@ std::string to_string(const bytes::DecodeErrorStrategy& x, tag /*unused*/) {
 }
 
 std::string to_string(const bytes::Side& x, tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value() ) {
         case bytes::Side::Left: return "Side::Left";
         case bytes::Side::Right: return "Side::Right";
         case bytes::Side::Both: return "Side::Both";

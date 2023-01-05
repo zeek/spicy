@@ -18,7 +18,7 @@ size_t string::size(const std::string& s, DecodeErrorStrategy errors) {
         auto n = utf8proc_iterate(p, e - p, &cp);
 
         if ( n < 0 ) {
-            switch ( errors ) {
+            switch ( errors.value() ) {
                 case DecodeErrorStrategy::IGNORE: break;
                 case DecodeErrorStrategy::REPLACE: ++len; break;
                 case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
@@ -47,7 +47,7 @@ std::string string::upper(const std::string& s, DecodeErrorStrategy errors) {
         auto n = utf8proc_iterate(p, e - p, &cp);
 
         if ( n < 0 ) {
-            switch ( errors ) {
+            switch ( errors.value() ) {
                 case DecodeErrorStrategy::IGNORE: break;
                 case DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
                 case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
@@ -77,7 +77,7 @@ std::string string::lower(const std::string& s, DecodeErrorStrategy errors) {
         auto n = utf8proc_iterate(p, e - p, &cp);
 
         if ( n < 0 ) {
-            switch ( errors ) {
+            switch ( errors.value() ) {
                 case DecodeErrorStrategy::IGNORE: break;
                 case DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
                 case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");

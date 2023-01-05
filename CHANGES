@@ -1,3 +1,11 @@
+1.7.0-dev.31 | 2023-01-05 15:38:13 +0100
+
+  * GH-1326: Generate proper runtime types for enums. (Benjamin Bannier, Corelight)
+
+  * Allow default for `vector::Allocator` with some non-class types. (Benjamin Bannier, Corelight)
+
+  * Remove unused define. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.25 | 2023-01-04 10:26:33 +0100
 
   * GH-1330: Reject uses of imported module IDs as expression. (Benjamin Bannier, Corelight)

@@ -391,11 +391,10 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
         });
 
         auto default_ = cxx::Block();
-        default_.addReturn(
-            fmt(R"(hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", static_cast<uint64_t>(x)))", id.local()));
+        default_.addReturn(fmt(R"(hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", x.value()))", id.local()));
 
         auto body = cxx::Block();
-        body.addSwitch("x", cases, std::move(default_));
+        body.addSwitch("x.value()", cases, std::move(default_));
 
         auto ts_decl = cxx::declaration::Function{.result = "std::string",
                                                   .id = {"::hilti::rt::detail::adl", "to_string"},
