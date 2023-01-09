@@ -1,3 +1,11 @@
+1.7.0-dev.37 | 2023-01-09 16:10:40 +0100
+
+  * Decrease excessive RAM on some CI platforms. (Benjamin Bannier, Corelight)
+
+  * Make all CI tasks greedy. (Benjamin Bannier, Corelight)
+
+  * Rerun BTest up to three times in CI. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.33 | 2023-01-05 17:33:00 +0100
 
   * Update repo to not publish Docker images anymore. (Benjamin Bannier, Corelight)
