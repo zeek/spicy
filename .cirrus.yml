@@ -867,8 +867,7 @@ zeek_plugin_task:
     dockerfile: ci/Dockerfile
     matrix:
       - docker_arguments:
-        - ZEEK_LTS:
-        - ZEEK_VERSION: 4.0.3-0
+        - ZEEK_VERSION: v5.0.5
     cpu: 4
     memory: 12G
 
