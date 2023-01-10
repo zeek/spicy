@@ -1,42 +1,57 @@
 FROM ubuntu:focal
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ZEEK_VERSION="v5.0.5"
+ARG ZEEK_CONFFLAGS="--disable-spicy"
 
-ARG ZEEK_LTS=1
-ARG ZEEK_VERSION=4.0.3-0
-ARG UID=1000
-ARG GID=1000
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 CMD ["sh"]
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PATH="/opt/spicy/bin:/usr/local/zeek/bin:${PATH}"
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 sudo \
+ && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 \
  # Zeek.
- && mkdir -p /tmp/zeek-packages \
- && cd /tmp/zeek-packages \
- && if [ -n "${ZEEK_LTS}" ]; then ZEEK_LTS="-lts"; fi && export ZEEK_LTS \
- && apt-get install -y --no-install-recommends libpcap0.8 libpcap-dev libssl-dev zlib1g-dev libmaxminddb0 libmaxminddb-dev python python3 python3-pip python3-semantic-version python3-git \
- && curl -L --remote-name-all \
-    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
-    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_amd64.deb \
-    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb \
-    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_amd64.deb \
-    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_amd64.deb \
-    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb \
- && [[ ${ZEEK_VERSION} = 4.* ]] && curl -L --remote-name-all \
-    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-btest_${ZEEK_VERSION}_amd64.deb \
-    https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-zkg_${ZEEK_VERSION}_amd64.deb \
- ||  pip3 install --no-cache-dir "btest>=0.66" zkg \
- && dpkg -i *.deb \
+ && apt-get install -q -y --no-install-recommends \
+    bind9 \
+    bison \
+    ccache \
+    cmake \
+    curl \
+    flex \
+    g++ \
+    gcc \
+    git \
+    jq \
+    libfl-dev \
+    libfl2 \
+    libmaxminddb-dev \
+    libpcap-dev \
+    libssl-dev \
+    libz-dev \
+    make \
+    ninja-build \
+    python3-git \
+    python3-minimal \
+    python3-minimal \
+    python3-pip \
+    python3-semantic-version \
+    python3-websocket \
+    python3.9-dev \
+    swig \
+ && git clone -b $ZEEK_VERSION --depth=1 https://github.com/zeek/zeek /src/zeek \
+ && cd /src/zeek \
+ && git submodule update --init --recursive --depth=1 \
+ && ./configure --generator=Ninja $ZEEK_CONFFLAGS \
+ && ninja -C build install \
  && cd - \
- && rm -rf /tmp/zeek-packages \
+ && rm -rf /src/zeek \
  # Spicy build and test dependencies.
- && apt-get install -y --no-install-recommends git ninja-build ccache bison flex libfl-dev python3 python3-pip docker zlib1g-dev jq locales-all python3-setuptools python3-wheel make \
- && pip3 install "btest>=0.66" pre-commit \
+ && apt-get install -y --no-install-recommends python3 docker zlib1g-dev jq locales-all python3-setuptools python3-wheel \
+ && pip3 install --no-cache-dir "btest>=0.66" pre-commit \
  # Spicy doc dependencies.
  && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme doxygen \
- && pip3 install --upgrade pygments \
+ && pip3 install --no-cache-dir --upgrade pygments \
  # GCC-9.
  && apt-get install -y --no-install-recommends g++ gcc \
  # Clang-9.
