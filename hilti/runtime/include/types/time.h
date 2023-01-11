@@ -30,7 +30,7 @@ public:
      *
      * @param nsecs interval in nanoseconds.
      */
-    explicit Time(hilti::rt::integer::safe<uint64_t> nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
+    explicit Time(const hilti::rt::integer::safe<uint64_t>& nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
 
     /**
      * Constructs a time from a double value.

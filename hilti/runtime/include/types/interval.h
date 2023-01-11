@@ -31,7 +31,7 @@ public:
      *
      * @param nsecs interval in nanoseconds.
      */
-    explicit Interval(hilti::rt::integer::safe<int64_t> nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
+    explicit Interval(const hilti::rt::integer::safe<int64_t>& nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
 
     /**
      * Constructs an interval from a double value.
@@ -73,9 +73,11 @@ public:
     Interval operator+(const Interval& other) const { return Interval(_nsecs + other._nsecs, NanosecondTag()); }
     Interval operator-(const Interval& other) const { return Interval(_nsecs - other._nsecs, NanosecondTag()); }
 
-    Interval operator*(hilti::rt::integer::safe<std::int64_t> i) const { return Interval(_nsecs * i, NanosecondTag()); }
+    Interval operator*(const hilti::rt::integer::safe<std::int64_t>& i) const {
+        return Interval(_nsecs * i, NanosecondTag());
+    }
 
-    Interval operator*(hilti::rt::integer::safe<std::uint64_t> i) const {
+    Interval operator*(const hilti::rt::integer::safe<std::uint64_t>& i) const {
         return Interval(_nsecs * i.Ref(), NanosecondTag());
     }
 
