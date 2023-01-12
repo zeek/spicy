@@ -63,6 +63,7 @@
 
 namespace hilti::rt {
 
+/** Reports an internal error and aborts execution. */
 void internalError(const std::string& msg) __attribute__((noreturn));
 
 } // namespace hilti::rt
