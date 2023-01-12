@@ -29,7 +29,7 @@ static bool _haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, c
     if ( cur.isOpenEnded() )
         return false;
 
-    return cur.unsafeEnd().offset() <= data->unsafeEnd().offset();
+    return cur.end().offset() <= data->end().offset();
 }
 
 void detail::printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
