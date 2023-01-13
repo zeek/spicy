@@ -676,11 +676,11 @@ docker_ubuntu20_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_fedora35_task:
+docker_fedora36_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.fedora-35
+    dockerfile: docker/Dockerfile.fedora-36
     cpu: 4
     memory: 12G
     greedy: true
@@ -713,11 +713,11 @@ docker_fedora35_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_fedora36_task:
+docker_fedora37_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.fedora-36
+    dockerfile: docker/Dockerfile.fedora-37
     cpu: 4
     memory: 12G
     greedy: true
