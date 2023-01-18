@@ -730,7 +730,7 @@ const_uint    : CUINTEGER                        { $$ = $1; }
               | '+' CUINTEGER                    { $$ = $2; }
 
 unit_field_ctor
-              : ctor
+              : ctor                             { $$ = std::move($1); }
               | UINT8 '(' const_uint ')'         { $$ = hilti::ctor::UnsignedInteger($3, 8, __loc__); }
               | UINT16 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 16, __loc__); }
               | UINT32 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 32, __loc__); }
