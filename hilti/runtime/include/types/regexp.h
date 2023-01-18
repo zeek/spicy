@@ -66,8 +66,10 @@ public:
      * value then indicates the ID of the pattern that was found. (2) zero if
      * no match was found and advancing further to more data is guaranteed to
      * not change that fact. (3) smaller than 0 if no match was found so far
-     * but advancing further may change that. In either case, the returned
-     * view trims *data* to the part not consumed yet.
+     * but advancing further may change that. In either case, the returned view
+     * trims *data* to the part not consumed yet. Note that the latter could
+     * actually be *more* than what was previously returned in case matching
+     * needed to backtrack because of a match now determined to end earlier.
      */
     std::tuple<int32_t, stream::View> advance(const stream::View& data);
 
@@ -86,10 +88,14 @@ public:
      * no match was found and advancing further to more data is guaranteed to
      * not change that fact. (3) smaller than 0 if no match was found so far
      * but advancing further may change that. In either case, the 2nd element
-     * in the tuple returns the number of bytes that were consumed from *data*
-     * by the matching.
+     * in the tuple returns the number of bytes that were consumed from
+     * *data* by the matching. Note that the integer can be *negative* in case
+     * of a match that has now been determined to end before the current chunk.
+     * In that case, the caller needs to backtrack by the given number of
+     * bytes. Because this could be tricky to handle, it's usually better to
+     * use the other variant of `advance()`, returning a view, if possible.
      */
-    std::tuple<int32_t, uint64_t> advance(const Bytes& data, bool is_final = false);
+    std::tuple<int32_t, int64_t> advance(const Bytes& data, bool is_final = false);
 
     /**
      * Returns extracted capture groups after successful matching.
@@ -102,7 +108,9 @@ public:
     Captures captures(const Stream& data) const;
 
 private:
-    std::pair<int32_t, uint64_t> _advance(const stream::View& data, bool is_final);
+    // Returns (rc, bytes-consumed). Note that the latter can be negative if
+    // backtracking is required.
+    std::pair<int32_t, int64_t> _advance(const stream::View& data, bool is_final);
 
     // PIMPLing here means we have to allocate dynamic memory, which
     // isn't great for this class. However, without PIMPL we get a new dependency on
