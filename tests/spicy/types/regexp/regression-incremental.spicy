@@ -1,0 +1,17 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf 'aaab' | spicy-driver -i 1 %INPUT.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf 'ab' | spicy-driver -i 1 %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test for #1349.
+
+module foo;
+
+public type X = unit {
+    x: /([^a]|(aa))*/;
+    y: b"ab";
+
+    on %done {
+        print self;
+    }
+};

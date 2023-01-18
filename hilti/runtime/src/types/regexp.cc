@@ -102,15 +102,23 @@ std::tuple<int32_t, stream::View> regexp::MatchState::advance(const stream::View
 
     auto [rc, offset] = _advance(data, data.isFrozen());
 
+    stream::View ndata;
+    // `SafeConstIterator` implements both `operator+` and `operator-` for `uint64_t`
+    // while `offset` is a `int64_t`. Make sure we trim in the correct direction.
+    if ( offset >= 0 )
+        ndata = data.trim(data.begin() + offset);
+    else
+        ndata = data.trim(data.begin() - static_cast<uint64_t>((-offset)));
+
     if ( rc >= 0 ) {
         _pimpl->_done = true;
-        return std::make_tuple(rc, data.trim(data.begin() + offset));
+        return std::make_tuple(rc, std::move(ndata));
     }
 
-    return std::make_tuple(rc, data.trim(data.begin() + offset));
+    return std::make_tuple(rc, std::move(ndata));
 }
 
-std::tuple<int32_t, uint64_t> regexp::MatchState::advance(const Bytes& data, bool is_final) {
+std::tuple<int32_t, int64_t> regexp::MatchState::advance(const Bytes& data, bool is_final) {
     if ( ! _pimpl )
         throw PatternError("no regular expression associated with match state");
 
@@ -127,7 +135,7 @@ std::tuple<int32_t, uint64_t> regexp::MatchState::advance(const Bytes& data, boo
     return std::make_tuple(rc, offset);
 }
 
-std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& data, bool is_final) {
+std::pair<int32_t, int64_t> regexp::MatchState::_advance(const stream::View& data, bool is_final) {
     jrx_assertion first = _pimpl->_first;
     jrx_assertion last = 0;
 
@@ -176,7 +184,6 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
             return std::make_pair(_pimpl->_acc > 0 ? _pimpl->_acc : 0, _pimpl->_ms.offset - start_ms_offset);
 
         if ( rc > 0 ) {
-            assert(_pimpl->_ms.match_eo >= start_ms_offset);
             _pimpl->_acc = rc;
             return std::make_pair(_pimpl->_acc, _pimpl->_ms.match_eo - start_ms_offset);
         }
@@ -186,10 +193,8 @@ std::pair<int32_t, uint64_t> regexp::MatchState::_advance(const stream::View& da
         // At least one could match with more data.
         _pimpl->_acc = -1;
 
-    if ( rc > 0 ) {
-        assert(_pimpl->_ms.match_eo >= start_ms_offset);
+    if ( rc > 0 )
         return std::make_pair(_pimpl->_acc, _pimpl->_ms.match_eo - start_ms_offset);
-    }
 
     return std::make_pair(_pimpl->_acc, _pimpl->_ms.offset - start_ms_offset);
 }
