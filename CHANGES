@@ -1,3 +1,40 @@
+1.7.0-dev.45 | 2023-01-19 09:46:14 +0100
+
+  * Remove dead code. (Benjamin Bannier, Corelight)
+
+  * Remove performance pessimization introduced in `84fb4f21f494`. (Benjamin Bannier, Corelight)
+
+    When exposing this function directly we made the argument always
+    evaluate. This now causes us to compute strings for logging even if they
+    are never emitted.
+
+    Undo this change as it is actually not needed for the cleanup it was
+    initially intended for.
+
+  * GH-1345: Fix pathological performance for `_haveEod` on highly chunked streams. (Benjamin Bannier, Corelight)
+
+    This function was identified as a performance bottleneck when parsing
+    `bytes` with a huge size from a stream with many chunks. The reason it
+    performed so poorly was due to its use of `unsafeEnd`: since `unsafeEnd`
+    creates an unsafe iterator from `end()` it always needs to compute the
+    chunk the safe iterator pointed to; if the stream contains many chunks
+    this causes the seen poor performance.
+
+    Since we only access `offset` use safe iterators instead. This makes it
+    much cheaper to call this function so we can safely use it during
+    parsing.
+
+    Since this change only affects performance we do not add a test case.
+    For a benchmark see #1345.
+
+    Closes #1345.
+
+  * Remove EOL fedora-35, add fedora-37. (Benjamin Bannier, Corelight)
+
+  * Bump Zeek version in zeek-plugin CI job. (Benjamin Bannier, Corelight)
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.37 | 2023-01-09 16:10:40 +0100
 
   * Decrease excessive RAM on some CI platforms. (Benjamin Bannier, Corelight)

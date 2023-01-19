@@ -12,9 +12,6 @@
 
 namespace hilti::rt {
 
-/** Reports an internal error and aborts execution. */
-// void internalError(const std::string& msg) __attribute__((noreturn)); // Declared in util.h
-
 /**
  * Reports a fatal error and immediately aborts execution. This skips all
  * cleanup and should be used only for catastrophic library issues; not for
@@ -26,7 +23,17 @@ void fatalError(const std::string& msg) __attribute__((noreturn));
 /** Reports a warning. */
 void warning(const std::string& msg);
 
-#define HILTI_RT_DEBUG(stream, msg) hilti::rt::debug::print(stream, msg);
+/**
+ * Prints a string, or a runtime value, to a specific debug stream. This is a
+ * macro wrapper around `debug::detail::print(*)` that avoids evaluation of
+ * the arguments if nothing is going to get logged.
+ */
+#define HILTI_RT_DEBUG(stream, msg)                                                                                    \
+    {                                                                                                                  \
+        if ( ::hilti::rt::detail::globalState()->debug_logger &&                                                       \
+             ::hilti::rt::detail::globalState()->debug_logger->isEnabled(stream) )                                     \
+            ::hilti::rt::debug::detail::print(stream, msg);                                                            \
+    }
 
 /** Shortcut to `hilti::rt::debug::setLocation`. */
 #define __location__(x) ::hilti::rt::debug::setLocation(x);
