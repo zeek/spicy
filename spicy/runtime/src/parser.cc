@@ -7,6 +7,7 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
 
+#include <spicy/rt/global-state.h>
 #include <spicy/rt/debug.h>
 #include <spicy/rt/parser.h>
 
@@ -16,6 +17,16 @@ using namespace spicy::rt::detail;
 HILTI_EXCEPTION_IMPL(Backtrack)
 HILTI_EXCEPTION_IMPL(MissingData);
 HILTI_EXCEPTION_IMPL(ParseError)
+
+void spicy::rt::confirm_input() {
+    if ( const auto& hook = globalState()->configuration->hook_confirm_input )
+        (*hook)();
+}
+
+void spicy::rt::reject_input(const std::string& reason) {
+    if ( const auto& hook = globalState()->configuration->hook_reject_input )
+        (*hook)(reason);
+}
 
 // Returns true if EOD can be seen already, even if not reached yet.
 static bool _haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur) {

@@ -128,3 +128,24 @@ Parses an address from a bytes instance. The address can be in standard IPv4
 or IPv6 ASCII represententation. The function raises ``InvalidArgument`` if the
 string could not be parsed.
 
+.. _spicy_confirm_input:
+
+.. rubric:: ``function spicy::confirm_input()``
+
+Reports a confirmation to the host application indicating that the parser
+appears to be processing the expected input format. It's up to the host
+application how to use this information.
+
+.. _spicy_reject_input:
+
+.. rubric:: ``function spicy::reject_input(reason: string)``
+
+Reports a violation to the host application indicating that the parser
+appears not to be processing the expected input format.  It's up to the
+host application how to use this information.
+
+Note that this does not automatically abort processing. If that's desired,
+you need to trigger a parse error as well.
+
+reason: user-presentable description of why the input seems wrong
+

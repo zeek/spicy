@@ -18,6 +18,7 @@
 using spicy::rt::fmt;
 
 static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
+                                              {"require-confirmation", no_argument, nullptr, 'c'},
                                               {"compiler-debug", required_argument, nullptr, 'D'},
                                               {"debug", no_argument, nullptr, 'd'},
                                               {"debug-addl", required_argument, nullptr, 'X'},
@@ -34,6 +35,14 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"report-resource-usage", no_argument, nullptr, 'U'},
                                               {"version", no_argument, nullptr, 'v'},
                                               {nullptr, 0, nullptr, 0}};
+
+static bool require_confirmation = false; // --require-confirmation
+
+static bool confirmed = false; // set by hook_confirm_input()
+static void hook_confirm_input() { confirmed = true; }
+
+static bool rejected = false; // set by hook_reject_input()
+static void hook_reject_input(const std::string& reason) { rejected = true; }
 
 class SpicyDriver : public spicy::Driver, public spicy::rt::Driver {
 public:
@@ -81,6 +90,8 @@ void SpicyDriver::usage() {
            "\n"
            "Options:\n"
            "\n"
+           "  -c | --require-confirmation     Return failure exit code if parser did not call confirm(), or called "
+           "reject().\n"
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
            "  -i | --increment <i>            Feed data incrementally in chunks of size n.\n"
            "  -f | --file <path>              Read input from <path> instead of stdin.\n"
@@ -122,7 +133,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABD:f:F:hdJX:Vlp:i:SRL:U", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABcD:f:F:hdJX:Vlp:i:SRL:U", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -131,6 +142,11 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'A': driver_options.abort_on_exceptions = true; break;
 
             case 'B': driver_options.show_backtraces = true; break;
+
+            case 'c': {
+                require_confirmation = true;
+                break;
+            }
 
             case 'd': {
                 compiler_options.debug = true;
@@ -233,6 +249,11 @@ int main(int argc, char** argv) {
     hilti::init();
     spicy::init();
 
+    auto config = spicy::rt::configuration::get();
+    config.hook_confirm_input = hook_confirm_input;
+    config.hook_reject_input = hook_reject_input;
+    spicy::rt::configuration::set(std::move(config));
+
     SpicyDriver driver;
 
     driver.parseOptions(argc, argv);
@@ -278,6 +299,9 @@ int main(int argc, char** argv) {
         hilti::util::timing::summary(std::cerr);
 
     hilti::rt::done();
+
+    if ( require_confirmation && (! confirmed || rejected) )
+        return 1;
 
     return 0;
 }

@@ -6,6 +6,7 @@
 
 #include <spicy/rt/autogen/config.h>
 #include <spicy/rt/base64.h>
+#include <spicy/rt/configuration.h>
 #include <spicy/rt/debug.h>
 #include <spicy/rt/driver.h>
 #include <spicy/rt/filter.h>
