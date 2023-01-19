@@ -159,3 +159,19 @@ public function parse_address(s: string) : addr &cxxname="hilti::rt::address::pa
 ## or IPv6 ASCII represententation. The function raises ``InvalidArgument`` if the
 ## string could not be parsed.
 public function parse_address(b: bytes) : addr &cxxname="hilti::rt::address::parse" &have_prototype;
+
+## Reports a confirmation to the host application indicating that the parser
+## appears to be processing the expected input format. It's up to the host
+## application how to use this information.
+public function accept_input() : void &cxxname="spicy::rt::accept_input";
+
+## Reports a violation to the host application indicating that the parser
+## appears not to be processing the expected input format.  It's up to the
+## host application how to use this information.
+##
+## Note that this does not automatically abort processing. If that's desired,
+## you need to trigger a parse error as well, e.g., by throwing an error,
+## `throw "<error message>"`.
+##
+## reason: user-presentable description of why the input seems wrong
+public function decline_input(reason: string) : void &cxxname="spicy::rt::decline_input";

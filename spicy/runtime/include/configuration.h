@@ -2,11 +2,28 @@
 
 #pragma once
 
+#include <functional>
+#include <optional>
+#include <string>
+
 namespace spicy::rt {
 
 /** Configuration parameters for the Spicy runtime system. */
 struct Configuration {
     Configuration() {}
+
+    /**
+     * Optional callback to execute when a Spicy parser calls
+     * `spicy::accept_input()`.
+     **/
+    std::optional<std::function<void()>> hook_accept_input;
+
+    /**
+     * Optional callback to execute when a Spicy parser calls
+     * `spicy::decline_input()`. This string argument is the reason provided by
+     * the caller.
+     */
+    std::optional<std::function<void(const std::string&)>> hook_decline_input;
 };
 
 namespace configuration {
