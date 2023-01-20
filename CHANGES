@@ -1,3 +1,129 @@
+1.5.3 | 2023-01-20 11:09:15 +0100
+
+  * GH-1349: Fix incremental regexp matching for potentially empty results. (Robin Sommer, Corelight)
+
+    When feeding data incrementally into the regexp matcher, we could run
+    into an assert trying to ensure that the end of a match wasn't in the
+    previous chunk already. Turns out, however, that *is* possible with
+    empty matches that are determined only later (and maybe it's possible
+    in other cases, too). To fix this, we need to account for potentially
+    backtracking into data from a previous round. This could be a bit
+    surprising to callers of the `advance()` method, but should
+    work as long as they aren't trimming the stream in between (which in
+    our use cases shouldn't be the case).
+
+    Closes #1349.
+
+  * Bump Zeek version in zeek-plugin CI job. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 41922f69769d4ba20c45675ccd99caf117588735)
+
+  * Fix test `Backtrace.comparison` for aggressive constant folding. (Benjamin Bannier, Corelight)
+
+    This is a fixup commit for 1333be6b40de6 which addresses compilers not
+    interpreting `optnone`. For such compilers we want to continue setting
+    `noinline`.
+
+    (cherry picked from commit 422b8f4c2ebe12ce257cbed28092758ee3e905fe)
+
+  * Fix test `Backtrace.comparison` for aggressive constant folding. (Benjamin Bannier, Corelight)
+
+    In order to test construction of backtraces we used a helper function
+    which was marked `noinline` to guarantee that it always constructed a
+    new stack frame. It seems this was not enough as a sufficiently smart
+    compiler might perform other optimizations like e.g., constant folding
+    which would also remove the stack frame.
+
+    We now disable optimizations for this function to make sure it is
+    emitted.
+
+    (cherry picked from commit 1333be6b40de6042d353c8b36f90bc80991e9442)
+
+  * Bump Cirrus macos CI. (Benjamin Bannier, Corelight)
+
+    As of 2023-01-01 Cirrus will not offer Intel-based macos instances
+    anymore. This patch moves the Cirrus macos CI to M1 virtual machines.
+    Since M1 virtual machines do not support the previously tested OS
+    versions we also bump CI to test the last two macos version.
+
+    (cherry picked from commit c739aa886dc112fec4e5a8dcfb5e198af330dcc6)
+
+  * Install full nlohmann JSON header as well. (Benjamin Bannier, Corelight)
+
+    We previously would only install the nlohmann header with forward
+    declaration while in `hilti/rt/json.h` we include the full header. With
+    that it was impossible to include this header in user code.
+
+    This patch makes sure we install the full header as well.
+
+    (cherry picked from commit f101790bb82345a3d029ed5f4f94e8eda1ae8851)
+
+  * GH-1345: Fix pathological performance for `_haveEod` on highly chunked streams. (Benjamin Bannier, Corelight)
+
+    This function was identified as a performance bottleneck when parsing
+    `bytes` with a huge size from a stream with many chunks. The reason it
+    performed so poorly was due to its use of `unsafeEnd`: since `unsafeEnd`
+    creates an unsafe iterator from `end()` it always needs to compute the
+    chunk the safe iterator pointed to; if the stream contains many chunks
+    this causes the seen poor performance.
+
+    Since we only access `offset` use safe iterators instead. This makes it
+    much cheaper to call this function so we can safely use it during
+    parsing.
+
+    Since this change only affects performance we do not add a test case.
+    For a benchmark see #1345.
+
+    Closes #1345.
+
+    (cherry picked from commit 9a218491de15bd8eab22f8018a2725a9046e01c4)
+
+  * cmake/FindGoldLinker: Do not use gold by default (Arne Welzel, Corelight)
+
+    When embedding Spicy in other CMake projects, the gold linker should not
+    be used by default (even if installed on the system).
+
+    The ./configure script continues to enable gold detection by default.
+
+    (cherry picked from commit 81f3aa4ff86921e900830104b44e8b5790dd6d06)
+
+  * cmake/FindGoldLinker: Put -fuse-ld=gold before existing flags (Arne Welzel, Corelight)
+
+    When building Zeek and specifying LDFLAGS=-fuse-ld=lld to prefer
+    lld over gold, the linker invocations for spicy continue to use gold due
+    to fuse-ld=gold being appended whenever it's detected.
+
+    Maybe USE_GOLD should be forced to off when compiled within Zeek, anyway.
+
+    Still, when configuring just spicy standalone with "LDFLAGS=-fuse-ld=lld ./configure",
+    currently gold detection will overwrite that, unless one explicitly passes
+    --disable-gold, as well. That's minimally surprising, too.
+
+    (cherry picked from commit 594254e42a0f964402634bac5dbc7ede611cb210)
+
+  * Fix test for doctest-2.4.8. (Benjamin Bannier, Corelight)
+
+    This test was originally developed against the version on `main`
+    (`doctest-2.4.9`), but produced errors with the version on this branch.
+
+    This patch slightly adjusts the test code in non-functional way so it
+    can build on this branch as well.
+
+  * GH-1303: Fix incorrect offset computation in `advanceToNextData`. (Benjamin Bannier, Corelight)
+
+    To compute the next `View` in `advanceToNextData` after a gap chunk we
+    would previously compute offsets incorrectly in that we would implicitly
+    assume that the begin of the original `View` started with zero offset.
+    This is unlikely true for any but the most trivial cases and often caused e.g.,
+    resynchronization to jump to incorrect offsets much after the correct
+    position.
+
+    With this patch we now use a correct offset computation.
+
+    Closes #1303.
+
+    (cherry picked from commit cda6f0da3826a44182a4cf064ad6cbce82b9aac1)
+
 1.5.2 | 2022-11-07 10:12:17 +0100
 
   * Quote CMake string to ensure correct argument count. (Nic Boet)
