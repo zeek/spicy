@@ -1,3 +1,27 @@
+1.7.0-dev.49 | 2023-01-20 10:41:46 +0100
+
+  * GH-1349: Fix incremental regexp matching for potentially empty results. (Robin Sommer, Corelight)
+
+    When feeding data incrementally into the regexp matcher, we could run
+    into an assert trying to ensure that the end of a match wasn't in the
+    previous chunk already. Turns out, however, that *is* possible with
+    empty matches that are determined only later (and maybe it's possible
+    in other cases, too). To fix this, we need to account for potentially
+    backtracking into data from a previous round. This could be a bit
+    surprising to callers of the `advance()` method, but should
+    work as long as they aren't trimming the stream in between (which in
+    our use cases shouldn't be the case).
+
+    Closes #1349.
+
+  * Install full nlohmann JSON header as well. (Benjamin Bannier, Corelight)
+
+    We previously would only install the nlohmann header with forward
+    declaration while in `hilti/rt/json.h` we include the full header. With
+    that it was impossible to include this header in user code.
+
+    This patch makes sure we install the full header as well.
+
 1.7.0-dev.45 | 2023-01-19 09:46:14 +0100
 
   * Remove dead code. (Benjamin Bannier, Corelight)
