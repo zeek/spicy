@@ -198,7 +198,7 @@ struct ConnectionState {
 } // namespace driver
 
 /** Exception thrown when a unit type is requested for parsing that isn't useable. */
-HILTI_EXCEPTION(InvalidUnitType, UserException);
+HILTI_EXCEPTION(InvalidUnitType, UsageError);
 
 /**
  * Runtime driver to retrieve and feed Spicy parsers.

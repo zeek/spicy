@@ -16,7 +16,7 @@ namespace spicy::rt {
  * Exception thrown on attempts to use a context not matching what the unit
  * expects.
  */
-HILTI_EXCEPTION(ContextMismatch, UserException)
+HILTI_EXCEPTION(ContextMismatch, UsageError)
 
 /**
  * Type-erased wrapper around an instance of a parsing unit's `%context` type.

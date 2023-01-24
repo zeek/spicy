@@ -26,7 +26,7 @@ namespace spicy::rt {
 /**
  * Exception thrown when sink operations fail due to usage errors.
  */
-HILTI_EXCEPTION(SinkError, UserException)
+HILTI_EXCEPTION(SinkError, UsageError)
 
 namespace sink {
 enum class ReassemblerPolicy { First };

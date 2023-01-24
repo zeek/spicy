@@ -15,7 +15,7 @@ namespace spicy::rt {
 /**
  * Exception thrown by MIMEType if it cannot parse a type specification.
  */
-HILTI_EXCEPTION(InvalidMIMEType, UserException)
+HILTI_EXCEPTION(InvalidMIMEType, UsageError)
 
 namespace mime {
 

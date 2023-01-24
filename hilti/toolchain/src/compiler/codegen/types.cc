@@ -324,7 +324,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
             scope = scope.namespace_();
 
         std::string base_ns = "::hilti::rt";
-        std::string base_cls = "UserException";
+        std::string base_cls = "UsageError";
 
         if ( auto b = n.baseType() ) {
             auto x = cxx::ID(cg->compile(*b, codegen::TypeUsage::Ctor));

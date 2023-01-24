@@ -81,14 +81,14 @@ inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { retu
 
 #define HILTI_EXCEPTION_IMPL(name) name::name::~name() = default;
 
-/** Base class for exceptions thrown by the runtime system. */
+/** Base class for exceptions thrown during runtime when encountering unexpected input/situations. */
 HILTI_EXCEPTION(RuntimeError, Exception)
 
-/** Base class for exceptions created by HILTI programs. */
-HILTI_EXCEPTION(UserException, Exception)
+/** Base class for exceptions indicating non-recoverable misuse of some functionality. */
+HILTI_EXCEPTION(UsageError, Exception)
 
 /** Base class for exceptions which can be recovered. */
-HILTI_EXCEPTION(RecoverableFailure, Exception)
+HILTI_EXCEPTION(RecoverableFailure, RuntimeError)
 
 /** Thrown when an `assert` statement fails. */
 HILTI_EXCEPTION(AssertionFailure, RuntimeError)
@@ -97,7 +97,7 @@ HILTI_EXCEPTION(AssertionFailure, RuntimeError)
  * Exception triggered y the ".?" operator to signal to host applications that
  * a struct attribute isn't set.
  */
-HILTI_EXCEPTION(AttributeNotSet, Exception)
+HILTI_EXCEPTION(AttributeNotSet, RuntimeError)
 
 /**
  * Exception triggered when a division by zero is attempted.
@@ -105,7 +105,7 @@ HILTI_EXCEPTION(AttributeNotSet, Exception)
 HILTI_EXCEPTION(DivisionByZero, RuntimeError)
 
 /** Thrown for trouble encountered while managing the runtime environment. */
-HILTI_EXCEPTION(EnvironmentError, Exception)
+HILTI_EXCEPTION(EnvironmentError, UsageError)
 
 /** Exception indicating access to an already expired weak reference. **/
 HILTI_EXCEPTION(ExpiredReference, RuntimeError)
