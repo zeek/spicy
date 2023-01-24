@@ -216,7 +216,7 @@ private:
     };
     JobRunner _runner;
 
-    std::size_t _hash;
+    std::size_t _hash = 0;
 };
 
 } // namespace hilti
