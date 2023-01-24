@@ -241,7 +241,7 @@ void JIT::_finish() {
 hilti::Result<Nothing> JIT::_compile() {
     util::timing::Collector _("hilti/jit/compile");
 
-    if ( _codes.empty() && _files.empty() )
+    if ( ! hasInputs() )
         return Nothing();
 
     auto cc_files = _files;
@@ -576,6 +576,21 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
     return Nothing();
 }
 
-void JIT::add(CxxCode d) { _codes.push_back(std::move(d)); }
+void JIT::add(CxxCode d) {
+    // Include all added codes in the JIT hash. This makes JIT invocations
+    // unique and e.g., prevents us from generating the same output file if the
+    // same module is seen in different compiler invocations.
+    if ( const auto& code = d.code() )
+        _hash = rt::hashCombine(_hash, std::hash<std::string>{}(*code));
 
-void JIT::add(const hilti::rt::filesystem::path& p) { _files.push_back(p); }
+    _codes.push_back(std::move(d));
+}
+
+void JIT::add(const hilti::rt::filesystem::path& p) {
+    // Include all added files in the JIT hash. This makes JIT invocations
+    // unique and e.g., prevents us from generating the same output file if the
+    // same module is seen in different compiler invocations.
+    _hash = rt::hashCombine(_hash, std::hash<std::string>{}(p));
+
+    _files.push_back(p);
+}
