@@ -149,10 +149,6 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
             // Sinks are operating independently from the writer, so we
             // don't forward errors on.
             s->resumable.resume();
-        } catch ( const hilti::rt::RecoverableFailure& err ) {
-            SPICY_RT_DEBUG_VERBOSE(
-                fmt("parse error in connected unit %s, aborting delivery (%s)", s->parser->name, err.what()));
-            s->skip_delivery = true;
         } catch ( const hilti::rt::RuntimeError& err ) {
             SPICY_RT_DEBUG_VERBOSE(
                 fmt("error in connected unit %s, aborting delivery (%s)", s->parser->name, err.what()));
@@ -411,9 +407,6 @@ void Sink::_close(bool orderly) {
                         s->resumable.resume();
                     else
                         s->resumable.abort();
-                } catch ( const hilti::rt::RecoverableFailure& err ) {
-                    SPICY_RT_DEBUG_VERBOSE(
-                        fmt("parse error in connected unit %s during close (%s)", s->parser->name, err.what()));
                 } catch ( const hilti::rt::RuntimeError& err ) {
                     SPICY_RT_DEBUG_VERBOSE(
                         fmt("error in connected unit %s during close (%s)", s->parser->name, err.what()));
