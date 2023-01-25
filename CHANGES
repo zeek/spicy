@@ -1,3 +1,7 @@
+1.7.0-dev.51 | 2023-01-25 09:36:56 +0100
+
+  * Remove potential race during JIT when using `HILTI_CXX_COMPILER_LAUNCHER`. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.49 | 2023-01-20 10:41:46 +0100
 
   * GH-1349: Fix incremental regexp matching for potentially empty results. (Robin Sommer, Corelight)

@@ -1,0 +1,37 @@
+# @TEST-DOC: This test validates that if the same module is included in multiple other modules, we create unique filenames. This avoids that concurrent JIT jobs work on the same file.
+#
+# @TEST-EXEC: rm -f /tmp/log
+# @TEST-EXEC: chmod +x wrapper.sh
+#
+# We expect exactly three files for this compilation (modules `a` and `foo` and linker script).
+# @TEST-EXEC: HILTI_CXX_COMPILER_LAUNCHER=$PWD/wrapper.sh spicyc -dj a.spicy
+# @TEST-EXEC test $(wc -l output) -eq 3
+#
+# We expect exactly three additional files for this compilation (modules `b` and `foo` and linker script).
+# @TEST-EXEC: HILTI_CXX_COMPILER_LAUNCHER=$PWD/wrapper.sh spicyc -dj b.spicy
+# @TEST-EXEC test $(wc -l output) -eq 6
+#
+# Each compiler invocation (and consequentially each compiled and created file should be unique).
+# @TEST-EXEC: test $(sort -u output | wc -l) -eq 6
+
+# A small helper script to intercept and log compiler invocations.
+# @TEST-START-FILE wrapper.sh
+#!/bin/sh
+echo "$@" >>output
+"$@"
+# @TEST-END-FILE
+
+# @TEST-START-FILE a.spicy
+module a;
+import foo;
+# @TEST-END-FILE
+
+# @TEST-START-FILE b.spicy
+module b;
+import foo;
+# @TEST-END-FILE
+
+# @TEST-START-FILE foo.spicy
+module foo;
+global N = 42;
+# @TEST-END-FILE
