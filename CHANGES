@@ -1,3 +1,115 @@
+1.6.1 | 2023-01-25 09:39:36 +0100
+
+  * Add stringification to UnitContext. (Benjamin Bannier, Corelight)
+
+    Not adding this in the first place broke e.g., `-X flow` or `-X trace`.
+
+    (cherry picked from commit 7ee860a2bb81962d60864d10090930cc8cb2ea64)
+
+  * Remove potential race during JIT when using `HILTI_CXX_COMPILER_LAUNCHER`. (Benjamin Bannier, Corelight)
+
+    We previously would not create unique names for different JIT
+    invocations if they came from the same directory. This causes issues if
+    the same module is imported into different analyzers where previously we
+    would generate the same C++ and object file name. Different JIT runs
+    could then race on the same output files and e.g., remove each others
+    inputs/outputs. As far as I can tell this was very unlikely to produce
+    incorrect behavior at runtime.
+
+    We now include all input files from a JIT run in the JIT hash. With that
+    above race is not possible anymore.
+
+    (cherry picked from commit 709990fe5593284e24822aa898e73ad988217d85)
+
+  * GH-1349: Fix incremental regexp matching for potentially empty results. (Robin Sommer, Corelight)
+
+    When feeding data incrementally into the regexp matcher, we could run
+    into an assert trying to ensure that the end of a match wasn't in the
+    previous chunk already. Turns out, however, that *is* possible with
+    empty matches that are determined only later (and maybe it's possible
+    in other cases, too). To fix this, we need to account for potentially
+    backtracking into data from a previous round. This could be a bit
+    surprising to callers of the `advance()` method, but should
+    work as long as they aren't trimming the stream in between (which in
+    our use cases shouldn't be the case).
+
+    Closes #1349.
+
+  * Bump Zeek version in zeek-plugin CI job. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 41922f69769d4ba20c45675ccd99caf117588735)
+
+  * Fix test `Backtrace.comparison` for aggressive constant folding. (Benjamin Bannier, Corelight)
+
+    This is a fixup commit for 1333be6b40de6 which addresses compilers not
+    interpreting `optnone`. For such compilers we want to continue setting
+    `noinline`.
+
+    (cherry picked from commit 422b8f4c2ebe12ce257cbed28092758ee3e905fe)
+
+  * Fix test `Backtrace.comparison` for aggressive constant folding. (Benjamin Bannier, Corelight)
+
+    In order to test construction of backtraces we used a helper function
+    which was marked `noinline` to guarantee that it always constructed a
+    new stack frame. It seems this was not enough as a sufficiently smart
+    compiler might perform other optimizations like e.g., constant folding
+    which would also remove the stack frame.
+
+    We now disable optimizations for this function to make sure it is
+    emitted.
+
+    (cherry picked from commit 1333be6b40de6042d353c8b36f90bc80991e9442)
+
+  * Bump Cirrus macos CI. (Benjamin Bannier, Corelight)
+
+    As of 2023-01-01 Cirrus will not offer Intel-based macos instances
+    anymore. This patch moves the Cirrus macos CI to M1 virtual machines.
+    Since M1 virtual machines do not support the previously tested OS
+    versions we also bump CI to test the last two macos version.
+
+    (cherry picked from commit c739aa886dc112fec4e5a8dcfb5e198af330dcc6)
+
+  * Remove performance pessimization introduced in `84fb4f21f494`. (Benjamin Bannier, Corelight)
+
+    When exposing this function directly we made the argument always
+    evaluate. This now causes us to compute strings for logging even if they
+    are never emitted.
+
+    Undo this change as it is actually not needed for the cleanup it was
+    initially intended for.
+
+    (cherry picked from commit d5fef37c379ac76762a7d8e2d9e3f9a417409a1b)
+
+  * Install full nlohmann JSON header as well. (Benjamin Bannier, Corelight)
+
+    We previously would only install the nlohmann header with forward
+    declaration while in `hilti/rt/json.h` we include the full header. With
+    that it was impossible to include this header in user code.
+
+    This patch makes sure we install the full header as well.
+
+    (cherry picked from commit f101790bb82345a3d029ed5f4f94e8eda1ae8851)
+
+  * GH-1345: Fix pathological performance for `_haveEod` on highly chunked streams. (Benjamin Bannier, Corelight)
+
+    This function was identified as a performance bottleneck when parsing
+    `bytes` with a huge size from a stream with many chunks. The reason it
+    performed so poorly was due to its use of `unsafeEnd`: since `unsafeEnd`
+    creates an unsafe iterator from `end()` it always needs to compute the
+    chunk the safe iterator pointed to; if the stream contains many chunks
+    this causes the seen poor performance.
+
+    Since we only access `offset` use safe iterators instead. This makes it
+    much cheaper to call this function so we can safely use it during
+    parsing.
+
+    Since this change only affects performance we do not add a test case.
+    For a benchmark see #1345.
+
+    Closes #1345.
+
+    (cherry picked from commit 9a218491de15bd8eab22f8018a2725a9046e01c4)
+
 1.6.0 | 2022-12-12 12:38:01 +0100
 
   * Release 1.6.0. (Benjamin Bannier, Corelight)
