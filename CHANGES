@@ -1,3 +1,28 @@
+1.7.0-dev.95 | 2023-01-27 12:00:41 +0100
+
+  * Streamline runtime exception hierarchy. (Robin Sommer, Corelight)
+
+    We were inconsistent in the structure of exceptions that could
+    happen during runtime, making it hard for host applications for
+    consistently handle trouble. We tweak this, as follows:
+
+        - We now only have two general subcategories of exceptions under the
+          top-level `hilti::rt::Exception`:
+
+            - `RuntimeError`: non-fatal errors that mean a host
+              applications cannot complete the current line of processing,
+              but can otherwise continue. This is the main exception that
+              host applications should catch, and then proceed
+              appropriately.
+
+            - `UsageError`: fatal errors that indicate something about
+              using the runtime environment was fundamentally wrong, and a
+              host application should abort.
+
+        - Almost all other exceptions are now derived from `RuntimeError`,
+          including Spicy's `ParseError` and `RecoverableFailure`, so that
+          they can treated consistently.
+
 1.7.0-dev.93 | 2023-01-27 11:57:58 +0100
 
   * Search user module paths before system paths. (Robin Sommer, Corelight)
