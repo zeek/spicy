@@ -279,6 +279,43 @@ private:                                                                        
                                                                                                                        \
     __END_OPERATOR_CUSTOM
 
+/** Defines a constructor-style call operator introduced by a keyword. */
+#define BEGIN_KEYWORD_CTOR(ns, cls, kw, result_, doc_)                                                                 \
+    __BEGIN_OPERATOR_CUSTOM(ns, Call, cls)                                                                             \
+                                                                                                                       \
+    const auto& signature() const {                                                                                    \
+        static hilti::operator_::Signature _signature = {.result = result_, .args = parameters(), .doc = doc_};        \
+        return _signature;                                                                                             \
+    }                                                                                                                  \
+                                                                                                                       \
+    const std::vector<hilti::operator_::Operand>& operands() const {                                                   \
+        static std::vector<hilti::operator_::Operand> _operands = {{{}, hilti::type::Member(kw)},                      \
+                                                                   {{}, hilti::type::OperandList(signature().args)}};  \
+        return _operands;                                                                                              \
+    }                                                                                                                  \
+                                                                                                                       \
+    std::string doc() const { return signature().doc; }                                                                \
+                                                                                                                       \
+    hilti::Type result(const hilti::node::Range<hilti::Expression>& ops) const {                                       \
+        return *hilti::operator_::type(signature().result, ops, ops);                                                  \
+    }                                                                                                                  \
+                                                                                                                       \
+    bool isLhs() const { return signature().lhs; }                                                                     \
+    hilti::operator_::Priority priority() const { return signature().priority; }                                       \
+                                                                                                                       \
+    void validate(const hilti::expression::ResolvedOperator& /* i */, hilti::operator_::position_t /* p */) const {}
+
+
+#define END_KEYWORD_CTOR __END_OPERATOR_CUSTOM
+
+/** Shortcut to define a constructor-style call operator introduced by a keyword using a single argument. */
+#define STANDARD_KEYWORD_CTOR(ns, cls, kw, result_, ty_op, doc_)                                                       \
+    BEGIN_KEYWORD_CTOR(ns, cls, kw, result_, doc_)                                                                     \
+                                                                                                                       \
+        std::vector<Operand> parameters() const { return {{"op", ty_op}}; }                                            \
+                                                                                                                       \
+    END_KEYWORD_CTOR
+
 /**
  * No-op to have the auto-generated code pick up on an operator that's
  * fully defined separately.

@@ -14,6 +14,16 @@
 using namespace hilti;
 using util::fmt;
 
+// Global state storing any scopes we are currently in during printing.
+// Maintaining this globally isn't great, but because of various independent
+// `printAST()` calls happening recursively through `operator<<` and `fmt()`,
+// we can't easily pass this state around.
+static std::vector<ID> _scopes = {""};
+
+static const ID& _currentScope() { return _scopes.back(); }
+static void _pushScope(ID id) { _scopes.push_back(std::move(id)); }
+static void _popScope() { _scopes.pop_back(); }
+
 static std::string renderOperator(operator_::Kind kind, const std::vector<std::string>& ops) {
     switch ( kind ) {
         case operator_::Kind::Add: return fmt("add %s[%s]", ops[0], ops[1]);
@@ -164,7 +174,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const ID& n) {
-        if ( n.namespace_() == out.currentScope() )
+        if ( n.namespace_() == _currentScope() )
             out << std::string(n.local());
         else
             out << std::string(n);
@@ -175,7 +185,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         out << "module " << n.id() << " {" << out.newline();
         out.endLine();
 
-        out.pushScope(n.id());
+        _pushScope(n.id());
 
         auto printDecls = [&](const auto& decls) {
             for ( const auto& d : decls )
@@ -201,7 +211,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         if ( ! n.statements().statements().empty() )
             out.emptyLine();
 
-        out.popScope();
+        _popScope();
 
         out.beginLine();
         out << "}";
@@ -222,11 +232,14 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         out << "default<" << n.type() << ">(" << std::make_pair(n.typeArguments(), ", ") << ")";
     }
 
-    void operator()(const ctor::Enum& n, position_t p) { out << *p.node.as<Type>().typeID() << "::" << n.value(); }
+    void operator()(const ctor::Enum& n, position_t p) {
+        assert(n.type().typeID());
+        out << *n.type().typeID() << "::" << n.value().id();
+    }
 
     void operator()(const ctor::Error& n) { out << "error(\"" << n.value() << "\")"; }
 
-    void operator()(const ctor::Interval& n) { out << n.value(); }
+    void operator()(const ctor::Interval& n) { out << "interval_ns(" << n.value().nanoseconds() << ")"; }
 
     void operator()(const ctor::List& n) { out << '[' << std::make_pair(n.value(), ", ") << ']'; }
 
@@ -273,7 +286,12 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const ctor::Set& n) { out << "set(" << std::make_pair(n.value(), ", ") << ')'; }
 
-    void operator()(const ctor::SignedInteger& n) { out << n.value(); }
+    void operator()(const ctor::SignedInteger& n) {
+        if ( n.width() < 64 )
+            out << fmt("int%d(%" PRId64 ")", n.width(), n.value());
+        else
+            out << n.value();
+    }
 
     void operator()(const ctor::Stream& n) { out << "stream(" << util::escapeUTF8(n.value(), true) << ')'; }
 
@@ -295,11 +313,16 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         out << "]";
     }
 
-    void operator()(const ctor::Time& n) { out << n.value(); }
+    void operator()(const ctor::Time& n) { out << "time_ns(" << n.value().nanoseconds() << ")"; }
 
     void operator()(const ctor::Tuple& n) { out << '(' << std::make_pair(n.value(), ", ") << ')'; }
 
-    void operator()(const ctor::UnsignedInteger& n) { out << n.value(); }
+    void operator()(const ctor::UnsignedInteger& n) {
+        if ( n.width() < 64 )
+            out << fmt("uint%d(%" PRId64 ")", n.width(), n.value());
+        else
+            out << n.value();
+    }
 
     void operator()(const ctor::Vector& n) { out << "vector(" << std::make_pair(n.value(), ", ") << ')'; }
 
@@ -800,7 +823,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const type::Interval& n) { out << const_(n) << "interval"; }
 
-    void operator()(const type::Member& n) { out << const_(n) << "<member>"; }
+    void operator()(const type::Member& n) { out << const_(n) << n.id(); }
 
     void operator()(const type::Network& n) { out << const_(n) << "net"; }
 

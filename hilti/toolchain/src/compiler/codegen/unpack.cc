@@ -31,6 +31,8 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             case Kind::Pack: return "pack";
             case Kind::Unpack: return "unpack";
         }
+
+        util::cannot_be_reached();
     }
 
     result_t operator()(const type::Address& n) {
@@ -38,6 +40,8 @@ struct Visitor : hilti::visitor::PreOrder<std::string, Visitor> {
             case Kind::Pack: return fmt("::hilti::rt::address::pack(%s, %s)", data, args[0]);
             case Kind::Unpack: return fmt("::hilti::rt::address::unpack(%s, %s, %s)", data, args[0], args[1]);
         }
+
+        util::cannot_be_reached();
     }
 
     result_t operator()(const type::UnsignedInteger& n) {

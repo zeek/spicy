@@ -348,5 +348,10 @@ inline auto port(Expression port, Expression protocol, const Meta& m = Meta()) {
         std::vector<Expression>{std::move(port), std::move(protocol)}, m);
 }
 
+inline Expression namedCtor(const std::string& name, const std::vector<Expression>& args, Meta m = Meta()) {
+    return expression::UnresolvedOperator(operator_::Kind::Call,
+                                          {expression::Member(ID(name)), expression::Ctor(hilti::ctor::Tuple(args))},
+                                          std::move(m));
+}
 
 } // namespace hilti::builder

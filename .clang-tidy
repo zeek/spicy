@@ -31,6 +31,7 @@ Checks: '
   -misc-unused-parameters,
   -misc-const-correctness,
   -misc-confusable-identifiers,
+  -misc-const-correctness,
 
   modernize-*,
   -modernize-avoid-c-arrays,

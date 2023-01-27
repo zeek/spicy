@@ -53,4 +53,19 @@ assert i == -30;
 i /= 3;
 assert i == -10;
 
+global uint<64> u = 10;
+assert int8(20) == int8(2 * u);
+assert int16(20) == int16(2 * u);
+assert int32(20) == int32(2 * u);
+assert int64(20) == int64(2 * u);
+
+global int<64> s = 10;
+assert int8(20) == int8(2 * s);
+assert int16(20) == int16(2 * s);
+assert int32(20) == int32(2 * s);
+assert int64(20) == int64(2 * s);
+
+# Check that max/min doesn't trigger an error.
+global x = int64(9223372036854775807); # max_int64
+global y = int64(-9223372036854775808); # min_int64
 }

@@ -1,5 +1,8 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/ast/ctors/integer.h>
+#include <hilti/ast/ctors/interval.h>
+#include <hilti/ast/ctors/time.h>
 #include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/detail/operator-registry.h>
@@ -17,6 +20,37 @@ inline const hilti::logging::DebugStream Normalizer("normalizer");
 } // namespace hilti::logging::debug
 namespace {
 
+struct VisitorConstants : public visitor::PreOrder<void, VisitorConstants> {
+    bool modified = false;
+
+    // Log debug message recording resolving a expression.
+    void logChange(const Node& old, const Ctor& ctor) {
+        HILTI_DEBUG(logging::debug::Normalizer,
+                    util::fmt("[%s] %s -> constant %s (%s)", old.typename_(), old, ctor, old.location()));
+    }
+
+    void operator()(const Expression& d, position_t p) {
+        if ( ! expression::isResolved(d) )
+            return;
+
+        if ( d.isA<expression::Ctor>() )
+            return;
+
+        auto ctor = detail::foldConstant(p.node);
+        if ( ! ctor ) {
+            p.node.addError(ctor.error());
+            return;
+        }
+
+        if ( ! *ctor )
+            return;
+
+        logChange(p.node, **ctor);
+        auto nexpr = expression::Ctor(**ctor, (*ctor)->meta());
+        p.node = nexpr;
+        modified = true;
+    }
+};
 
 struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     bool modified = false;
@@ -25,6 +59,12 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     void logChange(const Node& old, const Expression& nexpr) {
         HILTI_DEBUG(logging::debug::Normalizer,
                     util::fmt("[%s] %s -> expression %s (%s)", old.typename_(), old, nexpr, old.location()));
+    }
+
+    // Log debug message recording resolving a ctor.
+    void logChange(const Node& old, const Ctor& nexpr) {
+        HILTI_DEBUG(logging::debug::Normalizer,
+                    util::fmt("[%s] %s -> ctor %s (%s)", old.typename_(), old, nexpr, old.location()));
     }
 
     // Log debug message recording resolving a statement.
@@ -42,6 +82,34 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
     // Log debug message recording attribute normalizations.
     void logChange(const Node& old, const Attribute& nattr) {
         HILTI_DEBUG(logging::debug::Normalizer, util::fmt("%s -> %s (%s)", old, nattr, old.location()));
+    }
+
+    auto callArgument(const expression::ResolvedOperatorBase& o, int i) {
+        auto ctor = o.op1().as<expression::Ctor>().ctor();
+
+        if ( auto x = ctor.tryAs<ctor::Coerced>() )
+            ctor = x->coercedCtor();
+
+        return ctor.as<ctor::Tuple>().value()[i];
+    }
+
+    // Helper to cast an uint64 to int64, with range check.
+    int64_t to_int64(uint64_t x, position_t& p) {
+        if ( x > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
+            throw hilti::rt::OutOfRange("integer value out of range");
+
+        return static_cast<int64_t>(x);
+    }
+
+    // Overload that doesn't need to do any checking.
+    int64_t to_int64(int64_t x, position_t& p) { return x; }
+
+    // Helper to cast an int64 to uint64, with range check.
+    uint64_t to_uint64(int64_t x, position_t& p) {
+        if ( x < 0 )
+            throw hilti::rt::OutOfRange("integer value out of range");
+
+        return static_cast<uint64_t>(x);
     }
 
     void operator()(const declaration::Function& u, position_t p) {
@@ -275,6 +343,13 @@ static void _computeCanonicalIDs(VisitorComputeCanonicalIDs* v, Node* node, ID c
 bool hilti::detail::ast::normalize(Node* root, Unit* unit) {
     util::timing::Collector _("hilti/compiler/ast/normalizer");
 
+    auto v0 = VisitorConstants();
+    for ( auto i : v0.walk(root) )
+        v0.dispatch(i);
+
+    if ( logger().errors() )
+        return v0.modified;
+
     auto v1 = VisitorNormalizer();
     for ( auto i : v1.walk(root) )
         v1.dispatch(i);
@@ -291,5 +366,5 @@ bool hilti::detail::ast::normalize(Node* root, Unit* unit) {
         v4.dispatch(i);
 #endif
 
-    return v1.modified;
+    return v0.modified || v1.modified;
 }

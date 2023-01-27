@@ -58,4 +58,16 @@ assert i == 30;
 i /= 3;
 assert i == 10;
 
+global uint<64> u = 10;
+assert uint8(20) == uint8(2 * u);
+assert uint16(20) == uint16(2 * u);
+assert uint32(20) == uint32(2 * u);
+assert uint64(20) == uint64(2 * u);
+
+global uint<64> s = 10;
+assert uint8(20) == uint8(2 * s);
+assert uint16(20) == uint16(2 * s);
+assert uint32(20) == uint32(2 * s);
+assert uint64(20) == uint64(2 * s);
+
 }

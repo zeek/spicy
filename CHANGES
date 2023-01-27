@@ -1,3 +1,31 @@
+1.7.0-dev.78 | 2023-01-27 11:16:01 +0100
+
+  * GH-1123: Support arbitrary expression as argument to type
+    constructors, such as `interval(...)`. (Robin Sommer, Corelight)
+
+    So far we used constructor expressions like `interval(...)` to create
+    *constants* of the given type, and for that we required that the
+    argument was a single atomic value. The result was that these
+    constructor expressions were really more like literals for the
+    corresponding types than "normal" expressions. While that's useful
+    internally, it's confusing to the user. This commits changes that
+    to support arbitrary expressions as arguments.
+
+    To make this change without loosing a way to create actual constants
+    (which we need at some places), we implement this in two stages: the
+    parser initially turns such `interval(...)` expressions into call
+    operators[1] that the types now define for each desired constructor. We
+    then extend the normalizer with a new constants folding pass that
+    turns the call expressions into constants if possible.
+
+    The new constant folder remains limited to the cases we need for
+    this use case, but we'll be able to expand that later to  more
+    general folding.
+
+  * Fix bug in cast from `real` to `interval`. (Robin Sommer, Corelight)
+
+  * Add anchors to FAQ items in docs [skip CI]. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.53 | 2023-01-25 09:39:02 +0100
 
   * Add stringification to UnitContext. (Benjamin Bannier, Corelight)

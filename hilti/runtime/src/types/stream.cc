@@ -9,7 +9,7 @@ using namespace hilti::rt;
 using namespace hilti::rt::stream;
 using namespace hilti::rt::stream::detail;
 
-Chunk::Chunk(Offset offset, const View& d) : _offset(offset) {
+Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset) {
     if ( d.size() <= SmallBufferSize ) {
         std::array<Byte, SmallBufferSize> a{};
         d.copyRaw(a.data());
@@ -23,7 +23,7 @@ Chunk::Chunk(Offset offset, const View& d) : _offset(offset) {
     }
 }
 
-Chunk::Chunk(Offset offset, const std::string& s) : _offset(offset) {
+Chunk::Chunk(const Offset& offset, const std::string& s) : _offset(offset) {
     if ( s.size() <= SmallBufferSize ) {
         std::array<Byte, SmallBufferSize> a{};
         memcpy(a.data(), s.data(), s.size());
@@ -37,7 +37,7 @@ Chunk::Chunk(Offset offset, const std::string& s) : _offset(offset) {
     }
 }
 
-void Chunk::trim(Offset o) {
+void Chunk::trim(const Offset& o) {
     assert(o >= _offset && o < _offset + size());
     if ( auto a = std::get_if<Array>(&_data) ) {
         auto begin = a->second.data() + (o - _offset).Ref();
@@ -54,7 +54,7 @@ void Chunk::trim(Offset o) {
     _offset = o;
 }
 
-const Chunk* Chain::findChunk(Offset offset, const Chunk* hint_prev) const {
+const Chunk* Chain::findChunk(const Offset& offset, const Chunk* hint_prev) const {
     _ensureValid();
 
     const Chunk* c = _head.get();
@@ -71,7 +71,7 @@ const Chunk* Chain::findChunk(Offset offset, const Chunk* hint_prev) const {
     return c;
 }
 
-Chunk* Chain::findChunk(Offset offset, Chunk* hint_prev) {
+Chunk* Chain::findChunk(const Offset& offset, Chunk* hint_prev) {
     _ensureValid();
 
     Chunk* c = _head.get();
@@ -88,7 +88,7 @@ Chunk* Chain::findChunk(Offset offset, Chunk* hint_prev) {
     return c;
 }
 
-const Byte* Chain::data(Offset offset, Chunk* hint_prev) const {
+const Byte* Chain::data(const Offset& offset, Chunk* hint_prev) const {
     auto c = findChunk(offset, hint_prev);
     if ( ! c )
         throw InvalidIterator("stream iterator outside of valid range");
@@ -126,7 +126,7 @@ void Chain::append(Chain&& other) {
     other.reset();
 }
 
-void Chain::trim(Offset offset) {
+void Chain::trim(const Offset& offset) {
     _ensureValid();
 
     // We search the first chunk that's containing the desired position,
@@ -425,7 +425,7 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
 
 Stream::Stream(const Bytes& d) : Stream(Chunk(0, d.str())) {}
 
-Stream::Stream(const char* d, Size n) : Stream() { append(d, n); }
+Stream::Stream(const char* d, const Size& n) : Stream() { append(d, n); }
 
 void Stream::append(Bytes&& data) {
     if ( data.isEmpty() )

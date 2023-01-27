@@ -10,6 +10,28 @@
 
 .. rubric:: Operators
 
+.. spicy:operator:: interval::Call interval interval(int)
+
+    Creates an interval interpreting the argument as number of seconds.
+
+.. spicy:operator:: interval::Call interval interval(real)
+
+    Creates an interval interpreting the argument as number of seconds.
+
+.. spicy:operator:: interval::Call interval interval(uint)
+
+    Creates an interval interpreting the argument as number of seconds.
+
+.. spicy:operator:: interval::Call interval interval_ns(int)
+
+    Creates an interval interpreting the argument as number of
+    nanoseconds.
+
+.. spicy:operator:: interval::Call interval interval_ns(uint)
+
+    Creates an interval interpreting the argument as number of
+    nanoseconds.
+
 .. spicy:operator:: interval::Difference interval t:interval <sp> op:- <sp> t:interval
 
     Returns the difference of the intervals.

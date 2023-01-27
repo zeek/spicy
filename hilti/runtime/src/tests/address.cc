@@ -70,7 +70,10 @@ TEST_CASE("conversions to and from `std::string`") {
 TEST_CASE("constructs from an `::in_addr4`") { CHECK_EQ(std::string(Address(*make_in_addr("1.2.3.4"))), "1.2.3.4"); }
 
 TEST_CASE("constructs from an `::in6_addr`") {
-    CHECK_EQ(std::string(Address(*make_in6_addr("::4996:2d2:0:0:4996:2d2"))), "::4996:2d2:0:0:4996:2d2");
+    std::string addr = std::string(Address(*make_in6_addr("::4996:2d2:0:0:4996:2d2")));
+    auto is_correct = (addr == "::4996:2d2:0:0:4996:2d2" || addr == "0:0:4996:2d2::4996:2d2"); // Alpine has been seen to return the latter
+
+    CHECK(is_correct);
 }
 
 TEST_CASE("constructs from binary representation of an IPv4 address") {
@@ -80,7 +83,11 @@ TEST_CASE("constructs from binary representation of an IPv4 address") {
 
 TEST_CASE("constructs from binary representation of an IPv6 address") {
     CHECK_EQ(Address(1234567890, 1234567890).family(), AddressFamily::IPv6);
-    CHECK_EQ(std::string(Address(1234567890, 1234567890)), "::4996:2d2:0:0:4996:2d2");
+
+    std::string addr = Address(1234567890, 1234567890);
+    bool is_correct = (addr == "::4996:2d2:0:0:4996:2d2" ||
+                       addr == "0:0:4996:2d2::4996:2d2"); // Alpine has been seen to return the latter
+    CHECK(is_correct);
 }
 
 TEST_CASE("family") {
