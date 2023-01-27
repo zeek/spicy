@@ -120,7 +120,7 @@ Result<std::shared_ptr<Unit>> Unit::fromImport(const std::shared_ptr<Context>& c
     if ( parse_plugin->get().library_paths )
         library_paths = util::concat(std::move(library_paths), (*parse_plugin->get().library_paths)(context));
 
-    library_paths = util::concat(std::move(library_paths), context->options().library_paths);
+    library_paths = util::concat(context->options().library_paths, library_paths);
 
     auto path = util::findInPaths(name, library_paths);
     if ( ! path ) {
