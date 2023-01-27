@@ -7,6 +7,8 @@
 #include <cinttypes>
 #include <clocale>
 #include <cstring>
+#include <memory>
+#include <vector>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
@@ -93,4 +95,23 @@ void hilti::rt::detail::registerModule(HiltiModule module) {
         *module.globals_idx = globalState()->hilti_modules.size();
 
     globalState()->hilti_modules.emplace_back(module);
+}
+
+static std::unique_ptr<std::vector<void (*)()>> _registered_preinit_functions;
+
+RegisterManualPreInit::RegisterManualPreInit(void (*f)()) {
+    if ( ! _registered_preinit_functions )
+        _registered_preinit_functions = std::make_unique<std::vector<void (*)()>>();
+
+    _registered_preinit_functions->emplace_back(f);
+}
+
+void hilti::rt::executeManualPreInits() {
+    if ( ! _registered_preinit_functions )
+        return;
+
+    for ( const auto& f : *_registered_preinit_functions )
+        (*f)();
+
+    _registered_preinit_functions.reset();
 }

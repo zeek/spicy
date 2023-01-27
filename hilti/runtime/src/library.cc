@@ -67,7 +67,10 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
 
     auto version_string = reinterpret_cast<const char**>(::dlsym(_handle, "__hlt_hlto_library_version"));
     if ( ! version_string )
-        return result::Error("no version information");
+        // This could happen if the code was compiled with a custom CXX
+        // namespace prefix. But that's not expected for HLTO files; it should
+        // be used only when generating C++ code compiled through custom means.
+        return result::Error("no version information accessible");
 
     auto version = library::Version::fromJSON(*version_string);
     if ( ! version )

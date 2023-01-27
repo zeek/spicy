@@ -1,3 +1,15 @@
+1.7.0-dev.93 | 2023-01-27 11:57:58 +0100
+
+  * Search user module paths before system paths. (Robin Sommer, Corelight)
+
+    With, e.g., `spicyz -L /x/y/z`, we used to append the given module
+    path to the internal system paths, so that it was searched last. This
+    change turns around the priority to search `/x/y/x` first, before the
+    internal ones. That seems both more useful and more intuitive.
+
+  * Provide ability for host applications to initiate runtime's
+    module-pre-init phase manually. (Robin Sommer, Corelight)
+
 1.7.0-dev.89 | 2023-01-27 11:44:31 +0100
 
   * Add DPD-style `spicy::accept_input()` and `spicy::decline_input()`. (Robin Sommer, Corelight)
