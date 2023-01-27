@@ -345,6 +345,18 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         }
     }
 
+    void operator()(const expression::Keyword& e, position_t p) {
+        if ( e.kind() != expression::keyword::Kind::Scope )
+            return;
+
+        if ( type::isResolved(e.type()) )
+            return;
+
+        logChange(p.node, hilti::type::String());
+        p.node.as<expression::Keyword>().setType(hilti::type::String());
+        modified = true;
+    }
+
     void operator()(const expression::ListComprehension& e, position_t p) {
         if ( ! type::isResolved(e.type()) && type::isResolved(e.output().type()) ) {
             logChange(p.node, e.output().type());

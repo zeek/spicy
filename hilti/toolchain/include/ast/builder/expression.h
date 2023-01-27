@@ -354,4 +354,8 @@ inline Expression namedCtor(const std::string& name, const std::vector<Expressio
                                           std::move(m));
 }
 
+inline auto scope(const Meta& m = Meta()) {
+    return hilti::expression::Keyword(hilti::expression::keyword::Kind::Scope, m);
+}
+
 } // namespace hilti::builder

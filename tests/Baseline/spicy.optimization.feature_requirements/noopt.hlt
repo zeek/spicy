@@ -404,7 +404,7 @@ init function void __register_foo_X1() {
 
     if ( __feat%foo__X1%is_filter || __feat%foo__X1%supports_sinks ) {
         foo::X1::__parser = [$name="foo::X1", $is_public=False, $parse1=foo::X1::parse1, $parse2=foo::X1::parse2, $parse3=foo::X1::parse3, $context_new=Null, $type_info=typeinfo(X1), $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::X1::__parser, hilti::linker_scope(), Null);
+        spicy_rt::registerParser(foo::X1::__parser, $scope, Null);
     }
 
 }
@@ -614,7 +614,7 @@ init function void __register_foo_X2() {
 
     if ( __feat%foo__X2%is_filter || __feat%foo__X2%supports_sinks ) {
         foo::X2::__parser = [$name="foo::X2", $is_public=False, $parse1=foo::X2::parse1, $parse2=foo::X2::parse2, $parse3=foo::X2::parse3, $context_new=Null, $type_info=typeinfo(X2), $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::X2::__parser, hilti::linker_scope(), Null);
+        spicy_rt::registerParser(foo::X2::__parser, $scope, Null);
     }
 
 }
@@ -832,7 +832,7 @@ init function void __register_foo_X3() {
 
     if ( __feat%foo__X3%is_filter || __feat%foo__X3%supports_sinks ) {
         foo::X3::__parser = [$name="foo::X3", $is_public=False, $parse1=foo::X3::parse1, $parse2=foo::X3::parse2, $parse3=foo::X3::parse3, $context_new=Null, $type_info=typeinfo(X3), $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::X3::__parser, hilti::linker_scope(), Null);
+        spicy_rt::registerParser(foo::X3::__parser, $scope, Null);
     }
 
 }
@@ -1050,7 +1050,7 @@ init function void __register_foo_X4() {
 
     if ( __feat%foo__X4%is_filter || __feat%foo__X4%supports_sinks ) {
         foo::X4::__parser = [$name="foo::X4", $is_public=False, $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_info=typeinfo(X4), $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::X4::__parser, hilti::linker_scope(), Null);
+        spicy_rt::registerParser(foo::X4::__parser, $scope, Null);
     }
 
 }
@@ -1262,7 +1262,7 @@ method extern method view<stream> foo::X5::parse2(inout value_ref<X5> unit, inou
 
 init function void __register_foo_X5() {
     foo::X5::__parser = [$name="foo::X5", $is_public=True, $parse1=foo::X5::parse1, $parse2=foo::X5::parse2, $parse3=foo::X5::parse3, $context_new=Null, $type_info=typeinfo(X5), $description="", $mime_types=vector(), $ports=vector()];
-    spicy_rt::registerParser(foo::X5::__parser, hilti::linker_scope(), Null);
+    spicy_rt::registerParser(foo::X5::__parser, $scope, Null);
 }
 
 method hook void foo::X6::__on_0x25_init() {
@@ -1476,7 +1476,7 @@ init function void __register_foo_X6() {
 
     if ( __feat%foo__X6%is_filter || __feat%foo__X6%supports_sinks ) {
         foo::X6::__parser = [$name="foo::X6", $is_public=False, $parse1=foo::X6::parse1, $parse2=foo::X6::parse2, $parse3=foo::X6::parse3, $context_new=Null, $type_info=typeinfo(X6), $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::X6::__parser, hilti::linker_scope(), Null);
+        spicy_rt::registerParser(foo::X6::__parser, $scope, Null);
     }
 
 }

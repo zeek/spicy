@@ -497,6 +497,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
             case expression::keyword::Kind::Captures:
                 out << "$@"; // this is technically not valid source code; we don't expose this to users
                 break;
+            case expression::keyword::Kind::Scope: out << "$scope"; break;
         }
     }
 

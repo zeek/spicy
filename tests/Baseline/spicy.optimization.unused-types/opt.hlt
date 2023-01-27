@@ -201,7 +201,7 @@ method extern method view<stream> foo::Pub2::parse2(inout value_ref<Pub2> unit, 
 
 init function void __register_foo_Pub2() {
     foo::Pub2::__parser = [$name="foo::Pub2", $is_public=True, $parse1=foo::Pub2::parse1, $parse2=foo::Pub2::parse2, $parse3=foo::Pub2::parse3, $context_new=Null, $type_info=typeinfo(Pub2), $description="", $mime_types=vector(), $ports=vector()];
-    spicy_rt::registerParser(foo::Pub2::__parser, hilti::linker_scope(), Null);
+    spicy_rt::registerParser(foo::Pub2::__parser, $scope, Null);
 }
 
 init function void __register_foo_Priv2() {
@@ -413,7 +413,7 @@ method extern method view<stream> foo::Pub3::parse2(inout value_ref<Pub3> unit, 
 
 init function void __register_foo_Pub3() {
     foo::Pub3::__parser = [$name="foo::Pub3", $is_public=True, $parse1=foo::Pub3::parse1, $parse2=foo::Pub3::parse2, $parse3=foo::Pub3::parse3, $context_new=Null, $type_info=typeinfo(Pub3), $description="", $mime_types=vector(), $ports=vector()];
-    spicy_rt::registerParser(foo::Pub3::__parser, hilti::linker_scope(), Null);
+    spicy_rt::registerParser(foo::Pub3::__parser, $scope, Null);
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv10::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
@@ -514,7 +514,7 @@ method extern method view<stream> foo::Priv10::parse2(inout value_ref<Priv10> un
 
 init function void __register_foo_Priv10() {
     foo::Priv10::__parser = [$name="foo::Priv10", $is_public=True, $parse1=foo::Priv10::parse1, $parse2=foo::Priv10::parse2, $parse3=foo::Priv10::parse3, $context_new=Null, $type_info=typeinfo(Priv10), $description="", $mime_types=vector(), $ports=vector()];
-    spicy_rt::registerParser(foo::Priv10::__parser, hilti::linker_scope(), Null);
+    spicy_rt::registerParser(foo::Priv10::__parser, $scope, Null);
 }
 
 }

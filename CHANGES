@@ -1,3 +1,23 @@
+1.7.0-dev.86 | 2023-01-27 11:35:35 +0100
+
+  * Add driver option to output full set of generated C++ files. (Robin Sommer, Corelight)
+
+    `-x <prefix>` now writes out all generated C++ code as
+    `<prefix>_*.cc`, also setting the internal C++ namespace prefix to
+    `<prefix>`.
+
+  * Add test for sink's paying attention to linker scopes with static C++ code. (Robin Sommer, Corelight)
+
+  * Make test helper scripts `cxx-*` usable with Spicy code as well. (Robin Sommer, Corelight)
+
+  * Provide new HILTI keyword `$scope` to access linker scope. (Robin Sommer, Corelight)
+
+  * Prefix the linker scope with the internal CXX namespace. (Robin Sommer, Corelight)
+
+  * Fix a couple of places hardcoding the internal C++ namespace prefix. (Robin Sommer, Corelight)
+
+  * Prefix the linker symbols for versioning with C++ namespace. (Robin Sommer, Corelight)
+
 1.7.0-dev.78 | 2023-01-27 11:16:01 +0100
 
   * GH-1123: Support arbitrary expression as argument to type

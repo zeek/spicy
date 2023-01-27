@@ -202,7 +202,7 @@ method extern method view<stream> foo::X4::parse2(inout value_ref<X4> unit, inou
 init function void __register_foo_X4() {
     {
         foo::X4::__parser = [$name="foo::X4", $is_public=False, $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_info=typeinfo(X4), $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::X4::__parser, hilti::linker_scope(), Null);
+        spicy_rt::registerParser(foo::X4::__parser, $scope, Null);
     }
 
 }
@@ -329,7 +329,7 @@ method extern method view<stream> foo::X5::parse2(inout value_ref<X5> unit, inou
 
 init function void __register_foo_X5() {
     foo::X5::__parser = [$name="foo::X5", $is_public=True, $parse1=foo::X5::parse1, $parse2=foo::X5::parse2, $parse3=foo::X5::parse3, $context_new=Null, $type_info=typeinfo(X5), $description="", $mime_types=vector(), $ports=vector()];
-    spicy_rt::registerParser(foo::X5::__parser, hilti::linker_scope(), Null);
+    spicy_rt::registerParser(foo::X5::__parser, $scope, Null);
 }
 
 method hook void foo::X6::__on_0x25_init() {
@@ -437,7 +437,7 @@ method extern method view<stream> foo::X6::parse2(inout value_ref<X6> unit, inou
 init function void __register_foo_X6() {
     {
         foo::X6::__parser = [$name="foo::X6", $is_public=False, $parse1=foo::X6::parse1, $parse2=foo::X6::parse2, $parse3=foo::X6::parse3, $context_new=Null, $type_info=typeinfo(X6), $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::X6::__parser, hilti::linker_scope(), Null);
+        spicy_rt::registerParser(foo::X6::__parser, $scope, Null);
     }
 
 }

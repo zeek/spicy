@@ -59,8 +59,10 @@ void cxx::Linker::finalize() {
         for ( const auto& i : p.cxx_includes )
             unit.add(cxx::declaration::IncludeFile{i});
 
-    unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * __hlto_library_version = R\"(%s)\";", version.toJSON()));
-    unit.add("const char HILTI_EXPORT HILTI_WEAK * __hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();");
+    auto cxx_namespace = _codegen->context()->options().cxx_namespace_intern;
+
+    unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_library_version = R\"(%s)\";", cxx_namespace, version.toJSON()));
+    unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();", cxx_namespace));
 
     // Create a scope string that's likely to be unique to this linker module.
     std::size_t hash = 0;
@@ -71,7 +73,7 @@ void cxx::Linker::finalize() {
     }
 
     auto scope = hilti::rt::fmt("%" PRIx64, hash);
-    unit.add(fmt("const char HILTI_WEAK * __hlto_scope = \"%s\";", scope));
+    unit.add(fmt("const char HILTI_WEAK * %s_hlto_scope = \"%s\";", cxx_namespace, scope));
 
     std::string init_modules = "nullptr";
     std::string init_globals = "nullptr";

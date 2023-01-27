@@ -14,6 +14,8 @@ assert 0x1.999999999999ap-4 == 0x1.999999999999ap-4;
 
 #include <hilti/rt/libhilti.h>
 
+extern const char* __hlt_hlto_scope;
+
 namespace __hlt::Foo {
     struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
         double d{};
@@ -42,7 +44,7 @@ extern void __hlt::Foo::__init_module() {
     }
 }
 
-extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlto_scope, &__init_module, &__init_globals, &__globals_index}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, &__init_globals, &__globals_index}); }
 
 /* __HILTI_LINKER_V1__
 {"module":"Foo","namespace":"__hlt::Foo","path":"<...>/nops.hlt","version":1}
