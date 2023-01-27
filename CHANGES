@@ -1,3 +1,27 @@
+1.7.0-dev.89 | 2023-01-27 11:44:31 +0100
+
+  * Add DPD-style `spicy::accept_input()` and `spicy::decline_input()`. (Robin Sommer, Corelight)
+
+    This generalizes the accepting/decline input from being a Zeek thing to
+    being part of Spicy. Any Spicy grammar can call these functions as to
+    tell its host application if it recognizes the input format. The host
+    application can (but doesn't have to) install callbacks to receive
+    that information and react appropriately. For example, the Zeek
+    plugin will just forward it to Zeek's standard DPD hooks.
+
+    For testing, `spicy-driver` gets a new option `--require-accept`
+    that lets it exit with success only if `spicy::accept()` has
+    been called, and  `spicy::decline_input()` hasn't.
+
+    Note: The naming of the two functions is avoid conflicts with the
+    existing notion of synchronization's confirm/reject.
+
+  * Add a global configuration object to the Spicy runtime. (Robin Sommer, Corelight)
+
+    We didn't have a mechanism yet for a host application to configure the
+    runtime library's behavior. This follows what we do on the HILTI-side
+    to provide that capability.
+
 1.7.0-dev.86 | 2023-01-27 11:35:35 +0100
 
   * Add driver option to output full set of generated C++ files. (Robin Sommer, Corelight)

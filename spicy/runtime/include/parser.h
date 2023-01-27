@@ -316,6 +316,20 @@ public:
     ~MissingData() override; /* required to create vtable, see hilti::rt::Exception */
 };
 
+/**
+ * Reports a confirmation to the host application indicating that the parser
+ * appears to be processing the expected input format.
+ */
+extern void accept_input();
+
+/**
+ * Reports a violation to the host application indicating that the parser
+ * appears to not be processing the expected input format.
+ *
+ * @param reason user-presentable description of the violation
+ */
+extern void decline_input(const std::string& reason);
+
 namespace detail {
 
 /**
