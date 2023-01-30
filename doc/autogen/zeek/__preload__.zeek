@@ -4,6 +4,9 @@ module Spicy;
 
 export {
 # doc-options-start
+    # Constant for testing if Spicy is available.
+    const available = T;
+
     ## Activate compile-time debugging output for given debug streams (comma-separated list).
     const codegen_debug = "" &redef;
 
