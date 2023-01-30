@@ -48,13 +48,12 @@ refer to as a "Spicy (protocol/file/packet) analyzer" for Zeek.
 Installation
 ============
 
-As of Zeek version 5.0 Spicy and Spicy plugin are by default bundled with Zeek.
+Since Zeek version 5.0, Spicy and Spicy plugin are by default bundled with Zeek.
 To confirm whether Spicy plugin is available you can inspect the list of
 installed plugin::
 
-    # zeek -N
-    <...>
-    Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (built-in)
+    # zeek -N Zeek::Spicy
+    Zeek::Spicy - Support for Spicy parsers (*.hlto) (built-in)
 
 If you see ``Zeek::Spicy`` listed, spicy-plugin is available, otherwise it
 needs to be installed manually. The recommended way to do so is through Zeek's
@@ -89,7 +88,7 @@ become available, run ``zeek -N Zeek::Spicy``, it should show output
 like this::
 
     # zeek -N Zeek::Spicy
-    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version x.y.z)
+    Zeek::Spicy - Support for Spicy parsers (*.hlto) (dynamic, version x.y.z)
 
 By default, *zkg* will install the most recent release version of the
 plugin. If you want to install the current development version, use
@@ -147,8 +146,9 @@ Event definitions
    when to trigger them.
 
 We define all of these through custom interface definition files that
-the Spicy plugin reads in. These files use an ``*.evt`` extension, and
-the following subsections discuss their content in more detail.
+Spicy's compiler for Zeek reads in. These files use an ``*.evt``
+extension, and the following subsections discuss their content in more
+detail.
 
 Generally, empty lines and comments starting with ``#`` are ignored in
 an ``*.evt``.
@@ -649,31 +649,22 @@ This is an example bracketing code by Zeek version in an EVT file:
     @endif
 
 .. _zeek_compiling:
+.. _spicyz:
 
 Compiling Analyzers
 ====================
 
 Once you have the ``*.spicy`` and ``*.evt`` source files for your new
-analyzer, you have two options to compile them, either in advance, or
-just-in-time at startup.
-
-.. _spicyz:
-
-Ahead Of Time Compilation
--------------------------
-
-You can precompile analyzers into ``*.hlto`` object files containing
-their final executable code. To do that, pass the relevant ``*.spicy``
-and ``*.evt`` files to ``spicyz``, then have Zeek load the output. To
-repeat the :ref:`example <example_zeek_my_http>` from the *Getting
-Started* guide::
+analyzer, you need to precompile them into an ``*.hlto`` object file
+containing their final executable code, which Zeek will then use. To
+do that, pass the relevant ``*.spicy`` and ``*.evt`` files to
+``spicyz``, then have Zeek load the output. To repeat the
+:ref:`example <example_zeek_my_http>` from the *Getting Started*
+guide::
 
     # spicyz -o my-http-analyzer.hlto my-http.spicy my-http.evt
     # zeek -Cr request-line.pcap my-http-analyzer.hlto my-http.zeek
     Zeek saw from 127.0.0.1: GET /index.html 1.0
-
-While this approach requires an additional step every time
-something changes, starting up Zeek now executes quickly.
 
 Instead of providing the precompiled analyzer on the Zeek command
 line, you can also copy them into
@@ -689,23 +680,6 @@ subfolders.
 
 Run ``spicyz -h`` to see some additional options it provides, which
 are similar to :ref:`spicy-driver`.
-
-Just In Time Compilation
-------------------------
-
-To compile analyzers on the fly, you can pass your ``*.spicy`` and
-``*.evt`` files to Zeek just like any of its scripts, either on the
-command-line or through ``@load`` statements. The Spicy plugin hooks
-into Zeek's processing of input files and diverts them the right way
-into its compilation pipeline.
-
-This approach can be quite convenient, in particular during
-development of new analyzers as it makes it easy to iterate---just
-restart Zeek to pick up any changes. The disadvantage is that
-compiling Spicy parsers takes a noticeable amount of time, which
-you'll incur every time Zeek starts up; and it makes setting compiler
-options more difficult (see below). We generally recommend using
-ahead-of-time compilation when working with the Zeek plugin.
 
 .. _zeek_functions:
 
@@ -736,14 +710,13 @@ with your analyzer, add two pieces:
    with the double colons replaced with an underscore (e.g.,
    ``spicy::HTTP`` turns into ``enable "spicy_HTTP"``.
 
-2. You should call ``zeek::confirm_protocol()`` (see
-   :ref:`zeek_functions`) from a hook inside your grammar at a point
-   when the parser can be reasonably certain that it is processing the
-   expected protocol. Optionally, you may also call
-   ``zeek::reject_protocol()`` when you're sure the parser is *not*
-   parsing the right protocol (e.g., inside an :ref:`%error
-   <on_error>` hook). Doing so will let Zeek stop feeding it more
-   data.
+2. You should call :ref:`spicy::accept_input() <spicy_accept_input>`
+   from a hook inside your grammar at a point when the parser can be
+   reasonably certain that it is processing the expected protocol.
+   Optionally, you may also call :ref:`spicy::decline_input()
+   <spicy_decline_input>` when you're sure the parser is *not* parsing
+   the right protocol. However, the Zeek plugin will also trigger this
+   automatically whenever your parser aborts with an error.
 
 .. _zeek_configuration:
 
@@ -754,45 +727,12 @@ Options
 -------
 
 The Spicy plugin provides a set of script-level options to tune its
-behavior, similar to what the :ref:`spicy-driver` provides as
-command-line arguments. These all live in the ``Spicy::`` namespace:
+behavior. These all live in the ``Spicy::`` namespace:
 
 .. literalinclude:: /autogen/zeek/__preload__.zeek
     :language: zeek
     :start-after: doc-options-start
     :end-before:  doc-options-end
-
-Note, however, that most of those options affect code generation. It's
-usually easier to set them through ``spicyz`` when precompiling an
-analyzer. If you are using Zeek itself to compile an analyzer
-just-in-time, keep in mind that any code generation options need to be
-in effect at the time the Spicy plugin kicks of the compilation
-process. A ``redef`` from another script should work fine, as scripts
-are fully processed before compilation starts. However, changing
-values from the command-line (via Zeek's ``var=value``) won't be
-processed in time due to intricacies of Zeek's timing. To make it
-easier to change an option from the command-line, the Spicy plugin
-also supports an environment variable ``ZEEK_SPICY_PLUGIN_OPTIONS`` that
-accepts a subset of ``spicy-driver`` command-line options in the form
-of a string. For example, to JIT a debug version of all analyzers,
-set ``ZEEK_SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
-
-.. code-block:: text
-
-    Supported Zeek-side Spicy options:
-      -A             When executing compiled code, abort() instead of throwing HILTI exceptions.
-      -B             Include backtraces when reporting unhandled exceptions.
-      -C             Dump all generated code to disk for debugging.
-      -d             Include debug instrumentation into generated code.
-      -D <streams>   Activate compile-time debugging output for given debug streams (comma-separated).
-      -O             Build optimized release version of generated code.
-      -o <out.hlto>  Save precompiled code into file and exit.
-      -R             Report a break-down of compiler's execution time.
-      -V             Don't validate ASTs (for debugging only).
-      -X <addl>      Implies -d and adds selected additional instrumentation (comma-separated).
-
-To get that usage message, set ``ZEEK_SPICY_PLUGIN_OPTIONS=-h`` when
-running Zeek.
 
 Functions
 ---------
@@ -818,9 +758,10 @@ possible, use a debug version of Zeek (i.e., build Zeek with
 
 If your analyzer doesn't seem to be active at all, first make sure
 Zeek actually knows about it: It should show up in the output of
-``zeek -NN Zeek::Spicy``. If it doesn't, you might not being loading
-the right ``*.spicy`` or ``*.evt`` files. Also check your ``*.evt`` if
-it defines your analyzer correctly.
+``zeek -NN Zeek::Spicy``. If it doesn't, you might not have been using
+the right ``*.spicy`` or ``*.evt`` files when precompiling, or Zeek is
+not loading the ``*.hlto`` file. Also check your ``*.evt`` if it
+defines your analyzer correctly.
 
 If Zeek knows about your analyzer and just doesn't seem to activate
 it, double-check that ports or MIME types are correct in the ``*.evt``

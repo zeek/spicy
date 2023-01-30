@@ -23,7 +23,6 @@ pretty straight-forward. The Zeek-side logging is more tricky because
 of the data transfer happening over a separate network session.
 
     - `TFTP Spicy grammar <https://github.com/zeek/spicy-tftp/blob/main/analyzer/tftp.spicy>`_
-    - `Spicy code for TFTP analyzer Zeek integration <https://github.com/zeek/spicy-tftp/blob/main/analyzer/zeek_tftp.spicy>`_
     - `TFTP Zeek analyzer definition (EVT) <https://github.com/zeek/spicy-tftp/blob/main/analyzer/tftp.evt>`_
     - `Zeek TFTP script for logging <https://github.com/zeek/spicy-tftp/blob/main/scripts/main.zeek>`_
 

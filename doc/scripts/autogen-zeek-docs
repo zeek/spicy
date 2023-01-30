@@ -46,4 +46,4 @@ cp "${plugin}"/scripts/Zeek/Spicy/misc/record-spicy-batch.zeek "${AUTOGEN_FINAL}
 cp "${tftp}"/scripts/main.zeek "${AUTOGEN_FINAL}"/zeek/tftp.zeek || exit 1
 cp "${tftp}"/analyzer/tftp.spicy "${AUTOGEN_FINAL}"/zeek/tftp.spicy || exit 1
 cp "${tftp}"/analyzer/tftp.evt "${AUTOGEN_FINAL}"/zeek/tftp.evt || exit 1
-cp "${tftp}"/analyzer/zeek_tftp.spicy "${AUTOGEN_FINAL}"/zeek/zeek_tftp.spicy || exit 1
+cat "${tftp}"/analyzer/tftp.spicy | grep -v spicy::accept_input > "${AUTOGEN_FINAL}"/zeek/tftp-no-accept.spicy || exit 1
