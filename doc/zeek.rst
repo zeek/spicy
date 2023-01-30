@@ -409,6 +409,8 @@ As a full example, here's what a new GIF analyzer could look like:
         parse with GIF::Image,
         mime-type image/gif;
 
+.. _zeek_events:
+
 Event Definitions
 -----------------
 
@@ -450,6 +452,8 @@ the pieces going into such an event definition:
     The Spicy type of the expression determines the Zeek-side type of
     the corresponding event argument. Most Spicy types translate
     over pretty naturally, the following summarizes the translation:
+
+    .. _zeek-event-arg-types:
 
     .. csv-table:: Type Conversion from Spicy to Zeek
         :header: "Spicy Type", "Zeek Type", "Notes"
@@ -554,27 +558,91 @@ the pieces going into such an event definition:
     access to ``self``.
 
 
+.. _zeek_export_types:
+
+Exporting Types
+---------------
+
+As we :ref:`discuss above <zeek_events>`, the type of each event
+argument maps over to a corresponding Zeek type. On the Zeek side,
+that corresponding type needs to be known by Zeek. That is always the
+case for built-in atomic types (per the table:ref:`the conversion
+table <zeek-event-arg-types>`), but it can turn out more challenging
+to achieve for custom types, such as ``enum`` and ``record``, for
+which you would normally need to create matching type declarations in
+your Zeek scripts. While that's not necessarily hard, but it can
+become quite cumbersome.
+
+Fortunately, the Spicy plugin can help: for most types, it can
+instantiate corresponding Zeek types automatically as it loads the
+corresponding analyzer. While you will never actually see the
+Zeek-side type declarations, they will be available inside your Zeek
+scripts as if you had typed them out yourself--similar to other types
+that are built into Zeek itself.
+
+To have the plugin create a Zeek type for your analyzer automatically,
+you need to ``export`` the Spicy type in your EVT file. The syntax for
+that is::
+
+    export SPICY_ID [as ZEEK_ID];
+
+Here, ``SPICY_ID`` is the fully-scoped type ID on the Spicy side, and
+``ZEEK_ID`` is the fully-scoped type ID you want in Zeek. If you leave
+out the ``as ...`` part, the Zeek name will be the same as the Spicy
+name, including its namespace. For example, say you have a Spicy unit
+``TFTP::Request``. Adding ``export TFTP::Request;`` to your EVT file
+will make a ``record`` type of the same name, and with the same
+fields, available in Zeek. If you instead use ``export TFTP::Request
+as TheOtherTFTP::Request``, it will be placed into a different
+namespace instead.
+
+Exporting types generally works for most Spicy types as long as
+there's an ID associated with them in your Spicy code. However,
+exporting is most helpful with user-defined types, such as ``enum``
+and ``unit``, because it can save you quite a bit of typing there. We
+discuss the more common type conversions in more detail below.
+
+To confirm the types made available to Zeek, you can see all exports
+in the output of ``zeek -NN``. With our 2nd ``TFTP::Request``
+example, that looks like this::
+
+    [...]
+    # zeek -NN Zeek::Spicy
+    Zeek::Spicy - Support for Spicy parsers (*.hlto)
+        [Type] TheOtherTFTP::Request
+    [...]
+
+.. note::
+
+   Most, but not all, types can be exported automatically.  For
+   example, self-recursive types are currently not supported.
+   Generally, if you run into trouble exporting a type, you can always
+   fall back to declaring a corresponding Zeek version yourself in
+   your Zeek script. Consider the ``export`` mechanism as a
+   convenience feature that helps avoid writing a lot of boiler plate
+   code in common cases.
+
 .. _zeek_enum:
 
 Enum Types
-~~~~~~~~~~
+^^^^^^^^^^
 
-The Zeek plugin automatically makes Spicy :ref:`enum types
-<type_enum>` available on the Zeek-side if you declare them
-``public``. For example, assume the following Spicy declaration:
+When you export a Spicy ``enum`` type, the Spicy plugin creates a
+corresponding Zeek ``enum`` type. For example, assume the following
+Spicy declaration:
 
 .. spicy-code::
 
     module Test;
 
-    public type MyEnum = enum {
+    type MyEnum = enum {
         A = 83,
         B = 84,
         C = 85
     };
 
-The plugin will then create the equivalent of the following Zeek type
-for use in your scripts:
+Using ``export Test::MyEnum;``, the plugin will create the equivalent
+of the following Zeek type for use in your scripts:
 
 .. code-block:: zeek
 
@@ -593,13 +661,82 @@ for use in your scripts:
 
 (The odd naming is due to ID limitations on the Zeek side.)
 
-You can also see the type in the output of ``zeek -NN``::
+.. note::
 
-    [...]
-    Zeek::Spicy - Support for Spicy parsers
-        [Type] Test::MyEnum
-    [...]
+    For backward compatibility, the ``enum`` type comes with an
+    additional property: all *public* enum types are automatically
+    exported, even without adding any ``export`` to your EVT file.
+    This feature may go away at some point, and we suggest to not rely
+    on it on new code; always use ``export`` for `enum` types as well.
 
+.. _zeek_unit:
+
+Unit Types
+^^^^^^^^^^
+
+When you export a Spicy ``unit`` type, the Spicy plugin creates a
+corresponding Zeek ``record`` type. For example, assume the following
+Spicy declaration:
+
+.. spicy-code::
+
+    module Test;
+
+    type MyRecord = unit {
+        a: bytes &size=4;
+        b: uint16;
+
+        var c: bool;
+    };
+
+Using ``export Test::MyRecord;``, the plugin will then create the
+equivalent of the following Zeek type for use in your scripts:
+
+.. code-block:: zeek
+
+    module Test;
+
+    export {
+
+      type MyRecord: record {
+        a: string &optional;
+        b: count &optional;
+        c: bool;
+      };
+
+    }
+
+The individual fields map over just like event arguments do, following
+the :ref:`the table <zeek-event-arg-types>` above. For aggregate
+types, this works recursively: if, e.g., a field is itself of unit
+type *and that type has been exported as well*, the plugin will map it
+over accordingly to the corresponding ``record`` type. Note that such
+dependent types must be exported *first* in the EVT file for this to
+work. As a result, you cannot export self-recursive unit types.
+
+As you can see in the example, unit fields are always declared as
+optional on the Zeek-side, as they may not have been set during
+parsing. Unit variables are non-optional by default, unless declared
+as ``&optional`` in Spicy.
+
+.. _zeek_struct:
+
+Struct Types
+^^^^^^^^^^^^
+
+A Spicy ``struct`` type maps over to Zeek in the same way as ``unit``
+types do, treating each field like a unit variable. See :ref:`there
+<zeek_unit>` for more information.
+
+Tuple Types
+^^^^^^^^^^^
+
+A Spicy ``tuple`` type maps over to a Zeek ``record`` similar to how
+``unit`` types do, treating each tuple element like a unit variable.
+See :ref:`there <zeek_unit>` for more information.
+
+Exporting works only for ``tuple`` types that declare names for all
+their elements.
 
 Importing Spicy Modules
 -----------------------
