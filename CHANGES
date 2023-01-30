@@ -1,3 +1,9 @@
+1.8.0-dev.70 | 2023-04-05 10:38:03 +0200
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
+  * Preserve indention when extracting comments in doc generation. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.66 | 2023-04-03 14:28:14 +0200
 
   * Fix signed-unsigned comparison. (Benjamin Bannier, Corelight)

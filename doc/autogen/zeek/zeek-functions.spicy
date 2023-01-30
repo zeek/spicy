@@ -103,7 +103,7 @@ Forwards protocol data to all previously instantiated Zeek-side child protocol a
 
 is_orig: true to feed the data to the child's originator side, false for the responder
 data: chunk of data to forward to child analyzer
-h: optional handle to the child analyzer to foward data into, else forward to all child analyzers
+h: optional handle to the child analyzer to forward data into, else forward to all child analyzers
 
 .. _spicy_protocol_gap:
 
