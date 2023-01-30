@@ -160,19 +160,11 @@ macOS versions:
       - Release Version
       - Development Version
 
-    * - Catalina (10.15)
-      - :package-release-tgz:`TAR <macos_catalina>`
-      -
-
-    * - Big Sur (11)
-      - :package-release-tgz:`TAR <macos_big_sur>`
-      -
-
     * - Monterey (12)
       -
       - :package-dev-tgz:`TAR <macos_monterey>`
 
-    * - Catalina (13)
+    * - Ventura (13)
       -
       - :package-dev-tgz:`TAR <macos_venture>`
 
