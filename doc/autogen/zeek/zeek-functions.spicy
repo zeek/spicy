@@ -65,35 +65,56 @@ Returns the number of packets seen so far on the current side of the current con
 
 Adds a Zeek-side child protocol analyzer to the current connection.
 
+If the same analyzer was added previously with protocol_handle_get_or_create or
+protocol_begin with same argument, and not closed with protocol_handle_close
+or protocol_end, no new analyzer will be added.
+
+See `protocol_handle_get_or_create` for the error semantics of this function.
+
 analyzer: type of analyzer to instantiate, specified through its Zeek-side
 name (similar to what Zeek's signature action `enable` takes); if not
 specified, Zeek will perform its usual dynamic protocol detection to figure
 out how to parse the data (the latter will work only for TCP protocols, though.)
 
+.. _spicy_protocol_handle_get_or_create:
+
+.. rubric:: ``function zeek::protocol_handle_get_or_create(analyzer: string) : ProtocolHandle``
+
+Gets a handle to a Zeek-side child protocol analyzer for the current connection.
+
+If no such child exists it will be added; otherwise a handle to the
+existing child protocol analyzer will be returned.
+
+This function will return an error
+
+- if not called from a protocol analyzer, or
+- the requested child protocol analyzer is unknown, or
+- creation of a child analyzer of the requested type was prevented by a
+previous call of `disable_analyzer` with `prevent=T`
+
+analyzer: type of analyzer to instantiate, specified through its Zeek-side
+name (similar to what Zeek's signature action `enable` takes).
+
 .. _spicy_protocol_data_in:
 
-.. rubric:: ``function zeek::protocol_data_in(is_orig: bool, data: bytes)``
+.. rubric:: ``function zeek::protocol_data_in(is_orig: bool, data: bytes, h: optional<ProtocolHandle> = Null)``
 
 Forwards protocol data to all previously instantiated Zeek-side child protocol analyzers.
 
 is_orig: true to feed the data to the child's originator side, false for the responder
 data: chunk of data to forward to child analyzer
-
-Note that due to Zeek limitations, any data passed through this function will always
-be forwarded to *all* currently active child analyzers.
+h: optional handle to the child analyzer to foward data into, else forward to all child analyzers
 
 .. _spicy_protocol_gap:
 
-.. rubric:: ``function zeek::protocol_gap(is_orig: bool, offset: uint64, len: uint64)``
+.. rubric:: ``function zeek::protocol_gap(is_orig: bool, offset: uint64, len: uint64, h: optional<ProtocolHandle> = Null)``
 
 Signals a gap in input data to all previously instantiated Zeek-side child protocol analyzers.
 
 is_orig: true to signal gap to the child's originator side, false for the responder
 offset: start offset of gap in input stream
 len: size of gap
-
-Note that due to Zeek limitations, any gaps signaled through this function will always
-be forwarded to *all* currently active child analyzers.
+h: optional handle to the child analyzer signal a gap to, else signal to all child analyzers
 
 .. _spicy_protocol_end:
 
@@ -101,6 +122,19 @@ be forwarded to *all* currently active child analyzers.
 
 Signals end-of-data to all previously instantiated Zeek-side child protocol
 analyzers and removes them.
+
+.. _spicy_protocol_handle_close:
+
+.. rubric:: ``function zeek::protocol_handle_close(handle: ProtocolHandle)``
+
+Signals end-of-data to the given child analyzer and removes it.
+
+The given handle must be live, i.e., it must not have been used in a
+previous protocol_handle_close call, and must not have been live when
+protocol_end was called. If the handle is not live a runtime error will
+be triggered.
+
+handle: handle to the child analyzer to remove
 
 .. _spicy_file_begin:
 
