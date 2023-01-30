@@ -2,13 +2,19 @@
 
 .. rubric:: ``function zeek::confirm_protocol()``
 
-Triggers a DPD protocol confirmation for the current connection.
+[Deprecated] Triggers a DPD protocol confirmation for the current connection.
+
+This function has been deprecated and will be removed. Use ``spicy::accept_input``
+instead, which will have the same effect with Zeek.
 
 .. _spicy_reject_protocol:
 
 .. rubric:: ``function zeek::reject_protocol(reason: string)``
 
-Triggers a DPD protocol violation for the current connection.
+[Deprecated] Triggers a DPD protocol violation for the current connection.
+
+This function has been deprecated and will be removed. Use ``spicy::decline_input``
+instead, which will have the same effect with Zeek.
 
 .. _spicy_weird:
 

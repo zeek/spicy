@@ -25,7 +25,7 @@ copyright = u'2020 by the Zeek Project'
 author = u'Zeek Project'
 
 version = open('../VERSION').readline()
-release = "1.6.0"  # most recent release version
+release = "1.6.1"  # most recent release version
 
 # -- General configuration ---------------------------------------------------
 
@@ -53,7 +53,7 @@ todo_include_todos = True
 
 # Extlinks extension
 extlinks = {
-    "repo":  ("https://github.com/zeek/spicy/blob/main/%s", "#%s"),
+    "repo":  ("https://github.com/zeek/spicy/blob/v%s/%%s" % release, "#%s"),
     "issue": ("https://github.com/zeek/spicy/issues/%s", "#%s"),
     "pr":    ("https://github.com/zeek/spicy/pulls/%s", "#%s"),
 
