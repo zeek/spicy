@@ -304,8 +304,11 @@ hilti::Result<Nothing> JIT::_compile() {
             }
         }
 
-        auto obj = hilti::rt::filesystem::canonical(path);
-        obj.replace_extension(".o");
+        // We explicitly create the object file in the temporary directory.
+        // This ensures that we use a temp path for object files created for
+        // C++ files added by users as well.
+        auto obj = hilti::rt::filesystem::temp_directory_path() /
+                   util::fmt("%s_%" PRIx64 ".o", path.filename().c_str(), _hash);
 
         args.emplace_back("-o");
         args.push_back(obj);
