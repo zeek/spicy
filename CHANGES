@@ -1,3 +1,15 @@
+1.7.0-dev.102 | 2023-01-31 14:02:45 +0100
+
+  * GH-1367: Use unique filename for all object files generated during JIT. (Benjamin Bannier, Corelight)
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
+  * Point doc repo links to latest release instead of `main`. (Benjamin Bannier, Corelight)
+
+  * Fix installation links for macos platforms. (Benjamin Bannier, Corelight)
+
+  * Bump latest release in docs. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.95 | 2023-01-27 12:00:41 +0100
 
   * Streamline runtime exception hierarchy. (Robin Sommer, Corelight)
