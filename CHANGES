@@ -1,3 +1,10 @@
+1.7.0-dev.105 | 2023-02-01 11:17:25 +0100
+
+  * Documentation updates. (Robin Sommer, Corelight)
+
+        - Documenting the new type `export` feature for Zeek.
+        - Update Zeek docs for JIT removal and `accept_input`/`decline_input`.
+
 1.7.0-dev.102 | 2023-01-31 14:02:45 +0100
 
   * GH-1367: Use unique filename for all object files generated during JIT. (Benjamin Bannier, Corelight)

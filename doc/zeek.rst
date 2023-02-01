@@ -48,13 +48,12 @@ refer to as a "Spicy (protocol/file/packet) analyzer" for Zeek.
 Installation
 ============
 
-As of Zeek version 5.0 Spicy and Spicy plugin are by default bundled with Zeek.
+Since Zeek version 5.0, Spicy and Spicy plugin are by default bundled with Zeek.
 To confirm whether Spicy plugin is available you can inspect the list of
 installed plugin::
 
-    # zeek -N
-    <...>
-    Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (built-in)
+    # zeek -N Zeek::Spicy
+    Zeek::Spicy - Support for Spicy parsers (*.hlto) (built-in)
 
 If you see ``Zeek::Spicy`` listed, spicy-plugin is available, otherwise it
 needs to be installed manually. The recommended way to do so is through Zeek's
@@ -89,7 +88,7 @@ become available, run ``zeek -N Zeek::Spicy``, it should show output
 like this::
 
     # zeek -N Zeek::Spicy
-    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version x.y.z)
+    Zeek::Spicy - Support for Spicy parsers (*.hlto) (dynamic, version x.y.z)
 
 By default, *zkg* will install the most recent release version of the
 plugin. If you want to install the current development version, use
@@ -147,8 +146,9 @@ Event definitions
    when to trigger them.
 
 We define all of these through custom interface definition files that
-the Spicy plugin reads in. These files use an ``*.evt`` extension, and
-the following subsections discuss their content in more detail.
+Spicy's compiler for Zeek reads in. These files use an ``*.evt``
+extension, and the following subsections discuss their content in more
+detail.
 
 Generally, empty lines and comments starting with ``#`` are ignored in
 an ``*.evt``.
@@ -409,6 +409,8 @@ As a full example, here's what a new GIF analyzer could look like:
         parse with GIF::Image,
         mime-type image/gif;
 
+.. _zeek_events:
+
 Event Definitions
 -----------------
 
@@ -450,6 +452,8 @@ the pieces going into such an event definition:
     The Spicy type of the expression determines the Zeek-side type of
     the corresponding event argument. Most Spicy types translate
     over pretty naturally, the following summarizes the translation:
+
+    .. _zeek-event-arg-types:
 
     .. csv-table:: Type Conversion from Spicy to Zeek
         :header: "Spicy Type", "Zeek Type", "Notes"
@@ -554,27 +558,91 @@ the pieces going into such an event definition:
     access to ``self``.
 
 
+.. _zeek_export_types:
+
+Exporting Types
+---------------
+
+As we :ref:`discuss above <zeek_events>`, the type of each event
+argument maps over to a corresponding Zeek type. On the Zeek side,
+that corresponding type needs to be known by Zeek. That is always the
+case for built-in atomic types (per the table:ref:`the conversion
+table <zeek-event-arg-types>`), but it can turn out more challenging
+to achieve for custom types, such as ``enum`` and ``record``, for
+which you would normally need to create matching type declarations in
+your Zeek scripts. While that's not necessarily hard, but it can
+become quite cumbersome.
+
+Fortunately, the Spicy plugin can help: for most types, it can
+instantiate corresponding Zeek types automatically as it loads the
+corresponding analyzer. While you will never actually see the
+Zeek-side type declarations, they will be available inside your Zeek
+scripts as if you had typed them out yourself--similar to other types
+that are built into Zeek itself.
+
+To have the plugin create a Zeek type for your analyzer automatically,
+you need to ``export`` the Spicy type in your EVT file. The syntax for
+that is::
+
+    export SPICY_ID [as ZEEK_ID];
+
+Here, ``SPICY_ID`` is the fully-scoped type ID on the Spicy side, and
+``ZEEK_ID`` is the fully-scoped type ID you want in Zeek. If you leave
+out the ``as ...`` part, the Zeek name will be the same as the Spicy
+name, including its namespace. For example, say you have a Spicy unit
+``TFTP::Request``. Adding ``export TFTP::Request;`` to your EVT file
+will make a ``record`` type of the same name, and with the same
+fields, available in Zeek. If you instead use ``export TFTP::Request
+as TheOtherTFTP::Request``, it will be placed into a different
+namespace instead.
+
+Exporting types generally works for most Spicy types as long as
+there's an ID associated with them in your Spicy code. However,
+exporting is most helpful with user-defined types, such as ``enum``
+and ``unit``, because it can save you quite a bit of typing there. We
+discuss the more common type conversions in more detail below.
+
+To confirm the types made available to Zeek, you can see all exports
+in the output of ``zeek -NN``. With our 2nd ``TFTP::Request``
+example, that looks like this::
+
+    [...]
+    # zeek -NN Zeek::Spicy
+    Zeek::Spicy - Support for Spicy parsers (*.hlto)
+        [Type] TheOtherTFTP::Request
+    [...]
+
+.. note::
+
+   Most, but not all, types can be exported automatically.  For
+   example, self-recursive types are currently not supported.
+   Generally, if you run into trouble exporting a type, you can always
+   fall back to declaring a corresponding Zeek version yourself in
+   your Zeek script. Consider the ``export`` mechanism as a
+   convenience feature that helps avoid writing a lot of boiler plate
+   code in common cases.
+
 .. _zeek_enum:
 
 Enum Types
-~~~~~~~~~~
+^^^^^^^^^^
 
-The Zeek plugin automatically makes Spicy :ref:`enum types
-<type_enum>` available on the Zeek-side if you declare them
-``public``. For example, assume the following Spicy declaration:
+When you export a Spicy ``enum`` type, the Spicy plugin creates a
+corresponding Zeek ``enum`` type. For example, assume the following
+Spicy declaration:
 
 .. spicy-code::
 
     module Test;
 
-    public type MyEnum = enum {
+    type MyEnum = enum {
         A = 83,
         B = 84,
         C = 85
     };
 
-The plugin will then create the equivalent of the following Zeek type
-for use in your scripts:
+Using ``export Test::MyEnum;``, the plugin will create the equivalent
+of the following Zeek type for use in your scripts:
 
 .. code-block:: zeek
 
@@ -593,13 +661,82 @@ for use in your scripts:
 
 (The odd naming is due to ID limitations on the Zeek side.)
 
-You can also see the type in the output of ``zeek -NN``::
+.. note::
 
-    [...]
-    Zeek::Spicy - Support for Spicy parsers
-        [Type] Test::MyEnum
-    [...]
+    For backward compatibility, the ``enum`` type comes with an
+    additional property: all *public* enum types are automatically
+    exported, even without adding any ``export`` to your EVT file.
+    This feature may go away at some point, and we suggest to not rely
+    on it on new code; always use ``export`` for `enum` types as well.
 
+.. _zeek_unit:
+
+Unit Types
+^^^^^^^^^^
+
+When you export a Spicy ``unit`` type, the Spicy plugin creates a
+corresponding Zeek ``record`` type. For example, assume the following
+Spicy declaration:
+
+.. spicy-code::
+
+    module Test;
+
+    type MyRecord = unit {
+        a: bytes &size=4;
+        b: uint16;
+
+        var c: bool;
+    };
+
+Using ``export Test::MyRecord;``, the plugin will then create the
+equivalent of the following Zeek type for use in your scripts:
+
+.. code-block:: zeek
+
+    module Test;
+
+    export {
+
+      type MyRecord: record {
+        a: string &optional;
+        b: count &optional;
+        c: bool;
+      };
+
+    }
+
+The individual fields map over just like event arguments do, following
+the :ref:`the table <zeek-event-arg-types>` above. For aggregate
+types, this works recursively: if, e.g., a field is itself of unit
+type *and that type has been exported as well*, the plugin will map it
+over accordingly to the corresponding ``record`` type. Note that such
+dependent types must be exported *first* in the EVT file for this to
+work. As a result, you cannot export self-recursive unit types.
+
+As you can see in the example, unit fields are always declared as
+optional on the Zeek-side, as they may not have been set during
+parsing. Unit variables are non-optional by default, unless declared
+as ``&optional`` in Spicy.
+
+.. _zeek_struct:
+
+Struct Types
+^^^^^^^^^^^^
+
+A Spicy ``struct`` type maps over to Zeek in the same way as ``unit``
+types do, treating each field like a unit variable. See :ref:`there
+<zeek_unit>` for more information.
+
+Tuple Types
+^^^^^^^^^^^
+
+A Spicy ``tuple`` type maps over to a Zeek ``record`` similar to how
+``unit`` types do, treating each tuple element like a unit variable.
+See :ref:`there <zeek_unit>` for more information.
+
+Exporting works only for ``tuple`` types that declare names for all
+their elements.
 
 Importing Spicy Modules
 -----------------------
@@ -649,31 +786,22 @@ This is an example bracketing code by Zeek version in an EVT file:
     @endif
 
 .. _zeek_compiling:
+.. _spicyz:
 
 Compiling Analyzers
 ====================
 
 Once you have the ``*.spicy`` and ``*.evt`` source files for your new
-analyzer, you have two options to compile them, either in advance, or
-just-in-time at startup.
-
-.. _spicyz:
-
-Ahead Of Time Compilation
--------------------------
-
-You can precompile analyzers into ``*.hlto`` object files containing
-their final executable code. To do that, pass the relevant ``*.spicy``
-and ``*.evt`` files to ``spicyz``, then have Zeek load the output. To
-repeat the :ref:`example <example_zeek_my_http>` from the *Getting
-Started* guide::
+analyzer, you need to precompile them into an ``*.hlto`` object file
+containing their final executable code, which Zeek will then use. To
+do that, pass the relevant ``*.spicy`` and ``*.evt`` files to
+``spicyz``, then have Zeek load the output. To repeat the
+:ref:`example <example_zeek_my_http>` from the *Getting Started*
+guide::
 
     # spicyz -o my-http-analyzer.hlto my-http.spicy my-http.evt
     # zeek -Cr request-line.pcap my-http-analyzer.hlto my-http.zeek
     Zeek saw from 127.0.0.1: GET /index.html 1.0
-
-While this approach requires an additional step every time
-something changes, starting up Zeek now executes quickly.
 
 Instead of providing the precompiled analyzer on the Zeek command
 line, you can also copy them into
@@ -689,23 +817,6 @@ subfolders.
 
 Run ``spicyz -h`` to see some additional options it provides, which
 are similar to :ref:`spicy-driver`.
-
-Just In Time Compilation
-------------------------
-
-To compile analyzers on the fly, you can pass your ``*.spicy`` and
-``*.evt`` files to Zeek just like any of its scripts, either on the
-command-line or through ``@load`` statements. The Spicy plugin hooks
-into Zeek's processing of input files and diverts them the right way
-into its compilation pipeline.
-
-This approach can be quite convenient, in particular during
-development of new analyzers as it makes it easy to iterate---just
-restart Zeek to pick up any changes. The disadvantage is that
-compiling Spicy parsers takes a noticeable amount of time, which
-you'll incur every time Zeek starts up; and it makes setting compiler
-options more difficult (see below). We generally recommend using
-ahead-of-time compilation when working with the Zeek plugin.
 
 .. _zeek_functions:
 
@@ -736,14 +847,13 @@ with your analyzer, add two pieces:
    with the double colons replaced with an underscore (e.g.,
    ``spicy::HTTP`` turns into ``enable "spicy_HTTP"``.
 
-2. You should call ``zeek::confirm_protocol()`` (see
-   :ref:`zeek_functions`) from a hook inside your grammar at a point
-   when the parser can be reasonably certain that it is processing the
-   expected protocol. Optionally, you may also call
-   ``zeek::reject_protocol()`` when you're sure the parser is *not*
-   parsing the right protocol (e.g., inside an :ref:`%error
-   <on_error>` hook). Doing so will let Zeek stop feeding it more
-   data.
+2. You should call :ref:`spicy::accept_input() <spicy_accept_input>`
+   from a hook inside your grammar at a point when the parser can be
+   reasonably certain that it is processing the expected protocol.
+   Optionally, you may also call :ref:`spicy::decline_input()
+   <spicy_decline_input>` when you're sure the parser is *not* parsing
+   the right protocol. However, the Zeek plugin will also trigger this
+   automatically whenever your parser aborts with an error.
 
 .. _zeek_configuration:
 
@@ -754,45 +864,12 @@ Options
 -------
 
 The Spicy plugin provides a set of script-level options to tune its
-behavior, similar to what the :ref:`spicy-driver` provides as
-command-line arguments. These all live in the ``Spicy::`` namespace:
+behavior. These all live in the ``Spicy::`` namespace:
 
 .. literalinclude:: /autogen/zeek/__preload__.zeek
     :language: zeek
     :start-after: doc-options-start
     :end-before:  doc-options-end
-
-Note, however, that most of those options affect code generation. It's
-usually easier to set them through ``spicyz`` when precompiling an
-analyzer. If you are using Zeek itself to compile an analyzer
-just-in-time, keep in mind that any code generation options need to be
-in effect at the time the Spicy plugin kicks of the compilation
-process. A ``redef`` from another script should work fine, as scripts
-are fully processed before compilation starts. However, changing
-values from the command-line (via Zeek's ``var=value``) won't be
-processed in time due to intricacies of Zeek's timing. To make it
-easier to change an option from the command-line, the Spicy plugin
-also supports an environment variable ``ZEEK_SPICY_PLUGIN_OPTIONS`` that
-accepts a subset of ``spicy-driver`` command-line options in the form
-of a string. For example, to JIT a debug version of all analyzers,
-set ``ZEEK_SPICY_PLUGIN_OPTIONS=-d``. The full set of options is this:
-
-.. code-block:: text
-
-    Supported Zeek-side Spicy options:
-      -A             When executing compiled code, abort() instead of throwing HILTI exceptions.
-      -B             Include backtraces when reporting unhandled exceptions.
-      -C             Dump all generated code to disk for debugging.
-      -d             Include debug instrumentation into generated code.
-      -D <streams>   Activate compile-time debugging output for given debug streams (comma-separated).
-      -O             Build optimized release version of generated code.
-      -o <out.hlto>  Save precompiled code into file and exit.
-      -R             Report a break-down of compiler's execution time.
-      -V             Don't validate ASTs (for debugging only).
-      -X <addl>      Implies -d and adds selected additional instrumentation (comma-separated).
-
-To get that usage message, set ``ZEEK_SPICY_PLUGIN_OPTIONS=-h`` when
-running Zeek.
 
 Functions
 ---------
@@ -818,9 +895,10 @@ possible, use a debug version of Zeek (i.e., build Zeek with
 
 If your analyzer doesn't seem to be active at all, first make sure
 Zeek actually knows about it: It should show up in the output of
-``zeek -NN Zeek::Spicy``. If it doesn't, you might not being loading
-the right ``*.spicy`` or ``*.evt`` files. Also check your ``*.evt`` if
-it defines your analyzer correctly.
+``zeek -NN Zeek::Spicy``. If it doesn't, you might not have been using
+the right ``*.spicy`` or ``*.evt`` files when precompiling, or Zeek is
+not loading the ``*.hlto`` file. Also check your ``*.evt`` if it
+defines your analyzer correctly.
 
 If Zeek knows about your analyzer and just doesn't seem to activate
 it, double-check that ports or MIME types are correct in the ``*.evt``
