@@ -1,3 +1,22 @@
+1.7.0-dev.110 | 2023-02-03 15:57:39 +0100
+
+  * https://github.com/zeek/spicy-plugin/issues/134: Search
+    `HILTI_CXX_INCLUDE_DIRS` paths before default include paths.
+    (Robin Sommer, Corelight)
+
+  * Support Zeek-style documentation strings in Spicy source code. (Robin Sommer, Corelight)
+
+    This adds support for extracting and retaining Zeek-style
+    documentation strings (`##`, `##!`) inside Spicy source code to any
+    top-level AST nodes where it's appropriate: if they are prefixed with
+    a block of such comments, that information is retained along with the
+    node for later access.
+
+    The code printer (`-p`) learns to emit doc strings coming with the
+    nodes it's printing out.
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.105 | 2023-02-01 11:17:25 +0100
 
   * Documentation updates. (Robin Sommer, Corelight)
