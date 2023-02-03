@@ -122,6 +122,13 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
         out << ')';
     }
 
+    void printDoc(const std::optional<DocString>& doc) {
+        if ( doc && *doc ) {
+            out.emptyLine();
+            doc->render(out);
+        }
+    }
+
     auto linkage(declaration::Linkage l) {
         switch ( l ) {
             case declaration::Linkage::Init: return "init ";
@@ -181,6 +188,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const Module& n) {
+        printDoc(n.documentation());
         out.beginLine();
         out << "module " << n.id() << " {" << out.newline();
         out.endLine();
@@ -333,6 +341,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     ////// Declarations
 
     void operator()(const declaration::Constant& n) {
+        printDoc(n.documentation());
         out.beginLine();
         out << linkage(n.linkage()) << "const ";
         out << n.type();
@@ -404,14 +413,18 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const declaration::Function& n) {
-        out.beginLine();
-
         const auto& func = n.function();
 
-        if ( ! func.body() )
+        if ( ! func.body() ) {
+            printDoc(n.documentation());
+            out.beginLine();
             out << "declare ";
-        else
+        }
+        else {
             out.emptyLine();
+            printDoc(n.documentation());
+            out.beginLine();
+        }
 
         out << linkage(n.linkage());
 
@@ -432,6 +445,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const declaration::Type& n) {
+        printDoc(n.documentation());
         out.beginLine();
         for ( const auto& comment : n.meta().comments() )
             out << "# " << comment << '\n';
@@ -460,6 +474,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const declaration::GlobalVariable& n) {
+        printDoc(n.documentation());
         out.beginLine();
         out << linkage(n.linkage()) << "global ";
         out << n.type();

@@ -89,6 +89,20 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 
 static int _field_width = 0;
 
+// We keep a stack of doc strings here that's maintained during parsing. There
+// would actually be a much nicer way of doing this through Bison's mid-action
+// rules, but unfortunately those have a bug with Bison < 3.1 that prevents
+// passing results back from a mid-action rule; see
+// https://stackoverflow.com/questions/44811550/bison-c-mid-rule-value-lost-with-variants.
+//
+// Bison 3.1 fixes this and introduces a new, nicer typing syntax for
+// mid-action rules as well; see
+// https://www.gnu.org/software/bison/manual/html_node/Typed-Mid_002dRule-Actions.html#Typed-Mid_002dRule-Actions
+// Unfortunately, we cannot rely on having 3.1 yet, because some of our
+// supported platforms do not provide it. Once we can, we should get rid of
+// this stack and move to that new syntax instead.
+static std::vector<hilti::DocString> _docs;
+
 %}
 
 %token <std::string> IDENT          "identifier"
@@ -244,7 +258,6 @@ static int _field_width = 0;
 %type <std::vector<hilti::Expression>>               opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
 %type <std::optional<hilti::Statement>>              opt_else_block
 %type <std::optional<hilti::Expression>>             opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr
-%type <hilti::Function>                              function_with_body function_without_body
 %type <hilti::type::function::Parameter>             func_param
 %type <hilti::declaration::parameter::Kind>          opt_func_param_kind
 %type <hilti::type::function::Result>                func_result opt_func_result
@@ -282,6 +295,7 @@ static int _field_width = 0;
 %type <std::vector<spicy::type::unit::Item>>                unit_items opt_unit_items
 %type <spicy::type::unit::item::switch_::Case>              unit_switch_case
 %type <std::vector<spicy::type::unit::item::switch_::Case>> unit_switch_cases
+%type <std::pair<hilti::Type, std::optional<hilti::Expression>>> global_decl_type_and_init
 
 %type <int64_t>  const_sint
 %type <uint64_t> const_uint
@@ -298,9 +312,11 @@ start         : START_MODULE module
 
 start_expr    : expr                             { driver->setDestinationExpression(std::move($1)); }
 
-module        : MODULE local_id ';'
-                global_scope_items               { auto m = hilti::Module($2, std::move($4.first), std::move($4.second), __loc__);
-                                                   driver->setDestinationModule(std::move(m));
+module        : MODULE local_id ';'              { _docs.emplace_back(driver->docGetAndClear()); }
+                global_scope_items               { auto m = hilti::Module($2, std::move($5.first), std::move($5.second), __loc__);
+                                                   m.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                   driver->setDestinationModule(m);
                                                  }
               ;
 
@@ -342,19 +358,28 @@ global_scope_decl
               | property_decl                    { $$ = std::move($1); }
               | hook_decl                        { $$ = std::move($1); }
 
-type_decl     : opt_linkage TYPE scoped_id '=' type opt_attributes ';' {
-                                                   if ( auto x = $5.isA<type::Unit>(); x && $6 && *$6 ) {
-                                                       $5.as<type::Unit>().setAttributes(*$6);
-                                                       $6 = {}; // don't associate with declaration
+type_decl     : opt_linkage TYPE scoped_id '='   { _docs.emplace_back(driver->docGetAndClear()); }
+                type opt_attributes ';'          { if ( auto x = $6.isA<type::Unit>(); x && $7 && *$7 ) {
+                                                       $6.as<type::Unit>().setAttributes(*$7);
+                                                       $7 = {}; // don't associate with declaration
                                                        }
 
-                                                   $$ = hilti::declaration::Type(std::move($3), std::move($5), std::move($6), std::move($1), __loc__);
+                                                   $$ = hilti::declaration::Type(std::move($3), std::move($6), std::move($7), std::move($1), __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
                                                  }
 
-constant_decl : opt_linkage CONST scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::Constant($3, $5, $1, __loc__); }
-              | opt_linkage CONST scoped_id ':' type '=' expr ';'
-                                                 { $$ = hilti::declaration::Constant($3, $5, $7, $1, __loc__); }
+constant_decl : opt_linkage CONST scoped_id      { _docs.emplace_back(driver->docGetAndClear()); }
+                '=' expr ';'                     { $$ = hilti::declaration::Constant($3, $6, $1, __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
+
+              | opt_linkage CONST scoped_id      { _docs.emplace_back(driver->docGetAndClear()); }
+                ':' type '=' expr ';'            { $$ = hilti::declaration::Constant($3, $6, $8, $1, __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
               ;
 
 local_decl    : LOCAL scoped_id '=' expr ';'     { $$ = hilti::declaration::LocalVariable($2, $4, false, __loc__); }
@@ -370,18 +395,42 @@ local_init_decl
                                                  { $$ = hilti::declaration::LocalVariable($2, $4, false, __loc__); }
               ;
 
-global_decl   : opt_linkage GLOBAL scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($3, $5, $1, __loc__); }
-              | opt_linkage GLOBAL scoped_id ':' type ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($3, $5, $1, __loc__); }
-              | opt_linkage GLOBAL scoped_id ':' type '=' expr ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($3, $5, $7, $1, __loc__); }
+global_decl   : opt_linkage GLOBAL scoped_id     { _docs.emplace_back(driver->docGetAndClear()); }
+                '=' expr ';'                     { $$ = hilti::declaration::GlobalVariable($3, $6, $1, __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
+
+              | opt_linkage GLOBAL scoped_id     { _docs.emplace_back(driver->docGetAndClear()); }
+                ':' global_decl_type_and_init    { $$ = hilti::declaration::GlobalVariable($3, $6.first, $6.second, $1, __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
               ;
 
-function_decl : opt_linkage function_with_body
-                                                 { $$ = hilti::declaration::Function($2, $1, __loc__); }
-              | opt_linkage function_without_body ';'
-                                                 { $$ = hilti::declaration::Function($2, $1, __loc__); }
+global_decl_type_and_init
+              : type ';'                         { $$ = std::make_pair($1, std::nullopt); }
+              | type '=' expr ';'                { $$ = std::make_pair($1, $3); }
+
+function_decl : opt_linkage FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes
+                                                 { _docs.emplace_back(driver->docGetAndClear()); }
+                ';'                              {
+                                                    auto ftype = hilti::type::Function($9, $7, $3, __loc__);
+                                                    auto func = hilti::Function($5, std::move(ftype), {}, $4, $10, __loc__);
+                                                    $$ = hilti::declaration::Function(std::move(func), $1, __loc__);
+                                                    $$.setDocumentation(_docs.back());
+                                                    _docs.pop_back();
+                                                 }
+
+              | opt_linkage FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes
+                                                 { _docs.emplace_back(driver->docGetAndClear()); }
+                braced_block                     {
+                                                    auto ftype = hilti::type::Function($9, $7, $3, __loc__);
+                                                    auto func = hilti::Function($5, std::move(ftype), $12, $4, $10, __loc__);
+                                                    $$ = hilti::declaration::Function(std::move(func), $1, __loc__);
+                                                    $$.setDocumentation(_docs.back());
+                                                    _docs.pop_back();
+                                                 }
               ;
 
 import_decl   : IMPORT local_id ';'              { $$ = hilti::declaration::ImportedModule(std::move($2), std::string(".spicy"), __loc__); }
@@ -405,22 +454,7 @@ opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Link
               | PRIVATE                          { $$ = hilti::declaration::Linkage::Private; }
               | /* empty */                      { $$ = hilti::declaration::Linkage::Private; }
 
-/* Functions */
-
-function_with_body
-              : FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes braced_block
-                                                 {
-                                                    auto ftype = hilti::type::Function($8, $6, $2, __loc__);
-                                                    $$ = hilti::Function($4, std::move(ftype), $10, $3, $9, __loc__);
-                                                 }
-
-function_without_body
-              : FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes
-                                                 {
-                                                    auto ftype = hilti::type::Function($8, $6, $2, __loc__);
-                                                    $$ = hilti::Function($4, std::move(ftype), {}, $3, $9, __loc__);
-                                                 }
-
+/* Function helpers */
 
 opt_func_flavor : /* empty */                    { $$ = hilti::type::function::Flavor::Standard; }
 

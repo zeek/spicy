@@ -38,6 +38,7 @@ set(SOURCES
     src/ast/builder/builder.cc
     src/ast/builder/type.cc
     src/ast/declarations/imported-module.cc
+    src/ast/doc-string.cc
     src/ast/expression.cc
     src/ast/expressions
     src/ast/expressions/id.cc

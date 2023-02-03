@@ -23,6 +23,7 @@ using Attribute = hilti::Attribute;
 using AttributeSet = hilti::AttributeSet;
 using Ctor = hilti::Ctor;
 using Declaration = hilti::Declaration;
+using DocString = hilti::DocString;
 using Expression = hilti::Expression;
 using Function = hilti::Function;
 using ID = hilti::ID;
