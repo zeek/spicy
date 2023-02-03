@@ -297,8 +297,7 @@ hilti::Result<Nothing> JIT::_compile() {
         if ( auto path = getenv("HILTI_CXX_INCLUDE_DIRS") ) {
             for ( auto&& dir : hilti::rt::split(path, ":") ) {
                 if ( ! dir.empty() ) {
-                    args.emplace_back("-I");
-                    args.emplace_back(dir);
+                    args.insert(args.begin(), {"-I", std::string(dir)});
                 }
             }
         }
