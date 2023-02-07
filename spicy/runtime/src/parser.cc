@@ -7,8 +7,8 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
 
-#include <spicy/rt/global-state.h>
 #include <spicy/rt/debug.h>
+#include <spicy/rt/global-state.h>
 #include <spicy/rt/parser.h>
 
 using namespace spicy::rt;
@@ -82,7 +82,7 @@ void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, cons
     auto min = std::numeric_limits<uint64_t>::max();
 
     if ( ! cur.isOpenEnded() )
-        min = cur.unsafeEnd().offset() - cur.unsafeBegin().offset();
+        min = cur.end().offset() - cur.begin().offset();
 
     waitForInputOrEod(data, cur, min, std::move(filters));
 }

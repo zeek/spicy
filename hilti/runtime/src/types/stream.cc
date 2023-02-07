@@ -217,12 +217,14 @@ UnsafeConstIterator View::find(Byte b, UnsafeConstIterator n) const {
     if ( ! n )
         n = unsafeBegin();
 
-    for ( auto i = n; i != unsafeEnd(); ++i ) {
+    auto end = unsafeEnd();
+
+    for ( auto i = n; i != end; ++i ) {
         if ( *i == b )
             return i;
     }
 
-    return unsafeEnd();
+    return end;
 }
 
 std::tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstIterator n) const {
@@ -234,8 +236,11 @@ std::tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstItera
 
     auto first = *v.begin();
 
+    auto end = unsafeEnd();
+    auto vend = v.unsafeEnd();
+
     for ( auto i = n; true; ++i ) {
-        if ( i == unsafeEnd() )
+        if ( i == end )
             return std::make_tuple(false, i);
 
         if ( *i != first )
@@ -245,13 +250,13 @@ std::tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstItera
         auto y = v.unsafeBegin();
 
         for ( ;; ) {
-            if ( x == unsafeEnd() )
+            if ( x == end )
                 return std::make_tuple(false, i);
 
             if ( *x++ != *y++ )
                 break;
 
-            if ( y == v.unsafeEnd() )
+            if ( y == vend )
                 return std::make_tuple(true, i);
         }
     }
@@ -340,8 +345,8 @@ std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, U
 
 bool View::startsWith(const Bytes& b) const {
     _ensureValid();
-    auto s1 = unsafeBegin();
-    auto e1 = unsafeEnd();
+    auto s1 = begin();
+    auto e1 = end();
     auto s2 = b.begin();
     auto e2 = b.end();
 
@@ -358,14 +363,14 @@ bool View::startsWith(const Bytes& b) const {
 }
 
 void View::copyRaw(Byte* dst) const {
-    for ( auto i = unsafeBegin(); i != unsafeEnd(); ++i )
+    for ( auto i = begin(); i != end(); ++i )
         *dst++ = *i;
 }
 
 std::optional<View::Block> View::firstBlock() const {
     _ensureValid();
 
-    if ( unsafeBegin() == unsafeEnd() || ! unsafeBegin().chunk() )
+    if ( begin() == end() || ! unsafeBegin().chunk() )
         return {};
 
     const auto* chain = _begin.chain();
@@ -547,10 +552,10 @@ bool stream::View::operator==(const Bytes& other) const {
     if ( size() != other.size() )
         return false;
 
-    auto i = unsafeBegin();
+    auto i = begin();
     auto j = other.begin();
 
-    while ( i != unsafeEnd() ) {
+    while ( i != end() ) {
         if ( *i++ != *j++ )
             return false;
     }
