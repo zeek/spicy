@@ -928,18 +928,18 @@ inline std::ostream& operator<<(std::ostream& out, const UnsafeConstIterator& x)
 }
 
 template<int N>
-inline UnsafeConstIterator _extract(Byte* dst, const UnsafeConstIterator& i) {
+inline SafeConstIterator _extract(Byte* dst, const SafeConstIterator& i) {
     *dst = *i;
     return _extract<N - 1>(dst + 1, i + 1);
 }
 
 template<>
-inline UnsafeConstIterator _extract<0>(Byte* /* dst */, const UnsafeConstIterator& i) {
+inline SafeConstIterator _extract<0>(Byte* /* dst */, const SafeConstIterator& i) {
     return i;
 }
 
 template<int N>
-inline UnsafeConstIterator extract(Byte* dst, const UnsafeConstIterator& i, const UnsafeConstIterator& end) {
+inline SafeConstIterator extract(Byte* dst, const SafeConstIterator& i, const SafeConstIterator& end) {
     if ( end.offset() - i.offset() < N )
         throw WouldBlock("end of stream view");
 
@@ -1147,8 +1147,8 @@ public:
      */
     std::tuple<bool, SafeConstIterator> find(const Bytes& v, Direction d = Direction::Forward) const {
         _ensureValid();
-        auto i = (d == Direction::Forward ? unsafeBegin() : unsafeEnd());
-        auto x = find(v, std::move(i), d);
+        auto i = (d == Direction::Forward ? begin() : end());
+        auto x = find(v, i, d);
         return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
     }
 
@@ -1289,7 +1289,7 @@ public:
     template<int N>
     View extract(Byte (&dst)[N]) const {
         _ensureValid();
-        return View(SafeConstIterator(detail::extract<N>(dst, unsafeBegin(), unsafeEnd())), _end);
+        return View(SafeConstIterator(detail::extract<N>(dst, begin(), end())), _end);
     }
 
     /**
