@@ -1,0 +1,56 @@
+# @TEST-EXEC: hiltic -P -o Test.h %INPUT
+# @TEST-EXEC: hiltic -j %INPUT driver.cc >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Confirms exception behavior when aborting a barrier.
+
+module Test {
+
+import hilti;
+
+global b = barrier(2);
+
+function extern void x() {
+    hilti::print("in x: %s" % b);
+    b.arrive_and_wait(); # blocks, and then throws
+    assert False; # won't arrive here
+}
+
+function extern void y() {
+    hilti::print("in y: %s" % b);
+    b.abort();
+    b.arrive_and_wait(); # throws
+    assert False; # won't arrive here
+}
+
+}
+
+@TEST-START-FILE driver.cc
+
+#include "Test.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    std::cout << "-- starting rx" << std::endl;
+    auto rx = hlt::Test::x();
+    assert(rx);
+
+    try {
+        std::cout << "-- starting ry" << std::endl;
+        auto ry = hlt::Test::y();
+        assert(false);
+    } catch ( hilti::rt::BarrierAborted& e ) {
+        std::cout << "-- abort in ry" << std::endl;
+    }
+
+    std::cout << "-- resuming rx" << std::endl;
+
+    try {
+        rx.resume();
+    } catch ( hilti::rt::BarrierAborted& e ) {
+        std::cout << "-- abort in rx" << std::endl;
+    }
+
+    return 0;
+}
+
+@TEST-END-FILE

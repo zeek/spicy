@@ -44,6 +44,7 @@ TEST_CASE("execute-void") {
 
 TEST_CASE("reuse-from-cache") {
     hilti::rt::init();
+    hilti::rt::detail::Fiber::reset(); // reset cache and counters
 
     int x = 0;
 

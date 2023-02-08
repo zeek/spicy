@@ -35,6 +35,7 @@ set(SOURCES
     src/safe-math.cc
     src/type-info.cc
     src/types/address.cc
+    src/types/barrier.cc
     src/types/bytes.cc
     src/types/integer.cc
     src/types/port.cc

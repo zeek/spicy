@@ -15,6 +15,7 @@ HILTI_EXCEPTION_IMPL(RecoverableFailure)
 
 HILTI_EXCEPTION_IMPL(AssertionFailure)
 HILTI_EXCEPTION_IMPL(AttributeNotSet)
+HILTI_EXCEPTION_IMPL(BarrierAborted)
 HILTI_EXCEPTION_IMPL(DivisionByZero)
 HILTI_EXCEPTION_IMPL(EnvironmentError)
 HILTI_EXCEPTION_IMPL(ExpiredReference)

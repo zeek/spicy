@@ -455,15 +455,16 @@ void detail::Fiber::run() {
 
     switch ( _state ) {
         case State::Yielded:
+        case State::YieldedAtBarrier:
         case State::Idle: return;
         default: internalError(fmt("fiber: unexpected state (%d)", static_cast<int>(_state)));
     }
 }
 
-void detail::Fiber::yield() {
+void detail::Fiber::yield(bool at_barrier) {
     assert(_state == State::Running);
 
-    _state = State::Yielded;
+    _state = (at_barrier ? State::YieldedAtBarrier : State::Yielded);
     _yield("yield");
 
     if ( _state == State::Aborting )
@@ -471,12 +472,12 @@ void detail::Fiber::yield() {
 }
 
 void detail::Fiber::resume() {
-    assert(_state == State::Yielded);
+    assert(_state == State::Yielded || _state == State::YieldedAtBarrier);
     return run();
 }
 
 void detail::Fiber::abort() {
-    assert(_state == State::Yielded);
+    assert(_state == State::Yielded || _state == State::YieldedAtBarrier);
     _state = State::Aborting;
 
     if ( ! context::detail::get(true) )
@@ -503,7 +504,7 @@ void detail::Fiber::destroy(std::unique_ptr<detail::Fiber> f) {
     if ( f->isMain() )
         return;
 
-    if ( f->_state == State::Yielded )
+    if ( f->_state == State::Yielded || f->_state == State::YieldedAtBarrier )
         f->abort();
 
     auto* context = context::detail::get(true);
@@ -600,13 +601,13 @@ void Resumable::yielded() {
     }
 }
 
-void detail::yield() {
+void detail::yield(bool at_barrier) {
     auto r = context::detail::get()->resumable;
 
     if ( ! r )
         throw RuntimeError("'yield' in non-suspendable context");
 
-    r->yield();
+    r->yield(at_barrier);
     context::detail::get()->resumable = r;
 }
 
