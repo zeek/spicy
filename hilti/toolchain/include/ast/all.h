@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/ast/ctors/all.h>
+#include <hilti/ast/ctors/barrier.h>
 #include <hilti/ast/declarations/all.h>
 #include <hilti/ast/expressions/all.h>
 #include <hilti/ast/operators/all.h>

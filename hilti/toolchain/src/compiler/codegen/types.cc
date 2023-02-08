@@ -363,6 +363,11 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
     result_t operator()(const type::Any& n) { return CxxTypes{.base_type = "::hilti::rt::any"}; }
 
+    result_t operator()(const type::Barrier& n) {
+        auto ctor = fmt("::hilti::rt::Barrier(%d)", n.parties());
+        return CxxTypes{.base_type = "::hilti::rt::Barrier", .ctor = ctor, .default_ = ctor};
+    }
+
     result_t operator()(const type::Bool& n) { return CxxTypes{.base_type = "::hilti::rt::Bool"}; }
 
     result_t operator()(const type::Bytes& n) { return CxxTypes{.base_type = "::hilti::rt::Bytes"}; }

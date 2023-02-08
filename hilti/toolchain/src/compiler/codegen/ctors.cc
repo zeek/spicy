@@ -23,6 +23,12 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const ctor::Address& n) { return fmt("::hilti::rt::Address(\"%s\")", n.value()); }
 
+    result_t operator()(const ctor::Barrier& n) {
+        auto btype = n.type().as<type::Barrier>();
+        assert(! btype.isWildcard());
+        return fmt("::hilti::rt::Barrier(%u)", btype.parties());
+    }
+
     result_t operator()(const ctor::Bool& n) { return fmt("::hilti::rt::Bool(%s)", n.value() ? "true" : "false"); }
 
     result_t operator()(const ctor::Bytes& n) { return fmt("\"%s\"_b", util::escapeBytesForCxx(n.value())); }

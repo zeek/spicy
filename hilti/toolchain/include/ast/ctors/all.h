@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/ast/ctors/address.h>
+#include <hilti/ast/ctors/barrier.h>
 #include <hilti/ast/ctors/bool.h>
 #include <hilti/ast/ctors/bytes.h>
 #include <hilti/ast/ctors/coerced.h>

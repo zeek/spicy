@@ -37,6 +37,13 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
     const Type& dst;
     bitmask<CoercionStyle> style;
 
+    result_t operator()(const ctor::Barrier& c) {
+        if ( auto t = dst.tryAs<type::Barrier>(); t && c.type().isWildcard() )
+            return ctor::Barrier(t->parties(), c.meta());
+
+        return {};
+    }
+
     result_t operator()(const ctor::Enum& c) {
         if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
             return ctor::Bool(c.value().id() != ID("Undef"), c.meta());

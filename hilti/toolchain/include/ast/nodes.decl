@@ -24,6 +24,7 @@ hilti::type::enum_::Label : isNode
 hilti::type::tuple::Element : isNode
 
 hilti::ctor::Address : isCtor
+hilti::ctor::Barrier : isCtor
 hilti::ctor::Bool : isCtor
 hilti::ctor::Bytes : isCtor
 hilti::ctor::Coerced : isCtor
@@ -113,6 +114,7 @@ hilti::statement::Yield : isStatement
 hilti::type::Address : isType
 hilti::type::Any : isType
 hilti::type::Auto : isType
+hilti::type::Barrier : isType
 hilti::type::Bool : isType
 hilti::type::Bytes : isType
 hilti::type::DocOnly : isType

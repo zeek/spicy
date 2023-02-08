@@ -33,8 +33,8 @@ namespace hilti { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 113
-%expect-rr 207
+%expect 114
+%expect-rr 209
 
 %{
 
@@ -97,6 +97,7 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
 %token ARROW "->"
 %token AUTO "auto"
 %token AT "at"
+%token BARRIER "barrier"
 %token BEGIN_ "begin"
 %token BOOL "bool"
 %token BREAK "break"
@@ -585,9 +586,11 @@ base_type_no_attrs
               | MAP type_param_begin '*' type_param_end                  { $$ = hilti::type::Map(hilti::type::Wildcard(), __loc__); }
               | MAP type_param_begin type ',' type type_param_end        { $$ = hilti::type::Map(std::move($3), std::move($5), __loc__); }
 
+
               | EXCEPTION                        { $$ = hilti::type::Exception(__loc__); }
               | EXCEPTION ':' type               { $$ = hilti::type::Exception(std::move($3), __loc__); }
 
+              | BARRIER  '(' CUINTEGER ')'       { $$ = hilti::type::Barrier($3, __loc__); }
               | LIBRARY_TYPE '(' CSTRING ')'     { $$ = hilti::type::Library(std::move($3), __loc__); }
 
               | tuple_type                       { $$ = std::move($1); }
@@ -837,6 +840,8 @@ ctor_expr     : INTERVAL '(' expr ')'            { $$ = hilti::builder::namedCto
               | UINT32 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint32", { std::move($3) }, __loc__); }
               | UINT64 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint64", { std::move($3) }, __loc__); }
               | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::namedCtor("port", {std::move($3), std::move($5)}, __loc__); }
+              | BARRIER '(' expr ')'             { $$ = hilti::builder::namedCtor("barrier", { std::move($3) }, __loc__); }
+              | BARRIER '(' ')'                  { $$ = hilti::expression::Ctor(hilti::ctor::Barrier(__loc__), __loc__); }
               ;
 
 tuple         : '(' opt_tuple_elems1 ')'         { $$ = hilti::ctor::Tuple(std::move($2), __loc__); }

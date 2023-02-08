@@ -11,6 +11,8 @@
 #include <hilti/compiler/plugin.h>
 #include <hilti/compiler/printer.h>
 
+#include "ast/types/barrier.h"
+
 using namespace hilti;
 using util::fmt;
 
@@ -229,6 +231,13 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     ////// Ctors
 
     void operator()(const ctor::Address& n) { out << n.value(); }
+
+    void operator()(const ctor::Barrier& n) {
+        if ( n.type().isWildcard() )
+            out << "barrier()" << out.newline();
+        else
+            out << "barrier(\"" << n.type().as<type::Barrier>().parties() << "\")";
+    }
 
     void operator()(const ctor::Bool& n) { out << (n.value() ? "True" : "False"); }
 
@@ -794,6 +803,13 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
     void operator()(const type::Address& n) { out << const_(n) << "addr"; }
 
     void operator()(const type::Auto& n) { out << const_(n) << "auto"; }
+
+    void operator()(const type::Barrier& n) {
+        if ( n.isWildcard() )
+            out << const_(n) << "barrier()";
+        else
+            out << const_(n) << "barrier<" << n.parties() << '>';
+    }
 
     void operator()(const type::Bool& n) { out << const_(n) << "bool"; }
 
