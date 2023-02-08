@@ -133,6 +133,7 @@ add_executable(
     src/tests/main.cc
     src/tests/address.cc
     src/tests/backtrace.cc
+    src/tests/barrier.cc
     src/tests/bytes.cc
     src/tests/context.cc
     src/tests/debug-logger.cc
