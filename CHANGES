@@ -1,3 +1,7 @@
+1.7.0-dev.112 | 2023-02-09 11:03:09 +0100
+
+  * Make `printParserState` cheaper to call if debug logging is disabled. (Benjamin Bannier, Corelight)
+
 1.7.0-dev.110 | 2023-02-03 15:57:39 +0100
 
   * https://github.com/zeek/spicy-plugin/issues/134: Search

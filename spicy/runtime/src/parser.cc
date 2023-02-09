@@ -7,8 +7,8 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
 
-#include <spicy/rt/global-state.h>
 #include <spicy/rt/debug.h>
+#include <spicy/rt/global-state.h>
 #include <spicy/rt/parser.h>
 
 using namespace spicy::rt;
@@ -47,34 +47,37 @@ void detail::printParserState(const std::string& unit_id, const hilti::rt::Value
                               const hilti::rt::stream::View& cur, int64_t lahead,
                               const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
                               bool trim, const std::optional<hilti::rt::RecoverableFailure>& error) {
-    auto str = [&](const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end) {
-        auto i = begin + 10;
-        if ( i >= end )
-            return std::make_pair(hilti::rt::stream::View(begin, end), "");
+    auto msg = [&]() {
+        auto str = [&](const hilti::rt::stream::SafeConstIterator& begin,
+                       const hilti::rt::stream::SafeConstIterator& end) {
+            auto i = begin + 10;
+            if ( i >= end )
+                return std::make_pair(hilti::rt::stream::View(begin, end), "");
 
-        return std::make_pair(hilti::rt::stream::View(begin, i), "...");
+            return std::make_pair(hilti::rt::stream::View(begin, i), "...");
+        };
+
+        auto na = hilti::rt::Stream("n/a");
+        hilti::rt::stream::View lah_data = na.view();
+        std::string lah_str = "n/a";
+        std::string lah_dots;
+
+        auto [input_data, input_dots] = str(cur.begin(), cur.end());
+
+        if ( lahead && ! cur.begin().isEnd() ) {
+            std::tie(lah_data, lah_dots) = str(cur.begin(), lahead_end);
+            lah_str = hilti::rt::fmt("%" PRId32, lahead);
+        }
+
+        return hilti::rt::fmt("- state: type=%s input=\"%s%s\" stream=%p offsets=%" PRId64 "/%" PRId64 "/%" PRId64
+                              " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64 " lah_token=\"%s%s\" recovering=%s",
+                              unit_id, input_data, input_dots, data.get(), data->begin().offset(), cur.begin().offset(),
+                              data->end().offset(), data->numberOfChunks(), (data->isFrozen() ? "yes" : "no"),
+                              literal_mode, (trim ? "yes" : "no"), lah_str, lah_data, lah_dots,
+                              (error.has_value() ? "yes" : "no"));
     };
 
-    auto na = hilti::rt::Stream("n/a");
-    hilti::rt::stream::View lah_data = na.view();
-    std::string lah_str = "n/a";
-    std::string lah_dots;
-
-    auto [input_data, input_dots] = str(cur.begin(), cur.end());
-
-    if ( lahead && ! cur.begin().isEnd() ) {
-        std::tie(lah_data, lah_dots) = str(cur.begin(), lahead_end);
-        lah_str = hilti::rt::fmt("%" PRId32, lahead);
-    }
-
-    auto msg =
-        hilti::rt::fmt("- state: type=%s input=\"%s%s\" stream=%p offsets=%" PRId64 "/%" PRId64 "/%" PRId64
-                       " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64 " lah_token=\"%s%s\" recovering=%s",
-                       unit_id, input_data, input_dots, data.get(), data->begin().offset(), cur.begin().offset(),
-                       data->end().offset(), data->numberOfChunks(), (data->isFrozen() ? "yes" : "no"), literal_mode,
-                       (trim ? "yes" : "no"), lah_str, lah_data, lah_dots, (error.has_value() ? "yes" : "no"));
-
-    SPICY_RT_DEBUG_VERBOSE(msg);
+    SPICY_RT_DEBUG_VERBOSE(msg());
 }
 
 void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
