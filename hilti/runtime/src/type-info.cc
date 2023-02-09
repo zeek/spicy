@@ -8,6 +8,7 @@ using namespace hilti::rt;
 
 TypeInfo type_info::address{std::nullopt, "address", new type_info::Address()};
 TypeInfo type_info::any{std::nullopt, "any", new type_info::Any()};
+TypeInfo type_info::barrier{std::nullopt, "barrier", new type_info::Barrier()};
 TypeInfo type_info::bool_{std::nullopt, "bool", new type_info::Bool()};
 TypeInfo type_info::bytes{std::nullopt, "bytes", new type_info::Bytes()};
 TypeInfo type_info::bytes_iterator{std::nullopt, "iterator<bytes>", new type_info::BytesIterator()};

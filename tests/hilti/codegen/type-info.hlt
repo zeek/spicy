@@ -26,6 +26,7 @@ type A_Union = union {
 public type TestTypes = struct {
     addr ad;
     any an;
+    barrier(42) ba;
     bool bo;
     bytes by;
     iterator<bytes> bi;
@@ -101,6 +102,7 @@ public function tuple<strong_ref<TestTypes>, strong_ref<TestTypes>, TypeInfo> ma
     local TestTypes x = [
         $ad = 1.2.3.4,
         $an = "any",
+        $ba = barrier(),
         $bo = True,
         $by = b"bytes",
         $bi = begin(Bytes),
@@ -209,7 +211,7 @@ void __check_eq(const T& x, const U& y, std::string loc) {
 // "TypesInit".
 struct VisitorTypesInit {
     std::set<TypeInfo::Tag> seen;
-    static inline const int ExpectedVisitorsSeen = 40; // all (43) minus void and function and MatchState (which comes as struct)
+    static inline const int ExpectedVisitorsSeen = 41; // all (44) minus void and function and MatchState (which comes as struct)
 
     // Helper for checking content of a struct of type "S". All our instances
     // of "S" have the same values.
@@ -244,6 +246,11 @@ struct VisitorTypesInit {
             }
             case TypeInfo::Any: {
                 SEEN();
+                break;
+            }
+            case TypeInfo::Barrier: {
+                SEEN();
+                CHECK_EQ(std::string(type.barrier->get(v)), "<barrier 0/42>");
                 break;
             }
             case TypeInfo::Bool: {

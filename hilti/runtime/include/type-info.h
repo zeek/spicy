@@ -13,6 +13,7 @@
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/types/address.h>
+#include <hilti/rt/types/barrier.h>
 #include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/map.h>
@@ -377,6 +378,9 @@ class Address : public detail::AtomicType<hilti::rt::Address> {};
 
 /** Type information for type ``any`. */
 class Any : public detail::ValueLessType {};
+
+/** Type information for type ``barrier`. */
+class Barrier : public detail::AtomicType<hilti::rt::Barrier> {};
 
 /** Type information for type ``bool`. */
 class Bool : public detail::AtomicType<bool> {};
@@ -1148,6 +1152,7 @@ struct TypeInfo {
         Undefined,
         Address,
         Any,
+        Barrier,
         Bool,
         Bytes,
         BytesIterator,
@@ -1198,6 +1203,7 @@ struct TypeInfo {
     union {
         type_info::Address* address;
         type_info::Any* any;
+        type_info::Barrier* barrier;
         type_info::Bool* bool_;
         type_info::Bytes* bytes;
         type_info::BytesIterator* bytes_iterator;
@@ -1255,6 +1261,10 @@ struct TypeInfo {
         else if constexpr ( std::is_same_v<Type, type_info::Any> ) {
             tag = Any;
             any = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Barrier> ) {
+            tag = Barrier;
+            barrier = value;
         }
         else if constexpr ( std::is_same_v<Type, type_info::Bool> ) {
             tag = Bool;
@@ -1450,6 +1460,10 @@ const Type* auxType(const type_info::Value& v) {
         assert(type.tag == TypeInfo::Any);
         return type.any;
     }
+    else if constexpr ( std::is_same_v<Type, type_info::Barrier> ) {
+        assert(type.tag == TypeInfo::Barrier);
+        return type.barrier;
+    }
     else if constexpr ( std::is_same_v<Type, type_info::Bool> ) {
         assert(type.tag == TypeInfo::Bool);
         return type.bool_;
@@ -1624,6 +1638,7 @@ const Type* auxType(const type_info::Value& v) {
 // Forward declare static built-in type information objects.
 extern TypeInfo address;
 extern TypeInfo any;
+extern TypeInfo barrier;
 extern TypeInfo bool_;
 extern TypeInfo bytes_iterator;
 extern TypeInfo bytes;

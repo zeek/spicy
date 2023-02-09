@@ -759,6 +759,7 @@ struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder<cxx::Expression, Vis
 
     result_t operator()(const type::Address& n) { return "::hilti::rt::type_info::address"; }
     result_t operator()(const type::Any& n) { return "::hilti::rt::type_info::any"; }
+    result_t operator()(const type::Barrier& n) { return "::hilti::rt::type_info::barrier"; }
     result_t operator()(const type::Bool& n) { return "::hilti::rt::type_info::bool_"; }
     result_t operator()(const type::Bytes& n) { return "::hilti::rt::type_info::bytes"; }
     result_t operator()(const type::bytes::Iterator& n) { return "::hilti::rt::type_info::bytes_iterator"; }
