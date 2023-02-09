@@ -1,0 +1,40 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: spicy-driver -F test.dat test.hlto >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Craft a typical barrier scenario where the two sides of a connection need to wait for each other.
+
+module Test;
+
+type Context = struct {
+    sync: barrier(2);
+};
+
+public type Orig = unit {
+    %context = Context;
+    x: b"ab" { self.context().sync.arrive_and_wait(); }
+    y: b"cd";
+    on %done { print "%done orig", self.context(); }
+};
+
+public type Resp = unit {
+    %context = Context;
+    x: b"12" { self.context().sync.abort(); }
+    y: b"34";
+    on %done { print "%done resp", self.context(); }
+};
+
+@TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-conn conn stream orig Test::Orig resp Test::Resp
+@data orig 2
+ab
+@data orig 2
+cd
+@data resp 2
+12
+@data resp 2
+34
+@end-flow orig
+@end-flow resp
+@TEST-END-FILE

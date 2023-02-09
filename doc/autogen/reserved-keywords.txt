@@ -9,6 +9,7 @@ any
 assert
 assert-exception
 attribute
+barrier
 begin
 bitfield
 bool
