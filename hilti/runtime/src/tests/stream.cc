@@ -960,25 +960,25 @@ TEST_CASE("View") {
 
         SUBCASE("1") {
             Byte dst[1] = {'0'};
-            CHECK_EQ(v.extract(dst), "234567890"_b);
+            CHECK_EQ(v.extract(dst, sizeof(dst)), "234567890"_b);
             CHECK_EQ(vec(dst), std::vector<Byte>({'1'}));
         }
 
         SUBCASE("3") {
             Byte dst[3] = {'0'};
-            CHECK_EQ(v.extract(dst), "4567890"_b);
+            CHECK_EQ(v.extract(dst, sizeof(dst)), "4567890"_b);
             CHECK_EQ(vec(dst), std::vector<Byte>({'1', '2', '3'}));
         }
 
         SUBCASE("all") {
             Byte dst[10] = {'0'};
-            CHECK_EQ(v.extract(dst), ""_b);
+            CHECK_EQ(v.extract(dst, sizeof(dst)), ""_b);
             CHECK_EQ(vec(dst), std::vector<Byte>({'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}));
         }
 
         SUBCASE("empty") {
             Byte dst[1] = {'0'};
-            CHECK_THROWS_WITH_AS(Stream().view().extract(dst), "end of stream view", const WouldBlock&);
+            CHECK_THROWS_WITH_AS(Stream().view().extract(dst, sizeof(dst)), "end of stream view", const WouldBlock&);
         }
     }
 
