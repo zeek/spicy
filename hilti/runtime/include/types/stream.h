@@ -8,6 +8,7 @@
 #include <cinttypes>
 #include <cstddef>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -1039,6 +1040,17 @@ public:
     Offset offset() const { return _begin.offset(); }
 
     /**
+     * Returns the offset of the view's end location within the associated
+     * stream instance. For an open-ended view, returns an unset value.
+     */
+    std::optional<Offset> endOffset() const {
+        if ( _end )
+            return _end->offset();
+        else
+            return std::nullopt;
+    }
+
+    /**
      * Returns the number of actual bytes available inside the view. If the
      * view's end position is beyond the current end offset of the underlying
      * stream, those missing bytes are not counted.
@@ -1568,6 +1580,9 @@ public:
      * @param offset offset to use for the created iterator
      */
     SafeConstIterator at(const Offset& offset) const { return _chain->at(offset); }
+
+    /** Returns the offset of the position one after the stream's last byte. */
+    Offset endOffset() const { return _chain->endOffset(); }
 
     /**
      * Returns a view representing the entire instance.
