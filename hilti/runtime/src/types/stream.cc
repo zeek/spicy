@@ -59,6 +59,14 @@ const Chunk* Chain::findChunk(Offset offset, const Chunk* hint_prev) const {
 
     const Chunk* c = _head.get();
 
+    // A very common way this function gets called without `hint_prev` is
+    // `Stream::unsafeEnd` via `Chain::unsafeEnd` in construction of an
+    // `UnsafeConstIterator` from a `SafeConstIterator`; in this case the chunk
+    // for `end()` will be `nullptr`. Optimize for that case by assuming we
+    // always want a chunk near the end if no hint is given.
+    if ( ! hint_prev )
+        hint_prev = _tail;
+
     if ( hint_prev && hint_prev->offset() <= offset )
         c = hint_prev;
 
@@ -75,6 +83,10 @@ Chunk* Chain::findChunk(Offset offset, Chunk* hint_prev) {
     _ensureValid();
 
     Chunk* c = _head.get();
+
+    // See comment above.
+    if ( ! hint_prev )
+        hint_prev = _tail;
 
     if ( hint_prev && hint_prev->offset() <= offset )
         c = hint_prev;
