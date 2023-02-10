@@ -26,10 +26,10 @@ static bool _haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, c
     if ( data->isFrozen() )
         return true;
 
-    if ( cur.isOpenEnded() )
+    if ( auto end_offset = cur.endOffset() )
+        return *end_offset <= data->endOffset();
+    else
         return false;
-
-    return cur.unsafeEnd().offset() <= data->unsafeEnd().offset();
 }
 
 void detail::printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
@@ -73,8 +73,8 @@ void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, cons
                         hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters) {
     auto min = std::numeric_limits<uint64_t>::max();
 
-    if ( ! cur.isOpenEnded() )
-        min = cur.unsafeEnd().offset() - cur.unsafeBegin().offset();
+    if ( auto end_offset = cur.endOffset() )
+        min = *end_offset - cur.offset();
 
     waitForInputOrEod(data, cur, min, std::move(filters));
 }
