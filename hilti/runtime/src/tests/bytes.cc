@@ -65,13 +65,13 @@ TEST_CASE("decode") {
 TEST_CASE("extract") {
     SUBCASE("sufficient data") {
         unsigned char dst1[3] = {0};
-        CHECK_EQ("123456"_b.extract(dst1), "456"_b);
+        CHECK_EQ("123456"_b.extract(dst1, 3), "456"_b);
         CHECK_EQ(dst1[0], '1');
         CHECK_EQ(dst1[1], '2');
         CHECK_EQ(dst1[2], '3');
 
         unsigned char dst2[3] = {0};
-        CHECK_EQ("123"_b.extract(dst2), ""_b);
+        CHECK_EQ("123"_b.extract(dst2, 3), ""_b);
         CHECK_EQ(dst2[0], '1');
         CHECK_EQ(dst2[1], '2');
         CHECK_EQ(dst2[2], '3');
@@ -80,11 +80,11 @@ TEST_CASE("extract") {
     SUBCASE("insufficient data") {
         unsigned char dst1[3] = {0};
         // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-        CHECK_THROWS_WITH_AS(""_b.extract(dst1), "insufficient data in source", const InvalidArgument&);
+        CHECK_THROWS_WITH_AS(""_b.extract(dst1, 3), "insufficient data in source", const InvalidArgument&);
 
         unsigned char dst2[1] = {0};
         // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-        CHECK_THROWS_WITH_AS(""_b.extract(dst2), "insufficient data in source", const InvalidArgument&);
+        CHECK_THROWS_WITH_AS(""_b.extract(dst2, 1), "insufficient data in source", const InvalidArgument&);
     }
 }
 

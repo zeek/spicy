@@ -297,17 +297,16 @@ public:
     /**
      * Extracts a fixed number of bytes from the data
      *
-     * @tparam N number of bytes to extract
      * @param dst array to writes bytes into
+     * @param n number of bytes to extract
      * @return new bytes instance that has the first *N* bytes removed.
      */
-    template<int N>
-    Bytes extract(unsigned char (&dst)[N]) const {
-        if ( N > size() )
+    Bytes extract(unsigned char* dst, uint64_t n) const {
+        if ( n > size() )
             throw InvalidArgument("insufficient data in source");
 
-        memcpy(dst, data(), N);
-        return sub(N, std::string::npos);
+        memcpy(dst, data(), n);
+        return sub(n, std::string::npos);
     }
 
     /**
