@@ -47,20 +47,25 @@ static const auto FiberGuardFlags = 0; // leak sanitizer may abort with "Tracer 
 
 #endif
 
+// Pre-allocate this so that we don't need to create a std::string on the fly
+// when HILTI_RT_FIBER_DEBUG executes. That avoids a false positive with
+// ASAN during fiber switching when using GCC/libc++.
+static const std::string debug_stream_fibers = "fibers";
+
 // Wrapper similar to HILTI_RT_DEBUG that adds the current fiber to the message.
 #define HILTI_RT_FIBER_DEBUG(tag, msg)                                                                                 \
     {                                                                                                                  \
         if ( ::hilti::rt::detail::globalState()->debug_logger &&                                                       \
-             ::hilti::rt::detail::globalState()->debug_logger->isEnabled("fibers") )                                   \
-            ::hilti::rt::debug::detail::print("fibers",                                                                \
+             ::hilti::rt::detail::globalState()->debug_logger->isEnabled(debug_stream_fibers) )                        \
+            ::hilti::rt::debug::detail::print(debug_stream_fibers,                                                     \
                                               fmt("[%s/%s] %s", *context::detail::get()->fiber.current, tag, msg));    \
     }
 
 #define HILTI_RT_FIBER_DEBUG_NO_CONTEXT(tag, msg)                                                                      \
     {                                                                                                                  \
         if ( ::hilti::rt::detail::globalState()->debug_logger &&                                                       \
-             ::hilti::rt::detail::globalState()->debug_logger->isEnabled("fibers") )                                   \
-            ::hilti::rt::debug::detail::print("fibers", fmt("[none/%s] %s", tag, msg));                                \
+             ::hilti::rt::detail::globalState()->debug_logger->isEnabled(debug_stream_fibers) )                        \
+            ::hilti::rt::debug::detail::print(debug_stream_fibers, fmt("[none/%s] %s", tag, msg));                     \
     }
 
 extern "C" {
