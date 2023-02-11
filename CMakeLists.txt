@@ -74,9 +74,14 @@ endif ()
 if (USE_SANITIZERS)
     # Recommended flags per https://github.com/google/sanitizers/wiki/AddressSanitizer
     set(sanitizer_cxx_flags
-        "-fsanitize=${USE_SANITIZERS} -fno-omit-frame-pointer -fno-optimize-sibling-calls -O1 -shared-libsan"
-    )
-    set(sanitizer_ld_flags "-fsanitize=${USE_SANITIZERS} -frtlib-add-rpath -shared-libsan")
+        "-fsanitize=${USE_SANITIZERS} -fno-omit-frame-pointer -fno-optimize-sibling-calls -O1")
+    set(sanitizer_ld_flags "-fsanitize=${USE_SANITIZERS}")
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        set(sanitizer_cxx_flags "${sanitizer_cxx_flags} -shared-libasan")
+        set(sanitizer_ld_flags "${sanitizer_ld_flags} -frtlib-add-rpath -shared-libasan")
+    endif ()
+
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${sanitizer_cxx_flags}")
     set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${sanitizer_cxx_flags}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${sanitizer_ld_flags}")
