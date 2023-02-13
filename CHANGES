@@ -1,3 +1,13 @@
+1.7.0-dev.124 | 2023-02-13 17:41:08 +0100
+
+  * Revert "Make all CI tasks greedy." (Benjamin Bannier, Corelight)
+
+    This reverts commit 3176c2cadc71aaf4c0c3dd28d37c1d465323da8c.
+
+  * Revert "Decrease excessive RAM on some CI platforms." (Benjamin Bannier, Corelight)
+
+    This reverts commit 6ce665b9f3dc7f3630167e1bdf3f752ce3647dcf.
+
 1.7.0-dev.121 | 2023-02-13 14:47:21 +0100
 
   * GH-1310: Fix ASAN false positive with GCC. (Robin Sommer, Corelight)
