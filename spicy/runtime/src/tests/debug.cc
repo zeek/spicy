@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/configuration.h>
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/init.h>
@@ -23,8 +24,7 @@ TEST_CASE("wantVerbose") {
         hilti::rt::init();
 
         const auto& logger = hilti::rt::detail::globalState()->debug_logger;
-        REQUIRE(logger);
-        REQUIRE_FALSE(logger->isEnabled("spicy-verbose"));
+        REQUIRE(! logger);
 
         CHECK_FALSE(debug::wantVerbose());
     }
@@ -32,11 +32,14 @@ TEST_CASE("wantVerbose") {
     SUBCASE("enabled") {
         // Bootstrap a clean runtime.
         hilti::rt::done();
-        hilti::rt::init();
 
+        auto config = hilti::rt::configuration::get();
+        config.debug_streams = "spicy-verbose";
+        hilti::rt::configuration::set(std::move(config));
+
+        hilti::rt::init();
         const auto& logger = hilti::rt::detail::globalState()->debug_logger;
         REQUIRE(logger);
-        logger->enable("spicy-verbose");
         REQUIRE(logger->isEnabled("spicy-verbose"));
 
         CHECK(debug::wantVerbose());

@@ -29,12 +29,14 @@ void hilti::rt::init() {
     if ( ! globalState()->configuration )
         globalState()->configuration = std::make_unique<hilti::rt::Configuration>();
 
-    if ( auto debug_out = globalState()->configuration->debug_out )
-        globalState()->debug_logger = std::make_unique<hilti::rt::detail::DebugLogger>(*debug_out);
-    else
-        globalState()->debug_logger = std::make_unique<hilti::rt::detail::DebugLogger>("/dev/stderr");
+    if ( ! globalState()->configuration->debug_streams.empty() ) {
+        if ( auto debug_out = globalState()->configuration->debug_out )
+            globalState()->debug_logger = std::make_unique<hilti::rt::detail::DebugLogger>(*debug_out);
+        else
+            globalState()->debug_logger = std::make_unique<hilti::rt::detail::DebugLogger>("/dev/stderr");
 
-    globalState()->debug_logger->enable(globalState()->configuration->debug_streams);
+        globalState()->debug_logger->enable(globalState()->configuration->debug_streams);
+    }
 
     HILTI_RT_DEBUG("libhilti", "initializing runtime");
 

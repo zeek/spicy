@@ -8,6 +8,7 @@
 #include <cinttypes>
 #include <cstddef>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -927,25 +928,6 @@ inline std::ostream& operator<<(std::ostream& out, const UnsafeConstIterator& x)
     return out;
 }
 
-template<int N>
-inline UnsafeConstIterator _extract(Byte* dst, const UnsafeConstIterator& i) {
-    *dst = *i;
-    return _extract<N - 1>(dst + 1, i + 1);
-}
-
-template<>
-inline UnsafeConstIterator _extract<0>(Byte* /* dst */, const UnsafeConstIterator& i) {
-    return i;
-}
-
-template<int N>
-inline UnsafeConstIterator extract(Byte* dst, const UnsafeConstIterator& i, const UnsafeConstIterator& end) {
-    if ( end.offset() - i.offset() < N )
-        throw WouldBlock("end of stream view");
-
-    return _extract<N>(dst, i);
-}
-
 inline SafeConstIterator Chain::begin() const {
     _ensureValid();
     return {ConstChainPtr(intrusive_ptr::NewRef(), this), offset(), _head.get()};
@@ -1037,6 +1019,17 @@ public:
      * stream instance.
      */
     Offset offset() const { return _begin.offset(); }
+
+    /**
+     * Returns the offset of the view's end location within the associated
+     * stream instance. For an open-ended view, returns an unset value.
+     */
+    std::optional<Offset> endOffset() const {
+        if ( _end )
+            return _end->offset();
+        else
+            return std::nullopt;
+    }
 
     /**
      * Returns the number of actual bytes available inside the view. If the
@@ -1280,16 +1273,23 @@ public:
     View limit(const Offset& incr) const { return View(begin(), begin() + incr); }
 
     /**
-     * Extracts a fixed number of stream from the view.
+     * Extracts a fixed number of stream bytes from the view.
      *
-     * @tparam N number of stream to extract
      * @param dst target array to write stream data into
+     * @param n number of stream bytes to extract
      * @return new view that has it's starting position advanced by N
      */
-    template<int N>
-    View extract(Byte (&dst)[N]) const {
+    View extract(Byte* dst, uint64_t n) const {
         _ensureValid();
-        return View(SafeConstIterator(detail::extract<N>(dst, unsafeBegin(), unsafeEnd())), _end);
+
+        if ( n > size() )
+            throw WouldBlock("end of stream view");
+
+        auto p = unsafeBegin();
+        for ( int i = 0; i < n; ++i )
+            dst[i] = *p++;
+
+        return View(SafeConstIterator(p), _end);
     }
 
     /**
@@ -1568,6 +1568,9 @@ public:
      * @param offset offset to use for the created iterator
      */
     SafeConstIterator at(const Offset& offset) const { return _chain->at(offset); }
+
+    /** Returns the offset of the position one after the stream's last byte. */
+    Offset endOffset() const { return _chain->endOffset(); }
 
     /**
      * Returns a view representing the entire instance.

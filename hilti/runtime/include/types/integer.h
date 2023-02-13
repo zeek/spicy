@@ -158,7 +158,7 @@ inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
         return result::Error("insufficient data to unpack integer");
 
     uint8_t raw[sizeof(T)];
-    b = b.extract(raw);
+    b = b.extract(raw, sizeof(raw));
 
     switch ( fmt.value() ) {
         case ByteOrder::Big:
