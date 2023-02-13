@@ -385,7 +385,7 @@ docker_alpine_3_12_task:
   container:
     dockerfile: docker/Dockerfile.alpine-3.12
     cpu: 4
-    memory: 12G
+    memory: 14G
     greedy: true
 
   timeout_in: 120m
@@ -419,7 +419,7 @@ docker_centos_stream_8_task:
   container:
     dockerfile: docker/Dockerfile.centos-stream-8
     cpu: 4
-    memory: 12G
+    memory: 14G
     greedy: true
 
   timeout_in: 120m
