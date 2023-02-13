@@ -17,7 +17,6 @@ lint_task:
     dockerfile: ci/Dockerfile
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -53,7 +52,6 @@ clang12_ubuntu_debug_task:
     dockerfile: ci/Dockerfile
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -96,7 +94,6 @@ clang10_lts_ubuntu_release_task:
     dockerfile: ci/Dockerfile
     cpu: 4
     memory: 8G
-    greedy: true
 
   timeout_in: 120m
 
@@ -138,7 +135,6 @@ clang9_lts_ubuntu_release_static_task:
     dockerfile: ci/Dockerfile
     cpu: 4
     memory: 8G
-    greedy: true
 
   timeout_in: 120m
 
@@ -178,7 +174,6 @@ clang11_nightly_task:
     dockerfile: ci/Dockerfile
     cpu: 4
     memory: 8G
-    greedy: true
 
   timeout_in: 120m
 
@@ -287,7 +282,6 @@ no_toolchain_task:
     dockerfile: ci/Dockerfile
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -328,7 +322,6 @@ validate_release_tarball_task:
     dockerfile: ci/Dockerfile
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -386,7 +379,6 @@ docker_alpine_3_12_task:
     dockerfile: docker/Dockerfile.alpine-3.12
     cpu: 4
     memory: 14G
-    greedy: true
 
   timeout_in: 120m
 
@@ -420,7 +412,6 @@ docker_centos_stream_8_task:
     dockerfile: docker/Dockerfile.centos-stream-8
     cpu: 4
     memory: 14G
-    greedy: true
 
   timeout_in: 120m
 
@@ -459,7 +450,6 @@ docker_debian9_task:
     dockerfile: docker/Dockerfile.debian-9
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -496,7 +486,6 @@ docker_debian10_task:
     dockerfile: docker/Dockerfile.debian-10
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -533,7 +522,6 @@ docker_debian11_task:
     dockerfile: docker/Dockerfile.debian-11
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -570,7 +558,6 @@ docker_ubuntu16_task:
     dockerfile: docker/Dockerfile.ubuntu-16
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -609,7 +596,6 @@ docker_ubuntu18_task:
     dockerfile: docker/Dockerfile.ubuntu-18
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -646,7 +632,6 @@ docker_ubuntu20_task:
     dockerfile: docker/Dockerfile.ubuntu-20
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -683,7 +668,6 @@ docker_fedora36_task:
     dockerfile: docker/Dockerfile.fedora-36
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -720,7 +704,6 @@ docker_fedora37_task:
     dockerfile: docker/Dockerfile.fedora-37
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -757,7 +740,6 @@ docker_opensuse15_2_task:
     dockerfile: docker/Dockerfile.opensuse-15.2
     cpu: 4
     memory: 12G
-    greedy: true
 
   timeout_in: 120m
 
@@ -792,7 +774,6 @@ freebsd13_task:
     image_family: freebsd-13-1
     cpu: 8
     memory: 8GB
-    greedy: true
 
   prepare_script: ./ci/prepare_freebsd.sh
 
@@ -829,7 +810,6 @@ freebsd12_task:
     image_family: freebsd-12-2
     cpu: 8
     memory: 8GB
-    greedy: true
 
   prepare_script: ./ci/prepare_freebsd.sh
 
@@ -869,7 +849,6 @@ zeek_plugin_task:
         - ZEEK_VERSION: v5.0.5
     cpu: 4
     memory: 12G
-    greedy: true
 
   env:
     CCACHE_DIR: /tmp/ccache
