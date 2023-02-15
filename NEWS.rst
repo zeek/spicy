@@ -2,14 +2,46 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.7 (in progress)
-=========================
+Version 1.7
+===========
 
 .. rubric:: New Functionality
 
+- Support Zeek-style documentation strings in Spicy source code.
+
+- Provide ability for host applications to initiate runtime's module-pre-init phase manually.
+
+- Add DPD-style ``spicy::accept_input()`` and ``spicy::decline_input()``.
+
+- Add driver option to output full set of generated C++ files.
+
+- GH-1123: Support arbitrary expression as argument to type constructors, such as ``interval(...)``.
+
 .. rubric:: Changed Functionality
 
+- Search ``HILTI_CXX_INCLUDE_DIRS`` paths before default include paths.
+
+- Search user module paths before system paths.
+
+- Streamline runtime exception hierarchy.
+
+- Fix bug in cast from ``real`` to ``interval``.
+
+- GH-1326: Generate proper runtime types for enums.
+
+- GH-1330: Reject uses of imported module IDs as expression.
+
 .. rubric:: Bug fixes
+
+- GH-1310: Fix ASAN false positive with GCC.
+
+- GH-1345: Improve runtime performance of stream iteration.
+
+- GH-1367: Use unique filename for all object files generated during JIT.
+
+- Remove potential race during JIT when using ``HILTI_CXX_COMPILER_LAUNCHER``.
+
+- GH-1349: Fix incremental regexp matching for potentially empty results.
 
 .. rubric:: Documentation
 

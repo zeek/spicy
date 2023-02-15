@@ -1,3 +1,7 @@
+1.7.0 | 2023-02-13 17:41:31 +0100
+
+  * Release 1.7.0.
+
 1.7.0-dev.124 | 2023-02-13 17:41:08 +0100
 
   * Revert "Make all CI tasks greedy." (Benjamin Bannier, Corelight)
