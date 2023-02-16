@@ -1285,7 +1285,7 @@ public:
             throw WouldBlock("end of stream view");
 
         auto p = unsafeBegin();
-        for ( int i = 0; i < n; ++i )
+        for ( uint64_t i = 0; i < n; ++i )
             dst[i] = *p++;
 
         return View(SafeConstIterator(p), _end);
