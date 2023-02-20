@@ -1,3 +1,13 @@
+1.8.0-dev.5 | 2023-02-20 14:31:21 +0100
+
+  * Fix sign-unsigned comparison. (Benjamin Bannier, Corelight)
+
+  * GH-169: Build debian-11 instead of centos stream 8 in CI. (Benjamin Bannier, Corelight)
+
+  * Update docs for removal of fedora-35, addition of fedora-36. [skip CI] (Benjamin Bannier, Corelight)
+
+  * Add placeholder section for 1.8 to NEWS. (Benjamin Bannier, Corelight)
+
 1.7.0 | 2023-02-13 17:41:31 +0100
 
   * Release 1.7.0.
