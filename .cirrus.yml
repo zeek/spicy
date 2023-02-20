@@ -408,6 +408,8 @@ docker_alpine_3_12_task:
     type: application/gzip
 
 docker_centos_stream_8_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+
   container:
     dockerfile: docker/Dockerfile.centos-stream-8
     cpu: 4
@@ -516,8 +518,6 @@ docker_debian10_task:
     type: application/gzip
 
 docker_debian11_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
   container:
     dockerfile: docker/Dockerfile.debian-11
     cpu: 4
