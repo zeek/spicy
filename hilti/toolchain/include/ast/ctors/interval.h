@@ -16,8 +16,7 @@ class Interval : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Interval;
 
-    Interval(Value interval, const Meta& m = Meta())
-        : NodeBase(nodes(type::Interval(m)), m), _interval(std::move(interval)) {}
+    Interval(Value interval, const Meta& m = Meta()) : NodeBase(nodes(type::Interval(m)), m), _interval(interval) {}
 
     const auto& value() const { return _interval; }
 
