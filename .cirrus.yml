@@ -9,7 +9,7 @@ environment:
     IMAGE_MACOS_VENTURA: ghcr.io/cirruslabs/macos-ventura-base:latest
 
     # Branches to use for spicy-plugin and spicy-analyzers tests.
-    ZEEK_SPICY_BRANCH:      main
+    ZEEK_SPICY_BRANCH:      topic/robin/gh-123-symlink
     ZEEK_ANALYZERS_BRANCH:  main
 
 lint_task:
