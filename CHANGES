@@ -1,3 +1,9 @@
+1.8.0-dev.8 | 2023-02-22 11:16:08 +0100
+
+  * Set reupload_on_changes for ccache caches. (Arne Welzel, Corelight)
+
+  * Build centos stream again for PRs, disable clang-12 debug. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.5 | 2023-02-20 14:31:21 +0100
 
   * Fix sign-unsigned comparison. (Benjamin Bannier, Corelight)
