@@ -48,6 +48,8 @@ lint_task:
         path: build/ci
 
 clang12_ubuntu_debug_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -408,8 +410,6 @@ docker_alpine_3_12_task:
     type: application/gzip
 
 docker_centos_stream_8_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
   container:
     dockerfile: docker/Dockerfile.centos-stream-8
     cpu: 4
