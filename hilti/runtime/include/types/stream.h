@@ -1141,7 +1141,7 @@ public:
     std::tuple<bool, SafeConstIterator> find(const Bytes& v, Direction d = Direction::Forward) const {
         _ensureValid();
         auto i = (d == Direction::Forward ? unsafeBegin() : unsafeEnd());
-        auto x = find(v, std::move(i), d);
+        auto x = find(v, i, d);
         return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
     }
 
@@ -1178,9 +1178,9 @@ public:
     std::tuple<bool, UnsafeConstIterator> find(const Bytes& v, UnsafeConstIterator n,
                                                Direction d = Direction::Forward) const {
         if ( d == Direction::Forward )
-            return _findForward(v, std::move(n));
+            return _findForward(v, n);
         else
-            return _findBackward(v, std::move(n));
+            return _findBackward(v, n);
     }
 
     /**

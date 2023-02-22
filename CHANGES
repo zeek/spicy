@@ -1,3 +1,7 @@
+1.8.0-dev.10 | 2023-02-22 15:42:04 +0100
+
+  * Switch `SafeInt` to current upstream. (Robin Sommer, Corelight)
+
 1.8.0-dev.8 | 2023-02-22 11:16:08 +0100
 
   * Set reupload_on_changes for ccache caches. (Arne Welzel, Corelight)

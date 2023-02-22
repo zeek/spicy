@@ -16,7 +16,7 @@ class Time : public NodeBase, public hilti::trait::isCtor {
 public:
     using Value = hilti::rt::Time;
 
-    Time(Value time, const Meta& m = Meta()) : NodeBase(nodes(type::Time(m)), m), _time(std::move(time)) {}
+    Time(Value time, const Meta& m = Meta()) : NodeBase(nodes(type::Time(m)), m), _time(time) {}
 
     const auto& value() const { return _time; }
 
