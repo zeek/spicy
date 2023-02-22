@@ -24,6 +24,7 @@ lint_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -61,6 +62,7 @@ clang12_ubuntu_debug_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -103,6 +105,7 @@ clang10_lts_ubuntu_release_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -144,6 +147,7 @@ clang9_lts_ubuntu_release_static_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -183,6 +187,7 @@ clang11_nightly_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -221,6 +226,7 @@ macos_monterey_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   environment:
     CCACHE_DIR: /tmp/ccache
@@ -254,6 +260,7 @@ macos_ventura_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   environment:
     CCACHE_DIR: /tmp/ccache
@@ -291,6 +298,7 @@ no_toolchain_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -331,6 +339,7 @@ validate_release_tarball_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -388,6 +397,7 @@ docker_alpine_3_12_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -421,6 +431,7 @@ docker_centos_stream_8_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -459,6 +470,7 @@ docker_debian9_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -495,6 +507,7 @@ docker_debian10_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -529,6 +542,7 @@ docker_debian11_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -565,6 +579,7 @@ docker_ubuntu16_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -603,6 +618,7 @@ docker_ubuntu18_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -639,6 +655,7 @@ docker_ubuntu20_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -675,6 +692,7 @@ docker_fedora36_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -711,6 +729,7 @@ docker_fedora37_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -747,6 +766,7 @@ docker_opensuse15_2_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -783,6 +803,7 @@ freebsd13_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -819,6 +840,7 @@ freebsd12_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   env:
     CCACHE_DIR: /tmp/ccache
@@ -858,6 +880,7 @@ zeek_plugin_task:
     ccache_cache:
       folder: /tmp/ccache
       fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
 
   update_git_script:
     - git fetch --tags
