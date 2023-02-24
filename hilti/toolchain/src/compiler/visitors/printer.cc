@@ -14,6 +14,16 @@
 using namespace hilti;
 using util::fmt;
 
+// Global state storing any scopes we are currently in during printing.
+// Maintaining this globally isn't great, but because of various independent
+// `printAST()` calls happening recursively through `operator<<` and `fmt()`,
+// we can't easily pass this state around.
+static std::vector<ID> _scopes = {""};
+
+static const ID& _currentScope() { return _scopes.back(); }
+static void _pushScope(ID id) { _scopes.push_back(std::move(id)); }
+static void _popScope() { _scopes.pop_back(); }
+
 static std::string renderOperator(operator_::Kind kind, const std::vector<std::string>& ops) {
     switch ( kind ) {
         case operator_::Kind::Add: return fmt("add %s[%s]", ops[0], ops[1]);
@@ -51,6 +61,7 @@ static std::string renderOperator(operator_::Kind kind, const std::vector<std::s
         case operator_::Kind::MultipleAssign: return fmt("%s *= %s", ops[0], ops[1]);
         case operator_::Kind::Negate: return fmt("~%s", ops[0]);
         case operator_::Kind::New: return fmt("new %s%s", ops[0], ops[1]);
+        case operator_::Kind::Pack: return fmt("pack%s", ops[0]);
         case operator_::Kind::Power: return fmt("%s ** %s", ops[0], ops[1]);
         case operator_::Kind::ShiftLeft: return fmt("%s << %s", ops[0], ops[1]);
         case operator_::Kind::ShiftRight: return fmt("%s >> %s", ops[0], ops[1]);
@@ -112,6 +123,13 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
         out << ')';
     }
 
+    void printDoc(const std::optional<DocString>& doc) {
+        if ( doc && *doc ) {
+            out.emptyLine();
+            doc->render(out);
+        }
+    }
+
     auto linkage(declaration::Linkage l) {
         switch ( l ) {
             case declaration::Linkage::Init: return "init ";
@@ -164,18 +182,19 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
     }
 
     void operator()(const ID& n) {
-        if ( n.namespace_() == out.currentScope() )
+        if ( n.namespace_() == _currentScope() )
             out << std::string(n.local());
         else
             out << std::string(n);
     }
 
     void operator()(const Module& n) {
+        printDoc(n.documentation());
         out.beginLine();
         out << "module " << n.id() << " {" << out.newline();
         out.endLine();
 
-        out.pushScope(n.id());
+        _pushScope(n.id());
 
         auto printDecls = [&](const auto& decls) {
             for ( const auto& d : decls )
@@ -201,7 +220,7 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
         if ( ! n.statements().statements().empty() )
             out.emptyLine();
 
-        out.popScope();
+        _popScope();
 
         out.beginLine();
         out << "}";
@@ -222,11 +241,14 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
         out << "default<" << n.type() << ">(" << std::make_pair(n.typeArguments(), ", ") << ")";
     }
 
-    void operator()(const ctor::Enum& n, position_t p) { out << *p.node.as<Type>().typeID() << "::" << n.value(); }
+    void operator()(const ctor::Enum& n, position_t p) {
+        assert(n.type().typeID());
+        out << *n.type().typeID() << "::" << n.value().id();
+    }
 
     void operator()(const ctor::Error& n) { out << "error(\"" << n.value() << "\")"; }
 
-    void operator()(const ctor::Interval& n) { out << n.value(); }
+    void operator()(const ctor::Interval& n) { out << "interval_ns(" << n.value().nanoseconds() << ")"; }
 
     void operator()(const ctor::List& n) { out << '[' << std::make_pair(n.value(), ", ") << ']'; }
 
@@ -273,7 +295,12 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
 
     void operator()(const ctor::Set& n) { out << "set(" << std::make_pair(n.value(), ", ") << ')'; }
 
-    void operator()(const ctor::SignedInteger& n) { out << n.value(); }
+    void operator()(const ctor::SignedInteger& n) {
+        if ( n.width() < 64 )
+            out << fmt("int%d(%" PRId64 ")", n.width(), n.value());
+        else
+            out << n.value();
+    }
 
     void operator()(const ctor::Stream& n) { out << "stream(" << util::escapeUTF8(n.value(), true) << ')'; }
 
@@ -295,11 +322,16 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
         out << "]";
     }
 
-    void operator()(const ctor::Time& n) { out << n.value(); }
+    void operator()(const ctor::Time& n) { out << "time_ns(" << n.value().nanoseconds() << ")"; }
 
     void operator()(const ctor::Tuple& n) { out << '(' << std::make_pair(n.value(), ", ") << ')'; }
 
-    void operator()(const ctor::UnsignedInteger& n) { out << n.value(); }
+    void operator()(const ctor::UnsignedInteger& n) {
+        if ( n.width() < 64 )
+            out << fmt("uint%d(%" PRId64 ")", n.width(), n.value());
+        else
+            out << n.value();
+    }
 
     void operator()(const ctor::Vector& n) { out << "vector(" << std::make_pair(n.value(), ", ") << ')'; }
 
@@ -310,6 +342,7 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
     ////// Declarations
 
     void operator()(const declaration::Constant& n) {
+        printDoc(n.documentation());
         out.beginLine();
         out << linkage(n.linkage()) << "const ";
         out << n.type();
@@ -381,14 +414,18 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
     }
 
     void operator()(const declaration::Function& n) {
-        out.beginLine();
-
         const auto& func = n.function();
 
-        if ( ! func.body() )
+        if ( ! func.body() ) {
+            printDoc(n.documentation());
+            out.beginLine();
             out << "declare ";
-        else
+        }
+        else {
             out.emptyLine();
+            printDoc(n.documentation());
+            out.beginLine();
+        }
 
         out << linkage(n.linkage());
 
@@ -409,6 +446,7 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
     }
 
     void operator()(const declaration::Type& n) {
+        printDoc(n.documentation());
         out.beginLine();
         for ( const auto& comment : n.meta().comments() )
             out << "# " << comment << '\n';
@@ -437,6 +475,7 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
     }
 
     void operator()(const declaration::GlobalVariable& n) {
+        printDoc(n.documentation());
         out.beginLine();
         out << linkage(n.linkage()) << "global ";
         out << n.type();
@@ -474,6 +513,7 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
             case expression::keyword::Kind::Captures:
                 out << "$@"; // this is technically not valid source code; we don't expose this to users
                 break;
+            case expression::keyword::Kind::Scope: out << "$scope"; break;
         }
     }
 
@@ -800,7 +840,7 @@ struct Visitor : visitor::PreOrder<void, Visitor>, type::Visitor {
 
     void operator()(const type::Interval& n, type::Visitor::position_t&) override { out << const_(n) << "interval"; }
 
-    void operator()(const type::Member& n, type::Visitor::position_t&) override { out << const_(n) << "<member>"; }
+    void operator()(const type::Member& n, type::Visitor::position_t&) override { out << const_(n) << n.id(); }
 
     void operator()(const type::Network& n, type::Visitor::position_t&) override { out << const_(n) << "net"; }
 

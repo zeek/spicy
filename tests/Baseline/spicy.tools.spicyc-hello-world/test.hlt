@@ -7,6 +7,8 @@
 #include <hilti/rt/libhilti.h>
 #include <spicy/rt/libspicy.h>
 
+extern const char* __hlt_hlto_scope;
+
 namespace __hlt::Foo {
     extern void __init_module();
     extern void __register_module();
@@ -21,7 +23,7 @@ extern void __hlt::Foo::__init_module() {
     ::hilti::rt::printValues(std::make_tuple(std::string("Hello"), std::string("world!")), ::hilti::rt::Bool(true));
 }
 
-extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlto_scope, &__init_module, nullptr, nullptr}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, nullptr, nullptr}); }
 
 /* __HILTI_LINKER_V1__
 {"module":"Foo","namespace":"__hlt::Foo","path":"<...>/spicyc-hello-world.spicy","version":1}

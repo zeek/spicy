@@ -70,7 +70,10 @@ TEST_CASE("conversions to and from `std::string`") {
 TEST_CASE("constructs from an `::in_addr4`") { CHECK_EQ(std::string(Address(*make_in_addr("1.2.3.4"))), "1.2.3.4"); }
 
 TEST_CASE("constructs from an `::in6_addr`") {
-    CHECK_EQ(std::string(Address(*make_in6_addr("::4996:2d2:0:0:4996:2d2"))), "::4996:2d2:0:0:4996:2d2");
+    std::string addr = std::string(Address(*make_in6_addr("::4996:2d2:0:0:4996:2d2")));
+    auto is_correct = (addr == "::4996:2d2:0:0:4996:2d2" || addr == "0:0:4996:2d2::4996:2d2"); // Alpine has been seen to return the latter
+
+    CHECK(is_correct);
 }
 
 TEST_CASE("constructs from binary representation of an IPv4 address") {
@@ -80,7 +83,11 @@ TEST_CASE("constructs from binary representation of an IPv4 address") {
 
 TEST_CASE("constructs from binary representation of an IPv6 address") {
     CHECK_EQ(Address(1234567890, 1234567890).family(), AddressFamily::IPv6);
-    CHECK_EQ(std::string(Address(1234567890, 1234567890)), "::4996:2d2:0:0:4996:2d2");
+
+    std::string addr = Address(1234567890, 1234567890);
+    bool is_correct = (addr == "::4996:2d2:0:0:4996:2d2" ||
+                       addr == "0:0:4996:2d2::4996:2d2"); // Alpine has been seen to return the latter
+    CHECK(is_correct);
 }
 
 TEST_CASE("family") {
@@ -121,6 +128,20 @@ TEST_CASE("asInAddr") {
              *make_in6_addr("2001::"));
     CHECK_EQ(std::get<struct in6_addr>(Address("2001:db8:85a3:8d3:1319:8a2e:370:7348").asInAddr()),
              *make_in6_addr("2001:db8:85a3:8d3:1319:8a2e:370:7348"));
+}
+
+TEST_CASE("pack") {
+    CHECK_EQ(address::pack(Address("1.2.3.4"), ByteOrder::Big), "\x01\x02\x03\x04"_b);
+    CHECK_EQ(address::pack(Address("4.3.2.1"), ByteOrder::Little), "\x01\x02\x03\x04"_b);
+    CHECK_EQ(address::pack(Address("1.2.3.4"), ByteOrder::Host), "\x04\x03\x02\x01"_b);
+    CHECK_EQ(address::pack(Address("102:304:102:304:506:708:901:203"), ByteOrder::Big),
+             "\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b);
+    CHECK_EQ(address::pack(Address("302:109:807:605:403:201:403:201"), ByteOrder::Little),
+             "\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b);
+    CHECK_EQ(address::pack(Address("2001:db8::FFFF:192.168.0.5"), ByteOrder::Little),
+             "\x05\x00\xa8\xc0\xff\xff\x00\x00\x00\x00\x00\x00\xb8\x0d\x01\x20"_b);
+    CHECK_THROWS_WITH_AS(address::pack(Address("1.2.3.4"), ByteOrder::Undef),
+                         "attempt to pack value with undefined byte order", const RuntimeError&);
 }
 
 TEST_CASE("unpack") {

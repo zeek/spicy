@@ -1,0 +1,12 @@
+# @TEST-EXEC: hiltic -p -D ast-final %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that the constant folder replaces constant expressions with corresponding ctor nodes, and that the printer round-trips the result.
+
+module Test {
+
+global x = int32(-1);
+global y = uint32(1);
+global z = -1; # int64
+
+}

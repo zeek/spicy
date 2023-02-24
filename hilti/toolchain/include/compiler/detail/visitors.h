@@ -58,6 +58,15 @@ std::string renderOperatorInstance(const expression::ResolvedOperator& o);
 void renderNode(const Node& n, std::ostream& out, bool include_scopes = false);
 void renderNode(const Node& n, logging::DebugStream stream, bool include_scopes = false);
 
+/**
+ * Folds an expression into a constant value if that's possible. Note that the
+ * current implementation is very, very basic, and covers just a few cases. If
+ * the function returns an error, that does not necessarily mean that the
+ * expression is not represeneting a constant value, but only that we aren't
+ * able to compute it.
+ */
+Result<std::optional<Ctor>> foldConstant(const Node& expr);
+
 namespace ast {
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 void buildScopes(const std::shared_ptr<hilti::Context>& ctx, Node* root, Unit* unit);

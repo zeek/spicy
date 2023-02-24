@@ -2,7 +2,7 @@
 
 . $(dirname $0)/cxx-common.sh
 
-cxx=$(hilti-config --cxx)
-ldflags=$(hilti-config --ldflags ${debug})
+cxx=$(spicy-config --cxx)
+ldflags=$(spicy-config --ldflags ${debug})
 
 exec ${cxx} $@ ${ldflags}

@@ -6,9 +6,16 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/ast/ctors/bool.h>
+#include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/expressions/type.h>
 #include <hilti/ast/operators/common.h>
+#include <hilti/ast/types/address.h>
+#include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/bytes.h>
+#include <hilti/ast/types/error.h>
+#include <hilti/ast/types/integer.h>
+#include <hilti/ast/types/real.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/result.h>
 #include <hilti/ast/types/stream.h>
@@ -17,13 +24,86 @@
 
 namespace hilti::operator_ {
 
+BEGIN_OPERATOR_CUSTOM(generic, Pack)
+    Type result(const hilti::node::Range<Expression>& ops) const {
+        if ( ops.empty() )
+            return type::DocOnly("<packable>");
+
+        return type::Bytes();
+    }
+
+    bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
+
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands = {Operand{{}, type::Tuple(type::Wildcard())}};
+        return _operands;
+    }
+
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
+        const auto args = i.op0().type().template as<type::Tuple>().elements();
+
+        if ( args.empty() ) {
+            p.node.addError("not enough arguments for pack operator");
+            return;
+        }
+
+        const auto& input_type = args[0].type();
+
+        if ( input_type.isA<type::SignedInteger>() || input_type.isA<type::UnsignedInteger>() ) {
+            if ( args.size() == 2 ) {
+                auto arg1 = args[1].type().typeID();
+                if ( arg1 && arg1->local() == ID("ByteOrder") )
+                    return;
+            }
+
+            p.node.addError("invalid arguments for integer packing; want (<value>, <ByteOrder>)");
+            return;
+        }
+
+        else if ( input_type.isA<type::Address>() ) {
+            if ( args.size() == 2 ) {
+                auto arg1 = args[1].type().typeID();
+                if ( arg1 && arg1->local() == ID("ByteOrder") )
+                    return;
+            }
+
+            p.node.addError("invalid arguments for address packing; want (<value>, <ByteOrder>)");
+            return;
+        }
+
+        else if ( input_type.isA<type::Real>() ) {
+            if ( args.size() == 3 ) {
+                auto arg1 = args[1].type().typeID();
+                auto arg2 = args[2].type().typeID();
+                if ( arg1 && arg1->local() == ID("RealType") && arg2 && arg2->local() == ID("ByteOrder") )
+                    return;
+            }
+
+            p.node.addError("invalid arguments for real packing; want (<value>, <RealType>, <ByteOrder>)");
+            return;
+        }
+
+        else
+            p.node.addError("type not packable");
+    }
+
+    std::string doc() const { return "Packs a value into a binary representation."; }
+END_OPERATOR_CUSTOM
+
 BEGIN_OPERATOR_CUSTOM(generic, Unpack)
     Type result(const hilti::node::Range<Expression>& ops) const {
         if ( ops.empty() )
             return type::DocOnly("<unpackable>");
 
-        const auto& data_type = ops[1].type().as<type::Tuple>().elements()[0].type();
-        return type::Result(type::Tuple({ops[0].type().as<type::Type_>().typeValue(), data_type}, ops[0].meta()));
+        const auto args = ops[1].type().template as<type::Tuple>().elements();
+        if ( args.empty() )
+            return type::Error();
+
+        auto t = type::Tuple({ops[0].type().as<type::Type_>().typeValue(), args[0].type()}, ops[0].meta());
+
+        auto throw_on_error = ops[2].as<expression::Ctor>().ctor().as<ctor::Bool>().value();
+        return throw_on_error ? Type(t) : Type(type::Result(t));
     }
 
     bool isLhs() const { return false; }
@@ -31,15 +111,63 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
 
     const std::vector<Operand>& operands() const {
         static std::vector<Operand> _operands = {Operand{{}, type::Type_(type::Wildcard())},
-                                                 Operand{{}, type::Tuple(type::Wildcard())}};
+                                                 Operand{{}, type::Tuple(type::Wildcard())}, Operand({}, type::Bool())};
         return _operands;
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
-        const auto& data_type = i.op1().type().template as<type::Tuple>().elements()[0].type();
+        const auto& data_type = i.op0().type().as<type::Type_>().typeValue();
+        const auto args = i.op1().type().template as<type::Tuple>().elements();
 
-        if ( ! (data_type.isA<type::Bytes>() || data_type.isA<type::stream::View>()) )
+        if ( args.size() < 1 ) {
+            p.node.addError("not enough arguments for unpack operator");
+            return;
+        }
+
+        const auto& input_type = args[0].type();
+
+        if ( ! (input_type.isA<type::Bytes>() || input_type.isA<type::stream::View>()) ) {
             p.node.addError("unpack() can be used only with bytes or a stream view as input");
+            return;
+        }
+
+        if ( data_type.isA<type::SignedInteger>() || data_type.isA<type::UnsignedInteger>() ) {
+            if ( args.size() == 2 ) {
+                auto arg1 = args[1].type().typeID();
+                if ( arg1 && arg1->local() == ID("ByteOrder") )
+                    return;
+            }
+
+            p.node.addError("invalid arguments for integer unpacking; want (<data>, <ByteOrder>)");
+            return;
+        }
+
+        else if ( data_type.isA<type::Address>() ) {
+            if ( args.size() == 3 ) {
+                auto arg1 = args[1].type().typeID();
+                auto arg2 = args[2].type().typeID();
+                if ( arg1 && arg1->local() == ID("AddressFamily") && arg2 && arg2->local() == ID("ByteOrder") )
+                    return;
+            }
+
+            p.node.addError("invalid arguments for address unpacking; want (<data>, <AddressFamily>, <ByteOrder>)");
+            return;
+        }
+
+        else if ( data_type.isA<type::Real>() ) {
+            if ( args.size() == 3 ) {
+                auto arg1 = args[1].type().typeID();
+                auto arg2 = args[2].type().typeID();
+                if ( arg1 && arg1->local() == ID("RealType") && arg2 && arg2->local() == ID("ByteOrder") )
+                    return;
+            }
+
+            p.node.addError("invalid arguments for real unpacking; want (<data>, <RealType>, <ByteOrder>)");
+            return;
+        }
+
+        else
+            p.node.addError("type not unpackable");
     }
 
     std::string doc() const { return "Unpacks a value from a binary representation."; }

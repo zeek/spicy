@@ -2,7 +2,7 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.6 (in progress)
+Version 1.8 (in progress)
 =========================
 
 .. rubric:: New Functionality
@@ -12,6 +12,205 @@ Version 1.6 (in progress)
 .. rubric:: Bug fixes
 
 .. rubric:: Documentation
+
+Version 1.7
+===========
+
+.. rubric:: New Functionality
+
+- Support Zeek-style documentation strings in Spicy source code.
+
+- Provide ability for host applications to initiate runtime's module-pre-init phase manually.
+
+- Add DPD-style ``spicy::accept_input()`` and ``spicy::decline_input()``.
+
+- Add driver option to output full set of generated C++ files.
+
+- GH-1123: Support arbitrary expression as argument to type constructors, such as ``interval(...)``.
+
+.. rubric:: Changed Functionality
+
+- Search ``HILTI_CXX_INCLUDE_DIRS`` paths before default include paths.
+
+- Search user module paths before system paths.
+
+- Streamline runtime exception hierarchy.
+
+- Fix bug in cast from ``real`` to ``interval``.
+
+- GH-1326: Generate proper runtime types for enums.
+
+- GH-1330: Reject uses of imported module IDs as expression.
+
+.. rubric:: Bug fixes
+
+- GH-1310: Fix ASAN false positive with GCC.
+
+- GH-1345: Improve runtime performance of stream iteration.
+
+- GH-1367: Use unique filename for all object files generated during JIT.
+
+- Remove potential race during JIT when using ``HILTI_CXX_COMPILER_LAUNCHER``.
+
+- GH-1349: Fix incremental regexp matching for potentially empty results.
+
+.. rubric:: Documentation
+
+Version 1.6
+===========
+
+.. rubric:: New Functionality
+
+- GH-1249: Allow combining ``&eod`` with ``&until`` or ``&until-including``.
+
+- GH-1251: When decoding bytes into a string using a given character
+  set, allow caller to control error handling.
+
+  All methods taking a charset parameters now take an additional
+  enum selecting 1 of 3 possible error handling strategies in case a
+  character can't be decoded/represented: ``STRICT`` throws an error,
+  ``IGNORE`` skips the problematic character and proceeds with the
+  next, and ``REPLACE`` replaces the problematic character with a safe
+  substitute. ``REPLACE`` is the default everywhere now, so that by
+  default no errors are triggered.
+
+  This comes with an additional functional change for the ASCII
+  encoding: we now consistently sanitize characters that ASCII can't
+  represent when in ``REPLACE``/``IGNORE`` modes (and, hence, by
+  default), and trigger errors in ``STRICT`` mode. Previously, we'd
+  sometimes let them through, and never triggered any errors. This
+  also fixes a bug with the ASCII encoding sometimes turning a
+  non-printable character into multiple repeated substitutes.
+
+- GH-1294: Add library function to parse an address from string or bytes.
+
+- HLTO files now perform a version check when loaded.
+
+  We previously would potentially allow building a HLTO file against one
+  version of the Spicy runtime, and then load it with a different version. If
+  exposed symbols matched loading might have succeeded, but could still have lead
+  to sublte bugs at runtime.
+
+  We now embed a runtime version string in HLTO files and reject loading HLTO
+  files into a different runtime version. We require an exact version match.
+
+- New ``pack`` and ``unpack`` operators.
+
+  These provide
+  low-level primitives for transforming a value into, or out of, a
+  binary representations, see :ref:`the docs <packing>` for details.
+
+.. rubric:: Changed Functionality
+
+- GH-1236: Add support for adding link dependencies via ``--cxx-link``.
+
+- GH-1285: C++ identifiers referenced in ``&cxxname`` are now automatically
+  interpreted to be in the global namespace.
+
+- Synchronization-related debug messages are now logged to the
+  ``spicy-verbose`` stream. We added logging of successful synchronization.
+
+- Downgrade required Flex version.
+  We previously required at least flex-2.6.0; we can now build against flex-2.5.37.
+
+- Improve C++ caching during JIT.
+
+  We improved caching behavior via ``HILTI_CXX_COMPILER_LAUNCHER`` if the
+  configuration of ``spicyc`` was changed without changing the C++ file
+  produced during JIT.
+
+- ``hilti::rt::isDebugVersion`` has been removed.
+
+- The ``-O | --optimize`` flag has been removed from command line tools.
+
+  This was already a no-op without observable side-effects.
+
+- GH-1311: Reject use of ``context()`` unit method if unit does not declare a
+  context with ``%context``.
+
+- GH-1319: Unsupported unit variable attributes are now rejected.
+
+- GH-1299: Add validator for bitfield field ranges.
+
+- We now reject uses of ``self`` as an ID.
+
+- GH-1233: Reject key types for maps that can't be sorted.
+
+- Fix validator for field ``&default`` expression types for constness.
+
+  When checking types of field ``&default`` expressions we previously would
+  also consider their constness. This breaks e.g., cases where the used
+  expression is not a LHS like the field the ``&default`` is defined for,
+
+  .. code-block:: ruby
+
+     type X = unit {
+         var x: bytes = b"" + a;
+     };
+
+  We now do not consider constness in the type check anymore. Since fields are
+  never const this allows us to set a ``&default`` with constant expressions as
+  well.
+
+.. rubric:: Bug fixes
+
+- GH-1231: Add special handling for potential ``advance`` failure in trial mode.
+
+- GH-1115, GH-1196: Explicitly type temporary value used by ``&max_size``
+  logic.
+
+- GH-1143, GH-1220: Add coercion on assignment for optionals that
+  only differ in constness of their inner types.
+
+- GH-1230: Add coercion to default argument of ``map::get``.
+
+- GH-1234, GH-1238: Fix assertions with anonymous struct constructor.
+
+- GH-1248: Fix ``stop`` for unbounded loop.
+
+- GH-1250: Fix internal errors when seeing unsupported character
+  classes in regular expression.
+
+- GH-1170: Fix contexts not allowing being passed ``inout``.
+
+- GH-1266: Fix wrong type for Spicy-side ``self`` expression.
+
+- GH-1261: Fix inability to access unit fields through ``self`` in
+  ``&convert`` expressions.
+
+- GH-1267: Install only needed headers from bundled SafeInt library.
+
+- GH-1227: Fix code generation when a module's file could be imported through different means.
+
+- GH-1273: Remove bundled code licensed under `CPOL license <https://www.codeproject.com/info/cpol10.aspx>`_.
+
+- GH-1303: Fix potentially late synchronization when jumping over gaps during synchronization.
+
+- Do not force gold linker with user-provided linker flags or when built as a CMake subproject.
+
+- Improve efficiency of ``startsWith`` for long inputs.
+
+.. rubric:: Documentation
+
+- The documentation now reflects Zeek package manager Spicy feature templates.
+
+- The documentation for bitfields was clarified.
+
+- Documentation for casts from integers to boolean was added.
+
+- We added documentation for how to expose custom C++ code in Spicy.
+
+- Update doc link to commits mailing list.
+
+- Clarify that ``%context`` can only be used in top-level units.
+
+- Clarify that ``&until`` consumes the delimiter.
+
+- GH-1240: Clarify docs on ``SPICY_VERSION``.
+
+- Add FAQ item on source locations.
+
+- Add example for use of ``?.``.
 
 Version 1.5
 ===========

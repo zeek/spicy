@@ -21,6 +21,7 @@ namespace hilti::trait {
 class isNode {};
 } // namespace hilti::trait
 
+#include <hilti/ast/doc-string.h>
 #include <hilti/ast/meta.h>
 #include <hilti/ast/node-ref.h>
 #include <hilti/ast/scope.h>
@@ -486,6 +487,27 @@ private:
 
 namespace node {
 
+/** Common mix-in class for nodes storing doc strings. */
+class WithDocString {
+public:
+    /** Returns the documentation associated with the declaration, if any. */
+    const std::optional<DocString>& documentation() const { return _doc; }
+
+    /** Clears out any documentation associated with the declaration. */
+    void clearDocumentation() { _doc.reset(); }
+
+    /** Sets the documentation associated with the declaration. */
+    void setDocumentation(DocString doc) {
+        if ( doc )
+            _doc = std::move(doc);
+        else
+            _doc.reset();
+    }
+
+private:
+    std::optional<DocString> _doc;
+};
+
 /** Place-holder node for an optional node that's not set. */
 class None : public NodeBase, public util::type_erasure::trait::Singleton {
 public:
@@ -948,15 +970,15 @@ std::vector<NodeRef> NodeBase::childRefsOfType() const {
 namespace node {
 namespace detail {
 // Backend to NodeBase::flattenedChildren.
-void flattenedChildren(const hilti::Node& n, node::Set<const hilti::Node>* dst);
+void flattenedChildren(const hilti::Node& n, node::Set<hilti::Node>* dst);
 } // namespace detail
 
 /**
  * Returns a list of all children of specific type, descending recursively
  * to find instance anywhere below this node.
  */
-inline node::Set<const Node> flattenedChildren(const Node& n) {
-    node::Set<const Node> dst;
+inline node::Set<Node> flattenedChildren(const Node& n) {
+    node::Set<Node> dst;
     detail::flattenedChildren(n, &dst);
     return dst;
 }

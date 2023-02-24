@@ -48,6 +48,20 @@ inline static auto widestTypeUnsigned() {
         return type::UnsignedInteger(std::max(w1, w2));
     };
 }
+
+inline static auto sameWidthSigned() {
+    return [=](const hilti::node::Range<Expression>& orig_ops,
+               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
+        if ( orig_ops.empty() && resolved_ops.empty() )
+            return type::DocOnly("int<*>");
+
+        if ( auto t = orig_ops[0].type().tryAs<type::UnsignedInteger>() )
+            return type::SignedInteger(t->width());
+        else
+            return {};
+    };
+}
+
 } // namespace detail
 
 STANDARD_OPERATOR_1(unsigned_integer, DecrPostfix, operator_::sameTypeAs(0, "uint"),
@@ -58,6 +72,8 @@ STANDARD_OPERATOR_1(unsigned_integer, IncrPostfix, operator_::sameTypeAs(0, "uin
                     type::UnsignedInteger(type::Wildcard()), "Increments the value, returning the old value.");
 STANDARD_OPERATOR_1(unsigned_integer, IncrPrefix, operator_::sameTypeAs(0, "uint"),
                     type::UnsignedInteger(type::Wildcard()), "Increments the value, returning the new value.");
+STANDARD_OPERATOR_1(unsigned_integer, SignNeg, detail::sameWidthSigned(), type::UnsignedInteger(type::Wildcard()),
+                    "Inverts the sign of the integer.");
 STANDARD_OPERATOR_1(unsigned_integer, Negate, operator_::sameTypeAs(0, "uint"), type::UnsignedInteger(type::Wildcard()),
                     "Computes the bit-wise negation of the integer.");
 STANDARD_OPERATOR_2(unsigned_integer, BitAnd, detail::widestTypeUnsigned(), detail::widestTypeUnsigned(),
@@ -125,4 +141,24 @@ STANDARD_OPERATOR_2x(unsigned_integer, CastToTime, Cast, type::Time(), type::Uns
                      type::Type_(type::Time()), "Interprets the value as number of seconds since the UNIX epoch.");
 STANDARD_OPERATOR_2x(unsigned_integer, CastToInterval, Cast, type::Interval(), type::UnsignedInteger(type::Wildcard()),
                      type::Type_(type::Interval()), "Interprets the value as number of seconds.");
+STANDARD_OPERATOR_2x(unsigned_integer, CastToBool, Cast, type::Bool(), type::SignedInteger(type::Wildcard()),
+                     type::Type_(type::Bool()), "Converts the value to a boolean by comparing against zero");
+
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorSigned8, "uint8", type::UnsignedInteger(8),
+                      type::SignedInteger(type::Wildcard()), "Creates a 8-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorSigned16, "uint16", type::UnsignedInteger(16),
+                      type::SignedInteger(type::Wildcard()), "Creates a 16-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorSigned32, "uint32", type::UnsignedInteger(32),
+                      type::SignedInteger(type::Wildcard()), "Creates a 32-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorSigned64, "uint64", type::UnsignedInteger(64),
+                      type::SignedInteger(type::Wildcard()), "Creates a 64-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorUnsigned8, "uint8", type::UnsignedInteger(8),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 8-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorUnsigned16, "uint16", type::UnsignedInteger(16),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 16-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorUnsigned32, "uint32", type::UnsignedInteger(32),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 32-bit unsigned integer value.");
+STANDARD_KEYWORD_CTOR(unsigned_integer, CtorUnsigned64, "uint64", type::UnsignedInteger(64),
+                      type::UnsignedInteger(type::Wildcard()), "Creates a 64-bit unsigned integer value.");
+
 } // namespace hilti::operator_

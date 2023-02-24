@@ -250,31 +250,39 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const operator_::enum_::CastToSignedInteger& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
-        return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
+        return fmt("static_cast<%s>(%s.value())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     result_t operator()(const operator_::enum_::CastToUnsignedInteger& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
-        return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
+        return fmt("static_cast<%s>(%s.value())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     result_t operator()(const operator_::enum_::CtorSigned& n) {
         auto args = tupleArguments(n, n.op1());
         auto t = n.op0().type().as<type::Type_>().typeValue();
-        return fmt("::hilti::rt::enum_::from_int<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
+        return fmt("%s(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
     result_t operator()(const operator_::enum_::CtorUnsigned& n) {
         auto args = tupleArguments(n, n.op1());
         auto t = n.op0().type().as<type::Type_>().typeValue();
-        return fmt("::hilti::rt::enum_::from_uint<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
+        return fmt("%s(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
     result_t operator()(const operator_::enum_::HasLabel& n) {
         return fmt("::hilti::rt::enum_::has_label(%s, %s)", op0(n), cg->typeInfo(n.op0().type()));
     }
 
+    // Error
+
+    result_t operator()(const operator_::error::Ctor& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::result::Error(%s)", args[0]);
+    }
+
     // Exception
+
     result_t operator()(const operator_::exception::Ctor& n) {
         std::string type;
 
@@ -305,6 +313,31 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::interval::Sum& n) { return binary(n, "+"); }
     result_t operator()(const operator_::interval::Unequal& n) { return binary(n, "!="); }
 
+    result_t operator()(const operator_::interval::CtorSignedIntegerSecs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%s, hilti::rt::Interval::SecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::interval::CtorSignedIntegerNs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%s, hilti::rt::Interval::NanosecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::interval::CtorUnsignedIntegerSecs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%s, hilti::rt::Interval::SecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::interval::CtorUnsignedIntegerNs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%s, hilti::rt::Interval::NanosecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::interval::CtorRealSecs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Interval(%f, hilti::rt::Interval::SecondTag())", args[0]);
+    }
+
     // List
     result_t operator()(const operator_::list::iterator::IncrPostfix& n) { return fmt("%s++", op0(n)); }
     result_t operator()(const operator_::list::iterator::IncrPrefix& n) { return fmt("++%s", op0(n)); }
@@ -328,7 +361,9 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::map::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
     result_t operator()(const operator_::map::In& n) { return fmt("%s.contains(%s)", op1(n), op0(n)); }
     result_t operator()(const operator_::map::IndexConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
-    result_t operator()(const operator_::map::IndexNonConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
+    result_t operator()(const operator_::map::IndexNonConst& n) {
+        return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS};
+    }
     result_t operator()(const operator_::map::Size& n) { return fmt("%s.size()", op0(n)); }
     result_t operator()(const operator_::map::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
@@ -369,7 +404,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     /// Real
 
     result_t operator()(const operator_::real::CastToInterval& n) {
-        return fmt("::hilti::rt::Interval(%f, hilti::rt::Interval::NanosecondTag())", op0(n));
+        return fmt("::hilti::rt::Interval(%f, hilti::rt::Interval::SecondTag())", op0(n));
     }
     result_t operator()(const operator_::real::CastToTime& n) {
         return fmt("::hilti::rt::Time(%f, hilti::rt::Time::SecondTag())", op0(n));
@@ -409,9 +444,17 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const operator_::result::Error& n) { return fmt("%s.errorOrThrow()", op0(n)); }
 
+    result_t operator()(const operator_::generic::Pack& n) {
+        const auto& type = n.op0().as<expression::Ctor>().ctor().as<ctor::Tuple>().value()[0].type();
+        auto args = tupleArguments(n, n.op0());
+        return cg->pack(type, args[0], util::slice(args, 1, -1));
+    }
+
     result_t operator()(const operator_::generic::Unpack& n) {
         auto args = tupleArguments(n, n.op1());
-        return cg->unpack(n.op0().type().as<type::Type_>().typeValue(), args[0], util::slice(args, 1, -1));
+        auto throw_on_error = n.op2().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
+        return cg->unpack(n.op0().type().as<type::Type_>().typeValue(), args[0], util::slice(args, 1, -1),
+                          throw_on_error);
     }
 
     result_t operator()(const operator_::generic::Begin& n) { return fmt("%s.begin()", op0(n)); }
@@ -441,7 +484,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         auto name = op0(n);
 
         if ( auto a = AttributeSet::find(f.function().attributes(), "&cxxname") ) {
-            if (auto s = a->valueAsString() )
+            if ( auto s = a->valueAsString() )
                 name = cxx::Expression(*s);
             else
                 logger().error(s, n);
@@ -484,13 +527,20 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     // Optional
     result_t operator()(const operator_::optional::Deref& n) {
-        return {fmt("::hilti::rt::optional::value(%s, \"%s\")", op0(n), n.op0().meta().location().render()), cxx::Side::LHS};
+        return {fmt("::hilti::rt::optional::value(%s, \"%s\")", op0(n), n.op0().meta().location().render()),
+                cxx::Side::LHS};
     }
 
     /// Port
 
     result_t operator()(const operator_::port::Equal& n) { return binary(n, "=="); }
     result_t operator()(const operator_::port::Unequal& n) { return binary(n, "!="); }
+
+    result_t operator()(const operator_::port::Ctor& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Port(%s, %s)", args[0], args[1]);
+    }
+
     result_t operator()(const operator_::port::Protocol& n) { return fmt("%s.protocol()", op0(n)); }
 
     // Set
@@ -614,6 +664,11 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::stream::Size& n) { return fmt("%s.size()", op0(n)); }
     result_t operator()(const operator_::stream::SumAssignView& n) { return fmt("%s.append(%s)", op0(n), op1(n)); }
     result_t operator()(const operator_::stream::SumAssignBytes& n) { return fmt("%s.append(%s)", op0(n), op1(n)); }
+
+    result_t operator()(const operator_::stream::Ctor& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Stream(%s)", args[0]);
+    }
 
     result_t operator()(const operator_::stream::Freeze& n) {
         auto [self, args] = methodArguments(n);
@@ -787,6 +842,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     // Signed integer
 
+    result_t operator()(const operator_::signed_integer::CastToBool& n) { return fmt("::hilti::rt::Bool(%s)", op0(n)); }
     result_t operator()(const operator_::signed_integer::CastToInterval& n) {
         return fmt("::hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
                    ") * 1000000000, hilti::rt::Interval::NanosecondTag())",
@@ -837,6 +893,46 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
+    result_t operator()(const operator_::signed_integer::CtorSigned8& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<int8_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::signed_integer::CtorSigned16& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<int16_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::signed_integer::CtorSigned32& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<int32_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::signed_integer::CtorSigned64& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<int64_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::signed_integer::CtorUnsigned8& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<int8_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::signed_integer::CtorUnsigned16& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<int16_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::signed_integer::CtorUnsigned32& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<int32_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::signed_integer::CtorUnsigned64& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<int64_t>(%s)", args[0]);
+    }
+
     // Time
 
     result_t operator()(const operator_::time::DifferenceInterval& n) { return binary(n, "-"); }
@@ -850,6 +946,31 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::time::Seconds& n) { return fmt("%s.seconds()", op0(n)); }
     result_t operator()(const operator_::time::SumInterval& n) { return binary(n, "+"); }
     result_t operator()(const operator_::time::Unequal& n) { return binary(n, "!="); }
+
+    result_t operator()(const operator_::time::CtorSignedIntegerSecs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Time(%s, hilti::rt::Time::SecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::time::CtorSignedIntegerNs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Time(%s, hilti::rt::Time::NanosecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::time::CtorUnsignedIntegerSecs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Time(%s, hilti::rt::Time::SecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::time::CtorUnsignedIntegerNs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Time(%s, hilti::rt::Time::NanosecondTag())", args[0]);
+    }
+
+    result_t operator()(const operator_::time::CtorRealSecs& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Time(%f, hilti::rt::Time::SecondTag())", args[0]);
+    }
 
     // Tuple
 
@@ -879,6 +1000,9 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::unsigned_integer::BitAnd& n) { return fmt("(%s & %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::BitOr& n) { return fmt("(%s | %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::BitXor& n) { return fmt("(%s ^ %s)", op0(n), op1(n)); }
+    result_t operator()(const operator_::unsigned_integer::CastToBool& n) {
+        return fmt("::hilti::rt::Bool(%s)", op0(n));
+    }
     result_t operator()(const operator_::unsigned_integer::CastToEnum& n) {
         auto t = n.op1().type().as<type::Type_>().typeValue();
         return fmt("::hilti::rt::enum_::from_uint<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
@@ -921,6 +1045,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     }
     result_t operator()(const operator_::unsigned_integer::ShiftLeft& n) { return fmt("(%s << %s)", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::ShiftRight& n) { return fmt("(%s >> %s)", op0(n), op1(n)); }
+    result_t operator()(const operator_::unsigned_integer::SignNeg& n) { return fmt("(-%s)", op0(n)); }
     result_t operator()(const operator_::unsigned_integer::Sum& n) { return fmt("%s + %s", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::SumAssign& n) { return fmt("%s += %s", op0(n), op1(n)); }
     result_t operator()(const operator_::unsigned_integer::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
@@ -940,6 +1065,46 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         return fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
+    result_t operator()(const operator_::unsigned_integer::CtorSigned8& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<uint8_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::unsigned_integer::CtorSigned16& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<uint16_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::unsigned_integer::CtorSigned32& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<uint32_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::unsigned_integer::CtorSigned64& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<uint64_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::unsigned_integer::CtorUnsigned8& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<uint8_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::unsigned_integer::CtorUnsigned16& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<uint16_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::unsigned_integer::CtorUnsigned32& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<uint32_t>(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::unsigned_integer::CtorUnsigned64& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("static_cast<uint64_t>(%s)", args[0]);
+    }
+
     // Vector
     result_t operator()(const operator_::vector::iterator::IncrPostfix& n) { return fmt("%s++", op0(n)); }
     result_t operator()(const operator_::vector::iterator::IncrPrefix& n) { return fmt("++%s", op0(n)); }
@@ -948,8 +1113,12 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::vector::iterator::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
 
     result_t operator()(const operator_::vector::Equal& n) { return fmt("%s == %s", op0(n), op1(n)); }
-    result_t operator()(const operator_::vector::IndexConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
-    result_t operator()(const operator_::vector::IndexNonConst& n) { return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS}; }
+    result_t operator()(const operator_::vector::IndexConst& n) {
+        return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS};
+    }
+    result_t operator()(const operator_::vector::IndexNonConst& n) {
+        return {fmt("%s[%s]", op0(n), op1(n)), cxx::Side::LHS};
+    }
     result_t operator()(const operator_::vector::Size& n) { return fmt("%s.size()", op0(n)); }
     result_t operator()(const operator_::vector::Unequal& n) { return fmt("%s != %s", op0(n), op1(n)); }
     result_t operator()(const operator_::vector::Sum& n) { return fmt("%s + %s", op0(n), op1(n)); }

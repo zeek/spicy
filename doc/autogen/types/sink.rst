@@ -102,7 +102,7 @@
     Note that by default, auto-trimming is enabled, which means all data
     is trimmed automatically once in-order and processed.
 
-.. spicy:method:: sink::write sink write False void (inout data: bytes, [ seq: uint<64> ], [ len: uint<64> ])
+.. spicy:method:: sink::write sink write False void (data: bytes, [ seq: uint<64> ], [ len: uint<64> ])
 
     Passes data on to all connected parsing units. Multiple *write* calls
     act like passing input in incrementally: The units will parse the

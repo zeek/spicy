@@ -238,9 +238,16 @@ inline Expression memberCall(Expression self, std::string id_, ctor::Tuple args,
                                           m);
 }
 
+inline Expression pack(Type type, const std::vector<Expression>& args, const Meta& m = Meta()) {
+    return expression::UnresolvedOperator(operator_::Kind::Pack,
+                                          {hilti::expression::Type_(std::move(type), m), tuple(args, m)}, m);
+}
+
 inline Expression unpack(Type type, const std::vector<Expression>& args, const Meta& m = Meta()) {
     return expression::UnresolvedOperator(operator_::Kind::Unpack,
-                                          {hilti::expression::Type_(std::move(type), m), tuple(args, m)}, m);
+                                          {hilti::expression::Type_(std::move(type), m), tuple(args, m),
+                                           hilti::expression::Ctor(hilti::ctor::Bool(false))},
+                                          m);
 }
 
 inline Expression unset(Expression self, ID field, const Meta& m = Meta()) {
@@ -341,5 +348,14 @@ inline auto port(Expression port, Expression protocol, const Meta& m = Meta()) {
         std::vector<Expression>{std::move(port), std::move(protocol)}, m);
 }
 
+inline Expression namedCtor(const std::string& name, const std::vector<Expression>& args, Meta m = Meta()) {
+    return expression::UnresolvedOperator(operator_::Kind::Call,
+                                          {expression::Member(ID(name)), expression::Ctor(hilti::ctor::Tuple(args))},
+                                          std::move(m));
+}
+
+inline auto scope(const Meta& m = Meta()) {
+    return hilti::expression::Keyword(hilti::expression::keyword::Kind::Scope, m);
+}
 
 } // namespace hilti::builder

@@ -758,6 +758,14 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>,
     }
 
     void operator()(const spicy::type::unit::item::Variable& v, position_t p) {
+        if ( auto attrs = v.attributes() ) {
+            for ( const auto& attr : attrs->attributes() ) {
+                const auto& tag = attr.tag();
+                if ( tag != "&optional" )
+                    error(fmt("attribute '%s' not supported for unit variables", tag), p);
+            }
+        }
+
         if ( v.itemType().isA<type::Sink>() )
             error(
                 "cannot use type 'sink' for unit variables; use either a 'sink' item or a reference to a sink "
@@ -866,6 +874,16 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>,
                  methodArgument(n, 0).type().as<type::StrongReference>().dereferencedType()->as<type::Unit>();
              ! y.isFilter() )
             error("unit type cannot be a filter, %filter missing", p);
+    }
+
+    void operator()(const operator_::unit::ContextConst& n, position_t p) {
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->contextType() )
+            error("context() used with a unit which did not declare %context", p);
+    }
+
+    void operator()(const operator_::unit::ContextNonConst& n, position_t p) {
+        if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->contextType() )
+            error("context() used with a unit which did not declare %context", p);
     }
 
     void operator()(const operator_::unit::Forward& n, position_t p) {

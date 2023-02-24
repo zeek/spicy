@@ -347,6 +347,18 @@ struct Visitor : visitor::PostOrder<void, Visitor>, type::Visitor {
         }
     }
 
+    void operator()(const expression::Keyword& e, position_t p) {
+        if ( e.kind() != expression::keyword::Kind::Scope )
+            return;
+
+        if ( type::isResolved(e.type()) )
+            return;
+
+        logChange(p.node, hilti::type::String());
+        p.node.as<expression::Keyword>().setType(hilti::type::String());
+        modified = true;
+    }
+
     void operator()(const expression::ListComprehension& e, position_t p) {
         if ( ! type::isResolved(e.type()) && type::isResolved(e.output().type()) ) {
             logChange(p.node, e.output().type());
@@ -578,7 +590,7 @@ bool Visitor::resolveOperator(const expression::UnresolvedOperator& u, position_
     modified = true;
 
 #ifndef NDEBUG
-    const Expression& new_op = p.node.as<expression::ResolvedOperator>();
+    const auto& new_op = p.node.as<Expression>();
     HILTI_DEBUG(logging::debug::Operator, util::fmt("=> resolved to %s (result: %s, expression is %s)", p.node.render(),
                                                     new_op, (new_op.isConstant() ? "const" : "non-const")));
 #endif
@@ -769,7 +781,8 @@ bool Visitor::resolveMethodCall(const expression::UnresolvedOperator& u, positio
 
     auto fields = stype->fields(member->id());
     if ( fields.empty() ) {
-        p.node.addError(util::fmt("struct type does not have a method `%s`", member->id()));
+        p.node.addError(
+            util::fmt("struct type %s does not have a method `%s`", stype->meta().location(), member->id()));
         return false; // Continue trying to find another match.
     }
 
@@ -921,6 +934,11 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
             return {};
 
         auto r = candidate.instantiate(nops->second, meta);
+
+        // Fold any constants right here in case downstream resolving depends
+        // on finding a constant (like for coercion).
+        if ( auto ctor = detail::foldConstant(r); ctor && *ctor )
+            r = expression::Ctor(**ctor, r.meta());
 
         // Some operators may not be able to determine their type before the
         // resolver had a chance to provide the information needed. They will

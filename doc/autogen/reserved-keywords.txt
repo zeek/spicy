@@ -60,6 +60,7 @@ new
 object
 on
 optional
+pack
 port
 print
 priority
@@ -89,6 +90,7 @@ uint32
 uint64
 uint8
 unit
+unpack
 unset
 var
 vector

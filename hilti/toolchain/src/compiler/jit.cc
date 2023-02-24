@@ -241,7 +241,7 @@ void JIT::_finish() {
 hilti::Result<Nothing> JIT::_compile() {
     util::timing::Collector _("hilti/jit/compile");
 
-    if ( _codes.empty() && _files.empty() )
+    if ( ! hasInputs() )
         return Nothing();
 
     auto cc_files = _files;
@@ -297,14 +297,16 @@ hilti::Result<Nothing> JIT::_compile() {
         if ( auto path = getenv("HILTI_CXX_INCLUDE_DIRS") ) {
             for ( auto&& dir : hilti::rt::split(path, ":") ) {
                 if ( ! dir.empty() ) {
-                    args.emplace_back("-I");
-                    args.emplace_back(dir);
+                    args.insert(args.begin(), {"-I", std::string(dir)});
                 }
             }
         }
 
-        auto obj = hilti::rt::filesystem::canonical(path);
-        obj.replace_extension(".o");
+        // We explicitly create the object file in the temporary directory.
+        // This ensures that we use a temp path for object files created for
+        // C++ files added by users as well.
+        auto obj = hilti::rt::filesystem::temp_directory_path() /
+                   util::fmt("%s_%" PRIx64 ".o", path.filename().c_str(), _hash);
 
         args.emplace_back("-o");
         args.push_back(obj);
@@ -437,7 +439,7 @@ Result<JIT::JobRunner::JobID> JIT::JobRunner::_scheduleJob(const hilti::rt::file
     auto jid = ++_job_counter;
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] %s", jid, util::join(cmdline, " ")));
 
-    _jobs_pending.emplace_back(std::make_tuple(jid, cmdline));
+    _jobs_pending.emplace_back(jid, cmdline);
     return jid;
 }
 
@@ -576,6 +578,21 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
     return Nothing();
 }
 
-void JIT::add(CxxCode d) { _codes.push_back(std::move(d)); }
+void JIT::add(CxxCode d) {
+    // Include all added codes in the JIT hash. This makes JIT invocations
+    // unique and e.g., prevents us from generating the same output file if the
+    // same module is seen in different compiler invocations.
+    if ( const auto& code = d.code() )
+        _hash = rt::hashCombine(_hash, std::hash<std::string>{}(*code));
 
-void JIT::add(const hilti::rt::filesystem::path& p) { _files.push_back(p); }
+    _codes.push_back(std::move(d));
+}
+
+void JIT::add(const hilti::rt::filesystem::path& p) {
+    // Include all added files in the JIT hash. This makes JIT invocations
+    // unique and e.g., prevents us from generating the same output file if the
+    // same module is seen in different compiler invocations.
+    _hash = rt::hashCombine(_hash, std::hash<std::string>{}(p));
+
+    _files.push_back(p);
+}

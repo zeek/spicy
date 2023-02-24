@@ -892,7 +892,7 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
 
         if ( style & CoercionStyle::OperandMatching ) {
             // Don't allow a constant value to match a non-constant operand.
-            if ( e_is_const && ! (dst_is_const || ! dst_is_mut) )
+            if ( e_is_const && !dst_is_const && dst_is_mut )
                 RETURN(result::Error());
         }
     }

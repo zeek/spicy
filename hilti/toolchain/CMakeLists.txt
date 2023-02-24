@@ -38,6 +38,7 @@ set(SOURCES
     src/ast/builder/builder.cc
     src/ast/builder/type.cc
     src/ast/declarations/imported-module.cc
+    src/ast/doc-string.cc
     src/ast/expression.cc
     src/ast/expressions
     src/ast/expressions/id.cc
@@ -51,6 +52,7 @@ set(SOURCES
     src/ast/type.cc
     src/ast/types/enum.cc
     src/ast/types/integer.cc
+    src/ast/types/library.cc
     src/ast/types/struct.cc
     src/ast/types/tuple.cc
     src/base/code-formatter.cc
@@ -82,6 +84,7 @@ set(SOURCES
     src/compiler/plugin.cc
     src/compiler/unit.cc
     src/compiler/visitors/coercer.cc
+    src/compiler/visitors/constant-folder.cc
     src/compiler/visitors/normalizer.cc
     src/compiler/visitors/printer.cc
     src/compiler/visitors/renderer.cc

@@ -1,0 +1,27 @@
+# @TEST-EXEC: ${SPICYC} -j -o test.hlto %INPUT
+# @TEST-EXEC: printf ok | spicy-driver --require-accept -c test.hlto >>output
+# @TEST-EXEC-FAIL: printf fail | spicy-driver -c test.hlto >>output
+# @TEST-EXEC-FAIL: printf okfail | spicy-driver --require-accept -c test.hlto >>output
+# @TEST-EXEC-FAIL: printf failok | spicy-driver --require-accept -c test.hlto >>output
+# @TEST-EXEC-FAIL: printf dunno | spicy-driver --require-accept -c test.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test `spicy::accept_input()` and `spicy::decline_input()` through `spicy-driver`.
+
+module Test;
+
+import spicy;
+
+public type Foo = unit {
+    on %init { print "---"; }
+
+    : Bar[];
+};
+
+type Bar = unit {
+    switch {
+        -> : b"ok" { print "ok"; spicy::accept_input(); }
+        -> : b"fail" { print "fail"; spicy::decline_input("kaputt"); }
+        -> : b"dunno" { print "dunno"; }
+    };
+};

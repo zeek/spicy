@@ -377,6 +377,18 @@ std::string hilti::rt::replace(std::string s, std::string_view o, std::string_vi
     return s;
 }
 
+bool hilti::rt::startsWith(const std::string& s, const std::string& prefix) {
+    if ( s.size() < prefix.size() )
+        return false;
+
+    for ( size_t i = 0; i < prefix.size(); ++i ) {
+        if ( s[i] != prefix[i] )
+            return false;
+    }
+
+    return true;
+}
+
 hilti::rt::ByteOrder hilti::rt::systemByteOrder() {
 #ifdef LITTLE_ENDIAN
     return ByteOrder::Little;
@@ -388,7 +400,7 @@ hilti::rt::ByteOrder hilti::rt::systemByteOrder() {
 }
 
 std::string hilti::rt::detail::adl::to_string(const hilti::rt::ByteOrder& x, tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value() ) {
         case hilti::rt::ByteOrder::Little: return "ByteOrder::Little";
         case hilti::rt::ByteOrder::Big: return "ByteOrder::Big";
         case hilti::rt::ByteOrder::Network: return "ByteOrder::Network";

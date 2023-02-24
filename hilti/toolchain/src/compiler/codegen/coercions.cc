@@ -36,7 +36,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor>, type::Visitor {
         if ( auto t = dst.tryAs<type::Bool>() ) {
             auto etype = p.node.as<Type>(); // preserve type ID
             auto id = cg->compile(etype, codegen::TypeUsage::Storage);
-            _result = fmt("(%s != %s::Undef)", expr, id);
+            _result = fmt("(%s != %s(%s::Undef))", expr, id, id);
         }
 
         else

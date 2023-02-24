@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <utility>
 
 #include <hilti/ast/type.h>
 
@@ -18,7 +17,7 @@ namespace hilti::type {
  */
 class Library : public TypeBase {
 public:
-    Library(std::string cxx_name, Meta m = Meta()) : TypeBase(std::move(m)), _cxx_name(std::move(cxx_name)) {}
+    Library(std::string cxx_name, Meta m = Meta());
 
     const std::string& cxxName() const { return _cxx_name; }
     bool operator==(const Library& other) const { return _cxx_name == other._cxx_name; }

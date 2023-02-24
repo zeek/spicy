@@ -11,7 +11,6 @@
 
 using namespace hilti;
 using namespace hilti::operator_;
-using util::fmt;
 
 namespace hilti::logging::debug {
 inline const hilti::logging::DebugStream Coercer("coercer");

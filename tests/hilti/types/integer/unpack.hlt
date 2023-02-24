@@ -13,8 +13,11 @@ global d = b"\x00\x01X";
 (u16, r) = *unpack<uint<16>>(d, hilti::ByteOrder::Little);
 hilti::print("L 0x%04x" % u16);
 
+assert pack(u16, hilti::ByteOrder::Little) == b"\x00\x01";
+
 (u16, r) = *unpack<uint<16>>(d, hilti::ByteOrder::Big);
 hilti::print("B 0x%04x" % u16);
+assert pack(u16, hilti::ByteOrder::Big) == b"\x00\x01";
 
 # Check that stream version works, too.
 global stream s = stream(b"\x00\x01X");
@@ -22,7 +25,10 @@ global view<stream> v = s;
 global view<stream> vr;
 (u16, vr) = *unpack<uint<16>>(v, hilti::ByteOrder::Little);
 hilti::print("L 0x%04x" % u16);
+assert pack(u16, hilti::ByteOrder::Little) == b"\x00\x01";
+
 (u16, vr) = *unpack<uint<16>>(v, hilti::ByteOrder::Big);
 hilti::print("B 0x%04x" % u16);
+assert pack(u16, hilti::ByteOrder::Big) == b"\x00\x01";
 
 }

@@ -16,7 +16,7 @@ namespace spicy::rt {
  * Exception thrown on attempts to use a context not matching what the unit
  * expects.
  */
-HILTI_EXCEPTION(ContextMismatch, UserException)
+HILTI_EXCEPTION(ContextMismatch, UsageError)
 
 /**
  * Type-erased wrapper around an instance of a parsing unit's `%context` type.
@@ -98,3 +98,11 @@ inline void setContext(hilti::rt::StrongReference<Context>& context, const std::
 } // namespace detail
 
 } // namespace spicy::rt
+
+namespace hilti::rt::detail::adl {
+
+inline std::string to_string(const spicy::rt::UnitContext& ctx, rt::detail::adl::tag /*unused*/) {
+    return "<unit context>";
+}
+
+} // namespace hilti::rt::detail::adl

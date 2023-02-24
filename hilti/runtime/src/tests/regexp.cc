@@ -356,6 +356,54 @@ TEST_CASE("advance") {
 
         CHECK_EQ(RegExp("[ \\n]*", {}).tokenMatcher().advance(s.view()), std::make_tuple(1, stream::View()));
     }
+
+    SUBCASE("advance with backtracking across chunks of input") {
+        const auto re_std = RegExp("abc(123)?", regexp::Flags{.use_std = true});
+        auto ms_std_1 = re_std.tokenMatcher();
+        CHECK_EQ(ms_std_1.advance("a"_b, false), std::make_tuple(-1, 1));
+        CHECK_EQ(ms_std_1.advance("b"_b, false), std::make_tuple(-1, 1));
+        CHECK_EQ(ms_std_1.advance("c"_b, false), std::make_tuple(-1, 1));
+        CHECK_EQ(ms_std_1.advance("1"_b, false), std::make_tuple(-1, 1));
+        CHECK_EQ(ms_std_1.advance("2"_b, false), std::make_tuple(-1, 1));
+        CHECK_EQ(ms_std_1.advance("X"_b, false), std::make_tuple(1, -2)); // go back two bytes
+    }
+
+    SUBCASE("advance into gap") {
+        // This is a regression test for GH-1303.
+        auto s = Stream();
+        s.append("A");
+        s.append(nullptr, 1024);
+        s.append("BC");
+        s.freeze();
+
+        const auto re = RegExp("(A|B|C)");
+
+        auto cur = s.view();
+
+        // Match on `A`.
+        {
+            auto [rc, ncur] = re.tokenMatcher().advance(cur);
+            CHECK_EQ(rc, 1);
+            CHECK_EQ(ncur, stream::View(cur.begin() + 1, cur.end()));
+            cur = ncur;
+        }
+
+        // Match attempt on gap fails, but leaves `cur` alone.
+        CHECK_EQ(cur.offset(), 1);
+        CHECK_THROWS_AS(re.tokenMatcher().advance(cur), MissingData);
+        CHECK_EQ(cur.offset(), 1);
+
+        // Resynchronize input which should put us just after the gap on `B`.
+        cur = cur.advanceToNextData();
+        CHECK_EQ(cur.offset(), 1 + 1024);
+
+        // Match on `B`.
+        {
+            auto [rc, ncur] = re.tokenMatcher().advance(cur);
+            CHECK_EQ(rc, 1);
+            CHECK_EQ(ncur.offset(), 1 + 1024 + 1);
+        }
+    }
 }
 
 TEST_CASE("reassign") {

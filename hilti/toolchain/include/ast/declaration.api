@@ -32,6 +32,12 @@ class Declaration(trait::isDeclaration) : trait::isNode {
      */
     std::string displayName() const;
 
+    /** Returns the documentation associated with the declaration, if any. */
+    const std::optional<DocString>& documentation() const;
+
+    /** Sets the documentation associated with the declaration. */
+    void setDocumentation(DocString doc);
+
     /**
      * Returns true if the declaration is equivalent to another one in HILTI
      * semantics.

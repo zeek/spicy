@@ -1,0 +1,19 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Trigger various packing/unpacking validation errors.
+
+module Foo {
+
+import hilti;
+
+pack();
+pack(42);
+pack(42, hilti::ByteOrder::Little, "xx");
+
+unpack<uint<32>>();
+unpack<uint<32>>(42);
+unpack<uint<32>>(b"");
+unpack<uint<32>>(b"", hilti::ByteOrder::Little, "xx");
+
+}

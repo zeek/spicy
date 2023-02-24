@@ -9,6 +9,7 @@ file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 set(SOURCES
     src/base64.cc
+    src/configuration.cc
     src/driver.cc
     src/global-state.cc
     src/init.cc

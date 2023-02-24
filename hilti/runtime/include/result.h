@@ -99,13 +99,15 @@ public:
 
     /**
      * Returns the result's value if it indicates success, or throws an
-     * exception if not.
+     * exception if not. By default, the exception thrown is `result::NoResult`.
      *
-     * @exception `result::NoResult` if the result reflects an error state
+     * @tparam E type of the exception to throw
+     * @exception exception of type `E` if the result reflects an error state
      */
+    template<typename E = result::NoResult>
     const T& valueOrThrow() const {
         if ( ! hasValue() )
-            throw result::NoResult(error());
+            throw E(error());
 
         return value();
     }
@@ -114,11 +116,13 @@ public:
      * Returns the result's value if it indicates success, or throws an
      * exception if not.
      *
-     * @exception `result::NoResult` if the result reflects an error state
+     * @tparam E type of the exception to throw
+     * @exception exception of type `E` if the result reflects an error state
      */
+    template<typename E = result::NoResult>
     T& valueOrThrow() {
         if ( ! hasValue() )
-            throw result::NoResult(error());
+            throw E(error());
 
         return value();
     }

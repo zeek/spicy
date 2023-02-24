@@ -12,7 +12,7 @@
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/json-fwd.h>
 #include <hilti/rt/result.h>
-#include <hilti/rt/types/integer.h>
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/string.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
@@ -30,14 +30,14 @@ class View;
 namespace bytes {
 
 /** For Bytes::Strip, which side to strip from. */
-enum class Side : int64_t {
-    Left,  /**< left side */
-    Right, /**< right side */
-    Both   /**< left and right sides */
-};
+HILTI_RT_ENUM_WITH_DEFAULT(Side, Left,
+                           Left,  // left side
+                           Right, // right side
+                           Both   // left and right side
+);
 
 /** For bytes decoding, which character set to use. */
-enum class Charset : int64_t { Undef, UTF8, ASCII };
+HILTI_RT_ENUM(Charset, Undef, UTF8, ASCII);
 
 /** For bytes decoding, how to handle decoding errors. */
 using DecodeErrorStrategy = string::DecodeErrorStrategy;
@@ -301,17 +301,16 @@ public:
     /**
      * Extracts a fixed number of bytes from the data
      *
-     * @tparam N number of bytes to extract
      * @param dst array to writes bytes into
+     * @param n number of bytes to extract
      * @return new bytes instance that has the first *N* bytes removed.
      */
-    template<int N>
-    Bytes extract(unsigned char (&dst)[N]) const {
-        if ( N > size() )
+    Bytes extract(unsigned char* dst, uint64_t n) const {
+        if ( n > size() )
             throw InvalidArgument("insufficient data in source");
 
-        memcpy(dst, data(), N);
-        return sub(N, std::string::npos);
+        memcpy(dst, data(), n);
+        return sub(n, std::string::npos);
     }
 
     /**

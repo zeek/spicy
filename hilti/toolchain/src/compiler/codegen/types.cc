@@ -326,7 +326,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<void, VisitorDeclaration>, 
             scope = scope.namespace_();
 
         std::string base_ns = "::hilti::rt";
-        std::string base_cls = "UserException";
+        std::string base_cls = "UsageError";
 
         if ( auto b = n.baseType() ) {
             auto x = cxx::ID(cg->compile(*b, codegen::TypeUsage::Ctor));
@@ -408,11 +408,10 @@ struct VisitorStorage : hilti::visitor::PreOrder<void, VisitorStorage>, type::Vi
         });
 
         auto default_ = cxx::Block();
-        default_.addReturn(
-            fmt(R"(hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", static_cast<uint64_t>(x)))", id.local()));
+        default_.addReturn(fmt(R"(hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", x.value()))", id.local()));
 
         auto body = cxx::Block();
-        body.addSwitch("x", cases, std::move(default_));
+        body.addSwitch("x.value()", cases, std::move(default_));
 
         auto ts_decl = cxx::declaration::Function{.result = "std::string",
                                                   .id = {"::hilti::rt::detail::adl", "to_string"},

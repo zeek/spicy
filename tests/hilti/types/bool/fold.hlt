@@ -1,0 +1,17 @@
+# @TEST-EXEC: hiltic -p %INPUT >>output
+# @TEST-EXEC: hiltic -j %INPUT >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test boolean constant folding.
+
+module Test {
+
+const b1 = (True || False);
+const b2 = (True && False);
+
+assert True && True;
+assert (True && (False || (!False)));
+assert b1 || b2;
+assert !(b1 && b2);
+
+}

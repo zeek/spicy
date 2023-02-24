@@ -1,0 +1,43 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test a series of out-of-range integer constructors.
+
+module Test {
+global x = int64(9223372036854775808); # max_int64  + 1
+}
+
+@TEST-START-NEXT
+module Test {
+global x = int64(-9223372036854775809); # min_int64 - 1
+}
+
+@TEST-START-NEXT
+module Test {
+global x = uint64(-1);
+}
+
+@TEST-START-NEXT
+module Test {
+global x = uint8(256);
+}
+
+@TEST-START-NEXT
+module Test {
+global x = uint8(-256);
+}
+
+@TEST-START-NEXT
+module Test {
+global x = uint8(-1);
+}
+
+@TEST-START-NEXT
+module Test {
+global x = int8(128);
+}
+
+@TEST-START-NEXT
+module Test {
+global x = +9223372036854775808;
+}

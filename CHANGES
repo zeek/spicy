@@ -1,3 +1,389 @@
+1.8.0-dev.8 | 2023-02-22 11:16:08 +0100
+
+  * Set reupload_on_changes for ccache caches. (Arne Welzel, Corelight)
+
+  * Build centos stream again for PRs, disable clang-12 debug. (Benjamin Bannier, Corelight)
+
+1.8.0-dev.5 | 2023-02-20 14:31:21 +0100
+
+  * Fix sign-unsigned comparison. (Benjamin Bannier, Corelight)
+
+  * GH-169: Build debian-11 instead of centos stream 8 in CI. (Benjamin Bannier, Corelight)
+
+  * Update docs for removal of fedora-35, addition of fedora-36. [skip CI] (Benjamin Bannier, Corelight)
+
+  * Add placeholder section for 1.8 to NEWS. (Benjamin Bannier, Corelight)
+
+1.7.0 | 2023-02-13 17:41:31 +0100
+
+  * Release 1.7.0.
+
+1.7.0-dev.124 | 2023-02-13 17:41:08 +0100
+
+  * Revert "Make all CI tasks greedy." (Benjamin Bannier, Corelight)
+
+    This reverts commit 3176c2cadc71aaf4c0c3dd28d37c1d465323da8c.
+
+  * Revert "Decrease excessive RAM on some CI platforms." (Benjamin Bannier, Corelight)
+
+    This reverts commit 6ce665b9f3dc7f3630167e1bdf3f752ce3647dcf.
+
+1.7.0-dev.121 | 2023-02-13 14:47:21 +0100
+
+  * GH-1310: Fix ASAN false positive with GCC. (Robin Sommer, Corelight)
+
+  * Skip clang-specific ASAN flags with other compilers. (Robin Sommer, Corelight)
+
+  * Don't instantiate a debug logger if we aren't going to debug log. (Robin Sommer, Corelight)
+
+  * Simplify runtime library's extract methods. (Robin Sommer, Corelight)
+
+  * Shortcut some stream offset computations. (Robin Sommer, Corelight)
+
+  * GH-1345: Apply alternative fix for #1345. (Robin Sommer, Corelight)
+
+1.7.0-dev.112 | 2023-02-09 11:03:09 +0100
+
+  * Make `printParserState` cheaper to call if debug logging is disabled. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.110 | 2023-02-03 15:57:39 +0100
+
+  * https://github.com/zeek/spicy-plugin/issues/134: Search
+    `HILTI_CXX_INCLUDE_DIRS` paths before default include paths.
+    (Robin Sommer, Corelight)
+
+  * Support Zeek-style documentation strings in Spicy source code. (Robin Sommer, Corelight)
+
+    This adds support for extracting and retaining Zeek-style
+    documentation strings (`##`, `##!`) inside Spicy source code to any
+    top-level AST nodes where it's appropriate: if they are prefixed with
+    a block of such comments, that information is retained along with the
+    node for later access.
+
+    The code printer (`-p`) learns to emit doc strings coming with the
+    nodes it's printing out.
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.105 | 2023-02-01 11:17:25 +0100
+
+  * Documentation updates. (Robin Sommer, Corelight)
+
+        - Documenting the new type `export` feature for Zeek.
+        - Update Zeek docs for JIT removal and `accept_input`/`decline_input`.
+
+1.7.0-dev.102 | 2023-01-31 14:02:45 +0100
+
+  * GH-1367: Use unique filename for all object files generated during JIT. (Benjamin Bannier, Corelight)
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
+  * Point doc repo links to latest release instead of `main`. (Benjamin Bannier, Corelight)
+
+  * Fix installation links for macos platforms. (Benjamin Bannier, Corelight)
+
+  * Bump latest release in docs. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.95 | 2023-01-27 12:00:41 +0100
+
+  * Streamline runtime exception hierarchy. (Robin Sommer, Corelight)
+
+    We were inconsistent in the structure of exceptions that could
+    happen during runtime, making it hard for host applications for
+    consistently handle trouble. We tweak this, as follows:
+
+        - We now only have two general subcategories of exceptions under the
+          top-level `hilti::rt::Exception`:
+
+            - `RuntimeError`: non-fatal errors that mean a host
+              applications cannot complete the current line of processing,
+              but can otherwise continue. This is the main exception that
+              host applications should catch, and then proceed
+              appropriately.
+
+            - `UsageError`: fatal errors that indicate something about
+              using the runtime environment was fundamentally wrong, and a
+              host application should abort.
+
+        - Almost all other exceptions are now derived from `RuntimeError`,
+          including Spicy's `ParseError` and `RecoverableFailure`, so that
+          they can treated consistently.
+
+1.7.0-dev.93 | 2023-01-27 11:57:58 +0100
+
+  * Search user module paths before system paths. (Robin Sommer, Corelight)
+
+    With, e.g., `spicyz -L /x/y/z`, we used to append the given module
+    path to the internal system paths, so that it was searched last. This
+    change turns around the priority to search `/x/y/x` first, before the
+    internal ones. That seems both more useful and more intuitive.
+
+  * Provide ability for host applications to initiate runtime's
+    module-pre-init phase manually. (Robin Sommer, Corelight)
+
+1.7.0-dev.89 | 2023-01-27 11:44:31 +0100
+
+  * Add DPD-style `spicy::accept_input()` and `spicy::decline_input()`. (Robin Sommer, Corelight)
+
+    This generalizes the accepting/decline input from being a Zeek thing to
+    being part of Spicy. Any Spicy grammar can call these functions as to
+    tell its host application if it recognizes the input format. The host
+    application can (but doesn't have to) install callbacks to receive
+    that information and react appropriately. For example, the Zeek
+    plugin will just forward it to Zeek's standard DPD hooks.
+
+    For testing, `spicy-driver` gets a new option `--require-accept`
+    that lets it exit with success only if `spicy::accept()` has
+    been called, and  `spicy::decline_input()` hasn't.
+
+    Note: The naming of the two functions is avoid conflicts with the
+    existing notion of synchronization's confirm/reject.
+
+  * Add a global configuration object to the Spicy runtime. (Robin Sommer, Corelight)
+
+    We didn't have a mechanism yet for a host application to configure the
+    runtime library's behavior. This follows what we do on the HILTI-side
+    to provide that capability.
+
+1.7.0-dev.86 | 2023-01-27 11:35:35 +0100
+
+  * Add driver option to output full set of generated C++ files. (Robin Sommer, Corelight)
+
+    `-x <prefix>` now writes out all generated C++ code as
+    `<prefix>_*.cc`, also setting the internal C++ namespace prefix to
+    `<prefix>`.
+
+  * Add test for sink's paying attention to linker scopes with static C++ code. (Robin Sommer, Corelight)
+
+  * Make test helper scripts `cxx-*` usable with Spicy code as well. (Robin Sommer, Corelight)
+
+  * Provide new HILTI keyword `$scope` to access linker scope. (Robin Sommer, Corelight)
+
+  * Prefix the linker scope with the internal CXX namespace. (Robin Sommer, Corelight)
+
+  * Fix a couple of places hardcoding the internal C++ namespace prefix. (Robin Sommer, Corelight)
+
+  * Prefix the linker symbols for versioning with C++ namespace. (Robin Sommer, Corelight)
+
+1.7.0-dev.78 | 2023-01-27 11:16:01 +0100
+
+  * GH-1123: Support arbitrary expression as argument to type
+    constructors, such as `interval(...)`. (Robin Sommer, Corelight)
+
+    So far we used constructor expressions like `interval(...)` to create
+    *constants* of the given type, and for that we required that the
+    argument was a single atomic value. The result was that these
+    constructor expressions were really more like literals for the
+    corresponding types than "normal" expressions. While that's useful
+    internally, it's confusing to the user. This commits changes that
+    to support arbitrary expressions as arguments.
+
+    To make this change without loosing a way to create actual constants
+    (which we need at some places), we implement this in two stages: the
+    parser initially turns such `interval(...)` expressions into call
+    operators[1] that the types now define for each desired constructor. We
+    then extend the normalizer with a new constants folding pass that
+    turns the call expressions into constants if possible.
+
+    The new constant folder remains limited to the cases we need for
+    this use case, but we'll be able to expand that later to  more
+    general folding.
+
+  * Fix bug in cast from `real` to `interval`. (Robin Sommer, Corelight)
+
+  * Add anchors to FAQ items in docs [skip CI]. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.53 | 2023-01-25 09:39:02 +0100
+
+  * Add stringification to UnitContext. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.51 | 2023-01-25 09:36:56 +0100
+
+  * Remove potential race during JIT when using `HILTI_CXX_COMPILER_LAUNCHER`. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.49 | 2023-01-20 10:41:46 +0100
+
+  * GH-1349: Fix incremental regexp matching for potentially empty results. (Robin Sommer, Corelight)
+
+    When feeding data incrementally into the regexp matcher, we could run
+    into an assert trying to ensure that the end of a match wasn't in the
+    previous chunk already. Turns out, however, that *is* possible with
+    empty matches that are determined only later (and maybe it's possible
+    in other cases, too). To fix this, we need to account for potentially
+    backtracking into data from a previous round. This could be a bit
+    surprising to callers of the `advance()` method, but should
+    work as long as they aren't trimming the stream in between (which in
+    our use cases shouldn't be the case).
+
+    Closes #1349.
+
+  * Install full nlohmann JSON header as well. (Benjamin Bannier, Corelight)
+
+    We previously would only install the nlohmann header with forward
+    declaration while in `hilti/rt/json.h` we include the full header. With
+    that it was impossible to include this header in user code.
+
+    This patch makes sure we install the full header as well.
+
+1.7.0-dev.45 | 2023-01-19 09:46:14 +0100
+
+  * Remove dead code. (Benjamin Bannier, Corelight)
+
+  * Remove performance pessimization introduced in `84fb4f21f494`. (Benjamin Bannier, Corelight)
+
+    When exposing this function directly we made the argument always
+    evaluate. This now causes us to compute strings for logging even if they
+    are never emitted.
+
+    Undo this change as it is actually not needed for the cleanup it was
+    initially intended for.
+
+  * GH-1345: Fix pathological performance for `_haveEod` on highly chunked streams. (Benjamin Bannier, Corelight)
+
+    This function was identified as a performance bottleneck when parsing
+    `bytes` with a huge size from a stream with many chunks. The reason it
+    performed so poorly was due to its use of `unsafeEnd`: since `unsafeEnd`
+    creates an unsafe iterator from `end()` it always needs to compute the
+    chunk the safe iterator pointed to; if the stream contains many chunks
+    this causes the seen poor performance.
+
+    Since we only access `offset` use safe iterators instead. This makes it
+    much cheaper to call this function so we can safely use it during
+    parsing.
+
+    Since this change only affects performance we do not add a test case.
+    For a benchmark see #1345.
+
+    Closes #1345.
+
+  * Remove EOL fedora-35, add fedora-37. (Benjamin Bannier, Corelight)
+
+  * Bump Zeek version in zeek-plugin CI job. (Benjamin Bannier, Corelight)
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.37 | 2023-01-09 16:10:40 +0100
+
+  * Decrease excessive RAM on some CI platforms. (Benjamin Bannier, Corelight)
+
+  * Make all CI tasks greedy. (Benjamin Bannier, Corelight)
+
+  * Rerun BTest up to three times in CI. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.33 | 2023-01-05 17:33:00 +0100
+
+  * Update repo to not publish Docker images anymore. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.31 | 2023-01-05 15:38:13 +0100
+
+  * GH-1326: Generate proper runtime types for enums. (Benjamin Bannier, Corelight)
+
+  * Allow default for `vector::Allocator` with some non-class types. (Benjamin Bannier, Corelight)
+
+  * Remove unused define. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.25 | 2023-01-04 10:26:33 +0100
+
+  * GH-1330: Reject uses of imported module IDs as expression. (Benjamin Bannier, Corelight)
+
+  * Fix test `Backtrace.comparison` for aggressive constant folding. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.22 | 2022-12-14 13:25:57 +0100
+
+  * Push container images to Docker Hub zeek org, too. (Arne Welzel, Corelight)
+
+1.7.0-dev.20 | 2022-12-14 13:24:47 +0100
+
+  * Bump Cirrus macos CI. (Benjamin Bannier, Corelight)
+
+  * Fix test `Backtrace.comparison` for aggressive constant folding. (Benjamin Bannier, Corelight)
+
+  * Remove workaround for outdated Homebrew db on Cirrus CI. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.16 | 2022-12-14 10:29:59 +0100
+
+  * Audit previously disabled clang-tidy-15 checks. (Benjamin Bannier, Corelight)
+
+1.7.0-dev.4 | 2022-12-13 10:56:35 +0100
+
+  * Fix docs for enum using semicolon instead of comma. (Arne Welzel, Corelight)
+
+1.7.0-dev.2 | 2022-12-13 10:43:41 +0100
+
+  * GH-1322: Bring implementation of `Sink::write` in line with declaration. (Benjamin Bannier, Corelight)
+
+  * Add placeholder section for 1.7 to NEWS. (Benjamin Bannier, Corelight)
+
+1.6.0 | 2022-12-12 12:38:01 +0100
+
+  * Release 1.6.0. (Benjamin Bannier, Corelight)
+
+1.6.0-dev.147 | 2022-12-12 09:40:49 +0100
+
+  * GH-1319: Add validation rejecting unsupported attributes on unit variables. (Benjamin Bannier, Corelight)
+
+1.6.0-dev.145 | 2022-12-12 09:14:22 +0100
+
+  * doc/zeek: zkg template changed and mention packet analyzers (Arne
+    Welzel, Corelight)
+
+1.6.0-dev.143 | 2022-12-12 09:02:59 +0100
+
+  * GH-1298: Fix/clarify bitfield docs. (Robin Sommer, Corelight)
+
+1.6.0-dev.141 | 2022-12-12 08:56:24 +0100
+
+  * Expose new `pack`/`unpack` operators in Spicy. These provide
+    low-level primitives for transforming a value into, or out of, a
+    binary representations. See
+    https://docs.zeek.org/projects/spicy/en/latest/programming/language/packing.html
+    for more. Internally, `unpack` already existed; `pack` is new.
+    (Robin Sommer, Corelight)
+
+  * Update clang-tidy config for clang-15. (Benjamin Bannier, Corelight)
+
+  * Use clang-15 for lint CI job. (Benjamin Bannier, Corelight)
+
+1.6.0-dev.133 | 2022-12-07 08:44:38 +0100
+
+  * Improve efficiency of `startsWith` for long inputs. (Benjamin Bannier, Corelight)
+
+1.6.0-dev.131 | 2022-12-06 10:37:30 +0100
+
+  * Drop redundant leading `::` for C++ entities in script land. (Benjamin Bannier, Corelight)
+
+  * GH-1285: Remove implemented TODO in docs. (Benjamin Bannier, Corelight)
+
+  * Normalize names used in `__library_type`. (Benjamin Bannier, Corelight)
+
+  * Normalize any type `cxxID` set through C++ API. (Benjamin Bannier, Corelight)
+
+  * Normalize `&cxxname` values to be fully qualified. (Benjamin Bannier, Corelight)
+
+  * Expose function instead of macro for `hilti::debug`. (Benjamin Bannier, Corelight)
+
+  * Fix duplicate prefixing of `::` for prototypes generated for `&cxxname`. (Benjamin Bannier, Corelight)
+
+  * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
+
+1.6.0-dev.122 | 2022-12-05 09:31:26 +0100
+
+  * GH-1311: Validate that unit using `self.context()` declares `%context`. (Benjamin Bannier, Corelight)
+
+1.6.0-dev.120 | 2022-12-05 09:30:26 +0100
+
+  * Explicitly type integer to boolean cast. (Benjamin Bannier, Corelight)
+
+1.6.0-dev.118 | 2022-12-02 12:20:30 +0100
+
+  * cmake/FindGoldLinker: Do not use gold by default (Arne Welzel, Corelight)
+
+  * cmake/FindGoldLinker: Put -fuse-ld=gold before existing flags (Arne Welzel, Corelight)
+
+1.6.0-dev.115 | 2022-12-01 13:59:34 +0100
+
+  * GH-1303: Fix incorrect offset computation in `advanceToNextData`. (Benjamin Bannier, Corelight)
+
 1.6.0-dev.113 | 2022-11-18 11:48:35 +0100
 
   * GH-1294: Add library function to parse an address from string or bytes. (Robin Sommer, Corelight)
@@ -3905,7 +4291,7 @@ x:
 
   * Fix ADL for `rt::to_string`. (Benjamin Bannier, Corelight)
 
-  * Fix `rt::util::split` for empty delimter case. (Benjamin Bannier, Corelight)
+  * Fix `rt::util::split` for empty delimiter case. (Benjamin Bannier, Corelight)
 
 0.4.0-364 | 2020-06-04 08:40:25 +0200
 

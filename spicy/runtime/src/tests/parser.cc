@@ -36,15 +36,15 @@ using namespace spicy::rt;
 TEST_SUITE_BEGIN("Parser");
 
 TEST_CASE("Direction") {
-    CHECK_EQ(to_string(Direction::Originator), "originator");
-    CHECK_EQ(to_string(Direction::Responder), "responder");
-    CHECK_EQ(to_string(Direction::Both), "both");
-    CHECK_EQ(to_string(Direction::Undef), "undefined");
+    CHECK_EQ(to_string(Enum(Direction::Originator)), "originator");
+    CHECK_EQ(to_string(Enum(Direction::Responder)), "responder");
+    CHECK_EQ(to_string(Enum(Direction::Both)), "both");
+    CHECK_EQ(to_string(Enum(Direction::Undef)), "undefined");
 
-    CHECK_EQ(fmt("%s", Direction::Originator), "originator");
-    CHECK_EQ(fmt("%s", Direction::Responder), "responder");
-    CHECK_EQ(fmt("%s", Direction::Both), "both");
-    CHECK_EQ(fmt("%s", Direction::Undef), "undefined");
+    CHECK_EQ(fmt("%s", Enum(Direction::Originator)), "originator");
+    CHECK_EQ(fmt("%s", Enum(Direction::Responder)), "responder");
+    CHECK_EQ(fmt("%s", Enum(Direction::Both)), "both");
+    CHECK_EQ(fmt("%s", Enum(Direction::Undef)), "undefined");
 }
 
 TEST_CASE("ParserPort") {

@@ -12,9 +12,6 @@
 
 namespace hilti::rt {
 
-/** Reports an internal error and aborts execution. */
-// void internalError(const std::string& msg) __attribute__((noreturn)); // Declared in util.h
-
 /**
  * Reports a fatal error and immediately aborts execution. This skips all
  * cleanup and should be used only for catastrophic library issues; not for
@@ -97,6 +94,18 @@ inline const char* location() {
 inline void setLocation(const char* l = nullptr) {
     if ( auto context = ::hilti::rt::context::detail::current() )
         context->source_location = l;
+}
+
+/**
+ * Prints a string, or a runtime value, to a specific debug stream. This is a
+ * wrapper around `debug::detail::print(*)` that avoids evaluation of the
+ * arguments if nothing is going to get logged.
+ */
+template<typename T>
+inline void print(const std::string& stream, T&& msg) {
+    if ( ::hilti::rt::detail::globalState()->debug_logger &&
+         ::hilti::rt::detail::globalState()->debug_logger->isEnabled(stream) )
+        ::hilti::rt::debug::detail::print(stream, std::forward<T>(msg));
 }
 
 } // namespace debug

@@ -581,7 +581,7 @@ Combining everything discussed so far, this leaves us with the
 following complete grammar for TFTP, including the packet formats in
 comments as well:
 
-.. literalinclude:: examples/tftp.spicy
+.. literalinclude:: /autogen/zeek/tftp-no-accept.spicy
     :language: spicy
 
 Zeek Integration
@@ -599,17 +599,19 @@ files involved individually first, see the :ref:`final section
 used to bootstrap a new Zeek package with a skeleton of everything
 needed for an analyzer.
 
-Before proceeding, make sure that the Zeek plugin is available::
+Before proceeding, make sure that the Zeek plugin is available. Since
+Zeek 5.0, it will show up by default::
+
+    # zeek -N Zeek::Spicy
+    Zeek::Spicy - Support for Spicy parsers (*.hlto) (built-in)
+
+If you are using an older version (or your Zeek has it specifically
+disabled), follow the instructions to :ref:`install the Zeek plugin
+<zeek_spicy_plugin_installation>`. You should now be seeing output
+similar to this::
 
     # zeek -NN Zeek::Spicy
-    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (built-in)
-
-If it is not available follow the instructions to :ref:`install the Zeek plugin
-<zeek_spicy_plugin_installation>`. You should now be seeing output similar to
-this::
-
-    # zeek -NN Zeek::Spicy
-    Zeek::Spicy - Support for Spicy parsers (*.spicy, *.evt, *.hlto) (dynamic, version x.y.z)
+    Zeek::Spicy - Support for Spicy parsers (*.hlto) (dynamic, version x.y.z)
 
 You should also have ``spicyz`` in your ``PATH``::
 
@@ -623,11 +625,10 @@ instructions plugin <zeek_installation>` for more.
 Compiling the Analyzer
 ----------------------
 
-While the Spicy plugin for Zeek can compile Spicy code on the fly, it
-is usually more convenient to compile an analyzer once upfront. Spicy
-comes with a tool :ref:`spicyz <spicyz>` for that. The following
-command line produces a binary object file ``tftp.hlto`` containing
-the executable analyzer code:
+Spicy comes with a tool :ref:`spicyz <spicyz>` that compiles Spicy
+analyzers into binary code that Zeek can load through a Spicy
+plugin. The following command line produces a binary object file
+``tftp.hlto`` containing the executable analyzer code:
 
 .. code::
 
@@ -784,21 +785,28 @@ the corresponding value of ``is_read``. Let's try it with a new
 If we look at the ``conn.log`` that Zeek produces during this run, we
 will see that the ``service`` field is not filled in yet. That's
 because our analyzer does not yet confirm to Zeek that it has been
-successful in parsing the content. To do that, we can extend our Spicy
-TFTP grammar to call two helper functions that the Spicy plugin makes
-available: ``zeek::confirm_protocol`` once we have successfully parsed
-a request, and ``zeek::reject_protocol`` in case we encounter a
-parsing error. While we could put this code right into ``tftp.spicy``, we
-prefer to store it inside separate Spicy file (``zeek_tftp.spicy``)
-because this is Zeek-specific logic:
+successful in parsing the content. To do that, we can call a library
+function that Spicy makes available once we have successfully parsed a
+request: :ref:`spicy::accept_input <spicy_accept_input>`. That
+function signals the host application---i.e., Zeek in our case—--that
+the parser is processing the expected protocol. With that, our request
+looks like this now:
 
-.. literalinclude:: examples/zeek_tftp.spicy
-    :lines: 3-
-    :language: spicy
+.. spicy-code:: tftp-request-with-accept.spicy
+
+    type Request = unit(is_read: bool) {
+        filename: bytes &until=b"\x00";
+        mode:     bytes &until=b"\x00";
+
+        on %done { spicy::accept_input(); }
+    };
+
+
+Let's try it again:
 
 .. code::
 
-    # spicyz -o tftp.hlto tftp.spicy zeek_tftp.spicy tftp.evt
+    # spicyz -o tftp.hlto tftp.spicy tftp.evt
     # zeek -r tftp_rrq.pcap tftp.hlto tftp.zeek
     TFTP read request, [orig_h=192.168.0.253, orig_p=50618/udp, resp_h=192.168.0.10, resp_p=69/udp], T, rfc1350.txt, octet
     # cat conn.log
@@ -863,7 +871,7 @@ connection. We can call that function when we see the initial request:
 
 .. code::
 
-    # spicyz -o tftp.hlto tftp.spicy zeek_tftp.spicy tftp.evt
+    # spicyz -o tftp.hlto tftp.spicy tftp.evt
     # zeek -r tftp_rrq.pcap tftp.hlto tftp.zeek
     TFTP read request, [orig_h=192.168.0.253, orig_p=50618/udp, resp_h=192.168.0.10, resp_p=69/udp], rfc1350.txt, octet
     TFTP data, 1, \x0a\x0a\x0a\x0a\x0a\x0aNetwork Working Group [...]
@@ -892,7 +900,7 @@ new ``tftp.log``:
 
 .. code::
 
-    # spicyz -o tftp.hlto tftp.spicy zeek_tftp.spicy tftp.evt
+    # spicyz -o tftp.hlto tftp.spicy tftp.evt
     # zeek -r tftp_rrq.pcap tftp.hlto tftp.zeek
     # cat tftp.log
     #fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	wrq	fname	mode	uid_data	size	block_sent	block_acked	error_code	error_msg
@@ -956,7 +964,6 @@ The above creates the following files (skipping anything related to
     spicy-tftp/analyzer/CMakeLists.txt
     spicy-tftp/analyzer/tftp.evt
     spicy-tftp/analyzer/tftp.spicy
-    spicy-tftp/analyzer/zeek_tftp.spicy
     spicy-tftp/cmake/FindSpicyPlugin.cmake
     spicy-tftp/scripts/__load__.zeek
     spicy-tftp/scripts/dpd.sig

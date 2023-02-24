@@ -34,8 +34,8 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 131
-%expect-rr 160
+%expect 125
+%expect-rr 164
 
 %{
 
@@ -88,6 +88,20 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 #define __loc__ toMeta(yylhs.location)
 
 static int _field_width = 0;
+
+// We keep a stack of doc strings here that's maintained during parsing. There
+// would actually be a much nicer way of doing this through Bison's mid-action
+// rules, but unfortunately those have a bug with Bison < 3.1 that prevents
+// passing results back from a mid-action rule; see
+// https://stackoverflow.com/questions/44811550/bison-c-mid-rule-value-lost-with-variants.
+//
+// Bison 3.1 fixes this and introduces a new, nicer typing syntax for
+// mid-action rules as well; see
+// https://www.gnu.org/software/bison/manual/html_node/Typed-Mid_002dRule-Actions.html#Typed-Mid_002dRule-Actions
+// Unfortunately, we cannot rely on having 3.1 yet, because some of our
+// supported platforms do not provide it. Once we can, we should get rid of
+// this stack and move to that new syntax instead.
+static std::vector<hilti::DocString> _docs;
 
 %}
 
@@ -190,6 +204,7 @@ static int _field_width = 0;
 %token ON
 %token OPTIONAL
 %token OR
+%token PACK
 %token PLUSASSIGN
 %token PLUSPLUS
 %token PORT
@@ -226,6 +241,7 @@ static int _field_width = 0;
 %token UINT64
 %token UINT8
 %token UNIT
+%token UNPACK
 %token UNSET
 %token VAR
 %token VECTOR
@@ -237,12 +253,11 @@ static int _field_width = 0;
 %type <hilti::Declaration>                           local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
 %type <std::vector<hilti::Declaration>>              struct_fields
 %type <hilti::Type>                                  base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
-%type <hilti::Ctor>                                  ctor tuple struct_ regexp list vector map set
-%type <hilti::Expression>                            expr tuple_elem member_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
+%type <hilti::Ctor>                                  ctor tuple struct_ regexp list vector map set unit_field_ctor
+%type <hilti::Expression>                            expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
 %type <std::vector<hilti::Expression>>               opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
 %type <std::optional<hilti::Statement>>              opt_else_block
 %type <std::optional<hilti::Expression>>             opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr
-%type <hilti::Function>                              function_with_body function_without_body
 %type <hilti::type::function::Parameter>             func_param
 %type <hilti::declaration::parameter::Kind>          opt_func_param_kind
 %type <hilti::type::function::Result>                func_result opt_func_result
@@ -271,11 +286,6 @@ static int _field_width = 0;
 
 %type <std::pair<std::vector<hilti::Declaration>, std::vector<hilti::Statement>>> global_scope_items
 
-%type <double>   const_real
-%type <uint64_t> const_uint
-%type <int64_t>  const_sint
-
-
 // Spicy-only
 %type <std::optional<hilti::ID>>                            opt_unit_field_id
 %type <spicy::Engine>                                       opt_unit_field_engine opt_hook_engine
@@ -285,6 +295,10 @@ static int _field_width = 0;
 %type <std::vector<spicy::type::unit::Item>>                unit_items opt_unit_items
 %type <spicy::type::unit::item::switch_::Case>              unit_switch_case
 %type <std::vector<spicy::type::unit::item::switch_::Case>> unit_switch_cases
+%type <std::pair<hilti::Type, std::optional<hilti::Expression>>> global_decl_type_and_init
+
+%type <int64_t>  const_sint
+%type <uint64_t> const_uint
 
 %%
 
@@ -298,9 +312,11 @@ start         : START_MODULE module
 
 start_expr    : expr                             { driver->setDestinationExpression(std::move($1)); }
 
-module        : MODULE local_id ';'
-                global_scope_items               { auto m = hilti::Module($2, std::move($4.first), std::move($4.second), __loc__);
-                                                   driver->setDestinationModule(std::move(m));
+module        : MODULE local_id ';'              { _docs.emplace_back(driver->docGetAndClear()); }
+                global_scope_items               { auto m = hilti::Module($2, std::move($5.first), std::move($5.second), __loc__);
+                                                   m.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                   driver->setDestinationModule(m);
                                                  }
               ;
 
@@ -342,19 +358,28 @@ global_scope_decl
               | property_decl                    { $$ = std::move($1); }
               | hook_decl                        { $$ = std::move($1); }
 
-type_decl     : opt_linkage TYPE scoped_id '=' type opt_attributes ';' {
-                                                   if ( auto x = $5.isA<type::Unit>(); x && $6 && *$6 ) {
-                                                       $5.as<type::Unit>().setAttributes(*$6);
-                                                       $6 = {}; // don't associate with declaration
+type_decl     : opt_linkage TYPE scoped_id '='   { _docs.emplace_back(driver->docGetAndClear()); }
+                type opt_attributes ';'          { if ( auto x = $6.isA<type::Unit>(); x && $7 && *$7 ) {
+                                                       $6.as<type::Unit>().setAttributes(*$7);
+                                                       $7 = {}; // don't associate with declaration
                                                        }
 
-                                                   $$ = hilti::declaration::Type(std::move($3), std::move($5), std::move($6), std::move($1), __loc__);
+                                                   $$ = hilti::declaration::Type(std::move($3), std::move($6), std::move($7), std::move($1), __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
                                                  }
 
-constant_decl : opt_linkage CONST scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::Constant($3, $5, $1, __loc__); }
-              | opt_linkage CONST scoped_id ':' type '=' expr ';'
-                                                 { $$ = hilti::declaration::Constant($3, $5, $7, $1, __loc__); }
+constant_decl : opt_linkage CONST scoped_id      { _docs.emplace_back(driver->docGetAndClear()); }
+                '=' expr ';'                     { $$ = hilti::declaration::Constant($3, $6, $1, __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
+
+              | opt_linkage CONST scoped_id      { _docs.emplace_back(driver->docGetAndClear()); }
+                ':' type '=' expr ';'            { $$ = hilti::declaration::Constant($3, $6, $8, $1, __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
               ;
 
 local_decl    : LOCAL scoped_id '=' expr ';'     { $$ = hilti::declaration::LocalVariable($2, $4, false, __loc__); }
@@ -370,18 +395,42 @@ local_init_decl
                                                  { $$ = hilti::declaration::LocalVariable($2, $4, false, __loc__); }
               ;
 
-global_decl   : opt_linkage GLOBAL scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($3, $5, $1, __loc__); }
-              | opt_linkage GLOBAL scoped_id ':' type ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($3, $5, $1, __loc__); }
-              | opt_linkage GLOBAL scoped_id ':' type '=' expr ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($3, $5, $7, $1, __loc__); }
+global_decl   : opt_linkage GLOBAL scoped_id     { _docs.emplace_back(driver->docGetAndClear()); }
+                '=' expr ';'                     { $$ = hilti::declaration::GlobalVariable($3, $6, $1, __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
+
+              | opt_linkage GLOBAL scoped_id     { _docs.emplace_back(driver->docGetAndClear()); }
+                ':' global_decl_type_and_init    { $$ = hilti::declaration::GlobalVariable($3, $6.first, $6.second, $1, __loc__);
+                                                   $$.setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
               ;
 
-function_decl : opt_linkage function_with_body
-                                                 { $$ = hilti::declaration::Function($2, $1, __loc__); }
-              | opt_linkage function_without_body ';'
-                                                 { $$ = hilti::declaration::Function($2, $1, __loc__); }
+global_decl_type_and_init
+              : type ';'                         { $$ = std::make_pair($1, std::nullopt); }
+              | type '=' expr ';'                { $$ = std::make_pair($1, $3); }
+
+function_decl : opt_linkage FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes
+                                                 { _docs.emplace_back(driver->docGetAndClear()); }
+                ';'                              {
+                                                    auto ftype = hilti::type::Function($9, $7, $3, __loc__);
+                                                    auto func = hilti::Function($5, std::move(ftype), {}, $4, $10, __loc__);
+                                                    $$ = hilti::declaration::Function(std::move(func), $1, __loc__);
+                                                    $$.setDocumentation(_docs.back());
+                                                    _docs.pop_back();
+                                                 }
+
+              | opt_linkage FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes
+                                                 { _docs.emplace_back(driver->docGetAndClear()); }
+                braced_block                     {
+                                                    auto ftype = hilti::type::Function($9, $7, $3, __loc__);
+                                                    auto func = hilti::Function($5, std::move(ftype), $12, $4, $10, __loc__);
+                                                    $$ = hilti::declaration::Function(std::move(func), $1, __loc__);
+                                                    $$.setDocumentation(_docs.back());
+                                                    _docs.pop_back();
+                                                 }
               ;
 
 import_decl   : IMPORT local_id ';'              { $$ = hilti::declaration::ImportedModule(std::move($2), std::string(".spicy"), __loc__); }
@@ -405,22 +454,7 @@ opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Link
               | PRIVATE                          { $$ = hilti::declaration::Linkage::Private; }
               | /* empty */                      { $$ = hilti::declaration::Linkage::Private; }
 
-/* Functions */
-
-function_with_body
-              : FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes braced_block
-                                                 {
-                                                    auto ftype = hilti::type::Function($8, $6, $2, __loc__);
-                                                    $$ = hilti::Function($4, std::move(ftype), $10, $3, $9, __loc__);
-                                                 }
-
-function_without_body
-              : FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes
-                                                 {
-                                                    auto ftype = hilti::type::Function($8, $6, $2, __loc__);
-                                                    $$ = hilti::Function($4, std::move(ftype), {}, $3, $9, __loc__);
-                                                 }
-
+/* Function helpers */
 
 opt_func_flavor : /* empty */                    { $$ = hilti::type::function::Flavor::Standard; }
 
@@ -650,7 +684,7 @@ enum_label    : local_id                         { $$ = hilti::type::enum_::Labe
               | local_id '=' CUINTEGER           { $$ = hilti::type::enum_::Label(std::move($1), $3, __loc__); }
               ;
 
-bitfield_type : BITFIELD '(' const_uint ')'
+bitfield_type : BITFIELD '(' CUINTEGER ')'
                                                  { _field_width = $3; }
                 '{' opt_bitfield_bits '}'
                                                  { $$ = spicy::type::Bitfield($3, $7, __loc__); }
@@ -666,9 +700,9 @@ bitfield_bits
               | bitfield_bits_spec               { $$ = std::vector<spicy::type::bitfield::Bits>(); $$.push_back(std::move($1)); }
 
 bitfield_bits_spec
-              : local_id ':' const_uint DOTDOT const_uint opt_attributes ';'
+              : local_id ':' CUINTEGER DOTDOT CUINTEGER opt_attributes ';'
                                                  { $$ = spicy::type::bitfield::Bits(std::move($1), $3, $5, _field_width, std::move($6), __loc__); }
-              | local_id ':' const_uint opt_attributes ';'
+              | local_id ':' CUINTEGER opt_attributes ';'
                                                  { $$ = spicy::type::bitfield::Bits(std::move($1), $3, $3, _field_width, std::move($4), __loc__); }
 
 /* --- Begin of Spicy units --- */
@@ -713,7 +747,7 @@ unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_fiel
                                                      $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__);
                                                  }
 
-              | opt_unit_field_id opt_unit_field_engine ctor       opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+              | opt_unit_field_id opt_unit_field_engine unit_field_ctor       opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__); }
 
               | opt_unit_field_id opt_unit_field_engine scoped_id  opt_unit_field_args opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
@@ -721,6 +755,24 @@ unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_fiel
 
               | opt_unit_field_id opt_unit_field_engine '(' unit_field_in_container ')' opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($4), std::move($2), {}, std::move($6), std::move($9), std::move($7), std::move($8), std::move($10), __loc__); }
+
+const_sint    : CUINTEGER                        { $$ = check_int64_range($1, true, __loc__); }
+              | '+' CUINTEGER                    { $$ = check_int64_range($2, true, __loc__); }
+              | '-' CUINTEGER                    { $$ = -check_int64_range($2, false, __loc__); }
+
+const_uint    : CUINTEGER                        { $$ = $1; }
+              | '+' CUINTEGER                    { $$ = $2; }
+
+unit_field_ctor
+              : ctor                             { $$ = std::move($1); }
+              | UINT8 '(' const_uint ')'         { $$ = hilti::ctor::UnsignedInteger($3, 8, __loc__); }
+              | UINT16 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 16, __loc__); }
+              | UINT32 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 32, __loc__); }
+              | UINT64 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 64, __loc__); }
+              | INT8 '(' const_sint ')'          { $$ = hilti::ctor::SignedInteger($3, 8, __loc__); }
+              | INT16 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 16, __loc__); }
+              | INT32 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 32, __loc__); }
+              | INT64 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 64, __loc__); }
 
 unit_field_in_container
               : ctor opt_unit_field_args opt_attributes
@@ -903,6 +955,8 @@ expr_d        : expr_d '(' opt_exprs ')'         { $$ = hilti::expression::Unres
               | expr_e                           { $$ = std::move($1); }
 
 expr_e        : CAST type_param_begin type type_param_end '(' expr ')'   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Cast, {std::move($6), hilti::expression::Type_(std::move($3))}, __loc__); }
+              | PACK tuple_expr                  { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Pack, {std::move($2)}, __loc__); }
+              | UNPACK type_param_begin type type_param_end tuple_expr   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unpack, {hilti::expression::Type_(std::move($3)), std::move($5), hilti::expression::Ctor(hilti::ctor::Bool(true), __loc__)}, __loc__); }
               | BEGIN_ '(' expr ')'              { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Begin, {std::move($3)}, __loc__); }
               | END_ '(' expr ')'                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::End, {std::move($3)}, __loc__); }
               | NEW ctor                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Ctor(std::move($2), __loc__), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
@@ -911,8 +965,8 @@ expr_e        : CAST type_param_begin type type_param_end '(' expr ')'   { $$ = 
               | expr_f                           { $$ = std::move($1); }
 
 expr_f        : ctor                             { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
-              | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::port(std::move($3), std::move($5), __loc__); }
-              | '-' expr_g                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
+              | ctor_expr                        { $$ = std::move($1); }
+              | '-' expr_f                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
               | '[' expr FOR local_id IN expr ']'
                                                  { $$ = hilti::expression::ListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
               | '[' expr FOR local_id IN expr IF expr ']'
@@ -939,37 +993,19 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | CPORT                            { $$ = hilti::ctor::Port(hilti::ctor::Port::Value($1), __loc__); }
               | CNULL                            { $$ = hilti::ctor::Null(__loc__); }
               | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
-
-              | const_real                       { $$ = hilti::ctor::Real($1, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
-              | '+' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(check_int64_range($2, true, __loc__), 64, __loc__); }
-              | '-' CUINTEGER                    { $$ = hilti::ctor::SignedInteger(-check_int64_range($2, false, __loc__), 64, __loc__); }
+              | '+' CUINTEGER                    { if ( $2 > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
+                                                    hilti::logger().error("integer constant out of range", __loc__.location());
+
+                                                   $$ = hilti::ctor::SignedInteger($2, 64, __loc__);
+                                                 }
+              | CUREAL                           { $$ = hilti::ctor::Real($1, __loc__); }
+              | '+' CUREAL                       { $$ = hilti::ctor::Real($2, __loc__);; }
+
+              /* There are more here that we could move into ctor_expr and have them use namedCtor.
+                 But not sure if that'd change much so leaving here for now.
+              */
               | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
-              | INTERVAL '(' const_real ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
-                                                 }
-              | INTERVAL '(' const_sint ')'      { try { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value()); error(@$, e.what()); }
-                                                 }
-              | INTERVAL_NS '(' const_sint ')'   { $$ = hilti::ctor::Interval(hilti::ctor::Interval::Value($3, hilti::rt::Interval::NanosecondTag()), __loc__); }
-              | TIME '(' const_real ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
-                                                 }
-              | TIME '(' const_uint ')'          { try { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::SecondTag()), __loc__); }
-                                                   catch ( hilti::rt::OutOfRange& e ) { $$ = hilti::ctor::Time(hilti::ctor::Time::Value()); error(@$, e.what()); }
-                                                 }
-              | TIME_NS '(' const_uint ')'       { $$ = hilti::ctor::Time(hilti::ctor::Time::Value($3, hilti::rt::Time::NanosecondTag()), __loc__); }
-              | STREAM '(' CBYTES ')'            { $$ = hilti::ctor::Stream(std::move($3), __loc__); }
-
-              | UINT8 '(' const_uint ')'         { $$ = hilti::ctor::UnsignedInteger($3, 8, __loc__); }
-              | UINT16 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 16, __loc__); }
-              | UINT32 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 32, __loc__); }
-              | UINT64 '(' const_uint ')'        { $$ = hilti::ctor::UnsignedInteger($3, 64, __loc__); }
-              | INT8 '(' const_sint ')'          { $$ = hilti::ctor::SignedInteger($3, 8, __loc__); }
-              | INT16 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 16, __loc__); }
-              | INT32 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 32, __loc__); }
-              | INT64 '(' const_sint ')'         { $$ = hilti::ctor::SignedInteger($3, 64, __loc__); }
-
               | list                             { $$ = std::move($1); }
               | map                              { $$ = std::move($1); }
               | regexp                           { $$ = std::move($1); }
@@ -979,16 +1015,21 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | vector                           { $$ = std::move($1); }
               ;
 
-const_real    : CUREAL                           { $$ = $1; }
-              | '+' CUREAL                       { $$ = $2; }
-              | '-' CUREAL                       { $$ = -$2; }
-
-const_sint    : CUINTEGER                        { $$ = check_int64_range($1, true, __loc__); }
-              | '+' CUINTEGER                    { $$ = check_int64_range($2, true, __loc__); }
-              | '-' CUINTEGER                    { $$ = -check_int64_range($2, false, __loc__); }
-
-const_uint    : CUINTEGER                        { $$ = $1; }
-              | '+' CUINTEGER                    { $$ = $2; }
+ctor_expr     : INTERVAL '(' expr ')'            { $$ = hilti::builder::namedCtor("interval", { std::move($3) }, __loc__); }
+              | INTERVAL_NS '(' expr ')'         { $$ = hilti::builder::namedCtor("interval_ns", { std::move($3) }, __loc__); }
+              | TIME '(' expr ')'                { $$ = hilti::builder::namedCtor("time", { std::move($3) }, __loc__); }
+              | TIME_NS '(' expr ')'             { $$ = hilti::builder::namedCtor("time_ns", { std::move($3) }, __loc__); }
+              | STREAM '(' expr ')'              { $$ = hilti::builder::namedCtor("stream", { std::move($3) }, __loc__); }
+              | INT8 '(' expr ')'                { $$ = hilti::builder::namedCtor("int8", { std::move($3) }, __loc__); }
+              | INT16 '(' expr ')'               { $$ = hilti::builder::namedCtor("int16", { std::move($3) }, __loc__); }
+              | INT32 '(' expr ')'               { $$ = hilti::builder::namedCtor("int32", { std::move($3) }, __loc__); }
+              | INT64 '(' expr ')'               { $$ = hilti::builder::namedCtor("int64", { std::move($3) }, __loc__); }
+              | UINT8 '(' expr ')'               { $$ = hilti::builder::namedCtor("uint8", { std::move($3) }, __loc__); }
+              | UINT16 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint16", { std::move($3) }, __loc__); }
+              | UINT32 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint32", { std::move($3) }, __loc__); }
+              | UINT64 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint64", { std::move($3) }, __loc__); }
+              | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::namedCtor("port", {std::move($3), std::move($5)}, __loc__); }
+              ;
 
 tuple         : '(' opt_tuple_elems1 ')'         { $$ = hilti::ctor::Tuple(std::move($2), __loc__); }
               | TUPLE '(' opt_exprs ')'          { $$ = hilti::ctor::Tuple(std::move($3), __loc__); }
@@ -1007,6 +1048,8 @@ opt_tuple_elems2
 
 tuple_elem    : expr                             { $$ = std::move($1); }
               | NONE                             { $$ = hilti::expression::Ctor(hilti::ctor::Null(__loc__), __loc__); }
+
+tuple_expr    : tuple                            { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
 
 list          : '[' opt_exprs ']'                { $$ = hilti::ctor::List(std::move($2), __loc__); }
               | LIST '(' opt_exprs ')'           { $$ = hilti::ctor::List(std::move($3), __loc__); }

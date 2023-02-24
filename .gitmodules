@@ -3,7 +3,7 @@
 	url = https://github.com/onqtam/doctest.git
 [submodule "3rdparty/SafeInt"]
 	path = 3rdparty/SafeInt
-	url = https://github.com/dcleblanc/SafeInt
+	url = https://github.com/rsmmr/SafeInt.git
 [submodule "3rdparty/ArticleEnumClass-v2"]
 	path = 3rdparty/ArticleEnumClass-v2
 	url = https://github.com/Dalzhim/ArticleEnumClass-v2

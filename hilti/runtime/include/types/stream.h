@@ -8,6 +8,7 @@
 #include <cinttypes>
 #include <cstddef>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -90,17 +91,18 @@ public:
     using Array = std::pair<Size, std::array<Byte, SmallBufferSize>>;
     using Vector = std::vector<Byte>;
 
-    Chunk(Offset o, std::array<Byte, SmallBufferSize> d, Size n) : _offset(o), _data(std::make_pair(n, d)) {}
-    Chunk(Offset o, Vector&& d) : _offset(o), _data(std::move(d)) {}
-    Chunk(Offset o, const View& d);
-    Chunk(Offset o, const std::string& s);
+    Chunk(const Offset& o, std::array<Byte, SmallBufferSize> d, const Size& n)
+        : _offset(o), _data(std::make_pair(n, d)) {}
+    Chunk(const Offset& o, Vector&& d) : _offset(o), _data(std::move(d)) {}
+    Chunk(const Offset& o, const View& d);
+    Chunk(const Offset& o, const std::string& s);
 
     template<int N>
     Chunk(Offset o, std::array<Byte, N> d) : Chunk(_fromArray(o, std::move(d))) {}
-    Chunk(Offset o, const char* d, Size n) : Chunk(_fromArray(o, d, n)) {}
+    Chunk(const Offset& o, const char* d, const Size& n) : Chunk(_fromArray(o, d, n)) {}
 
     // Constructs a gap chunk which signifies empty data.
-    Chunk(Offset o, size_t len) : _offset(o), _data(Gap{len}) {}
+    Chunk(const Offset& o, size_t len) : _offset(o), _data(Gap{len}) {}
 
     Chunk(const Chunk& other) : _offset(other._offset), _data(other._data) {}
     Chunk(Chunk&& other) noexcept
@@ -121,7 +123,7 @@ public:
     Offset offset() const { return _offset; }
     Offset endOffset() const { return _offset + size(); }
     bool isGap() const { return std::holds_alternative<Gap>(_data); }
-    bool inRange(Offset offset) const { return offset >= _offset && offset < endOffset(); }
+    bool inRange(const Offset& offset) const { return offset >= _offset && offset < endOffset(); }
 
     const Byte* data() const {
         if ( auto a = std::get_if<Array>(&_data) )
@@ -135,7 +137,7 @@ public:
         hilti::rt::cannot_be_reached();
     }
 
-    const Byte* data(Offset offset) const {
+    const Byte* data(const Offset& offset) const {
         assert(inRange(offset));
         return data() + (offset - _offset).Ref();
     }
@@ -187,7 +189,7 @@ protected:
     // only from chain so that it can track any changes.
     friend class Chain;
 
-    void trim(Offset o);
+    void trim(const Offset& o);
 
     // Update offset for current chunk and all others linked from it.
     void setOffset(Offset o) {
@@ -230,7 +232,7 @@ protected:
     void clearNext() { _next = nullptr; }
 
 private:
-    inline Chunk _fromArray(Offset o, const char* d, Size n) {
+    inline Chunk _fromArray(const Offset& o, const char* d, const Size& n) {
         auto ud = reinterpret_cast<const Byte*>(d);
 
         if ( n <= Chunk::SmallBufferSize ) {
@@ -276,7 +278,7 @@ public:
     Size size() const { return (endOffset() - offset()).Ref(); }
     bool isFrozen() const { return _state == State::Frozen; }
     bool isValid() const { return _state != State::Invalid; }
-    bool inRange(Offset o) const { return o >= offset() && o < endOffset(); }
+    bool inRange(const Offset& o) const { return o >= offset() && o < endOffset(); }
 
     Offset offset() const { return _head_offset; }
     Offset endOffset() const { return _tail ? _tail->endOffset() : _head_offset; }
@@ -286,16 +288,16 @@ public:
     // allowing that to be found more quickly. If given, *hint_prev* must be
     // pointing to a current chunk of the chain, but it's ok if it's
     // non-helpful for finding the target (i.e., pointing to a later chunk).
-    const Chunk* findChunk(Offset offset, const Chunk* hint_prev = nullptr) const;
-    Chunk* findChunk(Offset offset, Chunk* hint_prev = nullptr);
+    const Chunk* findChunk(const Offset& offset, const Chunk* hint_prev = nullptr) const;
+    Chunk* findChunk(const Offset& offset, Chunk* hint_prev = nullptr);
 
     // Returns a pointer to the byte at a given offset. Returns null if
     // offset is out of range. See find() for semantics of *hint_prev*.
-    const Byte* data(Offset offset, Chunk* hint_prev = nullptr) const;
+    const Byte* data(const Offset& offset, Chunk* hint_prev = nullptr) const;
 
     SafeConstIterator begin() const;
     SafeConstIterator end() const;
-    SafeConstIterator at(Offset offset) const;
+    SafeConstIterator at(const Offset& offset) const;
     UnsafeConstIterator unsafeBegin() const;
     UnsafeConstIterator unsafeEnd() const;
 
@@ -306,7 +308,7 @@ public:
     void append(std::unique_ptr<Chunk> chunk);
     void append(Chain&& other);
 
-    void trim(Offset offset);
+    void trim(const Offset& offset);
     void trim(const SafeConstIterator& i);
     void trim(const UnsafeConstIterator& i);
 
@@ -424,7 +426,7 @@ public:
     }
 
     /** Advances the iterator by a given number of stream. */
-    auto& operator+=(integer::safe<uint64_t> i) {
+    auto& operator+=(const integer::safe<uint64_t>& i) {
         _increment(i);
         return *this;
     }
@@ -443,7 +445,7 @@ public:
     }
 
     /** Moves back the iterator by a given number of stream. */
-    auto& operator-=(integer::safe<uint64_t> i) {
+    auto& operator-=(const integer::safe<uint64_t>& i) {
         _decrement(i);
         return *this;
     }
@@ -452,14 +454,14 @@ public:
     auto operator*() const { return _dereference(); }
 
     /** Return a new iterator advanced by a given number of bytes. */
-    auto operator+(integer::safe<uint64_t> i) const {
+    auto operator+(const integer::safe<uint64_t>& i) const {
         auto x = *this;
         x._increment(i);
         return x;
     }
 
     /** Returns a new iterator moved back by a given number of bytes. */
-    auto operator-(integer::safe<uint64_t> i) const {
+    auto operator-(const integer::safe<uint64_t>& i) const {
         auto x = *this;
         x._decrement(i);
         return x;
@@ -577,7 +579,7 @@ protected:
     const Chain* chain() const { return _chain.get(); }
 
 private:
-    SafeConstIterator(ConstChainPtr chain, Offset offset, const Chunk* chunk)
+    SafeConstIterator(ConstChainPtr chain, const Offset& offset, const Chunk* chunk)
         : _chain(std::move(chain)), _offset(offset), _chunk(chunk) {
         assert(! isUnset());
     }
@@ -602,7 +604,7 @@ private:
             throw InvalidIterator("incompatible iterators");
     }
 
-    void _increment(integer::safe<uint64_t> n) {
+    void _increment(const integer::safe<uint64_t>& n) {
         if ( ! _chain )
             throw InvalidIterator("unbound stream iterator");
 
@@ -618,7 +620,7 @@ private:
         // chunk will be null if we're pointing beyond the end.
     }
 
-    void _decrement(integer::safe<uint64_t> n) {
+    void _decrement(const integer::safe<uint64_t>& n) {
         if ( ! _chain )
             throw InvalidIterator("unbound stream iterator");
 
@@ -747,7 +749,7 @@ public:
     }
 
     /** Moves back the iterator by a given number of stream. */
-    auto& operator-=(integer::safe<uint64_t> i) {
+    auto& operator-=(const integer::safe<uint64_t>& i) {
         _decrement(i);
         return *this;
     }
@@ -756,14 +758,14 @@ public:
     auto operator*() const { return _dereference(); }
 
     /** Return a new iterator advanced by a given number of bytes. */
-    auto operator+(integer::safe<uint64_t> i) const {
+    auto operator+(const integer::safe<uint64_t>& i) const {
         auto x = *this;
         x._increment(i);
         return x;
     }
 
     /** Return a new iterator moved back by a given number of bytes. */
-    auto operator-(integer::safe<uint64_t> i) const {
+    auto operator-(const integer::safe<uint64_t>& i) const {
         auto x = *this;
         x._decrement(i);
         return x;
@@ -857,17 +859,17 @@ protected:
     const Chain* chain() const { return _chain; }
 
 private:
-    UnsafeConstIterator(const ConstChainPtr& chain, Offset offset, const Chunk* chunk)
+    UnsafeConstIterator(const ConstChainPtr& chain, const Offset& offset, const Chunk* chunk)
         : _chain(chain.get()), _offset(offset), _chunk(chunk) {
         assert(! isUnset());
     }
 
-    UnsafeConstIterator(const Chain* chain, Offset offset, const Chunk* chunk)
+    UnsafeConstIterator(const Chain* chain, const Offset& offset, const Chunk* chunk)
         : _chain(chain), _offset(offset), _chunk(chunk) {
         assert(! isUnset());
     }
 
-    void _increment(integer::safe<uint64_t> n) {
+    void _increment(const integer::safe<uint64_t>& n) {
         _offset += n;
 
         if ( _chunk && _offset < _chunk->endOffset() )
@@ -876,7 +878,7 @@ private:
         _chunk = _chain->findChunk(_offset, _chunk);
     }
 
-    void _decrement(integer::safe<uint64_t> n) {
+    void _decrement(const integer::safe<uint64_t>& n) {
         _offset -= n;
 
         if ( _chunk && _offset > _chunk->offset() )
@@ -926,25 +928,6 @@ inline std::ostream& operator<<(std::ostream& out, const UnsafeConstIterator& x)
     return out;
 }
 
-template<int N>
-inline UnsafeConstIterator _extract(Byte* dst, const UnsafeConstIterator& i) {
-    *dst = *i;
-    return _extract<N - 1>(dst + 1, i + 1);
-}
-
-template<>
-inline UnsafeConstIterator _extract<0>(Byte* /* dst */, const UnsafeConstIterator& i) {
-    return i;
-}
-
-template<int N>
-inline UnsafeConstIterator extract(Byte* dst, const UnsafeConstIterator& i, const UnsafeConstIterator& end) {
-    if ( end.offset() - i.offset() < N )
-        throw WouldBlock("end of stream view");
-
-    return _extract<N>(dst, i);
-}
-
 inline SafeConstIterator Chain::begin() const {
     _ensureValid();
     return {ConstChainPtr(intrusive_ptr::NewRef(), this), offset(), _head.get()};
@@ -955,7 +938,7 @@ inline SafeConstIterator Chain::end() const {
     return {ConstChainPtr(intrusive_ptr::NewRef(), this), endOffset(), _tail};
 }
 
-inline SafeConstIterator Chain::at(Offset offset) const {
+inline SafeConstIterator Chain::at(const Offset& offset) const {
     return {ConstChainPtr(intrusive_ptr::NewRef(), this), offset, findChunk(offset)};
 }
 
@@ -1036,6 +1019,17 @@ public:
      * stream instance.
      */
     Offset offset() const { return _begin.offset(); }
+
+    /**
+     * Returns the offset of the view's end location within the associated
+     * stream instance. For an open-ended view, returns an unset value.
+     */
+    std::optional<Offset> endOffset() const {
+        if ( _end )
+            return _end->offset();
+        else
+            return std::nullopt;
+    }
 
     /**
      * Returns the number of actual bytes available inside the view. If the
@@ -1205,7 +1199,7 @@ public:
      *
      * @param i the number of stream to advance.
      */
-    View advance(integer::safe<uint64_t> i) const { return View(begin() + i, _end); }
+    View advance(const integer::safe<uint64_t>& i) const { return View(begin() + i, _end); }
 
     /**
      * Advances the view to the next, none gap offset. This always advances at least by one byte.
@@ -1241,7 +1235,7 @@ public:
      * @param from offset of start of subrange, relative to beginning of view
      * @param to offset of one beyond end of subrange, relative to beginning of view
      */
-    View sub(Offset from, Offset to) const { return View(begin() + from, begin() + to); }
+    View sub(const Offset& from, const Offset& to) const { return View(begin() + from, begin() + to); }
 
     /**
      * Extracts subrange of stream from the beginning of the view, returned as
@@ -1249,10 +1243,10 @@ public:
      *
      * @param to of one beyond end of subrange, relative to beginning of view
      */
-    View sub(Offset to) const { return View(begin(), begin() + to); }
+    View sub(const Offset& to) const { return View(begin(), begin() + to); }
 
     /** Returns an iterator representing an offset inside the view's data */
-    SafeConstIterator at(Offset offset) const { return begin() + (offset - begin().offset()); }
+    SafeConstIterator at(const Offset& offset) const { return begin() + (offset - begin().offset()); }
 
     /**
      * Returns a new view moves the beginning to a subsequent iterator while
@@ -1276,19 +1270,26 @@ public:
      * at a specified offset from that beginning. The returned view will not
      * be able to expand any further.
      */
-    View limit(Offset incr) const { return View(begin(), begin() + incr); }
+    View limit(const Offset& incr) const { return View(begin(), begin() + incr); }
 
     /**
-     * Extracts a fixed number of stream from the view.
+     * Extracts a fixed number of stream bytes from the view.
      *
-     * @tparam N number of stream to extract
      * @param dst target array to write stream data into
+     * @param n number of stream bytes to extract
      * @return new view that has it's starting position advanced by N
      */
-    template<int N>
-    View extract(Byte (&dst)[N]) const {
+    View extract(Byte* dst, uint64_t n) const {
         _ensureValid();
-        return View(SafeConstIterator(detail::extract<N>(dst, unsafeBegin(), unsafeEnd())), _end);
+
+        if ( n > size() )
+            throw WouldBlock("end of stream view");
+
+        auto p = unsafeBegin();
+        for ( uint64_t i = 0; i < n; ++i )
+            dst[i] = *p++;
+
+        return View(SafeConstIterator(p), _end);
     }
 
     /**
@@ -1442,7 +1443,7 @@ public:
      * Creates an instance from an existing memory block. The data
      * will be copied if set, otherwise a gap will be recorded.
      */
-    Stream(const char* d, Size n);
+    Stream(const char* d, const Size& n);
     /**
      * Creates an instance from an existing stream view.
      * @param d `View` to create the stream from
@@ -1460,7 +1461,7 @@ public:
      * Constructs a stream from another stream instance.
      * @param other instance to create this stream from
      */
-    Stream(const Stream& other) noexcept : _chain(other._chain->deepCopy()) {}
+    Stream(const Stream& other) : _chain(other._chain->deepCopy()) {}
 
     /**
      * Constructs a stream from another stream instance.
@@ -1566,7 +1567,10 @@ public:
      * Returns an iterator representing a specific offset.
      * @param offset offset to use for the created iterator
      */
-    SafeConstIterator at(Offset offset) const { return _chain->at(offset); }
+    SafeConstIterator at(const Offset& offset) const { return _chain->at(offset); }
+
+    /** Returns the offset of the position one after the stream's last byte. */
+    Offset endOffset() const { return _chain->endOffset(); }
 
     /**
      * Returns a view representing the entire instance.

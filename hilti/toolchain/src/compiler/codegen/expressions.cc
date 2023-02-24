@@ -77,6 +77,13 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
             case expression::keyword::Kind::Self: return {cg->self(), cxx::Side::LHS};
             case expression::keyword::Kind::DollarDollar: return {cg->dollardollar(), cxx::Side::LHS};
             case expression::keyword::Kind::Captures: return {"__captures", cxx::Side::LHS};
+            case expression::keyword::Kind::Scope: {
+                auto scope = fmt("%s_hlto_scope", cg->options().cxx_namespace_intern);
+                auto extern_scope = cxx::declaration::Global{.id = cxx::ID(scope), .type = "const char*", .linkage = "extern"};
+                cg->unit()->add(extern_scope);
+                return {fmt("std::string(%s)", scope), cxx::Side::RHS};
+            }
+
             default: util::cannot_be_reached();
         }
     }

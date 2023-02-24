@@ -19,7 +19,7 @@
 namespace spicy::type::unit::item {
 
 /** AST node for a unit field. */
-class Field : public hilti::NodeBase, public spicy::trait::isUnitItem {
+class Field : public hilti::NodeBase, public hilti::node::WithDocString, public spicy::trait::isUnitItem {
 public:
     Field(const std::optional<ID>& id, Type type, Engine e, const std::vector<Expression>& args,
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,

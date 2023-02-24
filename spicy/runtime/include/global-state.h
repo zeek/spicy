@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include <spicy/rt/configuration.h>
+
 namespace spicy::rt {
 struct Parser;
 } // namespace spicy::rt
@@ -32,6 +34,9 @@ struct GlobalState {
 
     /** True once `hilit::init()`` has finished. */
     bool runtime_is_initialized = false;
+
+    /** The runtime's configuration. */
+    std::unique_ptr<Configuration> configuration;
 
     /**
      * List of available parsers. Compiled Spicy parsers register themselves

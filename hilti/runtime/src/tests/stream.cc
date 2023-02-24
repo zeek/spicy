@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
@@ -852,6 +853,27 @@ TEST_CASE("View") {
         CHECK(view.startsWith("67890"_b));
     }
 
+    SUBCASE("advanceToNextData") {
+        auto stream = Stream();
+        stream.append("A");
+        stream.append(nullptr, 1024);
+        stream.append("BC");
+
+        std::optional<View> view;
+        SUBCASE("view with zero offset") { view = stream.view(); }
+
+        SUBCASE("with with non-zero offset") {
+            // This is a regression test for GH-1303.
+            view = stream.view().sub(1, stream.end().offset() + 1);
+        }
+
+        REQUIRE(view);
+
+        auto ncur = view->advanceToNextData();
+        CHECK_EQ(ncur.offset(), 1025);
+        CHECK_EQ(ncur.data().str(), "BC");
+    }
+
     SUBCASE("dataForPrint") {
         auto s = make_stream({"AAA", "BBB", "CCC"});
         REQUIRE_EQ(s.numberOfChunks(), 3);
@@ -938,25 +960,25 @@ TEST_CASE("View") {
 
         SUBCASE("1") {
             Byte dst[1] = {'0'};
-            CHECK_EQ(v.extract(dst), "234567890"_b);
+            CHECK_EQ(v.extract(dst, sizeof(dst)), "234567890"_b);
             CHECK_EQ(vec(dst), std::vector<Byte>({'1'}));
         }
 
         SUBCASE("3") {
             Byte dst[3] = {'0'};
-            CHECK_EQ(v.extract(dst), "4567890"_b);
+            CHECK_EQ(v.extract(dst, sizeof(dst)), "4567890"_b);
             CHECK_EQ(vec(dst), std::vector<Byte>({'1', '2', '3'}));
         }
 
         SUBCASE("all") {
             Byte dst[10] = {'0'};
-            CHECK_EQ(v.extract(dst), ""_b);
+            CHECK_EQ(v.extract(dst, sizeof(dst)), ""_b);
             CHECK_EQ(vec(dst), std::vector<Byte>({'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}));
         }
 
         SUBCASE("empty") {
             Byte dst[1] = {'0'};
-            CHECK_THROWS_WITH_AS(Stream().view().extract(dst), "end of stream view", const WouldBlock&);
+            CHECK_THROWS_WITH_AS(Stream().view().extract(dst, sizeof(dst)), "end of stream view", const WouldBlock&);
         }
     }
 

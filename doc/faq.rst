@@ -8,6 +8,8 @@ Frequently Asked Questions
 Spicy Language
 --------------
 
+.. _faq_spicy_global_variables:
+
 .. rubric:: Are Spicy's global variables *really* global?
 
 Indeed, they are. Changes to global variables become visible to all
@@ -18,6 +20,8 @@ often won't be the right tool for the job; it's rare that a parser
 needs truly global state. Take a look at :ref:`unit_context` for a
 different mechanism tying state to the current connection, which is a
 much more common requirement.
+
+.. _faq_spicy_line_numbers:
 
 .. rubric:: What do the numbers in ``foo.spicy:37:1`` or
   ``foo.spicy:37:1-42:19`` in messages mean?
@@ -32,6 +36,8 @@ ending in line 42, character 19 in the same file.
 
 Toolchain
 ---------
+
+.. _faq_toolchain_speed_up_compilation:
 
 .. rubric:: Is there a way to speed up compilation of Spicy code?
 
@@ -51,6 +57,8 @@ refers to compiling generated C++ code).
 Zeek
 ----
 
+.. _faq_zeek_install_spicy_and_plugin_to_use_parsers:
+
 .. rubric:: Do I need to install Spicy and its Zeek plugin to use Spicy parsers in Zeek?
 
 As of version 5.0 Zeek by default bundles Spicy and its Zeek plugin. If that is
@@ -67,6 +75,8 @@ If ``spicyc`` is missing, you need to :ref:`install Spicy <installation>`; if
 ``spicyz`` is missing or ``Zeek::Spicy`` is not listed you need to :ref:`install
 Spicy plugin <zeek_spicy_plugin_installation>`.
 
+.. _faq_zeek_install_spicy_to_use_plugin:
+
 .. rubric:: Do I need a Spicy installation for using the Zeek plugin?
 
 No, if the Zeek plugin was compiled with ``--build-toolchain=no``,
@@ -77,10 +87,14 @@ through :ref:`spicyz <spicyz>`. The build process will leave a binary
 distribution inside your build directory at
 ``zeek/plugin/Zeek_Spicy.tgz``.
 
+.. _faq_zeek_spicy_dpd_support:
+
 .. rubric:: Does Spicy support *Dynamic Protocol Detection (DPD)*?
 
 Yes, see the :ref:`corresponding section <zeek_dpd>` on how to add it
 to your analyzers.
+
+.. _faq_zeek_layer2_analyzer:
 
 .. rubric:: Can I write a Layer 2 protocol analyzer with Spicy?
 
@@ -88,12 +102,16 @@ Yes, you can. In Zeek terminology a layer 2 protocol analyzer is a packet
 analyzer, see the :ref:`corresponding section <zeek_packet_analyzer>` on how
 to declare such an analyzer.
 
+.. _faq_zeek_print_statements_no_effect:
+
 .. rubric:: I have ``print`` statements in my Spicy grammar, why do I not see any output when running Zeek?
 
 The Zeek plugin by default disables the output of Spicy-side ``print``
 statements. To enable them, add ``Spicy::enable_print=T`` to the Zeek
 command line (or ``redef Spicy::enable_print=T;`` to a Zeek script
 that you are loading).
+
+.. _faq_zeek_tcp_analyzer_not_all_messages_recognized:
 
 .. rubric:: My analyzer recognizes only one or two TCP packets even though there are more in the input.
 

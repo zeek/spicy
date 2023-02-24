@@ -73,7 +73,7 @@ Address Address::mask(unsigned int width) const {
 }
 
 std::variant<struct in_addr, struct in6_addr> Address::asInAddr() const {
-    switch ( _family ) {
+    switch ( _family.value() ) {
         case AddressFamily::IPv4: return in_addr{integer::hton32(_a2)};
 
         case AddressFamily::IPv6: {
@@ -124,9 +124,32 @@ Address::operator std::string() const {
     }
 }
 
+Bytes Address::pack(ByteOrder fmt) const {
+    switch ( _family.value() ) {
+        case AddressFamily::IPv4: return integer::pack<uint32_t>(_a2, fmt);
+
+        case AddressFamily::IPv6: {
+            auto x = integer::pack<uint64_t>(_a1, fmt);
+            auto y = integer::pack<uint64_t>(_a2, fmt);
+
+            const bool nbo =
+                (fmt == ByteOrder::Little || (fmt == ByteOrder::Host && systemByteOrder() == ByteOrder::Little));
+
+            if ( ! nbo )
+                return x + y;
+            else
+                return y + x;
+        }
+
+        case AddressFamily::Undef:; // Intentional fall-through.
+    }
+
+    throw RuntimeError("attempt to pack address of undefined family");
+}
+
 template<typename T>
 Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily family, ByteOrder fmt) {
-    switch ( family ) {
+    switch ( family.value() ) {
         case AddressFamily::IPv4: {
             if ( data.size() < 4 )
                 return result::Error("insufficient data to unpack IPv4 address");
@@ -142,7 +165,7 @@ Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily family, Byte
                 return result::Error("insufficient data to unpack IPv6 address");
 
             const bool nbo =
-                ! (fmt == ByteOrder::Little || (fmt == ByteOrder::Host && systemByteOrder() == ByteOrder::Little));
+                fmt != ByteOrder::Little && (fmt != ByteOrder::Host || systemByteOrder() != ByteOrder::Little);
 
             if ( auto x = integer::unpack<uint64_t>(data, fmt) ) {
                 if ( auto y = integer::unpack<uint64_t>(std::get<1>(*x), fmt) ) {
@@ -174,7 +197,7 @@ Result<std::tuple<Address, stream::View>> address::unpack(const stream::View& da
 }
 
 std::string detail::adl::to_string(const AddressFamily& x, tag /*unused*/) {
-    switch ( x ) {
+    switch ( x.value() ) {
         case AddressFamily::IPv4: return "AddressFamily::IPv4";
         case AddressFamily::IPv6: return "AddressFamily::IPv6";
         case AddressFamily::Undef: return "AddressFamily::Undef";

@@ -12,10 +12,11 @@
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
+#include <hilti/rt/util.h>
 
 namespace hilti::rt {
 
-enum class AddressFamily : int64_t { Undef, IPv4, IPv6 };
+HILTI_RT_ENUM(AddressFamily, Undef, IPv4, IPv6);
 
 /**
  * Represents HILTI address type. This treats IPv4 and IPv6 addresses
@@ -97,6 +98,8 @@ public:
      */
     operator std::string() const;
 
+    Bytes pack(ByteOrder fmt) const;
+
 private:
     void _init(struct in_addr addr);
     void _init(struct in6_addr addr);
@@ -111,6 +114,9 @@ private:
 };
 
 namespace address {
+/** Packs an address into a binary representation, following the protocol for `pack` operator. */
+inline Bytes pack(const Address& addr, ByteOrder fmt) { return addr.pack(fmt); }
+
 /** Unpacks an address from binary representation, following the protocol for `unpack` operator. */
 extern Result<std::tuple<Address, Bytes>> unpack(const Bytes& data, AddressFamily family, ByteOrder fmt);
 

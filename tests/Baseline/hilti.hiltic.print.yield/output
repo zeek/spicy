@@ -6,6 +6,8 @@
 
 #include <hilti/rt/libhilti.h>
 
+extern const char* __hlt_hlto_scope;
+
 namespace __hlt::Foo {
     extern void __register_module();
     extern auto test(const std::string& x) -> std::string;
@@ -17,7 +19,7 @@ namespace hlt::Foo {
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
-extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlto_scope, nullptr, nullptr, nullptr}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, nullptr, nullptr, nullptr}); }
 
 extern auto __hlt::Foo::test(const std::string& x) -> std::string {
     ::hilti::rt::detail::checkStack();

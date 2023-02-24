@@ -21,6 +21,8 @@ The address type stores both IPv4 and IPv6 addresses.
 - IPv4: ``1.2.3.4``
 - IPv6: ``[2001:db8:85a3:8d3:1319:8a2e:370:7348]``, ``[::1.2.3.4]``
 
+This type supports the :ref:`pack/unpack operators <packing>`.
+
 .. include:: /autogen/types/address.rst
 
 .. _type_bitfield:
@@ -86,7 +88,7 @@ Enum types associate labels with numerical values.
 
 .. rubric:: Type
 
-- ``enum { LABEL_1; ... LABEL_N }``
+- ``enum { LABEL_1, ..., LABEL_N }``
 - Each label has the form ``ID [= VALUE]``. If ``VALUE`` is skipped,
   one will be assigned automatically.
 
@@ -130,6 +132,8 @@ requires specifying the bitwidth of a type.
 
 - Unsigned integer: ``1234``, ``+1234``, ``uint8(42)``, ``uint16(42)``, ``uint32(42)``, ``uint64(42)``
 - Signed integer: ``-1234``, ``int8(42)``, ``int8(-42)``, ``int16(42)``, ``int32(42)``, ``int64(42)``
+
+This type supports the :ref:`pack/unpack operators <packing>`.
 
 .. include:: /autogen/types/integer.rst
 
@@ -274,6 +278,8 @@ Real
 .. rubric:: Constants
 
 - ``3.14``, ``10e9``, ``0x1.921fb78121fb8p+1``
+
+This type supports the :ref:`pack/unpack operators <packing>`.
 
 .. include:: /autogen/types/real.rst
 

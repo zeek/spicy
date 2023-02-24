@@ -1,0 +1,42 @@
+# @TEST-EXEC: spicyc -g -p %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Confirm tracking of doc strings associaged with top-level declarations.
+
+##! Summary line 1.
+##! Summary line 2.
+## p1,l1
+## p1,l2
+## p1,l3
+##
+## p2,l1
+## p2,l2
+## p2,l3
+module Test;
+
+## It's a Foo type.
+type Foo = struct {
+    a: bool;
+    b: string;
+};
+
+## Global 1.
+global g1 = 1;
+
+## Global 2.
+global g2: int32 = 2;
+
+## Global 3.
+global g3: int32;
+
+## Constant 1.
+const c1 = 1;
+
+## Constant 2.
+const c2: int32 = 2;
+
+## Function 1.
+function foo1();
+
+## Function 2.
+function foo2() {}

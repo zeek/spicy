@@ -17,6 +17,7 @@
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/stream.h>
 #include <hilti/ast/types/unknown.h>
+#include <hilti/ast/types/void.h>
 
 #include <spicy/ast/types/unit.h>
 
@@ -410,9 +411,12 @@ static inline auto contextResult(bool is_const) {
         if ( resolved_ops.empty() )
             return type::DocOnly("<context>&");
 
-        const auto& ctype = resolved_ops[0].type().as<type::Unit>().contextType();
-        assert(ctype);
-        return Type(type::StrongReference(*ctype));
+        if ( const auto& ctype = resolved_ops[0].type().as<type::Unit>().contextType() )
+            return Type(type::StrongReference(*ctype));
+
+        // We only arrive here if the unit did not declare a `%context`. Return
+        // a dummy value for now and reject it in subsequent validation.
+        return type::void_;
     };
 }
 

@@ -12,6 +12,74 @@
 
     Computes the bit-wise 'xor' of the two integers.
 
+.. spicy:operator:: integer::Call int<16> int16(int)
+
+    Creates a 16-bit signed integer value.
+
+.. spicy:operator:: integer::Call int<16> int16(uint)
+
+    Creates a 16-bit signed integer value.
+
+.. spicy:operator:: integer::Call int<32> int32(int)
+
+    Creates a 32-bit signed integer value.
+
+.. spicy:operator:: integer::Call int<32> int32(uint)
+
+    Creates a 32-bit signed integer value.
+
+.. spicy:operator:: integer::Call int<64> int64(int)
+
+    Creates a 64-bit signed integer value.
+
+.. spicy:operator:: integer::Call int<64> int64(uint)
+
+    Creates a 64-bit signed integer value.
+
+.. spicy:operator:: integer::Call int<8> int8(int)
+
+    Creates a 8-bit signed integer value.
+
+.. spicy:operator:: integer::Call int<8> int8(uint)
+
+    Creates a 8-bit signed integer value.
+
+.. spicy:operator:: integer::Call uint<16> uint16(int)
+
+    Creates a 16-bit unsigned integer value.
+
+.. spicy:operator:: integer::Call uint<16> uint16(uint)
+
+    Creates a 16-bit unsigned integer value.
+
+.. spicy:operator:: integer::Call uint<32> uint32(int)
+
+    Creates a 32-bit unsigned integer value.
+
+.. spicy:operator:: integer::Call uint<32> uint32(uint)
+
+    Creates a 32-bit unsigned integer value.
+
+.. spicy:operator:: integer::Call uint<64> uint64(int)
+
+    Creates a 64-bit unsigned integer value.
+
+.. spicy:operator:: integer::Call uint<64> uint64(uint)
+
+    Creates a 64-bit unsigned integer value.
+
+.. spicy:operator:: integer::Call uint<8> uint8(int)
+
+    Creates a 8-bit unsigned integer value.
+
+.. spicy:operator:: integer::Call uint<8> uint8(uint)
+
+    Creates a 8-bit unsigned integer value.
+
+.. spicy:operator:: integer::Cast bool cast<bool-type>(int)
+
+    Converts the value to a boolean by comparing against zero
+
 .. spicy:operator:: integer::Cast enum cast<enum-type>(int)
 
     Converts the value into an enum instance. The value does *not* need to
@@ -213,6 +281,10 @@
     Shifts the integer to the right by the given number of bits.
 
 .. spicy:operator:: integer::SignNeg int op:- t:int op:
+
+    Inverts the sign of the integer.
+
+.. spicy:operator:: integer::SignNeg int op:- t:uint op:
 
     Inverts the sign of the integer.
 

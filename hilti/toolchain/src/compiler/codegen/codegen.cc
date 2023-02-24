@@ -253,8 +253,18 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
         if ( auto a = AttributeSet::find(n.function().attributes(), "&cxxname") ) {
             // Just add the prototype. Make sure to skip any custom namespacing.
-            d.id = cxx::ID(fmt("::%s", *a->valueAsString()));
+            const auto& value = a->valueAsString();
+            if ( ! value ) {
+                logger().error(fmt("cannot parse &cxxname: %s", value.error()));
+                return;
+            }
+
+            if ( ! util::startsWith(*value, "::") )
+                d.id = cxx::ID(fmt("::%s", *value));
+            else
+                d.id = cxx::ID(*value);
             cg->unit()->add(d);
+
             return;
         }
 

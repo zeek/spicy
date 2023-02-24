@@ -176,20 +176,41 @@ TEST_CASE("bits") {
              72623859790382848);
 }
 
+TEST_CASE("pack") {
+    CHECK_EQ(integer::pack<uint16_t>(1, ByteOrder::Little), "\x01\x00"_b);
+    CHECK_EQ(integer::pack<uint16_t>(256, ByteOrder::Big), "\x01\x00"_b);
+    CHECK_EQ(integer::pack<uint16_t>(256, ByteOrder::Little), "\x00\x01"_b);
+    CHECK_EQ(integer::pack<uint16_t>(1, ByteOrder::Big), "\x00\x01"_b);
+    CHECK_THROWS_WITH_AS(integer::pack<uint16_t>(1, ByteOrder::Undef), "attempt to pack value with undefined byte order", const RuntimeError&);
+
+    CHECK_EQ(integer::pack<uint32_t>(0x01020304, ByteOrder::Big), "\x01\x02\x03\x04"_b);
+    CHECK_EQ(integer::pack<uint32_t>(0x01020304, ByteOrder::Little), "\x04\x03\x02\x01"_b);
+    CHECK_EQ(integer::pack<uint64_t>(0x0102030405060708, ByteOrder::Big), "\x01\x02\x03\x04\x05\x06\x07\x08"_b);
+    CHECK_EQ(integer::pack<uint64_t>(0x0102030405060708, ByteOrder::Little), "\x08\x07\x06\x05\x04\x03\x02\x01"_b);
+
+}
+
 TEST_CASE("unpack") {
-    using Result = Result<std::tuple<integer::safe<uint16_t>, Bytes>>;
+    using Result16 = Result<std::tuple<integer::safe<uint16_t>, Bytes>>;
+    using Result32 = Result<std::tuple<integer::safe<uint32_t>, Bytes>>;
+    using Result64 = Result<std::tuple<integer::safe<uint64_t>, Bytes>>;
 
     CHECK_EQ(integer::unpack<uint16_t>(""_b, ByteOrder::Little),
-             Result(result::Error("insufficient data to unpack integer")));
+             Result16(result::Error("insufficient data to unpack integer")));
     CHECK_EQ(integer::unpack<uint16_t>("\x01"_b, ByteOrder::Little),
-             Result(result::Error("insufficient data to unpack integer")));
+             Result16(result::Error("insufficient data to unpack integer")));
+    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Undef), Result16(result::Error("undefined byte order")));
 
-    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Little), Result(std::make_tuple(1, ""_b)));
-    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Big), Result(std::make_tuple(256, ""_b)));
-    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Little), Result(std::make_tuple(256, ""_b)));
-    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Big), Result(std::make_tuple(1, ""_b)));
+    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Little), Result16(std::make_tuple(1, ""_b)));
+    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Big), Result16(std::make_tuple(256, ""_b)));
+    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Little), Result16(std::make_tuple(256, ""_b)));
+    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Big), Result16(std::make_tuple(1, ""_b)));
 
-    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Undef), Result(result::Error("undefined byte order")));
+    CHECK_EQ(integer::unpack<uint32_t>("\x01\x02\x03\x04"_b, ByteOrder::Big), Result32(std::make_tuple(0x01020304, ""_b)));
+    CHECK_EQ(integer::unpack<uint32_t>("\x04\x03\x02\x01"_b, ByteOrder::Little), Result32(std::make_tuple(0x01020304, ""_b)));
+    CHECK_EQ(integer::unpack<uint64_t>("\x01\x02\x03\x04\x05\x06\x07\x08"_b, ByteOrder::Big), Result64(std::make_tuple(0x0102030405060708, ""_b)));
+    CHECK_EQ(integer::unpack<uint64_t>("\x08\x07\x06\x05\x04\x03\x02\x01"_b, ByteOrder::Little), Result64(std::make_tuple(0x0102030405060708, ""_b)));
+
 }
 
 TEST_SUITE_END();

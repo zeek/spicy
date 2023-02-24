@@ -30,6 +30,7 @@ Spicy pretty quickly.
     variables
     types
     statements
+    packing
     error-handling
     conditional
     appendix

@@ -299,6 +299,7 @@ enum class Kind {
     MultipleAssign,
     Negate,
     New,
+    Pack,
     Power,
     ShiftLeft,
     ShiftRight,
@@ -355,6 +356,7 @@ inline auto isCommutative(Kind k) {
         case Kind::MultipleAssign:
         case Kind::Negate:
         case Kind::New:
+        case Kind::Pack:
         case Kind::Power:
         case Kind::ShiftLeft:
         case Kind::ShiftRight:
@@ -390,6 +392,7 @@ constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Add, "add"},           {Kin
                                               {Kind::Difference, "-"},      {Kind::DifferenceAssign, "-="},
                                               {Kind::Modulo, "%"},          {Kind::Multiple, "*"},
                                               {Kind::MultipleAssign, "*="}, {Kind::Sum, "+"},
+                                              {Kind::Pack, "unpack"},       {Kind::Unset, "unset"},
                                               {Kind::SumAssign, "+="},      {Kind::Power, "**"},
                                               {Kind::ShiftLeft, "<<"},      {Kind::ShiftRight, ">>"},
                                               {Kind::SignNeg, "-"},         {Kind::SignPos, "+"},

@@ -50,6 +50,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"library-path", required_argument, nullptr, 'L'},
                                               {"output", required_argument, nullptr, 'o'},
                                               {"output-c++", no_argument, nullptr, 'c'},
+                                              {"output-c++-files", no_argument, nullptr, 'x'},
                                               {"output-hilti", no_argument, nullptr, 'p'},
                                               {"execute-code", no_argument, nullptr, 'j'},
                                               {"output-linker", no_argument, nullptr, 'l'},
@@ -111,6 +112,7 @@ void Driver::usage() {
            "  -o | --output-to <path>         Path for saving output.\n"
            "  -p | --output-hilti             Just output parsed HILTI code again.\n"
            "  -v | --version                  Print version information.\n"
+           "  -x | --output-c++ <prefix>      Output generated C++ code into set of files.\n"
            "  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI "
            "exceptions.\n"
            "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
@@ -255,7 +257,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     int num_output_types = 0;
 
     opterr = 0; // don't print errors
-    std::string option_string = "ABlL:cCpPvjhvVdX:o:D:TUEeSRg" + hookAddCommandLineOptions();
+    std::string option_string = "ABlL:cCpPvjhvx:VdX:o:D:TUEeSRg" + hookAddCommandLineOptions();
 
     while ( true ) {
         int c = getopt_long(argc, argv, option_string.c_str(), long_driver_options, nullptr);
@@ -270,6 +272,19 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
             case 'c':
                 _driver_options.output_cxx = true;
+                ++num_output_types;
+                break;
+
+            case 'x':
+                _driver_options.output_cxx = true;
+                _driver_options.output_cxx_prefix = optarg;
+                _driver_options.execute_code = false;
+                _driver_options.include_linker = true;
+                _compiler_options.cxx_namespace_extern =
+                    hilti::util::fmt("hlt_%s", hilti::rt::filesystem::path(optarg).stem().string());
+                _compiler_options.cxx_namespace_intern =
+                    hilti::util::fmt("__hlt_%s", hilti::rt::filesystem::path(optarg).stem().string());
+
                 ++num_output_types;
                 break;
 
