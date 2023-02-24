@@ -156,9 +156,8 @@ inline Expression cast(Expression e, Type dst, Meta m = Meta()) {
                                           std::move(m));
 }
 
-inline Expression delete_(Expression self, ID field, const Meta& m = Meta()) {
-    return expression::UnresolvedOperator(operator_::Kind::Delete,
-                                          {std::move(self), expression::Member(std::move(field))}, m);
+inline Expression delete_(Expression self, const ID& field, const Meta& m = Meta()) {
+    return expression::UnresolvedOperator(operator_::Kind::Delete, {std::move(self), expression::Member(field)}, m);
 }
 
 inline Expression deref(Expression e, const Meta& m = Meta()) {
@@ -250,9 +249,8 @@ inline Expression unpack(Type type, const std::vector<Expression>& args, const M
                                           m);
 }
 
-inline Expression unset(Expression self, ID field, const Meta& m = Meta()) {
-    return expression::UnresolvedOperator(operator_::Kind::Unset,
-                                          {std::move(self), expression::Member(std::move(field))}, m);
+inline Expression unset(Expression self, const ID& field, const Meta& m = Meta()) {
+    return expression::UnresolvedOperator(operator_::Kind::Unset, {std::move(self), expression::Member(field)}, m);
 }
 
 inline Expression sumAssign(Expression op1, Expression op2, const Meta& m = Meta()) {

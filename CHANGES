@@ -1,3 +1,7 @@
+1.8.0-dev.12 | 2023-02-24 17:13:42 +0100
+
+  * Fix potential use-after-move bug. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.10 | 2023-02-22 15:42:04 +0100
 
   * Switch `SafeInt` to current upstream. (Robin Sommer, Corelight)
