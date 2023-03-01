@@ -16,7 +16,8 @@ namespace string {
 HILTI_RT_ENUM_WITH_DEFAULT(DecodeErrorStrategy, IGNORE,
                            IGNORE,  // skip data
                            REPLACE, // replace with a place-holder
-                           STRICT   // throw a runtime error
+                           STRICT,  // throw a runtime error
+                           ESCAPE   // replace with escaped hex value (\xHH)
 );
 
 /**

@@ -104,6 +104,9 @@ std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) 
             return Bytes(str(), cs, errors).str();
 
         case bytes::Charset::ASCII: {
+            if ( errors.value() == DecodeErrorStrategy::ESCAPE )
+                return escapeBytes(str());
+
             std::string s;
             for ( auto c : *this ) {
                 if ( c >= 32 && c < 0x7f )
@@ -113,6 +116,7 @@ std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) 
                         case DecodeErrorStrategy::IGNORE: break;
                         case DecodeErrorStrategy::REPLACE: s += "?"; break;
                         case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal ASCII character in string");
+                        case DecodeErrorStrategy::ESCAPE: cannot_be_reached();
                     }
                 }
             }
@@ -232,6 +236,7 @@ std::string to_string(const bytes::DecodeErrorStrategy& x, tag /*unused*/) {
         case bytes::DecodeErrorStrategy::IGNORE: return "Charset::IGNORE";
         case bytes::DecodeErrorStrategy::REPLACE: return "Charset::REPLACE";
         case bytes::DecodeErrorStrategy::STRICT: return "Charset::STRICT";
+        case bytes::DecodeErrorStrategy::ESCAPE: return "Charset::ESCAPE";
     }
 
     cannot_be_reached();

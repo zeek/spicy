@@ -37,7 +37,8 @@ public type Charset = enum {
 public type DecodeErrorStrategy = enum {
     IGNORE,  # data is skipped but processing continues
     REPLACE, # data is replaced with a valid place-holder and processing continues
-    STRICT   # runtime error is triggered
+    STRICT,  # runtime error is triggered
+    ESCAPE   # data is replaced with an escaped hex value (\xHH) and processing continues
 } &cxxname="hilti::rt::bytes::DecodeErrorStrategy";
 
 ## Captures state for incremental regular expression matching.
