@@ -12,6 +12,9 @@ environment:
     ZEEK_SPICY_BRANCH:      main
     ZEEK_ANALYZERS_BRANCH:  main
 
+    # Cache HILTI C++ compilation.
+    HILTI_CXX_COMPILER_LAUNCHER: ccache
+
 lint_task:
   container:
     dockerfile: ci/Dockerfile
