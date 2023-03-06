@@ -9,4 +9,5 @@ hilti::print(b"testing".decode(hilti::Charset::ASCII));
 hilti::print(b"testüng\n".decode(hilti::Charset::ASCII));
 hilti::print(b"testüng".decode(hilti::Charset::UTF8));
 assert b"testüng".decode(hilti::Charset::UTF8) == b"testüng".decode(); # Check default
+hilti::print(b" 123\x01 ".strip().decode(hilti::Charset::ASCII));
 }
