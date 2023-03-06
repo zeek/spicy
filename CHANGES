@@ -1,3 +1,27 @@
+1.8.0-dev.14 | 2023-03-06 16:24:20 +0100
+
+  * GH-1386: Prevent internal error when passed invalid context. (Benjamin Bannier, Corelight)
+
+    We previously would trigger an internal error when encountering
+    `self.context()` in a unit which declared a `%context` to something
+    which was not a type. With this patch we now reject such calls.
+
+    We picked a simplified implementation strategy: when querying a `Unit`'s
+    `contextType` we still return an optional type to handle both units
+    without context as well as units where %context does not point to a
+    type; if a context is present but does not refer to a type we return an
+    empty result. With that we potentially trigger two errors, from
+    validating that `%context` refers to a type, and from validating that
+    the unit had a `%context` when using `self.context()`, i.e., if the
+    `%context` is invalid we continue parsing as if the unit had no
+    `%context` at all. The alternative would have been to return e.g., a
+    `Result<optional_ref<Type>>` from `contextType` to capture both the
+    unset as well as invalid case and move some of the validation into
+    `contextType` itself; this still would have led to a lot of manual
+    unwrapping in users.
+
+    Closes #1386.
+
 1.8.0-dev.12 | 2023-02-24 17:13:42 +0100
 
   * Fix potential use-after-move bug. (Benjamin Bannier, Corelight)
