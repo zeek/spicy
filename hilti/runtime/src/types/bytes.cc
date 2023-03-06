@@ -104,7 +104,7 @@ std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) 
 
         case bytes::Charset::ASCII: {
             std::string s;
-            for ( auto c : *this ) {
+            for ( auto c : str() ) {
                 if ( c >= 32 && c < 0x7f )
                     s += static_cast<char>(c);
                 else {
