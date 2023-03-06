@@ -173,9 +173,9 @@ public:
      */
     Bytes(std::string s, bytes::Charset cs);
 
-    Bytes(Base&& str) : Base(std::move(str)), _control(std::make_shared<Base*>(static_cast<Base*>(this))) {}
-    Bytes(const Bytes& xs) : Base(xs), _control(std::make_shared<Base*>(static_cast<Base*>(this))) {}
-    Bytes(Bytes&& xs) noexcept : Base(std::move(xs)), _control(std::make_shared<Base*>(static_cast<Base*>(this))) {}
+    Bytes(Base&& str) : Base(std::move(str)) {}
+    Bytes(const Bytes& xs) : Base(xs) {}
+    Bytes(Bytes&& xs) noexcept : Base(std::move(xs)) {}
 
     /** Replaces the contents of this `Bytes` with another `Bytes`.
      *
@@ -511,7 +511,7 @@ public:
 
 private:
     friend bytes::Iterator;
-    std::shared_ptr<Base*> _control;
+    std::shared_ptr<Base*> _control = std::make_shared<Base*>(static_cast<Base*>(this));
 
     void invalidateIterators() { _control = std::make_shared<Base*>(static_cast<Base*>(this)); }
 };
