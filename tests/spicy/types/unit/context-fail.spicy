@@ -18,3 +18,15 @@ public type C = unit {
     %context = string;
     %context = bytes; # more than one context
 };
+
+type D = unit {
+    on %init { self.context(); }
+};
+
+# Regression test for #1386.
+function noop() {}
+public type Foo = unit {
+  %context = noop;
+
+  on %init { self.context(); }
+};

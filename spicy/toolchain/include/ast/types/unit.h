@@ -91,9 +91,10 @@ public:
     /** Returns the type set through ``%context`, if available. */
     hilti::optional_ref<const Type> contextType() const {
         if ( auto context = propertyItem("%context") )
-            return context->expression()->as<hilti::expression::Type_>().typeValue();
-        else
-            return {};
+            if ( auto ty = context->expression()->tryAs<hilti::expression::Type_>() )
+                return ty->typeValue();
+
+        return {};
     }
 
     /**
