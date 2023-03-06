@@ -68,7 +68,7 @@ std::string Bytes::decode(bytes::Charset cs) const {
         case bytes::Charset::ASCII: {
             // Convert non-printable to the unicode replacement character.
             std::string s;
-            for ( auto c : *this ) {
+            for ( auto c : str() ) {
                 if ( c >= 32 && c < 0x7f )
                     s += static_cast<char>(c);
                 else
