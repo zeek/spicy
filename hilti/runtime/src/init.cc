@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <cinttypes>
-#include <clocale>
 #include <cstring>
 
 #include <hilti/rt/configuration.h>
@@ -20,9 +19,6 @@ using namespace hilti::rt::detail;
 void hilti::rt::init() {
     if ( globalState()->runtime_is_initialized )
         return;
-
-    if ( ! setlocale(LC_CTYPE, "") )
-        warning("cannot set locale");
 
     if ( ! globalState()->configuration )
         globalState()->configuration = std::make_unique<hilti::rt::Configuration>();
