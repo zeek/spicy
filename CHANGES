@@ -1,3 +1,7 @@
+1.8.0-dev.16 | 2023-03-06 16:24:55 +0100
+
+  * Cache HILTI C++ compilations with ccache in CI. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.14 | 2023-03-06 16:24:20 +0100
 
   * GH-1386: Prevent internal error when passed invalid context. (Benjamin Bannier, Corelight)
