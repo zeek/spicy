@@ -1,3 +1,25 @@
+1.8.0-dev.21 | 2023-03-07 09:44:38 +0100
+
+  * Avoid expensive checked iterator for internal `Bytes` iteration. (Benjamin Bannier, Corelight)
+
+    We previously would go through a checked iterator to iterate a `Bytes`
+    instance. Since none of the iterators were user-provided this was always
+    safe, but incured the performance overhead for checking.
+
+    With this patch we iterate the underlying bytes directly.
+
+  * GH-1390: Initialize `Bytes` internal control block for all constructors. (Benjamin Bannier, Corelight)
+
+    `Bytes` inherits constructors from its base class. We previously would
+    not initialize the internal control block for these constructors so some
+    operations involving iterators on such `Bytes` instances would have
+    failed, even thought the controlled object was still valid.
+
+    With this patch we always set up the control block, no matter which
+    constructor is used.
+
+    Closes #1390.
+
 1.8.0-dev.18 | 2023-03-07 09:43:59 +0100
 
   * Do not force locale on users of libhilti. (Benjamin Bannier, Corelight)

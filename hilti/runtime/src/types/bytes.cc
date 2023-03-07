@@ -40,8 +40,7 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_
     }
 }
 
-Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors)
-    : _control(std::make_shared<Base*>(static_cast<Base*>(this))) {
+Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors) {
     switch ( cs.value() ) {
         case bytes::Charset::UTF8: {
             // Data supposedly is already in UTF-8, but let's validate it.
@@ -105,7 +104,7 @@ std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) 
 
         case bytes::Charset::ASCII: {
             std::string s;
-            for ( auto c : *this ) {
+            for ( auto c : str() ) {
                 if ( c >= 32 && c < 0x7f )
                     s += static_cast<char>(c);
                 else {
