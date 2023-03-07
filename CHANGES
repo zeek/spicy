@@ -1,3 +1,11 @@
+1.8.0-dev.18 | 2023-03-07 09:43:59 +0100
+
+  * Do not force locale on users of libhilti. (Benjamin Bannier, Corelight)
+
+    Setting a locale from a library can interfere negatively with the rest
+    of the application. We previously would set a locale inside
+    `hilti::rt::init`, but we probably do not need it at all.
+
 1.8.0-dev.16 | 2023-03-06 16:24:55 +0100
 
   * Cache HILTI C++ compilations with ccache in CI. (Benjamin Bannier, Corelight)
