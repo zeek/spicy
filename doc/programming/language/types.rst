@@ -126,7 +126,7 @@ requires specifying the bitwidth of a type.
 .. rubric:: Type
 
 - ``intN`` for signed integers, where ``N`` can be one of 8, 16, 32, 64.
-- ``uintN`` for signed integers, where ``N`` can be one of 8, 16, 32, 64.
+- ``uintN`` for unsigned integers, where ``N`` can be one of 8, 16, 32, 64.
 
 .. rubric:: Constants
 
