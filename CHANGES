@@ -1,3 +1,7 @@
+1.8.0-dev.23 | 2023-03-08 11:38:16 +0100
+
+  * Only run lint CI task from scheduled builds or PRs. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.21 | 2023-03-07 09:44:38 +0100
 
   * Avoid expensive checked iterator for internal `Bytes` iteration. (Benjamin Bannier, Corelight)

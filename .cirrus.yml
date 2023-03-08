@@ -16,6 +16,7 @@ environment:
     HILTI_CXX_COMPILER_LAUNCHER: ccache
 
 lint_task:
+  skip: $CIRRUS_CRON == '' && $CIRRUS_PR == ''
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
