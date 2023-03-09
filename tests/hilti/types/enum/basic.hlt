@@ -81,4 +81,10 @@ type E = enum {
 };
 global E e = E::NULL;
 hilti::print(e);
+
+type NULL = enum {
+    ONE,
+};
+global n = NULL::ONE;
+hilti::print(n);
 }
