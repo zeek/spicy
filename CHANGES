@@ -1,3 +1,19 @@
+1.8.0-dev.28 | 2023-03-10 11:22:48 +0100
+
+  * Fix stringification of enum values. (Benjamin Bannier, Corelight)
+
+    If an enum type or label used a C++ reserved identifier we would
+    previously stringify to name normalized for use in C++. Since we are
+    generating strings this is not needed and also confusing as stringified
+    names deviate from what the user wrote in the input.
+
+    With this patch we emit names which directly correspond to input
+    Spicy/HILTI names and labels.
+
+  * GH-1394: Fix C++ normalization of generated enum values. (Benjamin Bannier, Corelight)
+
+    Closes #1394.
+
 1.8.0-dev.25 | 2023-03-08 16:27:27 +0100
 
   * Fix typo in types documentation (tbfhg)

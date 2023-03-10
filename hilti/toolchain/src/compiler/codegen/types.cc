@@ -375,8 +375,11 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
         if ( auto cxx = cxxID(p.node) )
             return CxxTypes{.base_type = cxx::Type(*cxx), .default_ = cxx::Expression(cxx::ID(*cxx, "Undef"))};
 
+        auto tid = typeID(p.node);
+        assert(tid);
+
         auto scope = cxx::ID{cg->unit()->cxxNamespace()};
-        auto sid = cxx::ID{*typeID(p.node)};
+        auto sid = cxx::ID{*tid};
 
         if ( sid.namespace_() )
             scope = scope.namespace_();
@@ -384,9 +387,9 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
         auto id = cxx::ID(scope, sid);
 
         // Add tailored to_string() function.
-        auto cases = util::transform(n.uniqueLabels(), [&](auto l) {
+        auto cases = util::transform(n.uniqueLabels(), [&](const auto& l) {
             auto b = cxx::Block();
-            b.addReturn(fmt("\"%s\"", cxx::ID(id.local(), l.get().id())));
+            b.addReturn(fmt("\"%s::%s\"", tid->local(), l.get().id()));
             return std::make_pair(cxx::Expression(cxx::ID(id, l.get().id())), std::move(b));
         });
 
