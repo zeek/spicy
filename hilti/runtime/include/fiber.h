@@ -100,7 +100,7 @@ struct StackBuffer {
      * by the fiber's stack. This value is only well-defined if the fiber is
      * *not* currently executing.
      **/
-    size_t activeSize() const { return static_cast<size_t>(activeRegion().second - activeRegion().first); }
+    size_t activeSize() const;
 
     /** Returns the size of the memory region that's allocated for the fiber's stack. */
     size_t allocatedSize() const { return static_cast<size_t>(allocatedRegion().second - allocatedRegion().first); }
@@ -120,6 +120,7 @@ struct StackBuffer {
 private:
     const ::Fiber* _fiber;
     void* _buffer = nullptr; // allocated memory holding swapped out stack content
+    size_t _buffer_size = 0; // size currently allocated for buffer
 };
 
 // Render stack region for use in debug output.
