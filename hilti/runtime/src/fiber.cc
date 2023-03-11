@@ -289,14 +289,28 @@ size_t detail::StackBuffer::liveRemainingSize() const {
 #endif
 }
 
-void detail::StackBuffer::save() {
-    auto [lower, upper] = activeRegion();
+size_t detail::StackBuffer::activeSize() const { return static_cast<size_t>(::fiber_stack_used_size(_fiber)); }
 
-    _buffer = ::realloc(_buffer, (upper - lower));
-    if ( ! _buffer )
-        throw RuntimeError("out of memory when saving fiber stack");
+void detail::StackBuffer::save() {
+    auto want_buffer_size = std::max(activeSize(), configuration::get().fiber_shared_stack_swap_size_min);
+
+    // Round to KB boundary to avoid frequent reallocations.
+    want_buffer_size = ((want_buffer_size >> 10) + 1) << 10;
+
+    if ( want_buffer_size != _buffer_size ) {
+        HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("%sallocating %zu bytes of swap space for stack %s",
+                                                   (_buffer ? "re" : ""), want_buffer_size, *this));
+
+        _buffer = ::realloc(_buffer, want_buffer_size);
+        if ( ! _buffer )
+            throw RuntimeError("out of memory when saving fiber stack");
+
+        _buffer_size = want_buffer_size;
+    }
 
     HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("saving stack %s to %p", *this, _buffer));
+    auto [lower, upper] = activeRegion();
+    assert(_buffer_size >= (upper - lower));
     ::memcpy(_buffer, lower, (upper - lower));
 }
 
