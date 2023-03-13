@@ -784,7 +784,7 @@ struct ProductionVisitor
         while ( pb->cg()->haveAddedDeclaration(re) )
             re = ID(fmt("__re_%" PRId64, ++i));
 
-        auto d = builder::constant(re, builder::regexp(c->value(), AttributeSet({Attribute("&anchor")})));
+        auto d = builder::global(re, builder::regexp(c->value(), AttributeSet({Attribute("&anchor")})));
         pb->cg()->addDeclaration(d);
 
         auto ncur = builder()->addTmp("ncur", state().cur);
@@ -877,7 +877,7 @@ struct ProductionVisitor
 
                 auto re = hilti::ID(fmt("__re_%" PRId64, symbol));
                 auto d =
-                    builder::constant(re, builder::regexp(flattened,
+                    builder::global(re, builder::regexp(flattened,
                                                           AttributeSet({Attribute("&nosub"), Attribute("&anchor")})));
                 pb->cg()->addDeclaration(d);
 
