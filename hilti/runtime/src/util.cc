@@ -59,6 +59,7 @@ hilti::rt::ResourceUsage hilti::rt::resource_usage() {
     stats.memory_heap = r.ru_maxrss * 1024;
     stats.num_fibers = fibers.current;
     stats.max_fibers = fibers.max;
+    stats.max_fiber_stack_size = fibers.max_stack_size;
     stats.cached_fibers = fibers.cached;
 
     return stats;
