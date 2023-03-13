@@ -39,6 +39,14 @@ using Handle = detail::Fiber;
 
 namespace detail {
 
+/**
+ * Checks that the current fiber has sufficient stack space left for
+ * executing a function body.
+ *
+ * \throws StackSizeExceeded if the minimum size is not available
+ */
+extern void checkStack();
+
 /** Context-wide state for managing all fibers associated with that context. */
 struct FiberContext {
     FiberContext();
@@ -217,6 +225,7 @@ public:
         uint64_t current;
         uint64_t cached;
         uint64_t max;
+        uint64_t max_stack_size;
         uint64_t initialized;
     };
 
@@ -225,6 +234,7 @@ public:
 private:
     friend void ::__fiber_run_trampoline(void* argsp);
     friend void ::__fiber_switch_trampoline(void* argsp);
+    friend void detail::checkStack();
 
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 
@@ -270,20 +280,13 @@ private:
     inline static uint64_t _current_fibers;
     inline static uint64_t _cached_fibers;
     inline static uint64_t _max_fibers;
+    inline static uint64_t _max_stack_size;
     inline static uint64_t _initialized; // number of trampolines run
 };
 
 std::ostream& operator<<(std::ostream& out, const Fiber& fiber);
 
 extern void yield();
-
-/**
- * Checks that the current fiber has sufficient stack space left for
- * executing a function body.
- *
- * \throws StackSizeExceeded if the minimum size is not available
- */
-extern void checkStack();
 
 } // namespace detail
 

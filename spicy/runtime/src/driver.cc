@@ -64,10 +64,11 @@ void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& dat
     auto memory_heap = pretty_print_number(ru.memory_heap);
     auto num_stacks = pretty_print_number(ru.num_fibers);
     auto max_stacks = pretty_print_number(ru.max_fibers);
+    auto max_stack_size = pretty_print_number(ru.max_fiber_stack_size);
     auto cached_stacks = pretty_print_number(ru.cached_fibers);
 
-    DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s", memory_heap, num_stacks,
-                     cached_stacks, max_stacks));
+    DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap, num_stacks,
+                     cached_stacks, max_stacks, max_stack_size));
 }
 
 void Driver::_debugStats(size_t current_flows, size_t current_connections) {
@@ -83,10 +84,11 @@ void Driver::_debugStats(size_t current_flows, size_t current_connections) {
     auto memory_heap = pretty_print_number(stats.memory_heap);
     auto num_stacks = pretty_print_number(stats.num_fibers);
     auto max_stacks = pretty_print_number(stats.max_fibers);
+    auto max_stack_size = pretty_print_number(stats.max_fiber_stack_size);
     auto cached_stacks = pretty_print_number(stats.cached_fibers);
 
-    DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s", memory_heap, num_stacks,
-                     cached_stacks, max_stacks));
+    DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap, num_stacks,
+                     cached_stacks, max_stacks, max_stack_size));
 }
 
 Result<Nothing> Driver::listParsers(std::ostream& out) {

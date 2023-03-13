@@ -546,6 +546,7 @@ void detail::Fiber::reset() {
     _current_fibers = 0;
     _cached_fibers = 0;
     _max_fibers = 0;
+    _max_stack_size = 0;
     _initialized = 0;
 }
 
@@ -621,6 +622,11 @@ void detail::checkStack() {
     if ( fiber->type() == Fiber::Type::Main )
         return;
 
+    if ( fiber->type() == Fiber::Type::IndividualStack || fiber->type() == Fiber::Type::SharedStack ) {
+        if ( auto size = fiber->stackBuffer().activeSize(); size > detail::Fiber::_max_stack_size )
+            detail::Fiber::_max_stack_size = size;
+    }
+
     if ( fiber->stackBuffer().liveRemainingSize() < configuration::get().fiber_min_stack_size )
         throw StackSizeExceeded("not enough stack space remaining");
 }
@@ -631,6 +637,7 @@ detail::Fiber::Statistics detail::Fiber::statistics() {
         .current = _current_fibers,
         .cached = _cached_fibers,
         .max = _max_fibers,
+        .max_stack_size = _max_stack_size,
         .initialized = _initialized,
     };
 

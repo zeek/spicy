@@ -88,12 +88,13 @@ extern void cannot_be_reached() __attribute__((noreturn));
 /** Statistics about resource usage. */
 struct ResourceUsage {
     // Note when changing this, update `resource_usage()`.
-    double user_time;       //< user time since runtime initialization
-    double system_time;     //< system time since runtime initialization
-    uint64_t memory_heap;   //< current size of heap in bytes
-    uint64_t num_fibers;    //< number of fibers currently in use
-    uint64_t max_fibers;    //< high-water mark for number of fibers in use
-    uint64_t cached_fibers; //< number of fibers currently cached for reuse
+    double user_time;              //< user time since runtime initialization
+    double system_time;            //< system time since runtime initialization
+    uint64_t memory_heap;          //< current size of heap in bytes
+    uint64_t num_fibers;           //< number of fibers currently in use
+    uint64_t max_fibers;           //< high-water mark for number of fibers in use
+    uint64_t max_fiber_stack_size; //< global high-water mark for fiber stack size
+    uint64_t cached_fibers;        //< number of fibers currently cached for reuse
 };
 
 /** Returns statistics about the current resource uage. */
