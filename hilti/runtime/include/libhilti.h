@@ -18,6 +18,7 @@
 #include <hilti/rt/library.h>
 #include <hilti/rt/linker.h>
 #include <hilti/rt/logging.h>
+#include <hilti/rt/profiler.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/type-info.h>

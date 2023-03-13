@@ -105,6 +105,10 @@ public:
     cxx::Expression addTmp(const std::string& prefix, const cxx::Type& t);
     cxx::Expression addTmp(const std::string& prefix, const cxx::Expression& init);
 
+    cxx::Expression startProfiler(const std::string& name);
+    cxx::Expression startProfiler(const std::string& name, cxx::Block* block = nullptr, bool insert_at_front = false);
+    void stopProfiler(const cxx::Expression& profiler, cxx::Block* block = nullptr);
+
     /**
      * Returns an ID that's unique for a given node. The ID is derived from
      * the node's location information, which must be present.

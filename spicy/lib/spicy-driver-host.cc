@@ -49,6 +49,7 @@ public:
     bool opt_list_parsers = false;
     bool opt_report_resource_usage = false;
     bool opt_show_backtraces = false;
+    bool opt_enable_profiling = false;
     int opt_increment = 0;
     std::string opt_file = "/dev/stdin";
     std::string opt_parser;
@@ -122,6 +123,7 @@ int main(int argc, char** argv) {
     config.abort_on_exceptions = driver.opt_abort_on_exceptions;
     config.show_backtraces = driver.opt_show_backtraces;
     config.report_resource_usage = driver.opt_report_resource_usage;
+    config.enable_profiling = driver.opt_enable_profiling;
     hilti::rt::configuration::set(config);
 
     try {

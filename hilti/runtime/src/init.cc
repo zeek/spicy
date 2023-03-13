@@ -14,6 +14,7 @@
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/logging.h>
+#include <hilti/rt/profiler.h>
 
 using namespace hilti::rt;
 using namespace hilti::rt::detail;
@@ -38,6 +39,8 @@ void hilti::rt::init() {
 
     globalState()->master_context = std::make_unique<Context>(vthread::Master);
     context::detail::set(globalState()->master_context.get());
+
+    profiler::init();
 
     for ( const auto& m : globalState()->hilti_modules ) {
         if ( m.init_globals ) {
@@ -68,6 +71,8 @@ void hilti::rt::done() {
         std::cerr << fmt("# user_time=%.6f sys_time=%.6f memory=%" PRIu64 "\n", stats.user_time, stats.system_time,
                          stats.memory_heap);
     }
+
+    profiler::done();
 
     delete __global_state; // NOLINT (cppcoreguidelines-owning-memory)
     __global_state = nullptr;

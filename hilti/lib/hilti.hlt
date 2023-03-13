@@ -10,6 +10,7 @@ public type Protocol = enum { TCP, UDP, ICMP } &cxxname="hilti::rt::Protocol";
 public type Charset = enum { ASCII, UTF8 } &cxxname="hilti::rt::bytes::Charset";
 public type DecodeErrorStrategy = enum { IGNORE, REPLACE, STRICT } &cxxname="hilti::rt::bytes::DecodeErrorStrategy";
 public type Captures = vector<bytes>;
+public type Profiler = __library_type("hilti::rt::Profiler");
 
 public type MatchState = struct {
     method Captures captures(stream data);
@@ -45,4 +46,7 @@ public type MissingData = exception &cxxname="hilti::rt::MissingData";
 
 # Returns the message associated with an exception.
 declare public string exception_what(SystemException excpt) &cxxname="hilti::rt::exception::what" &have_prototype;
+
+declare public Profiler profiler_start(string name) &cxxname="hilti::rt::profiler::start" &have_prototype;
+declare public void profiler_stop(Profiler p) &cxxname="hilti::rt::profiler::stop" &have_prototype;
 }

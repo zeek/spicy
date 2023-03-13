@@ -25,7 +25,7 @@ Result<Nothing> Options::parseDebugAddl(const std::string& flags) {
             debug_flow = true;
         else
             return result::Error(
-                util::fmt("unknow codegen debug option '%s', must be 'flow' or 'trace' or 'location'", i));
+                util::fmt("unknown codegen debug option '%s', must be any of: 'flow', 'trace', 'location'", i));
     }
 
     return Nothing();

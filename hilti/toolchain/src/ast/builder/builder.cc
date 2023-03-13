@@ -104,3 +104,11 @@ void Builder::addDebugDedent(const std::string& stream) {
 }
 
 void Builder::setLocation(const Location& l) { _block._add(statement::SetLocation(builder::string(l.render()))); }
+
+Expression Builder::startProfiler(const std::string& name) {
+    return addTmp("profiler_x", builder::call("hilti::profiler_start", {builder::string(name)}));
+}
+
+void Builder::stopProfiler(Expression profiler) {
+    addCall("hilti::profiler_stop", {std::move(profiler)});
+}

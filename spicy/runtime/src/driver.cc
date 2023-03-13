@@ -14,6 +14,7 @@
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/init.h>
+#include <hilti/rt/profiler.h>
 
 #include <spicy/rt/driver.h>
 
@@ -67,8 +68,8 @@ void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& dat
     auto max_stack_size = pretty_print_number(ru.max_fiber_stack_size);
     auto cached_stacks = pretty_print_number(ru.cached_fibers);
 
-    DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap, num_stacks,
-                     cached_stacks, max_stacks, max_stack_size));
+    DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap,
+                     num_stacks, cached_stacks, max_stacks, max_stack_size));
 }
 
 void Driver::_debugStats(size_t current_flows, size_t current_connections) {
@@ -87,8 +88,8 @@ void Driver::_debugStats(size_t current_flows, size_t current_connections) {
     auto max_stack_size = pretty_print_number(stats.max_fiber_stack_size);
     auto cached_stacks = pretty_print_number(stats.cached_fibers);
 
-    DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap, num_stacks,
-                     cached_stacks, max_stacks, max_stack_size));
+    DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap,
+                     num_stacks, cached_stacks, max_stacks, max_stack_size));
 }
 
 Result<Nothing> Driver::listParsers(std::ostream& out) {
@@ -243,11 +244,11 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
         return Done;
     }
 
-
     try {
         switch ( _type ) {
             case ParsingType::Block: {
                 DRIVER_DEBUG("block", size, data);
+                auto profiler = hilti::rt::profiler::start(fmt("spicy/process/block/%s", _parser->name));
 
                 auto input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                 input->freeze();
@@ -263,6 +264,8 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     else
                         DRIVER_DEBUG("no context provided");
                 }
+
+                hilti::rt::profiler::stop(profiler);
 
                 _resumable = _parser->parse1(input, {}, _context);
 
@@ -281,6 +284,8 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
 
                     return Done;
                 }
+
+                auto profiler = hilti::rt::profiler::start(fmt("spicy/process/stream/%s", _parser->name));
 
                 if ( ! _input ) {
                     // First chunk.
@@ -302,6 +307,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                             fmt("unit type '%s' cannot be used as external entry point because it requires arguments",
                                 _parser->name));
 
+                    hilti::rt::profiler::stop(profiler);
                     _resumable = _parser->parse1(*_input, {}, _context);
                 }
 
@@ -319,6 +325,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     else
                         DRIVER_DEBUG("next data chunk", size, data);
 
+                    hilti::rt::profiler::stop(profiler);
                     _resumable->resume();
                 }
 

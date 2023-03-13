@@ -57,6 +57,7 @@ struct Options {
     bool report_times = false;          /**< Report break-down of driver's execution time. */
     bool dump_code = false;             /**< Record all final HILTI and C++ code to disk for debugging. */
     bool global_optimizations = true;   /**< whether to run global HILTI optimizations on the generated code. */
+    bool enable_profiling = false;      /**< Insert profiling instrumentation into generated C++ code */
     std::vector<hilti::rt::filesystem::path>
         inputs; /**< files to compile; these will be automatically pulled in by ``Driver::run()`` */
     hilti::rt::filesystem::path output_path; /**< file to store output in (default if empty is printing to stdout) */

@@ -423,6 +423,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             // runtime yet.
             body.addStatementAtFront("::hilti::rt::detail::checkStack()");
 
+        // We rely on the profiler's destructor to stop it when the function terminates.
+        auto profiler = cg->startProfiler(std::string("hlt/func/") + n.canonicalID().str(), &body, true);
+
         if ( n.linkage() == declaration::Linkage::Struct && ! f.isStatic() ) {
             if ( ! is_hook && ! f.isStatic() ) {
                 // Need a LHS value for __self.
@@ -727,6 +730,36 @@ cxx::Expression CodeGen::addTmp(const std::string& prefix, const cxx::Type& t) {
     cxxBlock()->addTmp(tmp);
     _tmp_counters[prefix] = n;
     return {std::string(tmp.id), cxx::Side::LHS};
+}
+
+cxx::Expression CodeGen::startProfiler(const std::string& name, cxx::Block* block, bool insert_at_front) {
+    if ( ! options().enable_profiling )
+        return {};
+
+    if ( ! block )
+        block = cxxBlock();
+
+    pushCxxBlock(block);
+    auto id = addTmp("profiler_y", cxx::Type("hilti::rt::Profiler"));
+    auto stmt = cxx::Expression(fmt("%s = hilti::rt::profiler::start(\"%s\")", id, name));
+
+    if ( insert_at_front )
+        cxxBlock()->addStatementAtFront(stmt);
+    else
+        cxxBlock()->addStatement(stmt);
+
+    popCxxBlock();
+    return id;
+}
+
+void CodeGen::stopProfiler(const cxx::Expression& profiler, cxx::Block* block) {
+    if ( ! options().enable_profiling )
+        return;
+
+    if ( ! block )
+        block = cxxBlock();
+
+    block->addStatement(cxx::Expression(fmt("hilti::rt::profiler::stop(%s)", profiler)));
 }
 
 cxx::ID CodeGen::uniqueID(const std::string& prefix, const Node& n) {

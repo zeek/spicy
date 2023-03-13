@@ -5,6 +5,8 @@
 #include <optional>
 #include <utility>
 
+#include <hilti/rt/profiler.h>
+
 #include <hilti/ast/builder/all.h>
 #include <hilti/ast/ctors/regexp.h>
 #include <hilti/ast/declarations/field.h>
@@ -109,6 +111,30 @@ struct ProductionVisitor
     hilti::util::Cache<std::string, ID> parse_functions;
     std::vector<hilti::declaration::Field> new_fields;
     std::vector<Expression> _destinations;
+    std::vector<std::string> _path;
+
+    class PathTracker {
+    public:
+        PathTracker() = delete;
+        PathTracker(ProductionVisitor* v, const std::string& id) : v(v) { v->_path.emplace_back(id); }
+        ~PathTracker() {
+            if ( v )
+                v->_path.pop_back();
+        }
+        ProductionVisitor* v = nullptr;
+
+        PathTracker(const PathTracker& other) = delete;
+        PathTracker(PathTracker&& other) noexcept {
+            v = other.v;
+            other.v = nullptr;
+        }
+        PathTracker& operator=(const PathTracker& other) = delete;
+        PathTracker& operator=(PathTracker&& other) noexcept {
+            v = other.v;
+            other.v = nullptr;
+            return *this;
+        }
+    };
 
     void beginProduction(const Production& p) {
         HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- begin production"));
@@ -242,6 +268,12 @@ struct ProductionVisitor
                     pstate.lahead_end = builder::id("__lahe");
                     pstate.error = builder::id("__error");
 
+                    std::optional<PathTracker> path_tracker;
+                    if ( unit->id() ) {
+                        path_tracker = PathTracker(this, *unit->id());
+                        builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")));
+                    }
+
                     // Note: Originally, we had the init expression (`{...}`)
                     // inside the tuple ctor, but that triggered ASAN to report
                     // a memory leak.
@@ -353,8 +385,15 @@ struct ProductionVisitor
                     pstate.lahead_end = builder::id("__lahe");
                     pstate.error = builder::id("__error");
 
-                    if ( unit )
+                    std::optional<PathTracker> path_tracker;
+                    if ( unit ) {
                         pstate.unit = *unit;
+
+                        if ( unit->id() ) {
+                           path_tracker = PathTracker(this, *unit->id());
+                            builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")));
+                        }
+                    }
 
                     pushState(std::move(pstate));
                     pushBuilder();
@@ -473,8 +512,13 @@ struct ProductionVisitor
         builder()->setLocation(p.location());
 
         std::optional<Expression> pre_container_offset;
-        if ( is_field_owner )
+        std::optional<PathTracker> path_tracker;
+        std::optional<Expression> profiler;
+        if ( is_field_owner ) {
+            path_tracker = PathTracker(this, field->id());
+            profiler = builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")));
             pre_container_offset = preParseField(p, meta);
+        }
 
         beginProduction(p);
 
@@ -519,8 +563,11 @@ struct ProductionVisitor
 
         endProduction(p);
 
-        if ( is_field_owner )
+        if ( is_field_owner ) {
             postParseField(p, meta, pre_container_offset);
+            builder()->stopProfiler(*profiler);
+            path_tracker = {};
+        }
 
         // Top of stack will now have the final value for the field.
         Expression stop = builder::bool_(false);
@@ -878,7 +925,7 @@ struct ProductionVisitor
                 auto re = hilti::ID(fmt("__re_%" PRId64, symbol));
                 auto d =
                     builder::global(re, builder::regexp(flattened,
-                                                          AttributeSet({Attribute("&nosub"), Attribute("&anchor")})));
+                                                        AttributeSet({Attribute("&nosub"), Attribute("&anchor")})));
                 pb->cg()->addDeclaration(d);
 
                 // Create the token matcher state.

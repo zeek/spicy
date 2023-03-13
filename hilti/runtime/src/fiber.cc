@@ -12,6 +12,7 @@
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/logging.h>
 #include <hilti/rt/util.h>
+#include <hilti/rt/profiler.h>
 
 #ifdef HILTI_HAVE_ASAN
 #include <sanitizer/common_interface_defs.h>
@@ -126,11 +127,15 @@ void __fiber_switch_trampoline(void* argsp) {
     auto to = args->to;
     HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("switching from %s to %s", *from, *to));
 
+    auto profiler = hilti::rt::profiler::start("hlt/fiber/save-stack");
+
     if ( from->_type == detail::Fiber::Type::SharedStack )
         from->_stack_buffer.save();
 
     if ( to->_type == detail::Fiber::Type::SharedStack )
         to->_stack_buffer.restore();
+
+    hilti::rt::profiler::stop(profiler);
 
     detail::Fiber::_executeSwitch("stack-switcher", args->switcher, to);
 
