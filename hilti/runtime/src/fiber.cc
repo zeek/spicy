@@ -308,9 +308,10 @@ void detail::StackBuffer::save() {
         _buffer_size = want_buffer_size;
     }
 
+    assert(_buffer_size >= activeSize());
+
     HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("saving stack %s to %p", *this, _buffer));
     auto [lower, upper] = activeRegion();
-    assert(_buffer_size >= (upper - lower));
     ::memcpy(_buffer, lower, (upper - lower));
 }
 
