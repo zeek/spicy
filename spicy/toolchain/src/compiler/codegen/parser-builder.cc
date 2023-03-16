@@ -528,7 +528,7 @@ struct ProductionVisitor
         if ( meta.container() ) {
             auto elem = destination();
             popDestination();
-            stop = pb->newContainerItem(*meta.container(), destination(), elem, true);
+            stop = pb->newContainerItem(*meta.container(), destination(), elem, ! meta.container()->isTransient());
         }
 
         else if ( ! meta.isFieldProduction() ) {
