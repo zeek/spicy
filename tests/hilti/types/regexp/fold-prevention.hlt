@@ -1,0 +1,13 @@
+# @TEST-EXEC: hiltic -c %INPUT | grep -q 'my_regex(.*::Test::re)'
+#
+# @TEST-DOC: Test that direct references to regexp constants aren't folded into local temporaries. Regression test for #1396.
+
+module Test {
+
+function void my_regex(regexp r) {}
+
+const re = /abc/;
+
+my_regex(re);
+
+}

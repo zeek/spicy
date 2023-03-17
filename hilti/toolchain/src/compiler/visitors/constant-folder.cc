@@ -344,6 +344,11 @@ Result<Ctor> _foldConstant(const Node& expr) {
 } // anonymous namespace
 
 Result<std::optional<Ctor>> detail::foldConstant(const Node& expr) {
+    // Don't fold away direct, top-level references to constant IDs. It's
+    // likely as least as efficient to leave them as is, and potentially more.
+    if ( expr.isA<expression::ResolvedID>() )
+        return {std::nullopt};
+
     try {
         auto v = VisitorConstantFolder();
 
