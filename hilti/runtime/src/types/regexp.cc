@@ -5,6 +5,7 @@
 
 #include <utility>
 
+#include <hilti/rt/global-state.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/util.h>
 
@@ -44,16 +45,15 @@ public:
     bool _done = false;
 
     jrx_match_state _ms{};
-    std::shared_ptr<jrx_regex_t> _jrx;
-    Flags _flags{};
+    std::shared_ptr<regexp::detail::CompiledRegExp> _re;
 
     ~Pimpl() { jrx_match_state_done(&_ms); }
 
-    Pimpl(std::shared_ptr<jrx_regex_t> jrx, Flags flags) : _jrx(std::move(jrx)), _flags(flags) {
-        jrx_match_state_init(_jrx.get(), 0, &_ms);
+    Pimpl(std::shared_ptr<regexp::detail::CompiledRegExp> re) : _re(std::move(re)) {
+        jrx_match_state_init(_re->jrx(), 0, &_ms);
     }
 
-    Pimpl(const Pimpl& other) : _acc(other._acc), _first(other._first), _jrx(other._jrx) {
+    Pimpl(const Pimpl& other) : _acc(other._acc), _first(other._first), _re(other._re) {
         jrx_match_state_copy(&other._ms, &_ms);
     }
 };
@@ -62,14 +62,14 @@ regexp::MatchState::MatchState(const RegExp& re) {
     if ( re.patterns().empty() )
         throw PatternError("trying to match empty pattern set");
 
-    _pimpl = std::make_unique<Pimpl>(re._jrxShared(), re._flags);
+    _pimpl = std::make_unique<Pimpl>(re._re);
 }
 
 regexp::MatchState::MatchState(const MatchState& other) {
     if ( this == &other )
         return;
 
-    if ( other._pimpl->_jrx->cflags & REG_STD_MATCHER )
+    if ( other._pimpl->_re->jrx()->cflags & REG_STD_MATCHER )
         throw InvalidArgument("cannot copy match state of regexp with sub-expressions support");
 
     _pimpl = std::make_unique<Pimpl>(*other._pimpl);
@@ -79,7 +79,7 @@ regexp::MatchState& regexp::MatchState::operator=(const MatchState& other) {
     if ( this == &other )
         return *this;
 
-    if ( other._pimpl->_jrx->cflags & REG_STD_MATCHER )
+    if ( other._pimpl->_re->jrx()->cflags & REG_STD_MATCHER )
         throw InvalidArgument("cannot copy match state of regexp with sub-expressions support");
 
     _pimpl = std::make_unique<Pimpl>(*other._pimpl);
@@ -150,7 +150,7 @@ std::pair<int32_t, int64_t> regexp::MatchState::_advance(const stream::View& dat
     }
 
     jrx_accept_id rc = 0;
-    auto use_std_matcher = _use_std_matcher(_pimpl->_jrx.get(), &_pimpl->_ms);
+    auto use_std_matcher = _use_std_matcher(_pimpl->_re->jrx(), &_pimpl->_ms);
     auto start_ms_offset = _pimpl->_ms.offset;
 
     for ( auto block = data.firstBlock(); block; block = data.nextBlock(block) ) {
@@ -166,11 +166,11 @@ std::pair<int32_t, int64_t> regexp::MatchState::_advance(const stream::View& dat
 
         if ( use_std_matcher )
             rc = static_cast<jrx_accept_id>(
-                jrx_regexec_partial_std(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size,
+                jrx_regexec_partial_std(_pimpl->_re->jrx(), reinterpret_cast<const char*>(block->start), block->size,
                                         first, last, &_pimpl->_ms, final_block));
         else
             rc = static_cast<jrx_accept_id>(
-                jrx_regexec_partial_min(_pimpl->_jrx.get(), reinterpret_cast<const char*>(block->start), block->size,
+                jrx_regexec_partial_min(_pimpl->_re->jrx(), reinterpret_cast<const char*>(block->start), block->size,
                                         first, last, &_pimpl->_ms, final_block));
 
             // Note: The JRX match_state initializes offsets with 1.
@@ -200,14 +200,14 @@ std::pair<int32_t, int64_t> regexp::MatchState::_advance(const stream::View& dat
 }
 
 regexp::Captures regexp::MatchState::captures(const Stream& data) const {
-    if ( _pimpl->_flags.no_sub || _pimpl->_acc <= 0 || ! _pimpl->_done )
+    if ( _pimpl->_re->_flags.no_sub || _pimpl->_acc <= 0 || ! _pimpl->_done )
         return Captures();
 
     Captures captures = {};
 
-    auto num_groups = jrx_num_groups(_pimpl->_jrx.get());
+    auto num_groups = jrx_num_groups(_pimpl->_re->jrx());
     jrx_regmatch_t groups[num_groups];
-    if ( jrx_reggroups(_pimpl->_jrx.get(), &_pimpl->_ms, num_groups, groups) == REG_OK ) {
+    if ( jrx_reggroups(_pimpl->_re->jrx(), &_pimpl->_ms, num_groups, groups) == REG_OK ) {
         for ( auto i = 0; i < num_groups; i++ ) {
             // The following condition follows what JRX does
             // internally as well: if not both are set, just skip (and
@@ -220,27 +220,27 @@ regexp::Captures regexp::MatchState::captures(const Stream& data) const {
     return captures;
 }
 
-RegExp::RegExp(std::string pattern, regexp::Flags flags) : _flags(flags) {
-    _newJrx();
-    _compileOne(std::move(pattern), 0);
-    jrx_regset_finalize(_jrx());
+void regexp::detail::CompiledRegExp::RegFree::operator()(jrx_regex_t* j) {
+    jrx_regfree(j);
+    delete j;
 }
 
-RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) : _flags(flags) {
-    if ( patterns.empty() )
-        throw PatternError("trying to compile empty pattern set");
-
+regexp::detail::CompiledRegExp::CompiledRegExp(const std::vector<std::string>& patterns, regexp::Flags flags)
+    : _flags(flags), _patterns(patterns) {
     _newJrx();
+
+    if ( patterns.empty() )
+        return;
 
     int idx = 0;
     for ( const auto& p : patterns )
         _compileOne(p, idx++);
 
-    jrx_regset_finalize(_jrx());
+    jrx_regset_finalize(jrx());
 }
 
-void RegExp::_newJrx() {
-    assert(! _jrx_shared && "regexp already compiled");
+void regexp::detail::CompiledRegExp::_newJrx() {
+    assert(! _jrx && "regexp already compiled");
 
     int cflags = (REG_EXTENDED | REG_ANCHOR | REG_LAZY); // | REG_DEBUG;
 
@@ -250,26 +250,36 @@ void RegExp::_newJrx() {
         cflags |= REG_STD_MATCHER;
 
     _patterns.clear();
-    _jrx_shared = std::shared_ptr<jrx_regex_t>(new jrx_regex_t, [=](auto j) {
-        jrx_regfree(j);
-        delete j;
-    });
-    jrx_regset_init(_jrx(), -1, cflags);
+    _jrx = std::unique_ptr<jrx_regex_t, RegFree>(new jrx_regex_t);
+    jrx_regset_init(_jrx.get(), -1, cflags);
 }
 
-void RegExp::_compileOne(std::string pattern, int idx) {
-    if ( auto rc = jrx_regset_add(_jrx(), pattern.c_str(), pattern.size()); rc != REG_OK ) {
+void regexp::detail::CompiledRegExp::_compileOne(std::string pattern, int idx) {
+    if ( auto rc = jrx_regset_add(_jrx.get(), pattern.c_str(), pattern.size()); rc != REG_OK ) {
         static char err[256];
-        jrx_regerror(rc, _jrx(), err, sizeof(err));
+        jrx_regerror(rc, _jrx.get(), err, sizeof(err));
         throw PatternError(fmt("error compiling pattern '%s': %s", pattern, err));
     }
 
     _patterns.push_back(std::move(pattern));
 }
 
-int32_t RegExp::match(const Bytes& data) const {
-    assert(_jrx() && "regexp not compiled");
+RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) {
+    auto key = (patterns.empty() ? std::string() : join(patterns, "|") + "|" + flags.cacheKey());
+    auto& ptr = detail::globalState()->regexp_cache[key];
 
+    if ( ! ptr )
+        ptr = std::make_shared<regexp::detail::CompiledRegExp>(patterns, flags);
+
+    _re = ptr;
+}
+
+RegExp::RegExp(std::string pattern, regexp::Flags flags)
+    : RegExp(std::vector<std::string>{std::move(pattern)}, flags) {}
+
+RegExp::RegExp() : RegExp(std::vector<std::string>{}, regexp::Flags{}) {}
+
+int32_t RegExp::match(const Bytes& data) const {
     jrx_match_state ms;
     jrx_accept_id acc = _search_pattern(&ms, data.data(), data.size(), nullptr, nullptr);
     jrx_match_state_done(&ms);
@@ -284,12 +294,12 @@ static Bytes _subslice(const Bytes& data, jrx_offset so, jrx_offset eo) {
 }
 
 Vector<Bytes> RegExp::matchGroups(const Bytes& data) const {
-    assert(_jrx() && "regexp not compiled");
+    assert(jrx() && "regexp not compiled");
 
-    if ( _patterns.size() > 1 )
+    if ( _re->_patterns.size() > 1 )
         throw NotSupported("cannot capture groups during set matching");
 
-    if ( _flags.no_sub )
+    if ( _re->_flags.no_sub )
         throw NotSupported("cannot capture groups when compiled with &nosub");
 
     jrx_offset so = -1;
@@ -302,9 +312,9 @@ Vector<Bytes> RegExp::matchGroups(const Bytes& data) const {
     if ( rc > 0 ) {
         groups.emplace_back(_subslice(data, so, eo));
 
-        if ( auto num_groups = jrx_num_groups(_jrx()); num_groups > 1 ) {
+        if ( auto num_groups = jrx_num_groups(jrx()); num_groups > 1 ) {
             jrx_regmatch_t pmatch[num_groups];
-            jrx_reggroups(_jrx(), &ms, num_groups, pmatch);
+            jrx_reggroups(jrx(), &ms, num_groups, pmatch);
 
             for ( int i = 1; i < num_groups; i++ ) {
                 if ( pmatch[i].rm_so >= 0 )
@@ -318,8 +328,6 @@ Vector<Bytes> RegExp::matchGroups(const Bytes& data) const {
 }
 
 std::tuple<int32_t, Bytes> RegExp::find(const Bytes& data) const {
-    assert(_jrx() && "regexp not compiled");
-
     const auto startp = data.data();
     const auto endp = startp + data.size().Ref();
 
@@ -370,17 +378,17 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const char* data, siz
                                       jrx_offset* eo) const {
     if ( len == 0 ) {
         // Nothing to do, but still need to init the match state.
-        jrx_match_state_init(_jrx(), 0, ms);
+        jrx_match_state_init(jrx(), 0, ms);
         return -1;
     }
 
     const jrx_assertion last = JRX_ASSERTION_EOL | JRX_ASSERTION_EOD;
     jrx_assertion first = JRX_ASSERTION_BOL | JRX_ASSERTION_BOD;
 
-    jrx_match_state_init(_jrx(), 0, ms);
+    jrx_match_state_init(jrx(), 0, ms);
     jrx_accept_id rc = 0;
 
-    auto use_std_matcher = _use_std_matcher(_jrx(), ms);
+    auto use_std_matcher = _use_std_matcher(jrx(), ms);
 
 #ifdef _DEBUG_MATCHING
     std::cerr << fmt("feeding |%s| use_std_matcher=%u first=%u last=%u\n", escapeBytes(std::string_view(data, len)),
@@ -388,9 +396,9 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const char* data, siz
 #endif
 
     if ( use_std_matcher )
-        rc = static_cast<jrx_accept_id>(jrx_regexec_partial_std(_jrx(), data, len, first, last, ms, true));
+        rc = static_cast<jrx_accept_id>(jrx_regexec_partial_std(jrx(), data, len, first, last, ms, true));
     else
-        rc = static_cast<jrx_accept_id>(jrx_regexec_partial_min(_jrx(), data, len, first, last, ms, true));
+        rc = static_cast<jrx_accept_id>(jrx_regexec_partial_min(jrx(), data, len, first, last, ms, true));
 
 #ifdef _DEBUG_MATCHING
     std::cerr << fmt("-> rc=%d ms->offset=%d\n", rc, ms->offset);
@@ -399,7 +407,7 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const char* data, siz
     if ( rc > 0 ) {
         if ( use_std_matcher ) {
             jrx_regmatch_t pmatch;
-            jrx_reggroups(_jrx(), ms, 1, &pmatch);
+            jrx_reggroups(jrx(), ms, 1, &pmatch);
 
             if ( so )
                 *so = pmatch.rm_so; // 0-based

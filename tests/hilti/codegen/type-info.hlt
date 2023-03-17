@@ -338,7 +338,8 @@ struct VisitorTypesInit {
             }
             case TypeInfo::RegExp: {
                 SEEN();
-                CHECK(type.regexp->get(v) == RegExp("foo"));
+                auto x = RegExp("foo");
+                CHECK(type.regexp->get(v) == x);
                 break;
             }
             case TypeInfo::Result: {
