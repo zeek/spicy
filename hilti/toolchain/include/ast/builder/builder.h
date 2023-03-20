@@ -240,6 +240,9 @@ public:
 
     bool empty() const { return _block.statements().empty() && _tmps.empty(); }
 
+    std::optional<Expression> startProfiler(const std::string& name);
+    void stopProfiler(Expression profiler);
+
 private:
     friend class SwitchProxy;
 

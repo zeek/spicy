@@ -104,3 +104,20 @@ void Builder::addDebugDedent(const std::string& stream) {
 }
 
 void Builder::setLocation(const Location& l) { _block._add(statement::SetLocation(builder::string(l.render()))); }
+
+std::optional<Expression> Builder::startProfiler(const std::string& name) {
+    if ( ! context()->options().enable_profiling )
+        return {};
+
+    // Note the name of the temp must not clash what HILTI's code generator
+    // picks for profiler that it instantiates itself. We do not currently keep
+    // those namespace separate.
+    return addTmp("prof", builder::call("hilti::profiler_start", {builder::string(name)}));
+}
+
+void Builder::stopProfiler(Expression profiler) {
+    if ( ! context()->options().enable_profiling )
+        return;
+
+    addCall("hilti::profiler_stop", {std::move(profiler)});
+}
