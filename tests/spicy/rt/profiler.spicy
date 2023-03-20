@@ -1,0 +1,17 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | spicy-driver -Z -d %INPUT >output 2>prof.log.raw
+# @TEST-EXEC: cat prof.log.raw | awk '/total/ { print $1, $2, $4, $5; next } { print $1, $2 }' >prof.log
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: btest-diff prof.log
+#
+# @TEST-DOC: Ensure that enabling profiling produces the expected output.
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    on %init   { print self; }
+    f1: uint32 { print self.f1; }
+    f2: uint8  { print self.f2; }
+    on %done   { print self; }
+};
