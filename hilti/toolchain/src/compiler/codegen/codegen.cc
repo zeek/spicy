@@ -423,6 +423,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             // runtime yet.
             body.addStatementAtFront("::hilti::rt::detail::checkStack()");
 
+        // We rely on the profiler's destructor to stop it when the function terminates.
+        cg->startProfiler(std::string("hilti/func/") + n.canonicalID().str(), &body, true);
+
         if ( n.linkage() == declaration::Linkage::Struct && ! f.isStatic() ) {
             if ( ! is_hook && ! f.isStatic() ) {
                 // Need a LHS value for __self.

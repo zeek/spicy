@@ -1,0 +1,28 @@
+# @TEST-EXEC: hiltic -j -Z %INPUT 2>&1 | egrep '^(hilti|#name)' | awk '/total/ { print $1, $2, $4, $5; next } { print $1, $2 }' | sort > output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that profiling reports a function timings, using a recursive function to test the tracking can deal with that.
+#
+# Note that for recursive call, we only measure the top-level one.
+
+module Foo {
+
+function void y() {
+}
+
+function int<64> fibo(int<64> n) {
+    if ( n == 0 )
+        return 0;
+
+    if ( n == 1 )
+        return 1;
+
+    y();
+
+    return fibo(n - 2) + fibo(n - 1);
+}
+
+fibo(5);
+fibo(10);
+
+}
