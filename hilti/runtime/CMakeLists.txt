@@ -32,6 +32,7 @@ set(SOURCES
     src/library.cc
     src/logging.cc
     src/main.cc
+    src/profiler.cc
     src/safe-math.cc
     src/type-info.cc
     src/types/address.cc
@@ -154,6 +155,7 @@ add_executable(
     src/tests/network.cc
     src/tests/optional.cc
     src/tests/port.cc
+    src/tests/profiler.cc
     src/tests/real.cc
     src/tests/reference.cc
     src/tests/regexp.cc
