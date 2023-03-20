@@ -141,6 +141,8 @@
 [debug/optimizer] removing declaration for unused function hilti::mktime
 [debug/optimizer] removing declaration for unused function hilti::print
 [debug/optimizer] removing declaration for unused function hilti::printValues
+[debug/optimizer] removing declaration for unused function hilti::profiler_start
+[debug/optimizer] removing declaration for unused function hilti::profiler_stop
 [debug/optimizer] removing declaration for unused function spicy_rt::atEod
 [debug/optimizer] removing declaration for unused function spicy_rt::backtrack
 [debug/optimizer] removing declaration for unused function spicy_rt::confirm
