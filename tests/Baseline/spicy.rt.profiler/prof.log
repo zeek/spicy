@@ -4,14 +4,27 @@
 # 
 #name count avg-% total-%
 hilti/func/Mini::Test::__on_0x25_done 1
-hilti/func/Mini::Test::__on_0x25_init 1
-hilti/func/Mini::Test::__on_f1 1
-hilti/func/Mini::Test::__on_f2 1
 hilti/func/Mini::Test::__parse_Mini_Test_stage2 1
 hilti/func/Mini::Test::__parse_stage1 1
 hilti/func/Mini::Test::parse3 1
 hilti/func/Mini::__register_Mini_Test 1
 hilti/total 1 100.00 100.00
+spicy/prepare/input/Mini::Test 1
 spicy/unit/Mini::Test 1
 spicy/unit/Mini::Test::f1 1
 spicy/unit/Mini::Test::f2 1
+# 
+# Profiling
+# 
+#name count avg-% total-%
+hilti/func/Mini::Test::__on_0x25_done 4
+hilti/func/Mini::Test::__parse_Mini_Test_stage2 2
+hilti/func/Mini::Test::__parse_stage1 2
+hilti/func/Mini::Test::parse1 2
+hilti/func/Mini::__register_Mini_Test 1
+hilti/total 1 100.00 100.00
+spicy/prepare/block/Mini::Test 3
+spicy/prepare/stream/Mini::Test 3
+spicy/unit/Mini::Test 2
+spicy/unit/Mini::Test::f1 3
+spicy/unit/Mini::Test::f2 3
