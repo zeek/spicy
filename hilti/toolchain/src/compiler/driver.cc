@@ -44,6 +44,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"debug", no_argument, nullptr, 'd'},
                                               {"debug-addl", required_argument, nullptr, 'X'},
                                               {"disable-optimizations", no_argument, nullptr, 'g'},
+                                              {"enable-profiling", no_argument, nullptr, 'Z'},
                                               {"dump-code", no_argument, nullptr, 'C'},
                                               {"help", no_argument, nullptr, 'h'},
                                               {"keep-tmps", no_argument, nullptr, 'T'},
@@ -129,6 +130,7 @@ void Driver::usage() {
            "  -V | --skip-validation          Don't validate ASTs (for debugging only).\n"
            "  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation "
            "(comma-separated; see 'help' for list).\n"
+           "  -Z | --enable-profiling         Report profiling statistics after execution.\n"
            "       --cxx-link <lib>           Link specified static archive or shared library during JIT or to "
            "produced HLTO file. Can be given multiple times.\n"
         << addl_usage
@@ -257,7 +259,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     int num_output_types = 0;
 
     opterr = 0; // don't print errors
-    std::string option_string = "ABlL:cCpPvjhvx:VdX:o:D:TUEeSRg" + hookAddCommandLineOptions();
+    std::string option_string = "ABlL:cCpPvjhvx:VdX:o:D:TUEeSRgZ" + hookAddCommandLineOptions();
 
     while ( true ) {
         int c = getopt_long(argc, argv, option_string.c_str(), long_driver_options, nullptr);
@@ -396,6 +398,11 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 return Nothing();
 
             case 'V': _compiler_options.skip_validation = true; break;
+
+            case 'Z':
+                _compiler_options.enable_profiling = true;
+                _driver_options.enable_profiling = true;
+                break;
 
             case OPT_CXX_LINK: _compiler_options.cxx_link.emplace_back(optarg); break;
 
@@ -1175,6 +1182,7 @@ Result<Nothing> Driver::initRuntime() {
     config.abort_on_exceptions = _driver_options.abort_on_exceptions;
     config.show_backtraces = _driver_options.show_backtraces;
     config.report_resource_usage = _driver_options.report_resource_usage;
+    config.enable_profiling = _driver_options.enable_profiling;
     hilti::rt::configuration::set(config);
 
     try {
