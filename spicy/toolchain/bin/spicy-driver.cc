@@ -22,6 +22,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"compiler-debug", required_argument, nullptr, 'D'},
                                               {"debug", no_argument, nullptr, 'd'},
                                               {"debug-addl", required_argument, nullptr, 'X'},
+                                              {"enable-profiling", no_argument, nullptr, 'Z'},
                                               {"file", required_argument, nullptr, 'f'},
                                               {"batch-file", required_argument, nullptr, 'F'},
                                               {"help", no_argument, nullptr, 'h'},
@@ -111,6 +112,7 @@ void SpicyDriver::usage() {
            "  -S | --skip-dependencies        Do not automatically compile dependencies during JIT.\n"
            "  -U | --report-resource-usage    Print summary of runtime resource usage.\n"
            "  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation "
+           "  -Z | --enable-profiling         Report profiling statistics after execution.\n"
            "(comma-separated; see 'help' for list).\n"
            "\n"
            "Environment variables:\n"
@@ -133,7 +135,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABcD:f:F:hdJX:Vlp:i:SRL:U", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABcD:f:F:hdJX:Vlp:i:SRL:UZ", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -227,6 +229,11 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'v': std::cerr << "spicy-driver v" << hilti::configuration().version_string_long << std::endl; exit(0);
 
             case 'L': compiler_options.library_paths.emplace_back(optarg); break;
+
+            case 'Z':
+                compiler_options.enable_profiling = true;
+                driver_options.enable_profiling = true;
+                break;
 
             case 'h': usage(); exit(0);
             case '?': usage(); exit(1); // getopt reports error
