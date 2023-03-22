@@ -631,7 +631,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/default-parser-functions.spicy:17:8"
 
     # Begin parsing production: Variable: x   -> uint<8>
-    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8", (*self).__filters);
+    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8", foo::__feat%foo__P2%supports_filters ? (*self).__filters : Null);
     ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 
     if ( __trim ) 
@@ -662,7 +662,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/default-parser-functions.spicy:18:8"
 
     # Begin parsing production: Variable: y   -> uint<8>
-    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8", (*self).__filters);
+    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8", foo::__feat%foo__P2%supports_filters ? (*self).__filters : Null);
     ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 
     if ( __trim ) 

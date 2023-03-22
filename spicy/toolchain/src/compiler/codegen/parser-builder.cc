@@ -2121,7 +2121,22 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         builder()->addMemberCall(builder::member(state().self, s.id()), "close", {}, l);
 }
 
-static Expression _filters(const ParserState& state) { return builder::member(state.self, ID("__filters")); }
+Expression _filters(const ParserState& state) {
+    // Since used of a unit's `_filters` member triggers a requirement for
+    // filter support, guard access to it behind a feature flag. This allows us
+    // to decide with user-written code whether we actually want to enable
+    // filter support.
+    auto member = builder::member(state.self, ID("__filters"));
+
+    const auto& typeID = state.unit.get().id();
+    if ( ! typeID )
+        return member;
+
+    const auto id = hilti::util::replace(*typeID, ":", "_");
+    const auto flag = builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, "supports_filters")));
+
+    return builder::ternary(flag, std::move(member), builder::strong_reference(builder::typeByID("spicy_rt::Filters")));
+}
 
 Expression ParserBuilder::waitForInputOrEod() {
     return builder::call("spicy_rt::waitForInputOrEod", {state().data, state().cur, _filters(state())});
