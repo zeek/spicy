@@ -647,7 +647,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         if ( f.sinks().size() && ! f.parseType().isA<type::Bytes>() )
             error("only a bytes field can have sinks attached", p);
 
-        if ( f.parseType().isA<type::Void>() && ! f.isTransient() )
+        if ( f.parseType().isA<type::Void>() && ! f.isAnonymous() )
             error("void fields never store a value and cannot be named", p);
 
         if ( const auto& c = f.ctor() ) {

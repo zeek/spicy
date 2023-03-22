@@ -1,5 +1,8 @@
-# @TEST-EXEC: echo 1234567890ab | spicy-driver -d %INPUT >output
+# @TEST-EXEC: echo 1234567890abcdefgh | spicy-driver -d %INPUT >output
+# @TEST-EXEC-FAIL: spicyc -p %INPUT | grep -q 'push_back'
 # @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: If the top-level field is anonymous, we don't want to see it in any output. If it's a vector, we also don't want to see any values being stored there.
 
 module Mini;
 
@@ -17,6 +20,9 @@ public type test = unit {
        c: bytes &size=2;
        : uint8[2] foreach { print "|", $$; }
        d : bytes &size=2;
+
+       : (uint8[2] &size=2);
+       : (uint8[2] &size=2) &size=2;
 
        on %done {
            print self;
