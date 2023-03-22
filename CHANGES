@@ -1,3 +1,7 @@
+1.8.0-dev.30 | 2023-03-22 15:58:42 +0100
+
+  * Update docs for changes in spicy-plugin. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.28 | 2023-03-10 11:22:48 +0100
 
   * Fix stringification of enum values. (Benjamin Bannier, Corelight)
