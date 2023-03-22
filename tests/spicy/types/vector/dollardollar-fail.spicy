@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL:  spicyc -p %INPUT 2>output
+# @TEST-EXEC:       btest-diff output
+
+module Test;
+
+type Foo = unit {
+    : uint8[1] { print $$; } # error
+    : uint8[2] &convert=$$; # error
+
+    : uint8[1] foreach { print $$; } # no error
+    : uint8[1] &until=($$==1); # no error
+};

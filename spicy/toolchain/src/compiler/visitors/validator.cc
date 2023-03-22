@@ -229,6 +229,26 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             error("constant cannot be declared at local scope", p);
     }
 
+    void operator()(const hilti::expression::ResolvedID& id, position_t p) {
+        if ( id.id() == ID("__dd") ) {
+            if ( auto hook = p.findParent<spicy::Hook>(); hook && hook->get().isForEach() )
+                // $$ in "foreach" ok is ok.
+                return;
+
+            if ( auto attr = p.findParent<spicy::Attribute>() ) {
+                auto tag = attr->get().tag();
+                if ( tag == "&until" || tag == "&until-including" || tag == "&while" )
+                    // $$ inside these attributes is ok
+                    return;
+            }
+
+            if ( auto field = p.findParent<spicy::type::unit::item::Field>() ) {
+                if ( field->get().isContainer() && field->get().isTransient() )
+                    error("cannot use $$ with container inside anonymous field", p);
+            }
+        }
+    }
+
     void operator()(const hilti::Module& m, position_t p) {
         if ( auto version = m.moduleProperty("%spicy-version") ) {
             if ( ! version->expression() ) {
