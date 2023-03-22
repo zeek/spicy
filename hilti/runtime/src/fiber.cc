@@ -301,17 +301,19 @@ void detail::StackBuffer::save() {
         HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("%sallocating %zu bytes of swap space for stack %s",
                                                    (_buffer ? "re" : ""), want_buffer_size, *this));
 
-        _buffer = ::realloc(_buffer, want_buffer_size);
+        if ( _buffer )
+            free(_buffer);
+
+        _buffer = ::malloc(want_buffer_size);
         if ( ! _buffer )
             throw RuntimeError("out of memory when saving fiber stack");
 
         _buffer_size = want_buffer_size;
     }
 
-    assert(_buffer_size >= activeSize());
-
     HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("saving stack %s to %p", *this, _buffer));
     auto [lower, upper] = activeRegion();
+    assert(_buffer_size >= (upper - lower));
     ::memcpy(_buffer, lower, (upper - lower));
 }
 

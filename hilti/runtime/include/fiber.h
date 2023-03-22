@@ -120,7 +120,7 @@ struct StackBuffer {
 private:
     const ::Fiber* _fiber;
     void* _buffer = nullptr; // allocated memory holding swapped out stack content
-    size_t _buffer_size = 0; // size currently allocated for buffer
+    size_t _buffer_size = 0; // amount currently allocated for `_buffer`
 };
 
 // Render stack region for use in debug output.
