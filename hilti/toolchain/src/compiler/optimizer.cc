@@ -19,6 +19,7 @@
 #include <hilti/ast/expressions/logical-and.h>
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/logical-or.h>
+#include <hilti/ast/expressions/ternary.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
@@ -802,6 +803,25 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
 
                     return false;
                 };
+            }
+        }
+
+        return false;
+    }
+
+    bool operator()(const expression::Ternary& x, position_t p) {
+        switch ( _stage ) {
+            case OptimizerVisitor::Stage::COLLECT:
+            case OptimizerVisitor::Stage::PRUNE_DECLS: return false;
+            case OptimizerVisitor::Stage::PRUNE_USES: {
+                if ( auto bool_ = tryAsBoolLiteral(x.condition()) ) {
+                    if ( *bool_ )
+                        replaceNode(p, x.true_());
+                    else
+                        replaceNode(p, x.false_());
+
+                    return true;
+                }
             }
         }
 
