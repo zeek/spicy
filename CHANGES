@@ -1,3 +1,24 @@
+1.8.0-dev.51 | 2023-03-23 11:09:17 +0100
+
+  * GH-1399: Guard access to unit `_filters` member with feature flag. (Benjamin Bannier, Corelight)
+
+    The unit `_filters` member is accessed by most low-level functions
+    extracting data from the input, but its value is only interesting if a
+    unit actually supports filters. We had previously annotated `_filters`
+    with a requirement for filter support so any use of it with trigger
+    enabling support. By guarding access with a feature flag we can detect
+    such dependent uses in a subsequent patch.
+
+  * Extend detection of conditionally used features in optimizer. (Benjamin Bannier, Corelight)
+
+    We previously were only able to detect conditionally used features if
+    the feature flag was an `if` condition. In order to support
+    conditionally used features in expressions (as opposed to statements) we
+    add support for detecting their use under a ternary operator with this
+    patch.
+
+  * Add support for folding ternary operator uses in optimizer. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.47 | 2023-03-23 10:21:35 +0100
 
   * Add runtime profiling infrastructure.  (Robin Sommer, Corelight)

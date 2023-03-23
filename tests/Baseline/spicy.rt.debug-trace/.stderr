@@ -16,7 +16,7 @@
 [hilti-trace] : (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
 [hilti-trace] : # "<...>/debug-trace.spicy:8:20-13:2"
 [hilti-trace] : local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
-[hilti-trace] : try {     hilti::debug("spicy", "Mini::Test");     hilti::debugIndent("spicy");     (*self).__error = __error;     (*self).__on_0x25_init();     __error = (*self).__error;     local strong_ref<stream> filtered = Null;               if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {             local value_ref<stream> filtered_data = filtered;             (*self).__parse_Mini_Test_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe, __error);             __cur = __cur.advance(|__cur|);              if ( __trim ) {                 hilti::debug("spicy-verbose", "- trimming input");                 (*__data).trim(begin(__cur));             }             __result = (__cur, __lah, __lahe, __error);         }      if ( ! filtered )          __result = (*self).__parse_Mini_Test_stage2(__data, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) {     default<void>();              spicy_rt::filter_disconnect(self);     (*self).__error = __error;     default<void>();     __error = (*self).__error;     throw; }
+[hilti-trace] : try {     hilti::debug("spicy", "Mini::Test");     hilti::debugIndent("spicy");     (*self).__error = __error;     (*self).__on_0x25_init();     __error = (*self).__error;     local strong_ref<stream> filtered = Null;      if ( ! filtered )          __result = (*self).__parse_Mini_Test_stage2(__data, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) {     default<void>();     (*self).__error = __error;     default<void>();     __error = (*self).__error;     throw; }
 [hilti-trace] : hilti::debug("spicy", "Mini::Test");
 [hilti-trace] : hilti::debugIndent("spicy");
 [hilti-trace] : (*self).__error = __error;
@@ -24,7 +24,6 @@
 [hilti-trace] <...>/debug-trace.spicy:9:18: hilti::print(self, True);
 [hilti-trace] : __error = (*self).__error;
 [hilti-trace] : local strong_ref<stream> filtered = Null;
-[hilti-trace] :  if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {     local value_ref<stream> filtered_data = filtered;     (*self).__parse_Mini_Test_stage2(filtered_data, (*filtered_data), __trim, __lah, __lahe, __error);     __cur = __cur.advance(|__cur|);      if ( __trim ) {         hilti::debug("spicy-verbose", "- trimming input");         (*__data).trim(begin(__cur));     }     __result = (__cur, __lah, __lahe, __error); }
 [hilti-trace] :  if ( ! filtered ) {     __result = (*self).__parse_Mini_Test_stage2(__data, __cur, __trim, __lah, __lahe, __error); }
 [hilti-trace] : __result = (*self).__parse_Mini_Test_stage2(__data, __cur, __trim, __lah, __lahe, __error);
 [hilti-trace] : # "<...>/debug-trace.spicy:8:20-13:2"
@@ -34,7 +33,7 @@
 [hilti-trace] : spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim, __error);
 [hilti-trace] : hilti::debug("spicy-verbose", "- parsing production: Variable: f1  -> uint<32>");
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
-[hilti-trace] : spicy_rt::waitForInput(__data, __cur, 4, "expecting 4 bytes for unpacking value", "<...>/debug-trace.spicy:10:9", (*self).__filters);
+[hilti-trace] : spicy_rt::waitForInput(__data, __cur, 4, "expecting 4 bytes for unpacking value", "<...>/debug-trace.spicy:10:9", Null);
 [hilti-trace] : ((*self).f1, __cur) = (*unpack<uint<32>>((__cur, hilti::ByteOrder::Network)));
 [hilti-trace] :  if ( __trim ) {     hilti::debug("spicy-verbose", "- trimming input");     (*__data).trim(begin(__cur)); }
 [hilti-trace] : hilti::debug("spicy-verbose", "- trimming input");
@@ -52,7 +51,7 @@
 [hilti-trace] : spicy_rt::printParserState("Mini::Test", __data, __cur, __lah, __lahe, "default", __trim, __error);
 [hilti-trace] : hilti::debug("spicy-verbose", "- parsing production: Variable: f2  -> uint<8>");
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
-[hilti-trace] : spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/debug-trace.spicy:11:9", (*self).__filters);
+[hilti-trace] : spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/debug-trace.spicy:11:9", Null);
 [hilti-trace] : ((*self).f2, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 [hilti-trace] :  if ( __trim ) {     hilti::debug("spicy-verbose", "- trimming input");     (*__data).trim(begin(__cur)); }
 [hilti-trace] : hilti::debug("spicy-verbose", "- trimming input");
@@ -69,7 +68,6 @@
 [hilti-trace] <...>/debug-trace.spicy:8:20-13:2: (*self).__on_0x25_done();
 [hilti-trace] <...>/debug-trace.spicy:12:18: hilti::print(self, True);
 [hilti-trace] : __error = (*self).__error;
-[hilti-trace] : spicy_rt::filter_disconnect(self);
 [hilti-trace] : hilti::debugDedent("spicy");
 [hilti-trace] : __result = (__cur, __lah, __lahe, __error);
 [hilti-trace] : return __result;

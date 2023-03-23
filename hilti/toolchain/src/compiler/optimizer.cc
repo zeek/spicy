@@ -19,6 +19,7 @@
 #include <hilti/ast/expressions/logical-and.h>
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/logical-or.h>
+#include <hilti/ast/expressions/ternary.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
@@ -808,6 +809,25 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
         return false;
     }
 
+    bool operator()(const expression::Ternary& x, position_t p) {
+        switch ( _stage ) {
+            case OptimizerVisitor::Stage::COLLECT:
+            case OptimizerVisitor::Stage::PRUNE_DECLS: return false;
+            case OptimizerVisitor::Stage::PRUNE_USES: {
+                if ( auto bool_ = tryAsBoolLiteral(x.condition()) ) {
+                    if ( *bool_ )
+                        replaceNode(p, x.true_());
+                    else
+                        replaceNode(p, x.false_());
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     bool operator()(const expression::LogicalOr& x, position_t p) {
         switch ( _stage ) {
             case Stage::COLLECT:
@@ -1070,9 +1090,9 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
         }
     }
 
-    // Helper function to compute all feature flags participating in an `if`
+    // Helper function to compute all feature flags participating in an
     // condition. Feature flags are always combined with logical `or`.
-    static void featureFlagsFromIfCondition(const Expression& condition, std::map<ID, std::set<std::string>>& result) {
+    static void featureFlagsFromCondition(const Expression& condition, std::map<ID, std::set<std::string>>& result) {
         // Helper to extract `(ID, feature)` from a feature constant.
         auto idFeatureFromConstant = [](const ID& featureConstant) -> std::optional<std::pair<ID, std::string>> {
             // Split away the module part of the resolved ID.
@@ -1094,11 +1114,12 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
             if ( auto id_feature = idFeatureFromConstant(rid->id()) )
                 result[std::move(id_feature->first)].insert(std::move(id_feature->second));
         }
+
         // If we did not find a feature constant in the conditional, we
         // could also be dealing with a `OR` of feature constants.
         else if ( auto or_ = condition.tryAs<expression::LogicalOr>() ) {
-            featureFlagsFromIfCondition(or_->op0(), result);
-            featureFlagsFromIfCondition(or_->op1(), result);
+            featureFlagsFromCondition(or_->op0(), result);
+            featureFlagsFromCondition(or_->op1(), result);
         }
     }
 
@@ -1108,15 +1129,17 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
 
         // We walk up the full path to discover all feature conditionals wrapping this position.
         for ( const auto& parent : p.path ) {
-            if ( ! parent.node.isA<statement::If>() )
-                continue;
+            if ( const auto& if_ = parent.node.tryAs<statement::If>() ) {
+                const auto condition = if_->condition();
+                if ( ! condition )
+                    continue;
 
-            const auto& if_ = parent.node.as<statement::If>();
-            const auto condition = if_.condition();
-            if ( ! condition )
-                continue;
+                featureFlagsFromCondition(*condition, result);
+            }
 
-            featureFlagsFromIfCondition(*condition, result);
+            else if ( const auto& ternary = parent.node.tryAs<expression::Ternary>() ) {
+                featureFlagsFromCondition(ternary->condition(), result);
+            }
         }
 
         return result;
