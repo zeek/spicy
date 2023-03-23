@@ -1,3 +1,12 @@
+1.8.0-dev.59 | 2023-03-23 15:51:45 +0100
+
+  * Install missing dependency for running with clang-15. (Benjamin Bannier, Corelight)
+
+    Between clang-15.0.6 upstream broke out the runtime libraries needed for
+    e.g., ASAN into a separate, optional package. Install it as well.
+
+  * Remove unused CI setups for packages. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.56 | 2023-03-23 14:15:40 +0100
 
   * Fix potential double accounting for units in profiling output.
