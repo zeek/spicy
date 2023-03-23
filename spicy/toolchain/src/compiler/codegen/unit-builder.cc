@@ -42,7 +42,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
             if ( auto x = AttributeSet::find(f.attributes(), "&default") )
                 attrs = AttributeSet::add(attrs, *x);
 
-            if ( f.isTransient() )
+            if ( f.isAnonymous() )
                 // This field will never make it into the C++ struct. We still
                 // carry it around though as that makes type inference easier at
                 // times.

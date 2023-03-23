@@ -4,7 +4,7 @@
 module Test;
 
 type PcapPacket = unit {
-   : bytes &size= 2 { print $$; }
+   x: bytes &size=2 { print $$; }
 };
 
 public type PcapFile = unit {

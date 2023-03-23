@@ -30,7 +30,8 @@ public:
                          std::move(cond), args, sinks, hooks),
                    std::move(m)),
           _is_forwarding(false),
-          _is_transient(! id.has_value()),
+          _is_transient(false),
+          _is_anonymous(! id.has_value()),
           _engine(e),
           _args_start(9),
           _args_end(_args_start + static_cast<int>(args.size())),
@@ -48,7 +49,8 @@ public:
                          args, sinks, hooks),
                    std::move(m)),
           _is_forwarding(false),
-          _is_transient(! id.has_value()),
+          _is_transient(false),
+          _is_anonymous(! id.has_value()),
           _engine(e),
           _args_start(9),
           _args_end(_args_start + static_cast<int>(args.size())),
@@ -66,7 +68,8 @@ public:
                          args, sinks, hooks),
                    m),
           _is_forwarding(false),
-          _is_transient(! id.has_value()),
+          _is_transient(false),
+          _is_anonymous(! id.has_value()),
           _engine(e),
           _args_start(9),
           _args_end(_args_start + static_cast<int>(args.size())),
@@ -85,7 +88,8 @@ public:
                    m),
           _type(std::move(type)),
           _is_forwarding(false),
-          _is_transient(! id.has_value()),
+          _is_transient(false),
+          _is_anonymous(! id.has_value()),
           _engine(e),
           _args_start(9),
           _args_end(_args_start + static_cast<int>(args.size())),
@@ -117,7 +121,8 @@ public:
     bool isContainer() const { return repeatCount().has_value(); }
     bool isForwarding() const { return _is_forwarding; }
     bool isTransient() const { return _is_transient; }
-    bool emitHook() const { return ! isTransient() || hooks().size(); }
+    bool isAnonymous() const { return _is_anonymous; }
+    bool emitHook() const { return ! isAnonymous() || hooks().size(); }
 
     const Type& originalType() const {
         if ( _type )
@@ -159,6 +164,7 @@ public:
     std::optional<std::pair<const Expression, std::optional<const Type>>> convertExpression() const;
 
     void setForwarding(bool is_forwarding) { _is_forwarding = is_forwarding; }
+    void setTransient(bool is_transient) { _is_transient = is_transient; }
     void setDDType(Type t) { children()[3] = hilti::expression::Keyword::createDollarDollarDeclaration(std::move(t)); }
     void setIndex(uint64_t index) { _index = index; }
     void setItemType(Type t) { children()[4] = hilti::type::pruneWalk(std::move(t)); }
@@ -181,6 +187,7 @@ public:
     // Node interface.
     auto properties() const {
         return node::Properties{{"engine", to_string(_engine)},
+                                {"anonymous", _is_anonymous},
                                 {"transient", _is_transient},
                                 {"forwarding", _is_forwarding}};
     }
@@ -190,6 +197,7 @@ private:
     std::optional<uint64_t> _index;
     bool _is_forwarding;
     bool _is_transient;
+    bool _is_anonymous;
     Engine _engine;
     int _args_start;
     int _args_end;

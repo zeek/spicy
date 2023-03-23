@@ -455,9 +455,8 @@ struct ProductionVisitor
             builder()->addAssign(destination(), builder::default_(field->itemType()));
         }
 
-        else if ( field->isTransient() ) {
+        else if ( field->isAnonymous() ) {
             // We won't have a field to store the value in, create a temporary.
-            // auto init = builder::default_(field->itemType(), field->arguments());
             auto dst = builder()->addTmp(fmt("transient_%s", field->id()), field->itemType());
             pushDestination(dst);
         }
@@ -528,7 +527,7 @@ struct ProductionVisitor
         if ( meta.container() ) {
             auto elem = destination();
             popDestination();
-            stop = pb->newContainerItem(*meta.container(), destination(), elem, true);
+            stop = pb->newContainerItem(*meta.container(), destination(), elem, ! meta.container()->isTransient());
         }
 
         else if ( ! meta.isFieldProduction() ) {
@@ -548,7 +547,7 @@ struct ProductionVisitor
             // nothing to do
         }
 
-        else if ( field->isTransient() )
+        else if ( field->isAnonymous() )
             popDestination();
 
         else
@@ -693,7 +692,7 @@ struct ProductionVisitor
             auto exceeded = builder()->addIf(std::move(cond));
             pushBuilder(exceeded, [&]() {
                 // We didn't finish parsing the data, which is an error.
-                if ( ! destination().type().isA<type::Void>() && ! field->isTransient() )
+                if ( ! destination().type().isA<type::Void>() && ! field->isAnonymous() )
                     // Clear the field in case the type parsing has started
                     // to fill it.
                     builder()->addExpression(builder::unset(state().self, field->id()));
@@ -709,7 +708,7 @@ struct ProductionVisitor
             auto insufficient = builder()->addIf(std::move(missing));
             pushBuilder(insufficient, [&]() {
                 // We didn't parse all the data, which is an error.
-                if ( ! destination().type().isA<type::Void>() && ! field->isTransient() )
+                if ( ! destination().type().isA<type::Void>() && ! field->isAnonymous() )
                     // Clear the field in case the type parsing has started
                     // to fill it.
                     builder()->addExpression(builder::unset(state().self, field->id()));

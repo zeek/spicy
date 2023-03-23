@@ -19,12 +19,12 @@ inline const hilti::logging::DebugStream Normalizer("normalizer");
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
+struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
     explicit Visitor(Node* root) : root(root) {}
     Node* root;
     bool modified = false;
 
-    // Log debug message recording resolving a epxxression.
+    // Log debug message recording resolving a expression.
     void logChange(const Node& old, const Expression& nexpr) {
         HILTI_DEBUG(hilti::logging::debug::Normalizer,
                     hilti::util::fmt("[%s] %s -> expression %s (%s)", old.typename_(), old, nexpr, old.location()));
@@ -212,6 +212,27 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             logChange(p.node, hilti::util::fmt("unit ID %s", *t.typeID()));
             p.node.as<type::Unit>().setID(*t.typeID());
             modified = true;
+        }
+    }
+
+    void operator()(const type::unit::item::Field& f, position_t p) {
+        if ( f.isAnonymous() && ! f.isTransient() ) {
+            // Make the field transient if it's either top-level, or a direct
+            // parent field is already transient.
+            bool make_transient = false;
+
+            if ( p.parent().isA<type::Unit>() )
+                make_transient = true;
+
+            if ( auto pf = p.findParent<type::unit::item::Field>(); pf && pf->get().isTransient() )
+                make_transient = true;
+
+            if ( make_transient ) {
+                // Make anonymous top-level fields transient.
+                logChange(p.node, "set transient");
+                p.node.as<type::unit::item::Field>().setTransient(true);
+                modified = true;
+            }
         }
     }
 };
