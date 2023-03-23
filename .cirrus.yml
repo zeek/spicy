@@ -33,12 +33,12 @@ lint_task:
   env:
     CCACHE_DIR: /tmp/ccache
     CCACHE_COMPRESS: 1
-    LD_LIBRARY_PATH: /usr/lib/llvm-15/lib/clang/15.0.6/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/
 
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-15 --clang-format `which clang-format-15` --clang-tidy `which clang-tidy-15` --rpath /usr/lib/llvm-15/lib/clang/15.0.6/lib/linux/
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-15 --clang-format `which clang-format-15` --clang-tidy `which clang-tidy-15` --rpath /usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/
   build_script:       ./ci/run-ci -b build build
   test_code_script:   ./ci/run-ci -b build test-code
 

@@ -70,7 +70,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends llvm-10-dev clang-10 libclang-10-dev clang-format-10 clang-tidy-10 \
  && apt-get install -y --no-install-recommends llvm-11-dev clang-11 libclang-11-dev clang-format-11 clang-tidy-11 \
  && apt-get install -y --no-install-recommends llvm-12-dev clang-12 libclang-12-dev clang-format-12 clang-tidy-12 \
- && apt-get install -y --no-install-recommends llvm-15-dev clang-15 libclang-15-dev clang-format-15 clang-tidy-15 \
+ && apt-get install -y --no-install-recommends llvm-15-dev clang-15 libclang-15-dev clang-format-15 clang-tidy-15 libclang-rt-15-dev \
  # Additional tools.
  && apt-get install -y --no-install-recommends docker.io vim \
  && apt-get clean \
