@@ -1,3 +1,8 @@
+1.8.0-dev.56 | 2023-03-23 14:15:40 +0100
+
+  * Fix potential double accounting for units in profiling output.
+    (Robin Sommer, Corelight)
+
 1.8.0-dev.54 | 2023-03-23 11:49:32 +0100
 
   * GH-1396: Fix regex performance regression introduced by constant

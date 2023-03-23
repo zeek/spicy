@@ -15,11 +15,15 @@ module Mini;
 
 import spicy;
 
+type Sub = unit {
+    f2: uint8;
+};
+
 public type Test = unit {
     %port = 22/tcp;
 
     f1: uint32;
-    f2: uint8;
+    sub: Sub;
     on %done { print self; }
 };
 
