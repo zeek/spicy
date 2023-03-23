@@ -114,28 +114,31 @@ struct ProductionVisitor
     // RAII helper to update the visitor's `_path` as we descend the parse tree.
     class PathTracker {
     public:
-        PathTracker(ProductionVisitor* v, const ID& id) : v(v) { v->_path.emplace_back(id); }
+        PathTracker(std::vector<ID>* path, const ID& id) : _path(path) { path->emplace_back(id); }
         PathTracker() = delete;
         ~PathTracker() {
-            if ( v )
-                v->_path.pop_back();
+            if ( _path )
+                _path->pop_back();
         }
 
         PathTracker(const PathTracker& other) = delete;
         PathTracker(PathTracker&& other) noexcept {
-            v = other.v;
-            other.v = nullptr;
+            _path = other._path;
+            other._path = nullptr;
         }
 
         PathTracker& operator=(const PathTracker& other) = delete;
         PathTracker& operator=(PathTracker&& other) noexcept {
-            v = other.v;
-            other.v = nullptr;
+            if ( this == &other )
+                return *this;
+
+            _path = other._path;
+            other._path = nullptr;
             return *this;
         }
 
     private:
-        ProductionVisitor* v = nullptr;
+        std::vector<ID>* _path = nullptr;
     };
 
     void beginProduction(const Production& p) {
@@ -272,7 +275,7 @@ struct ProductionVisitor
 
                     std::optional<PathTracker> path_tracker;
                     if ( unit->id() ) {
-                        path_tracker = PathTracker(this, *unit->id());
+                        path_tracker = PathTracker(&_path, *unit->id());
                         builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")));
                     }
 
@@ -393,7 +396,7 @@ struct ProductionVisitor
                         pstate.unit = *unit;
 
                         if ( unit->id() ) {
-                            path_tracker = PathTracker(this, *unit->id());
+                            path_tracker = PathTracker(&_path, *unit->id());
                             builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")));
                         }
                     }
@@ -518,7 +521,7 @@ struct ProductionVisitor
         std::optional<PathTracker> path_tracker;
         std::optional<Expression> profiler;
         if ( is_field_owner ) {
-            path_tracker = PathTracker(this, field->id());
+            path_tracker = PathTracker(&_path, field->id());
             profiler = builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")));
             pre_container_offset = preParseField(p, meta);
         }

@@ -22,7 +22,7 @@ TEST_CASE("measurement") {
 
     for ( int i = 1; i <= 3; i++ ) {
         auto p = profiler::start("xyz");
-        ::usleep(100);
+        ::usleep(10);
         profiler::stop(p);
 
         auto m = profiler::get("xyz");
@@ -36,6 +36,7 @@ TEST_CASE("measurement") {
     auto m = profiler::get("xyz");
     REQUIRE(m);
     CHECK_EQ(m->count, 3);
+    CHECK_GT(m->time, 0);
     CHECK_EQ(m->time, total);
 
     detail::globalState()->profiling_enabled = old_profiling;

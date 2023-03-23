@@ -29,13 +29,13 @@ struct Measurement {
 
     Measurement& operator+=(const Measurement& m) {
         time += m.time;
-        // Don't modify to count.
+        // Don't modify count.
         return *this;
     }
 
     Measurement& operator-=(const Measurement& m) {
         time -= m.time;
-        // Don't modify to count.
+        // Don't modify count.
         return *this;
     }
 
@@ -43,8 +43,8 @@ struct Measurement {
     Measurement operator-(const Measurement& m) const { return Measurement(*this) -= m; }
 };
 
-inline Profiler start(std::string_view name);
-inline void stop(Profiler& p);
+Profiler start(std::string_view name);
+void stop(Profiler& p);
 
 namespace detail {
 

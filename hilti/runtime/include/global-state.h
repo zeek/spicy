@@ -46,7 +46,7 @@ struct GlobalState {
     /** True once `hilit::init()`` has finished. */
     bool runtime_is_initialized = false;
 
-    /** True once `profiler::init()`` has been called. */
+    /** True once `profiler::init()` has been called. */
     bool profiling_enabled = false;
 
     /** If not zero, `Configuration::abort_on_exception` is disabled. */

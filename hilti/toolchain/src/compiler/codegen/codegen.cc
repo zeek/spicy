@@ -739,6 +739,7 @@ cxx::Expression CodeGen::startProfiler(const std::string& name, cxx::Block* bloc
     if ( ! block )
         block = cxxBlock();
 
+    assert(block);
     pushCxxBlock(block);
     auto id = addTmp("profiler", cxx::Type("hilti::rt::Profiler"));
     auto stmt = cxx::Expression(fmt("%s = hilti::rt::profiler::start(\"%s\")", id, name));
@@ -759,6 +760,7 @@ void CodeGen::stopProfiler(const cxx::Expression& profiler, cxx::Block* block) {
     if ( ! block )
         block = cxxBlock();
 
+    assert(block);
     block->addStatement(cxx::Expression(fmt("hilti::rt::profiler::stop(%s)", profiler)));
 }
 

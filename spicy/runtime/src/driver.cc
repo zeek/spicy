@@ -172,16 +172,15 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
 
         in.read(buffer, static_cast<std::streamsize>(len));
 
-        auto profiler = hilti::rt::profiler::start(fmt("spicy/prepare/input/%s", parser.name));
+                {
+            auto profiler = hilti::rt::profiler::start(fmt("spicy/prepare/input/%s", parser.name));
 
-        if ( auto n = in.gcount() )
-            data->append(hilti::rt::Bytes(buffer, n));
+            if ( auto n = in.gcount() )
+                data->append(hilti::rt::Bytes(buffer, n));
 
-        if ( in.peek() == EOF )
-            data->freeze();
-
-        hilti::rt::profiler::stop(profiler);
-
+            if ( in.peek() == EOF )
+                data->freeze();
+        }
         if ( ! r ) {
             DRIVER_DEBUG(fmt("beginning parsing input (eod=%s)", data->isFrozen()));
             r = parser.parse3(unit, data, {}, {});

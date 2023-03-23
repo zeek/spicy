@@ -18,13 +18,13 @@ spicy/unit/Mini::Test::f2 1
 # 
 #name count avg-% total-%
 hilti/func/Mini::Test::__on_0x25_done 4
-hilti/func/Mini::Test::__parse_Mini_Test_stage2 2
-hilti/func/Mini::Test::__parse_stage1 2
-hilti/func/Mini::Test::parse1 2
+hilti/func/Mini::Test::__parse_Mini_Test_stage2 4
+hilti/func/Mini::Test::__parse_stage1 4
+hilti/func/Mini::Test::parse1 4
 hilti/func/Mini::__register_Mini_Test 1
 hilti/total 1 100.00 100.00
 spicy/prepare/block/Mini::Test 3
 spicy/prepare/stream/Mini::Test 3
-spicy/unit/Mini::Test 2
-spicy/unit/Mini::Test::f1 3
-spicy/unit/Mini::Test::f2 3
+spicy/unit/Mini::Test 8
+spicy/unit/Mini::Test::f1 4
+spicy/unit/Mini::Test::f2 4

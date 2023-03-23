@@ -48,12 +48,13 @@ void Profiler::record(const Measurement& end) {
         return; // already recorded
 
     auto& p = detail::globalState()->profilers[_name];
-    // With recursive calls, we only count the top-level.
     assert(p.instances > 0);
-    if ( p.instances-- == 1 ) {
-        ++p.m.count;
+
+    ++p.m.count;
+
+    // With recursive calls, we only time the top-level.
+    if ( p.instances-- == 1 )
         p.m += (end - _start);
-    }
 
     _name.clear();
 }
