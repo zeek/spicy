@@ -395,10 +395,8 @@ struct ProductionVisitor
                     if ( unit ) {
                         pstate.unit = *unit;
 
-                        if ( unit->id() ) {
+                        if ( unit->id() )
                             path_tracker = PathTracker(&_path, *unit->id());
-                            builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")));
-                        }
                     }
 
                     pushState(std::move(pstate));
