@@ -46,8 +46,15 @@ struct Configuration {
     /** abort() instead of throwing HILTI exceptions. */
     bool abort_on_exceptions = false;
 
-    /**< Print summary of runtime resource usage at termination */
+    /** Print summary of runtime resource usage at termination. */
     bool report_resource_usage = false;
+
+    /**
+     * Enable execution profiling, producing a report at termination.
+     * Collecting the data requires compiling HILTI code with profiling
+     * instrumentation.
+     **/
+    bool enable_profiling = false;
 
     /** Colon-separated list of debug streams to enable. Default comes from HILTI_DEBUG. */
     std::string debug_streams;

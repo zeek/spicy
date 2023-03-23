@@ -1,3 +1,31 @@
+1.8.0-dev.47 | 2023-03-23 10:21:35 +0100
+
+  * Add runtime profiling infrastructure.  (Robin Sommer, Corelight)
+
+    This add an option `-enable-profiling` to the HILTI and Spicy
+    compilers. Use of the option does two things: (1) it sets a flag
+    enabling inserting additional profiling instrumentation into
+    generated C++ code, and (2) it enables using instrumentation for
+    recording profiling information during execution of the compiled
+    code, incl. dumping out a profiling report at the end. The
+    profiling information collected includes time spent in HILTI
+    functions as well as for parsing Spicy units and unit fields.
+
+  * Fix parser generator to not store any parsed items for transient
+    containers. (Robin Sommer, Corelight)
+
+  * Disallow using `$$` with anonymous containers. (Robin Sommer, Corelight)
+
+    Transient containers don't store their values, which means `$$`
+    produces an always-empty container. Disallowing its use avoids simple
+    mistakes.
+
+  * Fiber tuning (Robin Sommer, Corelight)
+
+    - Tune buffer memory management during stack switching.
+    - Tune fibers' stack buffer management for less memory activity.
+    - Track high-level water mark for stack size needed by fibers.
+
 1.8.0-dev.30 | 2023-03-22 15:58:42 +0100
 
   * Update docs for changes in spicy-plugin. (Benjamin Bannier, Corelight)

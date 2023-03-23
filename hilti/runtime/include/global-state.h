@@ -5,11 +5,14 @@
 
 #include <memory>
 #include <optional>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <hilti/rt/context.h>
 #include <hilti/rt/debug-logger.h>
 #include <hilti/rt/init.h>
+#include <hilti/rt/profiler.h>
 
 // We collect all (or most) of the runtime's global state centrally. That's
 // 1st good to see what we have (global state should be minimal) and 2nd
@@ -43,11 +46,17 @@ struct GlobalState {
     /** True once `hilit::init()`` has finished. */
     bool runtime_is_initialized = false;
 
+    /** True once `profiler::init()` has been called. */
+    bool profiling_enabled = false;
+
     /** If not zero, `Configuration::abort_on_exception` is disabled. */
     int disable_abort_on_exceptions = 0;
 
     /** Resource usage at library initialization time. */
     ResourceUsage resource_usage_init;
+
+    /** Profiler's global measurements. */
+    std::unordered_map<std::string, profiler::detail::MeasurementState> profilers;
 
     /** The runtime's configuration. */
     std::unique_ptr<hilti::rt::Configuration> configuration;

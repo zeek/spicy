@@ -1,0 +1,44 @@
+# @TEST-EXEC: spicyc -j -Z %INPUT -o test.hlto >>output 2>prof.log.raw
+#
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | spicy-driver -Z test.hlto >>output 2>prof.log.raw
+# @TEST-EXEC: cat prof.log.raw | awk '/total/ { print $1, $2, $4, $5; next } { print $1, $2 }' >>prof.log
+#
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | spicy-driver -Z -F test.dat test.hlto >>output 2>prof.log.raw
+# @TEST-EXEC: cat prof.log.raw | awk '/total/ { print $1, $2, $4, $5; next } { print $1, $2 }' >>prof.log
+#
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: btest-diff prof.log
+#
+# @TEST-DOC: Ensure that enabling profiling produces the expected output.
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    %port = 22/tcp;
+
+    f1: uint32;
+    f2: uint8;
+    on %done { print self; }
+};
+
+@TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-flow id1 stream 22/tcp
+@begin-flow id2 block 22/tcp
+@data id1 2
+ab
+@data id2 5
+12345
+@data id1 2
+cd
+@data id2 5
+67890
+@data id1 1
+e
+@data id2 5
+ABCDE
+@end-flow id1
+@end-flow id2
+@TEST-END-FILE

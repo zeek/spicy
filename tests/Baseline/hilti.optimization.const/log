@@ -7,3 +7,5 @@
 [debug/optimizer] removing declaration for unused function hilti::exception_what
 [debug/optimizer] removing declaration for unused function hilti::mktime
 [debug/optimizer] removing declaration for unused function hilti::printValues
+[debug/optimizer] removing declaration for unused function hilti::profiler_start
+[debug/optimizer] removing declaration for unused function hilti::profiler_stop

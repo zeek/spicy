@@ -14,6 +14,7 @@
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/init.h>
+#include <hilti/rt/profiler.h>
 
 #include <spicy/rt/driver.h>
 
@@ -173,12 +174,15 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
 
         in.read(buffer, static_cast<std::streamsize>(len));
 
-        if ( auto n = in.gcount() )
-            data->append(hilti::rt::Bytes(buffer, n));
+                {
+            auto profiler = hilti::rt::profiler::start(fmt("spicy/prepare/input/%s", parser.name));
 
-        if ( in.peek() == EOF )
-            data->freeze();
+            if ( auto n = in.gcount() )
+                data->append(hilti::rt::Bytes(buffer, n));
 
+            if ( in.peek() == EOF )
+                data->freeze();
+        }
         if ( ! r ) {
             DRIVER_DEBUG(fmt("beginning parsing input (eod=%s)", data->isFrozen()));
             r = parser.parse3(unit, data, {}, {});
@@ -243,11 +247,11 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
         return Done;
     }
 
-
     try {
         switch ( _type ) {
             case ParsingType::Block: {
                 DRIVER_DEBUG("block", size, data);
+                auto profiler = hilti::rt::profiler::start(fmt("spicy/prepare/block/%s", _parser->name));
 
                 auto input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                 input->freeze();
@@ -263,6 +267,8 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     else
                         DRIVER_DEBUG("no context provided");
                 }
+
+                hilti::rt::profiler::stop(profiler);
 
                 _resumable = _parser->parse1(input, {}, _context);
 
@@ -281,6 +287,8 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
 
                     return Done;
                 }
+
+                auto profiler = hilti::rt::profiler::start(fmt("spicy/prepare/stream/%s", _parser->name));
 
                 if ( ! _input ) {
                     // First chunk.
@@ -302,6 +310,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                             fmt("unit type '%s' cannot be used as external entry point because it requires arguments",
                                 _parser->name));
 
+                    hilti::rt::profiler::stop(profiler);
                     _resumable = _parser->parse1(*_input, {}, _context);
                 }
 
@@ -319,6 +328,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     else
                         DRIVER_DEBUG("next data chunk", size, data);
 
+                    hilti::rt::profiler::stop(profiler);
                     _resumable->resume();
                 }
 
