@@ -22,6 +22,9 @@ struct Configuration {
     /** Stack size for shared fiber stack. */
     size_t fiber_shared_stack_size = static_cast<size_t>(1 * 1024 * 1024);
 
+    /** Minimum size of a fiber's buffer for swapped out stack content. */
+    size_t fiber_shared_stack_swap_size_min = static_cast<size_t>(2 * 1024);
+
     /** Max. number of fibers cached for reuse. */
     unsigned int fiber_cache_size = 100;
 

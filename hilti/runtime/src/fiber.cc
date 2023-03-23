@@ -289,14 +289,31 @@ size_t detail::StackBuffer::liveRemainingSize() const {
 #endif
 }
 
-void detail::StackBuffer::save() {
-    auto [lower, upper] = activeRegion();
+size_t detail::StackBuffer::activeSize() const { return static_cast<size_t>(::fiber_stack_used_size(_fiber)); }
 
-    _buffer = ::realloc(_buffer, (upper - lower));
-    if ( ! _buffer )
-        throw RuntimeError("out of memory when saving fiber stack");
+void detail::StackBuffer::save() {
+    auto want_buffer_size = std::max(activeSize(), configuration::get().fiber_shared_stack_swap_size_min);
+
+    // Round to KB boundary to avoid frequent reallocations.
+    want_buffer_size = ((want_buffer_size >> 10) + 1) << 10;
+
+    if ( want_buffer_size != _buffer_size ) {
+        HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("%sallocating %zu bytes of swap space for stack %s",
+                                                   (_buffer ? "re" : ""), want_buffer_size, *this));
+
+        if ( _buffer )
+            free(_buffer);
+
+        _buffer = ::malloc(want_buffer_size);
+        if ( ! _buffer )
+            throw RuntimeError("out of memory when saving fiber stack");
+
+        _buffer_size = want_buffer_size;
+    }
 
     HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("saving stack %s to %p", *this, _buffer));
+    auto [lower, upper] = activeRegion();
+    assert(_buffer_size >= (upper - lower));
     ::memcpy(_buffer, lower, (upper - lower));
 }
 
@@ -546,6 +563,7 @@ void detail::Fiber::reset() {
     _current_fibers = 0;
     _cached_fibers = 0;
     _max_fibers = 0;
+    _max_stack_size = 0;
     _initialized = 0;
 }
 
@@ -621,6 +639,11 @@ void detail::checkStack() {
     if ( fiber->type() == Fiber::Type::Main )
         return;
 
+    if ( fiber->type() == Fiber::Type::IndividualStack || fiber->type() == Fiber::Type::SharedStack ) {
+        if ( auto size = fiber->stackBuffer().activeSize(); size > detail::Fiber::_max_stack_size )
+            detail::Fiber::_max_stack_size = size;
+    }
+
     if ( fiber->stackBuffer().liveRemainingSize() < configuration::get().fiber_min_stack_size )
         throw StackSizeExceeded("not enough stack space remaining");
 }
@@ -631,6 +654,7 @@ detail::Fiber::Statistics detail::Fiber::statistics() {
         .current = _current_fibers,
         .cached = _cached_fibers,
         .max = _max_fibers,
+        .max_stack_size = _max_stack_size,
         .initialized = _initialized,
     };
 

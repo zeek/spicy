@@ -39,6 +39,14 @@ using Handle = detail::Fiber;
 
 namespace detail {
 
+/**
+ * Checks that the current fiber has sufficient stack space left for
+ * executing a function body.
+ *
+ * \throws StackSizeExceeded if the minimum size is not available
+ */
+extern void checkStack();
+
 /** Context-wide state for managing all fibers associated with that context. */
 struct FiberContext {
     FiberContext();
@@ -92,7 +100,7 @@ struct StackBuffer {
      * by the fiber's stack. This value is only well-defined if the fiber is
      * *not* currently executing.
      **/
-    size_t activeSize() const { return static_cast<size_t>(activeRegion().second - activeRegion().first); }
+    size_t activeSize() const;
 
     /** Returns the size of the memory region that's allocated for the fiber's stack. */
     size_t allocatedSize() const { return static_cast<size_t>(allocatedRegion().second - allocatedRegion().first); }
@@ -112,6 +120,7 @@ struct StackBuffer {
 private:
     const ::Fiber* _fiber;
     void* _buffer = nullptr; // allocated memory holding swapped out stack content
+    size_t _buffer_size = 0; // amount currently allocated for `_buffer`
 };
 
 // Render stack region for use in debug output.
@@ -217,6 +226,7 @@ public:
         uint64_t current;
         uint64_t cached;
         uint64_t max;
+        uint64_t max_stack_size;
         uint64_t initialized;
     };
 
@@ -225,6 +235,7 @@ public:
 private:
     friend void ::__fiber_run_trampoline(void* argsp);
     friend void ::__fiber_switch_trampoline(void* argsp);
+    friend void detail::checkStack();
 
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 
@@ -270,20 +281,13 @@ private:
     inline static uint64_t _current_fibers;
     inline static uint64_t _cached_fibers;
     inline static uint64_t _max_fibers;
+    inline static uint64_t _max_stack_size;
     inline static uint64_t _initialized; // number of trampolines run
 };
 
 std::ostream& operator<<(std::ostream& out, const Fiber& fiber);
 
 extern void yield();
-
-/**
- * Checks that the current fiber has sufficient stack space left for
- * executing a function body.
- *
- * \throws StackSizeExceeded if the minimum size is not available
- */
-extern void checkStack();
 
 } // namespace detail
 
