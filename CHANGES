@@ -1,3 +1,11 @@
+1.8.0-dev.54 | 2023-03-23 11:49:32 +0100
+
+  * GH-1396: Fix regex performance regression introduced by constant
+    folding. (Robin Sommer, Corelight)
+
+  * Cache regular expressions to compile each only once. (Robin
+    Sommer, Corelight)
+
 1.8.0-dev.51 | 2023-03-23 11:09:17 +0100
 
   * GH-1399: Guard access to unit `_filters` member with feature flag. (Benjamin Bannier, Corelight)

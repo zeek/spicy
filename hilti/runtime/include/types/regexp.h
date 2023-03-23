@@ -30,8 +30,11 @@ struct Flags {
     bool use_std =
         false; /**< if true, always use the standard matcher (for testing purposes; ignored if `no_sub` is set) */
 
-    friend bool operator==(const Flags& a, const Flags& b) { return a.no_sub == b.no_sub && a.use_std == b.use_std; }
-    friend bool operator!=(const Flags& a, const Flags& b) { return ! (a == b); }
+    /** Returns a string uniquely identifying the set of flags. */
+    std::string cacheKey() const {
+        char key[2] = {no_sub ? '1' : '0', use_std ? '1' : '0'};
+        return std::string(key, 2);
+    }
 };
 
 /* Type for passing around the content of extracted capture groups. */
@@ -119,6 +122,44 @@ private:
     std::unique_ptr<Pimpl> _pimpl;
 };
 
+namespace detail {
+
+// Internal helper class to compile and cache regular expressions. We compile
+// each unique set of patterns once into an instance of this class, which we
+// then retain inside a global cache for later reuse when seeing the same set
+// of patterns again.
+class CompiledRegExp {
+public:
+    CompiledRegExp(const std::vector<std::string>& patterns, regexp::Flags flags);
+    ~CompiledRegExp() = default;
+
+    CompiledRegExp(const CompiledRegExp& other) = delete;
+    CompiledRegExp(CompiledRegExp&& other) = delete;
+    CompiledRegExp& operator=(const CompiledRegExp& other) = delete;
+    CompiledRegExp& operator=(CompiledRegExp&& other) = delete;
+
+    jrx_regex_t* jrx() const {
+        assert(_jrx && "regexp not compiled");
+        return _jrx.get();
+    }
+
+private:
+    friend class rt::RegExp;
+    friend class regexp::MatchState;
+
+    struct RegFree {
+        void operator()(jrx_regex_t* j);
+    };
+
+    void _newJrx();
+    void _compileOne(std::string pattern, int idx);
+
+    regexp::Flags _flags{};
+    std::vector<std::string> _patterns;
+    std::unique_ptr<jrx_regex_t, RegFree> _jrx;
+};
+
+} // namespace detail
 } // namespace regexp
 
 /** A regular expression instance. */
@@ -144,10 +185,15 @@ public:
      */
     RegExp(const std::vector<std::string>& patterns, regexp::Flags flags = regexp::Flags());
 
-    RegExp() = default;
+    /**
+     * Instantiates an empty regular expression without any patterns. This is
+     * a valid instance that however cannot be used with any matching
+     * functionality. Doing will produce runtime errors.
+     */
+    RegExp();
 
-    const auto& patterns() const { return _patterns; }
-    const auto& flags() const { return _flags; }
+    const auto& patterns() const { return _re->_patterns; }
+    const auto& flags() const { return _re->_flags; }
 
     /**
      * Searches a pattern within a bytes view. The expression is considered
@@ -197,32 +243,21 @@ public:
      */
     regexp::MatchState tokenMatcher() const;
 
-    friend bool operator==(const RegExp& a, const RegExp& b) {
-        // NOTE: `_jrx_shared` is deliberately not included in the comparison.
-        return a._flags == b._flags && a._patterns == b._patterns;
-    }
+    /** Accessor to underlying JRX state. Intended for internal use and testing. */
+    jrx_regex_t* jrx() const { return _re->jrx(); }
 
-    friend bool operator!=(const RegExp& a, const RegExp& b) { return ! (a == b); }
+    bool operator==(const RegExp& other) const {
+        // Due to caching uniqueing instances, we can just compare the pointers.
+        return _re == other._re;
+    }
 
 private:
     friend class regexp::MatchState;
 
-    jrx_regex_t* _jrx() const {
-        assert(_jrx_shared && "regexp not compiled");
-        return _jrx_shared.get();
-    }
-    const auto& _jrxShared() const { return _jrx_shared; }
-
-    // Backend for the the searching and matching methods.
+    // Backend for the searching and matching methods.
     int16_t _search_pattern(jrx_match_state* ms, const char* data, size_t len, int32_t* so, int32_t* eo) const;
 
-    void _newJrx();
-    void _compileOne(std::string pattern, int idx);
-
-    regexp::Flags _flags{};
-    std::vector<std::string> _patterns;
-    std::shared_ptr<jrx_regex_t>
-        _jrx_shared; // Shared ptr so that we can copy by value, and safely share with match state.
+    std::shared_ptr<regexp::detail::CompiledRegExp> _re;
 };
 
 namespace detail::adl {

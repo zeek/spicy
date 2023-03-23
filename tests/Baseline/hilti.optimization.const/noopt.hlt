@@ -6,10 +6,10 @@ import hilti;
 const bool t = True;
 const bool f = False;
 
-hilti::print(True, True);
-hilti::print(False, True);
+hilti::print(t, True);
+hilti::print(f, True);
 
-if ( True ) {
+if ( t ) {
     0;
 }
 else {
@@ -17,7 +17,7 @@ else {
 }
 
 
-if ( False ) {
+if ( f ) {
     2;
 }
 else {
@@ -25,12 +25,12 @@ else {
 }
 
 
-if ( True ) {
+if ( t ) {
     4;
 }
 
 
-if ( False ) {
+if ( f ) {
     5;
 }
 
@@ -44,7 +44,7 @@ False;
 False;
 False;
 True;
-True ? 1 : 0;
-False ? 0 : 1;
+t ? 1 : 0;
+f ? 0 : 1;
 
 }

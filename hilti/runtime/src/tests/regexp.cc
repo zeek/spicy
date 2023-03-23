@@ -188,11 +188,6 @@ TEST_CASE("matchGroups") {
     }
 }
 
-TEST_CASE("construct") {
-    CHECK_THROWS_WITH_AS(RegExp(std::vector<std::string>()), "trying to compile empty pattern set",
-                         const PatternError&);
-}
-
 TEST_CASE("binary data") {
     CHECK_GT(RegExp("\xf0\xfe\xff").match("\xf0\xfe\xff"_b), 0);    // Pass in raw data directly.
     CHECK_GT(RegExp("\\xF0\\xFe\\xff").match("\xf0\xfe\xff"_b), 0); // Let the ctor unescape
@@ -453,4 +448,19 @@ TEST_CASE("reassign") {
     }
 }
 
-TEST_SUITE_END();
+TEST_CASE("caching") {
+    const auto emptya = RegExp();
+    const auto emptyb = RegExp();
+    const auto re1a = RegExp("123");
+    const auto re1b = RegExp("123");
+    const auto re2a = RegExp(std::vector<std::string>{"123", "456"}, {.no_sub = true});
+    const auto re2b = RegExp(std::vector<std::string>{"123", "456"}, {.no_sub = true});
+    const auto re3 = RegExp("123", {.no_sub = true});
+    const auto re4 = RegExp(std::vector<std::string>{"123", "456"}, {.no_sub = false});
+
+    CHECK_EQ(emptya.jrx(), emptyb.jrx());
+    CHECK_EQ(re1a.jrx(), re1b.jrx());
+    CHECK_EQ(re2a.jrx(), re2b.jrx());
+    CHECK_NE(re1a.jrx(), re3.jrx());
+    CHECK_NE(re1a.jrx(), re4.jrx());
+}

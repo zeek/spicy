@@ -1,0 +1,13 @@
+# @TEST-EXEC: hiltic -j %INPUT
+#
+# @TEST-DOC: Check that default values for regexp vectors are constructed correctly.
+
+module Test {
+
+import hilti;
+
+global vector<regexp> xs;
+xs.resize(10);
+hilti::print(xs);
+
+}

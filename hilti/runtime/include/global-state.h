@@ -25,9 +25,9 @@
 namespace hilti::rt {
 struct Configuration;
 
-namespace detail {
-class DebugLogger;
-}
+namespace regexp::detail {
+class CompiledRegExp;
+} // namespace regexp::detail
 
 } // namespace hilti::rt
 
@@ -75,6 +75,9 @@ struct GlobalState {
      * still need this information.
      */
     std::vector<hilti::rt::detail::HiltiModule> hilti_modules;
+
+    /** Cache of already compiled regular expressions. */
+    std::unordered_map<std::string, std::shared_ptr<regexp::detail::CompiledRegExp>> regexp_cache;
 };
 
 /**
