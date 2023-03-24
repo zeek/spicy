@@ -41,6 +41,9 @@ export {
     ##
     ## Returns: true if the operation succeeded
     global disable_file_analyzer: function(tag: Files::Tag) : bool;
+
+    ## Returns current resource usage as reported by the Spicy runtime system.
+    global resource_usage: function() : ResourceUsage;
 # doc-functions-end
 }
 
@@ -70,4 +73,9 @@ function enable_file_analyzer(tag: Files::Tag) : bool
 function disable_file_analyzer(tag: Files::Tag) : bool
     {
     return Spicy::__toggle_analyzer(tag, F);
+    }
+
+function resource_usage() : ResourceUsage
+    {
+    return Spicy::__resource_usage();
     }
