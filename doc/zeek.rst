@@ -568,8 +568,8 @@ Exporting Types
 As we :ref:`discuss above <zeek_events>`, the type of each event
 argument maps over to a corresponding Zeek type. On the Zeek side,
 that corresponding type needs to be known by Zeek. That is always the
-case for built-in atomic types (per the table:ref:`the conversion
-table <zeek-event-arg-types>`), but it can turn out more challenging
+case for built-in atomic types (per :ref:`the conversion table
+<zeek-event-arg-types>`), but it can turn out more challenging
 to achieve for custom types, such as ``enum`` and ``record``, for
 which you would normally need to create matching type declarations in
 your Zeek scripts. While that's not necessarily hard, but it can
