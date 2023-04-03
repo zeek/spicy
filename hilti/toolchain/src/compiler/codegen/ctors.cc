@@ -195,7 +195,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const ctor::Enum& n) {
         auto id = cg->compile(n.type(), codegen::TypeUsage::Storage);
-        return fmt("%s(%s::%s)", id, id, cxx::ID(n.value().id()));
+        return fmt("%s{%s::%s}", id, id, cxx::ID(n.value().id()));
     }
 
     result_t operator()(const ctor::ValueReference& n) {

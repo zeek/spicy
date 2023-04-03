@@ -261,13 +261,13 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::enum_::CtorSigned& n) {
         auto args = tupleArguments(n, n.op1());
         auto t = n.op0().type().as<type::Type_>().typeValue();
-        return fmt("%s(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
+        return fmt("%s{%s}", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
     result_t operator()(const operator_::enum_::CtorUnsigned& n) {
         auto args = tupleArguments(n, n.op1());
         auto t = n.op0().type().as<type::Type_>().typeValue();
-        return fmt("%s(%s)", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
+        return fmt("%s{%s}", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
     result_t operator()(const operator_::enum_::HasLabel& n) {

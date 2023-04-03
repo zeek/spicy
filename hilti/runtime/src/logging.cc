@@ -12,7 +12,7 @@ using namespace hilti::rt::detail;
 
 using namespace hilti::rt;
 
-HILTI_THREAD_LOCAL const char* tls_location = nullptr;
+HILTI_THREAD_LOCAL const char* debug::detail::tls_location = nullptr;
 
 void hilti::rt::internalError(const std::string& msg) {
     std::cerr << fmt("[libhilti] Internal error: %s", msg) << std::endl;

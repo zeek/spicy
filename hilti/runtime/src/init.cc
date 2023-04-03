@@ -75,6 +75,13 @@ void hilti::rt::done() {
 
     profiler::detail::done();
 
+    for ( const auto& m : globalState()->hilti_modules ) {
+        if ( m.destroy_globals ) {
+            HILTI_RT_DEBUG("libhilti", fmt("destroying globals for module %s", m.name));
+            (*m.destroy_globals)(context::detail::master());
+        }
+    }
+
     delete __global_state; // NOLINT (cppcoreguidelines-owning-memory)
     __global_state = nullptr;
     context::detail::set(nullptr);

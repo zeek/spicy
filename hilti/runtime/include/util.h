@@ -63,9 +63,9 @@
 
 
 /**
- * On Linux `` is faster than C++'s
- * `thread_local`. However, on macOS `__thread` doesn't work. Also see this for
- * a lot of detail: https://maskray.me/blog/2021-02-14-all-about-thread-local-storage.
+ * On Linux `__thread` is faster than C++'s `thread_local`. However, on macOS
+ * `__thread` doesn't work. Also see this for a lot of detail:
+ * https://maskray.me/blog/2021-02-14-all-about-thread-local-storage.
  */
 #if defined(__linux__)
 #define HILTI_THREAD_LOCAL __thread

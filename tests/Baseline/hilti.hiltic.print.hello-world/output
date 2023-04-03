@@ -20,7 +20,7 @@ extern void __hlt::Foo::__init_module() {
     ::hilti::rt::print(std::string("Hello, world!"), ::hilti::rt::Bool(true));
 }
 
-extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, nullptr, nullptr}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, nullptr, nullptr, nullptr}); }
 
 /* __HILTI_LINKER_V1__
 {"module":"Foo","namespace":"__hlt::Foo","path":"<...>/hello-world.hlt","version":1}

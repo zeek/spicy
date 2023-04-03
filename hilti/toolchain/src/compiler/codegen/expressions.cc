@@ -79,7 +79,8 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
             case expression::keyword::Kind::Captures: return {"__captures", cxx::Side::LHS};
             case expression::keyword::Kind::Scope: {
                 auto scope = fmt("%s_hlto_scope", cg->options().cxx_namespace_intern);
-                auto extern_scope = cxx::declaration::Global{.id = cxx::ID(scope), .type = "const char*", .linkage = "extern"};
+                auto extern_scope =
+                    cxx::declaration::Global{.id = cxx::ID(scope), .type = "const char*", .linkage = "extern"};
                 cg->unit()->add(extern_scope);
                 return {fmt("std::string(%s)", scope), cxx::Side::RHS};
             }
@@ -134,10 +135,14 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const expression::ResolvedID& n, position_t p) {
         if ( auto g = n.declaration().tryAs<declaration::GlobalVariable>() ) {
-            if ( auto ns = n.id().namespace_(); ! ns.empty() )
-                return {fmt("%s->%s", cxx::ID(ns, "__globals()"), cxx::ID(n.id().local())), cxx::Side::LHS};
+            if ( cg->options().cxx_enable_dynamic_globals ) {
+                if ( auto ns = n.id().namespace_(); ! ns.empty() )
+                    return {fmt("%s->%s", cxx::ID(ns, "__globals()"), cxx::ID(n.id().local())), cxx::Side::LHS};
 
-            return {fmt("__globals()->%s", cxx::ID(n.id())), cxx::Side::LHS};
+                return {fmt("__globals()->%s", cxx::ID(n.id())), cxx::Side::LHS};
+            }
+            else
+                return {fmt("(*%s)", cxx::ID(cg->options().cxx_namespace_intern, cxx::ID(n.id()))), cxx::Side::LHS};
         }
 
         if ( auto e = n.declaration().tryAs<declaration::Expression>() )

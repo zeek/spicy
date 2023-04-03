@@ -32,11 +32,13 @@ struct HiltiModule {
     const char* name{};              /**< name of the HILTI module; for informational purposes */
     const char* id = nullptr;        /**< unique identifier for the module */
     void (*init_module)() = nullptr; /**< callback for executing any top-level module code when the runtime library is
-                                being initialized */
+                                being initialized; null if not needed */
     void (*init_globals)(hilti::rt::Context* ctx) =
-        nullptr; /**< callback to initialize the module's globals in a freshly allocated context */
-    unsigned int* globals_idx =
-        nullptr; /**< pointer to an integer storing the modules' index in the context-wide globals array */
+        nullptr; /**< callback to initialize the module's globals in a freshly allocated context; null if not needed */
+    void (*destroy_globals)(hilti::rt::Context* ctx) =
+        nullptr; /**< callback to destroy the module's globals at termination; null if not needed */
+    unsigned int* globals_idx = nullptr; /**< pointer to an integer storing the modules' index in the context-wide
+                                            globals array; valid only if dynamic globals are in use */
 };
 
 /** Entry point for the generated code to register a compiled HILTI module with the runtime */
