@@ -350,6 +350,8 @@ std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, U
     }
 }
 
+void View::_force_vtable() { }
+
 bool View::startsWith(const Bytes& b) const {
     _ensureValid();
     auto s1 = unsafeBegin();
@@ -462,29 +464,6 @@ void Stream::append(const char* data, size_t len) {
     else
         _chain->append(std::make_unique<Chunk>(0, len));
 }
-
-Size View::size() const {
-    // Because our end offset may point beyond what's currently
-    // available, we need to take the actual end in account to return
-    // the number of actually available bytes.
-
-    if ( ! _begin.chain() )
-        return 0;
-
-    auto tail = _begin.chain()->tail();
-    if ( ! tail )
-        return 0;
-
-    if ( _begin.offset() > tail->endOffset() )
-        return 0;
-
-    if ( ! _end || _end->offset() >= tail->endOffset() )
-        return tail->endOffset() - _begin.offset();
-    else
-        return _end->offset() > _begin.offset() ? (_end->offset() - _begin.offset()).Ref() : 0;
-}
-
-stream::View::~View() = default;
 
 Bytes stream::View::data() const {
     Bytes s;
