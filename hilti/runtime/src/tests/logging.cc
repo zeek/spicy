@@ -100,6 +100,7 @@ TEST_CASE("debug::location") {
     debug::setLocation(source_location);
 
     CHECK_EQ(debug::location(), source_location);
+    debug::setLocation(nullptr);
 }
 
 TEST_CASE("debug::setLocation") {

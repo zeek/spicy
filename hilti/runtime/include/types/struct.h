@@ -18,11 +18,11 @@ struct hasParameters {};
 namespace struct_ {
 
 template<class T>
-inline auto& value_or_exception(const std::optional<T>& t, const char* location) {
+inline auto& value_or_exception(const std::optional<T>& t) {
     if ( t.has_value() )
         return t.value();
 
-    throw AttributeNotSet("struct attribute not set", location);
+    throw AttributeNotSet("struct attribute not set");
 }
 } // namespace struct_
 

@@ -22,19 +22,19 @@ namespace optional {
 struct Unset : public std::exception {}; // Internal exception to signal access to optional that may expectedly by unset
 
 template<class T>
-inline auto& value(const std::optional<T>& t, const char* location) {
+inline auto& value(const std::optional<T>& t) {
     if ( t.has_value() )
         return t.value();
 
-    throw UnsetOptional("unset optional value", location);
+    throw UnsetOptional("unset optional value");
 }
 
 template<class T>
-inline auto& value(std::optional<T>& t, const char* location) {
+inline auto& value(std::optional<T>& t) {
     if ( t.has_value() )
         return t.value();
 
-    throw UnsetOptional("unset optional value", location);
+    throw UnsetOptional("unset optional value");
 }
 
 template<class T>

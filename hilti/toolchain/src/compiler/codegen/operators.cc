@@ -293,7 +293,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         else
             type = cg->compile(n.op0().type().as<type::Type_>().typeValue(), codegen::TypeUsage::Ctor);
 
-        return fmt("%s(%s, \"%s\")", type, args[0], n.meta().location());
+        return fmt("%s(%s)", type, args[0]);
     }
 
     result_t operator()(const operator_::exception::Description& n) { return fmt("%s.description()", op0(n)); }
@@ -527,7 +527,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     // Optional
     result_t operator()(const operator_::optional::Deref& n) {
-        return {fmt("::hilti::rt::optional::value(%s, \"%s\")", op0(n), n.op0().meta().location().render()),
+        return {fmt("::hilti::rt::optional::value(%s)", op0(n)),
                 cxx::Side::LHS};
     }
 
@@ -752,7 +752,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
             if ( d )
                 return fmt("%s.value_or(%s)", attr, cg->compile(*d));
 
-            return fmt("::hilti::rt::optional::value(%s, \"%s\")", attr, op0.meta().location().render());
+            return fmt("::hilti::rt::optional::value(%s)", attr);
         }
 
         return {attr, cxx::Side::LHS};
@@ -799,8 +799,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
             if ( auto d = f->default_() )
                 return memberAccess(n, fmt("value_or(%s)", cg->compile(*d)));
 
-            return fmt("::hilti::rt::struct_::value_or_exception(%s, \"%s\")", attr,
-                       n.op0().meta().location().render());
+            return fmt("::hilti::rt::struct_::value_or_exception(%s)", attr);
         }
 
         return structMember(n, n.op1());

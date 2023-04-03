@@ -6,16 +6,19 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/struct.h>
+#include <hilti/rt/logging.h>
 
 using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("struct");
 
 TEST_CASE("value_or_exception") {
-    CHECK_EQ(struct_::value_or_exception(std::optional<int>(42), "location:123"), 42);
+    debug::setLocation("location:123");
+    CHECK_EQ(struct_::value_or_exception(std::optional<int>(42)), 42);
 
-    CHECK_THROWS_WITH_AS(struct_::value_or_exception(std::optional<int>(std::nullopt), "location:123"),
+    CHECK_THROWS_WITH_AS(struct_::value_or_exception(std::optional<int>(std::nullopt)),
                          "struct attribute not set (location:123)", const AttributeNotSet&);
+    debug::setLocation(nullptr);
 }
 
 struct Test : trait::isStruct {
