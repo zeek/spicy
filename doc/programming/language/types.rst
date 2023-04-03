@@ -222,9 +222,9 @@ iterators to traverse their content, with no particular ordering.
 Optional
 --------
 
-An optional value may hold a value of another type, or can
-alternatively remain unset. A common use case for optional is the
-return value of a function that may fail.
+An ``optional`` value may hold a value of another type, or can alternatively
+remain unset. A common use case for ``optional`` is the return value of a
+function that may fail.
 
 - ``optional<TYPE>``
 
@@ -234,13 +234,26 @@ return value of a function that may fail.
   type of the expression ``EXPR`` and initializes it with the value of
   ``EXPR``.
 
-More commonly, however, optional values are initialized through
-assignment:
+More commonly, however, ``optional`` values are initialized through assignment:
 
 - Assigning an instance of ``TYPE`` to an ``optional<TYPE>`` sets it
   to the instance's value.
 
 - Assigning ``Null`` to an ``optional<TYPE>`` unsets it.
+
+To check whether an ``optional`` value is set, it can implicitly or explicitly
+be converted to a ``bool``.
+
+.. spicy-code:: optional-check.spicy
+
+    global x: optional<uint64>;  # Unset.
+    global b1: bool = x;         # False.
+    global b2 = cast<bool>(x);   # False.
+
+    if ( x )
+        print "'x' was set";     # Never runs.
+    if ( ! x )
+        print "'x' was unset";   # Always runs.
 
 .. include:: /autogen/types/optional.rst
 
