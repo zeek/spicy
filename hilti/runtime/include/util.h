@@ -61,6 +61,18 @@
  */
 #define HILTI_RT_ENUM(name, ...) HILTI_RT_ENUM_WITH_DEFAULT(name, Undef, __VA_ARGS__)
 
+
+/**
+ * On Linux `` is faster than C++'s
+ * `thread_local`. However, on macOS `__thread` doesn't work. Also see this for
+ * a lot of detail: https://maskray.me/blog/2021-02-14-all-about-thread-local-storage.
+ */
+#if defined(__linux__)
+#define HILTI_THREAD_LOCAL __thread
+#else
+#define HILTI_THREAD_LOCAL thread_local
+#endif
+
 namespace hilti::rt {
 
 /** Reports an internal error and aborts execution. */
