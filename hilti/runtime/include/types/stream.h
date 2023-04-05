@@ -969,6 +969,61 @@ inline void Chain::trim(const SafeConstIterator& i) {
 
 inline void Chain::trim(const UnsafeConstIterator& i) { trim(i.offset()); }
 
+inline const Chunk* Chain::findChunk(const Offset& offset, const Chunk* hint_prev) const {
+    _ensureValid();
+
+    const Chunk* c = _head.get();
+
+    // A very common way this function gets called without `hint_prev` is
+    // `Stream::unsafeEnd` via `Chain::unsafeEnd` in construction of an
+    // `UnsafeConstIterator` from a `SafeConstIterator`; in this case the chunk
+    // for `end()` will be `nullptr`. Optimize for that case by assuming we
+    // always want a chunk near the end if no hint is given.
+    if ( ! hint_prev )
+        hint_prev = _tail;
+
+    if ( hint_prev && hint_prev->offset() <= offset )
+        c = hint_prev;
+
+    while ( c && ! c->inRange(offset) )
+        c = c->next();
+
+    if ( c && ! c->inRange(offset) )
+        return nullptr;
+
+    return c;
+}
+
+inline Chunk* Chain::findChunk(const Offset& offset, Chunk* hint_prev) {
+    _ensureValid();
+
+    Chunk* c = _head.get();
+
+    // See comment above.
+    if ( ! hint_prev )
+        hint_prev = _tail;
+
+    if ( hint_prev && hint_prev->offset() <= offset )
+        c = hint_prev;
+
+    while ( c && ! c->inRange(offset) )
+        c = c->next();
+
+    if ( _tail && offset > _tail->endOffset() )
+        return _tail;
+
+    return c;
+}
+
+inline const Byte* Chain::data(const Offset& offset, Chunk* hint_prev) const {
+    auto c = findChunk(offset, hint_prev);
+    if ( ! c )
+        throw InvalidIterator("stream iterator outside of valid range");
+
+    return c->data(offset);
+}
+
+
 } // namespace detail
 
 inline SafeConstIterator::SafeConstIterator(const UnsafeConstIterator& i)
@@ -1413,6 +1468,12 @@ inline Size View::size() const {
         return tail->endOffset() - _begin.offset();
     else
         return _end->offset() > _begin.offset() ? (_end->offset() - _begin.offset()).Ref() : 0;
+}
+
+inline Bytes stream::View::data() const {
+    Bytes s;
+    s.append(*this);
+    return s;
 }
 
 inline std::ostream& operator<<(std::ostream& out, const View& x) { return out << hilti::rt::to_string_for_print(x); }

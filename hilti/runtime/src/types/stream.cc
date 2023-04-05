@@ -54,60 +54,6 @@ void Chunk::trim(const Offset& o) {
     _offset = o;
 }
 
-const Chunk* Chain::findChunk(const Offset& offset, const Chunk* hint_prev) const {
-    _ensureValid();
-
-    const Chunk* c = _head.get();
-
-    // A very common way this function gets called without `hint_prev` is
-    // `Stream::unsafeEnd` via `Chain::unsafeEnd` in construction of an
-    // `UnsafeConstIterator` from a `SafeConstIterator`; in this case the chunk
-    // for `end()` will be `nullptr`. Optimize for that case by assuming we
-    // always want a chunk near the end if no hint is given.
-    if ( ! hint_prev )
-        hint_prev = _tail;
-
-    if ( hint_prev && hint_prev->offset() <= offset )
-        c = hint_prev;
-
-    while ( c && ! c->inRange(offset) )
-        c = c->next();
-
-    if ( c && ! c->inRange(offset) )
-        return nullptr;
-
-    return c;
-}
-
-Chunk* Chain::findChunk(const Offset& offset, Chunk* hint_prev) {
-    _ensureValid();
-
-    Chunk* c = _head.get();
-
-    // See comment above.
-    if ( ! hint_prev )
-        hint_prev = _tail;
-
-    if ( hint_prev && hint_prev->offset() <= offset )
-        c = hint_prev;
-
-    while ( c && ! c->inRange(offset) )
-        c = c->next();
-
-    if ( _tail && offset > _tail->endOffset() )
-        return _tail;
-
-    return c;
-}
-
-const Byte* Chain::data(const Offset& offset, Chunk* hint_prev) const {
-    auto c = findChunk(offset, hint_prev);
-    if ( ! c )
-        throw InvalidIterator("stream iterator outside of valid range");
-
-    return c->data(offset);
-}
-
 void Chain::append(std::unique_ptr<Chunk> chunk) {
     _ensureValid();
     _ensureMutable();
@@ -463,12 +409,6 @@ void Stream::append(const char* data, size_t len) {
         _chain->append(std::make_unique<Chunk>(0, std::string(data, len)));
     else
         _chain->append(std::make_unique<Chunk>(0, len));
-}
-
-Bytes stream::View::data() const {
-    Bytes s;
-    s.append(*this);
-    return s;
 }
 
 std::string stream::View::dataForPrint() const {
